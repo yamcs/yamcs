@@ -26,6 +26,7 @@
         return {
             getKey: getKey,
             getActiveAlarms: getActiveAlarms,
+            getActiveAlarmForParameter: getActiveAlarmForParameter,
             listAlarms: listAlarms,
             listAlarmsForParameter: listAlarmsForParameter,
             patchParameterAlarm: patchParameterAlarm
@@ -46,6 +47,14 @@
          */
         function getActiveAlarms() {
             return activeAlarms;
+        }
+
+        function getActiveAlarmForParameter(qname) {
+            for (var i = 0; i < activeAlarms.length; i++) {
+                if (activeAlarms[i]['triggerValue']['id']['name'] === qname) {
+                    return activeAlarms[i];
+                }
+            }
         }
 
         function listAlarms() {

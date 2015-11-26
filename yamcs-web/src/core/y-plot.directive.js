@@ -3,24 +3,21 @@
 
     angular
         .module('yamcs.core')
-        .directive('plot', plot);
+        .directive('yPlot', yPlot);
 
     /* @ngInject */
-    function plot($log, $filter, tmService, configService) {
+    function yPlot($log, configService) {
 
         return {
             restrict: 'EA',
             scope: {
                 pinfo: '=',
-                para: '=',
+                pdata: '=',
                 alarms: '=',
-                range: '@'
+                control: '=' // Optionally allows controlling this directive from the outside
             },
             link: function(scope, element, attrs) {
-                var data = [];
-                var valueRange = [null, null];
                 var plotWrapper = angular.element('<div>');
-
                 var spinContainer = angular.element('<div style="position: absolute; top: 50%; left: 50%;"></div>');
                 plotWrapper.prepend(spinContainer);
 
@@ -28,19 +25,80 @@
                 plotWrapper.prepend(plotEl);
 
                 element.prepend(plotWrapper);
-                makePlot(plotEl[0], spinContainer, scope, data, valueRange);
+
+                var model = {
+                    hasData: false,
+                    valueRange: [null, null],
+                    spinning: false
+                };
+                var g = makePlot(plotEl[0], scope.pinfo, model);
+                g.ready(function () {
+                    scope.$watch(attrs.pdata, function (pdata) {
+                        var match = false;
+                        for (var i = 0; i < pdata.length; i++) {
+                            if (pdata[i]['points'].length > 0) {
+                                match = true;
+                                break;
+                            }
+                        }
+                        model.hasData = match;
+                        updateGraph(g, pdata, model);
+                    });
+                });
+
+                scope.__control = scope.control || {};
+                var spinner = new Spinner();
+                scope.__control.startSpinner = function() {
+                    if (!model.spinning) {
+                        model.spinning = true;
+                        spinner.spin(spinContainer[0]);
+                    }
+                };
+                scope.__control.stopSpinner = function () {
+                    model.spinning = false;
+                    spinner.stop();
+                };
+                scope.__control.emptyPlot = function () {
+                    model.hasData = false;
+                    updateGraph(g, [], model);
+                };
+                scope.__control.resetZoom = function () {
+                    // dygraphs gives errors when resetting with empty plot,
+                    // so work around that
+                    if (hasData) {
+                        g.resetZoom();
+                    }
+                };
+                scope.__control.initialized = true;
+
+                /*scope.$watch('range', function(range) {
+                    var qname = pinfo['qualifiedName'];
+
+                    if (data.length > 0) {
+                        g.resetZoom();
+                    }
+
+                    valueRange = calculateInitialPlotRange(pinfo);
+                    data.length = 0;
+
+                    // Add new set of data
+                    loadHistoricData(spinContainer, g, qname, range, data, valueRange, ctx, spinner);
+
+                    // Reset again to cover edge case where we start from empty but zoomed graph
+                    // (buggy dygraphs)
+                    if (data.length > 0) {
+                        g.resetZoom();
+                    }
+                });*/
             }
         };
 
-        function makePlot(containingDiv, spinContainer, scope, data, valueRange) {
-            valueRange = calculateInitialPlotRange(scope.pinfo);
-            var guidelines = calculateGuidelines(scope.pinfo);
-            var ctx = {archiveFetched: false};
-            var spinner = new Spinner();
+        function makePlot(containingDiv, pinfo, model) {
+            model.valueRange = calculateInitialPlotRange(pinfo);
+            var guidelines = calculateGuidelines(pinfo);
+            var label = pinfo['qualifiedName'];
 
-            var label = scope.pinfo.name;
-
-            var g = new Dygraph(containingDiv, 'X\n', {
+            return new Dygraph(containingDiv, 'X\n', {
                 legend: 'always',
                 drawPoints: true,
                 showRoller: false,
@@ -52,7 +110,7 @@
                 digitsAfterDecimal: 6,
                 labels: ['Generation Time', label],
                 labelsDiv: 'parameter-detail-legend',
-                valueRange: valueRange,
+                valueRange: model.valueRange,
                 yRangePad: 10,
                 axes: {
                     y: { axisLabelWidth: 50 }
@@ -63,7 +121,7 @@
                     var prevAlpha = canvasCtx.globalAlpha;
                     canvasCtx.globalAlpha = 0.4;
 
-                    if (data.length === 0 && ctx.archiveFetched) {
+                    if (!model.hasData && !model.spinning) {
                         canvasCtx.font = '20px Verdana';
                         canvasCtx.textAlign = 'center';
                         canvasCtx.textBaseline = 'middle';
@@ -98,37 +156,6 @@
                     canvasCtx.globalAlpha = prevAlpha;
                 }
             });
-
-            g.ready(function () {
-                spinner.spin(spinContainer[0]);
-            });
-
-            var tempData = [];
-            scope.$watch('para', function(pval) {
-                addPval(g, pval, data, valueRange, ctx, tempData);
-            });
-
-            scope.$watch('range', function(range) {
-                var qname = scope.pinfo.qualifiedName;
-
-                if (data.length > 0) {
-                    g.resetZoom();
-                }
-
-                valueRange = calculateInitialPlotRange(scope.pinfo);
-                data.length = 0;
-
-                // Add new set of data
-                loadHistoricData(spinContainer, g, qname, range, data, valueRange, ctx, spinner);
-
-                // Reset again to cover edge case where we start from empty but zoomed graph
-                // (buggy dygraphs)
-                if (data.length > 0) {
-                    g.resetZoom();
-                }
-            });
-
-            return g;
         }
 
         /**
@@ -192,12 +219,12 @@
                 if (defaultAlarm.hasOwnProperty('staticAlarmRange')) {
                     defaultAlarm['staticAlarmRange'].forEach(function (range) {
                         if (range.hasOwnProperty('minInclusive')) {
-                            var newMin = range['minInclusive'];
-                            min = (min === null) ? newMin : Math.min(newMin, min);
+                            min = (min === null) ? range['minInclusive'] : Math.min(range['minInclusive'], min);
+                            max = (max === null) ? range['minInclusive'] : Math.max(range['minInclusive'], max);
                         }
                         if (range.hasOwnProperty('maxInclusive')) {
-                            var newMax = range['maxInclusive'];
-                            max = (max === null) ? newMax : Math.max(newMax, max);
+                            min = (min === null) ? range['maxInclusive'] : Math.min(range['maxInclusive'], min);
+                            max = (max === null) ? range['maxInclusive'] : Math.max(range['maxInclusive'], max);
                         }
                     });
                 }
@@ -209,20 +236,25 @@
             return [min, max];
         }
 
-        function addPval(g, pval, data, valueRange, ctx, tempData) {
-            if (pval && pval.hasOwnProperty('engValue')) {
-                var val = $filter('stringValue')(pval);
-                updateValueRange(g, valueRange, val, val);
+        function colorForLevel(level) {
+            if (level == 'WATCH') return '#ffdddb';
+            else if (level == 'WARNING') return '#ffc3c1';
+            else if (level == 'DISTRESS') return '#ffaaa8';
+            else if (level == 'CRITICAL') return '#c35e5c';
+            else if (level == 'SEVERE') return '#a94442';
+            else $log.error('Unknown level ' + level);
+        }
 
-                var t = new Date();
-                t.setTime(Date.parse(pval['generationTimeUTC']));
-
-                if (ctx['archiveFetched']) {
-                    data.push([t, [val,val,val]]);
-                    updateGraph(g, data);
-                } else {
-                    tempData.push([t, [val,val,val]]);
-                }
+        function updateGraph(g, pdata, model) {
+            console.log('updating graph');
+            if (pdata.length === 0 || pdata[0]['points'].length === 0) {
+                g.updateOptions({ file: 'x\n' });
+            } else {
+                updateValueRange(g, model.valueRange, pdata[0]['min'], pdata[0]['max']);
+                g.updateOptions({
+                    file: pdata[0]['points'],
+                    drawPoints: pdata[0]['points'].length < 50
+                });
             }
         }
 
@@ -239,100 +271,6 @@
                 valueRange[1] = Math.max(valueRange[1], high);
                 g.updateOptions({ valueRange: valueRange });
             }
-        }
-
-        function updateGraph(g, data) {
-            var options = {
-                file: data,
-                drawPoints: data.length < 50
-            };
-            g.updateOptions(options);
-        }
-
-
-        function loadHistoricData(spinContainer, g, qname, range, data, valueRange, ctx, spinner) {
-            var now = new Date();
-            var nowIso = now.toISOString();
-            var before = new Date(now.getTime());
-            var beforeIso = nowIso;
-            if (range === '15m') {
-                before.setMinutes(now.getMinutes() - 15);
-                beforeIso = before.toISOString();
-            } else if (range === '30m') {
-                before.setMinutes(now.getMinutes() - 30);
-                beforeIso = before.toISOString();
-            } else if (range === '1h') {
-                before.setHours(now.getHours() - 1);
-                beforeIso = before.toISOString();
-            } else if (range === '5h') {
-                before.setHours(now.getHours() - 5);
-                beforeIso = before.toISOString();
-            } else if (range === '1d') {
-                before.setDate(now.getDate() - 1);
-                beforeIso = before.toISOString();
-            } else if (range === '1w') {
-                before.setDate(now.getDate() - 7);
-                beforeIso = before.toISOString();
-            } else if (range === '1m') {
-                before.setDate(now.getDate() - 31);
-                beforeIso = before.toISOString();
-            } else if (range === '3m') {
-                before.setDate(now.getDate() - (3*31));
-                beforeIso = before.toISOString();
-            }
-
-            ctx['archiveFetched'] = false;
-            updateGraph(g, 'x\n');
-            spinner.spin(spinContainer[0]);
-
-            tmService.getParameterSamples(qname, {
-                start: beforeIso.slice(0, -1),
-                stop: nowIso.slice(0, -1)
-            }).then(function (incomingData) {
-                var min, max;
-                if (incomingData['sample']) {
-                    for (var i = 0; i < incomingData['sample'].length; i++) {
-                        var sample = incomingData['sample'][i];
-                        var t = new Date();
-                        t.setTime(Date.parse(sample['averageGenerationTimeUTC']));
-                        var v = sample['averageValue'];
-                        var lo = sample['lowValue'];
-                        var hi = sample['highValue'];
-
-                        if (typeof min === 'undefined') {
-                            min = lo;
-                            max = hi;
-                        } else {
-                            if (min > lo) min = lo;
-                            if (max < hi) max = hi;
-                        }
-                        data.push([t, [lo, v, hi]]);
-                    }
-                }
-                updateValueRange(g, valueRange, min, max);
-
-
-                // before updating graph, so 'no data' text is not rendered
-                ctx['archiveFetched'] = true;
-
-                if (data.length > 0) {
-                    updateGraph(g, data);
-                } else {
-                    // Ensures that the 'no data' message is shown
-                    updateGraph(g, 'x\n');
-                }
-
-                spinner.stop();
-            });
-        }
-
-        function colorForLevel(level) {
-            if (level == 'WATCH') return '#ffdddb';
-            else if (level == 'WARNING') return '#ffc3c1';
-            else if (level == 'DISTRESS') return '#ffaaa8';
-            else if (level == 'CRITICAL') return '#c35e5c';
-            else if (level == 'SEVERE') return '#a94442';
-            else $log.error('Unknown level ' + level);
         }
     }
 })();

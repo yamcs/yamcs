@@ -2,6 +2,48 @@
   <div>
     <h1 class="page-header">{{ vm.info.name }} <small>{{ vm.info.qualifiedName | spaceSystem }}</small></h1>
   </div>
+
+  <uib-alert ng-if="vm.activeAlarm" type="danger" style="margin-top: 0.5em;">
+    <strong>Out of limits detected {{ (vm.activeAlarm.triggerValue.generationTimeUTC | parseUTC).fromNow() }}</strong><br>
+    <span ng-if="!vm.activeAlarm.acknowledgeInfo">Unacknowledged</span>
+    <div class="container-fluid" style="margin-top: 0.5em;">
+      <div class="col-md-11">
+        <dl class="dl-horizontal">
+          <dt>Activation Level</dt>
+          <dd>
+            <img ng-src="/_static/_site/alarms/images/level{{ vm.activeAlarm.triggerLevel }}.png" uib-tooltip="{{ vm.activeAlarm.triggerValue.monitoringResult | monitoringValue }}">
+            <small>
+              Reached {{ vm.activeAlarm.triggerValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
+              with {{ vm.activeAlarm.triggerValue | stringValue }}<span ng-bind-html="vm.activeAlarm.triggerValue.monitoringResult | lohi"></span>
+            </small>
+          </dd>
+
+          <dt>Highest Level</dt>
+          <dd>
+            <img ng-src="/_static/_site/alarms/images/level{{ vm.activeAlarm.mostSevereLevel }}.png" uib-tooltip="{{ vm.activeAlarm.mostSevereValue.monitoringResult | monitoringValue }}">
+            <small>
+              Reached {{ vm.activeAlarm.mostSevereValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
+              with {{ vm.activeAlarm.mostSevereValue | stringValue }}<span ng-bind-html="vm.activeAlarm.mostSevereValue.monitoringResult | lohi"></span>
+            </small>
+          </dd>
+
+          <dt>Current Value</dt>
+          <dd>
+            <img ng-src="/_static/_site/alarms/images/level{{ vm.activeAlarm.currentLevel }}.png" uib-tooltip="{{ vm.activeAlarm.currentValue.monitoringResult | monitoringValue }}">
+            <small>
+              <strong>{{ vm.activeAlarm.currentValue | stringValue }}</strong><span ng-bind-html="vm.activeAlarm.currentValue.monitoringResult | lohi"></span>
+              &ndash; {{ vm.activeAlarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
+            </small>
+          </dd>
+        </dl>
+      </div>
+
+      <div class="col-md-1 text-right">
+        <button class="btn btn-sm btn-danger">Acknowledge</button>
+      </div>
+    </div>
+  </uib-alert>
+
   <p>&nbsp;</p>
 
   <div class="container-fluid">
@@ -65,13 +107,20 @@
       <h2>Plot</h2>
     </div>
 
-    <plot ng-if="vm.isNumeric()"
+    <y-plot ng-if="vm.isNumeric()"
+      pinfo="vm.info"
+      pdata="pdata"
+      control="plotController"
+      style="width: 100%; position: relative;">
+    </y-plot> <!-- the position: relative is needed for spin.js :-/ Not sure. -->
+
+    <!--plot ng-if="vm.isNumeric()"
       pinfo="vm.info"
       para="vm.para"
+      alarms="vm.alarms"
       range="plotctx.range"
       style="width: 100%; position: relative">
-    </plot>
-    <!-- the position: relative is needed for spin.js :-/ Not sure. -->
+    </plot-->
 
     <div class="section" style="margin-top: 1.5em;">
       <div class="btn-toolbar pull-right" role="toolbar" style="margin-left: 0; padding-bottom: 0.5em;">
@@ -193,74 +242,79 @@
       </tr>
     </table>
 
-    <div style="margin-top: 1em;" ng-if="vm.para.monitoringResult != 'DISABLED'">
-      <h2 class="section">Monitoring Definition</h2>
-      <span ng-if="!(vm.isNumeric())">-</span>
-      <dl class="dl-horizontal" ng-if="vm.isNumeric()">
-        <dt>High Limits</dt>
-        <dd>
-          <span ng-if="vm.info.severe | has:'maxInclusive'">
-            Severe: {{ vm.info.severe.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-          </span>
-          <span ng-if="vm.info.critical | has:'maxInclusive'">
-            Critical: {{ vm.info.critical.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-          </span>
-          <span ng-if="vm.info.distress | has:'maxInclusive'">
-            Distress: {{ vm.info.distress.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-          </span>
-          <span ng-if="vm.info.warning | has:'maxInclusive'">
-            Warning: {{ vm.info.warning.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-          </span>
-          <span ng-if="vm.info.watch | has:'maxInclusive'">
-            Watch: {{ vm.info.watch.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-          </span>
-          <span ng-if="!(vm.info.watch|has:'maxInclusive') && !(vm.info.warning|has:'maxInclusive') && !(vm.info.distress|has:'maxInclusive') && !(vm.info.critical|has:'maxInclusive') && !(vm.info.severe|has:'maxInclusive')">-</span>
-        </dd>
-
-        <dt>Low Limits</dt>
-        <dd>
-          <span ng-if="vm.info.watch | has:'minInclusive'">
-            Watch: {{ vm.info.watch.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-          </span>
-          <span ng-if="vm.info.warning | has:'minInclusive'">
-            Warning: {{ vm.info.warning.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-          </span>
-          <span ng-if="vm.info.distress | has:'minInclusive'">
-            Distress: {{ vm.info.distress.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-          </span>
-          <span ng-if="vm.info.critical | has:'minInclusive'">
-            Critical: {{ vm.info.critical.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-          </span>
-          <span ng-if="vm.info.severe | has:'minInclusive'">
-            Severe: {{ vm.info.severe.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
-          </span>
-          <span ng-if="!(vm.info.watch|has:'minInclusive') && !(vm.info.warning|has:'minInclusive') && !(vm.info.distress|has:'minInclusive') && !(vm.info.critical|has:'minInclusive') && !(vm.info.severe|has:'minInclusive')">-</span>
-        </dd>
-      </dl>
+    <div class="section" style="margin-top: 1em;" ng-if="vm.para.monitoringResult != 'DISABLED'">
+      <h2>Monitoring Definition</h2>
     </div>
 
-    <div style="margin-top: 1em;" ng-if=vm.info.type.dataEncoding>
-      <h2 class="section">Packet Definition</h2>
-      <dl class="dl-horizontal">
-        <dt>Raw Type</dt>
-        <dd>
-          {{ vm.info.type.dataEncoding.type | capitalize | nvl:'-' }}
-        </dd>
-
-        <dt>Size In Bits</dt>
-        <dd>{{ vm.info.type.dataEncoding.sizeInBits | nvl:'-' }}</dd>
-
-        <dt>Byte Order</dt>
-        <dd ng-if="vm.info.type.dataEncoding.littleEndian">Little Endian</dd>
-        <dd ng-if="!vm.info.type.dataEncoding.littleEndian">Big Endian</dd>
-
-        <dt>Encoding</dt>
-        <dd>{{ vm.info.type.dataEncoding.encoding | nvl:'-' }}</dd>
-
-        <dt>Calibrator</dt>
-        <dd>{{ vm.info.type.dataEncoding.defaultCalibrator | nvl:'-' }}</dd>
-      </dl>
+    <div class="container-fluid" ng-if="vm.para.monitoringResult != 'DISABLED' && !(vm.isNumeric())">
+      <div class="row">
+        <div class="col-md-1">-</div>
+      </div>
     </div>
+    <dl class="dl-horizontal" ng-if="vm.para.monitoringResult != 'DISABLED' && vm.isNumeric()">
+      <dt>High Limits</dt>
+      <dd>
+        <span ng-if="vm.info.severe | has:'maxInclusive'">
+          Severe: {{ vm.info.severe.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        </span>
+        <span ng-if="vm.info.critical | has:'maxInclusive'">
+          Critical: {{ vm.info.critical.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        </span>
+        <span ng-if="vm.info.distress | has:'maxInclusive'">
+          Distress: {{ vm.info.distress.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        </span>
+        <span ng-if="vm.info.warning | has:'maxInclusive'">
+          Warning: {{ vm.info.warning.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        </span>
+        <span ng-if="vm.info.watch | has:'maxInclusive'">
+          Watch: {{ vm.info.watch.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        </span>
+        <span ng-if="!(vm.info.watch|has:'maxInclusive') && !(vm.info.warning|has:'maxInclusive') && !(vm.info.distress|has:'maxInclusive') && !(vm.info.critical|has:'maxInclusive') && !(vm.info.severe|has:'maxInclusive')">-</span>
+      </dd>
+
+      <dt>Low Limits</dt>
+      <dd>
+        <span ng-if="vm.info.watch | has:'minInclusive'">
+          Watch: {{ vm.info.watch.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        </span>
+        <span ng-if="vm.info.warning | has:'minInclusive'">
+          Warning: {{ vm.info.warning.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        </span>
+        <span ng-if="vm.info.distress | has:'minInclusive'">
+          Distress: {{ vm.info.distress.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        </span>
+        <span ng-if="vm.info.critical | has:'minInclusive'">
+          Critical: {{ vm.info.critical.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        </span>
+        <span ng-if="vm.info.severe | has:'minInclusive'">
+          Severe: {{ vm.info.severe.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        </span>
+        <span ng-if="!(vm.info.watch|has:'minInclusive') && !(vm.info.warning|has:'minInclusive') && !(vm.info.distress|has:'minInclusive') && !(vm.info.critical|has:'minInclusive') && !(vm.info.severe|has:'minInclusive')">-</span>
+      </dd>
+    </dl>
+
+    <div class="section" style="margin-top: 1em;" ng-if="vm.info.type.dataEncoding">
+      <h2>Packet Definition</h2>
+    </div>
+    <dl class="dl-horizontal" ng-if="vm.info.type.dataEncoding">
+      <dt>Raw Type</dt>
+      <dd>
+        {{ vm.info.type.dataEncoding.type | capitalize | nvl:'-' }}
+      </dd>
+
+      <dt>Size In Bits</dt>
+      <dd>{{ vm.info.type.dataEncoding.sizeInBits | nvl:'-' }}</dd>
+
+      <dt>Byte Order</dt>
+      <dd ng-if="vm.info.type.dataEncoding.littleEndian">Little Endian</dd>
+      <dd ng-if="!vm.info.type.dataEncoding.littleEndian">Big Endian</dd>
+
+      <dt>Encoding</dt>
+      <dd>{{ vm.info.type.dataEncoding.encoding | nvl:'-' }}</dd>
+
+      <dt>Calibrator</dt>
+      <dd>{{ vm.info.type.dataEncoding.defaultCalibrator | nvl:'-' }}</dd>
+    </dl>
   </div>
 </mdb-pane>
 

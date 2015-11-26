@@ -38,8 +38,8 @@
   <div class="container-fluid">
     <div class="row" style="padding-bottom: 0.5em;">
       <div class="col-md-12 text-right">
-        <a href="#" ng-click="vm.expandAlarms()" style="text-decoration: underline"><small>▼ Expand All</small></a>&nbsp;&nbsp;&nbsp;
-        <a href="#" ng-click="vm.collapseAlarms()" style="text-decoration: underline"><small>▶ Collapse All</small></a><br>
+        <a href="#" ng-if="vm.alarms.length" ng-click="vm.expandAlarms()"><small>▼ Expand All</small></a>&nbsp;&nbsp;&nbsp;
+        <a href="#" ng-if="vm.alarms.length" ng-click="vm.collapseAlarms()"><small>▶ Collapse All</small></a><br>
       </div>
     </div>
     <div class="row" ng-repeat-start="alarm in vm.alarms | filter:vm.filterTable" style="cursor: pointer; border-top: 1px solid #ddd;" ng-click="alarm.expanded = !alarm.expanded">
