@@ -1,10 +1,5 @@
 <mdb-pane active-pane="{{ vm.info.qualifiedName|spaceSystem }}" yamcs-instance="yamcsInstance" shell="shell">
   <div>
-    <!--div class="btn-toolbar pull-right">
-      <div class="btn-group">
-        <button type="button" class="btn btn-default btn-xs">Export CSV</button>
-      </div>
-    </div-->
     <h1 class="page-header">{{ vm.info.name }} <small>{{ vm.info.qualifiedName | spaceSystem }}</small></h1>
   </div>
   <p>&nbsp;</p>
@@ -80,8 +75,8 @@
 
     <div class="section" style="margin-top: 1.5em;">
       <div class="btn-toolbar pull-right" role="toolbar" style="margin-left: 0; padding-bottom: 0.5em;">
-        <button ng-click="vm.expandAlarms()" class="btn btn-default btn-xs">▼ Expand All</button>
-        <button ng-click="vm.collapseAlarms()" class="btn btn-default btn-xs">▶ Collapse All</button>
+        <button ng-if="vm.alarms.length" ng-click="vm.expandAlarms()" class="btn btn-default btn-xs">▼ Expand All</button>
+        <button ng-if="vm.alarms.length" ng-click="vm.collapseAlarms()" class="btn btn-default btn-xs">▶ Collapse All</button>
       </div>
       <h2>Alarm History</h2>
     </div>
@@ -161,39 +156,42 @@
       </div>
     </div>
 
-    <div style="margin-top: 1em;">
-      <h2 class="section">Value History</h2>
-      <table class="table table-condensed">
-        <tr>
-          <th width="200">Generated</th>
-          <th width="200" title="Engineering Value">Eng. Value</th>
-          <th width="200">Raw Value</th>
-          <th></th>
-          <th width="1">Monitoring</th>
-        </tr>
-        <tr ng-repeat="val in vm.values">
-          <td style="white-space: nowrap">
-            {{ val.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
-          </td>
-          <td>{{ val | stringValue }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}</td>
-          <td>{{ val | stringValue:true }}</td>
-          <td></td>
-          <td ng-if="val.monitoringResult">
-            <img ng-src="/_static/_site/alarms/images/level{{ val.monitoringResult | monitoringLevel }}.png" uib-tooltip="{{ val.monitoringResult | monitoringValue }}">
-          </td>
-          <td ng-if="!val.monitoringResult">
-            -
-          </td>
-        </tr>
-        <tr ng-if="!vm.values">
-          <td>-</td>
-          <td>-</td>
-          <td>-</td>
-          <td></td>
-          <td>-</td>
-        </tr>
-      </table>
+    <div class="section" style="margin-top: 1em;">
+      <div class="btn-toolbar pull-right" ng-if="false && vm.values.length">
+        <div class="btn-group">
+          <button type="button" class="btn btn-default btn-xs">Export CSV</button>
+        </div>
+      </div>
+      <h2>Value History</h2>
     </div>
+    <div class="container-fluid" ng-if="!vm.values.length">
+      <div class="row">
+        <div class="col-md-1">-</div>
+      </div>
+    </div>
+    <table class="table table-condensed" ng-if="vm.values.length">
+      <tr>
+        <th width="200">Generated</th>
+        <th width="200" title="Engineering Value">Eng. Value</th>
+        <th width="200">Raw Value</th>
+        <th></th>
+        <th width="1">Monitoring</th>
+      </tr>
+      <tr ng-repeat="val in vm.values">
+        <td style="white-space: nowrap">
+          {{ val.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
+        </td>
+        <td>{{ val | stringValue }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}</td>
+        <td>{{ val | stringValue:true }}</td>
+        <td></td>
+        <td ng-if="val.monitoringResult">
+          <img ng-src="/_static/_site/alarms/images/level{{ val.monitoringResult | monitoringLevel }}.png" uib-tooltip="{{ val.monitoringResult | monitoringValue }}">
+        </td>
+        <td ng-if="!val.monitoringResult">
+          -
+        </td>
+      </tr>
+    </table>
 
     <div style="margin-top: 1em;" ng-if="vm.para.monitoringResult != 'DISABLED'">
       <h2 class="section">Monitoring Definition</h2>

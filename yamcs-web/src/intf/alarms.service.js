@@ -95,7 +95,7 @@
                 if (data['type'] === 'CLEARED') {
                     for (var i = 0; i < activeAlarms.length; i++) {
                         if (activeAlarms[i]['key'] === data['key']) {
-                            activeAlarms.slice(i, 1);
+                            activeAlarms.splice(i, 1);
                             break;
                         }
                     }

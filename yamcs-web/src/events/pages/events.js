@@ -25,7 +25,9 @@
 
         vm.reloadData = function() {
         eventsService.resetUnreadCount(); // Not waterproof
-        eventsService.listEvents().then(function (data) {
+        eventsService.listEvents({
+            limit: 200
+        }).then(function (data) {
                 vm.events = data;
                 return vm.events;
             });
