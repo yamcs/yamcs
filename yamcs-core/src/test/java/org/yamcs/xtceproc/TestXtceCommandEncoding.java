@@ -1,6 +1,7 @@
 package org.yamcs.xtceproc;
 
 import static org.junit.Assert.*;
+
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -12,6 +13,7 @@ import org.yamcs.xtce.XtceDb;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -41,9 +43,22 @@ public class TestXtceCommandEncoding {
         List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>() ;
         ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("string_arg", "aaaa");
         arguments.add(argumentAssignment1);
+        ArgumentAssignment argumentAssignment2 = new ArgumentAssignment("terminatedString_arg", "bbbb");
+        arguments.add(argumentAssignment2);
+        ArgumentAssignment argumentAssignment3 = new ArgumentAssignment("prependedSizeString_arg", "cccc");
+        arguments.add(argumentAssignment3);
+        ArgumentAssignment argumentAssignment4 = new ArgumentAssignment("fixedString_arg", "dddd");
+        arguments.add(argumentAssignment4);
         byte[] b = MetaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
 
-        Assert.assertTrue(b[0] != 0);
+        byte[] expectedResult = {
+                97, 97, 97, 97, 0,              // aaaa
+                97, 98, 99, 100, 101, 102, 0,   // abcdef
+                98, 98, 98, 98, 0x2C,           // aaaa
+                0, 4, 99, 99, 99, 99,           // bbbb
+                100, 100, 100, 100, 0, 0, 0     // dddd
+        };
+        Assert.assertTrue(Arrays.equals(b, expectedResult));
     }
     
     @Test
