@@ -99,7 +99,7 @@
             <small>
               <strong>{{ alarm.currentValue | stringValue }}</strong>
               <span ng-bind-html="alarm.currentValue.monitoringResult | lohi"></span>
-              {{ alarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
+              &ndash; {{ alarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
             </small>
           </dd>
         </dl>

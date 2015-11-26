@@ -89,6 +89,16 @@
         };
     })
 
+/*
+.filter('nl2br', ['$sanitize', function($sanitize) {
+	return function(msg) {
+		// ngSanitize's linky filter changes \r and \n to &#10; and &#13; respectively
+		msg = (msg + '').replace(/(\r\n|\n\r|\r|\n|&#10;&#13;|&#13;&#10;|&#10;|&#13;)/g, '<br>$1');
+		return $sanitize(msg);
+	};
+}]);
+ */
+
     /*
         Returns whether an object has a property. This is sometimes more
         useful than the default if-behaviour, because if a property value is 0,

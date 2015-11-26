@@ -1,6 +1,36 @@
 <div class="main" style="padding: 40px;">
   <uib-alert ng-repeat="msg in shell.messages" type="{{ msg.type }}" close="shell.closeMessage($index)">{{ msg.msg }}</uib-alert>
-  <h1 class="page-header">Events</h1>
+
+  <uib-alert ng-if="vm.stats.unreadCount == 1" type="info">
+    <span class="glyphicon glyphicon-info-sign"></span>&nbsp;&nbsp;
+    1 more event since you loaded this page.
+    <a class="alert-link" href="#" ng-click="vm.reloadData()">Reload?</a>
+  </uib-alert>
+  <uib-alert ng-if="vm.stats.unreadCount > 1" type="info">
+    <span class="glyphicon glyphicon-info-sign"></span>&nbsp;&nbsp;
+    {{ vm.stats.unreadCount }} more events since you loaded this page.
+    <a class="alert-link" href="#" ng-click="vm.reloadData()">Reload?</a>
+  </uib-alert>
+
+  <div>
+    <div class="pull-right" style="margin-left: 10px;">
+      <div class="form-group form-group-sm" style="margin-bottom: 0; margin-top: -10px;">
+        <div class="input-group input-group-sm" style="width: 200px">
+          <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+          <input type="text" class="form-control" style="width: 200px;" ng-model="vm.searchText" placeholder="Search...">
+          <span ng-if="vm.searchText" class="search-clear glyphicon glyphicon-remove-circle" ng-click="vm.searchText = ''"></span>
+        </div>
+      </div>
+    </div>
+    <div class="btn-toolbar pull-right">
+      <div class="btn-group" style="margin-top: -10px;">
+        <button type="button" class="btn btn-default btn-sm" ng-model="vm.severityToggles.info" uib-btn-checkbox>Info</button>
+        <button type="button" class="btn btn-default btn-sm" ng-model="vm.severityToggles.warning" uib-btn-checkbox>Warning</button>
+        <button type="button" class="btn btn-default btn-sm" ng-model="vm.severityToggles.error" uib-btn-checkbox>Error</button>
+      </div>
+    </div>
+    <h1 class="page-header">Events2s</h1>
+  </div>
 
   <table class="table table-condensed">
     <tr>
@@ -10,13 +40,13 @@
       <th>Generated</th>
     </tr>
 
-    <tr ng-repeat="event in vm.events | orderBy:'-generationTime'"
+    <tr ng-repeat="event in vm.events | filter:vm.filterTable | orderBy:'-generationTime'"
         ng-class="{warning: event.severity == 'WARNING', danger: event.severity == 'ERROR'}">
       <td>
         <!--span ng-if="event.severity == 'INFO'" class="label label-info">Info</span-->
         <span ng-if="event.severity == 'WARNING'" class="label label-warning">Warning</span>
         <span ng-if="event.severity == 'ERROR'" class="label label-danger">Error</span>
-        {{ event.message }}
+        <span ng-bind-html="event.message | nl2br"></span>
       </td>
 
       <td>
@@ -28,7 +58,7 @@
       </td>
 
       <td>
-        {{ event.generationTimeUTC | parseUTC | formatDate }}
+        {{ event.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
       </td>
     </tr>
   </table>

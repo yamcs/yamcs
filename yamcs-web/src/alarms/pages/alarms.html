@@ -63,8 +63,8 @@
           <dd>
             <img ng-src="/_static/_site/alarms/images/level{{ alarm.currentLevel }}.png" uib-tooltip="{{ alarm.currentValue.monitoringResult | monitoringValue }}">
             <small>
-              {{ alarm.currentValue | stringValue }}<span ng-bind-html="alarm.currentValue.monitoringResult | lohi"></span>
-              {{ alarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
+              <strong>{{ alarm.currentValue | stringValue }}</strong><span ng-bind-html="alarm.currentValue.monitoringResult | lohi"></span>
+              &ndash; {{ alarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
             </small>
           </dd>
         </dl>

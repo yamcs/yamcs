@@ -6,11 +6,12 @@
         .factory('eventsService', eventsService);
 
     /* @ngInject */
-    function eventsService(socket, $rootScope) {
+    function eventsService($rootScope, $http, socket, yamcsInstance) {
 
-        var unreadCount = 0; // well, sort of
-        var urgent = false;
-        var events = [];
+        var stats = {
+            unreadCount: 0, // well, sort of
+            urgent: false
+        };
 
         socket.on('open', function () {
             subscribeUpstream();
@@ -21,6 +22,7 @@
 
         return {
             getEvents: getEvents,
+            listEvents: listEvents,
             resetUnreadCount: resetUnreadCount
         };
 
@@ -28,20 +30,30 @@
             return events;
         }
 
+        function listEvents(options) {
+            var targetUrl = '/api/archive/' + yamcsInstance + '/events';
+            targetUrl += toQueryString(options);
+            return $http.get(targetUrl).then(function (response) {
+                return response.data['event'];
+            }).catch(function (message) {
+                $log.error('XHR failed', message);
+                throw messageToException(message);
+            });
+        }
+
         function resetUnreadCount() {
-            unreadCount = 0;
-            urgent = false;
-            broadcastEventStats();
+            stats.unreadCount = 0;
+            stats.urgent = false;
+            $rootScope.$broadcast('yamcs.eventStats', stats);
         }
 
         function subscribeUpstream() {
             socket.on('EVENT', function (data) {
-                unreadCount++;
-                events.push(data);
+                stats.unreadCount++;
                 if (data['severity'] === 'ERROR') {
-                    urgent = true;
+                    stats.urgent = true;
                 }
-                broadcastEventStats();
+                $rootScope.$broadcast('yamcs.eventStats', stats);
                 $rootScope.$broadcast('yamcs.event', data);
             });
             socket.emit('events', 'subscribe', {}, null, function (et, msg) {
@@ -49,12 +61,15 @@
             });
         }
 
-        function broadcastEventStats() {
-            $rootScope.$broadcast('yamcs.eventStats', {
-                unreadCount: unreadCount,
-                count: events.length,
-                urgent: urgent
-            });
+        function toQueryString(options) {
+            if (!options) return '?nolink';
+            var result = '?nolink';
+            for (var opt in options) {
+                if (options.hasOwnProperty(opt)) {
+                    result += '&' + opt + '=' + options[opt];
+                }
+            }
+            return result;
         }
 
         function messageToException(message) {
