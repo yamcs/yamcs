@@ -68,6 +68,7 @@ import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.SystemParameterDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.AbstractStream;
 import org.yamcs.yarch.Stream;
@@ -617,6 +618,11 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
+        
+        // syspar provider is not currently added to replay channels, so it only generates errors
+        if (SystemParameterDb.isSystemParameter(id)) {
+            return new RestResponse(req, ParameterData.newBuilder().build(), SchemaPvalue.ParameterData.WRITE);
+        }
         
         ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, id, true);
 
