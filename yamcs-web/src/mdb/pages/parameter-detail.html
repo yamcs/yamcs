@@ -59,12 +59,12 @@
     <div class="row">
       <div class="col-md-2">
         <span style="font-size: 20px; font-weight: bolder; white-space: nowrap">
-          <span ng-if="vm.para">{{ vm.para | stringValue }}</span>
-          <span ng-if="!vm.para">---</span>
+          <span ng-if="para">{{ para | stringValue }}</span>
+          <span ng-if="!para">---</span>
           {{ vm.info.type.unitSet | joinBy:'unit':' ' }}
         </span>
-        <img ng-if="vm.para.monitoringResult && (vm.para.monitoringResult != 'DISABLED')" ng-src="/_static/_site/alarms/images/level{{ vm.para.monitoringResult | monitoringLevel }}.png" uib-tooltip="{{ vm.para.monitoringResult | monitoringValue }}"><br>
-        <small style="color: #6f6f6f" ng-if="vm.para">{{ vm.para.generationTimeUTC | parseUTC | formatDate }}</small><br>
+        <img ng-if="para.monitoringResult && (para.monitoringResult != 'DISABLED')" ng-src="/_static/_site/alarms/images/level{{ para.monitoringResult | monitoringLevel }}.png" uib-tooltip="{{ para.monitoringResult | monitoringValue }}"><br>
+        <small style="color: #6f6f6f" ng-if="para">{{ para.generationTimeUTC | parseUTC | formatDate }}</small><br>
         <small style="color: #6f6f6f">Source: {{ vm.info.dataSource|capitalize }}</small>
       </div>
 
@@ -125,17 +125,17 @@
 
     <div class="section" style="margin-top: 1.5em;">
       <div class="btn-toolbar pull-right" role="toolbar" style="margin-left: 0; padding-bottom: 0.5em;">
-        <button ng-if="vm.alarms.length" ng-click="vm.expandAlarms()" class="btn btn-default btn-xs">▼ Expand All</button>
-        <button ng-if="vm.alarms.length" ng-click="vm.collapseAlarms()" class="btn btn-default btn-xs">▶ Collapse All</button>
+        <button ng-if="alarms.length" ng-click="vm.expandAlarms()" class="btn btn-default btn-xs">▼ Expand All</button>
+        <button ng-if="alarms.length" ng-click="vm.collapseAlarms()" class="btn btn-default btn-xs">▶ Collapse All</button>
       </div>
       <h2>Alarm History</h2>
     </div>
 
     <div class="container-fluid">
-      <div class="row" ng-if="!vm.alarms.length">
+      <div class="row" ng-if="!alarms.length">
         <div class="col-md-1">-</div>
       </div>
-      <div class="row" ng-repeat-start="alarm in vm.alarms | filter:vm.filterTable" style="cursor: pointer; border-top: 1px solid #ddd;" ng-click="alarm.expanded = !alarm.expanded">
+      <div class="row" ng-repeat-start="alarm in alarms | filter:vm.filterTable" style="cursor: pointer; border-top: 1px solid #ddd;" ng-click="alarm.expanded = !alarm.expanded">
         <div class="col-md-3">
           <span ng-if="alarm.urgent" class="glyphicon glyphicon-flag" style="color: #c9302c"></span>
           <strong>Out of limits</strong>
@@ -243,16 +243,16 @@
       </tr>
     </table>
 
-    <div class="section" style="margin-top: 1em;" ng-if="vm.para.monitoringResult != 'DISABLED'">
+    <div class="section" style="margin-top: 1em;" ng-if="para.monitoringResult != 'DISABLED'">
       <h2>Monitoring Definition</h2>
     </div>
 
-    <div class="container-fluid" ng-if="vm.para.monitoringResult != 'DISABLED' && !(vm.isNumeric())">
+    <div class="container-fluid" ng-if="para.monitoringResult != 'DISABLED' && !(vm.isNumeric())">
       <div class="row">
         <div class="col-md-1">-</div>
       </div>
     </div>
-    <dl class="dl-horizontal" ng-if="vm.para.monitoringResult != 'DISABLED' && vm.isNumeric()">
+    <dl class="dl-horizontal" ng-if="para.monitoringResult != 'DISABLED' && vm.isNumeric()">
       <dt>High Limits</dt>
       <dd>
         <span ng-if="vm.info.severe | has:'maxInclusive'">
