@@ -1,0 +1,86 @@
+<nav class="navbar navbar-inverse navbar-fixed-top">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header" style="width: 230px; text-align: center;">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a href="/{{ yamcsInstance }}" ng-if="shell.brandImage" style="padding-right: 15px;">
+        <img ng-src="{{ shell.brandImage }}" alt="{{ shell.appTitle }}">
+      </a>
+      <a class="navbar-brand" href="/{{ yamcsInstance }}" ng-if="!shell.brandImage">
+        {{ shell.appTitle }}
+      </a>
+    </div>
+
+    <div class="navbar-header pull-right">
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+          <a href="/{{ yamcsInstance }}/events" role="button" class="btn btn-link">
+            <span class="glyphicon glyphicon-bullhorn"></span>
+            Events
+            <span class="badge" ng-if="shell.eventStats.unreadCount > 0"
+                ng-class="{'urgent': shell.eventStats.urgent}">
+              {{ shell.eventStats.unreadCount }}
+            </span>
+          </a>
+        </li>
+
+        <li ng-class="{ active: headerVM.isActive('/alarms')}">
+          <a href="/{{ yamcsInstance }}/alarms" role="button" class="btn btn-link">
+            <span class="glyphicon glyphicon-bell"></span>
+            Alarms
+            <span class="badge" ng-if="shell.alarmStats.activeCount > 0" ng-class="{'urgent': shell.alarmStats.urgent}">
+              {{ shell.alarmStats.activeCount }}
+            </span>
+          </a>
+        </li>
+
+        <li style="width: 200px;" title="Mission Time">
+          <uib-progressbar
+              ng-class="{ active: shell.socketOpen, 'progress-striped': true }"
+              style="margin-top: 15px; margin-bottom: -15px; margin-right: 15px;"
+              value="100" type="{{ shell.socketInfoType }}">
+            <span ng-if="!shell.socketOpen">
+              no live connection
+            </span>
+            <span ng-if="shell.socketOpen && shell.timeData.currentTimeUTC">
+              {{ shell.timeData.currentTimeUTC | parseUTC | formatDate:'with_offset' }}
+            </span>
+            <span ng-if="shell.socketOpen && !(shell.timeData.currentTimeUTC)">
+              ---
+            </span>
+          </uib-progressbar>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="navbar-collapse-1">
+      <ul class="nav navbar-nav" id="nav-items" ng-controller="HeaderController as headerVM">
+
+
+        <!-- should link to 'top' displays -->
+
+        <!--li class="dropdown" ng-repeat="display in displaysVM.displays" dropdown>
+          <a href="" class="dropdown-toggle" role="button" dropdown-toggle>
+            {{ display.group }}
+            <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu" dropdown-menu>
+            <li class="open-display" ng-repeat="d1 in display.displays">
+              <a href="/{{ yamcsInstance }}/displays/{{ d1.display }}">{{ d1.name }}</a>
+            </li>
+          </ul>
+        </li-->
+
+
+        <li ng-class="{ active: headerVM.isActive('/displays')}"><a href="/{{ yamcsInstance }}/displays">Displays</a></li>
+        <li ng-class="{ active: headerVM.isActive('/mdb')}"><a href="/{{ yamcsInstance }}/mdb">MDB</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>

@@ -7,7 +7,6 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -25,7 +24,7 @@ import io.protostuff.Schema;
  * than the treshold size for one chunk, this will cause a chunk to be written out.
  * Could maybe be replaced by using built-in netty functionality, but would need to investigate.
  */
-public abstract class StreamToChunkedProtobufEncoder<T extends MessageLite> implements StreamSubscriber {
+public abstract class StreamToChunkedProtobufEncoder<T extends MessageLite> extends RestStreamSubscriber {
     
     private static final Logger log = LoggerFactory.getLogger(StreamToChunkedProtobufEncoder.class);
     private static final int CHUNK_TRESHOLD = 8096;
@@ -38,6 +37,7 @@ public abstract class StreamToChunkedProtobufEncoder<T extends MessageLite> impl
     private ByteBufOutputStream bufOut;
     
     public StreamToChunkedProtobufEncoder(RestRequest req, Schema<T> schema) throws RestException {
+        super();
         this.req = req;
         this.schema = schema;
         contentType = req.deriveTargetContentType();
@@ -51,7 +51,7 @@ public abstract class StreamToChunkedProtobufEncoder<T extends MessageLite> impl
     }
 
     @Override
-    public void onTuple(Stream stream, Tuple tuple) {
+    public void onTuple(Tuple tuple) {
         try {
             T msg = mapTuple(tuple);
             bufferMessage(msg);

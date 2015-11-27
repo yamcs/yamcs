@@ -1,0 +1,116 @@
+<div class="main" style="padding: 40px;">
+  <uib-alert ng-repeat="msg in shell.messages" type="{{ msg.type }}" close="shell.closeMessage($index)">{{ msg.msg }}</uib-alert>
+  <h1 class="page-header">Alarms</h1>
+  <p>&nbsp;</p>
+  <ul class="nav nav-tabs">
+    <li>
+      <a href="/{{ yamcsInstance }}/alarms">
+        <span class="glyphicon glyphicon-folder-open"></span> Active
+      </a>
+    </li>
+
+    <li class="active">
+      <a href="/{{ yamcsInstance }}/alarms/archive">
+        <span class="glyphicon glyphicon-folder-close"></span> Archived
+      </a>
+    </li>
+
+    <!--li class="pull-right">
+      <div class="btn-group btn-group-sm" style="margin-bottom: 0; margin-top: 5px;">
+        <button class="btn btn-default btn-sm">▼ Expand All</button>
+      </div>
+      <div class="btn-group btn-group-sm" style="margin-bottom: 0; margin-top: 5px;">
+        <button class="btn btn-default btn-sm">▶ Collapse All</button>
+      </div>
+    </li-->
+
+    <li class="pull-right">
+      <div class="form-group form-group-sm" style="margin-bottom: 0; margin-top: 5px;">
+        <div class="input-group input-group-sm" style="width: 200px">
+          <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+          <input type="text" class="form-control" style="width: 200px;" ng-model="vm.searchText" placeholder="Search...">
+          <span ng-if="vm.searchText" class="search-clear glyphicon glyphicon-remove-circle" ng-click="vm.searchText = ''"></span>
+        </div>
+      </div>
+    </li>
+  </ul>
+
+  <div class="container-fluid">
+    <div class="row" style="padding-bottom: 0.5em;">
+      <div class="col-md-12 text-right">
+        <a href="#" ng-if="vm.alarms.length" ng-click="vm.expandAlarms()"><small>▼ Expand All</small></a>&nbsp;&nbsp;&nbsp;
+        <a href="#" ng-if="vm.alarms.length" ng-click="vm.collapseAlarms()"><small>▶ Collapse All</small></a><br>
+      </div>
+    </div>
+    <div class="row" ng-repeat-start="alarm in vm.alarms | filter:vm.filterTable" style="cursor: pointer; border-top: 1px solid #ddd;" ng-click="alarm.expanded = !alarm.expanded">
+      <div class="col-md-3">
+        <span ng-if="alarm.urgent" class="glyphicon glyphicon-flag" style="color: #c9302c"></span>
+        <strong><a href="/{{ yamcsInstance }}/mdb{{ alarm.triggerValue.id.name }}" class="subtle">{{ alarm.triggerValue.id.name | name }}</a> out of limits</strong>
+        <img ng-src="/_static/_site/alarms/images/level{{ alarm.mostSevereLevel }}.png" uib-tooltip="{{ alarm.mostSevereValue.monitoringResult | monitoringValue }}"><br>
+        <small>{{ alarm.triggerValue.id.name | spaceSystem }}</small>
+      </div>
+
+      <div class="col-md-4">
+        <small>{{ alarm.triggerValue.generationTimeUTC | parseUTC | formatDate:'pretty' }} &ndash;
+        {{ alarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty' }}</small>
+      </div>
+
+      <div class="col-md-3">
+        <div ng-if="alarm.acknowledgeInfo">
+          <small>Acknowledged {{ alarm.acknowledgeInfo.acknowledgeTimeUTC | parseUTC | formatDate:'pretty_short':true }}</small>
+        </div>
+        <span ng-if="!alarm.acknowledgeInfo"><small>Unacknowledged</small></span>
+      </div>
+
+      <div class="col-md-2 text-right">
+        <small>
+          {{ (alarm.triggerValue.generationTimeUTC | parseUTC).fromNow() }}
+          <span ng-if="!alarm.expanded">▶</span>
+          <span ng-if="alarm.expanded">▼</span>
+        </small>
+      </div>
+    </div>
+
+    <div class="row" ng-repeat-end uib-collapse="!alarm.expanded">
+      <div class="col-md-1"></div>
+      <div class="col-md-5">
+        <dl class="dl-horizontal">
+          <dt>Activation Level</dt>
+          <dd>
+            <img ng-src="/_static/_site/alarms/images/level{{ alarm.triggerLevel }}.png" uib-tooltip="{{ alarm.triggerValue.monitoringResult | monitoringValue }}">
+            <small>
+              Reached {{ alarm.triggerValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
+              with {{ alarm.triggerValue | stringValue }}<span ng-bind-html="alarm.triggerValue.monitoringResult | lohi"></span>
+            </small>
+          </dd>
+
+          <dt>Highest Level</dt>
+          <dd>
+            <img ng-src="/_static/_site/alarms/images/level{{ alarm.mostSevereLevel }}.png" uib-tooltip="{{ alarm.mostSevereValue.monitoringResult | monitoringValue }}">
+            <small>
+              Reached {{ alarm.mostSevereValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
+              with {{ alarm.mostSevereValue | stringValue }}<span ng-bind-html="alarm.mostSevereValue.monitoringResult | lohi"></span>
+            </small>
+          </dd>
+
+          <dt>Last Record</dt>
+          <dd>
+            <img ng-src="/_static/_site/alarms/images/level{{ alarm.currentLevel }}.png" uib-tooltip="{{ alarm.currentValue.monitoringResult | monitoringValue }}">
+            <small>
+              <strong>{{ alarm.currentValue | stringValue }}</strong>
+              <span ng-bind-html="alarm.currentValue.monitoringResult | lohi"></span>
+              &ndash; {{ alarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
+            </small>
+          </dd>
+        </dl>
+      </div>
+      <div class="col-md-6">
+        <blockquote ng-if="alarm.acknowledgeInfo" style="font-size: small">
+          <span class="glyphicon glyphicon-comment" style="color: #ccc;"></span>
+          {{ alarm.acknowledgeInfo.acknowledgeMessage | nvl:'(without comment)' }}
+          <footer>{{ alarm.acknowledgeInfo.acknowledgedBy }}</footer>
+        </blockquote>
+      </div>
+    </div>
+  </div>
+</div>

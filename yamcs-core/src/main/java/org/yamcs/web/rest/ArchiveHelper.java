@@ -3,11 +3,14 @@ package org.yamcs.web.rest;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yamcs.protobuf.Alarms.AcknowledgeInfo;
+import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Archive.ColumnData;
 import org.yamcs.protobuf.Archive.ColumnInfo;
 import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Archive.StreamInfo;
 import org.yamcs.protobuf.Archive.TableInfo;
+import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.SampleSeries;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
@@ -29,6 +32,7 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.MessageLite;
 
 /**
  * Collects all archive-related conversions performed in the web api
@@ -104,6 +108,14 @@ public final class ArchiveHelper {
                 v.setType(Type.STRING);
                 v.setStringValue((String) column);
                 break;
+            case PROTOBUF:
+                // Perhaps we could be a bit smarter here. Proto3 will have an any-type
+                //String messageClassname = protoType.substring(9, protoType.length() - 1);
+                //String schemaClassname = messageClassname.replace("org.yamcs.protobuf.", "org.yamcs.protobuf.Schema") + "$BuilderSchema";
+                MessageLite message = (MessageLite) column;
+                v.setType(Type.BINARY);
+                v.setBinaryValue(message.toByteString());
+                break;
             default:
                 throw new IllegalArgumentException("Tuple column type " + cdef.getType().val + " is currently not supported");
             }
@@ -172,5 +184,35 @@ public final class ArchiveHelper {
         byte[] tmbody = (byte[]) tuple.getColumn(TmProviderAdapter.PACKET_COLUMN);
         pdatab.setPacket(ByteString.copyFrom(tmbody));
         return pdatab.build();
+    }
+    
+    final static AlarmData tupleToAlarmData(Tuple tuple) {
+        AlarmData.Builder alarmb = AlarmData.newBuilder();
+        alarmb.setSeqNum((int) tuple.getColumn("seqNum"));
+        
+        ParameterValue pval = (ParameterValue) tuple.getColumn("triggerPV");
+        alarmb.setTriggerValue(pval);
+        
+        if (tuple.hasColumn("severityIncreasedPV")) {
+            pval = (ParameterValue) tuple.getColumn("severityIncreasedPV");
+            alarmb.setMostSevereValue(pval);
+        }
+        if (tuple.hasColumn("updatedPV")) {
+            pval = (ParameterValue) tuple.getColumn("updatedPV");
+            alarmb.setCurrentValue(pval);
+        }
+        if (tuple.hasColumn("acknowledgedBy")) {
+            AcknowledgeInfo.Builder ackb = AcknowledgeInfo.newBuilder();
+            ackb.setAcknowledgedBy((String) tuple.getColumn("acknowledgedBy"));
+            if (tuple.hasColumn("acknowledgeMessage")) {
+                ackb.setAcknowledgeMessage((String) tuple.getColumn("acknowledgeMessage"));
+            }
+            long acknowledgeTime = (Long) tuple.getColumn("acknowledgeTime");
+            ackb.setAcknowledgeTime(acknowledgeTime);
+            ackb.setAcknowledgeTimeUTC(TimeEncoding.toString(acknowledgeTime));
+            alarmb.setAcknowledgeInfo(ackb);
+        }
+        
+        return alarmb.build();
     }
 }

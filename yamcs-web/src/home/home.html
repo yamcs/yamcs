@@ -1,0 +1,18 @@
+<div class="main" style="padding: 40px;">
+  <uib-alert ng-repeat="msg in shell.messages" type="{{ msg.type }}" close="shell.closeMessage($index)">{{ msg.msg }}</uib-alert>
+  <h1 class="page-header">{{ vm.appTitle }}</h1>
+
+  <p>&nbsp;</p>
+  <div class="row">
+    <div class="col-sm-6 col-md-4" ng-repeat="display in vm.displays">
+      <div class="panel panel-default">
+        <div class="panel-heading">{{ display.group }}</div>
+        <div class="list-group">
+            <a class="list-group-item" href="/{{ yamcsInstance }}/displays/{{ d1.display }}" ng-repeat="d1 in display.displays">
+              {{ d1.name }}
+            </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

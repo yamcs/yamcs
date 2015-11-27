@@ -207,7 +207,7 @@ enum ProtoDataType {
   CLIENT_INFO = 11;
   PROCESSING_STATISTICS = 12;
   STREAM_DATA = 13;
-  ALARM_INFO = 14;
+  ALARM_DATA = 14;
   TIME_INFO = 15;
 }
 

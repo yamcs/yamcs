@@ -163,10 +163,9 @@ public class AlarmServer extends AbstractService {
                     for (AlarmListener l : alarmListeners) {
                         l.notifySeverityIncrease(activeAlarm);                        
                     }
-                } else {
-                    for (AlarmListener l : alarmListeners) {
-                        l.notifyParameterValueUpdate(activeAlarm);                        
-                    }
+                }
+                for (AlarmListener l : alarmListeners) {
+                    l.notifyParameterValueUpdate(activeAlarm);                        
                 }
             }
         
@@ -201,7 +200,38 @@ public class AlarmServer extends AbstractService {
         return aa;
     }
 
-    private boolean moreSevere(MonitoringResult mr1, MonitoringResult mr2) {
-        return mr1.getNumber()>mr2.getNumber();
+    protected static boolean moreSevere(MonitoringResult mr1, MonitoringResult mr2) {
+        if (mr1 == mr2) return false;
+        switch (mr2) {
+        case WATCH:
+        case WATCH_LOW:
+        case WATCH_HIGH:
+            if (mr1 == MonitoringResult.WARNING || mr1 == MonitoringResult.WARNING_LOW || mr1 == MonitoringResult.WARNING_HIGH) {
+                return true;
+            }
+            // fall
+        case WARNING:
+        case WARNING_LOW:
+        case WARNING_HIGH:
+            if (mr1 == MonitoringResult.DISTRESS || mr1 == MonitoringResult.DISTRESS_LOW || mr1 == MonitoringResult.DISTRESS_HIGH) {
+                return true;
+            }
+            // fall
+        case DISTRESS:
+        case DISTRESS_LOW:
+        case DISTRESS_HIGH:
+            if (mr1 == MonitoringResult.CRITICAL || mr1 == MonitoringResult.CRITICAL_LOW || mr1 == MonitoringResult.CRITICAL_HIGH) {
+                return true;
+            }
+            // fall
+        case CRITICAL:
+        case CRITICAL_LOW:
+        case CRITICAL_HIGH:
+            if (mr1 == MonitoringResult.SEVERE || mr1 == MonitoringResult.SEVERE_LOW || mr1 == MonitoringResult.SEVERE_HIGH) {
+                return true;
+            }
+        default:
+            return false;
+        }
     }
 }

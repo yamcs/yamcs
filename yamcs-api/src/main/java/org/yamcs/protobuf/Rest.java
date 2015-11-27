@@ -17399,29 +17399,29 @@ public final class Rest {
   public interface ListAlarmsResponseOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // repeated .alarms.AlarmInfo alarm = 1;
+    // repeated .alarms.AlarmData alarm = 1;
     /**
-     * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+     * <code>repeated .alarms.AlarmData alarm = 1;</code>
      */
-    java.util.List<org.yamcs.protobuf.Alarms.AlarmInfo> 
+    java.util.List<org.yamcs.protobuf.Alarms.AlarmData> 
         getAlarmList();
     /**
-     * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+     * <code>repeated .alarms.AlarmData alarm = 1;</code>
      */
-    org.yamcs.protobuf.Alarms.AlarmInfo getAlarm(int index);
+    org.yamcs.protobuf.Alarms.AlarmData getAlarm(int index);
     /**
-     * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+     * <code>repeated .alarms.AlarmData alarm = 1;</code>
      */
     int getAlarmCount();
     /**
-     * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+     * <code>repeated .alarms.AlarmData alarm = 1;</code>
      */
-    java.util.List<? extends org.yamcs.protobuf.Alarms.AlarmInfoOrBuilder> 
+    java.util.List<? extends org.yamcs.protobuf.Alarms.AlarmDataOrBuilder> 
         getAlarmOrBuilderList();
     /**
-     * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+     * <code>repeated .alarms.AlarmData alarm = 1;</code>
      */
-    org.yamcs.protobuf.Alarms.AlarmInfoOrBuilder getAlarmOrBuilder(
+    org.yamcs.protobuf.Alarms.AlarmDataOrBuilder getAlarmOrBuilder(
         int index);
   }
   /**
@@ -17477,10 +17477,10 @@ public final class Rest {
             }
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                alarm_ = new java.util.ArrayList<org.yamcs.protobuf.Alarms.AlarmInfo>();
+                alarm_ = new java.util.ArrayList<org.yamcs.protobuf.Alarms.AlarmData>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              alarm_.add(input.readMessage(org.yamcs.protobuf.Alarms.AlarmInfo.PARSER, extensionRegistry));
+              alarm_.add(input.readMessage(org.yamcs.protobuf.Alarms.AlarmData.PARSER, extensionRegistry));
               break;
             }
           }
@@ -17525,38 +17525,38 @@ public final class Rest {
       return PARSER;
     }
 
-    // repeated .alarms.AlarmInfo alarm = 1;
+    // repeated .alarms.AlarmData alarm = 1;
     public static final int ALARM_FIELD_NUMBER = 1;
-    private java.util.List<org.yamcs.protobuf.Alarms.AlarmInfo> alarm_;
+    private java.util.List<org.yamcs.protobuf.Alarms.AlarmData> alarm_;
     /**
-     * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+     * <code>repeated .alarms.AlarmData alarm = 1;</code>
      */
-    public java.util.List<org.yamcs.protobuf.Alarms.AlarmInfo> getAlarmList() {
+    public java.util.List<org.yamcs.protobuf.Alarms.AlarmData> getAlarmList() {
       return alarm_;
     }
     /**
-     * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+     * <code>repeated .alarms.AlarmData alarm = 1;</code>
      */
-    public java.util.List<? extends org.yamcs.protobuf.Alarms.AlarmInfoOrBuilder> 
+    public java.util.List<? extends org.yamcs.protobuf.Alarms.AlarmDataOrBuilder> 
         getAlarmOrBuilderList() {
       return alarm_;
     }
     /**
-     * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+     * <code>repeated .alarms.AlarmData alarm = 1;</code>
      */
     public int getAlarmCount() {
       return alarm_.size();
     }
     /**
-     * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+     * <code>repeated .alarms.AlarmData alarm = 1;</code>
      */
-    public org.yamcs.protobuf.Alarms.AlarmInfo getAlarm(int index) {
+    public org.yamcs.protobuf.Alarms.AlarmData getAlarm(int index) {
       return alarm_.get(index);
     }
     /**
-     * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+     * <code>repeated .alarms.AlarmData alarm = 1;</code>
      */
-    public org.yamcs.protobuf.Alarms.AlarmInfoOrBuilder getAlarmOrBuilder(
+    public org.yamcs.protobuf.Alarms.AlarmDataOrBuilder getAlarmOrBuilder(
         int index) {
       return alarm_.get(index);
     }
@@ -17831,23 +17831,23 @@ public final class Rest {
       }
       private int bitField0_;
 
-      // repeated .alarms.AlarmInfo alarm = 1;
-      private java.util.List<org.yamcs.protobuf.Alarms.AlarmInfo> alarm_ =
+      // repeated .alarms.AlarmData alarm = 1;
+      private java.util.List<org.yamcs.protobuf.Alarms.AlarmData> alarm_ =
         java.util.Collections.emptyList();
       private void ensureAlarmIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          alarm_ = new java.util.ArrayList<org.yamcs.protobuf.Alarms.AlarmInfo>(alarm_);
+          alarm_ = new java.util.ArrayList<org.yamcs.protobuf.Alarms.AlarmData>(alarm_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.yamcs.protobuf.Alarms.AlarmInfo, org.yamcs.protobuf.Alarms.AlarmInfo.Builder, org.yamcs.protobuf.Alarms.AlarmInfoOrBuilder> alarmBuilder_;
+          org.yamcs.protobuf.Alarms.AlarmData, org.yamcs.protobuf.Alarms.AlarmData.Builder, org.yamcs.protobuf.Alarms.AlarmDataOrBuilder> alarmBuilder_;
 
       /**
-       * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+       * <code>repeated .alarms.AlarmData alarm = 1;</code>
        */
-      public java.util.List<org.yamcs.protobuf.Alarms.AlarmInfo> getAlarmList() {
+      public java.util.List<org.yamcs.protobuf.Alarms.AlarmData> getAlarmList() {
         if (alarmBuilder_ == null) {
           return java.util.Collections.unmodifiableList(alarm_);
         } else {
@@ -17855,7 +17855,7 @@ public final class Rest {
         }
       }
       /**
-       * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+       * <code>repeated .alarms.AlarmData alarm = 1;</code>
        */
       public int getAlarmCount() {
         if (alarmBuilder_ == null) {
@@ -17865,9 +17865,9 @@ public final class Rest {
         }
       }
       /**
-       * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+       * <code>repeated .alarms.AlarmData alarm = 1;</code>
        */
-      public org.yamcs.protobuf.Alarms.AlarmInfo getAlarm(int index) {
+      public org.yamcs.protobuf.Alarms.AlarmData getAlarm(int index) {
         if (alarmBuilder_ == null) {
           return alarm_.get(index);
         } else {
@@ -17875,10 +17875,10 @@ public final class Rest {
         }
       }
       /**
-       * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+       * <code>repeated .alarms.AlarmData alarm = 1;</code>
        */
       public Builder setAlarm(
-          int index, org.yamcs.protobuf.Alarms.AlarmInfo value) {
+          int index, org.yamcs.protobuf.Alarms.AlarmData value) {
         if (alarmBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -17892,10 +17892,10 @@ public final class Rest {
         return this;
       }
       /**
-       * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+       * <code>repeated .alarms.AlarmData alarm = 1;</code>
        */
       public Builder setAlarm(
-          int index, org.yamcs.protobuf.Alarms.AlarmInfo.Builder builderForValue) {
+          int index, org.yamcs.protobuf.Alarms.AlarmData.Builder builderForValue) {
         if (alarmBuilder_ == null) {
           ensureAlarmIsMutable();
           alarm_.set(index, builderForValue.build());
@@ -17906,9 +17906,9 @@ public final class Rest {
         return this;
       }
       /**
-       * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+       * <code>repeated .alarms.AlarmData alarm = 1;</code>
        */
-      public Builder addAlarm(org.yamcs.protobuf.Alarms.AlarmInfo value) {
+      public Builder addAlarm(org.yamcs.protobuf.Alarms.AlarmData value) {
         if (alarmBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -17922,10 +17922,10 @@ public final class Rest {
         return this;
       }
       /**
-       * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+       * <code>repeated .alarms.AlarmData alarm = 1;</code>
        */
       public Builder addAlarm(
-          int index, org.yamcs.protobuf.Alarms.AlarmInfo value) {
+          int index, org.yamcs.protobuf.Alarms.AlarmData value) {
         if (alarmBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -17939,10 +17939,10 @@ public final class Rest {
         return this;
       }
       /**
-       * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+       * <code>repeated .alarms.AlarmData alarm = 1;</code>
        */
       public Builder addAlarm(
-          org.yamcs.protobuf.Alarms.AlarmInfo.Builder builderForValue) {
+          org.yamcs.protobuf.Alarms.AlarmData.Builder builderForValue) {
         if (alarmBuilder_ == null) {
           ensureAlarmIsMutable();
           alarm_.add(builderForValue.build());
@@ -17953,10 +17953,10 @@ public final class Rest {
         return this;
       }
       /**
-       * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+       * <code>repeated .alarms.AlarmData alarm = 1;</code>
        */
       public Builder addAlarm(
-          int index, org.yamcs.protobuf.Alarms.AlarmInfo.Builder builderForValue) {
+          int index, org.yamcs.protobuf.Alarms.AlarmData.Builder builderForValue) {
         if (alarmBuilder_ == null) {
           ensureAlarmIsMutable();
           alarm_.add(index, builderForValue.build());
@@ -17967,10 +17967,10 @@ public final class Rest {
         return this;
       }
       /**
-       * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+       * <code>repeated .alarms.AlarmData alarm = 1;</code>
        */
       public Builder addAllAlarm(
-          java.lang.Iterable<? extends org.yamcs.protobuf.Alarms.AlarmInfo> values) {
+          java.lang.Iterable<? extends org.yamcs.protobuf.Alarms.AlarmData> values) {
         if (alarmBuilder_ == null) {
           ensureAlarmIsMutable();
           super.addAll(values, alarm_);
@@ -17981,7 +17981,7 @@ public final class Rest {
         return this;
       }
       /**
-       * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+       * <code>repeated .alarms.AlarmData alarm = 1;</code>
        */
       public Builder clearAlarm() {
         if (alarmBuilder_ == null) {
@@ -17994,7 +17994,7 @@ public final class Rest {
         return this;
       }
       /**
-       * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+       * <code>repeated .alarms.AlarmData alarm = 1;</code>
        */
       public Builder removeAlarm(int index) {
         if (alarmBuilder_ == null) {
@@ -18007,16 +18007,16 @@ public final class Rest {
         return this;
       }
       /**
-       * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+       * <code>repeated .alarms.AlarmData alarm = 1;</code>
        */
-      public org.yamcs.protobuf.Alarms.AlarmInfo.Builder getAlarmBuilder(
+      public org.yamcs.protobuf.Alarms.AlarmData.Builder getAlarmBuilder(
           int index) {
         return getAlarmFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+       * <code>repeated .alarms.AlarmData alarm = 1;</code>
        */
-      public org.yamcs.protobuf.Alarms.AlarmInfoOrBuilder getAlarmOrBuilder(
+      public org.yamcs.protobuf.Alarms.AlarmDataOrBuilder getAlarmOrBuilder(
           int index) {
         if (alarmBuilder_ == null) {
           return alarm_.get(index);  } else {
@@ -18024,9 +18024,9 @@ public final class Rest {
         }
       }
       /**
-       * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+       * <code>repeated .alarms.AlarmData alarm = 1;</code>
        */
-      public java.util.List<? extends org.yamcs.protobuf.Alarms.AlarmInfoOrBuilder> 
+      public java.util.List<? extends org.yamcs.protobuf.Alarms.AlarmDataOrBuilder> 
            getAlarmOrBuilderList() {
         if (alarmBuilder_ != null) {
           return alarmBuilder_.getMessageOrBuilderList();
@@ -18035,33 +18035,33 @@ public final class Rest {
         }
       }
       /**
-       * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+       * <code>repeated .alarms.AlarmData alarm = 1;</code>
        */
-      public org.yamcs.protobuf.Alarms.AlarmInfo.Builder addAlarmBuilder() {
+      public org.yamcs.protobuf.Alarms.AlarmData.Builder addAlarmBuilder() {
         return getAlarmFieldBuilder().addBuilder(
-            org.yamcs.protobuf.Alarms.AlarmInfo.getDefaultInstance());
+            org.yamcs.protobuf.Alarms.AlarmData.getDefaultInstance());
       }
       /**
-       * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+       * <code>repeated .alarms.AlarmData alarm = 1;</code>
        */
-      public org.yamcs.protobuf.Alarms.AlarmInfo.Builder addAlarmBuilder(
+      public org.yamcs.protobuf.Alarms.AlarmData.Builder addAlarmBuilder(
           int index) {
         return getAlarmFieldBuilder().addBuilder(
-            index, org.yamcs.protobuf.Alarms.AlarmInfo.getDefaultInstance());
+            index, org.yamcs.protobuf.Alarms.AlarmData.getDefaultInstance());
       }
       /**
-       * <code>repeated .alarms.AlarmInfo alarm = 1;</code>
+       * <code>repeated .alarms.AlarmData alarm = 1;</code>
        */
-      public java.util.List<org.yamcs.protobuf.Alarms.AlarmInfo.Builder> 
+      public java.util.List<org.yamcs.protobuf.Alarms.AlarmData.Builder> 
            getAlarmBuilderList() {
         return getAlarmFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.yamcs.protobuf.Alarms.AlarmInfo, org.yamcs.protobuf.Alarms.AlarmInfo.Builder, org.yamcs.protobuf.Alarms.AlarmInfoOrBuilder> 
+          org.yamcs.protobuf.Alarms.AlarmData, org.yamcs.protobuf.Alarms.AlarmData.Builder, org.yamcs.protobuf.Alarms.AlarmDataOrBuilder> 
           getAlarmFieldBuilder() {
         if (alarmBuilder_ == null) {
           alarmBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.yamcs.protobuf.Alarms.AlarmInfo, org.yamcs.protobuf.Alarms.AlarmInfo.Builder, org.yamcs.protobuf.Alarms.AlarmInfoOrBuilder>(
+              org.yamcs.protobuf.Alarms.AlarmData, org.yamcs.protobuf.Alarms.AlarmData.Builder, org.yamcs.protobuf.Alarms.AlarmDataOrBuilder>(
                   alarm_,
                   ((bitField0_ & 0x00000001) == 0x00000001),
                   getParentForChildren(),
@@ -21635,8 +21635,8 @@ public final class Rest {
       "edTime\030\003 \001(\003\022\020\n\010simSpeed\030\004 \001(\001\"I\n\025ListIn",
       "stancesResponse\0220\n\010instance\030\001 \003(\0132\036.yamc" +
       "sManagement.YamcsInstance\"6\n\022ListAlarmsR" +
-      "esponse\022 \n\005alarm\030\001 \003(\0132\021.alarms.AlarmInf" +
-      "o\"3\n\021PatchAlarmRequest\022\r\n\005state\030\001 \001(\t\022\017\n" +
+      "esponse\022 \n\005alarm\030\001 \003(\0132\021.alarms.AlarmDat" +
+      "a\"3\n\021PatchAlarmRequest\022\r\n\005state\030\001 \001(\t\022\017\n" +
       "\007comment\030\002 \001(\t\"7\n\022ListTablesResponse\022!\n\005" +
       "table\030\001 \003(\0132\022.archive.TableInfo\":\n\023ListS" +
       "treamsResponse\022#\n\006stream\030\001 \003(\0132\023.archive" +

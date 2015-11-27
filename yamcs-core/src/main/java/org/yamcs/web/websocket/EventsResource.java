@@ -10,6 +10,7 @@ import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -77,6 +78,10 @@ public class EventsResource extends AbstractWebSocketResource {
                 public void onTuple(Stream stream, Tuple tuple) {
                     try {
                         Event event = (Event) tuple.getColumn("body");
+                        event = Event.newBuilder(event)
+                                .setGenerationTimeUTC(TimeEncoding.toString(event.getGenerationTime()))
+                                .setReceptionTimeUTC(TimeEncoding.toString(event.getReceptionTime()))
+                                .build();
                         wsHandler.sendData(ProtoDataType.EVENT, event, SchemaYamcs.Event.WRITE);
                     } catch (Exception e) {
                         log.warn("got error when sending event, quitting", e);

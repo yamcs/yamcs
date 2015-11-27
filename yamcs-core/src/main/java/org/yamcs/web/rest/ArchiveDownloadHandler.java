@@ -46,7 +46,7 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
             switch (req.getPathSegment(pathOffset)) {
             case "parameters":
                 req.assertGET();
-                MatchResult<Parameter> mr = RestUtils.matchParameterName(req, pathOffset);
+                MatchResult<Parameter> mr = RestUtils.matchParameterName(req, pathOffset + 1);
                 if (!mr.matches()) {
                     throw new NotFoundException(req);
                 } else {
@@ -59,9 +59,6 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
                 downloadPackets(req);
                 return null;
             case "events":
-            case "events.json":
-            case "events.proto":
-            case "events.csv":
                 req.assertGET();
                 downloadEvents(req);
                 return null;
@@ -83,12 +80,17 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
     
     private void downloadParameter(RestRequest req, NamedObjectId id) throws RestException {
         ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, id, false);
+        boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
         
         if (req.asksFor(CSV_MIME_TYPE)) {
             List<NamedObjectId> idList = Arrays.asList(id);
-            RestReplays.replay(req, rr, new ReplayToChunkedParameterCSV(req, idList));
+            RestParameterReplayListener l = new ReplayToChunkedParameterCSV(req, idList);
+            l.setNoRepeat(noRepeat);
+            RestReplays.replay(req, rr, l);
         } else {
-            RestReplays.replay(req, rr, new ReplayToChunkedParameterProtobuf(req));
+            RestParameterReplayListener l = new ReplayToChunkedParameterProtobuf(req);
+            l.setNoRepeat(noRepeat);
+            RestReplays.replay(req, rr, l);
         }
     }
     

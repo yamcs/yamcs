@@ -70,6 +70,7 @@ public class ValueUtility {
         }
         throw new RuntimeException("cannot values of type "+v.getType());
     }
+    
     public static DataType getYarchType(Value v) {
         switch(v.getType()) {
         case BINARY:
@@ -88,5 +89,74 @@ public class ValueUtility {
             return DataType.TIMESTAMP;
         }
         throw new RuntimeException("cannot values of type "+v.getType());
+    }
+    
+    public static boolean equals(Value a, Value b) {
+        if (a == null ^ b == null)
+            return false;
+        if (a == null && b == null)
+            return true;
+        if (a.getType() != b.getType())
+            return false;
+        
+        switch (a.getType()) {
+        case BINARY:
+            return a.getBinaryValue().equals(b.getBinaryValue());
+        case BOOLEAN:
+            return a.getBooleanValue() == b.getBooleanValue();
+        case DOUBLE:
+            return a.getDoubleValue() == b.getDoubleValue();
+        case FLOAT:
+            return a.getFloatValue() == b.getFloatValue();
+        case SINT32:
+            return a.getSint32Value() == b.getSint32Value();
+        case SINT64:
+            return a.getSint64Value() == b.getSint64Value();
+        case STRING:
+            return a.getStringValue().equals(b.getStringValue());
+        case TIMESTAMP:
+            return a.getTimestampValue() == b.getTimestampValue();
+        case UINT32:
+            return a.getUint32Value() == b.getUint32Value();
+        case UINT64:
+            return a.getUint64Value() == b.getUint64Value();
+        default:
+            throw new IllegalStateException("Unexpected type " + a.getType());
+        }
+    }
+    
+    // Not perfect. Should also compare compatible types
+    public static int compare(Value a, Value b) {
+        if (a == null ^ b == null)
+            return (a == null) ? -1 : 1;
+        if (a == null && b == null)
+            return 0;
+        if (a.getType() != b.getType())
+            return a.getType().compareTo(b.getType());
+        
+        switch (a.getType()) {
+        case BINARY:
+            return String.valueOf(a).compareTo(String.valueOf(b)); // TODO ?
+        case BOOLEAN:
+            return Boolean.compare(a.getBooleanValue(), b.getBooleanValue());
+        case DOUBLE:
+            return Double.compare(a.getDoubleValue(), b.getDoubleValue());
+        case FLOAT:
+            return Float.compare(a.getFloatValue(), b.getFloatValue());
+        case SINT32:
+            return Integer.compare(a.getSint32Value(), b.getSint32Value());
+        case SINT64:
+            return Long.compare(a.getSint64Value(), b.getSint64Value());
+        case STRING:
+            return a.getStringValue().compareTo(b.getStringValue());
+        case TIMESTAMP:
+            return Long.compare(a.getTimestampValue(), b.getTimestampValue());
+        case UINT32:
+            return Integer.compareUnsigned(a.getUint32Value(), b.getUint32Value());
+        case UINT64:
+            return Long.compareUnsigned(a.getUint64Value(), b.getUint64Value());
+        default:
+            throw new IllegalStateException("Unexpected type " + a.getType());
+        }
     }
 }

@@ -9,12 +9,10 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.SchemaPvalue;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.web.AbstractRequestHandler;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.google.protobuf.MessageLite;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -27,7 +25,7 @@ import io.protostuff.JsonIOUtil;
  * than the treshold size for one chunk, this will cause a chunk to be written out.
  * Could maybe be replaced by using built-in netty functionality, but would need to investigate.
  */
-public class ReplayToChunkedParameterProtobuf extends RestReplayListener {
+public class ReplayToChunkedParameterProtobuf extends RestParameterReplayListener {
     
     private static final Logger log = LoggerFactory.getLogger(ReplayToChunkedParameterProtobuf.class);
     private static final int CHUNK_TRESHOLD = 8096;
@@ -39,6 +37,7 @@ public class ReplayToChunkedParameterProtobuf extends RestReplayListener {
     private ByteBufOutputStream bufOut;
     
     public ReplayToChunkedParameterProtobuf(RestRequest req) throws RestException {
+        super();
         this.req = req;
         contentType = req.deriveTargetContentType();
         resetBuffer();
@@ -51,9 +50,8 @@ public class ReplayToChunkedParameterProtobuf extends RestReplayListener {
     }
     
     @Override
-    public void newData(ProtoDataType type, MessageLite data) {
+    public void onParameterData(ParameterData pdata) {
         try {
-            ParameterData pdata = (ParameterData) data;
             for (ParameterValue pval : pdata.getParameterList()) {
                 bufferMessage(pval);
             }

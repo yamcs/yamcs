@@ -3,6 +3,7 @@ package org.yamcs.web.rest;
 import java.nio.ByteOrder;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.yamcs.protobuf.Mdb;
 import org.yamcs.protobuf.Mdb.AlarmInfo;
@@ -29,6 +30,7 @@ import org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType;
 import org.yamcs.protobuf.Mdb.TransmissionConstraintInfo;
 import org.yamcs.protobuf.Mdb.UnitInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Argument;
@@ -36,6 +38,7 @@ import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BooleanDataEncoding;
+import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.ComparisonList;
 import org.yamcs.xtce.ContainerEntry;
@@ -79,12 +82,14 @@ public class XtceToGpbAssembler {
         FULL
     }
     
-    public static ContainerInfo toContainerInfo(SequenceContainer c, String instanceURL, DetailLevel detail) {
+    public static ContainerInfo toContainerInfo(SequenceContainer c, String instanceURL, DetailLevel detail, Set<Option> options) {
         ContainerInfo.Builder cb = ContainerInfo.newBuilder();
         
         cb.setName(c.getName());
         cb.setQualifiedName(c.getQualifiedName());
-        cb.setUrl(instanceURL + "/containers" + c.getQualifiedName());
+        if (!options.contains(Option.NO_LINK)) {
+            cb.setUrl(instanceURL + "/containers" + c.getQualifiedName());
+        }
         
         if (detail == DetailLevel.SUMMARY || detail == DetailLevel.FULL) {
             if (c.getShortDescription() != null) {
@@ -93,9 +98,11 @@ public class XtceToGpbAssembler {
             if (c.getLongDescription() != null) {
                 cb.setLongDescription(c.getLongDescription());
             }
-            Map<String, String> aliases = c.getAliasSet().getAliases();
-            for(Entry<String, String> me : aliases.entrySet()) {
-                cb.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+            if (c.getAliasSet() != null) {
+                Map<String, String> aliases = c.getAliasSet().getAliases();
+                for(Entry<String, String> me : aliases.entrySet()) {
+                    cb.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+                }
             }
             if (c.getRateInStream() != null) {
                 cb.setMaxInterval(c.getRateInStream().getMaxInterval());
@@ -105,26 +112,26 @@ public class XtceToGpbAssembler {
             }
             if (c.getBaseContainer() != null) {
                 if (detail == DetailLevel.SUMMARY) {
-                    cb.setBaseContainer(toContainerInfo(c.getBaseContainer(), instanceURL, DetailLevel.LINK));
+                    cb.setBaseContainer(toContainerInfo(c.getBaseContainer(), instanceURL, DetailLevel.LINK, options));
                 } else if (detail == DetailLevel.FULL) {
-                    cb.setBaseContainer(toContainerInfo(c.getBaseContainer(), instanceURL, DetailLevel.FULL));
+                    cb.setBaseContainer(toContainerInfo(c.getBaseContainer(), instanceURL, DetailLevel.FULL, options));
                 }
             }
             if (c.getRestrictionCriteria() != null) {
                 if (c.getRestrictionCriteria() instanceof ComparisonList) {
                     ComparisonList xtceList = (ComparisonList) c.getRestrictionCriteria();
                     for (Comparison comparison : xtceList.getComparisonList()) {
-                        cb.addRestrictionCriteria(toComparisonInfo(comparison, instanceURL));
+                        cb.addRestrictionCriteria(toComparisonInfo(comparison, instanceURL, options));
                     }
                 } else if (c.getRestrictionCriteria() instanceof Comparison) {
-                    cb.addRestrictionCriteria(toComparisonInfo((Comparison) c.getRestrictionCriteria(), instanceURL));
+                    cb.addRestrictionCriteria(toComparisonInfo((Comparison) c.getRestrictionCriteria(), instanceURL, options));
                 }
             }
             for (SequenceEntry entry : c.getEntryList()) {
                 if (detail == DetailLevel.SUMMARY) {
-                    cb.addEntry(toSequenceEntryInfo(entry, instanceURL, DetailLevel.LINK));
+                    cb.addEntry(toSequenceEntryInfo(entry, instanceURL, DetailLevel.LINK, options));
                 } else if (detail == DetailLevel.FULL) {
-                    cb.addEntry(toSequenceEntryInfo(entry, instanceURL, DetailLevel.FULL));
+                    cb.addEntry(toSequenceEntryInfo(entry, instanceURL, DetailLevel.FULL, options));
                 }
             }
         }
@@ -132,7 +139,7 @@ public class XtceToGpbAssembler {
         return cb.build();
     }
     
-    public static SequenceEntryInfo toSequenceEntryInfo(SequenceEntry e, String instanceURL, DetailLevel detail) {
+    public static SequenceEntryInfo toSequenceEntryInfo(SequenceEntry e, String instanceURL, DetailLevel detail, Set<Option> options) {
         SequenceEntryInfo.Builder b = SequenceEntryInfo.newBuilder();
         b.setLocationInBits(e.getLocationInContainerInBits());
         
@@ -150,16 +157,16 @@ public class XtceToGpbAssembler {
         if (e instanceof ContainerEntry) {
             ContainerEntry ce = (ContainerEntry) e;
             if (detail == DetailLevel.LINK || detail == DetailLevel.SUMMARY) {
-                b.setContainer(toContainerInfo(ce.getSequenceContainer(), instanceURL, DetailLevel.LINK));
+                b.setContainer(toContainerInfo(ce.getSequenceContainer(), instanceURL, DetailLevel.LINK, options));
             } else if (detail == DetailLevel.FULL) {
-                b.setContainer(toContainerInfo(ce.getSequenceContainer(), instanceURL, DetailLevel.FULL));
+                b.setContainer(toContainerInfo(ce.getSequenceContainer(), instanceURL, DetailLevel.FULL, options));
             }
         } else if (e instanceof ParameterEntry) {
             ParameterEntry pe = (ParameterEntry) e;
             if (detail == DetailLevel.LINK || detail == DetailLevel.SUMMARY) {
-                b.setParameter(toParameterInfo(pe.getParameter(), instanceURL, DetailLevel.LINK));
+                b.setParameter(toParameterInfo(pe.getParameter(), instanceURL, DetailLevel.LINK, options));
             } else if (detail == DetailLevel.FULL) {
-                b.setParameter(toParameterInfo(pe.getParameter(), instanceURL, DetailLevel.FULL));
+                b.setParameter(toParameterInfo(pe.getParameter(), instanceURL, DetailLevel.FULL, options));
             }
         } else {
             throw new IllegalStateException("Unexpected entry " + e);
@@ -168,7 +175,7 @@ public class XtceToGpbAssembler {
         return b.build();
     }
     
-    public static RepeatInfo toRepeatInfo(Repeat xtceRepeat, String instanceURL, DetailLevel detail) {
+    public static RepeatInfo toRepeatInfo(Repeat xtceRepeat, String instanceURL, DetailLevel detail, Set<Option> options) {
         RepeatInfo.Builder b = RepeatInfo.newBuilder();
         b.setBitsBetween(xtceRepeat.getOffsetSizeInBits());
         if (xtceRepeat.getCount() instanceof FixedIntegerValue) {
@@ -177,9 +184,9 @@ public class XtceToGpbAssembler {
         } else if (xtceRepeat.getCount() instanceof DynamicIntegerValue) {
             DynamicIntegerValue val = (DynamicIntegerValue) xtceRepeat.getCount();
             if (detail == DetailLevel.SUMMARY) {
-                b.setDynamicCount(toParameterInfo(val.getParameter(), instanceURL, DetailLevel.LINK));
+                b.setDynamicCount(toParameterInfo(val.getParameter(), instanceURL, DetailLevel.LINK, options));
             } else if (detail == DetailLevel.FULL) {
-                b.setDynamicCount(toParameterInfo(val.getParameter(), instanceURL, DetailLevel.FULL));
+                b.setDynamicCount(toParameterInfo(val.getParameter(), instanceURL, DetailLevel.FULL, options));
             }
         } else {
             throw new IllegalStateException("Unexpected repeat count " + xtceRepeat.getCount());
@@ -191,12 +198,14 @@ public class XtceToGpbAssembler {
     /**
      * @param detail whether base commands should be expanded
      */
-    public static CommandInfo toCommandInfo(MetaCommand cmd, String instanceURL, DetailLevel detail) {
+    public static CommandInfo toCommandInfo(MetaCommand cmd, String instanceURL, DetailLevel detail, Set<Option> options) {
         CommandInfo.Builder cb = CommandInfo.newBuilder();
         
         cb.setName(cmd.getName());
         cb.setQualifiedName(cmd.getQualifiedName());
-        cb.setUrl(instanceURL + "/commands" + cmd.getQualifiedName());
+        if (!options.contains(Option.NO_LINK)) {
+            cb.setUrl(instanceURL + "/commands" + cmd.getQualifiedName());
+        }
         
         if (detail == DetailLevel.SUMMARY || detail == DetailLevel.FULL) {
             if (cmd.getShortDescription() != null) {
@@ -205,9 +214,11 @@ public class XtceToGpbAssembler {
             if (cmd.getLongDescription() != null) {
                 cb.setLongDescription(cmd.getLongDescription());
             }
-            Map<String, String> aliases = cmd.getAliasSet().getAliases();
-            for(Entry<String, String> me : aliases.entrySet()) {
-                cb.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+            if (cmd.getAliasSet() != null) {
+                Map<String, String> aliases = cmd.getAliasSet().getAliases();
+                for(Entry<String, String> me : aliases.entrySet()) {
+                    cb.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+                }
             }
             
             if (cmd.getDefaultSignificance() != null) {
@@ -226,17 +237,17 @@ public class XtceToGpbAssembler {
             cb.setAbstract(cmd.isAbstract());
             if (cmd.getTransmissionConstraintList() != null) {
                 for (TransmissionConstraint xtceConstraint : cmd.getTransmissionConstraintList()) {
-                    cb.addConstraint(toTransmissionConstraintInfo(xtceConstraint, instanceURL));
+                    cb.addConstraint(toTransmissionConstraintInfo(xtceConstraint, instanceURL, options));
                 }
             }
             
             if (detail == DetailLevel.SUMMARY) {
                 if (cmd.getBaseMetaCommand() != null) {
-                    cb.setBaseCommand(toCommandInfo(cmd.getBaseMetaCommand(), instanceURL, DetailLevel.LINK));
+                    cb.setBaseCommand(toCommandInfo(cmd.getBaseMetaCommand(), instanceURL, DetailLevel.LINK, options));
                 }
             } else if (detail == DetailLevel.FULL) {
                 if (cmd.getBaseMetaCommand() != null) {
-                    cb.setBaseCommand(toCommandInfo(cmd.getBaseMetaCommand(), instanceURL, DetailLevel.FULL));
+                    cb.setBaseCommand(toCommandInfo(cmd.getBaseMetaCommand(), instanceURL, DetailLevel.FULL, options));
                 }
             }
         }
@@ -272,14 +283,14 @@ public class XtceToGpbAssembler {
         return b.build();
     }
     
-    public static TransmissionConstraintInfo toTransmissionConstraintInfo(TransmissionConstraint xtceConstraint, String instanceURL) {
+    public static TransmissionConstraintInfo toTransmissionConstraintInfo(TransmissionConstraint xtceConstraint, String instanceURL, Set<Option> options) {
         TransmissionConstraintInfo.Builder b = TransmissionConstraintInfo.newBuilder();
         if (xtceConstraint.getMatchCriteria() instanceof Comparison) {
-            b.addComparison(toComparisonInfo((Comparison) xtceConstraint.getMatchCriteria(), instanceURL));
+            b.addComparison(toComparisonInfo((Comparison) xtceConstraint.getMatchCriteria(), instanceURL, options));
         } else if (xtceConstraint.getMatchCriteria() instanceof ComparisonList) {
             ComparisonList xtceList = (ComparisonList) xtceConstraint.getMatchCriteria();
             for (Comparison xtceComparison : xtceList.getComparisonList()) {
-                b.addComparison(toComparisonInfo(xtceComparison, instanceURL));
+                b.addComparison(toComparisonInfo(xtceComparison, instanceURL, options));
             }
         } else {
             throw new IllegalStateException("Unexpected match criteria " + xtceConstraint.getMatchCriteria());
@@ -288,9 +299,9 @@ public class XtceToGpbAssembler {
         return b.build();
     }
     
-    public static ComparisonInfo toComparisonInfo(Comparison xtceComparison, String instanceURL) {
+    public static ComparisonInfo toComparisonInfo(Comparison xtceComparison, String instanceURL, Set<Option> options) {
         ComparisonInfo.Builder b = ComparisonInfo.newBuilder();
-        b.setParameter(toParameterInfo(xtceComparison.getParameter(), instanceURL, DetailLevel.LINK));
+        b.setParameter(toParameterInfo(xtceComparison.getParameter(), instanceURL, DetailLevel.LINK, options));
         b.setOperator(toOperatorType(xtceComparison.getComparisonOperator()));
         b.setValue(xtceComparison.getStringValue());
         return b.build();
@@ -346,12 +357,14 @@ public class XtceToGpbAssembler {
         return b.build();
     }
     
-    public static ParameterInfo toParameterInfo(Parameter p, String mdbURL, DetailLevel detail) {
+    public static ParameterInfo toParameterInfo(Parameter p, String mdbURL, DetailLevel detail, Set<Option> options) {
         ParameterInfo.Builder b = ParameterInfo.newBuilder();
         
         b.setName(p.getName());
         b.setQualifiedName(p.getQualifiedName());
-        b.setUrl(mdbURL + "/parameters" + p.getQualifiedName());
+        if (!options.contains(Option.NO_LINK)) {
+            b.setUrl(mdbURL + "/parameters" + p.getQualifiedName());
+        }
         
         if (detail == DetailLevel.SUMMARY || detail == DetailLevel.FULL) {
             if (p.getShortDescription() != null) {
@@ -360,9 +373,11 @@ public class XtceToGpbAssembler {
             if (p.getLongDescription() != null) {
                 b.setLongDescription(p.getLongDescription());
             }
-            Map<String, String> aliases = p.getAliasSet().getAliases();
-            for(Entry<String, String> me : aliases.entrySet()) {
-                b.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+            if (p.getAliasSet() != null) {
+                Map<String, String> aliases = p.getAliasSet().getAliases();
+                for(Entry<String, String> me : aliases.entrySet()) {
+                    b.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+                }
             }
             DataSource xtceDs = p.getDataSource();
             if (xtceDs != null) {
@@ -456,7 +471,8 @@ public class XtceToGpbAssembler {
                 infob.setEncoding(fde.getEncoding().toString());
             }
             if (fde.getDefaultCalibrator() != null) {
-                infob.setDefaultCalibrator(fde.toString());
+                Calibrator calibrator = fde.getDefaultCalibrator();
+                infob.setDefaultCalibrator(calibrator.toString());
             }
         } else if (xtceDataEncoding instanceof IntegerDataEncoding) {
             IntegerDataEncoding ide = (IntegerDataEncoding) xtceDataEncoding;
@@ -468,7 +484,8 @@ public class XtceToGpbAssembler {
                 infob.setEncoding(ide.getEncoding().toString());
             }
             if (ide.getDefaultCalibrator() != null) {
-                infob.setDefaultCalibrator(ide.toString());
+                Calibrator calibrator = ide.getDefaultCalibrator();
+                infob.setDefaultCalibrator(calibrator.toString());
             }
         } else if (xtceDataEncoding instanceof StringDataEncoding) {
             infob.setType(Type.STRING);
@@ -585,12 +602,14 @@ public class XtceToGpbAssembler {
         return resultb.build();
     }
     
-    public static AlgorithmInfo toAlgorithmInfo(Algorithm a, String mdbURL, DetailLevel detail) {
+    public static AlgorithmInfo toAlgorithmInfo(Algorithm a, String mdbURL, DetailLevel detail, Set<Option> options) {
         AlgorithmInfo.Builder b = AlgorithmInfo.newBuilder();
         
         b.setName(a.getName());
         b.setQualifiedName(a.getQualifiedName());
-        b.setUrl(mdbURL + "/algorithms" + a.getQualifiedName());
+        if (!options.contains(Option.NO_LINK)) {
+            b.setUrl(mdbURL + "/algorithms" + a.getQualifiedName());
+        }
         
         if (detail == DetailLevel.SUMMARY || detail == DetailLevel.FULL) {
             if (a.getShortDescription() != null) {
@@ -599,9 +618,11 @@ public class XtceToGpbAssembler {
             if (a.getLongDescription() != null) {
                 b.setLongDescription(a.getLongDescription());
             }
-            Map<String, String> aliases = a.getAliasSet().getAliases();
-            for(Entry<String, String> me : aliases.entrySet()) {
-                b.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+            if (a.getAliasSet() != null) {
+                Map<String, String> aliases = a.getAliasSet().getAliases();
+                for(Entry<String, String> me : aliases.entrySet()) {
+                    b.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+                }
             }
             switch (a.getScope()) {
             case global:
@@ -623,15 +644,15 @@ public class XtceToGpbAssembler {
                 b.setText(a.getAlgorithmText());
             }
             for (InputParameter p : a.getInputSet()) {
-                b.addInputParameter(toInputParameterInfo(p, mdbURL));
+                b.addInputParameter(toInputParameterInfo(p, mdbURL, options));
             }
             for (OutputParameter p : a.getOutputSet()) {
-                b.addOutputParameter(toOutputParameterInfo(p, mdbURL));
+                b.addOutputParameter(toOutputParameterInfo(p, mdbURL, options));
             }
             TriggerSetType triggerSet = a.getTriggerSet();
             if (triggerSet != null) {
                 for (OnParameterUpdateTrigger trig : triggerSet.getOnParameterUpdateTriggers()) {
-                    b.addOnParameterUpdate(toParameterInfo(trig.getParameter(), mdbURL, DetailLevel.SUMMARY));
+                    b.addOnParameterUpdate(toParameterInfo(trig.getParameter(), mdbURL, DetailLevel.SUMMARY, options));
                 }
                 for (OnPeriodicRateTrigger trig : triggerSet.getOnPeriodicRateTriggers()) {
                     b.addOnPeriodicRate(trig.getFireRate());
@@ -642,9 +663,9 @@ public class XtceToGpbAssembler {
         return b.build();
     }
     
-    public static InputParameterInfo toInputParameterInfo(InputParameter xtceInput, String mdbURL) {
+    public static InputParameterInfo toInputParameterInfo(InputParameter xtceInput, String mdbURL, Set<Option> options) {
         InputParameterInfo.Builder resultb = InputParameterInfo.newBuilder();
-        resultb.setParameter(toParameterInfo(xtceInput.getParameterInstance().getParameter(), mdbURL, DetailLevel.SUMMARY));
+        resultb.setParameter(toParameterInfo(xtceInput.getParameterInstance().getParameter(), mdbURL, DetailLevel.SUMMARY, options));
         if (xtceInput.getInputName() != null) {
             resultb.setInputName(xtceInput.getInputName());
         }
@@ -653,9 +674,9 @@ public class XtceToGpbAssembler {
         return resultb.build();
     }
     
-    public static OutputParameterInfo toOutputParameterInfo(OutputParameter xtceOutput, String mdbUrl) {
+    public static OutputParameterInfo toOutputParameterInfo(OutputParameter xtceOutput, String mdbUrl, Set<Option> options) {
         OutputParameterInfo.Builder resultb = OutputParameterInfo.newBuilder();
-        resultb.setParameter(toParameterInfo(xtceOutput.getParameter(), mdbUrl, DetailLevel.SUMMARY));
+        resultb.setParameter(toParameterInfo(xtceOutput.getParameter(), mdbUrl, DetailLevel.SUMMARY, options));
         if (xtceOutput.getOutputName() != null) {
             resultb.setOutputName(xtceOutput.getOutputName());
         }

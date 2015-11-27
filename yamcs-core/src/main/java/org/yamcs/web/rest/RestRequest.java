@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.yamcs.management.ManagementService;
 import org.yamcs.security.AuthenticationToken;
@@ -41,6 +43,10 @@ public class RestRequest {
     
     public static final String CTX_INSTANCE = "instance";
     public static final String CTX_PROCESSOR = "processor";
+    
+    public enum Option {
+        NO_LINK;
+    }
     
     private ChannelHandlerContext channelHandlerContext;
     private FullHttpRequest httpRequest;
@@ -89,6 +95,24 @@ public class RestRequest {
         return pathSegments[index];
     }
     
+    public long getPathSegmentAsDate(int index) {
+        String segment = pathSegments[index];
+        try {
+            return Long.parseLong(segment);
+        } catch (NumberFormatException e) {
+            return TimeEncoding.parse(segment);
+        }
+    }
+    
+    public int getPathSegmentAsInt(int index) throws BadRequestException {
+        String segment = pathSegments[index];
+        try {
+            return Integer.parseInt(segment);
+        } catch (NumberFormatException e) {
+            throw new BadRequestException("Path segment '" + segment + "' is not a valid integer value");
+        }
+    }
+    
     public boolean hasPathSegment(int index) {
         return pathSegments.length > index;
     }
@@ -131,24 +155,35 @@ public class RestRequest {
     }
     
     /**
-     * Matches the content type on either the Accept header or the extension of the resource
+     * Experimental feature to gather common parameters. Should also be made to include the pretty-flag
+     */
+    public Set<Option> getOptions() {
+        Set<Option> options = new HashSet<>(2);
+        if (getQueryParameterAsBoolean("nolink", false)) {
+            options.add(Option.NO_LINK);
+        }
+        return options;
+    }
+    
+    /**
+     * Matches the content type on either the Accept header or a 'format' query param.
+     * Should probably better be integrated with the deriveTargetContentType setting.
      */
     public boolean asksFor(String mediaType) {
-        if (getHttpRequest().headers().contains(Names.ACCEPT)
-                && getHttpRequest().headers().get(Names.ACCEPT).equals(mediaType)) {
-            return true;
-        } else {
-            String lastSegment = getPathSegment(getPathSegmentCount() - 1).toLowerCase();
-            switch (mediaType) {
-            case JSON_MIME_TYPE:
-                return lastSegment.endsWith(".json");
-            case CSV_MIME_TYPE:
-                return lastSegment.endsWith(".csv");
-            case BINARY_MIME_TYPE:
-                return lastSegment.endsWith(".proto");
+        if (hasQueryParameter("format")) {
+            switch (getQueryParameter("format").toLowerCase()) {
+            case "json":
+                return JSON_MIME_TYPE.equals(mediaType);
+            case "csv":
+                return CSV_MIME_TYPE.equals(mediaType);
+            case "proto":
+                return BINARY_MIME_TYPE.equals(mediaType);
             default:
-                return false;
+                return mediaType.equals(getQueryParameter("format"));
             }
+        } else {
+            return getHttpRequest().headers().contains(Names.ACCEPT)
+                    && getHttpRequest().headers().get(Names.ACCEPT).equals(mediaType);
         }
     }
     

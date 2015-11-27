@@ -10,7 +10,7 @@ message AcknowledgeInfo {
   optional string acknowledgeTimeUTC = 4;
 }
 
-message AlarmInfo {
+message AlarmData {
   enum Type {
     ACTIVE = 1;  // Initial active alarms at the moment of request
     TRIGGERED = 2;  // Whenever a new alarm triggers
@@ -19,7 +19,7 @@ message AlarmInfo {
     ACKNOWLEDGED = 5;  // Whenever somebody acknowledged an alarm (it could be that it is still OOL)
     CLEARED = 6; // When the alarm was really cleared by the server (acknowledged && not OOL)
   }
-  optional uint32 id = 1;
+  optional uint32 seqNum = 1;
   optional Type type = 2;
   optional pvalue.ParameterValue triggerValue = 3;
   optional pvalue.ParameterValue mostSevereValue = 4;

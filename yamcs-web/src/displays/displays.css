@@ -1,0 +1,44 @@
+.embedded-display {
+  text-align: center;
+}
+
+svg.canvas {
+  /*border: 1px solid #181a1f;*/
+}
+
+.uss-label {
+  display: table;
+}
+
+.uss-field-unit {
+  margin-left: 2px;
+}
+
+.uss-missing-symbol {
+  border-width: medium;
+  border-color: red;
+  border-style: solid;
+  background-color: white;
+  font-size: 6px;
+  text-align: center;
+}
+
+.uss-transparency img {
+  background: transparent;
+}
+
+.dropdown-menu {
+  z-index: 1000000 ;
+}
+
+.context-menu-field {
+  cursor: pointer;
+}
+
+.context-menu-field:hover {
+  opacity: 0.7;
+}
+
+text {
+  pointer-events: none;
+}

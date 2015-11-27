@@ -1,6 +1,6 @@
 package org.yamcs.web.rest;
 
-import java.util.ListIterator;
+import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +10,7 @@ import org.yamcs.protobuf.YamcsManagement.HistoryInfo;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
 import org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
+import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.History;
 import org.yamcs.xtce.SpaceSystem;
@@ -78,12 +79,14 @@ public class MDBRequestHandler extends RestRequestHandler {
     public static MissionDatabase toMissionDatabase(RestRequest req, String instance, XtceDb mdb) {
         YamcsInstance yamcsInstance = YamcsServer.getYamcsInstance(instance);
         MissionDatabase.Builder b = MissionDatabase.newBuilder(yamcsInstance.getMissionDatabase());
-        String apiUrl = req.getApiURL();
-        b.setUrl(apiUrl + "/mdb/" + instance);
-        b.setParametersUrl(b.getUrl() + "/parameters{/namespace}{/name}");
-        b.setContainersUrl(b.getUrl() + "/containers{/namespace}{/name}");
-        b.setCommandsUrl(b.getUrl() + "/commands{/namespace}{/name}");
-        b.setAlgorithmsUrl(b.getUrl() + "/algorithms{/namespace}{/name}");
+        if (!req.getOptions().contains(Option.NO_LINK)) {
+            String apiUrl = req.getApiURL();
+            b.setUrl(apiUrl + "/mdb/" + instance);
+            b.setParametersUrl(b.getUrl() + "/parameters{/namespace}{/name}");
+            b.setContainersUrl(b.getUrl() + "/containers{/namespace}{/name}");
+            b.setCommandsUrl(b.getUrl() + "/commands{/namespace}{/name}");
+            b.setAlgorithmsUrl(b.getUrl() + "/algorithms{/namespace}{/name}");
+        }
         
         SpaceSystem ss = mdb.getRootSpaceSystem();
         for (SpaceSystem sub : ss.getSubSystems()) {
@@ -107,9 +110,10 @@ public class MDBRequestHandler extends RestRequestHandler {
             if (h.getVersion() != null) {
                 b.setVersion(h.getVersion());
             }
-            ListIterator<History> li = h.getHistoryList().listIterator(h.getHistoryList().size());
-            while (li.hasPrevious()) {
-                History history = li.previous();
+            
+            History[] sortedHistory = h.getHistoryList().toArray(new History[] {});
+            Arrays.sort(sortedHistory);
+            for (History history : sortedHistory) {
                 HistoryInfo.Builder historyb = HistoryInfo.newBuilder();
                 if (history.getVersion() != null) historyb.setVersion(history.getVersion());
                 if (history.getDate() != null) historyb.setDate(history.getDate());
@@ -124,11 +128,13 @@ public class MDBRequestHandler extends RestRequestHandler {
         for (SpaceSystem sub : ss.getSubSystems()) {
             b.addSub(toSpaceSystemInfo(req, instance, sub));
         }
-        String url = req.getApiURL() + "/mdb/" + instance;
-        b.setParametersUrl(url + "/parameters" + ss.getQualifiedName());
-        b.setContainersUrl(url + "/containers" + ss.getQualifiedName());
-        b.setCommandsUrl(url + "/commands" + ss.getQualifiedName());
-        b.setAlgorithmsUrl(url + "/algorithms" + ss.getQualifiedName());
+        if (!req.getOptions().contains(Option.NO_LINK)) {
+            String url = req.getApiURL() + "/mdb/" + instance;
+            b.setParametersUrl(url + "/parameters" + ss.getQualifiedName());
+            b.setContainersUrl(url + "/containers" + ss.getQualifiedName());
+            b.setCommandsUrl(url + "/commands" + ss.getQualifiedName());
+            b.setAlgorithmsUrl(url + "/algorithms" + ss.getQualifiedName());
+        }
         return b.build();
     }
 }

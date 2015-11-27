@@ -935,8 +935,6 @@ public final class SchemaYamcsManagement
                     output.writeString(13, message.getCommandsUrl(), false);
                 if(message.hasCommandQueuesUrl())
                     output.writeString(14, message.getCommandQueuesUrl(), false);
-                if(message.hasAlarmsUrl())
-                    output.writeString(15, message.getAlarmsUrl(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.ProcessorInfo message)
             {
@@ -1019,9 +1017,6 @@ public final class SchemaYamcsManagement
                         case 14:
                             builder.setCommandQueuesUrl(input.readString());
                             break;
-                        case 15:
-                            builder.setAlarmsUrl(input.readString());
-                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -1076,7 +1071,6 @@ public final class SchemaYamcsManagement
                 case 12: return "parametersUrl";
                 case 13: return "commandsUrl";
                 case 14: return "commandQueuesUrl";
-                case 15: return "alarmsUrl";
                 default: return null;
             }
         }
@@ -1102,7 +1096,6 @@ public final class SchemaYamcsManagement
             fieldMap.put("parametersUrl", 12);
             fieldMap.put("commandsUrl", 13);
             fieldMap.put("commandQueuesUrl", 14);
-            fieldMap.put("alarmsUrl", 15);
         }
     }
 

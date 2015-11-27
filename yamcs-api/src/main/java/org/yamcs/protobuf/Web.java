@@ -2758,19 +2758,19 @@ public final class Web {
        */
       org.yamcs.protobuf.Archive.StreamDataOrBuilder getStreamDataOrBuilder();
 
-      // optional .alarms.AlarmInfo alarmInfo = 10;
+      // optional .alarms.AlarmData alarmData = 10;
       /**
-       * <code>optional .alarms.AlarmInfo alarmInfo = 10;</code>
+       * <code>optional .alarms.AlarmData alarmData = 10;</code>
        */
-      boolean hasAlarmInfo();
+      boolean hasAlarmData();
       /**
-       * <code>optional .alarms.AlarmInfo alarmInfo = 10;</code>
+       * <code>optional .alarms.AlarmData alarmData = 10;</code>
        */
-      org.yamcs.protobuf.Alarms.AlarmInfo getAlarmInfo();
+      org.yamcs.protobuf.Alarms.AlarmData getAlarmData();
       /**
-       * <code>optional .alarms.AlarmInfo alarmInfo = 10;</code>
+       * <code>optional .alarms.AlarmData alarmData = 10;</code>
        */
-      org.yamcs.protobuf.Alarms.AlarmInfoOrBuilder getAlarmInfoOrBuilder();
+      org.yamcs.protobuf.Alarms.AlarmDataOrBuilder getAlarmDataOrBuilder();
 
       // optional .yamcs.TimeInfo timeInfo = 11;
       /**
@@ -2951,14 +2951,14 @@ public final class Web {
                 break;
               }
               case 82: {
-                org.yamcs.protobuf.Alarms.AlarmInfo.Builder subBuilder = null;
+                org.yamcs.protobuf.Alarms.AlarmData.Builder subBuilder = null;
                 if (((bitField0_ & 0x00000200) == 0x00000200)) {
-                  subBuilder = alarmInfo_.toBuilder();
+                  subBuilder = alarmData_.toBuilder();
                 }
-                alarmInfo_ = input.readMessage(org.yamcs.protobuf.Alarms.AlarmInfo.PARSER, extensionRegistry);
+                alarmData_ = input.readMessage(org.yamcs.protobuf.Alarms.AlarmData.PARSER, extensionRegistry);
                 if (subBuilder != null) {
-                  subBuilder.mergeFrom(alarmInfo_);
-                  alarmInfo_ = subBuilder.buildPartial();
+                  subBuilder.mergeFrom(alarmData_);
+                  alarmData_ = subBuilder.buildPartial();
                 }
                 bitField0_ |= 0x00000200;
                 break;
@@ -3202,26 +3202,26 @@ public final class Web {
         return streamData_;
       }
 
-      // optional .alarms.AlarmInfo alarmInfo = 10;
-      public static final int ALARMINFO_FIELD_NUMBER = 10;
-      private org.yamcs.protobuf.Alarms.AlarmInfo alarmInfo_;
+      // optional .alarms.AlarmData alarmData = 10;
+      public static final int ALARMDATA_FIELD_NUMBER = 10;
+      private org.yamcs.protobuf.Alarms.AlarmData alarmData_;
       /**
-       * <code>optional .alarms.AlarmInfo alarmInfo = 10;</code>
+       * <code>optional .alarms.AlarmData alarmData = 10;</code>
        */
-      public boolean hasAlarmInfo() {
+      public boolean hasAlarmData() {
         return ((bitField0_ & 0x00000200) == 0x00000200);
       }
       /**
-       * <code>optional .alarms.AlarmInfo alarmInfo = 10;</code>
+       * <code>optional .alarms.AlarmData alarmData = 10;</code>
        */
-      public org.yamcs.protobuf.Alarms.AlarmInfo getAlarmInfo() {
-        return alarmInfo_;
+      public org.yamcs.protobuf.Alarms.AlarmData getAlarmData() {
+        return alarmData_;
       }
       /**
-       * <code>optional .alarms.AlarmInfo alarmInfo = 10;</code>
+       * <code>optional .alarms.AlarmData alarmData = 10;</code>
        */
-      public org.yamcs.protobuf.Alarms.AlarmInfoOrBuilder getAlarmInfoOrBuilder() {
-        return alarmInfo_;
+      public org.yamcs.protobuf.Alarms.AlarmDataOrBuilder getAlarmDataOrBuilder() {
+        return alarmData_;
       }
 
       // optional .yamcs.TimeInfo timeInfo = 11;
@@ -3256,7 +3256,7 @@ public final class Web {
         statistics_ = org.yamcs.protobuf.YamcsManagement.Statistics.getDefaultInstance();
         event_ = org.yamcs.protobuf.Yamcs.Event.getDefaultInstance();
         streamData_ = org.yamcs.protobuf.Archive.StreamData.getDefaultInstance();
-        alarmInfo_ = org.yamcs.protobuf.Alarms.AlarmInfo.getDefaultInstance();
+        alarmData_ = org.yamcs.protobuf.Alarms.AlarmData.getDefaultInstance();
         timeInfo_ = org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance();
       }
       private byte memoizedIsInitialized = -1;
@@ -3306,8 +3306,8 @@ public final class Web {
             return false;
           }
         }
-        if (hasAlarmInfo()) {
-          if (!getAlarmInfo().isInitialized()) {
+        if (hasAlarmData()) {
+          if (!getAlarmData().isInitialized()) {
             memoizedIsInitialized = 0;
             return false;
           }
@@ -3347,7 +3347,7 @@ public final class Web {
           output.writeMessage(9, streamData_);
         }
         if (((bitField0_ & 0x00000200) == 0x00000200)) {
-          output.writeMessage(10, alarmInfo_);
+          output.writeMessage(10, alarmData_);
         }
         if (((bitField0_ & 0x00000400) == 0x00000400)) {
           output.writeMessage(11, timeInfo_);
@@ -3399,7 +3399,7 @@ public final class Web {
         }
         if (((bitField0_ & 0x00000200) == 0x00000200)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(10, alarmInfo_);
+            .computeMessageSize(10, alarmData_);
         }
         if (((bitField0_ & 0x00000400) == 0x00000400)) {
           size += com.google.protobuf.CodedOutputStream
@@ -3526,7 +3526,7 @@ public final class Web {
             getStatisticsFieldBuilder();
             getEventFieldBuilder();
             getStreamDataFieldBuilder();
-            getAlarmInfoFieldBuilder();
+            getAlarmDataFieldBuilder();
             getTimeInfoFieldBuilder();
           }
         }
@@ -3582,10 +3582,10 @@ public final class Web {
             streamDataBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000100);
-          if (alarmInfoBuilder_ == null) {
-            alarmInfo_ = org.yamcs.protobuf.Alarms.AlarmInfo.getDefaultInstance();
+          if (alarmDataBuilder_ == null) {
+            alarmData_ = org.yamcs.protobuf.Alarms.AlarmData.getDefaultInstance();
           } else {
-            alarmInfoBuilder_.clear();
+            alarmDataBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000200);
           if (timeInfoBuilder_ == null) {
@@ -3689,10 +3689,10 @@ public final class Web {
           if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
             to_bitField0_ |= 0x00000200;
           }
-          if (alarmInfoBuilder_ == null) {
-            result.alarmInfo_ = alarmInfo_;
+          if (alarmDataBuilder_ == null) {
+            result.alarmData_ = alarmData_;
           } else {
-            result.alarmInfo_ = alarmInfoBuilder_.build();
+            result.alarmData_ = alarmDataBuilder_.build();
           }
           if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
             to_bitField0_ |= 0x00000400;
@@ -3745,8 +3745,8 @@ public final class Web {
           if (other.hasStreamData()) {
             mergeStreamData(other.getStreamData());
           }
-          if (other.hasAlarmInfo()) {
-            mergeAlarmInfo(other.getAlarmInfo());
+          if (other.hasAlarmData()) {
+            mergeAlarmData(other.getAlarmData());
           }
           if (other.hasTimeInfo()) {
             mergeTimeInfo(other.getTimeInfo());
@@ -3798,8 +3798,8 @@ public final class Web {
               return false;
             }
           }
-          if (hasAlarmInfo()) {
-            if (!getAlarmInfo().isInitialized()) {
+          if (hasAlarmData()) {
+            if (!getAlarmData().isInitialized()) {
               
               return false;
             }
@@ -4714,121 +4714,121 @@ public final class Web {
           return streamDataBuilder_;
         }
 
-        // optional .alarms.AlarmInfo alarmInfo = 10;
-        private org.yamcs.protobuf.Alarms.AlarmInfo alarmInfo_ = org.yamcs.protobuf.Alarms.AlarmInfo.getDefaultInstance();
+        // optional .alarms.AlarmData alarmData = 10;
+        private org.yamcs.protobuf.Alarms.AlarmData alarmData_ = org.yamcs.protobuf.Alarms.AlarmData.getDefaultInstance();
         private com.google.protobuf.SingleFieldBuilder<
-            org.yamcs.protobuf.Alarms.AlarmInfo, org.yamcs.protobuf.Alarms.AlarmInfo.Builder, org.yamcs.protobuf.Alarms.AlarmInfoOrBuilder> alarmInfoBuilder_;
+            org.yamcs.protobuf.Alarms.AlarmData, org.yamcs.protobuf.Alarms.AlarmData.Builder, org.yamcs.protobuf.Alarms.AlarmDataOrBuilder> alarmDataBuilder_;
         /**
-         * <code>optional .alarms.AlarmInfo alarmInfo = 10;</code>
+         * <code>optional .alarms.AlarmData alarmData = 10;</code>
          */
-        public boolean hasAlarmInfo() {
+        public boolean hasAlarmData() {
           return ((bitField0_ & 0x00000200) == 0x00000200);
         }
         /**
-         * <code>optional .alarms.AlarmInfo alarmInfo = 10;</code>
+         * <code>optional .alarms.AlarmData alarmData = 10;</code>
          */
-        public org.yamcs.protobuf.Alarms.AlarmInfo getAlarmInfo() {
-          if (alarmInfoBuilder_ == null) {
-            return alarmInfo_;
+        public org.yamcs.protobuf.Alarms.AlarmData getAlarmData() {
+          if (alarmDataBuilder_ == null) {
+            return alarmData_;
           } else {
-            return alarmInfoBuilder_.getMessage();
+            return alarmDataBuilder_.getMessage();
           }
         }
         /**
-         * <code>optional .alarms.AlarmInfo alarmInfo = 10;</code>
+         * <code>optional .alarms.AlarmData alarmData = 10;</code>
          */
-        public Builder setAlarmInfo(org.yamcs.protobuf.Alarms.AlarmInfo value) {
-          if (alarmInfoBuilder_ == null) {
+        public Builder setAlarmData(org.yamcs.protobuf.Alarms.AlarmData value) {
+          if (alarmDataBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
             }
-            alarmInfo_ = value;
+            alarmData_ = value;
             onChanged();
           } else {
-            alarmInfoBuilder_.setMessage(value);
+            alarmDataBuilder_.setMessage(value);
           }
           bitField0_ |= 0x00000200;
           return this;
         }
         /**
-         * <code>optional .alarms.AlarmInfo alarmInfo = 10;</code>
+         * <code>optional .alarms.AlarmData alarmData = 10;</code>
          */
-        public Builder setAlarmInfo(
-            org.yamcs.protobuf.Alarms.AlarmInfo.Builder builderForValue) {
-          if (alarmInfoBuilder_ == null) {
-            alarmInfo_ = builderForValue.build();
+        public Builder setAlarmData(
+            org.yamcs.protobuf.Alarms.AlarmData.Builder builderForValue) {
+          if (alarmDataBuilder_ == null) {
+            alarmData_ = builderForValue.build();
             onChanged();
           } else {
-            alarmInfoBuilder_.setMessage(builderForValue.build());
+            alarmDataBuilder_.setMessage(builderForValue.build());
           }
           bitField0_ |= 0x00000200;
           return this;
         }
         /**
-         * <code>optional .alarms.AlarmInfo alarmInfo = 10;</code>
+         * <code>optional .alarms.AlarmData alarmData = 10;</code>
          */
-        public Builder mergeAlarmInfo(org.yamcs.protobuf.Alarms.AlarmInfo value) {
-          if (alarmInfoBuilder_ == null) {
+        public Builder mergeAlarmData(org.yamcs.protobuf.Alarms.AlarmData value) {
+          if (alarmDataBuilder_ == null) {
             if (((bitField0_ & 0x00000200) == 0x00000200) &&
-                alarmInfo_ != org.yamcs.protobuf.Alarms.AlarmInfo.getDefaultInstance()) {
-              alarmInfo_ =
-                org.yamcs.protobuf.Alarms.AlarmInfo.newBuilder(alarmInfo_).mergeFrom(value).buildPartial();
+                alarmData_ != org.yamcs.protobuf.Alarms.AlarmData.getDefaultInstance()) {
+              alarmData_ =
+                org.yamcs.protobuf.Alarms.AlarmData.newBuilder(alarmData_).mergeFrom(value).buildPartial();
             } else {
-              alarmInfo_ = value;
+              alarmData_ = value;
             }
             onChanged();
           } else {
-            alarmInfoBuilder_.mergeFrom(value);
+            alarmDataBuilder_.mergeFrom(value);
           }
           bitField0_ |= 0x00000200;
           return this;
         }
         /**
-         * <code>optional .alarms.AlarmInfo alarmInfo = 10;</code>
+         * <code>optional .alarms.AlarmData alarmData = 10;</code>
          */
-        public Builder clearAlarmInfo() {
-          if (alarmInfoBuilder_ == null) {
-            alarmInfo_ = org.yamcs.protobuf.Alarms.AlarmInfo.getDefaultInstance();
+        public Builder clearAlarmData() {
+          if (alarmDataBuilder_ == null) {
+            alarmData_ = org.yamcs.protobuf.Alarms.AlarmData.getDefaultInstance();
             onChanged();
           } else {
-            alarmInfoBuilder_.clear();
+            alarmDataBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000200);
           return this;
         }
         /**
-         * <code>optional .alarms.AlarmInfo alarmInfo = 10;</code>
+         * <code>optional .alarms.AlarmData alarmData = 10;</code>
          */
-        public org.yamcs.protobuf.Alarms.AlarmInfo.Builder getAlarmInfoBuilder() {
+        public org.yamcs.protobuf.Alarms.AlarmData.Builder getAlarmDataBuilder() {
           bitField0_ |= 0x00000200;
           onChanged();
-          return getAlarmInfoFieldBuilder().getBuilder();
+          return getAlarmDataFieldBuilder().getBuilder();
         }
         /**
-         * <code>optional .alarms.AlarmInfo alarmInfo = 10;</code>
+         * <code>optional .alarms.AlarmData alarmData = 10;</code>
          */
-        public org.yamcs.protobuf.Alarms.AlarmInfoOrBuilder getAlarmInfoOrBuilder() {
-          if (alarmInfoBuilder_ != null) {
-            return alarmInfoBuilder_.getMessageOrBuilder();
+        public org.yamcs.protobuf.Alarms.AlarmDataOrBuilder getAlarmDataOrBuilder() {
+          if (alarmDataBuilder_ != null) {
+            return alarmDataBuilder_.getMessageOrBuilder();
           } else {
-            return alarmInfo_;
+            return alarmData_;
           }
         }
         /**
-         * <code>optional .alarms.AlarmInfo alarmInfo = 10;</code>
+         * <code>optional .alarms.AlarmData alarmData = 10;</code>
          */
         private com.google.protobuf.SingleFieldBuilder<
-            org.yamcs.protobuf.Alarms.AlarmInfo, org.yamcs.protobuf.Alarms.AlarmInfo.Builder, org.yamcs.protobuf.Alarms.AlarmInfoOrBuilder> 
-            getAlarmInfoFieldBuilder() {
-          if (alarmInfoBuilder_ == null) {
-            alarmInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-                org.yamcs.protobuf.Alarms.AlarmInfo, org.yamcs.protobuf.Alarms.AlarmInfo.Builder, org.yamcs.protobuf.Alarms.AlarmInfoOrBuilder>(
-                    alarmInfo_,
+            org.yamcs.protobuf.Alarms.AlarmData, org.yamcs.protobuf.Alarms.AlarmData.Builder, org.yamcs.protobuf.Alarms.AlarmDataOrBuilder> 
+            getAlarmDataFieldBuilder() {
+          if (alarmDataBuilder_ == null) {
+            alarmDataBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+                org.yamcs.protobuf.Alarms.AlarmData, org.yamcs.protobuf.Alarms.AlarmData.Builder, org.yamcs.protobuf.Alarms.AlarmDataOrBuilder>(
+                    alarmData_,
                     getParentForChildren(),
                     isClean());
-            alarmInfo_ = null;
+            alarmData_ = null;
           }
-          return alarmInfoBuilder_;
+          return alarmDataBuilder_;
         }
 
         // optional .yamcs.TimeInfo timeInfo = 11;
@@ -6459,8 +6459,8 @@ public final class Web {
       "tInfo\022/\n\nstatistics\030\007 \001(\0132\033.yamcsManagem" +
       "ent.Statistics\022\033\n\005event\030\010 \001(\0132\014.yamcs.Ev" +
       "ent\022\'\n\nstreamData\030\t \001(\0132\023.archive.Stream" +
-      "Data\022$\n\talarmInfo\030\n \001(\0132\021.alarms.AlarmIn" +
-      "fo\022!\n\010timeInfo\030\013 \001(\0132\017.yamcs.TimeInfo\"1\n",
+      "Data\022$\n\talarmData\030\n \001(\0132\021.alarms.AlarmDa" +
+      "ta\022!\n\010timeInfo\030\013 \001(\0132\017.yamcs.TimeInfo\"1\n",
       "\013MessageType\022\t\n\005REPLY\020\002\022\r\n\tEXCEPTION\020\003\022\010" +
       "\n\004DATA\020\004\"1\n\024RestExceptionMessage\022\014\n\004type" +
       "\030\001 \001(\t\022\013\n\003msg\030\002 \001(\tB\024\n\022org.yamcs.protobu" +
@@ -6500,7 +6500,7 @@ public final class Web {
           internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_descriptor,
-              new java.lang.String[] { "SequenceNumber", "Type", "ParameterData", "Command", "ProcessorInfo", "ClientInfo", "Statistics", "Event", "StreamData", "AlarmInfo", "TimeInfo", });
+              new java.lang.String[] { "SequenceNumber", "Type", "ParameterData", "Command", "ProcessorInfo", "ClientInfo", "Statistics", "Event", "StreamData", "AlarmData", "TimeInfo", });
           internal_static_web_RestExceptionMessage_descriptor =
             getDescriptor().getMessageTypes().get(2);
           internal_static_web_RestExceptionMessage_fieldAccessorTable = new

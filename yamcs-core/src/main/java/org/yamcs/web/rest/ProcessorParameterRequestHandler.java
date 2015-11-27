@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.YProcessor;
-import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.alarms.CouldNotAcknowledgeAlarmException;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
@@ -19,14 +18,12 @@ import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.parameter.SoftwareParameterManager;
-import org.yamcs.protobuf.Alarms.AlarmInfo;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkGetParameterValueResponse;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Rest.PatchAlarmRequest;
-import org.yamcs.protobuf.SchemaAlarms;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
@@ -124,16 +121,15 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
         
         // URI can override body
         if (req.hasQueryParameter("state")) state = req.getQueryParameter("state");
-        if (req.hasQueryParameter("comment")) state = req.getQueryParameter("comment");
+        if (req.hasQueryParameter("comment")) comment = req.getQueryParameter("comment");
         
         switch (state.toLowerCase()) {
         case "acknowledged":
             AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
             try {
                 // TODO permissions on AlarmServer
-                ActiveAlarm aa = alarmServer.acknowledge(p, alarmId, req.getUsername(), processor.getCurrentTime(), comment);
-                AlarmInfo updatedInfo = ProcessorAlarmRequestHandler.toAlarmInfo(p, aa);
-                return new RestResponse(req, updatedInfo, SchemaAlarms.AlarmInfo.WRITE);   
+                alarmServer.acknowledge(p, alarmId, req.getUsername(), processor.getCurrentTime(), comment);
+                return new RestResponse(req);
             } catch (CouldNotAcknowledgeAlarmException e) {
                 log.debug("Did not acknowledge alarm " + alarmId + ". " + e.getMessage());
                 throw new BadRequestException(e.getMessage());

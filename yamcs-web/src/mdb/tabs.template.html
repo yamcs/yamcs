@@ -1,0 +1,17 @@
+<ul class="nav nav-tabs">
+  <li ng-class="{active: vm.mdbType == 'parameters'}">
+    <a href="/{{ yamcsInstance }}/mdb{{ vm.qname }}/parameters">Parameters</a>
+  </li>
+
+  <li ng-class="{active: vm.mdbType == 'containers'}">
+    <a href="/{{ yamcsInstance }}/mdb{{ vm.qname }}/containers">Containers</a>
+  </li>
+
+  <li ng-class="{active: vm.mdbType == 'algorithms'}">
+    <a href="/{{ yamcsInstance }}/mdb{{ vm.qname }}/algorithms">Algorithms</a>
+  </li>
+
+  <li ng-class="{active: vm.mdbType == 'commands'}">
+    <a href="/{{ yamcsInstance }}/mdb{{ vm.qname }}/commands">Commands</a>
+  </li>
+</ul>

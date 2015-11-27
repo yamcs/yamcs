@@ -40,7 +40,7 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
     
     private RestResponse listContainersOrError(RestRequest req, int pathOffset) throws RestException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
-        MatchResult<String> nsm = RestUtils.matchXtceDbNamespace(req, pathOffset);
+        MatchResult<String> nsm = RestUtils.matchXtceDbNamespace(req, pathOffset, true);
         if (nsm.matches()) {
             return listContainers(req, nsm.getMatch(), mdb);
         } else {
@@ -51,7 +51,7 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
     private RestResponse getSingleContainer(RestRequest req, NamedObjectId id, SequenceContainer c) throws RestException {
         // TODO privileges
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
-        ContainerInfo cinfo = XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.FULL);
+        ContainerInfo cinfo = XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.FULL, req.getOptions());
         return new RestResponse(req, cinfo, SchemaMdb.ContainerInfo.WRITE);
     }
 
@@ -61,6 +61,7 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
      */
     private RestResponse listContainers(RestRequest req, String namespace, XtceDb mdb) throws RestException {
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
+        boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
         
         NameDescriptionSearchMatcher matcher = null;
         if (req.hasQueryParameter("q")) {
@@ -71,7 +72,7 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
         if (namespace == null) {
             for (SequenceContainer c : mdb.getSequenceContainers()) {
                 if (matcher != null && !matcher.matches(c)) continue;
-                responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY));
+                responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
             }
         } else {
             // TODO privileges
@@ -80,8 +81,8 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
                     continue;
                 
                 String alias = c.getAlias(namespace);
-                if (alias != null) {
-                    responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY));
+                if (alias != null || (recurse && c.getQualifiedName().startsWith(namespace))) {
+                    responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
                 }
             }
         }

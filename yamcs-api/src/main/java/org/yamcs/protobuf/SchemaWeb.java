@@ -444,8 +444,8 @@ public final class SchemaWeb
                     if(message.hasStreamData())
                         output.writeObject(9, message.getStreamData(), org.yamcs.protobuf.SchemaArchive.StreamData.WRITE, false);
 
-                    if(message.hasAlarmInfo())
-                        output.writeObject(10, message.getAlarmInfo(), org.yamcs.protobuf.SchemaAlarms.AlarmInfo.WRITE, false);
+                    if(message.hasAlarmData())
+                        output.writeObject(10, message.getAlarmData(), org.yamcs.protobuf.SchemaAlarms.AlarmData.WRITE, false);
 
                     if(message.hasTimeInfo())
                         output.writeObject(11, message.getTimeInfo(), org.yamcs.protobuf.SchemaYamcs.TimeInfo.WRITE, false);
@@ -524,7 +524,7 @@ public final class SchemaWeb
 
                                 break;
                             case 10:
-                                builder.setAlarmInfo(input.mergeObject(org.yamcs.protobuf.Alarms.AlarmInfo.newBuilder(), org.yamcs.protobuf.SchemaAlarms.AlarmInfo.MERGE));
+                                builder.setAlarmData(input.mergeObject(org.yamcs.protobuf.Alarms.AlarmData.newBuilder(), org.yamcs.protobuf.SchemaAlarms.AlarmData.MERGE));
 
                                 break;
                             case 11:
@@ -580,7 +580,7 @@ public final class SchemaWeb
                     case 7: return "statistics";
                     case 8: return "event";
                     case 9: return "streamData";
-                    case 10: return "alarmInfo";
+                    case 10: return "alarmData";
                     case 11: return "timeInfo";
                     default: return null;
                 }
@@ -602,7 +602,7 @@ public final class SchemaWeb
                 fieldMap.put("statistics", 7);
                 fieldMap.put("event", 8);
                 fieldMap.put("streamData", 9);
-                fieldMap.put("alarmInfo", 10);
+                fieldMap.put("alarmData", 10);
                 fieldMap.put("timeInfo", 11);
             }
         }

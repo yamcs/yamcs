@@ -81,7 +81,7 @@ fi
 %post
 
 %changelog
-* Mon Nov 16 2014 fdi
+* Mon Nov 16 2015 fdi
 - add build step for yamcs-web
 * Wed Sep 24 2014 nm
 - added css and html files for yamcs-web

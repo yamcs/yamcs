@@ -113,6 +113,7 @@ public class SystemParametersProvider extends AbstractService implements StreamS
             log.info("Creating new SystemParameter for fqname={}", fqname);
             sv = SystemParameter.getForFullyQualifiedName(fqname, DataSource.SYSTEM);
             variables.put(fqname, sv);
+            xtceDb.getSystemParameterDb().registerSystemParameter(sv);
         }
         return sv;
     }

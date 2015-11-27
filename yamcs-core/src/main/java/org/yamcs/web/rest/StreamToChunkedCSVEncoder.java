@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.web.AbstractRequestHandler;
 import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 
 import com.csvreader.CsvWriter;
@@ -23,7 +22,7 @@ import io.netty.channel.ChannelFutureListener;
  * than the treshold size for one chunk, this will cause a chunk to be written out.
  * Could maybe be replaced by using built-in netty functionality, but would need to investigate.
  */
-public abstract class StreamToChunkedCSVEncoder implements StreamSubscriber {
+public abstract class StreamToChunkedCSVEncoder extends RestStreamSubscriber {
     
     private static final Logger log = LoggerFactory.getLogger(StreamToChunkedCSVEncoder.class);
     private static final int CHUNK_TRESHOLD = 8096;
@@ -34,6 +33,7 @@ public abstract class StreamToChunkedCSVEncoder implements StreamSubscriber {
     private CsvWriter csvWriter;
     
     public StreamToChunkedCSVEncoder(RestRequest req) throws RestException {
+        super();
         this.req = req;
         
         RestUtils.startChunkedTransfer(req, AbstractRequestHandler.CSV_MIME_TYPE);
@@ -56,7 +56,7 @@ public abstract class StreamToChunkedCSVEncoder implements StreamSubscriber {
     }
 
     @Override
-    public void onTuple(Stream stream, Tuple tuple) {
+    public void onTuple(Tuple tuple) {
         try {
             processTuple(tuple, csvWriter);
             //csvWriter.flush(); // Hmm would prefer not to flush everytime

@@ -49,7 +49,7 @@ message WebSocketServerMessage {
     optional yamcsManagement.Statistics statistics = 7;
     optional yamcs.Event event = 8;
     optional archive.StreamData streamData = 9;
-    optional alarms.AlarmInfo alarmInfo = 10;
+    optional alarms.AlarmData alarmData = 10;
     optional yamcs.TimeInfo timeInfo = 11;
   }
 

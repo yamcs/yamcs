@@ -100,7 +100,6 @@ message ProcessorInfo {
   optional string parametersUrl = 12;
   optional string commandsUrl = 13;
   optional string commandQueuesUrl = 14;
-  optional string alarmsUrl = 15;
 }
 
 message ClientInfo {

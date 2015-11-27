@@ -1,5 +1,7 @@
 package org.yamcs.archive;
 
+import static org.yamcs.tctm.PpProviderAdapter.PP_TUPLE_DEFINITION;
+
 import java.io.IOException;
 
 import org.yamcs.ConfigurationException;
@@ -8,8 +10,6 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
 
 import com.google.common.util.concurrent.AbstractService;
-
-import static org.yamcs.tctm.PpProviderAdapter.PP_TUPLE_DEFINITION;
 
 
 /**
@@ -30,36 +30,36 @@ public class PpRecorder extends AbstractService {
     static public final String TABLE_NAME="pp";
 
     public PpRecorder(String archiveInstance) throws IOException, ConfigurationException{
-	this.archiveInstance=archiveInstance;
-	YarchDatabase ydb=YarchDatabase.getInstance(archiveInstance);
-	try {
-	    String cols=PP_TUPLE_DEFINITION.getStringDefinition1();
-	    if(ydb.getTable(TABLE_NAME)==null) {
-		String query="create table "+TABLE_NAME+"("+cols+", primary key(gentime, seqNum)) histogram(ppgroup) partition by time_and_value(gentime,ppgroup) table_format=compressed";
-		ydb.execute(query);
-	    }
-	    if(ydb.getStream(REALTIME_PP_STREAM_NAME )==null) {
-		ydb.execute("create stream "+REALTIME_PP_STREAM_NAME+PP_TUPLE_DEFINITION.getStringDefinition());
-	    }
-	    if(ydb.getStream(DUMP_PP_STREAM_NAME )==null) {
-		ydb.execute("create stream "+DUMP_PP_STREAM_NAME+PP_TUPLE_DEFINITION.getStringDefinition());
-	    }
+        this.archiveInstance=archiveInstance;
+        YarchDatabase ydb=YarchDatabase.getInstance(archiveInstance);
+        try {
+            String cols=PP_TUPLE_DEFINITION.getStringDefinition1();
+            if(ydb.getTable(TABLE_NAME)==null) {
+                String query="create table "+TABLE_NAME+"("+cols+", primary key(gentime, seqNum)) histogram(ppgroup) partition by time_and_value(gentime,ppgroup) table_format=compressed";
+                ydb.execute(query);
+            }
+            if(ydb.getStream(REALTIME_PP_STREAM_NAME )==null) {
+                ydb.execute("create stream "+REALTIME_PP_STREAM_NAME+PP_TUPLE_DEFINITION.getStringDefinition());
+            }
+            if(ydb.getStream(DUMP_PP_STREAM_NAME )==null) {
+                ydb.execute("create stream "+DUMP_PP_STREAM_NAME+PP_TUPLE_DEFINITION.getStringDefinition());
+            }
 
-	    ydb.execute("create stream pp_is("+cols+")");
-	    ydb.execute("insert into "+TABLE_NAME+" select * from "+REALTIME_PP_STREAM_NAME);
-	    ydb.execute("insert into "+TABLE_NAME+" select * from "+DUMP_PP_STREAM_NAME);
-	} catch (Exception e) {
-	    throw new ConfigurationException("exception when creating pp input stream", e);
-	}
+            ydb.execute("create stream pp_is("+cols+")");
+            ydb.execute("insert into "+TABLE_NAME+" select * from "+REALTIME_PP_STREAM_NAME);
+            ydb.execute("insert into "+TABLE_NAME+" select * from "+DUMP_PP_STREAM_NAME);
+        } catch (Exception e) {
+            throw new ConfigurationException("exception when creating pp input stream", e);
+        }
     }
 
     @Override
     protected void doStart() {
-	notifyStarted();
+        notifyStarted();
     }
 
     @Override
     protected void doStop() {
-	notifyStopped();
+        notifyStopped();
     }
 }

@@ -195,39 +195,41 @@ public interface StreamSqlParserConstants {
   /** RegularExpression Id. */
   int K_UPSERT = 96;
   /** RegularExpression Id. */
-  int K_USE = 97;
+  int K_UPSERT_APPEND = 97;
   /** RegularExpression Id. */
-  int K_USING = 98;
+  int K_USE = 98;
   /** RegularExpression Id. */
-  int K_VALUE = 99;
+  int K_USING = 99;
   /** RegularExpression Id. */
-  int K_WHEN = 100;
+  int K_VALUE = 100;
   /** RegularExpression Id. */
-  int K_WHERE = 101;
+  int K_WHEN = 101;
   /** RegularExpression Id. */
-  int S_INTEGER = 102;
+  int K_WHERE = 102;
   /** RegularExpression Id. */
-  int S_FLOAT = 103;
+  int S_INTEGER = 103;
   /** RegularExpression Id. */
-  int EXPONENT = 104;
+  int S_FLOAT = 104;
   /** RegularExpression Id. */
-  int DIGIT = 105;
+  int EXPONENT = 105;
   /** RegularExpression Id. */
-  int SIGN = 106;
+  int DIGIT = 106;
   /** RegularExpression Id. */
-  int S_STRING = 107;
+  int SIGN = 107;
   /** RegularExpression Id. */
-  int LINE_COMMENT = 108;
+  int S_STRING = 108;
   /** RegularExpression Id. */
-  int MULTI_LINE_COMMENT = 109;
+  int LINE_COMMENT = 109;
   /** RegularExpression Id. */
-  int S_IDENTIFIER = 110;
+  int MULTI_LINE_COMMENT = 110;
   /** RegularExpression Id. */
-  int LETTER = 111;
+  int S_IDENTIFIER = 111;
   /** RegularExpression Id. */
-  int SPECIAL_CHARS = 112;
+  int LETTER = 112;
   /** RegularExpression Id. */
-  int S_DOUBLE_QUOTED_IDENTIFIER = 113;
+  int SPECIAL_CHARS = 113;
+  /** RegularExpression Id. */
+  int S_DOUBLE_QUOTED_IDENTIFIER = 114;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -331,6 +333,7 @@ public interface StreamSqlParserConstants {
     "\"UNIQUE\"",
     "\"UPDATE\"",
     "\"UPSERT\"",
+    "\"UPSERT_APPEND\"",
     "\"USE\"",
     "\"USING\"",
     "\"VALUE\"",

@@ -1,6 +1,9 @@
 package org.yamcs.parameter;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,7 +36,7 @@ public class SoftwareParameterManagerTest {
     @Test
     public void test() throws Exception {
 	SoftwareParameterManager spm = new SoftwareParameterManager("test");
-	XtceDb xtceDb = XtceDbFactory.getInstanceByConfig("refmdb");
+	XtceDb xtceDb = XtceDbFactory.createInstance("refmdb");
 	MyParamConsumer consumer = new MyParamConsumer();
 	
 	spm.init(xtceDb);

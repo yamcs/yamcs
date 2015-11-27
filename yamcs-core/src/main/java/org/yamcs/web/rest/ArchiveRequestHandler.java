@@ -14,10 +14,12 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.TimeInterval;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
+import org.yamcs.archive.AlarmRecorder;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.archive.TagDb;
 import org.yamcs.archive.TagReceiver;
 import org.yamcs.archive.XtceTmRecorder;
+import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Archive.DumpArchiveRequest;
 import org.yamcs.protobuf.Archive.DumpArchiveResponse;
 import org.yamcs.protobuf.Archive.GetTagsRequest;
@@ -33,10 +35,12 @@ import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.SampleSeries;
+import org.yamcs.protobuf.Rest.ListAlarmsResponse;
 import org.yamcs.protobuf.Rest.ListEventsResponse;
 import org.yamcs.protobuf.Rest.ListPacketsResponse;
 import org.yamcs.protobuf.Rest.ListStreamsResponse;
 import org.yamcs.protobuf.Rest.ListTablesResponse;
+import org.yamcs.protobuf.SchemaAlarms;
 import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.SchemaPvalue;
@@ -64,6 +68,7 @@ import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.SystemParameterDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.AbstractStream;
 import org.yamcs.yarch.Stream;
@@ -130,15 +135,13 @@ public class ArchiveRequestHandler extends RestRequestHandler {
                 return handleStreamsRequest(req, pathOffset + 1, ydb);
             case "parameters":
                 return handleParametersRequest(req, pathOffset + 1);
+            case "alarms":
+                return handleAlarmsRequest(req, pathOffset + 1);
             case "events":
-            case "events.csv":
-            case "events.json":
-            case "events.proto":
                 req.assertGET();
                 return listEvents(req);
             case "packets":
-                req.assertGET();
-                return listPackets(req);
+                return handlePacketsRequest(req, pathOffset + 1);
             case "downloads":
                 return downloadHandler.handleRequest(req, pathOffset + 1);
             default:
@@ -253,7 +256,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         RestReplays.replay(req, replayRequest, new RestReplayListener() {
             
             @Override
-            public void newData(ProtoDataType type, MessageLite data) {
+            public void onNewData(ProtoDataType type, MessageLite data) {
                 try {
                     DumpArchiveResponse.Builder builder = DumpArchiveResponse.newBuilder();
                     MessageAndSchema restMessage = fromReplayMessage(type, data);
@@ -431,7 +434,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         String sql = buf.toString();
         
         TableData.Builder responseb = TableData.newBuilder();
-        RestStreams.streamAndWait(req, sql, new LimitedStreamSubscriber(pos, limit) {
+        RestStreams.streamAndWait(req, sql, new RestStreamSubscriber(pos, limit) {
             
             @Override
             public void onTuple(Tuple tuple) {
@@ -501,6 +504,51 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         }
     }
     
+    private RestResponse handlePacketsRequest(RestRequest req, int pathOffset) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
+            req.assertGET();
+            return listPackets(req, TimeEncoding.INVALID_INSTANT);
+        } else {
+            long gentime = req.getPathSegmentAsDate(pathOffset);
+            
+            pathOffset++;
+            if (!req.hasPathSegment(pathOffset)) {
+                return listPackets(req, gentime);
+            } else {
+                int seqnum = req.getPathSegmentAsInt(pathOffset);
+                return getPacket(req, gentime, seqnum);
+            }
+        }
+    }
+    
+    private RestResponse handleAlarmsRequest(RestRequest req, int pathOffset) throws RestException {
+        if (!req.hasPathSegment(pathOffset)) {
+            req.assertGET();
+            return listAlarms(req, null, TimeEncoding.INVALID_INSTANT);
+        } else {
+            MatchResult<Parameter> mr = RestUtils.matchParameterName(req, pathOffset);
+            if (!mr.matches()) {
+                throw new NotFoundException(req);
+            }
+            pathOffset = mr.getPathOffset();
+            if (req.hasPathSegment(pathOffset)) {
+                long triggerTime = req.getPathSegmentAsDate(pathOffset);
+                if (req.hasPathSegment(pathOffset + 1)) {
+                    int sequenceNumber = req.getPathSegmentAsInt(pathOffset + 1);
+                    if (req.hasPathSegment(pathOffset + 2)) {
+                        throw new NotFoundException(req);
+                    } else {
+                        return getAlarm(req, mr.getMatch(), triggerTime, sequenceNumber);
+                    }
+                } else {
+                    return listAlarms(req, mr.getMatch().getQualifiedName(), triggerTime);
+                }
+            } else {
+                return listAlarms(req, mr.getMatch().getQualifiedName(), TimeEncoding.INVALID_INSTANT);
+            }
+        }
+    }
+    
     /**
      * A series is a list of samples that are determined in one-pass while processing a stream result.
      * Final API unstable.
@@ -529,7 +577,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         RestReplays.replayAndWait(req, rr.build(), new RestReplayListener() {
 
             @Override
-            public void newData(ProtoDataType type, MessageLite data) {
+            public void onNewData(ProtoDataType type, MessageLite data) {
                 ParameterData pdata = (ParameterData) data;
                 for (ParameterValue pval : pdata.getParameterList()) {
                     switch (pval.getEngValue().getType()) {
@@ -569,6 +617,13 @@ public class ArchiveRequestHandler extends RestRequestHandler {
     private RestResponse listParameterHistory(RestRequest req, NamedObjectId id) throws RestException {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
+        boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
+        
+        // syspar provider is not currently added to replay channels, so it only generates errors
+        if (SystemParameterDb.isSystemParameter(id)) {
+            return new RestResponse(req, ParameterData.newBuilder().build(), SchemaPvalue.ParameterData.WRITE);
+        }
+        
         ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, id, true);
 
         if (req.asksFor(CSV_MIME_TYPE)) {
@@ -577,32 +632,34 @@ public class ArchiveRequestHandler extends RestRequestHandler {
                 List<NamedObjectId> idList = Arrays.asList(id);
                 ParameterFormatter csvFormatter = new ParameterFormatter(bw, idList);
                 limit++; // Allow one extra line for the CSV header
-                RestReplays.replayAndWait(req, rr, new LimitedReplayListener(pos, limit) {
+                RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit) {
 
                     @Override
-                    public void onNewData(ProtoDataType type, MessageLite data) {
-                        ParameterData pdata = (ParameterData) data;
+                    public void onParameterData(ParameterData pdata) {
                         try {
                             csvFormatter.writeParameters(pdata.getParameterList());
                         } catch (IOException e) {
                             log.error("Error while writing parameter line", e);
                         }
                     }
-                });
+                };
+                replayListener.setNoRepeat(noRepeat);
+                RestReplays.replayAndWait(req, rr, replayListener);
             } catch (IOException e) {
                 throw new InternalServerErrorException(e);
             }
             return new RestResponse(req, CSV_MIME_TYPE, buf);
         } else {
             ParameterData.Builder resultb = ParameterData.newBuilder();
-            RestReplays.replayAndWait(req, rr, new LimitedReplayListener(pos, limit) {
+            RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit) {
                 
                 @Override
-                public void onNewData(ProtoDataType type, MessageLite data) {
-                    ParameterData pdata = (ParameterData) data;
+                public void onParameterData(ParameterData pdata) {
                     resultb.addAllParameter(pdata.getParameterList());
                 }
-            });
+            };
+            replayListener.setNoRepeat(noRepeat);
+            RestReplays.replayAndWait(req, rr, replayListener);
             return new RestResponse(req, resultb.build(), SchemaPvalue.ParameterData.WRITE);
         }
     }
@@ -630,7 +687,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
                 throw new InternalServerErrorException(e);
             }
                 
-            RestStreams.streamAndWait(req, sqlb.toString(), new LimitedStreamSubscriber(pos, limit) {
+            RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
 
                 @Override
                 public void onTuple(Tuple tuple) {
@@ -646,7 +703,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
             return new RestResponse(req, CSV_MIME_TYPE, buf);
         } else {
             ListEventsResponse.Builder responseb = ListEventsResponse.newBuilder();
-            RestStreams.streamAndWait(req, sqlb.toString(), new LimitedStreamSubscriber(pos, limit) {
+            RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
 
                 @Override
                 public void onTuple(Tuple tuple) {
@@ -661,21 +718,28 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse listPackets(RestRequest req) throws RestException {
+    private RestResponse listPackets(RestRequest req, long gentime) throws RestException {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         
         StringBuilder sqlb = new StringBuilder("select * from ").append(XtceTmRecorder.TABLE_NAME);
         IntervalResult ir = RestUtils.scanForInterval(req);
-        if (ir.hasInterval()) {
-            sqlb.append(" where ").append(ir.asSqlCondition("gentime"));
+        if (ir.hasInterval() || gentime != TimeEncoding.INVALID_INSTANT) {
+            sqlb.append(" where ");
+            if (ir.hasInterval()) {
+                sqlb.append(ir.asSqlCondition("gentime"));    
+            }
+            if (gentime != TimeEncoding.INVALID_INSTANT) {
+                if (ir.hasInterval()) sqlb.append(" and ");
+                sqlb.append("gentime = ").append(gentime);
+            }
         }
         if (RestUtils.asksDescending(req, true)) {
             sqlb.append(" order desc");
         }
         
         ListPacketsResponse.Builder responseb = ListPacketsResponse.newBuilder();
-        RestStreams.streamAndWait(req, sqlb.toString(), new LimitedStreamSubscriber(pos, limit) {
+        RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
 
             @Override
             public void onTuple(Tuple tuple) {
@@ -685,6 +749,91 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         });
         
         return new RestResponse(req, responseb.build(), SchemaRest.ListPacketsResponse.WRITE);
+    }
+    
+    private RestResponse getPacket(RestRequest req, long gentime, int seqnum) throws RestException {
+        StringBuilder sqlb = new StringBuilder("select * from ").append(XtceTmRecorder.TABLE_NAME);
+        sqlb.append(" where gentime = ").append(gentime).append(" and seqNum = ").append(seqnum);
+        List<TmPacketData> packets = new ArrayList<>();
+        RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(0, 2) {
+
+            @Override
+            public void onTuple(Tuple tuple) {
+                TmPacketData pdata = ArchiveHelper.tupleToPacketData(tuple);
+                packets.add(pdata);
+            }
+        });
+        
+        if (packets.isEmpty()) {
+            throw new NotFoundException(req, "No packet for id (" + gentime + ", " + seqnum + ")");
+        } else if (packets.size() > 1) {
+            throw new InternalServerErrorException("Too many results");
+        } else {
+            return new RestResponse(req, packets.get(0), SchemaYamcs.TmPacketData.WRITE);
+        }
+    }
+    
+    private RestResponse listAlarms(RestRequest req, String parameterName, long triggerTime) throws RestException {
+        long pos = req.getQueryParameterAsLong("pos", 0);
+        int limit = req.getQueryParameterAsInt("limit", 100);
+        
+        StringBuilder sqlb = new StringBuilder("select * from ").append(AlarmRecorder.TABLE_NAME);
+        IntervalResult ir = RestUtils.scanForInterval(req);
+        if (ir.hasInterval() || parameterName != null || triggerTime != TimeEncoding.INVALID_INSTANT) {
+            sqlb.append(" where ");
+            if (ir.hasInterval()) {
+                sqlb.append(ir.asSqlCondition("triggerTime"));    
+            }
+            if (parameterName != null) {
+                if (ir.hasInterval()) sqlb.append(" and ");
+                sqlb.append("parameter = '").append(parameterName).append("'");
+            }
+            if (triggerTime != TimeEncoding.INVALID_INSTANT) {
+                if (ir.hasInterval() || parameterName != null) sqlb.append(" and ");
+                sqlb.append("triggerTime = ").append(triggerTime);
+            }
+        }
+        if (RestUtils.asksDescending(req, true)) {
+            sqlb.append(" order desc");
+        }
+        
+        System.out.println("will execute " + sqlb.toString());
+        
+        ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
+        RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
+
+            @Override
+            public void onTuple(Tuple tuple) {
+                AlarmData alarm = ArchiveHelper.tupleToAlarmData(tuple);
+                responseb.addAlarm(alarm);
+            }
+        });
+        
+        return new RestResponse(req, responseb.build(), SchemaRest.ListAlarmsResponse.WRITE);
+    }
+    
+    private RestResponse getAlarm(RestRequest req, Parameter p, long triggerTime, int seqnum) throws RestException {
+        StringBuilder sqlb = new StringBuilder("select * from ").append(AlarmRecorder.TABLE_NAME);
+        sqlb.append(" where triggerTime = ").append(triggerTime)
+            .append(" and seqNum = ").append(seqnum)
+            .append(" and parameter = '").append(p.getQualifiedName()).append("'");
+        List<AlarmData> alarms = new ArrayList<>();
+        RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(0, 2) {
+
+            @Override
+            public void onTuple(Tuple tuple) {
+                AlarmData alarm = ArchiveHelper.tupleToAlarmData(tuple);
+                alarms.add(alarm);
+            }
+        });
+        
+        if (alarms.isEmpty()) {
+            throw new NotFoundException(req, "No alarm for id (" + p.getQualifiedName() + ", " + triggerTime + ", " + seqnum + ")");
+        } else if (alarms.size() > 1) {
+            throw new InternalServerErrorException("Too many results");
+        } else {
+            return new RestResponse(req, alarms.get(0), SchemaAlarms.AlarmData.WRITE);
+        }
     }
     
     /**

@@ -267,7 +267,7 @@ public class YamcsServer {
             MissionDatabase.Builder mdb = MissionDatabase.newBuilder();
             YConfiguration c = YConfiguration.getConfiguration("yamcs."+name);
             String configName = c.getString("mdb");
-            XtceDb xtcedb=XtceDbFactory.getInstanceByConfig(configName);
+            XtceDb xtcedb=XtceDbFactory.getInstanceByConfig(name, configName);
             mdb.setConfigName(configName);
             mdb.setName(xtcedb.getRootSpaceSystem().getName());
             Header h =xtcedb.getRootSpaceSystem().getHeader();
@@ -287,7 +287,7 @@ public class YamcsServer {
             if(mdr.hasInstance()) {
                 xtcedb=XtceDbFactory.getInstance(mdr.getInstance());
             } else if(mdr.hasDbConfigName()){
-                xtcedb=XtceDbFactory.getInstanceByConfig(mdr.getDbConfigName());
+                xtcedb=XtceDbFactory.createInstance(mdr.getDbConfigName());
             } else {
                 staticlog.warn("getMissionDatabase request received with none of the instance or dbConfigName specified");
                 ctrlAddressClient.sendErrorReply(replyTo, "Please specify either instance or dbConfigName");

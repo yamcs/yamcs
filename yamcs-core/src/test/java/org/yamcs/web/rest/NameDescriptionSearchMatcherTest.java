@@ -22,7 +22,7 @@ public class NameDescriptionSearchMatcherTest {
 
     @Test
     public void testSearchMatch() throws ConfigurationException {
-        XtceDb mdb = XtceDbFactory.getInstanceByConfig("refmdb");
+        XtceDb mdb = XtceDbFactory.createInstance("refmdb");
         assertTrue(match("/REFMDB/CcSdS-APID", mdb));
         assertTrue(match("REFMDB_ccsds-apid", mdb));
         assertTrue(match("ap ReFmDB_CC", mdb));

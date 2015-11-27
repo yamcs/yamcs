@@ -157,7 +157,7 @@ public class ParameterValue {
     }
 
     public FloatRange getDistressRange() {
-	return distressRange;
+        return distressRange;
     }
 
     public void setCriticalRange(FloatRange range) {

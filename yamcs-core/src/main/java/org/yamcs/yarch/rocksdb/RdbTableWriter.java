@@ -56,11 +56,12 @@ public class RdbTableWriter extends TableWriter {
                 updated=!inserted;
                 break;
             case INSERT_APPEND:
-                inserted=insertAppend(db,partition, t);
+                inserted=insertAppend(db, partition, t);
                 break;
-                /*case UPSERT_APPEND:
-			    upsertAppend(db,t);
-			    break;*/
+            case UPSERT_APPEND:
+			    inserted=upsertAppend(db, partition, t);
+			    updated=!inserted;
+			    break;
             }
             rdbFactory.dispose(db);
             if(inserted && tableDefinition.hasHistogram()) {
@@ -169,10 +170,45 @@ public class RdbTableWriter extends TableWriter {
         return inserted;
     }
 
-    /* TODO
-	private void upsertAppend(YBDB db, Tuple t) throws IOException {
+	private boolean upsertAppend(YRDB db, RdbPartition partition, Tuple t) throws RocksDBException {
+        byte[] k=tableDefinition.serializeKey(t);
+        ColumnFamilyHandle cfh = db.getColumnFamilyHandle(partition.getValue());
+        if(cfh==null) {
+            cfh = db.createColumnFamily(partition.getValue());
+        }
+        byte[] v=db.get(cfh, k);
+        boolean inserted=false;
+        if(v!=null) {//append to an existing row
+            Tuple oldt=tableDefinition.deserialize(k, v);
+            TupleDefinition tdef=t.getDefinition();
+            TupleDefinition oldtdef=oldt.getDefinition();
+
+            boolean changed=false;
+            ArrayList<Object> cols=new ArrayList<Object>(oldt.getColumns().size()+t.getColumns().size());
+            cols.addAll(oldt.getColumns());
+            for(ColumnDefinition cd:tdef.getColumnDefinitions()) {
+                if (oldtdef.hasColumn(cd.getName())) {
+                    // currently always says it changed. Not sure if it's worth checking if different
+                    cols.set(oldt.getColumnIndex(cd.getName()), t.getColumn(cd.getName()));
+                    changed=true;
+                } else {
+                    oldtdef.addColumn(cd);
+                    cols.add(t.getColumn(cd.getName()));
+                    changed=true;
+                }
+            }
+            if(changed) {
+                oldt.setColumns(cols);
+                v=tableDefinition.serializeValue(oldt);
+                db.put(cfh, k, v);
+            }
+        } else {//new row
+            inserted=true;
+            v=tableDefinition.serializeValue(t);
+            db.put(cfh, k, v);
+        }
+        return inserted;
     }
-     */
 
     /**
      * get the filename where the tuple would fit (can be a partition)

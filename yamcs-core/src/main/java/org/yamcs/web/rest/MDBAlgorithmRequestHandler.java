@@ -40,7 +40,7 @@ public class MDBAlgorithmRequestHandler extends RestRequestHandler {
     
     private RestResponse listAlgorithmsOrError(RestRequest req, int pathOffset) throws RestException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
-        MatchResult<String> nsm = RestUtils.matchXtceDbNamespace(req, pathOffset);
+        MatchResult<String> nsm = RestUtils.matchXtceDbNamespace(req, pathOffset, true);
         if (nsm.matches()) {
             return listAlgorithms(req, nsm.getMatch(), mdb);
         } else {
@@ -51,7 +51,7 @@ public class MDBAlgorithmRequestHandler extends RestRequestHandler {
     private RestResponse getSingleAlgorithm(RestRequest req, NamedObjectId id, Algorithm a) throws RestException {
         // TODO privileges
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
-        AlgorithmInfo ainfo = XtceToGpbAssembler.toAlgorithmInfo(a, instanceURL, DetailLevel.FULL);
+        AlgorithmInfo ainfo = XtceToGpbAssembler.toAlgorithmInfo(a, instanceURL, DetailLevel.FULL, req.getOptions());
         return new RestResponse(req, ainfo, SchemaMdb.AlgorithmInfo.WRITE);
     }
 
@@ -61,6 +61,7 @@ public class MDBAlgorithmRequestHandler extends RestRequestHandler {
      */
     private RestResponse listAlgorithms(RestRequest req, String namespace, XtceDb mdb) throws RestException {
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
+        boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
         
         NameDescriptionSearchMatcher matcher = null;
         if (req.hasQueryParameter("q")) {
@@ -71,7 +72,7 @@ public class MDBAlgorithmRequestHandler extends RestRequestHandler {
         if (namespace == null) {
             for (Algorithm a : mdb.getAlgorithms()) {
                 if (matcher != null && !matcher.matches(a)) continue;
-                responseb.addAlgorithm(XtceToGpbAssembler.toAlgorithmInfo(a, instanceURL, DetailLevel.SUMMARY));
+                responseb.addAlgorithm(XtceToGpbAssembler.toAlgorithmInfo(a, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
             }
         } else {
             // TODO privileges
@@ -80,8 +81,8 @@ public class MDBAlgorithmRequestHandler extends RestRequestHandler {
                     continue;
                 
                 String alias = a.getAlias(namespace);
-                if (alias != null) {
-                    responseb.addAlgorithm(XtceToGpbAssembler.toAlgorithmInfo(a, instanceURL, DetailLevel.SUMMARY));
+                if (alias != null || (recurse && a.getQualifiedName().startsWith(namespace))) {
+                    responseb.addAlgorithm(XtceToGpbAssembler.toAlgorithmInfo(a, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
                 }
             }
         }
