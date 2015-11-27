@@ -75,7 +75,7 @@
           {{ alarm.acknowledgeInfo.acknowledgeMessage | nvl:'(without comment)' }}
           <footer>Acknowledged <span ng-if="alarm.acknowledgeInfo.acknowledgedBy != 'anonymous'">by {{ alarm.acknowledgeInfo.acknowledgedBy }}</span> {{ alarm.acknowledgeInfo.acknowledgeTimeUTC | parseUTC | formatDate:'pretty_short':true }}</footer>
         </blockquote>
-        <button ng-if="!alarm.acknowledgeInfo" class="btn btn-default btn-xs" type="button" ng-click="vm.openAcknowledge(alarm)">Acknowledge</button>
+        <button ng-if="!alarm.acknowledgeInfo" class="btn btn-default btn-sm" type="button" ng-click="vm.openAcknowledge(alarm)">Acknowledge</button>
       </div>
     </div>
   </div>

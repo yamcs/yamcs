@@ -108,6 +108,7 @@
                 axisLabelColor: '#666',
                 axisLabelFontSize: 11,
                 digitsAfterDecimal: 6,
+                panEdgeFraction: 0,
                 labels: ['Generation Time', label],
                 labelsDiv: 'parameter-detail-legend',
                 valueRange: model.valueRange,
@@ -246,7 +247,7 @@
         }
 
         function updateGraph(g, pdata, model) {
-            console.log('updating graph');
+            console.log('updating graph', model);
             if (pdata.length === 0 || pdata[0]['points'].length === 0) {
                 g.updateOptions({ file: 'x\n' });
             } else {
@@ -255,6 +256,13 @@
                     file: pdata[0]['points'],
                     drawPoints: pdata[0]['points'].length < 50
                 });
+
+                /*g.setAnnotations([{
+                     series: "/YSS/SIMULATOR/BatteryVoltage2",
+                     x: Date.parse("2015-11-26T18:50:00"),
+                     shortText: "W",
+                     text: "Coldest Day"
+                }]);*/ // TODO date needs to match exactly an existing point :/ there seems to be a method findClosestRow
             }
         }
 

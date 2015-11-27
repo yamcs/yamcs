@@ -52,24 +52,23 @@
                     vm.values = historyData['parameter'];
                 });
 
-                vm.activeAlarms = alarmsService.getActiveAlarms(); // Live collection
-                $scope.$watch('vm.activeAlarms', function (activeAlarms) {
-                    console.log('fadfjasf ', activeAlarms);
+                $scope.activeAlarms = alarmsService.getActiveAlarms(); // Live collection
+                $scope.activeAlarm = alarmsService.getActiveAlarmForParameter(qname);
+                $scope.$watchCollection('activeAlarms', function (activeAlarms) {
                     var match = false;
                     for (var i = 0; i < activeAlarms.length; i++) {
                         var alarm = activeAlarms[i];
                         if (alarm['triggerValue']['id']['name'] === qname) {
-                            vm.activeAlarm = alarm;
+                            $scope.activeAlarm = alarm;
                             match = true;
                             break;
                         }
                     }
-                    console.log('nn22');
-                    if (!match) vm.activeAlarm = null;
+                    if (!match) $scope.activeAlarm = null;
                     // TODO should maybe update alarm history table
                 });
 
-                vm.activeAlarm = alarmsService.getActiveAlarmForParameter(qname);
+
                 return vm.alarms;
             });
 
@@ -84,6 +83,26 @@
                     });
                 }
             });
+
+            $scope.openAcknowledge = function(alarm) {
+                var form = {
+                    comment: undefined
+                };
+                $uibModal.open({
+                  animation: true,
+                  templateUrl: 'acknowledgeAlarmModal.html',
+                  controller: 'AcknowledgeAlarmModalController',
+                  size: 'lg',
+                  resolve: {
+                    alarm: function () {
+                        return alarm;
+                    },
+                    form: function () {
+                        return form;
+                    }
+                  }
+                });
+            };
 
             return vm.info;
         });

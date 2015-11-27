@@ -3,48 +3,57 @@
     <h1 class="page-header">{{ vm.info.name }} <small>{{ vm.info.qualifiedName | spaceSystem }}</small></h1>
   </div>
 
-  <uib-alert ng-if="vm.activeAlarm" type="danger" style="margin-top: 0.5em;">
-    <strong>Out of limits detected {{ (vm.activeAlarm.triggerValue.generationTimeUTC | parseUTC).fromNow() }}</strong><br>
-    <span ng-if="!vm.activeAlarm.acknowledgeInfo">Unacknowledged</span>
+  <uib-alert ng-if="activeAlarm" type="danger" style="margin-top: 0.5em;">
+    <strong>Out of limits detected {{ (activeAlarm.triggerValue.generationTimeUTC | parseUTC).fromNow() }}</strong><br>
+    <span ng-if="!activeAlarm.acknowledgeInfo">Unacknowledged</span>
+    <span ng-if="activeAlarm.acknowledgeInfo">Acknowledged {{ activeAlarm.acknowledgeInfo.acknowledgeTimeUTC | parseUTC | formatDate:'pretty_short':true }}</span>
     <div class="container-fluid" style="margin-top: 0.5em;">
-      <div class="col-md-11">
+      <div class="col-md-6">
         <dl class="dl-horizontal">
           <dt>Activation Level</dt>
           <dd>
-            <img ng-src="/_static/_site/alarms/images/level{{ vm.activeAlarm.triggerLevel }}.png" uib-tooltip="{{ vm.activeAlarm.triggerValue.monitoringResult | monitoringValue }}">
+            <img ng-src="/_static/_site/alarms/images/level{{ activeAlarm.triggerLevel }}.png" uib-tooltip="{{ activeAlarm.triggerValue.monitoringResult | monitoringValue }}">
             <small>
-              Reached {{ vm.activeAlarm.triggerValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
-              with {{ vm.activeAlarm.triggerValue | stringValue }}<span ng-bind-html="vm.activeAlarm.triggerValue.monitoringResult | lohi"></span>
+              Reached {{ activeAlarm.triggerValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
+              with {{ activeAlarm.triggerValue | stringValue }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="activeAlarm.triggerValue.monitoringResult | lohi"></span>
             </small>
           </dd>
 
           <dt>Highest Level</dt>
           <dd>
-            <img ng-src="/_static/_site/alarms/images/level{{ vm.activeAlarm.mostSevereLevel }}.png" uib-tooltip="{{ vm.activeAlarm.mostSevereValue.monitoringResult | monitoringValue }}">
+            <img ng-src="/_static/_site/alarms/images/level{{ activeAlarm.mostSevereLevel }}.png" uib-tooltip="{{ activeAlarm.mostSevereValue.monitoringResult | monitoringValue }}">
             <small>
-              Reached {{ vm.activeAlarm.mostSevereValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
-              with {{ vm.activeAlarm.mostSevereValue | stringValue }}<span ng-bind-html="vm.activeAlarm.mostSevereValue.monitoringResult | lohi"></span>
+              Reached {{ activeAlarm.mostSevereValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
+              with {{ activeAlarm.mostSevereValue | stringValue }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="activeAlarm.mostSevereValue.monitoringResult | lohi"></span>
             </small>
           </dd>
 
           <dt>Current Value</dt>
           <dd>
-            <img ng-src="/_static/_site/alarms/images/level{{ vm.activeAlarm.currentLevel }}.png" uib-tooltip="{{ vm.activeAlarm.currentValue.monitoringResult | monitoringValue }}">
+            <img ng-src="/_static/_site/alarms/images/level{{ activeAlarm.currentLevel }}.png" uib-tooltip="{{ activeAlarm.currentValue.monitoringResult | monitoringValue }}">
             <small>
-              <strong>{{ vm.activeAlarm.currentValue | stringValue }}</strong><span ng-bind-html="vm.activeAlarm.currentValue.monitoringResult | lohi"></span>
-              &ndash; {{ vm.activeAlarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
+              <strong>{{ activeAlarm.currentValue | stringValue }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}</strong><span ng-bind-html="activeAlarm.currentValue.monitoringResult | lohi"></span>
+              &ndash; {{ activeAlarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
             </small>
           </dd>
         </dl>
       </div>
 
+      <div class="col-md-5">
+        <blockquote ng-if="activeAlarm.acknowledgeInfo" style="font-size: small">
+          <span class="glyphicon glyphicon-comment"></span>
+          {{ activeAlarm.acknowledgeInfo.acknowledgeMessage | nvl:'(without comment)' }}
+          <footer>{{ activeAlarm.acknowledgeInfo.acknowledgedBy }}</footer>
+        </blockquote>
+      </div>
+
       <div class="col-md-1 text-right">
-        <button class="btn btn-sm btn-danger">Acknowledge</button>
+        <button ng-if="!activeAlarm.acknowledgeInfo" class="btn btn-sm btn-danger" ng-click="openAcknowledge(activeAlarm)">Acknowledge</button>
       </div>
     </div>
   </uib-alert>
 
-  <p>&nbsp;</p>
+  <p ng-if="!activeAlarm">&nbsp;</p>
 
   <div class="container-fluid">
     <div class="row">
@@ -114,14 +123,6 @@
       style="width: 100%; position: relative;">
     </y-plot> <!-- the position: relative is needed for spin.js :-/ Not sure. -->
 
-    <!--plot ng-if="vm.isNumeric()"
-      pinfo="vm.info"
-      para="vm.para"
-      alarms="vm.alarms"
-      range="plotctx.range"
-      style="width: 100%; position: relative">
-    </plot-->
-
     <div class="section" style="margin-top: 1.5em;">
       <div class="btn-toolbar pull-right" role="toolbar" style="margin-left: 0; padding-bottom: 0.5em;">
         <button ng-if="vm.alarms.length" ng-click="vm.expandAlarms()" class="btn btn-default btn-xs">▼ Expand All</button>
@@ -171,7 +172,7 @@
               <img ng-src="/_static/_site/alarms/images/level{{ alarm.triggerLevel }}.png" uib-tooltip="{{ alarm.triggerValue.monitoringResult | monitoringValue }}">
               <small>
                 Reached {{ alarm.triggerValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
-                with {{ alarm.triggerValue | stringValue }}<span ng-bind-html="alarm.triggerValue.monitoringResult | lohi"></span>
+                with {{ alarm.triggerValue | stringValue }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="alarm.triggerValue.monitoringResult | lohi"></span>
               </small>
             </dd>
 
@@ -180,7 +181,7 @@
               <img ng-src="/_static/_site/alarms/images/level{{ alarm.mostSevereLevel }}.png" uib-tooltip="{{ alarm.mostSevereValue.monitoringResult | monitoringValue }}">
               <small>
                 Reached {{ alarm.mostSevereValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
-                with {{ alarm.mostSevereValue | stringValue }}<span ng-bind-html="alarm.mostSevereValue.monitoringResult | lohi"></span>
+                with {{ alarm.mostSevereValue | stringValue }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="alarm.mostSevereValue.monitoringResult | lohi"></span>
               </small>
             </dd>
 
@@ -188,7 +189,7 @@
             <dd>
               <img ng-src="/_static/_site/alarms/images/level{{ alarm.currentLevel }}.png" uib-tooltip="{{ alarm.currentValue.monitoringResult | monitoringValue }}">
               <small>
-                <strong>{{ alarm.currentValue | stringValue }}</strong>
+                <strong>{{ alarm.currentValue | stringValue }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}</strong>
                 <span ng-bind-html="alarm.currentValue.monitoringResult | lohi"></span>
                 &ndash; {{ alarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
               </small>
@@ -318,6 +319,7 @@
   </div>
 </mdb-pane>
 
+
 <script type="text/ng-template" id="enumValuesModal.html">
   <div class="modal-header">
     <button type="button" class="close" ng-click="close()">&times;</button>
@@ -333,6 +335,25 @@
     </table>
   </div>
 </script>
+
+
+<script type="text/ng-template" id="acknowledgeAlarmModal.html">
+    <div class="modal-header">
+        <h3 class="modal-title">
+          Acknowledge {{ alarm.triggerValue.id.name }} out of limits {{ alarm.triggerValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
+        </h3>
+    </div>
+    <div class="modal-body">
+      <form>
+        <textarea ng-model="form.comment" class="form-control" placeholder="Comment"></textarea>
+      </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-default" type="button" ng-click="ok()">Acknowledge</button>
+        <button class="btn btn-link" type="button" ng-click="cancel()">Cancel</button>
+    </div>
+</script>
+
 
 <script type="text/ng-template" id="addParameterModal.html">
   <div class="modal-header">
