@@ -6,9 +6,6 @@ import static org.yamcs.api.Protocol.HDR_EVENT_NAME;
 import static org.yamcs.api.Protocol.REPLYTO_HEADER_NAME;
 import static org.yamcs.api.Protocol.REQUEST_TYPE_HEADER_NAME;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -38,15 +35,16 @@ import com.google.protobuf.ByteString;
  *
  */
 public class HornetCommandQueueManagement implements CommandQueueListener {
+    ManagementService managementService;
     YamcsSession ysession;
     YamcsClient yclient;
     YamcsClient queueControlServer;
 
 
     static Logger log=LoggerFactory.getLogger(HornetCommandQueueManagement.class.getName());
-    List<CommandQueueManager> qmanagers=new CopyOnWriteArrayList<>();
 
-    public HornetCommandQueueManagement() throws YamcsApiException, HornetQException {
+    public HornetCommandQueueManagement(ManagementService managementService) throws YamcsApiException, HornetQException {
+        this.managementService = managementService;
 
         if(ysession!=null) return;
         ysession=YamcsSession.newBuilder().build();
@@ -72,15 +70,6 @@ public class HornetCommandQueueManagement implements CommandQueueListener {
         });
     }
 
-    public void registerCommandQueueManager(CommandQueueManager cqm) {
-        qmanagers.add(cqm);
-        cqm.registerListener(this);
-        for(CommandQueue q:cqm.getQueues()) {
-            updateQueue(q);
-        }
-    }
-
-
     private void processQueueControlMessage(ClientMessage msg) throws YamcsApiException, HornetQException {
         SimpleString replyto=msg.getSimpleStringProperty(REPLYTO_HEADER_NAME);
         if(replyto==null) {
@@ -94,46 +83,30 @@ public class HornetCommandQueueManagement implements CommandQueueListener {
             if("setQueueState".equalsIgnoreCase(req)) {
                 if(!cqr.hasQueueInfo()) throw new YamcsException("setQueueState requires a queueInfo");
                 CommandQueueInfo cqi=cqr.getQueueInfo();
-                CommandQueueManager cqm=getQueueManager(cqi.getInstance(), cqi.getProcessorName());
+                CommandQueueManager cqm=managementService.getQueueManager(cqi.getInstance(), cqi.getProcessorName());
                 cqm.setQueueState(cqi.getName(), cqi.getState(), cqr.getRebuild());
                 queueControlServer.sendReply(replyto, "OK", null);
             } else if("sendCommand".equalsIgnoreCase(req)) {
                 if(!cqr.hasQueueEntry()) throw new YamcsException("sendCommand requires a queueEntry");
                 CommandQueueEntry cqe=cqr.getQueueEntry();
-                CommandQueueManager cqm=getQueueManager(cqe.getInstance(), cqe.getProcessorName());
+                CommandQueueManager cqm=managementService.getQueueManager(cqe.getInstance(), cqe.getProcessorName());
                 cqm.sendCommand(cqe.getCmdId(), cqr.getRebuild());
                 queueControlServer.sendReply(replyto, "OK", null);
             } else if("rejectCommand".equalsIgnoreCase(req)) {
                 if(!cqr.hasQueueEntry()) throw new YamcsException("rejectCommand requires a queueEntry");
                 CommandQueueEntry cqe=cqr.getQueueEntry();
-                CommandQueueManager cqm=getQueueManager(cqe.getInstance(), cqe.getProcessorName());
+                CommandQueueManager cqm=managementService.getQueueManager(cqe.getInstance(), cqe.getProcessorName());
                 cqm.rejectCommand(cqe.getCmdId(), "username");
                 queueControlServer.sendReply(replyto, "OK", null);
             } else  {
                 throw new YamcsException("Unknown request '"+req+"'");
             }
         } catch (YamcsException e) {
-            e.printStackTrace();
             log.warn("Sending error reply ", e);
             queueControlServer.sendErrorReply(replyto, e.getMessage());
         } 
     }
-
-    private CommandQueueManager getQueueManager(String instance, String channelName) throws YamcsException {
-        for(int i=0;i<qmanagers.size();i++) {
-            CommandQueueManager cqm=qmanagers.get(i);
-            if(cqm.getInstance().equals(instance) && cqm.getChannelName().equals(channelName)) {
-                return cqm;
-            }
-        }
-
-        throw new YamcsException("Cannot find a command queue manager for "+instance+"."+channelName);
-    }
     
-    public List<CommandQueueManager> getQueueManagers() {
-        return qmanagers;
-    }
-
     /**
      * sends a "commandAdded" event 
      */

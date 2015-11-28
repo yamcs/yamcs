@@ -34,6 +34,7 @@ import org.yamcs.YProcessorException;
 import org.yamcs.YProcessorListener;
 import org.yamcs.YamcsException;
 import org.yamcs.commanding.CommandQueue;
+import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
@@ -74,12 +75,14 @@ public class ManagementService implements YProcessorListener {
     AtomicInteger clientId=new AtomicInteger();
     
     List<LinkControlImpl> links=new CopyOnWriteArrayList<LinkControlImpl>();
+    List<CommandQueueManager> qmanagers=new CopyOnWriteArrayList<>();
     
     // Used to update TM-statistics, and Link State
     ScheduledThreadPoolExecutor timer=new ScheduledThreadPoolExecutor(1);
     
-    CopyOnWriteArraySet<ManagementListener> managementListeners = new CopyOnWriteArraySet<>(); // Processors & Clients. Should maybe split up
-    CopyOnWriteArraySet<LinkListener> linkListeners = new CopyOnWriteArraySet<>(); // Data Links
+    Set<ManagementListener> managementListeners = new CopyOnWriteArraySet<>(); // Processors & Clients. Should maybe split up
+    Set<LinkListener> linkListeners = new CopyOnWriteArraySet<>();
+    Set<CommandQueueListener> commandQueueListeners = new CopyOnWriteArraySet<>();
 
     // keep track of registered services
     Map<String, Integer> servicesCount = new HashMap<>();
@@ -107,9 +110,10 @@ public class ManagementService implements YProcessorListener {
         if(hornetEnabled) {
             try {
                 hornetMgr=new HornetManagement(this);
-                hornetCmdQueueMgr=new HornetCommandQueueManagement();
+                hornetCmdQueueMgr=new HornetCommandQueueManagement(this);
                 hornetProcessorMgr=new HornetProcessorManagement(this);
                 addLinkListener(hornetMgr);
+                addCommandQueueListener(hornetCmdQueueMgr);
                 addManagementListener(hornetProcessorMgr);
             } catch (Exception e) {
                 log.error("failed to start hornet management service: ", e);
@@ -204,7 +208,21 @@ public class ManagementService implements YProcessorListener {
         }
         linkListeners.forEach(l -> l.unregisterLink(instance, name));
     }
+    
+    public CommandQueueManager getQueueManager(String instance, String channelName) throws YamcsException {
+        for(int i=0;i<qmanagers.size();i++) {
+            CommandQueueManager cqm=qmanagers.get(i);
+            if(cqm.getInstance().equals(instance) && cqm.getChannelName().equals(channelName)) {
+                return cqm;
+            }
+        }
 
+        throw new YamcsException("Cannot find a command queue manager for "+instance+"."+channelName);
+    }
+    
+    public List<CommandQueueManager> getQueueManagers() {
+        return qmanagers;
+    }
 
     public void registerYProcessor(YProcessor yproc) {
         try {
@@ -377,8 +395,12 @@ public class ManagementService implements YProcessorListener {
                     mbeanServer.registerMBean(cqci, ObjectName.getInstance(tld+"."+instance+":type=commandQueues,processor="+yprocName+",name="+cq.getName()));
                 }
             }
-            if(hornetEnabled) {
-                hornetCmdQueueMgr.registerCommandQueueManager(cqm);
+            qmanagers.add(cqm);
+            for (CommandQueueListener l : commandQueueListeners) {
+                cqm.registerListener(l);
+                for(CommandQueue q:cqm.getQueues()) {
+                    l.updateQueue(q);
+                }
             }
         } catch (Exception e) {
             log.warn("Got exception when registering a command queue", e);
@@ -386,11 +408,11 @@ public class ManagementService implements YProcessorListener {
     }
     
     public List<CommandQueueManager> getCommandQueueManagers() {
-        return hornetCmdQueueMgr.getQueueManagers();
+        return qmanagers;
     }
     
     public CommandQueueManager getCommandQueueManager(YProcessor processor) {
-        for (CommandQueueManager mgr : hornetCmdQueueMgr.getQueueManagers()) {
+        for (CommandQueueManager mgr : qmanagers) {
             if (mgr.getInstance().equals(processor.getInstance())
                     && mgr.getChannelName().equals(processor.getName())) {
                 return mgr;
@@ -449,6 +471,16 @@ public class ManagementService implements YProcessorListener {
     
     public boolean removeManagementListener(ManagementListener l) {
         return managementListeners.remove(l);
+    }
+    
+    public boolean addCommandQueueListener(CommandQueueListener l) {
+        return commandQueueListeners.add(l);
+    }
+    
+    public boolean removeCommandQueueListener(CommandQueueListener l) {
+        boolean removed = commandQueueListeners.remove(l);
+        qmanagers.forEach(m -> m.removeListener(l));
+        return removed;
     }
     
     public boolean removeLinkListener(LinkListener l) {

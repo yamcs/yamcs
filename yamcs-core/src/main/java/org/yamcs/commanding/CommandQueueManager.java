@@ -542,6 +542,10 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     public void registerListener(CommandQueueListener cqm) {
         monitoringClients.add(cqm);
     }
+    
+    public boolean removeListener(CommandQueueListener cqm) {
+        return monitoringClients.remove(cqm);
+    }
 
     public String getInstance() {
         return instance;
