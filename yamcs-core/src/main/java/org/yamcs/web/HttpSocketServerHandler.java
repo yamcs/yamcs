@@ -25,6 +25,7 @@ import org.yamcs.web.rest.ArchiveRequestHandler;
 import org.yamcs.web.rest.ClientRequestHandler;
 import org.yamcs.web.rest.DisplayRequestHandler;
 import org.yamcs.web.rest.InstanceRequestHandler;
+import org.yamcs.web.rest.LinkRequestHandler;
 import org.yamcs.web.rest.MDBRequestHandler;
 import org.yamcs.web.rest.ProcessorRequestHandler;
 import org.yamcs.web.rest.RestRequest;
@@ -65,13 +66,14 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
     WebSocketServerHandler webSocketHandler = new WebSocketServerHandler();
     
     public HttpSocketServerHandler() {
-        restHandlers.put("displays",  new DisplayRequestHandler(fileRequestHandler));
+        restHandlers.put("displays",  new DisplayRequestHandler());
         restHandlers.put("instances", new InstanceRequestHandler());
         restHandlers.put("user", new UserRequestHandler());
         restHandlers.put("mdb", new MDBRequestHandler());
         restHandlers.put("clients", new ClientRequestHandler());
         restHandlers.put("processors", new ProcessorRequestHandler());
         restHandlers.put("archive", new ArchiveRequestHandler());
+        restHandlers.put("links", new LinkRequestHandler());
         restHandlers.put("simTime", new SimulationTimeService.SimTimeRequestHandler());
     }
     

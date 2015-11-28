@@ -132,7 +132,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
      * by multiple HttpChunks where messages are delimited by their byte size (when the 'stream'-option
      * is true).
      * 
-     * @deprecated
+     * @deprecated the profiles stuff still needs migration
      */
     @Deprecated
     private RestResponse handleDumpRequest(RestRequest req) throws RestException {

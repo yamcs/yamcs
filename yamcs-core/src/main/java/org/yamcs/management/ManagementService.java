@@ -1,6 +1,7 @@
 package org.yamcs.management;
 
 import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -186,6 +187,7 @@ public class ManagementService implements YProcessorListener {
             if(jmxEnabled) {
                 mbeanServer.registerMBean(lci, ObjectName.getInstance(tld+"."+instance+":type=links,name="+name));
             }
+            links.add(lci);
             linkListeners.forEach(l -> l.registerLink(lci.getLinkInfo()));
         } catch (Exception e) {
             log.warn("Got exception when registering a link: "+e, e);
@@ -397,34 +399,34 @@ public class ManagementService implements YProcessorListener {
         return null;
     }
     
-    public void enableLink(LinkInfo li) throws YamcsException {
-        log.debug("received enableLink for "+li);
+    public void enableLink(String instance, String name) throws YamcsException {
+        log.debug("received enableLink for "+instance+"/"+name);
         boolean found=false;
         for(int i=0;i<links.size();i++) {
             LinkControlImpl lci=links.get(i);
             LinkInfo li2=lci.getLinkInfo();
-            if(li2.getInstance().equals(li.getInstance()) && li2.getName().equals(li.getName())) {
+            if(li2.getInstance().equals(instance) && li2.getName().equals(name)) {
                 found=true;
                 lci.enable();
                 break;
             }
         }
-        if(!found) throw new YamcsException("There is no link named '"+li.getName()+"' in instance "+li.getInstance());
+        if(!found) throw new YamcsException("There is no link named '"+name+"' in instance "+instance);
     }
     
-    public void disableLink(LinkInfo li) throws YamcsException {
-        log.debug("received disableLink for "+li);
+    public void disableLink(String instance, String name) throws YamcsException {
+        log.debug("received disableLink for "+instance+"/"+name);
         boolean found=false;
         for(int i=0;i<links.size();i++) {
             LinkControlImpl lci=links.get(i);
             LinkInfo li2=lci.getLinkInfo();
-            if(li2.getInstance().equals(li.getInstance()) && li2.getName().equals(li.getName())) {
+            if(li2.getInstance().equals(instance) && li2.getName().equals(name)) {
                 found=true;
                 lci.disable();
                 break;
             }
         }
-        if(!found) throw new YamcsException("There is no link named '"+li.getName()+"' in instance "+li.getInstance());
+        if(!found) throw new YamcsException("There is no link named '"+name+"' in instance "+instance);
     }
     
     /**
@@ -451,6 +453,25 @@ public class ManagementService implements YProcessorListener {
     
     public boolean removeLinkListener(LinkListener l) {
         return linkListeners.remove(l);
+    }
+    
+    public List<LinkInfo> getLinkInfo() {
+        List<LinkInfo> l = new ArrayList<>();
+        for (LinkControlImpl li : links) {
+            l.add(li.getLinkInfo());
+        }
+        return l;
+    }
+    
+    public LinkInfo getLinkInfo(String instance, String name) {
+        for(int i=0;i<links.size();i++) {
+            LinkControlImpl lci=links.get(i);
+            LinkInfo li=lci.getLinkInfo();
+            if(li.getInstance().equals(instance) && li.getName().equals(name)) {
+                return li;
+            }
+        }
+        return null;
     }
 
     public Set<ClientInfo> getClientInfo() {

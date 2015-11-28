@@ -19,16 +19,16 @@ import org.yamcs.yarch.YarchDatabase;
 /**
  * Provides realtime event subscription via web.
  */
-public class EventsResource extends AbstractWebSocketResource {
+public class EventResource extends AbstractWebSocketResource {
     private final Logger log;
     
     private Stream stream;
     private StreamSubscriber streamSubscriber;
     
 
-    public EventsResource(YProcessor channel, WebSocketServerHandler wsHandler) {
+    public EventResource(YProcessor channel, WebSocketServerHandler wsHandler) {
         super(channel, wsHandler);
-        log = LoggerFactory.getLogger(EventsResource.class.getName() + "[" + channel.getInstance() + "]");
+        log = LoggerFactory.getLogger(EventResource.class.getName() + "[" + channel.getInstance() + "]");
         wsHandler.addResource("events", this);
         YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
         stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);

@@ -21680,6 +21680,706 @@ public final class YamcsManagement {
     // @@protoc_insertion_point(class_scope:yamcsManagement.LinkInfo)
   }
 
+  public interface LinkEventOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional .yamcsManagement.LinkEvent.Type type = 1;
+    /**
+     * <code>optional .yamcsManagement.LinkEvent.Type type = 1;</code>
+     */
+    boolean hasType();
+    /**
+     * <code>optional .yamcsManagement.LinkEvent.Type type = 1;</code>
+     */
+    org.yamcs.protobuf.YamcsManagement.LinkEvent.Type getType();
+
+    // optional .yamcsManagement.LinkInfo linkInfo = 2;
+    /**
+     * <code>optional .yamcsManagement.LinkInfo linkInfo = 2;</code>
+     */
+    boolean hasLinkInfo();
+    /**
+     * <code>optional .yamcsManagement.LinkInfo linkInfo = 2;</code>
+     */
+    org.yamcs.protobuf.YamcsManagement.LinkInfo getLinkInfo();
+    /**
+     * <code>optional .yamcsManagement.LinkInfo linkInfo = 2;</code>
+     */
+    org.yamcs.protobuf.YamcsManagement.LinkInfoOrBuilder getLinkInfoOrBuilder();
+  }
+  /**
+   * Protobuf type {@code yamcsManagement.LinkEvent}
+   */
+  public static final class LinkEvent extends
+      com.google.protobuf.GeneratedMessage
+      implements LinkEventOrBuilder {
+    // Use LinkEvent.newBuilder() to construct.
+    private LinkEvent(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private LinkEvent(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final LinkEvent defaultInstance;
+    public static LinkEvent getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public LinkEvent getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private LinkEvent(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              int rawValue = input.readEnum();
+              org.yamcs.protobuf.YamcsManagement.LinkEvent.Type value = org.yamcs.protobuf.YamcsManagement.LinkEvent.Type.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(1, rawValue);
+              } else {
+                bitField0_ |= 0x00000001;
+                type_ = value;
+              }
+              break;
+            }
+            case 18: {
+              org.yamcs.protobuf.YamcsManagement.LinkInfo.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000002) == 0x00000002)) {
+                subBuilder = linkInfo_.toBuilder();
+              }
+              linkInfo_ = input.readMessage(org.yamcs.protobuf.YamcsManagement.LinkInfo.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(linkInfo_);
+                linkInfo_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000002;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsManagement_LinkEvent_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsManagement_LinkEvent_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.YamcsManagement.LinkEvent.class, org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<LinkEvent> PARSER =
+        new com.google.protobuf.AbstractParser<LinkEvent>() {
+      public LinkEvent parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new LinkEvent(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<LinkEvent> getParserForType() {
+      return PARSER;
+    }
+
+    /**
+     * Protobuf enum {@code yamcsManagement.LinkEvent.Type}
+     */
+    public enum Type
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <code>REGISTERED = 1;</code>
+       */
+      REGISTERED(0, 1),
+      /**
+       * <code>UNREGISTERED = 2;</code>
+       */
+      UNREGISTERED(1, 2),
+      /**
+       * <code>UPDATED = 3;</code>
+       */
+      UPDATED(2, 3),
+      ;
+
+      /**
+       * <code>REGISTERED = 1;</code>
+       */
+      public static final int REGISTERED_VALUE = 1;
+      /**
+       * <code>UNREGISTERED = 2;</code>
+       */
+      public static final int UNREGISTERED_VALUE = 2;
+      /**
+       * <code>UPDATED = 3;</code>
+       */
+      public static final int UPDATED_VALUE = 3;
+
+
+      public final int getNumber() { return value; }
+
+      public static Type valueOf(int value) {
+        switch (value) {
+          case 1: return REGISTERED;
+          case 2: return UNREGISTERED;
+          case 3: return UPDATED;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<Type>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static com.google.protobuf.Internal.EnumLiteMap<Type>
+          internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<Type>() {
+              public Type findValueByNumber(int number) {
+                return Type.valueOf(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(index);
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.YamcsManagement.LinkEvent.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final Type[] VALUES = values();
+
+      public static Type valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int index;
+      private final int value;
+
+      private Type(int index, int value) {
+        this.index = index;
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:yamcsManagement.LinkEvent.Type)
+    }
+
+    private int bitField0_;
+    // optional .yamcsManagement.LinkEvent.Type type = 1;
+    public static final int TYPE_FIELD_NUMBER = 1;
+    private org.yamcs.protobuf.YamcsManagement.LinkEvent.Type type_;
+    /**
+     * <code>optional .yamcsManagement.LinkEvent.Type type = 1;</code>
+     */
+    public boolean hasType() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .yamcsManagement.LinkEvent.Type type = 1;</code>
+     */
+    public org.yamcs.protobuf.YamcsManagement.LinkEvent.Type getType() {
+      return type_;
+    }
+
+    // optional .yamcsManagement.LinkInfo linkInfo = 2;
+    public static final int LINKINFO_FIELD_NUMBER = 2;
+    private org.yamcs.protobuf.YamcsManagement.LinkInfo linkInfo_;
+    /**
+     * <code>optional .yamcsManagement.LinkInfo linkInfo = 2;</code>
+     */
+    public boolean hasLinkInfo() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional .yamcsManagement.LinkInfo linkInfo = 2;</code>
+     */
+    public org.yamcs.protobuf.YamcsManagement.LinkInfo getLinkInfo() {
+      return linkInfo_;
+    }
+    /**
+     * <code>optional .yamcsManagement.LinkInfo linkInfo = 2;</code>
+     */
+    public org.yamcs.protobuf.YamcsManagement.LinkInfoOrBuilder getLinkInfoOrBuilder() {
+      return linkInfo_;
+    }
+
+    private void initFields() {
+      type_ = org.yamcs.protobuf.YamcsManagement.LinkEvent.Type.REGISTERED;
+      linkInfo_ = org.yamcs.protobuf.YamcsManagement.LinkInfo.getDefaultInstance();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (hasLinkInfo()) {
+        if (!getLinkInfo().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeEnum(1, type_.getNumber());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeMessage(2, linkInfo_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(1, type_.getNumber());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, linkInfo_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.YamcsManagement.LinkEvent parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.LinkEvent parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.LinkEvent parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.LinkEvent parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.LinkEvent parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.LinkEvent parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.LinkEvent parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.LinkEvent parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.LinkEvent parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.YamcsManagement.LinkEvent parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.YamcsManagement.LinkEvent prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code yamcsManagement.LinkEvent}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.YamcsManagement.LinkEventOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsManagement_LinkEvent_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsManagement_LinkEvent_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.YamcsManagement.LinkEvent.class, org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.YamcsManagement.LinkEvent.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getLinkInfoFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        type_ = org.yamcs.protobuf.YamcsManagement.LinkEvent.Type.REGISTERED;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (linkInfoBuilder_ == null) {
+          linkInfo_ = org.yamcs.protobuf.YamcsManagement.LinkInfo.getDefaultInstance();
+        } else {
+          linkInfoBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsManagement_LinkEvent_descriptor;
+      }
+
+      public org.yamcs.protobuf.YamcsManagement.LinkEvent getDefaultInstanceForType() {
+        return org.yamcs.protobuf.YamcsManagement.LinkEvent.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.YamcsManagement.LinkEvent build() {
+        org.yamcs.protobuf.YamcsManagement.LinkEvent result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.YamcsManagement.LinkEvent buildPartial() {
+        org.yamcs.protobuf.YamcsManagement.LinkEvent result = new org.yamcs.protobuf.YamcsManagement.LinkEvent(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.type_ = type_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        if (linkInfoBuilder_ == null) {
+          result.linkInfo_ = linkInfo_;
+        } else {
+          result.linkInfo_ = linkInfoBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.YamcsManagement.LinkEvent) {
+          return mergeFrom((org.yamcs.protobuf.YamcsManagement.LinkEvent)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.YamcsManagement.LinkEvent other) {
+        if (other == org.yamcs.protobuf.YamcsManagement.LinkEvent.getDefaultInstance()) return this;
+        if (other.hasType()) {
+          setType(other.getType());
+        }
+        if (other.hasLinkInfo()) {
+          mergeLinkInfo(other.getLinkInfo());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (hasLinkInfo()) {
+          if (!getLinkInfo().isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.YamcsManagement.LinkEvent parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.YamcsManagement.LinkEvent) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional .yamcsManagement.LinkEvent.Type type = 1;
+      private org.yamcs.protobuf.YamcsManagement.LinkEvent.Type type_ = org.yamcs.protobuf.YamcsManagement.LinkEvent.Type.REGISTERED;
+      /**
+       * <code>optional .yamcsManagement.LinkEvent.Type type = 1;</code>
+       */
+      public boolean hasType() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .yamcsManagement.LinkEvent.Type type = 1;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.LinkEvent.Type getType() {
+        return type_;
+      }
+      /**
+       * <code>optional .yamcsManagement.LinkEvent.Type type = 1;</code>
+       */
+      public Builder setType(org.yamcs.protobuf.YamcsManagement.LinkEvent.Type value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
+        type_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .yamcsManagement.LinkEvent.Type type = 1;</code>
+       */
+      public Builder clearType() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        type_ = org.yamcs.protobuf.YamcsManagement.LinkEvent.Type.REGISTERED;
+        onChanged();
+        return this;
+      }
+
+      // optional .yamcsManagement.LinkInfo linkInfo = 2;
+      private org.yamcs.protobuf.YamcsManagement.LinkInfo linkInfo_ = org.yamcs.protobuf.YamcsManagement.LinkInfo.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.YamcsManagement.LinkInfo, org.yamcs.protobuf.YamcsManagement.LinkInfo.Builder, org.yamcs.protobuf.YamcsManagement.LinkInfoOrBuilder> linkInfoBuilder_;
+      /**
+       * <code>optional .yamcsManagement.LinkInfo linkInfo = 2;</code>
+       */
+      public boolean hasLinkInfo() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional .yamcsManagement.LinkInfo linkInfo = 2;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.LinkInfo getLinkInfo() {
+        if (linkInfoBuilder_ == null) {
+          return linkInfo_;
+        } else {
+          return linkInfoBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .yamcsManagement.LinkInfo linkInfo = 2;</code>
+       */
+      public Builder setLinkInfo(org.yamcs.protobuf.YamcsManagement.LinkInfo value) {
+        if (linkInfoBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          linkInfo_ = value;
+          onChanged();
+        } else {
+          linkInfoBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .yamcsManagement.LinkInfo linkInfo = 2;</code>
+       */
+      public Builder setLinkInfo(
+          org.yamcs.protobuf.YamcsManagement.LinkInfo.Builder builderForValue) {
+        if (linkInfoBuilder_ == null) {
+          linkInfo_ = builderForValue.build();
+          onChanged();
+        } else {
+          linkInfoBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .yamcsManagement.LinkInfo linkInfo = 2;</code>
+       */
+      public Builder mergeLinkInfo(org.yamcs.protobuf.YamcsManagement.LinkInfo value) {
+        if (linkInfoBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002) &&
+              linkInfo_ != org.yamcs.protobuf.YamcsManagement.LinkInfo.getDefaultInstance()) {
+            linkInfo_ =
+              org.yamcs.protobuf.YamcsManagement.LinkInfo.newBuilder(linkInfo_).mergeFrom(value).buildPartial();
+          } else {
+            linkInfo_ = value;
+          }
+          onChanged();
+        } else {
+          linkInfoBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .yamcsManagement.LinkInfo linkInfo = 2;</code>
+       */
+      public Builder clearLinkInfo() {
+        if (linkInfoBuilder_ == null) {
+          linkInfo_ = org.yamcs.protobuf.YamcsManagement.LinkInfo.getDefaultInstance();
+          onChanged();
+        } else {
+          linkInfoBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+      /**
+       * <code>optional .yamcsManagement.LinkInfo linkInfo = 2;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.LinkInfo.Builder getLinkInfoBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getLinkInfoFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .yamcsManagement.LinkInfo linkInfo = 2;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.LinkInfoOrBuilder getLinkInfoOrBuilder() {
+        if (linkInfoBuilder_ != null) {
+          return linkInfoBuilder_.getMessageOrBuilder();
+        } else {
+          return linkInfo_;
+        }
+      }
+      /**
+       * <code>optional .yamcsManagement.LinkInfo linkInfo = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.YamcsManagement.LinkInfo, org.yamcs.protobuf.YamcsManagement.LinkInfo.Builder, org.yamcs.protobuf.YamcsManagement.LinkInfoOrBuilder> 
+          getLinkInfoFieldBuilder() {
+        if (linkInfoBuilder_ == null) {
+          linkInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.yamcs.protobuf.YamcsManagement.LinkInfo, org.yamcs.protobuf.YamcsManagement.LinkInfo.Builder, org.yamcs.protobuf.YamcsManagement.LinkInfoOrBuilder>(
+                  linkInfo_,
+                  getParentForChildren(),
+                  isClean());
+          linkInfo_ = null;
+        }
+        return linkInfoBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:yamcsManagement.LinkEvent)
+    }
+
+    static {
+      defaultInstance = new LinkEvent(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:yamcsManagement.LinkEvent)
+  }
+
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_yamcsManagement_YamcsInstances_descriptor;
   private static
@@ -21750,6 +22450,11 @@ public final class YamcsManagement {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_yamcsManagement_LinkInfo_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_yamcsManagement_LinkEvent_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_yamcsManagement_LinkEvent_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -21833,22 +22538,26 @@ public final class YamcsManagement {
       "\002 \002(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006str" +
       "eam\030\005 \001(\t\022\020\n\010disabled\030\006 \001(\010\022\016\n\006status\030\007 " +
       "\001(\t\022\021\n\tdataCount\030\010 \001(\003\022\026\n\016detailedStatus" +
-      "\030\t \001(\t*\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010START" +
-      "ING\020\001\022\013\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERM" +
-      "INATED\020\004\022\n\n\006FAILED\020\0052\235\001\n\014YamcsControl\022A\n" +
-      "\021GetYamcsInstances\022\013.yamcs.Void\032\037.yamcsM" +
-      "anagement.YamcsInstances\022J\n\022GetMissionDa" +
-      "tabase\022\'.yamcsManagement.MissionDatabase",
-      "Request\032\013.yamcs.Void2\341\002\n\020ProcessorContro" +
-      "l\022A\n\017CreateProcessor\022!.yamcsManagement.P" +
-      "rocessorRequest\032\013.yamcs.Void\022D\n\022ConnectT" +
-      "oProcessor\022!.yamcsManagement.ProcessorRe" +
-      "quest\032\013.yamcs.Void\022@\n\016PauseProcessor\022!.y" +
-      "amcsManagement.ProcessorRequest\032\013.yamcs." +
-      "Void\022A\n\017ResumeProcessor\022!.yamcsManagemen" +
-      "t.ProcessorRequest\032\013.yamcs.Void\022?\n\rSeekP" +
-      "rocessor\022!.yamcsManagement.ProcessorRequ" +
-      "est\032\013.yamcs.VoidB\024\n\022org.yamcs.protobuf"
+      "\030\t \001(\t\"\236\001\n\tLinkEvent\022-\n\004type\030\001 \001(\0162\037.yam" +
+      "csManagement.LinkEvent.Type\022+\n\010linkInfo\030" +
+      "\002 \001(\0132\031.yamcsManagement.LinkInfo\"5\n\004Type" +
+      "\022\016\n\nREGISTERED\020\001\022\020\n\014UNREGISTERED\020\002\022\013\n\007UP" +
+      "DATED\020\003*\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010STAR" +
+      "TING\020\001\022\013\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTER",
+      "MINATED\020\004\022\n\n\006FAILED\020\0052\235\001\n\014YamcsControl\022A" +
+      "\n\021GetYamcsInstances\022\013.yamcs.Void\032\037.yamcs" +
+      "Management.YamcsInstances\022J\n\022GetMissionD" +
+      "atabase\022\'.yamcsManagement.MissionDatabas" +
+      "eRequest\032\013.yamcs.Void2\341\002\n\020ProcessorContr" +
+      "ol\022A\n\017CreateProcessor\022!.yamcsManagement." +
+      "ProcessorRequest\032\013.yamcs.Void\022D\n\022Connect" +
+      "ToProcessor\022!.yamcsManagement.ProcessorR" +
+      "equest\032\013.yamcs.Void\022@\n\016PauseProcessor\022!." +
+      "yamcsManagement.ProcessorRequest\032\013.yamcs",
+      ".Void\022A\n\017ResumeProcessor\022!.yamcsManageme" +
+      "nt.ProcessorRequest\032\013.yamcs.Void\022?\n\rSeek" +
+      "Processor\022!.yamcsManagement.ProcessorReq" +
+      "uest\032\013.yamcs.VoidB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -21939,6 +22648,12 @@ public final class YamcsManagement {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcsManagement_LinkInfo_descriptor,
               new java.lang.String[] { "Instance", "Name", "Type", "Spec", "Stream", "Disabled", "Status", "DataCount", "DetailedStatus", });
+          internal_static_yamcsManagement_LinkEvent_descriptor =
+            getDescriptor().getMessageTypes().get(14);
+          internal_static_yamcsManagement_LinkEvent_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_yamcsManagement_LinkEvent_descriptor,
+              new java.lang.String[] { "Type", "LinkInfo", });
           return null;
         }
       };

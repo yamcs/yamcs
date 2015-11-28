@@ -55,6 +55,14 @@ message ListAlgorithmsResponse {
   repeated mdb.AlgorithmInfo algorithm = 1;
 }
 
+message ListLinksResponse {
+  repeated yamcsManagement.LinkInfo link = 1;
+}
+
+message PatchLinkRequest {
+  optional string state = 1;
+}
+
 message ListClientsResponse {
   repeated yamcsManagement.ClientInfo client = 1;
 }

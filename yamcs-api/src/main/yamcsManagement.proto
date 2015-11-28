@@ -199,3 +199,13 @@ message LinkInfo {
   optional int64 dataCount = 8;
   optional string detailedStatus = 9;
 }
+
+message LinkEvent {
+  enum Type {
+    REGISTERED = 1;
+    UNREGISTERED = 2;
+    UPDATED = 3;
+  }
+  optional Type type = 1;
+  optional LinkInfo linkInfo = 2;
+}

@@ -22,12 +22,12 @@ import org.yamcs.utils.TimeEncoding;
 /**
  * Provides realtime alarm subscription via web.
  */
-public class AlarmsResource extends AbstractWebSocketResource implements AlarmListener {
+public class AlarmResource extends AbstractWebSocketResource implements AlarmListener {
     Logger log;
 
-    public AlarmsResource(YProcessor channel, WebSocketServerHandler wsHandler) {
+    public AlarmResource(YProcessor channel, WebSocketServerHandler wsHandler) {
         super(channel, wsHandler);
-        log = LoggerFactory.getLogger(AlarmsResource.class.getName() + "[" + channel.getInstance() + "]");
+        log = LoggerFactory.getLogger(AlarmResource.class.getName() + "[" + channel.getInstance() + "]");
         wsHandler.addResource("alarms", this);
     }
 

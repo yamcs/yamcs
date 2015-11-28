@@ -35,6 +35,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
+import org.yamcs.protobuf.YamcsManagement.LinkEvent;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.security.Privilege;
@@ -183,6 +184,7 @@ public abstract class AbstractIntegrationTest {
         LinkedBlockingQueue<Event> eventList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<StreamData> streamDataList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<TimeInfo> timeInfoList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<LinkEvent> linkEventList = new LinkedBlockingQueue<>();
 
         int count =0;
         @Override
@@ -236,6 +238,9 @@ public abstract class AbstractIntegrationTest {
                 break;
             case TIME_INFO:
                 timeInfoList.add(data.getTimeInfo());
+                break;
+            case LINK_EVENT:
+                linkEventList.add(data.getLinkEvent());
                 break;
             default:
                 throw new IllegalArgumentException("Unexpected type " + data.getType());

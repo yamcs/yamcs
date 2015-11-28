@@ -28,12 +28,6 @@ public class DisplayRequestHandler extends RestRequestHandler {
     JsonFactory jsonFactory=new JsonFactory();
     final static Logger log=LoggerFactory.getLogger(DisplayRequestHandler.class.getName());
     
-    StaticFileRequestHandler fileRequestHandler;
-    
-    public DisplayRequestHandler(StaticFileRequestHandler fileRequestHandler) {
-        this.fileRequestHandler=fileRequestHandler;
-    }
-
     @Override
     protected RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {

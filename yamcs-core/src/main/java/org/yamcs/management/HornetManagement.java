@@ -68,11 +68,11 @@ public class HornetManagement implements LinkListener {
             String req=msg.getStringProperty(REQUEST_TYPE_HEADER_NAME);
             if("enableLink".equalsIgnoreCase(req)) {
                 LinkInfo li=(LinkInfo)Protocol.decode(msg, LinkInfo.newBuilder());
-                mservice.enableLink(li);
+                mservice.enableLink(li.getInstance(), li.getName());
                 linkControlServer.sendReply(replyto, "OK", null);
             } else if("disableLink".equalsIgnoreCase(req)) {
                 LinkInfo li=(LinkInfo)Protocol.decode(msg, LinkInfo.newBuilder());
-                mservice.disableLink(li);
+                mservice.disableLink(li.getInstance(), li.getName());
                 linkControlServer.sendReply(replyto, "OK", null);
             } else  {
                 throw new YamcsException("Unknown request '"+req+"'");

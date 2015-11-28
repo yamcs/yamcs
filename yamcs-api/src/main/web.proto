@@ -51,6 +51,7 @@ message WebSocketServerMessage {
     optional archive.StreamData streamData = 9;
     optional alarms.AlarmData alarmData = 10;
     optional yamcs.TimeInfo timeInfo = 11;
+    optional yamcsManagement.LinkEvent linkEvent = 12;
   }
 
   optional MessageType type = 1;
