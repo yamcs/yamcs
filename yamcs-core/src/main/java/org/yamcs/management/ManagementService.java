@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +35,7 @@ import org.yamcs.YamcsException;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueManager;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
+import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
@@ -70,10 +72,13 @@ public class ManagementService implements YProcessorListener {
     Map<Integer, ClientControlImpl> clients=Collections.synchronizedMap(new HashMap<Integer, ClientControlImpl>());
     AtomicInteger clientId=new AtomicInteger();
     
+    List<LinkControlImpl> links=new CopyOnWriteArrayList<LinkControlImpl>();
+    
     // Used to update TM-statistics, and Link State
     ScheduledThreadPoolExecutor timer=new ScheduledThreadPoolExecutor(1);
     
-    CopyOnWriteArraySet<ManagementListener> managementListeners = new CopyOnWriteArraySet<>();
+    CopyOnWriteArraySet<ManagementListener> managementListeners = new CopyOnWriteArraySet<>(); // Processors & Clients. Should maybe split up
+    CopyOnWriteArraySet<LinkListener> linkListeners = new CopyOnWriteArraySet<>(); // Data Links
 
     // keep track of registered services
     Map<String, Integer> servicesCount = new HashMap<>();
@@ -100,9 +105,10 @@ public class ManagementService implements YProcessorListener {
 
         if(hornetEnabled) {
             try {
-                hornetMgr=new HornetManagement(this, timer);
+                hornetMgr=new HornetManagement(this);
                 hornetCmdQueueMgr=new HornetCommandQueueManagement();
                 hornetProcessorMgr=new HornetProcessorManagement(this);
+                addLinkListener(hornetMgr);
                 addManagementListener(hornetProcessorMgr);
             } catch (Exception e) {
                 log.error("failed to start hornet management service: ", e);
@@ -113,6 +119,7 @@ public class ManagementService implements YProcessorListener {
         
         YProcessor.addProcessorListener(this);
         timer.scheduleAtFixedRate(() -> updateStatistics(), 1, 1, TimeUnit.SECONDS);
+        timer.scheduleAtFixedRate(() -> checkLinkUpdate(), 1, 1, TimeUnit.SECONDS);
     }
 
     public void shutdown() {
@@ -179,9 +186,7 @@ public class ManagementService implements YProcessorListener {
             if(jmxEnabled) {
                 mbeanServer.registerMBean(lci, ObjectName.getInstance(tld+"."+instance+":type=links,name="+name));
             }
-            if(hornetEnabled) {
-                hornetMgr.registerLink(instance, lci);
-            }
+            linkListeners.forEach(l -> l.registerLink(lci.getLinkInfo()));
         } catch (Exception e) {
             log.warn("Got exception when registering a link: "+e, e);
         }
@@ -195,10 +200,7 @@ public class ManagementService implements YProcessorListener {
                 log.warn("Got exception when unregistering a link", e);
             }
         }
-
-        if(hornetEnabled) {
-            hornetMgr.unRegisterLink(instance, name);
-        }
+        linkListeners.forEach(l -> l.unregisterLink(instance, name));
     }
 
 
@@ -395,6 +397,36 @@ public class ManagementService implements YProcessorListener {
         return null;
     }
     
+    public void enableLink(LinkInfo li) throws YamcsException {
+        log.debug("received enableLink for "+li);
+        boolean found=false;
+        for(int i=0;i<links.size();i++) {
+            LinkControlImpl lci=links.get(i);
+            LinkInfo li2=lci.getLinkInfo();
+            if(li2.getInstance().equals(li.getInstance()) && li2.getName().equals(li.getName())) {
+                found=true;
+                lci.enable();
+                break;
+            }
+        }
+        if(!found) throw new YamcsException("There is no link named '"+li.getName()+"' in instance "+li.getInstance());
+    }
+    
+    public void disableLink(LinkInfo li) throws YamcsException {
+        log.debug("received disableLink for "+li);
+        boolean found=false;
+        for(int i=0;i<links.size();i++) {
+            LinkControlImpl lci=links.get(i);
+            LinkInfo li2=lci.getLinkInfo();
+            if(li2.getInstance().equals(li.getInstance()) && li2.getName().equals(li.getName())) {
+                found=true;
+                lci.disable();
+                break;
+            }
+        }
+        if(!found) throw new YamcsException("There is no link named '"+li.getName()+"' in instance "+li.getInstance());
+    }
+    
     /**
      * Adds a listener that is to be notified when any processor, or any client
      * is updated. Calling this multiple times has no extra effects. Either you
@@ -404,8 +436,21 @@ public class ManagementService implements YProcessorListener {
         return managementListeners.add(l);
     }
     
+    /**
+     * Adds a listener that is to be notified when any processor, or any client
+     * is updated. Calling this multiple times has no extra effects. Either you
+     * listen, or you don't.
+     */
+    public boolean addLinkListener(LinkListener l) {
+        return linkListeners.add(l);
+    }
+    
     public boolean removeManagementListener(ManagementListener l) {
         return managementListeners.remove(l);
+    }
+    
+    public boolean removeLinkListener(LinkListener l) {
+        return linkListeners.remove(l);
     }
 
     public Set<ClientInfo> getClientInfo() {
@@ -447,6 +492,16 @@ public class ManagementService implements YProcessorListener {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    
+    private void checkLinkUpdate() {
+        // see if any link has changed
+        for(LinkControlImpl lci:links) {
+            if(lci.hasChanged()) {
+                LinkInfo li=lci.getLinkInfo();
+                linkListeners.forEach(l -> l.linkChanged(li));
+            }
         }
     }
 
