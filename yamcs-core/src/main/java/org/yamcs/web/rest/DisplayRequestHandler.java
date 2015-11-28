@@ -1,4 +1,4 @@
-package org.yamcs.web;
+package org.yamcs.web.rest;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,13 +7,7 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
-import org.yamcs.web.rest.InternalServerErrorException;
-import org.yamcs.web.rest.NotFoundException;
-import org.yamcs.web.rest.RestException;
-import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequestHandler;
-import org.yamcs.web.rest.RestResponse;
-import org.yamcs.web.websocket.WebSocketServerHandler;
+import org.yamcs.web.StaticFileRequestHandler;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -32,19 +26,13 @@ import io.netty.buffer.ByteBufOutputStream;
  */
 public class DisplayRequestHandler extends RestRequestHandler {
     JsonFactory jsonFactory=new JsonFactory();
-    final static Logger log=LoggerFactory.getLogger(WebSocketServerHandler.class.getName());
+    final static Logger log=LoggerFactory.getLogger(DisplayRequestHandler.class.getName());
     
     StaticFileRequestHandler fileRequestHandler;
     
     public DisplayRequestHandler(StaticFileRequestHandler fileRequestHandler) {
         this.fileRequestHandler=fileRequestHandler;
     }
-    
-    @Override
-    public String getPath() {
-        return "displays";
-    }
-    
 
     @Override
     protected RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {

@@ -19,11 +19,6 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation;
 public class ClientRequestHandler extends RestRequestHandler {
     
     @Override
-    public String getPath() {
-        return "clients";
-    }
-    
-    @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         if (req.hasPathSegment(pathOffset)) {
             int clientId = Integer.parseInt(req.getPathSegment(pathOffset));

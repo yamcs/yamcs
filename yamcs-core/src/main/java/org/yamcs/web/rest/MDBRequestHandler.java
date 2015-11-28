@@ -32,11 +32,6 @@ public class MDBRequestHandler extends RestRequestHandler {
     private static MDBAlgorithmRequestHandler algorithmHandler = new MDBAlgorithmRequestHandler();
     
     @Override
-    public String getPath() {
-        return "mdb";
-    }
-    
-    @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);

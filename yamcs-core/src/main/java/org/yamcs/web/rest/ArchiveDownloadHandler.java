@@ -33,11 +33,6 @@ import com.csvreader.CsvWriter;
 public class ArchiveDownloadHandler extends RestRequestHandler {
     
     @Override
-    public String getPath() {
-        return "downloads";
-    }
-    
-    @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
         if (!req.hasPathSegment(pathOffset)) {

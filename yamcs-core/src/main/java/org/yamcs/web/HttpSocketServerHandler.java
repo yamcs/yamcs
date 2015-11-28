@@ -10,6 +10,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -21,10 +23,12 @@ import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.time.SimulationTimeService;
 import org.yamcs.web.rest.ArchiveRequestHandler;
 import org.yamcs.web.rest.ClientRequestHandler;
+import org.yamcs.web.rest.DisplayRequestHandler;
 import org.yamcs.web.rest.InstanceRequestHandler;
 import org.yamcs.web.rest.MDBRequestHandler;
 import org.yamcs.web.rest.ProcessorRequestHandler;
 import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.UserRequestHandler;
 import org.yamcs.web.websocket.WebSocketServerHandler;
 
@@ -51,25 +55,25 @@ import io.netty.util.CharsetUtil;
  */
 public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object> {
 
-    //the request to get the list of displays goes here
-    public static final String DISPLAYS_PATH = "displays";
     public static final String STATIC_PATH = "_static";
     public static final String API_PATH = "api";
 
     final static Logger log = LoggerFactory.getLogger(HttpSocketServerHandler.class.getName());
 
     static StaticFileRequestHandler fileRequestHandler = new StaticFileRequestHandler();
-    
-    static DisplayRequestHandler displayRequestHandler = new DisplayRequestHandler(fileRequestHandler);
-    static InstanceRequestHandler instanceRequestHandler = new InstanceRequestHandler();
-    static UserRequestHandler userRequestHandler = new UserRequestHandler();
-    static MDBRequestHandler mdbRequestHandler = new MDBRequestHandler();
-    static ClientRequestHandler clientRequestHandler = new ClientRequestHandler();
-    static ProcessorRequestHandler processorRequestHandler = new ProcessorRequestHandler();
-    static ArchiveRequestHandler archiveRequestHandler = new ArchiveRequestHandler();
-    static SimulationTimeService.SimTimeRequestHandler simTimeRequestHandler = new SimulationTimeService.SimTimeRequestHandler();
-    
+    Map<String, RestRequestHandler> restHandlers = new HashMap<>();
     WebSocketServerHandler webSocketHandler = new WebSocketServerHandler();
+    
+    public HttpSocketServerHandler() {
+        restHandlers.put("displays",  new DisplayRequestHandler(fileRequestHandler));
+        restHandlers.put("instances", new InstanceRequestHandler());
+        restHandlers.put("user", new UserRequestHandler());
+        restHandlers.put("mdb", new MDBRequestHandler());
+        restHandlers.put("clients", new ClientRequestHandler());
+        restHandlers.put("processors", new ProcessorRequestHandler());
+        restHandlers.put("archive", new ArchiveRequestHandler());
+        restHandlers.put("simTime", new SimulationTimeService.SimTimeRequestHandler());
+    }
     
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -133,26 +137,9 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
             RestRequest restReq = AbstractRequestHandler.toRestRequest(ctx, req, qsDecoder, authToken);
             
             String resource = restReq.getPathSegment(2);
-            if (instanceRequestHandler.getPath().equals(resource)) { 
-                instanceRequestHandler.handleRequestOrError(restReq, 3);
-                return;
-            } else if (displayRequestHandler.getPath().equals(resource)) {
-                displayRequestHandler.handleRequestOrError(restReq, 3);
-                return;
-            } else if (processorRequestHandler.getPath().equals(resource)) {
-                processorRequestHandler.handleRequestOrError(restReq, 3);
-                return;
-            } else if (clientRequestHandler.getPath().equals(resource)) {
-                clientRequestHandler.handleRequestOrError(restReq, 3);
-                return;
-            } else if (archiveRequestHandler.getPath().equals(resource)) {
-                archiveRequestHandler.handleRequestOrError(restReq, 3);
-                return;
-            } else if (mdbRequestHandler.getPath().equals(resource)) {
-                mdbRequestHandler.handleRequestOrError(restReq, 3);
-                return;
-            } else if (userRequestHandler.getPath().equals(resource)) {
-                userRequestHandler.handleRequestOrError(restReq, 3);
+            RestRequestHandler restHandler = restHandlers.get(resource);
+            if (restHandler != null) {
+                restHandler.handleRequestOrError(restReq, 3);
                 return;
             } else {
                 sendNegativeHttpResponse(ctx, req, NOT_FOUND);
@@ -193,7 +180,7 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
         }
 
         ChannelFuture f = ctx.writeAndFlush(res);
-        if (!isKeepAlive(req) || res.getStatus().code() != 200) {
+        if (!isKeepAlive(req) || res.getStatus().code() < 200 || res.getStatus().code() > 299) {
             f.addListener(ChannelFutureListener.CLOSE);
         }
     }

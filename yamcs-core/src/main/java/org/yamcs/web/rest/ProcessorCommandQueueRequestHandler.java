@@ -16,11 +16,6 @@ import org.yamcs.protobuf.SchemaRest;
 public class ProcessorCommandQueueRequestHandler extends RestRequestHandler {
     
     @Override
-    public String getPath() {
-        return "cqueues";
-    }
-    
-    @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {
             if (req.isGET()) {

@@ -89,11 +89,6 @@ public abstract class RestRequestHandler extends AbstractRequestHandler {
             sendError(req, status); // text/plain
         }
     }
-    
-    /**
-     * Returns the path handled by this handler.
-     */
-    public abstract String getPath();
 
     /**
      * Wraps all the logic that deals with a RestRequest. Requests should always

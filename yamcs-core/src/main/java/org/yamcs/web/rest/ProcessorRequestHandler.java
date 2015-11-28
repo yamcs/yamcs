@@ -47,11 +47,6 @@ public class ProcessorRequestHandler extends RestRequestHandler {
     private static ProcessorCommandQueueRequestHandler cqueueHandler = new ProcessorCommandQueueRequestHandler();
 
     @Override
-    public String getPath() {
-        return "processors";
-    }
-
-    @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {
             req.assertGET();

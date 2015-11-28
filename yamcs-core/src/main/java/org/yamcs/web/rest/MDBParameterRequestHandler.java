@@ -27,11 +27,6 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
     final static Logger log = LoggerFactory.getLogger(MDBParameterRequestHandler.class.getName());
     
     @Override
-    public String getPath() {
-        return "parameters";
-    }
-    
-    @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
         if (!req.hasPathSegment(pathOffset)) {
