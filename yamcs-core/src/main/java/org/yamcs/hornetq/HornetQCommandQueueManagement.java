@@ -1,4 +1,4 @@
-package org.yamcs.management;
+package org.yamcs.hornetq;
 
 import static org.yamcs.api.Protocol.CMDQUEUE_CONTROL_ADDRESS;
 import static org.yamcs.api.Protocol.CMDQUEUE_INFO_ADDRESS;
@@ -23,6 +23,8 @@ import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.management.ManagementGpbHelper;
+import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Commanding.CommandQueueEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Commanding.CommandQueueRequest;
@@ -32,16 +34,16 @@ import org.yamcs.protobuf.Commanding.CommandQueueRequest;
  * @author nm
  *
  */
-public class HornetCommandQueueManagement implements CommandQueueListener {
+public class HornetQCommandQueueManagement implements CommandQueueListener {
     ManagementService managementService;
     YamcsSession ysession;
     YamcsClient yclient;
     YamcsClient queueControlServer;
 
 
-    static Logger log=LoggerFactory.getLogger(HornetCommandQueueManagement.class.getName());
+    static Logger log=LoggerFactory.getLogger(HornetQCommandQueueManagement.class.getName());
 
-    public HornetCommandQueueManagement(ManagementService managementService) throws YamcsApiException, HornetQException {
+    public HornetQCommandQueueManagement(ManagementService managementService) throws YamcsApiException, HornetQException {
         this.managementService = managementService;
 
         if(ysession!=null) return;

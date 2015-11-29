@@ -35,6 +35,9 @@ import org.yamcs.YamcsException;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;
+import org.yamcs.hornetq.HornetQCommandQueueManagement;
+import org.yamcs.hornetq.HornetQManagement;
+import org.yamcs.hornetq.HornetQProcessorManagement;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
@@ -59,9 +62,9 @@ public class ManagementService implements YProcessorListener {
     public static final String ANONYMOUS = "anonymous";
     
     final MBeanServer mbeanServer;
-    HornetManagement hornetMgr;
-    HornetProcessorManagement hornetProcessorMgr;
-    HornetCommandQueueManagement hornetCmdQueueMgr;
+    HornetQManagement hornetMgr;
+    HornetQProcessorManagement hornetProcessorMgr;
+    HornetQCommandQueueManagement hornetCmdQueueMgr;
 
     final boolean jmxEnabled, hornetEnabled;
     static Logger log=LoggerFactory.getLogger(ManagementService.class.getName());
@@ -106,16 +109,15 @@ public class ManagementService implements YProcessorListener {
 
         if(hornetEnabled) {
             try {
-                hornetMgr=new HornetManagement(this);
-                hornetCmdQueueMgr=new HornetCommandQueueManagement(this);
-                hornetProcessorMgr=new HornetProcessorManagement(this);
+                hornetMgr=new HornetQManagement(this);
+                hornetCmdQueueMgr=new HornetQCommandQueueManagement(this);
+                hornetProcessorMgr=new HornetQProcessorManagement(this);
                 addLinkListener(hornetMgr);
                 addCommandQueueListener(hornetCmdQueueMgr);
                 addManagementListener(hornetProcessorMgr);
             } catch (Exception e) {
-                log.error("failed to start hornet management service: ", e);
+                log.error("failed to start hornet management service", e);
                 hornetEnabled=false;
-                e.printStackTrace();
             }
         }
         

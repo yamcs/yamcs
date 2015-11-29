@@ -1,4 +1,4 @@
-package org.yamcs.management;
+package org.yamcs.hornetq;
 
 import static org.yamcs.api.Protocol.LINK_CONTROL_ADDRESS;
 import static org.yamcs.api.Protocol.LINK_INFO_ADDRESS;
@@ -17,6 +17,8 @@ import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
+import org.yamcs.management.LinkListener;
+import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 
 /**
@@ -24,14 +26,14 @@ import org.yamcs.protobuf.YamcsManagement.LinkInfo;
  * @author nm
  *
  */
-public class HornetManagement implements LinkListener {
+public class HornetQManagement implements LinkListener {
     YamcsSession ysession;
     YamcsClient yclient, linkControlServer;
-    static Logger log=LoggerFactory.getLogger(HornetManagement.class.getName());
+    static Logger log=LoggerFactory.getLogger(HornetQManagement.class.getName());
     
     ManagementService mservice;
     
-    public HornetManagement(ManagementService mservice) throws YamcsApiException, HornetQException {
+    public HornetQManagement(ManagementService mservice) throws YamcsApiException, HornetQException {
         this.mservice=mservice;       
         
         if(ysession!=null) return;
