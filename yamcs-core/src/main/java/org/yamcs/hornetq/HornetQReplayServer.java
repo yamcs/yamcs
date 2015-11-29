@@ -15,9 +15,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.HqClientMessageToken;
-import org.yamcs.security.Privilege;
 import org.yamcs.YamcsException;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
@@ -34,6 +31,9 @@ import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.StringMessage;
+import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.HqClientMessageToken;
+import org.yamcs.security.Privilege;
 import org.yamcs.xtce.MdbMappings;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
@@ -125,7 +125,6 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
             }
 
             // Check privileges for requested packets
-            // TODO delete right half of if-statement once no longer deprecated
             if (replayRequest.hasPacketRequest()) {
                 Collection<String> allowedPackets = priv.getTmPacketNames(instance, authToken, MdbMappings.MDB_OPSNAME);
 
