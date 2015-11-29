@@ -60,11 +60,6 @@ message CommandQueueRequest {
   optional CommandQueueEntry queueEntry = 2; //for SendCommand and RejectCommand
   optional bool rebuild = 3[default=false]; //if rebuild is true, the binary packet will be recreated to include new time and sequence count
 }
-service CommandQueueControl { //rpc requests sent to the cmdQueueControl address
-  rpc SetQueueState(CommandQueueInfo) returns (yamcs.Void);
-  rpc SendCommand(CommandQueueRequest) returns (yamcs.Void);
-  rpc RejectCommand(CommandQueueEntry) returns (yamcs.Void);
-}
 
 /* this message is sent as response to validate, in case the significance is defined for a commands*/
 message CommandSignificance {

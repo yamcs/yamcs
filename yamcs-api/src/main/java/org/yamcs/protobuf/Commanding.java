@@ -8420,13 +8420,7 @@ public final class Commanding {
       "\030\001 \002(\0132\025.commanding.CommandId\0221\n\004attr\030\003 ",
       "\003(\0132#.commanding.CommandHistoryAttribute" +
       "*4\n\nQueueState\022\013\n\007BLOCKED\020\001\022\014\n\010DISABLED\020" +
-      "\002\022\013\n\007ENABLED\020\0032\313\001\n\023CommandQueueControl\022:" +
-      "\n\rSetQueueState\022\034.commanding.CommandQueu" +
-      "eInfo\032\013.yamcs.Void\022;\n\013SendCommand\022\037.comm" +
-      "anding.CommandQueueRequest\032\013.yamcs.Void\022" +
-      ";\n\rRejectCommand\022\035.commanding.CommandQue" +
-      "ueEntry\032\013.yamcs.VoidB\024\n\022org.yamcs.protob" +
-      "uf"
+      "\002\022\013\n\007ENABLED\020\003B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

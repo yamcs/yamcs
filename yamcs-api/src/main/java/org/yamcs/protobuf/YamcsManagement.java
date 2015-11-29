@@ -20217,8 +20217,7 @@ public final class YamcsManagement {
    * Protobuf type {@code yamcsManagement.LinkInfo}
    *
    * <pre>
-   *these messages are posted on the linkInfo address.
-   *there is also a linkInfo queue that contains the last values
+   ************** Link Control ***************************
    * </pre>
    */
   public static final class LinkInfo extends
@@ -20872,8 +20871,7 @@ public final class YamcsManagement {
      * Protobuf type {@code yamcsManagement.LinkInfo}
      *
      * <pre>
-     *these messages are posted on the linkInfo address.
-     *there is also a linkInfo queue that contains the last values
+     ************** Link Control ***************************
      * </pre>
      */
     public static final class Builder extends
@@ -22544,20 +22542,8 @@ public final class YamcsManagement {
       "\022\016\n\nREGISTERED\020\001\022\020\n\014UNREGISTERED\020\002\022\013\n\007UP" +
       "DATED\020\003*\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010STAR" +
       "TING\020\001\022\013\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTER",
-      "MINATED\020\004\022\n\n\006FAILED\020\0052\235\001\n\014YamcsControl\022A" +
-      "\n\021GetYamcsInstances\022\013.yamcs.Void\032\037.yamcs" +
-      "Management.YamcsInstances\022J\n\022GetMissionD" +
-      "atabase\022\'.yamcsManagement.MissionDatabas" +
-      "eRequest\032\013.yamcs.Void2\341\002\n\020ProcessorContr" +
-      "ol\022A\n\017CreateProcessor\022!.yamcsManagement." +
-      "ProcessorRequest\032\013.yamcs.Void\022D\n\022Connect" +
-      "ToProcessor\022!.yamcsManagement.ProcessorR" +
-      "equest\032\013.yamcs.Void\022@\n\016PauseProcessor\022!." +
-      "yamcsManagement.ProcessorRequest\032\013.yamcs",
-      ".Void\022A\n\017ResumeProcessor\022!.yamcsManageme" +
-      "nt.ProcessorRequest\032\013.yamcs.Void\022?\n\rSeek" +
-      "Processor\022!.yamcsManagement.ProcessorReq" +
-      "uest\032\013.yamcs.VoidB\024\n\022org.yamcs.protobuf"
+      "MINATED\020\004\022\n\n\006FAILED\020\005B\024\n\022org.yamcs.proto" +
+      "buf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

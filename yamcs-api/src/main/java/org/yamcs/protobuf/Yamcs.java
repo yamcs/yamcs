@@ -12,19 +12,7 @@ public final class Yamcs {
    * Protobuf enum {@code yamcs.EndAction}
    *
    * <pre>
-   * all the replay data is sent on the data address
-   *service YarchReplay {
-   *rpc CreateReplay(ReplayRequest) returns (MessagingAddress);
-   *}
-   *
-   *service Replay {
-   *rpc Start(Void) returns (Void);
-   *rpc Pause(Void) returns (Void);
-   *rpc Quit(Void) returns (Void);
-   *rpc Seek(Instant) returns (Void);
-   *rpc GetReplayStatus(Void) returns (ReplayStatus);
-   *rpc ChangeReplayRequest(ReplayRequest) returns (Void);
-   *}
+   ************************ Replay Service ***************
    * </pre>
    */
   public enum EndAction
@@ -24310,19 +24298,8 @@ public final class Yamcs {
       "O\020\013\022\031\n\025PROCESSING_STATISTICS\020\014\022\017\n\013STREAM" +
       "_DATA\020\r\022\016\n\nALARM_DATA\020\016\022\r\n\tTIME_INFO\020\017\022\016" +
       "\n\nLINK_EVENT\020\020\022\026\n\022COMMAND_QUEUE_INFO\020\021\022\027" +
-      "\n\023COMMAND_QUEUE_EVENT\020\0222\337\001\n\030RealtimePara",
-      "meterService\0220\n\tSubscribe\022\026.yamcs.NamedO" +
-      "bjectList\032\013.yamcs.Void\0221\n\014SubscribeAll\022\024" +
-      ".yamcs.StringMessage\032\013.yamcs.Void\0222\n\013Uns" +
-      "ubscribe\022\026.yamcs.NamedObjectList\032\013.yamcs" +
-      ".Void\022*\n\016UnsubscribeAll\022\013.yamcs.Void\032\013.y" +
-      "amcs.Void2\340\001\n\014ArchiveIndex\0223\n\010GetIndex\022\023" +
-      ".yamcs.IndexRequest\032\022.yamcs.IndexResult\022" +
-      "/\n\006GetTag\022\023.yamcs.IndexRequest\032\020.yamcs.T" +
-      "agResult\0227\n\tUpsertTag\022\027.yamcs.UpsertTagR" +
-      "equest\032\021.yamcs.ArchiveTag\0221\n\tDeleteTag\022\027",
-      ".yamcs.DeleteTagRequest\032\013.yamcs.VoidB\024\n\022" +
-      "org.yamcs.protobuf"
+      "\n\023COMMAND_QUEUE_EVENT\020\022B\024\n\022org.yamcs.pro",
+      "tobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

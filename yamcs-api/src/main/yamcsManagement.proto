@@ -2,7 +2,6 @@ package yamcsManagement;
 option java_package = "org.yamcs.protobuf";
 
 /* Yamcs Management structures and services */
-/* Services are used just for reference, no code is being generated (yet) */
 
 import "yamcs.proto";
 
@@ -71,13 +70,6 @@ message MissionDatabase {
 message MissionDatabaseRequest {
   optional string dbConfigName = 1;
   optional string instance = 2;
-}
-
-//this is just for documentation purposes, the protobuf generated stuff is not used yet
-service YamcsControl {
-  rpc GetYamcsInstances(yamcs.Void) returns (YamcsInstances);
-  //this one sends a binary stream containing the serialized MDB
-  rpc GetMissionDatabase(MissionDatabaseRequest) returns (yamcs.Void);
 }
 
 /************** Yamcs Processor Control service *********************/
@@ -174,20 +166,7 @@ message ProcessorRequest { //this is used for ProcessorControl service
   optional yamcs.ReplaySpeed replaySpeed = 5; //for CHANGE_SPEED
 }
 
-//this is obsolete (but still implemented in HornetQ)
-// the operations shall be specified using the ProcessorRequest.Operation defined above
-service ProcessorControl {
-  rpc CreateProcessor(ProcessorRequest) returns (yamcs.Void);
-  rpc ConnectToProcessor(ProcessorRequest) returns (yamcs.Void);
-  rpc PauseProcessor(ProcessorRequest) returns (yamcs.Void);
-  rpc ResumeProcessor(ProcessorRequest) returns (yamcs.Void);
-  rpc SeekProcessor(ProcessorRequest) returns (yamcs.Void);
-}
-
 /************** Link Control ****************************/
-/*these messages are posted on the linkInfo address.
-  there is also a linkInfo queue that contains the last values
-*/
 message LinkInfo {
   required string instance = 1;
   required string name = 2;
