@@ -53,7 +53,6 @@ public class ReplayToChunkedParameterCSV extends RestParameterReplayListener {
     public void onParameterData(ParameterData pdata) {
         try {
             formatter.writeParameters(pdata.getParameterList());
-            //formatter.flush(); // Hmm would prefer not to flush everytime
             if (buf.readableBytes() >= CHUNK_TRESHOLD) {
                 formatter.close();
                 RestUtils.writeChunk(req, buf);

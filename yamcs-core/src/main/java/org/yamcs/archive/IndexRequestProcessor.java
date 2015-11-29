@@ -95,7 +95,6 @@ class IndexRequestProcessor implements Runnable {
     public void run() {
         boolean ok=true;
         try {
-            indexRequestListener.beforeProcessing();
             if(tmpackets.size()>0) ok=sendHistogramData(XtceTmRecorder.TABLE_NAME, "pname", 2000, tmpackets);
             if(ok && sendParams) ok=sendHistogramData(PpRecorder.TABLE_NAME, "ppgroup", 20000, null); //use 20 sec for the PP to avoid millions of records
             
@@ -104,10 +103,10 @@ class IndexRequestProcessor implements Runnable {
             
             if(ok && req.getSendCompletenessIndex()) ok=sendCompletenessIndex();
         } catch (Exception e) {
-            log.error("got exception while sending the response: ", e);
+            log.error("got exception while sending the response", e);
             ok=false;
         } finally {
-        	indexRequestListener.afterProcessing(ok);
+        	indexRequestListener.finished(ok);
         }
     }
 
@@ -159,7 +158,7 @@ class IndexRequestProcessor implements Runnable {
                     if(name2id!=null) {
                         id=name2id.get(name);
                         if(id==null) {
-                            log.debug("Not sending {} because no id for it ", name);
+                            log.debug("Not sending {} because no id for it", name);
                             return;
                         }
                     } else {

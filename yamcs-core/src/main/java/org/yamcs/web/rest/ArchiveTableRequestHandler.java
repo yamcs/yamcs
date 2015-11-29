@@ -105,5 +105,4 @@ public class ArchiveTableRequestHandler extends RestRequestHandler {
         
         return new RestResponse(req, responseb.build(), SchemaArchive.TableData.WRITE);
     }
-
 }

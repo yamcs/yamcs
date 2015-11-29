@@ -17,25 +17,26 @@ public class HornetQIndexRequestListener implements IndexRequestListener {
     SimpleString dataAddress;
     YamcsSession yamcsSession;
     YamcsClient yamcsClient;
+    private boolean first;
     
     public HornetQIndexRequestListener(SimpleString replyto) {
         this.dataAddress = replyto;
+        first = true;
     }
     
     @Override
-    public void beforeProcessing() throws Exception {
-        yamcsSession=YamcsSession.newBuilder().build();
-        yamcsClient=yamcsSession.newClientBuilder().setRpc(false).setDataProducer(true).build();
-        Protocol.killProducerOnConsumerClosed(yamcsClient.dataProducer, dataAddress);
-    }
-
-    @Override
     public void processData(IndexResult indexResult) throws Exception {
+        if (first) {
+            yamcsSession=YamcsSession.newBuilder().build();
+            yamcsClient=yamcsSession.newClientBuilder().setRpc(false).setDataProducer(true).build();
+            Protocol.killProducerOnConsumerClosed(yamcsClient.dataProducer, dataAddress);
+            first = false;
+        }
         yamcsClient.sendData(dataAddress, ProtoDataType.ARCHIVE_INDEX, indexResult);
     }
 
     @Override
-    public void afterProcessing(boolean success) {
+    public void finished(boolean success) {
         if (success) {
             try {
                 yamcsClient.sendDataEnd(dataAddress);

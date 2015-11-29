@@ -55,7 +55,6 @@ public abstract class StreamToChunkedProtobufEncoder<T extends MessageLite> exte
         try {
             T msg = mapTuple(tuple);
             bufferMessage(msg);
-            //bufOut.flush(); // hmm
             if (buf.readableBytes() >= CHUNK_TRESHOLD) {
                 bufOut.close();
                 RestUtils.writeChunk(req, buf);

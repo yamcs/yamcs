@@ -55,7 +55,6 @@ public class ReplayToChunkedParameterProtobuf extends RestParameterReplayListene
             for (ParameterValue pval : pdata.getParameterList()) {
                 bufferMessage(pval);
             }
-            //bufOut.flush(); // hmm
             if (buf.readableBytes() >= CHUNK_TRESHOLD) {
                 bufOut.close();
                 RestUtils.writeChunk(req, buf);

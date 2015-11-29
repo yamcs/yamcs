@@ -55,14 +55,15 @@ public class ArchiveRequestHandler extends RestRequestHandler {
     private CsvGenerator csvGenerator = null;
     
     public ArchiveRequestHandler() {
-        subHandlers.put("tags", new ArchiveTagRequestHandler());
-        subHandlers.put("tables", new ArchiveTableRequestHandler());
-        subHandlers.put("streams", new ArchiveStreamRequestHandler());
-        subHandlers.put("parameters", new ArchiveParameterRequestHandler());
         subHandlers.put("alarms", new ArchiveAlarmRequestHandler());
-        subHandlers.put("packets", new ArchivePacketRequestHandler());
-        subHandlers.put("events", new ArchiveEventRequestHandler());
         subHandlers.put("downloads", new ArchiveDownloadHandler());
+        subHandlers.put("events", new ArchiveEventRequestHandler());
+        subHandlers.put("indexes", new ArchiveIndexHandler());
+        subHandlers.put("packets", new ArchivePacketRequestHandler());
+        subHandlers.put("parameters", new ArchiveParameterRequestHandler());
+        subHandlers.put("streams", new ArchiveStreamRequestHandler());
+        subHandlers.put("tables", new ArchiveTableRequestHandler());
+        subHandlers.put("tags", new ArchiveTagRequestHandler());
     }
     
     @Override

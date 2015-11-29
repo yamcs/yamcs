@@ -39,7 +39,6 @@ public class RestStreams {
         
         Stream stream = ydb.getStream(streamName);
         stream.addSubscriber(wrapper);
-        System.out.println("bbb");
         stream.start();
         return wrapper;
     }

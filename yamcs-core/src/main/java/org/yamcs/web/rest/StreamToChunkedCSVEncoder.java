@@ -59,7 +59,6 @@ public abstract class StreamToChunkedCSVEncoder extends RestStreamSubscriber {
     public void onTuple(Tuple tuple) {
         try {
             processTuple(tuple, csvWriter);
-            //csvWriter.flush(); // Hmm would prefer not to flush everytime
             if (buf.readableBytes() >= CHUNK_TRESHOLD) {
                 csvWriter.close();
                 RestUtils.writeChunk(req, buf);

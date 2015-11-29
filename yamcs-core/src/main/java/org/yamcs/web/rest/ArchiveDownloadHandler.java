@@ -27,8 +27,7 @@ import com.csvreader.CsvWriter;
  * Serves archived data through a web api.
  *
  * <p>Archive requests use chunked encoding with an unspecified content length, which enables
- * us to send large dumps without needing to determine a content length on the server. At the
- * moment every hornetq message from the archive replay is put in a separate chunk and flushed.
+ * us to send large dumps without needing to determine a content length on the server.
  */
 public class ArchiveDownloadHandler extends RestRequestHandler {
     
