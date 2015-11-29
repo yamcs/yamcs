@@ -74,8 +74,6 @@ public class CommandQueue {
         return commands.contains(pc);
     }
 
-
-
     public void add(PreparedCommand pc) {
         commands.add(pc);
     }

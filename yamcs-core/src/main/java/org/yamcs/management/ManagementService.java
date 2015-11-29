@@ -2,7 +2,6 @@ package org.yamcs.management;
 
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -41,11 +40,9 @@ import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
-import org.yamcs.protobuf.YamcsManagement.TmStatistics;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.tctm.Link;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtceproc.ProcessingStatistics;
 
 import com.google.common.util.concurrent.Service;
@@ -534,7 +531,7 @@ public class ManagementService implements YProcessorListener {
                 Statistics stats=entry.getValue();
                 ProcessingStatistics ps=yproc.getTmProcessor().getStatistics();
                 if((stats==STATS_NULL) || (ps.getLastUpdated()>stats.getLastUpdated())) {
-                    stats=buildStats(yproc);
+                    stats=ManagementGpbHelper.buildStats(yproc);
                     yprocs.put(yproc, stats);
                 }
                 if(stats!=STATS_NULL) {
@@ -560,57 +557,21 @@ public class ManagementService implements YProcessorListener {
 
     @Override
     public void processorAdded(YProcessor processor) {
-        ProcessorInfo pi = getProcessorInfo(processor);
+        ProcessorInfo pi = ManagementGpbHelper.toProcessorInfo(processor);
         managementListeners.forEach(l -> l.processorAdded(pi));
         yprocs.put(processor, STATS_NULL);
     }
 
     @Override
     public void yProcessorClosed(YProcessor processor) {
-        ProcessorInfo pi = getProcessorInfo(processor);
+        ProcessorInfo pi = ManagementGpbHelper.toProcessorInfo(processor);
         managementListeners.forEach(l -> l.processorClosed(pi));
         yprocs.remove(processor);
     }
 
     @Override
     public void processorStateChanged(YProcessor processor) {
-        ProcessorInfo pi = getProcessorInfo(processor);
+        ProcessorInfo pi = ManagementGpbHelper.toProcessorInfo(processor);
         managementListeners.forEach(l -> l.processorStateChanged(pi));
-    }
-    
-    public static Statistics buildStats(YProcessor processor) {
-        ProcessingStatistics ps=processor.getTmProcessor().getStatistics();
-        Statistics.Builder statsb=Statistics.newBuilder();
-        statsb.setLastUpdated(ps.getLastUpdated());
-        statsb.setLastUpdatedUTC(TimeEncoding.toString(ps.getLastUpdated()));
-        statsb.setInstance(processor.getInstance()).setYProcessorName(processor.getName());
-        Collection<ProcessingStatistics.TmStats> tmstats=ps.stats.values();
-        if(tmstats==null) {
-            return STATS_NULL;
-        }
-
-        for(ProcessingStatistics.TmStats t:tmstats) {
-            TmStatistics ts=TmStatistics.newBuilder()
-                    .setPacketName(t.packetName).setLastPacketTime(t.lastPacketTime)
-                    .setLastReceived(t.lastReceived).setReceivedPackets(t.receivedPackets)
-                    .setLastPacketTimeUTC(TimeEncoding.toString(t.lastPacketTime))
-                    .setLastReceivedUTC(TimeEncoding.toString(t.lastReceived))
-                    .setSubscribedParameterCount(t.subscribedParameterCount).build();
-            statsb.addTmstats(ts);
-        }
-        return statsb.build();
-    }
-    
-    public static ProcessorInfo getProcessorInfo(YProcessor yproc) {
-        ProcessorInfo.Builder cib=ProcessorInfo.newBuilder().setInstance(yproc.getInstance())
-                .setName(yproc.getName()).setType(yproc.getType())
-                .setCreator(yproc.getCreator()).setHasCommanding(yproc.hasCommanding())
-                .setState(yproc.getState());
-
-        if(yproc.isReplay()) {
-            cib.setReplayRequest(yproc.getReplayRequest());
-            cib.setReplayState(yproc.getReplayState());
-        }
-        return cib.build();
     }
 }

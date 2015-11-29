@@ -42,6 +42,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
         resources.add(new StreamResource(yproc, wsHandler));
         resources.add(new TimeResource(yproc, wsHandler));
         resources.add(new LinkResource(yproc, wsHandler));
+        resources.add(new CommandQueueResource(yproc, wsHandler));
     }
 
     @Override

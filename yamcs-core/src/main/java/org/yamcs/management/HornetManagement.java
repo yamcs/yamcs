@@ -50,8 +50,7 @@ public class HornetManagement implements LinkListener {
                 try {
                     processLinkControlMessage(message);
                 } catch (Exception e) {
-                    log.error("Error when processing request");
-                    e.printStackTrace();
+                    log.error("Error when processing request", e);
                 }
             }
         });
@@ -113,7 +112,6 @@ public class HornetManagement implements LinkListener {
             yclient.dataProducer.send(LINK_INFO_ADDRESS, msg);
         }   catch (HornetQException e) {
             log.error("Exception while updating link status: ", e);
-            e.printStackTrace();
         }
     }
 }

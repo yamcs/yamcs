@@ -27,8 +27,6 @@ import org.yamcs.protobuf.Commanding.CommandQueueEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Commanding.CommandQueueRequest;
 
-import com.google.protobuf.ByteString;
-
 /**
  * allows controlling command queues via hornet
  * @author nm
@@ -84,7 +82,7 @@ public class HornetCommandQueueManagement implements CommandQueueListener {
                 if(!cqr.hasQueueInfo()) throw new YamcsException("setQueueState requires a queueInfo");
                 CommandQueueInfo cqi=cqr.getQueueInfo();
                 CommandQueueManager cqm=managementService.getQueueManager(cqi.getInstance(), cqi.getProcessorName());
-                cqm.setQueueState(cqi.getName(), cqi.getState(), cqr.getRebuild());
+                cqm.setQueueState(cqi.getName(), cqi.getState());
                 queueControlServer.sendReply(replyto, "OK", null);
             } else if("sendCommand".equalsIgnoreCase(req)) {
                 if(!cqr.hasQueueEntry()) throw new YamcsException("sendCommand requires a queueEntry");
@@ -132,12 +130,8 @@ public class HornetCommandQueueManagement implements CommandQueueListener {
     }
 
     private void sendCommandEvent(String eventName, CommandQueue q, PreparedCommand pc, boolean expire) {
+        CommandQueueEntry cqe = ManagementGpbHelper.toCommandQueueEntry(q, pc);
         YProcessor c=q.getChannel();
-        CommandQueueEntry cqe=CommandQueueEntry.newBuilder()
-                .setInstance(c.getInstance()).setProcessorName(c.getName()).setQueueName(q.getName())
-                .setCmdId(pc.getCommandId()).setSource(pc.getSource()).setBinary(ByteString.copyFrom(pc.getBinary()))
-                .setGenerationTime(pc.getGenerationTime()).setUsername(pc.getUsername()).build();
-
         String lvn=c.getInstance()+"."+c.getName()+"."+pc.getCommandId().getOrigin()+"."+pc.getCommandId().getSequenceNumber();
         ClientMessage msg=ysession.session.createMessage(false);
         msg.putStringProperty(Message.HDR_LAST_VALUE_NAME, new SimpleString(lvn));
@@ -159,12 +153,7 @@ public class HornetCommandQueueManagement implements CommandQueueListener {
     @Override
     public void updateQueue(CommandQueue queue) {
         YProcessor c=queue.getChannel();
-        CommandQueueInfo cqi=CommandQueueInfo.newBuilder()
-                .setInstance(c.getInstance()).setProcessorName(c.getName())
-                .setName(queue.getName()).setState(queue.getState())
-                .setStateExpirationTimeS(queue.getStateExpirationRemainingS())
-                .setNbRejectedCommands(queue.getNbRejectedCommands())
-                .setNbSentCommands(queue.getNbSentCommands()).build();
+        CommandQueueInfo cqi=ManagementGpbHelper.toCommandQueueInfo(queue);
 
         String lvn=c.getInstance()+"."+c.getName()+"."+queue.getName();
         ClientMessage msg=ysession.session.createMessage(false);

@@ -6,6 +6,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
+import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.SchemaYamcsManagement;
@@ -50,7 +51,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
     
     private WebSocketReplyData processGetProcessorInfoRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
         int requestId = ctx.getRequestId();
-        ProcessorInfo pinfo = ManagementService.getProcessorInfo(processor);
+        ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
         try {
             wsHandler.sendReply(toAckReply(requestId));
             wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
@@ -89,7 +90,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
             
             // Send current set of processors
             for (YProcessor processor : YProcessor.getChannels()) {
-                ProcessorInfo pinfo = ManagementService.getProcessorInfo(processor);
+                ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
                 wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
             }
             

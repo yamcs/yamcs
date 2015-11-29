@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
+import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Rest;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
@@ -391,7 +392,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
     public static ProcessorInfo toProcessorInfo(YProcessor processor, RestRequest req, boolean detail) {
         ProcessorInfo.Builder b;
         if (detail) {
-            ProcessorInfo pinfo = ManagementService.getProcessorInfo(processor);
+            ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
             b = ProcessorInfo.newBuilder(pinfo);
         } else {
             b = ProcessorInfo.newBuilder().setName(processor.getName());

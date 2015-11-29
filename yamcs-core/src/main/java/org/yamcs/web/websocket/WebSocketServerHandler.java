@@ -176,7 +176,7 @@ public class WebSocketServerHandler {
         if(!channel.isOpen()) throw new IOException("Channel not open");
         
         if(!channel.isWritable()) {
-            log.warn("Dropping message because channel is not writable");
+            log.warn("Dropping " + dataType + " message because channel is not writable");
             return;
         }
         WebSocketFrame frame = encoder.encodeData(dataSeqCount, dataType, data, schema);

@@ -63,6 +63,10 @@ message PatchLinkRequest {
   optional string state = 1;
 }
 
+message PatchCommandQueueRequest {
+  optional string state = 1;
+}
+
 message ListClientsResponse {
   repeated yamcsManagement.ClientInfo client = 1;
 }
@@ -77,6 +81,14 @@ message ListProcessorsResponse {
 
 message ListCommandQueuesResponse {
   repeated commanding.CommandQueueInfo queue = 1;
+}
+
+message ListCommandQueueEntries {
+  repeated commanding.CommandQueueEntry entry = 1;
+}
+
+message PatchCommandQueueEntryRequest {
+  optional string state = 1;
 }
 
 message IssueCommandRequest {
