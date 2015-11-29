@@ -78,7 +78,7 @@ public class WebSocketServerHandler {
     private String determineApplicationName(HttpRequest req) {
         if (req.headers().contains(HttpHeaders.Names.USER_AGENT)) {
             String userAgent = req.headers().get(HttpHeaders.Names.USER_AGENT);
-            return (userAgent.contains("Mozilla")) ? "uss-web" : userAgent;
+            return (userAgent.contains("Mozilla")) ? "yamcs-web" : userAgent;
         } else {
             // Origin is always present, according to spec.
             return "Unknown (" + req.headers().get(HttpHeaders.Names.ORIGIN) +")";
