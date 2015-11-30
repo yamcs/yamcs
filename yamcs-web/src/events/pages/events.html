@@ -24,9 +24,27 @@
     </div>
     <div class="btn-toolbar pull-right">
       <div class="btn-group" style="margin-top: -10px;">
-        <button type="button" class="btn btn-default btn-sm" ng-model="vm.severityToggles.info" uib-btn-checkbox>Info</button>
-        <button type="button" class="btn btn-default btn-sm" ng-model="vm.severityToggles.warning" uib-btn-checkbox>Warning</button>
-        <button type="button" class="btn btn-default btn-sm" ng-model="vm.severityToggles.error" uib-btn-checkbox>Error</button>
+        <button type="button" class="btn btn-default btn-sm" ng-model="vm.severityToggles.info" uib-btn-checkbox>
+          <span class="glyphicon" ng-class="{
+            'glyphicon-ok-circle': vm.severityToggles.info,
+            'glyphicon-remove-circle': !vm.severityToggles.info
+          }"></span>
+          Info
+        </button>
+        <button type="button" class="btn btn-default btn-sm" ng-model="vm.severityToggles.warning" uib-btn-checkbox>
+          <span class="glyphicon" ng-class="{
+            'glyphicon-ok-circle': vm.severityToggles.warning,
+            'glyphicon-remove-circle': !vm.severityToggles.warning
+          }"></span>
+          Warning
+        </button>
+        <button type="button" class="btn btn-default btn-sm" ng-model="vm.severityToggles.error" uib-btn-checkbox>
+          <span class="glyphicon" ng-class="{
+            'glyphicon-ok-circle': vm.severityToggles.error,
+            'glyphicon-remove-circle': !vm.severityToggles.error
+          }"></span>
+          Error
+        </button>
       </div>
     </div>
     <h1 class="page-header">Events</h1>
@@ -43,7 +61,7 @@
     <tr ng-repeat="event in vm.events | filter:vm.filterTable | orderBy:'-generationTime'"
         ng-class="{warning: event.severity == 'WARNING', danger: event.severity == 'ERROR'}">
       <td>
-        <!--span ng-if="event.severity == 'INFO'" class="label label-info">Info</span-->
+        <span ng-if="event.severity == 'INFO'" class="label label-info">Info</span>
         <span ng-if="event.severity == 'WARNING'" class="label label-warning">Warning</span>
         <span ng-if="event.severity == 'ERROR'" class="label label-danger">Error</span>
         <span ng-bind-html="event.message | nl2br"></span>

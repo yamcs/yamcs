@@ -7,7 +7,6 @@
 
     /* @ngInject */
     function MDBParameterDetailController($rootScope, $scope, $routeParams, $filter, $uibModal, tmService, mdbService, configService, alarmsService) {
-        var vm = this;
 
         // Will be augmented when passed into directive
         $scope.plotController = {};
@@ -31,8 +30,8 @@
         $scope.alarms = [];
         mdbService.getParameterInfo(urlname).then(function (data) {
 
-            vm.info = mapAlarmRanges(data);
-            var qname = vm.info['qualifiedName'];
+            $scope.info = mapAlarmRanges(data);
+            var qname = $scope.info['qualifiedName'];
 
             alarmsService.listAlarmsForParameter(qname).then(function (alarms) {
                 $scope.alarms = alarms;
@@ -44,7 +43,7 @@
                 // data. This may mean that we miss a few points though, but that's acceptable for now.
                 var subscriptionId = tmService.subscribeParameter({name: qname}, function (data) {
                     $scope.para = data;
-                    if (!loadingHistory) {
+                    if (!loadingHistory && $scope.isNumeric()) {
                         appendPoint($scope, data, $filter);
                     } else {
                         //console.log('ignoring a point');
@@ -58,7 +57,7 @@
                     noRepeat: true,
                     limit: 10
                 }).then(function (historyData) {
-                    vm.values = historyData['parameter'];
+                    $scope.values = historyData['parameter'];
                 });
 
                 $scope.activeAlarms = alarmsService.getActiveAlarms(); // Live collection
@@ -115,10 +114,10 @@
                 });
             };
 
-            return vm.info;
+            return $scope.info;
         });
 
-        vm.openEnumValuesModal = function() {
+        $scope.openEnumValuesModal = function() {
             $uibModal.open({
                 animation: true,
                 templateUrl: 'enumValuesModal.html',
@@ -126,12 +125,12 @@
                 size: 'lg',
                 resolve: {
                     info: function () {
-                        return vm.info;
+                        return $scope.info;
                     }
                 }
             });
         };
-        vm.addParameterModal = function() {
+        $scope.addParameterModal = function() {
             $uibModal.open({
                 animation: true,
                 templateUrl: 'addParameterModal.html',
@@ -140,21 +139,21 @@
             });
         };
 
-        vm.expandAlarms = function() {
+        $scope.expandAlarms = function() {
             for (var i = 0; i < $scope.alarms.length; i++) {
                 $scope.alarms[i].expanded = true;
             }
         };
 
-        vm.collapseAlarms = function() {
+        $scope.collapseAlarms = function() {
             for (var i = 0; i < $scope.alarms.length; i++) {
                 $scope.alarms[i].expanded = false;
             }
         };
 
-        vm.isNumeric = function() {
-            if (vm.hasOwnProperty('info') && vm.info.hasOwnProperty('type') && vm.info.type.hasOwnProperty('engType')) {
-                return vm.info.type.engType === 'float' || vm.info.type.engType === 'integer';
+        $scope.isNumeric = function() {
+            if ($scope.hasOwnProperty('info') && $scope.info.hasOwnProperty('type') && $scope.info.type.hasOwnProperty('engType')) {
+                return $scope.info.type.engType === 'float' || $scope.info.type.engType === 'integer';
             } else {
                 return false;
             }
@@ -174,7 +173,9 @@
             if (scope.pdata[0]['max'] === null || scope.pdata[0]['max'] < val) {
                 scope.pdata[0]['max'] = val;
             }
-            scope.plotController.repaint();
+            if (scope.hasOwnProperty('plotController')) {
+                scope.plotController.repaint();
+            }
         }
     }
 

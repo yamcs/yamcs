@@ -1,6 +1,6 @@
-<mdb-pane active-pane="{{ vm.info.qualifiedName|spaceSystem }}" yamcs-instance="yamcsInstance" shell="shell">
+<mdb-pane active-pane="{{ info.qualifiedName|spaceSystem }}" yamcs-instance="yamcsInstance" shell="shell">
   <div>
-    <h1 class="page-header">{{ vm.info.name }} <small>{{ vm.info.qualifiedName | spaceSystem }}</small></h1>
+    <h1 class="page-header">{{ info.name }} <small>{{ info.qualifiedName | spaceSystem }}</small></h1>
   </div>
 
   <uib-alert ng-if="activeAlarm" type="danger" style="margin-top: 0.5em;">
@@ -15,7 +15,7 @@
             <img ng-src="/_static/_site/alarms/images/level{{ activeAlarm.triggerLevel }}.png" uib-tooltip="{{ activeAlarm.triggerValue.monitoringResult | monitoringValue }}">
             <small>
               Reached {{ activeAlarm.triggerValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
-              with {{ activeAlarm.triggerValue | stringValue }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="activeAlarm.triggerValue.monitoringResult | lohi"></span>
+              with {{ activeAlarm.triggerValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="activeAlarm.triggerValue.monitoringResult | lohi"></span>
             </small>
           </dd>
 
@@ -24,7 +24,7 @@
             <img ng-src="/_static/_site/alarms/images/level{{ activeAlarm.mostSevereLevel }}.png" uib-tooltip="{{ activeAlarm.mostSevereValue.monitoringResult | monitoringValue }}">
             <small>
               Reached {{ activeAlarm.mostSevereValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
-              with {{ activeAlarm.mostSevereValue | stringValue }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="activeAlarm.mostSevereValue.monitoringResult | lohi"></span>
+              with {{ activeAlarm.mostSevereValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="activeAlarm.mostSevereValue.monitoringResult | lohi"></span>
             </small>
           </dd>
 
@@ -32,7 +32,7 @@
           <dd>
             <img ng-src="/_static/_site/alarms/images/level{{ activeAlarm.currentLevel }}.png" uib-tooltip="{{ activeAlarm.currentValue.monitoringResult | monitoringValue }}">
             <small>
-              <strong>{{ activeAlarm.currentValue | stringValue }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}</strong><span ng-bind-html="activeAlarm.currentValue.monitoringResult | lohi"></span>
+              <strong>{{ activeAlarm.currentValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}</strong><span ng-bind-html="activeAlarm.currentValue.monitoringResult | lohi"></span>
               &ndash; {{ activeAlarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
             </small>
           </dd>
@@ -61,28 +61,28 @@
         <span style="font-size: 20px; font-weight: bolder; white-space: nowrap">
           <span ng-if="para">{{ para | stringValue }}</span>
           <span ng-if="!para">---</span>
-          {{ vm.info.type.unitSet | joinBy:'unit':' ' }}
+          {{ info.type.unitSet | joinBy:'unit':' ' }}
         </span>
         <img ng-if="para.monitoringResult && (para.monitoringResult != 'DISABLED')" ng-src="/_static/_site/alarms/images/level{{ para.monitoringResult | monitoringLevel }}.png" uib-tooltip="{{ para.monitoringResult | monitoringValue }}"><br>
         <small style="color: #6f6f6f" ng-if="para">{{ para.generationTimeUTC | parseUTC | formatDate }}</small><br>
-        <small style="color: #6f6f6f">Source: {{ vm.info.dataSource|capitalize }}</small>
+        <small style="color: #6f6f6f">Source: {{ info.dataSource|capitalize }}</small>
       </div>
 
       <div class="col-md-6">
         <dl class="dl-horizontal">
           <dt>Qualified&nbsp;Name</dt>
-          <dd>{{ vm.info.qualifiedName }}</dd>
+          <dd>{{ info.qualifiedName }}</dd>
 
-          <dt ng-repeat-start="id in vm.info.alias" ng-if="!(id.namespace | startsWith:'/')">{{ id.namespace }}</dt>
+          <dt ng-repeat-start="id in info.alias" ng-if="!(id.namespace | startsWith:'/')">{{ id.namespace }}</dt>
           <dd ng-repeat-end ng-if="!(id.namespace | startsWith:'/')">{{ id.name }}</dd>
 
           <dt>Description</dt>
-          <dd>{{ vm.info.shortDescription | nvl:'-' }}</dd>
+          <dd>{{ info.shortDescription | nvl:'-' }}</dd>
 
           <dt>Type</dt>
           <dd>
-            {{ vm.info.type.engType | capitalize | nvl:'-' }}
-            <span ng-if="vm.info.type.engType == 'enumeration'" class="glyphicon glyphicon-list" style="cursor: pointer;" ng-click="vm.openEnumValuesModal()"></span>
+            {{ info.type.engType | capitalize | nvl:'-' }}
+            <span ng-if="info.type.engType == 'enumeration'" class="glyphicon glyphicon-list" style="cursor: pointer;" ng-click="openEnumValuesModal()"></span>
           </dd>
         </dl>
       </div>
@@ -91,7 +91,7 @@
       </div>
     </div>
 
-    <div class="section" ng-if="vm.isNumeric()">
+    <div class="section" ng-if="isNumeric()">
       <div class="btn-toolbar pull-right" role="toolbar" style="margin-left: 0; padding-bottom: 0.5em;">
         <div id="parameter-detail-legend" style="float: left;"></div>
         <div class="btn-group btn-group-xs" role="group" style="float: left;">
@@ -107,17 +107,17 @@
             <span class="glyphicon glyphicon-menu-down"></span>
           </button>
           <ul class="uib-dropdown-menu dropdown-menu-right">
-            <li><a href="#">&#x2713; {{ vm.info.name }}</a></li>
+            <li><a href="#">&#x2713; {{ info.name }}</a></li>
             <li role="separator" class="divider"></li>
-            <li><a href="#" ng-click="vm.addParameterModal()">Add Parameter...</a></li>
+            <li><a href="#" ng-click="addParameterModal()">Add Parameter...</a></li>
           </ul>
         </div>
       </div>
       <h2>Plot</h2>
     </div>
 
-    <y-plot ng-if="vm.isNumeric()"
-      pinfo="vm.info"
+    <y-plot ng-if="isNumeric()"
+      pinfo="info"
       pdata="pdata"
       control="plotController"
       style="width: 100%; position: relative;">
@@ -125,8 +125,8 @@
 
     <div class="section" style="margin-top: 1.5em;">
       <div class="btn-toolbar pull-right" role="toolbar" style="margin-left: 0; padding-bottom: 0.5em;">
-        <button ng-if="alarms.length" ng-click="vm.expandAlarms()" class="btn btn-default btn-xs">▼ Expand All</button>
-        <button ng-if="alarms.length" ng-click="vm.collapseAlarms()" class="btn btn-default btn-xs">▶ Collapse All</button>
+        <button ng-if="alarms.length" ng-click="expandAlarms()" class="btn btn-default btn-xs">▼ Expand All</button>
+        <button ng-if="alarms.length" ng-click="collapseAlarms()" class="btn btn-default btn-xs">▶ Collapse All</button>
       </div>
       <h2>Alarm History</h2>
     </div>
@@ -135,7 +135,7 @@
       <div class="row" ng-if="!alarms.length">
         <div class="col-md-1">-</div>
       </div>
-      <div class="row" ng-repeat-start="alarm in alarms | filter:vm.filterTable" style="cursor: pointer; border-top: 1px solid #ddd;" ng-click="alarm.expanded = !alarm.expanded">
+      <div class="row" ng-repeat-start="alarm in alarms | filter:filterTable" style="cursor: pointer; border-top: 1px solid #ddd;" ng-click="alarm.expanded = !alarm.expanded">
         <div class="col-md-3">
           <span ng-if="alarm.urgent" class="glyphicon glyphicon-flag" style="color: #c9302c"></span>
           <strong>Out of limits</strong>
@@ -172,7 +172,7 @@
               <img ng-src="/_static/_site/alarms/images/level{{ alarm.triggerLevel }}.png" uib-tooltip="{{ alarm.triggerValue.monitoringResult | monitoringValue }}">
               <small>
                 Reached {{ alarm.triggerValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
-                with {{ alarm.triggerValue | stringValue }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="alarm.triggerValue.monitoringResult | lohi"></span>
+                with {{ alarm.triggerValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="alarm.triggerValue.monitoringResult | lohi"></span>
               </small>
             </dd>
 
@@ -181,7 +181,7 @@
               <img ng-src="/_static/_site/alarms/images/level{{ alarm.mostSevereLevel }}.png" uib-tooltip="{{ alarm.mostSevereValue.monitoringResult | monitoringValue }}">
               <small>
                 Reached {{ alarm.mostSevereValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
-                with {{ alarm.mostSevereValue | stringValue }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="alarm.mostSevereValue.monitoringResult | lohi"></span>
+                with {{ alarm.mostSevereValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="alarm.mostSevereValue.monitoringResult | lohi"></span>
               </small>
             </dd>
 
@@ -189,7 +189,7 @@
             <dd>
               <img ng-src="/_static/_site/alarms/images/level{{ alarm.currentLevel }}.png" uib-tooltip="{{ alarm.currentValue.monitoringResult | monitoringValue }}">
               <small>
-                <strong>{{ alarm.currentValue | stringValue }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}</strong>
+                <strong>{{ alarm.currentValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}</strong>
                 <span ng-bind-html="alarm.currentValue.monitoringResult | lohi"></span>
                 &ndash; {{ alarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
               </small>
@@ -207,19 +207,19 @@
     </div>
 
     <div class="section" style="margin-top: 1em;">
-      <div class="btn-toolbar pull-right" ng-if="false && vm.values.length">
+      <div class="btn-toolbar pull-right" ng-if="false && values.length">
         <div class="btn-group">
           <button type="button" class="btn btn-default btn-xs">Export CSV</button>
         </div>
       </div>
       <h2>Value History</h2>
     </div>
-    <div class="container-fluid" ng-if="!vm.values.length">
+    <div class="container-fluid" ng-if="!values.length">
       <div class="row">
         <div class="col-md-1">-</div>
       </div>
     </div>
-    <table class="table table-condensed" ng-if="vm.values.length">
+    <table class="table table-condensed" ng-if="values.length">
       <tr>
         <th width="200">Generated</th>
         <th width="200" title="Engineering Value">Eng. Value</th>
@@ -227,11 +227,11 @@
         <th></th>
         <th width="1">Monitoring</th>
       </tr>
-      <tr ng-repeat="val in vm.values">
+      <tr ng-repeat="val in values">
         <td style="white-space: nowrap">
           {{ val.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
         </td>
-        <td>{{ val | stringValue }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}</td>
+        <td>{{ val | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}</td>
         <td>{{ val | stringValue:true }}</td>
         <td></td>
         <td ng-if="val.monitoringResult">
@@ -247,74 +247,74 @@
       <h2>Monitoring Definition</h2>
     </div>
 
-    <div class="container-fluid" ng-if="para.monitoringResult != 'DISABLED' && !(vm.isNumeric())">
+    <div class="container-fluid" ng-if="para.monitoringResult != 'DISABLED' && !isNumeric()">
       <div class="row">
         <div class="col-md-1">-</div>
       </div>
     </div>
-    <dl class="dl-horizontal" ng-if="para.monitoringResult != 'DISABLED' && vm.isNumeric()">
+    <dl class="dl-horizontal" ng-if="para.monitoringResult != 'DISABLED' && isNumeric()">
       <dt>High Limits</dt>
       <dd>
-        <span ng-if="vm.info.severe | has:'maxInclusive'">
-          Severe: {{ vm.info.severe.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        <span ng-if="info.severe | has:'maxInclusive'">
+          Severe: {{ info.severe.maxInclusive }} {{ info.type.unitSet | joinBy:'unit':' ' }}<br>
         </span>
-        <span ng-if="vm.info.critical | has:'maxInclusive'">
-          Critical: {{ vm.info.critical.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        <span ng-if="info.critical | has:'maxInclusive'">
+          Critical: {{ info.critical.maxInclusive }} {{ info.type.unitSet | joinBy:'unit':' ' }}<br>
         </span>
-        <span ng-if="vm.info.distress | has:'maxInclusive'">
-          Distress: {{ vm.info.distress.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        <span ng-if="info.distress | has:'maxInclusive'">
+          Distress: {{ info.distress.maxInclusive }} {{ info.type.unitSet | joinBy:'unit':' ' }}<br>
         </span>
-        <span ng-if="vm.info.warning | has:'maxInclusive'">
-          Warning: {{ vm.info.warning.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        <span ng-if="info.warning | has:'maxInclusive'">
+          Warning: {{ info.warning.maxInclusive }} {{ info.type.unitSet | joinBy:'unit':' ' }}<br>
         </span>
-        <span ng-if="vm.info.watch | has:'maxInclusive'">
-          Watch: {{ vm.info.watch.maxInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        <span ng-if="info.watch | has:'maxInclusive'">
+          Watch: {{ info.watch.maxInclusive }} {{ info.type.unitSet | joinBy:'unit':' ' }}<br>
         </span>
-        <span ng-if="!(vm.info.watch|has:'maxInclusive') && !(vm.info.warning|has:'maxInclusive') && !(vm.info.distress|has:'maxInclusive') && !(vm.info.critical|has:'maxInclusive') && !(vm.info.severe|has:'maxInclusive')">-</span>
+        <span ng-if="!(info.watch|has:'maxInclusive') && !(info.warning|has:'maxInclusive') && !(info.distress|has:'maxInclusive') && !(info.critical|has:'maxInclusive') && !(info.severe|has:'maxInclusive')">-</span>
       </dd>
 
       <dt>Low Limits</dt>
       <dd>
-        <span ng-if="vm.info.watch | has:'minInclusive'">
-          Watch: {{ vm.info.watch.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        <span ng-if="info.watch | has:'minInclusive'">
+          Watch: {{ info.watch.minInclusive }} {{ info.type.unitSet | joinBy:'unit':' ' }}<br>
         </span>
-        <span ng-if="vm.info.warning | has:'minInclusive'">
-          Warning: {{ vm.info.warning.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        <span ng-if="info.warning | has:'minInclusive'">
+          Warning: {{ info.warning.minInclusive }} {{ info.type.unitSet | joinBy:'unit':' ' }}<br>
         </span>
-        <span ng-if="vm.info.distress | has:'minInclusive'">
-          Distress: {{ vm.info.distress.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        <span ng-if="info.distress | has:'minInclusive'">
+          Distress: {{ info.distress.minInclusive }} {{ info.type.unitSet | joinBy:'unit':' ' }}<br>
         </span>
-        <span ng-if="vm.info.critical | has:'minInclusive'">
-          Critical: {{ vm.info.critical.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        <span ng-if="info.critical | has:'minInclusive'">
+          Critical: {{ info.critical.minInclusive }} {{ info.type.unitSet | joinBy:'unit':' ' }}<br>
         </span>
-        <span ng-if="vm.info.severe | has:'minInclusive'">
-          Severe: {{ vm.info.severe.minInclusive }} {{ vm.info.type.unitSet | joinBy:'unit':' ' }}<br>
+        <span ng-if="info.severe | has:'minInclusive'">
+          Severe: {{ info.severe.minInclusive }} {{ info.type.unitSet | joinBy:'unit':' ' }}<br>
         </span>
-        <span ng-if="!(vm.info.watch|has:'minInclusive') && !(vm.info.warning|has:'minInclusive') && !(vm.info.distress|has:'minInclusive') && !(vm.info.critical|has:'minInclusive') && !(vm.info.severe|has:'minInclusive')">-</span>
+        <span ng-if="!(info.watch|has:'minInclusive') && !(info.warning|has:'minInclusive') && !(info.distress|has:'minInclusive') && !(info.critical|has:'minInclusive') && !(info.severe|has:'minInclusive')">-</span>
       </dd>
     </dl>
 
-    <div class="section" style="margin-top: 1em;" ng-if="vm.info.type.dataEncoding">
+    <div class="section" style="margin-top: 1em;" ng-if="info.type.dataEncoding">
       <h2>Packet Definition</h2>
     </div>
-    <dl class="dl-horizontal" ng-if="vm.info.type.dataEncoding">
+    <dl class="dl-horizontal" ng-if="info.type.dataEncoding">
       <dt>Raw Type</dt>
       <dd>
-        {{ vm.info.type.dataEncoding.type | capitalize | nvl:'-' }}
+        {{ info.type.dataEncoding.type | capitalize | nvl:'-' }}
       </dd>
 
       <dt>Size In Bits</dt>
-      <dd>{{ vm.info.type.dataEncoding.sizeInBits | nvl:'-' }}</dd>
+      <dd>{{ info.type.dataEncoding.sizeInBits | nvl:'-' }}</dd>
 
       <dt>Byte Order</dt>
-      <dd ng-if="vm.info.type.dataEncoding.littleEndian">Little Endian</dd>
-      <dd ng-if="!vm.info.type.dataEncoding.littleEndian">Big Endian</dd>
+      <dd ng-if="info.type.dataEncoding.littleEndian">Little Endian</dd>
+      <dd ng-if="!info.type.dataEncoding.littleEndian">Big Endian</dd>
 
       <dt>Encoding</dt>
-      <dd>{{ vm.info.type.dataEncoding.encoding | nvl:'-' }}</dd>
+      <dd>{{ info.type.dataEncoding.encoding | nvl:'-' }}</dd>
 
       <dt>Calibrator</dt>
-      <dd>{{ vm.info.type.dataEncoding.defaultCalibrator | nvl:'-' }}</dd>
+      <dd>{{ info.type.dataEncoding.defaultCalibrator | nvl:'-' }}</dd>
     </dl>
   </div>
 </mdb-pane>
