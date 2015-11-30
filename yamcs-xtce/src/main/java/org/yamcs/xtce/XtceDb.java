@@ -26,7 +26,7 @@ import org.yamcs.xtce.xml.XtceAliasSet;
  * @author mache
  */
 public class XtceDb implements Serializable {
-    private static final long  serialVersionUID   = 51L;
+    private static final long  serialVersionUID   = 52L;
     SpaceSystem rootSystem;
     
     SystemParameterDb sysParamDb;
