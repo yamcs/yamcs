@@ -1,7 +1,7 @@
 package org.yamcs.web.rest;
 
 import static junit.framework.Assert.assertEquals;
-import static org.yamcs.web.AbstractRequestHandler.BINARY_MIME_TYPE;
+import static org.yamcs.web.AbstractRequestHandler.PROTOBUF_MIME_TYPE;
 import static org.yamcs.web.AbstractRequestHandler.JSON_MIME_TYPE;
 
 import org.junit.Test;
@@ -90,10 +90,10 @@ public class RestRequestTest {
 
     @Test
     public void testMediaType_cross_match() {
-        RestRequest req = makeRestRequest(BINARY_MIME_TYPE, JSON_MIME_TYPE);
+        RestRequest req = makeRestRequest(PROTOBUF_MIME_TYPE, JSON_MIME_TYPE);
 
         String in = req.deriveSourceContentType();
-        assertEquals(BINARY_MIME_TYPE, in);
+        assertEquals(PROTOBUF_MIME_TYPE, in);
 
         String out = req.deriveTargetContentType();
         assertEquals(JSON_MIME_TYPE, out);

@@ -1,6 +1,6 @@
 package org.yamcs.web.rest;
 
-import static org.yamcs.web.AbstractRequestHandler.BINARY_MIME_TYPE;
+import static org.yamcs.web.AbstractRequestHandler.PROTOBUF_MIME_TYPE;
 
 import java.io.IOException;
 
@@ -45,7 +45,7 @@ public class RestResponse {
         body = restRequest.getChannelHandlerContext().alloc().buffer();
         ByteBufOutputStream channelOut = new ByteBufOutputStream(body);
         try {
-            if (BINARY_MIME_TYPE.equals(getContentType())) {
+            if (PROTOBUF_MIME_TYPE.equals(getContentType())) {
                 responseMsg.writeTo(channelOut);
             } else {
                 JsonGenerator generator = restRequest.createJsonGenerator(channelOut);

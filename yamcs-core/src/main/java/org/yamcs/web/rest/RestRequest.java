@@ -1,6 +1,6 @@
 package org.yamcs.web.rest;
 
-import static org.yamcs.web.AbstractRequestHandler.BINARY_MIME_TYPE;
+import static org.yamcs.web.AbstractRequestHandler.PROTOBUF_MIME_TYPE;
 import static org.yamcs.web.AbstractRequestHandler.CSV_MIME_TYPE;
 import static org.yamcs.web.AbstractRequestHandler.JSON_MIME_TYPE;
 
@@ -177,7 +177,7 @@ public class RestRequest {
             case "csv":
                 return CSV_MIME_TYPE.equals(mediaType);
             case "proto":
-                return BINARY_MIME_TYPE.equals(mediaType);
+                return PROTOBUF_MIME_TYPE.equals(mediaType);
             default:
                 return mediaType.equals(getQueryParameter("format"));
             }
@@ -377,7 +377,7 @@ public class RestRequest {
         // Allow for empty body, otherwise user has to specify '{}'
         if (HttpHeaders.getContentLength(httpRequest) > 0) {
             try {
-                if (BINARY_MIME_TYPE.equals(sourceContentType)) {
+                if (PROTOBUF_MIME_TYPE.equals(sourceContentType)) {
                     msg.mergeFrom(cin);
                 } else {
                     JsonIOUtil.mergeFrom(cin, msg, sourceSchema, false);
@@ -404,7 +404,7 @@ public class RestRequest {
         if (httpRequest.headers().contains(Names.CONTENT_TYPE)) {
             String declaredContentType = httpRequest.headers().get(Names.CONTENT_TYPE);
             if (declaredContentType.equals(JSON_MIME_TYPE)
-                    || declaredContentType.equals(BINARY_MIME_TYPE)) {
+                    || declaredContentType.equals(PROTOBUF_MIME_TYPE)) {
                 return declaredContentType;
             }
         }
@@ -422,7 +422,7 @@ public class RestRequest {
         if (httpRequest.headers().contains(Names.ACCEPT)) {
             String acceptedContentType = httpRequest.headers().get(Names.ACCEPT);
             if (acceptedContentType.equals(JSON_MIME_TYPE)
-                    || acceptedContentType.equals(BINARY_MIME_TYPE)) {
+                    || acceptedContentType.equals(PROTOBUF_MIME_TYPE)) {
                 return acceptedContentType;
             }
         }

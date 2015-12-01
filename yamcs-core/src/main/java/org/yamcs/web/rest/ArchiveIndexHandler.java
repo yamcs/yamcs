@@ -281,7 +281,7 @@ public class ArchiveIndexHandler extends RestRequestHandler {
         }
         
         private void bufferArchiveRecord(ArchiveRecord msg) throws IOException {
-            if (BINARY_MIME_TYPE.equals(contentType)) {
+            if (PROTOBUF_MIME_TYPE.equals(contentType)) {
                 msg.writeDelimitedTo(bufOut);
             } else {
                 JsonGenerator generator = req.createJsonGenerator(bufOut);
@@ -291,7 +291,7 @@ public class ArchiveIndexHandler extends RestRequestHandler {
         }
         
         private void bufferIndexResult(IndexResult msg) throws IOException {
-            if (BINARY_MIME_TYPE.equals(contentType)) {
+            if (PROTOBUF_MIME_TYPE.equals(contentType)) {
                 msg.writeDelimitedTo(bufOut);
             } else {
                 JsonGenerator generator = req.createJsonGenerator(bufOut);

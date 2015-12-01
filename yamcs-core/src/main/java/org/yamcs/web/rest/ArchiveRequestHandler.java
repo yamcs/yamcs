@@ -208,7 +208,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
                     // Write a chunk containing a delimited message
                     ByteBuf buf = ctx.alloc().buffer();
                     try (ByteBufOutputStream channelOut = new ByteBufOutputStream(buf)) {
-                        if (BINARY_MIME_TYPE.equals(targetContentType)) {
+                        if (PROTOBUF_MIME_TYPE.equals(targetContentType)) {
                             builder.build().writeDelimitedTo(channelOut);
                         } else if (CSV_MIME_TYPE.equals(targetContentType)) {
                             if(csvGenerator != null) {

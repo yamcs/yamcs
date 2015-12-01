@@ -1,6 +1,6 @@
 package org.yamcs.web.rest;
 
-import static org.yamcs.web.AbstractRequestHandler.BINARY_MIME_TYPE;
+import static org.yamcs.web.AbstractRequestHandler.PROTOBUF_MIME_TYPE;
 
 import java.io.IOException;
 
@@ -10,7 +10,6 @@ import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
-import org.yamcs.web.AbstractRequestHandler;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 
@@ -41,7 +40,7 @@ public class ReplayToChunkedParameterProtobuf extends RestParameterReplayListene
         this.req = req;
         contentType = req.deriveTargetContentType();
         resetBuffer();
-        RestUtils.startChunkedTransfer(req, AbstractRequestHandler.CSV_MIME_TYPE);
+        RestUtils.startChunkedTransfer(req, contentType);
     }
     
     private void resetBuffer() {
@@ -66,7 +65,7 @@ public class ReplayToChunkedParameterProtobuf extends RestParameterReplayListene
     }
     
     private void bufferMessage(ParameterValue msg) throws IOException {
-        if (BINARY_MIME_TYPE.equals(contentType)) {
+        if (PROTOBUF_MIME_TYPE.equals(contentType)) {
             msg.writeDelimitedTo(bufOut);
         } else {
             JsonGenerator generator = req.createJsonGenerator(bufOut);

@@ -1,6 +1,6 @@
 package org.yamcs.web.rest;
 
-import static org.yamcs.web.AbstractRequestHandler.BINARY_MIME_TYPE;
+import static org.yamcs.web.AbstractRequestHandler.PROTOBUF_MIME_TYPE;
 
 import java.io.IOException;
 
@@ -66,7 +66,7 @@ public abstract class StreamToChunkedProtobufEncoder<T extends MessageLite> exte
     }
     
     private void bufferMessage(T msg) throws IOException {
-        if (BINARY_MIME_TYPE.equals(contentType)) {
+        if (PROTOBUF_MIME_TYPE.equals(contentType)) {
             msg.writeDelimitedTo(bufOut);
         } else {
             JsonGenerator generator = req.createJsonGenerator(bufOut);
