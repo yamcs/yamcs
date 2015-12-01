@@ -1,6 +1,5 @@
 package org.yamcs;
 
-import org.hornetq.api.core.HornetQException;
 import org.yamcs.api.AbstractEventProducer;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.protobuf.Yamcs.Event;
