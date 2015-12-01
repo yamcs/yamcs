@@ -6,8 +6,7 @@
         .controller('MDBParameterDetailController', MDBParameterDetailController);
 
     /* @ngInject */
-    function MDBParameterDetailController($rootScope, $routeParams, tmService, mdbService, $scope, $uibModal, configService, alarmsService) {
-        var vm = this;
+    function MDBParameterDetailController($rootScope, $scope, $routeParams, $filter, $uibModal, tmService, mdbService, configService, alarmsService) {
 
         // Will be augmented when passed into directive
         $scope.plotController = {};
@@ -18,7 +17,6 @@
         $rootScope.pageTitle = $routeParams.name + ' | Yamcs';
 
         var urlname = '/' + $routeParams['ss'] + '/' + $routeParams.name;
-        vm.urlname = urlname;
 
         $scope.pdata = [{
             name: null,
@@ -26,20 +24,30 @@
             min: null,
             max: null
         }];
-        vm.alarms = [];
+
+        var loadingHistory = false;
+
+        $scope.alarms = [];
         mdbService.getParameterInfo(urlname).then(function (data) {
 
-            vm.info = mapAlarmRanges(data);
-            var qname = vm.info['qualifiedName'];
+            $scope.info = mapAlarmRanges(data);
+            var qname = $scope.info['qualifiedName'];
 
             alarmsService.listAlarmsForParameter(qname).then(function (alarms) {
-                vm.alarms = alarms;
+                $scope.alarms = alarms;
 
                 // Both dependencies are now fetched (could improve towards parallel requests though)
                 // So continue on
 
+                // Live data is added to the plot, except when we are loading a chunk of historic
+                // data. This may mean that we miss a few points though, but that's acceptable for now.
                 var subscriptionId = tmService.subscribeParameter({name: qname}, function (data) {
-                    vm.para = data;
+                    $scope.para = data;
+                    if (!loadingHistory && $scope.isNumeric()) {
+                        appendPoint($scope, data, $filter);
+                    } else {
+                        //console.log('ignoring a point');
+                    }
                 });
                 $scope.$on('$destroy', function() {
                     tmService.unsubscribeParameter(subscriptionId);
@@ -49,7 +57,7 @@
                     noRepeat: true,
                     limit: 10
                 }).then(function (historyData) {
-                    vm.values = historyData['parameter'];
+                    $scope.values = historyData['parameter'];
                 });
 
                 $scope.activeAlarms = alarmsService.getActiveAlarms(); // Live collection
@@ -69,17 +77,19 @@
                 });
 
 
-                return vm.alarms;
+                return $scope.alarms;
             });
 
             $scope.$watchGroup(['plotctx.range', 'plotController.initialized'], function (values) {
                 var mode = values[0];
                 if ($scope.plotController.initialized) {
                     $scope.plotController.startSpinner(); // before emptyPlot, so effects get considered in empty redraw
+                    loadingHistory = true;
                     $scope.plotController.emptyPlot();
                     loadHistoricData(tmService, qname, mode).then(function (data) {
                         $scope.plotController.stopSpinner();
                         $scope.pdata = [ data ];
+                        loadingHistory = false;
                     });
                 }
             });
@@ -104,10 +114,10 @@
                 });
             };
 
-            return vm.info;
+            return $scope.info;
         });
 
-        vm.openEnumValuesModal = function() {
+        $scope.openEnumValuesModal = function() {
             $uibModal.open({
                 animation: true,
                 templateUrl: 'enumValuesModal.html',
@@ -115,12 +125,12 @@
                 size: 'lg',
                 resolve: {
                     info: function () {
-                        return vm.info;
+                        return $scope.info;
                     }
                 }
             });
         };
-        vm.addParameterModal = function() {
+        $scope.addParameterModal = function() {
             $uibModal.open({
                 animation: true,
                 templateUrl: 'addParameterModal.html',
@@ -129,23 +139,42 @@
             });
         };
 
-        vm.expandAlarms = function() {
-            for (var i = 0; i < vm.alarms.length; i++) {
-                vm.alarms[i].expanded = true;
+        $scope.expandAlarms = function() {
+            for (var i = 0; i < $scope.alarms.length; i++) {
+                $scope.alarms[i].expanded = true;
             }
         };
 
-        vm.collapseAlarms = function() {
-            for (var i = 0; i < vm.alarms.length; i++) {
-                vm.alarms[i].expanded = false;
+        $scope.collapseAlarms = function() {
+            for (var i = 0; i < $scope.alarms.length; i++) {
+                $scope.alarms[i].expanded = false;
             }
         };
 
-        vm.isNumeric = function() {
-            if (vm.hasOwnProperty('info') && vm.info.hasOwnProperty('type') && vm.info.type.hasOwnProperty('engType')) {
-                return vm.info.type.engType === 'float' || vm.info.type.engType === 'integer';
+        $scope.isNumeric = function() {
+            if ($scope.hasOwnProperty('info') && $scope.info.hasOwnProperty('type') && $scope.info.type.hasOwnProperty('engType')) {
+                return $scope.info.type.engType === 'float' || $scope.info.type.engType === 'integer';
             } else {
                 return false;
+            }
+        }
+    }
+
+    function appendPoint(scope, pval, filter) {
+        if (pval && pval.hasOwnProperty('engValue')) {
+            var val = filter('stringValue')(pval);
+
+            var t = new Date();
+            t.setTime(Date.parse(pval['generationTimeUTC']));
+            scope.pdata[0]['points'].push([t, [val,val,val]]);
+            if (scope.pdata[0]['min'] === null || scope.pdata[0]['min'] > val) {
+                scope.pdata[0]['min'] = val;
+            }
+            if (scope.pdata[0]['max'] === null || scope.pdata[0]['max'] < val) {
+                scope.pdata[0]['max'] = val;
+            }
+            if (scope.hasOwnProperty('plotController')) {
+                scope.plotController.repaint();
             }
         }
     }
@@ -213,18 +242,6 @@
                 min: min,
                 max: max
             };
-
-            // before updating graph, so 'no data' text is not rendered
-            //ctx['archiveFetched'] = true;
-
-            /*if (data.length > 0) {
-                updateGraph(g, data);
-            } else {
-                // Ensures that the 'no data' message is shown
-                updateGraph(g, 'x\n');
-            }
-
-            spinner.stop();*/
         });
     }
 

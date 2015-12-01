@@ -34,14 +34,7 @@
                 var g = makePlot(plotEl[0], scope.pinfo, model);
                 g.ready(function () {
                     scope.$watch(attrs.pdata, function (pdata) {
-                        var match = false;
-                        for (var i = 0; i < pdata.length; i++) {
-                            if (pdata[i]['points'].length > 0) {
-                                match = true;
-                                break;
-                            }
-                        }
-                        model.hasData = match;
+                        updateModel(pdata);
                         updateGraph(g, pdata, model);
                     });
                 });
@@ -69,8 +62,22 @@
                         g.resetZoom();
                     }
                 };
+                scope.__control.repaint = function() {
+                    updateModel(scope.pdata);
+                    updateGraph(g, scope.pdata, model);
+                };
                 scope.__control.initialized = true;
 
+                function updateModel(pdata) {
+                    var match = false;
+                    for (var i = 0; i < pdata.length; i++) {
+                        if (pdata[i]['points'].length > 0) {
+                            match = true;
+                            break;
+                        }
+                    }
+                    model.hasData = match;
+                }
                 /*scope.$watch('range', function(range) {
                     var qname = pinfo['qualifiedName'];
 
@@ -247,7 +254,6 @@
         }
 
         function updateGraph(g, pdata, model) {
-            console.log('updating graph', model);
             if (pdata.length === 0 || pdata[0]['points'].length === 0) {
                 g.updateOptions({ file: 'x\n' });
             } else {
