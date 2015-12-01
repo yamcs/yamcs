@@ -3,6 +3,9 @@ package org.yamcs.web.rest;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,10 +40,27 @@ public class ArchiveEventRequestHandler extends RestRequestHandler {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         
+        Set<String> sourceSet = new HashSet<>();
+        for (String names : req.getQueryParameterList("source", Collections.emptyList())) {
+            for (String name : names.split(",")) {
+                sourceSet.add(name);
+            }
+        }
+        
         StringBuilder sqlb = new StringBuilder("select * from ").append(EventRecorder.TABLE_NAME);
         IntervalResult ir = RestUtils.scanForInterval(req);
-        if (ir.hasInterval()) {
-            sqlb.append(" where ").append(ir.asSqlCondition("gentime"));
+        if (ir.hasInterval() || !sourceSet.isEmpty()) {
+            sqlb.append(" where ");
+            boolean first = true;
+            if (ir.hasInterval()) {
+                sqlb.append(ir.asSqlCondition("gentime"));
+                first = false;
+            }
+            if (!sourceSet.isEmpty()) {
+                if (!first) sqlb.append(" and ");
+                sqlb.append("source in ('").append(String.join("','", sourceSet)).append("')");
+                first = false;
+            }
         }
         if (RestUtils.asksDescending(req, true)) {
             sqlb.append(" order desc");

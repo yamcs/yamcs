@@ -3,7 +3,10 @@ package org.yamcs.web.rest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.archive.XtceTmRecorder;
@@ -148,10 +151,27 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
     }
 
     private void downloadEvents(RestRequest req) throws RestException {
+        Set<String> sourceSet = new HashSet<>();
+        for (String names : req.getQueryParameterList("source", Collections.emptyList())) {
+            for (String name : names.split(",")) {
+                sourceSet.add(name);
+            }
+        }
+
         StringBuilder sqlb = new StringBuilder("select * from ").append(EventRecorder.TABLE_NAME);
         IntervalResult ir = RestUtils.scanForInterval(req);
-        if (ir.hasInterval()) {
-            sqlb.append(" where ").append(ir.asSqlCondition("gentime"));
+        if (ir.hasInterval() || !sourceSet.isEmpty()) {
+            sqlb.append(" where ");
+            boolean first = true;
+            if (ir.hasInterval()) {
+                sqlb.append(ir.asSqlCondition("gentime"));
+                first = false;
+            }
+            if (!sourceSet.isEmpty()) {
+                if (!first) sqlb.append(" and ");
+                sqlb.append("source in ('").append(String.join("','", sourceSet)).append("')");
+                first = false;
+            }
         }
         if (RestUtils.asksDescending(req, false)) {
             sqlb.append(" order desc");

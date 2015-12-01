@@ -1,8 +1,9 @@
 package org.yamcs.web.rest;
 
-import static org.yamcs.web.AbstractRequestHandler.PROTOBUF_MIME_TYPE;
+import static org.yamcs.web.AbstractRequestHandler.BINARY_MIME_TYPE;
 import static org.yamcs.web.AbstractRequestHandler.CSV_MIME_TYPE;
 import static org.yamcs.web.AbstractRequestHandler.JSON_MIME_TYPE;
+import static org.yamcs.web.AbstractRequestHandler.PROTOBUF_MIME_TYPE;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -178,6 +179,9 @@ public class RestRequest {
                 return CSV_MIME_TYPE.equals(mediaType);
             case "proto":
                 return PROTOBUF_MIME_TYPE.equals(mediaType);
+            case "raw":
+            case "binary":
+                return BINARY_MIME_TYPE.equals(mediaType);
             default:
                 return mediaType.equals(getQueryParameter("format"));
             }
@@ -246,6 +250,14 @@ public class RestRequest {
     
     public List<String> getQueryParameterList(String name) {
         return qsDecoder.parameters().get(name);
+    }
+    
+    public List<String> getQueryParameterList(String name, List<String> defaultList) {
+        if (hasQueryParameter(name)) {
+            return getQueryParameterList(name);
+        } else {
+            return defaultList;
+        }
     }
     
     public String getQueryParameter(String name) {
