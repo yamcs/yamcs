@@ -92,10 +92,27 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
     }
     
     private void downloadPackets(RestRequest req) throws RestException {
+        Set<String> nameSet = new HashSet<>();
+        for (String names : req.getQueryParameterList("name", Collections.emptyList())) {
+            for (String name : names.split(",")) {
+                nameSet.add(name.trim());
+            }
+        }
+        
         StringBuilder sqlb = new StringBuilder("select * from ").append(XtceTmRecorder.TABLE_NAME);
         IntervalResult ir = RestUtils.scanForInterval(req);
-        if (ir.hasInterval()) {
-            sqlb.append(" where ").append(ir.asSqlCondition("gentime"));
+        if (ir.hasInterval() || !nameSet.isEmpty()) {
+            sqlb.append(" where ");
+            boolean first = true;
+            if (ir.hasInterval()) {
+                sqlb.append(ir.asSqlCondition("gentime"));
+                first = false;
+            }
+            if (!nameSet.isEmpty()) {
+                if (!first) sqlb.append(" and ");
+                sqlb.append("pname in ('").append(String.join("','", nameSet)).append("')");
+                first = false;
+            }
         }
         if (RestUtils.asksDescending(req, false)) {
             sqlb.append(" order desc");

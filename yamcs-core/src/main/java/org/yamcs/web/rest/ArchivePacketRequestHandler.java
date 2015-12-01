@@ -1,7 +1,10 @@
 package org.yamcs.web.rest;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.yamcs.archive.XtceTmRecorder;
 import org.yamcs.protobuf.Rest.ListPacketsResponse;
@@ -36,16 +39,31 @@ public class ArchivePacketRequestHandler extends RestRequestHandler {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         
+        Set<String> nameSet = new HashSet<>();
+        for (String names : req.getQueryParameterList("name", Collections.emptyList())) {
+            for (String name : names.split(",")) {
+                nameSet.add(name.trim());
+            }
+        }
+        
         StringBuilder sqlb = new StringBuilder("select * from ").append(XtceTmRecorder.TABLE_NAME);
         IntervalResult ir = RestUtils.scanForInterval(req);
-        if (ir.hasInterval() || gentime != TimeEncoding.INVALID_INSTANT) {
+        if (ir.hasInterval() || gentime != TimeEncoding.INVALID_INSTANT || !nameSet.isEmpty()) {
             sqlb.append(" where ");
+            boolean first = true;
             if (ir.hasInterval()) {
-                sqlb.append(ir.asSqlCondition("gentime"));    
+                sqlb.append(ir.asSqlCondition("gentime"));
+                first = false;
             }
             if (gentime != TimeEncoding.INVALID_INSTANT) {
-                if (ir.hasInterval()) sqlb.append(" and ");
+                if (!first) sqlb.append(" and ");
                 sqlb.append("gentime = ").append(gentime);
+                first = false;
+            }
+            if (!nameSet.isEmpty()) {
+                if (!first) sqlb.append(" and ");
+                sqlb.append("pname in ('").append(String.join("','", nameSet)).append("')");
+                first = false;
             }
         }
         if (RestUtils.asksDescending(req, true)) {
