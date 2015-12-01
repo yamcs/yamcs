@@ -93,10 +93,14 @@ public class HornetQEventProducer extends AbstractEventProducer implements Conne
      * @see org.yamcs.api.EventProducer#sendEvent(org.yamcs.protobuf.Yamcs.Event)
      */
     @Override
-    public synchronized void sendEvent(Event event) throws  HornetQException {
+    public synchronized void sendEvent(Event event) {
         logger.debug("Sending Event: {}", event.getMessage());
         if(yconnector.isConnected()) {
-            yclient.sendData(address, ProtoDataType.EVENT, event);
+            try {
+                yclient.sendData(address, ProtoDataType.EVENT, event);
+            } catch (HornetQException e) {
+                logger.error("Failed to send event ",e);
+            }
         } else {
             queue.offer(event);
         }

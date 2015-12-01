@@ -1,11 +1,10 @@
 package org.yamcs.api;
 
-import org.hornetq.api.core.HornetQException;
 import org.yamcs.protobuf.Yamcs.Event;
 
 public interface EventProducer {
 
-    public abstract void sendEvent(Event event) throws HornetQException;
+    public abstract void sendEvent(Event event);
 
     public abstract void setSource(String source);
 

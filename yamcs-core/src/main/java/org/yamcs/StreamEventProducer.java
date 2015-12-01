@@ -33,7 +33,7 @@ public class StreamEventProducer extends AbstractEventProducer {
     }
     
     @Override
-    public void sendEvent(Event event) throws HornetQException {
+    public void sendEvent(Event event) {
         Tuple t=new Tuple(tdef, new Object[]{event.getGenerationTime(), 
                 event.getSource(), event.getSeqNumber(), event});
         
