@@ -1,11 +1,14 @@
 package org.yamcs.web.rest;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.archive.XtceTmRecorder;
 import org.yamcs.protobuf.Rest.ListPacketsResponse;
 import org.yamcs.protobuf.SchemaRest;
@@ -15,7 +18,12 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
 import org.yamcs.yarch.Tuple;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
+
 public class ArchivePacketRequestHandler extends RestRequestHandler {
+    
+    private static final Logger log = LoggerFactory.getLogger(ArchivePacketRequestHandler.class);
 
     @Override
     protected RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
@@ -46,46 +54,58 @@ public class ArchivePacketRequestHandler extends RestRequestHandler {
             }
         }
         
-        StringBuilder sqlb = new StringBuilder("select * from ").append(XtceTmRecorder.TABLE_NAME);
+        SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
         IntervalResult ir = RestUtils.scanForInterval(req);
-        if (ir.hasInterval() || gentime != TimeEncoding.INVALID_INSTANT || !nameSet.isEmpty()) {
-            sqlb.append(" where ");
-            boolean first = true;
-            if (ir.hasInterval()) {
-                sqlb.append(ir.asSqlCondition("gentime"));
-                first = false;
-            }
-            if (gentime != TimeEncoding.INVALID_INSTANT) {
-                if (!first) sqlb.append(" and ");
-                sqlb.append("gentime = ").append(gentime);
-                first = false;
-            }
-            if (!nameSet.isEmpty()) {
-                if (!first) sqlb.append(" and ");
-                sqlb.append("pname in ('").append(String.join("','", nameSet)).append("')");
-                first = false;
-            }
+        if (ir.hasInterval()) {
+            sqlb.where(ir.asSqlCondition("gentime"));
         }
-        if (RestUtils.asksDescending(req, true)) {
-            sqlb.append(" order desc");
+        if (gentime != TimeEncoding.INVALID_INSTANT) {
+            sqlb.where("gentime = " + gentime);
         }
+        if (!nameSet.isEmpty()) {
+            sqlb.where("pname in ('" + String.join("','", nameSet) + "')");
+        }        
+        sqlb.descend(RestUtils.asksDescending(req, true));
         
-        ListPacketsResponse.Builder responseb = ListPacketsResponse.newBuilder();
-        RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
-
-            @Override
-            public void onTuple(Tuple tuple) {
-                TmPacketData pdata = ArchiveHelper.tupleToPacketData(tuple);
-                responseb.addPacket(pdata);
+        if (req.asksFor(BINARY_MIME_TYPE)) {
+            ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
+            try (ByteBufOutputStream bufOut = new ByteBufOutputStream(buf)) {
+                RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
+                    
+                    @Override
+                    public void onTuple(Tuple tuple) {
+                        TmPacketData pdata = ArchiveHelper.tupleToPacketData(tuple);
+                        try {
+                            pdata.getPacket().writeTo(bufOut);
+                        } catch (IOException e) {
+                            log.warn("ignoring packet", e);
+                            // should improve to somehow throw upwards
+                        }
+                    }
+                });
+                bufOut.close();
+                return new RestResponse(req, BINARY_MIME_TYPE, buf);
+            } catch (IOException e) {
+                throw new InternalServerErrorException(e);
             }
-        });
-        
-        return new RestResponse(req, responseb.build(), SchemaRest.ListPacketsResponse.WRITE);
+        } else {
+            ListPacketsResponse.Builder responseb = ListPacketsResponse.newBuilder();
+            RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
+    
+                @Override
+                public void onTuple(Tuple tuple) {
+                    TmPacketData pdata = ArchiveHelper.tupleToPacketData(tuple);
+                    responseb.addPacket(pdata);
+                }
+            });
+            return new RestResponse(req, responseb.build(), SchemaRest.ListPacketsResponse.WRITE);
+        }
     }
     
     private RestResponse getPacket(RestRequest req, long gentime, int seqnum) throws RestException {
-        StringBuilder sqlb = new StringBuilder("select * from ").append(XtceTmRecorder.TABLE_NAME);
-        sqlb.append(" where gentime = ").append(gentime).append(" and seqNum = ").append(seqnum);
+        SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME)
+                .where("gentime = " + gentime, "seqNum = " + seqnum);
+        
         List<TmPacketData> packets = new ArrayList<>();
         RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(0, 2) {
 

@@ -17,6 +17,7 @@ import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.tctm.TmProviderAdapter;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
 import org.yamcs.web.rest.RestUtils.MatchResult;
 import org.yamcs.xtce.Parameter;
@@ -25,6 +26,8 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 
 import com.csvreader.CsvWriter;
+
+import io.netty.buffer.ByteBufOutputStream;
 
 /** 
  * Serves archived data through a web api.
@@ -99,33 +102,34 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
             }
         }
         
-        StringBuilder sqlb = new StringBuilder("select * from ").append(XtceTmRecorder.TABLE_NAME);
+        SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
         IntervalResult ir = RestUtils.scanForInterval(req);
-        if (ir.hasInterval() || !nameSet.isEmpty()) {
-            sqlb.append(" where ");
-            boolean first = true;
-            if (ir.hasInterval()) {
-                sqlb.append(ir.asSqlCondition("gentime"));
-                first = false;
-            }
-            if (!nameSet.isEmpty()) {
-                if (!first) sqlb.append(" and ");
-                sqlb.append("pname in ('").append(String.join("','", nameSet)).append("')");
-                first = false;
-            }
+        if (ir.hasInterval()) {
+            sqlb.where(ir.asSqlCondition("gentime"));
         }
-        if (RestUtils.asksDescending(req, false)) {
-            sqlb.append(" order desc");
-        }
+        if (!nameSet.isEmpty()) {
+            sqlb.where("pname in ('" + String.join("','", nameSet) + "')");
+        }        
+        sqlb.descend(RestUtils.asksDescending(req, true));
+        
         String sql = sqlb.toString();
         
-        RestStreams.stream(req, sql, new StreamToChunkedProtobufEncoder<TmPacketData>(req, SchemaYamcs.TmPacketData.WRITE) {
-            
-            @Override
-            public TmPacketData mapTuple(Tuple tuple) {
-                return ArchiveHelper.tupleToPacketData(tuple);
-            }
-        });
+        if (req.asksFor(BINARY_MIME_TYPE)) {
+            RestStreams.stream(req, sql, new StreamToChunkedBinaryEncoder(req) {
+                @Override
+                public void processTuple(Tuple tuple, ByteBufOutputStream bufOut) throws IOException {
+                    byte[] raw = (byte[]) tuple.getColumn(TmProviderAdapter.PACKET_COLUMN);
+                    bufOut.write(raw);
+                }
+            });
+        } else {
+            RestStreams.stream(req, sql, new StreamToChunkedProtobufEncoder<TmPacketData>(req, SchemaYamcs.TmPacketData.WRITE) {
+                @Override
+                public TmPacketData mapTuple(Tuple tuple) {
+                    return ArchiveHelper.tupleToPacketData(tuple);
+                }
+            });
+        }
     }
     
     private void downloadTableData(RestRequest req, TableDefinition table) throws RestException {
