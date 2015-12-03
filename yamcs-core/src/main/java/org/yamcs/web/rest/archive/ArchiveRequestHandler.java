@@ -65,6 +65,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
     
     public ArchiveRequestHandler() {
         subHandlers.put("alarms", new ArchiveAlarmRequestHandler());
+        subHandlers.put("commands", new ArchiveCommandRequestHandler());
         subHandlers.put("downloads", new ArchiveDownloadHandler());
         subHandlers.put("events", new ArchiveEventRequestHandler());
         subHandlers.put("indexes", new ArchiveIndexHandler());

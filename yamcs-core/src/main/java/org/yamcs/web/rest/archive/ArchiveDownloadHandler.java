@@ -9,9 +9,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.yamcs.archive.EventRecorder;
+import org.yamcs.archive.GPBHelper;
 import org.yamcs.archive.XtceTmRecorder;
+import org.yamcs.cmdhistory.CommandHistoryRecorder;
 import org.yamcs.protobuf.Archive.TableData.TableRecord;
+import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.SchemaArchive;
+import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -34,8 +38,8 @@ import org.yamcs.web.rest.SqlBuilder;
 import org.yamcs.web.rest.StreamToChunkedCSVEncoder;
 import org.yamcs.web.rest.StreamToChunkedProtobufEncoder;
 import org.yamcs.web.rest.StreamToChunkedTransferEncoder;
-import org.yamcs.web.rest.mdb.MdbHelper;
-import org.yamcs.web.rest.mdb.MdbHelper.MatchResult;
+import org.yamcs.web.rest.mdb.MissionDatabaseHelper;
+import org.yamcs.web.rest.mdb.MissionDatabaseHelper.MatchResult;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
@@ -62,7 +66,7 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
             switch (req.getPathSegment(pathOffset)) {
             case "parameters":
                 req.assertGET();
-                MatchResult<Parameter> mr = MdbHelper.matchParameterName(req, pathOffset + 1);
+                MatchResult<Parameter> mr = MissionDatabaseHelper.matchParameterName(req, pathOffset + 1);
                 if (!mr.matches()) {
                     throw new NotFoundException(req);
                 } else {
@@ -73,6 +77,10 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
             case "packets":
                 req.assertGET();
                 downloadPackets(req);
+                return null;
+            case "commands":
+                req.assertGET();
+                downloadCommands(req);
                 return null;
             case "events":
                 req.assertGET();
@@ -126,7 +134,7 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
         if (!nameSet.isEmpty()) {
             sqlb.where("pname in ('" + String.join("','", nameSet) + "')");
         }
-        sqlb.descend(RestUtils.asksDescending(req, true));
+        sqlb.descend(RestUtils.asksDescending(req, false));
         String sql = sqlb.toString();
         
         if (req.asksFor(BINARY_MIME_TYPE)) {
@@ -141,10 +149,37 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
             RestStreams.stream(req, sql, new StreamToChunkedProtobufEncoder<TmPacketData>(req, SchemaYamcs.TmPacketData.WRITE) {
                 @Override
                 public TmPacketData mapTuple(Tuple tuple) {
-                    return ArchiveHelper.tupleToPacketData(tuple);
+                    return GPBHelper.tupleToTmPacketData(tuple);
                 }
             });
         }
+    }
+    
+    private void downloadCommands(RestRequest req) throws RestException {
+        Set<String> nameSet = new HashSet<>();
+        for (String names : req.getQueryParameterList("name", Collections.emptyList())) {
+            for (String name : names.split(",")) {
+                nameSet.add(name.trim());
+            }
+        }
+        
+        SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
+        IntervalResult ir = RestUtils.scanForInterval(req);
+        if (ir.hasInterval()) {
+            sqlb.where(ir.asSqlCondition("gentime"));
+        }
+        if (!nameSet.isEmpty()) {
+            sqlb.where("cmdName in ('" + String.join("','", nameSet) + "')");
+        }
+        sqlb.descend(RestUtils.asksDescending(req, false));
+        String sql = sqlb.toString();
+        
+        RestStreams.stream(req, sql, new StreamToChunkedProtobufEncoder<CommandHistoryEntry>(req, SchemaCommanding.CommandHistoryEntry.WRITE) {
+            @Override
+            public CommandHistoryEntry mapTuple(Tuple tuple) {
+                return GPBHelper.tupleToCommandHistoryEntry(tuple);
+            }
+        });
     }
     
     private void downloadTableData(RestRequest req, TableDefinition table) throws RestException {

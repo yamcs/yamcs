@@ -19,10 +19,8 @@ import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
-import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.tctm.TmProviderAdapter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.rest.RestException;
 import org.yamcs.web.rest.RestRequest;
@@ -38,8 +36,8 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 
 /**
- * Collects all archive-related conversions performed in the web api
- * (x towards archive.proto)
+ * Collects all archive-related conversions performed in the web api (x towards
+ * archive.proto)
  */
 public final class ArchiveHelper {
 
@@ -54,7 +52,7 @@ public final class ArchiveHelper {
         }
         return infob.build();
     }
-    
+
     final static StreamInfo toStreamInfo(Stream stream) {
         StreamInfo.Builder infob = StreamInfo.newBuilder();
         infob.setName(stream.getName());
@@ -63,27 +61,27 @@ public final class ArchiveHelper {
         }
         return infob.build();
     }
-    
+
     private static ColumnInfo toColumnInfo(ColumnDefinition cdef) {
         ColumnInfo.Builder infob = ColumnInfo.newBuilder();
         infob.setName(cdef.getName());
         infob.setType(cdef.getType().toString());
         return infob.build();
     }
-    
+
     public static StreamData toStreamData(Stream stream, Tuple tuple) {
         StreamData.Builder builder = StreamData.newBuilder();
         builder.setStream(stream.getName());
         builder.addAllColumn(toColumnDataList(tuple));
         return builder.build();
     }
-    
+
     final static List<ColumnData> toColumnDataList(Tuple tuple) {
         List<ColumnData> result = new ArrayList<>();
         int i = 0;
         for (Object column : tuple.getColumns()) {
             ColumnDefinition cdef = tuple.getColumnDefinition(i);
-            
+
             Value.Builder v = Value.newBuilder();
             switch (cdef.getType().val) {
             case SHORT:
@@ -112,17 +110,22 @@ public final class ArchiveHelper {
                 v.setStringValue((String) column);
                 break;
             case PROTOBUF:
-                // Perhaps we could be a bit smarter here. Proto3 will have an any-type
-                //String messageClassname = protoType.substring(9, protoType.length() - 1);
-                //String schemaClassname = messageClassname.replace("org.yamcs.protobuf.", "org.yamcs.protobuf.Schema") + "$BuilderSchema";
+                // Perhaps we could be a bit smarter here. Proto3 will have an
+                // any-type
+                // String messageClassname = protoType.substring(9,
+                // protoType.length() - 1);
+                // String schemaClassname =
+                // messageClassname.replace("org.yamcs.protobuf.",
+                // "org.yamcs.protobuf.Schema") + "$BuilderSchema";
                 MessageLite message = (MessageLite) column;
                 v.setType(Type.BINARY);
                 v.setBinaryValue(message.toByteString());
                 break;
             default:
-                throw new IllegalArgumentException("Tuple column type " + cdef.getType().val + " is currently not supported");
+                throw new IllegalArgumentException(
+                        "Tuple column type " + cdef.getType().val + " is currently not supported");
             }
-            
+
             ColumnData.Builder colData = ColumnData.newBuilder();
             colData.setName(cdef.getName());
             colData.setValue(v);
@@ -131,8 +134,9 @@ public final class ArchiveHelper {
         }
         return result;
     }
-    
-    final static ReplayRequest toParameterReplayRequest(RestRequest req, NamedObjectId id, boolean descendByDefault) throws RestException {
+
+    final static ReplayRequest toParameterReplayRequest(RestRequest req, NamedObjectId id, boolean descendByDefault)
+            throws RestException {
         ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
         rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
         IntervalResult ir = RestUtils.scanForInterval(req);
@@ -147,7 +151,7 @@ public final class ArchiveHelper {
         rrb.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id));
         return rrb.build();
     }
-    
+
     final static SampleSeries.Sample toGPBSample(Sample sample) {
         SampleSeries.Sample.Builder b = SampleSeries.Sample.newBuilder();
         b.setAverageGenerationTime(sample.avgt);
@@ -158,44 +162,30 @@ public final class ArchiveHelper {
         b.setN(sample.n);
         return b.build();
     }
-    
-    final static String[] EVENT_CSV_HEADER = new String[] {"Source","Generation Time","Reception Time","Event Type","Event Text"};
-    
+
+    final static String[] EVENT_CSV_HEADER = new String[] { "Source", "Generation Time", "Reception Time", "Event Type",
+            "Event Text" };
+
     final static String[] tupleToCSVEvent(Tuple tuple) {
         Event event = tupleToEvent(tuple);
-        return new String[] {
-                event.getSource(),
-                event.getGenerationTimeUTC(),
-                event.getReceptionTimeUTC(),
-                event.getType(),
-                event.getMessage()
-        };
+        return new String[] { event.getSource(), event.getGenerationTimeUTC(), event.getReceptionTimeUTC(),
+                event.getType(), event.getMessage() };
     }
-    
+
     final static Event tupleToEvent(Tuple tuple) {
         Event.Builder event = Event.newBuilder((Event) tuple.getColumn("body"));
         event.setGenerationTimeUTC(TimeEncoding.toString(event.getGenerationTime()));
         event.setReceptionTimeUTC(TimeEncoding.toString(event.getReceptionTime()));
         return event.build();
     }
-    
-    final static TmPacketData tupleToPacketData(Tuple tuple) {
-        TmPacketData.Builder pdatab = TmPacketData.newBuilder();
-        pdatab.setGenerationTime((Long) tuple.getColumn(TmProviderAdapter.GENTIME_COLUMN));
-        pdatab.setReceptionTime((Long) tuple.getColumn(TmProviderAdapter.RECTIME_COLUMN));
-        pdatab.setSequenceNumber((Integer) tuple.getColumn(TmProviderAdapter.SEQNUM_COLUMN));
-        byte[] tmbody = (byte[]) tuple.getColumn(TmProviderAdapter.PACKET_COLUMN);
-        pdatab.setPacket(ByteString.copyFrom(tmbody));
-        return pdatab.build();
-    }
-    
+
     final static AlarmData tupleToAlarmData(Tuple tuple) {
         AlarmData.Builder alarmb = AlarmData.newBuilder();
         alarmb.setSeqNum((int) tuple.getColumn("seqNum"));
-        
+
         ParameterValue pval = (ParameterValue) tuple.getColumn("triggerPV");
         alarmb.setTriggerValue(pval);
-        
+
         if (tuple.hasColumn("severityIncreasedPV")) {
             pval = (ParameterValue) tuple.getColumn("severityIncreasedPV");
             alarmb.setMostSevereValue(pval);
@@ -215,7 +205,7 @@ public final class ArchiveHelper {
             ackb.setAcknowledgeTimeUTC(TimeEncoding.toString(acknowledgeTime));
             alarmb.setAcknowledgeInfo(ackb);
         }
-        
+
         return alarmb.build();
     }
 }

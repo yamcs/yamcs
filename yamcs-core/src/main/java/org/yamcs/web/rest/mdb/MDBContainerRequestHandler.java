@@ -14,7 +14,7 @@ import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.XtceToGpbAssembler;
 import org.yamcs.web.rest.XtceToGpbAssembler.DetailLevel;
-import org.yamcs.web.rest.mdb.MdbHelper.MatchResult;
+import org.yamcs.web.rest.mdb.MissionDatabaseHelper.MatchResult;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 
@@ -30,7 +30,7 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
         if (!req.hasPathSegment(pathOffset)) {
             return listContainers(req, null, mdb); // root namespace
         } else {
-            MatchResult<SequenceContainer> pm = MdbHelper.matchContainerName(req, pathOffset);
+            MatchResult<SequenceContainer> pm = MissionDatabaseHelper.matchContainerName(req, pathOffset);
             if (pm.matches()) { // container
                 return getSingleContainer(req, pm.getRequestedId(), pm.getMatch());
             } else { // namespace
@@ -41,7 +41,7 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
     
     private RestResponse listContainersOrError(RestRequest req, int pathOffset) throws RestException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
-        MatchResult<String> nsm = MdbHelper.matchXtceDbNamespace(req, pathOffset, true);
+        MatchResult<String> nsm = MissionDatabaseHelper.matchXtceDbNamespace(req, pathOffset, true);
         if (nsm.matches()) {
             return listContainers(req, nsm.getMatch(), mdb);
         } else {

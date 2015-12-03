@@ -23,7 +23,7 @@ import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.XtceToGpbAssembler;
 import org.yamcs.web.rest.XtceToGpbAssembler.DetailLevel;
-import org.yamcs.web.rest.mdb.MdbHelper.MatchResult;
+import org.yamcs.web.rest.mdb.MissionDatabaseHelper.MatchResult;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
@@ -49,7 +49,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
                     return listParametersOrError(req, pathOffset);
                 }
             } else {
-                MatchResult<Parameter> pm = MdbHelper.matchParameterName(req, pathOffset);
+                MatchResult<Parameter> pm = MissionDatabaseHelper.matchParameterName(req, pathOffset);
                 if (pm.matches()) { // parameter?
                     return getSingleParameter(req, pm.getRequestedId(), pm.getMatch());
                 } else { // namespace?
@@ -61,7 +61,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
     
     private RestResponse listParametersOrError(RestRequest req, int pathOffset) throws RestException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
-        MatchResult<String> nsm = MdbHelper.matchXtceDbNamespace(req, pathOffset, true);
+        MatchResult<String> nsm = MissionDatabaseHelper.matchXtceDbNamespace(req, pathOffset, true);
         if (nsm.matches()) {
             return listParameters(req, nsm.getMatch(), mdb);
         } else {
@@ -158,7 +158,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
         BulkGetParameterRequest request = req.bodyAsMessage(SchemaRest.BulkGetParameterRequest.MERGE).build();
         BulkGetParameterResponse.Builder responseb = BulkGetParameterResponse.newBuilder();
         for(NamedObjectId id:request.getIdList()) {
-            Parameter p = MdbHelper.findParameter(mdb, id);
+            Parameter p = MissionDatabaseHelper.findParameter(mdb, id);
             if(p==null) {
                 throw new BadRequestException("Invalid parameter name specified "+id);
             }

@@ -8,7 +8,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 
-public class MdbHelper {
+public class MissionDatabaseHelper {
     
     /**
      * Searches for a valid parameter name in the URI of the request. It is

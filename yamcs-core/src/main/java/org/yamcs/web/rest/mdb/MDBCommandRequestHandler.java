@@ -17,7 +17,7 @@ import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.XtceToGpbAssembler;
 import org.yamcs.web.rest.XtceToGpbAssembler.DetailLevel;
-import org.yamcs.web.rest.mdb.MdbHelper.MatchResult;
+import org.yamcs.web.rest.mdb.MissionDatabaseHelper.MatchResult;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
 
@@ -33,7 +33,7 @@ public class MDBCommandRequestHandler extends RestRequestHandler {
         if (!req.hasPathSegment(pathOffset)) {
             return listCommands(req, null, mdb); // root namespace
         } else {
-            MatchResult<MetaCommand> c = MdbHelper.matchCommandName(req, pathOffset);
+            MatchResult<MetaCommand> c = MissionDatabaseHelper.matchCommandName(req, pathOffset);
             if (c.matches()) { // command
                 return getSingleCommand(req, c.getRequestedId(), c.getMatch());
             } else { // namespace
@@ -44,7 +44,7 @@ public class MDBCommandRequestHandler extends RestRequestHandler {
     
     private RestResponse listCommandsOrError(RestRequest req, int pathOffset) throws RestException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
-        MatchResult<String> nsm = MdbHelper.matchXtceDbNamespace(req, pathOffset, true);
+        MatchResult<String> nsm = MissionDatabaseHelper.matchXtceDbNamespace(req, pathOffset, true);
         if (nsm.matches()) {
             return listCommands(req, nsm.getMatch(), mdb);
         } else {

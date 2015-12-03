@@ -14,7 +14,7 @@ import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.XtceToGpbAssembler;
 import org.yamcs.web.rest.XtceToGpbAssembler.DetailLevel;
-import org.yamcs.web.rest.mdb.MdbHelper.MatchResult;
+import org.yamcs.web.rest.mdb.MissionDatabaseHelper.MatchResult;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.XtceDb;
 
@@ -30,7 +30,7 @@ public class MDBAlgorithmRequestHandler extends RestRequestHandler {
         if (!req.hasPathSegment(pathOffset)) {
             return listAlgorithms(req, null, mdb); // root namespace
         } else {
-            MatchResult<Algorithm> am = MdbHelper.matchAlgorithmName(req, pathOffset);
+            MatchResult<Algorithm> am = MissionDatabaseHelper.matchAlgorithmName(req, pathOffset);
             if (am.matches()) { // algorithm
                 return getSingleAlgorithm(req, am.getRequestedId(), am.getMatch());
             } else { // namespace
@@ -41,7 +41,7 @@ public class MDBAlgorithmRequestHandler extends RestRequestHandler {
     
     private RestResponse listAlgorithmsOrError(RestRequest req, int pathOffset) throws RestException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
-        MatchResult<String> nsm = MdbHelper.matchXtceDbNamespace(req, pathOffset, true);
+        MatchResult<String> nsm = MissionDatabaseHelper.matchXtceDbNamespace(req, pathOffset, true);
         if (nsm.matches()) {
             return listAlgorithms(req, nsm.getMatch(), mdb);
         } else {

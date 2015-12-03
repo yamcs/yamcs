@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.archive.GPBHelper;
 import org.yamcs.archive.XtceTmRecorder;
 import org.yamcs.protobuf.Rest.ListPacketsResponse;
 import org.yamcs.protobuf.SchemaRest;
@@ -85,7 +86,7 @@ public class ArchivePacketRequestHandler extends RestRequestHandler {
                     
                     @Override
                     public void processTuple(Stream stream, Tuple tuple) {
-                        TmPacketData pdata = ArchiveHelper.tupleToPacketData(tuple);
+                        TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
                         try {
                             pdata.getPacket().writeTo(bufOut);
                         } catch (IOException e) {
@@ -105,7 +106,7 @@ public class ArchivePacketRequestHandler extends RestRequestHandler {
     
                 @Override
                 public void processTuple(Stream stream, Tuple tuple) {
-                    TmPacketData pdata = ArchiveHelper.tupleToPacketData(tuple);
+                    TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
                     responseb.addPacket(pdata);
                 }
             });
@@ -122,7 +123,7 @@ public class ArchivePacketRequestHandler extends RestRequestHandler {
 
             @Override
             public void processTuple(Stream stream, Tuple tuple) {
-                TmPacketData pdata = ArchiveHelper.tupleToPacketData(tuple);
+                TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
                 packets.add(pdata);
             }
         });

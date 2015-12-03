@@ -20,8 +20,8 @@ import org.yamcs.web.rest.RestStreams;
 import org.yamcs.web.rest.RestUtils;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
 import org.yamcs.web.rest.SqlBuilder;
-import org.yamcs.web.rest.mdb.MdbHelper;
-import org.yamcs.web.rest.mdb.MdbHelper.MatchResult;
+import org.yamcs.web.rest.mdb.MissionDatabaseHelper;
+import org.yamcs.web.rest.mdb.MissionDatabaseHelper.MatchResult;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
@@ -34,7 +34,7 @@ public class ArchiveAlarmRequestHandler extends RestRequestHandler {
             req.assertGET();
             return listAlarms(req, null, TimeEncoding.INVALID_INSTANT);
         } else {
-            MatchResult<Parameter> mr = MdbHelper.matchParameterName(req, pathOffset);
+            MatchResult<Parameter> mr = MissionDatabaseHelper.matchParameterName(req, pathOffset);
             if (!mr.matches()) {
                 throw new NotFoundException(req);
             }
