@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.archive;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -15,6 +15,13 @@ import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.web.rest.BadRequestException;
+import org.yamcs.web.rest.NotFoundException;
+import org.yamcs.web.rest.RestException;
+import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestResponse;
+import org.yamcs.web.rest.RestUtils;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
 
 import com.fasterxml.jackson.core.JsonGenerator;

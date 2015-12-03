@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.archive;
 
 
 import java.util.concurrent.Semaphore;
@@ -14,6 +14,11 @@ import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
+import org.yamcs.web.rest.BadRequestException;
+import org.yamcs.web.rest.InternalServerErrorException;
+import org.yamcs.web.rest.RestException;
+import org.yamcs.web.rest.RestReplayListener;
+import org.yamcs.web.rest.RestRequest;
 
 import com.google.protobuf.MessageLite;
 
@@ -38,7 +43,7 @@ public class RestReplays {
         
         ReplayWrapper wrapper = new ReplayWrapper(l);
         try {
-             YarchReplay yarchReplay = replayServer.createReplay(replayRequest, wrapper, req.authToken);
+             YarchReplay yarchReplay = replayServer.createReplay(replayRequest, wrapper, req.getAuthToken());
              wrapper.setYarchReplay(yarchReplay);
              yarchReplay.start();
              return wrapper;

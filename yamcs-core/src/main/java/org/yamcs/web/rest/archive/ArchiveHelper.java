@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.archive;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +24,11 @@ import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.tctm.TmProviderAdapter;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.rest.RestParameterSampler.Sample;
+import org.yamcs.web.rest.RestException;
+import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestUtils;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
+import org.yamcs.web.rest.archive.RestParameterSampler.Sample;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;

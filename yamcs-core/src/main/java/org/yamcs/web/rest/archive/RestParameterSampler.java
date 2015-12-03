@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.archive;
 
 import java.util.Collections;
 import java.util.List;

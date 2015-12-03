@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.SchemaWeb;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.web.AbstractRequestHandler;
+import org.yamcs.web.rest.archive.ArchiveRequestHandler;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 
@@ -101,7 +102,7 @@ public abstract class RestRequestHandler extends AbstractRequestHandler {
      *            the path offset wherein this handler operates. Use this to
      *            correctly index into {@link RestRequest#getPathSegment(int)}
      */
-    protected abstract RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException;
+    public abstract RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException;
     
     /**
      * Helper method to throw a BadRequestException on incorrect requests. This is some validation mechanism

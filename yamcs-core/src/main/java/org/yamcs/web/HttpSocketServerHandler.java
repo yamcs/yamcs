@@ -21,16 +21,16 @@ import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.time.SimulationTimeService;
-import org.yamcs.web.rest.ArchiveRequestHandler;
 import org.yamcs.web.rest.ClientRequestHandler;
 import org.yamcs.web.rest.DisplayRequestHandler;
 import org.yamcs.web.rest.InstanceRequestHandler;
 import org.yamcs.web.rest.LinkRequestHandler;
-import org.yamcs.web.rest.MDBRequestHandler;
-import org.yamcs.web.rest.ProcessorRequestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.UserRequestHandler;
+import org.yamcs.web.rest.archive.ArchiveRequestHandler;
+import org.yamcs.web.rest.mdb.MDBRequestHandler;
+import org.yamcs.web.rest.processor.ProcessorRequestHandler;
 import org.yamcs.web.websocket.WebSocketServerHandler;
 
 import io.netty.buffer.ByteBuf;
@@ -66,15 +66,15 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
     WebSocketServerHandler webSocketHandler = new WebSocketServerHandler();
     
     public HttpSocketServerHandler() {
+        restHandlers.put("archive", new ArchiveRequestHandler());
+        restHandlers.put("clients", new ClientRequestHandler());
         restHandlers.put("displays",  new DisplayRequestHandler());
         restHandlers.put("instances", new InstanceRequestHandler());
-        restHandlers.put("user", new UserRequestHandler());
-        restHandlers.put("mdb", new MDBRequestHandler());
-        restHandlers.put("clients", new ClientRequestHandler());
-        restHandlers.put("processors", new ProcessorRequestHandler());
-        restHandlers.put("archive", new ArchiveRequestHandler());
         restHandlers.put("links", new LinkRequestHandler());
+        restHandlers.put("mdb", new MDBRequestHandler());
+        restHandlers.put("processors", new ProcessorRequestHandler());
         restHandlers.put("simTime", new SimulationTimeService.SimTimeRequestHandler());
+        restHandlers.put("user", new UserRequestHandler());
     }
     
     @Override

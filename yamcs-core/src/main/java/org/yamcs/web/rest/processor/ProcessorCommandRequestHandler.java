@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.processor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +18,15 @@ import org.yamcs.protobuf.Rest.IssueCommandResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.StringConvertors;
+import org.yamcs.web.rest.BadRequestException;
+import org.yamcs.web.rest.ForbiddenException;
+import org.yamcs.web.rest.InternalServerErrorException;
+import org.yamcs.web.rest.NotFoundException;
+import org.yamcs.web.rest.RestException;
+import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestResponse;
+import org.yamcs.web.rest.mdb.MDBRequestHandler;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
@@ -113,7 +122,7 @@ public class ProcessorCommandRequestHandler extends RestRequestHandler {
         // Prepare the command
         PreparedCommand preparedCommand;
         try {
-            preparedCommand = processor.getCommandingManager().buildCommand(cmd, assignments, origin, sequenceNumber, req.authToken);
+            preparedCommand = processor.getCommandingManager().buildCommand(cmd, assignments, origin, sequenceNumber, req.getAuthToken());
             
             //make the source - should perhaps come from the client
             StringBuilder sb = new StringBuilder();
@@ -142,9 +151,9 @@ public class ProcessorCommandRequestHandler extends RestRequestHandler {
         CommandQueue queue;
         if (dryRun) {
             CommandQueueManager mgr = processor.getCommandingManager().getCommandQueueManager();
-            queue = mgr.getQueue(req.authToken, preparedCommand);
+            queue = mgr.getQueue(req.getAuthToken(), preparedCommand);
         } else {
-            queue = processor.getCommandingManager().sendCommand(req.authToken, preparedCommand);
+            queue = processor.getCommandingManager().sendCommand(req.getAuthToken(), preparedCommand);
         }
         
         IssueCommandResponse.Builder response = IssueCommandResponse.newBuilder();

@@ -52,7 +52,7 @@ public class RestRequest {
     private ChannelHandlerContext channelHandlerContext;
     private FullHttpRequest httpRequest;
     private QueryStringDecoder qsDecoder;
-    AuthenticationToken authToken;
+    private AuthenticationToken authToken;
     private JsonFactory jsonFactory;
     
     // For storing resolved URI resource segments
@@ -198,6 +198,10 @@ public class RestRequest {
     public String getUsername() {
         User user = getUser();
         return (user != null) ? user.getPrincipalName() : ManagementService.ANONYMOUS;
+    }
+    
+    public AuthenticationToken getAuthToken() {
+        return authToken;
     }
     
     public boolean isPOST() {

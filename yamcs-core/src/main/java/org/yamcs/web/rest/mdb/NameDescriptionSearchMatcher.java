@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.mdb;
 
 import java.util.Map.Entry;
 

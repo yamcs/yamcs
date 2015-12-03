@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.processor;
 
 import java.util.UUID;
 
@@ -17,7 +17,14 @@ import org.yamcs.protobuf.Rest.PatchCommandQueueEntryRequest;
 import org.yamcs.protobuf.Rest.PatchCommandQueueRequest;
 import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.web.rest.BadRequestException;
+import org.yamcs.web.rest.MethodNotAllowedException;
+import org.yamcs.web.rest.NotFoundException;
+import org.yamcs.web.rest.RestException;
+import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
+import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestResponse;
 
 /**
  * Handles requests related to command queues

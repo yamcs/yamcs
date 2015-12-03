@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.processor;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -33,7 +33,15 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.web.rest.BadRequestException;
+import org.yamcs.web.rest.MethodNotAllowedException;
+import org.yamcs.web.rest.NotFoundException;
+import org.yamcs.web.rest.RestException;
+import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
+import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestResponse;
+import org.yamcs.web.rest.mdb.MDBRequestHandler;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -381,7 +389,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         reqb.setReplaySpec(rrb);
         ManagementService mservice = ManagementService.getInstance();
         try {
-            mservice.createProcessor(reqb.build(), req.authToken);
+            mservice.createProcessor(reqb.build(), req.getAuthToken());
             return new RestResponse(req);
         } catch (YamcsException e) {
             throw new BadRequestException(e.getMessage());
