@@ -46,7 +46,7 @@ public class HornetQIndexServer extends AbstractExecutionThreadService {
         this.tagDb = tagDb;
         this.instance = indexServer.getInstance();
         yamcsSession = YamcsSession.newBuilder().build();
-        msgClient = yamcsSession.newClientBuilder().setRpcAddress(Protocol.getYarchReplayControlAddress(instance)).setDataProducer(true).build();
+        msgClient = yamcsSession.newClientBuilder().setRpcAddress(Protocol.getYarchIndexControlAddress(instance)).setDataProducer(true).build();
     }
 
     @Override
@@ -166,7 +166,7 @@ public class HornetQIndexServer extends AbstractExecutionThreadService {
         try {
             quit();
         } catch (HornetQException e) {
-            e.printStackTrace();
+            log.error("Failed to shutdown", e);
         }
     }
     
