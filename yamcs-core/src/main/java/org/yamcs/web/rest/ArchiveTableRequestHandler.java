@@ -9,6 +9,7 @@ import org.yamcs.protobuf.Archive.TableInfo;
 import org.yamcs.protobuf.Rest.ListTablesResponse;
 import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
@@ -96,7 +97,7 @@ public class ArchiveTableRequestHandler extends RestRequestHandler {
         RestStreams.streamAndWait(req, sql, new RestStreamSubscriber(pos, limit) {
             
             @Override
-            public void onTuple(Tuple tuple) {
+            public void processTuple(Stream stream, Tuple tuple) {
                 TableRecord.Builder rec = TableRecord.newBuilder();
                 rec.addAllColumn(ArchiveHelper.toColumnDataList(tuple));
                 responseb.addRecord(rec); // TODO estimate byte size

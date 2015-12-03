@@ -16,6 +16,7 @@ import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
+import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 
 import io.netty.buffer.ByteBuf;
@@ -73,7 +74,7 @@ public class ArchivePacketRequestHandler extends RestRequestHandler {
                 RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
                     
                     @Override
-                    public void onTuple(Tuple tuple) {
+                    public void processTuple(Stream stream, Tuple tuple) {
                         TmPacketData pdata = ArchiveHelper.tupleToPacketData(tuple);
                         try {
                             pdata.getPacket().writeTo(bufOut);
@@ -93,7 +94,7 @@ public class ArchivePacketRequestHandler extends RestRequestHandler {
             RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
     
                 @Override
-                public void onTuple(Tuple tuple) {
+                public void processTuple(Stream stream, Tuple tuple) {
                     TmPacketData pdata = ArchiveHelper.tupleToPacketData(tuple);
                     responseb.addPacket(pdata);
                 }
@@ -110,7 +111,7 @@ public class ArchivePacketRequestHandler extends RestRequestHandler {
         RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(0, 2) {
 
             @Override
-            public void onTuple(Tuple tuple) {
+            public void processTuple(Stream stream, Tuple tuple) {
                 TmPacketData pdata = ArchiveHelper.tupleToPacketData(tuple);
                 packets.add(pdata);
             }

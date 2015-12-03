@@ -1,83 +1,82 @@
 package org.yamcs.web.rest;
 
-import static org.yamcs.web.AbstractRequestHandler.PROTOBUF_MIME_TYPE;
-
 import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Pvalue.ParameterData;
-import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
-
-import com.fasterxml.jackson.core.JsonGenerator;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
-import io.protostuff.JsonIOUtil;
 
 /**
- * Reads a yamcs stream and maps it directly to an output buffer. If that buffer grows larger
+ * Reads a yamcs replay and maps it directly to an output buffer. If that buffer grows larger
  * than the treshold size for one chunk, this will cause a chunk to be written out.
  * Could maybe be replaced by using built-in netty functionality, but would need to investigate.
  */
-public class ReplayToChunkedParameterProtobuf extends RestParameterReplayListener {
+public abstract class ParameterReplayToChunkedTransferEncoder extends RestParameterReplayListener {
     
-    private static final Logger log = LoggerFactory.getLogger(ReplayToChunkedParameterProtobuf.class);
+    private static final Logger log = LoggerFactory.getLogger(ParameterReplayToChunkedTransferEncoder.class);
     private static final int CHUNK_TRESHOLD = 8096;
     
-    private RestRequest req;
-    private String contentType;
-    
     private ByteBuf buf;
-    private ByteBufOutputStream bufOut;
+    protected ByteBufOutputStream bufOut;
     
-    public ReplayToChunkedParameterProtobuf(RestRequest req) throws RestException {
+    protected RestRequest req;
+    protected String contentType;
+    protected boolean failed = false;
+    
+    public ParameterReplayToChunkedTransferEncoder(RestRequest req, String contentType) throws RestException {
         super();
         this.req = req;
-        contentType = req.deriveTargetContentType();
+        this.contentType = contentType;
         resetBuffer();
         RestUtils.startChunkedTransfer(req, contentType);
     }
     
-    private void resetBuffer() {
+    protected void resetBuffer() {
         buf = req.getChannelHandlerContext().alloc().buffer();
         bufOut = new ByteBufOutputStream(buf);
     }
     
+    protected void closeBufferOutputStream() throws IOException {
+        bufOut.close();
+    }
+    
     @Override
     public void onParameterData(ParameterData pdata) {
+        if (failed) {
+            log.warn("Already failed. Ignoring parameter data");
+            return;
+        }
         try {
-            for (ParameterValue pval : pdata.getParameterList()) {
-                bufferMessage(pval);
-            }
+            processParameterData(pdata, bufOut);
             if (buf.readableBytes() >= CHUNK_TRESHOLD) {
-                bufOut.close();
+                closeBufferOutputStream();
                 RestUtils.writeChunk(req, buf);
                 resetBuffer();
             }
         } catch (IOException e) {
-            log.error("Skipping chunk", e);
+            log.error("Closing replay due to IO error", e);
+            failed = true;
+            requestReplayAbortion();
         }
     }
     
-    private void bufferMessage(ParameterValue msg) throws IOException {
-        if (PROTOBUF_MIME_TYPE.equals(contentType)) {
-            msg.writeDelimitedTo(bufOut);
-        } else {
-            JsonGenerator generator = req.createJsonGenerator(bufOut);
-            JsonIOUtil.writeTo(generator, msg, SchemaPvalue.ParameterValue.WRITE, false);
-            generator.close();
-        }
-    }
+    public abstract void processParameterData(ParameterData pdata, ByteBufOutputStream bufOut) throws IOException;
     
     @Override
     public void stateChanged(ReplayStatus rs) {
+        if (failed) {
+            log.info("Closing channel because transfer failed");
+            req.getChannelHandlerContext().channel().close();
+            return;
+        }
         try {
-            bufOut.close();
+            closeBufferOutputStream();
             if (buf.readableBytes() > 0) {
                 RestUtils.writeChunk(req, buf).addListener(new ChannelFutureListener() {
                     @Override

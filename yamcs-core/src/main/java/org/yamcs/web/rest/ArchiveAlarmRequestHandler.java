@@ -12,6 +12,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
 import org.yamcs.web.rest.RestUtils.MatchResult;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 
 public class ArchiveAlarmRequestHandler extends RestRequestHandler {
@@ -75,7 +76,7 @@ public class ArchiveAlarmRequestHandler extends RestRequestHandler {
         RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
 
             @Override
-            public void onTuple(Tuple tuple) {
+            public void processTuple(Stream stream, Tuple tuple) {
                 AlarmData alarm = ArchiveHelper.tupleToAlarmData(tuple);
                 responseb.addAlarm(alarm);
             }
@@ -93,7 +94,7 @@ public class ArchiveAlarmRequestHandler extends RestRequestHandler {
         RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(0, 2) {
 
             @Override
-            public void onTuple(Tuple tuple) {
+            public void processTuple(Stream stream, Tuple tuple) {
                 AlarmData alarm = ArchiveHelper.tupleToAlarmData(tuple);
                 alarms.add(alarm);
             }

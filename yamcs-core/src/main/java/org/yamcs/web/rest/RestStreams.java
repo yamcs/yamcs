@@ -30,6 +30,7 @@ public class RestStreams {
                 .append(streamName)
                 .append(" as ")
                 .append(selectSql)
+                .append(" nofollow")
                 .toString();
         
         log.debug("Executing: {}", sql);

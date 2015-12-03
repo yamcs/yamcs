@@ -84,11 +84,11 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
         
         if (req.asksFor(CSV_MIME_TYPE)) {
             List<NamedObjectId> idList = Arrays.asList(id);
-            RestParameterReplayListener l = new ReplayToChunkedParameterCSV(req, idList);
+            RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, idList);
             l.setNoRepeat(noRepeat);
             RestReplays.replay(req, rr, l);
         } else {
-            RestParameterReplayListener l = new ReplayToChunkedParameterProtobuf(req);
+            RestParameterReplayListener l = new ParameterReplayToChunkedProtobufEncoder(req);
             l.setNoRepeat(noRepeat);
             RestReplays.replay(req, rr, l);
         }
@@ -115,7 +115,7 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
         String sql = sqlb.toString();
         
         if (req.asksFor(BINARY_MIME_TYPE)) {
-            RestStreams.stream(req, sql, new StreamToChunkedBinaryEncoder(req) {
+            RestStreams.stream(req, sql, new StreamToChunkedTransferEncoder(req, BINARY_MIME_TYPE) {
                 @Override
                 public void processTuple(Tuple tuple, ByteBufOutputStream bufOut) throws IOException {
                     byte[] raw = (byte[]) tuple.getColumn(TmProviderAdapter.PACKET_COLUMN);

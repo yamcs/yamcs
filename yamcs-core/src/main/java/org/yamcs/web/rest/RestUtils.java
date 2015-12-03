@@ -78,14 +78,21 @@ public class RestUtils {
     public static ChannelFuture writeChunk(RestRequest req, ByteBuf buf) throws IOException {
         ChannelHandlerContext ctx = req.getChannelHandlerContext();
         Channel ch = ctx.channel();
+        if (!ch.isOpen()) {
+            throw new IOException("Channel not or no longer open");
+        }
         ChannelFuture writeFuture = ctx.writeAndFlush(new DefaultHttpContent(buf));
         try {
-            while (!ch.isWritable() && ch.isOpen()) {
-                writeFuture.await(5, TimeUnit.SECONDS);
+            if (!ch.isWritable()) {
+                log.warn("Channel open, but not writable. Waiting it out for max 10 seconds.");
+                boolean writeCompleted = writeFuture.await(10, TimeUnit.SECONDS);
+                if (!writeCompleted) {
+                    throw new IOException("Channel did not become writable in 10 seconds");
+                }
             }
         } catch (InterruptedException e) {
             log.warn("Interrupted while waiting for channel to become writable", e);
-            // TODO return? throw up?
+            throw new IOException(e);
         }
         return writeFuture;
     }

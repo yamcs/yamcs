@@ -15,6 +15,7 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
+import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 
 import com.csvreader.CsvWriter;
@@ -79,7 +80,7 @@ public class ArchiveEventRequestHandler extends RestRequestHandler {
             RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
 
                 @Override
-                public void onTuple(Tuple tuple) {
+                public void processTuple(Stream stream, Tuple tuple) {
                     try {
                         w.writeRecord(ArchiveHelper.tupleToCSVEvent(tuple));
                     } catch (IOException e) {
@@ -95,7 +96,7 @@ public class ArchiveEventRequestHandler extends RestRequestHandler {
             RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
 
                 @Override
-                public void onTuple(Tuple tuple) {
+                public void processTuple(Stream stream, Tuple tuple) {
                     Event.Builder event = Event.newBuilder((Event) tuple.getColumn("body"));
                     event.setGenerationTimeUTC(TimeEncoding.toString(event.getGenerationTime()));
                     event.setReceptionTimeUTC(TimeEncoding.toString(event.getReceptionTime()));
