@@ -31,7 +31,6 @@ import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
-import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.rest.BadRequestException;
 import org.yamcs.web.rest.MethodNotAllowedException;
@@ -137,11 +136,12 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         return new RestResponse(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
     }
 
-    private RestResponse updateProcessor(RestRequest req, YProcessor yproc) throws RestException {
-        if(req.isPOST())
-            return postProcessor(req, yproc);
-        else if(req.isPATCH())
-            return patchProcessor(req, yproc);
+    private RestResponse updateProcessor(RestRequest req, YProcessor processor) throws RestException {
+        if (req.isGET()) {
+            ProcessorInfo pinfo = toProcessorInfo(processor, req, true);
+            return new RestResponse(req, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
+        } else if (req.isPOST() || req.isPATCH() || req.isPUT())
+            return patchProcessor(req, processor);
         else {
             throw new MethodNotAllowedException(req);
         }
@@ -202,47 +202,6 @@ public class ProcessorRequestHandler extends RestRequestHandler {
             }
         }
 
-        return new RestResponse(req);
-    }
-
-    private RestResponse postProcessor(RestRequest req, YProcessor yproc) throws RestException {
-
-        req.assertPOST();
-        ProcessorRequest yprocReq = req.bodyAsMessage(SchemaYamcsManagement.ProcessorRequest.MERGE).build();
-        switch(yprocReq.getOperation()) {
-            case RESUME:
-                if(!yproc.isReplay()) {
-                    throw new BadRequestException("Cannot resume a non replay processor ");
-                }
-                yproc.resume();
-                break;
-            case PAUSE:
-                if(!yproc.isReplay()) {
-                    throw new BadRequestException("Cannot pause a non replay processor ");
-                }
-                yproc.pause();
-                break;
-            case SEEK:
-                if(!yproc.isReplay()) {
-                    throw new BadRequestException("Cannot seek a non replay processor ");
-                }
-                if(!yprocReq.hasSeekTime()) {
-                    throw new BadRequestException("No seek time specified");
-                }
-                yproc.seek(yprocReq.getSeekTime());
-                break;
-            case CHANGE_SPEED:
-                if(!yproc.isReplay()) {
-                    throw new BadRequestException("Cannot seek a non replay processor ");
-                }
-                if(!yprocReq.hasReplaySpeed()) {
-                    throw new BadRequestException("No replay speed specified");
-                }
-                yproc.changeSpeed(yprocReq.getReplaySpeed());
-                break;
-            default:
-                throw new BadRequestException("Invalid operation "+yprocReq.getOperation()+" specified");
-        }
         return new RestResponse(req);
     }
 
