@@ -18226,15 +18226,20 @@ public final class Rest {
     com.google.protobuf.ByteString
         getStateBytes();
 
-    // optional int64 seekTime = 2;
+    // optional string seek = 2;
     /**
-     * <code>optional int64 seekTime = 2;</code>
+     * <code>optional string seek = 2;</code>
      */
-    boolean hasSeekTime();
+    boolean hasSeek();
     /**
-     * <code>optional int64 seekTime = 2;</code>
+     * <code>optional string seek = 2;</code>
      */
-    long getSeekTime();
+    java.lang.String getSeek();
+    /**
+     * <code>optional string seek = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getSeekBytes();
 
     // optional string speed = 3;
     /**
@@ -18307,9 +18312,9 @@ public final class Rest {
               state_ = input.readBytes();
               break;
             }
-            case 16: {
+            case 18: {
               bitField0_ |= 0x00000002;
-              seekTime_ = input.readInt64();
+              seek_ = input.readBytes();
               break;
             }
             case 26: {
@@ -18400,20 +18405,47 @@ public final class Rest {
       }
     }
 
-    // optional int64 seekTime = 2;
-    public static final int SEEKTIME_FIELD_NUMBER = 2;
-    private long seekTime_;
+    // optional string seek = 2;
+    public static final int SEEK_FIELD_NUMBER = 2;
+    private java.lang.Object seek_;
     /**
-     * <code>optional int64 seekTime = 2;</code>
+     * <code>optional string seek = 2;</code>
      */
-    public boolean hasSeekTime() {
+    public boolean hasSeek() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>optional int64 seekTime = 2;</code>
+     * <code>optional string seek = 2;</code>
      */
-    public long getSeekTime() {
-      return seekTime_;
+    public java.lang.String getSeek() {
+      java.lang.Object ref = seek_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          seek_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string seek = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getSeekBytes() {
+      java.lang.Object ref = seek_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        seek_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
     }
 
     // optional string speed = 3;
@@ -18461,7 +18493,7 @@ public final class Rest {
 
     private void initFields() {
       state_ = "";
-      seekTime_ = 0L;
+      seek_ = "";
       speed_ = "";
     }
     private byte memoizedIsInitialized = -1;
@@ -18480,7 +18512,7 @@ public final class Rest {
         output.writeBytes(1, getStateBytes());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeInt64(2, seekTime_);
+        output.writeBytes(2, getSeekBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeBytes(3, getSpeedBytes());
@@ -18500,7 +18532,7 @@ public final class Rest {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(2, seekTime_);
+          .computeBytesSize(2, getSeekBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
@@ -18624,7 +18656,7 @@ public final class Rest {
         super.clear();
         state_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        seekTime_ = 0L;
+        seek_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
         speed_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
@@ -18663,7 +18695,7 @@ public final class Rest {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.seekTime_ = seekTime_;
+        result.seek_ = seek_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
@@ -18689,8 +18721,10 @@ public final class Rest {
           state_ = other.state_;
           onChanged();
         }
-        if (other.hasSeekTime()) {
-          setSeekTime(other.getSeekTime());
+        if (other.hasSeek()) {
+          bitField0_ |= 0x00000002;
+          seek_ = other.seek_;
+          onChanged();
         }
         if (other.hasSpeed()) {
           bitField0_ |= 0x00000004;
@@ -18798,35 +18832,76 @@ public final class Rest {
         return this;
       }
 
-      // optional int64 seekTime = 2;
-      private long seekTime_ ;
+      // optional string seek = 2;
+      private java.lang.Object seek_ = "";
       /**
-       * <code>optional int64 seekTime = 2;</code>
+       * <code>optional string seek = 2;</code>
        */
-      public boolean hasSeekTime() {
+      public boolean hasSeek() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>optional int64 seekTime = 2;</code>
+       * <code>optional string seek = 2;</code>
        */
-      public long getSeekTime() {
-        return seekTime_;
+      public java.lang.String getSeek() {
+        java.lang.Object ref = seek_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          seek_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
       }
       /**
-       * <code>optional int64 seekTime = 2;</code>
+       * <code>optional string seek = 2;</code>
        */
-      public Builder setSeekTime(long value) {
-        bitField0_ |= 0x00000002;
-        seekTime_ = value;
+      public com.google.protobuf.ByteString
+          getSeekBytes() {
+        java.lang.Object ref = seek_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          seek_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string seek = 2;</code>
+       */
+      public Builder setSeek(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        seek_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 seekTime = 2;</code>
+       * <code>optional string seek = 2;</code>
        */
-      public Builder clearSeekTime() {
+      public Builder clearSeek() {
         bitField0_ = (bitField0_ & ~0x00000002);
-        seekTime_ = 0L;
+        seek_ = getDefaultInstance().getSeek();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string seek = 2;</code>
+       */
+      public Builder setSeekBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        seek_ = value;
         onChanged();
         return this;
       }
@@ -25136,24 +25211,23 @@ public final class Rest {
       "\n\004stop\030\003 \001(\t\022\014\n\004loop\030\004 \001(\010\022\r\n\005speed\030\005 \001(",
       "\t\022\020\n\010clientId\030\006 \003(\005\022\020\n\010paraname\030\007 \003(\t\022\017\n" +
       "\007ppgroup\030\010 \003(\t\022\022\n\npacketname\030\t \003(\t\022\017\n\007cm" +
-      "dhist\030\n \001(\010\022\022\n\npersistent\030\013 \001(\010\"G\n\025Patch" +
-      "ProcessorRequest\022\r\n\005state\030\001 \001(\t\022\020\n\010seekT" +
-      "ime\030\002 \001(\003\022\r\n\005speed\030\003 \001(\t\"(\n\026StreamSubscr" +
-      "ibeRequest\022\016\n\006stream\030\001 \001(\t\"e\n\030SetSimulat" +
-      "ionTimeRequest\022\r\n\005time0\030\001 \001(\003\022\020\n\010time0UT" +
-      "C\030\002 \001(\t\022\026\n\016simElapsedTime\030\003 \001(\003\022\020\n\010simSp" +
-      "eed\030\004 \001(\001\"I\n\025ListInstancesResponse\0220\n\010in" +
-      "stance\030\001 \003(\0132\036.yamcsManagement.YamcsInst",
-      "ance\"6\n\022ListAlarmsResponse\022 \n\005alarm\030\001 \003(" +
-      "\0132\021.alarms.AlarmData\"3\n\021PatchAlarmReques" +
-      "t\022\r\n\005state\030\001 \001(\t\022\017\n\007comment\030\002 \001(\t\"7\n\022Lis" +
-      "tTablesResponse\022!\n\005table\030\001 \003(\0132\022.archive" +
-      ".TableInfo\":\n\023ListStreamsResponse\022#\n\006str" +
-      "eam\030\001 \003(\0132\023.archive.StreamInfo\"1\n\022ListEv" +
-      "entsResponse\022\033\n\005event\030\001 \003(\0132\014.yamcs.Even" +
-      "t\":\n\023ListPacketsResponse\022#\n\006packet\030\001 \003(\013" +
-      "2\023.yamcs.TmPacketDataB\024\n\022org.yamcs.proto" +
-      "buf"
+      "dhist\030\n \001(\010\022\022\n\npersistent\030\013 \001(\010\"C\n\025Patch" +
+      "ProcessorRequest\022\r\n\005state\030\001 \001(\t\022\014\n\004seek\030" +
+      "\002 \001(\t\022\r\n\005speed\030\003 \001(\t\"(\n\026StreamSubscribeR" +
+      "equest\022\016\n\006stream\030\001 \001(\t\"e\n\030SetSimulationT" +
+      "imeRequest\022\r\n\005time0\030\001 \001(\003\022\020\n\010time0UTC\030\002 " +
+      "\001(\t\022\026\n\016simElapsedTime\030\003 \001(\003\022\020\n\010simSpeed\030" +
+      "\004 \001(\001\"I\n\025ListInstancesResponse\0220\n\010instan" +
+      "ce\030\001 \003(\0132\036.yamcsManagement.YamcsInstance",
+      "\"6\n\022ListAlarmsResponse\022 \n\005alarm\030\001 \003(\0132\021." +
+      "alarms.AlarmData\"3\n\021PatchAlarmRequest\022\r\n" +
+      "\005state\030\001 \001(\t\022\017\n\007comment\030\002 \001(\t\"7\n\022ListTab" +
+      "lesResponse\022!\n\005table\030\001 \003(\0132\022.archive.Tab" +
+      "leInfo\":\n\023ListStreamsResponse\022#\n\006stream\030" +
+      "\001 \003(\0132\023.archive.StreamInfo\"1\n\022ListEvents" +
+      "Response\022\033\n\005event\030\001 \003(\0132\014.yamcs.Event\":\n" +
+      "\023ListPacketsResponse\022#\n\006packet\030\001 \003(\0132\023.y" +
+      "amcs.TmPacketDataB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -25315,7 +25389,7 @@ public final class Rest {
           internal_static_parameters_PatchProcessorRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_parameters_PatchProcessorRequest_descriptor,
-              new java.lang.String[] { "State", "SeekTime", "Speed", });
+              new java.lang.String[] { "State", "Seek", "Speed", });
           internal_static_parameters_StreamSubscribeRequest_descriptor =
             getDescriptor().getMessageTypes().get(23);
           internal_static_parameters_StreamSubscribeRequest_fieldAccessorTable = new

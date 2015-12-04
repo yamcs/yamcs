@@ -2986,8 +2986,8 @@ public final class SchemaRest
             {
                 if(message.hasState())
                     output.writeString(1, message.getState(), false);
-                if(message.hasSeekTime())
-                    output.writeInt64(2, message.getSeekTime(), false);
+                if(message.hasSeek())
+                    output.writeString(2, message.getSeek(), false);
                 if(message.hasSpeed())
                     output.writeString(3, message.getSpeed(), false);
             }
@@ -3033,7 +3033,7 @@ public final class SchemaRest
                             builder.setState(input.readString());
                             break;
                         case 2:
-                            builder.setSeekTime(input.readInt64());
+                            builder.setSeek(input.readString());
                             break;
                         case 3:
                             builder.setSpeed(input.readString());
@@ -3079,7 +3079,7 @@ public final class SchemaRest
             switch(number)
             {
                 case 1: return "state";
-                case 2: return "seekTime";
+                case 2: return "seek";
                 case 3: return "speed";
                 default: return null;
             }
@@ -3093,7 +3093,7 @@ public final class SchemaRest
         static
         {
             fieldMap.put("state", 1);
-            fieldMap.put("seekTime", 2);
+            fieldMap.put("seek", 2);
             fieldMap.put("speed", 3);
         }
     }
