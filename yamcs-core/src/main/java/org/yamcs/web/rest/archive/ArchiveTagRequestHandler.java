@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.archive;
 
 import java.io.IOException;
 
@@ -13,13 +13,21 @@ import org.yamcs.protobuf.Archive.InsertTagResponse;
 import org.yamcs.protobuf.Archive.UpdateTagRequest;
 import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
+import org.yamcs.web.rest.BadRequestException;
+import org.yamcs.web.rest.InternalServerErrorException;
+import org.yamcs.web.rest.MethodNotAllowedException;
+import org.yamcs.web.rest.NotFoundException;
+import org.yamcs.web.rest.RestException;
+import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestResponse;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
 
 public class ArchiveTagRequestHandler extends RestRequestHandler {
 
     @Override
-    protected RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {
             if (req.isGET()) {
                 return listTags(req);

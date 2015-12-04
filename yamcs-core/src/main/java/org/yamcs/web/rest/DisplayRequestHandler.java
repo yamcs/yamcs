@@ -29,7 +29,7 @@ public class DisplayRequestHandler extends RestRequestHandler {
     final static Logger log=LoggerFactory.getLogger(DisplayRequestHandler.class.getName());
     
     @Override
-    protected RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);
         }

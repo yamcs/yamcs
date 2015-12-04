@@ -10,13 +10,10 @@ import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
-import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.tctm.TmProviderAdapter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Tuple;
 
-import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 
 /**
@@ -97,18 +94,8 @@ public class XtceTmReplayHandler implements ReplayHandler {
 
 
     @Override
-    public MessageLite transform(Tuple t) {
-        long recTime=(Long)t.getColumn(TmProviderAdapter.RECTIME_COLUMN);
-        byte[]pbody=(byte[]) t.getColumn(TmProviderAdapter.PACKET_COLUMN);
-        long genTime = (Long)t.getColumn(TmProviderAdapter.GENTIME_COLUMN);
-        int seqNum = (Integer)t.getColumn(TmProviderAdapter.SEQNUM_COLUMN);
-        String pname = (String)t.getColumn(XtceTmRecorder.PNAME_COLUMN);
-        TmPacketData tm=TmPacketData.newBuilder().setReceptionTime(recTime)
-            .setPacket(ByteString.copyFrom(pbody)).setGenerationTime(genTime)
-            .setSequenceNumber(seqNum)
-            .setId(NamedObjectId.newBuilder().setName(pname).build())
-            .build();
-        return tm;
+    public MessageLite transform(Tuple tuple) {
+        return GPBHelper.tupleToTmPacketData(tuple);
     }
 
 

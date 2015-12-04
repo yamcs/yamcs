@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.archive;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -14,7 +14,17 @@ import org.yamcs.protobuf.Rest.ListEventsResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.web.rest.InternalServerErrorException;
+import org.yamcs.web.rest.NotFoundException;
+import org.yamcs.web.rest.RestException;
+import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestResponse;
+import org.yamcs.web.rest.RestStreamSubscriber;
+import org.yamcs.web.rest.RestStreams;
+import org.yamcs.web.rest.RestUtils;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
+import org.yamcs.web.rest.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 
@@ -28,7 +38,7 @@ public class ArchiveEventRequestHandler extends RestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(ArchiveEventRequestHandler.class);
 
     @Override
-    protected RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {
             req.assertGET();
             return listEvents(req);
@@ -48,24 +58,16 @@ public class ArchiveEventRequestHandler extends RestRequestHandler {
             }
         }
         
-        StringBuilder sqlb = new StringBuilder("select * from ").append(EventRecorder.TABLE_NAME);
+        SqlBuilder sqlb = new SqlBuilder(EventRecorder.TABLE_NAME);
         IntervalResult ir = RestUtils.scanForInterval(req);
-        if (ir.hasInterval() || !sourceSet.isEmpty()) {
-            sqlb.append(" where ");
-            boolean first = true;
-            if (ir.hasInterval()) {
-                sqlb.append(ir.asSqlCondition("gentime"));
-                first = false;
-            }
-            if (!sourceSet.isEmpty()) {
-                if (!first) sqlb.append(" and ");
-                sqlb.append("source in ('").append(String.join("','", sourceSet)).append("')");
-                first = false;
-            }
+        if (ir.hasInterval()) {
+            sqlb.where(ir.asSqlCondition("gentime"));
         }
-        if (RestUtils.asksDescending(req, true)) {
-            sqlb.append(" order desc");
+        if (!sourceSet.isEmpty()) {
+            sqlb.where("source in ('" + String.join("','", sourceSet) + "')");
         }
+        sqlb.descend(RestUtils.asksDescending(req, true));
+        String sql = sqlb.toString();
         
         if (req.asksFor(CSV_MIME_TYPE)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
@@ -77,7 +79,7 @@ public class ArchiveEventRequestHandler extends RestRequestHandler {
                 throw new InternalServerErrorException(e);
             }
                 
-            RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
+            RestStreams.streamAndWait(req, sql, new RestStreamSubscriber(pos, limit) {
 
                 @Override
                 public void processTuple(Stream stream, Tuple tuple) {
@@ -93,7 +95,7 @@ public class ArchiveEventRequestHandler extends RestRequestHandler {
             return new RestResponse(req, CSV_MIME_TYPE, buf);
         } else {
             ListEventsResponse.Builder responseb = ListEventsResponse.newBuilder();
-            RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
+            RestStreams.streamAndWait(req, sql, new RestStreamSubscriber(pos, limit) {
 
                 @Override
                 public void processTuple(Stream stream, Tuple tuple) {

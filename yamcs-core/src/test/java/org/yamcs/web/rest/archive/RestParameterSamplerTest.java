@@ -1,11 +1,11 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.archive;
 
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
 import org.junit.Test;
-import org.yamcs.web.rest.RestParameterSampler.Sample;
+import org.yamcs.web.rest.archive.RestParameterSampler.Sample;
 
 public class RestParameterSamplerTest {
     

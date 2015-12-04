@@ -66,7 +66,7 @@ public class ClientRequestHandler extends RestRequestHandler {
                 yprocReq.setOperation(Operation.CONNECT_TO_PROCESSOR);
                 yprocReq.addClientId(ci.getId());
                 try {
-                    mservice.connectToProcessor(yprocReq.build(), req.authToken);
+                    mservice.connectToProcessor(yprocReq.build(), req.getAuthToken());
                     return new RestResponse(req);
                 } catch (YamcsException e) {
                     throw new BadRequestException(e.getMessage());

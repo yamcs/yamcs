@@ -1,9 +1,14 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.archive;
 
 import org.yamcs.protobuf.Archive.StreamInfo;
 import org.yamcs.protobuf.Rest.ListStreamsResponse;
 import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.web.rest.NotFoundException;
+import org.yamcs.web.rest.RestException;
+import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestResponse;
 import org.yamcs.yarch.AbstractStream;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
@@ -11,7 +16,7 @@ import org.yamcs.yarch.YarchDatabase;
 public class ArchiveStreamRequestHandler extends RestRequestHandler {
 
     @Override
-    protected RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
         if (!req.hasPathSegment(pathOffset)) {

@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.archive;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,13 +9,24 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.archive.GPBHelper;
 import org.yamcs.archive.XtceTmRecorder;
 import org.yamcs.protobuf.Rest.ListPacketsResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.web.rest.InternalServerErrorException;
+import org.yamcs.web.rest.NotFoundException;
+import org.yamcs.web.rest.RestException;
+import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestResponse;
+import org.yamcs.web.rest.RestStreamSubscriber;
+import org.yamcs.web.rest.RestStreams;
+import org.yamcs.web.rest.RestUtils;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
+import org.yamcs.web.rest.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 
@@ -27,7 +38,7 @@ public class ArchivePacketRequestHandler extends RestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(ArchivePacketRequestHandler.class);
 
     @Override
-    protected RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {
             req.assertGET();
             return listPackets(req, TimeEncoding.INVALID_INSTANT);
@@ -75,7 +86,7 @@ public class ArchivePacketRequestHandler extends RestRequestHandler {
                     
                     @Override
                     public void processTuple(Stream stream, Tuple tuple) {
-                        TmPacketData pdata = ArchiveHelper.tupleToPacketData(tuple);
+                        TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
                         try {
                             pdata.getPacket().writeTo(bufOut);
                         } catch (IOException e) {
@@ -95,7 +106,7 @@ public class ArchivePacketRequestHandler extends RestRequestHandler {
     
                 @Override
                 public void processTuple(Stream stream, Tuple tuple) {
-                    TmPacketData pdata = ArchiveHelper.tupleToPacketData(tuple);
+                    TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
                     responseb.addPacket(pdata);
                 }
             });
@@ -112,7 +123,7 @@ public class ArchivePacketRequestHandler extends RestRequestHandler {
 
             @Override
             public void processTuple(Stream stream, Tuple tuple) {
-                TmPacketData pdata = ArchiveHelper.tupleToPacketData(tuple);
+                TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
                 packets.add(pdata);
             }
         });

@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.mdb;
 
 import java.util.Arrays;
 
@@ -10,7 +10,12 @@ import org.yamcs.protobuf.YamcsManagement.HistoryInfo;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
 import org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
+import org.yamcs.web.rest.NotFoundException;
+import org.yamcs.web.rest.RestException;
+import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
+import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestResponse;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.History;
 import org.yamcs.xtce.SpaceSystem;

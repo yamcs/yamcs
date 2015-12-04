@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.archive;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +9,16 @@ import org.yamcs.protobuf.Archive.TableInfo;
 import org.yamcs.protobuf.Rest.ListTablesResponse;
 import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.web.rest.BadRequestException;
+import org.yamcs.web.rest.NotFoundException;
+import org.yamcs.web.rest.RestException;
+import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestResponse;
+import org.yamcs.web.rest.RestStreamSubscriber;
+import org.yamcs.web.rest.RestStreams;
+import org.yamcs.web.rest.RestUtils;
+import org.yamcs.web.rest.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
@@ -17,7 +27,7 @@ import org.yamcs.yarch.YarchDatabase;
 public class ArchiveTableRequestHandler extends RestRequestHandler {
 
     @Override
-    protected RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
         if (!req.hasPathSegment(pathOffset)) {
@@ -75,24 +85,17 @@ public class ArchiveTableRequestHandler extends RestRequestHandler {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         
-        StringBuilder buf = new StringBuilder("select ");
-        if (cols == null) {
-            buf.append("*");
-        } else if (cols.isEmpty()) {
-            throw new BadRequestException("No columns are specified.");
-        } else {
-            for (int i = 0; i < cols.size(); i++) {
-                if (i != 0) buf.append(", ");
-                buf.append(cols.get(i));
+        SqlBuilder sqlb = new SqlBuilder(table.getName());
+        if (cols != null) {
+            if (cols.isEmpty()) {
+                throw new BadRequestException("No columns were specified");    
+            } else {
+                cols.forEach(col -> sqlb.select(col));
             }
         }
-        buf.append(" from ").append(table.getName());
-        if (RestUtils.asksDescending(req, true)) {
-            buf.append(" order desc");
-        }
+        sqlb.descend(RestUtils.asksDescending(req, true));
         
-        String sql = buf.toString();
-        
+        String sql = sqlb.toString();
         TableData.Builder responseb = TableData.newBuilder();
         RestStreams.streamAndWait(req, sql, new RestStreamSubscriber(pos, limit) {
             

@@ -187,7 +187,6 @@ public class XtceTmRecorder extends AbstractService {
         return totalNumPackets;
     }
 
-
     /**
      * Records telemetry from one stream. The decoding starts with the specified sequence container 
      * 

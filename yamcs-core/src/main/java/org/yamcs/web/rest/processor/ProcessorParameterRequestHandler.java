@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.processor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +30,16 @@ import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.security.Privilege;
+import org.yamcs.web.rest.BadRequestException;
+import org.yamcs.web.rest.ForbiddenException;
+import org.yamcs.web.rest.InternalServerErrorException;
+import org.yamcs.web.rest.MethodNotAllowedException;
+import org.yamcs.web.rest.NotFoundException;
+import org.yamcs.web.rest.RestException;
+import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestResponse;
+import org.yamcs.web.rest.mdb.MDBRequestHandler;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 
@@ -164,8 +174,8 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
         for(SetParameterValueRequest r : request.getRequestList()) {
             try {
                 String parameterName = prm.getParameter(r.getId()).getQualifiedName();
-                if(!Privilege.getInstance().hasPrivilege(req.authToken, Privilege.Type.TM_PARAMETER_SET, parameterName)) {
-                    throw new ForbiddenException("User " + req.authToken + " has no set permission for parameter "
+                if(!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.TM_PARAMETER_SET, parameterName)) {
+                    throw new ForbiddenException("User " + req.getAuthToken() + " has no set permission for parameter "
                             + parameterName);
                 }
             } catch (InvalidIdentification e) {
@@ -191,8 +201,8 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
     }
     
     private RestResponse getParameterValue(RestRequest req, NamedObjectId id, Parameter p) throws RestException {
-        if (!Privilege.getInstance().hasPrivilege(req.authToken, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
-            log.warn("Parameter Info for {} not authorized for token {}, throwing BadRequestException", id, req.authToken);
+        if (!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
+            log.warn("Parameter Info for {} not authorized for token {}, throwing BadRequestException", id, req.getAuthToken());
             throw new BadRequestException("Invalid parameter name specified");
         }
         long timeout = 10000;
@@ -254,13 +264,13 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
                     throw new BadRequestException("ParameterCache not activated for this processor");
                 }
                 List<ParameterValueWithId> l;
-                l = pwirh.getValuesFromCache(ids, req.authToken);
+                l = pwirh.getValuesFromCache(ids, req.getAuthToken());
                 for(ParameterValueWithId pvwi: l) {
                     pvals.add(pvwi.toGbpParameterValue());
                 }
             } else {
 
-                int reqId = pwirh.addRequest(ids, req.authToken);
+                int reqId = pwirh.addRequest(ids, req.getAuthToken());
                 long t0 = System.currentTimeMillis();
                 long t1;
                 while(true) {

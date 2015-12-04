@@ -17,7 +17,7 @@ import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.security.AuthenticationToken;
-import org.yamcs.web.rest.ArchiveHelper;
+import org.yamcs.web.rest.archive.ArchiveHelper;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;

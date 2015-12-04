@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.mdb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,8 +9,15 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.Privilege.Type;
-import org.yamcs.web.rest.RestUtils.MatchResult;
+import org.yamcs.web.rest.BadRequestException;
+import org.yamcs.web.rest.NotFoundException;
+import org.yamcs.web.rest.RestException;
+import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestResponse;
+import org.yamcs.web.rest.XtceToGpbAssembler;
 import org.yamcs.web.rest.XtceToGpbAssembler.DetailLevel;
+import org.yamcs.web.rest.mdb.MissionDatabaseHelper.MatchResult;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
 
@@ -26,7 +33,7 @@ public class MDBCommandRequestHandler extends RestRequestHandler {
         if (!req.hasPathSegment(pathOffset)) {
             return listCommands(req, null, mdb); // root namespace
         } else {
-            MatchResult<MetaCommand> c = RestUtils.matchCommandName(req, pathOffset);
+            MatchResult<MetaCommand> c = MissionDatabaseHelper.matchCommandName(req, pathOffset);
             if (c.matches()) { // command
                 return getSingleCommand(req, c.getRequestedId(), c.getMatch());
             } else { // namespace
@@ -37,7 +44,7 @@ public class MDBCommandRequestHandler extends RestRequestHandler {
     
     private RestResponse listCommandsOrError(RestRequest req, int pathOffset) throws RestException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
-        MatchResult<String> nsm = RestUtils.matchXtceDbNamespace(req, pathOffset, true);
+        MatchResult<String> nsm = MissionDatabaseHelper.matchXtceDbNamespace(req, pathOffset, true);
         if (nsm.matches()) {
             return listCommands(req, nsm.getMatch(), mdb);
         } else {
@@ -46,8 +53,8 @@ public class MDBCommandRequestHandler extends RestRequestHandler {
     }
     
     private RestResponse getSingleCommand(RestRequest req, NamedObjectId id, MetaCommand cmd) throws RestException {
-        if (!Privilege.getInstance().hasPrivilege(req.authToken, Privilege.Type.TC, cmd.getQualifiedName())) {
-            log.warn("Command Info for {} not authorized for token {}, throwing BadRequestException", id, req.authToken);
+        if (!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.TC, cmd.getQualifiedName())) {
+            log.warn("Command Info for {} not authorized for token {}, throwing BadRequestException", id, req.getAuthToken());
             throw new BadRequestException("Invalid command name specified "+id);
         }
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
@@ -77,7 +84,7 @@ public class MDBCommandRequestHandler extends RestRequestHandler {
         } else {
             Privilege privilege = Privilege.getInstance();
             for (MetaCommand cmd : mdb.getMetaCommands()) {
-                if (!privilege.hasPrivilege(req.authToken, Type.TC, cmd.getQualifiedName()))
+                if (!privilege.hasPrivilege(req.getAuthToken(), Type.TC, cmd.getQualifiedName()))
                     continue;
                 if (matcher != null && !matcher.matches(cmd))
                     continue;

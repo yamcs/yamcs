@@ -22,7 +22,7 @@ public class UserRequestHandler extends RestRequestHandler {
             throw new NotFoundException(req);
         }
         
-        UserInfo info = getUser(req.authToken);
+        UserInfo info = getUser(req.getAuthToken());
         return new RestResponse(req, info, SchemaYamcsManagement.UserInfo.WRITE);
     }
 

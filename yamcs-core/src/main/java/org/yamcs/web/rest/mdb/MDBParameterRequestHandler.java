@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.mdb;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,8 +14,16 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.Privilege.Type;
-import org.yamcs.web.rest.RestUtils.MatchResult;
+import org.yamcs.web.rest.BadRequestException;
+import org.yamcs.web.rest.MethodNotAllowedException;
+import org.yamcs.web.rest.NotFoundException;
+import org.yamcs.web.rest.RestException;
+import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestResponse;
+import org.yamcs.web.rest.XtceToGpbAssembler;
 import org.yamcs.web.rest.XtceToGpbAssembler.DetailLevel;
+import org.yamcs.web.rest.mdb.MissionDatabaseHelper.MatchResult;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
@@ -41,7 +49,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
                     return listParametersOrError(req, pathOffset);
                 }
             } else {
-                MatchResult<Parameter> pm = RestUtils.matchParameterName(req, pathOffset);
+                MatchResult<Parameter> pm = MissionDatabaseHelper.matchParameterName(req, pathOffset);
                 if (pm.matches()) { // parameter?
                     return getSingleParameter(req, pm.getRequestedId(), pm.getMatch());
                 } else { // namespace?
@@ -53,7 +61,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
     
     private RestResponse listParametersOrError(RestRequest req, int pathOffset) throws RestException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
-        MatchResult<String> nsm = RestUtils.matchXtceDbNamespace(req, pathOffset, true);
+        MatchResult<String> nsm = MissionDatabaseHelper.matchXtceDbNamespace(req, pathOffset, true);
         if (nsm.matches()) {
             return listParameters(req, nsm.getMatch(), mdb);
         } else {
@@ -62,8 +70,8 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
     }
     
     private RestResponse getSingleParameter(RestRequest req, NamedObjectId id, Parameter p) throws RestException {
-        if (!Privilege.getInstance().hasPrivilege(req.authToken, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
-            log.warn("Parameter Info for {} not authorized for token {}, throwing BadRequestException", id, req.authToken);
+        if (!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
+            log.warn("Parameter Info for {} not authorized for token {}, throwing BadRequestException", id, req.getAuthToken());
             throw new BadRequestException("Invalid parameter name specified "+id);
         }
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
@@ -107,7 +115,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
         } else {
             Privilege privilege = Privilege.getInstance();
             for (Parameter p : mdb.getParameters()) {
-                if (!privilege.hasPrivilege(req.authToken, Type.TM_PARAMETER, p.getQualifiedName()))
+                if (!privilege.hasPrivilege(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName()))
                     continue;
                 if (matcher != null && !matcher.matches(p))
                     continue;
@@ -120,7 +128,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
                 }
             }
             for (SystemParameter p : mdb.getSystemParameterDb().getSystemParameters()) {
-                if (!privilege.hasPrivilege(req.authToken, Type.TM_PARAMETER, p.getQualifiedName()))
+                if (!privilege.hasPrivilege(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName()))
                     continue;
                 if (matcher != null && !matcher.matches(p))
                     continue;
@@ -150,11 +158,11 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
         BulkGetParameterRequest request = req.bodyAsMessage(SchemaRest.BulkGetParameterRequest.MERGE).build();
         BulkGetParameterResponse.Builder responseb = BulkGetParameterResponse.newBuilder();
         for(NamedObjectId id:request.getIdList()) {
-            Parameter p = RestUtils.findParameter(mdb, id);
+            Parameter p = MissionDatabaseHelper.findParameter(mdb, id);
             if(p==null) {
                 throw new BadRequestException("Invalid parameter name specified "+id);
             }
-            if(!Privilege.getInstance().hasPrivilege(req.authToken, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
+            if(!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
                 log.warn("Not providing information about parameter {} because no privileges exists", p.getQualifiedName());
                 continue;
             }

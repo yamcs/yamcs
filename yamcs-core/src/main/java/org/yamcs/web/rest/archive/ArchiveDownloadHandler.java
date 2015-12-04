@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.archive;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,17 +9,37 @@ import java.util.List;
 import java.util.Set;
 
 import org.yamcs.archive.EventRecorder;
+import org.yamcs.archive.GPBHelper;
 import org.yamcs.archive.XtceTmRecorder;
+import org.yamcs.cmdhistory.CommandHistoryRecorder;
 import org.yamcs.protobuf.Archive.TableData.TableRecord;
+import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.SchemaArchive;
+import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.tctm.TmProviderAdapter;
+import org.yamcs.web.rest.BadRequestException;
+import org.yamcs.web.rest.NotFoundException;
+import org.yamcs.web.rest.ParameterReplayToChunkedCSVEncoder;
+import org.yamcs.web.rest.ParameterReplayToChunkedProtobufEncoder;
+import org.yamcs.web.rest.RestException;
+import org.yamcs.web.rest.RestParameterReplayListener;
+import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestResponse;
+import org.yamcs.web.rest.RestStreams;
+import org.yamcs.web.rest.RestUtils;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
-import org.yamcs.web.rest.RestUtils.MatchResult;
+import org.yamcs.web.rest.SqlBuilder;
+import org.yamcs.web.rest.StreamToChunkedCSVEncoder;
+import org.yamcs.web.rest.StreamToChunkedProtobufEncoder;
+import org.yamcs.web.rest.StreamToChunkedTransferEncoder;
+import org.yamcs.web.rest.mdb.MissionDatabaseHelper;
+import org.yamcs.web.rest.mdb.MissionDatabaseHelper.MatchResult;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
@@ -46,7 +66,7 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
             switch (req.getPathSegment(pathOffset)) {
             case "parameters":
                 req.assertGET();
-                MatchResult<Parameter> mr = RestUtils.matchParameterName(req, pathOffset + 1);
+                MatchResult<Parameter> mr = MissionDatabaseHelper.matchParameterName(req, pathOffset + 1);
                 if (!mr.matches()) {
                     throw new NotFoundException(req);
                 } else {
@@ -57,6 +77,10 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
             case "packets":
                 req.assertGET();
                 downloadPackets(req);
+                return null;
+            case "commands":
+                req.assertGET();
+                downloadCommands(req);
                 return null;
             case "events":
                 req.assertGET();
@@ -109,9 +133,8 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
         }
         if (!nameSet.isEmpty()) {
             sqlb.where("pname in ('" + String.join("','", nameSet) + "')");
-        }        
-        sqlb.descend(RestUtils.asksDescending(req, true));
-        
+        }
+        sqlb.descend(RestUtils.asksDescending(req, false));
         String sql = sqlb.toString();
         
         if (req.asksFor(BINARY_MIME_TYPE)) {
@@ -126,10 +149,37 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
             RestStreams.stream(req, sql, new StreamToChunkedProtobufEncoder<TmPacketData>(req, SchemaYamcs.TmPacketData.WRITE) {
                 @Override
                 public TmPacketData mapTuple(Tuple tuple) {
-                    return ArchiveHelper.tupleToPacketData(tuple);
+                    return GPBHelper.tupleToTmPacketData(tuple);
                 }
             });
         }
+    }
+    
+    private void downloadCommands(RestRequest req) throws RestException {
+        Set<String> nameSet = new HashSet<>();
+        for (String names : req.getQueryParameterList("name", Collections.emptyList())) {
+            for (String name : names.split(",")) {
+                nameSet.add(name.trim());
+            }
+        }
+        
+        SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
+        IntervalResult ir = RestUtils.scanForInterval(req);
+        if (ir.hasInterval()) {
+            sqlb.where(ir.asSqlCondition("gentime"));
+        }
+        if (!nameSet.isEmpty()) {
+            sqlb.where("cmdName in ('" + String.join("','", nameSet) + "')");
+        }
+        sqlb.descend(RestUtils.asksDescending(req, false));
+        String sql = sqlb.toString();
+        
+        RestStreams.stream(req, sql, new StreamToChunkedProtobufEncoder<CommandHistoryEntry>(req, SchemaCommanding.CommandHistoryEntry.WRITE) {
+            @Override
+            public CommandHistoryEntry mapTuple(Tuple tuple) {
+                return GPBHelper.tupleToCommandHistoryEntry(tuple);
+            }
+        });
     }
     
     private void downloadTableData(RestRequest req, TableDefinition table) throws RestException {
@@ -143,21 +193,15 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
             }
         }
         
-        StringBuilder sqlb = new StringBuilder("select ");
-        if (cols == null) {
-            sqlb.append("*");
-        } else if (cols.isEmpty()) {
-            throw new BadRequestException("No columns are specified.");
-        } else {
-            for (int i = 0; i < cols.size(); i++) {
-                if (i != 0) sqlb.append(", ");
-                sqlb.append(cols.get(i));
+        SqlBuilder sqlb = new SqlBuilder(table.getName());
+        if (cols != null) {
+            if (cols.isEmpty()) {
+                throw new BadRequestException("No columns were specified");
+            } else {
+                cols.forEach(col -> sqlb.select(col));
             }
         }
-        sqlb.append(" from ").append(table.getName());
-        if (RestUtils.asksDescending(req, false)) {
-            sqlb.append(" order desc");
-        }
+        sqlb.descend(RestUtils.asksDescending(req, false));
         String sql = sqlb.toString();
         
         RestStreams.stream(req, sql, new StreamToChunkedProtobufEncoder<TableRecord>(req, SchemaArchive.TableData.TableRecord.WRITE) {
@@ -179,24 +223,15 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
             }
         }
 
-        StringBuilder sqlb = new StringBuilder("select * from ").append(EventRecorder.TABLE_NAME);
+        SqlBuilder sqlb = new SqlBuilder(EventRecorder.TABLE_NAME);
         IntervalResult ir = RestUtils.scanForInterval(req);
-        if (ir.hasInterval() || !sourceSet.isEmpty()) {
-            sqlb.append(" where ");
-            boolean first = true;
-            if (ir.hasInterval()) {
-                sqlb.append(ir.asSqlCondition("gentime"));
-                first = false;
-            }
-            if (!sourceSet.isEmpty()) {
-                if (!first) sqlb.append(" and ");
-                sqlb.append("source in ('").append(String.join("','", sourceSet)).append("')");
-                first = false;
-            }
+        if (ir.hasInterval()) {
+            sqlb.where(ir.asSqlCondition("gentime"));
         }
-        if (RestUtils.asksDescending(req, false)) {
-            sqlb.append(" order desc");
+        if (!sourceSet.isEmpty()) {
+            sqlb.where("source in ('" + String.join("','", sourceSet) + "')");
         }
+        sqlb.descend(RestUtils.asksDescending(req, false));
         String sql = sqlb.toString();
         
         if (req.asksFor(CSV_MIME_TYPE)) {

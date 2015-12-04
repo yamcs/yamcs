@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.mdb;
 
 import static org.junit.Assert.assertTrue;
 

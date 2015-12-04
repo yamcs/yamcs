@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.archive;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -21,8 +21,18 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.rest.RestParameterSampler.Sample;
-import org.yamcs.web.rest.RestUtils.MatchResult;
+import org.yamcs.web.rest.BadRequestException;
+import org.yamcs.web.rest.InternalServerErrorException;
+import org.yamcs.web.rest.NotFoundException;
+import org.yamcs.web.rest.RestException;
+import org.yamcs.web.rest.RestParameterReplayListener;
+import org.yamcs.web.rest.RestReplayListener;
+import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestResponse;
+import org.yamcs.web.rest.archive.RestParameterSampler.Sample;
+import org.yamcs.web.rest.mdb.MissionDatabaseHelper;
+import org.yamcs.web.rest.mdb.MissionDatabaseHelper.MatchResult;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Parameter;
@@ -39,8 +49,8 @@ public class ArchiveParameterRequestHandler extends RestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(ArchiveParameterRequestHandler.class);
 
     @Override
-    protected RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
-        MatchResult<Parameter> mr = RestUtils.matchParameterName(req, pathOffset);
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+        MatchResult<Parameter> mr = MissionDatabaseHelper.matchParameterName(req, pathOffset);
         if (!mr.matches()) {
             throw new NotFoundException(req);
         }

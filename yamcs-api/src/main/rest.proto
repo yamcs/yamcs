@@ -59,6 +59,10 @@ message ListLinksResponse {
   repeated yamcsManagement.LinkInfo link = 1;
 }
 
+message ListCommandHistoryResponse {
+  repeated commanding.CommandHistoryEntry entry = 1;
+}
+
 message PatchLinkRequest {
   optional string state = 1;
 }

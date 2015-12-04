@@ -1,4 +1,4 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.archive;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,8 +9,19 @@ import org.yamcs.protobuf.Rest.ListAlarmsResponse;
 import org.yamcs.protobuf.SchemaAlarms;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.web.rest.InternalServerErrorException;
+import org.yamcs.web.rest.NotFoundException;
+import org.yamcs.web.rest.RestException;
+import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestResponse;
+import org.yamcs.web.rest.RestStreamSubscriber;
+import org.yamcs.web.rest.RestStreams;
+import org.yamcs.web.rest.RestUtils;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
-import org.yamcs.web.rest.RestUtils.MatchResult;
+import org.yamcs.web.rest.SqlBuilder;
+import org.yamcs.web.rest.mdb.MissionDatabaseHelper;
+import org.yamcs.web.rest.mdb.MissionDatabaseHelper.MatchResult;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
@@ -18,12 +29,12 @@ import org.yamcs.yarch.Tuple;
 public class ArchiveAlarmRequestHandler extends RestRequestHandler {
 
     @Override
-    protected RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {
             req.assertGET();
             return listAlarms(req, null, TimeEncoding.INVALID_INSTANT);
         } else {
-            MatchResult<Parameter> mr = RestUtils.matchParameterName(req, pathOffset);
+            MatchResult<Parameter> mr = MissionDatabaseHelper.matchParameterName(req, pathOffset);
             if (!mr.matches()) {
                 throw new NotFoundException(req);
             }
@@ -50,27 +61,18 @@ public class ArchiveAlarmRequestHandler extends RestRequestHandler {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         
-        StringBuilder sqlb = new StringBuilder("select * from ").append(AlarmRecorder.TABLE_NAME);
+        SqlBuilder sqlb = new SqlBuilder(AlarmRecorder.TABLE_NAME);
         IntervalResult ir = RestUtils.scanForInterval(req);
-        if (ir.hasInterval() || parameterName != null || triggerTime != TimeEncoding.INVALID_INSTANT) {
-            sqlb.append(" where ");
-            if (ir.hasInterval()) {
-                sqlb.append(ir.asSqlCondition("triggerTime"));    
-            }
-            if (parameterName != null) {
-                if (ir.hasInterval()) sqlb.append(" and ");
-                sqlb.append("parameter = '").append(parameterName).append("'");
-            }
-            if (triggerTime != TimeEncoding.INVALID_INSTANT) {
-                if (ir.hasInterval() || parameterName != null) sqlb.append(" and ");
-                sqlb.append("triggerTime = ").append(triggerTime);
-            }
+        if (ir.hasInterval()) {
+            sqlb.where(ir.asSqlCondition("triggerTime"));    
         }
-        if (RestUtils.asksDescending(req, true)) {
-            sqlb.append(" order desc");
+        if (parameterName != null) {
+            sqlb.where("parameter = '" + parameterName + "'");
         }
-        
-        System.out.println("will execute " + sqlb.toString());
+        if (triggerTime != TimeEncoding.INVALID_INSTANT) {
+            sqlb.where("triggerTime = " + triggerTime);
+        }
+        sqlb.descend(RestUtils.asksDescending(req, true));
         
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
         RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
@@ -86,12 +88,14 @@ public class ArchiveAlarmRequestHandler extends RestRequestHandler {
     }
     
     private RestResponse getAlarm(RestRequest req, Parameter p, long triggerTime, int seqnum) throws RestException {
-        StringBuilder sqlb = new StringBuilder("select * from ").append(AlarmRecorder.TABLE_NAME);
-        sqlb.append(" where triggerTime = ").append(triggerTime)
-            .append(" and seqNum = ").append(seqnum)
-            .append(" and parameter = '").append(p.getQualifiedName()).append("'");
+        String sql = new SqlBuilder(AlarmRecorder.TABLE_NAME)
+                .where("triggerTime = " + triggerTime)
+                .where("seqNum = " + seqnum)
+                .where("parameter = '" + p.getQualifiedName() + "'")
+                .toString();
+        
         List<AlarmData> alarms = new ArrayList<>();
-        RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(0, 2) {
+        RestStreams.streamAndWait(req, sql, new RestStreamSubscriber(0, 2) {
 
             @Override
             public void processTuple(Stream stream, Tuple tuple) {
