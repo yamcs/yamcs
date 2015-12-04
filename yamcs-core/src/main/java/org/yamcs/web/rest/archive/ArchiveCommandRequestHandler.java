@@ -3,7 +3,7 @@ package org.yamcs.web.rest.archive;
 import org.yamcs.archive.GPBHelper;
 import org.yamcs.cmdhistory.CommandHistoryRecorder;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
-import org.yamcs.protobuf.Rest.ListCommandHistoryResponse;
+import org.yamcs.protobuf.Rest.ListCommandsResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.web.rest.NotFoundException;
 import org.yamcs.web.rest.RestException;
@@ -51,7 +51,7 @@ public class ArchiveCommandRequestHandler extends RestRequestHandler {
         }
         sqlb.descend(RestUtils.asksDescending(req, true));
         
-        ListCommandHistoryResponse.Builder responseb = ListCommandHistoryResponse.newBuilder();
+        ListCommandsResponse.Builder responseb = ListCommandsResponse.newBuilder();
         RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
 
             @Override
@@ -60,6 +60,6 @@ public class ArchiveCommandRequestHandler extends RestRequestHandler {
                 responseb.addEntry(che);
             }
         });
-        return new RestResponse(req, responseb.build(), SchemaRest.ListCommandHistoryResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaRest.ListCommandsResponse.WRITE);
     }
 }

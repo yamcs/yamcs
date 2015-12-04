@@ -5,8 +5,8 @@ import java.util.List;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Rest.ListLinksResponse;
-import org.yamcs.protobuf.Rest.PatchLinkRequest;
+import org.yamcs.protobuf.Rest.EditLinkRequest;
+import org.yamcs.protobuf.Rest.ListLinkInfoResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
@@ -34,7 +34,7 @@ public class LinkRequestHandler extends RestRequestHandler {
                     if (req.isGET()) {
                         return getLink(req, linkInfo);
                     } else if (req.isPATCH() || req.isPOST() || req.isPUT()) {
-                        return patchLink(req, linkInfo);
+                        return editLink(req, linkInfo);
                     } else {
                         throw new MethodNotAllowedException(req);
                     }
@@ -55,17 +55,17 @@ public class LinkRequestHandler extends RestRequestHandler {
     
     private RestResponse listLinks(RestRequest req, String instance) throws RestException {
         List<LinkInfo> links = ManagementService.getInstance().getLinkInfo();
-        ListLinksResponse.Builder responseb = ListLinksResponse.newBuilder();
+        ListLinkInfoResponse.Builder responseb = ListLinkInfoResponse.newBuilder();
         for (LinkInfo link : links) {
             if (instance == null || instance.equals(link.getInstance())) {
                 responseb.addLink(link);
             }
         }
-        return new RestResponse(req, responseb.build(), SchemaRest.ListLinksResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaRest.ListLinkInfoResponse.WRITE);
     }
     
-    private RestResponse patchLink(RestRequest req, LinkInfo linkInfo) throws RestException {
-        PatchLinkRequest request = req.bodyAsMessage(SchemaRest.PatchLinkRequest.MERGE).build();
+    private RestResponse editLink(RestRequest req, LinkInfo linkInfo) throws RestException {
+        EditLinkRequest request = req.bodyAsMessage(SchemaRest.EditLinkRequest.MERGE).build();
         String state = null;
         if (request.hasState()) state = request.getState();
         if (req.hasQueryParameter("state")) state = req.getQueryParameter("state");

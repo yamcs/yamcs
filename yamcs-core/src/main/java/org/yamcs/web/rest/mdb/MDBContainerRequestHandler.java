@@ -3,7 +3,7 @@ package org.yamcs.web.rest.mdb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
-import org.yamcs.protobuf.Rest.ListContainersResponse;
+import org.yamcs.protobuf.Rest.ListContainerInfoResponse;
 import org.yamcs.protobuf.SchemaMdb;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -69,7 +69,7 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
             matcher = new NameDescriptionSearchMatcher(req.getQueryParameter("q"));    
         }
         
-        ListContainersResponse.Builder responseb = ListContainersResponse.newBuilder();
+        ListContainerInfoResponse.Builder responseb = ListContainerInfoResponse.newBuilder();
         if (namespace == null) {
             for (SequenceContainer c : mdb.getSequenceContainers()) {
                 if (matcher != null && !matcher.matches(c)) continue;
@@ -88,6 +88,6 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
             }
         }
         
-        return new RestResponse(req, responseb.build(), SchemaRest.ListContainersResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaRest.ListContainerInfoResponse.WRITE);
     }
 }

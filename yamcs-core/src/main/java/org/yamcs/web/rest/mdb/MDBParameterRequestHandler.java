@@ -6,9 +6,9 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
-import org.yamcs.protobuf.Rest.BulkGetParameterRequest;
-import org.yamcs.protobuf.Rest.BulkGetParameterResponse;
-import org.yamcs.protobuf.Rest.ListParametersResponse;
+import org.yamcs.protobuf.Rest.BulkGetParameterInfoRequest;
+import org.yamcs.protobuf.Rest.BulkGetParameterInfoResponse;
+import org.yamcs.protobuf.Rest.ListParameterInfoResponse;
 import org.yamcs.protobuf.SchemaMdb;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -104,7 +104,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
             matcher = new NameDescriptionSearchMatcher(req.getQueryParameter("q"));    
         }
         
-        ListParametersResponse.Builder responseb = ListParametersResponse.newBuilder();
+        ListParameterInfoResponse.Builder responseb = ListParameterInfoResponse.newBuilder();
         if (namespace == null) {
             for (Parameter p : mdb.getParameters()) {
                 if (matcher != null && !matcher.matches(p)) continue;
@@ -142,7 +142,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
             }
         }
         
-        return new RestResponse(req, responseb.build(), SchemaRest.ListParametersResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaRest.ListParameterInfoResponse.WRITE);
     }
     
     private boolean parameterTypeMatches(Parameter p, Set<String> types) {
@@ -155,8 +155,8 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
         if (!req.isGET() && !req.isPOST())
             throw new MethodNotAllowedException(req);
         
-        BulkGetParameterRequest request = req.bodyAsMessage(SchemaRest.BulkGetParameterRequest.MERGE).build();
-        BulkGetParameterResponse.Builder responseb = BulkGetParameterResponse.newBuilder();
+        BulkGetParameterInfoRequest request = req.bodyAsMessage(SchemaRest.BulkGetParameterInfoRequest.MERGE).build();
+        BulkGetParameterInfoResponse.Builder responseb = BulkGetParameterInfoResponse.newBuilder();
         for(NamedObjectId id:request.getIdList()) {
             Parameter p = MissionDatabaseHelper.findParameter(mdb, id);
             if(p==null) {
@@ -167,13 +167,13 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
                 continue;
             }
             
-            BulkGetParameterResponse.GetParameterResponse.Builder response = BulkGetParameterResponse.GetParameterResponse.newBuilder();
+            BulkGetParameterInfoResponse.GetParameterInfoResponse.Builder response = BulkGetParameterInfoResponse.GetParameterInfoResponse.newBuilder();
             response.setId(id);
             String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
             response.setParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
             responseb.addResponse(response);
         }
         
-        return new RestResponse(req, responseb.build(), SchemaRest.BulkGetParameterResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaRest.BulkGetParameterInfoResponse.WRITE);
     }
 }

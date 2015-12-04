@@ -36,30 +36,6 @@ message DumpArchiveResponse {
   repeated pvalue.ParameterData ppData = 6;
 }
 
-message ListTagsResponse {
-  repeated yamcs.ArchiveTag tag = 1;
-}
-
-message InsertTagRequest {
-  optional string name = 1;
-  optional string start = 2;
-  optional string stop = 3;
-  optional string description = 4;
-  optional string color = 5;
-}
-
-message InsertTagResponse {
-  optional yamcs.ArchiveTag tag = 1;
-}
-
-message PatchTagRequest {
-  optional string name = 1;
-  optional string start = 2;
-  optional string stop = 3;
-  optional string description = 4;
-  optional string color = 5;
-}
-
 message ColumnData {
   optional string name = 1;
   optional yamcs.Value value = 2;

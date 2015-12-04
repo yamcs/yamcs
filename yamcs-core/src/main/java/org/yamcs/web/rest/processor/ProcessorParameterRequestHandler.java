@@ -23,7 +23,7 @@ import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkGetParameterValueResponse;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
-import org.yamcs.protobuf.Rest.PatchAlarmRequest;
+import org.yamcs.protobuf.Rest.EditAlarmRequest;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
@@ -120,7 +120,7 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
         
         String state = null;
         String comment = null;
-        PatchAlarmRequest request = req.bodyAsMessage(SchemaRest.PatchAlarmRequest.MERGE).build();
+        EditAlarmRequest request = req.bodyAsMessage(SchemaRest.EditAlarmRequest.MERGE).build();
         if (request.hasState()) state = request.getState();
         if (request.hasComment()) comment = request.getComment();
         

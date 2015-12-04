@@ -6,11 +6,10 @@ import org.yamcs.TimeInterval;
 import org.yamcs.YamcsException;
 import org.yamcs.archive.TagDb;
 import org.yamcs.archive.TagReceiver;
-import org.yamcs.protobuf.Archive.InsertTagRequest;
-import org.yamcs.protobuf.Archive.InsertTagResponse;
-import org.yamcs.protobuf.Archive.ListTagsResponse;
-import org.yamcs.protobuf.Archive.PatchTagRequest;
-import org.yamcs.protobuf.SchemaArchive;
+import org.yamcs.protobuf.Rest.CreateTagRequest;
+import org.yamcs.protobuf.Rest.EditTagRequest;
+import org.yamcs.protobuf.Rest.ListTagsResponse;
+import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.web.rest.BadRequestException;
@@ -96,7 +95,7 @@ public class ArchiveTagRequestHandler extends RestRequestHandler {
         } catch (IOException e) {
             throw new InternalServerErrorException("Could not load tags", e);
         }
-        return new RestResponse(req, responseb.build(), SchemaArchive.ListTagsResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaRest.ListTagsResponse.WRITE);
     }
     
     /**
@@ -111,7 +110,7 @@ public class ArchiveTagRequestHandler extends RestRequestHandler {
      * knows the assigned id.
      */
     private RestResponse insertTag(RestRequest req, TagDb tagDb) throws RestException {
-        InsertTagRequest request = req.bodyAsMessage(SchemaArchive.InsertTagRequest.MERGE).build();
+        CreateTagRequest request = req.bodyAsMessage(SchemaRest.CreateTagRequest.MERGE).build();
         if (!request.hasName())
             throw new BadRequestException("Name is required");
         
@@ -130,17 +129,15 @@ public class ArchiveTagRequestHandler extends RestRequestHandler {
             throw new InternalServerErrorException(e);
         }
 
-        // Echo back the tag, with its new ID
-        InsertTagResponse.Builder responseb = InsertTagResponse.newBuilder();
-        responseb.setTag(newTag);
-        return new RestResponse(req, responseb.build(), SchemaArchive.InsertTagResponse.WRITE);
+        // Echo back the tag, with its assigned ID
+        return new RestResponse(req, newTag, SchemaYamcs.ArchiveTag.WRITE);
     }
     
     /**
      * Updates an existing tag. Returns the updated tag
      */
     private RestResponse updateTag(RestRequest req, TagDb tagDb, ArchiveTag tag) throws RestException {
-        PatchTagRequest request = req.bodyAsMessage(SchemaArchive.PatchTagRequest.MERGE).build();        
+        EditTagRequest request = req.bodyAsMessage(SchemaRest.EditTagRequest.MERGE).build();        
         
         // Patch the existing tag
         ArchiveTag.Builder tagb = ArchiveTag.newBuilder(tag);

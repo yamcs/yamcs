@@ -13,9 +13,9 @@ import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
+import org.yamcs.protobuf.Rest.EditProcessorRequest;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
 import org.yamcs.protobuf.Rest.ListProcessorsResponse;
-import org.yamcs.protobuf.Rest.PatchProcessorRequest;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
@@ -94,7 +94,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
             if (req.isGET()) {
                 return getProcessor(req, processor);
             } else if (req.isPOST() || req.isPATCH() || req.isPUT())
-                return updateProcessor(req, processor);
+                return editProcessor(req, processor);
             else {
                 throw new MethodNotAllowedException(req);
             }
@@ -148,8 +148,8 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         return new RestResponse(req, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
     }
 
-    private RestResponse updateProcessor(RestRequest req, YProcessor processor) throws RestException {
-        PatchProcessorRequest request = req.bodyAsMessage(SchemaRest.PatchProcessorRequest.MERGE).build();
+    private RestResponse editProcessor(RestRequest req, YProcessor processor) throws RestException {
+        EditProcessorRequest request = req.bodyAsMessage(SchemaRest.EditProcessorRequest.MERGE).build();
 
         if (!processor.isReplay()) {
             throw new BadRequestException("Cannot update a non-replay processor");

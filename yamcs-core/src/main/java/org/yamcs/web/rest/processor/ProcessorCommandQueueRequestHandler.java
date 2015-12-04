@@ -11,10 +11,10 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Commanding.CommandQueueEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Commanding.QueueState;
+import org.yamcs.protobuf.Rest.EditCommandQueueEntryRequest;
+import org.yamcs.protobuf.Rest.EditCommandQueueRequest;
 import org.yamcs.protobuf.Rest.ListCommandQueueEntries;
 import org.yamcs.protobuf.Rest.ListCommandQueuesResponse;
-import org.yamcs.protobuf.Rest.PatchCommandQueueEntryRequest;
-import org.yamcs.protobuf.Rest.PatchCommandQueueRequest;
 import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.web.rest.BadRequestException;
@@ -100,7 +100,7 @@ public class ProcessorCommandQueueRequestHandler extends RestRequestHandler {
     }
     
     private RestResponse editQueue(RestRequest req, CommandQueue queue, CommandQueueManager queueManager) throws RestException {
-        PatchCommandQueueRequest body = req.bodyAsMessage(SchemaRest.PatchCommandQueueRequest.MERGE).build();
+        EditCommandQueueRequest body = req.bodyAsMessage(SchemaRest.EditCommandQueueRequest.MERGE).build();
         String state = null;
         if (body.hasState()) state = body.getState();
         if (req.hasQueryParameter("state")) state = req.getQueryParameter("state");
@@ -135,7 +135,7 @@ public class ProcessorCommandQueueRequestHandler extends RestRequestHandler {
     }
     
     private RestResponse editQueueEntry(RestRequest req, UUID entryId, CommandQueueManager queueManager) throws RestException {
-        PatchCommandQueueEntryRequest body = req.bodyAsMessage(SchemaRest.PatchCommandQueueEntryRequest.MERGE).build();
+        EditCommandQueueEntryRequest body = req.bodyAsMessage(SchemaRest.EditCommandQueueEntryRequest.MERGE).build();
         String state = null;
         if (body.hasState()) state = body.getState();
         if (req.hasQueryParameter("state")) state = req.getQueryParameter("state");
