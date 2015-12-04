@@ -340,57 +340,52 @@ public final class SchemaArchive
         }
     }
 
-    public static final class GetTagsRequest
+    public static final class ListTagsResponse
     {
-        public static final org.yamcs.protobuf.SchemaArchive.GetTagsRequest.MessageSchema WRITE =
-            new org.yamcs.protobuf.SchemaArchive.GetTagsRequest.MessageSchema();
-        public static final org.yamcs.protobuf.SchemaArchive.GetTagsRequest.BuilderSchema MERGE =
-            new org.yamcs.protobuf.SchemaArchive.GetTagsRequest.BuilderSchema();
+        public static final org.yamcs.protobuf.SchemaArchive.ListTagsResponse.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaArchive.ListTagsResponse.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaArchive.ListTagsResponse.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaArchive.ListTagsResponse.BuilderSchema();
         
-        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Archive.GetTagsRequest>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Archive.ListTagsResponse>
         {
-            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Archive.GetTagsRequest message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Archive.ListTagsResponse message) throws java.io.IOException
             {
-                if(message.hasStart())
-                    output.writeInt64(1, message.getStart(), false);
-                if(message.hasStop())
-                    output.writeInt64(2, message.getStop(), false);
-                if(message.hasUtcStart())
-                    output.writeString(3, message.getUtcStart(), false);
-                if(message.hasUtcStop())
-                    output.writeString(4, message.getUtcStop(), false);
+                for(org.yamcs.protobuf.Yamcs.ArchiveTag tag : message.getTagList())
+                    output.writeObject(1, tag, org.yamcs.protobuf.SchemaYamcs.ArchiveTag.WRITE, true);
+
             }
-            public boolean isInitialized(org.yamcs.protobuf.Archive.GetTagsRequest message)
+            public boolean isInitialized(org.yamcs.protobuf.Archive.ListTagsResponse message)
             {
                 return message.isInitialized();
             }
             public java.lang.String getFieldName(int number)
             {
-                return org.yamcs.protobuf.SchemaArchive.GetTagsRequest.getFieldName(number);
+                return org.yamcs.protobuf.SchemaArchive.ListTagsResponse.getFieldName(number);
             }
             public int getFieldNumber(java.lang.String name)
             {
-                return org.yamcs.protobuf.SchemaArchive.GetTagsRequest.getFieldNumber(name);
+                return org.yamcs.protobuf.SchemaArchive.ListTagsResponse.getFieldNumber(name);
             }
-            public java.lang.Class<org.yamcs.protobuf.Archive.GetTagsRequest> typeClass()
+            public java.lang.Class<org.yamcs.protobuf.Archive.ListTagsResponse> typeClass()
             {
-                return org.yamcs.protobuf.Archive.GetTagsRequest.class;
+                return org.yamcs.protobuf.Archive.ListTagsResponse.class;
             }
             public java.lang.String messageName()
             {
-                return org.yamcs.protobuf.Archive.GetTagsRequest.class.getSimpleName();
+                return org.yamcs.protobuf.Archive.ListTagsResponse.class.getSimpleName();
             }
             public java.lang.String messageFullName()
             {
-                return org.yamcs.protobuf.Archive.GetTagsRequest.class.getName();
+                return org.yamcs.protobuf.Archive.ListTagsResponse.class.getName();
             }
             //unused
-            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Archive.GetTagsRequest message) throws java.io.IOException {}
-            public org.yamcs.protobuf.Archive.GetTagsRequest newMessage() { return null; }
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Archive.ListTagsResponse message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Archive.ListTagsResponse newMessage() { return null; }
         }
-        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Archive.GetTagsRequest.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Archive.ListTagsResponse.Builder>
         {
-            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Archive.GetTagsRequest.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Archive.ListTagsResponse.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -399,61 +394,50 @@ public final class SchemaArchive
                         case 0:
                             return;
                         case 1:
-                            builder.setStart(input.readInt64());
-                            break;
-                        case 2:
-                            builder.setStop(input.readInt64());
-                            break;
-                        case 3:
-                            builder.setUtcStart(input.readString());
-                            break;
-                        case 4:
-                            builder.setUtcStop(input.readString());
+                            builder.addTag(input.mergeObject(org.yamcs.protobuf.Yamcs.ArchiveTag.newBuilder(), org.yamcs.protobuf.SchemaYamcs.ArchiveTag.MERGE));
+
                             break;
                         default:
                             input.handleUnknownField(number, this);
                     }
                 }
             }
-            public boolean isInitialized(org.yamcs.protobuf.Archive.GetTagsRequest.Builder builder)
+            public boolean isInitialized(org.yamcs.protobuf.Archive.ListTagsResponse.Builder builder)
             {
                 return builder.isInitialized();
             }
-            public org.yamcs.protobuf.Archive.GetTagsRequest.Builder newMessage()
+            public org.yamcs.protobuf.Archive.ListTagsResponse.Builder newMessage()
             {
-                return org.yamcs.protobuf.Archive.GetTagsRequest.newBuilder();
+                return org.yamcs.protobuf.Archive.ListTagsResponse.newBuilder();
             }
             public java.lang.String getFieldName(int number)
             {
-                return org.yamcs.protobuf.SchemaArchive.GetTagsRequest.getFieldName(number);
+                return org.yamcs.protobuf.SchemaArchive.ListTagsResponse.getFieldName(number);
             }
             public int getFieldNumber(java.lang.String name)
             {
-                return org.yamcs.protobuf.SchemaArchive.GetTagsRequest.getFieldNumber(name);
+                return org.yamcs.protobuf.SchemaArchive.ListTagsResponse.getFieldNumber(name);
             }
-            public java.lang.Class<org.yamcs.protobuf.Archive.GetTagsRequest.Builder> typeClass()
+            public java.lang.Class<org.yamcs.protobuf.Archive.ListTagsResponse.Builder> typeClass()
             {
-                return org.yamcs.protobuf.Archive.GetTagsRequest.Builder.class;
+                return org.yamcs.protobuf.Archive.ListTagsResponse.Builder.class;
             }
             public java.lang.String messageName()
             {
-                return org.yamcs.protobuf.Archive.GetTagsRequest.class.getSimpleName();
+                return org.yamcs.protobuf.Archive.ListTagsResponse.class.getSimpleName();
             }
             public java.lang.String messageFullName()
             {
-                return org.yamcs.protobuf.Archive.GetTagsRequest.class.getName();
+                return org.yamcs.protobuf.Archive.ListTagsResponse.class.getName();
             }
             //unused
-            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Archive.GetTagsRequest.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Archive.ListTagsResponse.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {
             switch(number)
             {
-                case 1: return "start";
-                case 2: return "stop";
-                case 3: return "utcStart";
-                case 4: return "utcStop";
+                case 1: return "tag";
                 default: return null;
             }
         }
@@ -465,123 +449,7 @@ public final class SchemaArchive
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("start", 1);
-            fieldMap.put("stop", 2);
-            fieldMap.put("utcStart", 3);
-            fieldMap.put("utcStop", 4);
-        }
-    }
-
-    public static final class GetTagsResponse
-    {
-        public static final org.yamcs.protobuf.SchemaArchive.GetTagsResponse.MessageSchema WRITE =
-            new org.yamcs.protobuf.SchemaArchive.GetTagsResponse.MessageSchema();
-        public static final org.yamcs.protobuf.SchemaArchive.GetTagsResponse.BuilderSchema MERGE =
-            new org.yamcs.protobuf.SchemaArchive.GetTagsResponse.BuilderSchema();
-        
-        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Archive.GetTagsResponse>
-        {
-            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Archive.GetTagsResponse message) throws java.io.IOException
-            {
-                for(org.yamcs.protobuf.Yamcs.ArchiveTag tags : message.getTagsList())
-                    output.writeObject(1, tags, org.yamcs.protobuf.SchemaYamcs.ArchiveTag.WRITE, true);
-
-            }
-            public boolean isInitialized(org.yamcs.protobuf.Archive.GetTagsResponse message)
-            {
-                return message.isInitialized();
-            }
-            public java.lang.String getFieldName(int number)
-            {
-                return org.yamcs.protobuf.SchemaArchive.GetTagsResponse.getFieldName(number);
-            }
-            public int getFieldNumber(java.lang.String name)
-            {
-                return org.yamcs.protobuf.SchemaArchive.GetTagsResponse.getFieldNumber(name);
-            }
-            public java.lang.Class<org.yamcs.protobuf.Archive.GetTagsResponse> typeClass()
-            {
-                return org.yamcs.protobuf.Archive.GetTagsResponse.class;
-            }
-            public java.lang.String messageName()
-            {
-                return org.yamcs.protobuf.Archive.GetTagsResponse.class.getSimpleName();
-            }
-            public java.lang.String messageFullName()
-            {
-                return org.yamcs.protobuf.Archive.GetTagsResponse.class.getName();
-            }
-            //unused
-            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Archive.GetTagsResponse message) throws java.io.IOException {}
-            public org.yamcs.protobuf.Archive.GetTagsResponse newMessage() { return null; }
-        }
-        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Archive.GetTagsResponse.Builder>
-        {
-            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Archive.GetTagsResponse.Builder builder) throws java.io.IOException
-            {
-                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
-                {
-                    switch(number)
-                    {
-                        case 0:
-                            return;
-                        case 1:
-                            builder.addTags(input.mergeObject(org.yamcs.protobuf.Yamcs.ArchiveTag.newBuilder(), org.yamcs.protobuf.SchemaYamcs.ArchiveTag.MERGE));
-
-                            break;
-                        default:
-                            input.handleUnknownField(number, this);
-                    }
-                }
-            }
-            public boolean isInitialized(org.yamcs.protobuf.Archive.GetTagsResponse.Builder builder)
-            {
-                return builder.isInitialized();
-            }
-            public org.yamcs.protobuf.Archive.GetTagsResponse.Builder newMessage()
-            {
-                return org.yamcs.protobuf.Archive.GetTagsResponse.newBuilder();
-            }
-            public java.lang.String getFieldName(int number)
-            {
-                return org.yamcs.protobuf.SchemaArchive.GetTagsResponse.getFieldName(number);
-            }
-            public int getFieldNumber(java.lang.String name)
-            {
-                return org.yamcs.protobuf.SchemaArchive.GetTagsResponse.getFieldNumber(name);
-            }
-            public java.lang.Class<org.yamcs.protobuf.Archive.GetTagsResponse.Builder> typeClass()
-            {
-                return org.yamcs.protobuf.Archive.GetTagsResponse.Builder.class;
-            }
-            public java.lang.String messageName()
-            {
-                return org.yamcs.protobuf.Archive.GetTagsResponse.class.getSimpleName();
-            }
-            public java.lang.String messageFullName()
-            {
-                return org.yamcs.protobuf.Archive.GetTagsResponse.class.getName();
-            }
-            //unused
-            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Archive.GetTagsResponse.Builder builder) throws java.io.IOException {}
-        }
-        public static java.lang.String getFieldName(int number)
-        {
-            switch(number)
-            {
-                case 1: return "tags";
-                default: return null;
-            }
-        }
-        public static int getFieldNumber(java.lang.String name)
-        {
-            java.lang.Integer number = fieldMap.get(name);
-            return number == null ? 0 : number.intValue();
-        }
-        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
-        static
-        {
-            fieldMap.put("tags", 1);
+            fieldMap.put("tag", 1);
         }
     }
 
@@ -599,9 +467,9 @@ public final class SchemaArchive
                 if(message.hasName())
                     output.writeString(1, message.getName(), false);
                 if(message.hasStart())
-                    output.writeInt64(2, message.getStart(), false);
+                    output.writeString(2, message.getStart(), false);
                 if(message.hasStop())
-                    output.writeInt64(3, message.getStop(), false);
+                    output.writeString(3, message.getStop(), false);
                 if(message.hasDescription())
                     output.writeString(4, message.getDescription(), false);
                 if(message.hasColor())
@@ -649,10 +517,10 @@ public final class SchemaArchive
                             builder.setName(input.readString());
                             break;
                         case 2:
-                            builder.setStart(input.readInt64());
+                            builder.setStart(input.readString());
                             break;
                         case 3:
-                            builder.setStop(input.readInt64());
+                            builder.setStop(input.readString());
                             break;
                         case 4:
                             builder.setDescription(input.readString());
@@ -837,59 +705,59 @@ public final class SchemaArchive
         }
     }
 
-    public static final class UpdateTagRequest
+    public static final class PatchTagRequest
     {
-        public static final org.yamcs.protobuf.SchemaArchive.UpdateTagRequest.MessageSchema WRITE =
-            new org.yamcs.protobuf.SchemaArchive.UpdateTagRequest.MessageSchema();
-        public static final org.yamcs.protobuf.SchemaArchive.UpdateTagRequest.BuilderSchema MERGE =
-            new org.yamcs.protobuf.SchemaArchive.UpdateTagRequest.BuilderSchema();
+        public static final org.yamcs.protobuf.SchemaArchive.PatchTagRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaArchive.PatchTagRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaArchive.PatchTagRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaArchive.PatchTagRequest.BuilderSchema();
         
-        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Archive.UpdateTagRequest>
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Archive.PatchTagRequest>
         {
-            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Archive.UpdateTagRequest message) throws java.io.IOException
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Archive.PatchTagRequest message) throws java.io.IOException
             {
                 if(message.hasName())
                     output.writeString(1, message.getName(), false);
                 if(message.hasStart())
-                    output.writeInt64(2, message.getStart(), false);
+                    output.writeString(2, message.getStart(), false);
                 if(message.hasStop())
-                    output.writeInt64(3, message.getStop(), false);
+                    output.writeString(3, message.getStop(), false);
                 if(message.hasDescription())
                     output.writeString(4, message.getDescription(), false);
                 if(message.hasColor())
                     output.writeString(5, message.getColor(), false);
             }
-            public boolean isInitialized(org.yamcs.protobuf.Archive.UpdateTagRequest message)
+            public boolean isInitialized(org.yamcs.protobuf.Archive.PatchTagRequest message)
             {
                 return message.isInitialized();
             }
             public java.lang.String getFieldName(int number)
             {
-                return org.yamcs.protobuf.SchemaArchive.UpdateTagRequest.getFieldName(number);
+                return org.yamcs.protobuf.SchemaArchive.PatchTagRequest.getFieldName(number);
             }
             public int getFieldNumber(java.lang.String name)
             {
-                return org.yamcs.protobuf.SchemaArchive.UpdateTagRequest.getFieldNumber(name);
+                return org.yamcs.protobuf.SchemaArchive.PatchTagRequest.getFieldNumber(name);
             }
-            public java.lang.Class<org.yamcs.protobuf.Archive.UpdateTagRequest> typeClass()
+            public java.lang.Class<org.yamcs.protobuf.Archive.PatchTagRequest> typeClass()
             {
-                return org.yamcs.protobuf.Archive.UpdateTagRequest.class;
+                return org.yamcs.protobuf.Archive.PatchTagRequest.class;
             }
             public java.lang.String messageName()
             {
-                return org.yamcs.protobuf.Archive.UpdateTagRequest.class.getSimpleName();
+                return org.yamcs.protobuf.Archive.PatchTagRequest.class.getSimpleName();
             }
             public java.lang.String messageFullName()
             {
-                return org.yamcs.protobuf.Archive.UpdateTagRequest.class.getName();
+                return org.yamcs.protobuf.Archive.PatchTagRequest.class.getName();
             }
             //unused
-            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Archive.UpdateTagRequest message) throws java.io.IOException {}
-            public org.yamcs.protobuf.Archive.UpdateTagRequest newMessage() { return null; }
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Archive.PatchTagRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Archive.PatchTagRequest newMessage() { return null; }
         }
-        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Archive.UpdateTagRequest.Builder>
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Archive.PatchTagRequest.Builder>
         {
-            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Archive.UpdateTagRequest.Builder builder) throws java.io.IOException
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Archive.PatchTagRequest.Builder builder) throws java.io.IOException
             {
                 for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
                 {
@@ -901,10 +769,10 @@ public final class SchemaArchive
                             builder.setName(input.readString());
                             break;
                         case 2:
-                            builder.setStart(input.readInt64());
+                            builder.setStart(input.readString());
                             break;
                         case 3:
-                            builder.setStop(input.readInt64());
+                            builder.setStop(input.readString());
                             break;
                         case 4:
                             builder.setDescription(input.readString());
@@ -917,36 +785,36 @@ public final class SchemaArchive
                     }
                 }
             }
-            public boolean isInitialized(org.yamcs.protobuf.Archive.UpdateTagRequest.Builder builder)
+            public boolean isInitialized(org.yamcs.protobuf.Archive.PatchTagRequest.Builder builder)
             {
                 return builder.isInitialized();
             }
-            public org.yamcs.protobuf.Archive.UpdateTagRequest.Builder newMessage()
+            public org.yamcs.protobuf.Archive.PatchTagRequest.Builder newMessage()
             {
-                return org.yamcs.protobuf.Archive.UpdateTagRequest.newBuilder();
+                return org.yamcs.protobuf.Archive.PatchTagRequest.newBuilder();
             }
             public java.lang.String getFieldName(int number)
             {
-                return org.yamcs.protobuf.SchemaArchive.UpdateTagRequest.getFieldName(number);
+                return org.yamcs.protobuf.SchemaArchive.PatchTagRequest.getFieldName(number);
             }
             public int getFieldNumber(java.lang.String name)
             {
-                return org.yamcs.protobuf.SchemaArchive.UpdateTagRequest.getFieldNumber(name);
+                return org.yamcs.protobuf.SchemaArchive.PatchTagRequest.getFieldNumber(name);
             }
-            public java.lang.Class<org.yamcs.protobuf.Archive.UpdateTagRequest.Builder> typeClass()
+            public java.lang.Class<org.yamcs.protobuf.Archive.PatchTagRequest.Builder> typeClass()
             {
-                return org.yamcs.protobuf.Archive.UpdateTagRequest.Builder.class;
+                return org.yamcs.protobuf.Archive.PatchTagRequest.Builder.class;
             }
             public java.lang.String messageName()
             {
-                return org.yamcs.protobuf.Archive.UpdateTagRequest.class.getSimpleName();
+                return org.yamcs.protobuf.Archive.PatchTagRequest.class.getSimpleName();
             }
             public java.lang.String messageFullName()
             {
-                return org.yamcs.protobuf.Archive.UpdateTagRequest.class.getName();
+                return org.yamcs.protobuf.Archive.PatchTagRequest.class.getName();
             }
             //unused
-            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Archive.UpdateTagRequest.Builder builder) throws java.io.IOException {}
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Archive.PatchTagRequest.Builder builder) throws java.io.IOException {}
         }
         public static java.lang.String getFieldName(int number)
         {

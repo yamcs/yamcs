@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.TimeInterval;
 import org.yamcs.utils.TimeEncoding;
 
 import io.netty.buffer.ByteBuf;
@@ -121,6 +122,18 @@ public class RestUtils {
         }
     }
     
+    /**
+     * Interprets the provided string as either an instant, or an ISO 8601
+     * string and returns it as an instant of type long
+     */
+    public static long parseTime(String datetime) {
+        try {
+            return Long.parseLong(datetime);
+        } catch (NumberFormatException e) {
+            return TimeEncoding.parse(datetime);
+        }
+    }
+    
     public static IntervalResult scanForInterval(RestRequest req) throws RestException {
         return new IntervalResult(req);
     }
@@ -152,6 +165,13 @@ public class RestUtils {
         
         public long getStop() {
             return stop;
+        }
+        
+        public TimeInterval asTimeInterval() {
+            TimeInterval intv = new TimeInterval();
+            if (hasStart()) intv.setStart(start);
+            if (hasStop()) intv.setStop(stop);
+            return intv;
         }
         
         public String asSqlCondition(String col) {

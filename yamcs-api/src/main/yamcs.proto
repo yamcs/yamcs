@@ -1,13 +1,8 @@
 package yamcs;
 option java_package = "org.yamcs.protobuf";
 
-/*********Services are used just for reference, the code generated is not used in any manner(yet) */
-
 message StringMessage {
   required string message = 1;
-}
-
-message Void {
 }
 
 message Instant {
@@ -136,7 +131,7 @@ message DeleteTagRequest {
   required ArchiveTag tag = 3;
 }
 
-/************************ Replay Service ****************/
+/************************ Replays ****************/
 enum EndAction {
   LOOP = 1;
   QUIT = 2;

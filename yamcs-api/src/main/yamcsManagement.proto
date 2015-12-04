@@ -1,8 +1,6 @@
 package yamcsManagement;
 option java_package = "org.yamcs.protobuf";
 
-/* Yamcs Management structures and services */
-
 import "yamcs.proto";
 
 /*service states coming from guava (numbers have to correspond)*/
@@ -15,14 +13,12 @@ enum ServiceState {
   FAILED = 5;
 }
 
-/*contains a list of instances*/
 message YamcsInstances {
   repeated YamcsInstance instance = 1;
 }
 
 message YamcsInstance {
   required string name = 1;
-  //repeated MessagingAddress address=2; //removed 5-Mar-2012
   optional MissionDatabase missionDatabase = 3;
   repeated ProcessorInfo processor = 4;
   optional string url = 5;
@@ -72,11 +68,7 @@ message MissionDatabaseRequest {
   optional string instance = 2;
 }
 
-/************** Yamcs Processor Control service *********************/
-/* The ProcessorInfo and ClientInfo events are posted on the yprocInfo address.
- * There is also a queue with the same name containing the last values
- * The name of the events are yProcessorUpdated (means added or updated),
- * yProcessorRemoved, clientUpdated (means connected or updated) clientDisconnected */
+/************** Yamcs Processor Control *********************/
 message ProcessorInfo {
   optional string instance = 1; //yamcs instance
   optional string name = 2;
@@ -152,7 +144,7 @@ message ProcessorManagementRequest {
   optional yamcs.ReplayRequest replaySpec = 8; //for CREATE as alternative to string spec
 }
 
-message ProcessorRequest { //this is used for ProcessorControl service
+message ProcessorRequest {
   enum Operation {
     PAUSE = 2;
     RESUME = 3;

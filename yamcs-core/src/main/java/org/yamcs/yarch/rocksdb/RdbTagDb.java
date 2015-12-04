@@ -68,6 +68,7 @@ public class RdbTagDb implements TagDb {
      * Synchonously gets tags, passing every separate one to the provided
      * {@link TagReceiver}.
      */
+    @Override
     public void getTags(TimeInterval intv, TagReceiver callback) throws IOException {
         log.debug("processing request: {}", intv);
         RocksIterator it = db.newIterator();
@@ -91,12 +92,26 @@ public class RdbTagDb implements TagDb {
         }
         callback.finished();
     }
+    
+    /**
+     * Returns a specific tag, or null if the requested tag does not exist
+     */
+    @Override
+    public ArchiveTag getTag(long tagTime, int tagId) throws IOException {
+        try {
+            byte[] k = key(tagTime, tagId);
+            byte[] v = db.get(k);
+            return (v != null) ? ArchiveTag.parseFrom(v) : null;
+        } catch (RocksDBException e) {
+            throw new IOException(e);
+        }
+    }
 
     /**
      * Inserts a new Tag. No id should be specified. If it is, it will
      * silently be overwritten, and the new tag will be returned.
-     * @throws RocksDBException 
      */
+    @Override
     public ArchiveTag insertTag(ArchiveTag tag) throws IOException {
         ArchiveTag newTag=ArchiveTag.newBuilder(tag).setId(getNewId()).build();
         try {
@@ -112,8 +127,9 @@ public class RdbTagDb implements TagDb {
      * throws YamcsException if the tag could not be found.
      * <p>
      * Note that both tagId and oldTagStart need to be specified so that
-     * a direct lookup in the internal data structure can be made. 
+     * a direct lookup in the internal data structure can be made.
      */
+    @Override
     public ArchiveTag updateTag(long tagTime, int tagId, ArchiveTag tag) throws YamcsException, IOException {
         try {
             if(tagId<1) throw new YamcsException("Invalid or unexisting id");
@@ -130,6 +146,7 @@ public class RdbTagDb implements TagDb {
      * Deletes the specified tag
      * @throws YamcsException if the id was invalid, or if the tag could not be found
      */
+    @Override
     public ArchiveTag deleteTag(long tagTime, int tagId) throws IOException, YamcsException {
         if(tagId<1) throw new YamcsException("Invalid or unexisting id");
         try {

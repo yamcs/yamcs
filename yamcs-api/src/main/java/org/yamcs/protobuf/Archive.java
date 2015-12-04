@@ -4240,930 +4240,53 @@ public final class Archive {
     // @@protoc_insertion_point(class_scope:archive.DumpArchiveResponse)
   }
 
-  public interface GetTagsRequestOrBuilder
+  public interface ListTagsResponseOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // optional int64 start = 1;
+    // repeated .yamcs.ArchiveTag tag = 1;
     /**
-     * <code>optional int64 start = 1;</code>
-     *
-     * <pre>
-     * Time specification (assumed Yamcs internal time)
-     * </pre>
-     */
-    boolean hasStart();
-    /**
-     * <code>optional int64 start = 1;</code>
-     *
-     * <pre>
-     * Time specification (assumed Yamcs internal time)
-     * </pre>
-     */
-    long getStart();
-
-    // optional int64 stop = 2;
-    /**
-     * <code>optional int64 stop = 2;</code>
-     */
-    boolean hasStop();
-    /**
-     * <code>optional int64 stop = 2;</code>
-     */
-    long getStop();
-
-    // optional string utcStart = 3;
-    /**
-     * <code>optional string utcStart = 3;</code>
-     *
-     * <pre>
-     *Alternative time specification as UTC strings in ISO8601 format
-     * </pre>
-     */
-    boolean hasUtcStart();
-    /**
-     * <code>optional string utcStart = 3;</code>
-     *
-     * <pre>
-     *Alternative time specification as UTC strings in ISO8601 format
-     * </pre>
-     */
-    java.lang.String getUtcStart();
-    /**
-     * <code>optional string utcStart = 3;</code>
-     *
-     * <pre>
-     *Alternative time specification as UTC strings in ISO8601 format
-     * </pre>
-     */
-    com.google.protobuf.ByteString
-        getUtcStartBytes();
-
-    // optional string utcStop = 4;
-    /**
-     * <code>optional string utcStop = 4;</code>
-     */
-    boolean hasUtcStop();
-    /**
-     * <code>optional string utcStop = 4;</code>
-     */
-    java.lang.String getUtcStop();
-    /**
-     * <code>optional string utcStop = 4;</code>
-     */
-    com.google.protobuf.ByteString
-        getUtcStopBytes();
-  }
-  /**
-   * Protobuf type {@code archive.GetTagsRequest}
-   *
-   * <pre>
-   * GET /api/archive/:instance/tags
-   * </pre>
-   */
-  public static final class GetTagsRequest extends
-      com.google.protobuf.GeneratedMessage
-      implements GetTagsRequestOrBuilder {
-    // Use GetTagsRequest.newBuilder() to construct.
-    private GetTagsRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
-      super(builder);
-      this.unknownFields = builder.getUnknownFields();
-    }
-    private GetTagsRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final GetTagsRequest defaultInstance;
-    public static GetTagsRequest getDefaultInstance() {
-      return defaultInstance;
-    }
-
-    public GetTagsRequest getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
-    @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
-      return this.unknownFields;
-    }
-    private GetTagsRequest(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-            case 8: {
-              bitField0_ |= 0x00000001;
-              start_ = input.readInt64();
-              break;
-            }
-            case 16: {
-              bitField0_ |= 0x00000002;
-              stop_ = input.readInt64();
-              break;
-            }
-            case 26: {
-              bitField0_ |= 0x00000004;
-              utcStart_ = input.readBytes();
-              break;
-            }
-            case 34: {
-              bitField0_ |= 0x00000008;
-              utcStop_ = input.readBytes();
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
-    public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return org.yamcs.protobuf.Archive.internal_static_archive_GetTagsRequest_descriptor;
-    }
-
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-        internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Archive.internal_static_archive_GetTagsRequest_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(
-              org.yamcs.protobuf.Archive.GetTagsRequest.class, org.yamcs.protobuf.Archive.GetTagsRequest.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<GetTagsRequest> PARSER =
-        new com.google.protobuf.AbstractParser<GetTagsRequest>() {
-      public GetTagsRequest parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new GetTagsRequest(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<GetTagsRequest> getParserForType() {
-      return PARSER;
-    }
-
-    private int bitField0_;
-    // optional int64 start = 1;
-    public static final int START_FIELD_NUMBER = 1;
-    private long start_;
-    /**
-     * <code>optional int64 start = 1;</code>
-     *
-     * <pre>
-     * Time specification (assumed Yamcs internal time)
-     * </pre>
-     */
-    public boolean hasStart() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
-    }
-    /**
-     * <code>optional int64 start = 1;</code>
-     *
-     * <pre>
-     * Time specification (assumed Yamcs internal time)
-     * </pre>
-     */
-    public long getStart() {
-      return start_;
-    }
-
-    // optional int64 stop = 2;
-    public static final int STOP_FIELD_NUMBER = 2;
-    private long stop_;
-    /**
-     * <code>optional int64 stop = 2;</code>
-     */
-    public boolean hasStop() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
-    }
-    /**
-     * <code>optional int64 stop = 2;</code>
-     */
-    public long getStop() {
-      return stop_;
-    }
-
-    // optional string utcStart = 3;
-    public static final int UTCSTART_FIELD_NUMBER = 3;
-    private java.lang.Object utcStart_;
-    /**
-     * <code>optional string utcStart = 3;</code>
-     *
-     * <pre>
-     *Alternative time specification as UTC strings in ISO8601 format
-     * </pre>
-     */
-    public boolean hasUtcStart() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
-    }
-    /**
-     * <code>optional string utcStart = 3;</code>
-     *
-     * <pre>
-     *Alternative time specification as UTC strings in ISO8601 format
-     * </pre>
-     */
-    public java.lang.String getUtcStart() {
-      java.lang.Object ref = utcStart_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (bs.isValidUtf8()) {
-          utcStart_ = s;
-        }
-        return s;
-      }
-    }
-    /**
-     * <code>optional string utcStart = 3;</code>
-     *
-     * <pre>
-     *Alternative time specification as UTC strings in ISO8601 format
-     * </pre>
-     */
-    public com.google.protobuf.ByteString
-        getUtcStartBytes() {
-      java.lang.Object ref = utcStart_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        utcStart_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
-    // optional string utcStop = 4;
-    public static final int UTCSTOP_FIELD_NUMBER = 4;
-    private java.lang.Object utcStop_;
-    /**
-     * <code>optional string utcStop = 4;</code>
-     */
-    public boolean hasUtcStop() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
-    }
-    /**
-     * <code>optional string utcStop = 4;</code>
-     */
-    public java.lang.String getUtcStop() {
-      java.lang.Object ref = utcStop_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (bs.isValidUtf8()) {
-          utcStop_ = s;
-        }
-        return s;
-      }
-    }
-    /**
-     * <code>optional string utcStop = 4;</code>
-     */
-    public com.google.protobuf.ByteString
-        getUtcStopBytes() {
-      java.lang.Object ref = utcStop_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        utcStop_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
-    private void initFields() {
-      start_ = 0L;
-      stop_ = 0L;
-      utcStart_ = "";
-      utcStop_ = "";
-    }
-    private byte memoizedIsInitialized = -1;
-    public final boolean isInitialized() {
-      byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
-
-      memoizedIsInitialized = 1;
-      return true;
-    }
-
-    public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
-      getSerializedSize();
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeInt64(1, start_);
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeInt64(2, stop_);
-      }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeBytes(3, getUtcStartBytes());
-      }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeBytes(4, getUtcStopBytes());
-      }
-      getUnknownFields().writeTo(output);
-    }
-
-    private int memoizedSerializedSize = -1;
-    public int getSerializedSize() {
-      int size = memoizedSerializedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(1, start_);
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(2, stop_);
-      }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(3, getUtcStartBytes());
-      }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(4, getUtcStopBytes());
-      }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
-      return size;
-    }
-
-    private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
-    }
-
-    public static org.yamcs.protobuf.Archive.GetTagsRequest parseFrom(
-        com.google.protobuf.ByteString data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static org.yamcs.protobuf.Archive.GetTagsRequest parseFrom(
-        com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static org.yamcs.protobuf.Archive.GetTagsRequest parseFrom(byte[] data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static org.yamcs.protobuf.Archive.GetTagsRequest parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static org.yamcs.protobuf.Archive.GetTagsRequest parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-    public static org.yamcs.protobuf.Archive.GetTagsRequest parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-    public static org.yamcs.protobuf.Archive.GetTagsRequest parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
-    }
-    public static org.yamcs.protobuf.Archive.GetTagsRequest parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
-    }
-    public static org.yamcs.protobuf.Archive.GetTagsRequest parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-    public static org.yamcs.protobuf.Archive.GetTagsRequest parseFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-
-    public static Builder newBuilder() { return Builder.create(); }
-    public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.Archive.GetTagsRequest prototype) {
-      return newBuilder().mergeFrom(prototype);
-    }
-    public Builder toBuilder() { return newBuilder(this); }
-
-    @java.lang.Override
-    protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-      Builder builder = new Builder(parent);
-      return builder;
-    }
-    /**
-     * Protobuf type {@code archive.GetTagsRequest}
-     *
-     * <pre>
-     * GET /api/archive/:instance/tags
-     * </pre>
-     */
-    public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Archive.GetTagsRequestOrBuilder {
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return org.yamcs.protobuf.Archive.internal_static_archive_GetTagsRequest_descriptor;
-      }
-
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return org.yamcs.protobuf.Archive.internal_static_archive_GetTagsRequest_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                org.yamcs.protobuf.Archive.GetTagsRequest.class, org.yamcs.protobuf.Archive.GetTagsRequest.Builder.class);
-      }
-
-      // Construct using org.yamcs.protobuf.Archive.GetTagsRequest.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
-
-      private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-        super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-        }
-      }
-      private static Builder create() {
-        return new Builder();
-      }
-
-      public Builder clear() {
-        super.clear();
-        start_ = 0L;
-        bitField0_ = (bitField0_ & ~0x00000001);
-        stop_ = 0L;
-        bitField0_ = (bitField0_ & ~0x00000002);
-        utcStart_ = "";
-        bitField0_ = (bitField0_ & ~0x00000004);
-        utcStop_ = "";
-        bitField0_ = (bitField0_ & ~0x00000008);
-        return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
-      }
-
-      public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
-        return org.yamcs.protobuf.Archive.internal_static_archive_GetTagsRequest_descriptor;
-      }
-
-      public org.yamcs.protobuf.Archive.GetTagsRequest getDefaultInstanceForType() {
-        return org.yamcs.protobuf.Archive.GetTagsRequest.getDefaultInstance();
-      }
-
-      public org.yamcs.protobuf.Archive.GetTagsRequest build() {
-        org.yamcs.protobuf.Archive.GetTagsRequest result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(result);
-        }
-        return result;
-      }
-
-      public org.yamcs.protobuf.Archive.GetTagsRequest buildPartial() {
-        org.yamcs.protobuf.Archive.GetTagsRequest result = new org.yamcs.protobuf.Archive.GetTagsRequest(this);
-        int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-          to_bitField0_ |= 0x00000001;
-        }
-        result.start_ = start_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-          to_bitField0_ |= 0x00000002;
-        }
-        result.stop_ = stop_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
-          to_bitField0_ |= 0x00000004;
-        }
-        result.utcStart_ = utcStart_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
-          to_bitField0_ |= 0x00000008;
-        }
-        result.utcStop_ = utcStop_;
-        result.bitField0_ = to_bitField0_;
-        onBuilt();
-        return result;
-      }
-
-      public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.yamcs.protobuf.Archive.GetTagsRequest) {
-          return mergeFrom((org.yamcs.protobuf.Archive.GetTagsRequest)other);
-        } else {
-          super.mergeFrom(other);
-          return this;
-        }
-      }
-
-      public Builder mergeFrom(org.yamcs.protobuf.Archive.GetTagsRequest other) {
-        if (other == org.yamcs.protobuf.Archive.GetTagsRequest.getDefaultInstance()) return this;
-        if (other.hasStart()) {
-          setStart(other.getStart());
-        }
-        if (other.hasStop()) {
-          setStop(other.getStop());
-        }
-        if (other.hasUtcStart()) {
-          bitField0_ |= 0x00000004;
-          utcStart_ = other.utcStart_;
-          onChanged();
-        }
-        if (other.hasUtcStop()) {
-          bitField0_ |= 0x00000008;
-          utcStop_ = other.utcStop_;
-          onChanged();
-        }
-        this.mergeUnknownFields(other.getUnknownFields());
-        return this;
-      }
-
-      public final boolean isInitialized() {
-        return true;
-      }
-
-      public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        org.yamcs.protobuf.Archive.GetTagsRequest parsedMessage = null;
-        try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.yamcs.protobuf.Archive.GetTagsRequest) e.getUnfinishedMessage();
-          throw e;
-        } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
-        return this;
-      }
-      private int bitField0_;
-
-      // optional int64 start = 1;
-      private long start_ ;
-      /**
-       * <code>optional int64 start = 1;</code>
-       *
-       * <pre>
-       * Time specification (assumed Yamcs internal time)
-       * </pre>
-       */
-      public boolean hasStart() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
-      }
-      /**
-       * <code>optional int64 start = 1;</code>
-       *
-       * <pre>
-       * Time specification (assumed Yamcs internal time)
-       * </pre>
-       */
-      public long getStart() {
-        return start_;
-      }
-      /**
-       * <code>optional int64 start = 1;</code>
-       *
-       * <pre>
-       * Time specification (assumed Yamcs internal time)
-       * </pre>
-       */
-      public Builder setStart(long value) {
-        bitField0_ |= 0x00000001;
-        start_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional int64 start = 1;</code>
-       *
-       * <pre>
-       * Time specification (assumed Yamcs internal time)
-       * </pre>
-       */
-      public Builder clearStart() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        start_ = 0L;
-        onChanged();
-        return this;
-      }
-
-      // optional int64 stop = 2;
-      private long stop_ ;
-      /**
-       * <code>optional int64 stop = 2;</code>
-       */
-      public boolean hasStop() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>optional int64 stop = 2;</code>
-       */
-      public long getStop() {
-        return stop_;
-      }
-      /**
-       * <code>optional int64 stop = 2;</code>
-       */
-      public Builder setStop(long value) {
-        bitField0_ |= 0x00000002;
-        stop_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional int64 stop = 2;</code>
-       */
-      public Builder clearStop() {
-        bitField0_ = (bitField0_ & ~0x00000002);
-        stop_ = 0L;
-        onChanged();
-        return this;
-      }
-
-      // optional string utcStart = 3;
-      private java.lang.Object utcStart_ = "";
-      /**
-       * <code>optional string utcStart = 3;</code>
-       *
-       * <pre>
-       *Alternative time specification as UTC strings in ISO8601 format
-       * </pre>
-       */
-      public boolean hasUtcStart() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
-      }
-      /**
-       * <code>optional string utcStart = 3;</code>
-       *
-       * <pre>
-       *Alternative time specification as UTC strings in ISO8601 format
-       * </pre>
-       */
-      public java.lang.String getUtcStart() {
-        java.lang.Object ref = utcStart_;
-        if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          utcStart_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>optional string utcStart = 3;</code>
-       *
-       * <pre>
-       *Alternative time specification as UTC strings in ISO8601 format
-       * </pre>
-       */
-      public com.google.protobuf.ByteString
-          getUtcStartBytes() {
-        java.lang.Object ref = utcStart_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          utcStart_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>optional string utcStart = 3;</code>
-       *
-       * <pre>
-       *Alternative time specification as UTC strings in ISO8601 format
-       * </pre>
-       */
-      public Builder setUtcStart(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000004;
-        utcStart_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string utcStart = 3;</code>
-       *
-       * <pre>
-       *Alternative time specification as UTC strings in ISO8601 format
-       * </pre>
-       */
-      public Builder clearUtcStart() {
-        bitField0_ = (bitField0_ & ~0x00000004);
-        utcStart_ = getDefaultInstance().getUtcStart();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string utcStart = 3;</code>
-       *
-       * <pre>
-       *Alternative time specification as UTC strings in ISO8601 format
-       * </pre>
-       */
-      public Builder setUtcStartBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000004;
-        utcStart_ = value;
-        onChanged();
-        return this;
-      }
-
-      // optional string utcStop = 4;
-      private java.lang.Object utcStop_ = "";
-      /**
-       * <code>optional string utcStop = 4;</code>
-       */
-      public boolean hasUtcStop() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
-      }
-      /**
-       * <code>optional string utcStop = 4;</code>
-       */
-      public java.lang.String getUtcStop() {
-        java.lang.Object ref = utcStop_;
-        if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          utcStop_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>optional string utcStop = 4;</code>
-       */
-      public com.google.protobuf.ByteString
-          getUtcStopBytes() {
-        java.lang.Object ref = utcStop_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          utcStop_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>optional string utcStop = 4;</code>
-       */
-      public Builder setUtcStop(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000008;
-        utcStop_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string utcStop = 4;</code>
-       */
-      public Builder clearUtcStop() {
-        bitField0_ = (bitField0_ & ~0x00000008);
-        utcStop_ = getDefaultInstance().getUtcStop();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string utcStop = 4;</code>
-       */
-      public Builder setUtcStopBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000008;
-        utcStop_ = value;
-        onChanged();
-        return this;
-      }
-
-      // @@protoc_insertion_point(builder_scope:archive.GetTagsRequest)
-    }
-
-    static {
-      defaultInstance = new GetTagsRequest(true);
-      defaultInstance.initFields();
-    }
-
-    // @@protoc_insertion_point(class_scope:archive.GetTagsRequest)
-  }
-
-  public interface GetTagsResponseOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
-
-    // repeated .yamcs.ArchiveTag tags = 1;
-    /**
-     * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+     * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
      */
     java.util.List<org.yamcs.protobuf.Yamcs.ArchiveTag> 
-        getTagsList();
+        getTagList();
     /**
-     * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+     * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
      */
-    org.yamcs.protobuf.Yamcs.ArchiveTag getTags(int index);
+    org.yamcs.protobuf.Yamcs.ArchiveTag getTag(int index);
     /**
-     * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+     * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
      */
-    int getTagsCount();
+    int getTagCount();
     /**
-     * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+     * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
      */
     java.util.List<? extends org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder> 
-        getTagsOrBuilderList();
+        getTagOrBuilderList();
     /**
-     * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+     * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
      */
-    org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder getTagsOrBuilder(
+    org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder getTagOrBuilder(
         int index);
   }
   /**
-   * Protobuf type {@code archive.GetTagsResponse}
+   * Protobuf type {@code archive.ListTagsResponse}
    */
-  public static final class GetTagsResponse extends
+  public static final class ListTagsResponse extends
       com.google.protobuf.GeneratedMessage
-      implements GetTagsResponseOrBuilder {
-    // Use GetTagsResponse.newBuilder() to construct.
-    private GetTagsResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      implements ListTagsResponseOrBuilder {
+    // Use ListTagsResponse.newBuilder() to construct.
+    private ListTagsResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
       this.unknownFields = builder.getUnknownFields();
     }
-    private GetTagsResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+    private ListTagsResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
 
-    private static final GetTagsResponse defaultInstance;
-    public static GetTagsResponse getDefaultInstance() {
+    private static final ListTagsResponse defaultInstance;
+    public static ListTagsResponse getDefaultInstance() {
       return defaultInstance;
     }
 
-    public GetTagsResponse getDefaultInstanceForType() {
+    public ListTagsResponse getDefaultInstanceForType() {
       return defaultInstance;
     }
 
@@ -5173,7 +4296,7 @@ public final class Archive {
         getUnknownFields() {
       return this.unknownFields;
     }
-    private GetTagsResponse(
+    private ListTagsResponse(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -5198,10 +4321,10 @@ public final class Archive {
             }
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                tags_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.ArchiveTag>();
+                tag_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.ArchiveTag>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              tags_.add(input.readMessage(org.yamcs.protobuf.Yamcs.ArchiveTag.PARSER, extensionRegistry));
+              tag_.add(input.readMessage(org.yamcs.protobuf.Yamcs.ArchiveTag.PARSER, extensionRegistry));
               break;
             }
           }
@@ -5213,7 +4336,7 @@ public final class Archive {
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-          tags_ = java.util.Collections.unmodifiableList(tags_);
+          tag_ = java.util.Collections.unmodifiableList(tag_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -5221,77 +4344,77 @@ public final class Archive {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Archive.internal_static_archive_GetTagsResponse_descriptor;
+      return org.yamcs.protobuf.Archive.internal_static_archive_ListTagsResponse_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Archive.internal_static_archive_GetTagsResponse_fieldAccessorTable
+      return org.yamcs.protobuf.Archive.internal_static_archive_ListTagsResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.yamcs.protobuf.Archive.GetTagsResponse.class, org.yamcs.protobuf.Archive.GetTagsResponse.Builder.class);
+              org.yamcs.protobuf.Archive.ListTagsResponse.class, org.yamcs.protobuf.Archive.ListTagsResponse.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<GetTagsResponse> PARSER =
-        new com.google.protobuf.AbstractParser<GetTagsResponse>() {
-      public GetTagsResponse parsePartialFrom(
+    public static com.google.protobuf.Parser<ListTagsResponse> PARSER =
+        new com.google.protobuf.AbstractParser<ListTagsResponse>() {
+      public ListTagsResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new GetTagsResponse(input, extensionRegistry);
+        return new ListTagsResponse(input, extensionRegistry);
       }
     };
 
     @java.lang.Override
-    public com.google.protobuf.Parser<GetTagsResponse> getParserForType() {
+    public com.google.protobuf.Parser<ListTagsResponse> getParserForType() {
       return PARSER;
     }
 
-    // repeated .yamcs.ArchiveTag tags = 1;
-    public static final int TAGS_FIELD_NUMBER = 1;
-    private java.util.List<org.yamcs.protobuf.Yamcs.ArchiveTag> tags_;
+    // repeated .yamcs.ArchiveTag tag = 1;
+    public static final int TAG_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Yamcs.ArchiveTag> tag_;
     /**
-     * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+     * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
      */
-    public java.util.List<org.yamcs.protobuf.Yamcs.ArchiveTag> getTagsList() {
-      return tags_;
+    public java.util.List<org.yamcs.protobuf.Yamcs.ArchiveTag> getTagList() {
+      return tag_;
     }
     /**
-     * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+     * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
      */
     public java.util.List<? extends org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder> 
-        getTagsOrBuilderList() {
-      return tags_;
+        getTagOrBuilderList() {
+      return tag_;
     }
     /**
-     * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+     * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
      */
-    public int getTagsCount() {
-      return tags_.size();
+    public int getTagCount() {
+      return tag_.size();
     }
     /**
-     * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+     * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
      */
-    public org.yamcs.protobuf.Yamcs.ArchiveTag getTags(int index) {
-      return tags_.get(index);
+    public org.yamcs.protobuf.Yamcs.ArchiveTag getTag(int index) {
+      return tag_.get(index);
     }
     /**
-     * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+     * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
      */
-    public org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder getTagsOrBuilder(
+    public org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder getTagOrBuilder(
         int index) {
-      return tags_.get(index);
+      return tag_.get(index);
     }
 
     private void initFields() {
-      tags_ = java.util.Collections.emptyList();
+      tag_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      for (int i = 0; i < getTagsCount(); i++) {
-        if (!getTags(i).isInitialized()) {
+      for (int i = 0; i < getTagCount(); i++) {
+        if (!getTag(i).isInitialized()) {
           memoizedIsInitialized = 0;
           return false;
         }
@@ -5303,8 +4426,8 @@ public final class Archive {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      for (int i = 0; i < tags_.size(); i++) {
-        output.writeMessage(1, tags_.get(i));
+      for (int i = 0; i < tag_.size(); i++) {
+        output.writeMessage(1, tag_.get(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -5315,9 +4438,9 @@ public final class Archive {
       if (size != -1) return size;
 
       size = 0;
-      for (int i = 0; i < tags_.size(); i++) {
+      for (int i = 0; i < tag_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, tags_.get(i));
+          .computeMessageSize(1, tag_.get(i));
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -5331,53 +4454,53 @@ public final class Archive {
       return super.writeReplace();
     }
 
-    public static org.yamcs.protobuf.Archive.GetTagsResponse parseFrom(
+    public static org.yamcs.protobuf.Archive.ListTagsResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.yamcs.protobuf.Archive.GetTagsResponse parseFrom(
+    public static org.yamcs.protobuf.Archive.ListTagsResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Archive.GetTagsResponse parseFrom(byte[] data)
+    public static org.yamcs.protobuf.Archive.ListTagsResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.yamcs.protobuf.Archive.GetTagsResponse parseFrom(
+    public static org.yamcs.protobuf.Archive.ListTagsResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Archive.GetTagsResponse parseFrom(java.io.InputStream input)
+    public static org.yamcs.protobuf.Archive.ListTagsResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.yamcs.protobuf.Archive.GetTagsResponse parseFrom(
+    public static org.yamcs.protobuf.Archive.ListTagsResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Archive.GetTagsResponse parseDelimitedFrom(java.io.InputStream input)
+    public static org.yamcs.protobuf.Archive.ListTagsResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static org.yamcs.protobuf.Archive.GetTagsResponse parseDelimitedFrom(
+    public static org.yamcs.protobuf.Archive.ListTagsResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Archive.GetTagsResponse parseFrom(
+    public static org.yamcs.protobuf.Archive.ListTagsResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.yamcs.protobuf.Archive.GetTagsResponse parseFrom(
+    public static org.yamcs.protobuf.Archive.ListTagsResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -5386,7 +4509,7 @@ public final class Archive {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.Archive.GetTagsResponse prototype) {
+    public static Builder newBuilder(org.yamcs.protobuf.Archive.ListTagsResponse prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -5398,24 +4521,24 @@ public final class Archive {
       return builder;
     }
     /**
-     * Protobuf type {@code archive.GetTagsResponse}
+     * Protobuf type {@code archive.ListTagsResponse}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Archive.GetTagsResponseOrBuilder {
+       implements org.yamcs.protobuf.Archive.ListTagsResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.yamcs.protobuf.Archive.internal_static_archive_GetTagsResponse_descriptor;
+        return org.yamcs.protobuf.Archive.internal_static_archive_ListTagsResponse_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.yamcs.protobuf.Archive.internal_static_archive_GetTagsResponse_fieldAccessorTable
+        return org.yamcs.protobuf.Archive.internal_static_archive_ListTagsResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.yamcs.protobuf.Archive.GetTagsResponse.class, org.yamcs.protobuf.Archive.GetTagsResponse.Builder.class);
+                org.yamcs.protobuf.Archive.ListTagsResponse.class, org.yamcs.protobuf.Archive.ListTagsResponse.Builder.class);
       }
 
-      // Construct using org.yamcs.protobuf.Archive.GetTagsResponse.newBuilder()
+      // Construct using org.yamcs.protobuf.Archive.ListTagsResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -5427,7 +4550,7 @@ public final class Archive {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getTagsFieldBuilder();
+          getTagFieldBuilder();
         }
       }
       private static Builder create() {
@@ -5436,11 +4559,11 @@ public final class Archive {
 
       public Builder clear() {
         super.clear();
-        if (tagsBuilder_ == null) {
-          tags_ = java.util.Collections.emptyList();
+        if (tagBuilder_ == null) {
+          tag_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000001);
         } else {
-          tagsBuilder_.clear();
+          tagBuilder_.clear();
         }
         return this;
       }
@@ -5451,71 +4574,71 @@ public final class Archive {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.yamcs.protobuf.Archive.internal_static_archive_GetTagsResponse_descriptor;
+        return org.yamcs.protobuf.Archive.internal_static_archive_ListTagsResponse_descriptor;
       }
 
-      public org.yamcs.protobuf.Archive.GetTagsResponse getDefaultInstanceForType() {
-        return org.yamcs.protobuf.Archive.GetTagsResponse.getDefaultInstance();
+      public org.yamcs.protobuf.Archive.ListTagsResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Archive.ListTagsResponse.getDefaultInstance();
       }
 
-      public org.yamcs.protobuf.Archive.GetTagsResponse build() {
-        org.yamcs.protobuf.Archive.GetTagsResponse result = buildPartial();
+      public org.yamcs.protobuf.Archive.ListTagsResponse build() {
+        org.yamcs.protobuf.Archive.ListTagsResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.yamcs.protobuf.Archive.GetTagsResponse buildPartial() {
-        org.yamcs.protobuf.Archive.GetTagsResponse result = new org.yamcs.protobuf.Archive.GetTagsResponse(this);
+      public org.yamcs.protobuf.Archive.ListTagsResponse buildPartial() {
+        org.yamcs.protobuf.Archive.ListTagsResponse result = new org.yamcs.protobuf.Archive.ListTagsResponse(this);
         int from_bitField0_ = bitField0_;
-        if (tagsBuilder_ == null) {
+        if (tagBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            tags_ = java.util.Collections.unmodifiableList(tags_);
+            tag_ = java.util.Collections.unmodifiableList(tag_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
-          result.tags_ = tags_;
+          result.tag_ = tag_;
         } else {
-          result.tags_ = tagsBuilder_.build();
+          result.tag_ = tagBuilder_.build();
         }
         onBuilt();
         return result;
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.yamcs.protobuf.Archive.GetTagsResponse) {
-          return mergeFrom((org.yamcs.protobuf.Archive.GetTagsResponse)other);
+        if (other instanceof org.yamcs.protobuf.Archive.ListTagsResponse) {
+          return mergeFrom((org.yamcs.protobuf.Archive.ListTagsResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.yamcs.protobuf.Archive.GetTagsResponse other) {
-        if (other == org.yamcs.protobuf.Archive.GetTagsResponse.getDefaultInstance()) return this;
-        if (tagsBuilder_ == null) {
-          if (!other.tags_.isEmpty()) {
-            if (tags_.isEmpty()) {
-              tags_ = other.tags_;
+      public Builder mergeFrom(org.yamcs.protobuf.Archive.ListTagsResponse other) {
+        if (other == org.yamcs.protobuf.Archive.ListTagsResponse.getDefaultInstance()) return this;
+        if (tagBuilder_ == null) {
+          if (!other.tag_.isEmpty()) {
+            if (tag_.isEmpty()) {
+              tag_ = other.tag_;
               bitField0_ = (bitField0_ & ~0x00000001);
             } else {
-              ensureTagsIsMutable();
-              tags_.addAll(other.tags_);
+              ensureTagIsMutable();
+              tag_.addAll(other.tag_);
             }
             onChanged();
           }
         } else {
-          if (!other.tags_.isEmpty()) {
-            if (tagsBuilder_.isEmpty()) {
-              tagsBuilder_.dispose();
-              tagsBuilder_ = null;
-              tags_ = other.tags_;
+          if (!other.tag_.isEmpty()) {
+            if (tagBuilder_.isEmpty()) {
+              tagBuilder_.dispose();
+              tagBuilder_ = null;
+              tag_ = other.tag_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              tagsBuilder_ = 
+              tagBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                   getTagsFieldBuilder() : null;
+                   getTagFieldBuilder() : null;
             } else {
-              tagsBuilder_.addAllMessages(other.tags_);
+              tagBuilder_.addAllMessages(other.tag_);
             }
           }
         }
@@ -5524,8 +4647,8 @@ public final class Archive {
       }
 
       public final boolean isInitialized() {
-        for (int i = 0; i < getTagsCount(); i++) {
-          if (!getTags(i).isInitialized()) {
+        for (int i = 0; i < getTagCount(); i++) {
+          if (!getTag(i).isInitialized()) {
             
             return false;
           }
@@ -5537,11 +4660,11 @@ public final class Archive {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.yamcs.protobuf.Archive.GetTagsResponse parsedMessage = null;
+        org.yamcs.protobuf.Archive.ListTagsResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.yamcs.protobuf.Archive.GetTagsResponse) e.getUnfinishedMessage();
+          parsedMessage = (org.yamcs.protobuf.Archive.ListTagsResponse) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -5552,255 +4675,255 @@ public final class Archive {
       }
       private int bitField0_;
 
-      // repeated .yamcs.ArchiveTag tags = 1;
-      private java.util.List<org.yamcs.protobuf.Yamcs.ArchiveTag> tags_ =
+      // repeated .yamcs.ArchiveTag tag = 1;
+      private java.util.List<org.yamcs.protobuf.Yamcs.ArchiveTag> tag_ =
         java.util.Collections.emptyList();
-      private void ensureTagsIsMutable() {
+      private void ensureTagIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          tags_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.ArchiveTag>(tags_);
+          tag_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.ArchiveTag>(tag_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.yamcs.protobuf.Yamcs.ArchiveTag, org.yamcs.protobuf.Yamcs.ArchiveTag.Builder, org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder> tagsBuilder_;
+          org.yamcs.protobuf.Yamcs.ArchiveTag, org.yamcs.protobuf.Yamcs.ArchiveTag.Builder, org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder> tagBuilder_;
 
       /**
-       * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+       * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
        */
-      public java.util.List<org.yamcs.protobuf.Yamcs.ArchiveTag> getTagsList() {
-        if (tagsBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(tags_);
+      public java.util.List<org.yamcs.protobuf.Yamcs.ArchiveTag> getTagList() {
+        if (tagBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(tag_);
         } else {
-          return tagsBuilder_.getMessageList();
+          return tagBuilder_.getMessageList();
         }
       }
       /**
-       * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+       * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
        */
-      public int getTagsCount() {
-        if (tagsBuilder_ == null) {
-          return tags_.size();
+      public int getTagCount() {
+        if (tagBuilder_ == null) {
+          return tag_.size();
         } else {
-          return tagsBuilder_.getCount();
+          return tagBuilder_.getCount();
         }
       }
       /**
-       * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+       * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
        */
-      public org.yamcs.protobuf.Yamcs.ArchiveTag getTags(int index) {
-        if (tagsBuilder_ == null) {
-          return tags_.get(index);
+      public org.yamcs.protobuf.Yamcs.ArchiveTag getTag(int index) {
+        if (tagBuilder_ == null) {
+          return tag_.get(index);
         } else {
-          return tagsBuilder_.getMessage(index);
+          return tagBuilder_.getMessage(index);
         }
       }
       /**
-       * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+       * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
        */
-      public Builder setTags(
+      public Builder setTag(
           int index, org.yamcs.protobuf.Yamcs.ArchiveTag value) {
-        if (tagsBuilder_ == null) {
+        if (tagBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureTagsIsMutable();
-          tags_.set(index, value);
+          ensureTagIsMutable();
+          tag_.set(index, value);
           onChanged();
         } else {
-          tagsBuilder_.setMessage(index, value);
+          tagBuilder_.setMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+       * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
        */
-      public Builder setTags(
+      public Builder setTag(
           int index, org.yamcs.protobuf.Yamcs.ArchiveTag.Builder builderForValue) {
-        if (tagsBuilder_ == null) {
-          ensureTagsIsMutable();
-          tags_.set(index, builderForValue.build());
+        if (tagBuilder_ == null) {
+          ensureTagIsMutable();
+          tag_.set(index, builderForValue.build());
           onChanged();
         } else {
-          tagsBuilder_.setMessage(index, builderForValue.build());
+          tagBuilder_.setMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+       * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
        */
-      public Builder addTags(org.yamcs.protobuf.Yamcs.ArchiveTag value) {
-        if (tagsBuilder_ == null) {
+      public Builder addTag(org.yamcs.protobuf.Yamcs.ArchiveTag value) {
+        if (tagBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureTagsIsMutable();
-          tags_.add(value);
+          ensureTagIsMutable();
+          tag_.add(value);
           onChanged();
         } else {
-          tagsBuilder_.addMessage(value);
+          tagBuilder_.addMessage(value);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+       * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
        */
-      public Builder addTags(
+      public Builder addTag(
           int index, org.yamcs.protobuf.Yamcs.ArchiveTag value) {
-        if (tagsBuilder_ == null) {
+        if (tagBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureTagsIsMutable();
-          tags_.add(index, value);
+          ensureTagIsMutable();
+          tag_.add(index, value);
           onChanged();
         } else {
-          tagsBuilder_.addMessage(index, value);
+          tagBuilder_.addMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+       * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
        */
-      public Builder addTags(
+      public Builder addTag(
           org.yamcs.protobuf.Yamcs.ArchiveTag.Builder builderForValue) {
-        if (tagsBuilder_ == null) {
-          ensureTagsIsMutable();
-          tags_.add(builderForValue.build());
+        if (tagBuilder_ == null) {
+          ensureTagIsMutable();
+          tag_.add(builderForValue.build());
           onChanged();
         } else {
-          tagsBuilder_.addMessage(builderForValue.build());
+          tagBuilder_.addMessage(builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+       * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
        */
-      public Builder addTags(
+      public Builder addTag(
           int index, org.yamcs.protobuf.Yamcs.ArchiveTag.Builder builderForValue) {
-        if (tagsBuilder_ == null) {
-          ensureTagsIsMutable();
-          tags_.add(index, builderForValue.build());
+        if (tagBuilder_ == null) {
+          ensureTagIsMutable();
+          tag_.add(index, builderForValue.build());
           onChanged();
         } else {
-          tagsBuilder_.addMessage(index, builderForValue.build());
+          tagBuilder_.addMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+       * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
        */
-      public Builder addAllTags(
+      public Builder addAllTag(
           java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.ArchiveTag> values) {
-        if (tagsBuilder_ == null) {
-          ensureTagsIsMutable();
-          super.addAll(values, tags_);
+        if (tagBuilder_ == null) {
+          ensureTagIsMutable();
+          super.addAll(values, tag_);
           onChanged();
         } else {
-          tagsBuilder_.addAllMessages(values);
+          tagBuilder_.addAllMessages(values);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+       * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
        */
-      public Builder clearTags() {
-        if (tagsBuilder_ == null) {
-          tags_ = java.util.Collections.emptyList();
+      public Builder clearTag() {
+        if (tagBuilder_ == null) {
+          tag_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000001);
           onChanged();
         } else {
-          tagsBuilder_.clear();
+          tagBuilder_.clear();
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+       * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
        */
-      public Builder removeTags(int index) {
-        if (tagsBuilder_ == null) {
-          ensureTagsIsMutable();
-          tags_.remove(index);
+      public Builder removeTag(int index) {
+        if (tagBuilder_ == null) {
+          ensureTagIsMutable();
+          tag_.remove(index);
           onChanged();
         } else {
-          tagsBuilder_.remove(index);
+          tagBuilder_.remove(index);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+       * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
        */
-      public org.yamcs.protobuf.Yamcs.ArchiveTag.Builder getTagsBuilder(
+      public org.yamcs.protobuf.Yamcs.ArchiveTag.Builder getTagBuilder(
           int index) {
-        return getTagsFieldBuilder().getBuilder(index);
+        return getTagFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+       * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
        */
-      public org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder getTagsOrBuilder(
+      public org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder getTagOrBuilder(
           int index) {
-        if (tagsBuilder_ == null) {
-          return tags_.get(index);  } else {
-          return tagsBuilder_.getMessageOrBuilder(index);
+        if (tagBuilder_ == null) {
+          return tag_.get(index);  } else {
+          return tagBuilder_.getMessageOrBuilder(index);
         }
       }
       /**
-       * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+       * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
        */
       public java.util.List<? extends org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder> 
-           getTagsOrBuilderList() {
-        if (tagsBuilder_ != null) {
-          return tagsBuilder_.getMessageOrBuilderList();
+           getTagOrBuilderList() {
+        if (tagBuilder_ != null) {
+          return tagBuilder_.getMessageOrBuilderList();
         } else {
-          return java.util.Collections.unmodifiableList(tags_);
+          return java.util.Collections.unmodifiableList(tag_);
         }
       }
       /**
-       * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+       * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
        */
-      public org.yamcs.protobuf.Yamcs.ArchiveTag.Builder addTagsBuilder() {
-        return getTagsFieldBuilder().addBuilder(
+      public org.yamcs.protobuf.Yamcs.ArchiveTag.Builder addTagBuilder() {
+        return getTagFieldBuilder().addBuilder(
             org.yamcs.protobuf.Yamcs.ArchiveTag.getDefaultInstance());
       }
       /**
-       * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+       * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
        */
-      public org.yamcs.protobuf.Yamcs.ArchiveTag.Builder addTagsBuilder(
+      public org.yamcs.protobuf.Yamcs.ArchiveTag.Builder addTagBuilder(
           int index) {
-        return getTagsFieldBuilder().addBuilder(
+        return getTagFieldBuilder().addBuilder(
             index, org.yamcs.protobuf.Yamcs.ArchiveTag.getDefaultInstance());
       }
       /**
-       * <code>repeated .yamcs.ArchiveTag tags = 1;</code>
+       * <code>repeated .yamcs.ArchiveTag tag = 1;</code>
        */
       public java.util.List<org.yamcs.protobuf.Yamcs.ArchiveTag.Builder> 
-           getTagsBuilderList() {
-        return getTagsFieldBuilder().getBuilderList();
+           getTagBuilderList() {
+        return getTagFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
           org.yamcs.protobuf.Yamcs.ArchiveTag, org.yamcs.protobuf.Yamcs.ArchiveTag.Builder, org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder> 
-          getTagsFieldBuilder() {
-        if (tagsBuilder_ == null) {
-          tagsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+          getTagFieldBuilder() {
+        if (tagBuilder_ == null) {
+          tagBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               org.yamcs.protobuf.Yamcs.ArchiveTag, org.yamcs.protobuf.Yamcs.ArchiveTag.Builder, org.yamcs.protobuf.Yamcs.ArchiveTagOrBuilder>(
-                  tags_,
+                  tag_,
                   ((bitField0_ & 0x00000001) == 0x00000001),
                   getParentForChildren(),
                   isClean());
-          tags_ = null;
+          tag_ = null;
         }
-        return tagsBuilder_;
+        return tagBuilder_;
       }
 
-      // @@protoc_insertion_point(builder_scope:archive.GetTagsResponse)
+      // @@protoc_insertion_point(builder_scope:archive.ListTagsResponse)
     }
 
     static {
-      defaultInstance = new GetTagsResponse(true);
+      defaultInstance = new ListTagsResponse(true);
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:archive.GetTagsResponse)
+    // @@protoc_insertion_point(class_scope:archive.ListTagsResponse)
   }
 
   public interface InsertTagRequestOrBuilder
@@ -5821,25 +4944,35 @@ public final class Archive {
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // optional int64 start = 2;
+    // optional string start = 2;
     /**
-     * <code>optional int64 start = 2;</code>
+     * <code>optional string start = 2;</code>
      */
     boolean hasStart();
     /**
-     * <code>optional int64 start = 2;</code>
+     * <code>optional string start = 2;</code>
      */
-    long getStart();
-
-    // optional int64 stop = 3;
+    java.lang.String getStart();
     /**
-     * <code>optional int64 stop = 3;</code>
+     * <code>optional string start = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getStartBytes();
+
+    // optional string stop = 3;
+    /**
+     * <code>optional string stop = 3;</code>
      */
     boolean hasStop();
     /**
-     * <code>optional int64 stop = 3;</code>
+     * <code>optional string stop = 3;</code>
      */
-    long getStop();
+    java.lang.String getStop();
+    /**
+     * <code>optional string stop = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getStopBytes();
 
     // optional string description = 4;
     /**
@@ -5873,10 +5006,6 @@ public final class Archive {
   }
   /**
    * Protobuf type {@code archive.InsertTagRequest}
-   *
-   * <pre>
-   * POST /api/archive/:instance/tags
-   * </pre>
    */
   public static final class InsertTagRequest extends
       com.google.protobuf.GeneratedMessage
@@ -5931,14 +5060,14 @@ public final class Archive {
               name_ = input.readBytes();
               break;
             }
-            case 16: {
+            case 18: {
               bitField0_ |= 0x00000002;
-              start_ = input.readInt64();
+              start_ = input.readBytes();
               break;
             }
-            case 24: {
+            case 26: {
               bitField0_ |= 0x00000004;
-              stop_ = input.readInt64();
+              stop_ = input.readBytes();
               break;
             }
             case 34: {
@@ -6034,36 +5163,90 @@ public final class Archive {
       }
     }
 
-    // optional int64 start = 2;
+    // optional string start = 2;
     public static final int START_FIELD_NUMBER = 2;
-    private long start_;
+    private java.lang.Object start_;
     /**
-     * <code>optional int64 start = 2;</code>
+     * <code>optional string start = 2;</code>
      */
     public boolean hasStart() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>optional int64 start = 2;</code>
+     * <code>optional string start = 2;</code>
      */
-    public long getStart() {
-      return start_;
+    public java.lang.String getStart() {
+      java.lang.Object ref = start_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          start_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string start = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getStartBytes() {
+      java.lang.Object ref = start_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        start_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
     }
 
-    // optional int64 stop = 3;
+    // optional string stop = 3;
     public static final int STOP_FIELD_NUMBER = 3;
-    private long stop_;
+    private java.lang.Object stop_;
     /**
-     * <code>optional int64 stop = 3;</code>
+     * <code>optional string stop = 3;</code>
      */
     public boolean hasStop() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>optional int64 stop = 3;</code>
+     * <code>optional string stop = 3;</code>
      */
-    public long getStop() {
-      return stop_;
+    public java.lang.String getStop() {
+      java.lang.Object ref = stop_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          stop_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string stop = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getStopBytes() {
+      java.lang.Object ref = stop_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        stop_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
     }
 
     // optional string description = 4;
@@ -6154,8 +5337,8 @@ public final class Archive {
 
     private void initFields() {
       name_ = "";
-      start_ = 0L;
-      stop_ = 0L;
+      start_ = "";
+      stop_ = "";
       description_ = "";
       color_ = "";
     }
@@ -6175,10 +5358,10 @@ public final class Archive {
         output.writeBytes(1, getNameBytes());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeInt64(2, start_);
+        output.writeBytes(2, getStartBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeInt64(3, stop_);
+        output.writeBytes(3, getStopBytes());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeBytes(4, getDescriptionBytes());
@@ -6201,11 +5384,11 @@ public final class Archive {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(2, start_);
+          .computeBytesSize(2, getStartBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(3, stop_);
+          .computeBytesSize(3, getStopBytes());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
@@ -6295,10 +5478,6 @@ public final class Archive {
     }
     /**
      * Protobuf type {@code archive.InsertTagRequest}
-     *
-     * <pre>
-     * POST /api/archive/:instance/tags
-     * </pre>
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
@@ -6337,9 +5516,9 @@ public final class Archive {
         super.clear();
         name_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        start_ = 0L;
+        start_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
-        stop_ = 0L;
+        stop_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
         description_ = "";
         bitField0_ = (bitField0_ & ~0x00000008);
@@ -6415,10 +5594,14 @@ public final class Archive {
           onChanged();
         }
         if (other.hasStart()) {
-          setStart(other.getStart());
+          bitField0_ |= 0x00000002;
+          start_ = other.start_;
+          onChanged();
         }
         if (other.hasStop()) {
-          setStop(other.getStop());
+          bitField0_ |= 0x00000004;
+          stop_ = other.stop_;
+          onChanged();
         }
         if (other.hasDescription()) {
           bitField0_ |= 0x00000008;
@@ -6531,68 +5714,150 @@ public final class Archive {
         return this;
       }
 
-      // optional int64 start = 2;
-      private long start_ ;
+      // optional string start = 2;
+      private java.lang.Object start_ = "";
       /**
-       * <code>optional int64 start = 2;</code>
+       * <code>optional string start = 2;</code>
        */
       public boolean hasStart() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>optional int64 start = 2;</code>
+       * <code>optional string start = 2;</code>
        */
-      public long getStart() {
-        return start_;
+      public java.lang.String getStart() {
+        java.lang.Object ref = start_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          start_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
       }
       /**
-       * <code>optional int64 start = 2;</code>
+       * <code>optional string start = 2;</code>
        */
-      public Builder setStart(long value) {
-        bitField0_ |= 0x00000002;
+      public com.google.protobuf.ByteString
+          getStartBytes() {
+        java.lang.Object ref = start_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          start_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string start = 2;</code>
+       */
+      public Builder setStart(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
         start_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 start = 2;</code>
+       * <code>optional string start = 2;</code>
        */
       public Builder clearStart() {
         bitField0_ = (bitField0_ & ~0x00000002);
-        start_ = 0L;
+        start_ = getDefaultInstance().getStart();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string start = 2;</code>
+       */
+      public Builder setStartBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        start_ = value;
         onChanged();
         return this;
       }
 
-      // optional int64 stop = 3;
-      private long stop_ ;
+      // optional string stop = 3;
+      private java.lang.Object stop_ = "";
       /**
-       * <code>optional int64 stop = 3;</code>
+       * <code>optional string stop = 3;</code>
        */
       public boolean hasStop() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>optional int64 stop = 3;</code>
+       * <code>optional string stop = 3;</code>
        */
-      public long getStop() {
-        return stop_;
+      public java.lang.String getStop() {
+        java.lang.Object ref = stop_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          stop_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
       }
       /**
-       * <code>optional int64 stop = 3;</code>
+       * <code>optional string stop = 3;</code>
        */
-      public Builder setStop(long value) {
-        bitField0_ |= 0x00000004;
+      public com.google.protobuf.ByteString
+          getStopBytes() {
+        java.lang.Object ref = stop_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          stop_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string stop = 3;</code>
+       */
+      public Builder setStop(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
         stop_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 stop = 3;</code>
+       * <code>optional string stop = 3;</code>
        */
       public Builder clearStop() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        stop_ = 0L;
+        stop_ = getDefaultInstance().getStop();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string stop = 3;</code>
+       */
+      public Builder setStopBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        stop_ = value;
         onChanged();
         return this;
       }
@@ -7275,7 +6540,7 @@ public final class Archive {
     // @@protoc_insertion_point(class_scope:archive.InsertTagResponse)
   }
 
-  public interface UpdateTagRequestOrBuilder
+  public interface PatchTagRequestOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
     // optional string name = 1;
@@ -7293,25 +6558,35 @@ public final class Archive {
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // optional int64 start = 2;
+    // optional string start = 2;
     /**
-     * <code>optional int64 start = 2;</code>
+     * <code>optional string start = 2;</code>
      */
     boolean hasStart();
     /**
-     * <code>optional int64 start = 2;</code>
+     * <code>optional string start = 2;</code>
      */
-    long getStart();
-
-    // optional int64 stop = 3;
+    java.lang.String getStart();
     /**
-     * <code>optional int64 stop = 3;</code>
+     * <code>optional string start = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getStartBytes();
+
+    // optional string stop = 3;
+    /**
+     * <code>optional string stop = 3;</code>
      */
     boolean hasStop();
     /**
-     * <code>optional int64 stop = 3;</code>
+     * <code>optional string stop = 3;</code>
      */
-    long getStop();
+    java.lang.String getStop();
+    /**
+     * <code>optional string stop = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getStopBytes();
 
     // optional string description = 4;
     /**
@@ -7344,28 +6619,24 @@ public final class Archive {
         getColorBytes();
   }
   /**
-   * Protobuf type {@code archive.UpdateTagRequest}
-   *
-   * <pre>
-   * PUT /api/archive/:instance/tags/:old_start/:id
-   * </pre>
+   * Protobuf type {@code archive.PatchTagRequest}
    */
-  public static final class UpdateTagRequest extends
+  public static final class PatchTagRequest extends
       com.google.protobuf.GeneratedMessage
-      implements UpdateTagRequestOrBuilder {
-    // Use UpdateTagRequest.newBuilder() to construct.
-    private UpdateTagRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      implements PatchTagRequestOrBuilder {
+    // Use PatchTagRequest.newBuilder() to construct.
+    private PatchTagRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
       this.unknownFields = builder.getUnknownFields();
     }
-    private UpdateTagRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+    private PatchTagRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
 
-    private static final UpdateTagRequest defaultInstance;
-    public static UpdateTagRequest getDefaultInstance() {
+    private static final PatchTagRequest defaultInstance;
+    public static PatchTagRequest getDefaultInstance() {
       return defaultInstance;
     }
 
-    public UpdateTagRequest getDefaultInstanceForType() {
+    public PatchTagRequest getDefaultInstanceForType() {
       return defaultInstance;
     }
 
@@ -7375,7 +6646,7 @@ public final class Archive {
         getUnknownFields() {
       return this.unknownFields;
     }
-    private UpdateTagRequest(
+    private PatchTagRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -7403,14 +6674,14 @@ public final class Archive {
               name_ = input.readBytes();
               break;
             }
-            case 16: {
+            case 18: {
               bitField0_ |= 0x00000002;
-              start_ = input.readInt64();
+              start_ = input.readBytes();
               break;
             }
-            case 24: {
+            case 26: {
               bitField0_ |= 0x00000004;
-              stop_ = input.readInt64();
+              stop_ = input.readBytes();
               break;
             }
             case 34: {
@@ -7437,28 +6708,28 @@ public final class Archive {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Archive.internal_static_archive_UpdateTagRequest_descriptor;
+      return org.yamcs.protobuf.Archive.internal_static_archive_PatchTagRequest_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Archive.internal_static_archive_UpdateTagRequest_fieldAccessorTable
+      return org.yamcs.protobuf.Archive.internal_static_archive_PatchTagRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.yamcs.protobuf.Archive.UpdateTagRequest.class, org.yamcs.protobuf.Archive.UpdateTagRequest.Builder.class);
+              org.yamcs.protobuf.Archive.PatchTagRequest.class, org.yamcs.protobuf.Archive.PatchTagRequest.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<UpdateTagRequest> PARSER =
-        new com.google.protobuf.AbstractParser<UpdateTagRequest>() {
-      public UpdateTagRequest parsePartialFrom(
+    public static com.google.protobuf.Parser<PatchTagRequest> PARSER =
+        new com.google.protobuf.AbstractParser<PatchTagRequest>() {
+      public PatchTagRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new UpdateTagRequest(input, extensionRegistry);
+        return new PatchTagRequest(input, extensionRegistry);
       }
     };
 
     @java.lang.Override
-    public com.google.protobuf.Parser<UpdateTagRequest> getParserForType() {
+    public com.google.protobuf.Parser<PatchTagRequest> getParserForType() {
       return PARSER;
     }
 
@@ -7506,36 +6777,90 @@ public final class Archive {
       }
     }
 
-    // optional int64 start = 2;
+    // optional string start = 2;
     public static final int START_FIELD_NUMBER = 2;
-    private long start_;
+    private java.lang.Object start_;
     /**
-     * <code>optional int64 start = 2;</code>
+     * <code>optional string start = 2;</code>
      */
     public boolean hasStart() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>optional int64 start = 2;</code>
+     * <code>optional string start = 2;</code>
      */
-    public long getStart() {
-      return start_;
+    public java.lang.String getStart() {
+      java.lang.Object ref = start_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          start_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string start = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getStartBytes() {
+      java.lang.Object ref = start_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        start_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
     }
 
-    // optional int64 stop = 3;
+    // optional string stop = 3;
     public static final int STOP_FIELD_NUMBER = 3;
-    private long stop_;
+    private java.lang.Object stop_;
     /**
-     * <code>optional int64 stop = 3;</code>
+     * <code>optional string stop = 3;</code>
      */
     public boolean hasStop() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>optional int64 stop = 3;</code>
+     * <code>optional string stop = 3;</code>
      */
-    public long getStop() {
-      return stop_;
+    public java.lang.String getStop() {
+      java.lang.Object ref = stop_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          stop_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string stop = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getStopBytes() {
+      java.lang.Object ref = stop_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        stop_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
     }
 
     // optional string description = 4;
@@ -7626,8 +6951,8 @@ public final class Archive {
 
     private void initFields() {
       name_ = "";
-      start_ = 0L;
-      stop_ = 0L;
+      start_ = "";
+      stop_ = "";
       description_ = "";
       color_ = "";
     }
@@ -7647,10 +6972,10 @@ public final class Archive {
         output.writeBytes(1, getNameBytes());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeInt64(2, start_);
+        output.writeBytes(2, getStartBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeInt64(3, stop_);
+        output.writeBytes(3, getStopBytes());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeBytes(4, getDescriptionBytes());
@@ -7673,11 +6998,11 @@ public final class Archive {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(2, start_);
+          .computeBytesSize(2, getStartBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(3, stop_);
+          .computeBytesSize(3, getStopBytes());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
@@ -7699,53 +7024,53 @@ public final class Archive {
       return super.writeReplace();
     }
 
-    public static org.yamcs.protobuf.Archive.UpdateTagRequest parseFrom(
+    public static org.yamcs.protobuf.Archive.PatchTagRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.yamcs.protobuf.Archive.UpdateTagRequest parseFrom(
+    public static org.yamcs.protobuf.Archive.PatchTagRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Archive.UpdateTagRequest parseFrom(byte[] data)
+    public static org.yamcs.protobuf.Archive.PatchTagRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.yamcs.protobuf.Archive.UpdateTagRequest parseFrom(
+    public static org.yamcs.protobuf.Archive.PatchTagRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Archive.UpdateTagRequest parseFrom(java.io.InputStream input)
+    public static org.yamcs.protobuf.Archive.PatchTagRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.yamcs.protobuf.Archive.UpdateTagRequest parseFrom(
+    public static org.yamcs.protobuf.Archive.PatchTagRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Archive.UpdateTagRequest parseDelimitedFrom(java.io.InputStream input)
+    public static org.yamcs.protobuf.Archive.PatchTagRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static org.yamcs.protobuf.Archive.UpdateTagRequest parseDelimitedFrom(
+    public static org.yamcs.protobuf.Archive.PatchTagRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Archive.UpdateTagRequest parseFrom(
+    public static org.yamcs.protobuf.Archive.PatchTagRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.yamcs.protobuf.Archive.UpdateTagRequest parseFrom(
+    public static org.yamcs.protobuf.Archive.PatchTagRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -7754,7 +7079,7 @@ public final class Archive {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.Archive.UpdateTagRequest prototype) {
+    public static Builder newBuilder(org.yamcs.protobuf.Archive.PatchTagRequest prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -7766,28 +7091,24 @@ public final class Archive {
       return builder;
     }
     /**
-     * Protobuf type {@code archive.UpdateTagRequest}
-     *
-     * <pre>
-     * PUT /api/archive/:instance/tags/:old_start/:id
-     * </pre>
+     * Protobuf type {@code archive.PatchTagRequest}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Archive.UpdateTagRequestOrBuilder {
+       implements org.yamcs.protobuf.Archive.PatchTagRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.yamcs.protobuf.Archive.internal_static_archive_UpdateTagRequest_descriptor;
+        return org.yamcs.protobuf.Archive.internal_static_archive_PatchTagRequest_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.yamcs.protobuf.Archive.internal_static_archive_UpdateTagRequest_fieldAccessorTable
+        return org.yamcs.protobuf.Archive.internal_static_archive_PatchTagRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.yamcs.protobuf.Archive.UpdateTagRequest.class, org.yamcs.protobuf.Archive.UpdateTagRequest.Builder.class);
+                org.yamcs.protobuf.Archive.PatchTagRequest.class, org.yamcs.protobuf.Archive.PatchTagRequest.Builder.class);
       }
 
-      // Construct using org.yamcs.protobuf.Archive.UpdateTagRequest.newBuilder()
+      // Construct using org.yamcs.protobuf.Archive.PatchTagRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -7809,9 +7130,9 @@ public final class Archive {
         super.clear();
         name_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        start_ = 0L;
+        start_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
-        stop_ = 0L;
+        stop_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
         description_ = "";
         bitField0_ = (bitField0_ & ~0x00000008);
@@ -7826,23 +7147,23 @@ public final class Archive {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.yamcs.protobuf.Archive.internal_static_archive_UpdateTagRequest_descriptor;
+        return org.yamcs.protobuf.Archive.internal_static_archive_PatchTagRequest_descriptor;
       }
 
-      public org.yamcs.protobuf.Archive.UpdateTagRequest getDefaultInstanceForType() {
-        return org.yamcs.protobuf.Archive.UpdateTagRequest.getDefaultInstance();
+      public org.yamcs.protobuf.Archive.PatchTagRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Archive.PatchTagRequest.getDefaultInstance();
       }
 
-      public org.yamcs.protobuf.Archive.UpdateTagRequest build() {
-        org.yamcs.protobuf.Archive.UpdateTagRequest result = buildPartial();
+      public org.yamcs.protobuf.Archive.PatchTagRequest build() {
+        org.yamcs.protobuf.Archive.PatchTagRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.yamcs.protobuf.Archive.UpdateTagRequest buildPartial() {
-        org.yamcs.protobuf.Archive.UpdateTagRequest result = new org.yamcs.protobuf.Archive.UpdateTagRequest(this);
+      public org.yamcs.protobuf.Archive.PatchTagRequest buildPartial() {
+        org.yamcs.protobuf.Archive.PatchTagRequest result = new org.yamcs.protobuf.Archive.PatchTagRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -7871,26 +7192,30 @@ public final class Archive {
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.yamcs.protobuf.Archive.UpdateTagRequest) {
-          return mergeFrom((org.yamcs.protobuf.Archive.UpdateTagRequest)other);
+        if (other instanceof org.yamcs.protobuf.Archive.PatchTagRequest) {
+          return mergeFrom((org.yamcs.protobuf.Archive.PatchTagRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.yamcs.protobuf.Archive.UpdateTagRequest other) {
-        if (other == org.yamcs.protobuf.Archive.UpdateTagRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.yamcs.protobuf.Archive.PatchTagRequest other) {
+        if (other == org.yamcs.protobuf.Archive.PatchTagRequest.getDefaultInstance()) return this;
         if (other.hasName()) {
           bitField0_ |= 0x00000001;
           name_ = other.name_;
           onChanged();
         }
         if (other.hasStart()) {
-          setStart(other.getStart());
+          bitField0_ |= 0x00000002;
+          start_ = other.start_;
+          onChanged();
         }
         if (other.hasStop()) {
-          setStop(other.getStop());
+          bitField0_ |= 0x00000004;
+          stop_ = other.stop_;
+          onChanged();
         }
         if (other.hasDescription()) {
           bitField0_ |= 0x00000008;
@@ -7914,11 +7239,11 @@ public final class Archive {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.yamcs.protobuf.Archive.UpdateTagRequest parsedMessage = null;
+        org.yamcs.protobuf.Archive.PatchTagRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.yamcs.protobuf.Archive.UpdateTagRequest) e.getUnfinishedMessage();
+          parsedMessage = (org.yamcs.protobuf.Archive.PatchTagRequest) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -8003,68 +7328,150 @@ public final class Archive {
         return this;
       }
 
-      // optional int64 start = 2;
-      private long start_ ;
+      // optional string start = 2;
+      private java.lang.Object start_ = "";
       /**
-       * <code>optional int64 start = 2;</code>
+       * <code>optional string start = 2;</code>
        */
       public boolean hasStart() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>optional int64 start = 2;</code>
+       * <code>optional string start = 2;</code>
        */
-      public long getStart() {
-        return start_;
+      public java.lang.String getStart() {
+        java.lang.Object ref = start_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          start_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
       }
       /**
-       * <code>optional int64 start = 2;</code>
+       * <code>optional string start = 2;</code>
        */
-      public Builder setStart(long value) {
-        bitField0_ |= 0x00000002;
+      public com.google.protobuf.ByteString
+          getStartBytes() {
+        java.lang.Object ref = start_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          start_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string start = 2;</code>
+       */
+      public Builder setStart(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
         start_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 start = 2;</code>
+       * <code>optional string start = 2;</code>
        */
       public Builder clearStart() {
         bitField0_ = (bitField0_ & ~0x00000002);
-        start_ = 0L;
+        start_ = getDefaultInstance().getStart();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string start = 2;</code>
+       */
+      public Builder setStartBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        start_ = value;
         onChanged();
         return this;
       }
 
-      // optional int64 stop = 3;
-      private long stop_ ;
+      // optional string stop = 3;
+      private java.lang.Object stop_ = "";
       /**
-       * <code>optional int64 stop = 3;</code>
+       * <code>optional string stop = 3;</code>
        */
       public boolean hasStop() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>optional int64 stop = 3;</code>
+       * <code>optional string stop = 3;</code>
        */
-      public long getStop() {
-        return stop_;
+      public java.lang.String getStop() {
+        java.lang.Object ref = stop_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          stop_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
       }
       /**
-       * <code>optional int64 stop = 3;</code>
+       * <code>optional string stop = 3;</code>
        */
-      public Builder setStop(long value) {
-        bitField0_ |= 0x00000004;
+      public com.google.protobuf.ByteString
+          getStopBytes() {
+        java.lang.Object ref = stop_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          stop_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string stop = 3;</code>
+       */
+      public Builder setStop(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
         stop_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 stop = 3;</code>
+       * <code>optional string stop = 3;</code>
        */
       public Builder clearStop() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        stop_ = 0L;
+        stop_ = getDefaultInstance().getStop();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string stop = 3;</code>
+       */
+      public Builder setStopBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        stop_ = value;
         onChanged();
         return this;
       }
@@ -8217,15 +7624,15 @@ public final class Archive {
         return this;
       }
 
-      // @@protoc_insertion_point(builder_scope:archive.UpdateTagRequest)
+      // @@protoc_insertion_point(builder_scope:archive.PatchTagRequest)
     }
 
     static {
-      defaultInstance = new UpdateTagRequest(true);
+      defaultInstance = new PatchTagRequest(true);
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:archive.UpdateTagRequest)
+    // @@protoc_insertion_point(class_scope:archive.PatchTagRequest)
   }
 
   public interface ColumnDataOrBuilder
@@ -13786,15 +13193,10 @@ public final class Archive {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_archive_DumpArchiveResponse_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_archive_GetTagsRequest_descriptor;
+    internal_static_archive_ListTagsResponse_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_archive_GetTagsRequest_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_archive_GetTagsResponse_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_archive_GetTagsResponse_fieldAccessorTable;
+      internal_static_archive_ListTagsResponse_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_archive_InsertTagRequest_descriptor;
   private static
@@ -13806,10 +13208,10 @@ public final class Archive {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_archive_InsertTagResponse_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_archive_UpdateTagRequest_descriptor;
+    internal_static_archive_PatchTagRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_archive_UpdateTagRequest_fieldAccessorTable;
+      internal_static_archive_PatchTagRequest_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_archive_ColumnData_descriptor;
   private static
@@ -13870,29 +13272,27 @@ public final class Archive {
       "ata\030\003 \003(\0132\023.yamcs.TmPacketData\0220\n\007comman" +
       "d\030\004 \003(\0132\037.commanding.CommandHistoryEntry" +
       "\022\033\n\005event\030\005 \003(\0132\014.yamcs.Event\022%\n\006ppData\030" +
-      "\006 \003(\0132\025.pvalue.ParameterData\"P\n\016GetTagsR" +
-      "equest\022\r\n\005start\030\001 \001(\003\022\014\n\004stop\030\002 \001(\003\022\020\n\010u" +
-      "tcStart\030\003 \001(\t\022\017\n\007utcStop\030\004 \001(\t\"2\n\017GetTag" +
-      "sResponse\022\037\n\004tags\030\001 \003(\0132\021.yamcs.ArchiveT",
-      "ag\"a\n\020InsertTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n\005" +
-      "start\030\002 \001(\003\022\014\n\004stop\030\003 \001(\003\022\023\n\013description" +
-      "\030\004 \001(\t\022\r\n\005color\030\005 \001(\t\"3\n\021InsertTagRespon" +
-      "se\022\036\n\003tag\030\001 \001(\0132\021.yamcs.ArchiveTag\"a\n\020Up" +
-      "dateTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030\002 " +
-      "\001(\003\022\014\n\004stop\030\003 \001(\003\022\023\n\013description\030\004 \001(\t\022\r" +
-      "\n\005color\030\005 \001(\t\"7\n\nColumnData\022\014\n\004name\030\001 \001(" +
-      "\t\022\033\n\005value\030\002 \001(\0132\014.yamcs.Value\"A\n\nStream" +
-      "Data\022\016\n\006stream\030\001 \001(\t\022#\n\006column\030\002 \003(\0132\023.a" +
-      "rchive.ColumnData\"o\n\tTableData\022.\n\006record",
-      "\030\001 \003(\0132\036.archive.TableData.TableRecord\0322" +
-      "\n\013TableRecord\022#\n\006column\030\001 \003(\0132\023.archive." +
-      "ColumnData\"(\n\nColumnInfo\022\014\n\004name\030\001 \001(\t\022\014" +
-      "\n\004type\030\002 \001(\t\"k\n\tTableInfo\022\014\n\004name\030\001 \001(\t\022" +
-      "&\n\tkeyColumn\030\002 \003(\0132\023.archive.ColumnInfo\022" +
-      "(\n\013valueColumn\030\003 \003(\0132\023.archive.ColumnInf" +
-      "o\"?\n\nStreamInfo\022\014\n\004name\030\001 \001(\t\022#\n\006column\030" +
-      "\002 \003(\0132\023.archive.ColumnInfoB\024\n\022org.yamcs." +
-      "protobuf"
+      "\006 \003(\0132\025.pvalue.ParameterData\"2\n\020ListTags" +
+      "Response\022\036\n\003tag\030\001 \003(\0132\021.yamcs.ArchiveTag" +
+      "\"a\n\020InsertTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n\005st" +
+      "art\030\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013description\030\004",
+      " \001(\t\022\r\n\005color\030\005 \001(\t\"3\n\021InsertTagResponse" +
+      "\022\036\n\003tag\030\001 \001(\0132\021.yamcs.ArchiveTag\"`\n\017Patc" +
+      "hTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030\002 \001(\t" +
+      "\022\014\n\004stop\030\003 \001(\t\022\023\n\013description\030\004 \001(\t\022\r\n\005c" +
+      "olor\030\005 \001(\t\"7\n\nColumnData\022\014\n\004name\030\001 \001(\t\022\033" +
+      "\n\005value\030\002 \001(\0132\014.yamcs.Value\"A\n\nStreamDat" +
+      "a\022\016\n\006stream\030\001 \001(\t\022#\n\006column\030\002 \003(\0132\023.arch" +
+      "ive.ColumnData\"o\n\tTableData\022.\n\006record\030\001 " +
+      "\003(\0132\036.archive.TableData.TableRecord\0322\n\013T" +
+      "ableRecord\022#\n\006column\030\001 \003(\0132\023.archive.Col",
+      "umnData\"(\n\nColumnInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004t" +
+      "ype\030\002 \001(\t\"k\n\tTableInfo\022\014\n\004name\030\001 \001(\t\022&\n\t" +
+      "keyColumn\030\002 \003(\0132\023.archive.ColumnInfo\022(\n\013" +
+      "valueColumn\030\003 \003(\0132\023.archive.ColumnInfo\"?" +
+      "\n\nStreamInfo\022\014\n\004name\030\001 \001(\t\022#\n\006column\030\002 \003" +
+      "(\0132\023.archive.ColumnInfoB\024\n\022org.yamcs.pro" +
+      "tobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -13911,50 +13311,44 @@ public final class Archive {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_archive_DumpArchiveResponse_descriptor,
               new java.lang.String[] { "ParameterData", "PacketData", "Command", "Event", "PpData", });
-          internal_static_archive_GetTagsRequest_descriptor =
+          internal_static_archive_ListTagsResponse_descriptor =
             getDescriptor().getMessageTypes().get(2);
-          internal_static_archive_GetTagsRequest_fieldAccessorTable = new
+          internal_static_archive_ListTagsResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_archive_GetTagsRequest_descriptor,
-              new java.lang.String[] { "Start", "Stop", "UtcStart", "UtcStop", });
-          internal_static_archive_GetTagsResponse_descriptor =
-            getDescriptor().getMessageTypes().get(3);
-          internal_static_archive_GetTagsResponse_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_archive_GetTagsResponse_descriptor,
-              new java.lang.String[] { "Tags", });
+              internal_static_archive_ListTagsResponse_descriptor,
+              new java.lang.String[] { "Tag", });
           internal_static_archive_InsertTagRequest_descriptor =
-            getDescriptor().getMessageTypes().get(4);
+            getDescriptor().getMessageTypes().get(3);
           internal_static_archive_InsertTagRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_archive_InsertTagRequest_descriptor,
               new java.lang.String[] { "Name", "Start", "Stop", "Description", "Color", });
           internal_static_archive_InsertTagResponse_descriptor =
-            getDescriptor().getMessageTypes().get(5);
+            getDescriptor().getMessageTypes().get(4);
           internal_static_archive_InsertTagResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_archive_InsertTagResponse_descriptor,
               new java.lang.String[] { "Tag", });
-          internal_static_archive_UpdateTagRequest_descriptor =
-            getDescriptor().getMessageTypes().get(6);
-          internal_static_archive_UpdateTagRequest_fieldAccessorTable = new
+          internal_static_archive_PatchTagRequest_descriptor =
+            getDescriptor().getMessageTypes().get(5);
+          internal_static_archive_PatchTagRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_archive_UpdateTagRequest_descriptor,
+              internal_static_archive_PatchTagRequest_descriptor,
               new java.lang.String[] { "Name", "Start", "Stop", "Description", "Color", });
           internal_static_archive_ColumnData_descriptor =
-            getDescriptor().getMessageTypes().get(7);
+            getDescriptor().getMessageTypes().get(6);
           internal_static_archive_ColumnData_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_archive_ColumnData_descriptor,
               new java.lang.String[] { "Name", "Value", });
           internal_static_archive_StreamData_descriptor =
-            getDescriptor().getMessageTypes().get(8);
+            getDescriptor().getMessageTypes().get(7);
           internal_static_archive_StreamData_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_archive_StreamData_descriptor,
               new java.lang.String[] { "Stream", "Column", });
           internal_static_archive_TableData_descriptor =
-            getDescriptor().getMessageTypes().get(9);
+            getDescriptor().getMessageTypes().get(8);
           internal_static_archive_TableData_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_archive_TableData_descriptor,
@@ -13966,19 +13360,19 @@ public final class Archive {
               internal_static_archive_TableData_TableRecord_descriptor,
               new java.lang.String[] { "Column", });
           internal_static_archive_ColumnInfo_descriptor =
-            getDescriptor().getMessageTypes().get(10);
+            getDescriptor().getMessageTypes().get(9);
           internal_static_archive_ColumnInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_archive_ColumnInfo_descriptor,
               new java.lang.String[] { "Name", "Type", });
           internal_static_archive_TableInfo_descriptor =
-            getDescriptor().getMessageTypes().get(11);
+            getDescriptor().getMessageTypes().get(10);
           internal_static_archive_TableInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_archive_TableInfo_descriptor,
               new java.lang.String[] { "Name", "KeyColumn", "ValueColumn", });
           internal_static_archive_StreamInfo_descriptor =
-            getDescriptor().getMessageTypes().get(12);
+            getDescriptor().getMessageTypes().get(11);
           internal_static_archive_StreamInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_archive_StreamInfo_descriptor,
