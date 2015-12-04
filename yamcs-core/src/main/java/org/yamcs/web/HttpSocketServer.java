@@ -10,6 +10,8 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -78,12 +80,13 @@ public class HttpSocketServer {
         bootstrap.group(bossGroup, workerGroup)
             .channel(NioServerSocketChannel.class)
             .handler(new LoggingHandler(LogLevel.INFO))
+            .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
             .childHandler(new HttpServerInitializer());
         
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port));
 
-        log.info("Web socket server started at port " + port);
+        log.info("Web server started at port " + port);
     }
 
     public static void main(String[] args) throws ConfigurationException {

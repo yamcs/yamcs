@@ -1,7 +1,7 @@
 package org.yamcs.management;
 
 import java.lang.management.ManagementFactory;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -32,16 +33,19 @@ import org.yamcs.YProcessorException;
 import org.yamcs.YProcessorListener;
 import org.yamcs.YamcsException;
 import org.yamcs.commanding.CommandQueue;
+import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;
+import org.yamcs.hornetq.HornetQCommandQueueManagement;
+import org.yamcs.hornetq.HornetQManagement;
+import org.yamcs.hornetq.HornetQProcessorManagement;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
+import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
-import org.yamcs.protobuf.YamcsManagement.TmStatistics;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.tctm.Link;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtceproc.ProcessingStatistics;
 
 import com.google.common.util.concurrent.Service;
@@ -58,9 +62,9 @@ public class ManagementService implements YProcessorListener {
     public static final String ANONYMOUS = "anonymous";
     
     final MBeanServer mbeanServer;
-    HornetManagement hornetMgr;
-    HornetProcessorManagement hornetProcessorMgr;
-    HornetCommandQueueManagement hornetCmdQueueMgr;
+    HornetQManagement hornetMgr;
+    HornetQProcessorManagement hornetProcessorMgr;
+    HornetQCommandQueueManagement hornetCmdQueueMgr;
 
     final boolean jmxEnabled, hornetEnabled;
     static Logger log=LoggerFactory.getLogger(ManagementService.class.getName());
@@ -70,10 +74,15 @@ public class ManagementService implements YProcessorListener {
     Map<Integer, ClientControlImpl> clients=Collections.synchronizedMap(new HashMap<Integer, ClientControlImpl>());
     AtomicInteger clientId=new AtomicInteger();
     
+    List<LinkControlImpl> links=new CopyOnWriteArrayList<LinkControlImpl>();
+    List<CommandQueueManager> qmanagers=new CopyOnWriteArrayList<>();
+    
     // Used to update TM-statistics, and Link State
     ScheduledThreadPoolExecutor timer=new ScheduledThreadPoolExecutor(1);
     
-    CopyOnWriteArraySet<ManagementListener> managementListeners = new CopyOnWriteArraySet<>();
+    Set<ManagementListener> managementListeners = new CopyOnWriteArraySet<>(); // Processors & Clients. Should maybe split up
+    Set<LinkListener> linkListeners = new CopyOnWriteArraySet<>();
+    Set<CommandQueueListener> commandQueueListeners = new CopyOnWriteArraySet<>();
 
     // keep track of registered services
     Map<String, Integer> servicesCount = new HashMap<>();
@@ -100,19 +109,21 @@ public class ManagementService implements YProcessorListener {
 
         if(hornetEnabled) {
             try {
-                hornetMgr=new HornetManagement(this, timer);
-                hornetCmdQueueMgr=new HornetCommandQueueManagement();
-                hornetProcessorMgr=new HornetProcessorManagement(this);
+                hornetMgr=new HornetQManagement(this);
+                hornetCmdQueueMgr=new HornetQCommandQueueManagement(this);
+                hornetProcessorMgr=new HornetQProcessorManagement(this);
+                addLinkListener(hornetMgr);
+                addCommandQueueListener(hornetCmdQueueMgr);
                 addManagementListener(hornetProcessorMgr);
             } catch (Exception e) {
-                log.error("failed to start hornet management service: ", e);
+                log.error("failed to start hornet management service", e);
                 hornetEnabled=false;
-                e.printStackTrace();
             }
         }
         
         YProcessor.addProcessorListener(this);
         timer.scheduleAtFixedRate(() -> updateStatistics(), 1, 1, TimeUnit.SECONDS);
+        timer.scheduleAtFixedRate(() -> checkLinkUpdate(), 1, 1, TimeUnit.SECONDS);
     }
 
     public void shutdown() {
@@ -179,9 +190,8 @@ public class ManagementService implements YProcessorListener {
             if(jmxEnabled) {
                 mbeanServer.registerMBean(lci, ObjectName.getInstance(tld+"."+instance+":type=links,name="+name));
             }
-            if(hornetEnabled) {
-                hornetMgr.registerLink(instance, lci);
-            }
+            links.add(lci);
+            linkListeners.forEach(l -> l.registerLink(lci.getLinkInfo()));
         } catch (Exception e) {
             log.warn("Got exception when registering a link: "+e, e);
         }
@@ -195,12 +205,23 @@ public class ManagementService implements YProcessorListener {
                 log.warn("Got exception when unregistering a link", e);
             }
         }
-
-        if(hornetEnabled) {
-            hornetMgr.unRegisterLink(instance, name);
-        }
+        linkListeners.forEach(l -> l.unregisterLink(instance, name));
     }
+    
+    public CommandQueueManager getQueueManager(String instance, String channelName) throws YamcsException {
+        for(int i=0;i<qmanagers.size();i++) {
+            CommandQueueManager cqm=qmanagers.get(i);
+            if(cqm.getInstance().equals(instance) && cqm.getChannelName().equals(channelName)) {
+                return cqm;
+            }
+        }
 
+        throw new YamcsException("Cannot find a command queue manager for "+instance+"."+channelName);
+    }
+    
+    public List<CommandQueueManager> getQueueManagers() {
+        return qmanagers;
+    }
 
     public void registerYProcessor(YProcessor yproc) {
         try {
@@ -373,8 +394,12 @@ public class ManagementService implements YProcessorListener {
                     mbeanServer.registerMBean(cqci, ObjectName.getInstance(tld+"."+instance+":type=commandQueues,processor="+yprocName+",name="+cq.getName()));
                 }
             }
-            if(hornetEnabled) {
-                hornetCmdQueueMgr.registerCommandQueueManager(cqm);
+            qmanagers.add(cqm);
+            for (CommandQueueListener l : commandQueueListeners) {
+                cqm.registerListener(l);
+                for(CommandQueue q:cqm.getQueues()) {
+                    l.updateQueue(q);
+                }
             }
         } catch (Exception e) {
             log.warn("Got exception when registering a command queue", e);
@@ -382,17 +407,47 @@ public class ManagementService implements YProcessorListener {
     }
     
     public List<CommandQueueManager> getCommandQueueManagers() {
-        return hornetCmdQueueMgr.getQueueManagers();
+        return qmanagers;
     }
     
     public CommandQueueManager getCommandQueueManager(YProcessor processor) {
-        for (CommandQueueManager mgr : hornetCmdQueueMgr.getQueueManagers()) {
+        for (CommandQueueManager mgr : qmanagers) {
             if (mgr.getInstance().equals(processor.getInstance())
                     && mgr.getChannelName().equals(processor.getName())) {
                 return mgr;
             }
         }
         return null;
+    }
+    
+    public void enableLink(String instance, String name) throws YamcsException {
+        log.debug("received enableLink for "+instance+"/"+name);
+        boolean found=false;
+        for(int i=0;i<links.size();i++) {
+            LinkControlImpl lci=links.get(i);
+            LinkInfo li2=lci.getLinkInfo();
+            if(li2.getInstance().equals(instance) && li2.getName().equals(name)) {
+                found=true;
+                lci.enable();
+                break;
+            }
+        }
+        if(!found) throw new YamcsException("There is no link named '"+name+"' in instance "+instance);
+    }
+    
+    public void disableLink(String instance, String name) throws YamcsException {
+        log.debug("received disableLink for "+instance+"/"+name);
+        boolean found=false;
+        for(int i=0;i<links.size();i++) {
+            LinkControlImpl lci=links.get(i);
+            LinkInfo li2=lci.getLinkInfo();
+            if(li2.getInstance().equals(instance) && li2.getName().equals(name)) {
+                found=true;
+                lci.disable();
+                break;
+            }
+        }
+        if(!found) throw new YamcsException("There is no link named '"+name+"' in instance "+instance);
     }
     
     /**
@@ -404,8 +459,50 @@ public class ManagementService implements YProcessorListener {
         return managementListeners.add(l);
     }
     
+    /**
+     * Adds a listener that is to be notified when any processor, or any client
+     * is updated. Calling this multiple times has no extra effects. Either you
+     * listen, or you don't.
+     */
+    public boolean addLinkListener(LinkListener l) {
+        return linkListeners.add(l);
+    }
+    
     public boolean removeManagementListener(ManagementListener l) {
         return managementListeners.remove(l);
+    }
+    
+    public boolean addCommandQueueListener(CommandQueueListener l) {
+        return commandQueueListeners.add(l);
+    }
+    
+    public boolean removeCommandQueueListener(CommandQueueListener l) {
+        boolean removed = commandQueueListeners.remove(l);
+        qmanagers.forEach(m -> m.removeListener(l));
+        return removed;
+    }
+    
+    public boolean removeLinkListener(LinkListener l) {
+        return linkListeners.remove(l);
+    }
+    
+    public List<LinkInfo> getLinkInfo() {
+        List<LinkInfo> l = new ArrayList<>();
+        for (LinkControlImpl li : links) {
+            l.add(li.getLinkInfo());
+        }
+        return l;
+    }
+    
+    public LinkInfo getLinkInfo(String instance, String name) {
+        for(int i=0;i<links.size();i++) {
+            LinkControlImpl lci=links.get(i);
+            LinkInfo li=lci.getLinkInfo();
+            if(li.getInstance().equals(instance) && li.getName().equals(name)) {
+                return li;
+            }
+        }
+        return null;
     }
 
     public Set<ClientInfo> getClientInfo() {
@@ -436,7 +533,7 @@ public class ManagementService implements YProcessorListener {
                 Statistics stats=entry.getValue();
                 ProcessingStatistics ps=yproc.getTmProcessor().getStatistics();
                 if((stats==STATS_NULL) || (ps.getLastUpdated()>stats.getLastUpdated())) {
-                    stats=buildStats(yproc);
+                    stats=ManagementGpbHelper.buildStats(yproc);
                     yprocs.put(yproc, stats);
                 }
                 if(stats!=STATS_NULL) {
@@ -449,60 +546,34 @@ public class ManagementService implements YProcessorListener {
             e.printStackTrace();
         }
     }
+    
+    private void checkLinkUpdate() {
+        // see if any link has changed
+        for(LinkControlImpl lci:links) {
+            if(lci.hasChanged()) {
+                LinkInfo li=lci.getLinkInfo();
+                linkListeners.forEach(l -> l.linkChanged(li));
+            }
+        }
+    }
 
     @Override
     public void processorAdded(YProcessor processor) {
-        ProcessorInfo pi = getProcessorInfo(processor);
+        ProcessorInfo pi = ManagementGpbHelper.toProcessorInfo(processor);
         managementListeners.forEach(l -> l.processorAdded(pi));
         yprocs.put(processor, STATS_NULL);
     }
 
     @Override
     public void yProcessorClosed(YProcessor processor) {
-        ProcessorInfo pi = getProcessorInfo(processor);
+        ProcessorInfo pi = ManagementGpbHelper.toProcessorInfo(processor);
         managementListeners.forEach(l -> l.processorClosed(pi));
         yprocs.remove(processor);
     }
 
     @Override
     public void processorStateChanged(YProcessor processor) {
-        ProcessorInfo pi = getProcessorInfo(processor);
+        ProcessorInfo pi = ManagementGpbHelper.toProcessorInfo(processor);
         managementListeners.forEach(l -> l.processorStateChanged(pi));
-    }
-    
-    public static Statistics buildStats(YProcessor processor) {
-        ProcessingStatistics ps=processor.getTmProcessor().getStatistics();
-        Statistics.Builder statsb=Statistics.newBuilder();
-        statsb.setLastUpdated(ps.getLastUpdated());
-        statsb.setLastUpdatedUTC(TimeEncoding.toString(ps.getLastUpdated()));
-        statsb.setInstance(processor.getInstance()).setYProcessorName(processor.getName());
-        Collection<ProcessingStatistics.TmStats> tmstats=ps.stats.values();
-        if(tmstats==null) {
-            return STATS_NULL;
-        }
-
-        for(ProcessingStatistics.TmStats t:tmstats) {
-            TmStatistics ts=TmStatistics.newBuilder()
-                    .setPacketName(t.packetName).setLastPacketTime(t.lastPacketTime)
-                    .setLastReceived(t.lastReceived).setReceivedPackets(t.receivedPackets)
-                    .setLastPacketTimeUTC(TimeEncoding.toString(t.lastPacketTime))
-                    .setLastReceivedUTC(TimeEncoding.toString(t.lastReceived))
-                    .setSubscribedParameterCount(t.subscribedParameterCount).build();
-            statsb.addTmstats(ts);
-        }
-        return statsb.build();
-    }
-    
-    public static ProcessorInfo getProcessorInfo(YProcessor yproc) {
-        ProcessorInfo.Builder cib=ProcessorInfo.newBuilder().setInstance(yproc.getInstance())
-                .setName(yproc.getName()).setType(yproc.getType())
-                .setCreator(yproc.getCreator()).setHasCommanding(yproc.hasCommanding())
-                .setState(yproc.getState());
-
-        if(yproc.isReplay()) {
-            cib.setReplayRequest(yproc.getReplayRequest());
-            cib.setReplayState(yproc.getReplayState());
-        }
-        return cib.build();
     }
 }

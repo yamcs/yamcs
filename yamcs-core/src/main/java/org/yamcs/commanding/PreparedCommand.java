@@ -3,6 +3,7 @@ package org.yamcs.commanding;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -26,6 +27,7 @@ public class PreparedCommand {
     private byte[] binary;
     private CommandId id;
     private MetaCommand metaCommand;
+    private final UUID uuid; // Used in REST API as an easier single-field ID. Not persisted.
     
     //used when a command has a transmissionConstraint with timeout
     // when the command is ready to go, but is waiting for a transmission constraint, this is set to true
@@ -49,6 +51,7 @@ public class PreparedCommand {
 
     public PreparedCommand(CommandId id) {
         this.id=id;
+        uuid=UUID.randomUUID();
     }
 
     /**
@@ -57,6 +60,7 @@ public class PreparedCommand {
      */
     public PreparedCommand(byte[] binary) {
         this.setBinary(binary);
+        uuid=UUID.randomUUID();
     }
 
     public long getGenerationTime() {
@@ -91,6 +95,10 @@ public class PreparedCommand {
 
     public CommandId getCommandId() {
         return id;
+    }
+    
+    public UUID getUUID() {
+        return uuid;
     }
 
     static public CommandId getCommandId(Tuple t) {

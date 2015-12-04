@@ -54,7 +54,7 @@
                 });
 
                 tmService.getParameterHistory(qname, {
-                    noRepeat: true,
+                    norepeat: true,
                     limit: 10
                 }).then(function (historyData) {
                     $scope.values = historyData['parameter'];

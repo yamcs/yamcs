@@ -1,4 +1,4 @@
-package org.yamcs.management;
+package org.yamcs.hornetq;
 
 import static org.yamcs.api.Protocol.HDR_EVENT_NAME;
 import static org.yamcs.api.Protocol.REPLYTO_HEADER_NAME;
@@ -21,6 +21,8 @@ import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
+import org.yamcs.management.ManagementListener;
+import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
@@ -33,15 +35,15 @@ import org.yamcs.security.HqClientMessageToken;
  * @author nm
  *
  */
-public class HornetProcessorManagement implements ManagementListener {
+public class HornetQProcessorManagement implements ManagementListener {
     YamcsSession ysession;
     YamcsClient yclient, yprocControlServer, linkControlServer;
-    static Logger log=LoggerFactory.getLogger(HornetProcessorManagement.class.getName());
+    static Logger log=LoggerFactory.getLogger(HornetQProcessorManagement.class.getName());
     ManagementService mservice;
 
     static public final String YPR_createProcessor = "createProcessor";
 
-    public HornetProcessorManagement(ManagementService mservice) throws YamcsApiException, HornetQException {
+    public HornetQProcessorManagement(ManagementService mservice) throws YamcsApiException, HornetQException {
         this.mservice=mservice;
 
         if(ysession!=null) return;

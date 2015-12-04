@@ -12,19 +12,7 @@ public final class Yamcs {
    * Protobuf enum {@code yamcs.EndAction}
    *
    * <pre>
-   * all the replay data is sent on the data address
-   *service YarchReplay {
-   *rpc CreateReplay(ReplayRequest) returns (MessagingAddress);
-   *}
-   *
-   *service Replay {
-   *rpc Start(Void) returns (Void);
-   *rpc Pause(Void) returns (Void);
-   *rpc Quit(Void) returns (Void);
-   *rpc Seek(Instant) returns (Void);
-   *rpc GetReplayStatus(Void) returns (ReplayStatus);
-   *rpc ChangeReplayRequest(ReplayRequest) returns (Void);
-   *}
+   ************************ Replay Service ***************
    * </pre>
    */
   public enum EndAction
@@ -193,6 +181,18 @@ public final class Yamcs {
      * <code>TIME_INFO = 15;</code>
      */
     TIME_INFO(14, 15),
+    /**
+     * <code>LINK_EVENT = 16;</code>
+     */
+    LINK_EVENT(15, 16),
+    /**
+     * <code>COMMAND_QUEUE_INFO = 17;</code>
+     */
+    COMMAND_QUEUE_INFO(16, 17),
+    /**
+     * <code>COMMAND_QUEUE_EVENT = 18;</code>
+     */
+    COMMAND_QUEUE_EVENT(17, 18),
     ;
 
     /**
@@ -263,6 +263,18 @@ public final class Yamcs {
      * <code>TIME_INFO = 15;</code>
      */
     public static final int TIME_INFO_VALUE = 15;
+    /**
+     * <code>LINK_EVENT = 16;</code>
+     */
+    public static final int LINK_EVENT_VALUE = 16;
+    /**
+     * <code>COMMAND_QUEUE_INFO = 17;</code>
+     */
+    public static final int COMMAND_QUEUE_INFO_VALUE = 17;
+    /**
+     * <code>COMMAND_QUEUE_EVENT = 18;</code>
+     */
+    public static final int COMMAND_QUEUE_EVENT_VALUE = 18;
 
 
     public final int getNumber() { return value; }
@@ -284,6 +296,9 @@ public final class Yamcs {
         case 13: return STREAM_DATA;
         case 14: return ALARM_DATA;
         case 15: return TIME_INFO;
+        case 16: return LINK_EVENT;
+        case 17: return COMMAND_QUEUE_INFO;
+        case 18: return COMMAND_QUEUE_EVENT;
         default: return null;
       }
     }
@@ -24275,25 +24290,16 @@ public final class Yamcs {
       "C\030\010 \001(\t\022\030\n\020receptionTimeUTC\030\t \001(\t\"1\n\rEve" +
       "ntSeverity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERR",
       "OR\020\002*\005\010d\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QU" +
-      "IT\020\002\022\010\n\004STOP\020\003*\205\002\n\rProtoDataType\022\014\n\010DT_E" +
+      "IT\020\002\022\010\n\004STOP\020\003*\306\002\n\rProtoDataType\022\014\n\010DT_E" +
       "RROR\020\001\022\020\n\014STATE_CHANGE\020\002\022\r\n\tTM_PACKET\020\003\022" +
       "\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rARCHIVE_INDEX\020\006\022\017\n" +
       "\013ARCHIVE_TAG\020\007\022\r\n\tPARAMETER\020\010\022\017\n\013CMD_HIS" +
       "TORY\020\t\022\022\n\016PROCESSOR_INFO\020\n\022\017\n\013CLIENT_INF" +
       "O\020\013\022\031\n\025PROCESSING_STATISTICS\020\014\022\017\n\013STREAM" +
-      "_DATA\020\r\022\016\n\nALARM_DATA\020\016\022\r\n\tTIME_INFO\020\0172\337" +
-      "\001\n\030RealtimeParameterService\0220\n\tSubscribe" +
-      "\022\026.yamcs.NamedObjectList\032\013.yamcs.Void\0221\n",
-      "\014SubscribeAll\022\024.yamcs.StringMessage\032\013.ya" +
-      "mcs.Void\0222\n\013Unsubscribe\022\026.yamcs.NamedObj" +
-      "ectList\032\013.yamcs.Void\022*\n\016UnsubscribeAll\022\013" +
-      ".yamcs.Void\032\013.yamcs.Void2\340\001\n\014ArchiveInde" +
-      "x\0223\n\010GetIndex\022\023.yamcs.IndexRequest\032\022.yam" +
-      "cs.IndexResult\022/\n\006GetTag\022\023.yamcs.IndexRe" +
-      "quest\032\020.yamcs.TagResult\0227\n\tUpsertTag\022\027.y" +
-      "amcs.UpsertTagRequest\032\021.yamcs.ArchiveTag" +
-      "\0221\n\tDeleteTag\022\027.yamcs.DeleteTagRequest\032\013" +
-      ".yamcs.VoidB\024\n\022org.yamcs.protobuf"
+      "_DATA\020\r\022\016\n\nALARM_DATA\020\016\022\r\n\tTIME_INFO\020\017\022\016" +
+      "\n\nLINK_EVENT\020\020\022\026\n\022COMMAND_QUEUE_INFO\020\021\022\027" +
+      "\n\023COMMAND_QUEUE_EVENT\020\022B\024\n\022org.yamcs.pro",
+      "tobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

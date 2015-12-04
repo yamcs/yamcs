@@ -13,9 +13,9 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
-import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
+import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
@@ -24,11 +24,6 @@ import org.yamcs.xtceproc.XtceDbFactory;
  */
 public class InstanceRequestHandler extends RestRequestHandler {
     final static Logger log = LoggerFactory.getLogger(InstanceRequestHandler.class.getName());
-    
-    @Override
-    public String getPath() {
-        return "instances";
-    }
     
     @Override
     protected RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {

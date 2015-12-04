@@ -1,7 +1,6 @@
 package org.yamcs.archive;
 
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
@@ -10,7 +9,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
+import org.yamcs.cmdhistory.CommandHistoryRecorder;
+import org.yamcs.protobuf.Yamcs.ArchiveRecord;
+import org.yamcs.protobuf.Yamcs.IndexRequest;
+import org.yamcs.protobuf.Yamcs.IndexResult;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -19,50 +22,33 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.YarchException;
-
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-
-import org.yamcs.api.Protocol;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
-import org.yamcs.api.YamcsSession;
-import org.yamcs.cmdhistory.CommandHistoryRecorder;
-import org.yamcs.protobuf.Yamcs.IndexRequest;
-import org.yamcs.protobuf.Yamcs.IndexResult;
-import org.yamcs.protobuf.Yamcs.ArchiveRecord;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
 
 /**
  * Performs histogram and completeness index retrievals.
  * @author nm
  *
  */
-class IndexRequestProcessor implements Runnable{
-    SimpleString dataAddress;
+class IndexRequestProcessor implements Runnable {
     int n=500;
     final String archiveInstance;
     final static AtomicInteger counter=new AtomicInteger(); 
     static Logger log=LoggerFactory.getLogger(IndexRequestProcessor.class.getName());
     final IndexRequest req;
-    YamcsSession yamcsSession;
-    YamcsClient yamcsClient;
     TmIndex tmIndexer;
+    IndexRequestListener indexRequestListener;
 
     //these maps contains the names with which the records will be sent to the client
-    final Map<String, NamedObjectId> tmpackets=new HashMap<String,NamedObjectId>();
-  //  final Map<String, NamedObjectId> ppgroups=new HashMap<String,NamedObjectId>();
+    final Map<String, NamedObjectId> tmpackets=new HashMap<>();
+  //  final Map<String, NamedObjectId> ppgroups=new HashMap<>();
     
     boolean sendParams;
 
-    IndexRequestProcessor(TmIndex tmIndexer, IndexRequest req, SimpleString replyto) throws YarchException, IOException, ConfigurationException, YamcsApiException {
+    IndexRequestProcessor(TmIndex tmIndexer, IndexRequest req, IndexRequestListener l) {
         log.debug("new index request: "+req);
         this.archiveInstance=req.getInstance();
-        this.dataAddress=replyto;
         this.req=req;
         this.tmIndexer=tmIndexer;
+        this.indexRequestListener=l;
 
         if(req.getSendAllTm() || req.getTmPacketCount()>0) {
             XtceDb db=XtceDbFactory.getInstance(archiveInstance);
@@ -107,14 +93,8 @@ class IndexRequestProcessor implements Runnable{
 
     @Override
     public void run() {
-    	yamcsSession = null;
-    	yamcsClient = null;
+        boolean ok=true;
         try {
-            yamcsSession=YamcsSession.newBuilder().build();
-            yamcsClient=yamcsSession.newClientBuilder().setRpc(false).setDataProducer(true).build();
-            Protocol.killProducerOnConsumerClosed(yamcsClient.dataProducer, dataAddress);
-
-            boolean ok=true;
             if(tmpackets.size()>0) ok=sendHistogramData(XtceTmRecorder.TABLE_NAME, "pname", 2000, tmpackets);
             if(ok && sendParams) ok=sendHistogramData(PpRecorder.TABLE_NAME, "ppgroup", 20000, null); //use 20 sec for the PP to avoid millions of records
             
@@ -122,21 +102,11 @@ class IndexRequestProcessor implements Runnable{
             if(req.getSendAllEvent()) ok=sendHistogramData(EventRecorder.TABLE_NAME, "source", 2000, null);
             
             if(ok && req.getSendCompletenessIndex()) ok=sendCompletenessIndex();
-            if (ok) yamcsClient.sendDataEnd(dataAddress);
         } catch (Exception e) {
-            log.error("got exception while sending the resposne: ", e);
-            e.printStackTrace();
+            log.error("got exception while sending the response", e);
+            ok=false;
         } finally {
-        	try {
-        		if( yamcsClient != null ) yamcsClient.close();
-			} catch (HornetQException e) {
-				log.warn( "Got exception whilst closing client: ", e );
-			}
-        	try {
-        		if( yamcsSession != null ) yamcsSession.close();
-			} catch (HornetQException e) {
-				log.warn( "Got exception whilst closing client: ", e );
-			}
+        	indexRequestListener.finished(ok);
         }
     }
 
@@ -188,7 +158,7 @@ class IndexRequestProcessor implements Runnable{
                     if(name2id!=null) {
                         id=name2id.get(name);
                         if(id==null) {
-                            log.debug("Not sending {} because no id for it ", name);
+                            log.debug("Not sending {} because no id for it", name);
                             return;
                         }
                     } else {
@@ -241,14 +211,13 @@ class IndexRequestProcessor implements Runnable{
 
     boolean sendData(IndexResult.Builder builder) {
         if(builder.getRecordsCount()==0) return true;
+        log.debug("sending {} {} records", builder.getRecordsCount(), builder.getType());
         try {
-            log.debug("sending {} {} records", builder.getRecordsCount(), builder.getType());
-            yamcsClient.sendData(dataAddress, ProtoDataType.ARCHIVE_INDEX, builder.build());
-        } catch (HornetQException e) {
+            indexRequestListener.processData(builder.build());
+            return true;
+        } catch (Exception e) {
             log.warn("Error when sending histogram data",e);
             return false;
         }
-        return true;
     }
-
 }

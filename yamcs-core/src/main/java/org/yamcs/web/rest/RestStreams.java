@@ -3,6 +3,8 @@ package org.yamcs.web.rest;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -13,6 +15,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 public class RestStreams {
     
     private static AtomicInteger streamCounter = new AtomicInteger();
+    private static final Logger log = LoggerFactory.getLogger(RestStreams.class);
     
     public static void streamAndWait(RestRequest req, String selectSql, RestStreamSubscriber s) throws RestException {
         stream(req, selectSql, s).await();
@@ -27,10 +30,12 @@ public class RestStreams {
                 .append(streamName)
                 .append(" as ")
                 .append(selectSql)
+                .append(" nofollow")
                 .toString();
         
+        log.debug("Executing: {}", sql);
         try {
-            ydb.execute(sql.toString());
+            ydb.execute(sql);
         } catch (StreamSqlException | ParseException e) {
             throw new InternalServerErrorException(e);
         }
@@ -39,7 +44,6 @@ public class RestStreams {
         
         Stream stream = ydb.getStream(streamName);
         stream.addSubscriber(wrapper);
-        System.out.println("bbb");
         stream.start();
         return wrapper;
     }

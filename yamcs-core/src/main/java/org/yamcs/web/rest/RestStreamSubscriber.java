@@ -34,14 +34,14 @@ public abstract class RestStreamSubscriber implements StreamSubscriber {
             if (rowNr >= pos) {
                 if (emitted < limit) {
                     emitted++;
-                    onTuple(tuple);
+                    processTuple(stream, tuple);
                 } else {
                     stream.close();
                 }
             }
             rowNr++;
         } else {
-            onTuple(tuple);
+            processTuple(stream, tuple);
         }
     }
     
@@ -50,5 +50,5 @@ public abstract class RestStreamSubscriber implements StreamSubscriber {
         // NOP
     }
     
-    public abstract void onTuple(Tuple tuple);
+    public abstract void processTuple(Stream stream, Tuple tuple);
 }

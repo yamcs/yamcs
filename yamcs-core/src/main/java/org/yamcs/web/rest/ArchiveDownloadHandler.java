@@ -3,7 +3,10 @@ package org.yamcs.web.rest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.archive.XtceTmRecorder;
@@ -14,6 +17,7 @@ import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.tctm.TmProviderAdapter;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
 import org.yamcs.web.rest.RestUtils.MatchResult;
 import org.yamcs.xtce.Parameter;
@@ -23,19 +27,15 @@ import org.yamcs.yarch.YarchDatabase;
 
 import com.csvreader.CsvWriter;
 
+import io.netty.buffer.ByteBufOutputStream;
+
 /** 
  * Serves archived data through a web api.
  *
  * <p>Archive requests use chunked encoding with an unspecified content length, which enables
- * us to send large dumps without needing to determine a content length on the server. At the
- * moment every hornetq message from the archive replay is put in a separate chunk and flushed.
+ * us to send large dumps without needing to determine a content length on the server.
  */
 public class ArchiveDownloadHandler extends RestRequestHandler {
-    
-    @Override
-    public String getPath() {
-        return "downloads";
-    }
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
@@ -84,34 +84,52 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
         
         if (req.asksFor(CSV_MIME_TYPE)) {
             List<NamedObjectId> idList = Arrays.asList(id);
-            RestParameterReplayListener l = new ReplayToChunkedParameterCSV(req, idList);
+            RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, idList);
             l.setNoRepeat(noRepeat);
             RestReplays.replay(req, rr, l);
         } else {
-            RestParameterReplayListener l = new ReplayToChunkedParameterProtobuf(req);
+            RestParameterReplayListener l = new ParameterReplayToChunkedProtobufEncoder(req);
             l.setNoRepeat(noRepeat);
             RestReplays.replay(req, rr, l);
         }
     }
     
     private void downloadPackets(RestRequest req) throws RestException {
-        StringBuilder sqlb = new StringBuilder("select * from ").append(XtceTmRecorder.TABLE_NAME);
+        Set<String> nameSet = new HashSet<>();
+        for (String names : req.getQueryParameterList("name", Collections.emptyList())) {
+            for (String name : names.split(",")) {
+                nameSet.add(name.trim());
+            }
+        }
+        
+        SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
         IntervalResult ir = RestUtils.scanForInterval(req);
         if (ir.hasInterval()) {
-            sqlb.append(" where ").append(ir.asSqlCondition("gentime"));
+            sqlb.where(ir.asSqlCondition("gentime"));
         }
-        if (RestUtils.asksDescending(req, false)) {
-            sqlb.append(" order desc");
-        }
+        if (!nameSet.isEmpty()) {
+            sqlb.where("pname in ('" + String.join("','", nameSet) + "')");
+        }        
+        sqlb.descend(RestUtils.asksDescending(req, true));
+        
         String sql = sqlb.toString();
         
-        RestStreams.stream(req, sql, new StreamToChunkedProtobufEncoder<TmPacketData>(req, SchemaYamcs.TmPacketData.WRITE) {
-            
-            @Override
-            public TmPacketData mapTuple(Tuple tuple) {
-                return ArchiveHelper.tupleToPacketData(tuple);
-            }
-        });
+        if (req.asksFor(BINARY_MIME_TYPE)) {
+            RestStreams.stream(req, sql, new StreamToChunkedTransferEncoder(req, BINARY_MIME_TYPE) {
+                @Override
+                public void processTuple(Tuple tuple, ByteBufOutputStream bufOut) throws IOException {
+                    byte[] raw = (byte[]) tuple.getColumn(TmProviderAdapter.PACKET_COLUMN);
+                    bufOut.write(raw);
+                }
+            });
+        } else {
+            RestStreams.stream(req, sql, new StreamToChunkedProtobufEncoder<TmPacketData>(req, SchemaYamcs.TmPacketData.WRITE) {
+                @Override
+                public TmPacketData mapTuple(Tuple tuple) {
+                    return ArchiveHelper.tupleToPacketData(tuple);
+                }
+            });
+        }
     }
     
     private void downloadTableData(RestRequest req, TableDefinition table) throws RestException {
@@ -154,10 +172,27 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
     }
 
     private void downloadEvents(RestRequest req) throws RestException {
+        Set<String> sourceSet = new HashSet<>();
+        for (String names : req.getQueryParameterList("source", Collections.emptyList())) {
+            for (String name : names.split(",")) {
+                sourceSet.add(name);
+            }
+        }
+
         StringBuilder sqlb = new StringBuilder("select * from ").append(EventRecorder.TABLE_NAME);
         IntervalResult ir = RestUtils.scanForInterval(req);
-        if (ir.hasInterval()) {
-            sqlb.append(" where ").append(ir.asSqlCondition("gentime"));
+        if (ir.hasInterval() || !sourceSet.isEmpty()) {
+            sqlb.append(" where ");
+            boolean first = true;
+            if (ir.hasInterval()) {
+                sqlb.append(ir.asSqlCondition("gentime"));
+                first = false;
+            }
+            if (!sourceSet.isEmpty()) {
+                if (!first) sqlb.append(" and ");
+                sqlb.append("source in ('").append(String.join("','", sourceSet)).append("')");
+                first = false;
+            }
         }
         if (RestUtils.asksDescending(req, false)) {
             sqlb.append(" order desc");

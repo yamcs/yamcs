@@ -19,11 +19,6 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
     final static Logger log = LoggerFactory.getLogger(MDBContainerRequestHandler.class.getName());
     
     @Override
-    public String getPath() {
-        return "containers";
-    }
-    
-    @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
         if (!req.hasPathSegment(pathOffset)) {

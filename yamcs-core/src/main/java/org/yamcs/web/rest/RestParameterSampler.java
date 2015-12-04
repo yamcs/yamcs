@@ -17,8 +17,7 @@ import org.slf4j.LoggerFactory;
  * should be fit for inclusion in plots.
  * <br>
  * This is *NOT* perfect. The range of returned times is not known upfront, so we take a rough
- * assumption based on the first result, and up until validEnd. Maybe we could use the
- * histogram for this? But afaik that's an optional service.
+ * assumption based on the first result, and up until validEnd.
  */
 public class RestParameterSampler {
     

@@ -20,7 +20,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
     private final Logger log;
     private final int clientId;
     private final String applicationName;
-    private String username = ManagementService.ANONYMOUS;
+    private String username;
 
     private AuthenticationToken authToken = null;
 
@@ -37,10 +37,12 @@ public class WebSocketProcessorClient implements YProcessorClient {
         resources.add(new ParameterResource(yproc, wsHandler));
         resources.add(new CommandHistoryResource(yproc, wsHandler));
         resources.add(new ManagementResource(yproc, wsHandler, clientId));
-        resources.add(new AlarmsResource(yproc, wsHandler));
-        resources.add(new EventsResource(yproc, wsHandler));
+        resources.add(new AlarmResource(yproc, wsHandler));
+        resources.add(new EventResource(yproc, wsHandler));
         resources.add(new StreamResource(yproc, wsHandler));
         resources.add(new TimeResource(yproc, wsHandler));
+        resources.add(new LinkResource(yproc, wsHandler));
+        resources.add(new CommandQueueResource(yproc, wsHandler));
     }
 
     @Override

@@ -1,57 +1,27 @@
 package org.yamcs.web.rest;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.TimeInterval;
-import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
-import org.yamcs.archive.AlarmRecorder;
-import org.yamcs.archive.EventRecorder;
-import org.yamcs.archive.TagDb;
-import org.yamcs.archive.TagReceiver;
-import org.yamcs.archive.XtceTmRecorder;
-import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Archive.DumpArchiveRequest;
 import org.yamcs.protobuf.Archive.DumpArchiveResponse;
-import org.yamcs.protobuf.Archive.GetTagsRequest;
-import org.yamcs.protobuf.Archive.GetTagsResponse;
-import org.yamcs.protobuf.Archive.InsertTagRequest;
-import org.yamcs.protobuf.Archive.InsertTagResponse;
-import org.yamcs.protobuf.Archive.StreamInfo;
-import org.yamcs.protobuf.Archive.TableData;
-import org.yamcs.protobuf.Archive.TableData.TableRecord;
-import org.yamcs.protobuf.Archive.TableInfo;
-import org.yamcs.protobuf.Archive.UpdateTagRequest;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Pvalue.SampleSeries;
-import org.yamcs.protobuf.Rest.ListAlarmsResponse;
-import org.yamcs.protobuf.Rest.ListEventsResponse;
-import org.yamcs.protobuf.Rest.ListPacketsResponse;
-import org.yamcs.protobuf.Rest.ListStreamsResponse;
-import org.yamcs.protobuf.Rest.ListTablesResponse;
-import org.yamcs.protobuf.SchemaAlarms;
 import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.SchemaPvalue;
-import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs;
-import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
@@ -59,25 +29,10 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.ui.ParameterRetrievalGui;
-import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.rest.RestParameterSampler.Sample;
-import org.yamcs.web.rest.RestUtils.IntervalResult;
-import org.yamcs.web.rest.RestUtils.MatchResult;
-import org.yamcs.xtce.FloatParameterType;
-import org.yamcs.xtce.IntegerParameterType;
-import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.SystemParameterDb;
 import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.yarch.AbstractStream;
-import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.YarchException;
 
-import com.csvreader.CsvWriter;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.protobuf.MessageLite;
 
@@ -87,24 +42,28 @@ import io.netty.channel.ChannelHandlerContext;
 import io.protostuff.JsonIOUtil;
 import io.protostuff.Schema;
 
-/** 
- * Serves archived data through a web api.
- *
- * <p>Archive requests use chunked encoding with an unspecified content length, which enables
- * us to send large dumps without needing to determine a content length on the server. At the
- * moment every hornetq message from the archive replay is put in a separate chunk and flushed.
+/**
+ * Serves archived data through a web api. The default built-in tables are given
+ * specialised APIs. For mission-specific tables the generic table API could be
+ * used.
  */
 public class ArchiveRequestHandler extends RestRequestHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ArchiveRequestHandler.class.getName());
     
-    private static ArchiveDownloadHandler downloadHandler = new ArchiveDownloadHandler();
-    
+    private Map<String, RestRequestHandler> subHandlers = new LinkedHashMap<>();
     private CsvGenerator csvGenerator = null;
     
-    @Override
-    public String getPath() {
-        return "archive";
+    public ArchiveRequestHandler() {
+        subHandlers.put("alarms", new ArchiveAlarmRequestHandler());
+        subHandlers.put("downloads", new ArchiveDownloadHandler());
+        subHandlers.put("events", new ArchiveEventRequestHandler());
+        subHandlers.put("indexes", new ArchiveIndexHandler());
+        subHandlers.put("packets", new ArchivePacketRequestHandler());
+        subHandlers.put("parameters", new ArchiveParameterRequestHandler());
+        subHandlers.put("streams", new ArchiveStreamRequestHandler());
+        subHandlers.put("tables", new ArchiveTableRequestHandler());
+        subHandlers.put("tags", new ArchiveTagRequestHandler());
     }
     
     @Override
@@ -120,31 +79,15 @@ public class ArchiveRequestHandler extends RestRequestHandler {
         req.addToContext(RestRequest.CTX_INSTANCE, instance);
         req.addToContext(MDBRequestHandler.CTX_MDB, XtceDbFactory.getInstance(instance));
         
-        YarchDatabase ydb = YarchDatabase.getInstance(instance);
-        
         pathOffset++;
         if (!req.hasPathSegment(pathOffset)) {
             return handleDumpRequest(req);
         } else {
-            switch (req.getPathSegment(pathOffset)) {
-            case "tags":
-                return handleTagsRequest(req, pathOffset + 1);
-            case "tables":
-                return handleTablesRequest(req, pathOffset + 1, ydb);
-            case "streams":
-                return handleStreamsRequest(req, pathOffset + 1, ydb);
-            case "parameters":
-                return handleParametersRequest(req, pathOffset + 1);
-            case "alarms":
-                return handleAlarmsRequest(req, pathOffset + 1);
-            case "events":
-                req.assertGET();
-                return listEvents(req);
-            case "packets":
-                return handlePacketsRequest(req, pathOffset + 1);
-            case "downloads":
-                return downloadHandler.handleRequest(req, pathOffset + 1);
-            default:
+            String segment = req.getPathSegment(pathOffset);
+            RestRequestHandler handler = subHandlers.get(segment);
+            if (handler != null) {
+                return handler.handleRequest(req, pathOffset + 1);
+            } else {
                 throw new NotFoundException(req);
             }
         }
@@ -190,7 +133,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
      * by multiple HttpChunks where messages are delimited by their byte size (when the 'stream'-option
      * is true).
      * 
-     * @deprecated
+     * @deprecated the profiles stuff still needs migration
      */
     @Deprecated
     private RestResponse handleDumpRequest(RestRequest req) throws RestException {
@@ -265,7 +208,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
                     // Write a chunk containing a delimited message
                     ByteBuf buf = ctx.alloc().buffer();
                     try (ByteBufOutputStream channelOut = new ByteBufOutputStream(buf)) {
-                        if (BINARY_MIME_TYPE.equals(targetContentType)) {
+                        if (PROTOBUF_MIME_TYPE.equals(targetContentType)) {
                             builder.build().writeDelimitedTo(channelOut);
                         } else if (CSV_MIME_TYPE.equals(targetContentType)) {
                             if(csvGenerator != null) {
@@ -314,659 +257,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
                 log.warn("Unexpected data type " + dataType);
         }
     }
-    
-    /**
-     * GET /api/archive/:instance/tags
-     * POST /api/archive/:instance/tags
-     * PUT /api/archive/:instance/tags/(old_start)/(id)
-     * DELETE /api/archive/:instance/tags/(old_start)/(id)
-     */
-    private RestResponse handleTagsRequest(RestRequest req, int pathOffset) throws RestException {
-        if (!req.hasPathSegment(pathOffset)) {
-            if (req.isGET()) {
-                return listTags(req);
-            } else if (req.isPOST()) {
-                return insertTag(req);
-            } else {
-                throw new MethodNotAllowedException(req);
-            }
-        } else {
-            if (!req.hasPathSegment(pathOffset + 1)) {
-                throw new NotFoundException(req);
-            }
             
-            long tagTime;
-            try {
-                tagTime = Long.parseLong(req.getPathSegment(pathOffset));
-            } catch (NumberFormatException e) {
-                throw new BadRequestException("Invalid tag time: " + req.getPathSegment(pathOffset));
-            }
-            
-            int tagId;
-            try {
-                tagId = Integer.parseInt(req.getPathSegment(pathOffset + 1));
-            } catch (NumberFormatException e) {
-                throw new BadRequestException("Invalid tag id: " + req.getPathSegment(pathOffset + 1));
-            }
-            
-            if (req.isPUT()) {
-                return updateTag(req, tagTime, tagId);
-            } else if (req.isDELETE()) {
-                return deleteTag(req, tagTime, tagId);
-            } else {
-                throw new MethodNotAllowedException(req);
-            }
-        }
-    }
-    
-    private RestResponse handleTablesRequest(RestRequest req, int pathOffset, YarchDatabase ydb) throws RestException {
-        if (!req.hasPathSegment(pathOffset)) {
-            req.assertGET();
-            return listTables(req, ydb);            
-        } else {
-            String tableName = req.getPathSegment(pathOffset);
-            TableDefinition table = ydb.getTable(tableName);
-            if (table == null) {
-                throw new NotFoundException(req, "No table named '" + tableName + "'");
-            } else {
-                return handleTableRequest(req, pathOffset + 1, table);
-            }
-        }
-    }
-    
-    private RestResponse handleTableRequest(RestRequest req, int pathOffset, TableDefinition table) throws RestException {
-        if (!req.hasPathSegment(pathOffset)) {
-            req.assertGET();
-            return getTable(req, table);
-        } else {
-            String resource = req.getPathSegment(pathOffset);
-            switch (resource) {
-            case "data":
-                return getTableData(req, table);
-            default:
-                throw new NotFoundException(req, "No resource '" + resource + "' for table '" + table.getName() + "'");                
-            }
-        }
-    }
-    
-    private RestResponse listTables(RestRequest req, YarchDatabase ydb) throws RestException {
-        ListTablesResponse.Builder responseb = ListTablesResponse.newBuilder();
-        for (TableDefinition def : ydb.getTableDefinitions()) {
-            responseb.addTable(ArchiveHelper.toTableInfo(def));
-        }
-        return new RestResponse(req, responseb.build(), SchemaRest.ListTablesResponse.WRITE);
-    }
-    
-    private RestResponse getTable(RestRequest req, TableDefinition table) throws RestException {
-        TableInfo response = ArchiveHelper.toTableInfo(table);
-        return new RestResponse(req, response, SchemaArchive.TableInfo.WRITE);
-    }
-    
-    private RestResponse getTableData(RestRequest req, TableDefinition table) throws RestException {
-        List<String> cols = null;        
-        if (req.hasQueryParameter("cols")) {
-            cols = new ArrayList<>(); // Order, and non-unique
-            for (String para : req.getQueryParameterList("cols")) {
-                for (String col : para.split(",")) {
-                    cols.add(col.trim());
-                }
-            }
-        }
-        long pos = req.getQueryParameterAsLong("pos", 0);
-        int limit = req.getQueryParameterAsInt("limit", 100);
-        
-        StringBuilder buf = new StringBuilder("select ");
-        if (cols == null) {
-            buf.append("*");
-        } else if (cols.isEmpty()) {
-            throw new BadRequestException("No columns are specified.");
-        } else {
-            for (int i = 0; i < cols.size(); i++) {
-                if (i != 0) buf.append(", ");
-                buf.append(cols.get(i));
-            }
-        }
-        buf.append(" from ").append(table.getName());
-        if (RestUtils.asksDescending(req, true)) {
-            buf.append(" order desc");
-        }
-        
-        String sql = buf.toString();
-        
-        TableData.Builder responseb = TableData.newBuilder();
-        RestStreams.streamAndWait(req, sql, new RestStreamSubscriber(pos, limit) {
-            
-            @Override
-            public void onTuple(Tuple tuple) {
-                TableRecord.Builder rec = TableRecord.newBuilder();
-                rec.addAllColumn(ArchiveHelper.toColumnDataList(tuple));
-                responseb.addRecord(rec); // TODO estimate byte size
-            }
-        });
-        
-        return new RestResponse(req, responseb.build(), SchemaArchive.TableData.WRITE);
-    }
-    
-    private RestResponse handleStreamsRequest(RestRequest req, int pathOffset, YarchDatabase ydb) throws RestException {
-        if (!req.hasPathSegment(pathOffset)) {
-            req.assertGET();
-            return listStreams(req, ydb);
-        } else {
-            String streamName = req.getPathSegment(pathOffset);
-            Stream stream = ydb.getStream(streamName);
-            if (stream == null) {
-                throw new NotFoundException(req, "No stream named '" + streamName + "'");
-            } else {
-                return handleStreamRequest(req, pathOffset + 1, stream);
-            }
-        }
-    }
-    
-    private RestResponse handleStreamRequest(RestRequest req, int pathOffset, Stream stream) throws RestException {
-        if (!req.hasPathSegment(pathOffset)) {
-            req.assertGET();
-            return getStream(req, stream);
-        } else {
-            String resource = req.getPathSegment(pathOffset + 1);
-            throw new NotFoundException(req, "No resource '" + resource + "' for stream '" + stream.getName() +  "'");
-        }
-    } 
-    
-    private RestResponse listStreams(RestRequest req, YarchDatabase ydb) throws RestException {
-        ListStreamsResponse.Builder responseb = ListStreamsResponse.newBuilder();
-        for (AbstractStream stream : ydb.getStreams()) {
-            responseb.addStream(ArchiveHelper.toStreamInfo(stream));
-        }
-        return new RestResponse(req, responseb.build(), SchemaRest.ListStreamsResponse.WRITE);
-    }
-    
-    private RestResponse getStream(RestRequest req, Stream stream) throws RestException {
-        StreamInfo response = ArchiveHelper.toStreamInfo(stream);
-        return new RestResponse(req, response, SchemaArchive.StreamInfo.WRITE);
-    }
-    
-    private RestResponse handleParametersRequest(RestRequest req, int pathOffset) throws RestException {
-        MatchResult<Parameter> mr = RestUtils.matchParameterName(req, pathOffset);
-        if (!mr.matches()) {
-            throw new NotFoundException(req);
-        }
-        
-        pathOffset = mr.getPathOffset();
-        if (req.hasPathSegment(pathOffset)) {
-            switch (req.getPathSegment(pathOffset)) {
-            case "samples":
-                return getParameterSamples(req, mr.getRequestedId(), mr.getMatch());
-            default:
-                throw new NotFoundException(req, "No resource '" + req.getPathSegment(pathOffset) + "' for parameter " + mr.getRequestedId());
-            }
-        } else {
-            return listParameterHistory(req, mr.getRequestedId());
-        }
-    }
-    
-    private RestResponse handlePacketsRequest(RestRequest req, int pathOffset) throws RestException {
-        if (!req.hasPathSegment(pathOffset)) {
-            req.assertGET();
-            return listPackets(req, TimeEncoding.INVALID_INSTANT);
-        } else {
-            long gentime = req.getPathSegmentAsDate(pathOffset);
-            
-            pathOffset++;
-            if (!req.hasPathSegment(pathOffset)) {
-                return listPackets(req, gentime);
-            } else {
-                int seqnum = req.getPathSegmentAsInt(pathOffset);
-                return getPacket(req, gentime, seqnum);
-            }
-        }
-    }
-    
-    private RestResponse handleAlarmsRequest(RestRequest req, int pathOffset) throws RestException {
-        if (!req.hasPathSegment(pathOffset)) {
-            req.assertGET();
-            return listAlarms(req, null, TimeEncoding.INVALID_INSTANT);
-        } else {
-            MatchResult<Parameter> mr = RestUtils.matchParameterName(req, pathOffset);
-            if (!mr.matches()) {
-                throw new NotFoundException(req);
-            }
-            pathOffset = mr.getPathOffset();
-            if (req.hasPathSegment(pathOffset)) {
-                long triggerTime = req.getPathSegmentAsDate(pathOffset);
-                if (req.hasPathSegment(pathOffset + 1)) {
-                    int sequenceNumber = req.getPathSegmentAsInt(pathOffset + 1);
-                    if (req.hasPathSegment(pathOffset + 2)) {
-                        throw new NotFoundException(req);
-                    } else {
-                        return getAlarm(req, mr.getMatch(), triggerTime, sequenceNumber);
-                    }
-                } else {
-                    return listAlarms(req, mr.getMatch().getQualifiedName(), triggerTime);
-                }
-            } else {
-                return listAlarms(req, mr.getMatch().getQualifiedName(), TimeEncoding.INVALID_INSTANT);
-            }
-        }
-    }
-    
-    /**
-     * A series is a list of samples that are determined in one-pass while processing a stream result.
-     * Final API unstable.
-     * <p>
-     * If no query parameters are defined, the series covers *all* data.
-     */
-    private RestResponse getParameterSamples(RestRequest req, NamedObjectId id, Parameter p) throws RestException {
-        ParameterType ptype = p.getParameterType();
-        if (ptype == null) {
-            throw new BadRequestException("Requested parameter has no type");
-        } else if (!(ptype instanceof FloatParameterType) && !(ptype instanceof IntegerParameterType)) {
-            throw new BadRequestException("Only integer or float parameters can be sampled. Got " + ptype.getClass());
-        }
-        
-        ReplayRequest.Builder rr = ReplayRequest.newBuilder().setEndAction(EndAction.QUIT);
-        rr.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id));
-        rr.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
-        
-        if (req.hasQueryParameter("start")) {
-            rr.setStart(req.getQueryParameterAsDate("start"));
-        }
-        rr.setStop(req.getQueryParameterAsDate("stop", TimeEncoding.getWallclockTime()));
-        
-        RestParameterSampler sampler = new RestParameterSampler(rr.getStop());
-        
-        RestReplays.replayAndWait(req, rr.build(), new RestReplayListener() {
-
-            @Override
-            public void onNewData(ProtoDataType type, MessageLite data) {
-                ParameterData pdata = (ParameterData) data;
-                for (ParameterValue pval : pdata.getParameterList()) {
-                    switch (pval.getEngValue().getType()) {
-                    case DOUBLE:
-                        sampler.process(pval.getGenerationTime(), pval.getEngValue().getDoubleValue());
-                        break;
-                    case FLOAT:
-                        sampler.process(pval.getGenerationTime(), pval.getEngValue().getFloatValue());
-                        break;
-                    case SINT32:
-                        sampler.process(pval.getGenerationTime(), pval.getEngValue().getSint32Value());
-                        break;
-                    case SINT64:
-                        sampler.process(pval.getGenerationTime(), pval.getEngValue().getSint64Value());
-                        break;
-                    case UINT32:
-                        sampler.process(pval.getGenerationTime(), pval.getEngValue().getUint32Value()&0xFFFFFFFFL);
-                        break;
-                    case UINT64:
-                        sampler.process(pval.getGenerationTime(), pval.getEngValue().getUint64Value());
-                        break;
-                    default:
-                        log.warn("Unexpected value type " + pval.getEngValue().getType());
-                    }
-                }
-            }
-        });
-        
-        SampleSeries.Builder series = SampleSeries.newBuilder();
-        for (Sample s : sampler.collect()) {
-            series.addSample(ArchiveHelper.toGPBSample(s));
-        }
-        
-        return new RestResponse(req, series.build(), SchemaPvalue.SampleSeries.WRITE);
-    }
-    
-    private RestResponse listParameterHistory(RestRequest req, NamedObjectId id) throws RestException {
-        long pos = req.getQueryParameterAsLong("pos", 0);
-        int limit = req.getQueryParameterAsInt("limit", 100);
-        boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
-        
-        // syspar provider is not currently added to replay channels, so it only generates errors
-        if (SystemParameterDb.isSystemParameter(id)) {
-            return new RestResponse(req, ParameterData.newBuilder().build(), SchemaPvalue.ParameterData.WRITE);
-        }
-        
-        ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, id, true);
-
-        if (req.asksFor(CSV_MIME_TYPE)) {
-            ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
-            try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new ByteBufOutputStream(buf)))) {
-                List<NamedObjectId> idList = Arrays.asList(id);
-                ParameterFormatter csvFormatter = new ParameterFormatter(bw, idList);
-                limit++; // Allow one extra line for the CSV header
-                RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit) {
-
-                    @Override
-                    public void onParameterData(ParameterData pdata) {
-                        try {
-                            csvFormatter.writeParameters(pdata.getParameterList());
-                        } catch (IOException e) {
-                            log.error("Error while writing parameter line", e);
-                        }
-                    }
-                };
-                replayListener.setNoRepeat(noRepeat);
-                RestReplays.replayAndWait(req, rr, replayListener);
-            } catch (IOException e) {
-                throw new InternalServerErrorException(e);
-            }
-            return new RestResponse(req, CSV_MIME_TYPE, buf);
-        } else {
-            ParameterData.Builder resultb = ParameterData.newBuilder();
-            RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit) {
-                
-                @Override
-                public void onParameterData(ParameterData pdata) {
-                    resultb.addAllParameter(pdata.getParameterList());
-                }
-            };
-            replayListener.setNoRepeat(noRepeat);
-            RestReplays.replayAndWait(req, rr, replayListener);
-            return new RestResponse(req, resultb.build(), SchemaPvalue.ParameterData.WRITE);
-        }
-    }
-    
-    private RestResponse listEvents(RestRequest req) throws RestException {
-        long pos = req.getQueryParameterAsLong("pos", 0);
-        int limit = req.getQueryParameterAsInt("limit", 100);
-        
-        StringBuilder sqlb = new StringBuilder("select * from ").append(EventRecorder.TABLE_NAME);
-        IntervalResult ir = RestUtils.scanForInterval(req);
-        if (ir.hasInterval()) {
-            sqlb.append(" where ").append(ir.asSqlCondition("gentime"));
-        }
-        if (RestUtils.asksDescending(req, true)) {
-            sqlb.append(" order desc");
-        }
-        
-        if (req.asksFor(CSV_MIME_TYPE)) {
-            ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new ByteBufOutputStream(buf)));
-            CsvWriter w = new CsvWriter(bw, '\t');
-            try {
-                w.writeRecord(ArchiveHelper.EVENT_CSV_HEADER);
-            } catch (IOException e) {
-                throw new InternalServerErrorException(e);
-            }
-                
-            RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
-
-                @Override
-                public void onTuple(Tuple tuple) {
-                    try {
-                        w.writeRecord(ArchiveHelper.tupleToCSVEvent(tuple));
-                    } catch (IOException e) {
-                        // TODO maybe support passing up as rest exception using custom listeners
-                        log.error("Could not write csv record ", e);
-                    }
-                }
-            });
-            w.close();
-            return new RestResponse(req, CSV_MIME_TYPE, buf);
-        } else {
-            ListEventsResponse.Builder responseb = ListEventsResponse.newBuilder();
-            RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
-
-                @Override
-                public void onTuple(Tuple tuple) {
-                    Event.Builder event = Event.newBuilder((Event) tuple.getColumn("body"));
-                    event.setGenerationTimeUTC(TimeEncoding.toString(event.getGenerationTime()));
-                    event.setReceptionTimeUTC(TimeEncoding.toString(event.getReceptionTime()));
-                    responseb.addEvent(event);    
-                }
-            });
-            
-            return new RestResponse(req, responseb.build(), SchemaRest.ListEventsResponse.WRITE);
-        }
-    }
-    
-    private RestResponse listPackets(RestRequest req, long gentime) throws RestException {
-        long pos = req.getQueryParameterAsLong("pos", 0);
-        int limit = req.getQueryParameterAsInt("limit", 100);
-        
-        StringBuilder sqlb = new StringBuilder("select * from ").append(XtceTmRecorder.TABLE_NAME);
-        IntervalResult ir = RestUtils.scanForInterval(req);
-        if (ir.hasInterval() || gentime != TimeEncoding.INVALID_INSTANT) {
-            sqlb.append(" where ");
-            if (ir.hasInterval()) {
-                sqlb.append(ir.asSqlCondition("gentime"));    
-            }
-            if (gentime != TimeEncoding.INVALID_INSTANT) {
-                if (ir.hasInterval()) sqlb.append(" and ");
-                sqlb.append("gentime = ").append(gentime);
-            }
-        }
-        if (RestUtils.asksDescending(req, true)) {
-            sqlb.append(" order desc");
-        }
-        
-        ListPacketsResponse.Builder responseb = ListPacketsResponse.newBuilder();
-        RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
-
-            @Override
-            public void onTuple(Tuple tuple) {
-                TmPacketData pdata = ArchiveHelper.tupleToPacketData(tuple);
-                responseb.addPacket(pdata);
-            }
-        });
-        
-        return new RestResponse(req, responseb.build(), SchemaRest.ListPacketsResponse.WRITE);
-    }
-    
-    private RestResponse getPacket(RestRequest req, long gentime, int seqnum) throws RestException {
-        StringBuilder sqlb = new StringBuilder("select * from ").append(XtceTmRecorder.TABLE_NAME);
-        sqlb.append(" where gentime = ").append(gentime).append(" and seqNum = ").append(seqnum);
-        List<TmPacketData> packets = new ArrayList<>();
-        RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(0, 2) {
-
-            @Override
-            public void onTuple(Tuple tuple) {
-                TmPacketData pdata = ArchiveHelper.tupleToPacketData(tuple);
-                packets.add(pdata);
-            }
-        });
-        
-        if (packets.isEmpty()) {
-            throw new NotFoundException(req, "No packet for id (" + gentime + ", " + seqnum + ")");
-        } else if (packets.size() > 1) {
-            throw new InternalServerErrorException("Too many results");
-        } else {
-            return new RestResponse(req, packets.get(0), SchemaYamcs.TmPacketData.WRITE);
-        }
-    }
-    
-    private RestResponse listAlarms(RestRequest req, String parameterName, long triggerTime) throws RestException {
-        long pos = req.getQueryParameterAsLong("pos", 0);
-        int limit = req.getQueryParameterAsInt("limit", 100);
-        
-        StringBuilder sqlb = new StringBuilder("select * from ").append(AlarmRecorder.TABLE_NAME);
-        IntervalResult ir = RestUtils.scanForInterval(req);
-        if (ir.hasInterval() || parameterName != null || triggerTime != TimeEncoding.INVALID_INSTANT) {
-            sqlb.append(" where ");
-            if (ir.hasInterval()) {
-                sqlb.append(ir.asSqlCondition("triggerTime"));    
-            }
-            if (parameterName != null) {
-                if (ir.hasInterval()) sqlb.append(" and ");
-                sqlb.append("parameter = '").append(parameterName).append("'");
-            }
-            if (triggerTime != TimeEncoding.INVALID_INSTANT) {
-                if (ir.hasInterval() || parameterName != null) sqlb.append(" and ");
-                sqlb.append("triggerTime = ").append(triggerTime);
-            }
-        }
-        if (RestUtils.asksDescending(req, true)) {
-            sqlb.append(" order desc");
-        }
-        
-        System.out.println("will execute " + sqlb.toString());
-        
-        ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
-        RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
-
-            @Override
-            public void onTuple(Tuple tuple) {
-                AlarmData alarm = ArchiveHelper.tupleToAlarmData(tuple);
-                responseb.addAlarm(alarm);
-            }
-        });
-        
-        return new RestResponse(req, responseb.build(), SchemaRest.ListAlarmsResponse.WRITE);
-    }
-    
-    private RestResponse getAlarm(RestRequest req, Parameter p, long triggerTime, int seqnum) throws RestException {
-        StringBuilder sqlb = new StringBuilder("select * from ").append(AlarmRecorder.TABLE_NAME);
-        sqlb.append(" where triggerTime = ").append(triggerTime)
-            .append(" and seqNum = ").append(seqnum)
-            .append(" and parameter = '").append(p.getQualifiedName()).append("'");
-        List<AlarmData> alarms = new ArrayList<>();
-        RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(0, 2) {
-
-            @Override
-            public void onTuple(Tuple tuple) {
-                AlarmData alarm = ArchiveHelper.tupleToAlarmData(tuple);
-                alarms.add(alarm);
-            }
-        });
-        
-        if (alarms.isEmpty()) {
-            throw new NotFoundException(req, "No alarm for id (" + p.getQualifiedName() + ", " + triggerTime + ", " + seqnum + ")");
-        } else if (alarms.size() > 1) {
-            throw new InternalServerErrorException("Too many results");
-        } else {
-            return new RestResponse(req, alarms.get(0), SchemaAlarms.AlarmData.WRITE);
-        }
-    }
-    
-    /**
-     * Lists all tags (optionally filtered by request-body)
-     */
-    private RestResponse listTags(RestRequest req) throws RestException {
-        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
-        TagDb tagDb = getTagDb(instance);
-        
-        // Start with default open-ended
-        TimeInterval interval = new TimeInterval();
-        
-        // Check any additional options
-        if (req.hasBody()) {
-            GetTagsRequest request = req.bodyAsMessage(SchemaArchive.GetTagsRequest.MERGE).build();
-            if (request.hasStart()) interval.setStart(request.getStart());
-            if (request.hasStop()) interval.setStop(request.getStop());
-        }
-        
-        // Build response with a callback from the TagDb, this is all happening on
-        // the same thread.
-        GetTagsResponse.Builder responseb = GetTagsResponse.newBuilder();
-        try {
-            tagDb.getTags(new TimeInterval(), new TagReceiver() {
-                @Override
-                public void onTag(ArchiveTag tag) {
-                   responseb.addTags(tag);
-                }
-
-                @Override public void finished() {}
-            });
-        } catch (IOException e) {
-            throw new InternalServerErrorException("Could not load tags", e);
-        }
-        return new RestResponse(req, responseb.build(), SchemaArchive.GetTagsResponse.WRITE);
-    }
-    
-    /**
-     * Adds a new tag. The newly added tag is returned as a response so the user
-     * knows the assigned id.
-     * <p>
-     * POST /archive/:instance/tags
-     */
-    private RestResponse insertTag(RestRequest req) throws RestException {
-        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
-        TagDb tagDb = getTagDb(instance);
-        InsertTagRequest request = req.bodyAsMessage(SchemaArchive.InsertTagRequest.MERGE).build();
-        if (!request.hasName())
-            throw new BadRequestException("Name is required");
-        
-        // Translate to yamcs-api
-        ArchiveTag.Builder tagb = ArchiveTag.newBuilder().setName(request.getName());
-        if (request.hasStart()) tagb.setStart(request.getStart());
-        if (request.hasStop()) tagb.setStop(request.getStop());
-        if (request.hasDescription()) tagb.setDescription(request.getDescription());
-        if (request.hasColor()) tagb.setColor(request.getColor());
-        
-        // Do the insert
-        ArchiveTag newTag;
-        try {
-            newTag = tagDb.insertTag(tagb.build());
-        } catch (IOException e) {
-            throw new InternalServerErrorException(e);
-        }
-
-        // Echo back the tag, with its new ID
-        InsertTagResponse.Builder responseb = InsertTagResponse.newBuilder();
-        responseb.setTag(newTag);
-        return new RestResponse(req, responseb.build(), SchemaArchive.InsertTagResponse.WRITE);
-    }
-    
-    /**
-     * Updates an existing tag. Returns nothing
-     * <p>
-     * PUT /archive/:instance/tags/(tag-time)/(tag-id)
-     */
-    private RestResponse updateTag(RestRequest req, long tagTime, int tagId) throws RestException {
-        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
-        TagDb tagDb = getTagDb(instance);
-        UpdateTagRequest request = req.bodyAsMessage(SchemaArchive.UpdateTagRequest.MERGE).build();
-        if (tagId < 1)
-            throw new BadRequestException("Invalid tag ID");
-        if (!request.hasName())
-            throw new BadRequestException("Name is required");
-        
-        // Translate to yamcs-api
-        ArchiveTag.Builder tagb = ArchiveTag.newBuilder().setName(request.getName());
-        if (request.hasStart()) tagb.setStart(request.getStart());
-        if (request.hasStop()) tagb.setStop(request.getStop());
-        if (request.hasDescription()) tagb.setDescription(request.getDescription());
-        if (request.hasColor()) tagb.setColor(request.getColor());
-        
-        // Do the update
-        try {
-            tagDb.updateTag(tagTime, tagId, tagb.build());
-        } catch (YamcsException e) {
-            throw new InternalServerErrorException(e);
-        } catch (IOException e) {
-            throw new InternalServerErrorException(e);
-        }
-        
-        return new RestResponse(req);
-    }
-    
-    /**
-     * Deletes the identified tag. Returns nothing, but if the tag
-     * didn't exist, it returns a 404 Not Found
-     */
-    private RestResponse deleteTag(RestRequest req, long tagTime, int tagId) throws RestException {
-        if (tagId < 1)
-            throw new BadRequestException("Invalid tag ID");
-        
-        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
-        TagDb tagDb = getTagDb(instance);
-        try {
-            tagDb.deleteTag(tagTime, tagId);
-        } catch (YamcsException e) { // Delete-tag returns an exception when it's not found
-            throw new NotFoundException(req);
-        } catch (IOException e) {
-            throw new InternalServerErrorException(e);
-        }
-        
-        return new RestResponse(req);
-    }
-    
-    private static TagDb getTagDb(String yamcsInstance) throws RestException {
-        try {
-            return YarchDatabase.getInstance(yamcsInstance).getDefaultStorageEngine().getTagDb();
-        } catch (YarchException e) {
-            throw new InternalServerErrorException("Could not load tag-db", e);
-        }
-    }
-
     private static MessageAndSchema<?> fromReplayMessage(ProtoDataType dataType, MessageLite msg) {
         switch (dataType) {
             case PARAMETER:

@@ -450,6 +450,15 @@ public final class SchemaWeb
                     if(message.hasTimeInfo())
                         output.writeObject(11, message.getTimeInfo(), org.yamcs.protobuf.SchemaYamcs.TimeInfo.WRITE, false);
 
+                    if(message.hasLinkEvent())
+                        output.writeObject(12, message.getLinkEvent(), org.yamcs.protobuf.SchemaYamcsManagement.LinkEvent.WRITE, false);
+
+                    if(message.hasCommandQueueInfo())
+                        output.writeObject(13, message.getCommandQueueInfo(), org.yamcs.protobuf.SchemaCommanding.CommandQueueInfo.WRITE, false);
+
+                    if(message.hasCommandQueueEvent())
+                        output.writeObject(14, message.getCommandQueueEvent(), org.yamcs.protobuf.SchemaCommanding.CommandQueueEvent.WRITE, false);
+
                 }
                 public boolean isInitialized(org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData message)
                 {
@@ -531,6 +540,18 @@ public final class SchemaWeb
                                 builder.setTimeInfo(input.mergeObject(org.yamcs.protobuf.Yamcs.TimeInfo.newBuilder(), org.yamcs.protobuf.SchemaYamcs.TimeInfo.MERGE));
 
                                 break;
+                            case 12:
+                                builder.setLinkEvent(input.mergeObject(org.yamcs.protobuf.YamcsManagement.LinkEvent.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.LinkEvent.MERGE));
+
+                                break;
+                            case 13:
+                                builder.setCommandQueueInfo(input.mergeObject(org.yamcs.protobuf.Commanding.CommandQueueInfo.newBuilder(), org.yamcs.protobuf.SchemaCommanding.CommandQueueInfo.MERGE));
+
+                                break;
+                            case 14:
+                                builder.setCommandQueueEvent(input.mergeObject(org.yamcs.protobuf.Commanding.CommandQueueEvent.newBuilder(), org.yamcs.protobuf.SchemaCommanding.CommandQueueEvent.MERGE));
+
+                                break;
                             default:
                                 input.handleUnknownField(number, this);
                         }
@@ -582,6 +603,9 @@ public final class SchemaWeb
                     case 9: return "streamData";
                     case 10: return "alarmData";
                     case 11: return "timeInfo";
+                    case 12: return "linkEvent";
+                    case 13: return "commandQueueInfo";
+                    case 14: return "commandQueueEvent";
                     default: return null;
                 }
             }
@@ -604,6 +628,9 @@ public final class SchemaWeb
                 fieldMap.put("streamData", 9);
                 fieldMap.put("alarmData", 10);
                 fieldMap.put("timeInfo", 11);
+                fieldMap.put("linkEvent", 12);
+                fieldMap.put("commandQueueInfo", 13);
+                fieldMap.put("commandQueueEvent", 14);
             }
         }
 

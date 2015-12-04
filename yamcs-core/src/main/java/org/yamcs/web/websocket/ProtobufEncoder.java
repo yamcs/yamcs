@@ -5,6 +5,8 @@ import java.io.IOException;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
+import org.yamcs.protobuf.Commanding.CommandQueueEvent;
+import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType;
@@ -14,6 +16,7 @@ import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
+import org.yamcs.protobuf.YamcsManagement.LinkEvent;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 
@@ -71,10 +74,16 @@ public class ProtobufEncoder implements WebSocketEncoder {
             responseb.setAlarmData((AlarmData) message);
         } else if (dataType == ProtoDataType.STREAM_DATA) {
             responseb.setStreamData((StreamData) message);
+        } else if (dataType == ProtoDataType.LINK_EVENT) {
+            responseb.setLinkEvent((LinkEvent) message);
         } else if (dataType == ProtoDataType.TIME_INFO) {
             responseb.setTimeInfo((TimeInfo) message);
         } else if (dataType == ProtoDataType.EVENT) {
             responseb.setEvent((Event) message);
+        } else if (dataType == ProtoDataType.COMMAND_QUEUE_INFO) {
+            responseb.setCommandQueueInfo((CommandQueueInfo) message);
+        } else if (dataType == ProtoDataType.COMMAND_QUEUE_EVENT) {
+            responseb.setCommandQueueEvent((CommandQueueEvent) message);
         } else {
             throw new IllegalArgumentException("Unsupported data type " + dataType);
         }

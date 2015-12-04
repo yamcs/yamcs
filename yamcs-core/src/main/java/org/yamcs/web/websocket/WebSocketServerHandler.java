@@ -78,7 +78,7 @@ public class WebSocketServerHandler {
     private String determineApplicationName(HttpRequest req) {
         if (req.headers().contains(HttpHeaders.Names.USER_AGENT)) {
             String userAgent = req.headers().get(HttpHeaders.Names.USER_AGENT);
-            return (userAgent.contains("Mozilla")) ? "uss-web" : userAgent;
+            return (userAgent.contains("Mozilla")) ? "yamcs-web" : userAgent;
         } else {
             // Origin is always present, according to spec.
             return "Unknown (" + req.headers().get(HttpHeaders.Names.ORIGIN) +")";
@@ -176,7 +176,7 @@ public class WebSocketServerHandler {
         if(!channel.isOpen()) throw new IOException("Channel not open");
         
         if(!channel.isWritable()) {
-            log.warn("Dropping message because channel is not writable");
+            log.warn("Dropping " + dataType + " message because channel is not writable");
             return;
         }
         WebSocketFrame frame = encoder.encodeData(dataSeqCount, dataType, data, schema);

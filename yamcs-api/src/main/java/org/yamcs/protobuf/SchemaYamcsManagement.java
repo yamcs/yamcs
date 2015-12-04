@@ -2178,4 +2178,124 @@ public final class SchemaYamcsManagement
         }
     }
 
+    public static final class LinkEvent
+    {
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.LinkEvent.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.LinkEvent.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.LinkEvent.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.LinkEvent.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.LinkEvent>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.LinkEvent message) throws java.io.IOException
+            {
+                if(message.hasType())
+                    output.writeString(1, message.getType().name(), false);
+                if(message.hasLinkInfo())
+                    output.writeObject(2, message.getLinkInfo(), org.yamcs.protobuf.SchemaYamcsManagement.LinkInfo.WRITE, false);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.LinkEvent message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.LinkEvent.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.LinkEvent.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.LinkEvent> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.LinkEvent.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.LinkEvent.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.LinkEvent.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.LinkEvent message) throws java.io.IOException {}
+            public org.yamcs.protobuf.YamcsManagement.LinkEvent newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setType(org.yamcs.protobuf.YamcsManagement.LinkEvent.Type.valueOf(input.readString()));
+                            break;
+                        case 2:
+                            builder.setLinkInfo(input.mergeObject(org.yamcs.protobuf.YamcsManagement.LinkInfo.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.LinkInfo.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder newMessage()
+            {
+                return org.yamcs.protobuf.YamcsManagement.LinkEvent.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.LinkEvent.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.LinkEvent.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.LinkEvent.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.LinkEvent.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "type";
+                case 2: return "linkInfo";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("type", 1);
+            fieldMap.put("linkInfo", 2);
+        }
+    }
+
 }

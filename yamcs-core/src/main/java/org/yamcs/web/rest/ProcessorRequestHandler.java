@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
+import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Rest;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
@@ -45,11 +46,6 @@ public class ProcessorRequestHandler extends RestRequestHandler {
     private static ProcessorParameterRequestHandler parameterHandler = new ProcessorParameterRequestHandler();
     private static ProcessorCommandRequestHandler commandHandler = new ProcessorCommandRequestHandler();
     private static ProcessorCommandQueueRequestHandler cqueueHandler = new ProcessorCommandQueueRequestHandler();
-
-    @Override
-    public String getPath() {
-        return "processors";
-    }
 
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
@@ -396,7 +392,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
     public static ProcessorInfo toProcessorInfo(YProcessor processor, RestRequest req, boolean detail) {
         ProcessorInfo.Builder b;
         if (detail) {
-            ProcessorInfo pinfo = ManagementService.getProcessorInfo(processor);
+            ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
             b = ProcessorInfo.newBuilder(pinfo);
         } else {
             b = ProcessorInfo.newBuilder().setName(processor.getName());

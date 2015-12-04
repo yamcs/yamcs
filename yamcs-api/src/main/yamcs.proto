@@ -56,24 +56,6 @@ message NamedObjectList {
   repeated NamedObjectId list = 1;
 }
 
-service RealtimeParameterService {
-  rpc Subscribe(NamedObjectList) returns (Void);
-
-  //sends all the parameters with the names from namespace. Those that don't have a name in that namespace, are sent with their real name
-  rpc SubscribeAll(StringMessage) returns (Void);
-
-  rpc Unsubscribe(NamedObjectList) returns (Void);
-  rpc UnsubscribeAll(Void) returns (Void);
-}
-
-/****************Index Service*************/
-service ArchiveIndex {
-  rpc GetIndex(IndexRequest) returns (IndexResult);//result sent on the data address
-  rpc GetTag(IndexRequest) returns (TagResult);//result sent on the data address
-  rpc UpsertTag(UpsertTagRequest) returns (ArchiveTag);
-  rpc DeleteTag(DeleteTagRequest) returns (Void);
-}
-
 //requesting index (histogram) information about tm packets, pp groups and commands
 message IndexRequest {
   required string instance = 1;
@@ -155,22 +137,6 @@ message DeleteTagRequest {
 }
 
 /************************ Replay Service ****************/
-//this creates a reply request object
-// all the subsequent control messages are send to the returned address
-/* all the replay data is sent on the data address
-service YarchReplay {
-  rpc CreateReplay(ReplayRequest) returns (MessagingAddress);
-}
-
-service Replay {
-  rpc Start(Void) returns (Void);
-  rpc Pause(Void) returns (Void);
-  rpc Quit(Void) returns (Void);
-  rpc Seek(Instant) returns (Void);
-  rpc GetReplayStatus(Void) returns (ReplayStatus);
-  rpc ChangeReplayRequest(ReplayRequest) returns (Void);
-}
-*/
 enum EndAction {
   LOOP = 1;
   QUIT = 2;
@@ -209,6 +175,9 @@ enum ProtoDataType {
   STREAM_DATA = 13;
   ALARM_DATA = 14;
   TIME_INFO = 15;
+  LINK_EVENT = 16;
+  COMMAND_QUEUE_INFO = 17;
+  COMMAND_QUEUE_EVENT = 18;
 }
 
 //used to replay (concurrently) TM packets, parameters and events

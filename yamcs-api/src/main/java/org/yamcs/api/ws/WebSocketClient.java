@@ -14,10 +14,12 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -98,8 +100,12 @@ public class WebSocketClient {
                 null, false, header);
         WebSocketClientHandler webSocketHandler = new WebSocketClientHandler(handshaker, this, callback);
 
-        Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group(group).channel(NioSocketChannel.class).handler(new ChannelInitializer<SocketChannel>() {
+        Bootstrap bootstrap = new Bootstrap()
+                .group(group)
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                .channel(NioSocketChannel.class);
+        
+        bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
                 ch.pipeline().addLast(

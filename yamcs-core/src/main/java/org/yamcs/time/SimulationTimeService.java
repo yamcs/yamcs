@@ -64,11 +64,6 @@ public class SimulationTimeService implements TimeService {
         static final String SET_REQ = "set";
         
         @Override
-        public String getPath() {
-            return "simTime";
-        }
-        
-        @Override
         public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
             if (!req.hasPathSegment(pathOffset)) {
                 throw new NotFoundException(req);

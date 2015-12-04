@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -431,6 +432,19 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
         return pc;
     }
+    
+    // Used by REST API as a simpler identifier
+    public synchronized PreparedCommand rejectCommand(UUID uuid, String username) {
+        for(CommandQueue q:queues.values()) {
+            for(PreparedCommand pc:q.getCommands()) {
+                if(pc.getUUID().equals(uuid)) {
+                    return rejectCommand(pc.getCommandId(), username);
+                }
+            }
+        }
+        log.warn("no prepared command found for uuid "+uuid);
+        return null;
+    }
 
     /**
      * Called from external client to release a command from the queue
@@ -456,6 +470,19 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
         return command;
     }
+    
+    // Used by REST API as a simpler identifier
+    public synchronized PreparedCommand sendCommand(UUID uuid, boolean rebuild) {
+        for(CommandQueue q:queues.values()) {
+            for(PreparedCommand pc:q.getCommands()) {
+                if(pc.getUUID().equals(uuid)) {
+                    return sendCommand(pc.getCommandId(), rebuild);
+                }
+            }
+        }
+        log.warn("no prepared command found for uuid "+uuid);
+        return null;
+    }
 
     /**
      * Called from external clients to change the state of the queue
@@ -463,7 +490,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      * @param newState the new state of the queue
      * @throws CommandQueueException thrown when there is no queue with the given name
      */
-    public synchronized CommandQueue setQueueState(String queueName, QueueState newState, boolean rebuild) {
+    public synchronized CommandQueue setQueueState(String queueName, QueueState newState/*, boolean rebuild*/) {
         CommandQueue queue =null;
         for(CommandQueue q:queues.values()) {
             if(q.name.equals(queueName)) {
@@ -525,7 +552,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
         Runnable r = () -> {
             log.info("executing epiration state, reverting to " + queue.defaultState);
-            setQueueState(queue.name, queue.defaultState, false);
+            setQueueState(queue.name, queue.defaultState);
             queue.stateExpirationJob = null;
         };
 
@@ -541,6 +568,10 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      */
     public void registerListener(CommandQueueListener cqm) {
         monitoringClients.add(cqm);
+    }
+    
+    public boolean removeListener(CommandQueueListener cqm) {
+        return monitoringClients.remove(cqm);
     }
 
     public String getInstance() {

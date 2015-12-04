@@ -2785,6 +2785,48 @@ public final class Web {
        * <code>optional .yamcs.TimeInfo timeInfo = 11;</code>
        */
       org.yamcs.protobuf.Yamcs.TimeInfoOrBuilder getTimeInfoOrBuilder();
+
+      // optional .yamcsManagement.LinkEvent linkEvent = 12;
+      /**
+       * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
+       */
+      boolean hasLinkEvent();
+      /**
+       * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
+       */
+      org.yamcs.protobuf.YamcsManagement.LinkEvent getLinkEvent();
+      /**
+       * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
+       */
+      org.yamcs.protobuf.YamcsManagement.LinkEventOrBuilder getLinkEventOrBuilder();
+
+      // optional .commanding.CommandQueueInfo commandQueueInfo = 13;
+      /**
+       * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
+       */
+      boolean hasCommandQueueInfo();
+      /**
+       * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
+       */
+      org.yamcs.protobuf.Commanding.CommandQueueInfo getCommandQueueInfo();
+      /**
+       * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
+       */
+      org.yamcs.protobuf.Commanding.CommandQueueInfoOrBuilder getCommandQueueInfoOrBuilder();
+
+      // optional .commanding.CommandQueueEvent commandQueueEvent = 14;
+      /**
+       * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
+       */
+      boolean hasCommandQueueEvent();
+      /**
+       * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
+       */
+      org.yamcs.protobuf.Commanding.CommandQueueEvent getCommandQueueEvent();
+      /**
+       * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
+       */
+      org.yamcs.protobuf.Commanding.CommandQueueEventOrBuilder getCommandQueueEventOrBuilder();
     }
     /**
      * Protobuf type {@code web.WebSocketServerMessage.WebSocketSubscriptionData}
@@ -2974,6 +3016,45 @@ public final class Web {
                   timeInfo_ = subBuilder.buildPartial();
                 }
                 bitField0_ |= 0x00000400;
+                break;
+              }
+              case 98: {
+                org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder subBuilder = null;
+                if (((bitField0_ & 0x00000800) == 0x00000800)) {
+                  subBuilder = linkEvent_.toBuilder();
+                }
+                linkEvent_ = input.readMessage(org.yamcs.protobuf.YamcsManagement.LinkEvent.PARSER, extensionRegistry);
+                if (subBuilder != null) {
+                  subBuilder.mergeFrom(linkEvent_);
+                  linkEvent_ = subBuilder.buildPartial();
+                }
+                bitField0_ |= 0x00000800;
+                break;
+              }
+              case 106: {
+                org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder subBuilder = null;
+                if (((bitField0_ & 0x00001000) == 0x00001000)) {
+                  subBuilder = commandQueueInfo_.toBuilder();
+                }
+                commandQueueInfo_ = input.readMessage(org.yamcs.protobuf.Commanding.CommandQueueInfo.PARSER, extensionRegistry);
+                if (subBuilder != null) {
+                  subBuilder.mergeFrom(commandQueueInfo_);
+                  commandQueueInfo_ = subBuilder.buildPartial();
+                }
+                bitField0_ |= 0x00001000;
+                break;
+              }
+              case 114: {
+                org.yamcs.protobuf.Commanding.CommandQueueEvent.Builder subBuilder = null;
+                if (((bitField0_ & 0x00002000) == 0x00002000)) {
+                  subBuilder = commandQueueEvent_.toBuilder();
+                }
+                commandQueueEvent_ = input.readMessage(org.yamcs.protobuf.Commanding.CommandQueueEvent.PARSER, extensionRegistry);
+                if (subBuilder != null) {
+                  subBuilder.mergeFrom(commandQueueEvent_);
+                  commandQueueEvent_ = subBuilder.buildPartial();
+                }
+                bitField0_ |= 0x00002000;
                 break;
               }
             }
@@ -3246,6 +3327,72 @@ public final class Web {
         return timeInfo_;
       }
 
+      // optional .yamcsManagement.LinkEvent linkEvent = 12;
+      public static final int LINKEVENT_FIELD_NUMBER = 12;
+      private org.yamcs.protobuf.YamcsManagement.LinkEvent linkEvent_;
+      /**
+       * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
+       */
+      public boolean hasLinkEvent() {
+        return ((bitField0_ & 0x00000800) == 0x00000800);
+      }
+      /**
+       * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.LinkEvent getLinkEvent() {
+        return linkEvent_;
+      }
+      /**
+       * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.LinkEventOrBuilder getLinkEventOrBuilder() {
+        return linkEvent_;
+      }
+
+      // optional .commanding.CommandQueueInfo commandQueueInfo = 13;
+      public static final int COMMANDQUEUEINFO_FIELD_NUMBER = 13;
+      private org.yamcs.protobuf.Commanding.CommandQueueInfo commandQueueInfo_;
+      /**
+       * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
+       */
+      public boolean hasCommandQueueInfo() {
+        return ((bitField0_ & 0x00001000) == 0x00001000);
+      }
+      /**
+       * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
+       */
+      public org.yamcs.protobuf.Commanding.CommandQueueInfo getCommandQueueInfo() {
+        return commandQueueInfo_;
+      }
+      /**
+       * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
+       */
+      public org.yamcs.protobuf.Commanding.CommandQueueInfoOrBuilder getCommandQueueInfoOrBuilder() {
+        return commandQueueInfo_;
+      }
+
+      // optional .commanding.CommandQueueEvent commandQueueEvent = 14;
+      public static final int COMMANDQUEUEEVENT_FIELD_NUMBER = 14;
+      private org.yamcs.protobuf.Commanding.CommandQueueEvent commandQueueEvent_;
+      /**
+       * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
+       */
+      public boolean hasCommandQueueEvent() {
+        return ((bitField0_ & 0x00002000) == 0x00002000);
+      }
+      /**
+       * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
+       */
+      public org.yamcs.protobuf.Commanding.CommandQueueEvent getCommandQueueEvent() {
+        return commandQueueEvent_;
+      }
+      /**
+       * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
+       */
+      public org.yamcs.protobuf.Commanding.CommandQueueEventOrBuilder getCommandQueueEventOrBuilder() {
+        return commandQueueEvent_;
+      }
+
       private void initFields() {
         sequenceNumber_ = 0;
         type_ = org.yamcs.protobuf.Yamcs.ProtoDataType.DT_ERROR;
@@ -3258,6 +3405,9 @@ public final class Web {
         streamData_ = org.yamcs.protobuf.Archive.StreamData.getDefaultInstance();
         alarmData_ = org.yamcs.protobuf.Alarms.AlarmData.getDefaultInstance();
         timeInfo_ = org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance();
+        linkEvent_ = org.yamcs.protobuf.YamcsManagement.LinkEvent.getDefaultInstance();
+        commandQueueInfo_ = org.yamcs.protobuf.Commanding.CommandQueueInfo.getDefaultInstance();
+        commandQueueEvent_ = org.yamcs.protobuf.Commanding.CommandQueueEvent.getDefaultInstance();
       }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
@@ -3312,6 +3462,24 @@ public final class Web {
             return false;
           }
         }
+        if (hasLinkEvent()) {
+          if (!getLinkEvent().isInitialized()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+        }
+        if (hasCommandQueueInfo()) {
+          if (!getCommandQueueInfo().isInitialized()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+        }
+        if (hasCommandQueueEvent()) {
+          if (!getCommandQueueEvent().isInitialized()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+        }
         memoizedIsInitialized = 1;
         return true;
       }
@@ -3351,6 +3519,15 @@ public final class Web {
         }
         if (((bitField0_ & 0x00000400) == 0x00000400)) {
           output.writeMessage(11, timeInfo_);
+        }
+        if (((bitField0_ & 0x00000800) == 0x00000800)) {
+          output.writeMessage(12, linkEvent_);
+        }
+        if (((bitField0_ & 0x00001000) == 0x00001000)) {
+          output.writeMessage(13, commandQueueInfo_);
+        }
+        if (((bitField0_ & 0x00002000) == 0x00002000)) {
+          output.writeMessage(14, commandQueueEvent_);
         }
         getUnknownFields().writeTo(output);
       }
@@ -3404,6 +3581,18 @@ public final class Web {
         if (((bitField0_ & 0x00000400) == 0x00000400)) {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(11, timeInfo_);
+        }
+        if (((bitField0_ & 0x00000800) == 0x00000800)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(12, linkEvent_);
+        }
+        if (((bitField0_ & 0x00001000) == 0x00001000)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(13, commandQueueInfo_);
+        }
+        if (((bitField0_ & 0x00002000) == 0x00002000)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(14, commandQueueEvent_);
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -3528,6 +3717,9 @@ public final class Web {
             getStreamDataFieldBuilder();
             getAlarmDataFieldBuilder();
             getTimeInfoFieldBuilder();
+            getLinkEventFieldBuilder();
+            getCommandQueueInfoFieldBuilder();
+            getCommandQueueEventFieldBuilder();
           }
         }
         private static Builder create() {
@@ -3594,6 +3786,24 @@ public final class Web {
             timeInfoBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000400);
+          if (linkEventBuilder_ == null) {
+            linkEvent_ = org.yamcs.protobuf.YamcsManagement.LinkEvent.getDefaultInstance();
+          } else {
+            linkEventBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000800);
+          if (commandQueueInfoBuilder_ == null) {
+            commandQueueInfo_ = org.yamcs.protobuf.Commanding.CommandQueueInfo.getDefaultInstance();
+          } else {
+            commandQueueInfoBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00001000);
+          if (commandQueueEventBuilder_ == null) {
+            commandQueueEvent_ = org.yamcs.protobuf.Commanding.CommandQueueEvent.getDefaultInstance();
+          } else {
+            commandQueueEventBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00002000);
           return this;
         }
 
@@ -3702,6 +3912,30 @@ public final class Web {
           } else {
             result.timeInfo_ = timeInfoBuilder_.build();
           }
+          if (((from_bitField0_ & 0x00000800) == 0x00000800)) {
+            to_bitField0_ |= 0x00000800;
+          }
+          if (linkEventBuilder_ == null) {
+            result.linkEvent_ = linkEvent_;
+          } else {
+            result.linkEvent_ = linkEventBuilder_.build();
+          }
+          if (((from_bitField0_ & 0x00001000) == 0x00001000)) {
+            to_bitField0_ |= 0x00001000;
+          }
+          if (commandQueueInfoBuilder_ == null) {
+            result.commandQueueInfo_ = commandQueueInfo_;
+          } else {
+            result.commandQueueInfo_ = commandQueueInfoBuilder_.build();
+          }
+          if (((from_bitField0_ & 0x00002000) == 0x00002000)) {
+            to_bitField0_ |= 0x00002000;
+          }
+          if (commandQueueEventBuilder_ == null) {
+            result.commandQueueEvent_ = commandQueueEvent_;
+          } else {
+            result.commandQueueEvent_ = commandQueueEventBuilder_.build();
+          }
           result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
@@ -3750,6 +3984,15 @@ public final class Web {
           }
           if (other.hasTimeInfo()) {
             mergeTimeInfo(other.getTimeInfo());
+          }
+          if (other.hasLinkEvent()) {
+            mergeLinkEvent(other.getLinkEvent());
+          }
+          if (other.hasCommandQueueInfo()) {
+            mergeCommandQueueInfo(other.getCommandQueueInfo());
+          }
+          if (other.hasCommandQueueEvent()) {
+            mergeCommandQueueEvent(other.getCommandQueueEvent());
           }
           this.mergeUnknownFields(other.getUnknownFields());
           return this;
@@ -3800,6 +4043,24 @@ public final class Web {
           }
           if (hasAlarmData()) {
             if (!getAlarmData().isInitialized()) {
+              
+              return false;
+            }
+          }
+          if (hasLinkEvent()) {
+            if (!getLinkEvent().isInitialized()) {
+              
+              return false;
+            }
+          }
+          if (hasCommandQueueInfo()) {
+            if (!getCommandQueueInfo().isInitialized()) {
+              
+              return false;
+            }
+          }
+          if (hasCommandQueueEvent()) {
+            if (!getCommandQueueEvent().isInitialized()) {
               
               return false;
             }
@@ -4946,6 +5207,357 @@ public final class Web {
             timeInfo_ = null;
           }
           return timeInfoBuilder_;
+        }
+
+        // optional .yamcsManagement.LinkEvent linkEvent = 12;
+        private org.yamcs.protobuf.YamcsManagement.LinkEvent linkEvent_ = org.yamcs.protobuf.YamcsManagement.LinkEvent.getDefaultInstance();
+        private com.google.protobuf.SingleFieldBuilder<
+            org.yamcs.protobuf.YamcsManagement.LinkEvent, org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder, org.yamcs.protobuf.YamcsManagement.LinkEventOrBuilder> linkEventBuilder_;
+        /**
+         * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
+         */
+        public boolean hasLinkEvent() {
+          return ((bitField0_ & 0x00000800) == 0x00000800);
+        }
+        /**
+         * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
+         */
+        public org.yamcs.protobuf.YamcsManagement.LinkEvent getLinkEvent() {
+          if (linkEventBuilder_ == null) {
+            return linkEvent_;
+          } else {
+            return linkEventBuilder_.getMessage();
+          }
+        }
+        /**
+         * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
+         */
+        public Builder setLinkEvent(org.yamcs.protobuf.YamcsManagement.LinkEvent value) {
+          if (linkEventBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            linkEvent_ = value;
+            onChanged();
+          } else {
+            linkEventBuilder_.setMessage(value);
+          }
+          bitField0_ |= 0x00000800;
+          return this;
+        }
+        /**
+         * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
+         */
+        public Builder setLinkEvent(
+            org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder builderForValue) {
+          if (linkEventBuilder_ == null) {
+            linkEvent_ = builderForValue.build();
+            onChanged();
+          } else {
+            linkEventBuilder_.setMessage(builderForValue.build());
+          }
+          bitField0_ |= 0x00000800;
+          return this;
+        }
+        /**
+         * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
+         */
+        public Builder mergeLinkEvent(org.yamcs.protobuf.YamcsManagement.LinkEvent value) {
+          if (linkEventBuilder_ == null) {
+            if (((bitField0_ & 0x00000800) == 0x00000800) &&
+                linkEvent_ != org.yamcs.protobuf.YamcsManagement.LinkEvent.getDefaultInstance()) {
+              linkEvent_ =
+                org.yamcs.protobuf.YamcsManagement.LinkEvent.newBuilder(linkEvent_).mergeFrom(value).buildPartial();
+            } else {
+              linkEvent_ = value;
+            }
+            onChanged();
+          } else {
+            linkEventBuilder_.mergeFrom(value);
+          }
+          bitField0_ |= 0x00000800;
+          return this;
+        }
+        /**
+         * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
+         */
+        public Builder clearLinkEvent() {
+          if (linkEventBuilder_ == null) {
+            linkEvent_ = org.yamcs.protobuf.YamcsManagement.LinkEvent.getDefaultInstance();
+            onChanged();
+          } else {
+            linkEventBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000800);
+          return this;
+        }
+        /**
+         * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
+         */
+        public org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder getLinkEventBuilder() {
+          bitField0_ |= 0x00000800;
+          onChanged();
+          return getLinkEventFieldBuilder().getBuilder();
+        }
+        /**
+         * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
+         */
+        public org.yamcs.protobuf.YamcsManagement.LinkEventOrBuilder getLinkEventOrBuilder() {
+          if (linkEventBuilder_ != null) {
+            return linkEventBuilder_.getMessageOrBuilder();
+          } else {
+            return linkEvent_;
+          }
+        }
+        /**
+         * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
+         */
+        private com.google.protobuf.SingleFieldBuilder<
+            org.yamcs.protobuf.YamcsManagement.LinkEvent, org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder, org.yamcs.protobuf.YamcsManagement.LinkEventOrBuilder> 
+            getLinkEventFieldBuilder() {
+          if (linkEventBuilder_ == null) {
+            linkEventBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+                org.yamcs.protobuf.YamcsManagement.LinkEvent, org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder, org.yamcs.protobuf.YamcsManagement.LinkEventOrBuilder>(
+                    linkEvent_,
+                    getParentForChildren(),
+                    isClean());
+            linkEvent_ = null;
+          }
+          return linkEventBuilder_;
+        }
+
+        // optional .commanding.CommandQueueInfo commandQueueInfo = 13;
+        private org.yamcs.protobuf.Commanding.CommandQueueInfo commandQueueInfo_ = org.yamcs.protobuf.Commanding.CommandQueueInfo.getDefaultInstance();
+        private com.google.protobuf.SingleFieldBuilder<
+            org.yamcs.protobuf.Commanding.CommandQueueInfo, org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder, org.yamcs.protobuf.Commanding.CommandQueueInfoOrBuilder> commandQueueInfoBuilder_;
+        /**
+         * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
+         */
+        public boolean hasCommandQueueInfo() {
+          return ((bitField0_ & 0x00001000) == 0x00001000);
+        }
+        /**
+         * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
+         */
+        public org.yamcs.protobuf.Commanding.CommandQueueInfo getCommandQueueInfo() {
+          if (commandQueueInfoBuilder_ == null) {
+            return commandQueueInfo_;
+          } else {
+            return commandQueueInfoBuilder_.getMessage();
+          }
+        }
+        /**
+         * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
+         */
+        public Builder setCommandQueueInfo(org.yamcs.protobuf.Commanding.CommandQueueInfo value) {
+          if (commandQueueInfoBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            commandQueueInfo_ = value;
+            onChanged();
+          } else {
+            commandQueueInfoBuilder_.setMessage(value);
+          }
+          bitField0_ |= 0x00001000;
+          return this;
+        }
+        /**
+         * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
+         */
+        public Builder setCommandQueueInfo(
+            org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder builderForValue) {
+          if (commandQueueInfoBuilder_ == null) {
+            commandQueueInfo_ = builderForValue.build();
+            onChanged();
+          } else {
+            commandQueueInfoBuilder_.setMessage(builderForValue.build());
+          }
+          bitField0_ |= 0x00001000;
+          return this;
+        }
+        /**
+         * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
+         */
+        public Builder mergeCommandQueueInfo(org.yamcs.protobuf.Commanding.CommandQueueInfo value) {
+          if (commandQueueInfoBuilder_ == null) {
+            if (((bitField0_ & 0x00001000) == 0x00001000) &&
+                commandQueueInfo_ != org.yamcs.protobuf.Commanding.CommandQueueInfo.getDefaultInstance()) {
+              commandQueueInfo_ =
+                org.yamcs.protobuf.Commanding.CommandQueueInfo.newBuilder(commandQueueInfo_).mergeFrom(value).buildPartial();
+            } else {
+              commandQueueInfo_ = value;
+            }
+            onChanged();
+          } else {
+            commandQueueInfoBuilder_.mergeFrom(value);
+          }
+          bitField0_ |= 0x00001000;
+          return this;
+        }
+        /**
+         * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
+         */
+        public Builder clearCommandQueueInfo() {
+          if (commandQueueInfoBuilder_ == null) {
+            commandQueueInfo_ = org.yamcs.protobuf.Commanding.CommandQueueInfo.getDefaultInstance();
+            onChanged();
+          } else {
+            commandQueueInfoBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00001000);
+          return this;
+        }
+        /**
+         * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
+         */
+        public org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder getCommandQueueInfoBuilder() {
+          bitField0_ |= 0x00001000;
+          onChanged();
+          return getCommandQueueInfoFieldBuilder().getBuilder();
+        }
+        /**
+         * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
+         */
+        public org.yamcs.protobuf.Commanding.CommandQueueInfoOrBuilder getCommandQueueInfoOrBuilder() {
+          if (commandQueueInfoBuilder_ != null) {
+            return commandQueueInfoBuilder_.getMessageOrBuilder();
+          } else {
+            return commandQueueInfo_;
+          }
+        }
+        /**
+         * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
+         */
+        private com.google.protobuf.SingleFieldBuilder<
+            org.yamcs.protobuf.Commanding.CommandQueueInfo, org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder, org.yamcs.protobuf.Commanding.CommandQueueInfoOrBuilder> 
+            getCommandQueueInfoFieldBuilder() {
+          if (commandQueueInfoBuilder_ == null) {
+            commandQueueInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+                org.yamcs.protobuf.Commanding.CommandQueueInfo, org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder, org.yamcs.protobuf.Commanding.CommandQueueInfoOrBuilder>(
+                    commandQueueInfo_,
+                    getParentForChildren(),
+                    isClean());
+            commandQueueInfo_ = null;
+          }
+          return commandQueueInfoBuilder_;
+        }
+
+        // optional .commanding.CommandQueueEvent commandQueueEvent = 14;
+        private org.yamcs.protobuf.Commanding.CommandQueueEvent commandQueueEvent_ = org.yamcs.protobuf.Commanding.CommandQueueEvent.getDefaultInstance();
+        private com.google.protobuf.SingleFieldBuilder<
+            org.yamcs.protobuf.Commanding.CommandQueueEvent, org.yamcs.protobuf.Commanding.CommandQueueEvent.Builder, org.yamcs.protobuf.Commanding.CommandQueueEventOrBuilder> commandQueueEventBuilder_;
+        /**
+         * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
+         */
+        public boolean hasCommandQueueEvent() {
+          return ((bitField0_ & 0x00002000) == 0x00002000);
+        }
+        /**
+         * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
+         */
+        public org.yamcs.protobuf.Commanding.CommandQueueEvent getCommandQueueEvent() {
+          if (commandQueueEventBuilder_ == null) {
+            return commandQueueEvent_;
+          } else {
+            return commandQueueEventBuilder_.getMessage();
+          }
+        }
+        /**
+         * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
+         */
+        public Builder setCommandQueueEvent(org.yamcs.protobuf.Commanding.CommandQueueEvent value) {
+          if (commandQueueEventBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            commandQueueEvent_ = value;
+            onChanged();
+          } else {
+            commandQueueEventBuilder_.setMessage(value);
+          }
+          bitField0_ |= 0x00002000;
+          return this;
+        }
+        /**
+         * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
+         */
+        public Builder setCommandQueueEvent(
+            org.yamcs.protobuf.Commanding.CommandQueueEvent.Builder builderForValue) {
+          if (commandQueueEventBuilder_ == null) {
+            commandQueueEvent_ = builderForValue.build();
+            onChanged();
+          } else {
+            commandQueueEventBuilder_.setMessage(builderForValue.build());
+          }
+          bitField0_ |= 0x00002000;
+          return this;
+        }
+        /**
+         * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
+         */
+        public Builder mergeCommandQueueEvent(org.yamcs.protobuf.Commanding.CommandQueueEvent value) {
+          if (commandQueueEventBuilder_ == null) {
+            if (((bitField0_ & 0x00002000) == 0x00002000) &&
+                commandQueueEvent_ != org.yamcs.protobuf.Commanding.CommandQueueEvent.getDefaultInstance()) {
+              commandQueueEvent_ =
+                org.yamcs.protobuf.Commanding.CommandQueueEvent.newBuilder(commandQueueEvent_).mergeFrom(value).buildPartial();
+            } else {
+              commandQueueEvent_ = value;
+            }
+            onChanged();
+          } else {
+            commandQueueEventBuilder_.mergeFrom(value);
+          }
+          bitField0_ |= 0x00002000;
+          return this;
+        }
+        /**
+         * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
+         */
+        public Builder clearCommandQueueEvent() {
+          if (commandQueueEventBuilder_ == null) {
+            commandQueueEvent_ = org.yamcs.protobuf.Commanding.CommandQueueEvent.getDefaultInstance();
+            onChanged();
+          } else {
+            commandQueueEventBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00002000);
+          return this;
+        }
+        /**
+         * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
+         */
+        public org.yamcs.protobuf.Commanding.CommandQueueEvent.Builder getCommandQueueEventBuilder() {
+          bitField0_ |= 0x00002000;
+          onChanged();
+          return getCommandQueueEventFieldBuilder().getBuilder();
+        }
+        /**
+         * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
+         */
+        public org.yamcs.protobuf.Commanding.CommandQueueEventOrBuilder getCommandQueueEventOrBuilder() {
+          if (commandQueueEventBuilder_ != null) {
+            return commandQueueEventBuilder_.getMessageOrBuilder();
+          } else {
+            return commandQueueEvent_;
+          }
+        }
+        /**
+         * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
+         */
+        private com.google.protobuf.SingleFieldBuilder<
+            org.yamcs.protobuf.Commanding.CommandQueueEvent, org.yamcs.protobuf.Commanding.CommandQueueEvent.Builder, org.yamcs.protobuf.Commanding.CommandQueueEventOrBuilder> 
+            getCommandQueueEventFieldBuilder() {
+          if (commandQueueEventBuilder_ == null) {
+            commandQueueEventBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+                org.yamcs.protobuf.Commanding.CommandQueueEvent, org.yamcs.protobuf.Commanding.CommandQueueEvent.Builder, org.yamcs.protobuf.Commanding.CommandQueueEventOrBuilder>(
+                    commandQueueEvent_,
+                    getParentForChildren(),
+                    isClean());
+            commandQueueEvent_ = null;
+          }
+          return commandQueueEventBuilder_;
         }
 
         // @@protoc_insertion_point(builder_scope:web.WebSocketServerMessage.WebSocketSubscriptionData)
@@ -6437,7 +7049,7 @@ public final class Web {
       "SocketClientMessage\022\027\n\017protocolVersion\030\001" +
       " \001(\r\022\026\n\016sequenceNumber\030\002 \001(\r\022\020\n\010resource" +
       "\030\003 \001(\t\022\021\n\toperation\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\"" +
-      "\356\007\n\026WebSocketServerMessage\0225\n\004type\030\001 \001(\016" +
+      "\217\t\n\026WebSocketServerMessage\0225\n\004type\030\001 \001(\016" +
       "2\'.web.WebSocketServerMessage.MessageTyp" +
       "e\022=\n\005reply\030\002 \001(\0132..web.WebSocketServerMe" +
       "ssage.WebSocketReplyData\022E\n\texception\030\003 ",
@@ -6448,7 +7060,7 @@ public final class Web {
       "rsion\030\001 \001(\r\022\026\n\016sequenceNumber\030\002 \001(\005\032v\n\026W" +
       "ebSocketExceptionData\022\027\n\017protocolVersion" +
       "\030\001 \001(\r\022\026\n\016sequenceNumber\030\002 \001(\005\022\014\n\004type\030\003" +
-      " \001(\t\022\017\n\007message\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\032\337\003\n\031" +
+      " \001(\t\022\017\n\007message\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\032\200\005\n\031" +
       "WebSocketSubscriptionData\022\026\n\016sequenceNum" +
       "ber\030\001 \001(\r\022\"\n\004type\030\002 \001(\0162\024.yamcs.ProtoDat",
       "aType\022,\n\rparameterData\030\003 \001(\0132\025.pvalue.Pa" +
@@ -6460,11 +7072,15 @@ public final class Web {
       "ent.Statistics\022\033\n\005event\030\010 \001(\0132\014.yamcs.Ev" +
       "ent\022\'\n\nstreamData\030\t \001(\0132\023.archive.Stream" +
       "Data\022$\n\talarmData\030\n \001(\0132\021.alarms.AlarmDa" +
-      "ta\022!\n\010timeInfo\030\013 \001(\0132\017.yamcs.TimeInfo\"1\n",
-      "\013MessageType\022\t\n\005REPLY\020\002\022\r\n\tEXCEPTION\020\003\022\010" +
-      "\n\004DATA\020\004\"1\n\024RestExceptionMessage\022\014\n\004type" +
-      "\030\001 \001(\t\022\013\n\003msg\030\002 \001(\tB\024\n\022org.yamcs.protobu" +
-      "f"
+      "ta\022!\n\010timeInfo\030\013 \001(\0132\017.yamcs.TimeInfo\022-\n",
+      "\tlinkEvent\030\014 \001(\0132\032.yamcsManagement.LinkE" +
+      "vent\0226\n\020commandQueueInfo\030\r \001(\0132\034.command" +
+      "ing.CommandQueueInfo\0228\n\021commandQueueEven" +
+      "t\030\016 \001(\0132\035.commanding.CommandQueueEvent\"1" +
+      "\n\013MessageType\022\t\n\005REPLY\020\002\022\r\n\tEXCEPTION\020\003\022" +
+      "\010\n\004DATA\020\004\"1\n\024RestExceptionMessage\022\014\n\004typ" +
+      "e\030\001 \001(\t\022\013\n\003msg\030\002 \001(\tB\024\n\022org.yamcs.protob" +
+      "uf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -6500,7 +7116,7 @@ public final class Web {
           internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_descriptor,
-              new java.lang.String[] { "SequenceNumber", "Type", "ParameterData", "Command", "ProcessorInfo", "ClientInfo", "Statistics", "Event", "StreamData", "AlarmData", "TimeInfo", });
+              new java.lang.String[] { "SequenceNumber", "Type", "ParameterData", "Command", "ProcessorInfo", "ClientInfo", "Statistics", "Event", "StreamData", "AlarmData", "TimeInfo", "LinkEvent", "CommandQueueInfo", "CommandQueueEvent", });
           internal_static_web_RestExceptionMessage_descriptor =
             getDescriptor().getMessageTypes().get(2);
           internal_static_web_RestExceptionMessage_fieldAccessorTable = new

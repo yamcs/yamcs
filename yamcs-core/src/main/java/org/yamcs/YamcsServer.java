@@ -323,7 +323,7 @@ public class YamcsServer {
         } catch (ConfigurationException e) {
             throw e;
         } catch (UnknownHostException e) {
-            String msg = "Java cannot resolve local host (InetAddress.getLocalHost()). Make sure it's defined properly or altenatively add 'serverId: <name>' to yamcs.yaml";
+            String msg = "Java cannot resolve local host (InetAddress.getLocalHost()). Make sure it's defined properly or alternatively add 'serverId: <name>' to yamcs.yaml";
             staticlog.warn(msg);
             throw new ConfigurationException(msg, e);
         }
@@ -408,7 +408,7 @@ public class YamcsServer {
         if(instances.containsKey(yamcsInstance)) {
             return instances.get(yamcsInstance).getTimeService();
         } else {
-            return realtimeTimeService; //happends from unit tests
+            return realtimeTimeService; //happens from unit tests
         }
         
     }
