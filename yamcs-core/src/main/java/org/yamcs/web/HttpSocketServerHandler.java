@@ -117,20 +117,15 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
         }
         
         String[] path = uri.split("/", 3); //uri starts with / so path[0] is always empty
-        if (path.length == 1) {
-            sendNegativeHttpResponse(ctx, req, NOT_FOUND);
-            return;
-        }
-        if (STATIC_PATH.equals(path[1])) {
+        switch (path[1]) {
+        case STATIC_PATH:
             if (path.length == 2) { //do not accept "/_static/" (i.e. directory listing) requests 
                 sendNegativeHttpResponse(ctx, req, FORBIDDEN);
                 return;
             }
             fileRequestHandler.handleStaticFileRequest(ctx, req, path[2]);
             return;
-        }
-        
-        if (API_PATH.equals(path[1])) {
+        case API_PATH:
             if (path.length == 2 || "".equals(path[2])) {
                 sendNegativeHttpResponse(ctx, req, FORBIDDEN);
                 return;
@@ -142,30 +137,34 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
             RestRequestHandler restHandler = restHandlers.get(resource);
             if (restHandler != null) {
                 restHandler.handleRequestOrError(restReq, 3);
-                return;
             } else {
+                sendNegativeHttpResponse(ctx, req, NOT_FOUND);
+            }
+            return;
+        case "":
+            // overview of all instances 
+            fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/index.html");
+            return;
+        default:
+            String yamcsInstance = path[1];
+            if (!HttpSocketServer.getInstance().isInstanceRegistered(yamcsInstance)) {
                 sendNegativeHttpResponse(ctx, req, NOT_FOUND);
                 return;
             }
-        }
-
-        String yamcsInstance = path[1];
-        if (!HttpSocketServer.getInstance().isInstanceRegistered(yamcsInstance)) {
-            sendNegativeHttpResponse(ctx, req, NOT_FOUND);
-            return;
-        }
-        
-        if (path.length > 2) {
-            String[] rpath = path[2].split("/", 2);
-            String handler = rpath[0];
-            if (WebSocketServerHandler.WEBSOCKET_PATH.equals(handler)) {
-                webSocketHandler.handleHttpRequest(ctx, req, yamcsInstance, authToken);
+            
+            if (path.length > 2) {
+                String[] rpath = path[2].split("/", 2);
+                String handler = rpath[0];
+                if (WebSocketServerHandler.WEBSOCKET_PATH.equals(handler)) {
+                    webSocketHandler.handleHttpRequest(ctx, req, yamcsInstance, authToken);
+                } else {
+                    // Everything else is handled by angular's router (enables deep linking in html5 mode)
+                    fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/instance.html");                
+                }
             } else {
-                // Everything else is handled by angular's router (enables deep linking in html5 mode)
-                fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");                
+                fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/instance.html");
             }
-        } else {
-            fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
+            return;
         }
     }
     

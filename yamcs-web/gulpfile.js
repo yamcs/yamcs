@@ -87,7 +87,7 @@ gulp.task('js', ['clean', 'js-uss'], function () {
 });
 
 gulp.task('html', ['clean'], function () {
-    return gulp.src(['./src/**/*.html', '!./src/index.html'])
+    return gulp.src(['./src/**/*.html', '!./src/*.html'])
         .pipe(gulp.dest('./build/_site'));
 });
 
@@ -102,16 +102,16 @@ gulp.task('config', ['clean'], function () {
         .pipe(gulp.dest('./build'));
 });
 
-// Updates the CSS and JS references defined in the root index.html
+// Updates the CSS and JS references defined in the root html files
 gulp.task('index', ['clean', 'bower', 'css', 'less', 'js'], function () {
-    return gulp.src('./src/index.html')
+    return gulp.src('./src/*.html')
         .pipe(inject(gulp.src(['./build/_site/vendor.js', './build/_site/uss/uss.js'], {read: false}),
             {ignorePath: '/build', addPrefix: '/_static', name: 'bower'}))
         .pipe(inject(gulp.src('./build/_site/yamcs-web.js', {}),
             {ignorePath: '/build', addPrefix: '/_static'}))
         .pipe(inject(gulp.src('./build/_site/**/*.css',{read: false}),
             {ignorePath: '/build', addPrefix: '/_static'}))
-        .pipe(gulp.dest('./build'));
+        .pipe(gulp.dest('./build/_site'));
 });
 
 /**
