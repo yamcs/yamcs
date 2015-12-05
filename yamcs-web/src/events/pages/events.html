@@ -50,8 +50,9 @@
     <h1 class="page-header">Events</h1>
   </div>
 
-  <table class="table table-condensed">
+  <table class="table table-condensed" infinite-scroll="loadMoreEvents()" infinite-scroll-distance="0" infinite-scroll-disabled="ctx.loadingMoreData">
     <tr>
+      <th width="1"></th>
       <th>Message</th>
       <th>Source</th>
       <th>Type</th>
@@ -60,10 +61,13 @@
 
     <tr ng-repeat="event in vm.events | filter:vm.filterTable | orderBy:'-generationTime'"
         ng-class="{warning: event.severity == 'WARNING', danger: event.severity == 'ERROR'}">
-      <td>
+      <td style="text-align: center;">
         <span ng-if="event.severity == 'INFO'" class="label label-info">Info</span>
         <span ng-if="event.severity == 'WARNING'" class="label label-warning">Warning</span>
         <span ng-if="event.severity == 'ERROR'" class="label label-danger">Error</span>
+      </td>
+
+      <td>
         <span ng-bind-html="event.message | nl2br"></span>
       </td>
 
@@ -80,4 +84,5 @@
       </td>
     </tr>
   </table>
+  <p ng-show="ctx.loadingMoreData">Loading more events...</p>
 </div>
