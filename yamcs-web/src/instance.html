@@ -13,9 +13,9 @@
   <!-- endinject -->
 </head>
 
-<body ng-cloak>
+<body ng-cloak ng-class="{ 'with-topbar': !standalone }">
 
-  <div ng-include="'/_static/_site/core/shell.html'"></div>
+  <div ng-if="!standalone" ng-include="'/_static/_site/core/shell.html'"></div>
   <div ng-view></div>
 
   <!-- bower:js -->
@@ -37,8 +37,9 @@
               .module('yamcs.core')
               .constant('remoteConfig', response.data)
               .constant('yamcsInstance', yamcsInstance)
-              .run(['$rootScope', function ($rootScope) {
+              .run(['$rootScope', '$location', function ($rootScope, $location) {
                 $rootScope.yamcsInstance = yamcsInstance;
+                $rootScope.standalone = $location.search()['standalone'];
               }]);
           angular.element(document).ready(function() {
               angular.bootstrap(document, ['yamcs']);

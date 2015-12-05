@@ -1,5 +1,5 @@
 <div class="container-fluid" ng-controller="MDBTemplateController as templateVm">
-  <div class="sidebar" style="width: 230px;">
+  <div ng-if="!standalone" class="sidebar" style="width: 230px;">
     <ul class="nav nav-sidebar">
       <li ng-class="{active: activePane == 'overview'}"><a href="/{{ yamcsInstance }}/mdb">Overview</a></li>
       <li ng-class="{
@@ -9,7 +9,7 @@
       </li>
     </ul>
   </div>
-  <div class="main" style="padding-left: 230px;">
+  <div class="main" ng-class="{ 'with-sidebar': !standalone }">
     <uib-alert ng-repeat="msg in shell.messages" type="{{ msg.type }}" close="shell.closeMessage($index)">{{ msg.msg }}</uib-alert>
     <ng-transclude></ng-transclude>
   </div>
