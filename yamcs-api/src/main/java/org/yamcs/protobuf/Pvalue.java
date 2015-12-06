@@ -3887,53 +3887,53 @@ public final class Pvalue {
     // @@protoc_insertion_point(class_scope:pvalue.ParameterData)
   }
 
-  public interface SampleSeriesOrBuilder
+  public interface TimeSeriesOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // repeated .pvalue.SampleSeries.Sample sample = 1;
+    // repeated .pvalue.TimeSeries.Sample sample = 1;
     /**
-     * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+     * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
      */
-    java.util.List<org.yamcs.protobuf.Pvalue.SampleSeries.Sample> 
+    java.util.List<org.yamcs.protobuf.Pvalue.TimeSeries.Sample> 
         getSampleList();
     /**
-     * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+     * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
      */
-    org.yamcs.protobuf.Pvalue.SampleSeries.Sample getSample(int index);
+    org.yamcs.protobuf.Pvalue.TimeSeries.Sample getSample(int index);
     /**
-     * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+     * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
      */
     int getSampleCount();
     /**
-     * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+     * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
      */
-    java.util.List<? extends org.yamcs.protobuf.Pvalue.SampleSeries.SampleOrBuilder> 
+    java.util.List<? extends org.yamcs.protobuf.Pvalue.TimeSeries.SampleOrBuilder> 
         getSampleOrBuilderList();
     /**
-     * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+     * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
      */
-    org.yamcs.protobuf.Pvalue.SampleSeries.SampleOrBuilder getSampleOrBuilder(
+    org.yamcs.protobuf.Pvalue.TimeSeries.SampleOrBuilder getSampleOrBuilder(
         int index);
   }
   /**
-   * Protobuf type {@code pvalue.SampleSeries}
+   * Protobuf type {@code pvalue.TimeSeries}
    */
-  public static final class SampleSeries extends
+  public static final class TimeSeries extends
       com.google.protobuf.GeneratedMessage
-      implements SampleSeriesOrBuilder {
-    // Use SampleSeries.newBuilder() to construct.
-    private SampleSeries(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      implements TimeSeriesOrBuilder {
+    // Use TimeSeries.newBuilder() to construct.
+    private TimeSeries(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
       this.unknownFields = builder.getUnknownFields();
     }
-    private SampleSeries(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+    private TimeSeries(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
 
-    private static final SampleSeries defaultInstance;
-    public static SampleSeries getDefaultInstance() {
+    private static final TimeSeries defaultInstance;
+    public static TimeSeries getDefaultInstance() {
       return defaultInstance;
     }
 
-    public SampleSeries getDefaultInstanceForType() {
+    public TimeSeries getDefaultInstanceForType() {
       return defaultInstance;
     }
 
@@ -3943,7 +3943,7 @@ public final class Pvalue {
         getUnknownFields() {
       return this.unknownFields;
     }
-    private SampleSeries(
+    private TimeSeries(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -3968,10 +3968,10 @@ public final class Pvalue {
             }
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                sample_ = new java.util.ArrayList<org.yamcs.protobuf.Pvalue.SampleSeries.Sample>();
+                sample_ = new java.util.ArrayList<org.yamcs.protobuf.Pvalue.TimeSeries.Sample>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              sample_.add(input.readMessage(org.yamcs.protobuf.Pvalue.SampleSeries.Sample.PARSER, extensionRegistry));
+              sample_.add(input.readMessage(org.yamcs.protobuf.Pvalue.TimeSeries.Sample.PARSER, extensionRegistry));
               break;
             }
           }
@@ -3991,101 +3991,91 @@ public final class Pvalue {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Pvalue.internal_static_pvalue_SampleSeries_descriptor;
+      return org.yamcs.protobuf.Pvalue.internal_static_pvalue_TimeSeries_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Pvalue.internal_static_pvalue_SampleSeries_fieldAccessorTable
+      return org.yamcs.protobuf.Pvalue.internal_static_pvalue_TimeSeries_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.yamcs.protobuf.Pvalue.SampleSeries.class, org.yamcs.protobuf.Pvalue.SampleSeries.Builder.class);
+              org.yamcs.protobuf.Pvalue.TimeSeries.class, org.yamcs.protobuf.Pvalue.TimeSeries.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<SampleSeries> PARSER =
-        new com.google.protobuf.AbstractParser<SampleSeries>() {
-      public SampleSeries parsePartialFrom(
+    public static com.google.protobuf.Parser<TimeSeries> PARSER =
+        new com.google.protobuf.AbstractParser<TimeSeries>() {
+      public TimeSeries parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new SampleSeries(input, extensionRegistry);
+        return new TimeSeries(input, extensionRegistry);
       }
     };
 
     @java.lang.Override
-    public com.google.protobuf.Parser<SampleSeries> getParserForType() {
+    public com.google.protobuf.Parser<TimeSeries> getParserForType() {
       return PARSER;
     }
 
     public interface SampleOrBuilder
         extends com.google.protobuf.MessageOrBuilder {
 
-      // optional int64 averageGenerationTime = 1;
+      // optional string time = 1;
       /**
-       * <code>optional int64 averageGenerationTime = 1;</code>
+       * <code>optional string time = 1;</code>
        */
-      boolean hasAverageGenerationTime();
+      boolean hasTime();
       /**
-       * <code>optional int64 averageGenerationTime = 1;</code>
+       * <code>optional string time = 1;</code>
        */
-      long getAverageGenerationTime();
-
-      // optional string averageGenerationTimeUTC = 2;
+      java.lang.String getTime();
       /**
-       * <code>optional string averageGenerationTimeUTC = 2;</code>
-       */
-      boolean hasAverageGenerationTimeUTC();
-      /**
-       * <code>optional string averageGenerationTimeUTC = 2;</code>
-       */
-      java.lang.String getAverageGenerationTimeUTC();
-      /**
-       * <code>optional string averageGenerationTimeUTC = 2;</code>
+       * <code>optional string time = 1;</code>
        */
       com.google.protobuf.ByteString
-          getAverageGenerationTimeUTCBytes();
+          getTimeBytes();
 
-      // optional double averageValue = 3;
+      // optional double avg = 2;
       /**
-       * <code>optional double averageValue = 3;</code>
+       * <code>optional double avg = 2;</code>
        */
-      boolean hasAverageValue();
+      boolean hasAvg();
       /**
-       * <code>optional double averageValue = 3;</code>
+       * <code>optional double avg = 2;</code>
        */
-      double getAverageValue();
+      double getAvg();
 
-      // optional double lowValue = 4;
+      // optional double min = 3;
       /**
-       * <code>optional double lowValue = 4;</code>
+       * <code>optional double min = 3;</code>
        */
-      boolean hasLowValue();
+      boolean hasMin();
       /**
-       * <code>optional double lowValue = 4;</code>
+       * <code>optional double min = 3;</code>
        */
-      double getLowValue();
+      double getMin();
 
-      // optional double highValue = 5;
+      // optional double max = 4;
       /**
-       * <code>optional double highValue = 5;</code>
+       * <code>optional double max = 4;</code>
        */
-      boolean hasHighValue();
+      boolean hasMax();
       /**
-       * <code>optional double highValue = 5;</code>
+       * <code>optional double max = 4;</code>
        */
-      double getHighValue();
+      double getMax();
 
-      // optional int32 n = 6;
+      // optional int32 n = 5;
       /**
-       * <code>optional int32 n = 6;</code>
+       * <code>optional int32 n = 5;</code>
        */
       boolean hasN();
       /**
-       * <code>optional int32 n = 6;</code>
+       * <code>optional int32 n = 5;</code>
        */
       int getN();
     }
     /**
-     * Protobuf type {@code pvalue.SampleSeries.Sample}
+     * Protobuf type {@code pvalue.TimeSeries.Sample}
      */
     public static final class Sample extends
         com.google.protobuf.GeneratedMessage
@@ -4135,33 +4125,28 @@ public final class Pvalue {
                 }
                 break;
               }
-              case 8: {
+              case 10: {
                 bitField0_ |= 0x00000001;
-                averageGenerationTime_ = input.readInt64();
+                time_ = input.readBytes();
                 break;
               }
-              case 18: {
+              case 17: {
                 bitField0_ |= 0x00000002;
-                averageGenerationTimeUTC_ = input.readBytes();
+                avg_ = input.readDouble();
                 break;
               }
               case 25: {
                 bitField0_ |= 0x00000004;
-                averageValue_ = input.readDouble();
+                min_ = input.readDouble();
                 break;
               }
               case 33: {
                 bitField0_ |= 0x00000008;
-                lowValue_ = input.readDouble();
+                max_ = input.readDouble();
                 break;
               }
-              case 41: {
+              case 40: {
                 bitField0_ |= 0x00000010;
-                highValue_ = input.readDouble();
-                break;
-              }
-              case 48: {
-                bitField0_ |= 0x00000020;
                 n_ = input.readInt32();
                 break;
               }
@@ -4179,14 +4164,14 @@ public final class Pvalue {
       }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.yamcs.protobuf.Pvalue.internal_static_pvalue_SampleSeries_Sample_descriptor;
+        return org.yamcs.protobuf.Pvalue.internal_static_pvalue_TimeSeries_Sample_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.yamcs.protobuf.Pvalue.internal_static_pvalue_SampleSeries_Sample_fieldAccessorTable
+        return org.yamcs.protobuf.Pvalue.internal_static_pvalue_TimeSeries_Sample_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.yamcs.protobuf.Pvalue.SampleSeries.Sample.class, org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder.class);
+                org.yamcs.protobuf.Pvalue.TimeSeries.Sample.class, org.yamcs.protobuf.Pvalue.TimeSeries.Sample.Builder.class);
       }
 
       public static com.google.protobuf.Parser<Sample> PARSER =
@@ -4205,36 +4190,20 @@ public final class Pvalue {
       }
 
       private int bitField0_;
-      // optional int64 averageGenerationTime = 1;
-      public static final int AVERAGEGENERATIONTIME_FIELD_NUMBER = 1;
-      private long averageGenerationTime_;
+      // optional string time = 1;
+      public static final int TIME_FIELD_NUMBER = 1;
+      private java.lang.Object time_;
       /**
-       * <code>optional int64 averageGenerationTime = 1;</code>
+       * <code>optional string time = 1;</code>
        */
-      public boolean hasAverageGenerationTime() {
+      public boolean hasTime() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>optional int64 averageGenerationTime = 1;</code>
+       * <code>optional string time = 1;</code>
        */
-      public long getAverageGenerationTime() {
-        return averageGenerationTime_;
-      }
-
-      // optional string averageGenerationTimeUTC = 2;
-      public static final int AVERAGEGENERATIONTIMEUTC_FIELD_NUMBER = 2;
-      private java.lang.Object averageGenerationTimeUTC_;
-      /**
-       * <code>optional string averageGenerationTimeUTC = 2;</code>
-       */
-      public boolean hasAverageGenerationTimeUTC() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>optional string averageGenerationTimeUTC = 2;</code>
-       */
-      public java.lang.String getAverageGenerationTimeUTC() {
-        java.lang.Object ref = averageGenerationTimeUTC_;
+      public java.lang.String getTime() {
+        java.lang.Object ref = time_;
         if (ref instanceof java.lang.String) {
           return (java.lang.String) ref;
         } else {
@@ -4242,98 +4211,97 @@ public final class Pvalue {
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
-            averageGenerationTimeUTC_ = s;
+            time_ = s;
           }
           return s;
         }
       }
       /**
-       * <code>optional string averageGenerationTimeUTC = 2;</code>
+       * <code>optional string time = 1;</code>
        */
       public com.google.protobuf.ByteString
-          getAverageGenerationTimeUTCBytes() {
-        java.lang.Object ref = averageGenerationTimeUTC_;
+          getTimeBytes() {
+        java.lang.Object ref = time_;
         if (ref instanceof java.lang.String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          averageGenerationTimeUTC_ = b;
+          time_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
 
-      // optional double averageValue = 3;
-      public static final int AVERAGEVALUE_FIELD_NUMBER = 3;
-      private double averageValue_;
+      // optional double avg = 2;
+      public static final int AVG_FIELD_NUMBER = 2;
+      private double avg_;
       /**
-       * <code>optional double averageValue = 3;</code>
+       * <code>optional double avg = 2;</code>
        */
-      public boolean hasAverageValue() {
+      public boolean hasAvg() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional double avg = 2;</code>
+       */
+      public double getAvg() {
+        return avg_;
+      }
+
+      // optional double min = 3;
+      public static final int MIN_FIELD_NUMBER = 3;
+      private double min_;
+      /**
+       * <code>optional double min = 3;</code>
+       */
+      public boolean hasMin() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>optional double averageValue = 3;</code>
+       * <code>optional double min = 3;</code>
        */
-      public double getAverageValue() {
-        return averageValue_;
+      public double getMin() {
+        return min_;
       }
 
-      // optional double lowValue = 4;
-      public static final int LOWVALUE_FIELD_NUMBER = 4;
-      private double lowValue_;
+      // optional double max = 4;
+      public static final int MAX_FIELD_NUMBER = 4;
+      private double max_;
       /**
-       * <code>optional double lowValue = 4;</code>
+       * <code>optional double max = 4;</code>
        */
-      public boolean hasLowValue() {
+      public boolean hasMax() {
         return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>optional double lowValue = 4;</code>
+       * <code>optional double max = 4;</code>
        */
-      public double getLowValue() {
-        return lowValue_;
+      public double getMax() {
+        return max_;
       }
 
-      // optional double highValue = 5;
-      public static final int HIGHVALUE_FIELD_NUMBER = 5;
-      private double highValue_;
+      // optional int32 n = 5;
+      public static final int N_FIELD_NUMBER = 5;
+      private int n_;
       /**
-       * <code>optional double highValue = 5;</code>
+       * <code>optional int32 n = 5;</code>
        */
-      public boolean hasHighValue() {
+      public boolean hasN() {
         return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
-       * <code>optional double highValue = 5;</code>
-       */
-      public double getHighValue() {
-        return highValue_;
-      }
-
-      // optional int32 n = 6;
-      public static final int N_FIELD_NUMBER = 6;
-      private int n_;
-      /**
-       * <code>optional int32 n = 6;</code>
-       */
-      public boolean hasN() {
-        return ((bitField0_ & 0x00000020) == 0x00000020);
-      }
-      /**
-       * <code>optional int32 n = 6;</code>
+       * <code>optional int32 n = 5;</code>
        */
       public int getN() {
         return n_;
       }
 
       private void initFields() {
-        averageGenerationTime_ = 0L;
-        averageGenerationTimeUTC_ = "";
-        averageValue_ = 0D;
-        lowValue_ = 0D;
-        highValue_ = 0D;
+        time_ = "";
+        avg_ = 0D;
+        min_ = 0D;
+        max_ = 0D;
         n_ = 0;
       }
       private byte memoizedIsInitialized = -1;
@@ -4349,22 +4317,19 @@ public final class Pvalue {
                           throws java.io.IOException {
         getSerializedSize();
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
-          output.writeInt64(1, averageGenerationTime_);
+          output.writeBytes(1, getTimeBytes());
         }
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
-          output.writeBytes(2, getAverageGenerationTimeUTCBytes());
+          output.writeDouble(2, avg_);
         }
         if (((bitField0_ & 0x00000004) == 0x00000004)) {
-          output.writeDouble(3, averageValue_);
+          output.writeDouble(3, min_);
         }
         if (((bitField0_ & 0x00000008) == 0x00000008)) {
-          output.writeDouble(4, lowValue_);
+          output.writeDouble(4, max_);
         }
         if (((bitField0_ & 0x00000010) == 0x00000010)) {
-          output.writeDouble(5, highValue_);
-        }
-        if (((bitField0_ & 0x00000020) == 0x00000020)) {
-          output.writeInt32(6, n_);
+          output.writeInt32(5, n_);
         }
         getUnknownFields().writeTo(output);
       }
@@ -4377,27 +4342,23 @@ public final class Pvalue {
         size = 0;
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeInt64Size(1, averageGenerationTime_);
+            .computeBytesSize(1, getTimeBytes());
         }
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeBytesSize(2, getAverageGenerationTimeUTCBytes());
+            .computeDoubleSize(2, avg_);
         }
         if (((bitField0_ & 0x00000004) == 0x00000004)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeDoubleSize(3, averageValue_);
+            .computeDoubleSize(3, min_);
         }
         if (((bitField0_ & 0x00000008) == 0x00000008)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeDoubleSize(4, lowValue_);
+            .computeDoubleSize(4, max_);
         }
         if (((bitField0_ & 0x00000010) == 0x00000010)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeDoubleSize(5, highValue_);
-        }
-        if (((bitField0_ & 0x00000020) == 0x00000020)) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeInt32Size(6, n_);
+            .computeInt32Size(5, n_);
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -4411,53 +4372,53 @@ public final class Pvalue {
         return super.writeReplace();
       }
 
-      public static org.yamcs.protobuf.Pvalue.SampleSeries.Sample parseFrom(
+      public static org.yamcs.protobuf.Pvalue.TimeSeries.Sample parseFrom(
           com.google.protobuf.ByteString data)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data);
       }
-      public static org.yamcs.protobuf.Pvalue.SampleSeries.Sample parseFrom(
+      public static org.yamcs.protobuf.Pvalue.TimeSeries.Sample parseFrom(
           com.google.protobuf.ByteString data,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data, extensionRegistry);
       }
-      public static org.yamcs.protobuf.Pvalue.SampleSeries.Sample parseFrom(byte[] data)
+      public static org.yamcs.protobuf.Pvalue.TimeSeries.Sample parseFrom(byte[] data)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data);
       }
-      public static org.yamcs.protobuf.Pvalue.SampleSeries.Sample parseFrom(
+      public static org.yamcs.protobuf.Pvalue.TimeSeries.Sample parseFrom(
           byte[] data,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data, extensionRegistry);
       }
-      public static org.yamcs.protobuf.Pvalue.SampleSeries.Sample parseFrom(java.io.InputStream input)
+      public static org.yamcs.protobuf.Pvalue.TimeSeries.Sample parseFrom(java.io.InputStream input)
           throws java.io.IOException {
         return PARSER.parseFrom(input);
       }
-      public static org.yamcs.protobuf.Pvalue.SampleSeries.Sample parseFrom(
+      public static org.yamcs.protobuf.Pvalue.TimeSeries.Sample parseFrom(
           java.io.InputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
         return PARSER.parseFrom(input, extensionRegistry);
       }
-      public static org.yamcs.protobuf.Pvalue.SampleSeries.Sample parseDelimitedFrom(java.io.InputStream input)
+      public static org.yamcs.protobuf.Pvalue.TimeSeries.Sample parseDelimitedFrom(java.io.InputStream input)
           throws java.io.IOException {
         return PARSER.parseDelimitedFrom(input);
       }
-      public static org.yamcs.protobuf.Pvalue.SampleSeries.Sample parseDelimitedFrom(
+      public static org.yamcs.protobuf.Pvalue.TimeSeries.Sample parseDelimitedFrom(
           java.io.InputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
         return PARSER.parseDelimitedFrom(input, extensionRegistry);
       }
-      public static org.yamcs.protobuf.Pvalue.SampleSeries.Sample parseFrom(
+      public static org.yamcs.protobuf.Pvalue.TimeSeries.Sample parseFrom(
           com.google.protobuf.CodedInputStream input)
           throws java.io.IOException {
         return PARSER.parseFrom(input);
       }
-      public static org.yamcs.protobuf.Pvalue.SampleSeries.Sample parseFrom(
+      public static org.yamcs.protobuf.Pvalue.TimeSeries.Sample parseFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
@@ -4466,7 +4427,7 @@ public final class Pvalue {
 
       public static Builder newBuilder() { return Builder.create(); }
       public Builder newBuilderForType() { return newBuilder(); }
-      public static Builder newBuilder(org.yamcs.protobuf.Pvalue.SampleSeries.Sample prototype) {
+      public static Builder newBuilder(org.yamcs.protobuf.Pvalue.TimeSeries.Sample prototype) {
         return newBuilder().mergeFrom(prototype);
       }
       public Builder toBuilder() { return newBuilder(this); }
@@ -4478,24 +4439,24 @@ public final class Pvalue {
         return builder;
       }
       /**
-       * Protobuf type {@code pvalue.SampleSeries.Sample}
+       * Protobuf type {@code pvalue.TimeSeries.Sample}
        */
       public static final class Builder extends
           com.google.protobuf.GeneratedMessage.Builder<Builder>
-         implements org.yamcs.protobuf.Pvalue.SampleSeries.SampleOrBuilder {
+         implements org.yamcs.protobuf.Pvalue.TimeSeries.SampleOrBuilder {
         public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
-          return org.yamcs.protobuf.Pvalue.internal_static_pvalue_SampleSeries_Sample_descriptor;
+          return org.yamcs.protobuf.Pvalue.internal_static_pvalue_TimeSeries_Sample_descriptor;
         }
 
         protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
             internalGetFieldAccessorTable() {
-          return org.yamcs.protobuf.Pvalue.internal_static_pvalue_SampleSeries_Sample_fieldAccessorTable
+          return org.yamcs.protobuf.Pvalue.internal_static_pvalue_TimeSeries_Sample_fieldAccessorTable
               .ensureFieldAccessorsInitialized(
-                  org.yamcs.protobuf.Pvalue.SampleSeries.Sample.class, org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder.class);
+                  org.yamcs.protobuf.Pvalue.TimeSeries.Sample.class, org.yamcs.protobuf.Pvalue.TimeSeries.Sample.Builder.class);
         }
 
-        // Construct using org.yamcs.protobuf.Pvalue.SampleSeries.Sample.newBuilder()
+        // Construct using org.yamcs.protobuf.Pvalue.TimeSeries.Sample.newBuilder()
         private Builder() {
           maybeForceBuilderInitialization();
         }
@@ -4515,18 +4476,16 @@ public final class Pvalue {
 
         public Builder clear() {
           super.clear();
-          averageGenerationTime_ = 0L;
+          time_ = "";
           bitField0_ = (bitField0_ & ~0x00000001);
-          averageGenerationTimeUTC_ = "";
+          avg_ = 0D;
           bitField0_ = (bitField0_ & ~0x00000002);
-          averageValue_ = 0D;
+          min_ = 0D;
           bitField0_ = (bitField0_ & ~0x00000004);
-          lowValue_ = 0D;
+          max_ = 0D;
           bitField0_ = (bitField0_ & ~0x00000008);
-          highValue_ = 0D;
-          bitField0_ = (bitField0_ & ~0x00000010);
           n_ = 0;
-          bitField0_ = (bitField0_ & ~0x00000020);
+          bitField0_ = (bitField0_ & ~0x00000010);
           return this;
         }
 
@@ -4536,47 +4495,43 @@ public final class Pvalue {
 
         public com.google.protobuf.Descriptors.Descriptor
             getDescriptorForType() {
-          return org.yamcs.protobuf.Pvalue.internal_static_pvalue_SampleSeries_Sample_descriptor;
+          return org.yamcs.protobuf.Pvalue.internal_static_pvalue_TimeSeries_Sample_descriptor;
         }
 
-        public org.yamcs.protobuf.Pvalue.SampleSeries.Sample getDefaultInstanceForType() {
-          return org.yamcs.protobuf.Pvalue.SampleSeries.Sample.getDefaultInstance();
+        public org.yamcs.protobuf.Pvalue.TimeSeries.Sample getDefaultInstanceForType() {
+          return org.yamcs.protobuf.Pvalue.TimeSeries.Sample.getDefaultInstance();
         }
 
-        public org.yamcs.protobuf.Pvalue.SampleSeries.Sample build() {
-          org.yamcs.protobuf.Pvalue.SampleSeries.Sample result = buildPartial();
+        public org.yamcs.protobuf.Pvalue.TimeSeries.Sample build() {
+          org.yamcs.protobuf.Pvalue.TimeSeries.Sample result = buildPartial();
           if (!result.isInitialized()) {
             throw newUninitializedMessageException(result);
           }
           return result;
         }
 
-        public org.yamcs.protobuf.Pvalue.SampleSeries.Sample buildPartial() {
-          org.yamcs.protobuf.Pvalue.SampleSeries.Sample result = new org.yamcs.protobuf.Pvalue.SampleSeries.Sample(this);
+        public org.yamcs.protobuf.Pvalue.TimeSeries.Sample buildPartial() {
+          org.yamcs.protobuf.Pvalue.TimeSeries.Sample result = new org.yamcs.protobuf.Pvalue.TimeSeries.Sample(this);
           int from_bitField0_ = bitField0_;
           int to_bitField0_ = 0;
           if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
             to_bitField0_ |= 0x00000001;
           }
-          result.averageGenerationTime_ = averageGenerationTime_;
+          result.time_ = time_;
           if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
             to_bitField0_ |= 0x00000002;
           }
-          result.averageGenerationTimeUTC_ = averageGenerationTimeUTC_;
+          result.avg_ = avg_;
           if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
             to_bitField0_ |= 0x00000004;
           }
-          result.averageValue_ = averageValue_;
+          result.min_ = min_;
           if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
             to_bitField0_ |= 0x00000008;
           }
-          result.lowValue_ = lowValue_;
+          result.max_ = max_;
           if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
             to_bitField0_ |= 0x00000010;
-          }
-          result.highValue_ = highValue_;
-          if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
-            to_bitField0_ |= 0x00000020;
           }
           result.n_ = n_;
           result.bitField0_ = to_bitField0_;
@@ -4585,32 +4540,29 @@ public final class Pvalue {
         }
 
         public Builder mergeFrom(com.google.protobuf.Message other) {
-          if (other instanceof org.yamcs.protobuf.Pvalue.SampleSeries.Sample) {
-            return mergeFrom((org.yamcs.protobuf.Pvalue.SampleSeries.Sample)other);
+          if (other instanceof org.yamcs.protobuf.Pvalue.TimeSeries.Sample) {
+            return mergeFrom((org.yamcs.protobuf.Pvalue.TimeSeries.Sample)other);
           } else {
             super.mergeFrom(other);
             return this;
           }
         }
 
-        public Builder mergeFrom(org.yamcs.protobuf.Pvalue.SampleSeries.Sample other) {
-          if (other == org.yamcs.protobuf.Pvalue.SampleSeries.Sample.getDefaultInstance()) return this;
-          if (other.hasAverageGenerationTime()) {
-            setAverageGenerationTime(other.getAverageGenerationTime());
-          }
-          if (other.hasAverageGenerationTimeUTC()) {
-            bitField0_ |= 0x00000002;
-            averageGenerationTimeUTC_ = other.averageGenerationTimeUTC_;
+        public Builder mergeFrom(org.yamcs.protobuf.Pvalue.TimeSeries.Sample other) {
+          if (other == org.yamcs.protobuf.Pvalue.TimeSeries.Sample.getDefaultInstance()) return this;
+          if (other.hasTime()) {
+            bitField0_ |= 0x00000001;
+            time_ = other.time_;
             onChanged();
           }
-          if (other.hasAverageValue()) {
-            setAverageValue(other.getAverageValue());
+          if (other.hasAvg()) {
+            setAvg(other.getAvg());
           }
-          if (other.hasLowValue()) {
-            setLowValue(other.getLowValue());
+          if (other.hasMin()) {
+            setMin(other.getMin());
           }
-          if (other.hasHighValue()) {
-            setHighValue(other.getHighValue());
+          if (other.hasMax()) {
+            setMax(other.getMax());
           }
           if (other.hasN()) {
             setN(other.getN());
@@ -4627,11 +4579,11 @@ public final class Pvalue {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          org.yamcs.protobuf.Pvalue.SampleSeries.Sample parsedMessage = null;
+          org.yamcs.protobuf.Pvalue.TimeSeries.Sample parsedMessage = null;
           try {
             parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (org.yamcs.protobuf.Pvalue.SampleSeries.Sample) e.getUnfinishedMessage();
+            parsedMessage = (org.yamcs.protobuf.Pvalue.TimeSeries.Sample) e.getUnfinishedMessage();
             throw e;
           } finally {
             if (parsedMessage != null) {
@@ -4642,246 +4594,213 @@ public final class Pvalue {
         }
         private int bitField0_;
 
-        // optional int64 averageGenerationTime = 1;
-        private long averageGenerationTime_ ;
+        // optional string time = 1;
+        private java.lang.Object time_ = "";
         /**
-         * <code>optional int64 averageGenerationTime = 1;</code>
+         * <code>optional string time = 1;</code>
          */
-        public boolean hasAverageGenerationTime() {
+        public boolean hasTime() {
           return ((bitField0_ & 0x00000001) == 0x00000001);
         }
         /**
-         * <code>optional int64 averageGenerationTime = 1;</code>
+         * <code>optional string time = 1;</code>
          */
-        public long getAverageGenerationTime() {
-          return averageGenerationTime_;
-        }
-        /**
-         * <code>optional int64 averageGenerationTime = 1;</code>
-         */
-        public Builder setAverageGenerationTime(long value) {
-          bitField0_ |= 0x00000001;
-          averageGenerationTime_ = value;
-          onChanged();
-          return this;
-        }
-        /**
-         * <code>optional int64 averageGenerationTime = 1;</code>
-         */
-        public Builder clearAverageGenerationTime() {
-          bitField0_ = (bitField0_ & ~0x00000001);
-          averageGenerationTime_ = 0L;
-          onChanged();
-          return this;
-        }
-
-        // optional string averageGenerationTimeUTC = 2;
-        private java.lang.Object averageGenerationTimeUTC_ = "";
-        /**
-         * <code>optional string averageGenerationTimeUTC = 2;</code>
-         */
-        public boolean hasAverageGenerationTimeUTC() {
-          return ((bitField0_ & 0x00000002) == 0x00000002);
-        }
-        /**
-         * <code>optional string averageGenerationTimeUTC = 2;</code>
-         */
-        public java.lang.String getAverageGenerationTimeUTC() {
-          java.lang.Object ref = averageGenerationTimeUTC_;
+        public java.lang.String getTime() {
+          java.lang.Object ref = time_;
           if (!(ref instanceof java.lang.String)) {
             java.lang.String s = ((com.google.protobuf.ByteString) ref)
                 .toStringUtf8();
-            averageGenerationTimeUTC_ = s;
+            time_ = s;
             return s;
           } else {
             return (java.lang.String) ref;
           }
         }
         /**
-         * <code>optional string averageGenerationTimeUTC = 2;</code>
+         * <code>optional string time = 1;</code>
          */
         public com.google.protobuf.ByteString
-            getAverageGenerationTimeUTCBytes() {
-          java.lang.Object ref = averageGenerationTimeUTC_;
+            getTimeBytes() {
+          java.lang.Object ref = time_;
           if (ref instanceof String) {
             com.google.protobuf.ByteString b = 
                 com.google.protobuf.ByteString.copyFromUtf8(
                     (java.lang.String) ref);
-            averageGenerationTimeUTC_ = b;
+            time_ = b;
             return b;
           } else {
             return (com.google.protobuf.ByteString) ref;
           }
         }
         /**
-         * <code>optional string averageGenerationTimeUTC = 2;</code>
+         * <code>optional string time = 1;</code>
          */
-        public Builder setAverageGenerationTimeUTC(
+        public Builder setTime(
             java.lang.String value) {
           if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000002;
-          averageGenerationTimeUTC_ = value;
+  bitField0_ |= 0x00000001;
+          time_ = value;
           onChanged();
           return this;
         }
         /**
-         * <code>optional string averageGenerationTimeUTC = 2;</code>
+         * <code>optional string time = 1;</code>
          */
-        public Builder clearAverageGenerationTimeUTC() {
-          bitField0_ = (bitField0_ & ~0x00000002);
-          averageGenerationTimeUTC_ = getDefaultInstance().getAverageGenerationTimeUTC();
+        public Builder clearTime() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          time_ = getDefaultInstance().getTime();
           onChanged();
           return this;
         }
         /**
-         * <code>optional string averageGenerationTimeUTC = 2;</code>
+         * <code>optional string time = 1;</code>
          */
-        public Builder setAverageGenerationTimeUTCBytes(
+        public Builder setTimeBytes(
             com.google.protobuf.ByteString value) {
           if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000002;
-          averageGenerationTimeUTC_ = value;
+  bitField0_ |= 0x00000001;
+          time_ = value;
           onChanged();
           return this;
         }
 
-        // optional double averageValue = 3;
-        private double averageValue_ ;
+        // optional double avg = 2;
+        private double avg_ ;
         /**
-         * <code>optional double averageValue = 3;</code>
+         * <code>optional double avg = 2;</code>
          */
-        public boolean hasAverageValue() {
+        public boolean hasAvg() {
+          return ((bitField0_ & 0x00000002) == 0x00000002);
+        }
+        /**
+         * <code>optional double avg = 2;</code>
+         */
+        public double getAvg() {
+          return avg_;
+        }
+        /**
+         * <code>optional double avg = 2;</code>
+         */
+        public Builder setAvg(double value) {
+          bitField0_ |= 0x00000002;
+          avg_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional double avg = 2;</code>
+         */
+        public Builder clearAvg() {
+          bitField0_ = (bitField0_ & ~0x00000002);
+          avg_ = 0D;
+          onChanged();
+          return this;
+        }
+
+        // optional double min = 3;
+        private double min_ ;
+        /**
+         * <code>optional double min = 3;</code>
+         */
+        public boolean hasMin() {
           return ((bitField0_ & 0x00000004) == 0x00000004);
         }
         /**
-         * <code>optional double averageValue = 3;</code>
+         * <code>optional double min = 3;</code>
          */
-        public double getAverageValue() {
-          return averageValue_;
+        public double getMin() {
+          return min_;
         }
         /**
-         * <code>optional double averageValue = 3;</code>
+         * <code>optional double min = 3;</code>
          */
-        public Builder setAverageValue(double value) {
+        public Builder setMin(double value) {
           bitField0_ |= 0x00000004;
-          averageValue_ = value;
+          min_ = value;
           onChanged();
           return this;
         }
         /**
-         * <code>optional double averageValue = 3;</code>
+         * <code>optional double min = 3;</code>
          */
-        public Builder clearAverageValue() {
+        public Builder clearMin() {
           bitField0_ = (bitField0_ & ~0x00000004);
-          averageValue_ = 0D;
+          min_ = 0D;
           onChanged();
           return this;
         }
 
-        // optional double lowValue = 4;
-        private double lowValue_ ;
+        // optional double max = 4;
+        private double max_ ;
         /**
-         * <code>optional double lowValue = 4;</code>
+         * <code>optional double max = 4;</code>
          */
-        public boolean hasLowValue() {
+        public boolean hasMax() {
           return ((bitField0_ & 0x00000008) == 0x00000008);
         }
         /**
-         * <code>optional double lowValue = 4;</code>
+         * <code>optional double max = 4;</code>
          */
-        public double getLowValue() {
-          return lowValue_;
+        public double getMax() {
+          return max_;
         }
         /**
-         * <code>optional double lowValue = 4;</code>
+         * <code>optional double max = 4;</code>
          */
-        public Builder setLowValue(double value) {
+        public Builder setMax(double value) {
           bitField0_ |= 0x00000008;
-          lowValue_ = value;
+          max_ = value;
           onChanged();
           return this;
         }
         /**
-         * <code>optional double lowValue = 4;</code>
+         * <code>optional double max = 4;</code>
          */
-        public Builder clearLowValue() {
+        public Builder clearMax() {
           bitField0_ = (bitField0_ & ~0x00000008);
-          lowValue_ = 0D;
+          max_ = 0D;
           onChanged();
           return this;
         }
 
-        // optional double highValue = 5;
-        private double highValue_ ;
+        // optional int32 n = 5;
+        private int n_ ;
         /**
-         * <code>optional double highValue = 5;</code>
+         * <code>optional int32 n = 5;</code>
          */
-        public boolean hasHighValue() {
+        public boolean hasN() {
           return ((bitField0_ & 0x00000010) == 0x00000010);
         }
         /**
-         * <code>optional double highValue = 5;</code>
-         */
-        public double getHighValue() {
-          return highValue_;
-        }
-        /**
-         * <code>optional double highValue = 5;</code>
-         */
-        public Builder setHighValue(double value) {
-          bitField0_ |= 0x00000010;
-          highValue_ = value;
-          onChanged();
-          return this;
-        }
-        /**
-         * <code>optional double highValue = 5;</code>
-         */
-        public Builder clearHighValue() {
-          bitField0_ = (bitField0_ & ~0x00000010);
-          highValue_ = 0D;
-          onChanged();
-          return this;
-        }
-
-        // optional int32 n = 6;
-        private int n_ ;
-        /**
-         * <code>optional int32 n = 6;</code>
-         */
-        public boolean hasN() {
-          return ((bitField0_ & 0x00000020) == 0x00000020);
-        }
-        /**
-         * <code>optional int32 n = 6;</code>
+         * <code>optional int32 n = 5;</code>
          */
         public int getN() {
           return n_;
         }
         /**
-         * <code>optional int32 n = 6;</code>
+         * <code>optional int32 n = 5;</code>
          */
         public Builder setN(int value) {
-          bitField0_ |= 0x00000020;
+          bitField0_ |= 0x00000010;
           n_ = value;
           onChanged();
           return this;
         }
         /**
-         * <code>optional int32 n = 6;</code>
+         * <code>optional int32 n = 5;</code>
          */
         public Builder clearN() {
-          bitField0_ = (bitField0_ & ~0x00000020);
+          bitField0_ = (bitField0_ & ~0x00000010);
           n_ = 0;
           onChanged();
           return this;
         }
 
-        // @@protoc_insertion_point(builder_scope:pvalue.SampleSeries.Sample)
+        // @@protoc_insertion_point(builder_scope:pvalue.TimeSeries.Sample)
       }
 
       static {
@@ -4889,41 +4808,41 @@ public final class Pvalue {
         defaultInstance.initFields();
       }
 
-      // @@protoc_insertion_point(class_scope:pvalue.SampleSeries.Sample)
+      // @@protoc_insertion_point(class_scope:pvalue.TimeSeries.Sample)
     }
 
-    // repeated .pvalue.SampleSeries.Sample sample = 1;
+    // repeated .pvalue.TimeSeries.Sample sample = 1;
     public static final int SAMPLE_FIELD_NUMBER = 1;
-    private java.util.List<org.yamcs.protobuf.Pvalue.SampleSeries.Sample> sample_;
+    private java.util.List<org.yamcs.protobuf.Pvalue.TimeSeries.Sample> sample_;
     /**
-     * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+     * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
      */
-    public java.util.List<org.yamcs.protobuf.Pvalue.SampleSeries.Sample> getSampleList() {
+    public java.util.List<org.yamcs.protobuf.Pvalue.TimeSeries.Sample> getSampleList() {
       return sample_;
     }
     /**
-     * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+     * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
      */
-    public java.util.List<? extends org.yamcs.protobuf.Pvalue.SampleSeries.SampleOrBuilder> 
+    public java.util.List<? extends org.yamcs.protobuf.Pvalue.TimeSeries.SampleOrBuilder> 
         getSampleOrBuilderList() {
       return sample_;
     }
     /**
-     * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+     * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
      */
     public int getSampleCount() {
       return sample_.size();
     }
     /**
-     * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+     * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
      */
-    public org.yamcs.protobuf.Pvalue.SampleSeries.Sample getSample(int index) {
+    public org.yamcs.protobuf.Pvalue.TimeSeries.Sample getSample(int index) {
       return sample_.get(index);
     }
     /**
-     * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+     * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
      */
-    public org.yamcs.protobuf.Pvalue.SampleSeries.SampleOrBuilder getSampleOrBuilder(
+    public org.yamcs.protobuf.Pvalue.TimeSeries.SampleOrBuilder getSampleOrBuilder(
         int index) {
       return sample_.get(index);
     }
@@ -4971,53 +4890,53 @@ public final class Pvalue {
       return super.writeReplace();
     }
 
-    public static org.yamcs.protobuf.Pvalue.SampleSeries parseFrom(
+    public static org.yamcs.protobuf.Pvalue.TimeSeries parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.yamcs.protobuf.Pvalue.SampleSeries parseFrom(
+    public static org.yamcs.protobuf.Pvalue.TimeSeries parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Pvalue.SampleSeries parseFrom(byte[] data)
+    public static org.yamcs.protobuf.Pvalue.TimeSeries parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.yamcs.protobuf.Pvalue.SampleSeries parseFrom(
+    public static org.yamcs.protobuf.Pvalue.TimeSeries parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Pvalue.SampleSeries parseFrom(java.io.InputStream input)
+    public static org.yamcs.protobuf.Pvalue.TimeSeries parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.yamcs.protobuf.Pvalue.SampleSeries parseFrom(
+    public static org.yamcs.protobuf.Pvalue.TimeSeries parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Pvalue.SampleSeries parseDelimitedFrom(java.io.InputStream input)
+    public static org.yamcs.protobuf.Pvalue.TimeSeries parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static org.yamcs.protobuf.Pvalue.SampleSeries parseDelimitedFrom(
+    public static org.yamcs.protobuf.Pvalue.TimeSeries parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Pvalue.SampleSeries parseFrom(
+    public static org.yamcs.protobuf.Pvalue.TimeSeries parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static org.yamcs.protobuf.Pvalue.SampleSeries parseFrom(
+    public static org.yamcs.protobuf.Pvalue.TimeSeries parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -5026,7 +4945,7 @@ public final class Pvalue {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.Pvalue.SampleSeries prototype) {
+    public static Builder newBuilder(org.yamcs.protobuf.Pvalue.TimeSeries prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -5038,24 +4957,24 @@ public final class Pvalue {
       return builder;
     }
     /**
-     * Protobuf type {@code pvalue.SampleSeries}
+     * Protobuf type {@code pvalue.TimeSeries}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Pvalue.SampleSeriesOrBuilder {
+       implements org.yamcs.protobuf.Pvalue.TimeSeriesOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.yamcs.protobuf.Pvalue.internal_static_pvalue_SampleSeries_descriptor;
+        return org.yamcs.protobuf.Pvalue.internal_static_pvalue_TimeSeries_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.yamcs.protobuf.Pvalue.internal_static_pvalue_SampleSeries_fieldAccessorTable
+        return org.yamcs.protobuf.Pvalue.internal_static_pvalue_TimeSeries_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.yamcs.protobuf.Pvalue.SampleSeries.class, org.yamcs.protobuf.Pvalue.SampleSeries.Builder.class);
+                org.yamcs.protobuf.Pvalue.TimeSeries.class, org.yamcs.protobuf.Pvalue.TimeSeries.Builder.class);
       }
 
-      // Construct using org.yamcs.protobuf.Pvalue.SampleSeries.newBuilder()
+      // Construct using org.yamcs.protobuf.Pvalue.TimeSeries.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -5091,23 +5010,23 @@ public final class Pvalue {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.yamcs.protobuf.Pvalue.internal_static_pvalue_SampleSeries_descriptor;
+        return org.yamcs.protobuf.Pvalue.internal_static_pvalue_TimeSeries_descriptor;
       }
 
-      public org.yamcs.protobuf.Pvalue.SampleSeries getDefaultInstanceForType() {
-        return org.yamcs.protobuf.Pvalue.SampleSeries.getDefaultInstance();
+      public org.yamcs.protobuf.Pvalue.TimeSeries getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Pvalue.TimeSeries.getDefaultInstance();
       }
 
-      public org.yamcs.protobuf.Pvalue.SampleSeries build() {
-        org.yamcs.protobuf.Pvalue.SampleSeries result = buildPartial();
+      public org.yamcs.protobuf.Pvalue.TimeSeries build() {
+        org.yamcs.protobuf.Pvalue.TimeSeries result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.yamcs.protobuf.Pvalue.SampleSeries buildPartial() {
-        org.yamcs.protobuf.Pvalue.SampleSeries result = new org.yamcs.protobuf.Pvalue.SampleSeries(this);
+      public org.yamcs.protobuf.Pvalue.TimeSeries buildPartial() {
+        org.yamcs.protobuf.Pvalue.TimeSeries result = new org.yamcs.protobuf.Pvalue.TimeSeries(this);
         int from_bitField0_ = bitField0_;
         if (sampleBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
@@ -5123,16 +5042,16 @@ public final class Pvalue {
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.yamcs.protobuf.Pvalue.SampleSeries) {
-          return mergeFrom((org.yamcs.protobuf.Pvalue.SampleSeries)other);
+        if (other instanceof org.yamcs.protobuf.Pvalue.TimeSeries) {
+          return mergeFrom((org.yamcs.protobuf.Pvalue.TimeSeries)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.yamcs.protobuf.Pvalue.SampleSeries other) {
-        if (other == org.yamcs.protobuf.Pvalue.SampleSeries.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.yamcs.protobuf.Pvalue.TimeSeries other) {
+        if (other == org.yamcs.protobuf.Pvalue.TimeSeries.getDefaultInstance()) return this;
         if (sampleBuilder_ == null) {
           if (!other.sample_.isEmpty()) {
             if (sample_.isEmpty()) {
@@ -5171,11 +5090,11 @@ public final class Pvalue {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.yamcs.protobuf.Pvalue.SampleSeries parsedMessage = null;
+        org.yamcs.protobuf.Pvalue.TimeSeries parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.yamcs.protobuf.Pvalue.SampleSeries) e.getUnfinishedMessage();
+          parsedMessage = (org.yamcs.protobuf.Pvalue.TimeSeries) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -5186,23 +5105,23 @@ public final class Pvalue {
       }
       private int bitField0_;
 
-      // repeated .pvalue.SampleSeries.Sample sample = 1;
-      private java.util.List<org.yamcs.protobuf.Pvalue.SampleSeries.Sample> sample_ =
+      // repeated .pvalue.TimeSeries.Sample sample = 1;
+      private java.util.List<org.yamcs.protobuf.Pvalue.TimeSeries.Sample> sample_ =
         java.util.Collections.emptyList();
       private void ensureSampleIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          sample_ = new java.util.ArrayList<org.yamcs.protobuf.Pvalue.SampleSeries.Sample>(sample_);
+          sample_ = new java.util.ArrayList<org.yamcs.protobuf.Pvalue.TimeSeries.Sample>(sample_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.yamcs.protobuf.Pvalue.SampleSeries.Sample, org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder, org.yamcs.protobuf.Pvalue.SampleSeries.SampleOrBuilder> sampleBuilder_;
+          org.yamcs.protobuf.Pvalue.TimeSeries.Sample, org.yamcs.protobuf.Pvalue.TimeSeries.Sample.Builder, org.yamcs.protobuf.Pvalue.TimeSeries.SampleOrBuilder> sampleBuilder_;
 
       /**
-       * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+       * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
        */
-      public java.util.List<org.yamcs.protobuf.Pvalue.SampleSeries.Sample> getSampleList() {
+      public java.util.List<org.yamcs.protobuf.Pvalue.TimeSeries.Sample> getSampleList() {
         if (sampleBuilder_ == null) {
           return java.util.Collections.unmodifiableList(sample_);
         } else {
@@ -5210,7 +5129,7 @@ public final class Pvalue {
         }
       }
       /**
-       * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+       * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
        */
       public int getSampleCount() {
         if (sampleBuilder_ == null) {
@@ -5220,9 +5139,9 @@ public final class Pvalue {
         }
       }
       /**
-       * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+       * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
        */
-      public org.yamcs.protobuf.Pvalue.SampleSeries.Sample getSample(int index) {
+      public org.yamcs.protobuf.Pvalue.TimeSeries.Sample getSample(int index) {
         if (sampleBuilder_ == null) {
           return sample_.get(index);
         } else {
@@ -5230,10 +5149,10 @@ public final class Pvalue {
         }
       }
       /**
-       * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+       * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
        */
       public Builder setSample(
-          int index, org.yamcs.protobuf.Pvalue.SampleSeries.Sample value) {
+          int index, org.yamcs.protobuf.Pvalue.TimeSeries.Sample value) {
         if (sampleBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -5247,10 +5166,10 @@ public final class Pvalue {
         return this;
       }
       /**
-       * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+       * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
        */
       public Builder setSample(
-          int index, org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder builderForValue) {
+          int index, org.yamcs.protobuf.Pvalue.TimeSeries.Sample.Builder builderForValue) {
         if (sampleBuilder_ == null) {
           ensureSampleIsMutable();
           sample_.set(index, builderForValue.build());
@@ -5261,9 +5180,9 @@ public final class Pvalue {
         return this;
       }
       /**
-       * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+       * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
        */
-      public Builder addSample(org.yamcs.protobuf.Pvalue.SampleSeries.Sample value) {
+      public Builder addSample(org.yamcs.protobuf.Pvalue.TimeSeries.Sample value) {
         if (sampleBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -5277,10 +5196,10 @@ public final class Pvalue {
         return this;
       }
       /**
-       * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+       * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
        */
       public Builder addSample(
-          int index, org.yamcs.protobuf.Pvalue.SampleSeries.Sample value) {
+          int index, org.yamcs.protobuf.Pvalue.TimeSeries.Sample value) {
         if (sampleBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -5294,10 +5213,10 @@ public final class Pvalue {
         return this;
       }
       /**
-       * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+       * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
        */
       public Builder addSample(
-          org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder builderForValue) {
+          org.yamcs.protobuf.Pvalue.TimeSeries.Sample.Builder builderForValue) {
         if (sampleBuilder_ == null) {
           ensureSampleIsMutable();
           sample_.add(builderForValue.build());
@@ -5308,10 +5227,10 @@ public final class Pvalue {
         return this;
       }
       /**
-       * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+       * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
        */
       public Builder addSample(
-          int index, org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder builderForValue) {
+          int index, org.yamcs.protobuf.Pvalue.TimeSeries.Sample.Builder builderForValue) {
         if (sampleBuilder_ == null) {
           ensureSampleIsMutable();
           sample_.add(index, builderForValue.build());
@@ -5322,10 +5241,10 @@ public final class Pvalue {
         return this;
       }
       /**
-       * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+       * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
        */
       public Builder addAllSample(
-          java.lang.Iterable<? extends org.yamcs.protobuf.Pvalue.SampleSeries.Sample> values) {
+          java.lang.Iterable<? extends org.yamcs.protobuf.Pvalue.TimeSeries.Sample> values) {
         if (sampleBuilder_ == null) {
           ensureSampleIsMutable();
           super.addAll(values, sample_);
@@ -5336,7 +5255,7 @@ public final class Pvalue {
         return this;
       }
       /**
-       * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+       * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
        */
       public Builder clearSample() {
         if (sampleBuilder_ == null) {
@@ -5349,7 +5268,7 @@ public final class Pvalue {
         return this;
       }
       /**
-       * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+       * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
        */
       public Builder removeSample(int index) {
         if (sampleBuilder_ == null) {
@@ -5362,16 +5281,16 @@ public final class Pvalue {
         return this;
       }
       /**
-       * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+       * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
        */
-      public org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder getSampleBuilder(
+      public org.yamcs.protobuf.Pvalue.TimeSeries.Sample.Builder getSampleBuilder(
           int index) {
         return getSampleFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+       * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
        */
-      public org.yamcs.protobuf.Pvalue.SampleSeries.SampleOrBuilder getSampleOrBuilder(
+      public org.yamcs.protobuf.Pvalue.TimeSeries.SampleOrBuilder getSampleOrBuilder(
           int index) {
         if (sampleBuilder_ == null) {
           return sample_.get(index);  } else {
@@ -5379,9 +5298,9 @@ public final class Pvalue {
         }
       }
       /**
-       * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+       * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
        */
-      public java.util.List<? extends org.yamcs.protobuf.Pvalue.SampleSeries.SampleOrBuilder> 
+      public java.util.List<? extends org.yamcs.protobuf.Pvalue.TimeSeries.SampleOrBuilder> 
            getSampleOrBuilderList() {
         if (sampleBuilder_ != null) {
           return sampleBuilder_.getMessageOrBuilderList();
@@ -5390,33 +5309,33 @@ public final class Pvalue {
         }
       }
       /**
-       * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+       * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
        */
-      public org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder addSampleBuilder() {
+      public org.yamcs.protobuf.Pvalue.TimeSeries.Sample.Builder addSampleBuilder() {
         return getSampleFieldBuilder().addBuilder(
-            org.yamcs.protobuf.Pvalue.SampleSeries.Sample.getDefaultInstance());
+            org.yamcs.protobuf.Pvalue.TimeSeries.Sample.getDefaultInstance());
       }
       /**
-       * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+       * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
        */
-      public org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder addSampleBuilder(
+      public org.yamcs.protobuf.Pvalue.TimeSeries.Sample.Builder addSampleBuilder(
           int index) {
         return getSampleFieldBuilder().addBuilder(
-            index, org.yamcs.protobuf.Pvalue.SampleSeries.Sample.getDefaultInstance());
+            index, org.yamcs.protobuf.Pvalue.TimeSeries.Sample.getDefaultInstance());
       }
       /**
-       * <code>repeated .pvalue.SampleSeries.Sample sample = 1;</code>
+       * <code>repeated .pvalue.TimeSeries.Sample sample = 1;</code>
        */
-      public java.util.List<org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder> 
+      public java.util.List<org.yamcs.protobuf.Pvalue.TimeSeries.Sample.Builder> 
            getSampleBuilderList() {
         return getSampleFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.yamcs.protobuf.Pvalue.SampleSeries.Sample, org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder, org.yamcs.protobuf.Pvalue.SampleSeries.SampleOrBuilder> 
+          org.yamcs.protobuf.Pvalue.TimeSeries.Sample, org.yamcs.protobuf.Pvalue.TimeSeries.Sample.Builder, org.yamcs.protobuf.Pvalue.TimeSeries.SampleOrBuilder> 
           getSampleFieldBuilder() {
         if (sampleBuilder_ == null) {
           sampleBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.yamcs.protobuf.Pvalue.SampleSeries.Sample, org.yamcs.protobuf.Pvalue.SampleSeries.Sample.Builder, org.yamcs.protobuf.Pvalue.SampleSeries.SampleOrBuilder>(
+              org.yamcs.protobuf.Pvalue.TimeSeries.Sample, org.yamcs.protobuf.Pvalue.TimeSeries.Sample.Builder, org.yamcs.protobuf.Pvalue.TimeSeries.SampleOrBuilder>(
                   sample_,
                   ((bitField0_ & 0x00000001) == 0x00000001),
                   getParentForChildren(),
@@ -5426,15 +5345,15 @@ public final class Pvalue {
         return sampleBuilder_;
       }
 
-      // @@protoc_insertion_point(builder_scope:pvalue.SampleSeries)
+      // @@protoc_insertion_point(builder_scope:pvalue.TimeSeries)
     }
 
     static {
-      defaultInstance = new SampleSeries(true);
+      defaultInstance = new TimeSeries(true);
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:pvalue.SampleSeries)
+    // @@protoc_insertion_point(class_scope:pvalue.TimeSeries)
   }
 
   private static com.google.protobuf.Descriptors.Descriptor
@@ -5448,15 +5367,15 @@ public final class Pvalue {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_pvalue_ParameterData_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_pvalue_SampleSeries_descriptor;
+    internal_static_pvalue_TimeSeries_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_pvalue_SampleSeries_fieldAccessorTable;
+      internal_static_pvalue_TimeSeries_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_pvalue_SampleSeries_Sample_descriptor;
+    internal_static_pvalue_TimeSeries_Sample_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_pvalue_SampleSeries_Sample_fieldAccessorTable;
+      internal_static_pvalue_TimeSeries_Sample_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -5481,21 +5400,20 @@ public final class Pvalue {
       "rmRange\"q\n\rParameterData\022)\n\tparameter\030\001 " +
       "\003(\0132\026.pvalue.ParameterValue\022\r\n\005group\030\002 \001" +
       "(\t\022\026\n\016generationTime\030\003 \001(\003\022\016\n\006seqNum\030\004 \001" +
-      "(\005\"\315\001\n\014SampleSeries\022+\n\006sample\030\001 \003(\0132\033.pv" +
-      "alue.SampleSeries.Sample\032\217\001\n\006Sample\022\035\n\025a" +
-      "verageGenerationTime\030\001 \001(\003\022 \n\030averageGen" +
-      "erationTimeUTC\030\002 \001(\t\022\024\n\014averageValue\030\003 \001" +
-      "(\001\022\020\n\010lowValue\030\004 \001(\001\022\021\n\thighValue\030\005 \001(\001\022",
-      "\t\n\001n\030\006 \001(\005*M\n\021AcquisitionStatus\022\014\n\010ACQUI" +
-      "RED\020\000\022\020\n\014NOT_RECEIVED\020\001\022\013\n\007INVALID\020\002\022\013\n\007" +
-      "EXPIRED\020\003*\234\002\n\020MonitoringResult\022\014\n\010DISABL" +
-      "ED\020\000\022\r\n\tIN_LIMITS\020\001\022\t\n\005WATCH\020\007\022\r\n\tWATCH_" +
-      "LOW\020\010\022\016\n\nWATCH_HIGH\020\t\022\013\n\007WARNING\020\n\022\017\n\013WA" +
-      "RNING_LOW\020\013\022\020\n\014WARNING_HIGH\020\014\022\014\n\010DISTRES" +
-      "S\020\r\022\020\n\014DISTRESS_LOW\020\016\022\021\n\rDISTRESS_HIGH\020\017" +
-      "\022\014\n\010CRITICAL\020\020\022\020\n\014CRITICAL_LOW\020\021\022\021\n\rCRIT" +
-      "ICAL_HIGH\020\022\022\n\n\006SEVERE\020\023\022\016\n\nSEVERE_LOW\020\024\022" +
-      "\017\n\013SEVERE_HIGH\020\025B\024\n\022org.yamcs.protobuf"
+      "(\005\"\201\001\n\nTimeSeries\022)\n\006sample\030\001 \003(\0132\031.pval" +
+      "ue.TimeSeries.Sample\032H\n\006Sample\022\014\n\004time\030\001" +
+      " \001(\t\022\013\n\003avg\030\002 \001(\001\022\013\n\003min\030\003 \001(\001\022\013\n\003max\030\004 " +
+      "\001(\001\022\t\n\001n\030\005 \001(\005*M\n\021AcquisitionStatus\022\014\n\010A" +
+      "CQUIRED\020\000\022\020\n\014NOT_RECEIVED\020\001\022\013\n\007INVALID\020\002",
+      "\022\013\n\007EXPIRED\020\003*\234\002\n\020MonitoringResult\022\014\n\010DI" +
+      "SABLED\020\000\022\r\n\tIN_LIMITS\020\001\022\t\n\005WATCH\020\007\022\r\n\tWA" +
+      "TCH_LOW\020\010\022\016\n\nWATCH_HIGH\020\t\022\013\n\007WARNING\020\n\022\017" +
+      "\n\013WARNING_LOW\020\013\022\020\n\014WARNING_HIGH\020\014\022\014\n\010DIS" +
+      "TRESS\020\r\022\020\n\014DISTRESS_LOW\020\016\022\021\n\rDISTRESS_HI" +
+      "GH\020\017\022\014\n\010CRITICAL\020\020\022\020\n\014CRITICAL_LOW\020\021\022\021\n\r" +
+      "CRITICAL_HIGH\020\022\022\n\n\006SEVERE\020\023\022\016\n\nSEVERE_LO" +
+      "W\020\024\022\017\n\013SEVERE_HIGH\020\025B\024\n\022org.yamcs.protob" +
+      "uf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -5514,18 +5432,18 @@ public final class Pvalue {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_pvalue_ParameterData_descriptor,
               new java.lang.String[] { "Parameter", "Group", "GenerationTime", "SeqNum", });
-          internal_static_pvalue_SampleSeries_descriptor =
+          internal_static_pvalue_TimeSeries_descriptor =
             getDescriptor().getMessageTypes().get(2);
-          internal_static_pvalue_SampleSeries_fieldAccessorTable = new
+          internal_static_pvalue_TimeSeries_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_pvalue_SampleSeries_descriptor,
+              internal_static_pvalue_TimeSeries_descriptor,
               new java.lang.String[] { "Sample", });
-          internal_static_pvalue_SampleSeries_Sample_descriptor =
-            internal_static_pvalue_SampleSeries_descriptor.getNestedTypes().get(0);
-          internal_static_pvalue_SampleSeries_Sample_fieldAccessorTable = new
+          internal_static_pvalue_TimeSeries_Sample_descriptor =
+            internal_static_pvalue_TimeSeries_descriptor.getNestedTypes().get(0);
+          internal_static_pvalue_TimeSeries_Sample_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_pvalue_SampleSeries_Sample_descriptor,
-              new java.lang.String[] { "AverageGenerationTime", "AverageGenerationTimeUTC", "AverageValue", "LowValue", "HighValue", "N", });
+              internal_static_pvalue_TimeSeries_Sample_descriptor,
+              new java.lang.String[] { "Time", "Avg", "Min", "Max", "N", });
           return null;
         }
       };

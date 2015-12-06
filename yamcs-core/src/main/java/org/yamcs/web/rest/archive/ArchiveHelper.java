@@ -11,7 +11,7 @@ import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Archive.StreamInfo;
 import org.yamcs.protobuf.Archive.TableInfo;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Pvalue.SampleSeries;
+import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -26,7 +26,7 @@ import org.yamcs.web.rest.RestException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestUtils;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
-import org.yamcs.web.rest.archive.RestParameterSampler.Sample;
+import org.yamcs.web.rest.archive.RestDownsampler.Sample;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
@@ -152,13 +152,12 @@ public final class ArchiveHelper {
         return rrb.build();
     }
 
-    final static SampleSeries.Sample toGPBSample(Sample sample) {
-        SampleSeries.Sample.Builder b = SampleSeries.Sample.newBuilder();
-        b.setAverageGenerationTime(sample.avgt);
-        b.setAverageGenerationTimeUTC(TimeEncoding.toString(sample.avgt));
-        b.setAverageValue(sample.avg);
-        b.setLowValue(sample.low);
-        b.setHighValue(sample.high);
+    final static TimeSeries.Sample toGPBSample(Sample sample) {
+        TimeSeries.Sample.Builder b = TimeSeries.Sample.newBuilder();
+        b.setTime(TimeEncoding.toString(sample.avgt));
+        b.setAvg(sample.avg);
+        b.setMin(sample.min);
+        b.setMax(sample.max);
         b.setN(sample.n);
         return b.build();
     }

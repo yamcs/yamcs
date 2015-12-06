@@ -5,13 +5,13 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 
 import org.junit.Test;
-import org.yamcs.web.rest.archive.RestParameterSampler.Sample;
+import org.yamcs.web.rest.archive.RestDownsampler.Sample;
 
-public class RestParameterSamplerTest {
+public class RestDownsamplerTest {
     
     @Test
     public void testSampling() {
-        RestParameterSampler sampler = new RestParameterSampler(10, 3);
+        RestDownsampler sampler = new RestDownsampler(10, 3);
         
         List<Sample> samples = sampler.collect();
         assertEquals(0, samples.size());
@@ -43,12 +43,12 @@ public class RestParameterSamplerTest {
         
         Sample sample0 = samples.get(0);
         assertEquals((5+10+7)/3., sample0.avg, 1e-10);
-        assertEquals(5, sample0.low, 1e-10);
-        assertEquals(10, sample0.high, 1e-10);
+        assertEquals(5, sample0.min, 1e-10);
+        assertEquals(10, sample0.max, 1e-10);
         
         Sample sample1 = samples.get(1);
         assertEquals(2, sample1.avg, 1e-10);
-        assertEquals(2, sample1.low, 1e-10);
-        assertEquals(2, sample1.high, 1e-10);
+        assertEquals(2, sample1.min, 1e-10);
+        assertEquals(2, sample1.max, 1e-10);
     }
 }

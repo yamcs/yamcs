@@ -214,33 +214,33 @@
             start: beforeIso.slice(0, -1),
             stop: nowIso.slice(0, -1)
         }).then(function (incomingData) {
-            var min, max;
+            var rangeMin, rangeMax;
             var points = [];
             if (incomingData['sample']) {
                 for (var i = 0; i < incomingData['sample'].length; i++) {
                     var sample = incomingData['sample'][i];
                     var t = new Date();
-                    t.setTime(Date.parse(sample['averageGenerationTimeUTC']));
-                    var v = sample['averageValue'];
-                    var lo = sample['lowValue'];
-                    var hi = sample['highValue'];
+                    t.setTime(Date.parse(sample['time']));
+                    var v = sample['avg'];
+                    var min = sample['min'];
+                    var max = sample['max'];
 
-                    if (typeof min === 'undefined') {
-                        min = lo;
-                        max = hi;
+                    if (typeof rangeMin === 'undefined') {
+                        rangeMin = min;
+                        rangeMax = max;
                     } else {
-                        if (min > lo) min = lo;
-                        if (max < hi) max = hi;
+                        if (rangeMin > min) rangeMin = min;
+                        if (rangeMax < max) rangeMax = max;
                     }
-                    points.push([t, [lo, v, hi]]);
+                    points.push([t, [min, v, max]]);
                 }
             }
 
             return {
                 name: qname,
                 points: points,
-                min: min,
-                max: max
+                min: rangeMin,
+                max: rangeMax
             };
         });
     }

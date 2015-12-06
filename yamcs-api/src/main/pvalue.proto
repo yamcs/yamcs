@@ -71,14 +71,13 @@ message ParameterData {
   optional int32 seqNum = 4;
 }
 
-message SampleSeries {
+message TimeSeries {
   message Sample {
-    optional int64 averageGenerationTime = 1;
-    optional string averageGenerationTimeUTC = 2;
-    optional double averageValue = 3;
-    optional double lowValue = 4;
-    optional double highValue = 5;
-    optional int32 n = 6;
+    optional string time = 1;
+    optional double avg = 2;
+    optional double min = 3;
+    optional double max = 4;
+    optional int32 n = 5;
   }
 
   repeated Sample sample = 1;
