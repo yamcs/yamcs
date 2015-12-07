@@ -17,4 +17,4 @@ incomingDir: /tmp/yamcs-incoming
 #max length of the data of type binary(e.g. tm packets)
 maxBinaryLength: 1048576
 
-storageEngines: [rocksdb, tokyocabinet]
+storageEngines: [rocksdb]
