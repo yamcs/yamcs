@@ -3,6 +3,7 @@ package org.yamcs.archive;
 import static org.junit.Assert.*;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -54,7 +55,15 @@ public class CcsdsTmIndexTest extends YarchTestCase {
         short apid1=1001;
 
         tmindex.addPacket(apid,   10L, (short)5);
+        CcsdsIndexIterator it=tmindex.new CcsdsIndexIterator((short)-1, -1L, -1L);
+        assertEqual(it.getNextRecord(), 10, 10, 1);
+        it.close();
+        
         tmindex.addPacket(apid,    8L, (short)4);
+        it=tmindex.new CcsdsIndexIterator((short)-1, -1L, -1L);
+        assertEqual(it.getNextRecord(), 8, 10, 2);
+        it.close();
+        
 
         tmindex.addPacket(apid1,   10L, (short)5);
 
@@ -62,19 +71,19 @@ public class CcsdsTmIndexTest extends YarchTestCase {
         tmindex.addPacket(apid,   10L, (short)51);
         tmindex.addPacket(apid,   10L, (short)52);
         tmindex.addPacket(apid,   10L, (short)102);
-        tmindex.addPacket(apid, 4000L, (short)1);
+        tmindex.addPacket(apid, 4001L, (short)1);
         tmindex.addPacket(apid, 4000L, (short)0x3FFF);
-        tmindex.addPacket(apid, 4000L, (short)0);
+        tmindex.addPacket(apid, 4001L, (short)0);
         tmindex.addPacket(apid,    8L, (short)4);
 
-
-        CcsdsIndexIterator it=tmindex.new CcsdsIndexIterator((short)-1, -1L, -1L);
+        
+        it=tmindex.new CcsdsIndexIterator((short)-1, -1L, -1L);
         assertEqual(it.getNextRecord(), 1, 1, 1);
         assertEqual(it.getNextRecord(), 8, 10, 2);
 
         assertEqual(it.getNextRecord(), 10, 10, 2);
         assertEqual(it.getNextRecord(), 10, 10, 1);
-        assertEqual(it.getNextRecord(), 4000, 4000, 3);
+        assertEqual(it.getNextRecord(), 4000, 4001, 3);
         Record r=it.getNextRecord();
         assertEquals(apid1, r.apid());
         assertEqual(r, 10, 10, 1);
@@ -82,5 +91,24 @@ public class CcsdsTmIndexTest extends YarchTestCase {
         assertNull(it.getNextRecord());
 
         //tmindex.printApidDb();
+    }
+    
+    
+    @Test
+    @Ignore
+    public void testApidIndexSameTimeAndWraparound() throws Exception {
+        CccsdsTmIndex tmindex=new CccsdsTmIndex(ydb.getName(), false);
+
+        short apid=2000;
+
+        tmindex.addPacket(apid, 5000L, (short)1);
+        tmindex.addPacket(apid, 5000L, (short)0x3FFF);
+        tmindex.addPacket(apid, 5000L, (short)0);
+
+        
+        CcsdsIndexIterator it=tmindex.new CcsdsIndexIterator((short)-1, -1L, -1L);
+
+        assertEqual(it.getNextRecord(), 5000, 5000, 3);
+        assertNull(it.getNextRecord());
     }
 }
