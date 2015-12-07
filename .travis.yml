@@ -1,13 +1,6 @@
 language: java
 jdk: oraclejdk8
 
-before_script:
-#tokyocabinets
- - sudo apt-get install libtokyocabinet-dev
- - wget http://fallabs.com/tokyocabinet/javapkg/tokyocabinet-java-1.24.tar.gz
- - tar xzvf tokyocabinet-java-1.24.tar.gz
- - cd tokyocabinet-java-1.24 && ./configure && make && sudo make install && cd ..
-
 script: mvn -Dsurefire.useFile=false test && mvn -Dtest=PermissionsTest -pl yamcs-core test
 
 
