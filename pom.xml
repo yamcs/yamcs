@@ -104,6 +104,7 @@
     <module>yamcs-api</module>
     <module>yamcs-xtce</module>
     <module>yamcs-simulation</module>
+    <module>yamcs-tokyocabinet</module>
   </modules>
 
   <reporting>

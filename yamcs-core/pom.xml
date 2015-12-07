@@ -84,14 +84,6 @@
       <version>18.0</version>
     </dependency>
 
-    <!-- Dependencies in the spaceapps repo -->
-
-    <dependency>
-      <groupId>tokyocabinet</groupId>
-      <artifactId>tokyocabinet</artifactId>
-      <version>1.18</version>
-    </dependency>
-
     <dependency>
       <groupId>org.rocksdb</groupId>
       <artifactId>rocksdbjni</artifactId>

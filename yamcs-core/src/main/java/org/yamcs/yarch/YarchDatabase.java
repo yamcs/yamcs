@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.utils.YObjectLoader;
 import org.yamcs.yarch.management.ManagementService;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yamcs.yarch.streamsql.ExecutionContext;
@@ -27,8 +28,6 @@ import org.yamcs.yarch.streamsql.StreamSqlParser;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
 import org.yamcs.yarch.streamsql.TokenMgrError;
-import org.yamcs.yarch.tokyocabinet.TCBFactory;
-import org.yamcs.yarch.tokyocabinet.TcStorageEngine;
 import org.yaml.snakeyaml.Yaml;
 
 
@@ -51,7 +50,6 @@ public class YarchDatabase {
     static Logger log=LoggerFactory.getLogger(YarchDatabase.class.getName());
     static YConfiguration config;
     private static String home;
-    private TCBFactory tcbFactory=TCBFactory.getInstance();
 
     private Map<String, StorageEngine> storageEngines=new HashMap<String, StorageEngine>();
     public static String TC_ENGINE_NAME="tokyocabinet";	
@@ -87,7 +85,7 @@ public class YarchDatabase {
         if(config.containsKey("storageEngines")) {
             se = config.getList("storageEngines");
         } else {
-            se = Arrays.asList(RDB_ENGINE_NAME, TC_ENGINE_NAME);
+            se = Arrays.asList(RDB_ENGINE_NAME);
         }
         
         if(config.containsKey("defaultStorageEngine")) {
@@ -102,7 +100,15 @@ public class YarchDatabase {
         if(se!=null) {
             for(String s:se) {
                 if(TC_ENGINE_NAME.equalsIgnoreCase(s)) {
-                    storageEngines.put(TC_ENGINE_NAME, new TcStorageEngine(this));
+                    YObjectLoader<StorageEngine> objLoader= new YObjectLoader<StorageEngine>();
+                    StorageEngine tcStorageEngine;
+                    String clsName = "org.yamcs.yarch.tokyocabinet.TcStorageEngine";
+                    try {
+                        tcStorageEngine = objLoader.loadObject(clsName, this);
+                    } catch (IOException e) {
+                        throw new ConfigurationException("Cannot load TokyCabinetStorage Engine",e);
+                    }
+                    storageEngines.put(TC_ENGINE_NAME, tcStorageEngine);
                 } else if(RDB_ENGINE_NAME.equalsIgnoreCase(s)) {
                     storageEngines.put(RDB_ENGINE_NAME, new RdbStorageEngine(this));
                 }
@@ -278,14 +284,7 @@ public class YarchDatabase {
             throw new YarchException("There is no table named '"+tblName+"'");
         }
         managementService.unregisterTable(dbname, tblName);
-        if(tbl.hasPartitioning()) {
-            getStorageEngine(tbl).dropTable(tbl);
-        } else {
-            String file=tbl.getDataDir()+"/"+tblName+".tcb";
-            File f=new File(file);
-            if(f.exists() && (!f.delete())) throw new YarchException("Cannot remove "+file);
-            tcbFactory.delete(file);
-        }
+        getStorageEngine(tbl).dropTable(tbl);
         File f=new File(getRoot()+"/"+tblName+".def");
         if(!f.delete()) {
             throw new YarchException("Cannot remove "+f);
@@ -326,10 +325,6 @@ public class YarchDatabase {
 
     public static String getHome() {
         return home;
-    }
-
-    public TCBFactory getTCBFactory() {
-        return tcbFactory;
     }
 
     /**to be used for testing**/
