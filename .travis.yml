@@ -3,6 +3,7 @@ jdk: oraclejdk8
 
 before_script:
 #tokyocabinets
+ - sudo apt-get update
  - sudo apt-get install libtokyocabinet-dev
  - wget http://fallabs.com/tokyocabinet/javapkg/tokyocabinet-java-1.24.tar.gz
  - tar xzvf tokyocabinet-java-1.24.tar.gz
