@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.yamcs.TimeInterval;
 import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
-import org.yamcs.yarch.YarchException;
 
 public interface TagDb {
 
@@ -14,13 +13,17 @@ public interface TagDb {
      * {@link TagReceiver}.
      */
     public void getTags(TimeInterval intv, TagReceiver callback) throws IOException;
+    
+    /**
+     * Returns a specific tag, or null if the requested tag does not exist
+     */
+    public ArchiveTag getTag(long tagTime, int tagId) throws IOException;
 
     /**
      * Inserts a new Tag. No id should be specified. If it is, it will
      * silently be overwritten, and the new tag will be returned.
-     * @throws YarchException 
      */
-    public ArchiveTag insertTag(ArchiveTag tag) throws IOException ;
+    public ArchiveTag insertTag(ArchiveTag tag) throws IOException;
 
 
     /**
@@ -28,13 +31,15 @@ public interface TagDb {
      * throws YamcsException if the tag could not be found.
      * <p>
      * Note that both tagId and oldTagStart need to be specified so that
-     * a direct lookup in the internal data structure can be made. 
+     * a direct lookup in the internal data structure can be made.
+     * 
+     * @return the updated tag
      */
-    public ArchiveTag updateTag(long tagTime, int tagId, ArchiveTag tag) throws IOException, YamcsException ;
+    public ArchiveTag updateTag(long tagTime, int tagId, ArchiveTag tag) throws IOException, YamcsException;
 
     /**
      * Deletes the specified tag
      * @throws YamcsException if the id was invalid, or if the tag could not be found
      */
-    public ArchiveTag deleteTag(long tagTime, int tagId) throws IOException, YamcsException ;
+    public ArchiveTag deleteTag(long tagTime, int tagId) throws IOException, YamcsException;
 }

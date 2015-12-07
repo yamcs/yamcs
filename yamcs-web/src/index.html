@@ -1,47 +1,91 @@
 <!doctype html>
-<html lang="en" ng-strict-di ng-controller="Shell as shell">
+<html lang="en" ng-strict-di>
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title ng-bind="pageTitle"></title>
-
-  <!-- bower:css -->
-  <!-- endinject -->
+  <title>Yamcs</title>
 
   <!-- inject:css -->
   <!-- endinject -->
 </head>
 
-<body ng-cloak>
+<body>
 
-  <div ng-include="'/_static/_site/core/shell.html'"></div>
-  <div ng-view></div>
+  <!--nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!- -button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button- ->
+        <!- -a class="navbar-brand" href="#">Yamcs</a- ->
+      </div>
+      <!- -div id="navbar" class="navbar-collapse collapse">
+        <form class="navbar-form navbar-right">
+          <div class="form-group">
+            <input type="text" placeholder="Email" class="form-control">
+          </div>
+          <div class="form-group">
+            <input type="password" placeholder="Password" class="form-control">
+          </div>
+          <button type="submit" class="btn btn-success">Sign in</button>
+        </form>
+      </div- ->
+    </div>
+  </nav-->
+
+  <div class="jumbotron">
+    <div class="container">
+      <h1>Yamcs</h1>
+      <p>Modern, Lightweight, Scalable Mission Control System</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <p>&nbsp;</p>
+        <p id="instances" style="display: none;">
+          <a ng-repeat-start="instance in instances"
+             ng-repeat-end class="btn btn-default btn-lg"
+             ng-href="{{ instance.name }}"
+             role="button" style="margin-right: 1em;">{{ instance.name }} &raquo;</a>
+        </p>
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+      </div>
+    </div>
+
+    <hr>
+
+    <footer>
+      <p>
+        &copy; 2015 Space Applications Services<br>
+        <a href="http://www.yamcs.org">www.yamcs.org</a>
+      </p>
+    </footer>
+  </div>
 
   <!-- bower:js -->
-  <!-- endinject -->
-
-  <!-- inject:js -->
   <!-- endinject -->
 
   <script>
   (function() {
       var initInjector = angular.injector(['ng']);
       var $http = initInjector.get('$http');
-
-      var yamcsInstance = location.pathname.match(/\/([^\/]*)\/?/)[1];
-      var targetUrl = '/_static/' + yamcsInstance + '/config.json';
-
-      $http.get(targetUrl).then(function (response) {
+      $http.get('/api/instances?nolink').then(function(response) {
           angular
-              .module('yamcs.core')
-              .constant('remoteConfig', response.data)
-              .constant('yamcsInstance', yamcsInstance)
-              .run(['$rootScope', function ($rootScope) {
-                $rootScope.yamcsInstance = yamcsInstance;
+              .module('yamcs.index', [])
+              .run(['$rootScope', function($rootScope) {
+                  $rootScope.instances = response.data['instance'];
               }]);
           angular.element(document).ready(function() {
-              angular.bootstrap(document, ['yamcs']);
+              angular.bootstrap(document, ['yamcs.index']);
+              $('#instances').show();
           });
       });
   })();

@@ -4,7 +4,7 @@
     angular
         .module('yamcs.core', [
             'ngAnimate', 'ngRoute', 'ngSanitize',
-            'ui.bootstrap',
+            'ui.bootstrap', 'infinite-scroll',
             'yamcs.intf'
         ])
         .config(configure);

@@ -23,7 +23,9 @@ div.section {
 
 /* Move down content because we have a fixed navbar that is 50px tall */
 body {
-  padding-top: 50px;
+  &.with-topbar {
+    padding-top: 50px;
+  }
 }
 
 .badge.urgent {
@@ -137,12 +139,18 @@ ul.nav.nav-sidebar-sub > li.active > a:focus {
 }
 
 .main {
-  padding-top: 20px;
+
+  &.with-sidebar {
+    padding-left: 230px;
+  }
+
+  body.with-topbar & {
+    padding-top: 20px;
+  }
 }
 
 .main .page-header {
   margin: 0;
-  /*font-size: 16px;*/
 }
 
 .main h3 {

@@ -114,6 +114,15 @@ public class RestRequest {
         }
     }
     
+    public long getPathSegmentAsLong(int index) throws BadRequestException {
+        String segment = pathSegments[index];
+        try {
+            return Long.parseLong(segment);
+        } catch (NumberFormatException e) {
+            throw new BadRequestException("Path segment '" + segment + "' is not a valid integer value");
+        }
+    }
+    
     public boolean hasPathSegment(int index) {
         return pathSegments.length > index;
     }

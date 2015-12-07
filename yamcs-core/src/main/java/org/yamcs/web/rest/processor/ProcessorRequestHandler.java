@@ -12,8 +12,8 @@ import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Rest;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
+import org.yamcs.protobuf.Rest.EditProcessorRequest;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
 import org.yamcs.protobuf.Rest.ListProcessorsResponse;
 import org.yamcs.protobuf.SchemaRest;
@@ -31,7 +31,6 @@ import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
-import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.rest.BadRequestException;
 import org.yamcs.web.rest.MethodNotAllowedException;
@@ -41,6 +40,7 @@ import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
+import org.yamcs.web.rest.RestUtils;
 import org.yamcs.web.rest.mdb.MDBRequestHandler;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
@@ -91,7 +91,13 @@ public class ProcessorRequestHandler extends RestRequestHandler {
 
     private RestResponse handleProcessorRequest(RestRequest req, int pathOffset, YProcessor processor) throws RestException {
         if (!req.hasPathSegment(pathOffset)) {
-            return updateProcessor(req, processor);
+            if (req.isGET()) {
+                return getProcessor(req, processor);
+            } else if (req.isPOST() || req.isPATCH() || req.isPUT())
+                return editProcessor(req, processor);
+            else {
+                throw new MethodNotAllowedException(req);
+            }
         } else {
             switch (req.getPathSegment(pathOffset)) {
             case "parameters":
@@ -136,113 +142,73 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         }
         return new RestResponse(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
     }
-
-    private RestResponse updateProcessor(RestRequest req, YProcessor yproc) throws RestException {
-        if(req.isPOST())
-            return postProcessor(req, yproc);
-        else if(req.isPATCH())
-            return patchProcessor(req, yproc);
-        else {
-            throw new MethodNotAllowedException(req);
-        }
+    
+    private RestResponse getProcessor(RestRequest req, YProcessor processor) throws RestException {
+        ProcessorInfo pinfo = toProcessorInfo(processor, req, true);
+        return new RestResponse(req, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
     }
 
-    private RestResponse patchProcessor(RestRequest req, YProcessor yproc) throws RestException {
-        req.assertPATCH();
-        Rest.PatchProcessorRequest yprocPatch = req.bodyAsMessage(SchemaRest.PatchProcessorRequest.MERGE).build();
+    private RestResponse editProcessor(RestRequest req, YProcessor processor) throws RestException {
+        EditProcessorRequest request = req.bodyAsMessage(SchemaRest.EditProcessorRequest.MERGE).build();
 
-        if(!yproc.isReplay()) {
-            throw new BadRequestException("Cannot patch a non replay processor ");
+        if (!processor.isReplay()) {
+            throw new BadRequestException("Cannot update a non-replay processor");
         }
 
         // patch processor state
-        if(yprocPatch.hasState()) {
-            if ("RUNNING".equals(yprocPatch.getState())) {
-                yproc.resume();
-            }
-            if ("PAUSED".equals(yprocPatch.getState())) {
-                yproc.pause();
+        String newState = null;
+        if (request.hasState()) newState = request.getState();
+        if (req.hasQueryParameter("state")) newState = req.getQueryParameter("state");
+        if (newState != null) {
+            switch (newState.toLowerCase()) {
+            case "running":
+                processor.resume();
+                break;
+            case "paused":
+                processor.pause();
+                break;
             }
         }
 
         // patch processor seek time
-        if(yprocPatch.hasSeekTime())
-        {
-            yproc.seek(yprocPatch.getSeekTime());
+        long seek = TimeEncoding.INVALID_INSTANT;
+        if (request.hasSeek()) seek = RestUtils.parseTime(request.getSeek());
+        if (req.hasQueryParameter("seek")) seek = req.getQueryParameterAsDate("seek");
+        if (seek != TimeEncoding.INVALID_INSTANT) {
+            processor.seek(seek);
         }
 
         // patch processor speed
-        if(yprocPatch.hasSpeed())
-        {
-
-            ReplaySpeed replaySpeed = null;
-            if("afap".equals(yprocPatch.getSpeed()))
-            {
-                replaySpeed = ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).setParam(1).build();
-                yproc.changeSpeed(replaySpeed);
-            }
-            else if("realtime".equals(yprocPatch.getSpeed()))
-            {
-                replaySpeed = ReplaySpeed.newBuilder().setType(ReplaySpeedType.REALTIME).setParam(1).build();
-                yproc.changeSpeed(replaySpeed);
-                yproc.seek(yproc.getCurrentTime());
-            }
-            else
-            {
-                float speedValue = 1;
-                try{
-                    speedValue = Float.parseFloat(yprocPatch.getSpeed().replace("x", ""));
+        String speed = null;
+        if (request.hasSpeed()) speed = request.getSpeed().toLowerCase();
+        if (req.hasQueryParameter("speed")) speed = req.getQueryParameter("speed").toLowerCase();
+        if (speed != null) {
+            ReplaySpeed replaySpeed;
+            if ("afap".equals(speed)) {
+                replaySpeed = ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build();
+            } else if (speed.endsWith("x")) {
+                try {
+                    float factor = Float.parseFloat(speed.substring(0, speed.length() - 1));
+                    replaySpeed = ReplaySpeed.newBuilder()
+                            .setType(ReplaySpeedType.REALTIME)
+                            .setParam(factor).build();
+                } catch (NumberFormatException e) {
+                    throw new BadRequestException("Speed factor is not a valid number");
                 }
-                catch (Exception e)
-                {
-                    throw  new BadRequestException("Unable to parse replay speed");
+                
+            } else {
+                try {
+                    int fixedDelay = Integer.parseInt(speed);
+                    replaySpeed = ReplaySpeed.newBuilder()
+                            .setType(ReplaySpeedType.FIXED_DELAY)
+                            .setParam(fixedDelay).build();
+                } catch (NumberFormatException e) {
+                    throw new BadRequestException("Fixed delay value is not an integer");
                 }
-                replaySpeed = ReplaySpeed.newBuilder().setType(ReplaySpeedType.FIXED_DELAY).setParam(speedValue).build();
-                yproc.changeSpeed(replaySpeed);
             }
+            processor.changeSpeed(replaySpeed);
         }
 
-        return new RestResponse(req);
-    }
-
-    private RestResponse postProcessor(RestRequest req, YProcessor yproc) throws RestException {
-
-        req.assertPOST();
-        ProcessorRequest yprocReq = req.bodyAsMessage(SchemaYamcsManagement.ProcessorRequest.MERGE).build();
-        switch(yprocReq.getOperation()) {
-            case RESUME:
-                if(!yproc.isReplay()) {
-                    throw new BadRequestException("Cannot resume a non replay processor ");
-                }
-                yproc.resume();
-                break;
-            case PAUSE:
-                if(!yproc.isReplay()) {
-                    throw new BadRequestException("Cannot pause a non replay processor ");
-                }
-                yproc.pause();
-                break;
-            case SEEK:
-                if(!yproc.isReplay()) {
-                    throw new BadRequestException("Cannot seek a non replay processor ");
-                }
-                if(!yprocReq.hasSeekTime()) {
-                    throw new BadRequestException("No seek time specified");
-                }
-                yproc.seek(yprocReq.getSeekTime());
-                break;
-            case CHANGE_SPEED:
-                if(!yproc.isReplay()) {
-                    throw new BadRequestException("Cannot seek a non replay processor ");
-                }
-                if(!yprocReq.hasReplaySpeed()) {
-                    throw new BadRequestException("No replay speed specified");
-                }
-                yproc.changeSpeed(yprocReq.getReplaySpeed());
-                break;
-            default:
-                throw new BadRequestException("Invalid operation "+yprocReq.getOperation()+" specified");
-        }
         return new RestResponse(req);
     }
 
@@ -250,8 +216,8 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         CreateProcessorRequest request = req.bodyAsMessage(SchemaRest.CreateProcessorRequest.MERGE).build();
 
         String name = null;
-        String start = null;
-        String stop = null;
+        long start = TimeEncoding.INVALID_INSTANT;
+        long stop = TimeEncoding.INVALID_INSTANT;
         String type = "Archive"; // API currently only supports standard replays
         String speed = "1x";
         boolean loop = false;
@@ -263,8 +229,8 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         boolean cmdhist = false;
 
         if (request.hasName()) name = request.getName();
-        if (request.hasStart()) start = request.getStart();
-        if (request.hasStop()) stop = request.getStop();
+        if (request.hasStart()) start = RestUtils.parseTime(request.getStart());
+        if (request.hasStop()) stop = RestUtils.parseTime(request.getStop());
         if (request.hasSpeed()) speed = request.getSpeed().toLowerCase();
         if (request.hasLoop()) loop = request.getLoop();
         if (request.hasCmdhist()) cmdhist = request.getCmdhist();
@@ -276,8 +242,8 @@ public class ProcessorRequestHandler extends RestRequestHandler {
 
         // Query params get priority
         if (req.hasQueryParameter("name")) name = req.getQueryParameter("name");
-        if (req.hasQueryParameter("start")) start = req.getQueryParameter("start");
-        if (req.hasQueryParameter("stop")) stop = req.getQueryParameter("stop");
+        if (req.hasQueryParameter("start")) start = req.getQueryParameterAsDate("start");
+        if (req.hasQueryParameter("stop")) stop = req.getQueryParameterAsDate("stop");
         if (req.hasQueryParameter("speed")) speed = req.getQueryParameter("speed").toLowerCase();
         if (req.hasQueryParameter("loop")) loop = req.getQueryParameterAsBoolean("loop");
         if (req.hasQueryParameter("paraname")) paraPatterns.addAll(req.getQueryParameterList("paraname"));
@@ -289,7 +255,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
 
         // Only these must be user-provided
         if (name == null) throw new BadRequestException("No processor name was specified");
-        if (start == null) throw new BadRequestException("No start time was specified");
+        if (start == TimeEncoding.INVALID_INSTANT) throw new BadRequestException("No start time was specified");
 
         // Make internal processor request
         ProcessorManagementRequest.Builder reqb = ProcessorManagementRequest.newBuilder();
@@ -301,24 +267,32 @@ public class ProcessorRequestHandler extends RestRequestHandler {
 
         ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
         rrb.setEndAction(loop ? EndAction.LOOP : EndAction.STOP);
-        rrb.setStart(TimeEncoding.parse(start));
-        if (stop != null) {
-            rrb.setStop(TimeEncoding.parse(stop));
+        rrb.setStart(start);
+        if (stop != TimeEncoding.INVALID_INSTANT) {
+            rrb.setStop(stop);
         }
 
         // Replay Speed
         if ("afap".equals(speed)) {
             rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
         } else if (speed.endsWith("x")) {
-            float factor = Float.parseFloat(speed.substring(0, speed.length() - 1));
-            rrb.setSpeed(ReplaySpeed.newBuilder()
-                    .setType(ReplaySpeedType.REALTIME)
-                    .setParam(factor));
+            try {
+                float factor = Float.parseFloat(speed.substring(0, speed.length() - 1));
+                rrb.setSpeed(ReplaySpeed.newBuilder()
+                        .setType(ReplaySpeedType.REALTIME)
+                        .setParam(factor));
+            } catch (NumberFormatException e) {
+                throw new BadRequestException("Speed factor is not a valid number");
+            }
         } else {
-            int fixedDelay = Integer.parseInt(speed);
-            rrb.setSpeed(ReplaySpeed.newBuilder()
-                    .setType(ReplaySpeedType.FIXED_DELAY)
-                    .setParam(fixedDelay));
+            try {
+                int fixedDelay = Integer.parseInt(speed);
+                rrb.setSpeed(ReplaySpeed.newBuilder()
+                        .setType(ReplaySpeedType.FIXED_DELAY)
+                        .setParam(fixedDelay));
+            } catch (NumberFormatException e) {
+                throw new BadRequestException("Fixed delay is not an integer");
+            }
         }
 
         // Resolve parameter inclusion patterns
@@ -394,7 +368,6 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         } catch (YamcsException e) {
             throw new BadRequestException(e.getMessage());
         }
-
     }
 
     public static ProcessorInfo toProcessorInfo(YProcessor processor, RestRequest req, boolean detail) {

@@ -3,7 +3,7 @@ package org.yamcs.web.rest.mdb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Mdb.AlgorithmInfo;
-import org.yamcs.protobuf.Rest.ListAlgorithmsResponse;
+import org.yamcs.protobuf.Rest.ListAlgorithmInfoResponse;
 import org.yamcs.protobuf.SchemaMdb;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -69,7 +69,7 @@ public class MDBAlgorithmRequestHandler extends RestRequestHandler {
             matcher = new NameDescriptionSearchMatcher(req.getQueryParameter("q"));    
         }
         
-        ListAlgorithmsResponse.Builder responseb = ListAlgorithmsResponse.newBuilder();
+        ListAlgorithmInfoResponse.Builder responseb = ListAlgorithmInfoResponse.newBuilder();
         if (namespace == null) {
             for (Algorithm a : mdb.getAlgorithms()) {
                 if (matcher != null && !matcher.matches(a)) continue;
@@ -88,6 +88,6 @@ public class MDBAlgorithmRequestHandler extends RestRequestHandler {
             }
         }
         
-        return new RestResponse(req, responseb.build(), SchemaRest.ListAlgorithmsResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaRest.ListAlgorithmInfoResponse.WRITE);
     }
 }

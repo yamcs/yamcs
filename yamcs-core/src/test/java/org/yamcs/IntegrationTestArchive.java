@@ -8,14 +8,14 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.yamcs.api.ws.WebSocketRequest;
-import org.yamcs.protobuf.SchemaArchive;
-import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Archive.DumpArchiveRequest;
 import org.yamcs.protobuf.Archive.DumpArchiveResponse;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
-import org.yamcs.protobuf.Rest.PatchClientRequest;
+import org.yamcs.protobuf.Rest.EditClientRequest;
+import org.yamcs.protobuf.SchemaArchive;
+import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
@@ -98,8 +98,8 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
         assertEquals("2015-01-01T10:01:01.000", p1_1_6.getGenerationTimeUTC());
 
         //go back to realtime
-        PatchClientRequest pcrequest = PatchClientRequest.newBuilder().setProcessor("realtime").build();
-        httpClient.doPostRequest("http://localhost:9190/api/clients/" + cinfo.getId(), toJson(pcrequest, SchemaRest.PatchClientRequest.WRITE), currentUser);
+        EditClientRequest pcrequest = EditClientRequest.newBuilder().setProcessor("realtime").build();
+        httpClient.doPostRequest("http://localhost:9190/api/clients/" + cinfo.getId(), toJson(pcrequest, SchemaRest.EditClientRequest.WRITE), currentUser);
 
         cinfo = getClientInfo();
         assertEquals("realtime", cinfo.getProcessorName());

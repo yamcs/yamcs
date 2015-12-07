@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" ng-strict-di ng-controller="Shell as shell">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title ng-bind="pageTitle"></title>
+
+  <!-- bower:css -->
+  <!-- endinject -->
+
+  <!-- inject:css -->
+  <!-- endinject -->
+</head>
+
+<body ng-cloak ng-class="{ 'with-topbar': !standalone }">
+
+  <div ng-if="!standalone" ng-include="'/_static/_site/core/shell.html'"></div>
+  <div ng-view></div>
+
+  <!-- bower:js -->
+  <!-- endinject -->
+
+  <!-- inject:js -->
+  <!-- endinject -->
+
+  <script>
+  (function() {
+      var initInjector = angular.injector(['ng']);
+      var $http = initInjector.get('$http');
+
+      var yamcsInstance = location.pathname.match(/\/([^\/]*)\/?/)[1];
+      var targetUrl = '/_static/' + yamcsInstance + '/config.json';
+
+      $http.get(targetUrl).then(function (response) {
+          angular
+              .module('yamcs.core')
+              .constant('remoteConfig', response.data)
+              .constant('yamcsInstance', yamcsInstance)
+              .run(['$rootScope', '$location', function ($rootScope, $location) {
+                $rootScope.yamcsInstance = yamcsInstance;
+                $rootScope.standalone = $location.search()['standalone'];
+              }]);
+          angular.element(document).ready(function() {
+              angular.bootstrap(document, ['yamcs']);
+          });
+      });
+  })();
+  </script>
+</body>
+</html>

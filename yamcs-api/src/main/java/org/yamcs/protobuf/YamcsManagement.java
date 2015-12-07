@@ -160,10 +160,6 @@ public final class YamcsManagement {
   }
   /**
    * Protobuf type {@code yamcsManagement.YamcsInstances}
-   *
-   * <pre>
-   *contains a list of instances
-   * </pre>
    */
   public static final class YamcsInstances extends
       com.google.protobuf.GeneratedMessage
@@ -416,10 +412,6 @@ public final class YamcsManagement {
     }
     /**
      * Protobuf type {@code yamcsManagement.YamcsInstances}
-     *
-     * <pre>
-     *contains a list of instances
-     * </pre>
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
@@ -845,26 +837,14 @@ public final class YamcsManagement {
     // optional .yamcsManagement.MissionDatabase missionDatabase = 3;
     /**
      * <code>optional .yamcsManagement.MissionDatabase missionDatabase = 3;</code>
-     *
-     * <pre>
-     *repeated MessagingAddress address=2; //removed 5-Mar-2012
-     * </pre>
      */
     boolean hasMissionDatabase();
     /**
      * <code>optional .yamcsManagement.MissionDatabase missionDatabase = 3;</code>
-     *
-     * <pre>
-     *repeated MessagingAddress address=2; //removed 5-Mar-2012
-     * </pre>
      */
     org.yamcs.protobuf.YamcsManagement.MissionDatabase getMissionDatabase();
     /**
      * <code>optional .yamcsManagement.MissionDatabase missionDatabase = 3;</code>
-     *
-     * <pre>
-     *repeated MessagingAddress address=2; //removed 5-Mar-2012
-     * </pre>
      */
     org.yamcs.protobuf.YamcsManagement.MissionDatabaseOrBuilder getMissionDatabaseOrBuilder();
 
@@ -1121,30 +1101,18 @@ public final class YamcsManagement {
     private org.yamcs.protobuf.YamcsManagement.MissionDatabase missionDatabase_;
     /**
      * <code>optional .yamcsManagement.MissionDatabase missionDatabase = 3;</code>
-     *
-     * <pre>
-     *repeated MessagingAddress address=2; //removed 5-Mar-2012
-     * </pre>
      */
     public boolean hasMissionDatabase() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
      * <code>optional .yamcsManagement.MissionDatabase missionDatabase = 3;</code>
-     *
-     * <pre>
-     *repeated MessagingAddress address=2; //removed 5-Mar-2012
-     * </pre>
      */
     public org.yamcs.protobuf.YamcsManagement.MissionDatabase getMissionDatabase() {
       return missionDatabase_;
     }
     /**
      * <code>optional .yamcsManagement.MissionDatabase missionDatabase = 3;</code>
-     *
-     * <pre>
-     *repeated MessagingAddress address=2; //removed 5-Mar-2012
-     * </pre>
      */
     public org.yamcs.protobuf.YamcsManagement.MissionDatabaseOrBuilder getMissionDatabaseOrBuilder() {
       return missionDatabase_;
@@ -1789,20 +1757,12 @@ public final class YamcsManagement {
           org.yamcs.protobuf.YamcsManagement.MissionDatabase, org.yamcs.protobuf.YamcsManagement.MissionDatabase.Builder, org.yamcs.protobuf.YamcsManagement.MissionDatabaseOrBuilder> missionDatabaseBuilder_;
       /**
        * <code>optional .yamcsManagement.MissionDatabase missionDatabase = 3;</code>
-       *
-       * <pre>
-       *repeated MessagingAddress address=2; //removed 5-Mar-2012
-       * </pre>
        */
       public boolean hasMissionDatabase() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
        * <code>optional .yamcsManagement.MissionDatabase missionDatabase = 3;</code>
-       *
-       * <pre>
-       *repeated MessagingAddress address=2; //removed 5-Mar-2012
-       * </pre>
        */
       public org.yamcs.protobuf.YamcsManagement.MissionDatabase getMissionDatabase() {
         if (missionDatabaseBuilder_ == null) {
@@ -1813,10 +1773,6 @@ public final class YamcsManagement {
       }
       /**
        * <code>optional .yamcsManagement.MissionDatabase missionDatabase = 3;</code>
-       *
-       * <pre>
-       *repeated MessagingAddress address=2; //removed 5-Mar-2012
-       * </pre>
        */
       public Builder setMissionDatabase(org.yamcs.protobuf.YamcsManagement.MissionDatabase value) {
         if (missionDatabaseBuilder_ == null) {
@@ -1833,10 +1789,6 @@ public final class YamcsManagement {
       }
       /**
        * <code>optional .yamcsManagement.MissionDatabase missionDatabase = 3;</code>
-       *
-       * <pre>
-       *repeated MessagingAddress address=2; //removed 5-Mar-2012
-       * </pre>
        */
       public Builder setMissionDatabase(
           org.yamcs.protobuf.YamcsManagement.MissionDatabase.Builder builderForValue) {
@@ -1851,10 +1803,6 @@ public final class YamcsManagement {
       }
       /**
        * <code>optional .yamcsManagement.MissionDatabase missionDatabase = 3;</code>
-       *
-       * <pre>
-       *repeated MessagingAddress address=2; //removed 5-Mar-2012
-       * </pre>
        */
       public Builder mergeMissionDatabase(org.yamcs.protobuf.YamcsManagement.MissionDatabase value) {
         if (missionDatabaseBuilder_ == null) {
@@ -1874,10 +1822,6 @@ public final class YamcsManagement {
       }
       /**
        * <code>optional .yamcsManagement.MissionDatabase missionDatabase = 3;</code>
-       *
-       * <pre>
-       *repeated MessagingAddress address=2; //removed 5-Mar-2012
-       * </pre>
        */
       public Builder clearMissionDatabase() {
         if (missionDatabaseBuilder_ == null) {
@@ -1891,10 +1835,6 @@ public final class YamcsManagement {
       }
       /**
        * <code>optional .yamcsManagement.MissionDatabase missionDatabase = 3;</code>
-       *
-       * <pre>
-       *repeated MessagingAddress address=2; //removed 5-Mar-2012
-       * </pre>
        */
       public org.yamcs.protobuf.YamcsManagement.MissionDatabase.Builder getMissionDatabaseBuilder() {
         bitField0_ |= 0x00000002;
@@ -1903,10 +1843,6 @@ public final class YamcsManagement {
       }
       /**
        * <code>optional .yamcsManagement.MissionDatabase missionDatabase = 3;</code>
-       *
-       * <pre>
-       *repeated MessagingAddress address=2; //removed 5-Mar-2012
-       * </pre>
        */
       public org.yamcs.protobuf.YamcsManagement.MissionDatabaseOrBuilder getMissionDatabaseOrBuilder() {
         if (missionDatabaseBuilder_ != null) {
@@ -1917,10 +1853,6 @@ public final class YamcsManagement {
       }
       /**
        * <code>optional .yamcsManagement.MissionDatabase missionDatabase = 3;</code>
-       *
-       * <pre>
-       *repeated MessagingAddress address=2; //removed 5-Mar-2012
-       * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.YamcsManagement.MissionDatabase, org.yamcs.protobuf.YamcsManagement.MissionDatabase.Builder, org.yamcs.protobuf.YamcsManagement.MissionDatabaseOrBuilder> 
@@ -8912,10 +8844,7 @@ public final class YamcsManagement {
    * Protobuf type {@code yamcsManagement.ProcessorInfo}
    *
    * <pre>
-   * The ProcessorInfo and ClientInfo events are posted on the yprocInfo address.
-   * There is also a queue with the same name containing the last values
-   * The name of the events are yProcessorUpdated (means added or updated),
-   * yProcessorRemoved, clientUpdated (means connected or updated) clientDisconnected 
+   ************** Yamcs Processor Control ********************
    * </pre>
    */
   public static final class ProcessorInfo extends
@@ -9851,10 +9780,7 @@ public final class YamcsManagement {
      * Protobuf type {@code yamcsManagement.ProcessorInfo}
      *
      * <pre>
-     * The ProcessorInfo and ClientInfo events are posted on the yprocInfo address.
-     * There is also a queue with the same name containing the last values
-     * The name of the events are yProcessorUpdated (means added or updated),
-     * yProcessorRemoved, clientUpdated (means connected or updated) clientDisconnected 
+     ************** Yamcs Processor Control ********************
      * </pre>
      */
     public static final class Builder extends
@@ -18900,10 +18826,6 @@ public final class YamcsManagement {
   }
   /**
    * Protobuf type {@code yamcsManagement.ProcessorRequest}
-   *
-   * <pre>
-   *this is used for ProcessorControl service
-   * </pre>
    */
   public static final class ProcessorRequest extends
       com.google.protobuf.GeneratedMessage
@@ -19465,10 +19387,6 @@ public final class YamcsManagement {
     }
     /**
      * Protobuf type {@code yamcsManagement.ProcessorRequest}
-     *
-     * <pre>
-     *this is used for ProcessorControl service
-     * </pre>
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>

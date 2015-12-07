@@ -10,40 +10,39 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * One-pass sampler for numeric archived parameters, where the recorded data points
- * are not known upfront.
- * <br>
- * The output is not a bunch of parameter values, but instead a range of values limited to n, which
- * should be fit for inclusion in plots.
- * <br>
- * This is *NOT* perfect. The range of returned times is not known upfront, so we take a rough
- * assumption based on the first result, and up until validEnd.
+ * One-pass downsampler for time-series data (i.e. numeric archived parameters),
+ * where the recorded data points are not known upfront.
+ * <p>
+ * The output is not a bunch of parameter values, but instead a range of values
+ * limited to n, which should be fit for inclusion in plots.
+ * <p>
+ * This is *NOT* perfect. The range of returned times is not known upfront, so
+ * we take a rough assumption based on the first result, and up until validEnd.
  */
-public class RestParameterSampler {
+public class RestDownsampler {
     
-    private static final Logger log = LoggerFactory.getLogger(RestParameterSampler.class);
-    private static final int DEFAULT_BUCKET_COUNT = 500;
+    private static final Logger log = LoggerFactory.getLogger(RestDownsampler.class);
+    private static final int DEFAULT_INTERVAL_COUNT = 500;
     
     
     private TreeMap<Long, Sample> samplesByTime;
     private long start;
     private final long projectedEnd;
-    private final int bucketCount;
+    private final int intervalCount;
     
-    public RestParameterSampler(long projectedEnd) {
-        this(projectedEnd, DEFAULT_BUCKET_COUNT);
+    public RestDownsampler(long projectedEnd) {
+        this(projectedEnd, DEFAULT_INTERVAL_COUNT);
     }
     
-    public RestParameterSampler(long projectedEnd, int bucketCount) {
+    public RestDownsampler(long projectedEnd, int intervalCount) {
         this.projectedEnd = projectedEnd;
-        this.bucketCount = bucketCount;
-        // initializeBuckets();
+        this.intervalCount = intervalCount;
     }
     
-    private void initializeBuckets(long start) {
+    private void initializeIntervals(long start) {
         this.start = start;
         samplesByTime = new TreeMap<>();
-        long step = (projectedEnd - start) / bucketCount;
+        long step = (projectedEnd - start) / intervalCount;
         for (long i = start; i < projectedEnd; i+=step) {
             samplesByTime.put(i, null);
         }
@@ -57,12 +56,12 @@ public class RestParameterSampler {
         if (time > projectedEnd || time < start) return;
         
         if (samplesByTime == null) {
-            initializeBuckets(time);
+            initializeIntervals(time);
         }
         
         Entry<Long, Sample> entry = samplesByTime.floorEntry(time);
         if (entry == null) {
-            log.warn("No bucket for value " + value);
+            log.warn("No interval for value " + value);
             return;
         }
         Sample sample = entry.getValue();
@@ -81,20 +80,20 @@ public class RestParameterSampler {
      */
     public static class Sample {
         long avgt;
-        double low;
-        double high;
+        double min;
+        double max;
         double avg;
         int n;
         
         public Sample(long t, double value) {
             avgt = t;
-            low = avg = high = value;
+            min = avg = max = value;
             n = 1;
         }
         
         public void process(long t, double value) {
-            if (value < low) low = value;
-            if (value > high) high = value;
+            if (value < min) min = value;
+            if (value > max) max = value;
             n++;
             avgt -= (avgt / n);
             avgt += (t / n);
@@ -104,7 +103,7 @@ public class RestParameterSampler {
         
         @Override
         public String toString() {
-            return String.format("%s (lo=%s, hi=%s, n=%s)", avg, low, high, n);
+            return String.format("%s (min=%s, max=%s, n=%s)", avg, min, max, n);
         }
     }
 }

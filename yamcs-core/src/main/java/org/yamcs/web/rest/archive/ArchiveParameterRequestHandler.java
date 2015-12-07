@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Pvalue.SampleSeries;
+import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -30,7 +30,7 @@ import org.yamcs.web.rest.RestReplayListener;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
-import org.yamcs.web.rest.archive.RestParameterSampler.Sample;
+import org.yamcs.web.rest.archive.RestDownsampler.Sample;
 import org.yamcs.web.rest.mdb.MissionDatabaseHelper;
 import org.yamcs.web.rest.mdb.MissionDatabaseHelper.MatchResult;
 import org.yamcs.xtce.FloatParameterType;
@@ -91,7 +91,7 @@ public class ArchiveParameterRequestHandler extends RestRequestHandler {
         }
         rr.setStop(req.getQueryParameterAsDate("stop", TimeEncoding.getWallclockTime()));
         
-        RestParameterSampler sampler = new RestParameterSampler(rr.getStop());
+        RestDownsampler sampler = new RestDownsampler(rr.getStop());
         
         RestReplays.replayAndWait(req, rr.build(), new RestReplayListener() {
 
@@ -125,12 +125,12 @@ public class ArchiveParameterRequestHandler extends RestRequestHandler {
             }
         });
         
-        SampleSeries.Builder series = SampleSeries.newBuilder();
+        TimeSeries.Builder series = TimeSeries.newBuilder();
         for (Sample s : sampler.collect()) {
             series.addSample(ArchiveHelper.toGPBSample(s));
         }
         
-        return new RestResponse(req, series.build(), SchemaPvalue.SampleSeries.WRITE);
+        return new RestResponse(req, series.build(), SchemaPvalue.TimeSeries.WRITE);
     }
     
     private RestResponse listParameterHistory(RestRequest req, NamedObjectId id) throws RestException {

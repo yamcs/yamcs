@@ -3,7 +3,7 @@ package org.yamcs.web.rest.mdb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Mdb.CommandInfo;
-import org.yamcs.protobuf.Rest.ListCommandsResponse;
+import org.yamcs.protobuf.Rest.ListCommandInfoResponse;
 import org.yamcs.protobuf.SchemaMdb;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -75,7 +75,7 @@ public class MDBCommandRequestHandler extends RestRequestHandler {
             matcher = new NameDescriptionSearchMatcher(req.getQueryParameter("q"));    
         }
         
-        ListCommandsResponse.Builder responseb = ListCommandsResponse.newBuilder();
+        ListCommandInfoResponse.Builder responseb = ListCommandInfoResponse.newBuilder();
         if (namespace == null) {
             for (MetaCommand cmd : mdb.getMetaCommands()) {
                 if (matcher != null && !matcher.matches(cmd)) continue;
@@ -96,6 +96,6 @@ public class MDBCommandRequestHandler extends RestRequestHandler {
             }
         }
         
-        return new RestResponse(req, responseb.build(), SchemaRest.ListCommandsResponse.WRITE);
+        return new RestResponse(req, responseb.build(), SchemaRest.ListCommandInfoResponse.WRITE);
     }
 }

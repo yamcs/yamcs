@@ -6,11 +6,32 @@
         .controller('EventsController',  EventsController);
 
     /* @ngInject */
-    function EventsController($rootScope, $log, eventsService) {
+    function EventsController($rootScope, $scope, $log, eventsService) {
         var vm = this;
         eventsService.resetUnreadCount(); // Poor man's solution
 
         $rootScope.pageTitle = 'Events | Yamcs';
+
+        $scope.ctx = {
+            loadingMoreData: false
+        };
+
+        $scope.loadMoreEvents = function() {
+            if (!vm.events.length || $scope.ctx.loadingMoreData) return;
+            $scope.ctx.loadingMoreData = true;
+
+            var finalEvent = vm.events[vm.events.length - 1];
+            console.log('loading more data from ' + finalEvent['generationTimeUTC']);
+
+            eventsService.listEvents({
+                limit: 20,
+                stop: finalEvent['generationTimeUTC']
+            }).then(function (data) { // todo check when end is reached, to prevent further triggers
+                vm.events.push.apply(vm.events, data);
+                $scope.ctx.loadingMoreData = false;
+                return vm.events;
+            });
+        };
 
 
         vm.events = [];
@@ -24,10 +45,10 @@
         });
 
         vm.reloadData = function() {
-        eventsService.resetUnreadCount(); // Not waterproof
-        eventsService.listEvents({
-            limit: 200
-        }).then(function (data) {
+            eventsService.resetUnreadCount(); // Not waterproof
+            eventsService.listEvents({
+                limit: 200
+            }).then(function (data) {
                 vm.events = data;
                 return vm.events;
             });

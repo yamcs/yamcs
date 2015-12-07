@@ -9,6 +9,7 @@
                 scope: {
                     activePane: '@',
                     yamcsInstance: '=',
+                    standalone: '=',
                     shell: '='
                 },
                 templateUrl: '/_static/_site/mdb/mdb.template.html'

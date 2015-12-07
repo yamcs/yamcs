@@ -16,6 +16,7 @@
                 activePane: '@',
                 headerTitle: '@',
                 yamcsInstance: '=',
+                standalone: '=',
                 shell: '='
             },
             templateUrl: '/_static/_site/displays/displays.template.html'

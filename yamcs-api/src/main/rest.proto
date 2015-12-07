@@ -9,20 +9,20 @@ import "alarms.proto";
 import "commanding.proto";
 import "yamcsManagement.proto";
 
-message ListParametersResponse {
+message ListParameterInfoResponse {
   repeated mdb.ParameterInfo parameter = 1;
 }
 
-message BulkGetParameterRequest {
+message BulkGetParameterInfoRequest {
   repeated yamcs.NamedObjectId id = 1;
 }
 
-message BulkGetParameterResponse {
-  message GetParameterResponse {
+message BulkGetParameterInfoResponse {
+  message GetParameterInfoResponse {
     optional yamcs.NamedObjectId id = 1;
     optional mdb.ParameterInfo parameter = 2;
   }
-  repeated GetParameterResponse response = 1;
+  repeated GetParameterInfoResponse response = 1;
 }
 
 message BulkGetParameterValueRequest {
@@ -43,31 +43,31 @@ message BulkSetParameterValueRequest {
   repeated SetParameterValueRequest request = 1;
 }
 
-message ListContainersResponse {
+message ListContainerInfoResponse {
   repeated mdb.ContainerInfo container = 1;
 }
 
-message ListCommandsResponse {
+message ListCommandInfoResponse {
   repeated mdb.CommandInfo command = 1;
 }
 
-message ListAlgorithmsResponse {
+message ListAlgorithmInfoResponse {
   repeated mdb.AlgorithmInfo algorithm = 1;
 }
 
-message ListLinksResponse {
+message ListLinkInfoResponse {
   repeated yamcsManagement.LinkInfo link = 1;
 }
 
-message ListCommandHistoryResponse {
+message ListCommandsResponse {
   repeated commanding.CommandHistoryEntry entry = 1;
 }
 
-message PatchLinkRequest {
+message EditLinkRequest {
   optional string state = 1;
 }
 
-message PatchCommandQueueRequest {
+message EditCommandQueueRequest {
   optional string state = 1;
 }
 
@@ -75,7 +75,7 @@ message ListClientsResponse {
   repeated yamcsManagement.ClientInfo client = 1;
 }
 
-message PatchClientRequest {
+message EditClientRequest {
   optional string processor = 1;
 }
 
@@ -91,7 +91,7 @@ message ListCommandQueueEntries {
   repeated commanding.CommandQueueEntry entry = 1;
 }
 
-message PatchCommandQueueEntryRequest {
+message EditCommandQueueEntryRequest {
   optional string state = 1;
 }
 
@@ -127,9 +127,9 @@ message CreateProcessorRequest {
   optional bool persistent = 11;
 }
 
-message PatchProcessorRequest {
+message EditProcessorRequest {
   optional string state = 1;
-  optional int64 seekTime = 2;
+  optional string seek = 2;
   optional string speed = 3;
 }
 
@@ -150,11 +150,31 @@ message ListInstancesResponse {
   repeated yamcsManagement.YamcsInstance instance = 1;
 }
 
+message ListTagsResponse {
+  repeated yamcs.ArchiveTag tag = 1;
+}
+
+message CreateTagRequest {
+  optional string name = 1;
+  optional string start = 2;
+  optional string stop = 3;
+  optional string description = 4;
+  optional string color = 5;
+}
+
+message EditTagRequest {
+  optional string name = 1;
+  optional string start = 2;
+  optional string stop = 3;
+  optional string description = 4;
+  optional string color = 5;
+}
+
 message ListAlarmsResponse {
   repeated alarms.AlarmData alarm = 1;
 }
 
-message PatchAlarmRequest {
+message EditAlarmRequest {
   optional string state = 1;
   optional string comment = 2;
 }
