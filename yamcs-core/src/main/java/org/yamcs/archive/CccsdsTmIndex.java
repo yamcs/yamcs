@@ -59,7 +59,7 @@ public class CccsdsTmIndex implements TmIndex {
 
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
 
-        String filename=ydb.getRoot()+"/tmindex.bdb";
+        String filename=ydb.getRoot()+"/tmindex";
         try {
             openDb(filename);
         } catch (RocksDBException e) {
