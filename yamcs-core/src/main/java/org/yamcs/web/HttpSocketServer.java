@@ -1,6 +1,8 @@
 package org.yamcs.web;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -85,8 +87,12 @@ public class HttpSocketServer {
         
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port));
-
-        log.info("Web server started at port " + port);
+        
+        try {
+            log.info("Server address: http://{}:{}/", InetAddress.getLocalHost().getHostName(), port);
+        } catch (UnknownHostException e) {
+            log.info("Server address: http://localhost:{}/", port);
+        }
     }
 
     public static void main(String[] args) throws ConfigurationException {

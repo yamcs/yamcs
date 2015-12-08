@@ -200,9 +200,17 @@ public class YamcsServer {
     public static void setupYamcsServer() throws Exception  {
         YConfiguration c=YConfiguration.getConfiguration("yamcs");
         final List<String>instArray=c.getList("instances");
+        
+        if (instArray.isEmpty()) {
+            staticlog.info("Instances: none");
+        } else {
+            staticlog.info("Instances: " + String.join(", ", instArray));
+        }
+        
         for(String inst:instArray) {
             instances.put(inst, new YamcsServer(inst));
         }
+        
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread t, Throwable thrown) {
@@ -248,7 +256,7 @@ public class YamcsServer {
                 }
             }
         });
-        System.out.println("yamcsstartup success");
+        staticlog.info("Server running... press ctrl-c to stop");
     }
 
     public static YamcsInstances getYamcsInstances() {
