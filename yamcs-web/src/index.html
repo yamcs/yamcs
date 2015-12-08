@@ -54,6 +54,13 @@
              ng-href="{{ instance.name }}"
              role="button" style="margin-right: 1em;">{{ instance.name }} &raquo;</a>
         </p>
+        <p ng-if="!instances.length">
+          <strong>Yamcs is running, but no instances were configured.</strong>
+        </p>
+        <p ng-if="!instance.length">
+          An instance is like a domain. A database is created for every instance separately.<br>
+          Read more about how to setup Yamcs at <a href="http://www.yamcs.org/docs/server">http://www.yamcs.org/docs/server</a>
+        </p>
         <p>&nbsp;</p>
         <p>&nbsp;</p>
         <p>&nbsp;</p>

@@ -134,7 +134,7 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
         if (HttpHeaders.isKeepAlive(req)) {
             response.headers().set(Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
         }
-        System.out.println("sending response: "+response);
+        //System.out.println("sending response: "+response);
         // Write the initial line and the header.
         ctx.write(response);
 

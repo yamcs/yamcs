@@ -19,7 +19,6 @@ public class YamcsWebService extends AbstractService {
     
     public YamcsWebService(String yamcsInstance) throws ConfigurationException {
         this.yamcsInstance = yamcsInstance;
-        StaticFileRequestHandler.init();
         this.server = HttpSocketServer.getInstance();        
     }
 
