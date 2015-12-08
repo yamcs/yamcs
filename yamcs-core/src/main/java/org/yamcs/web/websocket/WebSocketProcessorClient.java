@@ -47,7 +47,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
 
     @Override
     public void switchYProcessor(YProcessor newProcessor, AuthenticationToken authToken) throws YProcessorException {
-        log.info("switching yprocessor to {}", newProcessor);
+        log.info("Switching processor to {}", newProcessor);
         for (AbstractWebSocketResource resource : resources) {
             resource.switchYProcessor(newProcessor, authToken);
         }
