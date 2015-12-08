@@ -216,7 +216,6 @@ public class CccsdsTmIndex implements TmIndex {
      */
     @Override
     public synchronized void close() throws IOException {
-        new Exception().printStackTrace();
         if(closed)return;
         log.info("Closing the tmindexdb");
         db.close();
