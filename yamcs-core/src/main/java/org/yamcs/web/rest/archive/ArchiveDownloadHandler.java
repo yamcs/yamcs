@@ -38,8 +38,8 @@ import org.yamcs.web.rest.SqlBuilder;
 import org.yamcs.web.rest.StreamToChunkedCSVEncoder;
 import org.yamcs.web.rest.StreamToChunkedProtobufEncoder;
 import org.yamcs.web.rest.StreamToChunkedTransferEncoder;
-import org.yamcs.web.rest.mdb.MissionDatabaseHelper;
-import org.yamcs.web.rest.mdb.MissionDatabaseHelper.MatchResult;
+import org.yamcs.web.rest.mdb.MDBHelper;
+import org.yamcs.web.rest.mdb.MDBHelper.MatchResult;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
@@ -66,7 +66,7 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
             switch (req.getPathSegment(pathOffset)) {
             case "parameters":
                 req.assertGET();
-                MatchResult<Parameter> mr = MissionDatabaseHelper.matchParameterName(req, pathOffset + 1);
+                MatchResult<Parameter> mr = MDBHelper.matchParameterName(req, pathOffset + 1);
                 if (!mr.matches()) {
                     throw new NotFoundException(req);
                 } else {

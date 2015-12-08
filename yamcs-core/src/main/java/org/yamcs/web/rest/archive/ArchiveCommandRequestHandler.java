@@ -15,8 +15,8 @@ import org.yamcs.web.rest.RestStreams;
 import org.yamcs.web.rest.RestUtils;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
 import org.yamcs.web.rest.SqlBuilder;
-import org.yamcs.web.rest.mdb.MissionDatabaseHelper;
-import org.yamcs.web.rest.mdb.MissionDatabaseHelper.MatchResult;
+import org.yamcs.web.rest.mdb.MDBHelper;
+import org.yamcs.web.rest.mdb.MDBHelper.MatchResult;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
@@ -29,7 +29,7 @@ public class ArchiveCommandRequestHandler extends RestRequestHandler {
             req.assertGET();
             return listCommands(req, null);
         } else {
-            MatchResult<MetaCommand> mr = MissionDatabaseHelper.matchCommandName(req, pathOffset);
+            MatchResult<MetaCommand> mr = MDBHelper.matchCommandName(req, pathOffset);
             if (!mr.matches()) {
                 throw new NotFoundException(req);
             }

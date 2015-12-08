@@ -38,6 +38,7 @@ public class AbstractRequestHandler {
     public static final String CSV_MIME_TYPE = "text/csv";
     public static final String JSON_MIME_TYPE = "application/json";
     public static final String PROTOBUF_MIME_TYPE = "application/protobuf";
+    public static final String JAVA_SERIALIZED_OBJECT_MIME_TYPE = "application/x-java-serialized-object";
     
     public static RestRequest toRestRequest(ChannelHandlerContext ctx, FullHttpRequest httpRequest, QueryStringDecoder qsDecoder, AuthenticationToken authToken) {
         return new RestRequest(ctx, httpRequest, qsDecoder, authToken, jsonFactory);

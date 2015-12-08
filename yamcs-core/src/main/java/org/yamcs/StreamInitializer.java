@@ -64,7 +64,7 @@ public class StreamInitializer {
             } else if(sce.type == StreamConfig.StandardStreamType.sqlFile) {
                 loadSqlFile(sce.name); //filename in fact
             } else {
-                throw new RuntimeException("Unkwnon stream type "+sce.type);
+                throw new RuntimeException("Unknown stream type "+sce.type);
             }
         }
       

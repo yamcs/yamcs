@@ -31,8 +31,8 @@ import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.archive.RestDownsampler.Sample;
-import org.yamcs.web.rest.mdb.MissionDatabaseHelper;
-import org.yamcs.web.rest.mdb.MissionDatabaseHelper.MatchResult;
+import org.yamcs.web.rest.mdb.MDBHelper;
+import org.yamcs.web.rest.mdb.MDBHelper.MatchResult;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Parameter;
@@ -50,7 +50,7 @@ public class ArchiveParameterRequestHandler extends RestRequestHandler {
 
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
-        MatchResult<Parameter> mr = MissionDatabaseHelper.matchParameterName(req, pathOffset);
+        MatchResult<Parameter> mr = MDBHelper.matchParameterName(req, pathOffset);
         if (!mr.matches()) {
             throw new NotFoundException(req);
         }

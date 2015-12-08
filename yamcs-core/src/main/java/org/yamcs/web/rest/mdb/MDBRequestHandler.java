@@ -1,5 +1,7 @@
 package org.yamcs.web.rest.mdb;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.Arrays;
 
 import org.slf4j.Logger;
@@ -10,6 +12,7 @@ import org.yamcs.protobuf.YamcsManagement.HistoryInfo;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
 import org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
+import org.yamcs.web.rest.InternalServerErrorException;
 import org.yamcs.web.rest.NotFoundException;
 import org.yamcs.web.rest.RestException;
 import org.yamcs.web.rest.RestRequest;
@@ -21,6 +24,9 @@ import org.yamcs.xtce.History;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
 
 /**
  * Handles incoming requests related to parameters
@@ -72,8 +78,18 @@ public class MDBRequestHandler extends RestRequestHandler {
     }
     
     private RestResponse getMissionDatabase(RestRequest req, String instance, XtceDb mdb) throws RestException {
-        MissionDatabase converted = toMissionDatabase(req, instance, mdb);
-        return new RestResponse(req, converted, SchemaYamcsManagement.MissionDatabase.WRITE);
+        if (req.asksFor(JAVA_SERIALIZED_OBJECT_MIME_TYPE)) {
+            ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
+            try (ObjectOutputStream oos = new ObjectOutputStream(new ByteBufOutputStream(buf))) {
+                oos.writeObject(mdb);
+            } catch (IOException e) {
+                throw new InternalServerErrorException("Could not serialize MDB", e);
+            }
+            return new RestResponse(req, JAVA_SERIALIZED_OBJECT_MIME_TYPE, buf);
+        } else {
+            MissionDatabase converted = toMissionDatabase(req, instance, mdb);
+            return new RestResponse(req, converted, SchemaYamcsManagement.MissionDatabase.WRITE);
+        }
     }
     
     public static MissionDatabase toMissionDatabase(RestRequest req, String instance, XtceDb mdb) {
