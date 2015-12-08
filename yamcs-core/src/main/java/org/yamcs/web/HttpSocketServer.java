@@ -89,9 +89,9 @@ public class HttpSocketServer {
         bootstrap.bind(new InetSocketAddress(port));
         
         try {
-            log.info("Server address: http://{}:{}/", InetAddress.getLocalHost().getHostName(), port);
+            log.info("Web address: http://{}:{}/", InetAddress.getLocalHost().getHostName(), port);
         } catch (UnknownHostException e) {
-            log.info("Server address: http://localhost:{}/", port);
+            log.info("Web address: http://localhost:{}/", port);
         }
     }
 

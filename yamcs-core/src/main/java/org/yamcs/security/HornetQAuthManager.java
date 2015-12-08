@@ -25,8 +25,8 @@ import org.yamcs.api.YamcsSession;
  *
  */
 public class HornetQAuthManager implements HornetQSecurityManager {
-	static Logger log = LoggerFactory.getLogger("org.yamcs.security.HornetQAuthManager");
-	private Map<String, ArrayList<String>> configuredUserCache = new HashMap<String, ArrayList<String>>();
+	static Logger log = LoggerFactory.getLogger(HornetQAuthManager.class);
+	private Map<String, ArrayList<String>> configuredUserCache = new HashMap<>();
 	/** If null (default), anonymous connections will be rejected. */
 	private String defaultUser = null;
 	
@@ -63,10 +63,10 @@ public class HornetQAuthManager implements HornetQSecurityManager {
 	@Override
 	public void start() throws Exception {
 		configuredUserCache.clear();
-		if( Privilege.usePrivileges ) {
-			log.info( "Privileges enabled, authenticating and authorising from "+Privilege.realmName+"." );
+		if(Privilege.usePrivileges) {
+			log.info("Privileges enabled, authenticating and authorising from "+Privilege.realmName);
 		} else {
-			log.warn( "Privileges disabled, all connections are allowed and have full permissions." );
+			log.warn("Privileges disabled, all connections are allowed and have full permissions");
 		}
 	}
 
