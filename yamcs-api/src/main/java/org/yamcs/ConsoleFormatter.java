@@ -25,40 +25,32 @@ public class ConsoleFormatter extends Formatter {
     private static final String COLOR_SUFFIX = "m";
     private static final String COLOR_RESET = "\033[0;0m";
     
-    // These logger names will not be displayed, since they are so central
-    // The messages will still be shown of course
-    private static final String MAIN_LOGGER_YAMCS_SERVER = "org.yamcs.YamcsServer";
-    private static final String MAIN_LOGGER_YCONFIGURATION = "org.yamcs.YConfiguration";
-    private static final String MAIN_LOGGER_HTTP_SOCKET_SERVER = "org.yamcs.web.HttpSocketServer";
-    private static final String MAIN_LOGGER_HTTP_SOCKET_SERVER_HANDLER = "org.yamcs.web.HttpSocketServerHandler";
-    private static final String MAIN_LOGGER_HTTP_STATIC_FILE_HANDLER = "org.yamcs.web.StaticFileRequestHandler";
-    
 	SimpleDateFormat sdf=new SimpleDateFormat("HH:mm:ss.SSS");
 	Date d=new Date();
 	@Override
 	public String format(LogRecord r) {
 		d.setTime(r.getMillis());
 		StringBuilder sb=new StringBuilder();
-		String name;
-		if (r.getSourceClassName()!=null) {
-		    name = r.getSourceClassName();
-		} else {
-		    name = r.getLoggerName();
-		}
-		name=r.getLoggerName();
+		String name=r.getLoggerName();;
+		String decoration;
 		sb.append(sdf.format(d));
 		sb.append(" [").append(r.getThreadID()).append("] ");
 		
-		switch (name) {
-		case MAIN_LOGGER_YAMCS_SERVER:
-		case MAIN_LOGGER_YCONFIGURATION:
-		case MAIN_LOGGER_HTTP_SOCKET_SERVER:
-		case MAIN_LOGGER_HTTP_SOCKET_SERVER_HANDLER:
-		case MAIN_LOGGER_HTTP_STATIC_FILE_HANDLER:
-		    break;
-		default:
-		    colorize(sb, name, 0, 36);
-		    sb.append(" ");
+	    if (name.lastIndexOf('.')!=-1) {
+            name=name.substring(name.lastIndexOf('.') + 1);
+        }
+        if (name.lastIndexOf('[')!=-1) {
+            decoration=name.substring(name.lastIndexOf('[') + 1, name.length() - 1);
+            name=name.substring(0, name.lastIndexOf('['));
+        } else {
+            decoration=null;
+        }
+	    colorize(sb, name, 0, 36);
+	    sb.append(" ");
+		
+		if (decoration!=null) {
+		    colorize(sb, decoration, 0, 35);
+            sb.append(" ");
 		}
 		
 		if (r.getLevel() == Level.WARNING || r.getLevel() == Level.SEVERE) {

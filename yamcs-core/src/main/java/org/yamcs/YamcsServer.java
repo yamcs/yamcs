@@ -73,7 +73,7 @@ public class YamcsServer {
     List<Service> serviceList=new ArrayList<Service>();
 
     Logger log;
-    static Logger staticlog=LoggerFactory.getLogger(YamcsServer.class.getName());
+    static Logger staticlog=LoggerFactory.getLogger(YamcsServer.class);
 
     /**in the shutdown, allow servies this number of seconds for stopping*/
     public static int SERVICE_STOP_GRACE_TIME = 10;
@@ -84,14 +84,13 @@ public class YamcsServer {
     static private String serverId;
     
     @SuppressWarnings("unchecked")
-    YamcsServer(String instance) throws HornetQException, IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {
+    YamcsServer(String instance) throws HornetQException, IOException, StreamSqlException, ParseException, YamcsApiException {
         this.instance=instance;
         
         //TODO - fix bootstrap issue 
         instances.put(instance, this);
         
-        
-        log=LoggerFactory.getLogger(YamcsServer.class.getName()+"["+instance+"]");
+        log=getLogger(YamcsServer.class, instance);
         
         YConfiguration conf=YConfiguration.getConfiguration("yamcs."+instance);
         loadTimeService();
@@ -113,7 +112,7 @@ public class YamcsServer {
             } else {
                 throw new ConfigurationException("Services can either be specified by classname, or by {class: classname, args: ....} map. Cannot load a service from "+servobj);
             }
-            log.info("loading service from "+servclass);
+            log.info("Loading service "+servclass);
             YObjectLoader<Service> objLoader = new YObjectLoader<Service>();
             Service serv;
             if(args == null) {
@@ -181,7 +180,22 @@ public class YamcsServer {
             ys.stop();
         }
     }
-
+    
+    /**
+     * Return a logger decorated with the applicable yamcs instance 
+     * <p>Convenience method
+     */
+    public static Logger getLogger(Class<?> clazz, String instance) {
+        return LoggerFactory.getLogger(clazz.getName() + "["+instance+"]");
+    }
+    
+    /**
+     * Return a logger decorated with the applicable yamcs instance and processor 
+     * <p>Convenience method
+     */
+    public static Logger getLogger(Class<?> clazz, YProcessor processor) {
+        return LoggerFactory.getLogger(clazz.getName() + "["+processor.getInstance()+"/" +processor.getName()+ "]");
+    }
 
     public void stop() {
         for(int i = serviceList.size()-1; i>=0; i--) {
@@ -208,9 +222,11 @@ public class YamcsServer {
         final List<String>instArray=c.getList("instances");
         
         if (instArray.isEmpty()) {
-            staticlog.info("Instances: none");
+            staticlog.warn("No instances");
+        } else if (instArray.size() == 1) {
+            staticlog.info("1 instance: " + instArray.get(0));
         } else {
-            staticlog.info("Instances: " + String.join(", ", instArray));
+            staticlog.info(instArray.size() + " instances: " + String.join(", ", instArray));
         }
         
         for(String inst:instArray) {
@@ -332,7 +348,7 @@ public class YamcsServer {
                 id = InetAddress.getLocalHost().getHostName();
             }
             serverId = id;
-            staticlog.info("Using {} as serverId", serverId);
+            staticlog.debug("Using serverId {}", serverId);
             return serverId;
         } catch (ConfigurationException e) {
             throw e;

@@ -2,7 +2,6 @@ package org.yamcs.xtce;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.text.SimpleDateFormat;
@@ -18,8 +17,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.utils.StringConvertors;
 import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.CommandVerifier.TerminationAction;
@@ -181,7 +178,6 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     protected Workbook workbook;
     protected String opsnamePrefix;
     protected SpaceSystem spaceSystem;
-    static Logger log=LoggerFactory.getLogger(SpreadsheetLoader.class.getName());
 
     String fileFormatVersion;
 

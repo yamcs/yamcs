@@ -10,10 +10,10 @@ import java.util.Map;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
@@ -41,7 +41,7 @@ import com.google.common.util.concurrent.AbstractService;
 public class FSEventDecoder extends AbstractService implements StreamSubscriber{
     String instance;
     Map<String,PayloadModel> opsnameToPayloadModel =new HashMap<String,PayloadModel>();
-    private Logger log=LoggerFactory.getLogger(this.getClass().getName());
+    private final Logger log;
     public YamcsClient msgClient;
     final SimpleString realtimeAddress, dumpAddress; //addresses where to send realtime and dump events
     
@@ -51,6 +51,7 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
     
     
     public FSEventDecoder(String instance) throws ConfigurationException {
+        log=YamcsServer.getLogger(this.getClass(), instance);
         YConfiguration conf=YConfiguration.getConfiguration("yamcs."+instance);
         YObjectLoader<PayloadModel> objLoader=new YObjectLoader<PayloadModel>();
         
@@ -59,7 +60,7 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
             for(Object d:decoders) {
                 PayloadModel payloadModel;
                 if(d instanceof String) {
-                    log.debug("adding FS Event decoder "+d);
+                    log.debug("Adding decoder "+d);
                     payloadModel = objLoader.loadObject((String)d, instance);
                 } else if(d instanceof Map<?,?>) {
                     Map<?, ?> m = (Map<?, ?>) d; 
@@ -72,7 +73,7 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
                 for (String opsname:payloadModel.getEventPacketsOpsnames()) {
                     opsnameToPayloadModel.put(opsname, payloadModel);
                 }
-                log.debug("added payload model "+d+" for payload"+payloadModel.getPayloadName());
+                log.debug("Added payload model "+d+" for payload"+payloadModel.getPayloadName());
             }
 
             YarchDatabase dict=YarchDatabase.getInstance(instance);
@@ -94,7 +95,6 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
         }
         xtceutil=XtceUtil.getInstance(XtceDbFactory.getInstance(instance));
         
-        log.info("FSEventDecoder for instance "+instance+" started");
         realtimeTmStream.addSubscriber(this);
         dumpTmStream.addSubscriber(this);
     }
@@ -132,7 +132,7 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
         String opsName=xtceutil.getPacketNameByApidPacketid(apid, packetId, MdbMappings.MDB_OPSNAME);
         if(opsName==null) opsName=xtceutil.getPacketNameByPacketId(packetId, MdbMappings.MDB_OPSNAME);
         if(opsName==null) {
-            log.info("cannot find an opsname for packetId " +packetId);
+            log.info("Cannot find an opsname for packetId " +packetId);
             return;
         }
         PayloadModel payloadModel=opsnameToPayloadModel.get(opsName);
@@ -159,7 +159,7 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
 	try {
 	    yamcsSession.close();
 	} catch (HornetQException e) {
-	    log.error("error when closing the yamcsSession", e);
+	    log.error("Error when closing the yamcsSession", e);
 	}
         notifyStopped();        
     }

@@ -69,7 +69,7 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
         } else {
             WEB_Roots.add(yconfig.getString("webRoot"));
         }
-        
+
         if (yconfig.containsKey("zeroCopyEnabled")) {
             zeroCopyEnabled = yconfig.getBoolean("zeroCopyEnabled");
         }

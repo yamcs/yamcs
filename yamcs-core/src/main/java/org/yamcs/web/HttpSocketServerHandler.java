@@ -59,7 +59,7 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
     public static final String STATIC_PATH = "_static";
     public static final String API_PATH = "api";
 
-    final static Logger log = LoggerFactory.getLogger(HttpSocketServerHandler.class.getName());
+    final static Logger log = LoggerFactory.getLogger(HttpSocketServerHandler.class);
 
     static StaticFileRequestHandler fileRequestHandler = new StaticFileRequestHandler();
     Map<String, RestRequestHandler> restHandlers = new HashMap<>();

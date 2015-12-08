@@ -80,7 +80,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         
         serverId = YamcsServer.getServerId();
         namespace = SystemParameterDb.YAMCS_SPACESYSTEM_NAME+NameDescription.PATH_SEPARATOR+serverId;
-        log.info("Using {} as serverId, and {} as namespace for system parameters", serverId, namespace);
+        log.debug("Using {} as serverId, and {} as namespace for system parameters", serverId, namespace);
         
         synchronized(instances) {
             instances.put(instance, this);    
