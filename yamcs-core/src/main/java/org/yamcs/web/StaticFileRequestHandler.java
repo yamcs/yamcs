@@ -75,11 +75,11 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
         }
     }
     
-    void handleStaticFileRequest(ChannelHandlerContext ctx, HttpRequest req, String path) throws Exception {
-        log.debug("handling static file request for {}", path);
-        path = sanitizePath(path);
+    void handleStaticFileRequest(ChannelHandlerContext ctx, HttpRequest req, String rawPath) throws Exception {
+        log.debug("handling static file request for {}", rawPath);
+        String path = sanitizePath(rawPath);
         if (path == null) {
-            sendError(ctx, FORBIDDEN);
+            sendError(ctx, req, FORBIDDEN);
             return;
         }
         
@@ -95,11 +95,11 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
 
         if (!match) {
             log.warn("{} does not exist or is hidden. Searched under {}", path, WEB_Roots);
-            sendError(ctx, NOT_FOUND);
+            sendError(ctx, req, NOT_FOUND);
             return;
         }
         if (!file.isFile()) {
-            sendError(ctx, FORBIDDEN);
+            sendError(ctx, req, FORBIDDEN);
             return;
         }
 
@@ -113,7 +113,7 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
             long ifModifiedSinceDateSeconds = ifModifiedSinceDate.getTime() / 1000;
             long fileLastModifiedSeconds = file.lastModified() / 1000;
             if (ifModifiedSinceDateSeconds == fileLastModifiedSeconds) {
-                sendNotModified(ctx);
+                sendNotModified(ctx, req);
                 return;
             }
         }
@@ -122,7 +122,7 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
         try {
             raf = new RandomAccessFile(file, "r");
         } catch (FileNotFoundException ignore) {
-            sendError(ctx, NOT_FOUND);
+            sendError(ctx, req, NOT_FOUND);
             return;
         }
         long fileLength = raf.length();
@@ -158,22 +158,25 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
         sendFileFuture.addListener(new ChannelProgressiveFutureListener() {
             @Override
             public void operationProgressed(ChannelProgressiveFuture future, long progress, long total) {
-                if (total < 0) { // total unknown
-                    log.trace(future.channel() + " Transfer progress: " + progress);
-                } else {
-                    log.trace(future.channel() + " Transfer progress: " + progress + " / " + total);
+                if (log.isTraceEnabled()) {
+                    if (total < 0) { // total unknown
+                        log.trace(future.channel() + " Transfer progress: " + progress);
+                    } else {
+                        log.trace(future.channel() + " Transfer progress: " + progress + " / " + total);
+                    }
                 }
             }
 
             @Override
             public void operationComplete(ChannelProgressiveFuture future) {
-                log.debug(future.channel() + " Transfer complete: " +finalFile);
+                if (log.isDebugEnabled()) {
+                    log.debug(future.channel() + " Transfer complete: " +finalFile);
+                }
             }
         });
-
-        // Decide whether to close the connection or not.
+        
+        log.info("{} {} 200", req.getMethod(), req.getUri());
         if (!HttpHeaders.isKeepAlive(req)) {
-            // Close the connection when the whole content is written out.
             lastContentFuture.addListener(ChannelFutureListener.CLOSE);
         }
     }
@@ -221,10 +224,10 @@ public class StaticFileRequestHandler extends AbstractRequestHandler {
      * @param ctx
      *            Context
      */
-    private void sendNotModified(ChannelHandlerContext ctx) {
+    private void sendNotModified(ChannelHandlerContext ctx, HttpRequest req) {
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.NOT_MODIFIED);
         setDateHeader(response);
-
+        log.info("{} {} 304", req.getMethod(), req.getUri());
         // Close the connection as soon as the error message is sent.
         ctx.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }

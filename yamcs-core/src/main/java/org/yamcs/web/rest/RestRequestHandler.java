@@ -46,7 +46,7 @@ public abstract class RestRequestHandler extends AbstractRequestHandler {
     }
     
     private void sendError(RestRequest ctx, HttpResponseStatus status) {
-        sendError(ctx.getChannelHandlerContext(), status);
+        sendError(ctx.getChannelHandlerContext(), ctx.getHttpRequest(), status);
     }
 
     /**

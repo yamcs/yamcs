@@ -84,8 +84,8 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
         } else if (msg instanceof WebSocketFrame) {
             webSocketHandler.handleWebSocketFrame(ctx, (WebSocketFrame) msg);
         } else {
-            log.info("sending bad request error for message {}",msg);
-            sendError(ctx, BAD_REQUEST);
+            log.info("sending bad request error for message {}", msg);
+            sendError(ctx, null, BAD_REQUEST);
             return;
         }
     }
@@ -97,6 +97,8 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
     }
 
     private void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
+        // We have this also on info level coupled with the HTTP response status code, but this is on debug
+        // for an earlier reporting while debugging issues
         log.debug("{} {}", req.getMethod(), req.getUri());
         
         QueryStringDecoder qsDecoder = new QueryStringDecoder(req.getUri());
@@ -180,16 +182,23 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
             setHeader(res, HttpHeaders.Names.WWW_AUTHENTICATE, "Basic realm=\"nmrs_m7VKmomQ2YM3\"");
         }
 
+        if (status.code() < 200 || status.code() > 299) {
+            log.warn("{} {} {}", req.getMethod(), req.getUri(), status.code());
+        }
         ChannelFuture f = ctx.writeAndFlush(res);
-        if (!isKeepAlive(req) || res.getStatus().code() < 200 || res.getStatus().code() > 299) {
+        if (!isKeepAlive(req) || status.code() < 200 || status.code() > 299) {
             f.addListener(ChannelFutureListener.CLOSE);
         }
     }
     
-    private static void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
+    private static void sendError(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status) {
         FullHttpResponse response = new DefaultFullHttpResponse(
                 HTTP_1_1, status, Unpooled.copiedBuffer("Failure: " + status + "\r\n", CharsetUtil.UTF_8));
         response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/plain; charset=UTF-8");
+        
+        if (req != null) {
+            log.warn("{} {} {}", req.getMethod(), req.getUri(), status.code());
+        }
 
         // Close the connection as soon as the error message is sent.
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);

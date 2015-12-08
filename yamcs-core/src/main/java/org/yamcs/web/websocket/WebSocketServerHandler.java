@@ -103,7 +103,7 @@ public class WebSocketServerHandler {
                         decoder = new JsonDecoder();
                     if (encoder == null)
                         encoder = new JsonEncoder();
-                } else if (frame instanceof  BinaryWebSocketFrame) {
+                } else if (frame instanceof BinaryWebSocketFrame) {
                     if (decoder == null)
                         decoder = new ProtobufDecoder();
                     if (encoder == null)

@@ -30,6 +30,8 @@ public class ConsoleFormatter extends Formatter {
     private static final String MAIN_LOGGER_YAMCS_SERVER = "org.yamcs.YamcsServer";
     private static final String MAIN_LOGGER_YCONFIGURATION = "org.yamcs.YConfiguration";
     private static final String MAIN_LOGGER_HTTP_SOCKET_SERVER = "org.yamcs.web.HttpSocketServer";
+    private static final String MAIN_LOGGER_HTTP_SOCKET_SERVER_HANDLER = "org.yamcs.web.HttpSocketServerHandler";
+    private static final String MAIN_LOGGER_HTTP_STATIC_FILE_HANDLER = "org.yamcs.web.StaticFileRequestHandler";
     
 	SimpleDateFormat sdf=new SimpleDateFormat("HH:mm:ss.SSS");
 	Date d=new Date();
@@ -51,6 +53,8 @@ public class ConsoleFormatter extends Formatter {
 		case MAIN_LOGGER_YAMCS_SERVER:
 		case MAIN_LOGGER_YCONFIGURATION:
 		case MAIN_LOGGER_HTTP_SOCKET_SERVER:
+		case MAIN_LOGGER_HTTP_SOCKET_SERVER_HANDLER:
+		case MAIN_LOGGER_HTTP_STATIC_FILE_HANDLER:
 		    break;
 		default:
 		    colorize(sb, name, 0, 36);

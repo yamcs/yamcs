@@ -9,6 +9,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.web.rest.RestRequest;
 
@@ -21,6 +23,7 @@ import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
@@ -40,16 +43,20 @@ public class AbstractRequestHandler {
     public static final String PROTOBUF_MIME_TYPE = "application/protobuf";
     public static final String JAVA_SERIALIZED_OBJECT_MIME_TYPE = "application/x-java-serialized-object";
     
+    // Intentionally same name as main class
+    private static final Logger log = LoggerFactory.getLogger(HttpSocketServer.class);
+    
     public static RestRequest toRestRequest(ChannelHandlerContext ctx, FullHttpRequest httpRequest, QueryStringDecoder qsDecoder, AuthenticationToken authToken) {
         return new RestRequest(ctx, httpRequest, qsDecoder, authToken, jsonFactory);
     }
     
-    protected void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
+    protected void sendError(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status,
                 Unpooled.copiedBuffer("Failure: " + status.toString() + "\r\n", CharsetUtil.UTF_8));
     
         response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
     
+        log.warn("{} {} {}", req.getMethod(), req.getUri(), status.code());
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
     

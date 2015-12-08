@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.TimeInterval;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.web.HttpSocketServer;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -32,7 +33,7 @@ import io.netty.handler.codec.http.LastHttpContent;
  */
 public class RestUtils {
     
-    private static final Logger log = LoggerFactory.getLogger(RestUtils.class);
+    private static final Logger log = LoggerFactory.getLogger(HttpSocketServer.class);
     
     public static void sendResponse(RestResponse restResponse) throws RestException {
         if (restResponse == null) return; // Allowed, when the specific handler prefers to do this
@@ -49,9 +50,8 @@ public class RestUtils {
         RestRequest restRequest = restResponse.getRestRequest();
         ChannelFuture writeFuture = restRequest.getChannelHandlerContext().writeAndFlush(httpResponse);
 
-        // Decide whether to close the connection or not.
+        log.info("{} {} 200", restRequest.getHttpRequest().getMethod(), restRequest.getHttpRequest().getUri());
         if (!isKeepAlive(restRequest.getHttpRequest())) {
-            // Close the connection when the whole content is written out.
             writeFuture.addListener(ChannelFutureListener.CLOSE);
         }
     }
@@ -73,7 +73,6 @@ public class RestUtils {
     public static ChannelFuture writeChunk(RestRequest req, ByteBuf buf) throws IOException {
         ChannelHandlerContext ctx = req.getChannelHandlerContext();
         Channel ch = ctx.channel();
-        log.debug("Writing a buf");
         if (!ch.isOpen()) {
             throw new IOException("Channel not or no longer open");
         }
@@ -99,6 +98,7 @@ public class RestUtils {
     public static void stopChunkedTransfer(RestRequest req) {
         ChannelHandlerContext ctx = req.getChannelHandlerContext();
         ChannelFuture chunkWriteFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+        log.info("{} {} 200", req.getHttpRequest().getMethod(), req.getHttpRequest().getUri());
         chunkWriteFuture.addListener(ChannelFutureListener.CLOSE);
     }
     
