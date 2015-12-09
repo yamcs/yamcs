@@ -4,6 +4,9 @@ import static org.yamcs.web.AbstractRequestHandler.PROTOBUF_MIME_TYPE;
 
 import java.io.IOException;
 
+import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.protobuf.MessageLite;
 
@@ -40,7 +43,7 @@ public class RestResponse {
      * Makes a new 200 response, where the specified message is serialized in JSON
      * or Protobuf format to the request body.
      */
-    public <T extends MessageLite> RestResponse(RestRequest restRequest, T responseMsg, Schema<T> responseSchema) throws RestException {
+    public <T extends MessageLite> RestResponse(RestRequest restRequest, T responseMsg, Schema<T> responseSchema) throws HttpException {
         this.restRequest = restRequest;
         body = restRequest.getChannelHandlerContext().alloc().buffer();
         ByteBufOutputStream channelOut = new ByteBufOutputStream(body);

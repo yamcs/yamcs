@@ -22,7 +22,7 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestUtils;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
@@ -136,7 +136,7 @@ public final class ArchiveHelper {
     }
 
     final static ReplayRequest toParameterReplayRequest(RestRequest req, NamedObjectId id, boolean descendByDefault)
-            throws RestException {
+            throws HttpException {
         ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
         rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
         IntervalResult ir = RestUtils.scanForInterval(req);

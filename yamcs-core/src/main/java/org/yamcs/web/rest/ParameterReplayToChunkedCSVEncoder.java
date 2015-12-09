@@ -10,6 +10,7 @@ import java.util.List;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.ParameterFormatter;
+import org.yamcs.web.HttpException;
 
 import io.netty.buffer.ByteBufOutputStream;
 
@@ -22,7 +23,7 @@ public class ParameterReplayToChunkedCSVEncoder extends ParameterReplayToChunked
     private List<NamedObjectId> idList;
     private ParameterFormatter formatter;
     
-    public ParameterReplayToChunkedCSVEncoder(RestRequest req, List<NamedObjectId> idList) throws RestException {
+    public ParameterReplayToChunkedCSVEncoder(RestRequest req, List<NamedObjectId> idList) throws HttpException {
         super(req, CSV_MIME_TYPE);
         this.idList = idList;
         formatter.setWriteHeader(true);

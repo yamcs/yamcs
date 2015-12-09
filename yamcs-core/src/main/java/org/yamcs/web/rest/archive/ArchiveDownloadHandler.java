@@ -22,11 +22,11 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.tctm.TmProviderAdapter;
-import org.yamcs.web.rest.BadRequestException;
-import org.yamcs.web.rest.NotFoundException;
+import org.yamcs.web.BadRequestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.ParameterReplayToChunkedCSVEncoder;
 import org.yamcs.web.rest.ParameterReplayToChunkedProtobufEncoder;
-import org.yamcs.web.rest.RestException;
 import org.yamcs.web.rest.RestParameterReplayListener;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequestHandler;
@@ -58,7 +58,7 @@ import io.netty.buffer.ByteBufOutputStream;
 public class ArchiveDownloadHandler extends RestRequestHandler {
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
         if (!req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);
@@ -102,7 +102,7 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
         }
     }
     
-    private void downloadParameter(RestRequest req, NamedObjectId id) throws RestException {
+    private void downloadParameter(RestRequest req, NamedObjectId id) throws HttpException {
         ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, id, false);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
         
@@ -118,7 +118,7 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
         }
     }
     
-    private void downloadPackets(RestRequest req) throws RestException {
+    private void downloadPackets(RestRequest req) throws HttpException {
         Set<String> nameSet = new HashSet<>();
         for (String names : req.getQueryParameterList("name", Collections.emptyList())) {
             for (String name : names.split(",")) {
@@ -155,7 +155,7 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
         }
     }
     
-    private void downloadCommands(RestRequest req) throws RestException {
+    private void downloadCommands(RestRequest req) throws HttpException {
         Set<String> nameSet = new HashSet<>();
         for (String names : req.getQueryParameterList("name", Collections.emptyList())) {
             for (String name : names.split(",")) {
@@ -182,7 +182,7 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
         });
     }
     
-    private void downloadTableData(RestRequest req, TableDefinition table) throws RestException {
+    private void downloadTableData(RestRequest req, TableDefinition table) throws HttpException {
         List<String> cols = null;
         if (req.hasQueryParameter("cols")) {
             cols = new ArrayList<>(); // Order, and non-unique
@@ -215,7 +215,7 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
         });
     }
 
-    private void downloadEvents(RestRequest req) throws RestException {
+    private void downloadEvents(RestRequest req) throws HttpException {
         Set<String> sourceSet = new HashSet<>();
         for (String names : req.getQueryParameterList("source", Collections.emptyList())) {
             for (String name : names.split(",")) {
@@ -241,7 +241,7 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
         }
     }
     
-    private void transferChunkedCSVEvents(RestRequest req, String sql) throws RestException {
+    private void transferChunkedCSVEvents(RestRequest req, String sql) throws HttpException {
         RestStreams.stream(req, sql, new StreamToChunkedCSVEncoder(req) {
             
             @Override
@@ -257,7 +257,7 @@ public class ArchiveDownloadHandler extends RestRequestHandler {
         });
     }
     
-    private void transferChunkedProtobufEvents(RestRequest req, String sql) throws RestException {
+    private void transferChunkedProtobufEvents(RestRequest req, String sql) throws HttpException {
         RestStreams.stream(req, sql, new StreamToChunkedProtobufEncoder<Event>(req, SchemaYamcs.Event.WRITE) {
             
             @Override

@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.web.HttpException;
 import org.yamcs.protobuf.SchemaPvalue;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -18,7 +19,7 @@ import io.protostuff.JsonIOUtil;
  */
 public class ParameterReplayToChunkedProtobufEncoder extends ParameterReplayToChunkedTransferEncoder {
     
-    public ParameterReplayToChunkedProtobufEncoder(RestRequest req) throws RestException {
+    public ParameterReplayToChunkedProtobufEncoder(RestRequest req) throws HttpException {
         super(req, req.deriveTargetContentType());
     }
     

@@ -16,9 +16,9 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.rest.InternalServerErrorException;
-import org.yamcs.web.rest.NotFoundException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
@@ -38,7 +38,7 @@ public class ArchivePacketRequestHandler extends RestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(ArchivePacketRequestHandler.class);
 
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             req.assertGET();
             return listPackets(req, TimeEncoding.INVALID_INSTANT);
@@ -55,7 +55,7 @@ public class ArchivePacketRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse listPackets(RestRequest req, long gentime) throws RestException {
+    private RestResponse listPackets(RestRequest req, long gentime) throws HttpException {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         
@@ -114,7 +114,7 @@ public class ArchivePacketRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse getPacket(RestRequest req, long gentime, int seqnum) throws RestException {
+    private RestResponse getPacket(RestRequest req, long gentime, int seqnum) throws HttpException {
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME)
                 .where("gentime = " + gentime, "seqNum = " + seqnum);
         

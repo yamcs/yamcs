@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
+import org.yamcs.web.HttpException;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -29,7 +30,7 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
     protected String contentType;
     protected boolean failed = false;
     
-    public ParameterReplayToChunkedTransferEncoder(RestRequest req, String contentType) throws RestException {
+    public ParameterReplayToChunkedTransferEncoder(RestRequest req, String contentType) throws HttpException {
         super();
         this.req = req;
         this.contentType = contentType;

@@ -6,6 +6,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
+import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.yarch.Tuple;
 
 import com.csvreader.CsvWriter;
@@ -20,7 +22,7 @@ public abstract class StreamToChunkedCSVEncoder extends StreamToChunkedTransferE
     
     private CsvWriter csvWriter;
     
-    public StreamToChunkedCSVEncoder(RestRequest req) throws RestException {
+    public StreamToChunkedCSVEncoder(RestRequest req) throws HttpException {
         super(req, CSV_MIME_TYPE);
         
         String[] csvHeader = getCSVHeader();

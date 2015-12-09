@@ -7,8 +7,8 @@ import org.yamcs.protobuf.Rest.ListContainerInfoResponse;
 import org.yamcs.protobuf.SchemaMdb;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.web.rest.NotFoundException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
@@ -25,7 +25,7 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
     final static Logger log = LoggerFactory.getLogger(MDBContainerRequestHandler.class.getName());
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
         if (!req.hasPathSegment(pathOffset)) {
             return listContainers(req, null, mdb); // root namespace
@@ -39,7 +39,7 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse listContainersOrError(RestRequest req, int pathOffset) throws RestException {
+    private RestResponse listContainersOrError(RestRequest req, int pathOffset) throws HttpException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
         MatchResult<String> nsm = MDBHelper.matchXtceDbNamespace(req, pathOffset, true);
         if (nsm.matches()) {
@@ -49,7 +49,7 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse getSingleContainer(RestRequest req, NamedObjectId id, SequenceContainer c) throws RestException {
+    private RestResponse getSingleContainer(RestRequest req, NamedObjectId id, SequenceContainer c) throws HttpException {
         // TODO privileges
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
         ContainerInfo cinfo = XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.FULL, req.getOptions());
@@ -60,7 +60,7 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
      * Sends the containers for the requested yamcs instance. If no namespace
      * is specified, assumes root namespace.
      */
-    private RestResponse listContainers(RestRequest req, String namespace, XtceDb mdb) throws RestException {
+    private RestResponse listContainers(RestRequest req, String namespace, XtceDb mdb) throws HttpException {
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
         

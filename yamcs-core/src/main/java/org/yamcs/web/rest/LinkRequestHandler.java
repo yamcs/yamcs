@@ -10,6 +10,11 @@ import org.yamcs.protobuf.Rest.ListLinkInfoResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
+import org.yamcs.web.BadRequestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
+import org.yamcs.web.MethodNotAllowedException;
+import org.yamcs.web.NotFoundException;
 
 /**
  * Gives information on data links
@@ -17,7 +22,7 @@ import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 public class LinkRequestHandler extends RestRequestHandler {
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (req.hasPathSegment(pathOffset)) {
             String instance = req.getPathSegment(pathOffset);
             if (!YamcsServer.hasInstance(instance)) {
@@ -49,11 +54,11 @@ public class LinkRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse getLink(RestRequest req, LinkInfo linkInfo) throws RestException {
+    private RestResponse getLink(RestRequest req, LinkInfo linkInfo) throws HttpException {
         return new RestResponse(req, linkInfo, SchemaYamcsManagement.LinkInfo.WRITE);
     }
     
-    private RestResponse listLinks(RestRequest req, String instance) throws RestException {
+    private RestResponse listLinks(RestRequest req, String instance) throws HttpException {
         List<LinkInfo> links = ManagementService.getInstance().getLinkInfo();
         ListLinkInfoResponse.Builder responseb = ListLinkInfoResponse.newBuilder();
         for (LinkInfo link : links) {
@@ -64,7 +69,7 @@ public class LinkRequestHandler extends RestRequestHandler {
         return new RestResponse(req, responseb.build(), SchemaRest.ListLinkInfoResponse.WRITE);
     }
     
-    private RestResponse editLink(RestRequest req, LinkInfo linkInfo) throws RestException {
+    private RestResponse editLink(RestRequest req, LinkInfo linkInfo) throws HttpException {
         EditLinkRequest request = req.bodyAsMessage(SchemaRest.EditLinkRequest.MERGE).build();
         String state = null;
         if (request.hasState()) state = request.getState();

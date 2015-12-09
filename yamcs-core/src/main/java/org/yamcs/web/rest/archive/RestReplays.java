@@ -14,9 +14,9 @@ import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
-import org.yamcs.web.rest.BadRequestException;
-import org.yamcs.web.rest.InternalServerErrorException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.BadRequestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.rest.RestReplayListener;
 import org.yamcs.web.rest.RestRequest;
 
@@ -37,7 +37,7 @@ public class RestReplays {
      * TODO we should be more helpful here with catching errored state and
      * throwing it up as RestException
      */
-    public static ReplayWrapper replay(RestRequest req, ReplayRequest replayRequest, RestReplayListener l) throws RestException {
+    public static ReplayWrapper replay(RestRequest req, ReplayRequest replayRequest, RestReplayListener l) throws HttpException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
         ReplayServer replayServer = getReplayServer(instance);
         
@@ -52,7 +52,7 @@ public class RestReplays {
         }
     }
     
-    public static void replayAndWait(RestRequest req, ReplayRequest replayRequest, RestReplayListener l) throws RestException {
+    public static void replayAndWait(RestRequest req, ReplayRequest replayRequest, RestReplayListener l) throws HttpException {
         replay(req, replayRequest, l).await();
     }
     

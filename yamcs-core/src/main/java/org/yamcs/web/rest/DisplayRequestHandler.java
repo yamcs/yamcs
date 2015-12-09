@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.StaticFileRequestHandler;
 
 import com.fasterxml.jackson.core.JsonEncoding;
@@ -29,7 +32,7 @@ public class DisplayRequestHandler extends RestRequestHandler {
     final static Logger log=LoggerFactory.getLogger(DisplayRequestHandler.class.getName());
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);
         }
@@ -48,7 +51,7 @@ public class DisplayRequestHandler extends RestRequestHandler {
         }
     }
 
-    private RestResponse listDisplays(RestRequest req, String yamcsInstance) throws RestException {
+    private RestResponse listDisplays(RestRequest req, String yamcsInstance) throws HttpException {
         ByteBuf cb=req.getChannelHandlerContext().alloc().buffer(1024);
         ByteBufOutputStream cbos=new ByteBufOutputStream(cb);
         

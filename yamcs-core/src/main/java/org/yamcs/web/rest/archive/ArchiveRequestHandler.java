@@ -30,9 +30,9 @@ import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.ui.ParameterRetrievalGui;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.rest.InternalServerErrorException;
-import org.yamcs.web.rest.NotFoundException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestReplayListener;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequestHandler;
@@ -77,7 +77,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
     }
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);
         }
@@ -146,7 +146,7 @@ public class ArchiveRequestHandler extends RestRequestHandler {
      * @deprecated the profiles stuff still needs migration
      */
     @Deprecated
-    private RestResponse handleDumpRequest(RestRequest req) throws RestException {
+    private RestResponse handleDumpRequest(RestRequest req) throws HttpException {
         // req.assertGET();
         DumpArchiveRequest request = req.bodyAsMessage(SchemaArchive.DumpArchiveRequest.MERGE).build();
 

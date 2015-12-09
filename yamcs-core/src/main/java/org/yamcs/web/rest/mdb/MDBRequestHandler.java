@@ -12,9 +12,9 @@ import org.yamcs.protobuf.YamcsManagement.HistoryInfo;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
 import org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
-import org.yamcs.web.rest.InternalServerErrorException;
-import org.yamcs.web.rest.NotFoundException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.web.rest.RestRequestHandler;
@@ -43,7 +43,7 @@ public class MDBRequestHandler extends RestRequestHandler {
     private static MDBAlgorithmRequestHandler algorithmHandler = new MDBAlgorithmRequestHandler();
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);
         } else {
@@ -77,7 +77,7 @@ public class MDBRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse getMissionDatabase(RestRequest req, String instance, XtceDb mdb) throws RestException {
+    private RestResponse getMissionDatabase(RestRequest req, String instance, XtceDb mdb) throws HttpException {
         if (req.asksFor(JAVA_SERIALIZED_OBJECT_MIME_TYPE)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
             try (ObjectOutputStream oos = new ObjectOutputStream(new ByteBufOutputStream(buf))) {

@@ -11,6 +11,9 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.SchemaWeb;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.web.AbstractRequestHandler;
+import org.yamcs.web.BadRequestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.rest.archive.ArchiveRequestHandler;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -35,10 +38,10 @@ public abstract class RestRequestHandler extends AbstractRequestHandler {
             sendResponse(handleRequest(req, handlerOffset));
         } catch (InternalServerErrorException e) {
             log.error("Reporting internal server error to rest client", e);
-            sendError(req, e.getHttpResponseStatus(), e);
-        } catch (RestException e) {
+            sendError(req, e.getStatus(), e);
+        } catch (HttpException e) {
             log.warn("Sending nominal exception back to rest client", e);
-            sendError(req, e.getHttpResponseStatus(), e);
+            sendError(req, e.getStatus(), e);
         } catch (Exception e) {
             log.error("Unexpected error " + e, e);
             sendError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR, e);
@@ -102,7 +105,7 @@ public abstract class RestRequestHandler extends AbstractRequestHandler {
      *            the path offset wherein this handler operates. Use this to
      *            correctly index into {@link RestRequest#getPathSegment(int)}
      */
-    public abstract RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException;
+    public abstract RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException;
     
     /**
      * Helper method to throw a BadRequestException on incorrect requests. This is some validation mechanism

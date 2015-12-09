@@ -10,6 +10,8 @@ import org.yamcs.protobuf.YamcsManagement.UserInfo;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.User;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.NotFoundException;
 
 /**
  * Handles incoming requests related to the user
@@ -17,7 +19,7 @@ import org.yamcs.security.User;
 public class UserRequestHandler extends RestRequestHandler {
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);
         }
@@ -26,7 +28,7 @@ public class UserRequestHandler extends RestRequestHandler {
         return new RestResponse(req, info, SchemaYamcsManagement.UserInfo.WRITE);
     }
 
-    private UserInfo getUser(AuthenticationToken authToken) throws RestException {
+    private UserInfo getUser(AuthenticationToken authToken) throws HttpException {
         User user = Privilege.getInstance().getUser(authToken);
         
         UserInfo.Builder userInfob;

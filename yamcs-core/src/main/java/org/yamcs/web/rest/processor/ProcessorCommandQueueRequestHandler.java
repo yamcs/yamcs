@@ -17,10 +17,10 @@ import org.yamcs.protobuf.Rest.ListCommandQueueEntries;
 import org.yamcs.protobuf.Rest.ListCommandQueuesResponse;
 import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.web.rest.BadRequestException;
-import org.yamcs.web.rest.MethodNotAllowedException;
-import org.yamcs.web.rest.NotFoundException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.BadRequestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.MethodNotAllowedException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.web.rest.RestRequestHandler;
@@ -32,7 +32,7 @@ import org.yamcs.web.rest.RestResponse;
 public class ProcessorCommandQueueRequestHandler extends RestRequestHandler {
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             if (req.isGET()) {
                 return listQueues(req);
@@ -85,7 +85,7 @@ public class ProcessorCommandQueueRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse listQueues(RestRequest req) throws RestException {
+    private RestResponse listQueues(RestRequest req) throws HttpException {
         ListCommandQueuesResponse.Builder response = ListCommandQueuesResponse.newBuilder();
         ManagementService managementService = ManagementService.getInstance();
         YProcessor processor = req.getFromContext(RestRequest.CTX_PROCESSOR);
@@ -94,12 +94,12 @@ public class ProcessorCommandQueueRequestHandler extends RestRequestHandler {
         return new RestResponse(req, response.build(), SchemaRest.ListCommandQueuesResponse.WRITE);
     }
     
-    private RestResponse getQueue(RestRequest req, CommandQueue queue) throws RestException {
+    private RestResponse getQueue(RestRequest req, CommandQueue queue) throws HttpException {
         CommandQueueInfo info = toCommandQueueInfo(req, queue, true);
         return new RestResponse(req, info, SchemaCommanding.CommandQueueInfo.WRITE);
     }
     
-    private RestResponse editQueue(RestRequest req, CommandQueue queue, CommandQueueManager queueManager) throws RestException {
+    private RestResponse editQueue(RestRequest req, CommandQueue queue, CommandQueueManager queueManager) throws HttpException {
         EditCommandQueueRequest body = req.bodyAsMessage(SchemaRest.EditCommandQueueRequest.MERGE).build();
         String state = null;
         if (body.hasState()) state = body.getState();
@@ -125,7 +125,7 @@ public class ProcessorCommandQueueRequestHandler extends RestRequestHandler {
         return new RestResponse(req, qinfo, SchemaCommanding.CommandQueueInfo.WRITE);
     }
     
-    private RestResponse listQueueEntries(RestRequest req, CommandQueue queue) throws RestException {
+    private RestResponse listQueueEntries(RestRequest req, CommandQueue queue) throws HttpException {
         ListCommandQueueEntries.Builder responseb = ListCommandQueueEntries.newBuilder();
         for (PreparedCommand pc : queue.getCommands()) {
             CommandQueueEntry qEntry = ManagementGpbHelper.toCommandQueueEntry(queue, pc);
@@ -134,7 +134,7 @@ public class ProcessorCommandQueueRequestHandler extends RestRequestHandler {
         return new RestResponse(req, responseb.build(), SchemaRest.ListCommandQueueEntries.WRITE);
     }
     
-    private RestResponse editQueueEntry(RestRequest req, UUID entryId, CommandQueueManager queueManager) throws RestException {
+    private RestResponse editQueueEntry(RestRequest req, UUID entryId, CommandQueueManager queueManager) throws HttpException {
         EditCommandQueueEntryRequest body = req.bodyAsMessage(SchemaRest.EditCommandQueueEntryRequest.MERGE).build();
         String state = null;
         if (body.hasState()) state = body.getState();

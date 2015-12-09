@@ -1,11 +1,11 @@
-package org.yamcs.web.rest;
+package org.yamcs.web;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
  * Something really wrong and unexpected occurred on the server. A bug.
  */
-public class InternalServerErrorException extends RestException {
+public class InternalServerErrorException extends HttpException {
     private static final long serialVersionUID = 1L;
 
     public InternalServerErrorException(Throwable t) {
@@ -21,7 +21,7 @@ public class InternalServerErrorException extends RestException {
     }
 
     @Override
-    public HttpResponseStatus getHttpResponseStatus() {
+    public HttpResponseStatus getStatus() {
         return HttpResponseStatus.INTERNAL_SERVER_ERROR;
     }
 }

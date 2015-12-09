@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.TimeInterval;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.web.BadRequestException;
+import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpSocketServer;
 
 import io.netty.buffer.ByteBuf;
@@ -35,7 +37,7 @@ public class RestUtils {
     
     private static final Logger log = LoggerFactory.getLogger(HttpSocketServer.class);
     
-    public static void sendResponse(RestResponse restResponse) throws RestException {
+    public static void sendResponse(RestResponse restResponse) throws HttpException {
         if (restResponse == null) return; // Allowed, when the specific handler prefers to do this
         HttpResponse httpResponse;
         if (restResponse.getBody() == null) {
@@ -105,7 +107,7 @@ public class RestUtils {
     /**
      * Returns true if the request specifies descending by use of the query string paramter 'order=desc'
      */
-    public static boolean asksDescending(RestRequest req, boolean descendByDefault) throws RestException {
+    public static boolean asksDescending(RestRequest req, boolean descendByDefault) throws HttpException {
         if (req.hasQueryParameter("order")) {
             switch (req.getQueryParameter("order").toLowerCase()) {
             case "asc":
@@ -134,7 +136,7 @@ public class RestUtils {
         }
     }
     
-    public static IntervalResult scanForInterval(RestRequest req) throws RestException {
+    public static IntervalResult scanForInterval(RestRequest req) throws HttpException {
         return new IntervalResult(req);
     }
     

@@ -1,11 +1,11 @@
-package org.yamcs.web.rest;
+package org.yamcs.web;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
  * When there was an authz exception
  */
-public class ForbiddenException extends RestException {
+public class ForbiddenException extends HttpException {
     private static final long serialVersionUID = 1L;
 
     public ForbiddenException(String message) {
@@ -21,7 +21,7 @@ public class ForbiddenException extends RestException {
     }
 
     @Override
-    public HttpResponseStatus getHttpResponseStatus() {
+    public HttpResponseStatus getStatus() {
         return HttpResponseStatus.FORBIDDEN;
     }
 }

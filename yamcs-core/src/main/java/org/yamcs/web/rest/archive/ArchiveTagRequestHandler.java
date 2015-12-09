@@ -12,11 +12,11 @@ import org.yamcs.protobuf.Rest.ListTagsResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
-import org.yamcs.web.rest.BadRequestException;
-import org.yamcs.web.rest.InternalServerErrorException;
-import org.yamcs.web.rest.MethodNotAllowedException;
-import org.yamcs.web.rest.NotFoundException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.BadRequestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
+import org.yamcs.web.MethodNotAllowedException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
@@ -28,7 +28,7 @@ import org.yamcs.yarch.YarchException;
 public class ArchiveTagRequestHandler extends RestRequestHandler {
 
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
         TagDb tagDb = getTagDb(instance);
         
@@ -76,7 +76,7 @@ public class ArchiveTagRequestHandler extends RestRequestHandler {
     /**
      * Lists tags
      */
-    private RestResponse listTags(RestRequest req, TagDb tagDb) throws RestException {
+    private RestResponse listTags(RestRequest req, TagDb tagDb) throws HttpException {
         IntervalResult ir = RestUtils.scanForInterval(req);
         TimeInterval interval = ir.asTimeInterval();
         
@@ -101,7 +101,7 @@ public class ArchiveTagRequestHandler extends RestRequestHandler {
     /**
      * Outputs info on a single tag
      */
-    private RestResponse getTag(RestRequest req, ArchiveTag tag) throws RestException {
+    private RestResponse getTag(RestRequest req, ArchiveTag tag) throws HttpException {
         return new RestResponse(req, tag, SchemaYamcs.ArchiveTag.WRITE);
     }
     
@@ -109,7 +109,7 @@ public class ArchiveTagRequestHandler extends RestRequestHandler {
      * Adds a new tag. The newly added tag is returned as a response so the user
      * knows the assigned id.
      */
-    private RestResponse insertTag(RestRequest req, TagDb tagDb) throws RestException {
+    private RestResponse insertTag(RestRequest req, TagDb tagDb) throws HttpException {
         CreateTagRequest request = req.bodyAsMessage(SchemaRest.CreateTagRequest.MERGE).build();
         if (!request.hasName())
             throw new BadRequestException("Name is required");
@@ -136,7 +136,7 @@ public class ArchiveTagRequestHandler extends RestRequestHandler {
     /**
      * Updates an existing tag. Returns the updated tag
      */
-    private RestResponse updateTag(RestRequest req, TagDb tagDb, ArchiveTag tag) throws RestException {
+    private RestResponse updateTag(RestRequest req, TagDb tagDb, ArchiveTag tag) throws HttpException {
         EditTagRequest request = req.bodyAsMessage(SchemaRest.EditTagRequest.MERGE).build();        
         
         // Patch the existing tag
@@ -171,7 +171,7 @@ public class ArchiveTagRequestHandler extends RestRequestHandler {
     /**
      * Deletes the identified tag. Returns the deleted tag
      */
-    private RestResponse deleteTag(RestRequest req, TagDb tagDb, long tagTime, int tagId) throws RestException {
+    private RestResponse deleteTag(RestRequest req, TagDb tagDb, long tagTime, int tagId) throws HttpException {
         ArchiveTag deletedTag;
         try {
             deletedTag = tagDb.deleteTag(tagTime, tagId);
@@ -184,7 +184,7 @@ public class ArchiveTagRequestHandler extends RestRequestHandler {
         return new RestResponse(req, deletedTag, SchemaYamcs.ArchiveTag.WRITE);
     }
     
-    private static TagDb getTagDb(String yamcsInstance) throws RestException {
+    private static TagDb getTagDb(String yamcsInstance) throws HttpException {
         try {
             return YarchDatabase.getInstance(yamcsInstance).getDefaultStorageEngine().getTagDb();
         } catch (YarchException e) {

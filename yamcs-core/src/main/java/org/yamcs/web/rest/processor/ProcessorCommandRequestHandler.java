@@ -18,11 +18,11 @@ import org.yamcs.protobuf.Rest.IssueCommandResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.StringConvertors;
-import org.yamcs.web.rest.BadRequestException;
-import org.yamcs.web.rest.ForbiddenException;
-import org.yamcs.web.rest.InternalServerErrorException;
-import org.yamcs.web.rest.NotFoundException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.BadRequestException;
+import org.yamcs.web.ForbiddenException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
@@ -40,7 +40,7 @@ public class ProcessorCommandRequestHandler extends RestRequestHandler {
     final static Logger log = LoggerFactory.getLogger(ProcessorCommandRequestHandler.class.getName());
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
         if (!req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);
@@ -79,7 +79,7 @@ public class ProcessorCommandRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse issueCommand(RestRequest req, NamedObjectId id, MetaCommand cmd) throws RestException {
+    private RestResponse issueCommand(RestRequest req, NamedObjectId id, MetaCommand cmd) throws HttpException {
         YProcessor processor = req.getFromContext(RestRequest.CTX_PROCESSOR);
         if (!processor.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this processor");

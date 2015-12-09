@@ -5,8 +5,8 @@ import org.yamcs.cmdhistory.CommandHistoryRecorder;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Rest.ListCommandsResponse;
 import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.web.rest.NotFoundException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
@@ -24,7 +24,7 @@ import org.yamcs.yarch.Tuple;
 public class ArchiveCommandRequestHandler extends RestRequestHandler {
 
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             req.assertGET();
             return listCommands(req, null);
@@ -37,7 +37,7 @@ public class ArchiveCommandRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse listCommands(RestRequest req, String commandName) throws RestException {
+    private RestResponse listCommands(RestRequest req, String commandName) throws HttpException {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         

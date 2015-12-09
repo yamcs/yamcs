@@ -15,6 +15,8 @@ import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.web.rest.mdb.MDBRequestHandler;
 import org.yamcs.web.rest.processor.ProcessorRequestHandler;
@@ -28,7 +30,7 @@ public class InstanceRequestHandler extends RestRequestHandler {
     final static Logger log = LoggerFactory.getLogger(InstanceRequestHandler.class.getName());
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             return listInstances(req);
         } else {
@@ -53,7 +55,7 @@ public class InstanceRequestHandler extends RestRequestHandler {
         }
     }
 
-    private RestResponse listInstances(RestRequest req) throws RestException {
+    private RestResponse listInstances(RestRequest req) throws HttpException {
         YamcsInstances instances = YamcsServer.getYamcsInstances();
         
         ListInstancesResponse.Builder instancesb = ListInstancesResponse.newBuilder();
@@ -64,7 +66,7 @@ public class InstanceRequestHandler extends RestRequestHandler {
         return new RestResponse(req, instancesb.build(), SchemaRest.ListInstancesResponse.WRITE);
     }
     
-    private RestResponse getInstance(RestRequest req, YamcsInstance yamcsInstance) throws RestException {
+    private RestResponse getInstance(RestRequest req, YamcsInstance yamcsInstance) throws HttpException {
         YamcsInstance enriched = enrichYamcsInstance(req, yamcsInstance);
         return new RestResponse(req, enriched, SchemaYamcsManagement.YamcsInstance.WRITE);
     }
@@ -92,7 +94,7 @@ public class InstanceRequestHandler extends RestRequestHandler {
         return instanceb.build();
     }
     
-    private RestResponse listClientsForInstance(RestRequest req, String instance) throws RestException {
+    private RestResponse listClientsForInstance(RestRequest req, String instance) throws HttpException {
         Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
         ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
         for (ClientInfo client : clients) {

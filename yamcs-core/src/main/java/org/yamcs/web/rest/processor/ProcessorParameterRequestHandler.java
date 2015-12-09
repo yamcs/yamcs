@@ -30,12 +30,12 @@ import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.security.Privilege;
-import org.yamcs.web.rest.BadRequestException;
-import org.yamcs.web.rest.ForbiddenException;
-import org.yamcs.web.rest.InternalServerErrorException;
-import org.yamcs.web.rest.MethodNotAllowedException;
-import org.yamcs.web.rest.NotFoundException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.BadRequestException;
+import org.yamcs.web.ForbiddenException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
+import org.yamcs.web.MethodNotAllowedException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
@@ -50,7 +50,7 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
     final static Logger log = LoggerFactory.getLogger(ProcessorParameterRequestHandler.class.getName());
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
         if (!req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);
@@ -102,7 +102,7 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse handleSingleParameter(RestRequest req, NamedObjectId id, Parameter p) throws RestException {
+    private RestResponse handleSingleParameter(RestRequest req, NamedObjectId id, Parameter p) throws HttpException {
         if (req.isGET()) {
             return getParameterValue(req, id, p);
         } else if (req.isPOST() || req.isPUT()) {
@@ -112,7 +112,7 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse patchParameterAlarm(RestRequest req, NamedObjectId id, Parameter p, int alarmId) throws RestException {
+    private RestResponse patchParameterAlarm(RestRequest req, NamedObjectId id, Parameter p, int alarmId) throws HttpException {
         YProcessor processor = req.getFromContext(RestRequest.CTX_PROCESSOR);
         if (!processor.hasAlarmServer()) {
             throw new BadRequestException("Alarms are not enabled for this instance");
@@ -144,7 +144,7 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse setSingleParameterValue(RestRequest req, Parameter p) throws RestException {
+    private RestResponse setSingleParameterValue(RestRequest req, Parameter p) throws HttpException {
         Value v = req.bodyAsMessage(SchemaYamcs.Value.MERGE).build();
         YProcessor processor = req.getFromContext(RestRequest.CTX_PROCESSOR);
         
@@ -161,7 +161,7 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
         return new RestResponse(req);
     }
     
-    private RestResponse setParameterValues(RestRequest req, XtceDb mdb) throws RestException {
+    private RestResponse setParameterValues(RestRequest req, XtceDb mdb) throws HttpException {
         BulkSetParameterValueRequest request = req.bodyAsMessage(SchemaRest.BulkSetParameterValueRequest.MERGE).build();
         YProcessor processor = req.getFromContext(RestRequest.CTX_PROCESSOR);
 
@@ -200,7 +200,7 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
         return new RestResponse(req);
     }
     
-    private RestResponse getParameterValue(RestRequest req, NamedObjectId id, Parameter p) throws RestException {
+    private RestResponse getParameterValue(RestRequest req, NamedObjectId id, Parameter p) throws HttpException {
         if (!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
             log.warn("Parameter Info for {} not authorized for token {}, throwing BadRequestException", id, req.getAuthToken());
             throw new BadRequestException("Invalid parameter name specified");
@@ -223,7 +223,7 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
         return new RestResponse(req, pval, SchemaPvalue.ParameterValue.WRITE);
     }
     
-    private RestResponse getParameterValues(RestRequest req) throws RestException {
+    private RestResponse getParameterValues(RestRequest req) throws HttpException {
         BulkGetParameterValueRequest request = req.bodyAsMessage(SchemaRest.BulkGetParameterValueRequest.MERGE).build();
         if(request.getIdCount()==0) {
             throw new BadRequestException("Empty parameter list");
@@ -248,7 +248,7 @@ public class ProcessorParameterRequestHandler extends RestRequestHandler {
         return new RestResponse(req, responseb.build(), SchemaRest.BulkGetParameterValueResponse.WRITE);
     }
     
-    private List<ParameterValue> doGetParameterValues(RestRequest req, List<NamedObjectId> ids, boolean fromCache, long timeout) throws RestException {
+    private List<ParameterValue> doGetParameterValues(RestRequest req, List<NamedObjectId> ids, boolean fromCache, long timeout) throws HttpException {
         if (timeout > 60000) {
             throw new BadRequestException("Invalid timeout specified. Maximum is 60.000 milliseconds");
         }

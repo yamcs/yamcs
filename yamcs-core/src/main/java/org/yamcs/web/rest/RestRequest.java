@@ -18,6 +18,8 @@ import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.web.BadRequestException;
+import org.yamcs.web.MethodNotAllowedException;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -360,7 +362,7 @@ public class RestRequest {
         return channelHandlerContext;
     }
     
-    HttpRequest getHttpRequest() {
+    public HttpRequest getHttpRequest() {
         return httpRequest;
     }
     

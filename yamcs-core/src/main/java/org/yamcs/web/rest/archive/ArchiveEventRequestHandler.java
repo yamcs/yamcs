@@ -14,9 +14,9 @@ import org.yamcs.protobuf.Rest.ListEventsResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.rest.InternalServerErrorException;
-import org.yamcs.web.rest.NotFoundException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
@@ -38,7 +38,7 @@ public class ArchiveEventRequestHandler extends RestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(ArchiveEventRequestHandler.class);
 
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             req.assertGET();
             return listEvents(req);
@@ -47,7 +47,7 @@ public class ArchiveEventRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse listEvents(RestRequest req) throws RestException {
+    private RestResponse listEvents(RestRequest req) throws HttpException {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         

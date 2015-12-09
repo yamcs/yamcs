@@ -14,10 +14,10 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.Privilege.Type;
-import org.yamcs.web.rest.BadRequestException;
-import org.yamcs.web.rest.MethodNotAllowedException;
-import org.yamcs.web.rest.NotFoundException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.BadRequestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.MethodNotAllowedException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
@@ -35,7 +35,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
     final static Logger log = LoggerFactory.getLogger(MDBParameterRequestHandler.class.getName());
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
         if (!req.hasPathSegment(pathOffset)) {
             return listParameters(req, null, mdb);
@@ -59,7 +59,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse listParametersOrError(RestRequest req, int pathOffset) throws RestException {
+    private RestResponse listParametersOrError(RestRequest req, int pathOffset) throws HttpException {
         XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
         MatchResult<String> nsm = MDBHelper.matchXtceDbNamespace(req, pathOffset, true);
         if (nsm.matches()) {
@@ -69,7 +69,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse getSingleParameter(RestRequest req, NamedObjectId id, Parameter p) throws RestException {
+    private RestResponse getSingleParameter(RestRequest req, NamedObjectId id, Parameter p) throws HttpException {
         if (!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
             log.warn("Parameter Info for {} not authorized for token {}, throwing BadRequestException", id, req.getAuthToken());
             throw new BadRequestException("Invalid parameter name specified "+id);
@@ -83,7 +83,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
      * Sends the parameters for the requested yamcs instance. If no namespace
      * is specified, assumes root namespace.
      */
-    private RestResponse listParameters(RestRequest req, String namespace, XtceDb mdb) throws RestException {
+    private RestResponse listParameters(RestRequest req, String namespace, XtceDb mdb) throws HttpException {
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
         
@@ -151,7 +151,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
                 && types.contains(p.getParameterType().getTypeAsString());
     }
     
-    private RestResponse getBulkParameterInfo(RestRequest req, XtceDb mdb) throws RestException {
+    private RestResponse getBulkParameterInfo(RestRequest req, XtceDb mdb) throws HttpException {
         if (!req.isGET() && !req.isPOST())
             throw new MethodNotAllowedException(req);
         

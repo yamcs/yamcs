@@ -4,6 +4,7 @@ import static org.yamcs.web.AbstractRequestHandler.PROTOBUF_MIME_TYPE;
 
 import java.io.IOException;
 
+import org.yamcs.web.HttpException;
 import org.yamcs.yarch.Tuple;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -21,7 +22,7 @@ public abstract class StreamToChunkedProtobufEncoder<T extends MessageLite> exte
     private RestRequest req;
     private Schema<T> schema;
     
-    public StreamToChunkedProtobufEncoder(RestRequest req, Schema<T> schema) throws RestException {
+    public StreamToChunkedProtobufEncoder(RestRequest req, Schema<T> schema) throws HttpException {
         super(req, req.deriveTargetContentType());
         this.req = req;
         this.schema = schema;

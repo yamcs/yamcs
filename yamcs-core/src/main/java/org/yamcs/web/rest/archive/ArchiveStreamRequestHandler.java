@@ -4,8 +4,8 @@ import org.yamcs.protobuf.Archive.StreamInfo;
 import org.yamcs.protobuf.Rest.ListStreamsResponse;
 import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.web.rest.NotFoundException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
@@ -16,7 +16,7 @@ import org.yamcs.yarch.YarchDatabase;
 public class ArchiveStreamRequestHandler extends RestRequestHandler {
 
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
         if (!req.hasPathSegment(pathOffset)) {
@@ -33,7 +33,7 @@ public class ArchiveStreamRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse handleStreamRequest(RestRequest req, int pathOffset, Stream stream) throws RestException {
+    private RestResponse handleStreamRequest(RestRequest req, int pathOffset, Stream stream) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             req.assertGET();
             return getStream(req, stream);
@@ -43,7 +43,7 @@ public class ArchiveStreamRequestHandler extends RestRequestHandler {
         }
     } 
     
-    private RestResponse listStreams(RestRequest req, YarchDatabase ydb) throws RestException {
+    private RestResponse listStreams(RestRequest req, YarchDatabase ydb) throws HttpException {
         ListStreamsResponse.Builder responseb = ListStreamsResponse.newBuilder();
         for (AbstractStream stream : ydb.getStreams()) {
             responseb.addStream(ArchiveHelper.toStreamInfo(stream));
@@ -51,7 +51,7 @@ public class ArchiveStreamRequestHandler extends RestRequestHandler {
         return new RestResponse(req, responseb.build(), SchemaRest.ListStreamsResponse.WRITE);
     }
     
-    private RestResponse getStream(RestRequest req, Stream stream) throws RestException {
+    private RestResponse getStream(RestRequest req, Stream stream) throws HttpException {
         StreamInfo response = ArchiveHelper.toStreamInfo(stream);
         return new RestResponse(req, response, SchemaArchive.StreamInfo.WRITE);
     }    

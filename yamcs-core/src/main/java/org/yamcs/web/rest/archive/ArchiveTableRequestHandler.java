@@ -9,9 +9,9 @@ import org.yamcs.protobuf.Archive.TableInfo;
 import org.yamcs.protobuf.Rest.ListTablesResponse;
 import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.web.rest.BadRequestException;
-import org.yamcs.web.rest.NotFoundException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.BadRequestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
@@ -27,7 +27,7 @@ import org.yamcs.yarch.YarchDatabase;
 public class ArchiveTableRequestHandler extends RestRequestHandler {
 
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
         if (!req.hasPathSegment(pathOffset)) {
@@ -44,7 +44,7 @@ public class ArchiveTableRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse handleTableRequest(RestRequest req, int pathOffset, TableDefinition table) throws RestException {
+    private RestResponse handleTableRequest(RestRequest req, int pathOffset, TableDefinition table) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             req.assertGET();
             return getTable(req, table);
@@ -59,7 +59,7 @@ public class ArchiveTableRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse listTables(RestRequest req, YarchDatabase ydb) throws RestException {
+    private RestResponse listTables(RestRequest req, YarchDatabase ydb) throws HttpException {
         ListTablesResponse.Builder responseb = ListTablesResponse.newBuilder();
         for (TableDefinition def : ydb.getTableDefinitions()) {
             responseb.addTable(ArchiveHelper.toTableInfo(def));
@@ -67,12 +67,12 @@ public class ArchiveTableRequestHandler extends RestRequestHandler {
         return new RestResponse(req, responseb.build(), SchemaRest.ListTablesResponse.WRITE);
     }
     
-    private RestResponse getTable(RestRequest req, TableDefinition table) throws RestException {
+    private RestResponse getTable(RestRequest req, TableDefinition table) throws HttpException {
         TableInfo response = ArchiveHelper.toTableInfo(table);
         return new RestResponse(req, response, SchemaArchive.TableInfo.WRITE);
     }
     
-    private RestResponse getTableData(RestRequest req, TableDefinition table) throws RestException {
+    private RestResponse getTableData(RestRequest req, TableDefinition table) throws HttpException {
         List<String> cols = null;        
         if (req.hasQueryParameter("cols")) {
             cols = new ArrayList<>(); // Order, and non-unique

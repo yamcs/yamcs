@@ -21,10 +21,10 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.rest.BadRequestException;
-import org.yamcs.web.rest.InternalServerErrorException;
-import org.yamcs.web.rest.NotFoundException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.BadRequestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestParameterReplayListener;
 import org.yamcs.web.rest.RestReplayListener;
 import org.yamcs.web.rest.RestRequest;
@@ -49,7 +49,7 @@ public class ArchiveParameterRequestHandler extends RestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(ArchiveParameterRequestHandler.class);
 
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         MatchResult<Parameter> mr = MDBHelper.matchParameterName(req, pathOffset);
         if (!mr.matches()) {
             throw new NotFoundException(req);
@@ -74,7 +74,7 @@ public class ArchiveParameterRequestHandler extends RestRequestHandler {
      * <p>
      * If no query parameters are defined, the series covers *all* data.
      */
-    private RestResponse getParameterSamples(RestRequest req, NamedObjectId id, Parameter p) throws RestException {
+    private RestResponse getParameterSamples(RestRequest req, NamedObjectId id, Parameter p) throws HttpException {
         ParameterType ptype = p.getParameterType();
         if (ptype == null) {
             throw new BadRequestException("Requested parameter has no type");
@@ -133,7 +133,7 @@ public class ArchiveParameterRequestHandler extends RestRequestHandler {
         return new RestResponse(req, series.build(), SchemaPvalue.TimeSeries.WRITE);
     }
     
-    private RestResponse listParameterHistory(RestRequest req, NamedObjectId id) throws RestException {
+    private RestResponse listParameterHistory(RestRequest req, NamedObjectId id) throws HttpException {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);

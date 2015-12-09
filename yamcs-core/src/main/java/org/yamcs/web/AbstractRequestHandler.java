@@ -39,9 +39,9 @@ public class AbstractRequestHandler {
     
     public static final String BINARY_MIME_TYPE = "application/octet-stream";
     public static final String CSV_MIME_TYPE = "text/csv";
+    public static final String JAVA_SERIALIZED_OBJECT_MIME_TYPE = "application/x-java-serialized-object";
     public static final String JSON_MIME_TYPE = "application/json";
     public static final String PROTOBUF_MIME_TYPE = "application/protobuf";
-    public static final String JAVA_SERIALIZED_OBJECT_MIME_TYPE = "application/x-java-serialized-object";
     
     // Intentionally same name as main class
     private static final Logger log = LoggerFactory.getLogger(HttpSocketServer.class);

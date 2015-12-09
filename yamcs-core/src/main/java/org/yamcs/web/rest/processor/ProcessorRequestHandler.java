@@ -32,10 +32,10 @@ import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.rest.BadRequestException;
-import org.yamcs.web.rest.MethodNotAllowedException;
-import org.yamcs.web.rest.NotFoundException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.BadRequestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.MethodNotAllowedException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.web.rest.RestRequestHandler;
@@ -56,7 +56,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
     private static ProcessorCommandQueueRequestHandler cqueueHandler = new ProcessorCommandQueueRequestHandler();
 
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             req.assertGET();
             return listProcessors(req);
@@ -89,7 +89,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         }
     }
 
-    private RestResponse handleProcessorRequest(RestRequest req, int pathOffset, YProcessor processor) throws RestException {
+    private RestResponse handleProcessorRequest(RestRequest req, int pathOffset, YProcessor processor) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             if (req.isGET()) {
                 return getProcessor(req, processor);
@@ -115,7 +115,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         }
     }
 
-    private RestResponse listClientsForProcessor(RestRequest req, YProcessor processor) throws RestException {
+    private RestResponse listClientsForProcessor(RestRequest req, YProcessor processor) throws HttpException {
         Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
         ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
         for (ClientInfo client : clients) {
@@ -127,7 +127,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         return new RestResponse(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
     }
 
-    private RestResponse listProcessors(RestRequest req) throws RestException {
+    private RestResponse listProcessors(RestRequest req) throws HttpException {
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
         for (YProcessor processor : YProcessor.getChannels()) {
             response.addProcessor(toProcessorInfo(processor, req, true));
@@ -135,7 +135,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         return new RestResponse(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
     }
 
-    private RestResponse listProcessorsForInstance(RestRequest req, String yamcsInstance) throws RestException {
+    private RestResponse listProcessorsForInstance(RestRequest req, String yamcsInstance) throws HttpException {
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
         for (YProcessor processor : YProcessor.getChannels(yamcsInstance)) {
             response.addProcessor(toProcessorInfo(processor, req, true));
@@ -143,12 +143,12 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         return new RestResponse(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
     }
     
-    private RestResponse getProcessor(RestRequest req, YProcessor processor) throws RestException {
+    private RestResponse getProcessor(RestRequest req, YProcessor processor) throws HttpException {
         ProcessorInfo pinfo = toProcessorInfo(processor, req, true);
         return new RestResponse(req, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
     }
 
-    private RestResponse editProcessor(RestRequest req, YProcessor processor) throws RestException {
+    private RestResponse editProcessor(RestRequest req, YProcessor processor) throws HttpException {
         EditProcessorRequest request = req.bodyAsMessage(SchemaRest.EditProcessorRequest.MERGE).build();
 
         if (!processor.isReplay()) {
@@ -212,7 +212,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
         return new RestResponse(req);
     }
 
-    private RestResponse createProcessorForInstance(RestRequest req, String yamcsInstance, XtceDb mdb) throws RestException {
+    private RestResponse createProcessorForInstance(RestRequest req, String yamcsInstance, XtceDb mdb) throws HttpException {
         CreateProcessorRequest request = req.bodyAsMessage(SchemaRest.CreateProcessorRequest.MERGE).build();
 
         String name = null;

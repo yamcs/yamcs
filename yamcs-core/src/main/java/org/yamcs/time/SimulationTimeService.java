@@ -6,8 +6,8 @@ import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Rest.SetSimulationTimeRequest;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.rest.NotFoundException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
@@ -64,7 +64,7 @@ public class SimulationTimeService implements TimeService {
         static final String SET_REQ = "set";
         
         @Override
-        public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+        public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
             if (!req.hasPathSegment(pathOffset)) {
                 throw new NotFoundException(req);
             }
@@ -87,7 +87,7 @@ public class SimulationTimeService implements TimeService {
         }
 
         
-        private void setSimTime(RestRequest req, SimulationTimeService sts) throws RestException {
+        private void setSimTime(RestRequest req, SimulationTimeService sts) throws HttpException {
             SetSimulationTimeRequest request = req.bodyAsMessage(SchemaRest.SetSimulationTimeRequest.MERGE).build();
             
             if(request.hasTime0()) {

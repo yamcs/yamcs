@@ -9,9 +9,9 @@ import org.yamcs.protobuf.Rest.ListAlarmsResponse;
 import org.yamcs.protobuf.SchemaAlarms;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.rest.InternalServerErrorException;
-import org.yamcs.web.rest.NotFoundException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
@@ -29,7 +29,7 @@ import org.yamcs.yarch.Tuple;
 public class ArchiveAlarmRequestHandler extends RestRequestHandler {
 
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             req.assertGET();
             return listAlarms(req, null, TimeEncoding.INVALID_INSTANT);
@@ -57,7 +57,7 @@ public class ArchiveAlarmRequestHandler extends RestRequestHandler {
         }
     }
     
-    private RestResponse listAlarms(RestRequest req, String parameterName, long triggerTime) throws RestException {
+    private RestResponse listAlarms(RestRequest req, String parameterName, long triggerTime) throws HttpException {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         
@@ -87,7 +87,7 @@ public class ArchiveAlarmRequestHandler extends RestRequestHandler {
         return new RestResponse(req, responseb.build(), SchemaRest.ListAlarmsResponse.WRITE);
     }
     
-    private RestResponse getAlarm(RestRequest req, Parameter p, long triggerTime, int seqnum) throws RestException {
+    private RestResponse getAlarm(RestRequest req, Parameter p, long triggerTime, int seqnum) throws HttpException {
         String sql = new SqlBuilder(AlarmRecorder.TABLE_NAME)
                 .where("triggerTime = " + triggerTime)
                 .where("seqNum = " + seqnum)

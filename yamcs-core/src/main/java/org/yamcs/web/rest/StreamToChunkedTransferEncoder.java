@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.web.HttpException;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 
@@ -30,7 +31,7 @@ public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscribe
     protected String contentType;
     protected boolean failed = false;
     
-    public StreamToChunkedTransferEncoder(RestRequest req, String contentType) throws RestException {
+    public StreamToChunkedTransferEncoder(RestRequest req, String contentType) throws HttpException {
         super();
         this.req = req;
         this.contentType = contentType;

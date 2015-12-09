@@ -15,9 +15,9 @@ import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.web.rest.BadRequestException;
-import org.yamcs.web.rest.NotFoundException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.BadRequestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequestHandler;
 import org.yamcs.web.rest.RestResponse;
@@ -43,7 +43,7 @@ public class ArchiveIndexHandler extends RestRequestHandler {
     private static final Logger log = LoggerFactory.getLogger(ArchiveIndexHandler.class);
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws RestException {
+    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
         IndexServer indexServer = YamcsServer.getService(instance, IndexServer.class);
         if (indexServer == null) {
@@ -85,7 +85,7 @@ public class ArchiveIndexHandler extends RestRequestHandler {
     /**
      * Downloads a combination of multiple indexes. If nothing is specified, returns empty
      */
-    private void downloadIndexes(RestRequest req, IndexServer indexServer) throws RestException {
+    private void downloadIndexes(RestRequest req, IndexServer indexServer) throws HttpException {
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(indexServer.getInstance());
         IntervalResult ir = RestUtils.scanForInterval(req);
@@ -134,7 +134,7 @@ public class ArchiveIndexHandler extends RestRequestHandler {
         }
     }
     
-    private void downloadPacketIndex(RestRequest req, IndexServer indexServer) throws RestException {
+    private void downloadPacketIndex(RestRequest req, IndexServer indexServer) throws HttpException {
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(indexServer.getInstance());
         IntervalResult ir = RestUtils.scanForInterval(req);
@@ -163,7 +163,7 @@ public class ArchiveIndexHandler extends RestRequestHandler {
         }
     }
     
-    private void downloadPpIndex(RestRequest req, IndexServer indexServer) throws RestException {
+    private void downloadPpIndex(RestRequest req, IndexServer indexServer) throws HttpException {
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(indexServer.getInstance());
         IntervalResult ir = RestUtils.scanForInterval(req);
@@ -182,7 +182,7 @@ public class ArchiveIndexHandler extends RestRequestHandler {
         }
     }
     
-    private void downloadCommandHistoryIndex(RestRequest req, IndexServer indexServer) throws RestException {
+    private void downloadCommandHistoryIndex(RestRequest req, IndexServer indexServer) throws HttpException {
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(indexServer.getInstance());
         IntervalResult ir = RestUtils.scanForInterval(req);
@@ -201,7 +201,7 @@ public class ArchiveIndexHandler extends RestRequestHandler {
         }
     }
     
-    private void downloadEventIndex(RestRequest req, IndexServer indexServer) throws RestException {
+    private void downloadEventIndex(RestRequest req, IndexServer indexServer) throws HttpException {
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(indexServer.getInstance());
         IntervalResult ir = RestUtils.scanForInterval(req);
@@ -220,7 +220,7 @@ public class ArchiveIndexHandler extends RestRequestHandler {
         }
     }
     
-    private void downloadCompletenessIndex(RestRequest req, IndexServer indexServer) throws RestException {
+    private void downloadCompletenessIndex(RestRequest req, IndexServer indexServer) throws HttpException {
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(indexServer.getInstance());
         IntervalResult ir = RestUtils.scanForInterval(req);

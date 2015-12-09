@@ -1,11 +1,13 @@
-package org.yamcs.web.rest;
+package org.yamcs.web;
+
+import org.yamcs.web.rest.RestRequest;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
  * When a resource (only the part identified by the request uri) could not be found
  */
-public class NotFoundException extends RestException {
+public class NotFoundException extends HttpException {
     private static final long serialVersionUID = 1L;
 
     public NotFoundException(RestRequest request) {
@@ -21,7 +23,7 @@ public class NotFoundException extends RestException {
     }
 
     @Override
-    public HttpResponseStatus getHttpResponseStatus() {
+    public HttpResponseStatus getStatus() {
         return HttpResponseStatus.NOT_FOUND;
     }
 }

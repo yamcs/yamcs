@@ -1,4 +1,6 @@
-package org.yamcs.web.rest;
+package org.yamcs.web;
+
+import org.yamcs.web.rest.RestRequest;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
@@ -6,7 +8,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
  * When an unsupported HTTP method was used for a
  * specific path
  */
-public class MethodNotAllowedException extends RestException {
+public class MethodNotAllowedException extends HttpException {
     private static final long serialVersionUID = 1L;
 
     public MethodNotAllowedException(RestRequest req) {
@@ -16,7 +18,7 @@ public class MethodNotAllowedException extends RestException {
     }
 
     @Override
-    public HttpResponseStatus getHttpResponseStatus() {
+    public HttpResponseStatus getStatus() {
         return HttpResponseStatus.METHOD_NOT_ALLOWED;
     }
 }
