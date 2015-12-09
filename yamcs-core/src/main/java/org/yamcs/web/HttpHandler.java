@@ -52,24 +52,28 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 
 
 /**
  * Handles handshakes and messages
  */
-public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
+public class HttpHandler extends SimpleChannelInboundHandler<Object> {
 
     public static final String STATIC_PATH = "_static";
     public static final String API_PATH = "api";
+    
+    public static final AttributeKey<HttpRequest> CTX_HTTP_REQUEST = AttributeKey.valueOf("request");
+    public static final AttributeKey<ChunkedTransferStats> CTX_CHUNK_STATS = AttributeKey.valueOf("chunkedTransferStats");
 
-    final static Logger log = LoggerFactory.getLogger(HttpServerHandler.class);
+    final static Logger log = LoggerFactory.getLogger(HttpHandler.class);
 
     static StaticFileHandler fileRequestHandler = new StaticFileHandler();
     Map<String, RestHandler> restHandlers = new HashMap<>();
     WebSocketServerHandler webSocketHandler = new WebSocketServerHandler();
     
-    public HttpServerHandler() {
+    public HttpHandler() {
         restHandlers.put("archive", new ArchiveRestHandler());
         restHandlers.put("clients", new ClientRestHandler());
         restHandlers.put("displays",  new DisplayRestHandler());
@@ -89,7 +93,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
             webSocketHandler.handleWebSocketFrame(ctx, (WebSocketFrame) msg);
         } else {
             log.info("Sending bad request error for message {}", msg);
-            sendPlainTextError(ctx, null, BAD_REQUEST);
+            sendPlainTextError(ctx, BAD_REQUEST);
             return;
         }
     }
@@ -105,6 +109,9 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
         // for an earlier reporting while debugging issues
         log.debug("{} {}", req.getMethod(), req.getUri());
         
+        // Store in context, mainly for use by full-response loggers
+        ctx.attr(CTX_HTTP_REQUEST).set(req);
+        
         QueryStringDecoder qsDecoder = new QueryStringDecoder(req.getUri());
         String uri = qsDecoder.path(); // URI without Query String
 
@@ -113,7 +120,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
             if (req.headers().contains(HttpHeaders.Names.AUTHORIZATION)) {
                 String authorizationHeader = req.headers().get(HttpHeaders.Names.AUTHORIZATION);
                 if (!authorizationHeader.startsWith("Basic ")) { // Exact case only
-                    sendPlainTextError(ctx, req, BAD_REQUEST);
+                    sendPlainTextError(ctx, BAD_REQUEST);
                     return;
                 }
                 // Get encoded user and password, comes after "Basic "
@@ -123,16 +130,16 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
                 // Username is not allowed to contain ':', but passwords are
                 String[] parts = userpassDecoded.split(":", 2);
                 if (parts.length < 2) {
-                    sendPlainTextError(ctx, req, BAD_REQUEST);
+                    sendPlainTextError(ctx, BAD_REQUEST);
                     return;
                 }
                 authToken = new UsernamePasswordToken(parts[0], parts[1]);
                 if (!Privilege.getInstance().authenticates(authToken)) {
-                    sendUnauthorized(ctx, req);
+                    sendUnauthorized(ctx);
                     return;
                 }
             } else {
-                sendUnauthorized(ctx, req);
+                sendUnauthorized(ctx);
                 return;
             }
         }
@@ -141,14 +148,14 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
         switch (path[1]) {
         case STATIC_PATH:
             if (path.length == 2) { //do not accept "/_static/" (i.e. directory listing) requests 
-                sendPlainTextError(ctx, req, FORBIDDEN);
+                sendPlainTextError(ctx, FORBIDDEN);
                 return;
             }
             fileRequestHandler.handleStaticFileRequest(ctx, req, path[2]);
             return;
         case API_PATH:
             if (path.length == 2 || "".equals(path[2])) {
-                sendPlainTextError(ctx, req, FORBIDDEN);
+                sendPlainTextError(ctx, FORBIDDEN);
                 return;
             }
             
@@ -159,7 +166,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
             if (restHandler != null) {
                 restHandler.handleRequestOrError(restReq, 3);
             } else {
-                sendPlainTextError(ctx, req, NOT_FOUND);
+                sendPlainTextError(ctx, NOT_FOUND);
             }
             return;
         case "":
@@ -169,7 +176,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
         default:
             String yamcsInstance = path[1];
             if (!HttpServer.getInstance().isInstanceRegistered(yamcsInstance)) {
-                sendPlainTextError(ctx, req, NOT_FOUND);
+                sendPlainTextError(ctx, NOT_FOUND);
                 return;
             }
             
@@ -189,32 +196,36 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
         }
     }
     
-    public ChannelFuture sendRedirect(ChannelHandlerContext ctx, HttpRequest req, String newUri) {
+    public ChannelFuture sendRedirect(ChannelHandlerContext ctx, String newUri) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.FOUND);
         response.headers().set(HttpHeaders.Names.LOCATION, newUri);
-        log.info("{} {} {}", req.getMethod(), req.getUri(), HttpResponseStatus.FOUND.code());
+        HttpRequest request = ctx.attr(CTX_HTTP_REQUEST).get();
+        log.info("{} {} {}", request.getMethod(), request.getUri(), HttpResponseStatus.FOUND.code());
         return ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
     
-    private ChannelFuture sendUnauthorized(ChannelHandlerContext ctx, HttpRequest req) {
+    private ChannelFuture sendUnauthorized(ChannelHandlerContext ctx) {
         ByteBuf buf = Unpooled.copiedBuffer(HttpResponseStatus.UNAUTHORIZED.toString() + "\r\n", CharsetUtil.UTF_8);
         
         HttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.UNAUTHORIZED, buf);
         setHeader(res, HttpHeaders.Names.WWW_AUTHENTICATE, "Basic realm=\"" + Privilege.getRealmName() + "\"");
-        log.warn("{} {} {} [realm=\"{}\"]", req.getMethod(), req.getUri(), res.getStatus().code(), Privilege.getRealmName());
+        
+        HttpRequest request = ctx.attr(CTX_HTTP_REQUEST).get();
+        log.warn("{} {} {} [realm=\"{}\"]", request.getMethod(), request.getUri(), res.getStatus().code(), Privilege.getRealmName());
         return ctx.writeAndFlush(res).addListener(ChannelFutureListener.CLOSE);
     }
     
-    public static ChannelFuture sendPlainTextError(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status) {
+    public static ChannelFuture sendPlainTextError(ChannelHandlerContext ctx, HttpResponseStatus status) {
         FullHttpResponse response = new DefaultFullHttpResponse(
                 HTTP_1_1, status, Unpooled.copiedBuffer(status + "\r\n", CharsetUtil.UTF_8));
         response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/plain; charset=UTF-8");
-        return sendError(ctx, req, response);
+        return sendError(ctx, response);
     }
     
-    public static ChannelFuture sendError(ChannelHandlerContext ctx, HttpRequest req, HttpResponse response) {
-        if (req != null) {
-            log.warn("{} {} {}", req.getMethod(), req.getUri(), response.getStatus().code());
+    public static ChannelFuture sendError(ChannelHandlerContext ctx, HttpResponse response) {
+        HttpRequest request = ctx.attr(CTX_HTTP_REQUEST).get();
+        if (request != null) {
+            log.warn("{} {} {}", request.getMethod(), request.getUri(), response.getStatus().code());
         } else {
             log.warn("Malformed or illegal request. Sending back " + response.getStatus().code());
         }
@@ -222,11 +233,12 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
         return ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
     
-    public static ChannelFuture sendOK(ChannelHandlerContext ctx, HttpRequest req, HttpResponse response) {
-        log.info("{} {} {}", req.getMethod(), req.getUri(), response.getStatus().code());
-        
+    public static ChannelFuture sendOK(ChannelHandlerContext ctx, HttpResponse response) {
+        HttpRequest request = ctx.attr(CTX_HTTP_REQUEST).get();
+        log.info("{} {} {}", request.getMethod(), request.getUri(), response.getStatus().code());
         ChannelFuture writeFuture = ctx.writeAndFlush(response);
-        if (!isKeepAlive(req)) {
+        
+        if (!isKeepAlive(request)) {
             writeFuture.addListener(ChannelFutureListener.CLOSE);
         }
         return writeFuture;
@@ -235,8 +247,10 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
     /**
      * Sends base HTTP response indicating that we'll use chunked transfer encoding
      */
-    public static ChannelFuture startChunkedTransfer(ChannelHandlerContext ctx, HttpRequest req, MediaType contentType) {
-        log.info("{} {} 200 Starting chunked transfer", req.getMethod(), req.getUri());
+    public static ChannelFuture startChunkedTransfer(ChannelHandlerContext ctx, MediaType contentType) {
+        HttpRequest request = ctx.attr(CTX_HTTP_REQUEST).get();
+        log.info("{} {} 200 Starting chunked transfer", request.getMethod(), request.getUri());
+        ctx.attr(CTX_CHUNK_STATS).set(new ChunkedTransferStats());
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(Names.TRANSFER_ENCODING, HttpHeaders.Values.CHUNKED);
         response.headers().set(Names.CONTENT_TYPE, contentType);
@@ -270,13 +284,13 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
      * If lastChunkFuture is not null, the 'successful stop' of the chunked transfer will only be
      * written out when that future returns succes.
      */
-    public static void stopChunkedTransfer(ChannelHandlerContext ctx, HttpRequest req, ChannelFuture lastChunkFuture) {
+    public static void stopChunkedTransfer(ChannelHandlerContext ctx, ChannelFuture lastChunkFuture) {
         if (lastChunkFuture != null) {
             lastChunkFuture.addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
                     if (future.isSuccess()) {
-                        writeEmptyLastContent(ctx, req);
+                        writeEmptyLastContent(ctx);
                     } else {
                         log.error("Last chunk was not written successfully. Closing channel without sending empty final chunk", future.cause());
                         ctx.channel().close();
@@ -284,14 +298,21 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
                 }
             });
         } else {
-            writeEmptyLastContent(ctx, req);
+            writeEmptyLastContent(ctx);
         }
     }
     
-    private static ChannelFuture writeEmptyLastContent(ChannelHandlerContext ctx, HttpRequest req) {
-        // TODO Should probably only output this info on successful write of the empty_last_content
-        log.info("{} {} --- Finished chunked transfer", req.getMethod(), req.getUri());
+    private static ChannelFuture writeEmptyLastContent(ChannelHandlerContext ctx) {
+        HttpRequest request = ctx.attr(CTX_HTTP_REQUEST).get();
+        ChunkedTransferStats stats = ctx.attr(CTX_CHUNK_STATS).get();
+        log.info("{} {} --- Finished chunked transfer ({} B)",
+                request.getMethod(), request.getUri(), stats.totalBytes);
         ChannelFuture chunkWriteFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         return chunkWriteFuture.addListener(ChannelFutureListener.CLOSE);
+    }
+    
+    public static class ChunkedTransferStats {
+        public int totalBytes = 0;
+        public int chunkCount = 0;
     }
 }

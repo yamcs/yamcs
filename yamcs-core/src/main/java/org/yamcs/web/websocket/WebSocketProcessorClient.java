@@ -32,18 +32,18 @@ public class WebSocketProcessorClient implements YProcessorClient {
         this.authToken = authToken;
         this.username = authToken != null ? authToken.getPrincipal().toString() : Privilege.getDefaultUser();
         log = YamcsServer.getLogger(WebSocketProcessorClient.class, yamcsInstance);
-        YProcessor yproc = YProcessor.getInstance(yamcsInstance, "realtime");
+        YProcessor processor = YProcessor.getInstance(yamcsInstance, "realtime");
         
-        clientId = ManagementService.getInstance().registerClient(yamcsInstance, yproc.getName(), this);
-        resources.add(new ParameterResource(yproc, wsHandler));
-        resources.add(new CommandHistoryResource(yproc, wsHandler));
-        resources.add(new ManagementResource(yproc, wsHandler, clientId));
-        resources.add(new AlarmResource(yproc, wsHandler));
-        resources.add(new EventResource(yproc, wsHandler));
-        resources.add(new StreamResource(yproc, wsHandler));
-        resources.add(new TimeResource(yproc, wsHandler));
-        resources.add(new LinkResource(yproc, wsHandler));
-        resources.add(new CommandQueueResource(yproc, wsHandler));
+        clientId = ManagementService.getInstance().registerClient(yamcsInstance, processor.getName(), this);
+        resources.add(new ParameterResource(processor, wsHandler));
+        resources.add(new CommandHistoryResource(processor, wsHandler));
+        resources.add(new ManagementResource(processor, wsHandler, clientId));
+        resources.add(new AlarmResource(processor, wsHandler));
+        resources.add(new EventResource(processor, wsHandler));
+        resources.add(new StreamResource(processor, wsHandler));
+        resources.add(new TimeResource(processor, wsHandler));
+        resources.add(new LinkResource(processor, wsHandler));
+        resources.add(new CommandQueueResource(processor, wsHandler));
     }
 
     @Override

@@ -79,7 +79,7 @@ public class StaticFileHandler extends RouteHandler {
         log.debug("handling static file request for {}", rawPath);
         String path = sanitizePath(rawPath);
         if (path == null) {
-            HttpServerHandler.sendPlainTextError(ctx, req, FORBIDDEN);
+            HttpHandler.sendPlainTextError(ctx, FORBIDDEN);
             return;
         }
         
@@ -95,11 +95,11 @@ public class StaticFileHandler extends RouteHandler {
 
         if (!match) {
             log.warn("{} does not exist or is hidden. Searched under {}", path, WEB_Roots);
-            HttpServerHandler.sendPlainTextError(ctx, req, NOT_FOUND);
+            HttpHandler.sendPlainTextError(ctx, NOT_FOUND);
             return;
         }
         if (!file.isFile()) {
-            HttpServerHandler.sendPlainTextError(ctx, req, FORBIDDEN);
+            HttpHandler.sendPlainTextError(ctx, FORBIDDEN);
             return;
         }
 
@@ -122,7 +122,7 @@ public class StaticFileHandler extends RouteHandler {
         try {
             raf = new RandomAccessFile(file, "r");
         } catch (FileNotFoundException ignore) {
-            HttpServerHandler.sendPlainTextError(ctx, req, NOT_FOUND);
+            HttpHandler.sendPlainTextError(ctx, NOT_FOUND);
             return;
         }
         long fileLength = raf.length();

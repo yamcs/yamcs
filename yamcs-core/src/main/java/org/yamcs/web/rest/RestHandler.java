@@ -12,7 +12,7 @@ import org.yamcs.api.MediaType;
 import org.yamcs.protobuf.SchemaWeb;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.web.HttpException;
-import org.yamcs.web.HttpServerHandler;
+import org.yamcs.web.HttpHandler;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.RouteHandler;
 
@@ -49,12 +49,12 @@ public abstract class RestHandler extends RouteHandler {
             }
 
             ChannelHandlerContext ctx = req.getChannelHandlerContext();    
-            HttpServerHandler.sendOK(ctx, req.getHttpRequest(), httpResponse);
+            HttpHandler.sendOK(ctx, httpResponse);
         } catch (InternalServerErrorException e) {
-            log.error("Reporting internal server error to REST client", e);
+            log.error("Reporting internal server error to client", e);
             sendRestError(req, e.getStatus(), e);
         } catch (HttpException e) {
-            log.warn("Sending nominal exception back to REST client", e);
+            log.warn("Sending nominal exception back to client", e);
             sendRestError(req, e.getStatus(), e);
         } catch (Exception e) {
             log.error("Unexpected error " + e, e);
@@ -75,11 +75,11 @@ public abstract class RestHandler extends RouteHandler {
                 HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
                 setContentTypeHeader(response, MediaType.JSON.toString()); // UTF-8 by default IETF RFC4627
                 setContentLength(response, buf.readableBytes());
-                HttpServerHandler.sendError(ctx, req.getHttpRequest(), response);
+                HttpHandler.sendError(ctx, response);
             } catch (IOException e2) {
                 log.error("Could not create JSON Generator", e2);
                 log.debug("Original exception not sent to client", t);
-                HttpServerHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                HttpHandler.sendPlainTextError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR);
             }
         } else if (MediaType.PROTOBUF.equals(contentType)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
@@ -89,14 +89,14 @@ public abstract class RestHandler extends RouteHandler {
                 HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
                 setContentTypeHeader(response, MediaType.PROTOBUF.toString());
                 setContentLength(response, buf.readableBytes());
-                HttpServerHandler.sendError(ctx, req.getHttpRequest(), response);
+                HttpHandler.sendError(ctx, response);
             } catch (IOException e2) {
                 log.error("Could not write to channel buffer", e2);
                 log.debug("Original exception not sent to client", t);
-                HttpServerHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                HttpHandler.sendPlainTextError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR);
             }
         } else {
-            HttpServerHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
+            HttpHandler.sendPlainTextError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

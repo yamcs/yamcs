@@ -9,8 +9,7 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.stream.ChunkedWriteHandler;
 
-/**
- */
+
 public class HttpServerInitializer extends ChannelInitializer<SocketChannel> {
     @Override
     public void initChannel(SocketChannel ch) {
@@ -21,6 +20,6 @@ public class HttpServerInitializer extends ChannelInitializer<SocketChannel> {
         pipeline.addLast("encoder", new HttpResponseEncoder());
         
         pipeline.addLast("streamer", new ChunkedWriteHandler());
-        pipeline.addLast("handler", new HttpServerHandler());
+        pipeline.addLast("handler", new HttpHandler());
     }
 }

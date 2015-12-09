@@ -18,7 +18,8 @@ import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
-import org.yamcs.web.HttpServerHandler;
+import org.yamcs.web.HttpHandler;
+import org.yamcs.web.HttpHandler.ChunkedTransferStats;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
@@ -251,6 +252,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         private ByteBuf buf;
         private ByteBufOutputStream bufOut;
         private ChannelFuture lastChannelFuture;
+        private ChunkedTransferStats stats;
         
         private boolean first;
         
@@ -271,7 +273,8 @@ public class ArchiveIndexRestHandler extends RestHandler {
         @Override
         public void processData(IndexResult indexResult) throws Exception {
             if (first) {
-                lastChannelFuture = HttpServerHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType);
+                lastChannelFuture = HttpHandler.startChunkedTransfer(req.getChannelHandlerContext(), contentType);
+                stats = req.getChannelHandlerContext().attr(HttpHandler.CTX_CHUNK_STATS).get();
                 first = false;
             }
             if (unpack) {
@@ -283,7 +286,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
             }
             if (buf.readableBytes() >= CHUNK_TRESHOLD) {
                 bufOut.close();
-                lastChannelFuture = HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf);
+                writeChunk();
                 resetBuffer();
             }
         }
@@ -313,13 +316,19 @@ public class ArchiveIndexRestHandler extends RestHandler {
             try {
                 bufOut.close();
                 if (buf.readableBytes() > 0) {
-                    lastChannelFuture = HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf);
+                    writeChunk();
                 }
-                HttpServerHandler.stopChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), lastChannelFuture);
+                HttpHandler.stopChunkedTransfer(req.getChannelHandlerContext(), lastChannelFuture);
             } catch (IOException e) {
                 log.error("Could not write final chunk of data", e);
                 req.getChannelHandlerContext().close();
             }
+        }
+        
+        private void writeChunk() throws IOException {
+            stats.totalBytes += buf.readableBytes();
+            stats.chunkCount++;
+            lastChannelFuture = HttpHandler.writeChunk(req.getChannelHandlerContext(), buf);
         }
     }
 }
