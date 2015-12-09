@@ -47,6 +47,7 @@ public class Privilege {
     }
 
     public static boolean usePrivileges = true;
+    private static String defaultUser; // Only if !usePrivileges. Could eventually replace usePrivileges i guess
 
     private static Realm realm;
     private static String realmName;
@@ -63,7 +64,7 @@ public class Privilege {
 
     public enum Type {
         SYSTEM, TC, TM_PACKET, TM_PARAMETER, TM_PARAMETER_SET
-    };
+    }
 
     /**
      * Load configuration once only.
@@ -77,10 +78,26 @@ public class Privilege {
             if(usePrivileges) {
                 String realmClass = conf.getString("realm");
                 realm = loadRealm(realmClass);
+            } else {
+                // Intended migration path is that this could replace 'privileges=false', but the interaction with
+                // HornetQAuthManager is still unclear to me. Looks like a dupe. (fdi)
+                if (!conf.containsKey("defaultUser")) {
+                    throw new ConfigurationException("'defaultUser' must be specified when privileges are not enabled. For example 'admin', 'anonymous' or 'guest'");
+                }
+                String defaultUserString = conf.getString("defaultUser");
+                if (defaultUserString.isEmpty() || defaultUserString.contains(":")) {
+                    throw new ConfigurationException("Invalid name '" + defaultUserString + "' for default user");
+                }
+                defaultUser = defaultUserString;
             }
         } catch (ConfigurationException e) {
-            log.error("Failed to load 'privileges' configuration: ", e);
-            System.exit( -1 );
+            log.error("Failed to load 'privileges' configuration", e);
+            System.exit(-1);
+        }
+        if(Privilege.usePrivileges) {
+            log.info("Privileges enabled, authenticating and authorising from "+realmName);
+        } else {
+            log.warn("Privileges disabled, all connections are allowed and have full permissions");
         }
     }
 
@@ -92,7 +109,7 @@ public class Privilege {
                     .loadClass(realmClass).newInstance();
             realmName = realm.getClass().getSimpleName();
         } catch (Exception e) {
-            throw new ConfigurationException("Unable to load the realm class :" + realmClass, e);
+            throw new ConfigurationException("Unable to load the realm class: " + realmClass, e);
         }
         return realm;
     }
@@ -193,6 +210,13 @@ public class Privilege {
 
     public static String getRealmName() {
         return realmName;
+    }
+    
+    /**
+     * Returns the default user if this server is unsecured. Returns null in all other cases.
+     */
+    public static String getDefaultUser() {
+        return defaultUser;
     }
 
     /**

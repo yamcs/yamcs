@@ -1,10 +1,13 @@
 #configuration of the privileges
-# if privileges.enabled is set to false, the connection to realm is not even
+# if enabled is set to false, the connection to realm is not even
 # attempted and hasPrivilege method always returns true
 #
-# if privileges.enables is set to true, you need to enable security of hornetQ and ensure
+# if enabled is set to true, you need to enable security of hornetQ and ensure
 # the hornetQ roles are assigned to user in the chosen realm.
 enabled: false
+
+# The name of the default user when privileges are not enabled
+defaultUser: admin
 
 #one of: LdapRealm, YamlRealm
 realm: org.yamcs.security.YamlRealm

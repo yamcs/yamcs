@@ -10,6 +10,7 @@ import org.yamcs.YProcessorClient;
 import org.yamcs.YProcessorException;
 import org.yamcs.management.ManagementService;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.Privilege;
 
 /**
  * Oversees the life cycle of a client web socket connection to a YProcessor. Combines multiple types of subscriptions
@@ -29,7 +30,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
     public WebSocketProcessorClient(String yamcsInstance, WebSocketServerHandler wsHandler, String applicationName, AuthenticationToken authToken) {
         this.applicationName = applicationName;
         this.authToken = authToken;
-        this.username = authToken != null ? authToken.getPrincipal().toString() : ManagementService.ANONYMOUS;
+        this.username = authToken != null ? authToken.getPrincipal().toString() : Privilege.getDefaultUser();
         log = LoggerFactory.getLogger(WebSocketProcessorClient.class.getName() + "[" + yamcsInstance + "]");
         YProcessor yproc = YProcessor.getInstance(yamcsInstance, "realtime");
         

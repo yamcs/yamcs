@@ -32,7 +32,7 @@ public class UserRequestHandler extends RestRequestHandler {
         UserInfo.Builder userInfob;
         if (user == null) {
             userInfob = buildFullyPrivilegedUser();
-            userInfob.setLogin(ManagementService.ANONYMOUS);
+            userInfob.setLogin(Privilege.getDefaultUser());
         } else {
             userInfob = UserInfo.newBuilder();
             userInfob.setLogin(user.getPrincipalName());
