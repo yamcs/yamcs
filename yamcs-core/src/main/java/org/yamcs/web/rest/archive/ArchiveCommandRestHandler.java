@@ -7,13 +7,12 @@ import org.yamcs.protobuf.Rest.ListCommandsResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;
-import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestHandler;
+import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequest.IntervalResult;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
-import org.yamcs.web.rest.RestUtils;
-import org.yamcs.web.rest.RestUtils.IntervalResult;
 import org.yamcs.web.rest.SqlBuilder;
 import org.yamcs.web.rest.mdb.MDBHelper;
 import org.yamcs.web.rest.mdb.MDBHelper.MatchResult;
@@ -42,14 +41,14 @@ public class ArchiveCommandRestHandler extends RestHandler {
         int limit = req.getQueryParameterAsInt("limit", 100);
         
         SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
-        IntervalResult ir = RestUtils.scanForInterval(req);
+        IntervalResult ir = req.scanForInterval();
         if (ir.hasInterval()) {
             sqlb.where(ir.asSqlCondition("gentime"));
         }
         if (commandName != null) {
             sqlb.where("cmdName = '" + commandName + "'");
         }
-        sqlb.descend(RestUtils.asksDescending(req, true));
+        sqlb.descend(req.asksDescending(true));
         
         ListCommandsResponse.Builder responseb = ListCommandsResponse.newBuilder();
         RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {

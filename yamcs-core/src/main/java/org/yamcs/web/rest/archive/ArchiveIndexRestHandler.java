@@ -22,9 +22,8 @@ import org.yamcs.web.HttpServerHandler;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequest.IntervalResult;
 import org.yamcs.web.rest.RestResponse;
-import org.yamcs.web.rest.RestUtils;
-import org.yamcs.web.rest.RestUtils.IntervalResult;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 
@@ -89,7 +88,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
     private void downloadIndexes(RestRequest req, IndexServer indexServer) throws HttpException {
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(indexServer.getInstance());
-        IntervalResult ir = RestUtils.scanForInterval(req);
+        IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) {
             requestb.setStart(ir.getStart());
         }
@@ -138,7 +137,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
     private void downloadPacketIndex(RestRequest req, IndexServer indexServer) throws HttpException {
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(indexServer.getInstance());
-        IntervalResult ir = RestUtils.scanForInterval(req);
+        IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) {
             requestb.setStart(ir.getStart());
         }
@@ -167,7 +166,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
     private void downloadPpIndex(RestRequest req, IndexServer indexServer) throws HttpException {
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(indexServer.getInstance());
-        IntervalResult ir = RestUtils.scanForInterval(req);
+        IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) {
             requestb.setStart(ir.getStart());
         }
@@ -186,7 +185,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
     private void downloadCommandHistoryIndex(RestRequest req, IndexServer indexServer) throws HttpException {
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(indexServer.getInstance());
-        IntervalResult ir = RestUtils.scanForInterval(req);
+        IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) {
             requestb.setStart(ir.getStart());
         }
@@ -205,7 +204,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
     private void downloadEventIndex(RestRequest req, IndexServer indexServer) throws HttpException {
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(indexServer.getInstance());
-        IntervalResult ir = RestUtils.scanForInterval(req);
+        IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) {
             requestb.setStart(ir.getStart());
         }
@@ -224,7 +223,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
     private void downloadCompletenessIndex(RestRequest req, IndexServer indexServer) throws HttpException {
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(indexServer.getInstance());
-        IntervalResult ir = RestUtils.scanForInterval(req);
+        IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) {
             requestb.setStart(ir.getStart());
         }

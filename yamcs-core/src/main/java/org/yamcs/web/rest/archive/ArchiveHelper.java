@@ -24,8 +24,7 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestUtils;
-import org.yamcs.web.rest.RestUtils.IntervalResult;
+import org.yamcs.web.rest.RestRequest.IntervalResult;
 import org.yamcs.web.rest.archive.RestDownsampler.Sample;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.Stream;
@@ -139,7 +138,7 @@ public final class ArchiveHelper {
             throws HttpException {
         ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
         rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
-        IntervalResult ir = RestUtils.scanForInterval(req);
+        IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) {
             rrb.setStart(ir.getStart());
         }
@@ -147,7 +146,7 @@ public final class ArchiveHelper {
             rrb.setStop(ir.getStop());
         }
         rrb.setEndAction(EndAction.QUIT);
-        rrb.setReverse(RestUtils.asksDescending(req, descendByDefault));
+        rrb.setReverse(req.asksDescending(descendByDefault));
         rrb.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id));
         return rrb.build();
     }

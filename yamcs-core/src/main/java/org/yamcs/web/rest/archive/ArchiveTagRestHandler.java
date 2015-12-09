@@ -17,11 +17,10 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.MethodNotAllowedException;
 import org.yamcs.web.NotFoundException;
-import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestHandler;
+import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequest.IntervalResult;
 import org.yamcs.web.rest.RestResponse;
-import org.yamcs.web.rest.RestUtils;
-import org.yamcs.web.rest.RestUtils.IntervalResult;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
 
@@ -77,7 +76,7 @@ public class ArchiveTagRestHandler extends RestHandler {
      * Lists tags
      */
     private RestResponse listTags(RestRequest req, TagDb tagDb) throws HttpException {
-        IntervalResult ir = RestUtils.scanForInterval(req);
+        IntervalResult ir = req.scanForInterval();
         TimeInterval interval = ir.asTimeInterval();
         
         // Build response with a callback from the TagDb, this is all happening on
@@ -116,8 +115,8 @@ public class ArchiveTagRestHandler extends RestHandler {
         
         // Translate to yamcs-api
         ArchiveTag.Builder tagb = ArchiveTag.newBuilder().setName(request.getName());
-        if (request.hasStart()) tagb.setStart(RestUtils.parseTime(request.getStart()));
-        if (request.hasStop()) tagb.setStop(RestUtils.parseTime(request.getStop()));
+        if (request.hasStart()) tagb.setStart(RestRequest.parseTime(request.getStart()));
+        if (request.hasStop()) tagb.setStop(RestRequest.parseTime(request.getStop()));
         if (request.hasDescription()) tagb.setDescription(request.getDescription());
         if (request.hasColor()) tagb.setColor(request.getColor());
         
@@ -142,15 +141,15 @@ public class ArchiveTagRestHandler extends RestHandler {
         // Patch the existing tag
         ArchiveTag.Builder tagb = ArchiveTag.newBuilder(tag);
         if (request.hasName()) tagb.setName(request.getName());
-        if (request.hasStart()) tagb.setStart(RestUtils.parseTime(request.getStart()));
-        if (request.hasStop()) tagb.setStop(RestUtils.parseTime(request.getStop()));
+        if (request.hasStart()) tagb.setStart(RestRequest.parseTime(request.getStart()));
+        if (request.hasStop()) tagb.setStop(RestRequest.parseTime(request.getStop()));
         if (request.hasDescription()) tagb.setDescription(request.getDescription());
         if (request.hasColor()) tagb.setColor(request.getColor());
         
         // Override with query params
         if (req.hasQueryParameter("name")) tagb.setName(req.getQueryParameter("name"));
-        if (req.hasQueryParameter("start")) tagb.setStart(RestUtils.parseTime(req.getQueryParameter("start")));
-        if (req.hasQueryParameter("stop")) tagb.setStop(RestUtils.parseTime(req.getQueryParameter("stop")));
+        if (req.hasQueryParameter("start")) tagb.setStart(RestRequest.parseTime(req.getQueryParameter("start")));
+        if (req.hasQueryParameter("stop")) tagb.setStop(RestRequest.parseTime(req.getQueryParameter("stop")));
         if (req.hasQueryParameter("description")) tagb.setDescription(req.getQueryParameter("description"));
         if (req.hasQueryParameter("color")) tagb.setColor(req.getQueryParameter("color"));
         

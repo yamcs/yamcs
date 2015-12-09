@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
 import org.yamcs.YProcessorClient;
 import org.yamcs.YProcessorException;
+import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementService;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
@@ -31,7 +31,7 @@ public class WebSocketProcessorClient implements YProcessorClient {
         this.applicationName = applicationName;
         this.authToken = authToken;
         this.username = authToken != null ? authToken.getPrincipal().toString() : Privilege.getDefaultUser();
-        log = LoggerFactory.getLogger(WebSocketProcessorClient.class.getName() + "[" + yamcsInstance + "]");
+        log = YamcsServer.getLogger(WebSocketProcessorClient.class, yamcsInstance);
         YProcessor yproc = YProcessor.getInstance(yamcsInstance, "realtime");
         
         clientId = ManagementService.getInstance().registerClient(yamcsInstance, yproc.getName(), this);

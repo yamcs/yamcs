@@ -40,10 +40,9 @@ import org.yamcs.web.rest.ParameterReplayToChunkedProtobufEncoder;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestParameterReplayListener;
 import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequest.IntervalResult;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestStreams;
-import org.yamcs.web.rest.RestUtils;
-import org.yamcs.web.rest.RestUtils.IntervalResult;
 import org.yamcs.web.rest.SqlBuilder;
 import org.yamcs.web.rest.StreamToChunkedCSVEncoder;
 import org.yamcs.web.rest.StreamToChunkedProtobufEncoder;
@@ -124,7 +123,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         ReplayRequest.Builder rr = ReplayRequest.newBuilder().setEndAction(EndAction.QUIT);
         rr.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
         
-        IntervalResult ir = RestUtils.scanForInterval(req);
+        IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) {
             rr.setStart(req.getQueryParameterAsDate("start"));
         }
@@ -183,14 +182,14 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         }
         
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
-        IntervalResult ir = RestUtils.scanForInterval(req);
+        IntervalResult ir = req.scanForInterval();
         if (ir.hasInterval()) {
             sqlb.where(ir.asSqlCondition("gentime"));
         }
         if (!nameSet.isEmpty()) {
             sqlb.where("pname in ('" + String.join("','", nameSet) + "')");
         }
-        sqlb.descend(RestUtils.asksDescending(req, false));
+        sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
         
         if (req.asksFor(MediaType.OCTET_STREAM)) {
@@ -220,14 +219,14 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         }
         
         SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
-        IntervalResult ir = RestUtils.scanForInterval(req);
+        IntervalResult ir = req.scanForInterval();
         if (ir.hasInterval()) {
             sqlb.where(ir.asSqlCondition("gentime"));
         }
         if (!nameSet.isEmpty()) {
             sqlb.where("cmdName in ('" + String.join("','", nameSet) + "')");
         }
-        sqlb.descend(RestUtils.asksDescending(req, false));
+        sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
         
         RestStreams.stream(req, sql, new StreamToChunkedProtobufEncoder<CommandHistoryEntry>(req, SchemaCommanding.CommandHistoryEntry.WRITE) {
@@ -257,7 +256,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
                 cols.forEach(col -> sqlb.select(col));
             }
         }
-        sqlb.descend(RestUtils.asksDescending(req, false));
+        sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
         
         RestStreams.stream(req, sql, new StreamToChunkedProtobufEncoder<TableRecord>(req, SchemaArchive.TableData.TableRecord.WRITE) {
@@ -280,14 +279,14 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         }
 
         SqlBuilder sqlb = new SqlBuilder(EventRecorder.TABLE_NAME);
-        IntervalResult ir = RestUtils.scanForInterval(req);
+        IntervalResult ir = req.scanForInterval();
         if (ir.hasInterval()) {
             sqlb.where(ir.asSqlCondition("gentime"));
         }
         if (!sourceSet.isEmpty()) {
             sqlb.where("source in ('" + String.join("','", sourceSet) + "')");
         }
-        sqlb.descend(RestUtils.asksDescending(req, false));
+        sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
         
         if (req.asksFor(MediaType.CSV)) {

@@ -20,11 +20,10 @@ import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequest.IntervalResult;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
-import org.yamcs.web.rest.RestUtils;
-import org.yamcs.web.rest.RestUtils.IntervalResult;
 import org.yamcs.web.rest.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
@@ -60,14 +59,14 @@ public class ArchiveEventRestHandler extends RestHandler {
         }
         
         SqlBuilder sqlb = new SqlBuilder(EventRecorder.TABLE_NAME);
-        IntervalResult ir = RestUtils.scanForInterval(req);
+        IntervalResult ir = req.scanForInterval();
         if (ir.hasInterval()) {
             sqlb.where(ir.asSqlCondition("gentime"));
         }
         if (!sourceSet.isEmpty()) {
             sqlb.where("source in ('" + String.join("','", sourceSet) + "')");
         }
-        sqlb.descend(RestUtils.asksDescending(req, true));
+        sqlb.descend(req.asksDescending(true));
         String sql = sqlb.toString();
         
         if (req.asksFor(MediaType.CSV)) {

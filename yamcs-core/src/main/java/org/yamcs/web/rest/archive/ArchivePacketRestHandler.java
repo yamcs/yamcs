@@ -22,11 +22,10 @@ import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.RestRequest.IntervalResult;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
-import org.yamcs.web.rest.RestUtils;
-import org.yamcs.web.rest.RestUtils.IntervalResult;
 import org.yamcs.web.rest.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
@@ -68,7 +67,7 @@ public class ArchivePacketRestHandler extends RestHandler {
         }
         
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
-        IntervalResult ir = RestUtils.scanForInterval(req);
+        IntervalResult ir = req.scanForInterval();
         if (ir.hasInterval()) {
             sqlb.where(ir.asSqlCondition("gentime"));
         }
@@ -78,7 +77,7 @@ public class ArchivePacketRestHandler extends RestHandler {
         if (!nameSet.isEmpty()) {
             sqlb.where("pname in ('" + String.join("','", nameSet) + "')");
         }        
-        sqlb.descend(RestUtils.asksDescending(req, true));
+        sqlb.descend(req.asksDescending(true));
         
         if (req.asksFor(MediaType.OCTET_STREAM)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();

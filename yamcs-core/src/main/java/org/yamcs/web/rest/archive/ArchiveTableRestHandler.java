@@ -12,12 +12,11 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;
-import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestHandler;
+import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
-import org.yamcs.web.rest.RestUtils;
 import org.yamcs.web.rest.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
@@ -93,7 +92,7 @@ public class ArchiveTableRestHandler extends RestHandler {
                 cols.forEach(col -> sqlb.select(col));
             }
         }
-        sqlb.descend(RestUtils.asksDescending(req, true));
+        sqlb.descend(req.asksDescending(true));
         
         String sql = sqlb.toString();
         TableData.Builder responseb = TableData.newBuilder();

@@ -36,11 +36,10 @@ import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.MethodNotAllowedException;
 import org.yamcs.web.NotFoundException;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
-import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
-import org.yamcs.web.rest.RestUtils;
 import org.yamcs.web.rest.mdb.MDBRestHandler;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
@@ -172,7 +171,7 @@ public class ProcessorRestHandler extends RestHandler {
 
         // patch processor seek time
         long seek = TimeEncoding.INVALID_INSTANT;
-        if (request.hasSeek()) seek = RestUtils.parseTime(request.getSeek());
+        if (request.hasSeek()) seek = RestRequest.parseTime(request.getSeek());
         if (req.hasQueryParameter("seek")) seek = req.getQueryParameterAsDate("seek");
         if (seek != TimeEncoding.INVALID_INSTANT) {
             processor.seek(seek);
@@ -229,8 +228,8 @@ public class ProcessorRestHandler extends RestHandler {
         boolean cmdhist = false;
 
         if (request.hasName()) name = request.getName();
-        if (request.hasStart()) start = RestUtils.parseTime(request.getStart());
-        if (request.hasStop()) stop = RestUtils.parseTime(request.getStop());
+        if (request.hasStart()) start = RestRequest.parseTime(request.getStart());
+        if (request.hasStop()) stop = RestRequest.parseTime(request.getStop());
         if (request.hasSpeed()) speed = request.getSpeed().toLowerCase();
         if (request.hasLoop()) loop = request.getLoop();
         if (request.hasCmdhist()) cmdhist = request.getCmdhist();
