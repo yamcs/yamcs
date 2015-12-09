@@ -159,7 +159,7 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
                 return;
             }
             
-            RestRequest restReq = RouteHandler.toRestRequest(ctx, req, qsDecoder, authToken);
+            RestRequest restReq = new RestRequest(ctx, req, qsDecoder, authToken);
             
             String resource = restReq.getPathSegment(2);
             RestHandler restHandler = restHandlers.get(resource);

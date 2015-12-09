@@ -52,18 +52,17 @@ public class RestRequest {
     private FullHttpRequest httpRequest;
     private QueryStringDecoder qsDecoder;
     private AuthenticationToken authToken;
-    private JsonFactory jsonFactory;
+    private static JsonFactory jsonFactory = new JsonFactory();
     
     // For storing resolved URI resource segments
     private Map<String, Object> ctx = new HashMap<String, Object>();
     
     private String[] pathSegments;
     
-    public RestRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest, QueryStringDecoder qsDecoder, AuthenticationToken authToken, JsonFactory jsonFactory) {
+    public RestRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest, QueryStringDecoder qsDecoder, AuthenticationToken authToken) {
         this.channelHandlerContext = channelHandlerContext;
         this.httpRequest = httpRequest;
         this.authToken = authToken;
-        this.jsonFactory = jsonFactory;
         this.qsDecoder = qsDecoder;
         
         // Get splitted path, taking care that URL-encoded slashes are ignored for the split

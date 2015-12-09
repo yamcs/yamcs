@@ -106,10 +106,10 @@ public class RestRequestTest {
         if (accept != null) {
             req.headers().set(Names.ACCEPT, accept);
         }
-        return new RestRequest(null, req, new QueryStringDecoder("/"), null, null);
+        return new RestRequest(null, req, new QueryStringDecoder("/"), null);
     }
     
     private static RestRequest makeRestRequest(String path) {
-        return new RestRequest(null, null, new QueryStringDecoder(path), null, null);
+        return new RestRequest(null, null, new QueryStringDecoder(path), null);
     }
 }
