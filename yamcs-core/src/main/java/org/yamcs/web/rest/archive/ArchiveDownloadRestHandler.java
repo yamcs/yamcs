@@ -1,5 +1,8 @@
 package org.yamcs.web.rest.archive;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,19 +20,25 @@ import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.SchemaYamcs;
+import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.tctm.TmProviderAdapter;
+import org.yamcs.ui.ParameterRetrievalGui;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.ParameterReplayToChunkedCSVEncoder;
 import org.yamcs.web.rest.ParameterReplayToChunkedProtobufEncoder;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestParameterReplayListener;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestStreams;
 import org.yamcs.web.rest.RestUtils;
@@ -66,12 +75,17 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             switch (req.getPathSegment(pathOffset)) {
             case "parameters":
                 req.assertGET();
-                MatchResult<Parameter> mr = MDBHelper.matchParameterName(req, pathOffset + 1);
-                if (!mr.matches()) {
-                    throw new NotFoundException(req);
+                if (req.hasPathSegment(pathOffset + 1)) {
+                    MatchResult<Parameter> mr = MDBHelper.matchParameterName(req, pathOffset + 1);
+                    if (!mr.matches()) {
+                        throw new NotFoundException(req);
+                    } else {
+                        NamedObjectId parameterId = mr.getRequestedId();
+                        downloadParameter(req, parameterId);
+                        return null;
+                    }
                 } else {
-                    NamedObjectId parameterId = mr.getRequestedId();
-                    downloadParameter(req, parameterId);
+                    downloadParameters(req);
                     return null;
                 }
             case "packets":
@@ -99,6 +113,47 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             default:
                 throw new NotFoundException(req);
             }
+        }
+    }
+    
+    // TODO needs more work. Which is also why it's not documented yet
+    // In general, i'm just not the biggest fan of these 'profiles'. But if we do it, we should
+    // support POST, PATCH, GET etc
+    private void downloadParameters(RestRequest req) throws HttpException {
+        ReplayRequest.Builder rr = ReplayRequest.newBuilder().setEndAction(EndAction.QUIT);
+        rr.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
+        
+        IntervalResult ir = RestUtils.scanForInterval(req);
+        if (ir.hasStart()) {
+            rr.setStart(req.getQueryParameterAsDate("start"));
+        }
+        if (ir.hasStop()) {
+            rr.setStop(req.getQueryParameterAsDate("stop"));
+        }
+        
+        if (req.getQueryParameters().containsKey("profile")) {
+            String profile = req.getQueryParameter("profile");
+            String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
+            String filename = YarchDatabase.getHome() + "/" + instance + "/profiles/" + profile + ".profile";
+            List<NamedObjectId> ids;
+            try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+                ids = ParameterRetrievalGui.loadParameters(reader);
+                rr.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids));
+            } catch (FileNotFoundException e) {
+                throw new BadRequestException("No profile '" + profile + "' could be found");
+            } catch (IOException e) {
+                throw new InternalServerErrorException("Could not load profile file", e);
+            }
+            
+            if (req.asksFor(CSV_MIME_TYPE)) {
+                RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, ids);
+                RestReplays.replay(req, rr.build(), l);
+            } else {
+                RestParameterReplayListener l = new ParameterReplayToChunkedProtobufEncoder(req);
+                RestReplays.replay(req, rr.build(), l);
+            }
+        } else {
+            throw new BadRequestException("profile query parameter must be specified. This operation needs more integration work");
         }
     }
     

@@ -25,10 +25,10 @@ import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestParameterReplayListener;
 import org.yamcs.web.rest.RestReplayListener;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.archive.RestDownsampler.Sample;
 import org.yamcs.web.rest.mdb.MDBHelper;
@@ -83,8 +83,8 @@ public class ArchiveParameterRestHandler extends RestHandler {
         }
         
         ReplayRequest.Builder rr = ReplayRequest.newBuilder().setEndAction(EndAction.QUIT);
-        rr.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id));
         rr.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
+        rr.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id));
         
         if (req.hasQueryParameter("start")) {
             rr.setStart(req.getQueryParameterAsDate("start"));
@@ -132,6 +132,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         
         return new RestResponse(req, series.build(), SchemaPvalue.TimeSeries.WRITE);
     }
+    
     
     private RestResponse listParameterHistory(RestRequest req, NamedObjectId id) throws HttpException {
         long pos = req.getQueryParameterAsLong("pos", 0);
