@@ -43,7 +43,7 @@ import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.HornetQBufferOutputStream;
 import org.yamcs.utils.YObjectLoader;
-import org.yamcs.web.HttpSocketServer;
+import org.yamcs.web.HttpServer;
 import org.yamcs.web.StaticFileRequestHandler;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.XtceDb;
@@ -137,9 +137,9 @@ public class YamcsServer {
         }
     }
     
-    public static HttpSocketServer setupHttpSocketServer() {
+    public static HttpServer setupHttpServer() {
         StaticFileRequestHandler.init();
-        return HttpSocketServer.getInstance();
+        return HttpServer.getInstance();
     }
 
     static YamcsSession yamcsSession;
@@ -407,7 +407,7 @@ public class YamcsServer {
             YConfiguration.setup();
             serverId = deriveServerId();
             setupSecurity();
-            setupHttpSocketServer();
+            setupHttpServer();
             setupHornet();
             org.yamcs.yarch.management.ManagementService.setup(true);
             ManagementService.setup(true,true);

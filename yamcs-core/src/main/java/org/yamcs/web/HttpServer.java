@@ -23,27 +23,27 @@ import io.netty.handler.logging.LoggingHandler;
 /**
  * Runs a simple http server based on Netty
  */
-public class HttpSocketServer {
+public class HttpServer {
     
-    private static final Logger log = LoggerFactory.getLogger(HttpSocketServer.class);
+    private static final Logger log = LoggerFactory.getLogger(HttpServer.class);
     
     private final int port;
-    private static HttpSocketServer instance;
+    private static HttpServer instance;
 
     private Map<String, YamcsWebService> yamcsInstances=new ConcurrentHashMap<>();
     private EventLoopGroup bossGroup;
     
     
-    public synchronized static HttpSocketServer getInstance() throws ConfigurationException {
+    public synchronized static HttpServer getInstance() throws ConfigurationException {
         if(instance==null) {
             int port = YConfiguration.getConfiguration("yamcs").getInt("webPort");
-            instance=new HttpSocketServer(port);
+            instance=new HttpServer(port);
             instance.run();
         } 
         return instance;
     }
     
-    public HttpSocketServer(int port) {
+    public HttpServer(int port) {
         this.port = port;
     }
     
@@ -96,6 +96,6 @@ public class HttpSocketServer {
     }
 
     public static void main(String[] args) throws ConfigurationException {
-        HttpSocketServer.getInstance().registerYamcsInstance("byops", new YamcsWebService("byops"));
+        HttpServer.getInstance().registerYamcsInstance("byops", new YamcsWebService("byops"));
     }
 }

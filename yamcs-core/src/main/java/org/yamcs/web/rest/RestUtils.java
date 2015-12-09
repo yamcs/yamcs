@@ -14,7 +14,7 @@ import org.yamcs.TimeInterval;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
-import org.yamcs.web.HttpSocketServer;
+import org.yamcs.web.HttpServer;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -35,7 +35,7 @@ import io.netty.handler.codec.http.LastHttpContent;
  */
 public class RestUtils {
     
-    private static final Logger log = LoggerFactory.getLogger(HttpSocketServer.class);
+    private static final Logger log = LoggerFactory.getLogger(HttpServer.class);
     
     public static void sendResponse(RestResponse restResponse) throws HttpException {
         if (restResponse == null) return; // Allowed, when the specific handler prefers to do this

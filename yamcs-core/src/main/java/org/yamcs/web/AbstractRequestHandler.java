@@ -44,7 +44,7 @@ public class AbstractRequestHandler {
     public static final String PROTOBUF_MIME_TYPE = "application/protobuf";
     
     // Intentionally same name as main class
-    private static final Logger log = LoggerFactory.getLogger(HttpSocketServer.class);
+    private static final Logger log = LoggerFactory.getLogger(HttpServer.class);
     
     public static RestRequest toRestRequest(ChannelHandlerContext ctx, FullHttpRequest httpRequest, QueryStringDecoder qsDecoder, AuthenticationToken authToken) {
         return new RestRequest(ctx, httpRequest, qsDecoder, authToken, jsonFactory);

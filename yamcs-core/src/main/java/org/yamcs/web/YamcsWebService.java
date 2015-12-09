@@ -15,11 +15,11 @@ import com.google.common.util.concurrent.AbstractService;
 public class YamcsWebService extends AbstractService {
     
     private String yamcsInstance;
-    private HttpSocketServer server;
+    private HttpServer server;
     
     public YamcsWebService(String yamcsInstance) throws ConfigurationException {
         this.yamcsInstance = yamcsInstance;
-        this.server = HttpSocketServer.getInstance();        
+        this.server = HttpServer.getInstance();        
     }
 
     @Override

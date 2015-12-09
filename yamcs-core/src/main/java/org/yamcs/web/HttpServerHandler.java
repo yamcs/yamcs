@@ -48,18 +48,18 @@ import io.netty.util.CharsetUtil;
 /**
  * Handles handshakes and messages
  */
-public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object> {
+public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
 
     public static final String STATIC_PATH = "_static";
     public static final String API_PATH = "api";
 
-    final static Logger log = LoggerFactory.getLogger(HttpSocketServerHandler.class);
+    final static Logger log = LoggerFactory.getLogger(HttpServerHandler.class);
 
     static StaticFileRequestHandler fileRequestHandler = new StaticFileRequestHandler();
     Map<String, RestRequestHandler> restHandlers = new HashMap<>();
     WebSocketServerHandler webSocketHandler = new WebSocketServerHandler();
     
-    public HttpSocketServerHandler() {
+    public HttpServerHandler() {
         restHandlers.put("archive", new ArchiveRequestHandler());
         restHandlers.put("clients", new ClientRequestHandler());
         restHandlers.put("displays",  new DisplayRequestHandler());
@@ -158,7 +158,7 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
             return;
         default:
             String yamcsInstance = path[1];
-            if (!HttpSocketServer.getInstance().isInstanceRegistered(yamcsInstance)) {
+            if (!HttpServer.getInstance().isInstanceRegistered(yamcsInstance)) {
                 sendError(ctx, req, NOT_FOUND);
                 return;
             }
