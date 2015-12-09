@@ -8,9 +8,10 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.mdb.MDBRestHandler;
 import org.yamcs.xtceproc.XtceDbFactory;
+
+import io.netty.channel.ChannelFuture;
 
 /**
  * Serves archived data through a web api. The default built-in tables are given
@@ -35,7 +36,7 @@ public class ArchiveRestHandler extends RestHandler {
     }
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             // TODO list archives with links or something
             throw new NotFoundException(req);

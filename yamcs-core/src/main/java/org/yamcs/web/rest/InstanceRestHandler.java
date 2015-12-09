@@ -23,6 +23,8 @@ import org.yamcs.web.rest.processor.ProcessorRestHandler;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
+import io.netty.channel.ChannelFuture;
+
 /**
  * Handles incoming requests related to yamcs instances.
  */
@@ -30,7 +32,7 @@ public class InstanceRestHandler extends RestHandler {
     final static Logger log = LoggerFactory.getLogger(InstanceRestHandler.class.getName());
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             return listInstances(req);
         } else {
@@ -55,7 +57,7 @@ public class InstanceRestHandler extends RestHandler {
         }
     }
 
-    private RestResponse listInstances(RestRequest req) throws HttpException {
+    private ChannelFuture listInstances(RestRequest req) throws HttpException {
         YamcsInstances instances = YamcsServer.getYamcsInstances();
         
         ListInstancesResponse.Builder instancesb = ListInstancesResponse.newBuilder();
@@ -63,12 +65,12 @@ public class InstanceRestHandler extends RestHandler {
             instancesb.addInstance(enrichYamcsInstance(req, yamcsInstance));
         }
         
-        return new RestResponse(req, instancesb.build(), SchemaRest.ListInstancesResponse.WRITE);
+        return sendOK(req, instancesb.build(), SchemaRest.ListInstancesResponse.WRITE);
     }
     
-    private RestResponse getInstance(RestRequest req, YamcsInstance yamcsInstance) throws HttpException {
+    private ChannelFuture getInstance(RestRequest req, YamcsInstance yamcsInstance) throws HttpException {
         YamcsInstance enriched = enrichYamcsInstance(req, yamcsInstance);
-        return new RestResponse(req, enriched, SchemaYamcsManagement.YamcsInstance.WRITE);
+        return sendOK(req, enriched, SchemaYamcsManagement.YamcsInstance.WRITE);
     }
     
     private YamcsInstance enrichYamcsInstance(RestRequest req, YamcsInstance yamcsInstance) {
@@ -94,7 +96,7 @@ public class InstanceRestHandler extends RestHandler {
         return instanceb.build();
     }
     
-    private RestResponse listClientsForInstance(RestRequest req, String instance) throws HttpException {
+    private ChannelFuture listClientsForInstance(RestRequest req, String instance) throws HttpException {
         Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
         ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
         for (ClientInfo client : clients) {
@@ -102,6 +104,6 @@ public class InstanceRestHandler extends RestHandler {
                 responseb.addClient(ClientInfo.newBuilder(client).setState(ClientState.CONNECTED));
             }
         }
-        return new RestResponse(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
+        return sendOK(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
     }
 }

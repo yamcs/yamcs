@@ -20,14 +20,15 @@ import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
-import org.yamcs.web.rest.RestResponse;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
+
+import io.netty.channel.ChannelFuture;
 
 public class ArchiveTagRestHandler extends RestHandler {
 
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
         TagDb tagDb = getTagDb(instance);
         
@@ -75,7 +76,7 @@ public class ArchiveTagRestHandler extends RestHandler {
     /**
      * Lists tags
      */
-    private RestResponse listTags(RestRequest req, TagDb tagDb) throws HttpException {
+    private ChannelFuture listTags(RestRequest req, TagDb tagDb) throws HttpException {
         IntervalResult ir = req.scanForInterval();
         TimeInterval interval = ir.asTimeInterval();
         
@@ -94,21 +95,21 @@ public class ArchiveTagRestHandler extends RestHandler {
         } catch (IOException e) {
             throw new InternalServerErrorException("Could not load tags", e);
         }
-        return new RestResponse(req, responseb.build(), SchemaRest.ListTagsResponse.WRITE);
+        return sendOK(req, responseb.build(), SchemaRest.ListTagsResponse.WRITE);
     }
     
     /**
      * Outputs info on a single tag
      */
-    private RestResponse getTag(RestRequest req, ArchiveTag tag) throws HttpException {
-        return new RestResponse(req, tag, SchemaYamcs.ArchiveTag.WRITE);
+    private ChannelFuture getTag(RestRequest req, ArchiveTag tag) throws HttpException {
+        return sendOK(req, tag, SchemaYamcs.ArchiveTag.WRITE);
     }
     
     /**
      * Adds a new tag. The newly added tag is returned as a response so the user
      * knows the assigned id.
      */
-    private RestResponse insertTag(RestRequest req, TagDb tagDb) throws HttpException {
+    private ChannelFuture insertTag(RestRequest req, TagDb tagDb) throws HttpException {
         CreateTagRequest request = req.bodyAsMessage(SchemaRest.CreateTagRequest.MERGE).build();
         if (!request.hasName())
             throw new BadRequestException("Name is required");
@@ -129,13 +130,13 @@ public class ArchiveTagRestHandler extends RestHandler {
         }
 
         // Echo back the tag, with its assigned ID
-        return new RestResponse(req, newTag, SchemaYamcs.ArchiveTag.WRITE);
+        return sendOK(req, newTag, SchemaYamcs.ArchiveTag.WRITE);
     }
     
     /**
      * Updates an existing tag. Returns the updated tag
      */
-    private RestResponse updateTag(RestRequest req, TagDb tagDb, ArchiveTag tag) throws HttpException {
+    private ChannelFuture updateTag(RestRequest req, TagDb tagDb, ArchiveTag tag) throws HttpException {
         EditTagRequest request = req.bodyAsMessage(SchemaRest.EditTagRequest.MERGE).build();        
         
         // Patch the existing tag
@@ -164,13 +165,13 @@ public class ArchiveTagRestHandler extends RestHandler {
             throw new InternalServerErrorException(e);
         }
         
-        return new RestResponse(req, updatedTag, SchemaYamcs.ArchiveTag.WRITE);
+        return sendOK(req, updatedTag, SchemaYamcs.ArchiveTag.WRITE);
     }
     
     /**
      * Deletes the identified tag. Returns the deleted tag
      */
-    private RestResponse deleteTag(RestRequest req, TagDb tagDb, long tagTime, int tagId) throws HttpException {
+    private ChannelFuture deleteTag(RestRequest req, TagDb tagDb, long tagTime, int tagId) throws HttpException {
         ArchiveTag deletedTag;
         try {
             deletedTag = tagDb.deleteTag(tagTime, tagId);
@@ -180,7 +181,7 @@ public class ArchiveTagRestHandler extends RestHandler {
             throw new InternalServerErrorException(e);
         }
         
-        return new RestResponse(req, deletedTag, SchemaYamcs.ArchiveTag.WRITE);
+        return sendOK(req, deletedTag, SchemaYamcs.ArchiveTag.WRITE);
     }
     
     private static TagDb getTagDb(String yamcsInstance) throws HttpException {

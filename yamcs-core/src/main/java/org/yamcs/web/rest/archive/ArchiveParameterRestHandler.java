@@ -8,10 +8,10 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.MediaType;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
-import org.yamcs.api.MediaType;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -30,7 +30,6 @@ import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestParameterReplayListener;
 import org.yamcs.web.rest.RestReplayListener;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.archive.RestDownsampler.Sample;
 import org.yamcs.web.rest.mdb.MDBHelper;
 import org.yamcs.web.rest.mdb.MDBHelper.MatchResult;
@@ -44,13 +43,14 @@ import com.google.protobuf.MessageLite;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
+import io.netty.channel.ChannelFuture;
 
 public class ArchiveParameterRestHandler extends RestHandler {
     
     private static final Logger log = LoggerFactory.getLogger(ArchiveParameterRestHandler.class);
 
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         MatchResult<Parameter> mr = MDBHelper.matchParameterName(req, pathOffset);
         if (!mr.matches()) {
             throw new NotFoundException(req);
@@ -75,7 +75,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
      * <p>
      * If no query parameters are defined, the series covers *all* data.
      */
-    private RestResponse getParameterSamples(RestRequest req, NamedObjectId id, Parameter p) throws HttpException {
+    private ChannelFuture getParameterSamples(RestRequest req, NamedObjectId id, Parameter p) throws HttpException {
         ParameterType ptype = p.getParameterType();
         if (ptype == null) {
             throw new BadRequestException("Requested parameter has no type");
@@ -131,18 +131,18 @@ public class ArchiveParameterRestHandler extends RestHandler {
             series.addSample(ArchiveHelper.toGPBSample(s));
         }
         
-        return new RestResponse(req, series.build(), SchemaPvalue.TimeSeries.WRITE);
+        return sendOK(req, series.build(), SchemaPvalue.TimeSeries.WRITE);
     }
     
     
-    private RestResponse listParameterHistory(RestRequest req, NamedObjectId id) throws HttpException {
+    private ChannelFuture listParameterHistory(RestRequest req, NamedObjectId id) throws HttpException {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
         
         // syspar provider is not currently added to replay channels, so it only generates errors
         if (SystemParameterDb.isSystemParameter(id)) {
-            return new RestResponse(req, ParameterData.newBuilder().build(), SchemaPvalue.ParameterData.WRITE);
+            return sendOK(req, ParameterData.newBuilder().build(), SchemaPvalue.ParameterData.WRITE);
         }
         
         ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, id, true);
@@ -169,7 +169,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
             } catch (IOException e) {
                 throw new InternalServerErrorException(e);
             }
-            return new RestResponse(req, MediaType.CSV, buf);
+            return sendOK(req, MediaType.CSV, buf);
         } else {
             ParameterData.Builder resultb = ParameterData.newBuilder();
             RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit) {
@@ -181,7 +181,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
             };
             replayListener.setNoRepeat(noRepeat);
             RestReplays.replayAndWait(req, rr, replayListener);
-            return new RestResponse(req, resultb.build(), SchemaPvalue.ParameterData.WRITE);
+            return sendOK(req, resultb.build(), SchemaPvalue.ParameterData.WRITE);
         }
     }
 }

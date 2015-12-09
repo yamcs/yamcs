@@ -41,7 +41,6 @@ import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestParameterReplayListener;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
-import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestStreams;
 import org.yamcs.web.rest.SqlBuilder;
 import org.yamcs.web.rest.StreamToChunkedCSVEncoder;
@@ -57,6 +56,7 @@ import org.yamcs.yarch.YarchDatabase;
 import com.csvreader.CsvWriter;
 
 import io.netty.buffer.ByteBufOutputStream;
+import io.netty.channel.ChannelFuture;
 
 /** 
  * Serves archived data through a web api.
@@ -67,7 +67,7 @@ import io.netty.buffer.ByteBufOutputStream;
 public class ArchiveDownloadRestHandler extends RestHandler {
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
         if (!req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);

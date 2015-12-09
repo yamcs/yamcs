@@ -21,28 +21,27 @@ public class RestResponse {
     private ByteBuf body;
     
     /**
-     * Makes a new 200 response, without a Content-Type header
-     * @param restRequest
+     * A response, without a Content-Type header
      */
-    public RestResponse(RestRequest restRequest) {
+    RestResponse(RestRequest restRequest) {
         this.restRequest = restRequest;
     }
     
     /**
-     * Makes a new 200 response of the specified contentType, passing in any ByteBuf.
+     * A response of the specified contentType, passing in any ByteBuf.
      * This is a catch-all constructor that enables response that are not JSON or GPB.
      */
-    public RestResponse(RestRequest restRequest, MediaType contentType, ByteBuf body) {
+    RestResponse(RestRequest restRequest, MediaType contentType, ByteBuf body) {
         this.restRequest = restRequest;
         this.contentType = contentType;
         this.body = body;
     }
     
     /**
-     * Makes a new 200 response, where the specified message is serialized in JSON
+     * A response where the specified message is serialized in JSON
      * or Protobuf format to the request body.
      */
-    public <T extends MessageLite> RestResponse(RestRequest restRequest, T responseMsg, Schema<T> responseSchema) throws HttpException {
+    <T extends MessageLite> RestResponse(RestRequest restRequest, T responseMsg, Schema<T> responseSchema) throws HttpException {
         this.restRequest = restRequest;
         body = restRequest.getChannelHandlerContext().alloc().buffer();
         ByteBufOutputStream channelOut = new ByteBufOutputStream(body);

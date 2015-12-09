@@ -12,14 +12,15 @@ import org.yamcs.security.Privilege.Type;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;
-import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestHandler;
-import org.yamcs.web.rest.RestResponse;
+import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.XtceToGpbAssembler;
 import org.yamcs.web.rest.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.web.rest.mdb.MDBHelper.MatchResult;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
+
+import io.netty.channel.ChannelFuture;
 
 /**
  * Handles incoming requests related to command info from the MDB
@@ -28,7 +29,7 @@ public class MDBCommandRestHandler extends RestHandler {
     final static Logger log = LoggerFactory.getLogger(MDBCommandRestHandler.class.getName());
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
         if (!req.hasPathSegment(pathOffset)) {
             return listCommands(req, null, mdb); // root namespace
@@ -42,7 +43,7 @@ public class MDBCommandRestHandler extends RestHandler {
         }
     }
     
-    private RestResponse listCommandsOrError(RestRequest req, int pathOffset) throws HttpException {
+    private ChannelFuture listCommandsOrError(RestRequest req, int pathOffset) throws HttpException {
         XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
         MatchResult<String> nsm = MDBHelper.matchXtceDbNamespace(req, pathOffset, true);
         if (nsm.matches()) {
@@ -52,21 +53,21 @@ public class MDBCommandRestHandler extends RestHandler {
         }
     }
     
-    private RestResponse getSingleCommand(RestRequest req, NamedObjectId id, MetaCommand cmd) throws HttpException {
+    private ChannelFuture getSingleCommand(RestRequest req, NamedObjectId id, MetaCommand cmd) throws HttpException {
         if (!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.TC, cmd.getQualifiedName())) {
             log.warn("Command Info for {} not authorized for token {}, throwing BadRequestException", id, req.getAuthToken());
             throw new BadRequestException("Invalid command name specified "+id);
         }
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
         CommandInfo cinfo = XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.FULL, req.getOptions());
-        return new RestResponse(req, cinfo, SchemaMdb.CommandInfo.WRITE);
+        return sendOK(req, cinfo, SchemaMdb.CommandInfo.WRITE);
     }
 
     /**
      * Sends the commands for the requested yamcs instance. If no namespace
      * is specified, assumes root namespace.
      */
-    private RestResponse listCommands(RestRequest req, String namespace, XtceDb mdb) throws HttpException {
+    private ChannelFuture listCommands(RestRequest req, String namespace, XtceDb mdb) throws HttpException {
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
         
@@ -96,6 +97,6 @@ public class MDBCommandRestHandler extends RestHandler {
             }
         }
         
-        return new RestResponse(req, responseb.build(), SchemaRest.ListCommandInfoResponse.WRITE);
+        return sendOK(req, responseb.build(), SchemaRest.ListCommandInfoResponse.WRITE);
     }
 }

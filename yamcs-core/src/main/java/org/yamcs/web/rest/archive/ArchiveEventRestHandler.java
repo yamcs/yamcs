@@ -21,7 +21,6 @@ import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
-import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
 import org.yamcs.web.rest.SqlBuilder;
@@ -32,13 +31,14 @@ import com.csvreader.CsvWriter;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
+import io.netty.channel.ChannelFuture;
 
 public class ArchiveEventRestHandler extends RestHandler {
     
     private static final Logger log = LoggerFactory.getLogger(ArchiveEventRestHandler.class);
 
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             req.assertGET();
             return listEvents(req);
@@ -47,7 +47,7 @@ public class ArchiveEventRestHandler extends RestHandler {
         }
     }
     
-    private RestResponse listEvents(RestRequest req) throws HttpException {
+    private ChannelFuture listEvents(RestRequest req) throws HttpException {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         
@@ -92,7 +92,7 @@ public class ArchiveEventRestHandler extends RestHandler {
                 }
             });
             w.close();
-            return new RestResponse(req, MediaType.CSV, buf);
+            return sendOK(req, MediaType.CSV, buf);
         } else {
             ListEventsResponse.Builder responseb = ListEventsResponse.newBuilder();
             RestStreams.streamAndWait(req, sql, new RestStreamSubscriber(pos, limit) {
@@ -106,7 +106,7 @@ public class ArchiveEventRestHandler extends RestHandler {
                 }
             });
             
-            return new RestResponse(req, responseb.build(), SchemaRest.ListEventsResponse.WRITE);
+            return sendOK(req, responseb.build(), SchemaRest.ListEventsResponse.WRITE);
         }
     }
 }

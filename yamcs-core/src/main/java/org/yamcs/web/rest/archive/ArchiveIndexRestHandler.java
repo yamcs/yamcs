@@ -24,7 +24,6 @@ import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
-import org.yamcs.web.rest.RestResponse;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 
@@ -44,7 +43,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(ArchiveIndexRestHandler.class);
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
         IndexServer indexServer = YamcsServer.getService(instance, IndexServer.class);
         if (indexServer == null) {

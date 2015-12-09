@@ -23,7 +23,6 @@ import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
-import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
 import org.yamcs.web.rest.SqlBuilder;
@@ -32,13 +31,14 @@ import org.yamcs.yarch.Tuple;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
+import io.netty.channel.ChannelFuture;
 
 public class ArchivePacketRestHandler extends RestHandler {
     
     private static final Logger log = LoggerFactory.getLogger(ArchivePacketRestHandler.class);
 
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             req.assertGET();
             return listPackets(req, TimeEncoding.INVALID_INSTANT);
@@ -55,7 +55,7 @@ public class ArchivePacketRestHandler extends RestHandler {
         }
     }
     
-    private RestResponse listPackets(RestRequest req, long gentime) throws HttpException {
+    private ChannelFuture listPackets(RestRequest req, long gentime) throws HttpException {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         
@@ -96,7 +96,7 @@ public class ArchivePacketRestHandler extends RestHandler {
                     }
                 });
                 bufOut.close();
-                return new RestResponse(req, MediaType.OCTET_STREAM, buf);
+                return sendOK(req, MediaType.OCTET_STREAM, buf);
             } catch (IOException e) {
                 throw new InternalServerErrorException(e);
             }
@@ -110,11 +110,11 @@ public class ArchivePacketRestHandler extends RestHandler {
                     responseb.addPacket(pdata);
                 }
             });
-            return new RestResponse(req, responseb.build(), SchemaRest.ListPacketsResponse.WRITE);
+            return sendOK(req, responseb.build(), SchemaRest.ListPacketsResponse.WRITE);
         }
     }
     
-    private RestResponse getPacket(RestRequest req, long gentime, int seqnum) throws HttpException {
+    private ChannelFuture getPacket(RestRequest req, long gentime, int seqnum) throws HttpException {
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME)
                 .where("gentime = " + gentime, "seqNum = " + seqnum);
         
@@ -133,7 +133,7 @@ public class ArchivePacketRestHandler extends RestHandler {
         } else if (packets.size() > 1) {
             throw new InternalServerErrorException("Too many results");
         } else {
-            return new RestResponse(req, packets.get(0), SchemaYamcs.TmPacketData.WRITE);
+            return sendOK(req, packets.get(0), SchemaYamcs.TmPacketData.WRITE);
         }
     }
 }

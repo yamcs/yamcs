@@ -19,7 +19,6 @@ import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
-import org.yamcs.web.rest.RestResponse;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.History;
 import org.yamcs.xtce.SpaceSystem;
@@ -28,6 +27,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
+import io.netty.channel.ChannelFuture;
 
 /**
  * Handles incoming requests related to parameters
@@ -44,7 +44,7 @@ public class MDBRestHandler extends RestHandler {
     private static MDBAlgorithmRestHandler algorithmHandler = new MDBAlgorithmRestHandler();
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);
         } else {
@@ -78,7 +78,7 @@ public class MDBRestHandler extends RestHandler {
         }
     }
     
-    private RestResponse getMissionDatabase(RestRequest req, String instance, XtceDb mdb) throws HttpException {
+    private ChannelFuture getMissionDatabase(RestRequest req, String instance, XtceDb mdb) throws HttpException {
         if (req.asksFor(MediaType.JAVA_SERIALIZED_OBJECT)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
             try (ObjectOutputStream oos = new ObjectOutputStream(new ByteBufOutputStream(buf))) {
@@ -86,10 +86,10 @@ public class MDBRestHandler extends RestHandler {
             } catch (IOException e) {
                 throw new InternalServerErrorException("Could not serialize MDB", e);
             }
-            return new RestResponse(req, MediaType.JAVA_SERIALIZED_OBJECT, buf);
+            return sendOK(req, MediaType.JAVA_SERIALIZED_OBJECT, buf);
         } else {
             MissionDatabase converted = toMissionDatabase(req, instance, mdb);
-            return new RestResponse(req, converted, SchemaYamcsManagement.MissionDatabase.WRITE);
+            return sendOK(req, converted, SchemaYamcsManagement.MissionDatabase.WRITE);
         }
     }
     

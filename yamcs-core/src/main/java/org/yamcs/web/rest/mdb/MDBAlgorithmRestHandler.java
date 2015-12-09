@@ -9,14 +9,15 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;
-import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestHandler;
-import org.yamcs.web.rest.RestResponse;
+import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.XtceToGpbAssembler;
 import org.yamcs.web.rest.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.web.rest.mdb.MDBHelper.MatchResult;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.XtceDb;
+
+import io.netty.channel.ChannelFuture;
 
 /**
  * Handles incoming requests related to algorithm info from the MDB
@@ -25,7 +26,7 @@ public class MDBAlgorithmRestHandler extends RestHandler {
     final static Logger log = LoggerFactory.getLogger(MDBAlgorithmRestHandler.class.getName());
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
         if (!req.hasPathSegment(pathOffset)) {
             return listAlgorithms(req, null, mdb); // root namespace
@@ -39,7 +40,7 @@ public class MDBAlgorithmRestHandler extends RestHandler {
         }
     }
     
-    private RestResponse listAlgorithmsOrError(RestRequest req, int pathOffset) throws HttpException {
+    private ChannelFuture listAlgorithmsOrError(RestRequest req, int pathOffset) throws HttpException {
         XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
         MatchResult<String> nsm = MDBHelper.matchXtceDbNamespace(req, pathOffset, true);
         if (nsm.matches()) {
@@ -49,18 +50,18 @@ public class MDBAlgorithmRestHandler extends RestHandler {
         }
     }
     
-    private RestResponse getSingleAlgorithm(RestRequest req, NamedObjectId id, Algorithm a) throws HttpException {
+    private ChannelFuture getSingleAlgorithm(RestRequest req, NamedObjectId id, Algorithm a) throws HttpException {
         // TODO privileges
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
         AlgorithmInfo ainfo = XtceToGpbAssembler.toAlgorithmInfo(a, instanceURL, DetailLevel.FULL, req.getOptions());
-        return new RestResponse(req, ainfo, SchemaMdb.AlgorithmInfo.WRITE);
+        return sendOK(req, ainfo, SchemaMdb.AlgorithmInfo.WRITE);
     }
 
     /**
      * Sends the containers for the requested yamcs instance. If no namespace
      * is specified, assumes root namespace.
      */
-    private RestResponse listAlgorithms(RestRequest req, String namespace, XtceDb mdb) throws HttpException {
+    private ChannelFuture listAlgorithms(RestRequest req, String namespace, XtceDb mdb) throws HttpException {
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
         
@@ -88,6 +89,6 @@ public class MDBAlgorithmRestHandler extends RestHandler {
             }
         }
         
-        return new RestResponse(req, responseb.build(), SchemaRest.ListAlgorithmInfoResponse.WRITE);
+        return sendOK(req, responseb.build(), SchemaRest.ListAlgorithmInfoResponse.WRITE);
     }
 }

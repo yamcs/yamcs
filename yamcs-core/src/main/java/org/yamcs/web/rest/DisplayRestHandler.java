@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
+import io.netty.channel.ChannelFuture;
 
 /** 
  * provides information about available displays
@@ -33,7 +34,7 @@ public class DisplayRestHandler extends RestHandler {
     final static Logger log=LoggerFactory.getLogger(DisplayRestHandler.class.getName());
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);
         }
@@ -52,7 +53,7 @@ public class DisplayRestHandler extends RestHandler {
         }
     }
 
-    private RestResponse listDisplays(RestRequest req, String yamcsInstance) throws HttpException {
+    private ChannelFuture listDisplays(RestRequest req, String yamcsInstance) throws HttpException {
         ByteBuf cb=req.getChannelHandlerContext().alloc().buffer(1024);
         ByteBufOutputStream cbos=new ByteBufOutputStream(cb);
         
@@ -71,7 +72,7 @@ public class DisplayRestHandler extends RestHandler {
                 writeFilesFromDir(json, new Path(), displayDir);
             }
             json.close();
-            return new RestResponse(req, MediaType.JSON, cb);
+            return sendOK(req, MediaType.JSON, cb);
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }

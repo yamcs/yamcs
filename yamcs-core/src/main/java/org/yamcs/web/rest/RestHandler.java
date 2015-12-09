@@ -17,15 +17,18 @@ import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.RouteHandler;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.google.protobuf.MessageLite;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.protostuff.JsonIOUtil;
+import io.protostuff.Schema;
 
 /**
  * Defines the basic contract of what a REST handler should abide to.
@@ -36,20 +39,24 @@ public abstract class RestHandler extends RouteHandler {
     
     public void handleRequestOrError(RestRequest req, int handlerOffset) {
         try {
-            RestResponse restResponse = handleRequest(req, handlerOffset);
-            if (restResponse == null) return; // Allowed, when the specific handler prefers to do this
-            HttpResponse httpResponse;
-            if (restResponse.getBody() == null) {
-                httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
-                setContentLength(httpResponse, 0);
-            } else {
-                httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, restResponse.getBody());
-                httpResponse.headers().set(HttpHeaders.Names.CONTENT_TYPE, restResponse.getContentType());
-                setContentLength(httpResponse, restResponse.getBody().readableBytes());
-            }
+            // FIXME handleRequest must never return null! Futures are used to follow up on handling
+            ChannelFuture responseFuture = handleRequest(req, handlerOffset);
+            if (responseFuture == null) return; // Allowed, when the specific handler prefers to do this
+            
+            /**
+             * Follow-up on the successful write, to provide some hints when a future was not actually
+             * successfully delivered.
+             */
+            responseFuture.addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    if (!future.isSuccess()) {
+                        log.error("Error writing out response to client", future.cause());
+                        future.channel().close();
+                    }
+                }
+            });
 
-            ChannelHandlerContext ctx = req.getChannelHandlerContext();    
-            HttpHandler.sendOK(ctx, httpResponse);
         } catch (InternalServerErrorException e) {
             log.error("Reporting internal server error to client", e);
             sendRestError(req, e.getStatus(), e);
@@ -59,6 +66,32 @@ public abstract class RestHandler extends RouteHandler {
         } catch (Exception e) {
             log.error("Unexpected error " + e, e);
             sendRestError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR, e);
+        }
+    }
+    
+    protected ChannelFuture sendOK(RestRequest restRequest) {
+        return sendOK(new RestResponse(restRequest));
+    }
+    
+    protected ChannelFuture sendOK(RestRequest restRequest, MediaType contentType, ByteBuf body) {
+        return sendOK(new RestResponse(restRequest, contentType, body));
+    }
+    
+    protected <T extends MessageLite> ChannelFuture sendOK(RestRequest restRequest, T message, Schema<T> schema) throws HttpException {
+        return sendOK(new RestResponse(restRequest, message, schema));
+    }
+    
+    private ChannelFuture sendOK(RestResponse restResponse) {
+        ChannelHandlerContext ctx = restResponse.getRestRequest().getChannelHandlerContext();    
+        if (restResponse.getBody() == null) {
+            HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
+            setContentLength(httpResponse, 0);
+            return HttpHandler.sendOK(ctx, httpResponse);
+        } else {
+            HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, restResponse.getBody());
+            setContentTypeHeader(httpResponse, restResponse.getContentType().toString());
+            setContentLength(httpResponse, restResponse.getBody().readableBytes());
+            return HttpHandler.sendOK(ctx, httpResponse);
         }
     }
     
@@ -110,7 +143,7 @@ public abstract class RestHandler extends RouteHandler {
      *            the path offset wherein this handler operates. Use this to
      *            correctly index into {@link RestRequest#getPathSegment(int)}
      */
-    public abstract RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException;
+    public abstract ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException;
     
     /**
      * Just a little shortcut because builders are dead ugly

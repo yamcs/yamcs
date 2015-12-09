@@ -16,13 +16,15 @@ import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.MethodNotAllowedException;
 import org.yamcs.web.NotFoundException;
 
+import io.netty.channel.ChannelFuture;
+
 /**
  * Gives information on data links
  */
 public class LinkRestHandler extends RestHandler {
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (req.hasPathSegment(pathOffset)) {
             String instance = req.getPathSegment(pathOffset);
             if (!YamcsServer.hasInstance(instance)) {
@@ -54,11 +56,11 @@ public class LinkRestHandler extends RestHandler {
         }
     }
     
-    private RestResponse getLink(RestRequest req, LinkInfo linkInfo) throws HttpException {
-        return new RestResponse(req, linkInfo, SchemaYamcsManagement.LinkInfo.WRITE);
+    private ChannelFuture getLink(RestRequest req, LinkInfo linkInfo) throws HttpException {
+        return sendOK(req, linkInfo, SchemaYamcsManagement.LinkInfo.WRITE);
     }
     
-    private RestResponse listLinks(RestRequest req, String instance) throws HttpException {
+    private ChannelFuture listLinks(RestRequest req, String instance) throws HttpException {
         List<LinkInfo> links = ManagementService.getInstance().getLinkInfo();
         ListLinkInfoResponse.Builder responseb = ListLinkInfoResponse.newBuilder();
         for (LinkInfo link : links) {
@@ -66,10 +68,10 @@ public class LinkRestHandler extends RestHandler {
                 responseb.addLink(link);
             }
         }
-        return new RestResponse(req, responseb.build(), SchemaRest.ListLinkInfoResponse.WRITE);
+        return sendOK(req, responseb.build(), SchemaRest.ListLinkInfoResponse.WRITE);
     }
     
-    private RestResponse editLink(RestRequest req, LinkInfo linkInfo) throws HttpException {
+    private ChannelFuture editLink(RestRequest req, LinkInfo linkInfo) throws HttpException {
         EditLinkRequest request = req.bodyAsMessage(SchemaRest.EditLinkRequest.MERGE).build();
         String state = null;
         if (request.hasState()) state = request.getState();
@@ -81,14 +83,14 @@ public class LinkRestHandler extends RestHandler {
             case "enabled":
                 try {
                     mservice.enableLink(linkInfo.getInstance(), linkInfo.getName());
-                    return new RestResponse(req);
+                    return sendOK(req);
                 } catch (YamcsException e) {
                     throw new InternalServerErrorException(e);
                 }
             case "disabled":
                 try {
                     mservice.disableLink(linkInfo.getInstance(), linkInfo.getName());
-                    return new RestResponse(req);                    
+                    return sendOK(req);                    
                 } catch (YamcsException e) {
                     throw new InternalServerErrorException(e);
                 }
@@ -96,7 +98,7 @@ public class LinkRestHandler extends RestHandler {
                 throw new BadRequestException("Unsupported link state '" + state + "'");
             }
         } else {
-            return new RestResponse(req);
+            return sendOK(req);
         }
     }
 }

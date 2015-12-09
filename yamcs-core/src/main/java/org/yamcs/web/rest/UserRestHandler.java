@@ -13,19 +13,21 @@ import org.yamcs.security.User;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;
 
+import io.netty.channel.ChannelFuture;
+
 /**
  * Handles incoming requests related to the user
  */
 public class UserRestHandler extends RestHandler {
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);
         }
         
         UserInfo info = getUser(req.getAuthToken());
-        return new RestResponse(req, info, SchemaYamcsManagement.UserInfo.WRITE);
+        return sendOK(req, info, SchemaYamcsManagement.UserInfo.WRITE);
     }
 
     private UserInfo getUser(AuthenticationToken authToken) throws HttpException {

@@ -18,15 +18,16 @@ import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.MethodNotAllowedException;
 import org.yamcs.web.NotFoundException;
-import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestHandler;
-import org.yamcs.web.rest.RestResponse;
+import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.XtceToGpbAssembler;
 import org.yamcs.web.rest.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.web.rest.mdb.MDBHelper.MatchResult;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
+
+import io.netty.channel.ChannelFuture;
 
 /**
  * Handles incoming requests related to parameter info from the MDB
@@ -35,7 +36,7 @@ public class MDBParameterRestHandler extends RestHandler {
     final static Logger log = LoggerFactory.getLogger(MDBParameterRestHandler.class.getName());
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
         if (!req.hasPathSegment(pathOffset)) {
             return listParameters(req, null, mdb);
@@ -59,7 +60,7 @@ public class MDBParameterRestHandler extends RestHandler {
         }
     }
     
-    private RestResponse listParametersOrError(RestRequest req, int pathOffset) throws HttpException {
+    private ChannelFuture listParametersOrError(RestRequest req, int pathOffset) throws HttpException {
         XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
         MatchResult<String> nsm = MDBHelper.matchXtceDbNamespace(req, pathOffset, true);
         if (nsm.matches()) {
@@ -69,21 +70,21 @@ public class MDBParameterRestHandler extends RestHandler {
         }
     }
     
-    private RestResponse getSingleParameter(RestRequest req, NamedObjectId id, Parameter p) throws HttpException {
+    private ChannelFuture getSingleParameter(RestRequest req, NamedObjectId id, Parameter p) throws HttpException {
         if (!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
             log.warn("Parameter Info for {} not authorized for token {}, throwing BadRequestException", id, req.getAuthToken());
             throw new BadRequestException("Invalid parameter name specified "+id);
         }
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
         ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.FULL, req.getOptions());
-        return new RestResponse(req, pinfo, SchemaMdb.ParameterInfo.WRITE);
+        return sendOK(req, pinfo, SchemaMdb.ParameterInfo.WRITE);
     }
 
     /**
      * Sends the parameters for the requested yamcs instance. If no namespace
      * is specified, assumes root namespace.
      */
-    private RestResponse listParameters(RestRequest req, String namespace, XtceDb mdb) throws HttpException {
+    private ChannelFuture listParameters(RestRequest req, String namespace, XtceDb mdb) throws HttpException {
         String instanceURL = req.getApiURL() + "/mdb/" + req.getFromContext(RestRequest.CTX_INSTANCE);
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
         
@@ -142,7 +143,7 @@ public class MDBParameterRestHandler extends RestHandler {
             }
         }
         
-        return new RestResponse(req, responseb.build(), SchemaRest.ListParameterInfoResponse.WRITE);
+        return sendOK(req, responseb.build(), SchemaRest.ListParameterInfoResponse.WRITE);
     }
     
     private boolean parameterTypeMatches(Parameter p, Set<String> types) {
@@ -151,7 +152,7 @@ public class MDBParameterRestHandler extends RestHandler {
                 && types.contains(p.getParameterType().getTypeAsString());
     }
     
-    private RestResponse getBulkParameterInfo(RestRequest req, XtceDb mdb) throws HttpException {
+    private ChannelFuture getBulkParameterInfo(RestRequest req, XtceDb mdb) throws HttpException {
         if (!req.isGET() && !req.isPOST())
             throw new MethodNotAllowedException(req);
         
@@ -174,6 +175,6 @@ public class MDBParameterRestHandler extends RestHandler {
             responseb.addResponse(response);
         }
         
-        return new RestResponse(req, responseb.build(), SchemaRest.BulkGetParameterInfoResponse.WRITE);
+        return sendOK(req, responseb.build(), SchemaRest.BulkGetParameterInfoResponse.WRITE);
     }
 }

@@ -14,7 +14,6 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
 import org.yamcs.web.rest.SqlBuilder;
@@ -23,10 +22,12 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 
+import io.netty.channel.ChannelFuture;
+
 public class ArchiveTableRestHandler extends RestHandler {
 
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
         if (!req.hasPathSegment(pathOffset)) {
@@ -43,7 +44,7 @@ public class ArchiveTableRestHandler extends RestHandler {
         }
     }
     
-    private RestResponse handleTableRequest(RestRequest req, int pathOffset, TableDefinition table) throws HttpException {
+    private ChannelFuture handleTableRequest(RestRequest req, int pathOffset, TableDefinition table) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             req.assertGET();
             return getTable(req, table);
@@ -58,20 +59,20 @@ public class ArchiveTableRestHandler extends RestHandler {
         }
     }
     
-    private RestResponse listTables(RestRequest req, YarchDatabase ydb) throws HttpException {
+    private ChannelFuture listTables(RestRequest req, YarchDatabase ydb) throws HttpException {
         ListTablesResponse.Builder responseb = ListTablesResponse.newBuilder();
         for (TableDefinition def : ydb.getTableDefinitions()) {
             responseb.addTable(ArchiveHelper.toTableInfo(def));
         }
-        return new RestResponse(req, responseb.build(), SchemaRest.ListTablesResponse.WRITE);
+        return sendOK(req, responseb.build(), SchemaRest.ListTablesResponse.WRITE);
     }
     
-    private RestResponse getTable(RestRequest req, TableDefinition table) throws HttpException {
+    private ChannelFuture getTable(RestRequest req, TableDefinition table) throws HttpException {
         TableInfo response = ArchiveHelper.toTableInfo(table);
-        return new RestResponse(req, response, SchemaArchive.TableInfo.WRITE);
+        return sendOK(req, response, SchemaArchive.TableInfo.WRITE);
     }
     
-    private RestResponse getTableData(RestRequest req, TableDefinition table) throws HttpException {
+    private ChannelFuture getTableData(RestRequest req, TableDefinition table) throws HttpException {
         List<String> cols = null;        
         if (req.hasQueryParameter("cols")) {
             cols = new ArrayList<>(); // Order, and non-unique
@@ -106,6 +107,6 @@ public class ArchiveTableRestHandler extends RestHandler {
             }
         });
         
-        return new RestResponse(req, responseb.build(), SchemaArchive.TableData.WRITE);
+        return sendOK(req, responseb.build(), SchemaArchive.TableData.WRITE);
     }
 }

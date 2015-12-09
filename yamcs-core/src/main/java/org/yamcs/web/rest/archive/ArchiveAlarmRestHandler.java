@@ -15,7 +15,6 @@ import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
-import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
 import org.yamcs.web.rest.SqlBuilder;
@@ -25,10 +24,12 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 
+import io.netty.channel.ChannelFuture;
+
 public class ArchiveAlarmRestHandler extends RestHandler {
 
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             req.assertGET();
             return listAlarms(req, null, TimeEncoding.INVALID_INSTANT);
@@ -56,7 +57,7 @@ public class ArchiveAlarmRestHandler extends RestHandler {
         }
     }
     
-    private RestResponse listAlarms(RestRequest req, String parameterName, long triggerTime) throws HttpException {
+    private ChannelFuture listAlarms(RestRequest req, String parameterName, long triggerTime) throws HttpException {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         
@@ -83,10 +84,10 @@ public class ArchiveAlarmRestHandler extends RestHandler {
             }
         });
         
-        return new RestResponse(req, responseb.build(), SchemaRest.ListAlarmsResponse.WRITE);
+        return sendOK(req, responseb.build(), SchemaRest.ListAlarmsResponse.WRITE);
     }
     
-    private RestResponse getAlarm(RestRequest req, Parameter p, long triggerTime, int seqnum) throws HttpException {
+    private ChannelFuture getAlarm(RestRequest req, Parameter p, long triggerTime, int seqnum) throws HttpException {
         String sql = new SqlBuilder(AlarmRecorder.TABLE_NAME)
                 .where("triggerTime = " + triggerTime)
                 .where("seqNum = " + seqnum)
@@ -108,7 +109,7 @@ public class ArchiveAlarmRestHandler extends RestHandler {
         } else if (alarms.size() > 1) {
             throw new InternalServerErrorException("Too many results");
         } else {
-            return new RestResponse(req, alarms.get(0), SchemaAlarms.AlarmData.WRITE);
+            return sendOK(req, alarms.get(0), SchemaAlarms.AlarmData.WRITE);
         }
     }
 }

@@ -8,9 +8,10 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;
-import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestHandler;
-import org.yamcs.web.rest.RestResponse;
+import org.yamcs.web.rest.RestRequest;
+
+import io.netty.channel.ChannelFuture;
 
 /**
  * Simulation time model where the simulation starts at javaTime0
@@ -64,7 +65,7 @@ public class SimulationTimeService implements TimeService {
         static final String SET_REQ = "set";
         
         @Override
-        public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+        public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
             if (!req.hasPathSegment(pathOffset)) {
                 throw new NotFoundException(req);
             }
@@ -80,7 +81,7 @@ public class SimulationTimeService implements TimeService {
                 case SET_REQ:
                     req.assertPOST();
                     setSimTime(req, (SimulationTimeService) ts);
-                    return new RestResponse(req);
+                    return sendOK(req);
                 default:
                     throw new NotFoundException(req);
             }

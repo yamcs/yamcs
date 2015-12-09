@@ -10,7 +10,6 @@ import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
-import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
 import org.yamcs.web.rest.SqlBuilder;
@@ -20,10 +19,12 @@ import org.yamcs.xtce.MetaCommand;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 
+import io.netty.channel.ChannelFuture;
+
 public class ArchiveCommandRestHandler extends RestHandler {
 
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (!req.hasPathSegment(pathOffset)) {
             req.assertGET();
             return listCommands(req, null);
@@ -36,7 +37,7 @@ public class ArchiveCommandRestHandler extends RestHandler {
         }
     }
     
-    private RestResponse listCommands(RestRequest req, String commandName) throws HttpException {
+    private ChannelFuture listCommands(RestRequest req, String commandName) throws HttpException {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         
@@ -59,6 +60,6 @@ public class ArchiveCommandRestHandler extends RestHandler {
                 responseb.addEntry(che);
             }
         });
-        return new RestResponse(req, responseb.build(), SchemaRest.ListCommandsResponse.WRITE);
+        return sendOK(req, responseb.build(), SchemaRest.ListCommandsResponse.WRITE);
     }
 }

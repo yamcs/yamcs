@@ -23,9 +23,8 @@ import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
-import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestHandler;
-import org.yamcs.web.rest.RestResponse;
+import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.mdb.MDBRestHandler;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
@@ -33,14 +32,16 @@ import org.yamcs.xtce.XtceDb;
 
 import com.google.protobuf.ByteString;
 
+import io.netty.channel.ChannelFuture;
+
 /**
- * Handles incoming requests related to command info from the MDB
+ * Processes command requests
  */
 public class ProcessorCommandRestHandler extends RestHandler {
     final static Logger log = LoggerFactory.getLogger(ProcessorCommandRestHandler.class.getName());
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
         if (!req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);
@@ -79,7 +80,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
         }
     }
     
-    private RestResponse issueCommand(RestRequest req, NamedObjectId id, MetaCommand cmd) throws HttpException {
+    private ChannelFuture issueCommand(RestRequest req, NamedObjectId id, MetaCommand cmd) throws HttpException {
         YProcessor processor = req.getFromContext(RestRequest.CTX_PROCESSOR);
         if (!processor.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this processor");
@@ -161,6 +162,6 @@ public class ProcessorCommandRestHandler extends RestHandler {
         response.setSource(preparedCommand.getSource());
         response.setBinary(ByteString.copyFrom(preparedCommand.getBinary()));
         response.setHex(StringConvertors.arrayToHexString(preparedCommand.getBinary()));
-        return new RestResponse(req, response.build(), SchemaRest.IssueCommandResponse.WRITE);
+        return sendOK(req, response.build(), SchemaRest.IssueCommandResponse.WRITE);
     }
 }

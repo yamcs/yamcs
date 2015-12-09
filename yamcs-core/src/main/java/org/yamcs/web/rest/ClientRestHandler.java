@@ -17,13 +17,15 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.MethodNotAllowedException;
 import org.yamcs.web.NotFoundException;
 
+import io.netty.channel.ChannelFuture;
+
 /**
  * Gives information on clients (aka sessions)
  */
 public class ClientRestHandler extends RestHandler {
     
     @Override
-    public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
+    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
         if (req.hasPathSegment(pathOffset)) {
             int clientId = Integer.parseInt(req.getPathSegment(pathOffset));
             ClientInfo ci = ManagementService.getInstance().getClientInfo(clientId);
@@ -42,16 +44,16 @@ public class ClientRestHandler extends RestHandler {
         }
     }
     
-    private RestResponse listClients(RestRequest req) throws HttpException {
+    private ChannelFuture listClients(RestRequest req) throws HttpException {
         Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
         ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
         for (ClientInfo client : clients) {
             responseb.addClient(ClientInfo.newBuilder(client).setState(ClientState.CONNECTED));
         }
-        return new RestResponse(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
+        return sendOK(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
     }
     
-    private RestResponse patchClient(RestRequest req, ClientInfo ci) throws HttpException {
+    private ChannelFuture patchClient(RestRequest req, ClientInfo ci) throws HttpException {
         EditClientRequest request = req.bodyAsMessage(SchemaRest.EditClientRequest.MERGE).build();
         String processor = null;
         if (request.hasProcessor()) processor = request.getProcessor();
@@ -71,13 +73,13 @@ public class ClientRestHandler extends RestHandler {
                 yprocReq.addClientId(ci.getId());
                 try {
                     mservice.connectToProcessor(yprocReq.build(), req.getAuthToken());
-                    return new RestResponse(req);
+                    return sendOK(req);
                 } catch (YamcsException e) {
                     throw new BadRequestException(e.getMessage());
                 }
             }
         }
         
-        return new RestResponse(req);
+        return sendOK(req);
     }
 }
