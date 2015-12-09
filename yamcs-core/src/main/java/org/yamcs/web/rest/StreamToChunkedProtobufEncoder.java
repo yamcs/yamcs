@@ -1,9 +1,8 @@
 package org.yamcs.web.rest;
 
-import static org.yamcs.web.RouteHandler.PROTOBUF_MIME_TYPE;
-
 import java.io.IOException;
 
+import org.yamcs.api.MediaType;
 import org.yamcs.web.HttpException;
 import org.yamcs.yarch.Tuple;
 
@@ -31,7 +30,7 @@ public abstract class StreamToChunkedProtobufEncoder<T extends MessageLite> exte
     @Override
     public void processTuple(Tuple tuple, ByteBufOutputStream bufOut) throws IOException {
         T msg = mapTuple(tuple);
-        if (PROTOBUF_MIME_TYPE.equals(contentType)) {
+        if (MediaType.PROTOBUF.equals(contentType)) {
             msg.writeDelimitedTo(bufOut);
         } else {
             JsonGenerator generator = req.createJsonGenerator(bufOut);

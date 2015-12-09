@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.MediaType;
 import org.yamcs.archive.GPBHelper;
 import org.yamcs.archive.XtceTmRecorder;
 import org.yamcs.protobuf.Rest.ListPacketsResponse;
@@ -19,8 +20,8 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
-import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestHandler;
+import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
@@ -79,7 +80,7 @@ public class ArchivePacketRestHandler extends RestHandler {
         }        
         sqlb.descend(RestUtils.asksDescending(req, true));
         
-        if (req.asksFor(BINARY_MIME_TYPE)) {
+        if (req.asksFor(MediaType.OCTET_STREAM)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
             try (ByteBufOutputStream bufOut = new ByteBufOutputStream(buf)) {
                 RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
@@ -96,7 +97,7 @@ public class ArchivePacketRestHandler extends RestHandler {
                     }
                 });
                 bufOut.close();
-                return new RestResponse(req, BINARY_MIME_TYPE, buf);
+                return new RestResponse(req, MediaType.OCTET_STREAM, buf);
             } catch (IOException e) {
                 throw new InternalServerErrorException(e);
             }

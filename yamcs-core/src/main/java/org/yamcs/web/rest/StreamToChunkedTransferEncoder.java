@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.MediaType;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpServerHandler;
 import org.yamcs.yarch.Stream;
@@ -29,10 +30,10 @@ public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscribe
     protected ByteBufOutputStream bufOut;
     private ChannelFuture lastChannelFuture;
     
-    protected String contentType;
+    protected MediaType contentType;
     protected boolean failed = false;
     
-    public StreamToChunkedTransferEncoder(RestRequest req, String contentType) throws HttpException {
+    public StreamToChunkedTransferEncoder(RestRequest req, MediaType contentType) throws HttpException {
         super();
         this.req = req;
         this.contentType = contentType;

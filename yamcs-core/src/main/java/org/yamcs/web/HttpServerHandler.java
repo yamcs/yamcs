@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.MediaType;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.UsernamePasswordToken;
@@ -234,7 +235,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
     /**
      * Sends base HTTP response indicating that we'll use chunked transfer encoding
      */
-    public static ChannelFuture startChunkedTransfer(ChannelHandlerContext ctx, HttpRequest req, String contentType) {
+    public static ChannelFuture startChunkedTransfer(ChannelHandlerContext ctx, HttpRequest req, MediaType contentType) {
         log.info("{} {} 200 Starting chunked transfer", req.getMethod(), req.getUri());
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(Names.TRANSFER_ENCODING, HttpHeaders.Values.CHUNKED);
@@ -289,7 +290,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
     
     private static ChannelFuture writeEmptyLastContent(ChannelHandlerContext ctx, HttpRequest req) {
         // TODO Should probably only output this info on successful write of the empty_last_content
-        log.info("{} {} (Finished chunked transfer)", req.getMethod(), req.getUri());
+        log.info("{} {} --- Finished chunked transfer", req.getMethod(), req.getUri());
         ChannelFuture chunkWriteFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         return chunkWriteFuture.addListener(ChannelFutureListener.CLOSE);
     }

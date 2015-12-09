@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
+import org.yamcs.api.MediaType;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
@@ -70,7 +71,7 @@ public class DisplayRestHandler extends RestHandler {
                 writeFilesFromDir(json, new Path(), displayDir);
             }
             json.close();
-            return new RestResponse(req, JSON_MIME_TYPE, cb);
+            return new RestResponse(req, MediaType.JSON, cb);
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }

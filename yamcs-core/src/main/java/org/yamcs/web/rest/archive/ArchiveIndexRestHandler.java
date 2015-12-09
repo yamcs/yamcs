@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
+import org.yamcs.api.MediaType;
 import org.yamcs.archive.IndexRequestListener;
 import org.yamcs.archive.IndexServer;
 import org.yamcs.protobuf.SchemaYamcs;
@@ -245,7 +246,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         private static final int CHUNK_TRESHOLD = 8096;
         
         private final RestRequest req;
-        private final String contentType;
+        private final MediaType contentType;
         private final boolean unpack;
         
         private ByteBuf buf;
@@ -289,7 +290,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         }
         
         private void bufferArchiveRecord(ArchiveRecord msg) throws IOException {
-            if (PROTOBUF_MIME_TYPE.equals(contentType)) {
+            if (MediaType.PROTOBUF.equals(contentType)) {
                 msg.writeDelimitedTo(bufOut);
             } else {
                 JsonGenerator generator = req.createJsonGenerator(bufOut);
@@ -299,7 +300,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         }
         
         private void bufferIndexResult(IndexResult msg) throws IOException {
-            if (PROTOBUF_MIME_TYPE.equals(contentType)) {
+            if (MediaType.PROTOBUF.equals(contentType)) {
                 msg.writeDelimitedTo(bufOut);
             } else {
                 JsonGenerator generator = req.createJsonGenerator(bufOut);

@@ -1,10 +1,5 @@
 package org.yamcs.web.rest;
 
-import static org.yamcs.web.RouteHandler.BINARY_MIME_TYPE;
-import static org.yamcs.web.RouteHandler.CSV_MIME_TYPE;
-import static org.yamcs.web.RouteHandler.JSON_MIME_TYPE;
-import static org.yamcs.web.RouteHandler.PROTOBUF_MIME_TYPE;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.yamcs.api.MediaType;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.User;
@@ -180,18 +176,18 @@ public class RestRequest {
      * Matches the content type on either the Accept header or a 'format' query param.
      * Should probably better be integrated with the deriveTargetContentType setting.
      */
-    public boolean asksFor(String mediaType) {
+    public boolean asksFor(MediaType mediaType) {
         if (hasQueryParameter("format")) {
             switch (getQueryParameter("format").toLowerCase()) {
             case "json":
-                return JSON_MIME_TYPE.equals(mediaType);
+                return MediaType.JSON.equals(mediaType);
             case "csv":
-                return CSV_MIME_TYPE.equals(mediaType);
+                return MediaType.CSV.equals(mediaType);
             case "proto":
-                return PROTOBUF_MIME_TYPE.equals(mediaType);
+                return MediaType.PROTOBUF.equals(mediaType);
             case "raw":
             case "binary":
-                return BINARY_MIME_TYPE.equals(mediaType);
+                return MediaType.OCTET_STREAM.equals(mediaType);
             default:
                 return mediaType.equals(getQueryParameter("format"));
             }
@@ -397,13 +393,13 @@ public class RestRequest {
      * {@link #bodyAsInputStream()}.
      */
     public <T extends MessageLite.Builder> T bodyAsMessage(Schema<T> sourceSchema) throws BadRequestException {
-        String sourceContentType = deriveSourceContentType();
+        MediaType sourceContentType = deriveSourceContentType();
         InputStream cin = bodyAsInputStream();
         T msg = sourceSchema.newMessage();
         // Allow for empty body, otherwise user has to specify '{}'
         if (HttpHeaders.getContentLength(httpRequest) > 0) {
             try {
-                if (PROTOBUF_MIME_TYPE.equals(sourceContentType)) {
+                if (MediaType.PROTOBUF.equals(sourceContentType)) {
                     msg.mergeFrom(cin);
                 } else {
                     JsonIOUtil.mergeFrom(cin, msg, sourceSchema, false);
@@ -426,17 +422,18 @@ public class RestRequest {
      * Derives the content type of the incoming request. Returns either JSON or
      * BINARY in that order.
      */
-    public String deriveSourceContentType() {
+    public MediaType deriveSourceContentType() {
         if (httpRequest.headers().contains(Names.CONTENT_TYPE)) {
             String declaredContentType = httpRequest.headers().get(Names.CONTENT_TYPE);
-            if (declaredContentType.equals(JSON_MIME_TYPE)
-                    || declaredContentType.equals(PROTOBUF_MIME_TYPE)) {
-                return declaredContentType;
+            if (MediaType.JSON.is(declaredContentType)) {
+                return MediaType.JSON;
+            } else if (MediaType.PROTOBUF.is(declaredContentType)) {
+                return MediaType.PROTOBUF;
             }
         }
 
         // Assume default for simplicity
-        return JSON_MIME_TYPE;
+        return MediaType.JSON;
     }
 
     /**
@@ -444,12 +441,13 @@ public class RestRequest {
      * JSON or BINARY media types with the ACCEPT header, else it will revert to
      * the (derived) source content type.
      */
-    public String deriveTargetContentType() {
+    public MediaType deriveTargetContentType() {
         if (httpRequest.headers().contains(Names.ACCEPT)) {
             String acceptedContentType = httpRequest.headers().get(Names.ACCEPT);
-            if (acceptedContentType.equals(JSON_MIME_TYPE)
-                    || acceptedContentType.equals(PROTOBUF_MIME_TYPE)) {
-                return acceptedContentType;
+            if (MediaType.JSON.is(acceptedContentType)) {
+                return MediaType.JSON;
+            } else if (MediaType.PROTOBUF.is(acceptedContentType)) {
+                return MediaType.PROTOBUF;
             }
         }
 

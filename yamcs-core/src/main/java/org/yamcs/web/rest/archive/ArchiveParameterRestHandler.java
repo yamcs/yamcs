@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
+import org.yamcs.api.MediaType;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -146,7 +147,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         
         ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, id, true);
 
-        if (req.asksFor(CSV_MIME_TYPE)) {
+        if (req.asksFor(MediaType.CSV)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
             try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new ByteBufOutputStream(buf)))) {
                 List<NamedObjectId> idList = Arrays.asList(id);
@@ -168,7 +169,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
             } catch (IOException e) {
                 throw new InternalServerErrorException(e);
             }
-            return new RestResponse(req, CSV_MIME_TYPE, buf);
+            return new RestResponse(req, MediaType.CSV, buf);
         } else {
             ParameterData.Builder resultb = ParameterData.newBuilder();
             RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit) {

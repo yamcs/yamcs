@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.MediaType;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.web.HttpException;
@@ -28,10 +29,10 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
     private ChannelFuture lastChannelWrite;
     
     protected RestRequest req;
-    protected String contentType;
+    protected MediaType contentType;
     protected boolean failed = false;
     
-    public ParameterReplayToChunkedTransferEncoder(RestRequest req, String contentType) throws HttpException {
+    public ParameterReplayToChunkedTransferEncoder(RestRequest req, MediaType contentType) throws HttpException {
         super();
         this.req = req;
         this.contentType = contentType;

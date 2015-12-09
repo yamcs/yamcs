@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.yamcs.api.MediaType;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.archive.GPBHelper;
 import org.yamcs.archive.XtceTmRecorder;
@@ -145,7 +146,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
                 throw new InternalServerErrorException("Could not load profile file", e);
             }
             
-            if (req.asksFor(CSV_MIME_TYPE)) {
+            if (req.asksFor(MediaType.CSV)) {
                 RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, ids);
                 RestReplays.replay(req, rr.build(), l);
             } else {
@@ -161,7 +162,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, id, false);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
         
-        if (req.asksFor(CSV_MIME_TYPE)) {
+        if (req.asksFor(MediaType.CSV)) {
             List<NamedObjectId> idList = Arrays.asList(id);
             RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, idList);
             l.setNoRepeat(noRepeat);
@@ -192,8 +193,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         sqlb.descend(RestUtils.asksDescending(req, false));
         String sql = sqlb.toString();
         
-        if (req.asksFor(BINARY_MIME_TYPE)) {
-            RestStreams.stream(req, sql, new StreamToChunkedTransferEncoder(req, BINARY_MIME_TYPE) {
+        if (req.asksFor(MediaType.OCTET_STREAM)) {
+            RestStreams.stream(req, sql, new StreamToChunkedTransferEncoder(req, MediaType.OCTET_STREAM) {
                 @Override
                 public void processTuple(Tuple tuple, ByteBufOutputStream bufOut) throws IOException {
                     byte[] raw = (byte[]) tuple.getColumn(TmProviderAdapter.PACKET_COLUMN);
@@ -289,7 +290,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         sqlb.descend(RestUtils.asksDescending(req, false));
         String sql = sqlb.toString();
         
-        if (req.asksFor(CSV_MIME_TYPE)) {
+        if (req.asksFor(MediaType.CSV)) {
             transferChunkedCSVEvents(req, sql);
         } else {
             transferChunkedProtobufEvents(req, sql);

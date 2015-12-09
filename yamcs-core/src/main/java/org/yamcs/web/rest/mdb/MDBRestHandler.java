@@ -7,6 +7,7 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
+import org.yamcs.api.MediaType;
 import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.HistoryInfo;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
@@ -15,9 +16,9 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
-import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.History;
@@ -78,14 +79,14 @@ public class MDBRestHandler extends RestHandler {
     }
     
     private RestResponse getMissionDatabase(RestRequest req, String instance, XtceDb mdb) throws HttpException {
-        if (req.asksFor(JAVA_SERIALIZED_OBJECT_MIME_TYPE)) {
+        if (req.asksFor(MediaType.JAVA_SERIALIZED_OBJECT)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
             try (ObjectOutputStream oos = new ObjectOutputStream(new ByteBufOutputStream(buf))) {
                 oos.writeObject(mdb);
             } catch (IOException e) {
                 throw new InternalServerErrorException("Could not serialize MDB", e);
             }
-            return new RestResponse(req, JAVA_SERIALIZED_OBJECT_MIME_TYPE, buf);
+            return new RestResponse(req, MediaType.JAVA_SERIALIZED_OBJECT, buf);
         } else {
             MissionDatabase converted = toMissionDatabase(req, instance, mdb);
             return new RestResponse(req, converted, SchemaYamcsManagement.MissionDatabase.WRITE);

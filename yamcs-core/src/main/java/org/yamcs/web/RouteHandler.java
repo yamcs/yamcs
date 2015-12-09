@@ -25,12 +25,6 @@ public class RouteHandler {
     public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
     public static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
     
-    public static final String BINARY_MIME_TYPE = "application/octet-stream";
-    public static final String CSV_MIME_TYPE = "text/csv";
-    public static final String JAVA_SERIALIZED_OBJECT_MIME_TYPE = "application/x-java-serialized-object";
-    public static final String JSON_MIME_TYPE = "application/json";
-    public static final String PROTOBUF_MIME_TYPE = "application/protobuf";
-    
     public static RestRequest toRestRequest(ChannelHandlerContext ctx, FullHttpRequest httpRequest, QueryStringDecoder qsDecoder, AuthenticationToken authToken) {
         return new RestRequest(ctx, httpRequest, qsDecoder, authToken, jsonFactory);
     }

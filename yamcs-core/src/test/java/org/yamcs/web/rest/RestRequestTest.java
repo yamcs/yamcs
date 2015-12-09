@@ -1,10 +1,9 @@
 package org.yamcs.web.rest;
 
 import static junit.framework.Assert.assertEquals;
-import static org.yamcs.web.RouteHandler.PROTOBUF_MIME_TYPE;
-import static org.yamcs.web.RouteHandler.JSON_MIME_TYPE;
 
 import org.junit.Test;
+import org.yamcs.api.MediaType;
 
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders.Names;
@@ -47,59 +46,59 @@ public class RestRequestTest {
     public void testMediaType_unspecified() {
         RestRequest req = makeRestRequest(null, null);
 
-        String in = req.deriveSourceContentType();
-        assertEquals(JSON_MIME_TYPE, in);
+        MediaType in = req.deriveSourceContentType();
+        assertEquals(MediaType.JSON, in);
 
-        String out = req.deriveTargetContentType();
+        MediaType out = req.deriveTargetContentType();
         assertEquals(in, out); // Match with default in, if unspecified
     }
 
     @Test
     public void testMediaType_wildcard() {
-        RestRequest req = makeRestRequest(null, "*/*");  // curl uses this by default
+        RestRequest req = makeRestRequest(null, MediaType.from("*/*"));  // curl uses this by default
 
-        String in = req.deriveSourceContentType();
-        assertEquals(JSON_MIME_TYPE, in);
+        MediaType in = req.deriveSourceContentType();
+        assertEquals(MediaType.JSON, in);
 
-        String out = req.deriveTargetContentType();
+        MediaType out = req.deriveTargetContentType();
         assertEquals(in, out);
     }
 
     @Test
     public void testMediaType_ContentType_only() {
-        RestRequest req = makeRestRequest(JSON_MIME_TYPE, null);
+        RestRequest req = makeRestRequest(MediaType.JSON, null);
 
-        String in = req.deriveSourceContentType();
-        assertEquals(JSON_MIME_TYPE, in);
+        MediaType in = req.deriveSourceContentType();
+        assertEquals(MediaType.JSON, in);
 
-        String out = req.deriveTargetContentType();
+        MediaType out = req.deriveTargetContentType();
         assertEquals(in, out); // Match with in, if unspecified
     }
 
     @Test
     public void testMediaType_unsupported_ContentType() {
         // We currently don't throw an error for this
-        RestRequest req = makeRestRequest("blabla", null);
+        RestRequest req = makeRestRequest(MediaType.from("blabla"), null);
 
-        String in = req.deriveSourceContentType();
-        assertEquals(JSON_MIME_TYPE, in);
+        MediaType in = req.deriveSourceContentType();
+        assertEquals(MediaType.JSON, in);
 
-        String out = req.deriveTargetContentType();
-        assertEquals(JSON_MIME_TYPE, out); // Match with default in, if unspecified
+        MediaType out = req.deriveTargetContentType();
+        assertEquals(MediaType.JSON, out); // Match with default in, if unspecified
     }
 
     @Test
     public void testMediaType_cross_match() {
-        RestRequest req = makeRestRequest(PROTOBUF_MIME_TYPE, JSON_MIME_TYPE);
+        RestRequest req = makeRestRequest(MediaType.PROTOBUF, MediaType.JSON);
 
-        String in = req.deriveSourceContentType();
-        assertEquals(PROTOBUF_MIME_TYPE, in);
+        MediaType in = req.deriveSourceContentType();
+        assertEquals(MediaType.PROTOBUF, in);
 
-        String out = req.deriveTargetContentType();
-        assertEquals(JSON_MIME_TYPE, out);
+        MediaType out = req.deriveTargetContentType();
+        assertEquals(MediaType.JSON, out);
     }
 
-    private static RestRequest makeRestRequest(String contentType, String accept) {
+    private static RestRequest makeRestRequest(MediaType contentType, MediaType accept) {
         DefaultFullHttpRequest req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
         if (contentType != null) {
             req.headers().set(Names.CONTENT_TYPE, contentType);

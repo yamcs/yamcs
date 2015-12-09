@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.MediaType;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.protobuf.Rest.ListEventsResponse;
 import org.yamcs.protobuf.SchemaRest;
@@ -17,8 +18,8 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
-import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestHandler;
+import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
@@ -69,7 +70,7 @@ public class ArchiveEventRestHandler extends RestHandler {
         sqlb.descend(RestUtils.asksDescending(req, true));
         String sql = sqlb.toString();
         
-        if (req.asksFor(CSV_MIME_TYPE)) {
+        if (req.asksFor(MediaType.CSV)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new ByteBufOutputStream(buf)));
             CsvWriter w = new CsvWriter(bw, '\t');
@@ -92,7 +93,7 @@ public class ArchiveEventRestHandler extends RestHandler {
                 }
             });
             w.close();
-            return new RestResponse(req, CSV_MIME_TYPE, buf);
+            return new RestResponse(req, MediaType.CSV, buf);
         } else {
             ListEventsResponse.Builder responseb = ListEventsResponse.newBuilder();
             RestStreams.streamAndWait(req, sql, new RestStreamSubscriber(pos, limit) {

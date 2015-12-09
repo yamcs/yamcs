@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.MediaType;
 import org.yamcs.protobuf.SchemaWeb;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.web.HttpException;
@@ -62,9 +63,9 @@ public abstract class RestHandler extends RouteHandler {
     }
     
     private void sendRestError(RestRequest req, HttpResponseStatus status, Throwable t) {
-        String contentType = req.deriveTargetContentType();
+        MediaType contentType = req.deriveTargetContentType();
         ChannelHandlerContext ctx = req.getChannelHandlerContext();
-        if (JSON_MIME_TYPE.equals(contentType)) {
+        if (MediaType.JSON.equals(contentType)) {
             try {
                 ByteBuf buf = ctx.alloc().buffer();
                 ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
@@ -72,7 +73,7 @@ public abstract class RestHandler extends RouteHandler {
                 JsonIOUtil.writeTo(generator, toException(t).build(), SchemaWeb.RestExceptionMessage.WRITE, false);
                 generator.close();
                 HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
-                setContentTypeHeader(response, JSON_MIME_TYPE); // UTF-8 by default IETF RFC4627
+                setContentTypeHeader(response, MediaType.JSON.toString()); // UTF-8 by default IETF RFC4627
                 setContentLength(response, buf.readableBytes());
                 HttpServerHandler.sendError(ctx, req.getHttpRequest(), response);
             } catch (IOException e2) {
@@ -80,13 +81,13 @@ public abstract class RestHandler extends RouteHandler {
                 log.debug("Original exception not sent to client", t);
                 HttpServerHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
             }
-        } else if (PROTOBUF_MIME_TYPE.equals(contentType)) {
+        } else if (MediaType.PROTOBUF.equals(contentType)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
             ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
             try {
                 toException(t).build().writeTo(channelOut);
                 HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
-                setContentTypeHeader(response, PROTOBUF_MIME_TYPE);
+                setContentTypeHeader(response, MediaType.PROTOBUF.toString());
                 setContentLength(response, buf.readableBytes());
                 HttpServerHandler.sendError(ctx, req.getHttpRequest(), response);
             } catch (IOException e2) {

@@ -1,9 +1,8 @@
 package org.yamcs.web.rest;
 
-import static org.yamcs.web.RouteHandler.PROTOBUF_MIME_TYPE;
-
 import java.io.IOException;
 
+import org.yamcs.api.MediaType;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 
@@ -17,7 +16,7 @@ import io.protostuff.Schema;
 
 public class RestResponse {
     
-    private String contentType;
+    private MediaType contentType;
     private RestRequest restRequest;
     private ByteBuf body;
     
@@ -33,7 +32,7 @@ public class RestResponse {
      * Makes a new 200 response of the specified contentType, passing in any ByteBuf.
      * This is a catch-all constructor that enables response that are not JSON or GPB.
      */
-    public RestResponse(RestRequest restRequest, String contentType, ByteBuf body) {
+    public RestResponse(RestRequest restRequest, MediaType contentType, ByteBuf body) {
         this.restRequest = restRequest;
         this.contentType = contentType;
         this.body = body;
@@ -48,7 +47,7 @@ public class RestResponse {
         body = restRequest.getChannelHandlerContext().alloc().buffer();
         ByteBufOutputStream channelOut = new ByteBufOutputStream(body);
         try {
-            if (PROTOBUF_MIME_TYPE.equals(getContentType())) {
+            if (MediaType.PROTOBUF.equals(getContentType())) {
                 responseMsg.writeTo(channelOut);
             } else {
                 JsonGenerator generator = restRequest.createJsonGenerator(channelOut);
@@ -60,7 +59,7 @@ public class RestResponse {
         }
     }
     
-    public String getContentType() {
+    public MediaType getContentType() {
         if (contentType != null) {
             return contentType;
         } else {
