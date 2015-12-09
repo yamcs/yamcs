@@ -112,13 +112,13 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
                 break;
             } catch (IOException e) {
                 String exc = (e instanceof ConnectException) ? ((ConnectException) e).getMessage() : e.toString();
-                log.info("Cannot open or read from TM socket "+host+":"+port+" '"+exc+"'. Retrying in 10 seconds");
+                log.info("Cannot open or read TM socket "+host+":"+port+" '"+exc+"'. Retrying in 10s");
                 try {tmSocket.close();} catch (Exception e2) {}
                 tmSocket=null;
                 try {
                     Thread.sleep(10000);
                 } catch (InterruptedException e1) {
-                    log.warn("Exception "+ e1.toString()+" while sleeping for 10 sec");
+                    log.warn("Exception "+ e1.toString()+" while sleeping for 10s");
                     return null;
                 }
             }

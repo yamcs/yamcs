@@ -1,19 +1,14 @@
 package org.yamcs.web;
 
-import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
-import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
 import static io.netty.handler.codec.http.HttpHeaders.setHeader;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
-import java.io.IOException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.xml.bind.DatatypeConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +30,6 @@ import org.yamcs.web.websocket.WebSocketServerHandler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -84,7 +78,7 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
         } else if (msg instanceof WebSocketFrame) {
             webSocketHandler.handleWebSocketFrame(ctx, (WebSocketFrame) msg);
         } else {
-            log.info("sending bad request error for message {}", msg);
+            log.info("Sending bad request error for message {}", msg);
             sendError(ctx, null, BAD_REQUEST);
             return;
         }
@@ -106,30 +100,45 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
 
         AuthenticationToken authToken = null;
         if (Privilege.getInstance().isEnabled()) {
-            String authorizationHeader = req.headers().get("Authorization");
-            authToken = extractAuthenticationToken(authorizationHeader);
-            if (!authenticatesUser(authToken)) {
-                sendNegativeHttpResponse(ctx, req, UNAUTHORIZED);
+            if (req.headers().contains(HttpHeaders.Names.AUTHORIZATION)) {
+                String authorizationHeader = req.headers().get(HttpHeaders.Names.AUTHORIZATION);
+                if (!authorizationHeader.startsWith("Basic ")) { // Exact case only
+                    sendError(ctx, req, BAD_REQUEST);
+                    return;
+                }
+                // Get encoded user and password, comes after "Basic "
+                String userpassEncoded = authorizationHeader.substring(6);
+                String userpassDecoded  = new String(Base64.getDecoder().decode(userpassEncoded));
+
+                // Username is not allowed to contain ':', but passwords are
+                String[] parts = userpassDecoded.split(":", 2);
+                if (parts.length < 2) {
+                    sendError(ctx, req, BAD_REQUEST);
+                    return;
+                }
+                authToken = new UsernamePasswordToken(parts[0], parts[1]);
+                if (!Privilege.getInstance().authenticates(authToken)) {
+                    sendUnauthorized(ctx, req);
+                    return;
+                }
+            } else {
+                sendUnauthorized(ctx, req);
                 return;
             }
-        }
-        if (uri.equals("favicon.ico")) {
-            sendNegativeHttpResponse(ctx, req, NOT_FOUND);
-            return;
         }
         
         String[] path = uri.split("/", 3); //uri starts with / so path[0] is always empty
         switch (path[1]) {
         case STATIC_PATH:
             if (path.length == 2) { //do not accept "/_static/" (i.e. directory listing) requests 
-                sendNegativeHttpResponse(ctx, req, FORBIDDEN);
+                sendError(ctx, req, FORBIDDEN);
                 return;
             }
             fileRequestHandler.handleStaticFileRequest(ctx, req, path[2]);
             return;
         case API_PATH:
             if (path.length == 2 || "".equals(path[2])) {
-                sendNegativeHttpResponse(ctx, req, FORBIDDEN);
+                sendError(ctx, req, FORBIDDEN);
                 return;
             }
             
@@ -140,7 +149,7 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
             if (restHandler != null) {
                 restHandler.handleRequestOrError(restReq, 3);
             } else {
-                sendNegativeHttpResponse(ctx, req, NOT_FOUND);
+                sendError(ctx, req, NOT_FOUND);
             }
             return;
         case "":
@@ -150,7 +159,7 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
         default:
             String yamcsInstance = path[1];
             if (!HttpSocketServer.getInstance().isInstanceRegistered(yamcsInstance)) {
-                sendNegativeHttpResponse(ctx, req, NOT_FOUND);
+                sendError(ctx, req, NOT_FOUND);
                 return;
             }
             
@@ -170,67 +179,33 @@ public class HttpSocketServerHandler extends SimpleChannelInboundHandler<Object>
         }
     }
     
-    private void sendNegativeHttpResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status) {
-        ByteBuf buf = Unpooled.copiedBuffer(status.toString(), CharsetUtil.UTF_8);
+    private void sendRedirect(ChannelHandlerContext ctx, HttpRequest req, String newUri) {
+        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.FOUND);
+        response.headers().set(HttpHeaders.Names.LOCATION, newUri);
+        log.info("{} {} {}", req.getMethod(), req.getUri(), HttpResponseStatus.FOUND.code());
+        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+    }
+    
+    private void sendUnauthorized(ChannelHandlerContext ctx, HttpRequest req) {
+        ByteBuf buf = Unpooled.copiedBuffer(HttpResponseStatus.UNAUTHORIZED.toString() + "\r\n", CharsetUtil.UTF_8);
         
-        HttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
-        if (!isKeepAlive(req)) {
-            setContentLength(res, buf.readableBytes());
-        }
-
-        if(status == UNAUTHORIZED) {
-            setHeader(res, HttpHeaders.Names.WWW_AUTHENTICATE, "Basic realm=\"nmrs_m7VKmomQ2YM3\"");
-        }
-
-        if (status.code() < 200 || status.code() > 299) {
-            log.warn("{} {} {}", req.getMethod(), req.getUri(), status.code());
-        }
-        ChannelFuture f = ctx.writeAndFlush(res);
-        if (!isKeepAlive(req) || status.code() < 200 || status.code() > 299) {
-            f.addListener(ChannelFutureListener.CLOSE);
-        }
+        HttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.UNAUTHORIZED, buf);
+        setHeader(res, HttpHeaders.Names.WWW_AUTHENTICATE, "Basic realm=\"" + Privilege.getRealmName() + "\"");
+        log.warn("{} {} {} [realm=\"{}\"]", req.getMethod(), req.getUri(), res.getStatus().code(), Privilege.getRealmName());
+        ctx.writeAndFlush(res).addListener(ChannelFutureListener.CLOSE);
     }
     
     private static void sendError(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status) {
         FullHttpResponse response = new DefaultFullHttpResponse(
-                HTTP_1_1, status, Unpooled.copiedBuffer("Failure: " + status + "\r\n", CharsetUtil.UTF_8));
+                HTTP_1_1, status, Unpooled.copiedBuffer(status + "\r\n", CharsetUtil.UTF_8));
         response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/plain; charset=UTF-8");
         
         if (req != null) {
             log.warn("{} {} {}", req.getMethod(), req.getUri(), status.code());
+        } else {
+            log.warn("Malformed or illegal request. Sending back " + status.code());
         }
 
-        // Close the connection as soon as the error message is sent.
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-    }
-
-    // This method checks the user information sent in the Authorization
-    // header against the database of users maintained in the users Hashtable.
-    //Hashtable validUsers = new Hashtable();
-    protected UsernamePasswordToken extractAuthenticationToken(String auth) throws IOException {
-        if(auth == null)
-        {
-            return null;
-        }
-        if (!auth.toUpperCase().startsWith("BASIC ")) {
-            return null;  // we only do BASIC
-        }
-        // Get encoded user and password, comes after "BASIC "
-        String userpassEncoded = auth.substring(6);
-        // Decode it, using any base 64 decoder
-        String userpassDecoded  = new String(DatatypeConverter.parseBase64Binary(userpassEncoded));
-
-        String username = "";
-        String password = "";
-        try {
-            username = userpassDecoded.split(":")[0];
-            password = userpassDecoded.split(":")[1];
-        }
-        catch (Exception e){}
-        return new UsernamePasswordToken(username, password);
-    }
-
-    protected boolean authenticatesUser(AuthenticationToken authToken) throws IOException {
-        return Privilege.getInstance().authenticates(authToken);
     }
 }

@@ -107,7 +107,7 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
             log.info("TC connection established to "+host+":"+port);
         } catch (IOException e) {
             String exc = (e instanceof ConnectException) ? ((ConnectException) e).getMessage() : e.toString();
-            log.info("Cannot open TC connection to "+host+":"+port+" '"+exc+"'. Retrying in 10 seconds");
+            log.info("Cannot open TC connection to "+host+":"+port+" '"+exc+"'. Retrying in 10s");
             try {socketChannel.close();} catch (Exception e1) {}
             try {selector.close();} catch (Exception e1) {}
             socketChannel=null;
@@ -121,8 +121,7 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
             selector.close();
             socketChannel=null;
         } catch (IOException e) {
-            e.printStackTrace();
-            log.warn("Exception caught when checking if the socket to "+host+":"+port+" is open:", e);
+            log.warn("Exception caught when checking if the socket to "+host+":"+port+" is open", e);
         }
     }
     /**

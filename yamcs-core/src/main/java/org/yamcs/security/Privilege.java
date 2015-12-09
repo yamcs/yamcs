@@ -49,16 +49,16 @@ public class Privilege {
     public static boolean usePrivileges = true;
 
     private static Realm realm;
-    public static String realmName;
+    private static String realmName;
 
-    static final Hashtable<String, String> contextEnv = new Hashtable<String, String>();
+    static final Hashtable<String, String> contextEnv = new Hashtable<>();
 
     public static int maxNoSessions;
     public static Privilege instance;
     // time to cache a user entry
     static final int PRIV_CACHE_TIME = 30*1000;
     // time to cache a certificate to username mapping
-    static private final ConcurrentHashMap<AuthenticationToken, Future<User>> cache = new ConcurrentHashMap<AuthenticationToken, Future<User>>();
+    static private final ConcurrentHashMap<AuthenticationToken, Future<User>> cache = new ConcurrentHashMap<>();
     static Logger log = LoggerFactory.getLogger(Privilege.class);
 
     public enum Type {
@@ -191,7 +191,9 @@ public class Privilege {
         return user.hasPrivilege(type, privilege);
     }
 
-
+    public static String getRealmName() {
+        return realmName;
+    }
 
     /**
      * Get packet names this user has appropriate privileges for.

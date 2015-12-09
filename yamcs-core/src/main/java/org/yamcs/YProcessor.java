@@ -103,14 +103,14 @@ public class YProcessor extends AbstractService {
 
     public YProcessor(String yamcsInstance, String name, String type, String creator) throws YProcessorException {
         if((name==null) || "".equals(name)) {
-            throw new YProcessorException("The processor name can not be empty");
+            throw new YProcessorException("The processor name must not be empty");
         }
         this.yamcsInstance=yamcsInstance;
         this.name=name;
         this.creator=creator;
         this.type=type;
         log=YamcsServer.getLogger(YProcessor.class, this);
-        log.info("Creating a new processor "+name+" of type "+type);
+        log.info("Creating new processor '{}' of type '{}'", name, type);
     }
 
 
