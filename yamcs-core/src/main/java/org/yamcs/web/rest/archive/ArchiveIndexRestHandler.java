@@ -17,9 +17,10 @@ import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
+import org.yamcs.web.HttpServerHandler;
 import org.yamcs.web.NotFoundException;
-import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestHandler;
+import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestUtils;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
@@ -270,7 +271,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         @Override
         public void processData(IndexResult indexResult) throws Exception {
             if (first) {
-                RestUtils.startChunkedTransfer(req, contentType);
+                HttpServerHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType);
                 first = false;
             }
             if (unpack) {
@@ -282,7 +283,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
             }
             if (buf.readableBytes() >= CHUNK_TRESHOLD) {
                 bufOut.close();
-                RestUtils.writeChunk(req, buf);
+                HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf);
                 resetBuffer();
             }
         }
@@ -312,14 +313,14 @@ public class ArchiveIndexRestHandler extends RestHandler {
             try {
                 bufOut.close();
                 if (buf.readableBytes() > 0) {
-                    RestUtils.writeChunk(req, buf).addListener(new ChannelFutureListener() {
+                    HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf).addListener(new ChannelFutureListener() {
                         @Override
                         public void operationComplete(ChannelFuture future) throws Exception {
-                            RestUtils.stopChunkedTransfer(req);
+                            HttpServerHandler.stopChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest());
                         }
                     });
                 } else {
-                    RestUtils.stopChunkedTransfer(req);
+                    HttpServerHandler.stopChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest());
                 }
             } catch (IOException e) {
                 log.error("Could not write final chunk of data", e);

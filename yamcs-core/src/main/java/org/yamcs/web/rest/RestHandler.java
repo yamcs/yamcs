@@ -1,8 +1,8 @@
 package org.yamcs.web.rest;
 
 import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-import static org.yamcs.web.rest.RestUtils.sendResponse;
 
 import java.io.IOException;
 
@@ -11,16 +11,17 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.SchemaWeb;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.web.HttpException;
+import org.yamcs.web.HttpServerHandler;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.RouteHandler;
-import org.yamcs.web.rest.archive.ArchiveRestHandler;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
-import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.protostuff.JsonIOUtil;
@@ -34,32 +35,38 @@ public abstract class RestHandler extends RouteHandler {
     
     public void handleRequestOrError(RestRequest req, int handlerOffset) {
         try {
-            sendResponse(handleRequest(req, handlerOffset));
+            RestResponse restResponse = handleRequest(req, handlerOffset);
+            if (restResponse == null) return; // Allowed, when the specific handler prefers to do this
+            HttpResponse httpResponse;
+            if (restResponse.getBody() == null) {
+                httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
+                setContentLength(httpResponse, 0);
+            } else {
+                httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, restResponse.getBody());
+                httpResponse.headers().set(HttpHeaders.Names.CONTENT_TYPE, restResponse.getContentType());
+                setContentLength(httpResponse, restResponse.getBody().readableBytes());
+            }
+
+            ChannelHandlerContext ctx = req.getChannelHandlerContext();    
+            HttpServerHandler.sendOK(ctx, req.getHttpRequest(), httpResponse);
         } catch (InternalServerErrorException e) {
-            log.error("Reporting internal server error to rest client", e);
-            sendError(req, e.getStatus(), e);
+            log.error("Reporting internal server error to REST client", e);
+            sendRestError(req, e.getStatus(), e);
         } catch (HttpException e) {
-            log.warn("Sending nominal exception back to rest client", e);
-            sendError(req, e.getStatus(), e);
+            log.warn("Sending nominal exception back to REST client", e);
+            sendRestError(req, e.getStatus(), e);
         } catch (Exception e) {
             log.error("Unexpected error " + e, e);
-            sendError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR, e);
+            sendRestError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR, e);
         }
     }
     
-    private void sendError(RestRequest ctx, HttpResponseStatus status) {
-        sendError(ctx.getChannelHandlerContext(), ctx.getHttpRequest(), status);
-    }
-
-    /**
-     * Used for sending back generic exceptions. Clients conventionally should deserialize to this
-     * when the status is not 200.
-     */
-    private void sendError(RestRequest req, HttpResponseStatus status, Throwable t) {
+    private void sendRestError(RestRequest req, HttpResponseStatus status, Throwable t) {
         String contentType = req.deriveTargetContentType();
+        ChannelHandlerContext ctx = req.getChannelHandlerContext();
         if (JSON_MIME_TYPE.equals(contentType)) {
             try {
-                ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
+                ByteBuf buf = ctx.alloc().buffer();
                 ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
                 JsonGenerator generator = req.createJsonGenerator(channelOut);
                 JsonIOUtil.writeTo(generator, toException(t).build(), SchemaWeb.RestExceptionMessage.WRITE, false);
@@ -67,12 +74,11 @@ public abstract class RestHandler extends RouteHandler {
                 HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
                 setContentTypeHeader(response, JSON_MIME_TYPE); // UTF-8 by default IETF RFC4627
                 setContentLength(response, buf.readableBytes());
-                // Close the connection as soon as the error message is sent.
-                req.getChannelHandlerContext().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+                HttpServerHandler.sendError(ctx, req.getHttpRequest(), response);
             } catch (IOException e2) {
-                log.error("Could not create Json Generator", e2);
+                log.error("Could not create JSON Generator", e2);
                 log.debug("Original exception not sent to client", t);
-                sendError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR); // text/plain
+                HttpServerHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
             }
         } else if (PROTOBUF_MIME_TYPE.equals(contentType)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
@@ -82,14 +88,14 @@ public abstract class RestHandler extends RouteHandler {
                 HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
                 setContentTypeHeader(response, PROTOBUF_MIME_TYPE);
                 setContentLength(response, buf.readableBytes());
-                req.getChannelHandlerContext().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+                HttpServerHandler.sendError(ctx, req.getHttpRequest(), response);
             } catch (IOException e2) {
                 log.error("Could not write to channel buffer", e2);
                 log.debug("Original exception not sent to client", t);
-                sendError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR); // text/plain
+                HttpServerHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
             }
         } else {
-            sendError(req, status); // text/plain
+            HttpServerHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -97,8 +103,7 @@ public abstract class RestHandler extends RouteHandler {
      * Wraps all the logic that deals with a RestRequest. Requests should always
      * return something, which is why a return type is enforced. For handlers
      * that have to stream their response, use <tt>return null;</tt> to
-     * explicitly turn off a forced response. See {@link ArchiveRestHandler}
-     * for an example of this.
+     * explicitly turn off a forced response.
      * 
      * @param pathOffset
      *            the path offset wherein this handler operates. Use this to

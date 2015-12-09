@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.web.HttpException;
+import org.yamcs.web.HttpServerHandler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -35,7 +36,7 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
         this.req = req;
         this.contentType = contentType;
         resetBuffer();
-        RestUtils.startChunkedTransfer(req, contentType);
+        HttpServerHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType);
     }
     
     protected void resetBuffer() {
@@ -57,7 +58,7 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
             processParameterData(pdata, bufOut);
             if (buf.readableBytes() >= CHUNK_TRESHOLD) {
                 closeBufferOutputStream();
-                RestUtils.writeChunk(req, buf);
+                HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf);
                 resetBuffer();
             }
         } catch (IOException e) {
@@ -79,14 +80,14 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
         try {
             closeBufferOutputStream();
             if (buf.readableBytes() > 0) {
-                RestUtils.writeChunk(req, buf).addListener(new ChannelFutureListener() {
+                HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf).addListener(new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {
-                        RestUtils.stopChunkedTransfer(req);
+                        HttpServerHandler.stopChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest());
                     }
                 });
             } else {
-                RestUtils.stopChunkedTransfer(req);
+                HttpServerHandler.stopChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest());
             }
         } catch (IOException e) {
             log.error("Could not write final chunk of data", e);

@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.web.HttpException;
+import org.yamcs.web.HttpServerHandler;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 
@@ -36,7 +37,7 @@ public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscribe
         this.req = req;
         this.contentType = contentType;
         resetBuffer();
-        RestUtils.startChunkedTransfer(req, contentType);
+        HttpServerHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType);
     }
     
     protected void resetBuffer() {
@@ -58,7 +59,7 @@ public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscribe
             processTuple(tuple, bufOut);
             if (buf.readableBytes() >= CHUNK_TRESHOLD) {
                 closeBufferOutputStream();
-                RestUtils.writeChunk(req, buf);
+                HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf);
                 resetBuffer();
             }
         } catch (IOException e) {
@@ -80,14 +81,14 @@ public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscribe
         try {
             closeBufferOutputStream();
             if (buf.readableBytes() > 0) {
-                RestUtils.writeChunk(req, buf).addListener(new ChannelFutureListener() {
+                HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf).addListener(new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {
-                        RestUtils.stopChunkedTransfer(req);
+                        HttpServerHandler.stopChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest());
                     }
                 });
             } else {
-                RestUtils.stopChunkedTransfer(req);
+                HttpServerHandler.stopChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest());
             }
         } catch (IOException e) {
             log.error("Could not write final chunk of data", e);

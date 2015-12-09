@@ -31,13 +31,13 @@ import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.ui.ParameterRetrievalGui;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.HttpException;
+import org.yamcs.web.HttpServerHandler;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestReplayListener;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
-import org.yamcs.web.rest.RestUtils;
 import org.yamcs.web.rest.mdb.MDBRestHandler;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.YarchDatabase;
@@ -47,7 +47,6 @@ import com.google.protobuf.MessageLite;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
-import io.netty.channel.ChannelHandlerContext;
 import io.protostuff.JsonIOUtil;
 import io.protostuff.Schema;
 
@@ -203,8 +202,7 @@ public class ArchiveRestHandler extends RestHandler {
             initCsvGenerator(replayRequest);
         }
 
-        RestUtils.startChunkedTransfer(req, targetContentType);
-        ChannelHandlerContext ctx = req.getChannelHandlerContext();
+        HttpServerHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), targetContentType);
         
         RestReplays.replay(req, replayRequest, new RestReplayListener() {
             
@@ -216,7 +214,7 @@ public class ArchiveRestHandler extends RestHandler {
                     mergeMessage(type, restMessage.message, builder);
     
                     // Write a chunk containing a delimited message
-                    ByteBuf buf = ctx.alloc().buffer();
+                    ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
                     try (ByteBufOutputStream channelOut = new ByteBufOutputStream(buf)) {
                         if (PROTOBUF_MIME_TYPE.equals(targetContentType)) {
                             builder.build().writeDelimitedTo(channelOut);
@@ -231,7 +229,7 @@ public class ArchiveRestHandler extends RestHandler {
                         }
                     }
     
-                    RestUtils.writeChunk(req, buf);
+                    HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf);
                 } catch (IOException e) {
                     log.info("skipping chunk");
                 }
@@ -239,7 +237,7 @@ public class ArchiveRestHandler extends RestHandler {
             
             @Override
             public void stateChanged(ReplayStatus rs) {
-                RestUtils.stopChunkedTransfer(req);
+                HttpServerHandler.stopChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest());
                 log.trace("All chunks were written out");
             }
         });
