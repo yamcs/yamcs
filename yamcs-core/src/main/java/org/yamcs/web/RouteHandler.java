@@ -16,9 +16,6 @@ public class RouteHandler {
     
     /**
      * Sets the Date header for the HTTP response
-     *
-     * @param response
-     *            HTTP response
      */
     protected void setDateHeader(HttpResponse response) {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
@@ -30,21 +27,17 @@ public class RouteHandler {
     
     /**
      * Sets the content type header for the HTTP Response
-     *
-     * @param response
-     *            HTTP response
+     * 
      * @param type
      *            content type of file to extract
      */
-    protected static void setContentTypeHeader(HttpResponse response, String type) {
+    protected void setContentTypeHeader(HttpResponse response, String type) {
         response.headers().set(HttpHeaders.Names.CONTENT_TYPE, type);
     }
     
     /**
      * Sets the Date and Cache headers for the HTTP Response
-     *
-     * @param response
-     *            HTTP response
+     * 
      * @param lastModified
      *            the time when the file has been last mdified
      */

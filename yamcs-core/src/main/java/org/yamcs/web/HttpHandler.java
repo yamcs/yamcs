@@ -66,6 +66,7 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
     
     public static final AttributeKey<HttpRequest> CTX_HTTP_REQUEST = AttributeKey.valueOf("request");
     public static final AttributeKey<ChunkedTransferStats> CTX_CHUNK_STATS = AttributeKey.valueOf("chunkedTransferStats");
+    public static final AttributeKey<String> CTX_ATTACHMENT_NAME = AttributeKey.valueOf("attachmentName");
 
     final static Logger log = LoggerFactory.getLogger(HttpHandler.class);
 
@@ -254,6 +255,12 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(Names.TRANSFER_ENCODING, HttpHeaders.Values.CHUNKED);
         response.headers().set(Names.CONTENT_TYPE, contentType);
+        
+        // Set Content-Disposition header so that some clients will treat the response as a downloadable file
+        if (ctx.attr(CTX_ATTACHMENT_NAME).get() != null) {
+            String filename = ctx.attr(CTX_ATTACHMENT_NAME).get();
+            response.headers().set("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        }
         return ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
     }
     
