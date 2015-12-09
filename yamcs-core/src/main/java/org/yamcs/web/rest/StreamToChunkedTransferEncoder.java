@@ -12,7 +12,6 @@ import org.yamcs.yarch.Tuple;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 
 /**
  * Reads a yamcs stream and maps it directly to an output buffer. If that buffer grows larger
@@ -28,6 +27,7 @@ public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscribe
     
     private ByteBuf buf;
     protected ByteBufOutputStream bufOut;
+    private ChannelFuture lastChannelFuture;
     
     protected String contentType;
     protected boolean failed = false;
@@ -37,7 +37,7 @@ public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscribe
         this.req = req;
         this.contentType = contentType;
         resetBuffer();
-        HttpServerHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType);
+        lastChannelFuture = HttpServerHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType);
     }
     
     protected void resetBuffer() {
@@ -59,7 +59,7 @@ public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscribe
             processTuple(tuple, bufOut);
             if (buf.readableBytes() >= CHUNK_TRESHOLD) {
                 closeBufferOutputStream();
-                HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf);
+                lastChannelFuture = HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf);
                 resetBuffer();
             }
         } catch (IOException e) {
@@ -74,22 +74,16 @@ public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscribe
     @Override
     public void streamClosed(Stream stream) {
         if (failed) {
-            log.info("Closing channel because transfer failed");
+            log.warn("Closing channel because transfer failed");
             req.getChannelHandlerContext().channel().close();
             return;
         }
         try {
             closeBufferOutputStream();
             if (buf.readableBytes() > 0) {
-                HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf).addListener(new ChannelFutureListener() {
-                    @Override
-                    public void operationComplete(ChannelFuture future) throws Exception {
-                        HttpServerHandler.stopChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest());
-                    }
-                });
-            } else {
-                HttpServerHandler.stopChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest());
+                lastChannelFuture = HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf);
             }
+            HttpServerHandler.stopChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), lastChannelFuture);
         } catch (IOException e) {
             log.error("Could not write final chunk of data", e);
         }

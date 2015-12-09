@@ -30,7 +30,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.protostuff.JsonIOUtil;
 
 /** 
@@ -251,6 +250,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         
         private ByteBuf buf;
         private ByteBufOutputStream bufOut;
+        private ChannelFuture lastChannelFuture;
         
         private boolean first;
         
@@ -271,7 +271,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         @Override
         public void processData(IndexResult indexResult) throws Exception {
             if (first) {
-                HttpServerHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType);
+                lastChannelFuture = HttpServerHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType);
                 first = false;
             }
             if (unpack) {
@@ -283,7 +283,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
             }
             if (buf.readableBytes() >= CHUNK_TRESHOLD) {
                 bufOut.close();
-                HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf);
+                lastChannelFuture = HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf);
                 resetBuffer();
             }
         }
@@ -313,17 +313,12 @@ public class ArchiveIndexRestHandler extends RestHandler {
             try {
                 bufOut.close();
                 if (buf.readableBytes() > 0) {
-                    HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf).addListener(new ChannelFutureListener() {
-                        @Override
-                        public void operationComplete(ChannelFuture future) throws Exception {
-                            HttpServerHandler.stopChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest());
-                        }
-                    });
-                } else {
-                    HttpServerHandler.stopChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest());
+                    lastChannelFuture = HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf);
                 }
+                HttpServerHandler.stopChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), lastChannelFuture);
             } catch (IOException e) {
                 log.error("Could not write final chunk of data", e);
+                req.getChannelHandlerContext().close();
             }
         }
     }

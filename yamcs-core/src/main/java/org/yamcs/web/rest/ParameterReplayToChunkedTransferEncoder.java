@@ -12,7 +12,6 @@ import org.yamcs.web.HttpServerHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 
 /**
  * Reads a yamcs replay and maps it directly to an output buffer. If that buffer grows larger
@@ -26,6 +25,7 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
     
     private ByteBuf buf;
     protected ByteBufOutputStream bufOut;
+    private ChannelFuture lastChannelWrite;
     
     protected RestRequest req;
     protected String contentType;
@@ -36,7 +36,7 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
         this.req = req;
         this.contentType = contentType;
         resetBuffer();
-        HttpServerHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType);
+        lastChannelWrite = HttpServerHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType);
     }
     
     protected void resetBuffer() {
@@ -58,7 +58,7 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
             processParameterData(pdata, bufOut);
             if (buf.readableBytes() >= CHUNK_TRESHOLD) {
                 closeBufferOutputStream();
-                HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf);
+                lastChannelWrite = HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf);
                 resetBuffer();
             }
         } catch (IOException e) {
@@ -73,22 +73,16 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
     @Override
     public void stateChanged(ReplayStatus rs) {
         if (failed) {
-            log.info("Closing channel because transfer failed");
+            log.warn("Closing channel because transfer failed");
             req.getChannelHandlerContext().channel().close();
             return;
         }
         try {
             closeBufferOutputStream();
             if (buf.readableBytes() > 0) {
-                HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf).addListener(new ChannelFutureListener() {
-                    @Override
-                    public void operationComplete(ChannelFuture future) throws Exception {
-                        HttpServerHandler.stopChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest());
-                    }
-                });
-            } else {
-                HttpServerHandler.stopChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest());
+                lastChannelWrite = HttpServerHandler.writeChunk(req.getChannelHandlerContext(), buf);
             }
+            HttpServerHandler.stopChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), lastChannelWrite);
         } catch (IOException e) {
             log.error("Could not write final chunk of data", e);
         }

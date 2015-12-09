@@ -188,20 +188,20 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
         }
     }
     
-    private void sendRedirect(ChannelHandlerContext ctx, HttpRequest req, String newUri) {
+    public ChannelFuture sendRedirect(ChannelHandlerContext ctx, HttpRequest req, String newUri) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.FOUND);
         response.headers().set(HttpHeaders.Names.LOCATION, newUri);
         log.info("{} {} {}", req.getMethod(), req.getUri(), HttpResponseStatus.FOUND.code());
-        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        return ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
     
-    private void sendUnauthorized(ChannelHandlerContext ctx, HttpRequest req) {
+    private ChannelFuture sendUnauthorized(ChannelHandlerContext ctx, HttpRequest req) {
         ByteBuf buf = Unpooled.copiedBuffer(HttpResponseStatus.UNAUTHORIZED.toString() + "\r\n", CharsetUtil.UTF_8);
         
         HttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.UNAUTHORIZED, buf);
         setHeader(res, HttpHeaders.Names.WWW_AUTHENTICATE, "Basic realm=\"" + Privilege.getRealmName() + "\"");
         log.warn("{} {} {} [realm=\"{}\"]", req.getMethod(), req.getUri(), res.getStatus().code(), Privilege.getRealmName());
-        ctx.writeAndFlush(res).addListener(ChannelFutureListener.CLOSE);
+        return ctx.writeAndFlush(res).addListener(ChannelFutureListener.CLOSE);
     }
     
     public static ChannelFuture sendPlainTextError(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status) {
@@ -264,9 +264,30 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
     }
     
     /**
-     * Send empty chunk downstream to signal succesful end of response
+     * Send empty chunk downstream to signal succesful end of response.
+     * <p>
+     * If lastChunkFuture is not null, the 'successful stop' of the chunked transfer will only be
+     * written out when that future returns succes.
      */
-    public static ChannelFuture stopChunkedTransfer(ChannelHandlerContext ctx, HttpRequest req) {
+    public static void stopChunkedTransfer(ChannelHandlerContext ctx, HttpRequest req, ChannelFuture lastChunkFuture) {
+        if (lastChunkFuture != null) {
+            lastChunkFuture.addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    if (future.isSuccess()) {
+                        writeEmptyLastContent(ctx, req);
+                    } else {
+                        log.error("Last chunk was not written successfully. Closing channel without sending empty final chunk", future.cause());
+                        ctx.channel().close();
+                    }
+                }
+            });
+        } else {
+            writeEmptyLastContent(ctx, req);
+        }
+    }
+    
+    private static ChannelFuture writeEmptyLastContent(ChannelHandlerContext ctx, HttpRequest req) {
         // TODO Should probably only output this info on successful write of the empty_last_content
         log.info("{} {} (Finished chunked transfer)", req.getMethod(), req.getUri());
         ChannelFuture chunkWriteFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);

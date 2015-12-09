@@ -237,7 +237,7 @@ public class ArchiveRestHandler extends RestHandler {
             
             @Override
             public void stateChanged(ReplayStatus rs) {
-                HttpServerHandler.stopChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest());
+                HttpServerHandler.stopChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), null);
                 log.trace("All chunks were written out");
             }
         });
