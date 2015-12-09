@@ -20,7 +20,7 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
@@ -33,9 +33,9 @@ import org.yamcs.yarch.Tuple;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 
-public class ArchivePacketRequestHandler extends RestRequestHandler {
+public class ArchivePacketRestHandler extends RestHandler {
     
-    private static final Logger log = LoggerFactory.getLogger(ArchivePacketRequestHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(ArchivePacketRestHandler.class);
 
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {

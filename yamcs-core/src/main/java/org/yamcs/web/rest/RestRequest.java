@@ -1,9 +1,9 @@
 package org.yamcs.web.rest;
 
-import static org.yamcs.web.AbstractRequestHandler.BINARY_MIME_TYPE;
-import static org.yamcs.web.AbstractRequestHandler.CSV_MIME_TYPE;
-import static org.yamcs.web.AbstractRequestHandler.JSON_MIME_TYPE;
-import static org.yamcs.web.AbstractRequestHandler.PROTOBUF_MIME_TYPE;
+import static org.yamcs.web.RouteHandler.BINARY_MIME_TYPE;
+import static org.yamcs.web.RouteHandler.CSV_MIME_TYPE;
+import static org.yamcs.web.RouteHandler.JSON_MIME_TYPE;
+import static org.yamcs.web.RouteHandler.PROTOBUF_MIME_TYPE;
 
 import java.io.IOException;
 import java.io.InputStream;

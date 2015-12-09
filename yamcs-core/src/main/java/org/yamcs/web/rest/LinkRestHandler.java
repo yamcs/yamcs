@@ -19,7 +19,7 @@ import org.yamcs.web.NotFoundException;
 /**
  * Gives information on data links
  */
-public class LinkRequestHandler extends RestRequestHandler {
+public class LinkRestHandler extends RestHandler {
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {

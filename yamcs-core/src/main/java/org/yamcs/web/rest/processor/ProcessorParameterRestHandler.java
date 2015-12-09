@@ -37,21 +37,21 @@ import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.MethodNotAllowedException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
-import org.yamcs.web.rest.mdb.MDBRequestHandler;
+import org.yamcs.web.rest.mdb.MDBRestHandler;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 
 /**
  * Handles incoming requests related to parameters
  */
-public class ProcessorParameterRequestHandler extends RestRequestHandler {
-    final static Logger log = LoggerFactory.getLogger(ProcessorParameterRequestHandler.class.getName());
+public class ProcessorParameterRestHandler extends RestHandler {
+    final static Logger log = LoggerFactory.getLogger(ProcessorParameterRestHandler.class.getName());
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
+        XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
         if (!req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);
         } else {

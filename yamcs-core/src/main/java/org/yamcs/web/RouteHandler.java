@@ -29,7 +29,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
 
-public class AbstractRequestHandler {
+public class RouteHandler {
     
     // This can be static, because the whole request-handling operates on a single thread
     private static JsonFactory jsonFactory = new JsonFactory();

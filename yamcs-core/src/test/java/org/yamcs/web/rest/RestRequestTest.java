@@ -1,8 +1,8 @@
 package org.yamcs.web.rest;
 
 import static junit.framework.Assert.assertEquals;
-import static org.yamcs.web.AbstractRequestHandler.PROTOBUF_MIME_TYPE;
-import static org.yamcs.web.AbstractRequestHandler.JSON_MIME_TYPE;
+import static org.yamcs.web.RouteHandler.PROTOBUF_MIME_TYPE;
+import static org.yamcs.web.RouteHandler.JSON_MIME_TYPE;
 
 import org.junit.Test;
 

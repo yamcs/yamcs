@@ -44,7 +44,7 @@ import org.yamcs.time.TimeService;
 import org.yamcs.utils.HornetQBufferOutputStream;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.web.HttpServer;
-import org.yamcs.web.StaticFileRequestHandler;
+import org.yamcs.web.StaticFileHandler;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -138,7 +138,7 @@ public class YamcsServer {
     }
     
     public static HttpServer setupHttpServer() {
-        StaticFileRequestHandler.init();
+        StaticFileHandler.init();
         return HttpServer.getInstance();
     }
 

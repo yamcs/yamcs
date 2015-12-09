@@ -17,7 +17,7 @@ import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
-import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.History;
@@ -31,16 +31,16 @@ import io.netty.buffer.ByteBufOutputStream;
 /**
  * Handles incoming requests related to parameters
  */
-public class MDBRequestHandler extends RestRequestHandler {
+public class MDBRestHandler extends RestHandler {
     
-    final static Logger log = LoggerFactory.getLogger(MDBRequestHandler.class.getName());
+    final static Logger log = LoggerFactory.getLogger(MDBRestHandler.class.getName());
 
     public static final String CTX_MDB = "mdb";
     
-    private static MDBParameterRequestHandler parameterHandler = new MDBParameterRequestHandler();    
-    private static MDBContainerRequestHandler containerHandler = new MDBContainerRequestHandler();
-    private static MDBCommandRequestHandler commandHandler = new MDBCommandRequestHandler();
-    private static MDBAlgorithmRequestHandler algorithmHandler = new MDBAlgorithmRequestHandler();
+    private static MDBParameterRestHandler parameterHandler = new MDBParameterRestHandler();    
+    private static MDBContainerRestHandler containerHandler = new MDBContainerRestHandler();
+    private static MDBCommandRestHandler commandHandler = new MDBCommandRestHandler();
+    private static MDBAlgorithmRestHandler algorithmHandler = new MDBAlgorithmRestHandler();
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {

@@ -10,7 +10,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
-import org.yamcs.web.StaticFileRequestHandler;
+import org.yamcs.web.StaticFileHandler;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -27,9 +27,9 @@ import io.netty.buffer.ByteBufOutputStream;
  * @author nm
  *
  */
-public class DisplayRequestHandler extends RestRequestHandler {
+public class DisplayRestHandler extends RestHandler {
     JsonFactory jsonFactory=new JsonFactory();
-    final static Logger log=LoggerFactory.getLogger(DisplayRequestHandler.class.getName());
+    final static Logger log=LoggerFactory.getLogger(DisplayRestHandler.class.getName());
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
@@ -59,7 +59,7 @@ public class DisplayRequestHandler extends RestRequestHandler {
             json.writeStartArray();
             
             File displayDir = null;
-            for (String webRoot : StaticFileRequestHandler.WEB_Roots) {
+            for (String webRoot : StaticFileHandler.WEB_Roots) {
                 File dir = new File(webRoot + File.separator + yamcsInstance + File.separator + "displays");
                 if (dir.exists()) {
                     displayDir = dir;

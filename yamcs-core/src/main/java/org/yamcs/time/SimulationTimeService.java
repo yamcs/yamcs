@@ -9,7 +9,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
 
 /**
@@ -60,7 +60,7 @@ public class SimulationTimeService implements TimeService {
     /**
      * Handles incoming requests related to SimTime
      */
-    public static class SimTimeRequestHandler extends RestRequestHandler {
+    public static class SimTimeRestHandler extends RestHandler {
         static final String SET_REQ = "set";
         
         @Override

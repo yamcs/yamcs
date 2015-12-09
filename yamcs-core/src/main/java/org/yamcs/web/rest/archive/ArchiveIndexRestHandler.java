@@ -19,7 +19,7 @@ import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestUtils;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
@@ -38,9 +38,9 @@ import io.protostuff.JsonIOUtil;
  * <p>These responses use chunked encoding with an unspecified content length, which enables
  * us to send large dumps without needing to determine a content length on the server.
  */
-public class ArchiveIndexHandler extends RestRequestHandler {
+public class ArchiveIndexRestHandler extends RestHandler {
     
-    private static final Logger log = LoggerFactory.getLogger(ArchiveIndexHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(ArchiveIndexRestHandler.class);
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {

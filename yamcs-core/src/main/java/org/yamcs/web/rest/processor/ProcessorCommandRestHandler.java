@@ -24,9 +24,9 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
-import org.yamcs.web.rest.mdb.MDBRequestHandler;
+import org.yamcs.web.rest.mdb.MDBRestHandler;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
@@ -36,12 +36,12 @@ import com.google.protobuf.ByteString;
 /**
  * Handles incoming requests related to command info from the MDB
  */
-public class ProcessorCommandRequestHandler extends RestRequestHandler {
-    final static Logger log = LoggerFactory.getLogger(ProcessorCommandRequestHandler.class.getName());
+public class ProcessorCommandRestHandler extends RestHandler {
+    final static Logger log = LoggerFactory.getLogger(ProcessorCommandRestHandler.class.getName());
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
+        XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
         if (!req.hasPathSegment(pathOffset)) {
             throw new NotFoundException(req);
         } else {

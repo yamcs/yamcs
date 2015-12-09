@@ -29,7 +29,7 @@ import org.yamcs.web.rest.ParameterReplayToChunkedCSVEncoder;
 import org.yamcs.web.rest.ParameterReplayToChunkedProtobufEncoder;
 import org.yamcs.web.rest.RestParameterReplayListener;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestStreams;
 import org.yamcs.web.rest.RestUtils;
@@ -55,7 +55,7 @@ import io.netty.buffer.ByteBufOutputStream;
  * <p>Archive requests use chunked encoding with an unspecified content length, which enables
  * us to send large dumps without needing to determine a content length on the server.
  */
-public class ArchiveDownloadHandler extends RestRequestHandler {
+public class ArchiveDownloadRestHandler extends RestHandler {
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {

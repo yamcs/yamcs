@@ -23,13 +23,13 @@ import org.yamcs.web.MethodNotAllowedException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
-import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
 
 /**
  * Handles requests related to command queues
  */
-public class ProcessorCommandQueueRequestHandler extends RestRequestHandler {
+public class ProcessorCommandQueueRestHandler extends RestHandler {
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {

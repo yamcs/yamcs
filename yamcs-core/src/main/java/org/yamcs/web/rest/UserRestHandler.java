@@ -16,7 +16,7 @@ import org.yamcs.web.NotFoundException;
 /**
  * Handles incoming requests related to the user
  */
-public class UserRequestHandler extends RestRequestHandler {
+public class UserRestHandler extends RestHandler {
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {

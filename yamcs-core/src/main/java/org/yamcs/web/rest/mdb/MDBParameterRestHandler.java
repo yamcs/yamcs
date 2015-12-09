@@ -19,7 +19,7 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.MethodNotAllowedException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.XtceToGpbAssembler;
 import org.yamcs.web.rest.XtceToGpbAssembler.DetailLevel;
@@ -31,12 +31,12 @@ import org.yamcs.xtce.XtceDb;
 /**
  * Handles incoming requests related to parameter info from the MDB
  */
-public class MDBParameterRequestHandler extends RestRequestHandler {
-    final static Logger log = LoggerFactory.getLogger(MDBParameterRequestHandler.class.getName());
+public class MDBParameterRestHandler extends RestHandler {
+    final static Logger log = LoggerFactory.getLogger(MDBParameterRestHandler.class.getName());
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
+        XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
         if (!req.hasPathSegment(pathOffset)) {
             return listParameters(req, null, mdb);
         } else {
@@ -60,7 +60,7 @@ public class MDBParameterRequestHandler extends RestRequestHandler {
     }
     
     private RestResponse listParametersOrError(RestRequest req, int pathOffset) throws HttpException {
-        XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
+        XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
         MatchResult<String> nsm = MDBHelper.matchXtceDbNamespace(req, pathOffset, true);
         if (nsm.matches()) {
             return listParameters(req, nsm.getMatch(), mdb);

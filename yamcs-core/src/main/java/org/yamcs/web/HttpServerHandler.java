@@ -16,16 +16,16 @@ import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.time.SimulationTimeService;
-import org.yamcs.web.rest.ClientRequestHandler;
-import org.yamcs.web.rest.DisplayRequestHandler;
-import org.yamcs.web.rest.InstanceRequestHandler;
-import org.yamcs.web.rest.LinkRequestHandler;
+import org.yamcs.web.rest.ClientRestHandler;
+import org.yamcs.web.rest.DisplayRestHandler;
+import org.yamcs.web.rest.InstanceRestHandler;
+import org.yamcs.web.rest.LinkRestHandler;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequestHandler;
-import org.yamcs.web.rest.UserRequestHandler;
-import org.yamcs.web.rest.archive.ArchiveRequestHandler;
-import org.yamcs.web.rest.mdb.MDBRequestHandler;
-import org.yamcs.web.rest.processor.ProcessorRequestHandler;
+import org.yamcs.web.rest.RestHandler;
+import org.yamcs.web.rest.UserRestHandler;
+import org.yamcs.web.rest.archive.ArchiveRestHandler;
+import org.yamcs.web.rest.mdb.MDBRestHandler;
+import org.yamcs.web.rest.processor.ProcessorRestHandler;
 import org.yamcs.web.websocket.WebSocketServerHandler;
 
 import io.netty.buffer.ByteBuf;
@@ -55,20 +55,20 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
 
     final static Logger log = LoggerFactory.getLogger(HttpServerHandler.class);
 
-    static StaticFileRequestHandler fileRequestHandler = new StaticFileRequestHandler();
-    Map<String, RestRequestHandler> restHandlers = new HashMap<>();
+    static StaticFileHandler fileRequestHandler = new StaticFileHandler();
+    Map<String, RestHandler> restHandlers = new HashMap<>();
     WebSocketServerHandler webSocketHandler = new WebSocketServerHandler();
     
     public HttpServerHandler() {
-        restHandlers.put("archive", new ArchiveRequestHandler());
-        restHandlers.put("clients", new ClientRequestHandler());
-        restHandlers.put("displays",  new DisplayRequestHandler());
-        restHandlers.put("instances", new InstanceRequestHandler());
-        restHandlers.put("links", new LinkRequestHandler());
-        restHandlers.put("mdb", new MDBRequestHandler());
-        restHandlers.put("processors", new ProcessorRequestHandler());
-        restHandlers.put("simTime", new SimulationTimeService.SimTimeRequestHandler());
-        restHandlers.put("user", new UserRequestHandler());
+        restHandlers.put("archive", new ArchiveRestHandler());
+        restHandlers.put("clients", new ClientRestHandler());
+        restHandlers.put("displays",  new DisplayRestHandler());
+        restHandlers.put("instances", new InstanceRestHandler());
+        restHandlers.put("links", new LinkRestHandler());
+        restHandlers.put("mdb", new MDBRestHandler());
+        restHandlers.put("processors", new ProcessorRestHandler());
+        restHandlers.put("simTime", new SimulationTimeService.SimTimeRestHandler());
+        restHandlers.put("user", new UserRestHandler());
     }
     
     @Override
@@ -142,10 +142,10 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
                 return;
             }
             
-            RestRequest restReq = AbstractRequestHandler.toRestRequest(ctx, req, qsDecoder, authToken);
+            RestRequest restReq = RouteHandler.toRestRequest(ctx, req, qsDecoder, authToken);
             
             String resource = restReq.getPathSegment(2);
-            RestRequestHandler restHandler = restHandlers.get(resource);
+            RestHandler restHandler = restHandlers.get(resource);
             if (restHandler != null) {
                 restHandler.handleRequestOrError(restReq, 3);
             } else {

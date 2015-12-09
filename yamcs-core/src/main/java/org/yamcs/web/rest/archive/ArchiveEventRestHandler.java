@@ -18,7 +18,7 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
@@ -33,9 +33,9 @@ import com.csvreader.CsvWriter;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 
-public class ArchiveEventRequestHandler extends RestRequestHandler {
+public class ArchiveEventRestHandler extends RestHandler {
     
-    private static final Logger log = LoggerFactory.getLogger(ArchiveEventRequestHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(ArchiveEventRestHandler.class);
 
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {

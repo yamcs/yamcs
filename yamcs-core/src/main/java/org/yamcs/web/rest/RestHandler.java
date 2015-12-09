@@ -10,11 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.SchemaWeb;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
-import org.yamcs.web.AbstractRequestHandler;
-import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
-import org.yamcs.web.rest.archive.ArchiveRequestHandler;
+import org.yamcs.web.RouteHandler;
+import org.yamcs.web.rest.archive.ArchiveRestHandler;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 
@@ -29,9 +28,9 @@ import io.protostuff.JsonIOUtil;
 /**
  * Defines the basic contract of what a REST handler should abide to.
  */
-public abstract class RestRequestHandler extends AbstractRequestHandler {
+public abstract class RestHandler extends RouteHandler {
     
-    private static final Logger log = LoggerFactory.getLogger(RestRequestHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
     
     public void handleRequestOrError(RestRequest req, int handlerOffset) {
         try {
@@ -98,7 +97,7 @@ public abstract class RestRequestHandler extends AbstractRequestHandler {
      * Wraps all the logic that deals with a RestRequest. Requests should always
      * return something, which is why a return type is enforced. For handlers
      * that have to stream their response, use <tt>return null;</tt> to
-     * explicitly turn off a forced response. See {@link ArchiveRequestHandler}
+     * explicitly turn off a forced response. See {@link ArchiveRestHandler}
      * for an example of this.
      * 
      * @param pathOffset
@@ -106,17 +105,6 @@ public abstract class RestRequestHandler extends AbstractRequestHandler {
      *            correctly index into {@link RestRequest#getPathSegment(int)}
      */
     public abstract RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException;
-    
-    /**
-     * Helper method to throw a BadRequestException on incorrect requests. This is some validation mechanism
-     * beyond proto, where we try to keep things optional
-     */
-    protected <T> T required(T object, String message) throws BadRequestException {
-        if(object != null)
-            return object;
-        else
-            throw new BadRequestException(message);
-    }
     
     /**
      * Just a little shortcut because builders are dead ugly

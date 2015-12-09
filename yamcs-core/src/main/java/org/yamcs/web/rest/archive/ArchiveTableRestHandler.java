@@ -13,7 +13,7 @@ import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
@@ -24,7 +24,7 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 
-public class ArchiveTableRequestHandler extends RestRequestHandler {
+public class ArchiveTableRestHandler extends RestHandler {
 
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {

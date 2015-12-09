@@ -10,7 +10,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.XtceToGpbAssembler;
 import org.yamcs.web.rest.XtceToGpbAssembler.DetailLevel;
@@ -21,12 +21,12 @@ import org.yamcs.xtce.XtceDb;
 /**
  * Handles incoming requests related to container info from the MDB
  */
-public class MDBContainerRequestHandler extends RestRequestHandler {
-    final static Logger log = LoggerFactory.getLogger(MDBContainerRequestHandler.class.getName());
+public class MDBContainerRestHandler extends RestHandler {
+    final static Logger log = LoggerFactory.getLogger(MDBContainerRestHandler.class.getName());
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
+        XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
         if (!req.hasPathSegment(pathOffset)) {
             return listContainers(req, null, mdb); // root namespace
         } else {
@@ -40,7 +40,7 @@ public class MDBContainerRequestHandler extends RestRequestHandler {
     }
     
     private RestResponse listContainersOrError(RestRequest req, int pathOffset) throws HttpException {
-        XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
+        XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
         MatchResult<String> nsm = MDBHelper.matchXtceDbNamespace(req, pathOffset, true);
         if (nsm.matches()) {
             return listContainers(req, nsm.getMatch(), mdb);

@@ -13,7 +13,7 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
@@ -26,7 +26,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 
-public class ArchiveAlarmRequestHandler extends RestRequestHandler {
+public class ArchiveAlarmRestHandler extends RestHandler {
 
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {

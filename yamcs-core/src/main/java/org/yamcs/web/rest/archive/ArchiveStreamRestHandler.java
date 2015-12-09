@@ -7,13 +7,13 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.yarch.AbstractStream;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
 
-public class ArchiveStreamRequestHandler extends RestRequestHandler {
+public class ArchiveStreamRestHandler extends RestHandler {
 
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {

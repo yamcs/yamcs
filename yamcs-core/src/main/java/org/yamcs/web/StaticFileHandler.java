@@ -42,13 +42,13 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedFile;
 
 
-public class StaticFileRequestHandler extends AbstractRequestHandler {
+public class StaticFileHandler extends RouteHandler {
     public static List<String> WEB_Roots = new ArrayList<>();
     static MimetypesFileTypeMap mimeTypesMap;
     public static final int HTTP_CACHE_SECONDS = 60;
     private static boolean zeroCopyEnabled = true;
     
-    final static Logger log=LoggerFactory.getLogger(StaticFileRequestHandler.class.getName());
+    final static Logger log=LoggerFactory.getLogger(StaticFileHandler.class.getName());
     
     public static void init() throws ConfigurationException {
         if(mimeTypesMap!=null) return;

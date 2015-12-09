@@ -18,7 +18,7 @@ public class MDBHelper {
      * @pathOffset the offset at which to start the search
      */
     public static MatchResult<Parameter> matchParameterName(RestRequest req, int pathOffset) {
-        XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
+        XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
         
         MatchResult<String> nsMatch = matchXtceDbNamespace(req, pathOffset, false);
         NamedObjectId id = null;
@@ -53,7 +53,7 @@ public class MDBHelper {
      * @pathOffset the offset at which to start the search
      */
     public static MatchResult<SequenceContainer> matchContainerName(RestRequest req, int pathOffset) {
-        XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
+        XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
         
         MatchResult<String> nsMatch = matchXtceDbNamespace(req, pathOffset, false);
         NamedObjectId id = null;
@@ -80,7 +80,7 @@ public class MDBHelper {
      * @pathOffset the offset at which to start the search
      */
     public static MatchResult<Algorithm> matchAlgorithmName(RestRequest req, int pathOffset) {
-        XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
+        XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
         
         MatchResult<String> nsMatch = matchXtceDbNamespace(req, pathOffset, false);
         NamedObjectId id = null;
@@ -107,7 +107,7 @@ public class MDBHelper {
      * @pathOffset the offset at which to start the search
      */
     public static MatchResult<MetaCommand> matchCommandName(RestRequest req, int pathOffset) {
-        XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
+        XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
         
         MatchResult<String> nsMatch = matchXtceDbNamespace(req, pathOffset, false);
         NamedObjectId id = null;
@@ -130,7 +130,7 @@ public class MDBHelper {
      * Greedily matches a namespace
      */
     public static MatchResult<String> matchXtceDbNamespace(RestRequest req, int pathOffset, boolean strict) {
-        XtceDb mdb = req.getFromContext(MDBRequestHandler.CTX_MDB);
+        XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
         String matchedNamespace = null;
         
         String segment = req.getPathSegment(pathOffset);

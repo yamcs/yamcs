@@ -18,14 +18,14 @@ import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.MethodNotAllowedException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestUtils;
 import org.yamcs.web.rest.RestUtils.IntervalResult;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
 
-public class ArchiveTagRequestHandler extends RestRequestHandler {
+public class ArchiveTagRestHandler extends RestHandler {
 
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {

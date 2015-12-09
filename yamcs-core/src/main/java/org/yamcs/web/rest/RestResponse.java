@@ -1,6 +1,6 @@
 package org.yamcs.web.rest;
 
-import static org.yamcs.web.AbstractRequestHandler.PROTOBUF_MIME_TYPE;
+import static org.yamcs.web.RouteHandler.PROTOBUF_MIME_TYPE;
 
 import java.io.IOException;
 

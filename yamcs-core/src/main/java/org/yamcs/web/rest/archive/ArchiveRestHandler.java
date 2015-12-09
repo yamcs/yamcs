@@ -35,10 +35,10 @@ import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestReplayListener;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestUtils;
-import org.yamcs.web.rest.mdb.MDBRequestHandler;
+import org.yamcs.web.rest.mdb.MDBRestHandler;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.YarchDatabase;
 
@@ -56,24 +56,24 @@ import io.protostuff.Schema;
  * specialised APIs. For mission-specific tables the generic table API could be
  * used.
  */
-public class ArchiveRequestHandler extends RestRequestHandler {
+public class ArchiveRestHandler extends RestHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(ArchiveRequestHandler.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(ArchiveRestHandler.class.getName());
     
-    private Map<String, RestRequestHandler> subHandlers = new LinkedHashMap<>();
+    private Map<String, RestHandler> subHandlers = new LinkedHashMap<>();
     private CsvGenerator csvGenerator = null;
     
-    public ArchiveRequestHandler() {
-        subHandlers.put("alarms", new ArchiveAlarmRequestHandler());
-        subHandlers.put("commands", new ArchiveCommandRequestHandler());
-        subHandlers.put("downloads", new ArchiveDownloadHandler());
-        subHandlers.put("events", new ArchiveEventRequestHandler());
-        subHandlers.put("indexes", new ArchiveIndexHandler());
-        subHandlers.put("packets", new ArchivePacketRequestHandler());
-        subHandlers.put("parameters", new ArchiveParameterRequestHandler());
-        subHandlers.put("streams", new ArchiveStreamRequestHandler());
-        subHandlers.put("tables", new ArchiveTableRequestHandler());
-        subHandlers.put("tags", new ArchiveTagRequestHandler());
+    public ArchiveRestHandler() {
+        subHandlers.put("alarms", new ArchiveAlarmRestHandler());
+        subHandlers.put("commands", new ArchiveCommandRestHandler());
+        subHandlers.put("downloads", new ArchiveDownloadRestHandler());
+        subHandlers.put("events", new ArchiveEventRestHandler());
+        subHandlers.put("indexes", new ArchiveIndexRestHandler());
+        subHandlers.put("packets", new ArchivePacketRestHandler());
+        subHandlers.put("parameters", new ArchiveParameterRestHandler());
+        subHandlers.put("streams", new ArchiveStreamRestHandler());
+        subHandlers.put("tables", new ArchiveTableRestHandler());
+        subHandlers.put("tags", new ArchiveTagRestHandler());
     }
     
     @Override
@@ -87,14 +87,14 @@ public class ArchiveRequestHandler extends RestRequestHandler {
             throw new NotFoundException(req, "No instance '" + instance + "'");
         }
         req.addToContext(RestRequest.CTX_INSTANCE, instance);
-        req.addToContext(MDBRequestHandler.CTX_MDB, XtceDbFactory.getInstance(instance));
+        req.addToContext(MDBRestHandler.CTX_MDB, XtceDbFactory.getInstance(instance));
         
         pathOffset++;
         if (!req.hasPathSegment(pathOffset)) {
             return handleDumpRequest(req);
         } else {
             String segment = req.getPathSegment(pathOffset);
-            RestRequestHandler handler = subHandlers.get(segment);
+            RestHandler handler = subHandlers.get(segment);
             if (handler != null) {
                 return handler.handleRequest(req, pathOffset + 1);
             } else {

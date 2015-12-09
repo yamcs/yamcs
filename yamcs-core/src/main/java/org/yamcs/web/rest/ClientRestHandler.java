@@ -20,7 +20,7 @@ import org.yamcs.web.NotFoundException;
 /**
  * Gives information on clients (aka sessions)
  */
-public class ClientRequestHandler extends RestRequestHandler {
+public class ClientRestHandler extends RestHandler {
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {

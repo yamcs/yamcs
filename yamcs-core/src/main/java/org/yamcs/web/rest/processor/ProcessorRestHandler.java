@@ -38,10 +38,10 @@ import org.yamcs.web.MethodNotAllowedException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
-import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.RestUtils;
-import org.yamcs.web.rest.mdb.MDBRequestHandler;
+import org.yamcs.web.rest.mdb.MDBRestHandler;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -49,11 +49,11 @@ import org.yamcs.xtceproc.XtceDbFactory;
 /**
  * Handles requests related to processors
  */
-public class ProcessorRequestHandler extends RestRequestHandler {
+public class ProcessorRestHandler extends RestHandler {
 
-    private static ProcessorParameterRequestHandler parameterHandler = new ProcessorParameterRequestHandler();
-    private static ProcessorCommandRequestHandler commandHandler = new ProcessorCommandRequestHandler();
-    private static ProcessorCommandQueueRequestHandler cqueueHandler = new ProcessorCommandQueueRequestHandler();
+    private static ProcessorParameterRestHandler parameterHandler = new ProcessorParameterRestHandler();
+    private static ProcessorCommandRestHandler commandHandler = new ProcessorCommandRestHandler();
+    private static ProcessorCommandQueueRestHandler cqueueHandler = new ProcessorCommandQueueRestHandler();
 
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
@@ -67,7 +67,7 @@ public class ProcessorRequestHandler extends RestRequestHandler {
             }
             req.addToContext(RestRequest.CTX_INSTANCE, instance);
             XtceDb mdb = XtceDbFactory.getInstance(instance);
-            req.addToContext(MDBRequestHandler.CTX_MDB, mdb);
+            req.addToContext(MDBRestHandler.CTX_MDB, mdb);
 
             if (!req.hasPathSegment(pathOffset + 1)) {
                 if (req.isGET()) {

@@ -1,6 +1,6 @@
 package org.yamcs.web.rest;
 
-import static org.yamcs.web.AbstractRequestHandler.CSV_MIME_TYPE;
+import static org.yamcs.web.RouteHandler.CSV_MIME_TYPE;
 
 import java.io.BufferedWriter;
 import java.io.IOException;

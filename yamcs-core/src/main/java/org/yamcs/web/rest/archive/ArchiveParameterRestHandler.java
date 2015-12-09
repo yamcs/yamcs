@@ -28,7 +28,7 @@ import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestParameterReplayListener;
 import org.yamcs.web.rest.RestReplayListener;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequestHandler;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestResponse;
 import org.yamcs.web.rest.archive.RestDownsampler.Sample;
 import org.yamcs.web.rest.mdb.MDBHelper;
@@ -44,9 +44,9 @@ import com.google.protobuf.MessageLite;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 
-public class ArchiveParameterRequestHandler extends RestRequestHandler {
+public class ArchiveParameterRestHandler extends RestHandler {
     
-    private static final Logger log = LoggerFactory.getLogger(ArchiveParameterRequestHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(ArchiveParameterRestHandler.class);
 
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {

@@ -18,16 +18,16 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestRequest.Option;
-import org.yamcs.web.rest.mdb.MDBRequestHandler;
-import org.yamcs.web.rest.processor.ProcessorRequestHandler;
+import org.yamcs.web.rest.mdb.MDBRestHandler;
+import org.yamcs.web.rest.processor.ProcessorRestHandler;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 /**
  * Handles incoming requests related to yamcs instances.
  */
-public class InstanceRequestHandler extends RestRequestHandler {
-    final static Logger log = LoggerFactory.getLogger(InstanceRequestHandler.class.getName());
+public class InstanceRestHandler extends RestHandler {
+    final static Logger log = LoggerFactory.getLogger(InstanceRestHandler.class.getName());
     
     @Override
     public RestResponse handleRequest(RestRequest req, int pathOffset) throws HttpException {
@@ -77,7 +77,7 @@ public class InstanceRequestHandler extends RestRequestHandler {
         // Override MDB with a version that has URLs too
         if (yamcsInstance.hasMissionDatabase()) {
             XtceDb mdb = XtceDbFactory.getInstance(yamcsInstance.getName());
-            instanceb.setMissionDatabase(MDBRequestHandler.toMissionDatabase(req, yamcsInstance.getName(), mdb)); 
+            instanceb.setMissionDatabase(MDBRestHandler.toMissionDatabase(req, yamcsInstance.getName(), mdb)); 
         }
         
         if (!req.getOptions().contains(Option.NO_LINK)) {
@@ -89,7 +89,7 @@ public class InstanceRequestHandler extends RestRequestHandler {
         }
         
         for (YProcessor processor : YProcessor.getChannels(instanceb.getName())) {
-            instanceb.addProcessor(ProcessorRequestHandler.toProcessorInfo(processor, req, false));
+            instanceb.addProcessor(ProcessorRestHandler.toProcessorInfo(processor, req, false));
         }
         return instanceb.build();
     }
