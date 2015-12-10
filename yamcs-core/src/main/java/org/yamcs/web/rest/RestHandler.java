@@ -70,27 +70,43 @@ public abstract class RestHandler extends RouteHandler {
     }
     
     protected ChannelFuture sendOK(RestRequest restRequest) {
-        return sendOK(new RestResponse(restRequest));
+        ChannelHandlerContext ctx = restRequest.getChannelHandlerContext();
+        HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
+        setContentLength(httpResponse, 0);
+        return HttpHandler.sendOK(ctx, httpResponse);
+    }
+    
+    protected <T extends MessageLite> ChannelFuture sendOK(RestRequest restRequest, T responseMsg, Schema<T> responseSchema) throws HttpException {
+        ByteBuf body = restRequest.getChannelHandlerContext().alloc().buffer();
+        ByteBufOutputStream channelOut = new ByteBufOutputStream(body);
+        try {
+            if (MediaType.PROTOBUF.equals(restRequest.deriveTargetContentType())) {
+                responseMsg.writeTo(channelOut);
+            } else {
+                JsonGenerator generator = restRequest.createJsonGenerator(channelOut);
+                JsonIOUtil.writeTo(generator, responseMsg, responseSchema, false);
+                generator.close();
+            }
+        } catch (IOException e) {
+            throw new InternalServerErrorException(e);
+        }
+        
+        HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
+        setContentTypeHeader(httpResponse, restRequest.deriveTargetContentType().toString());
+        setContentLength(httpResponse, body.readableBytes());
+        return HttpHandler.sendOK(restRequest.getChannelHandlerContext(), httpResponse);
     }
     
     protected ChannelFuture sendOK(RestRequest restRequest, MediaType contentType, ByteBuf body) {
-        return sendOK(new RestResponse(restRequest, contentType, body));
-    }
-    
-    protected <T extends MessageLite> ChannelFuture sendOK(RestRequest restRequest, T message, Schema<T> schema) throws HttpException {
-        return sendOK(new RestResponse(restRequest, message, schema));
-    }
-    
-    private ChannelFuture sendOK(RestResponse restResponse) {
-        ChannelHandlerContext ctx = restResponse.getRestRequest().getChannelHandlerContext();    
-        if (restResponse.getBody() == null) {
+        ChannelHandlerContext ctx = restRequest.getChannelHandlerContext();    
+        if (body == null) {
             HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
             setContentLength(httpResponse, 0);
             return HttpHandler.sendOK(ctx, httpResponse);
         } else {
-            HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, restResponse.getBody());
-            setContentTypeHeader(httpResponse, restResponse.getContentType().toString());
-            setContentLength(httpResponse, restResponse.getBody().readableBytes());
+            HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
+            setContentTypeHeader(httpResponse, contentType.toString());
+            setContentLength(httpResponse, body.readableBytes());
             return HttpHandler.sendOK(ctx, httpResponse);
         }
     }
