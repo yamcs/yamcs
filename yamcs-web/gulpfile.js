@@ -92,7 +92,7 @@ gulp.task('html', ['clean'], function () {
 });
 
 gulp.task('img', ['clean'], function () {
-    return gulp.src('./src/**/*.png')
+    return gulp.src(['./src/**/*.png', './src/**/*.ico'])
         .pipe(gulp.dest('./build/_site'));
 });
 
