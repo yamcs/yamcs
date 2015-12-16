@@ -385,8 +385,8 @@ public class XtceDbFactory {
         in = new ObjectInputStream(new FileInputStream(filename));
         XtceDb db = (XtceDb) in.readObject();
         in.close();
-        log.info("Loaded XTCE DB with " + db.getSequenceContainers().size()
-                + " containers, " + db.getParameterNames().size() + " parameters and "+db.getMetaCommands().size()+" commands");
+        log.info("Loaded XTCE DB with {} containers, {} parameters and {} commands",
+                db.getSequenceContainers().size(), db.getParameterNames().size(), db.getMetaCommands().size());
         return db;
     }
 

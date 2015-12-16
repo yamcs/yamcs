@@ -6,10 +6,14 @@ import java.nio.ByteBuffer;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.simulator.ui.SimWindow;
 
 
 public class Simulator extends Thread {
+    
+    private static final Logger log = LoggerFactory.getLogger(Simulator.class);
     
     private int DEFAULT_MAX_LENGTH=65542;
     private int maxLength = DEFAULT_MAX_LENGTH;
@@ -52,7 +56,7 @@ public class Simulator extends Thread {
             }).start();
 
             // start the TM transmission thread
-            System.out.println("Start TM thread");
+            log.debug("Start TM thread");
             (new Thread(() -> tmLink.packetSend(serverConnection))).start();
         }
     }

@@ -81,7 +81,7 @@ public class HttpServer {
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workerGroup)
             .channel(NioServerSocketChannel.class)
-            .handler(new LoggingHandler(LogLevel.INFO))
+            .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
             .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
             .childHandler(new HttpServerInitializer());
         
