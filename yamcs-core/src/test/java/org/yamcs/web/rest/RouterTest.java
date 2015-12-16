@@ -21,6 +21,7 @@ import org.yamcs.web.MethodNotAllowedException;
 import org.yamcs.web.RouteHandler;
 import org.yamcs.web.rest.Router.RouteMatch;
 
+import io.netty.channel.ChannelFuture;
 import io.netty.handler.codec.http.HttpMethod;
 
 public class RouterTest {
@@ -165,5 +166,45 @@ public class RouterTest {
         assertEquals(2, res.groupCount());
         assertEquals("simulator", res.group(1));
         assertEquals("YSS/SIMULATOR/BatteryVoltage1", res.group(2));
+    }
+    
+    @Test
+    public void testRouteParams() throws MethodNotAllowedException {
+        MockRestRouter router = new MockRestRouter();
+        router.registerRouteHandler(new RouteHandler() {
+            @Route(path = "/h/archive/:bla?/:instance")
+            public ChannelFuture abc(RestRequest req) {
+                return null;
+            }
+        });
+        
+        RouteMatch match = router.matchURI(GET, "/h/archive/simulator");
+        MockRestRequest mockRequest = new MockRestRequest();
+        mockRequest.setRouteMatch(match);
+        router.dispatch(mockRequest, match);
+        
+        Lookup lookup = MethodHandles.lookup();
+        MethodHandleInfo info = lookup.revealDirect(match.routeConfig.handle);
+        assertEquals("abc", info.getName());
+        
+        RestRequest observedRestRequest = router.observedRestRequest;
+        assertTrue(observedRestRequest.hasRouteParam("instance"));
+        assertEquals("simulator", observedRestRequest.getRouteParam("instance"));
+    }
+    
+    private static final class MockRestRouter extends Router {
+        
+        RestRequest observedRestRequest;
+        
+        @Override
+        protected void dispatch(RestRequest req, RouteMatch match) {
+            observedRestRequest = req;
+        }
+    }
+    
+    private static final class MockRestRequest extends RestRequest {
+        public MockRestRequest() {
+            super(null, null, null, null);
+        }
     }
 }

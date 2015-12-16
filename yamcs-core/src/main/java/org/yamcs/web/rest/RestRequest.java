@@ -3,7 +3,6 @@ package org.yamcs.web.rest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +16,7 @@ import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
+import org.yamcs.web.rest.Router.RouteMatch;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -47,9 +47,8 @@ public class RestRequest {
     private FullHttpRequest httpRequest;
     private QueryStringDecoder qsDecoder;
     private AuthenticationToken token;
+    private RouteMatch routeMatch;
     private static JsonFactory jsonFactory = new JsonFactory();
-    
-    private Map<String, String> routeParams = new HashMap<>();
     
     public RestRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest, QueryStringDecoder qsDecoder, AuthenticationToken token) {
         this.channelHandlerContext = channelHandlerContext;
@@ -58,16 +57,20 @@ public class RestRequest {
         this.qsDecoder = qsDecoder;
     }
     
+    void setRouteMatch(RouteMatch routeMatch) {
+        this.routeMatch = routeMatch;
+    }
+    
     public boolean hasRouteParam(String name) {
-        return routeParams.get(name) != null;
+        return routeMatch.regexMatch.group(name) != null;
     }
     
     public String getRouteParam(String name) {
-        return routeParams.get(name);
+        return routeMatch.regexMatch.group(name);
     }
     
     public long getLongRouteParam(String name) throws BadRequestException {
-        String routeParam = routeParams.get(name);
+        String routeParam = routeMatch.regexMatch.group(name);
         try {
             return Long.parseLong(routeParam);
         } catch (NumberFormatException e) {
@@ -76,7 +79,7 @@ public class RestRequest {
     }
     
     public int getIntegerRouteParam(String name) throws BadRequestException {
-        String routeParam = routeParams.get(name);
+        String routeParam = routeMatch.regexMatch.group(name);
         try {
             return Integer.parseInt(routeParam);
         } catch (NumberFormatException e) {
@@ -85,7 +88,7 @@ public class RestRequest {
     }
     
     public long getDateRouteParam(String name) throws BadRequestException {
-        String routeParam = routeParams.get(name);
+        String routeParam = routeMatch.regexMatch.group(name);
         try {
             return Long.parseLong(routeParam);
         } catch (NumberFormatException e) {

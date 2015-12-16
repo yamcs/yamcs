@@ -4,7 +4,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -13,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -145,6 +143,7 @@ public class Router {
         RestRequest restReq = new RestRequest(ctx, req, qsDecoder, token);
         try {
             RouteMatch match = matchURI(req.getMethod(), qsDecoder.path() /* without query string ! */);
+            restReq.setRouteMatch(match);
             if (match != null) {
                 dispatch(restReq, match);
             } else {
@@ -162,7 +161,7 @@ public class Router {
             if (matcher.matches()) {
                 Map<HttpMethod, RouteConfig> byMethod = entry.getValue();
                 if (byMethod.containsKey(method)) {
-                    return new RouteMatch(matcher.toMatchResult(), byMethod.get(method));
+                    return new RouteMatch(matcher, byMethod.get(method));
                 } else {
                     if (allowedMethods == null) {
                         allowedMethods = new HashSet<>(4);
@@ -179,9 +178,9 @@ public class Router {
         }
     }
     
-    public void dispatch(RestRequest req, RouteMatch match) {
+    protected void dispatch(RestRequest req, RouteMatch match) {
         try {
-            RestHandler target = (RestHandler) match.routeConfig.routeHandler;
+            RouteHandler target = match.routeConfig.routeHandler;
             
             // FIXME handleRequest must never return null! Futures are used to follow up on handling
             ChannelFuture responseFuture = (ChannelFuture) match.routeConfig.handle.invoke(target, req);
@@ -228,12 +227,13 @@ public class Router {
             if (optional) {
                 replacement.append("(?:");
                 replacement.append(slash);
-                replacement.append(star ? "(.+?)" : "([^/]+)");
-                replacement.append("?)?");
+                replacement.append("(?<").append(matcher.group(2)).append(">");
+                replacement.append(star ? ".+?" : "[^/]+");
+                replacement.append(")?)?");
             } else {
                 replacement.append(slash);
-                replacement.append("(?:");
-                replacement.append(star ? "(.+?)" : "([^/]+)");
+                replacement.append("(?<").append(matcher.group(2)).append(">");
+                replacement.append(star ? ".+?" : "[^/]+");
                 replacement.append(")");
             }            
 
@@ -241,10 +241,6 @@ public class Router {
         }
         matcher.appendTail(buf);
         return Pattern.compile(buf.append("$").toString());
-    }
-    
-    public Collection<Map<HttpMethod, RouteConfig>> getRoutes() {
-        return routes.values();
     }
     
     /**
@@ -282,14 +278,13 @@ public class Router {
     }
     
     /**
-     * Represents a matched route pattern.
-     * Used as a 'double' return value
+     * Represents a matched route pattern
      */
     public static final class RouteMatch {
-        final MatchResult regexMatch;
+        final Matcher regexMatch;
         final RouteConfig routeConfig;
         
-        RouteMatch(MatchResult regexMatch, RouteConfig routeConfig) {
+        RouteMatch(Matcher regexMatch, RouteConfig routeConfig) {
             this.regexMatch = regexMatch;
             this.routeConfig = routeConfig;
         }
