@@ -53,6 +53,7 @@ import io.protostuff.Schema;
 public abstract class RestHandler extends RouteHandler {
     
     private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
+    private static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
     
     protected static ChannelFuture sendOK(RestRequest restRequest) {
         ChannelHandlerContext ctx = restRequest.getChannelHandlerContext();
@@ -71,6 +72,7 @@ public abstract class RestHandler extends RouteHandler {
                 JsonGenerator generator = restRequest.createJsonGenerator(channelOut);
                 JsonIOUtil.writeTo(generator, responseMsg, responseSchema, false);
                 generator.close();
+                body.writeBytes(NEWLINE_BYTES); // For curl comfort
             }
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
@@ -106,6 +108,7 @@ public abstract class RestHandler extends RouteHandler {
                 JsonGenerator generator = req.createJsonGenerator(channelOut);
                 JsonIOUtil.writeTo(generator, toException(t).build(), SchemaWeb.RestExceptionMessage.WRITE, false);
                 generator.close();
+                buf.writeBytes(NEWLINE_BYTES); // For curl comfort
                 HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
                 setContentTypeHeader(response, MediaType.JSON.toString()); // UTF-8 by default IETF RFC4627
                 setContentLength(response, buf.readableBytes());
