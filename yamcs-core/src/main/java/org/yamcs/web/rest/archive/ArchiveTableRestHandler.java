@@ -11,11 +11,11 @@ import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
-import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
+import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
@@ -25,41 +25,12 @@ import org.yamcs.yarch.YarchDatabase;
 import io.netty.channel.ChannelFuture;
 
 public class ArchiveTableRestHandler extends RestHandler {
-
-    @Override
-    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
+    
+    @Route(path = "/api/archive/:instance/tables", method = "GET")
+    public ChannelFuture listTables(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
-        if (!req.hasPathSegment(pathOffset)) {
-            req.assertGET();
-            return listTables(req, ydb);            
-        } else {
-            String tableName = req.getPathSegment(pathOffset);
-            TableDefinition table = ydb.getTable(tableName);
-            if (table == null) {
-                throw new NotFoundException(req, "No table named '" + tableName + "'");
-            } else {
-                return handleTableRequest(req, pathOffset + 1, table);
-            }
-        }
-    }
-    
-    private ChannelFuture handleTableRequest(RestRequest req, int pathOffset, TableDefinition table) throws HttpException {
-        if (!req.hasPathSegment(pathOffset)) {
-            req.assertGET();
-            return getTable(req, table);
-        } else {
-            String resource = req.getPathSegment(pathOffset);
-            switch (resource) {
-            case "data":
-                return getTableData(req, table);
-            default:
-                throw new NotFoundException(req, "No resource '" + resource + "' for table '" + table.getName() + "'");                
-            }
-        }
-    }
-    
-    private ChannelFuture listTables(RestRequest req, YarchDatabase ydb) throws HttpException {
+        
         ListTablesResponse.Builder responseb = ListTablesResponse.newBuilder();
         for (TableDefinition def : ydb.getTableDefinitions()) {
             responseb.addTable(ArchiveHelper.toTableInfo(def));
@@ -67,12 +38,22 @@ public class ArchiveTableRestHandler extends RestHandler {
         return sendOK(req, responseb.build(), SchemaRest.ListTablesResponse.WRITE);
     }
     
-    private ChannelFuture getTable(RestRequest req, TableDefinition table) throws HttpException {
+    @Route(path = "/api/archive/:instance/tables/:name", method = "GET")
+    public ChannelFuture getTable(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
+        
         TableInfo response = ArchiveHelper.toTableInfo(table);
         return sendOK(req, response, SchemaArchive.TableInfo.WRITE);
     }
     
-    private ChannelFuture getTableData(RestRequest req, TableDefinition table) throws HttpException {
+    @Route(path = "/api/archive/:instance/tables/:name/data", method = "GET")
+    public ChannelFuture getTableData(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
+        
         List<String> cols = null;        
         if (req.hasQueryParameter("cols")) {
             cols = new ArrayList<>(); // Order, and non-unique
@@ -97,7 +78,7 @@ public class ArchiveTableRestHandler extends RestHandler {
         
         String sql = sqlb.toString();
         TableData.Builder responseb = TableData.newBuilder();
-        RestStreams.streamAndWait(req, sql, new RestStreamSubscriber(pos, limit) {
+        RestStreams.streamAndWait(instance, sql, new RestStreamSubscriber(pos, limit) {
             
             @Override
             public void processTuple(Stream stream, Tuple tuple) {

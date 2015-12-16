@@ -19,12 +19,11 @@ public class RestStreams {
     private static AtomicInteger streamCounter = new AtomicInteger();
     private static final Logger log = LoggerFactory.getLogger(RestStreams.class);
     
-    public static void streamAndWait(RestRequest req, String selectSql, RestStreamSubscriber s) throws HttpException {
-        stream(req, selectSql, s).await();
+    public static void streamAndWait(String instance, String selectSql, RestStreamSubscriber s) throws HttpException {
+        stream(instance, selectSql, s).await();
     }
     
-    public static StreamSubscriberWrapper stream(RestRequest req, String selectSql, RestStreamSubscriber s) throws HttpException {
-        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
+    public static StreamSubscriberWrapper stream(String instance, String selectSql, RestStreamSubscriber s) throws HttpException {
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
         
         String streamName = "rest_archive" + streamCounter.incrementAndGet();

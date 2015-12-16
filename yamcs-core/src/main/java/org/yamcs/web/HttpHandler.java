@@ -9,8 +9,6 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -24,11 +22,26 @@ import org.yamcs.web.rest.ClientRestHandler;
 import org.yamcs.web.rest.DisplayRestHandler;
 import org.yamcs.web.rest.InstanceRestHandler;
 import org.yamcs.web.rest.LinkRestHandler;
-import org.yamcs.web.rest.RestHandler;
-import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.Router;
 import org.yamcs.web.rest.UserRestHandler;
-import org.yamcs.web.rest.archive.ArchiveRestHandler;
+import org.yamcs.web.rest.archive.ArchiveAlarmRestHandler;
+import org.yamcs.web.rest.archive.ArchiveCommandRestHandler;
+import org.yamcs.web.rest.archive.ArchiveDownloadRestHandler;
+import org.yamcs.web.rest.archive.ArchiveEventRestHandler;
+import org.yamcs.web.rest.archive.ArchiveIndexRestHandler;
+import org.yamcs.web.rest.archive.ArchivePacketRestHandler;
+import org.yamcs.web.rest.archive.ArchiveParameterRestHandler;
+import org.yamcs.web.rest.archive.ArchiveStreamRestHandler;
+import org.yamcs.web.rest.archive.ArchiveTableRestHandler;
+import org.yamcs.web.rest.archive.ArchiveTagRestHandler;
+import org.yamcs.web.rest.mdb.MDBAlgorithmRestHandler;
+import org.yamcs.web.rest.mdb.MDBCommandRestHandler;
+import org.yamcs.web.rest.mdb.MDBContainerRestHandler;
+import org.yamcs.web.rest.mdb.MDBParameterRestHandler;
 import org.yamcs.web.rest.mdb.MDBRestHandler;
+import org.yamcs.web.rest.processor.ProcessorCommandQueueRestHandler;
+import org.yamcs.web.rest.processor.ProcessorCommandRestHandler;
+import org.yamcs.web.rest.processor.ProcessorParameterRestHandler;
 import org.yamcs.web.rest.processor.ProcessorRestHandler;
 import org.yamcs.web.websocket.WebSocketServerHandler;
 
@@ -50,7 +63,6 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
-import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
@@ -61,29 +73,49 @@ import io.netty.util.CharsetUtil;
  */
 public class HttpHandler extends SimpleChannelInboundHandler<Object> {
 
-    public static final String STATIC_PATH = "_static";
-    public static final String API_PATH = "api";
+    private static final String STATIC_PATH = "_static";
+    private static final String API_PATH = "api";
     
     public static final AttributeKey<HttpRequest> CTX_HTTP_REQUEST = AttributeKey.valueOf("request");
     public static final AttributeKey<ChunkedTransferStats> CTX_CHUNK_STATS = AttributeKey.valueOf("chunkedTransferStats");
     public static final AttributeKey<String> CTX_ATTACHMENT_NAME = AttributeKey.valueOf("attachmentName");
 
-    final static Logger log = LoggerFactory.getLogger(HttpHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(HttpHandler.class);
 
-    static StaticFileHandler fileRequestHandler = new StaticFileHandler();
-    Map<String, RestHandler> restHandlers = new HashMap<>();
-    WebSocketServerHandler webSocketHandler = new WebSocketServerHandler();
+    private static StaticFileHandler fileRequestHandler = new StaticFileHandler();
+    private WebSocketServerHandler webSocketHandler = new WebSocketServerHandler();
+    
+    private Router apiRouter = new Router();
     
     public HttpHandler() {
-        restHandlers.put("archive", new ArchiveRestHandler());
-        restHandlers.put("clients", new ClientRestHandler());
-        restHandlers.put("displays",  new DisplayRestHandler());
-        restHandlers.put("instances", new InstanceRestHandler());
-        restHandlers.put("links", new LinkRestHandler());
-        restHandlers.put("mdb", new MDBRestHandler());
-        restHandlers.put("processors", new ProcessorRestHandler());
-        restHandlers.put("simTime", new SimulationTimeService.SimTimeRestHandler());
-        restHandlers.put("user", new UserRestHandler());
+        apiRouter.registerRouteHandler(new ClientRestHandler());
+        apiRouter.registerRouteHandler(new DisplayRestHandler());
+        apiRouter.registerRouteHandler(new InstanceRestHandler());
+        apiRouter.registerRouteHandler(new LinkRestHandler());
+        apiRouter.registerRouteHandler(new SimulationTimeService.SimTimeRestHandler());
+        apiRouter.registerRouteHandler(new UserRestHandler());
+        
+        apiRouter.registerRouteHandler(new ArchiveAlarmRestHandler());
+        apiRouter.registerRouteHandler(new ArchiveCommandRestHandler());
+        apiRouter.registerRouteHandler(new ArchiveDownloadRestHandler());
+        apiRouter.registerRouteHandler(new ArchiveEventRestHandler());
+        apiRouter.registerRouteHandler(new ArchiveIndexRestHandler());
+        apiRouter.registerRouteHandler(new ArchivePacketRestHandler());
+        apiRouter.registerRouteHandler(new ArchiveParameterRestHandler());
+        apiRouter.registerRouteHandler(new ArchiveStreamRestHandler());
+        apiRouter.registerRouteHandler(new ArchiveTableRestHandler());
+        apiRouter.registerRouteHandler(new ArchiveTagRestHandler());
+        
+        apiRouter.registerRouteHandler(new ProcessorRestHandler());
+        apiRouter.registerRouteHandler(new ProcessorParameterRestHandler());
+        apiRouter.registerRouteHandler(new ProcessorCommandRestHandler());
+        apiRouter.registerRouteHandler(new ProcessorCommandQueueRestHandler());
+        
+        apiRouter.registerRouteHandler(new MDBRestHandler());
+        apiRouter.registerRouteHandler(new MDBParameterRestHandler());    
+        apiRouter.registerRouteHandler(new MDBContainerRestHandler());
+        apiRouter.registerRouteHandler(new MDBCommandRestHandler());
+        apiRouter.registerRouteHandler(new MDBAlgorithmRestHandler());
     }
     
     @Override
@@ -93,7 +125,7 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
         } else if (msg instanceof WebSocketFrame) {
             webSocketHandler.handleWebSocketFrame(ctx, (WebSocketFrame) msg);
         } else {
-            log.info("Sending bad request error for message {}", msg);
+            log.warn("Received garbage message {}", msg);
             sendPlainTextError(ctx, BAD_REQUEST);
             return;
         }
@@ -106,46 +138,27 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     private void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
-        // We have this also on info level coupled with the HTTP response status code, but this is on debug
-        // for an earlier reporting while debugging issues
+        // We have this also on info level coupled with the HTTP response status code,
+        // but this is on debug for an earlier reporting while debugging issues
         log.debug("{} {}", req.getMethod(), req.getUri());
-        
-        // Store in context, mainly for use by full-response loggers
-        ctx.attr(CTX_HTTP_REQUEST).set(req);
-        
-        QueryStringDecoder qsDecoder = new QueryStringDecoder(req.getUri());
-        String uri = qsDecoder.path(); // URI without Query String
 
         AuthenticationToken authToken = null;
         if (Privilege.getInstance().isEnabled()) {
-            if (req.headers().contains(HttpHeaders.Names.AUTHORIZATION)) {
-                String authorizationHeader = req.headers().get(HttpHeaders.Names.AUTHORIZATION);
-                if (!authorizationHeader.startsWith("Basic ")) { // Exact case only
-                    sendPlainTextError(ctx, BAD_REQUEST);
-                    return;
-                }
-                // Get encoded user and password, comes after "Basic "
-                String userpassEncoded = authorizationHeader.substring(6);
-                String userpassDecoded  = new String(Base64.getDecoder().decode(userpassEncoded));
-
-                // Username is not allowed to contain ':', but passwords are
-                String[] parts = userpassDecoded.split(":", 2);
-                if (parts.length < 2) {
-                    sendPlainTextError(ctx, BAD_REQUEST);
-                    return;
-                }
-                authToken = new UsernamePasswordToken(parts[0], parts[1]);
-                if (!Privilege.getInstance().authenticates(authToken)) {
-                    sendUnauthorized(ctx);
-                    return;
-                }
-            } else {
+            try {
+                authToken = authenticate(ctx, req);
+            } catch (BadRequestException e) {
+                sendPlainTextError(ctx, BAD_REQUEST);
+                return;
+            } catch (UnauthorizedException e) {
                 sendUnauthorized(ctx);
                 return;
             }
         }
         
-        String[] path = uri.split("/", 3); //uri starts with / so path[0] is always empty
+        // Store in context, mainly for use by full-response loggers
+        ctx.attr(CTX_HTTP_REQUEST).set(req);
+        
+        String[] path = req.getUri().split("/", 3); //uri starts with / so path[0] is always empty
         switch (path[1]) {
         case STATIC_PATH:
             if (path.length == 2) { //do not accept "/_static/" (i.e. directory listing) requests 
@@ -160,18 +173,10 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
                 return;
             }
             
-            RestRequest restReq = new RestRequest(ctx, req, qsDecoder, authToken);
-            
-            String resource = restReq.getPathSegment(2);
-            RestHandler restHandler = restHandlers.get(resource);
-            if (restHandler != null) {
-                restHandler.handleRequestOrError(restReq, 3);
-            } else {
-                sendPlainTextError(ctx, NOT_FOUND);
-            }
+            apiRouter.handleHttpRequest(ctx, req, authToken);
             return;
         case "":
-            // overview of all instances 
+            // overview of all instances
             fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/index.html");
             return;
         default:
@@ -195,6 +200,36 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
             }
             return;
         }
+    }
+    
+    private AuthenticationToken authenticate(ChannelHandlerContext ctx, HttpRequest req) throws BadRequestException, UnauthorizedException {
+        if (!req.headers().contains(HttpHeaders.Names.AUTHORIZATION)) {
+            throw new UnauthorizedException("Authorization required, but nothing provided");
+        }
+        
+        String authorizationHeader = req.headers().get(HttpHeaders.Names.AUTHORIZATION);
+        if (!authorizationHeader.startsWith("Basic ")) { // Exact case only
+            throw new BadRequestException("Unsupported Authorization header '" + authorizationHeader + "'");
+        }
+        // Get encoded user and password, comes after "Basic "
+        String userpassEncoded = authorizationHeader.substring(6);
+        String userpassDecoded;
+        try {
+            userpassDecoded = new String(Base64.getDecoder().decode(userpassEncoded));
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Could not decode Base64-encoded credentials");
+        }
+
+        // Username is not allowed to contain ':', but passwords are
+        String[] parts = userpassDecoded.split(":", 2);
+        if (parts.length < 2) {
+            throw new BadRequestException("Malformed username/password (Not separated by colon?)");
+        }
+        AuthenticationToken token = new UsernamePasswordToken(parts[0], parts[1]);
+        if (!Privilege.getInstance().authenticates(token)) {
+            throw new UnauthorizedException();
+        }
+        return token;
     }
     
     public ChannelFuture sendRedirect(ChannelHandlerContext ctx, String newUri) {
@@ -246,7 +281,7 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
     }
     
     /**
-     * Sends base HTTP response indicating that we'll use chunked transfer encoding
+     * Sends base HTTP response indicating the use of chunked transfer encoding
      */
     public static ChannelFuture startChunkedTransfer(ChannelHandlerContext ctx, MediaType contentType) {
         HttpRequest request = ctx.attr(CTX_HTTP_REQUEST).get();
@@ -256,7 +291,7 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
         response.headers().set(Names.TRANSFER_ENCODING, HttpHeaders.Values.CHUNKED);
         response.headers().set(Names.CONTENT_TYPE, contentType);
         
-        // Set Content-Disposition header so that some clients will treat the response as a downloadable file
+        // Set Content-Disposition header so that supporting clients will treat response as a downloadable file
         if (ctx.attr(CTX_ATTACHMENT_NAME).get() != null) {
             String filename = ctx.attr(CTX_ATTACHMENT_NAME).get();
             response.headers().set("Content-Disposition", "attachment; filename=\"" + filename + "\"");
@@ -272,7 +307,7 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
         ChannelFuture writeFuture = ctx.writeAndFlush(new DefaultHttpContent(buf));
         try {
             if (!ch.isWritable()) {
-                log.warn("Channel open, but not writable. Waiting it out for max 10 seconds.");
+                log.warn("Channel open, but not writable. Waiting it out for max 10 seconds");
                 boolean writeCompleted = writeFuture.await(10, TimeUnit.SECONDS);
                 if (!writeCompleted) {
                     throw new IOException("Channel did not become writable in 10 seconds");

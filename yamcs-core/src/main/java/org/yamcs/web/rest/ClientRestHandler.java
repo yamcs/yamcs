@@ -14,8 +14,6 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
-import org.yamcs.web.MethodNotAllowedException;
-import org.yamcs.web.NotFoundException;
 
 import io.netty.channel.ChannelFuture;
 
@@ -24,27 +22,8 @@ import io.netty.channel.ChannelFuture;
  */
 public class ClientRestHandler extends RestHandler {
     
-    @Override
-    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        if (req.hasPathSegment(pathOffset)) {
-            int clientId = Integer.parseInt(req.getPathSegment(pathOffset));
-            ClientInfo ci = ManagementService.getInstance().getClientInfo(clientId);
-            if (ci == null) {
-                throw new NotFoundException(req, "No such client");
-            } else {
-                if (req.isPATCH() || req.isPOST() || req.isPUT()) {
-                    return patchClient(req, ci);
-                } else {
-                    throw new MethodNotAllowedException(req);
-                }
-            }
-        } else {
-            req.assertGET();
-            return listClients(req);
-        }
-    }
-    
-    private ChannelFuture listClients(RestRequest req) throws HttpException {
+    @Route(path="/api/clients", method="GET")
+    public ChannelFuture listClients(RestRequest req) throws HttpException {
         Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
         ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
         for (ClientInfo client : clients) {
@@ -53,22 +32,25 @@ public class ClientRestHandler extends RestHandler {
         return sendOK(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
     }
     
-    private ChannelFuture patchClient(RestRequest req, ClientInfo ci) throws HttpException {
-        EditClientRequest request = req.bodyAsMessage(SchemaRest.EditClientRequest.MERGE).build();
-        String processor = null;
-        if (request.hasProcessor()) processor = request.getProcessor();
-        if (req.hasQueryParameter("processor")) processor = req.getQueryParameter("processor");
+    @Route(path="/api/clients/:id", method={ "PATCH", "PUT", "POST" })
+    public ChannelFuture patchClient(RestRequest req) throws HttpException {
+        ClientInfo ci = verifyClient(req, req.getIntegerRouteParam("id"));
         
-        if (processor != null) {
+        EditClientRequest request = req.bodyAsMessage(SchemaRest.EditClientRequest.MERGE).build();
+        String newProcessorName = null;
+        if (request.hasProcessor()) newProcessorName = request.getProcessor();
+        if (req.hasQueryParameter("processor")) newProcessorName = req.getQueryParameter("processor");
+        
+        if (newProcessorName != null) {
             String instance = ci.getInstance(); // Only allow changes within same instance
-            YProcessor yproc = YProcessor.getInstance(instance, processor);
-            if (yproc == null) {
-                throw new NotFoundException(req, "No processor named '" + processor + "' for instance '" + instance + "'");
+            YProcessor newProcessor = YProcessor.getInstance(instance, newProcessorName);
+            if (newProcessor == null) {
+                throw new BadRequestException("Cannot switch user to non-existing processor '" + newProcessorName + "' (instance: '" + instance + "')");
             } else {
                 ManagementService mservice = ManagementService.getInstance();
                 ProcessorManagementRequest.Builder yprocReq = ProcessorManagementRequest.newBuilder();
                 yprocReq.setInstance(instance);
-                yprocReq.setName(processor);
+                yprocReq.setName(newProcessorName);
                 yprocReq.setOperation(Operation.CONNECT_TO_PROCESSOR);
                 yprocReq.addClientId(ci.getId());
                 try {

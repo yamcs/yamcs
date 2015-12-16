@@ -16,7 +16,6 @@ import org.yamcs.protobuf.Rest.ListPacketsResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
@@ -25,6 +24,7 @@ import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
+import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
@@ -36,26 +36,11 @@ import io.netty.channel.ChannelFuture;
 public class ArchivePacketRestHandler extends RestHandler {
     
     private static final Logger log = LoggerFactory.getLogger(ArchivePacketRestHandler.class);
-
-    @Override
-    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        if (!req.hasPathSegment(pathOffset)) {
-            req.assertGET();
-            return listPackets(req, TimeEncoding.INVALID_INSTANT);
-        } else {
-            long gentime = req.getPathSegmentAsDate(pathOffset);
-            
-            pathOffset++;
-            if (!req.hasPathSegment(pathOffset)) {
-                return listPackets(req, gentime);
-            } else {
-                int seqnum = req.getPathSegmentAsInt(pathOffset);
-                return getPacket(req, gentime, seqnum);
-            }
-        }
-    }
     
-    private ChannelFuture listPackets(RestRequest req, long gentime) throws HttpException {
+    @Route(path = "/api/archive/:instance/packets/:gentime?", method = "GET")
+    public ChannelFuture listPackets(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         
@@ -71,8 +56,8 @@ public class ArchivePacketRestHandler extends RestHandler {
         if (ir.hasInterval()) {
             sqlb.where(ir.asSqlCondition("gentime"));
         }
-        if (gentime != TimeEncoding.INVALID_INSTANT) {
-            sqlb.where("gentime = " + gentime);
+        if (req.hasRouteParam("gentime")) {
+            sqlb.where("gentime = " + req.getDateRouteParam("gentime"));
         }
         if (!nameSet.isEmpty()) {
             sqlb.where("pname in ('" + String.join("','", nameSet) + "')");
@@ -82,7 +67,7 @@ public class ArchivePacketRestHandler extends RestHandler {
         if (req.asksFor(MediaType.OCTET_STREAM)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
             try (ByteBufOutputStream bufOut = new ByteBufOutputStream(buf)) {
-                RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
+                RestStreams.streamAndWait(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
                     
                     @Override
                     public void processTuple(Stream stream, Tuple tuple) {
@@ -102,7 +87,7 @@ public class ArchivePacketRestHandler extends RestHandler {
             }
         } else {
             ListPacketsResponse.Builder responseb = ListPacketsResponse.newBuilder();
-            RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
+            RestStreams.streamAndWait(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
     
                 @Override
                 public void processTuple(Stream stream, Tuple tuple) {
@@ -114,12 +99,17 @@ public class ArchivePacketRestHandler extends RestHandler {
         }
     }
     
-    private ChannelFuture getPacket(RestRequest req, long gentime, int seqnum) throws HttpException {
+    @Route(path = "/api/archive/:instance/packets/:gentime/:seqnum", method = "GET")
+    public ChannelFuture getPacket(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        long gentime = req.getDateRouteParam("gentime");
+        int seqNum = req.getIntegerRouteParam("seqnum");
+        
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME)
-                .where("gentime = " + gentime, "seqNum = " + seqnum);
+                .where("gentime = " + gentime, "seqNum = " + seqNum);
         
         List<TmPacketData> packets = new ArrayList<>();
-        RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(0, 2) {
+        RestStreams.streamAndWait(instance, sqlb.toString(), new RestStreamSubscriber(0, 2) {
 
             @Override
             public void processTuple(Stream stream, Tuple tuple) {
@@ -129,7 +119,7 @@ public class ArchivePacketRestHandler extends RestHandler {
         });
         
         if (packets.isEmpty()) {
-            throw new NotFoundException(req, "No packet for id (" + gentime + ", " + seqnum + ")");
+            throw new NotFoundException(req, "No packet for id (" + gentime + ", " + seqNum + ")");
         } else if (packets.size() > 1) {
             throw new InternalServerErrorException("Too many results");
         } else {

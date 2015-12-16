@@ -7,6 +7,10 @@ import io.netty.handler.codec.http.HttpResponseStatus;
  */
 public abstract class HttpException extends Exception {
     private static final long serialVersionUID = 1L;
+    
+    public HttpException() {
+        super();
+    }
 
     public HttpException(Throwable t) {
         super(t);

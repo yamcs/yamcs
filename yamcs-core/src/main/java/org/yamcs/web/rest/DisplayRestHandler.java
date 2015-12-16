@@ -6,11 +6,9 @@ import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
-import org.yamcs.web.NotFoundException;
 import org.yamcs.web.StaticFileHandler;
 
 import com.fasterxml.jackson.core.JsonEncoding;
@@ -31,38 +29,20 @@ import io.netty.channel.ChannelFuture;
  */
 public class DisplayRestHandler extends RestHandler {
     JsonFactory jsonFactory=new JsonFactory();
-    final static Logger log=LoggerFactory.getLogger(DisplayRestHandler.class.getName());
-    
-    @Override
-    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        if (!req.hasPathSegment(pathOffset)) {
-            throw new NotFoundException(req);
-        }
-        
-        String instance = req.getPathSegment(pathOffset);
-        if (!YamcsServer.hasInstance(instance)) {
-            throw new NotFoundException(req, "No instance '" + instance + "'");
-        }
-        
-        pathOffset++;
-        if (!req.hasPathSegment(pathOffset)) {
-            req.assertGET();
-            return listDisplays(req, instance);
-        } else {
-            throw new NotFoundException(req);
-        }
-    }
+    private final static Logger log=LoggerFactory.getLogger(DisplayRestHandler.class);
 
-    private ChannelFuture listDisplays(RestRequest req, String yamcsInstance) throws HttpException {
+    @Route(path="/api/displays/:instance", method="GET")
+    public ChannelFuture listDisplays(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
         ByteBuf cb=req.getChannelHandlerContext().alloc().buffer(1024);
         ByteBufOutputStream cbos=new ByteBufOutputStream(cb);
         
-        try (JsonGenerator json=jsonFactory.createGenerator(cbos, JsonEncoding.UTF8)) {
+        try (JsonGenerator json = jsonFactory.createGenerator(cbos, JsonEncoding.UTF8)) {
             json.writeStartArray();
             
             File displayDir = null;
             for (String webRoot : StaticFileHandler.WEB_Roots) {
-                File dir = new File(webRoot + File.separator + yamcsInstance + File.separator + "displays");
+                File dir = new File(webRoot + File.separator + instance + File.separator + "displays");
                 if (dir.exists()) {
                     displayDir = dir;
                     break;

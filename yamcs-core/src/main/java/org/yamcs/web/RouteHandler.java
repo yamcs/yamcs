@@ -17,7 +17,7 @@ public class RouteHandler {
     /**
      * Sets the Date header for the HTTP response
      */
-    protected void setDateHeader(HttpResponse response) {
+    protected static void setDateHeader(HttpResponse response) {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
         dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
     
@@ -31,7 +31,7 @@ public class RouteHandler {
      * @param type
      *            content type of file to extract
      */
-    protected void setContentTypeHeader(HttpResponse response, String type) {
+    protected static void setContentTypeHeader(HttpResponse response, String type) {
         response.headers().set(HttpHeaders.Names.CONTENT_TYPE, type);
     }
     
@@ -41,7 +41,7 @@ public class RouteHandler {
      * @param lastModified
      *            the time when the file has been last mdified
      */
-    protected void setDateAndCacheHeaders(HttpResponse response, Date lastModified) {
+    protected static void setDateAndCacheHeaders(HttpResponse response, Date lastModified) {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
         dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
     

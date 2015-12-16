@@ -8,7 +8,6 @@ import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Rest.ListAlarmsResponse;
 import org.yamcs.protobuf.SchemaAlarms;
 import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
@@ -17,10 +16,11 @@ import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
+import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.SqlBuilder;
-import org.yamcs.web.rest.mdb.MDBHelper;
-import org.yamcs.web.rest.mdb.MDBHelper.MatchResult;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 
@@ -28,36 +28,10 @@ import io.netty.channel.ChannelFuture;
 
 public class ArchiveAlarmRestHandler extends RestHandler {
 
-    @Override
-    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        if (!req.hasPathSegment(pathOffset)) {
-            req.assertGET();
-            return listAlarms(req, null, TimeEncoding.INVALID_INSTANT);
-        } else {
-            MatchResult<Parameter> mr = MDBHelper.matchParameterName(req, pathOffset);
-            if (!mr.matches()) {
-                throw new NotFoundException(req);
-            }
-            pathOffset = mr.getPathOffset();
-            if (req.hasPathSegment(pathOffset)) {
-                long triggerTime = req.getPathSegmentAsDate(pathOffset);
-                if (req.hasPathSegment(pathOffset + 1)) {
-                    int sequenceNumber = req.getPathSegmentAsInt(pathOffset + 1);
-                    if (req.hasPathSegment(pathOffset + 2)) {
-                        throw new NotFoundException(req);
-                    } else {
-                        return getAlarm(req, mr.getMatch(), triggerTime, sequenceNumber);
-                    }
-                } else {
-                    return listAlarms(req, mr.getMatch().getQualifiedName(), triggerTime);
-                }
-            } else {
-                return listAlarms(req, mr.getMatch().getQualifiedName(), TimeEncoding.INVALID_INSTANT);
-            }
-        }
-    }
-    
-    private ChannelFuture listAlarms(RestRequest req, String parameterName, long triggerTime) throws HttpException {
+    @Route(path="/api/archive/:instance/alarms/:parameter*/:triggerTime?", method="GET")
+    public ChannelFuture listAlarms(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+                
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         
@@ -66,16 +40,18 @@ public class ArchiveAlarmRestHandler extends RestHandler {
         if (ir.hasInterval()) {
             sqlb.where(ir.asSqlCondition("triggerTime"));    
         }
-        if (parameterName != null) {
-            sqlb.where("parameter = '" + parameterName + "'");
+        if (req.hasRouteParam("parameter")) {
+            XtceDb mdb = XtceDbFactory.getInstance(instance);
+            Parameter p = verifyParameter(req, mdb, req.getRouteParam("parameter"));
+            sqlb.where("parameter = '" + p.getQualifiedName() + "'");
         }
-        if (triggerTime != TimeEncoding.INVALID_INSTANT) {
-            sqlb.where("triggerTime = " + triggerTime);
+        if (req.hasRouteParam("triggerTime")) {
+            sqlb.where("triggerTime = " + req.getDateRouteParam("triggerTime"));
         }
         sqlb.descend(req.asksDescending(true));
         
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
-        RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
+        RestStreams.streamAndWait(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
 
             @Override
             public void processTuple(Stream stream, Tuple tuple) {
@@ -87,15 +63,24 @@ public class ArchiveAlarmRestHandler extends RestHandler {
         return sendOK(req, responseb.build(), SchemaRest.ListAlarmsResponse.WRITE);
     }
     
-    private ChannelFuture getAlarm(RestRequest req, Parameter p, long triggerTime, int seqnum) throws HttpException {
+    @Route(path="/api/archive/:instance/alarms/:parameter*/:triggerTime/:seqnum", method="GET")
+    public ChannelFuture getAlarm(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        Parameter p = verifyParameter(req, mdb, req.getRouteParam("parameter"));
+        
+        long triggerTime = req.getDateRouteParam("triggerTime");
+        int seqNum = req.getIntegerRouteParam("seqnum");
+        
         String sql = new SqlBuilder(AlarmRecorder.TABLE_NAME)
                 .where("triggerTime = " + triggerTime)
-                .where("seqNum = " + seqnum)
+                .where("seqNum = " + seqNum)
                 .where("parameter = '" + p.getQualifiedName() + "'")
                 .toString();
         
         List<AlarmData> alarms = new ArrayList<>();
-        RestStreams.streamAndWait(req, sql, new RestStreamSubscriber(0, 2) {
+        RestStreams.streamAndWait(instance, sql, new RestStreamSubscriber(0, 2) {
 
             @Override
             public void processTuple(Stream stream, Tuple tuple) {
@@ -105,7 +90,7 @@ public class ArchiveAlarmRestHandler extends RestHandler {
         });
         
         if (alarms.isEmpty()) {
-            throw new NotFoundException(req, "No alarm for id (" + p.getQualifiedName() + ", " + triggerTime + ", " + seqnum + ")");
+            throw new NotFoundException(req, "No alarm for id (" + p.getQualifiedName() + ", " + triggerTime + ", " + seqNum + ")");
         } else if (alarms.size() > 1) {
             throw new InternalServerErrorException("Too many results");
         } else {

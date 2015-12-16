@@ -3,7 +3,6 @@ package org.yamcs.web.rest;
 import java.util.List;
 
 import org.yamcs.YamcsException;
-import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Rest.EditLinkRequest;
 import org.yamcs.protobuf.Rest.ListLinkInfoResponse;
@@ -13,8 +12,6 @@ import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
-import org.yamcs.web.MethodNotAllowedException;
-import org.yamcs.web.NotFoundException;
 
 import io.netty.channel.ChannelFuture;
 
@@ -23,46 +20,16 @@ import io.netty.channel.ChannelFuture;
  */
 public class LinkRestHandler extends RestHandler {
     
-    @Override
-    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        if (req.hasPathSegment(pathOffset)) {
-            String instance = req.getPathSegment(pathOffset);
-            if (!YamcsServer.hasInstance(instance)) {
-                throw new NotFoundException(req, "No instance named '" + instance + "'");
-            }
-            
-            pathOffset++;
-            if (req.hasPathSegment(pathOffset)) {
-                String linkName = req.getPathSegment(pathOffset);
-                LinkInfo linkInfo = ManagementService.getInstance().getLinkInfo(instance, linkName);
-                if (linkInfo == null) {
-                    throw new NotFoundException(req, "No link named '" + linkName + "' within instance '" + instance + "'");
-                } else {
-                    if (req.isGET()) {
-                        return getLink(req, linkInfo);
-                    } else if (req.isPATCH() || req.isPOST() || req.isPUT()) {
-                        return editLink(req, linkInfo);
-                    } else {
-                        throw new MethodNotAllowedException(req);
-                    }
-                }
-            } else {
-                req.assertGET();
-                return listLinks(req, instance);
-            }
-        } else {
-            req.assertGET();
-            return listLinks(req, null);
+    @Route(path="/api/links/:instance?", method="GET")
+    public ChannelFuture listLinks(RestRequest req) throws HttpException {        
+        String instance = req.getRouteParam("instance");
+        if (instance != null) {
+            verifyInstance(req, instance);
         }
-    }
-    
-    private ChannelFuture getLink(RestRequest req, LinkInfo linkInfo) throws HttpException {
-        return sendOK(req, linkInfo, SchemaYamcsManagement.LinkInfo.WRITE);
-    }
-    
-    private ChannelFuture listLinks(RestRequest req, String instance) throws HttpException {
+        
         List<LinkInfo> links = ManagementService.getInstance().getLinkInfo();
         ListLinkInfoResponse.Builder responseb = ListLinkInfoResponse.newBuilder();
+        
         for (LinkInfo link : links) {
             if (instance == null || instance.equals(link.getInstance())) {
                 responseb.addLink(link);
@@ -71,7 +38,16 @@ public class LinkRestHandler extends RestHandler {
         return sendOK(req, responseb.build(), SchemaRest.ListLinkInfoResponse.WRITE);
     }
     
-    private ChannelFuture editLink(RestRequest req, LinkInfo linkInfo) throws HttpException {
+    @Route(path="/api/links/:instance/link/:name", method="GET")
+    public ChannelFuture getLink(RestRequest req) throws HttpException {
+        LinkInfo linkInfo = verifyLink(req, req.getRouteParam("instance"), req.getRouteParam("name"));
+        return sendOK(req, linkInfo, SchemaYamcsManagement.LinkInfo.WRITE);
+    }
+    
+    @Route(path="/api/links/:instance/link/:name", method={"PATCH", "PUT", "POST"})
+    public ChannelFuture editLink(RestRequest req) throws HttpException {
+        LinkInfo linkInfo = verifyLink(req, req.getRouteParam("instance"), req.getRouteParam("name"));
+        
         EditLinkRequest request = req.bodyAsMessage(SchemaRest.EditLinkRequest.MERGE).build();
         String state = null;
         if (request.hasState()) state = request.getState();

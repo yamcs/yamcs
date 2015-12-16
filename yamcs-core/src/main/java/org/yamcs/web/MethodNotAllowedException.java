@@ -1,7 +1,11 @@
 package org.yamcs.web;
 
-import org.yamcs.web.rest.RestRequest;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
@@ -9,12 +13,19 @@ import io.netty.handler.codec.http.HttpResponseStatus;
  * specific path
  */
 public class MethodNotAllowedException extends HttpException {
+    
     private static final long serialVersionUID = 1L;
+    
+    private List<HttpMethod> allowedMethods;
 
-    public MethodNotAllowedException(RestRequest req) {
-        super(String.format("Unsupported http method '%s' for path '%s'",
-                req.getHttpRequest().getMethod(),
-                req.getHttpRequest().getUri()));
+    public MethodNotAllowedException(HttpMethod method, String uri, Collection<HttpMethod> allowedMethods) {
+        super(String.format("Unsupported HTTP method '%s' for resource '%s'", method, uri));
+        this.allowedMethods = new ArrayList<>(allowedMethods);
+        Collections.sort(this.allowedMethods);
+    }
+    
+    public List<HttpMethod> getAllowedMethods() {
+        return allowedMethods;
     }
 
     @Override

@@ -48,7 +48,7 @@ public class StaticFileHandler extends RouteHandler {
     public static final int HTTP_CACHE_SECONDS = 60;
     private static boolean zeroCopyEnabled = true;
     
-    final static Logger log=LoggerFactory.getLogger(StaticFileHandler.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(StaticFileHandler.class.getName());
     
     public static void init() throws ConfigurationException {
         if(mimeTypesMap!=null) return;
@@ -76,7 +76,7 @@ public class StaticFileHandler extends RouteHandler {
     }
     
     void handleStaticFileRequest(ChannelHandlerContext ctx, HttpRequest req, String rawPath) throws Exception {
-        log.debug("handling static file request for {}", rawPath);
+        log.debug("Handling static file request for {}", rawPath);
         String path = sanitizePath(rawPath);
         if (path == null) {
             HttpHandler.sendPlainTextError(ctx, FORBIDDEN);
@@ -94,7 +94,7 @@ public class StaticFileHandler extends RouteHandler {
         }
 
         if (!match) {
-            log.warn("{} does not exist or is hidden. Searched under {}", path, WEB_Roots);
+            log.warn("File {} does not exist or is hidden. Searched under {}", path, WEB_Roots);
             HttpHandler.sendPlainTextError(ctx, NOT_FOUND);
             return;
         }
@@ -184,9 +184,7 @@ public class StaticFileHandler extends RouteHandler {
         
     /**
      * Sets the content type header for the HTTP Response
-     *
-     * @param response
-     *            HTTP response
+     * 
      * @param file
      *            file to extract content type
      */
@@ -197,8 +195,6 @@ public class StaticFileHandler extends RouteHandler {
     /**
      * Sets the Date and Cache headers for the HTTP Response
      *
-     * @param response
-     *            HTTP response
      * @param fileToCache
      *            file to extract content type
      */
@@ -220,9 +216,6 @@ public class StaticFileHandler extends RouteHandler {
     
     /**
      * When file timestamp is the same as what the browser is sending up, send a "304 Not Modified"
-     * 
-     * @param ctx
-     *            Context
      */
     private void sendNotModified(ChannelHandlerContext ctx, HttpRequest req) {
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.NOT_MODIFIED);

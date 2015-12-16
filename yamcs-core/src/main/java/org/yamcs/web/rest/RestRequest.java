@@ -17,7 +17,6 @@ import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
-import org.yamcs.web.MethodNotAllowedException;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -29,7 +28,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders.Names;
-import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.ssl.SslHandler;
@@ -41,9 +39,6 @@ import io.protostuff.Schema;
  */
 public class RestRequest {
     
-    public static final String CTX_INSTANCE = "instance";
-    public static final String CTX_PROCESSOR = "processor";
-    
     public enum Option {
         NO_LINK;
     }
@@ -51,107 +46,59 @@ public class RestRequest {
     private ChannelHandlerContext channelHandlerContext;
     private FullHttpRequest httpRequest;
     private QueryStringDecoder qsDecoder;
-    private AuthenticationToken authToken;
+    private AuthenticationToken token;
     private static JsonFactory jsonFactory = new JsonFactory();
     
-    // For storing resolved URI resource segments
-    private Map<String, Object> ctx = new HashMap<String, Object>();
+    private Map<String, String> routeParams = new HashMap<>();
     
-    private String[] pathSegments;
-    
-    public RestRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest, QueryStringDecoder qsDecoder, AuthenticationToken authToken) {
+    public RestRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest, QueryStringDecoder qsDecoder, AuthenticationToken token) {
         this.channelHandlerContext = channelHandlerContext;
         this.httpRequest = httpRequest;
-        this.authToken = authToken;
+        this.token = token;
         this.qsDecoder = qsDecoder;
-        
-        // Get splitted path, taking care that URL-encoded slashes are ignored for the split
-        pathSegments = qsDecoder.path().split("/");
-        for (int i=0; i<pathSegments.length; i++) {
-            pathSegments[i] = QueryStringDecoder.decodeComponent(pathSegments[i]);
-        }
     }
     
-    /**
-     * Returns all decoded path segments. The structure varies from one operation to another
-     * but in broad lines amounts to this:
-     * <ul>
-     *  <li>0. The empty string (because uri's start with a "/")
-     *  <li>1. 'api', this distinguishes api calls from other web requests
-     *  <li>2. The yamcs instance
-     *  <li>3. The general resource, e.g. 'parameters', or 'commands'
-     *  <li>4. Optionally, any number of other segments depending on the operation.
-     * </ul>
-     */
-    public String[] getPathSegments() {
-        return pathSegments;
+    public boolean hasRouteParam(String name) {
+        return routeParams.get(name) != null;
     }
     
-    /**
-     * Returns the decoded URI path segment at the specified index
-     */
-    public String getPathSegment(int index) {
-        return pathSegments[index];
+    public String getRouteParam(String name) {
+        return routeParams.get(name);
     }
     
-    public long getPathSegmentAsDate(int index) {
-        String segment = pathSegments[index];
+    public long getLongRouteParam(String name) throws BadRequestException {
+        String routeParam = routeParams.get(name);
         try {
-            return Long.parseLong(segment);
+            return Long.parseLong(routeParam);
         } catch (NumberFormatException e) {
-            return TimeEncoding.parse(segment);
+            throw new BadRequestException("Path segment ':" + name + "' is not a valid integer value");
         }
     }
     
-    public int getPathSegmentAsInt(int index) throws BadRequestException {
-        String segment = pathSegments[index];
+    public int getIntegerRouteParam(String name) throws BadRequestException {
+        String routeParam = routeParams.get(name);
         try {
-            return Integer.parseInt(segment);
+            return Integer.parseInt(routeParam);
         } catch (NumberFormatException e) {
-            throw new BadRequestException("Path segment '" + segment + "' is not a valid integer value");
+            throw new BadRequestException("Path segment ':" + name + "' is not a valid integer value");
         }
     }
     
-    public long getPathSegmentAsLong(int index) throws BadRequestException {
-        String segment = pathSegments[index];
+    public long getDateRouteParam(String name) throws BadRequestException {
+        String routeParam = routeParams.get(name);
         try {
-            return Long.parseLong(segment);
+            return Long.parseLong(routeParam);
         } catch (NumberFormatException e) {
-            throw new BadRequestException("Path segment '" + segment + "' is not a valid integer value");
+            try {
+                return TimeEncoding.parse(routeParam);
+            } catch (IllegalArgumentException e2) {
+                throw new BadRequestException("Path segment ':" + name + "' is not a valid ISO 8601 date string");
+            }
         }
-    }
-    
-    public boolean hasPathSegment(int index) {
-        return pathSegments.length > index;
-    }
-    
-    public int getPathSegmentCount() {
-        return pathSegments.length;
-    }
-    
-    public String slicePath(int startSegment) {
-        return slicePath(startSegment, pathSegments.length);
-    }
-    
-    public String slicePath(int startSegment, int stopSegment) {
-        if (startSegment < 0) startSegment = pathSegments.length + startSegment;
-        if (stopSegment < 0) stopSegment = pathSegments.length + stopSegment;
-        StringBuilder buf = new StringBuilder(pathSegments[startSegment]);
-        for (int i = startSegment + 1; i < stopSegment; i++) {
-            buf.append('/').append(pathSegments[i]);
-        }
-        return buf.toString();
     }
     
     public String getFullPathWithoutQueryString() {
         return qsDecoder.path();
-    }
-    
-    /**
-     * Returns the authenticated user. Or <tt>null</tt> if the user is not authenticated.
-     */
-    public User getUser() {
-        return Privilege.getInstance().getUser(authToken);
     }
     
     public boolean hasHeader(String name) {
@@ -199,6 +146,13 @@ public class RestRequest {
     }
     
     /**
+     * Returns the authenticated user. Or <tt>null</tt> if the user is not authenticated.
+     */
+    public User getUser() {
+        return Privilege.getInstance().getUser(token);
+    }
+    
+    /**
      * Returns the username of the authenticated user. Or {@link Privilege.getDefaultUser()} if the user
      * is not authenticated.
      */
@@ -208,47 +162,7 @@ public class RestRequest {
     }
     
     public AuthenticationToken getAuthToken() {
-        return authToken;
-    }
-    
-    public boolean isPOST() {
-        return httpRequest.getMethod() == HttpMethod.POST;
-    }
-    
-    public void assertPOST() throws MethodNotAllowedException {
-        if (!isPOST()) throw new MethodNotAllowedException(this); 
-    }
-    
-    public boolean isPATCH() {
-        return httpRequest.getMethod() == HttpMethod.PATCH;
-    }
-    
-    public void assertPATCH() throws MethodNotAllowedException {
-        if (!isPATCH()) throw new MethodNotAllowedException(this); 
-    }
-    
-    public boolean isGET() {
-        return httpRequest.getMethod() == HttpMethod.GET;
-    }
-    
-    public void assertGET() throws MethodNotAllowedException {
-        if (!isGET()) throw new MethodNotAllowedException(this); 
-    }
-    
-    public boolean isPUT() {
-        return httpRequest.getMethod() == HttpMethod.PUT;
-    }
-    
-    public void assertPUT() throws MethodNotAllowedException {
-        if (!isPUT()) throw new MethodNotAllowedException(this); 
-    }
-    
-    public boolean isDELETE() {
-        return httpRequest.getMethod() == HttpMethod.DELETE;
-    }
-    
-    public void assertDELETE() throws MethodNotAllowedException {
-        if (!isDELETE()) throw new MethodNotAllowedException(this); 
+        return token;
     }
     
     public boolean hasQueryParameter(String name) {
@@ -456,19 +370,6 @@ public class RestRequest {
         return deriveSourceContentType();
     }
     
-    public void addToContext(String key, Object obj) {
-        ctx.put(key, obj);
-    }
-    
-    public boolean contextContains(String key) {
-        return ctx.containsKey(key);
-    }
-    
-    @SuppressWarnings("unchecked")
-    public <T> T getFromContext(String key) {
-        return (T) ctx.get(key);
-    }
-
     public String getBaseURL() {
         String scheme = isSSL() ? "https://" : "http://";
         String host = getHeader(HttpHeaders.Names.HOST);
@@ -514,14 +415,6 @@ public class RestRequest {
     
     public String getApiURL() {
         return getBaseURL() + "/api";
-    }
-    
-    public String getBaseURL(int endSegment) {
-        StringBuilder buf = new StringBuilder(getBaseURL());
-        for (int i = 1; i < endSegment; i++) {
-            buf.append('/').append(getPathSegment(i));
-        }
-        return buf.toString();
     }
     
     public static class IntervalResult {

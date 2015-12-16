@@ -20,10 +20,10 @@ import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpHandler;
 import org.yamcs.web.HttpHandler.ChunkedTransferStats;
-import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
+import org.yamcs.web.rest.Route;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 
@@ -42,52 +42,16 @@ public class ArchiveIndexRestHandler extends RestHandler {
     
     private static final Logger log = LoggerFactory.getLogger(ArchiveIndexRestHandler.class);
     
-    @Override
-    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
-        IndexServer indexServer = YamcsServer.getService(instance, IndexServer.class);
-        if (indexServer == null) {
-            throw new BadRequestException("Index service not enabled for instance '" + instance + "'");
-        }
-        
-        if (!req.hasPathSegment(pathOffset)) {
-            req.assertGET();
-            downloadIndexes(req, indexServer);
-            return null;
-        } else {
-            switch (req.getPathSegment(pathOffset)) {
-            case "packets":
-                req.assertGET();
-                downloadPacketIndex(req, indexServer);
-                return null;
-            case "pp":
-                req.assertGET();
-                downloadPpIndex(req, indexServer);
-                return null;
-            case "events":
-                req.assertGET();
-                downloadEventIndex(req, indexServer);
-                return null;
-            case "commands":
-                req.assertGET();
-                downloadCommandHistoryIndex(req, indexServer);
-                return null;
-            case "completeness":
-                req.assertGET();
-                downloadCompletenessIndex(req, indexServer);
-                return null;
-            default:
-                throw new NotFoundException(req);
-            }
-        }
-    }
-    
     /**
-     * Downloads a combination of multiple indexes. If nothing is specified, returns empty
+     * indexes a combination of multiple indexes. If nothing is specified, returns empty
      */
-    private void downloadIndexes(RestRequest req, IndexServer indexServer) throws HttpException {
+    @Route(path = "/api/archive/:instance/indexes", method = "GET")
+    public void downloadIndexes(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        IndexServer indexServer = verifyIndexServer(req, instance);
+        
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(indexServer.getInstance());
+        requestb.setInstance(instance);
         IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) {
             requestb.setStart(ir.getStart());
@@ -134,9 +98,13 @@ public class ArchiveIndexRestHandler extends RestHandler {
         }
     }
     
-    private void downloadPacketIndex(RestRequest req, IndexServer indexServer) throws HttpException {
+    @Route(path = "/api/archive/:instance/indexes/packets", method = "GET")
+    public void downloadPacketIndex(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        IndexServer indexServer = verifyIndexServer(req, instance);
+        
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(indexServer.getInstance());
+        requestb.setInstance(instance);
         IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) {
             requestb.setStart(ir.getStart());
@@ -163,9 +131,13 @@ public class ArchiveIndexRestHandler extends RestHandler {
         }
     }
     
-    private void downloadPpIndex(RestRequest req, IndexServer indexServer) throws HttpException {
+    @Route(path = "/api/archive/:instance/indexes/pp", method = "GET")
+    public void downloadPpIndex(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        IndexServer indexServer = verifyIndexServer(req, instance);
+        
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(indexServer.getInstance());
+        requestb.setInstance(instance);
         IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) {
             requestb.setStart(ir.getStart());
@@ -182,9 +154,13 @@ public class ArchiveIndexRestHandler extends RestHandler {
         }
     }
     
-    private void downloadCommandHistoryIndex(RestRequest req, IndexServer indexServer) throws HttpException {
+    @Route(path = "/api/archive/:instance/indexes/commands", method = "GET")
+    public void downloadCommandHistoryIndex(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        IndexServer indexServer = verifyIndexServer(req, instance);
+        
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(indexServer.getInstance());
+        requestb.setInstance(instance);
         IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) {
             requestb.setStart(ir.getStart());
@@ -201,9 +177,13 @@ public class ArchiveIndexRestHandler extends RestHandler {
         }
     }
     
-    private void downloadEventIndex(RestRequest req, IndexServer indexServer) throws HttpException {
+    @Route(path = "/api/archive/:instance/indexes/events", method = "GET")
+    public void downloadEventIndex(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        IndexServer indexServer = verifyIndexServer(req, instance);
+        
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(indexServer.getInstance());
+        requestb.setInstance(instance);
         IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) {
             requestb.setStart(ir.getStart());
@@ -220,9 +200,13 @@ public class ArchiveIndexRestHandler extends RestHandler {
         }
     }
     
-    private void downloadCompletenessIndex(RestRequest req, IndexServer indexServer) throws HttpException {
+    @Route(path = "/api/archive/:instance/indexes/completeness", method = "GET")
+    public void downloadCompletenessIndex(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        IndexServer indexServer = verifyIndexServer(req, instance);
+        
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(indexServer.getInstance());
+        requestb.setInstance(instance);
         IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) {
             requestb.setStart(ir.getStart());
@@ -328,6 +312,16 @@ public class ArchiveIndexRestHandler extends RestHandler {
             stats.totalBytes += buf.readableBytes();
             stats.chunkCount++;
             lastChannelFuture = HttpHandler.writeChunk(req.getChannelHandlerContext(), buf);
+        }
+    }
+    
+    private IndexServer verifyIndexServer(RestRequest req, String instance) throws HttpException {
+        verifyInstance(req, instance);
+        IndexServer indexServer = YamcsServer.getService(instance, IndexServer.class);
+        if (indexServer == null) {
+            throw new BadRequestException("Index service not enabled for instance '" + instance + "'");
+        } else {
+            return indexServer;
         }
     }
 }

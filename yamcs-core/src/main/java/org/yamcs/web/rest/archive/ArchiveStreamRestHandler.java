@@ -5,9 +5,9 @@ import org.yamcs.protobuf.Rest.ListStreamsResponse;
 import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.web.HttpException;
-import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.Route;
 import org.yamcs.yarch.AbstractStream;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
@@ -16,35 +16,11 @@ import io.netty.channel.ChannelFuture;
 
 public class ArchiveStreamRestHandler extends RestHandler {
 
-    @Override
-    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
+    @Route(path = "/api/archive/:instance/streams", method = "GET")
+    public ChannelFuture listStreams(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
-        if (!req.hasPathSegment(pathOffset)) {
-            req.assertGET();
-            return listStreams(req, ydb);
-        } else {
-            String streamName = req.getPathSegment(pathOffset);
-            Stream stream = ydb.getStream(streamName);
-            if (stream == null) {
-                throw new NotFoundException(req, "No stream named '" + streamName + "'");
-            } else {
-                return handleStreamRequest(req, pathOffset + 1, stream);
-            }
-        }
-    }
-    
-    private ChannelFuture handleStreamRequest(RestRequest req, int pathOffset, Stream stream) throws HttpException {
-        if (!req.hasPathSegment(pathOffset)) {
-            req.assertGET();
-            return getStream(req, stream);
-        } else {
-            String resource = req.getPathSegment(pathOffset + 1);
-            throw new NotFoundException(req, "No resource '" + resource + "' for stream '" + stream.getName() +  "'");
-        }
-    } 
-    
-    private ChannelFuture listStreams(RestRequest req, YarchDatabase ydb) throws HttpException {
+        
         ListStreamsResponse.Builder responseb = ListStreamsResponse.newBuilder();
         for (AbstractStream stream : ydb.getStreams()) {
             responseb.addStream(ArchiveHelper.toStreamInfo(stream));
@@ -52,7 +28,12 @@ public class ArchiveStreamRestHandler extends RestHandler {
         return sendOK(req, responseb.build(), SchemaRest.ListStreamsResponse.WRITE);
     }
     
-    private ChannelFuture getStream(RestRequest req, Stream stream) throws HttpException {
+    @Route(path = "/api/archive/:instance/streams/:name", method = "GET")
+    public ChannelFuture getStream(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        Stream stream = verifyStream(req, ydb, req.getRouteParam("name"));
+        
         StreamInfo response = ArchiveHelper.toStreamInfo(stream);
         return sendOK(req, response, SchemaArchive.StreamInfo.WRITE);
     }    

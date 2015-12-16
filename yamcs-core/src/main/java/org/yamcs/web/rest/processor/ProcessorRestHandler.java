@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 
 import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
-import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
@@ -34,88 +33,23 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
-import org.yamcs.web.MethodNotAllowedException;
-import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
-import org.yamcs.web.rest.mdb.MDBRestHandler;
+import org.yamcs.web.rest.Route;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 import io.netty.channel.ChannelFuture;
 
-/**
- * Handles requests related to processors
- */
+
 public class ProcessorRestHandler extends RestHandler {
 
-    private static ProcessorParameterRestHandler parameterHandler = new ProcessorParameterRestHandler();
-    private static ProcessorCommandRestHandler commandHandler = new ProcessorCommandRestHandler();
-    private static ProcessorCommandQueueRestHandler cqueueHandler = new ProcessorCommandQueueRestHandler();
-
-    @Override
-    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        if (!req.hasPathSegment(pathOffset)) {
-            req.assertGET();
-            return listProcessors(req);
-        } else {
-            String instance = req.getPathSegment(pathOffset);
-            if (!YamcsServer.hasInstance(instance)) {
-                throw new NotFoundException(req, "No instance '" + instance + "'");
-            }
-            req.addToContext(RestRequest.CTX_INSTANCE, instance);
-            XtceDb mdb = XtceDbFactory.getInstance(instance);
-            req.addToContext(MDBRestHandler.CTX_MDB, mdb);
-
-            if (!req.hasPathSegment(pathOffset + 1)) {
-                if (req.isGET()) {
-                    return listProcessorsForInstance(req, instance);
-                } else if (req.isPOST()) {
-                    return createProcessorForInstance(req, instance, mdb);
-                } else {
-                    throw new MethodNotAllowedException(req);
-                }
-            } else {
-                String processorName = req.getPathSegment(pathOffset + 1);
-                YProcessor processor = YProcessor.getInstance(instance, processorName);
-                if (processor == null) {
-                    throw new NotFoundException(req, "No processor '" + processorName + "'");
-                }
-                req.addToContext(RestRequest.CTX_PROCESSOR, processor);
-                return handleProcessorRequest(req, pathOffset + 2, processor);
-            }
-        }
-    }
-
-    private ChannelFuture handleProcessorRequest(RestRequest req, int pathOffset, YProcessor processor) throws HttpException {
-        if (!req.hasPathSegment(pathOffset)) {
-            if (req.isGET()) {
-                return getProcessor(req, processor);
-            } else if (req.isPOST() || req.isPATCH() || req.isPUT())
-                return editProcessor(req, processor);
-            else {
-                throw new MethodNotAllowedException(req);
-            }
-        } else {
-            switch (req.getPathSegment(pathOffset)) {
-            case "parameters":
-                return parameterHandler.handleRequest(req, pathOffset + 1);
-            case "commands":
-                return commandHandler.handleRequest(req, pathOffset + 1);
-            case "cqueues":
-                return cqueueHandler.handleRequest(req, pathOffset + 1);
-            case "clients":
-                req.assertGET();
-                return listClientsForProcessor(req, processor);
-            default:
-                throw new NotFoundException(req);
-            }
-        }
-    }
-
-    private ChannelFuture listClientsForProcessor(RestRequest req, YProcessor processor) throws HttpException {
+    @Route(path = "/api/processors/:instance/:processor/clients", method = "GET")
+    public ChannelFuture listClientsForProcessor(RestRequest req) throws HttpException {
+        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        
         Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
         ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
         for (ClientInfo client : clients) {
@@ -127,7 +61,8 @@ public class ProcessorRestHandler extends RestHandler {
         return sendOK(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
     }
 
-    private ChannelFuture listProcessors(RestRequest req) throws HttpException {
+    @Route(path = "/api/processors", method = "GET")
+    public ChannelFuture listProcessors(RestRequest req) throws HttpException {
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
         for (YProcessor processor : YProcessor.getChannels()) {
             response.addProcessor(toProcessorInfo(processor, req, true));
@@ -135,27 +70,34 @@ public class ProcessorRestHandler extends RestHandler {
         return sendOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
     }
 
-    private ChannelFuture listProcessorsForInstance(RestRequest req, String yamcsInstance) throws HttpException {
+    @Route(path = "/api/processors/:instance", method = "GET")
+    public ChannelFuture listProcessorsForInstance(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
-        for (YProcessor processor : YProcessor.getChannels(yamcsInstance)) {
+        for (YProcessor processor : YProcessor.getChannels(instance)) {
             response.addProcessor(toProcessorInfo(processor, req, true));
         }
         return sendOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
     }
     
-    private ChannelFuture getProcessor(RestRequest req, YProcessor processor) throws HttpException {
+    @Route(path = "/api/processors/:instance/:processor", method = "GET")
+    public ChannelFuture getProcessor(RestRequest req) throws HttpException {
+        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        
         ProcessorInfo pinfo = toProcessorInfo(processor, req, true);
         return sendOK(req, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
     }
 
-    private ChannelFuture editProcessor(RestRequest req, YProcessor processor) throws HttpException {
-        EditProcessorRequest request = req.bodyAsMessage(SchemaRest.EditProcessorRequest.MERGE).build();
-
+    @Route(path = "/api/processors/:instance/:processor", method = { "PATCH", "PUT", "POST" })
+    public ChannelFuture editProcessor(RestRequest req) throws HttpException {
+        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.isReplay()) {
             throw new BadRequestException("Cannot update a non-replay processor");
         }
+        
+        EditProcessorRequest request = req.bodyAsMessage(SchemaRest.EditProcessorRequest.MERGE).build();
 
-        // patch processor state
         String newState = null;
         if (request.hasState()) newState = request.getState();
         if (req.hasQueryParameter("state")) newState = req.getQueryParameter("state");
@@ -170,7 +112,6 @@ public class ProcessorRestHandler extends RestHandler {
             }
         }
 
-        // patch processor seek time
         long seek = TimeEncoding.INVALID_INSTANT;
         if (request.hasSeek()) seek = RestRequest.parseTime(request.getSeek());
         if (req.hasQueryParameter("seek")) seek = req.getQueryParameterAsDate("seek");
@@ -178,7 +119,6 @@ public class ProcessorRestHandler extends RestHandler {
             processor.seek(seek);
         }
 
-        // patch processor speed
         String speed = null;
         if (request.hasSpeed()) speed = request.getSpeed().toLowerCase();
         if (req.hasQueryParameter("speed")) speed = req.getQueryParameter("speed").toLowerCase();
@@ -212,7 +152,11 @@ public class ProcessorRestHandler extends RestHandler {
         return sendOK(req);
     }
 
-    private ChannelFuture createProcessorForInstance(RestRequest req, String yamcsInstance, XtceDb mdb) throws HttpException {
+    @Route(path = "/api/processors/:instance", method = "POST")
+    public ChannelFuture createProcessorForInstance(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        XtceDb mdb = XtceDbFactory.createInstance(instance);
+        
         CreateProcessorRequest request = req.bodyAsMessage(SchemaRest.CreateProcessorRequest.MERGE).build();
 
         String name = null;
@@ -259,7 +203,7 @@ public class ProcessorRestHandler extends RestHandler {
 
         // Make internal processor request
         ProcessorManagementRequest.Builder reqb = ProcessorManagementRequest.newBuilder();
-        reqb.setInstance(yamcsInstance);
+        reqb.setInstance(instance);
         reqb.setName(name);
         reqb.setType(type);
         reqb.setPersistent(persistent);

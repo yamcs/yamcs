@@ -25,19 +25,19 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
-import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestParameterReplayListener;
 import org.yamcs.web.rest.RestReplayListener;
 import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.archive.RestDownsampler.Sample;
-import org.yamcs.web.rest.mdb.MDBHelper;
-import org.yamcs.web.rest.mdb.MDBHelper.MatchResult;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SystemParameterDb;
+import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.protobuf.MessageLite;
 
@@ -49,42 +49,29 @@ public class ArchiveParameterRestHandler extends RestHandler {
     
     private static final Logger log = LoggerFactory.getLogger(ArchiveParameterRestHandler.class);
 
-    @Override
-    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        MatchResult<Parameter> mr = MDBHelper.matchParameterName(req, pathOffset);
-        if (!mr.matches()) {
-            throw new NotFoundException(req);
-        }
-        
-        pathOffset = mr.getPathOffset();
-        if (req.hasPathSegment(pathOffset)) {
-            switch (req.getPathSegment(pathOffset)) {
-            case "samples":
-                return getParameterSamples(req, mr.getRequestedId(), mr.getMatch());
-            default:
-                throw new NotFoundException(req, "No resource '" + req.getPathSegment(pathOffset) + "' for parameter " + mr.getRequestedId());
-            }
-        } else {
-            return listParameterHistory(req, mr.getRequestedId());
-        }
-    }
-
     /**
      * A series is a list of samples that are determined in one-pass while processing a stream result.
      * Final API unstable.
      * <p>
      * If no query parameters are defined, the series covers *all* data.
      */
-    private ChannelFuture getParameterSamples(RestRequest req, NamedObjectId id, Parameter p) throws HttpException {
+    @Route(path = "/api/archive/:instance/parameters/:name*/samples")
+    public ChannelFuture getParameterSamples(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
+        
         ParameterType ptype = p.getParameterType();
         if (ptype == null) {
             throw new BadRequestException("Requested parameter has no type");
         } else if (!(ptype instanceof FloatParameterType) && !(ptype instanceof IntegerParameterType)) {
-            throw new BadRequestException("Only integer or float parameters can be sampled. Got " + ptype.getClass());
+            throw new BadRequestException("Only integer or float parameters can be sampled. Got " + ptype.getTypeAsString());
         }
         
         ReplayRequest.Builder rr = ReplayRequest.newBuilder().setEndAction(EndAction.QUIT);
         rr.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
+        NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
         rr.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id));
         
         if (req.hasQueryParameter("start")) {
@@ -94,7 +81,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         
         RestDownsampler sampler = new RestDownsampler(rr.getStop());
         
-        RestReplays.replayAndWait(req, rr.build(), new RestReplayListener() {
+        RestReplays.replayAndWait(instance, req.getAuthToken(), rr.build(), new RestReplayListener() {
 
             @Override
             public void onNewData(ProtoDataType type, MessageLite data) {
@@ -135,7 +122,14 @@ public class ArchiveParameterRestHandler extends RestHandler {
     }
     
     
-    private ChannelFuture listParameterHistory(RestRequest req, NamedObjectId id) throws HttpException {
+    @Route(path = "/api/archive/:instance/parameters/:name*")
+    public ChannelFuture listParameterHistory(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
+        NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
+        
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
@@ -145,7 +139,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
             return sendOK(req, ParameterData.newBuilder().build(), SchemaPvalue.ParameterData.WRITE);
         }
         
-        ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, id, true);
+        ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, p, true);
 
         if (req.asksFor(MediaType.CSV)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
@@ -165,7 +159,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
                     }
                 };
                 replayListener.setNoRepeat(noRepeat);
-                RestReplays.replayAndWait(req, rr, replayListener);
+                RestReplays.replayAndWait(instance, req.getAuthToken(), rr, replayListener);
             } catch (IOException e) {
                 throw new InternalServerErrorException(e);
             }
@@ -180,7 +174,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
                 }
             };
             replayListener.setNoRepeat(noRepeat);
-            RestReplays.replayAndWait(req, rr, replayListener);
+            RestReplays.replayAndWait(instance, req.getAuthToken(), rr, replayListener);
             return sendOK(req, resultb.build(), SchemaPvalue.ParameterData.WRITE);
         }
     }

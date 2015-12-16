@@ -34,7 +34,6 @@ import org.yamcs.ui.ParameterRetrievalGui;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
-import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.ParameterReplayToChunkedCSVEncoder;
 import org.yamcs.web.rest.ParameterReplayToChunkedProtobufEncoder;
 import org.yamcs.web.rest.RestHandler;
@@ -42,13 +41,14 @@ import org.yamcs.web.rest.RestParameterReplayListener;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
 import org.yamcs.web.rest.RestStreams;
+import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.SqlBuilder;
 import org.yamcs.web.rest.StreamToChunkedCSVEncoder;
 import org.yamcs.web.rest.StreamToChunkedProtobufEncoder;
 import org.yamcs.web.rest.StreamToChunkedTransferEncoder;
-import org.yamcs.web.rest.mdb.MDBHelper;
-import org.yamcs.web.rest.mdb.MDBHelper.MatchResult;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
@@ -56,7 +56,6 @@ import org.yamcs.yarch.YarchDatabase;
 import com.csvreader.CsvWriter;
 
 import io.netty.buffer.ByteBufOutputStream;
-import io.netty.channel.ChannelFuture;
 
 /** 
  * Serves archived data through a web api.
@@ -66,60 +65,13 @@ import io.netty.channel.ChannelFuture;
  */
 public class ArchiveDownloadRestHandler extends RestHandler {
     
-    @Override
-    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
-        if (!req.hasPathSegment(pathOffset)) {
-            throw new NotFoundException(req);
-        } else {
-            switch (req.getPathSegment(pathOffset)) {
-            case "parameters":
-                req.assertGET();
-                if (req.hasPathSegment(pathOffset + 1)) {
-                    MatchResult<Parameter> mr = MDBHelper.matchParameterName(req, pathOffset + 1);
-                    if (!mr.matches()) {
-                        throw new NotFoundException(req);
-                    } else {
-                        NamedObjectId parameterId = mr.getRequestedId();
-                        downloadParameter(req, parameterId);
-                        return null;
-                    }
-                } else {
-                    downloadParameters(req);
-                    return null;
-                }
-            case "packets":
-                req.assertGET();
-                downloadPackets(req);
-                return null;
-            case "commands":
-                req.assertGET();
-                downloadCommands(req);
-                return null;
-            case "events":
-                req.assertGET();
-                downloadEvents(req);
-                return null;
-            case "tables":
-                req.assertGET();
-                String tableName = req.getPathSegment(pathOffset + 1);
-                TableDefinition table = YarchDatabase.getInstance(instance).getTable(tableName);
-                if (table == null) {
-                    throw new NotFoundException(req, "No table named '" + tableName + "'");
-                } else {
-                    downloadTableData(req, table);
-                    return null;
-                }
-            default:
-                throw new NotFoundException(req);
-            }
-        }
-    }
-    
     // TODO needs more work. Which is also why it's not documented yet
     // In general, i'm just not the biggest fan of these 'profiles'. But if we do it, we should
     // support POST, PATCH, GET etc
-    private void downloadParameters(RestRequest req) throws HttpException {
+    @Route(path = "/api/archive/:instance/downloads/parameters", method = "GET")
+    public void downloadParameters(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        
         ReplayRequest.Builder rr = ReplayRequest.newBuilder().setEndAction(EndAction.QUIT);
         rr.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
         
@@ -133,7 +85,6 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         
         if (req.getQueryParameters().containsKey("profile")) {
             String profile = req.getQueryParameter("profile");
-            String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
             String filename = YarchDatabase.getHome() + "/" + instance + "/profiles/" + profile + ".profile";
             List<NamedObjectId> ids;
             try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
@@ -147,33 +98,42 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             
             if (req.asksFor(MediaType.CSV)) {
                 RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, ids);
-                RestReplays.replay(req, rr.build(), l);
+                RestReplays.replay(instance, req.getAuthToken(), rr.build(), l);
             } else {
                 RestParameterReplayListener l = new ParameterReplayToChunkedProtobufEncoder(req);
-                RestReplays.replay(req, rr.build(), l);
+                RestReplays.replay(instance, req.getAuthToken(), rr.build(), l);
             }
         } else {
             throw new BadRequestException("profile query parameter must be specified. This operation needs more integration work");
         }
     }
     
-    private void downloadParameter(RestRequest req, NamedObjectId id) throws HttpException {
-        ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, id, false);
+    @Route(path = "/api/archive/:instance/downloads/parameters/:name*", method = "GET")
+    public void downloadParameter(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
+        
+        ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, p, false);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
         
         if (req.asksFor(MediaType.CSV)) {
-            List<NamedObjectId> idList = Arrays.asList(id);
+            List<NamedObjectId> idList = Arrays.asList(NamedObjectId.newBuilder().setName(p.getQualifiedName()).build());
             RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, idList);
             l.setNoRepeat(noRepeat);
-            RestReplays.replay(req, rr, l);
+            RestReplays.replay(instance, req.getAuthToken(), rr, l);
         } else {
             RestParameterReplayListener l = new ParameterReplayToChunkedProtobufEncoder(req);
             l.setNoRepeat(noRepeat);
-            RestReplays.replay(req, rr, l);
+            RestReplays.replay(instance, req.getAuthToken(), rr, l);
         }
     }
     
-    private void downloadPackets(RestRequest req) throws HttpException {
+    @Route(path = "/api/archive/:instance/downloads/packets", method = "GET")
+    public void downloadPackets(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        
         Set<String> nameSet = new HashSet<>();
         for (String names : req.getQueryParameterList("name", Collections.emptyList())) {
             for (String name : names.split(",")) {
@@ -193,7 +153,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         String sql = sqlb.toString();
         
         if (req.asksFor(MediaType.OCTET_STREAM)) {
-            RestStreams.stream(req, sql, new StreamToChunkedTransferEncoder(req, MediaType.OCTET_STREAM) {
+            RestStreams.stream(instance, sql, new StreamToChunkedTransferEncoder(req, MediaType.OCTET_STREAM) {
                 @Override
                 public void processTuple(Tuple tuple, ByteBufOutputStream bufOut) throws IOException {
                     byte[] raw = (byte[]) tuple.getColumn(TmProviderAdapter.PACKET_COLUMN);
@@ -201,7 +161,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
                 }
             });
         } else {
-            RestStreams.stream(req, sql, new StreamToChunkedProtobufEncoder<TmPacketData>(req, SchemaYamcs.TmPacketData.WRITE) {
+            RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<TmPacketData>(req, SchemaYamcs.TmPacketData.WRITE) {
                 @Override
                 public TmPacketData mapTuple(Tuple tuple) {
                     return GPBHelper.tupleToTmPacketData(tuple);
@@ -210,7 +170,10 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         }
     }
     
-    private void downloadCommands(RestRequest req) throws HttpException {
+    @Route(path = "/api/archive/:instance/downloads/commands", method = "GET")
+    public void downloadCommands(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        
         Set<String> nameSet = new HashSet<>();
         for (String names : req.getQueryParameterList("name", Collections.emptyList())) {
             for (String name : names.split(",")) {
@@ -229,7 +192,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
         
-        RestStreams.stream(req, sql, new StreamToChunkedProtobufEncoder<CommandHistoryEntry>(req, SchemaCommanding.CommandHistoryEntry.WRITE) {
+        RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<CommandHistoryEntry>(req, SchemaCommanding.CommandHistoryEntry.WRITE) {
             @Override
             public CommandHistoryEntry mapTuple(Tuple tuple) {
                 return GPBHelper.tupleToCommandHistoryEntry(tuple);
@@ -237,7 +200,13 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         });
     }
     
-    private void downloadTableData(RestRequest req, TableDefinition table) throws HttpException {
+    @Route(path = "/api/archive/:instance/downloads/tables/:name", method = "GET")
+    public void downloadTableData(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        
+        TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
+        
         List<String> cols = null;
         if (req.hasQueryParameter("cols")) {
             cols = new ArrayList<>(); // Order, and non-unique
@@ -259,7 +228,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
         
-        RestStreams.stream(req, sql, new StreamToChunkedProtobufEncoder<TableRecord>(req, SchemaArchive.TableData.TableRecord.WRITE) {
+        RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<TableRecord>(req, SchemaArchive.TableData.TableRecord.WRITE) {
             
             @Override
             public TableRecord mapTuple(Tuple tuple) {
@@ -270,7 +239,10 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         });
     }
 
-    private void downloadEvents(RestRequest req) throws HttpException {
+    @Route(path = "/api/archive/:instance/downloads/events", method = "GET")
+    public void downloadEvents(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        
         Set<String> sourceSet = new HashSet<>();
         for (String names : req.getQueryParameterList("source", Collections.emptyList())) {
             for (String name : names.split(",")) {
@@ -290,14 +262,14 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         String sql = sqlb.toString();
         
         if (req.asksFor(MediaType.CSV)) {
-            transferChunkedCSVEvents(req, sql);
+            transferChunkedCSVEvents(req, instance, sql);
         } else {
-            transferChunkedProtobufEvents(req, sql);
+            transferChunkedProtobufEvents(req, instance, sql);
         }
     }
     
-    private void transferChunkedCSVEvents(RestRequest req, String sql) throws HttpException {
-        RestStreams.stream(req, sql, new StreamToChunkedCSVEncoder(req) {
+    private void transferChunkedCSVEvents(RestRequest req, String instance, String sql) throws HttpException {
+        RestStreams.stream(instance, sql, new StreamToChunkedCSVEncoder(req) {
             
             @Override
             public String[] getCSVHeader() {
@@ -312,8 +284,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         });
     }
     
-    private void transferChunkedProtobufEvents(RestRequest req, String sql) throws HttpException {
-        RestStreams.stream(req, sql, new StreamToChunkedProtobufEncoder<Event>(req, SchemaYamcs.Event.WRITE) {
+    private void transferChunkedProtobufEvents(RestRequest req, String instance, String sql) throws HttpException {
+        RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<Event>(req, SchemaYamcs.Event.WRITE) {
             
             @Override
             public Event mapTuple(Tuple tuple) {

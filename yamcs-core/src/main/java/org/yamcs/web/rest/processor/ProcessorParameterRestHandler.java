@@ -29,95 +29,33 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
-import org.yamcs.web.MethodNotAllowedException;
-import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.mdb.MDBRestHandler;
+import org.yamcs.web.rest.Route;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.XtceDbFactory;
 
 import io.netty.channel.ChannelFuture;
 
-/**
- * Handles incoming requests related to parameters
- */
 public class ProcessorParameterRestHandler extends RestHandler {
-    final static Logger log = LoggerFactory.getLogger(ProcessorParameterRestHandler.class.getName());
     
-    @Override
-    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
-        if (!req.hasPathSegment(pathOffset)) {
-            throw new NotFoundException(req);
-        } else {
-            if ("mget".equals(req.slicePath(pathOffset))) {
-                if (req.isGET() || req.isPOST()) {
-                    return getParameterValues(req);
-                } else {
-                    throw new MethodNotAllowedException(req);
-                }
-            } else if ("mset".equals(req.slicePath(pathOffset))) {
-                req.assertPOST();
-                return setParameterValues(req, mdb);
-            } else {
-                // Find out if it's a parameter or not. Support any namespace here. Not just XTCE
-                NamedObjectId id = null;
-                int i = pathOffset + 1;
-                for (; i < req.getPathSegmentCount(); i++) {
-                    String namespace = req.slicePath(pathOffset, i);
-                    String name = req.getPathSegment(i);
-                    id = verifyParameterId(mdb, namespace, name);
-                    if (id != null) break;
-                }
-                if (id == null) throw new NotFoundException(req, "Not a valid parameter id");
-                Parameter p = mdb.getParameter(id);
-                if (p == null) throw new NotFoundException(req, "No parameter for id " + id);
-                
-                pathOffset = i + 1;
-                if (!req.hasPathSegment(pathOffset)) {
-                    return handleSingleParameter(req, id, p);
-                } else {
-                    switch (req.getPathSegment(pathOffset)) {
-                    case "alarms":
-                        if (req.hasPathSegment(pathOffset + 1)) {
-                            if (req.isPOST() || req.isPATCH() || req.isPUT()) {
-                                int alarmId = Integer.valueOf(req.getPathSegment(pathOffset + 1));
-                                return patchParameterAlarm(req, id, p, alarmId);
-                            } else {
-                                throw new MethodNotAllowedException(req);
-                            }
-                        } else {
-                            throw new NotFoundException(req);
-                        }
-                    default:
-                        throw new NotFoundException(req, "No resource '" + req.getPathSegment(pathOffset) + "' for parameter " + id);
-                    }
-                }
-            }
-        }
-    }
+    private final static Logger log = LoggerFactory.getLogger(ProcessorParameterRestHandler.class);
     
-    private ChannelFuture handleSingleParameter(RestRequest req, NamedObjectId id, Parameter p) throws HttpException {
-        if (req.isGET()) {
-            return getParameterValue(req, id, p);
-        } else if (req.isPOST() || req.isPUT()) {
-            return setSingleParameterValue(req, p);
-        } else {
-            throw new MethodNotAllowedException(req);
-        }
-    }
-    
-    private ChannelFuture patchParameterAlarm(RestRequest req, NamedObjectId id, Parameter p, int alarmId) throws HttpException {
-        YProcessor processor = req.getFromContext(RestRequest.CTX_PROCESSOR);
-        if (!processor.hasAlarmServer()) {
-            throw new BadRequestException("Alarms are not enabled for this instance");
-        }
+    @Route(path = "/api/processors/:instance/:processor/parameters/:name*/alarms/:seqnum", method = { "PATCH", "PUT", "POST" })
+    public ChannelFuture patchParameterAlarm(RestRequest req) throws HttpException {
+        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        AlarmServer alarmServer = verifyAlarmServer(processor);
+        
+        XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
+        Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
+        int seqNum = req.getIntegerRouteParam("seqnum");
         
         String state = null;
         String comment = null;
@@ -131,13 +69,12 @@ public class ProcessorParameterRestHandler extends RestHandler {
         
         switch (state.toLowerCase()) {
         case "acknowledged":
-            AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
             try {
                 // TODO permissions on AlarmServer
-                alarmServer.acknowledge(p, alarmId, req.getUsername(), processor.getCurrentTime(), comment);
+                alarmServer.acknowledge(p, seqNum, req.getUsername(), processor.getCurrentTime(), comment);
                 return sendOK(req);
             } catch (CouldNotAcknowledgeAlarmException e) {
-                log.debug("Did not acknowledge alarm " + alarmId + ". " + e.getMessage());
+                log.debug("Did not acknowledge alarm " + seqNum + ". " + e.getMessage());
                 throw new BadRequestException(e.getMessage());
             }
         default:
@@ -145,38 +82,37 @@ public class ProcessorParameterRestHandler extends RestHandler {
         }
     }
     
-    private ChannelFuture setSingleParameterValue(RestRequest req, Parameter p) throws HttpException {
-        Value v = req.bodyAsMessage(SchemaYamcs.Value.MERGE).build();
-        YProcessor processor = req.getFromContext(RestRequest.CTX_PROCESSOR);
+    @Route(path = "/api/processors/:instance/:processor/parameters/:name*", method = { "PUT", "POST" })
+    public ChannelFuture setSingleParameterValue(RestRequest req) throws HttpException {
+        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        SoftwareParameterManager mgr = verifySoftwareParameterManager(processor);
         
-        SoftwareParameterManager spm = processor.getParameterRequestManager().getSoftwareParameterManager();
-        if(spm==null) {
-            throw new BadRequestException("SoftwareParameterManager not activated for this processor");
-        }
-
+        XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
+        Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
+        
+        Value v = req.bodyAsMessage(SchemaYamcs.Value.MERGE).build();
         try {
-            spm.updateParameter(p, v);
+            mgr.updateParameter(p, v);
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
         }
         return sendOK(req);
     }
     
-    private ChannelFuture setParameterValues(RestRequest req, XtceDb mdb) throws HttpException {
+    @Route(path = "/api/processors/:instance/:processor/parameters/mset", method = { "POST", "PUT" })
+    public ChannelFuture setParameterValues(RestRequest req) throws HttpException {
+        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        SoftwareParameterManager mgr = verifySoftwareParameterManager(processor);
+        
         BulkSetParameterValueRequest request = req.bodyAsMessage(SchemaRest.BulkSetParameterValueRequest.MERGE).build();
-        YProcessor processor = req.getFromContext(RestRequest.CTX_PROCESSOR);
 
-        SoftwareParameterManager spm = processor.getParameterRequestManager().getSoftwareParameterManager();
-        if(spm==null) {
-            throw new BadRequestException("SoftwareParameterManager not activated for this channel");
-        }
         // check permission
         ParameterRequestManagerImpl prm = processor.getParameterRequestManager();
         for(SetParameterValueRequest r : request.getRequestList()) {
             try {
                 String parameterName = prm.getParameter(r.getId()).getQualifiedName();
                 if(!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.TM_PARAMETER_SET, parameterName)) {
-                    throw new ForbiddenException("User " + req.getAuthToken() + " has no set permission for parameter "
+                    throw new ForbiddenException("User " + req.getAuthToken() + " has no 'set' permission for parameter "
                             + parameterName);
                 }
             } catch (InvalidIdentification e) {
@@ -193,7 +129,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
             pvals.add(pvalb.build());
         }
         try {
-            spm.updateParameters(pvals);
+            mgr.updateParameters(pvals);
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
         }
@@ -201,9 +137,15 @@ public class ProcessorParameterRestHandler extends RestHandler {
         return sendOK(req);
     }
     
-    private ChannelFuture getParameterValue(RestRequest req, NamedObjectId id, Parameter p) throws HttpException {
+    @Route(path = "/api/processors/:instance/:processor/parameters/:name*", method = "GET")
+    public ChannelFuture getParameterValue(RestRequest req) throws HttpException {
+        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        
+        XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
+        Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
+        
         if (!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
-            log.warn("Parameter Info for {} not authorized for token {}, throwing BadRequestException", id, req.getAuthToken());
+            log.warn("Parameter Info for {} not authorized for token {}", p.getQualifiedName(), req.getAuthToken());
             throw new BadRequestException("Invalid parameter name specified");
         }
         long timeout = 10000;
@@ -211,8 +153,9 @@ public class ProcessorParameterRestHandler extends RestHandler {
         if (req.hasQueryParameter("timeout")) timeout = req.getQueryParameterAsLong("timeout");
         if (req.hasQueryParameter("fromCache")) fromCache = req.getQueryParameterAsBoolean("fromCache");
         
+        NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
         List<NamedObjectId> ids = Arrays.asList(id);
-        List<ParameterValue> pvals = doGetParameterValues(req, ids, fromCache, timeout);
+        List<ParameterValue> pvals = doGetParameterValues(processor, req.getAuthToken(), ids, fromCache, timeout);
 
         ParameterValue pval;
         if (pvals.isEmpty()) {
@@ -224,9 +167,12 @@ public class ProcessorParameterRestHandler extends RestHandler {
         return sendOK(req, pval, SchemaPvalue.ParameterValue.WRITE);
     }
     
-    private ChannelFuture getParameterValues(RestRequest req) throws HttpException {
+    @Route(path = "/api/processors/:instance/:processor/parameters/mget", method = "GET")
+    public ChannelFuture getParameterValues(RestRequest req) throws HttpException {
+        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        
         BulkGetParameterValueRequest request = req.bodyAsMessage(SchemaRest.BulkGetParameterValueRequest.MERGE).build();
-        if(request.getIdCount()==0) {
+        if (request.getIdCount() == 0) {
             throw new BadRequestException("Empty parameter list");
         }
 
@@ -242,19 +188,18 @@ public class ProcessorParameterRestHandler extends RestHandler {
         if (req.hasQueryParameter("fromCache")) fromCache = req.getQueryParameterAsBoolean("fromCache");
         
         List<NamedObjectId> ids = request.getIdList();
-        List<ParameterValue> pvals = doGetParameterValues(req, ids, fromCache, timeout);
+        List<ParameterValue> pvals = doGetParameterValues(processor, req.getAuthToken(), ids, fromCache, timeout);
 
         BulkGetParameterValueResponse.Builder responseb = BulkGetParameterValueResponse.newBuilder();
         responseb.addAllValue(pvals);
         return sendOK(req, responseb.build(), SchemaRest.BulkGetParameterValueResponse.WRITE);
     }
     
-    private List<ParameterValue> doGetParameterValues(RestRequest req, List<NamedObjectId> ids, boolean fromCache, long timeout) throws HttpException {
+    private List<ParameterValue> doGetParameterValues(YProcessor processor, AuthenticationToken authToken, List<NamedObjectId> ids, boolean fromCache, long timeout) throws HttpException {
         if (timeout > 60000) {
             throw new BadRequestException("Invalid timeout specified. Maximum is 60.000 milliseconds");
         }
-        
-        YProcessor processor = req.getFromContext(RestRequest.CTX_PROCESSOR);
+
         ParameterRequestManagerImpl prm = processor.getParameterRequestManager();
         MyConsumer myConsumer = new MyConsumer();
         ParameterWithIdRequestHelper pwirh = new ParameterWithIdRequestHelper(prm, myConsumer);
@@ -265,13 +210,13 @@ public class ProcessorParameterRestHandler extends RestHandler {
                     throw new BadRequestException("ParameterCache not activated for this processor");
                 }
                 List<ParameterValueWithId> l;
-                l = pwirh.getValuesFromCache(ids, req.getAuthToken());
+                l = pwirh.getValuesFromCache(ids, authToken);
                 for(ParameterValueWithId pvwi: l) {
                     pvals.add(pvwi.toGbpParameterValue());
                 }
             } else {
 
-                int reqId = pwirh.addRequest(ids, req.getAuthToken());
+                int reqId = pwirh.addRequest(ids, authToken);
                 long t0 = System.currentTimeMillis();
                 long t1;
                 while(true) {
@@ -300,25 +245,21 @@ public class ProcessorParameterRestHandler extends RestHandler {
         return pvals;
     }
     
-    private NamedObjectId verifyParameterId(XtceDb mdb, String namespace, String name) {
-        NamedObjectId id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
-        if (mdb.getParameter(id) != null)
-            return id;
-        
-        String rootedNamespace = "/" + namespace;
-        id = NamedObjectId.newBuilder().setNamespace(rootedNamespace).setName(name).build();
-        if (mdb.getParameter(id) != null)
-            return id;
-        
-        return null;
-    }
-    
     private static class MyConsumer implements ParameterWithIdConsumer {
         LinkedBlockingQueue<List<ParameterValueWithId>> queue = new LinkedBlockingQueue<>();
 
         @Override
         public void update(int subscriptionId, List<ParameterValueWithId> params) {
             queue.add(params);
+        }
+    }
+    
+    private SoftwareParameterManager verifySoftwareParameterManager(YProcessor processor) throws BadRequestException {
+        SoftwareParameterManager mgr = processor.getParameterRequestManager().getSoftwareParameterManager();
+        if (mgr == null) {
+            throw new BadRequestException("SoftwareParameterManager not activated for this processor");
+        } else {
+            return mgr;
         }
     }
 }

@@ -1,6 +1,7 @@
-package org.yamcs.web.rest;
+package org.yamcs.web.rest.mdb;
 
 import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -30,6 +31,9 @@ import org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType;
 import org.yamcs.protobuf.Mdb.TransmissionConstraintInfo;
 import org.yamcs.protobuf.Mdb.UnitInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.YamcsManagement.HistoryInfo;
+import org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo;
+import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.Algorithm;
@@ -52,6 +56,8 @@ import org.yamcs.xtce.FixedIntegerValue;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.FloatRange;
+import org.yamcs.xtce.Header;
+import org.yamcs.xtce.History;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
@@ -68,6 +74,7 @@ import org.yamcs.xtce.Repeat;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtce.Significance;
+import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.TriggerSetType;
@@ -681,5 +688,48 @@ public class XtceToGpbAssembler {
             resultb.setOutputName(xtceOutput.getOutputName());
         }
         return resultb.build();
+    }
+    
+    public static SpaceSystemInfo toSpaceSystemInfo(RestRequest req, String instance, SpaceSystem ss) {
+        SpaceSystemInfo.Builder b = SpaceSystemInfo.newBuilder();
+        b.setName(ss.getName());
+        b.setQualifiedName(ss.getQualifiedName());
+        if (ss.getShortDescription() != null) {
+            b.setShortDescription(ss.getShortDescription());
+        }
+        if (ss.getLongDescription() != null) {
+            b.setLongDescription(ss.getLongDescription());
+        }
+        Header h = ss.getHeader();
+        if (h != null) {
+            if (h.getVersion() != null) {
+                b.setVersion(h.getVersion());
+            }
+            
+            History[] sortedHistory = h.getHistoryList().toArray(new History[] {});
+            Arrays.sort(sortedHistory);
+            for (History history : sortedHistory) {
+                HistoryInfo.Builder historyb = HistoryInfo.newBuilder();
+                if (history.getVersion() != null) historyb.setVersion(history.getVersion());
+                if (history.getDate() != null) historyb.setDate(history.getDate());
+                if (history.getMessage() != null) historyb.setMessage(history.getMessage());
+                b.addHistory(historyb);
+            }
+        }
+        b.setParameterCount(ss.getParameters().size());
+        b.setContainerCount(ss.getSequenceContainers().size());
+        b.setCommandCount(ss.getMetaCommands().size());
+        b.setAlgorithmCount(ss.getAlgorithms().size());
+        for (SpaceSystem sub : ss.getSubSystems()) {
+            b.addSub(toSpaceSystemInfo(req, instance, sub));
+        }
+        if (!req.getOptions().contains(Option.NO_LINK)) {
+            String url = req.getApiURL() + "/mdb/" + instance;
+            b.setParametersUrl(url + "/parameters" + ss.getQualifiedName());
+            b.setContainersUrl(url + "/containers" + ss.getQualifiedName());
+            b.setCommandsUrl(url + "/commands" + ss.getQualifiedName());
+            b.setAlgorithmsUrl(url + "/algorithms" + ss.getQualifiedName());
+        }
+        return b.build();
     }
 }

@@ -26,6 +26,7 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
 import org.yamcs.web.rest.archive.RestDownsampler.Sample;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
@@ -134,7 +135,7 @@ public final class ArchiveHelper {
         return result;
     }
 
-    final static ReplayRequest toParameterReplayRequest(RestRequest req, NamedObjectId id, boolean descendByDefault)
+    final static ReplayRequest toParameterReplayRequest(RestRequest req, Parameter p, boolean descendByDefault)
             throws HttpException {
         ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
         rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
@@ -147,6 +148,7 @@ public final class ArchiveHelper {
         }
         rrb.setEndAction(EndAction.QUIT);
         rrb.setReverse(req.asksDescending(descendByDefault));
+        NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
         rrb.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id));
         return rrb.build();
     }

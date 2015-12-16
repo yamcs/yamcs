@@ -15,68 +15,23 @@ import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
-import org.yamcs.web.MethodNotAllowedException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
+import org.yamcs.web.rest.Route;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
 
 import io.netty.channel.ChannelFuture;
 
 public class ArchiveTagRestHandler extends RestHandler {
-
-    @Override
-    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
+    
+    @Route(path = "/api/archive/:instance/tags", method = "GET")
+    public ChannelFuture listTags(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
         TagDb tagDb = getTagDb(instance);
         
-        if (!req.hasPathSegment(pathOffset)) {
-            if (req.isGET()) {
-                return listTags(req, tagDb);
-            } else if (req.isPOST()) {
-                return insertTag(req, tagDb);
-            } else {
-                throw new MethodNotAllowedException(req);
-            }
-        } else {
-            // Need both tagTime and tagId
-            if (!req.hasPathSegment(pathOffset + 1)) {
-                throw new NotFoundException(req);
-            }
-            
-            long tagTime = req.getPathSegmentAsLong(pathOffset);
-            int tagId = req.getPathSegmentAsInt(pathOffset + 1);
-            if (tagId < 1)
-                throw new BadRequestException("Invalid tag ID");
-            
-            ArchiveTag existingTag;
-            try {
-                existingTag = tagDb.getTag(tagTime, tagId);
-            } catch (IOException e) {
-                throw new InternalServerErrorException(e);
-            }
-            if (existingTag == null) {
-                throw new NotFoundException(req, "No tag for ID (" + tagTime + ", " + tagId + ")");
-            }
-                    
-            if (req.isGET()) {
-               return getTag(req, existingTag);
-            } else if (req.isPUT() || req.isPATCH() || req.isPOST()) {
-                return updateTag(req, tagDb, existingTag);
-            } else if (req.isDELETE()) {
-                return deleteTag(req, tagDb, tagTime, tagId);
-            } else {
-                throw new MethodNotAllowedException(req);
-            }
-        }
-    }
-    
-    /**
-     * Lists tags
-     */
-    private ChannelFuture listTags(RestRequest req, TagDb tagDb) throws HttpException {
         IntervalResult ir = req.scanForInterval();
         TimeInterval interval = ir.asTimeInterval();
         
@@ -98,10 +53,15 @@ public class ArchiveTagRestHandler extends RestHandler {
         return sendOK(req, responseb.build(), SchemaRest.ListTagsResponse.WRITE);
     }
     
-    /**
-     * Outputs info on a single tag
-     */
-    private ChannelFuture getTag(RestRequest req, ArchiveTag tag) throws HttpException {
+    @Route(path = "/api/archive/:instance/tags/:tagTime/:tagId", method = "GET")
+    public ChannelFuture getTag(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        TagDb tagDb = getTagDb(instance);
+        
+        long tagTime = req.getDateRouteParam("tagTime");
+        int tagId = req.getIntegerRouteParam("tagId");
+
+        ArchiveTag tag = verifyTag(req, tagDb, tagTime, tagId); 
         return sendOK(req, tag, SchemaYamcs.ArchiveTag.WRITE);
     }
     
@@ -109,7 +69,11 @@ public class ArchiveTagRestHandler extends RestHandler {
      * Adds a new tag. The newly added tag is returned as a response so the user
      * knows the assigned id.
      */
-    private ChannelFuture insertTag(RestRequest req, TagDb tagDb) throws HttpException {
+    @Route(path = "/api/archive/:instance/tags", method = "POST")
+    public ChannelFuture createTag(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        TagDb tagDb = getTagDb(instance);
+        
         CreateTagRequest request = req.bodyAsMessage(SchemaRest.CreateTagRequest.MERGE).build();
         if (!request.hasName())
             throw new BadRequestException("Name is required");
@@ -136,7 +100,12 @@ public class ArchiveTagRestHandler extends RestHandler {
     /**
      * Updates an existing tag. Returns the updated tag
      */
-    private ChannelFuture updateTag(RestRequest req, TagDb tagDb, ArchiveTag tag) throws HttpException {
+    @Route(path = "/api/archive/:instance/tags/:tagTime/:tagId", method = { "PATCH", "PUT", "POST" })
+    public ChannelFuture updateTag(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        TagDb tagDb = getTagDb(instance);
+        ArchiveTag tag = verifyTag(req, tagDb, req.getDateRouteParam("tagTime"), req.getIntegerRouteParam("tagId"));
+        
         EditTagRequest request = req.bodyAsMessage(SchemaRest.EditTagRequest.MERGE).build();        
         
         // Patch the existing tag
@@ -171,7 +140,8 @@ public class ArchiveTagRestHandler extends RestHandler {
     /**
      * Deletes the identified tag. Returns the deleted tag
      */
-    private ChannelFuture deleteTag(RestRequest req, TagDb tagDb, long tagTime, int tagId) throws HttpException {
+    @Route(path = "/api/archive/:instance/tags/:tagTime/:tagId", method = "DELETE")
+    public ChannelFuture deleteTag(RestRequest req, TagDb tagDb, long tagTime, int tagId) throws HttpException {
         ArchiveTag deletedTag;
         try {
             deletedTag = tagDb.deleteTag(tagTime, tagId);
@@ -189,6 +159,23 @@ public class ArchiveTagRestHandler extends RestHandler {
             return YarchDatabase.getInstance(yamcsInstance).getDefaultStorageEngine().getTagDb();
         } catch (YarchException e) {
             throw new InternalServerErrorException("Could not load Tag DB", e);
+        }
+    }
+    
+    private ArchiveTag verifyTag(RestRequest req, TagDb tagDb, long tagTime, int tagId) throws HttpException {
+        if (tagId < 1)
+            throw new BadRequestException("Invalid tag ID");
+        
+        ArchiveTag tag;
+        try {
+            tag = tagDb.getTag(tagTime, tagId);
+        } catch (IOException e) {
+            throw new InternalServerErrorException(e);
+        }
+        if (tag == null) {
+            throw new NotFoundException(req, "No tag for ID (" + tagTime + ", " + tagId + ")");
+        } else {
+            return tag;
         }
     }
 }

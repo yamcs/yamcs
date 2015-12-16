@@ -17,12 +17,12 @@ import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
-import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
+import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
@@ -37,17 +37,10 @@ public class ArchiveEventRestHandler extends RestHandler {
     
     private static final Logger log = LoggerFactory.getLogger(ArchiveEventRestHandler.class);
 
-    @Override
-    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        if (!req.hasPathSegment(pathOffset)) {
-            req.assertGET();
-            return listEvents(req);
-        } else {
-            throw new NotFoundException(req);
-        }
-    }
-    
-    private ChannelFuture listEvents(RestRequest req) throws HttpException {
+    @Route(path = "/api/archive/:instance/events", method = "GET")
+    public ChannelFuture listEvents(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         
@@ -79,7 +72,7 @@ public class ArchiveEventRestHandler extends RestHandler {
                 throw new InternalServerErrorException(e);
             }
                 
-            RestStreams.streamAndWait(req, sql, new RestStreamSubscriber(pos, limit) {
+            RestStreams.streamAndWait(instance, sql, new RestStreamSubscriber(pos, limit) {
 
                 @Override
                 public void processTuple(Stream stream, Tuple tuple) {
@@ -95,7 +88,7 @@ public class ArchiveEventRestHandler extends RestHandler {
             return sendOK(req, MediaType.CSV, buf);
         } else {
             ListEventsResponse.Builder responseb = ListEventsResponse.newBuilder();
-            RestStreams.streamAndWait(req, sql, new RestStreamSubscriber(pos, limit) {
+            RestStreams.streamAndWait(instance, sql, new RestStreamSubscriber(pos, limit) {
 
                 @Override
                 public void processTuple(Stream stream, Tuple tuple) {

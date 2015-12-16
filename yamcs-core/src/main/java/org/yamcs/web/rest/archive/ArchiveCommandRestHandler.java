@@ -6,38 +6,27 @@ import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Rest.ListCommandsResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.web.HttpException;
-import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
 import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
+import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.SqlBuilder;
-import org.yamcs.web.rest.mdb.MDBHelper;
-import org.yamcs.web.rest.mdb.MDBHelper.MatchResult;
 import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 
 import io.netty.channel.ChannelFuture;
 
 public class ArchiveCommandRestHandler extends RestHandler {
-
-    @Override
-    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        if (!req.hasPathSegment(pathOffset)) {
-            req.assertGET();
-            return listCommands(req, null);
-        } else {
-            MatchResult<MetaCommand> mr = MDBHelper.matchCommandName(req, pathOffset);
-            if (!mr.matches()) {
-                throw new NotFoundException(req);
-            }
-            return listCommands(req, mr.getMatch().getQualifiedName());
-        }
-    }
     
-    private ChannelFuture listCommands(RestRequest req, String commandName) throws HttpException {
+    @Route(path = "/api/archive/:instance/commands/:name*")
+    public ChannelFuture listCommands(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         
@@ -46,13 +35,15 @@ public class ArchiveCommandRestHandler extends RestHandler {
         if (ir.hasInterval()) {
             sqlb.where(ir.asSqlCondition("gentime"));
         }
-        if (commandName != null) {
-            sqlb.where("cmdName = '" + commandName + "'");
+        if (req.hasRouteParam("name")) {
+            XtceDb mdb = XtceDbFactory.getInstance(instance);
+            MetaCommand cmd = verifyCommand(req, mdb, req.getRouteParam("name"));
+            sqlb.where("cmdName = '" + cmd.getQualifiedName() + "'");
         }
         sqlb.descend(req.asksDescending(true));
         
         ListCommandsResponse.Builder responseb = ListCommandsResponse.newBuilder();
-        RestStreams.streamAndWait(req, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
+        RestStreams.streamAndWait(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
 
             @Override
             public void processTuple(Stream stream, Tuple tuple) {

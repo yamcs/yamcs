@@ -7,11 +7,9 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.UserInfo;
-import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.User;
 import org.yamcs.web.HttpException;
-import org.yamcs.web.NotFoundException;
 
 import io.netty.channel.ChannelFuture;
 
@@ -20,18 +18,10 @@ import io.netty.channel.ChannelFuture;
  */
 public class UserRestHandler extends RestHandler {
     
-    @Override
-    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        if (req.hasPathSegment(pathOffset)) {
-            throw new NotFoundException(req);
-        }
-        
-        UserInfo info = getUser(req.getAuthToken());
-        return sendOK(req, info, SchemaYamcsManagement.UserInfo.WRITE);
-    }
 
-    private UserInfo getUser(AuthenticationToken authToken) throws HttpException {
-        User user = Privilege.getInstance().getUser(authToken);
+    @Route(path = "/api/user", method = "GET")
+    public ChannelFuture getUser(RestRequest req) throws HttpException {
+        User user = Privilege.getInstance().getUser(req.getAuthToken());
         
         UserInfo.Builder userInfob;
         if (user == null) {
@@ -52,7 +42,8 @@ public class UserRestHandler extends RestHandler {
             userInfob.addClientInfo(ci);
         }
 
-        return userInfob.build();
+        UserInfo info = userInfob.build();
+        return sendOK(req, info, SchemaYamcsManagement.UserInfo.WRITE);
     }
 
     private UserInfo.Builder buildFullyPrivilegedUser() {

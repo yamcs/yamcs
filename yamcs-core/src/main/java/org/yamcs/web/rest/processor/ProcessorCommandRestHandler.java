@@ -3,8 +3,6 @@ package org.yamcs.web.rest.processor;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.NoPermissionException;
 import org.yamcs.YProcessor;
@@ -16,19 +14,18 @@ import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest.Assignment;
 import org.yamcs.protobuf.Rest.IssueCommandResponse;
 import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.StringConvertors;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
-import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.mdb.MDBRestHandler;
+import org.yamcs.web.rest.Route;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.protobuf.ByteString;
 
@@ -38,53 +35,16 @@ import io.netty.channel.ChannelFuture;
  * Processes command requests
  */
 public class ProcessorCommandRestHandler extends RestHandler {
-    final static Logger log = LoggerFactory.getLogger(ProcessorCommandRestHandler.class.getName());
     
-    @Override
-    public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
-        XtceDb mdb = req.getFromContext(MDBRestHandler.CTX_MDB);
-        if (!req.hasPathSegment(pathOffset)) {
-            throw new NotFoundException(req);
-        } else {
-            // Find out if it's a command or not. Support any namespace here. Not just XTCE
-            if (req.getPathSegmentCount() - pathOffset < 2) {
-                String lastSegment = req.slicePath(-1);
-                NamedObjectId id = NamedObjectId.newBuilder().setName(lastSegment).build();
-                MetaCommand cmd = mdb.getMetaCommand(id);
-                if (cmd != null) { // Possibly a URL-encoded qualified name
-                    req.assertPOST();
-                    return issueCommand(req, id, cmd);
-                } else {
-                    throw new NotFoundException(req);
-                }
-            } else {
-                String namespace = req.slicePath(pathOffset, -1);
-                String rootedNamespace = "/" + namespace;
-                String lastSegment = req.slicePath(-1);
-                NamedObjectId id = NamedObjectId.newBuilder().setNamespace(namespace).setName(lastSegment).build();
-                MetaCommand cmd = mdb.getMetaCommand(id);
-                if (cmd != null) {
-                    req.assertPOST();
-                    return issueCommand(req, id, cmd);
-                }
-                
-                id = NamedObjectId.newBuilder().setNamespace(rootedNamespace).setName(lastSegment).build();
-                cmd = mdb.getMetaCommand(id);
-                if (cmd != null) {
-                    req.assertPOST();
-                    return issueCommand(req, id, cmd);
-                }
-                
-                throw new NotFoundException(req); 
-            }
-        }
-    }
-    
-    private ChannelFuture issueCommand(RestRequest req, NamedObjectId id, MetaCommand cmd) throws HttpException {
-        YProcessor processor = req.getFromContext(RestRequest.CTX_PROCESSOR);
+    @Route(path = "/api/processors/:instance/:processor/commands/:name*", method = "POST")
+    public ChannelFuture issueCommand(RestRequest req) throws HttpException {
+        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this processor");
         }
+        
+        XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
+        MetaCommand cmd = verifyCommand(req, mdb, req.getRouteParam("name"));
 
         String origin = "";
         int sequenceNumber = 0;
@@ -127,7 +87,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
             
             //make the source - should perhaps come from the client
             StringBuilder sb = new StringBuilder();
-            sb.append(id.getName());
+            sb.append(cmd.getQualifiedName());
             sb.append("(");
             boolean first = true;
             for(ArgumentAssignment aa:assignments) {

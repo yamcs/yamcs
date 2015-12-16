@@ -10,6 +10,7 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.Route;
 
 import io.netty.channel.ChannelFuture;
 
@@ -62,33 +63,17 @@ public class SimulationTimeService implements TimeService {
      * Handles incoming requests related to SimTime
      */
     public static class SimTimeRestHandler extends RestHandler {
-        static final String SET_REQ = "set";
         
-        @Override
-        public ChannelFuture handleRequest(RestRequest req, int pathOffset) throws HttpException {
-            if (!req.hasPathSegment(pathOffset)) {
-                throw new NotFoundException(req);
-            }
-            
-            String yamcsInstance = req.getFromContext(RestRequest.CTX_INSTANCE);
-            TimeService ts = YamcsServer.getInstance(yamcsInstance).getTimeService();
+        @Route(path = "/api/simTime", method = { "PUT", "POST"})
+        public ChannelFuture setSimTime(RestRequest req) throws HttpException {
+            String instance = verifyInstance(req, req.getRouteParam("instance"));
+            TimeService ts = YamcsServer.getInstance(instance).getTimeService();
             if(!(ts instanceof SimulationTimeService)) {
-                log.warn("simulation time service requested for a non simulation TimeService "+ts);
+                log.warn("Simulation time service requested for a non-simulation TimeService "+ts);
                 throw new NotFoundException(req);
             }
             
-            switch (req.getPathSegment(pathOffset)) {
-                case SET_REQ:
-                    req.assertPOST();
-                    setSimTime(req, (SimulationTimeService) ts);
-                    return sendOK(req);
-                default:
-                    throw new NotFoundException(req);
-            }
-        }
-
-        
-        private void setSimTime(RestRequest req, SimulationTimeService sts) throws HttpException {
+            SimulationTimeService sts = (SimulationTimeService) ts;
             SetSimulationTimeRequest request = req.bodyAsMessage(SchemaRest.SetSimulationTimeRequest.MERGE).build();
             
             if(request.hasTime0()) {
@@ -104,6 +89,8 @@ public class SimulationTimeService implements TimeService {
             if(request.hasSimElapsedTime()) {
                 sts.setSimElapsedTime(request.getSimElapsedTime());
             }
+            
+            return sendOK(req);
         }
     }
 }
