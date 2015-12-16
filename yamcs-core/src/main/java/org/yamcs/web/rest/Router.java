@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -18,12 +19,34 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.protobuf.Rest.GetApiOverviewResponse;
+import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.time.SimulationTimeService;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpHandler;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.MethodNotAllowedException;
 import org.yamcs.web.RouteHandler;
+import org.yamcs.web.rest.archive.ArchiveAlarmRestHandler;
+import org.yamcs.web.rest.archive.ArchiveCommandRestHandler;
+import org.yamcs.web.rest.archive.ArchiveDownloadRestHandler;
+import org.yamcs.web.rest.archive.ArchiveEventRestHandler;
+import org.yamcs.web.rest.archive.ArchiveIndexRestHandler;
+import org.yamcs.web.rest.archive.ArchivePacketRestHandler;
+import org.yamcs.web.rest.archive.ArchiveParameterRestHandler;
+import org.yamcs.web.rest.archive.ArchiveStreamRestHandler;
+import org.yamcs.web.rest.archive.ArchiveTableRestHandler;
+import org.yamcs.web.rest.archive.ArchiveTagRestHandler;
+import org.yamcs.web.rest.mdb.MDBAlgorithmRestHandler;
+import org.yamcs.web.rest.mdb.MDBCommandRestHandler;
+import org.yamcs.web.rest.mdb.MDBContainerRestHandler;
+import org.yamcs.web.rest.mdb.MDBParameterRestHandler;
+import org.yamcs.web.rest.mdb.MDBRestHandler;
+import org.yamcs.web.rest.processor.ProcessorCommandQueueRestHandler;
+import org.yamcs.web.rest.processor.ProcessorCommandRestHandler;
+import org.yamcs.web.rest.processor.ProcessorParameterRestHandler;
+import org.yamcs.web.rest.processor.ProcessorRestHandler;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -43,6 +66,39 @@ public class Router {
 
     // Order, because patterns are matched top-down in insertion order
     private Map<Pattern, Map<HttpMethod, RouteConfig>> routes = new LinkedHashMap<>();
+    
+    public Router() {
+        registerRouteHandler(new ClientRestHandler());
+        registerRouteHandler(new DisplayRestHandler());
+        registerRouteHandler(new InstanceRestHandler());
+        registerRouteHandler(new LinkRestHandler());
+        registerRouteHandler(new SimulationTimeService.SimTimeRestHandler());
+        registerRouteHandler(new UserRestHandler());
+        
+        registerRouteHandler(new ArchiveAlarmRestHandler());
+        registerRouteHandler(new ArchiveCommandRestHandler());
+        registerRouteHandler(new ArchiveDownloadRestHandler());
+        registerRouteHandler(new ArchiveEventRestHandler());
+        registerRouteHandler(new ArchiveIndexRestHandler());
+        registerRouteHandler(new ArchivePacketRestHandler());
+        registerRouteHandler(new ArchiveParameterRestHandler());
+        registerRouteHandler(new ArchiveStreamRestHandler());
+        registerRouteHandler(new ArchiveTableRestHandler());
+        registerRouteHandler(new ArchiveTagRestHandler());
+        
+        registerRouteHandler(new ProcessorRestHandler());
+        registerRouteHandler(new ProcessorParameterRestHandler());
+        registerRouteHandler(new ProcessorCommandRestHandler());
+        registerRouteHandler(new ProcessorCommandQueueRestHandler());
+        
+        registerRouteHandler(new MDBRestHandler());
+        registerRouteHandler(new MDBParameterRestHandler());    
+        registerRouteHandler(new MDBContainerRestHandler());
+        registerRouteHandler(new MDBCommandRestHandler());
+        registerRouteHandler(new MDBAlgorithmRestHandler());
+        
+        registerRouteHandler(new OverviewRouteHandler());
+    }
     
     // Using method handles for better invoke performance
     public void registerRouteHandler(RouteHandler routeHandler) {
@@ -194,7 +250,7 @@ public class Router {
     /**
      * Struct containing all non-path route configuration
      */
-    public final static class RouteConfig implements Comparable<RouteConfig> {
+    public static final class RouteConfig implements Comparable<RouteConfig> {
         final RouteHandler routeHandler;
         final String originalPath;
         final boolean priority;
@@ -229,13 +285,34 @@ public class Router {
      * Represents a matched route pattern.
      * Used as a 'double' return value
      */
-    public final static class RouteMatch {
+    public static final class RouteMatch {
         final MatchResult regexMatch;
         final RouteConfig routeConfig;
         
         RouteMatch(MatchResult regexMatch, RouteConfig routeConfig) {
             this.regexMatch = regexMatch;
             this.routeConfig = routeConfig;
+        }
+    }
+    
+    /**
+     * 'Documents' all registered resources
+     */
+    private final class OverviewRouteHandler extends RestHandler {
+    
+        @Route(path="/api", method="GET")
+        public ChannelFuture getApiOverview(RestRequest req) throws HttpException {
+            
+            // Unique accross http methods, and according to insertion order
+            Set<String> urls = new LinkedHashSet<>();
+            for (Map<HttpMethod, RouteConfig> map : routes.values()) {
+                map.values().forEach(v -> urls.add(v.originalPath));
+            }
+            
+            GetApiOverviewResponse.Builder responseb = GetApiOverviewResponse.newBuilder();
+            urls.forEach(url -> responseb.addUrl(url));
+            
+            return sendOK(req, responseb.build(), SchemaRest.GetApiOverviewResponse.WRITE);
         }
     }
 }

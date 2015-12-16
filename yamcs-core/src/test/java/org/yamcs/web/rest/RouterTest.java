@@ -52,11 +52,11 @@ public class RouterTest {
             // Our algorithm is designed to stop on the first match by descending
             // string length. In addition, we have a flag to indicate priority, but
             // try to architect paths differently
-            @Route(path = "/api/archive/:instance") public void pathU() {}
-            @Route(path = "/api/archive/:instance/parameters") public void pathV() {}
-            @Route(path = "/api/archive/:instance/parameters/bulk", priority = true) public void pathW() {}
-            @Route(path = "/api/archive/:instance/parameters/:name*") public void pathY() {}
-            @Route(path = "/api/archive/:instance/parameters/:name*/series") public void pathX() {}
+            @Route(path = "/g/archive/:instance") public void pathU() {}
+            @Route(path = "/g/archive/:instance/parameters") public void pathV() {}
+            @Route(path = "/g/archive/:instance/parameters/bulk", priority = true) public void pathW() {}
+            @Route(path = "/g/archive/:instance/parameters/:name*") public void pathY() {}
+            @Route(path = "/g/archive/:instance/parameters/:name*/series") public void pathX() {}
         });
     }
     
@@ -148,20 +148,20 @@ public class RouterTest {
     
     @Test
     public void testMultipleRouteMatching() throws MethodNotAllowedException {
-        MatchResult res = router.matchURI(GET, "/api/archive/simulator").regexMatch;
+        MatchResult res = router.matchURI(GET, "/g/archive/simulator").regexMatch;
         assertEquals(1, res.groupCount());
         assertEquals("simulator", res.group(1));
         
-        res = router.matchURI(GET, "/api/archive/simulator/parameters/YSS/SIMULATOR/BatteryVoltage1").regexMatch;
+        res = router.matchURI(GET, "/g/archive/simulator/parameters/YSS/SIMULATOR/BatteryVoltage1").regexMatch;
         assertEquals(2, res.groupCount());
         assertEquals("simulator", res.group(1));
         assertEquals("YSS/SIMULATOR/BatteryVoltage1", res.group(2));
         
-        res = router.matchURI(GET, "/api/archive/simulator/parameters/bulk").regexMatch;
+        res = router.matchURI(GET, "/g/archive/simulator/parameters/bulk").regexMatch;
         assertEquals(1, res.groupCount());
         assertEquals("simulator", res.group(1));
         
-        res = router.matchURI(GET, "/api/archive/simulator/parameters/YSS/SIMULATOR/BatteryVoltage1/series").regexMatch;
+        res = router.matchURI(GET, "/g/archive/simulator/parameters/YSS/SIMULATOR/BatteryVoltage1/series").regexMatch;
         assertEquals(2, res.groupCount());
         assertEquals("simulator", res.group(1));
         assertEquals("YSS/SIMULATOR/BatteryVoltage1", res.group(2));

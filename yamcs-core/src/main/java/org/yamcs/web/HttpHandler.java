@@ -17,32 +17,7 @@ import org.yamcs.api.MediaType;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.UsernamePasswordToken;
-import org.yamcs.time.SimulationTimeService;
-import org.yamcs.web.rest.ClientRestHandler;
-import org.yamcs.web.rest.DisplayRestHandler;
-import org.yamcs.web.rest.InstanceRestHandler;
-import org.yamcs.web.rest.LinkRestHandler;
 import org.yamcs.web.rest.Router;
-import org.yamcs.web.rest.UserRestHandler;
-import org.yamcs.web.rest.archive.ArchiveAlarmRestHandler;
-import org.yamcs.web.rest.archive.ArchiveCommandRestHandler;
-import org.yamcs.web.rest.archive.ArchiveDownloadRestHandler;
-import org.yamcs.web.rest.archive.ArchiveEventRestHandler;
-import org.yamcs.web.rest.archive.ArchiveIndexRestHandler;
-import org.yamcs.web.rest.archive.ArchivePacketRestHandler;
-import org.yamcs.web.rest.archive.ArchiveParameterRestHandler;
-import org.yamcs.web.rest.archive.ArchiveStreamRestHandler;
-import org.yamcs.web.rest.archive.ArchiveTableRestHandler;
-import org.yamcs.web.rest.archive.ArchiveTagRestHandler;
-import org.yamcs.web.rest.mdb.MDBAlgorithmRestHandler;
-import org.yamcs.web.rest.mdb.MDBCommandRestHandler;
-import org.yamcs.web.rest.mdb.MDBContainerRestHandler;
-import org.yamcs.web.rest.mdb.MDBParameterRestHandler;
-import org.yamcs.web.rest.mdb.MDBRestHandler;
-import org.yamcs.web.rest.processor.ProcessorCommandQueueRestHandler;
-import org.yamcs.web.rest.processor.ProcessorCommandRestHandler;
-import org.yamcs.web.rest.processor.ProcessorParameterRestHandler;
-import org.yamcs.web.rest.processor.ProcessorRestHandler;
 import org.yamcs.web.websocket.WebSocketServerHandler;
 
 import io.netty.buffer.ByteBuf;
@@ -83,40 +58,8 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
     private static final Logger log = LoggerFactory.getLogger(HttpHandler.class);
 
     private static StaticFileHandler fileRequestHandler = new StaticFileHandler();
-    private WebSocketServerHandler webSocketHandler = new WebSocketServerHandler();
-    
-    private Router apiRouter = new Router();
-    
-    public HttpHandler() {
-        apiRouter.registerRouteHandler(new ClientRestHandler());
-        apiRouter.registerRouteHandler(new DisplayRestHandler());
-        apiRouter.registerRouteHandler(new InstanceRestHandler());
-        apiRouter.registerRouteHandler(new LinkRestHandler());
-        apiRouter.registerRouteHandler(new SimulationTimeService.SimTimeRestHandler());
-        apiRouter.registerRouteHandler(new UserRestHandler());
-        
-        apiRouter.registerRouteHandler(new ArchiveAlarmRestHandler());
-        apiRouter.registerRouteHandler(new ArchiveCommandRestHandler());
-        apiRouter.registerRouteHandler(new ArchiveDownloadRestHandler());
-        apiRouter.registerRouteHandler(new ArchiveEventRestHandler());
-        apiRouter.registerRouteHandler(new ArchiveIndexRestHandler());
-        apiRouter.registerRouteHandler(new ArchivePacketRestHandler());
-        apiRouter.registerRouteHandler(new ArchiveParameterRestHandler());
-        apiRouter.registerRouteHandler(new ArchiveStreamRestHandler());
-        apiRouter.registerRouteHandler(new ArchiveTableRestHandler());
-        apiRouter.registerRouteHandler(new ArchiveTagRestHandler());
-        
-        apiRouter.registerRouteHandler(new ProcessorRestHandler());
-        apiRouter.registerRouteHandler(new ProcessorParameterRestHandler());
-        apiRouter.registerRouteHandler(new ProcessorCommandRestHandler());
-        apiRouter.registerRouteHandler(new ProcessorCommandQueueRestHandler());
-        
-        apiRouter.registerRouteHandler(new MDBRestHandler());
-        apiRouter.registerRouteHandler(new MDBParameterRestHandler());    
-        apiRouter.registerRouteHandler(new MDBContainerRestHandler());
-        apiRouter.registerRouteHandler(new MDBCommandRestHandler());
-        apiRouter.registerRouteHandler(new MDBAlgorithmRestHandler());
-    }
+    private static Router apiRouter = new Router();
+    private WebSocketServerHandler webSocketHandler = new WebSocketServerHandler();    
     
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -168,11 +111,6 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
             fileRequestHandler.handleStaticFileRequest(ctx, req, path[2]);
             return;
         case API_PATH:
-            if (path.length == 2 || "".equals(path[2])) {
-                sendPlainTextError(ctx, FORBIDDEN);
-                return;
-            }
-            
             apiRouter.handleHttpRequest(ctx, req, authToken);
             return;
         case "":
