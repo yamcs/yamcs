@@ -28,6 +28,8 @@ import org.yamcs.xtce.NameReference.Type;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtce.xml.XtceAliasSet;
 
+import com.google.common.primitives.UnsignedLongs;
+
 import jxl.Cell;
 import jxl.CellType;
 import jxl.DateCell;
@@ -107,7 +109,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     final static int IDX_ALGO_PARA_INSTANCE=6;
     final static int IDX_ALGO_PARA_NAME=7;
     final static int IDX_ALGO_PARA_FLAGS=8;
-    
+
     //columns in the alarms sheet
     final static int IDX_ALARM_PARAM_NAME=0;
     final static int IDX_ALARM_CONTEXT=1;
@@ -164,7 +166,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     protected final static int IDX_CMDVERIF_ONSUCCESS = 6;
     protected final static int IDX_CMDVERIF_ONFAIL = 7;
     protected final static int IDX_CMDVERIF_ONTIMEOUT = 8;
-    
+
     //columns in the changelog sheet
     protected final static int IDX_LOG_VERSION = 0;
     protected final static int IDX_LOG_DATE = 1;
@@ -180,7 +182,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     protected String opsnamePrefix;
     protected SpaceSystem spaceSystem;
     static Logger log=LoggerFactory.getLogger(SpreadsheetLoader.class.getName());
-    
+
     String fileFormatVersion;
 
     /*
@@ -274,7 +276,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             throw new SpreadsheetLoadException(ctx, String.format( "Format version (%s) not supported by loader version (%s)", version, FORMAT_VERSION ) );
         }
         fileFormatVersion = version;
-        
+
         String name=requireString(cells, 1);
         spaceSystem=new SpaceSystem(name);
 
@@ -706,7 +708,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         HashMap<String, SequenceContainer> containers = new HashMap<String, SequenceContainer>();
         HashMap<String, String> parents = new HashMap<String, String>();
 
-        
+
         for (int i = 1; i < sheet.getRows(); i++) {
             // search for a new packet definition, starting from row i 
             //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
@@ -764,7 +766,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
             String description="";
             if(hasColumn(cells, IDX_CONT_DESCRIPTION)) {
-               description = cells[IDX_CONT_DESCRIPTION].getContents();
+                description = cells[IDX_CONT_DESCRIPTION].getContents();
             }
 
             // create a new SequenceContainer that will hold the parameters (i.e. SequenceEntries) for the ORDINARY/SUB/AGGREGATE packets, and register that new SequenceContainer in the containers hashmap
@@ -782,8 +784,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 if(flags.contains("a")) {
                     container.useAsArchivePartition(true);
                 }
-             }
-            
+            }
+
             //System.out.println("for "+name+" got absoluteOffset="+)
             // we mark the start of the command and advance to the next line, to get to the first argument (if there is one)
             int start = i++;
@@ -898,7 +900,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     container.setBaseContainer(sc);
                     if(("5.2".compareTo(fileFormatVersion) > 0) && (!parents.containsKey(parent))) {
                         //prior to version 5.2 of the format, the second level of containers were used as archive partitions
-                      //TODO: remove when switching to 6.x format
+                        //TODO: remove when switching to 6.x format
                         container.useAsArchivePartition(true);
                     }
                 } else {
@@ -914,7 +916,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                                     c.useAsArchivePartition(true);
                                 }
                             }
-                            
+
                             return true;
                         }
                     });
@@ -996,7 +998,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     cmd.setAbstract(true);
                 }
             }
-            
+
             if(hasColumn(cells, IDX_CMD_DESCRIPTION)) {
                 String shortDescription = cells[IDX_CMD_DESCRIPTION].getContents();
                 cmd.setShortDescription(shortDescription);
@@ -1012,7 +1014,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
                 // get the next row, containing a measurement/aggregate reference
                 cells = jumpToRow(sheet, i);
-               
+
                 // determine whether we have not reached the end of the command definition.
                 if (!hasColumn(cells, IDX_CMD_ARGNAME)) {
                     end = true; continue;
@@ -1251,9 +1253,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     } catch (IllegalArgumentException e) {
                         throw new SpreadsheetLoadException(ctx, "Invalid command verifier type '"+types+"' specified. Supported are: "+ Arrays.toString(CommandVerifier.Type.values()));
                     }
-                    
+
                     CommandVerifier cmdVerifier = new CommandVerifier(type, stage, cw);
-                    
+
                     if(type==CommandVerifier.Type.container) {
                         String containerName =  cells[IDX_CMDVERIF_TEXT].getContents();
                         SequenceContainer container = spaceSystem.getSequenceContainer(containerName);
@@ -1271,8 +1273,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     } else {
                         throw new  SpreadsheetLoadException(ctx, "Command verifier type '"+type+"' not implemented ");
                     }
-                    
-                    
+
+
                     String tas = null;
                     try {
                         if(hasColumn(cells, IDX_CMDVERIF_ONSUCCESS)) {
@@ -1321,9 +1323,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     private int loadArgument(Cell[] cells, MetaCommand cmd, MetaCommandContainer container, int absoluteOffset, int counter) {
         String engType = cells[IDX_CMD_ENGTYPE].getContents();
         String name = cells[IDX_CMD_ARGNAME].getContents();
-        
+
         int relpos = hasColumn(cells,  IDX_CMD_RELPOS)?Integer.decode(cells[IDX_CMD_RELPOS].getContents()):0;
-        
+
         String calib = null;
         if(hasColumn(cells, IDX_CMD_CALIBRATION)) {
             calib = cells[IDX_CMD_CALIBRATION].getContents();
@@ -1413,16 +1415,30 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         }
         if(hasColumn(cells, IDX_CMD_RANGELOW) || hasColumn(cells, IDX_CMD_RANGEHIGH)) {
             if(atype instanceof IntegerArgumentType) {
-                long minInclusive = Long.MIN_VALUE;
-                long maxInclusive = Long.MAX_VALUE;
-                if(hasColumn(cells, IDX_CMD_RANGELOW)) {
-                    minInclusive = Long.parseLong(cells[IDX_CMD_RANGELOW].getContents());
+                if(((IntegerArgumentType) atype).isSigned()) {
+                    long minInclusive = Long.MIN_VALUE;
+                    long maxInclusive = Long.MAX_VALUE;
+                    if(hasColumn(cells, IDX_CMD_RANGELOW)) {
+                        minInclusive = Long.decode(cells[IDX_CMD_RANGELOW].getContents());
+                    }
+                    if(hasColumn(cells, IDX_CMD_RANGEHIGH)) {
+                        maxInclusive = Long.decode(cells[IDX_CMD_RANGEHIGH].getContents());
+                    }
+                    IntegerValidRange range = new IntegerValidRange(minInclusive, maxInclusive);
+                    ((IntegerArgumentType)atype).setValidRange(range);
+                } else {
+                    long minInclusive = 0;
+                    long maxInclusive = ~0;
+                    if(hasColumn(cells, IDX_CMD_RANGELOW)) {
+                        minInclusive = UnsignedLongs.decode(cells[IDX_CMD_RANGELOW].getContents());
+                    }
+                    if(hasColumn(cells, IDX_CMD_RANGEHIGH)) {
+                        maxInclusive = UnsignedLongs.decode(cells[IDX_CMD_RANGEHIGH].getContents());
+                    }
+                    IntegerValidRange range = new IntegerValidRange(minInclusive, maxInclusive);
+                    ((IntegerArgumentType)atype).setValidRange(range);
+                    
                 }
-                if(hasColumn(cells, IDX_CMD_RANGEHIGH)) {
-                    maxInclusive = Long.parseLong(cells[IDX_CMD_RANGEHIGH].getContents());
-                }
-                IntegerValidRange range = new IntegerValidRange(minInclusive, maxInclusive);
-                ((IntegerArgumentType)atype).setValidRange(range);
             } else if(atype instanceof FloatArgumentType) {
                 double minInclusive = Double.NEGATIVE_INFINITY;
                 double maxInclusive = Double.POSITIVE_INFINITY;
@@ -1436,7 +1452,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 ((FloatArgumentType)atype).setValidRange(range);
             }
         }
-        
+
         if(hasColumn(cells, IDX_CMD_DESCRIPTION)) {
             String shortDescription = cells[IDX_CMD_DESCRIPTION].getContents();
             arg.setShortDescription(shortDescription);
@@ -1668,7 +1684,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
             if (cells.length >= 2) {
                 String version = cells[IDX_LOG_VERSION].getContents();
-                
+
                 String date;
                 Cell dateCell = cells[IDX_LOG_DATE];
                 if (dateCell.getType() == CellType.DATE) {
@@ -1777,7 +1793,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             if(!"JavaScript".equals(algorithmLanguage) && !"python".equals(algorithmLanguage)) {
                 throw new SpreadsheetLoadException(ctx, "Invalid algorithm language '"+algorithmLanguage+"' specified. Supported are 'JavaScript' and 'python' (case sensitive)");
             }
-            
+
             String algorithmText = cells[IDX_ALGO_TEXT].getContents();
 
             // now we search for the matching last row of that algorithm
@@ -1805,9 +1821,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 if(hasColumn(cells, IDX_ALGO_PARA_INOUT)) {
                     paraInout=cells[IDX_ALGO_PARA_INOUT].getContents();
                 }
-                
+
                 String flags = hasColumn(cells, IDX_ALGO_PARA_FLAGS)?cells[IDX_ALGO_PARA_FLAGS].getContents():"";
-                
+
                 if(paraInout==null) throw new SpreadsheetLoadException(ctx, "You must specify in/out attribute for this parameter");
                 if ("in".equalsIgnoreCase(paraInout)) {
                     if(paraRef.startsWith(SystemParameterDb.YAMCS_CMD_SPACESYSTEM_NAME) || paraRef.startsWith(SystemParameterDb.YAMCS_CMDHIST_SPACESYSTEM_NAME)) {
@@ -1839,7 +1855,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                             parameterInstance.setInstance(instance);
                         }
                     }
-                    
+
                     InputParameter inputParameter = new InputParameter(parameterInstance);
                     if (cells.length > IDX_ALGO_PARA_NAME) {
                         if (!"".equals(cells[IDX_ALGO_PARA_NAME].getContents())) {
@@ -2106,11 +2122,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
      * @return
      */
     private MatchCriteria toMatchCriteria(String criteriaString) {
-    	criteriaString = criteriaString.trim();
-    	
-    	if ((criteriaString.startsWith("&(") || criteriaString.startsWith("|(")) && (criteriaString.endsWith(")"))) {
-    		return parseBooleanExpression(criteriaString);
-    	} if(criteriaString.contains(";")) {
+        criteriaString = criteriaString.trim();
+
+        if ((criteriaString.startsWith("&(") || criteriaString.startsWith("|(")) && (criteriaString.endsWith(")"))) {
+            return parseBooleanExpression(criteriaString);
+        } if(criteriaString.contains(";")) {
             ComparisonList cl = new ComparisonList();
             String splitted[] = criteriaString.split(";");
             for (String part: splitted) {
@@ -2121,8 +2137,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             return toComparison(criteriaString);
         }    	
     }    
-    
-    
+
+
     /**
      * Boolean expression has the following pattern: op(epx1;exp2;...;expn) 
      * 
@@ -2145,92 +2161,92 @@ public class SpreadsheetLoader extends AbstractFileLoader {
      * @return
      */
     private BooleanExpression parseBooleanExpression(String rawExpression) {    	
-    	String regex = "([\"”])([^\"”\\\\]*(?:\\\\.[^\"”\\\\]*)*)([\"”])";
-    	
-    	rawExpression = rawExpression.trim();
-    	
-    	// Correct top-level expression 
-    	if (!rawExpression.startsWith("&") && !rawExpression.startsWith("|")) {
-    		rawExpression = "&(" + rawExpression + ")";
-    	}
-    	
-    	Pattern p = Pattern.compile(regex);
-    	Matcher m = p.matcher(rawExpression);
-    	ArrayList<String> quotes = new ArrayList<>();
-    	while (m.find()) {
-    		quotes.add(rawExpression.substring(m.start(2), m.end(2)));    		
-    	}
-    	
-    	String spec = p.matcher(rawExpression).replaceAll("\\$\\$");
-    	
-    	return toBooleanExpression(spec, quotes);
+        String regex = "([\"”])([^\"”\\\\]*(?:\\\\.[^\"”\\\\]*)*)([\"”])";
+
+        rawExpression = rawExpression.trim();
+
+        // Correct top-level expression 
+        if (!rawExpression.startsWith("&") && !rawExpression.startsWith("|")) {
+            rawExpression = "&(" + rawExpression + ")";
+        }
+
+        Pattern p = Pattern.compile(regex);
+        Matcher m = p.matcher(rawExpression);
+        ArrayList<String> quotes = new ArrayList<>();
+        while (m.find()) {
+            quotes.add(rawExpression.substring(m.start(2), m.end(2)));    		
+        }
+
+        String spec = p.matcher(rawExpression).replaceAll("\\$\\$");
+
+        return toBooleanExpression(spec, quotes);
     }
-    
+
     private void parseConditionList(ExpressionList conditions, String spec, ArrayList<String> quotes) {
-    	// Split top-level expressions
-    	ArrayList<String> expressions = new ArrayList<>();
-    	int balance = 0;
-    	String exp = "";
-    	for (int i = 0; i < spec.length(); i++) {
-    		if (spec.charAt(i) == '(') {
-    			balance++;
-    		} else if (spec.charAt(i) == ')') {
-    			balance--;
-    		} else if ((spec.charAt(i) == ';') && (balance == 0)) {    			    			
-    			if (!exp.isEmpty()) {
-    				expressions.add(exp);
-    			}
-    			
-    			exp = "";    			
-    			continue;    			
-    		} 
-    		
-    		exp += spec.charAt(i);    		
-    	}
-    	
-    	if (!exp.isEmpty()) {
-    		expressions.add(exp);
-    	}
-    	   
-    	// Parse each expression
+        // Split top-level expressions
+        ArrayList<String> expressions = new ArrayList<>();
+        int balance = 0;
+        String exp = "";
+        for (int i = 0; i < spec.length(); i++) {
+            if (spec.charAt(i) == '(') {
+                balance++;
+            } else if (spec.charAt(i) == ')') {
+                balance--;
+            } else if ((spec.charAt(i) == ';') && (balance == 0)) {    			    			
+                if (!exp.isEmpty()) {
+                    expressions.add(exp);
+                }
+
+                exp = "";    			
+                continue;    			
+            } 
+
+            exp += spec.charAt(i);    		
+        }
+
+        if (!exp.isEmpty()) {
+            expressions.add(exp);
+        }
+
+        // Parse each expression
         for (String expression: expressions) {
             conditions.addConditionExpression(toBooleanExpression(expression, quotes));
         }
     }
-    
+
     private BooleanExpression toBooleanExpression(String spec, ArrayList<String> quotes) {
-    	spec = spec.trim();
-    	BooleanExpression condition = null;    	
-    	
-    	if (spec.startsWith("&(") && (spec.endsWith(")"))) {
-    		condition = new ANDedConditions();
-    		parseConditionList((ExpressionList)condition, spec.substring(2, spec.length() -1), quotes);
-    	} else if (spec.startsWith("|(") && (spec.endsWith(")"))) {
-    		condition = new ORedConditions();
-    		parseConditionList((ExpressionList)condition, spec.substring(2, spec.length() -1), quotes);
-    	} else {
-    		condition = toCondition(spec, quotes);
-    	}
-				
-		return condition;
+        spec = spec.trim();
+        BooleanExpression condition = null;    	
+
+        if (spec.startsWith("&(") && (spec.endsWith(")"))) {
+            condition = new ANDedConditions();
+            parseConditionList((ExpressionList)condition, spec.substring(2, spec.length() -1), quotes);
+        } else if (spec.startsWith("|(") && (spec.endsWith(")"))) {
+            condition = new ORedConditions();
+            parseConditionList((ExpressionList)condition, spec.substring(2, spec.length() -1), quotes);
+        } else {
+            condition = toCondition(spec, quotes);
+        }
+
+        return condition;
     }
-    
+
     private Condition toCondition(String comparisonString, ArrayList<String> quotes) {
         Matcher m = Pattern.compile("(.*?)(=|!=|<=|>=|<|>)(.*)").matcher(comparisonString);
         if (!m.matches()) { 
-        	throw new SpreadsheetLoadException(ctx, "Cannot parse condition '"+comparisonString+"'");
+            throw new SpreadsheetLoadException(ctx, "Cannot parse condition '"+comparisonString+"'");
         }
-    	
+
         String lParamName = m.group(1).trim();
         boolean lParamCalibrated = true;
-        
+
         if (lParamName.endsWith(".raw")) {
-        	lParamName = lParamName.substring(0, lParamName.length() - 4);
-        	lParamCalibrated = false;
+            lParamName = lParamName.substring(0, lParamName.length() - 4);
+            lParamCalibrated = false;
         }
         Parameter lParam = spaceSystem.getParameter(lParamName);
         final ParameterInstanceRef lParamRef = new ParameterInstanceRef(lParam, lParamCalibrated);
-        
+
         String op = m.group(2);
         if ("=".equals(op)) {
             op = "==";
@@ -2241,31 +2257,31 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         Parameter rParam = null;
         final ParameterInstanceRef rParamRef;        
         final Condition cond;
-        
+
         if (rValue.startsWith("$$")) { // Quoted values
-        	rValue = quotes.remove(0);
+            rValue = quotes.remove(0);
         }
-        
+
         if (rValue.startsWith("$")) {
-        	boolean rParamCalibrated = true;
-        	rParamName = rValue.substring(1);
+            boolean rParamCalibrated = true;
+            rParamName = rValue.substring(1);
             if (rParamName.endsWith(".raw")) {
-            	rParamName = rParamName.substring(0, rParamName.length() - 4);
-            	rParamCalibrated = false;
+                rParamName = rParamName.substring(0, rParamName.length() - 4);
+                rParamCalibrated = false;
             }        	
-        	
+
             rParam = spaceSystem.getParameter(rParamName);
-        	rParamRef = new ParameterInstanceRef(rParam, rParamCalibrated);
-        	cond = new Condition(OperatorType.stringToOperator(op), lParamRef, rParamRef);
+            rParamRef = new ParameterInstanceRef(rParam, rParamCalibrated);
+            cond = new Condition(OperatorType.stringToOperator(op), lParamRef, rParamRef);
         } else {
-        	rParamRef = null;
+            rParamRef = null;
             if((rValue.startsWith("\"")||rValue.startsWith("”")) &&
                     (rValue.endsWith("\"")||rValue.endsWith("”")))  {
                 rValue = rValue.substring(1, rValue.length()-1);
             }
             cond = new Condition(OperatorType.stringToOperator(op), lParamRef, rValue);
         }
-        
+
         if ((rParamRef != null) && (rParam == null)) {
             spaceSystem.addUnresolvedReference(new NameReference(rParamName, Type.PARAMETER, new ResolvedAction() {
                 @Override
@@ -2275,7 +2291,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 }
             }));        	
         }
-        
+
         if (lParam == null) {
             spaceSystem.addUnresolvedReference(new NameReference(lParamName, Type.PARAMETER, new ResolvedAction() {
                 @Override
@@ -2286,7 +2302,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 }
             }));        	        	
         } else {
-        	cond.resolveValueType();
+            cond.resolveValueType();
         }
 
         return cond;

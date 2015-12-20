@@ -7,6 +7,7 @@ import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.StringConvertors;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.BinaryArgumentType;
 import org.yamcs.xtce.BooleanArgumentType;
@@ -22,6 +23,8 @@ import org.yamcs.xtce.IntegerRange;
 import org.yamcs.xtce.IntegerValidRange;
 import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.ValueEnumeration;
+
+import com.google.common.primitives.UnsignedLongs;
 
 public class ArgumentTypeProcessor {
 
@@ -89,9 +92,9 @@ public class ArgumentTypeProcessor {
             }
         } else {
             if (ipt.isSigned()) {
-                raw = Value.newBuilder().setType(Value.Type.UINT32).setSint64Value(longDecalValue).build();            	
+                raw = Value.newBuilder().setType(Value.Type.SINT64).setSint64Value(longDecalValue).build();            	
             } else {
-                raw = Value.newBuilder().setType(Value.Type.UINT32).setUint64Value(longDecalValue).build();
+                raw = Value.newBuilder().setType(Value.Type.UINT64).setUint64Value(longDecalValue).build();
             }
         }
         return raw;
@@ -192,15 +195,28 @@ public class ArgumentTypeProcessor {
     public static Value parseAndCheckRange(ArgumentType type, String argumentValue) throws ErrorInCommand {
         Value v;
         if(type instanceof IntegerArgumentType) {
-            long l = Long.decode(argumentValue);
-            IntegerValidRange vr = ((IntegerArgumentType)type).getValidRange();
-            if(vr!=null) {
-                if(!ValidRangeChecker.checkIntegerRange(vr, l)) {
-                    throw new ErrorInCommand("Value "+l+" is not in the range required for the type "+type);
+            IntegerArgumentType intType = (IntegerArgumentType) type;
+            if(intType.isSigned()) {
+                long l = Long.decode(argumentValue);
+                IntegerValidRange vr = ((IntegerArgumentType)type).getValidRange();
+                if(vr!=null) {
+                    if(!ValidRangeChecker.checkIntegerRange(vr, l)) {
+                        throw new ErrorInCommand("Value "+l+" is not in the range required for the type "+type);
+                    }
                 }
+                v = ValueUtility.getSint64Value(l);
+            } else {
+                long l = UnsignedLongs.decode(argumentValue);
+                IntegerValidRange vr = ((IntegerArgumentType)type).getValidRange();
+                if(vr!=null) {
+                    if(!ValidRangeChecker.checkUnsignedIntegerRange(vr, l)) {
+                        throw new ErrorInCommand("Value "+l+" is not in the range required for the type "+type);
+                    }
+                }
+                v = ValueUtility.getUint64Value(l);
             }
-            v = ValueHelper.newValue(l);
-        } else if(type instanceof FloatArgumentType) {
+            
+       } else if(type instanceof FloatArgumentType) {
             double d = Double.parseDouble(argumentValue);
             FloatValidRange vr = ((FloatArgumentType)type).getValidRange();
             if(vr!=null) {

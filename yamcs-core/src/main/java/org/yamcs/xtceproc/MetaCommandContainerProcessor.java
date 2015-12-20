@@ -57,7 +57,7 @@ public class MetaCommandContainerProcessor {
 
         ArgumentType atype = arg.getArgumentType();
         Value rawValue = ArgumentTypeProcessor.decalibrate(atype, argValue);
-
+        
         pcontext.deEncoder.encodeRaw(((BaseDataType) atype).getEncoding(), rawValue);
 
     }

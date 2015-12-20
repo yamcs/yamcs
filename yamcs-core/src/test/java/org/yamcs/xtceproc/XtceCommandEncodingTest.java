@@ -1,6 +1,6 @@
 package org.yamcs.xtceproc;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -102,6 +102,55 @@ public class XtceCommandEncodingTest {
 
         assertEquals(0, b[0]&0xFF);
         
+    }
+   
+    @Test
+    public void int64CommandArgumentRange() throws ErrorInCommand {
+        XtceDb xtcedb = XtceDbFactory.createInstance("refmdb");
+        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/INT64_ARG_TC");
         
+        try {
+            List<ArgumentAssignment> arguments = getArgAssignment("p1", "0X0102030405060707", "p2", "0xF102030405060708", "p3", "-18374120213919168760");
+            MetaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+            fail("Should throw an exception");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("Cannot assign value to p1"));
+        }
+        
+        
+        try {
+            List<ArgumentAssignment> arguments = getArgAssignment("p1", "0X0102030405060708", "p2", "0xF10203040506070A", "p3", "-18374120213919168760");
+            MetaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+            fail("Should throw an exception");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("Cannot assign value to p2"));
+        }
+        
+        try {
+            List<ArgumentAssignment> arguments = getArgAssignment("p1", "0X0102030405060708", "p2", "0xF102030405060708", "p3", "-0X0102030405060707");
+            MetaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+            fail("Should throw an exception");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("Cannot assign value to p3"));
+        }
+    }
+
+    @Test
+    public void int64CommandArgumentEncoding() throws ErrorInCommand {
+        XtceDb xtcedb = XtceDbFactory.createInstance("refmdb");
+        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/INT64_ARG_TC");
+        List<ArgumentAssignment> arguments = getArgAssignment("p1", "0X0102030405060708", "p2", "0xF102030405060708", "p3", "-0X0102030405060708");
+        byte[] b = MetaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        assertEquals("0102030405060708F102030405060708FEFDFCFBFAF9F8F8", StringConvertors.arrayToHexString(b));
+    }
+
+    private List<ArgumentAssignment> getArgAssignment(String ...v) {
+        if((v.length&0x1)!=0) throw new IllegalArgumentException("Please pass an even number of arguments: arg1,value1,arg2,value2...");
+        List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>() ;
+        for(int i=0;i<v.length;i+=2) {
+            ArgumentAssignment arg = new ArgumentAssignment(v[i], v[i+1]);
+            arguments.add(arg);
+        }
+        return arguments;
     }
 }

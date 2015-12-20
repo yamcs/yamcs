@@ -29,7 +29,7 @@ public class MetaCommandProcessor {
         for(ArgumentAssignment aa: argAssignmentList) {
             argAssignment.put(aa.getArgumentName(), aa.getArgumentValue());
         }
-        
+
         collectAndCheckArguments(mc, args, argAssignment);
 
         TcProcessingContext pcontext = new TcProcessingContext(ByteBuffer.allocate(1000), 0);
@@ -86,6 +86,7 @@ public class MetaCommandProcessor {
                         v= argTypeInitialValue;
                     args.put(a,  v);
                 } catch (Exception e) {
+                    e.printStackTrace();
                     throw new ErrorInCommand("Cannot assign value to "+a.getName()+": "+e.getMessage());
                 }
             }
@@ -110,12 +111,12 @@ public class MetaCommandProcessor {
     static public class CommandBuildResult {
         byte[] cmdPacket;
         Map<Argument, Value> args;
-        
+
         public CommandBuildResult(byte[] b, Map<Argument, Value> args) {
             this.cmdPacket = b;
             this.args = args;
         }
-        
+
         public byte[] getCmdPacket() {
             return cmdPacket;
         }
