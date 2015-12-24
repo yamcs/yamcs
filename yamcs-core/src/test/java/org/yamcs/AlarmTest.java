@@ -15,8 +15,9 @@ import org.yamcs.api.EventProducerFactory;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
-import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
+import org.yamcs.protobuf.Pvalue.RangeCondition;
+import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.SimpleTcTmService;
 import org.yamcs.xtce.Parameter;
@@ -95,23 +96,28 @@ public class AlarmTest {
         assertEquals(0, q.size());
         
         tmGenerator.generate_PKT1_10(42, 7, 0);
-        assertEquals(MonitoringResult.WARNING_HIGH, params.get(1).getMonitoringResult());
+        assertEquals(MonitoringResult.WARNING, params.get(1).getMonitoringResult());
+        assertEquals(RangeCondition.HIGH, params.get(1).getRangeCondition());
         assertEquals(1, q.size()); // Message for changed MonitoringResult
         
         tmGenerator.generate_PKT1_10(52, 7, 0);
-        assertEquals(MonitoringResult.DISTRESS_HIGH, params.get(2).getMonitoringResult());
+        assertEquals(MonitoringResult.DISTRESS, params.get(2).getMonitoringResult());
+        assertEquals(RangeCondition.HIGH, params.get(2).getRangeCondition());
         assertEquals(2, q.size()); // Message for changed MonitoringResult
         
         tmGenerator.generate_PKT1_10(62, 7, 0);
-        assertEquals(MonitoringResult.CRITICAL_HIGH, params.get(3).getMonitoringResult());
+        assertEquals(MonitoringResult.CRITICAL, params.get(3).getMonitoringResult());
+        assertEquals(RangeCondition.HIGH, params.get(3).getRangeCondition());
         assertEquals(3, q.size()); // Message for changed MonitoringResult
         
         tmGenerator.generate_PKT1_10(72, 7, 0);
-        assertEquals(MonitoringResult.SEVERE_HIGH, params.get(4).getMonitoringResult());
+        assertEquals(MonitoringResult.SEVERE, params.get(4).getMonitoringResult());
+        assertEquals(RangeCondition.HIGH, params.get(4).getRangeCondition());
         assertEquals(4, q.size()); // Message for changed MonitoringResult
         
         tmGenerator.generate_PKT1_10(74, 7, 0);
-        assertEquals(MonitoringResult.SEVERE_HIGH, params.get(5).getMonitoringResult());
+        assertEquals(MonitoringResult.SEVERE, params.get(5).getMonitoringResult());
+        assertEquals(RangeCondition.HIGH, params.get(5).getRangeCondition());
         assertEquals(4 /* ! */, q.size()); // No message, since nothing changed
         
         tmGenerator.generate_PKT1_10(15, 7, 0);
@@ -120,22 +126,26 @@ public class AlarmTest {
         
         // Now, change context
         tmGenerator.generate_PKT1_10(71, 0 /* ! */, 0);
-        assertEquals(MonitoringResult.CRITICAL_HIGH, params.get(7).getMonitoringResult());
+        assertEquals(MonitoringResult.CRITICAL, params.get(7).getMonitoringResult());
+        assertEquals(RangeCondition.HIGH, params.get(7).getRangeCondition());
         assertEquals(6, q.size()); // Message for changed MonitoringResult
         
         
         // Test minViolations of 3 under context 6
         tmGenerator.generate_PKT1_10(40, 6, 0);
-        assertEquals(MonitoringResult.WARNING_HIGH, params.get(8).getMonitoringResult());
+        assertEquals(MonitoringResult.WARNING, params.get(8).getMonitoringResult());
+        assertEquals(RangeCondition.HIGH, params.get(8).getRangeCondition());
         
         assertEquals(6, q.size()); // No message, violations=1
         
         tmGenerator.generate_PKT1_10(40, 6, 0);
-        assertEquals(MonitoringResult.WARNING_HIGH, params.get(9).getMonitoringResult());
+        assertEquals(MonitoringResult.WARNING, params.get(9).getMonitoringResult());
+        assertEquals(RangeCondition.HIGH, params.get(9).getRangeCondition());
         assertEquals(6, q.size()); // No message, violations=2
         
         tmGenerator.generate_PKT1_10(40, 6, 0);
-        assertEquals(MonitoringResult.WARNING_HIGH, params.get(10).getMonitoringResult());
+        assertEquals(MonitoringResult.WARNING, params.get(10).getMonitoringResult());
+        assertEquals(RangeCondition.HIGH, params.get(10).getRangeCondition());
         assertEquals(7, q.size()); // Message because violations=3
     }
     
@@ -171,23 +181,28 @@ public class AlarmTest {
         assertEquals(0, q.size());
         
         tmGenerator.generate_PKT1_10(0, 1, 42);
-        assertEquals(MonitoringResult.WARNING_HIGH, params.get(1).getMonitoringResult());
+        assertEquals(MonitoringResult.WARNING, params.get(1).getMonitoringResult());
+        assertEquals(RangeCondition.HIGH, params.get(1).getRangeCondition());
         assertEquals(1, q.size()); // Message for changed MonitoringResult
         
         tmGenerator.generate_PKT1_10(0, 1, 52);
-        assertEquals(MonitoringResult.DISTRESS_HIGH, params.get(2).getMonitoringResult());
+        assertEquals(MonitoringResult.DISTRESS, params.get(2).getMonitoringResult());
+        assertEquals(RangeCondition.HIGH, params.get(2).getRangeCondition());
         assertEquals(2, q.size()); // Message for changed MonitoringResult
         
         tmGenerator.generate_PKT1_10(0, 1, 62);
-        assertEquals(MonitoringResult.CRITICAL_HIGH, params.get(3).getMonitoringResult());
+        assertEquals(MonitoringResult.CRITICAL, params.get(3).getMonitoringResult());
+        assertEquals(RangeCondition.HIGH, params.get(3).getRangeCondition());
         assertEquals(3, q.size()); // Message for changed MonitoringResult
         
         tmGenerator.generate_PKT1_10(0, 1, 72);
-        assertEquals(MonitoringResult.SEVERE_HIGH, params.get(4).getMonitoringResult());
+        assertEquals(MonitoringResult.SEVERE, params.get(4).getMonitoringResult());
+        assertEquals(RangeCondition.HIGH, params.get(4).getRangeCondition());
         assertEquals(4, q.size()); // Message for changed MonitoringResult
         
         tmGenerator.generate_PKT1_10(0, 1, 74);
-        assertEquals(MonitoringResult.SEVERE_HIGH, params.get(5).getMonitoringResult());
+        assertEquals(MonitoringResult.SEVERE, params.get(5).getMonitoringResult());
+        assertEquals(RangeCondition.HIGH, params.get(5).getRangeCondition());
         assertEquals(4 /* ! */, q.size()); // No message, since nothing changed
         
         tmGenerator.generate_PKT1_10(0, 1, 15);
@@ -198,7 +213,8 @@ public class AlarmTest {
         // Now, change context
         tmGenerator.generate_PKT1_10(0, 0 /* ! */, 71);
         
-        assertEquals(MonitoringResult.CRITICAL_HIGH, params.get(7).getMonitoringResult());
+        assertEquals(MonitoringResult.CRITICAL, params.get(7).getMonitoringResult());
+        assertEquals(RangeCondition.HIGH, params.get(7).getRangeCondition());
         assertEquals(6, q.size()); // Message for changed MonitoringResult
     }
 

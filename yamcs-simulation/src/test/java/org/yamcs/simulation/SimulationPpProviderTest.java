@@ -1,24 +1,27 @@
 package org.yamcs.simulation;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import org.junit.Test;
-import org.yamcs.ParameterValue;
-import org.yamcs.protobuf.Pvalue;
-import org.yamcs.protobuf.Pvalue.MonitoringResult;
-import org.yamcs.simulation.generated.ObjectFactory;
-import org.yamcs.simulation.generated.PpSimulation;
-import org.yamcs.tctm.PpListener;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+
 import org.junit.BeforeClass;
+import org.junit.Test;
+import org.yamcs.ParameterValue;
+import org.yamcs.protobuf.Pvalue;
+import org.yamcs.protobuf.Pvalue.MonitoringResult;
+import org.yamcs.protobuf.Pvalue.RangeCondition;
+import org.yamcs.simulation.generated.ObjectFactory;
+import org.yamcs.simulation.generated.PpSimulation;
+import org.yamcs.tctm.PpListener;
 import org.yamcs.utils.TimeEncoding;
 
 public class SimulationPpProviderTest {
@@ -126,7 +129,8 @@ public class SimulationPpProviderTest {
 				- ppListener.receivedValue.get(1).getGenerationTime() == 42);
 
 		// check monitoring result
-		assertEquals(MonitoringResult.WARNING_HIGH, ppListener.receivedValue.get(20).getMonitoringResult());
+		assertEquals(MonitoringResult.WARNING, ppListener.receivedValue.get(20).getMonitoringResult());
+		assertEquals(RangeCondition.HIGH, ppListener.receivedValue.get(20).getRangeCondition());
 	}
 
 	@Test

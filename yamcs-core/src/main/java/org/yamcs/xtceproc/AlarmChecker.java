@@ -12,6 +12,7 @@ import org.yamcs.alarms.AlarmServer;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
+import org.yamcs.protobuf.Pvalue.RangeCondition;
 import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.AlarmType;
@@ -235,38 +236,43 @@ public class AlarmChecker {
         FloatRange criticalRange=staticAlarmRanges.getCriticalRange();
         FloatRange severeRange=staticAlarmRanges.getSevereRange();
         if(severeRange!=null) {
+            pv.setMonitoringResult(MonitoringResult.SEVERE);
             if(severeRange.getMinInclusive()>doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.SEVERE_LOW);
+                pv.setRangeCondition(RangeCondition.LOW);
             } else if(severeRange.getMaxInclusive()<doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.SEVERE_HIGH);
+                pv.setRangeCondition(RangeCondition.HIGH);
             }
         }
         if(pv.getMonitoringResult()==null && criticalRange!=null) {
+            pv.setMonitoringResult(MonitoringResult.CRITICAL);
             if(criticalRange.getMinInclusive()>doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.CRITICAL_LOW);
+                pv.setRangeCondition(RangeCondition.LOW);
             } else if(criticalRange.getMaxInclusive()<doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.CRITICAL_HIGH);
+                pv.setRangeCondition(RangeCondition.HIGH);
             }
         }
         if(pv.getMonitoringResult()==null && distressRange!=null) {
+            pv.setMonitoringResult(MonitoringResult.DISTRESS);
             if(distressRange.getMinInclusive()>doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.DISTRESS_LOW);
+                pv.setRangeCondition(RangeCondition.LOW);
             } else if(distressRange.getMaxInclusive()<doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.DISTRESS_HIGH);
+                pv.setRangeCondition(RangeCondition.HIGH);
             }
         }
         if(pv.getMonitoringResult()==null && warningRange!=null) {
+            pv.setMonitoringResult(MonitoringResult.WARNING);
             if(warningRange.getMinInclusive()>doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.WARNING_LOW);
+                pv.setRangeCondition(RangeCondition.LOW);
             } else if(warningRange.getMaxInclusive()<doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.WARNING_HIGH);
+                pv.setRangeCondition(RangeCondition.HIGH);
             }
         }
         if(pv.getMonitoringResult()==null && watchRange!=null) {
+            pv.setMonitoringResult(MonitoringResult.WATCH);
             if(watchRange.getMinInclusive()>doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.WATCH_LOW);
+                pv.setRangeCondition(RangeCondition.LOW);
             } else if(watchRange.getMaxInclusive()<doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.WATCH_HIGH);
+                pv.setRangeCondition(RangeCondition.HIGH);
             }
         }
         

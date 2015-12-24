@@ -159,72 +159,24 @@ public final class Pvalue {
     IN_LIMITS(1, 1),
     /**
      * <code>WATCH = 7;</code>
-     *
-     * <pre>
-     * NOMINAL_LIMIT_VIOLATION = 2;
-     * NOMINAL_LOW_LIMIT_VIOLATION = 3;
-     * NOMINAL_HIGH_LIMIT_VIOLATION = 4;
-     * DANGER_LOW_LIMIT_VIOLATION = 5;
-     * DANGER_HIGH_LIMIT_VIOLATION = 6;
-     * </pre>
      */
     WATCH(2, 7),
     /**
-     * <code>WATCH_LOW = 8;</code>
-     */
-    WATCH_LOW(3, 8),
-    /**
-     * <code>WATCH_HIGH = 9;</code>
-     */
-    WATCH_HIGH(4, 9),
-    /**
      * <code>WARNING = 10;</code>
      */
-    WARNING(5, 10),
-    /**
-     * <code>WARNING_LOW = 11;</code>
-     */
-    WARNING_LOW(6, 11),
-    /**
-     * <code>WARNING_HIGH = 12;</code>
-     */
-    WARNING_HIGH(7, 12),
+    WARNING(3, 10),
     /**
      * <code>DISTRESS = 13;</code>
      */
-    DISTRESS(8, 13),
-    /**
-     * <code>DISTRESS_LOW = 14;</code>
-     */
-    DISTRESS_LOW(9, 14),
-    /**
-     * <code>DISTRESS_HIGH = 15;</code>
-     */
-    DISTRESS_HIGH(10, 15),
+    DISTRESS(4, 13),
     /**
      * <code>CRITICAL = 16;</code>
      */
-    CRITICAL(11, 16),
-    /**
-     * <code>CRITICAL_LOW = 17;</code>
-     */
-    CRITICAL_LOW(12, 17),
-    /**
-     * <code>CRITICAL_HIGH = 18;</code>
-     */
-    CRITICAL_HIGH(13, 18),
+    CRITICAL(5, 16),
     /**
      * <code>SEVERE = 19;</code>
      */
-    SEVERE(14, 19),
-    /**
-     * <code>SEVERE_LOW = 20;</code>
-     */
-    SEVERE_LOW(15, 20),
-    /**
-     * <code>SEVERE_HIGH = 21;</code>
-     */
-    SEVERE_HIGH(16, 21),
+    SEVERE(6, 19),
     ;
 
     /**
@@ -237,72 +189,24 @@ public final class Pvalue {
     public static final int IN_LIMITS_VALUE = 1;
     /**
      * <code>WATCH = 7;</code>
-     *
-     * <pre>
-     * NOMINAL_LIMIT_VIOLATION = 2;
-     * NOMINAL_LOW_LIMIT_VIOLATION = 3;
-     * NOMINAL_HIGH_LIMIT_VIOLATION = 4;
-     * DANGER_LOW_LIMIT_VIOLATION = 5;
-     * DANGER_HIGH_LIMIT_VIOLATION = 6;
-     * </pre>
      */
     public static final int WATCH_VALUE = 7;
-    /**
-     * <code>WATCH_LOW = 8;</code>
-     */
-    public static final int WATCH_LOW_VALUE = 8;
-    /**
-     * <code>WATCH_HIGH = 9;</code>
-     */
-    public static final int WATCH_HIGH_VALUE = 9;
     /**
      * <code>WARNING = 10;</code>
      */
     public static final int WARNING_VALUE = 10;
     /**
-     * <code>WARNING_LOW = 11;</code>
-     */
-    public static final int WARNING_LOW_VALUE = 11;
-    /**
-     * <code>WARNING_HIGH = 12;</code>
-     */
-    public static final int WARNING_HIGH_VALUE = 12;
-    /**
      * <code>DISTRESS = 13;</code>
      */
     public static final int DISTRESS_VALUE = 13;
-    /**
-     * <code>DISTRESS_LOW = 14;</code>
-     */
-    public static final int DISTRESS_LOW_VALUE = 14;
-    /**
-     * <code>DISTRESS_HIGH = 15;</code>
-     */
-    public static final int DISTRESS_HIGH_VALUE = 15;
     /**
      * <code>CRITICAL = 16;</code>
      */
     public static final int CRITICAL_VALUE = 16;
     /**
-     * <code>CRITICAL_LOW = 17;</code>
-     */
-    public static final int CRITICAL_LOW_VALUE = 17;
-    /**
-     * <code>CRITICAL_HIGH = 18;</code>
-     */
-    public static final int CRITICAL_HIGH_VALUE = 18;
-    /**
      * <code>SEVERE = 19;</code>
      */
     public static final int SEVERE_VALUE = 19;
-    /**
-     * <code>SEVERE_LOW = 20;</code>
-     */
-    public static final int SEVERE_LOW_VALUE = 20;
-    /**
-     * <code>SEVERE_HIGH = 21;</code>
-     */
-    public static final int SEVERE_HIGH_VALUE = 21;
 
 
     public final int getNumber() { return value; }
@@ -312,20 +216,10 @@ public final class Pvalue {
         case 0: return DISABLED;
         case 1: return IN_LIMITS;
         case 7: return WATCH;
-        case 8: return WATCH_LOW;
-        case 9: return WATCH_HIGH;
         case 10: return WARNING;
-        case 11: return WARNING_LOW;
-        case 12: return WARNING_HIGH;
         case 13: return DISTRESS;
-        case 14: return DISTRESS_LOW;
-        case 15: return DISTRESS_HIGH;
         case 16: return CRITICAL;
-        case 17: return CRITICAL_LOW;
-        case 18: return CRITICAL_HIGH;
         case 19: return SEVERE;
-        case 20: return SEVERE_LOW;
-        case 21: return SEVERE_HIGH;
         default: return null;
       }
     }
@@ -375,6 +269,88 @@ public final class Pvalue {
     }
 
     // @@protoc_insertion_point(enum_scope:pvalue.MonitoringResult)
+  }
+
+  /**
+   * Protobuf enum {@code pvalue.RangeCondition}
+   */
+  public enum RangeCondition
+      implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     * <code>LOW = 0;</code>
+     */
+    LOW(0, 0),
+    /**
+     * <code>HIGH = 1;</code>
+     */
+    HIGH(1, 1),
+    ;
+
+    /**
+     * <code>LOW = 0;</code>
+     */
+    public static final int LOW_VALUE = 0;
+    /**
+     * <code>HIGH = 1;</code>
+     */
+    public static final int HIGH_VALUE = 1;
+
+
+    public final int getNumber() { return value; }
+
+    public static RangeCondition valueOf(int value) {
+      switch (value) {
+        case 0: return LOW;
+        case 1: return HIGH;
+        default: return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<RangeCondition>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static com.google.protobuf.Internal.EnumLiteMap<RangeCondition>
+        internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<RangeCondition>() {
+            public RangeCondition findValueByNumber(int number) {
+              return RangeCondition.valueOf(number);
+            }
+          };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      return getDescriptor().getValues().get(index);
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Pvalue.getDescriptor().getEnumTypes().get(2);
+    }
+
+    private static final RangeCondition[] VALUES = values();
+
+    public static RangeCondition valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int index;
+    private final int value;
+
+    private RangeCondition(int index, int value) {
+      this.index = index;
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:pvalue.RangeCondition)
   }
 
   public interface ParameterValueOrBuilder
@@ -471,6 +447,16 @@ public final class Pvalue {
      * <code>optional .pvalue.MonitoringResult monitoringResult = 8;</code>
      */
     org.yamcs.protobuf.Pvalue.MonitoringResult getMonitoringResult();
+
+    // optional .pvalue.RangeCondition rangeCondition = 9;
+    /**
+     * <code>optional .pvalue.RangeCondition rangeCondition = 9;</code>
+     */
+    boolean hasRangeCondition();
+    /**
+     * <code>optional .pvalue.RangeCondition rangeCondition = 9;</code>
+     */
+    org.yamcs.protobuf.Pvalue.RangeCondition getRangeCondition();
 
     // optional string acquisitionTimeUTC = 11;
     /**
@@ -716,30 +702,41 @@ public final class Pvalue {
               }
               break;
             }
+            case 72: {
+              int rawValue = input.readEnum();
+              org.yamcs.protobuf.Pvalue.RangeCondition value = org.yamcs.protobuf.Pvalue.RangeCondition.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(9, rawValue);
+              } else {
+                bitField0_ |= 0x00000100;
+                rangeCondition_ = value;
+              }
+              break;
+            }
             case 90: {
-              bitField0_ |= 0x00000100;
+              bitField0_ |= 0x00000200;
               acquisitionTimeUTC_ = input.readBytes();
               break;
             }
             case 98: {
-              bitField0_ |= 0x00000200;
+              bitField0_ |= 0x00000400;
               generationTimeUTC_ = input.readBytes();
               break;
             }
             case 184: {
-              bitField0_ |= 0x00000400;
+              bitField0_ |= 0x00000800;
               expirationTime_ = input.readInt64();
               break;
             }
             case 194: {
-              bitField0_ |= 0x00000800;
+              bitField0_ |= 0x00001000;
               expirationTimeUTC_ = input.readBytes();
               break;
             }
             case 202: {
-              if (!((mutable_bitField0_ & 0x00001000) == 0x00001000)) {
+              if (!((mutable_bitField0_ & 0x00002000) == 0x00002000)) {
                 alarmRange_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.AlarmRange>();
-                mutable_bitField0_ |= 0x00001000;
+                mutable_bitField0_ |= 0x00002000;
               }
               alarmRange_.add(input.readMessage(org.yamcs.protobuf.Mdb.AlarmRange.PARSER, extensionRegistry));
               break;
@@ -752,7 +749,7 @@ public final class Pvalue {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00001000) == 0x00001000)) {
+        if (((mutable_bitField0_ & 0x00002000) == 0x00002000)) {
           alarmRange_ = java.util.Collections.unmodifiableList(alarmRange_);
         }
         this.unknownFields = unknownFields.build();
@@ -933,6 +930,22 @@ public final class Pvalue {
       return monitoringResult_;
     }
 
+    // optional .pvalue.RangeCondition rangeCondition = 9;
+    public static final int RANGECONDITION_FIELD_NUMBER = 9;
+    private org.yamcs.protobuf.Pvalue.RangeCondition rangeCondition_;
+    /**
+     * <code>optional .pvalue.RangeCondition rangeCondition = 9;</code>
+     */
+    public boolean hasRangeCondition() {
+      return ((bitField0_ & 0x00000100) == 0x00000100);
+    }
+    /**
+     * <code>optional .pvalue.RangeCondition rangeCondition = 9;</code>
+     */
+    public org.yamcs.protobuf.Pvalue.RangeCondition getRangeCondition() {
+      return rangeCondition_;
+    }
+
     // optional string acquisitionTimeUTC = 11;
     public static final int ACQUISITIONTIMEUTC_FIELD_NUMBER = 11;
     private java.lang.Object acquisitionTimeUTC_;
@@ -944,7 +957,7 @@ public final class Pvalue {
      * </pre>
      */
     public boolean hasAcquisitionTimeUTC() {
-      return ((bitField0_ & 0x00000100) == 0x00000100);
+      return ((bitField0_ & 0x00000200) == 0x00000200);
     }
     /**
      * <code>optional string acquisitionTimeUTC = 11;</code>
@@ -995,7 +1008,7 @@ public final class Pvalue {
      * <code>optional string generationTimeUTC = 12;</code>
      */
     public boolean hasGenerationTimeUTC() {
-      return ((bitField0_ & 0x00000200) == 0x00000200);
+      return ((bitField0_ & 0x00000400) == 0x00000400);
     }
     /**
      * <code>optional string generationTimeUTC = 12;</code>
@@ -1038,7 +1051,7 @@ public final class Pvalue {
      * <code>optional int64 expirationTime = 23;</code>
      */
     public boolean hasExpirationTime() {
-      return ((bitField0_ & 0x00000400) == 0x00000400);
+      return ((bitField0_ & 0x00000800) == 0x00000800);
     }
     /**
      * <code>optional int64 expirationTime = 23;</code>
@@ -1054,7 +1067,7 @@ public final class Pvalue {
      * <code>optional string expirationTimeUTC = 24;</code>
      */
     public boolean hasExpirationTimeUTC() {
-      return ((bitField0_ & 0x00000800) == 0x00000800);
+      return ((bitField0_ & 0x00001000) == 0x00001000);
     }
     /**
      * <code>optional string expirationTimeUTC = 24;</code>
@@ -1155,6 +1168,7 @@ public final class Pvalue {
       acquisitionStatus_ = org.yamcs.protobuf.Pvalue.AcquisitionStatus.ACQUIRED;
       processingStatus_ = false;
       monitoringResult_ = org.yamcs.protobuf.Pvalue.MonitoringResult.DISABLED;
+      rangeCondition_ = org.yamcs.protobuf.Pvalue.RangeCondition.LOW;
       acquisitionTimeUTC_ = "";
       generationTimeUTC_ = "";
       expirationTime_ = 0L;
@@ -1216,15 +1230,18 @@ public final class Pvalue {
         output.writeEnum(8, monitoringResult_.getNumber());
       }
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
-        output.writeBytes(11, getAcquisitionTimeUTCBytes());
+        output.writeEnum(9, rangeCondition_.getNumber());
       }
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
-        output.writeBytes(12, getGenerationTimeUTCBytes());
+        output.writeBytes(11, getAcquisitionTimeUTCBytes());
       }
       if (((bitField0_ & 0x00000400) == 0x00000400)) {
-        output.writeInt64(23, expirationTime_);
+        output.writeBytes(12, getGenerationTimeUTCBytes());
       }
       if (((bitField0_ & 0x00000800) == 0x00000800)) {
+        output.writeInt64(23, expirationTime_);
+      }
+      if (((bitField0_ & 0x00001000) == 0x00001000)) {
         output.writeBytes(24, getExpirationTimeUTCBytes());
       }
       for (int i = 0; i < alarmRange_.size(); i++) {
@@ -1273,17 +1290,21 @@ public final class Pvalue {
       }
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(11, getAcquisitionTimeUTCBytes());
+          .computeEnumSize(9, rangeCondition_.getNumber());
       }
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(12, getGenerationTimeUTCBytes());
+          .computeBytesSize(11, getAcquisitionTimeUTCBytes());
       }
       if (((bitField0_ & 0x00000400) == 0x00000400)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(23, expirationTime_);
+          .computeBytesSize(12, getGenerationTimeUTCBytes());
       }
       if (((bitField0_ & 0x00000800) == 0x00000800)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(23, expirationTime_);
+      }
+      if (((bitField0_ & 0x00001000) == 0x00001000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(24, getExpirationTimeUTCBytes());
       }
@@ -1444,17 +1465,19 @@ public final class Pvalue {
         bitField0_ = (bitField0_ & ~0x00000040);
         monitoringResult_ = org.yamcs.protobuf.Pvalue.MonitoringResult.DISABLED;
         bitField0_ = (bitField0_ & ~0x00000080);
-        acquisitionTimeUTC_ = "";
+        rangeCondition_ = org.yamcs.protobuf.Pvalue.RangeCondition.LOW;
         bitField0_ = (bitField0_ & ~0x00000100);
-        generationTimeUTC_ = "";
+        acquisitionTimeUTC_ = "";
         bitField0_ = (bitField0_ & ~0x00000200);
-        expirationTime_ = 0L;
+        generationTimeUTC_ = "";
         bitField0_ = (bitField0_ & ~0x00000400);
-        expirationTimeUTC_ = "";
+        expirationTime_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000800);
+        expirationTimeUTC_ = "";
+        bitField0_ = (bitField0_ & ~0x00001000);
         if (alarmRangeBuilder_ == null) {
           alarmRange_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00001000);
+          bitField0_ = (bitField0_ & ~0x00002000);
         } else {
           alarmRangeBuilder_.clear();
         }
@@ -1533,23 +1556,27 @@ public final class Pvalue {
         if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
           to_bitField0_ |= 0x00000100;
         }
-        result.acquisitionTimeUTC_ = acquisitionTimeUTC_;
+        result.rangeCondition_ = rangeCondition_;
         if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
           to_bitField0_ |= 0x00000200;
         }
-        result.generationTimeUTC_ = generationTimeUTC_;
+        result.acquisitionTimeUTC_ = acquisitionTimeUTC_;
         if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
           to_bitField0_ |= 0x00000400;
         }
-        result.expirationTime_ = expirationTime_;
+        result.generationTimeUTC_ = generationTimeUTC_;
         if (((from_bitField0_ & 0x00000800) == 0x00000800)) {
           to_bitField0_ |= 0x00000800;
         }
+        result.expirationTime_ = expirationTime_;
+        if (((from_bitField0_ & 0x00001000) == 0x00001000)) {
+          to_bitField0_ |= 0x00001000;
+        }
         result.expirationTimeUTC_ = expirationTimeUTC_;
         if (alarmRangeBuilder_ == null) {
-          if (((bitField0_ & 0x00001000) == 0x00001000)) {
+          if (((bitField0_ & 0x00002000) == 0x00002000)) {
             alarmRange_ = java.util.Collections.unmodifiableList(alarmRange_);
-            bitField0_ = (bitField0_ & ~0x00001000);
+            bitField0_ = (bitField0_ & ~0x00002000);
           }
           result.alarmRange_ = alarmRange_;
         } else {
@@ -1595,13 +1622,16 @@ public final class Pvalue {
         if (other.hasMonitoringResult()) {
           setMonitoringResult(other.getMonitoringResult());
         }
+        if (other.hasRangeCondition()) {
+          setRangeCondition(other.getRangeCondition());
+        }
         if (other.hasAcquisitionTimeUTC()) {
-          bitField0_ |= 0x00000100;
+          bitField0_ |= 0x00000200;
           acquisitionTimeUTC_ = other.acquisitionTimeUTC_;
           onChanged();
         }
         if (other.hasGenerationTimeUTC()) {
-          bitField0_ |= 0x00000200;
+          bitField0_ |= 0x00000400;
           generationTimeUTC_ = other.generationTimeUTC_;
           onChanged();
         }
@@ -1609,7 +1639,7 @@ public final class Pvalue {
           setExpirationTime(other.getExpirationTime());
         }
         if (other.hasExpirationTimeUTC()) {
-          bitField0_ |= 0x00000800;
+          bitField0_ |= 0x00001000;
           expirationTimeUTC_ = other.expirationTimeUTC_;
           onChanged();
         }
@@ -1617,7 +1647,7 @@ public final class Pvalue {
           if (!other.alarmRange_.isEmpty()) {
             if (alarmRange_.isEmpty()) {
               alarmRange_ = other.alarmRange_;
-              bitField0_ = (bitField0_ & ~0x00001000);
+              bitField0_ = (bitField0_ & ~0x00002000);
             } else {
               ensureAlarmRangeIsMutable();
               alarmRange_.addAll(other.alarmRange_);
@@ -1630,7 +1660,7 @@ public final class Pvalue {
               alarmRangeBuilder_.dispose();
               alarmRangeBuilder_ = null;
               alarmRange_ = other.alarmRange_;
-              bitField0_ = (bitField0_ & ~0x00001000);
+              bitField0_ = (bitField0_ & ~0x00002000);
               alarmRangeBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getAlarmRangeFieldBuilder() : null;
@@ -2206,6 +2236,42 @@ public final class Pvalue {
         return this;
       }
 
+      // optional .pvalue.RangeCondition rangeCondition = 9;
+      private org.yamcs.protobuf.Pvalue.RangeCondition rangeCondition_ = org.yamcs.protobuf.Pvalue.RangeCondition.LOW;
+      /**
+       * <code>optional .pvalue.RangeCondition rangeCondition = 9;</code>
+       */
+      public boolean hasRangeCondition() {
+        return ((bitField0_ & 0x00000100) == 0x00000100);
+      }
+      /**
+       * <code>optional .pvalue.RangeCondition rangeCondition = 9;</code>
+       */
+      public org.yamcs.protobuf.Pvalue.RangeCondition getRangeCondition() {
+        return rangeCondition_;
+      }
+      /**
+       * <code>optional .pvalue.RangeCondition rangeCondition = 9;</code>
+       */
+      public Builder setRangeCondition(org.yamcs.protobuf.Pvalue.RangeCondition value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000100;
+        rangeCondition_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .pvalue.RangeCondition rangeCondition = 9;</code>
+       */
+      public Builder clearRangeCondition() {
+        bitField0_ = (bitField0_ & ~0x00000100);
+        rangeCondition_ = org.yamcs.protobuf.Pvalue.RangeCondition.LOW;
+        onChanged();
+        return this;
+      }
+
       // optional string acquisitionTimeUTC = 11;
       private java.lang.Object acquisitionTimeUTC_ = "";
       /**
@@ -2216,7 +2282,7 @@ public final class Pvalue {
        * </pre>
        */
       public boolean hasAcquisitionTimeUTC() {
-        return ((bitField0_ & 0x00000100) == 0x00000100);
+        return ((bitField0_ & 0x00000200) == 0x00000200);
       }
       /**
        * <code>optional string acquisitionTimeUTC = 11;</code>
@@ -2268,7 +2334,7 @@ public final class Pvalue {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000100;
+  bitField0_ |= 0x00000200;
         acquisitionTimeUTC_ = value;
         onChanged();
         return this;
@@ -2281,7 +2347,7 @@ public final class Pvalue {
        * </pre>
        */
       public Builder clearAcquisitionTimeUTC() {
-        bitField0_ = (bitField0_ & ~0x00000100);
+        bitField0_ = (bitField0_ & ~0x00000200);
         acquisitionTimeUTC_ = getDefaultInstance().getAcquisitionTimeUTC();
         onChanged();
         return this;
@@ -2298,7 +2364,7 @@ public final class Pvalue {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000100;
+  bitField0_ |= 0x00000200;
         acquisitionTimeUTC_ = value;
         onChanged();
         return this;
@@ -2310,7 +2376,7 @@ public final class Pvalue {
        * <code>optional string generationTimeUTC = 12;</code>
        */
       public boolean hasGenerationTimeUTC() {
-        return ((bitField0_ & 0x00000200) == 0x00000200);
+        return ((bitField0_ & 0x00000400) == 0x00000400);
       }
       /**
        * <code>optional string generationTimeUTC = 12;</code>
@@ -2350,7 +2416,7 @@ public final class Pvalue {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000200;
+  bitField0_ |= 0x00000400;
         generationTimeUTC_ = value;
         onChanged();
         return this;
@@ -2359,7 +2425,7 @@ public final class Pvalue {
        * <code>optional string generationTimeUTC = 12;</code>
        */
       public Builder clearGenerationTimeUTC() {
-        bitField0_ = (bitField0_ & ~0x00000200);
+        bitField0_ = (bitField0_ & ~0x00000400);
         generationTimeUTC_ = getDefaultInstance().getGenerationTimeUTC();
         onChanged();
         return this;
@@ -2372,7 +2438,7 @@ public final class Pvalue {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000200;
+  bitField0_ |= 0x00000400;
         generationTimeUTC_ = value;
         onChanged();
         return this;
@@ -2384,7 +2450,7 @@ public final class Pvalue {
        * <code>optional int64 expirationTime = 23;</code>
        */
       public boolean hasExpirationTime() {
-        return ((bitField0_ & 0x00000400) == 0x00000400);
+        return ((bitField0_ & 0x00000800) == 0x00000800);
       }
       /**
        * <code>optional int64 expirationTime = 23;</code>
@@ -2396,7 +2462,7 @@ public final class Pvalue {
        * <code>optional int64 expirationTime = 23;</code>
        */
       public Builder setExpirationTime(long value) {
-        bitField0_ |= 0x00000400;
+        bitField0_ |= 0x00000800;
         expirationTime_ = value;
         onChanged();
         return this;
@@ -2405,7 +2471,7 @@ public final class Pvalue {
        * <code>optional int64 expirationTime = 23;</code>
        */
       public Builder clearExpirationTime() {
-        bitField0_ = (bitField0_ & ~0x00000400);
+        bitField0_ = (bitField0_ & ~0x00000800);
         expirationTime_ = 0L;
         onChanged();
         return this;
@@ -2417,7 +2483,7 @@ public final class Pvalue {
        * <code>optional string expirationTimeUTC = 24;</code>
        */
       public boolean hasExpirationTimeUTC() {
-        return ((bitField0_ & 0x00000800) == 0x00000800);
+        return ((bitField0_ & 0x00001000) == 0x00001000);
       }
       /**
        * <code>optional string expirationTimeUTC = 24;</code>
@@ -2457,7 +2523,7 @@ public final class Pvalue {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000800;
+  bitField0_ |= 0x00001000;
         expirationTimeUTC_ = value;
         onChanged();
         return this;
@@ -2466,7 +2532,7 @@ public final class Pvalue {
        * <code>optional string expirationTimeUTC = 24;</code>
        */
       public Builder clearExpirationTimeUTC() {
-        bitField0_ = (bitField0_ & ~0x00000800);
+        bitField0_ = (bitField0_ & ~0x00001000);
         expirationTimeUTC_ = getDefaultInstance().getExpirationTimeUTC();
         onChanged();
         return this;
@@ -2479,7 +2545,7 @@ public final class Pvalue {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000800;
+  bitField0_ |= 0x00001000;
         expirationTimeUTC_ = value;
         onChanged();
         return this;
@@ -2489,9 +2555,9 @@ public final class Pvalue {
       private java.util.List<org.yamcs.protobuf.Mdb.AlarmRange> alarmRange_ =
         java.util.Collections.emptyList();
       private void ensureAlarmRangeIsMutable() {
-        if (!((bitField0_ & 0x00001000) == 0x00001000)) {
+        if (!((bitField0_ & 0x00002000) == 0x00002000)) {
           alarmRange_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.AlarmRange>(alarmRange_);
-          bitField0_ |= 0x00001000;
+          bitField0_ |= 0x00002000;
          }
       }
 
@@ -2684,7 +2750,7 @@ public final class Pvalue {
       public Builder clearAlarmRange() {
         if (alarmRangeBuilder_ == null) {
           alarmRange_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00001000);
+          bitField0_ = (bitField0_ & ~0x00002000);
           onChanged();
         } else {
           alarmRangeBuilder_.clear();
@@ -2789,7 +2855,7 @@ public final class Pvalue {
           alarmRangeBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               org.yamcs.protobuf.Mdb.AlarmRange, org.yamcs.protobuf.Mdb.AlarmRange.Builder, org.yamcs.protobuf.Mdb.AlarmRangeOrBuilder>(
                   alarmRange_,
-                  ((bitField0_ & 0x00001000) == 0x00001000),
+                  ((bitField0_ & 0x00002000) == 0x00002000),
                   getParentForChildren(),
                   isClean());
           alarmRange_ = null;
@@ -5386,34 +5452,31 @@ public final class Pvalue {
   static {
     java.lang.String[] descriptorData = {
       "\n\014pvalue.proto\022\006pvalue\032\013yamcs.proto\032\tmdb" +
-      ".proto\"\266\003\n\016ParameterValue\022 \n\002id\030\001 \001(\0132\024." +
+      ".proto\"\346\003\n\016ParameterValue\022 \n\002id\030\001 \001(\0132\024." +
       "yamcs.NamedObjectId\022\036\n\010rawValue\030\002 \001(\0132\014." +
       "yamcs.Value\022\036\n\010engValue\030\003 \001(\0132\014.yamcs.Va" +
       "lue\022\027\n\017acquisitionTime\030\004 \001(\003\022\026\n\016generati" +
       "onTime\030\005 \001(\003\0224\n\021acquisitionStatus\030\006 \001(\0162" +
       "\031.pvalue.AcquisitionStatus\022\030\n\020processing" +
       "Status\030\007 \001(\010\0222\n\020monitoringResult\030\010 \001(\0162\030" +
-      ".pvalue.MonitoringResult\022\032\n\022acquisitionT" +
-      "imeUTC\030\013 \001(\t\022\031\n\021generationTimeUTC\030\014 \001(\t\022",
-      "\026\n\016expirationTime\030\027 \001(\003\022\031\n\021expirationTim" +
-      "eUTC\030\030 \001(\t\022#\n\nalarmRange\030\031 \003(\0132\017.mdb.Ala" +
-      "rmRange\"q\n\rParameterData\022)\n\tparameter\030\001 " +
-      "\003(\0132\026.pvalue.ParameterValue\022\r\n\005group\030\002 \001" +
-      "(\t\022\026\n\016generationTime\030\003 \001(\003\022\016\n\006seqNum\030\004 \001" +
-      "(\005\"\201\001\n\nTimeSeries\022)\n\006sample\030\001 \003(\0132\031.pval" +
-      "ue.TimeSeries.Sample\032H\n\006Sample\022\014\n\004time\030\001" +
-      " \001(\t\022\013\n\003avg\030\002 \001(\001\022\013\n\003min\030\003 \001(\001\022\013\n\003max\030\004 " +
-      "\001(\001\022\t\n\001n\030\005 \001(\005*M\n\021AcquisitionStatus\022\014\n\010A" +
-      "CQUIRED\020\000\022\020\n\014NOT_RECEIVED\020\001\022\013\n\007INVALID\020\002",
-      "\022\013\n\007EXPIRED\020\003*\234\002\n\020MonitoringResult\022\014\n\010DI" +
-      "SABLED\020\000\022\r\n\tIN_LIMITS\020\001\022\t\n\005WATCH\020\007\022\r\n\tWA" +
-      "TCH_LOW\020\010\022\016\n\nWATCH_HIGH\020\t\022\013\n\007WARNING\020\n\022\017" +
-      "\n\013WARNING_LOW\020\013\022\020\n\014WARNING_HIGH\020\014\022\014\n\010DIS" +
-      "TRESS\020\r\022\020\n\014DISTRESS_LOW\020\016\022\021\n\rDISTRESS_HI" +
-      "GH\020\017\022\014\n\010CRITICAL\020\020\022\020\n\014CRITICAL_LOW\020\021\022\021\n\r" +
-      "CRITICAL_HIGH\020\022\022\n\n\006SEVERE\020\023\022\016\n\nSEVERE_LO" +
-      "W\020\024\022\017\n\013SEVERE_HIGH\020\025B\024\n\022org.yamcs.protob" +
-      "uf"
+      ".pvalue.MonitoringResult\022.\n\016rangeConditi" +
+      "on\030\t \001(\0162\026.pvalue.RangeCondition\022\032\n\022acqu",
+      "isitionTimeUTC\030\013 \001(\t\022\031\n\021generationTimeUT" +
+      "C\030\014 \001(\t\022\026\n\016expirationTime\030\027 \001(\003\022\031\n\021expir" +
+      "ationTimeUTC\030\030 \001(\t\022#\n\nalarmRange\030\031 \003(\0132\017" +
+      ".mdb.AlarmRange\"q\n\rParameterData\022)\n\tpara" +
+      "meter\030\001 \003(\0132\026.pvalue.ParameterValue\022\r\n\005g" +
+      "roup\030\002 \001(\t\022\026\n\016generationTime\030\003 \001(\003\022\016\n\006se" +
+      "qNum\030\004 \001(\005\"\201\001\n\nTimeSeries\022)\n\006sample\030\001 \003(" +
+      "\0132\031.pvalue.TimeSeries.Sample\032H\n\006Sample\022\014" +
+      "\n\004time\030\001 \001(\t\022\013\n\003avg\030\002 \001(\001\022\013\n\003min\030\003 \001(\001\022\013" +
+      "\n\003max\030\004 \001(\001\022\t\n\001n\030\005 \001(\005*M\n\021AcquisitionSta",
+      "tus\022\014\n\010ACQUIRED\020\000\022\020\n\014NOT_RECEIVED\020\001\022\013\n\007I" +
+      "NVALID\020\002\022\013\n\007EXPIRED\020\003*o\n\020MonitoringResul" +
+      "t\022\014\n\010DISABLED\020\000\022\r\n\tIN_LIMITS\020\001\022\t\n\005WATCH\020" +
+      "\007\022\013\n\007WARNING\020\n\022\014\n\010DISTRESS\020\r\022\014\n\010CRITICAL" +
+      "\020\020\022\n\n\006SEVERE\020\023*#\n\016RangeCondition\022\007\n\003LOW\020" +
+      "\000\022\010\n\004HIGH\020\001B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -5425,7 +5488,7 @@ public final class Pvalue {
           internal_static_pvalue_ParameterValue_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_pvalue_ParameterValue_descriptor,
-              new java.lang.String[] { "Id", "RawValue", "EngValue", "AcquisitionTime", "GenerationTime", "AcquisitionStatus", "ProcessingStatus", "MonitoringResult", "AcquisitionTimeUTC", "GenerationTimeUTC", "ExpirationTime", "ExpirationTimeUTC", "AlarmRange", });
+              new java.lang.String[] { "Id", "RawValue", "EngValue", "AcquisitionTime", "GenerationTime", "AcquisitionStatus", "ProcessingStatus", "MonitoringResult", "RangeCondition", "AcquisitionTimeUTC", "GenerationTimeUTC", "ExpirationTime", "ExpirationTimeUTC", "AlarmRange", });
           internal_static_pvalue_ParameterData_descriptor =
             getDescriptor().getMessageTypes().get(1);
           internal_static_pvalue_ParameterData_fieldAccessorTable = new
