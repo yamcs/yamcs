@@ -85,7 +85,7 @@ public class HornetQAuthManager implements HornetQSecurityManager {
 				log.debug( "Default user '{}' given role '{}'.",username, role );
 			}
 		} else {
-			log.debug( "addRole('{}','{}') called but will perform no functio.",username, role );
+			log.debug( "addRole('{}','{}') called but will perform no function",username, role );
 		}
 	}
 

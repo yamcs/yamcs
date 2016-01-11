@@ -215,7 +215,7 @@ public abstract class RestHandler extends RouteHandler {
             p = mdb.getParameter(id);
         }
         
-        if (!authorised(req, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
+        if (p != null &&  !authorised(req, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
             log.warn("Parameter {} found, but withheld due to insufficient privileges. Returning 404 instead", id);
             p = null;
         }
@@ -263,7 +263,7 @@ public abstract class RestHandler extends RouteHandler {
             cmd = mdb.getMetaCommand(id);
         }
         
-        if (!authorised(req, Privilege.Type.TC, cmd.getQualifiedName())) {
+        if (cmd != null && !authorised(req, Privilege.Type.TC, cmd.getQualifiedName())) {
             log.warn("Command {} found, but withheld due to insufficient privileges. Returning 404 instead", id);
             cmd = null;
         }

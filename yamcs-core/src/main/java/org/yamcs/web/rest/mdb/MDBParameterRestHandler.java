@@ -31,7 +31,7 @@ import io.netty.channel.ChannelFuture;
 public class MDBParameterRestHandler extends RestHandler {
     final static Logger log = LoggerFactory.getLogger(MDBParameterRestHandler.class);
     
-    @Route(path = "/api/mdb/:instance/parameters/bulk", method = { "GET", "POST" })
+    @Route(path = "/api/mdb/:instance/parameters/bulk", method = { "GET", "POST" }, priority = true)
     public ChannelFuture getBulkParameterInfo(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
