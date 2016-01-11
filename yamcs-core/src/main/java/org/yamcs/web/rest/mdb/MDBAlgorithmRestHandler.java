@@ -20,53 +20,59 @@ import io.netty.channel.ChannelFuture;
  */
 public class MDBAlgorithmRestHandler extends RestHandler {
     
+    @Route(path = "/api/mdb/:instance/algorithms", method = "GET")
     @Route(path = "/api/mdb/:instance/algorithms/:name*", method = "GET")
     public ChannelFuture getAlgorithm(RestRequest req) throws HttpException {
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
-        
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
-        Algorithm algorithm = verifyAlgorithm(req, mdb, req.getRouteParam("name"));
-        
-        String instanceURL = req.getApiURL() + "/mdb/" + instance;
-        AlgorithmInfo ainfo = XtceToGpbAssembler.toAlgorithmInfo(algorithm, instanceURL, DetailLevel.FULL, req.getOptions());
-        return sendOK(req, ainfo, SchemaMdb.AlgorithmInfo.WRITE);
+        if (req.hasRouteParam("name")) {
+            return getAlgorithmInfo(req);
+        } else {
+            return listAlgorithms(req);
+        }
     }
+    
+    private ChannelFuture getAlgorithmInfo(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
 
-    /**
-     * Sends the algorithms for the requested yamcs instance. If no namespace
-     * is specified, assumes root namespace.
-     */
-    @Route(path = "/api/mdb/:instance/algorithms", method = "GET")
-    public ChannelFuture listAlgorithms(RestRequest req) throws HttpException {
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        Algorithm algo = verifyAlgorithm(req, mdb, req.getRouteParam("name"));
+        
+        String instanceURL = req.getApiURL() + "/mdb/" + instance;
+        AlgorithmInfo cinfo = XtceToGpbAssembler.toAlgorithmInfo(algo, instanceURL, DetailLevel.FULL, req.getOptions());
+        return sendOK(req, cinfo, SchemaMdb.AlgorithmInfo.WRITE);
+    }
+    
+    private ChannelFuture listAlgorithms(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         
-        String instanceURL = req.getApiURL() + "/mdb/" + instance;
-        boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
-        
+        // Should eventually be replaced in a generic mdb search operation
         NameDescriptionSearchMatcher matcher = null;
         if (req.hasQueryParameter("q")) {
             matcher = new NameDescriptionSearchMatcher(req.getQueryParameter("q"));    
         }
         
+        String instanceURL = req.getApiURL() + "/mdb/" + instance;
+        boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
+        
         ListAlgorithmInfoResponse.Builder responseb = ListAlgorithmInfoResponse.newBuilder();
-        //if (namespace == null) {
-            for (Algorithm a : mdb.getAlgorithms()) {
-                if (matcher != null && !matcher.matches(a)) continue;
-                responseb.addAlgorithm(XtceToGpbAssembler.toAlgorithmInfo(a, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
-            }
-        /*} else {
-            // TODO privileges
-            for (Algorithm a : mdb.getAlgorithms()) {
-                if (matcher != null && !matcher.matches(a))
+        if (req.hasQueryParameter("namespace")) {
+            String namespace = req.getQueryParameter("namespace");
+            
+            for (Algorithm algo : mdb.getAlgorithms()) {
+                if (matcher != null && !matcher.matches(algo))
                     continue;
                 
-                String alias = a.getAlias(namespace);
-                if (alias != null || (recurse && a.getQualifiedName().startsWith(namespace))) {
-                    responseb.addAlgorithm(XtceToGpbAssembler.toAlgorithmInfo(a, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                String alias = algo.getAlias(namespace);
+                if (alias != null || (recurse && algo.getQualifiedName().startsWith(namespace))) {
+                    responseb.addAlgorithm(XtceToGpbAssembler.toAlgorithmInfo(algo, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
                 }
             }
-        }*/
+        } else { // List all
+            for (Algorithm algo : mdb.getAlgorithms()) {
+                if (matcher != null && !matcher.matches(algo)) continue;
+                responseb.addAlgorithm(XtceToGpbAssembler.toAlgorithmInfo(algo, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+            }
+        }
         
         return sendOK(req, responseb.build(), SchemaRest.ListAlgorithmInfoResponse.WRITE);
     }

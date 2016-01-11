@@ -199,12 +199,12 @@ public abstract class RestHandler extends RouteHandler {
     
     protected static Parameter verifyParameter(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
-        if (lastSlash == -1) {
+        if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
             throw new NotFoundException(req, "No such parameter (missing namespace?)");
         }
         
         String namespace = pathName.substring(0, lastSlash);
-        String name = pathName.substring(lastSlash);
+        String name = pathName.substring(lastSlash + 1);
         
         // First try with a prefixed slash (should be the common case)
         NamedObjectId id = NamedObjectId.newBuilder().setNamespace("/" + namespace).setName(name).build();
@@ -215,7 +215,7 @@ public abstract class RestHandler extends RouteHandler {
             p = mdb.getParameter(id);
         }
         
-        if (p != null &&  !authorised(req, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
+        if (p != null && !authorised(req, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
             log.warn("Parameter {} found, but withheld due to insufficient privileges. Returning 404 instead", id);
             p = null;
         }
@@ -247,12 +247,12 @@ public abstract class RestHandler extends RouteHandler {
     
     protected static MetaCommand verifyCommand(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
-        if (lastSlash == -1) {
+        if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
             throw new NotFoundException(req, "No such command (missing namespace?)");
         }
         
         String namespace = pathName.substring(0, lastSlash);
-        String name = pathName.substring(lastSlash);
+        String name = pathName.substring(lastSlash + 1);
         
         // First try with a prefixed slash (should be the common case)
         NamedObjectId id = NamedObjectId.newBuilder().setNamespace("/" + namespace).setName(name).build();
@@ -277,12 +277,12 @@ public abstract class RestHandler extends RouteHandler {
     
     protected static Algorithm verifyAlgorithm(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
-        if (lastSlash == -1) {
+        if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
             throw new NotFoundException(req, "No such algorithm (missing namespace?)");
         }
         
         String namespace = pathName.substring(0, lastSlash);
-        String name = pathName.substring(lastSlash);
+        String name = pathName.substring(lastSlash + 1);
         
         // First try with a prefixed slash (should be the common case)
         NamedObjectId id = NamedObjectId.newBuilder().setNamespace("/" + namespace).setName(name).build();
@@ -303,12 +303,12 @@ public abstract class RestHandler extends RouteHandler {
     
     protected static SequenceContainer verifyContainer(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
-        if (lastSlash == -1) {
+        if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
             throw new NotFoundException(req, "No such container (missing namespace?)");
         }
         
         String namespace = pathName.substring(0, lastSlash);
-        String name = pathName.substring(lastSlash);
+        String name = pathName.substring(lastSlash + 1);
         
         // First try with a prefixed slash (should be the common case)
         NamedObjectId id = NamedObjectId.newBuilder().setNamespace("/" + namespace).setName(name).build();

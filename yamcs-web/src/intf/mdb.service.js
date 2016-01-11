@@ -49,11 +49,8 @@
             });
         }
 
-        function listParameters(qname, options) {
+        function listParameters(options) {
             var targetUrl = '/api/mdb/' + yamcsInstance + '/parameters';
-            if (qname) {
-                targetUrl += qname;
-            }
             targetUrl += toQueryString(options);
 
             return $http.get(targetUrl).then(function (response) {
@@ -64,11 +61,8 @@
             });
         }
 
-        function listContainers(qname, options) {
+        function listContainers(options) {
             var targetUrl = '/api/mdb/' + yamcsInstance + '/containers';
-            if (qname) {
-                targetUrl += qname;
-            }
             targetUrl += toQueryString(options);
 
             return $http.get(targetUrl).then(function (response) {
@@ -79,11 +73,8 @@
             });
         }
 
-        function listCommands(qname, options) {
+        function listCommands(options) {
             var targetUrl = '/api/mdb/' + yamcsInstance + '/commands';
-            if (qname) {
-                targetUrl += qname;
-            }
             targetUrl += toQueryString(options);
 
             return $http.get(targetUrl).then(function (response) {
@@ -94,11 +85,8 @@
             });
         }
 
-        function listAlgorithms(qname, options) {
+        function listAlgorithms(options) {
             var targetUrl = '/api/mdb/' + yamcsInstance + '/algorithms';
-            if (qname) {
-                targetUrl += qname;
-            }
             targetUrl += toQueryString(options);
 
             return $http.get(targetUrl).then(function (response) {

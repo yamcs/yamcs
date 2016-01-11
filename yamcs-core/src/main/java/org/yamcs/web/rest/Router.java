@@ -3,6 +3,8 @@ package org.yamcs.web.rest;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -141,14 +143,20 @@ public class Router {
     public void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req, AuthenticationToken token) {
         QueryStringDecoder qsDecoder = new QueryStringDecoder(req.getUri());
         RestRequest restReq = new RestRequest(ctx, req, qsDecoder, token);
+        
         try {
-            RouteMatch match = matchURI(req.getMethod(), qsDecoder.path() /* without query string ! */);
+            // Decode first the path/qs difference, then url-decode the path
+            String uri = new URI(qsDecoder.path()).getPath();
+            
+            RouteMatch match = matchURI(req.getMethod(), uri);
             restReq.setRouteMatch(match);
             if (match != null) {
                 dispatch(restReq, match);
             } else {
                 HttpHandler.sendPlainTextError(ctx, HttpResponseStatus.NOT_FOUND);
             }
+        } catch (URISyntaxException e) {
+            RestHandler.sendRestError(restReq, HttpResponseStatus.INTERNAL_SERVER_ERROR, e);
         } catch (MethodNotAllowedException e) {
             RestHandler.sendRestError(restReq, e.getStatus(), e);
         }

@@ -1,16 +1,10 @@
 package org.yamcs.web.rest.archive;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.yamcs.archive.AlarmRecorder;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Rest.ListAlarmsResponse;
-import org.yamcs.protobuf.SchemaAlarms;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.web.HttpException;
-import org.yamcs.web.InternalServerErrorException;
-import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
@@ -28,7 +22,9 @@ import io.netty.channel.ChannelFuture;
 
 public class ArchiveAlarmRestHandler extends RestHandler {
 
-    @Route(path="/api/archive/:instance/alarms/:parameter*/:triggerTime?", method="GET")
+    @Route(path="/api/archive/:instance/alarms", method="GET")
+    @Route(path="/api/archive/:instance/alarms/:parameter*", method="GET")
+    //@Route(path="/api/archive/:instance/alarms/:parameter*/:triggerTime?", method="GET") // same comment as below
     public ChannelFuture listAlarms(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
                 
@@ -45,9 +41,9 @@ public class ArchiveAlarmRestHandler extends RestHandler {
             Parameter p = verifyParameter(req, mdb, req.getRouteParam("parameter"));
             sqlb.where("parameter = '" + p.getQualifiedName() + "'");
         }
-        if (req.hasRouteParam("triggerTime")) {
+        /*if (req.hasRouteParam("triggerTime")) {
             sqlb.where("triggerTime = " + req.getDateRouteParam("triggerTime"));
-        }
+        }*/
         sqlb.descend(req.asksDescending(true));
         
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
@@ -63,7 +59,10 @@ public class ArchiveAlarmRestHandler extends RestHandler {
         return sendOK(req, responseb.build(), SchemaRest.ListAlarmsResponse.WRITE);
     }
     
-    @Route(path="/api/archive/:instance/alarms/:parameter*/:triggerTime/:seqnum", method="GET")
+    /*
+     Commented out because in its current form the handling is ambiguous to the previous
+     operation. Perhaps should use queryparams instead. and have parameter* always be terminal
+    @Route(path="/api/archive/:instance/alarms/:parameter*   /:triggerTime/:seqnum", method="GET")
     public ChannelFuture getAlarm(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         
@@ -96,5 +95,5 @@ public class ArchiveAlarmRestHandler extends RestHandler {
         } else {
             return sendOK(req, alarms.get(0), SchemaAlarms.AlarmData.WRITE);
         }
-    }
+    }*/
 }

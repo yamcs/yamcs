@@ -20,10 +20,19 @@ import io.netty.channel.ChannelFuture;
  */
 public class MDBContainerRestHandler extends RestHandler {
     
+    @Route(path = "/api/mdb/:instance/containers", method = "GET")
     @Route(path = "/api/mdb/:instance/containers/:name*", method = "GET")
     public ChannelFuture getContainer(RestRequest req) throws HttpException {
+        if (req.hasRouteParam("name")) {
+            return getContainerInfo(req);
+        } else {
+            return listContainers(req);
+        }
+    }
+    
+    private ChannelFuture getContainerInfo(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        
+
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         SequenceContainer c = verifyContainer(req, mdb, req.getRouteParam("name"));
         
@@ -31,32 +40,24 @@ public class MDBContainerRestHandler extends RestHandler {
         ContainerInfo cinfo = XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.FULL, req.getOptions());
         return sendOK(req, cinfo, SchemaMdb.ContainerInfo.WRITE);
     }
-
-    /**
-     * Sends the containers for the requested yamcs instance. If no namespace
-     * is specified, assumes root namespace.
-     */
-    @Route(path = "/api/mdb/:instance/containers", method = "GET")
-    public ChannelFuture listContainers(RestRequest req) throws HttpException {
+    
+    private ChannelFuture listContainers(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         
-        String instanceURL = req.getApiURL() + "/mdb/" + instance;
-        boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
-        
+        // Should eventually be replaced in a generic mdb search operation
         NameDescriptionSearchMatcher matcher = null;
         if (req.hasQueryParameter("q")) {
             matcher = new NameDescriptionSearchMatcher(req.getQueryParameter("q"));    
         }
         
+        String instanceURL = req.getApiURL() + "/mdb/" + instance;
+        boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
+        
         ListContainerInfoResponse.Builder responseb = ListContainerInfoResponse.newBuilder();
-        //if (namespace == null) {
-            for (SequenceContainer c : mdb.getSequenceContainers()) {
-                if (matcher != null && !matcher.matches(c)) continue;
-                responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
-            }
-        /*} else {
-            // TODO privileges
+        if (req.hasQueryParameter("namespace")) {
+            String namespace = req.getQueryParameter("namespace");
+            
             for (SequenceContainer c : mdb.getSequenceContainers()) {
                 if (matcher != null && !matcher.matches(c))
                     continue;
@@ -66,7 +67,12 @@ public class MDBContainerRestHandler extends RestHandler {
                     responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
                 }
             }
-        }*/
+        } else { // List all
+            for (SequenceContainer c : mdb.getSequenceContainers()) {
+                if (matcher != null && !matcher.matches(c)) continue;
+                responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+            }
+        }
         
         return sendOK(req, responseb.build(), SchemaRest.ListContainerInfoResponse.WRITE);
     }

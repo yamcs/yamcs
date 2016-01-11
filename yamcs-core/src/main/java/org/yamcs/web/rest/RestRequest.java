@@ -62,7 +62,14 @@ public class RestRequest {
     }
     
     public boolean hasRouteParam(String name) {
-        return routeMatch.regexMatch.group(name) != null;
+        try {
+            return routeMatch.regexMatch.group(name) != null;
+        } catch (IllegalArgumentException e) {
+            // Could likely be improved, we need this catch in case of multiple @Route annotations
+            // for the same method. Because then above call could throw an error if the requested
+            // group is not present in one of the patterns
+            return false;
+        }
     }
     
     public String getRouteParam(String name) {

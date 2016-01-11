@@ -44,9 +44,3 @@ public @interface Route {
      */
     boolean priority() default false;
 }
-
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-@interface Routes {
-    Route[] value();
-}
