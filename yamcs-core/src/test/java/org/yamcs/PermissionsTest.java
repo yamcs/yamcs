@@ -96,7 +96,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
         cmdreq = getCommand(5, "float_arg", "-15", "double_arg", "0");
         resp = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/FLOAT_ARG_TC",
                 HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE), currentUser);
-        assertTrue("Should get permission exception message", resp.contains("ForbiddenException"));
+        assertTrue("Should get 404 when no permission (shouldn't be able to derive existence)", resp.contains("No such command"));
     }
 
     @Test
