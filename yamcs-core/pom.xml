@@ -129,7 +129,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <argLine>-Djava.library.path=/usr/local/lib</argLine>
-          <parallel>classes</parallel>
+          <parallel>suites</parallel>
           <threadCount>1</threadCount>
           <perCoreThreadCount>false</perCoreThreadCount>
            <systemProperties>
