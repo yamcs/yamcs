@@ -32,7 +32,7 @@ public class RouterTest {
     public void before() {
         router = new Router();
         
-        router.registerRouteHandler(new RouteHandler() {
+        router.registerRouteHandler(null, new RouteHandler() {
             
             // Some simple routes
             @Route(path = "/a/:adjective/path") public void pathA() {}
@@ -171,7 +171,7 @@ public class RouterTest {
     @Test
     public void testRouteParams() throws MethodNotAllowedException {
         MockRestRouter router = new MockRestRouter();
-        router.registerRouteHandler(new RouteHandler() {
+        router.registerRouteHandler(null, new RouteHandler() {
             @Route(path = "/h/archive/:bla?/:instance")
             public ChannelFuture abc(RestRequest req) {
                 return null;

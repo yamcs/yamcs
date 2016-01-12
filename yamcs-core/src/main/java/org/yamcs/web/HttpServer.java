@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.web.rest.Router;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -32,6 +33,8 @@ public class HttpServer {
 
     private Map<String, YamcsWebService> yamcsInstances=new ConcurrentHashMap<>();
     private EventLoopGroup bossGroup;
+    
+    private Router apiRouter = new Router();
     
     
     public synchronized static HttpServer getInstance() throws ConfigurationException {
@@ -70,6 +73,10 @@ public class HttpServer {
         return yamcsInstances.get(yamcsInstance);
     }
     
+    public void registerRouteHandler(String yamcsInstance, RouteHandler routeHandler) {
+        apiRouter.registerRouteHandler(yamcsInstance, routeHandler);
+    }
+    
     public void run() {
         // Configure the server.
 
@@ -83,7 +90,7 @@ public class HttpServer {
             .channel(NioServerSocketChannel.class)
             .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
             .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-            .childHandler(new HttpServerInitializer());
+            .childHandler(new HttpServerInitializer(apiRouter));
         
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port));

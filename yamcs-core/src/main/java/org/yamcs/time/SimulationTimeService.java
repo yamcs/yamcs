@@ -7,6 +7,7 @@ import org.yamcs.protobuf.Rest.SetSimulationTimeRequest;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.HttpException;
+import org.yamcs.web.HttpServer;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
@@ -37,6 +38,8 @@ public class SimulationTimeService implements TimeService {
         javaTime = javaTime0 ;
         simElapsedTime = 0;
         speed = 1;
+        
+        HttpServer.getInstance().registerRouteHandler(yamcsInstance, new SimTimeRestHandler());
     }
     
     @Override
@@ -64,7 +67,7 @@ public class SimulationTimeService implements TimeService {
      */
     public static class SimTimeRestHandler extends RestHandler {
         
-        @Route(path = "/api/simTime", method = { "PUT", "POST"})
+        @Route(path = "/api/time/:instance", method = { "PUT", "POST"})
         public ChannelFuture setSimTime(RestRequest req) throws HttpException {
             String instance = verifyInstance(req, req.getRouteParam("instance"));
             TimeService ts = YamcsServer.getInstance(instance).getTimeService();

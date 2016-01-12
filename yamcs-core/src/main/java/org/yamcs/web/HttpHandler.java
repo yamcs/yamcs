@@ -58,8 +58,12 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
     private static final Logger log = LoggerFactory.getLogger(HttpHandler.class);
 
     private static StaticFileHandler fileRequestHandler = new StaticFileHandler();
-    private static Router apiRouter = new Router();
+    private Router apiRouter;
     private WebSocketServerHandler webSocketHandler = new WebSocketServerHandler();    
+    
+    public HttpHandler(Router apiRouter) {
+        this.apiRouter = apiRouter;
+    }
     
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {

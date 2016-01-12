@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.security.AuthenticationToken;
-import org.yamcs.time.SimulationTimeService;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpHandler;
 import org.yamcs.web.InternalServerErrorException;
@@ -57,7 +56,18 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 
 /**
- * Matches a request uri to a registered route handler. Stops on the first match.
+ * Matches a request uri to a registered route handler. Stops on the first
+ * match. Every instance can register a different set of routes, if the magic
+ * token :instance appears in the path, than this is used to point to an
+ * instance-specific route, otherwise the first registered match from any
+ * instance is called.
+ * <p>
+ * The Router itself has the same granularity as HttpServer: one instance only.
+ * <p>
+ * When matching a route, priority is first given to built-in routes, only if
+ * none match the first matching instance-specific dynamic route is matched.
+ * These latter routes usually mention ':instance' in their url, which will be
+ * expanded upon registration into the actual yamcs instance.
  */
 public class Router {
     
@@ -65,43 +75,43 @@ public class Router {
     private static final Logger log = LoggerFactory.getLogger(Router.class);
 
     // Order, because patterns are matched top-down in insertion order
-    private Map<Pattern, Map<HttpMethod, RouteConfig>> routes = new LinkedHashMap<>();
+    private LinkedHashMap<Pattern, Map<HttpMethod, RouteConfig>> defaultRoutes = new LinkedHashMap<>();
+    private LinkedHashMap<Pattern, Map<HttpMethod, RouteConfig>> dynamicRoutes = new LinkedHashMap<>();
     
     public Router() {
-        registerRouteHandler(new ClientRestHandler());
-        registerRouteHandler(new DisplayRestHandler());
-        registerRouteHandler(new InstanceRestHandler());
-        registerRouteHandler(new LinkRestHandler());
-        registerRouteHandler(new SimulationTimeService.SimTimeRestHandler());
-        registerRouteHandler(new UserRestHandler());
+        registerRouteHandler(null, new ClientRestHandler());
+        registerRouteHandler(null, new DisplayRestHandler());
+        registerRouteHandler(null, new InstanceRestHandler());
+        registerRouteHandler(null, new LinkRestHandler());
+        registerRouteHandler(null, new UserRestHandler());
         
-        registerRouteHandler(new ArchiveAlarmRestHandler());
-        registerRouteHandler(new ArchiveCommandRestHandler());
-        registerRouteHandler(new ArchiveDownloadRestHandler());
-        registerRouteHandler(new ArchiveEventRestHandler());
-        registerRouteHandler(new ArchiveIndexRestHandler());
-        registerRouteHandler(new ArchivePacketRestHandler());
-        registerRouteHandler(new ArchiveParameterRestHandler());
-        registerRouteHandler(new ArchiveStreamRestHandler());
-        registerRouteHandler(new ArchiveTableRestHandler());
-        registerRouteHandler(new ArchiveTagRestHandler());
+        registerRouteHandler(null, new ArchiveAlarmRestHandler());
+        registerRouteHandler(null, new ArchiveCommandRestHandler());
+        registerRouteHandler(null, new ArchiveDownloadRestHandler());
+        registerRouteHandler(null, new ArchiveEventRestHandler());
+        registerRouteHandler(null, new ArchiveIndexRestHandler());
+        registerRouteHandler(null, new ArchivePacketRestHandler());
+        registerRouteHandler(null, new ArchiveParameterRestHandler());
+        registerRouteHandler(null, new ArchiveStreamRestHandler());
+        registerRouteHandler(null, new ArchiveTableRestHandler());
+        registerRouteHandler(null, new ArchiveTagRestHandler());
         
-        registerRouteHandler(new ProcessorRestHandler());
-        registerRouteHandler(new ProcessorParameterRestHandler());
-        registerRouteHandler(new ProcessorCommandRestHandler());
-        registerRouteHandler(new ProcessorCommandQueueRestHandler());
+        registerRouteHandler(null, new ProcessorRestHandler());
+        registerRouteHandler(null, new ProcessorParameterRestHandler());
+        registerRouteHandler(null, new ProcessorCommandRestHandler());
+        registerRouteHandler(null, new ProcessorCommandQueueRestHandler());
         
-        registerRouteHandler(new MDBRestHandler());
-        registerRouteHandler(new MDBParameterRestHandler());    
-        registerRouteHandler(new MDBContainerRestHandler());
-        registerRouteHandler(new MDBCommandRestHandler());
-        registerRouteHandler(new MDBAlgorithmRestHandler());
+        registerRouteHandler(null, new MDBRestHandler());
+        registerRouteHandler(null, new MDBParameterRestHandler());    
+        registerRouteHandler(null, new MDBContainerRestHandler());
+        registerRouteHandler(null, new MDBCommandRestHandler());
+        registerRouteHandler(null, new MDBAlgorithmRestHandler());
         
-        registerRouteHandler(new OverviewRouteHandler());
+        registerRouteHandler(null, new OverviewRouteHandler());
     }
     
     // Using method handles for better invoke performance
-    public void registerRouteHandler(RouteHandler routeHandler) {
+    public void registerRouteHandler(String instance, RouteHandler routeHandler) {
         MethodHandles.Lookup lookup = MethodHandles.lookup();
         Method[] declaredMethods = routeHandler.getClass().getDeclaredMethods();
         
@@ -132,10 +142,17 @@ public class Router {
         // 3. Actual path contents (should not matter too much)
         Collections.sort(routeConfigs);
         
+        LinkedHashMap<Pattern, Map<HttpMethod, RouteConfig>> targetRoutes;
+        targetRoutes = (instance == null) ? defaultRoutes : dynamicRoutes;
+        
         for (RouteConfig routeConfig : routeConfigs) {
-            Pattern pattern = toPattern(routeConfig.originalPath);
-            routes.putIfAbsent(pattern, new LinkedHashMap<>());
-            Map<HttpMethod, RouteConfig> configByMethod = routes.get(pattern);
+            String routeString = routeConfig.originalPath;
+            if (instance != null) { // Expand :instance upon registration (only for dynamic routes)
+                routeString = routeString.replace(":instance", instance);
+            }
+            Pattern pattern = toPattern(routeString);
+            targetRoutes.putIfAbsent(pattern, new LinkedHashMap<>());
+            Map<HttpMethod, RouteConfig> configByMethod = targetRoutes.get(pattern);
             configByMethod.put(routeConfig.httpMethod, routeConfig);
         }
     }
@@ -164,7 +181,22 @@ public class Router {
     
     protected RouteMatch matchURI(HttpMethod method, String uri) throws MethodNotAllowedException {
         Set<HttpMethod> allowedMethods = null;
-        for (Entry<Pattern, Map<HttpMethod, RouteConfig>> entry : routes.entrySet()) {
+        for (Entry<Pattern, Map<HttpMethod, RouteConfig>> entry : defaultRoutes.entrySet()) {
+            Matcher matcher = entry.getKey().matcher(uri);
+            if (matcher.matches()) {
+                Map<HttpMethod, RouteConfig> byMethod = entry.getValue();
+                if (byMethod.containsKey(method)) {
+                    return new RouteMatch(matcher, byMethod.get(method));
+                } else {
+                    if (allowedMethods == null) {
+                        allowedMethods = new HashSet<>(4);
+                    }
+                    allowedMethods.addAll(byMethod.keySet());
+                }
+            }
+        }
+        
+        for (Entry<Pattern, Map<HttpMethod, RouteConfig>> entry : dynamicRoutes.entrySet()) {
             Matcher matcher = entry.getKey().matcher(uri);
             if (matcher.matches()) {
                 Map<HttpMethod, RouteConfig> byMethod = entry.getValue();
@@ -308,7 +340,7 @@ public class Router {
             
             // Unique accross http methods, and according to insertion order
             Set<String> urls = new LinkedHashSet<>();
-            for (Map<HttpMethod, RouteConfig> map : routes.values()) {
+            for (Map<HttpMethod, RouteConfig> map : defaultRoutes.values()) {
                 map.values().forEach(v -> urls.add(v.originalPath));
             }
             
