@@ -1,12 +1,5 @@
 package org.yamcs.simulation;
 
-import org.yamcs.tctm.*;
-import org.yamcs.utils.TimeEncoding;
-import org.yamcs.simulation.generated.*;
-import org.yamcs.simulation.generated.PpSimulation.ParameterSequence;
-
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,19 +10,21 @@ import java.util.Random;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.*;
-import org.yamcs.*;
+import org.yamcs.ConfigurationException;
+import org.yamcs.ParameterValue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
+import org.yamcs.protobuf.Pvalue.RangeCondition;
+import org.yamcs.simulation.generated.PpSimulation;
+import org.yamcs.simulation.generated.PpSimulation.ParameterSequence;
+import org.yamcs.tctm.PpListener;
+import org.yamcs.tctm.PpProvider;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.FloatParameterType;
-import org.yamcs.xtce.FloatRange;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.XtceDb;
@@ -391,13 +386,21 @@ public class SimulationPpProvider extends AbstractExecutionThreadService
 
 		// set monitoring result as specified in xml data (regardless of the
 		// alarms ranges)
+		String rangeCondition = null;
+		if (monitoringResult != null && monitoringResult.contains("_")) {
+            String[] parts = monitoringResult.split("_");
+            monitoringResult = parts[0];
+            rangeCondition = parts[1];
+		}
 		try {
-			if (monitoringResult != null) {
+		    if (monitoringResult != null) {
 				MonitoringResult mr = MonitoringResult
 						.valueOf(monitoringResult);
 				pv.setMonitoringResult(mr);
 			} else
 				pv.setMonitoringResult(MonitoringResult.DISABLED);
+		    if (rangeCondition != null)
+		        pv.setRangeCondition(RangeCondition.valueOf(rangeCondition));
 		} catch (Exception e) {
 			log.error("Unable to set the specified monitoring result (\""
 					+ monitoringResult

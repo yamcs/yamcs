@@ -99,7 +99,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         return sendOK(req);
     }
     
-    @Route(path = "/api/processors/:instance/:processor/parameters/mset", method = { "POST", "PUT" })
+    @Route(path = "/api/processors/:instance/:processor/parameters/mset", method = { "POST", "PUT" }, priority=true)
     public ChannelFuture setParameterValues(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         SoftwareParameterManager mgr = verifySoftwareParameterManager(processor);
@@ -167,7 +167,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         return sendOK(req, pval, SchemaPvalue.ParameterValue.WRITE);
     }
     
-    @Route(path = "/api/processors/:instance/:processor/parameters/mget", method = "GET")
+    @Route(path = "/api/processors/:instance/:processor/parameters/mget", method = "GET", priority=true)
     public ChannelFuture getParameterValues(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         

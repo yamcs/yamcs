@@ -105,7 +105,7 @@ public class CccsdsTmIndex implements TmIndex {
     }
 
     public synchronized void addPacket(short apid, long instant, short seq) throws RocksDBException {
-        System.out.println("adding apid: "+apid+" instant: "+instant+" seq: "+seq);
+        //System.out.println("adding apid: "+apid+" instant: "+instant+" seq: "+seq);
         RocksIterator it = db.newIterator();
         try {
             it.seek(Record.key(apid, instant, seq));
@@ -128,7 +128,7 @@ public class CccsdsTmIndex implements TmIndex {
 
             it.prev();
             rleft = new Record(it.key(),it.value());
-            System.out.println("here rleft: "+rleft+" rright: "+rright);
+            //System.out.println("here rleft: "+rleft+" rright: "+rright);
 
             cleft = compare(apid,instant,seq,rleft);
             //	System.out.println("arleft="+arleft+"\narright="+arright);
