@@ -37,6 +37,8 @@ public final class SchemaPvalue
                     output.writeBool(7, message.getProcessingStatus(), false);
                 if(message.hasMonitoringResult())
                     output.writeString(8, message.getMonitoringResult().name(), false);
+                if(message.hasRangeCondition())
+                    output.writeString(9, message.getRangeCondition().name(), false);
                 if(message.hasAcquisitionTimeUTC())
                     output.writeString(11, message.getAcquisitionTimeUTC(), false);
                 if(message.hasGenerationTimeUTC())
@@ -114,6 +116,9 @@ public final class SchemaPvalue
                         case 8:
                             builder.setMonitoringResult(org.yamcs.protobuf.Pvalue.MonitoringResult.valueOf(input.readString()));
                             break;
+                        case 9:
+                            builder.setRangeCondition(org.yamcs.protobuf.Pvalue.RangeCondition.valueOf(input.readString()));
+                            break;
                         case 11:
                             builder.setAcquisitionTimeUTC(input.readString());
                             break;
@@ -178,6 +183,7 @@ public final class SchemaPvalue
                 case 6: return "acquisitionStatus";
                 case 7: return "processingStatus";
                 case 8: return "monitoringResult";
+                case 9: return "rangeCondition";
                 case 11: return "acquisitionTimeUTC";
                 case 12: return "generationTimeUTC";
                 case 23: return "expirationTime";
@@ -202,6 +208,7 @@ public final class SchemaPvalue
             fieldMap.put("acquisitionStatus", 6);
             fieldMap.put("processingStatus", 7);
             fieldMap.put("monitoringResult", 8);
+            fieldMap.put("rangeCondition", 9);
             fieldMap.put("acquisitionTimeUTC", 11);
             fieldMap.put("generationTimeUTC", 12);
             fieldMap.put("expirationTime", 23);

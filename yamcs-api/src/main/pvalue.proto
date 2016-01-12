@@ -15,26 +15,16 @@ enum AcquisitionStatus {
 enum MonitoringResult {
   DISABLED = 0;
   IN_LIMITS = 1;
-  // NOMINAL_LIMIT_VIOLATION = 2;
-  // NOMINAL_LOW_LIMIT_VIOLATION = 3;
-  // NOMINAL_HIGH_LIMIT_VIOLATION = 4;
-  // DANGER_LOW_LIMIT_VIOLATION = 5;
-  // DANGER_HIGH_LIMIT_VIOLATION = 6;
   WATCH = 7;
-  WATCH_LOW = 8;
-  WATCH_HIGH = 9;
   WARNING = 10;
-  WARNING_LOW = 11;
-  WARNING_HIGH = 12;
   DISTRESS = 13;
-  DISTRESS_LOW = 14;
-  DISTRESS_HIGH = 15;
   CRITICAL = 16;
-  CRITICAL_LOW = 17;
-  CRITICAL_HIGH = 18;
   SEVERE = 19;
-  SEVERE_LOW = 20;
-  SEVERE_HIGH = 21;
+}
+
+enum RangeCondition {
+  LOW = 0;
+  HIGH = 1;
 }
 
 // the difference between this and the com.spaceapplications.yamcs.ParameterValue is that
@@ -48,6 +38,7 @@ message ParameterValue {
   optional AcquisitionStatus acquisitionStatus = 6;
   optional bool processingStatus = 7;
   optional MonitoringResult monitoringResult = 8;
+  optional RangeCondition rangeCondition = 9;
 
   //to be used as alternative to the ones above for clients that do not understand internal yamcs time encoding
   optional string acquisitionTimeUTC = 11;

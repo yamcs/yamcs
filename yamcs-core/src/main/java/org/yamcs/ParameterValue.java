@@ -4,6 +4,7 @@ import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.protobuf.Mdb.AlarmRange;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
+import org.yamcs.protobuf.Pvalue.RangeCondition;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.utils.TimeEncoding;
@@ -37,6 +38,7 @@ public class ParameterValue {
     private boolean processingStatus;
     private MonitoringResult monitoringResult;
     private MonitoringResult deltaMonitoringResult;
+    private RangeCondition rangeCondition;
 
 
     public FloatRange watchRange=null;
@@ -183,7 +185,10 @@ public class ParameterValue {
     public void setDeltaMonitoringResult(MonitoringResult m) {
         deltaMonitoringResult=m;
     }
-
+    
+    public void setRangeCondition(RangeCondition rangeCondition) {
+        this.rangeCondition = rangeCondition;
+    }
 
     public void setProcessingStatus(boolean p) {
         processingStatus=p;
@@ -204,6 +209,10 @@ public class ParameterValue {
 
     public MonitoringResult getMonitoringResult() {
         return monitoringResult;
+    }
+    
+    public RangeCondition getRangeCondition() {
+        return rangeCondition;
     }
 
     public long getAcquisitionTime() {
@@ -339,6 +348,9 @@ public class ParameterValue {
         if(monitoringResult!=null) {
             gpvb.setMonitoringResult(monitoringResult);
         }
+        if(rangeCondition!=null) {
+            gpvb.setRangeCondition(rangeCondition);
+        }
 
         // TODO make this optional
         gpvb.setAcquisitionTimeUTC(TimeEncoding.toString(getAcquisitionTime()));
@@ -388,6 +400,8 @@ public class ParameterValue {
         pv.setGenerationTime(gpv.getGenerationTime());
         if(gpv.hasMonitoringResult())
             pv.setMonitoringResult(gpv.getMonitoringResult());
+        if(gpv.hasRangeCondition())
+            pv.setRangeCondition(gpv.getRangeCondition());
         pv.setProcessingStatus(gpv.getProcessingStatus());
         if(gpv.hasRawValue()) {
             pv.setRawValue(gpv.getRawValue());

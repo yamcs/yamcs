@@ -1,11 +1,12 @@
 package org.yamcs.web.rest;
 
-import static org.yamcs.web.AbstractRequestHandler.CSV_MIME_TYPE;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
+import org.yamcs.api.MediaType;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.yarch.Tuple;
 
 import com.csvreader.CsvWriter;
@@ -20,8 +21,8 @@ public abstract class StreamToChunkedCSVEncoder extends StreamToChunkedTransferE
     
     private CsvWriter csvWriter;
     
-    public StreamToChunkedCSVEncoder(RestRequest req) throws RestException {
-        super(req, CSV_MIME_TYPE);
+    public StreamToChunkedCSVEncoder(RestRequest req) throws HttpException {
+        super(req, MediaType.CSV);
         
         String[] csvHeader = getCSVHeader();
         if (csvHeader != null) {

@@ -17,3 +17,5 @@ server.lock
 make-live-devel-local.sh
 *.xtce.consistency_date
 *.xtce.serialized
+*.log
+

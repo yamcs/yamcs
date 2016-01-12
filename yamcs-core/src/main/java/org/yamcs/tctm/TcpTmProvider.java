@@ -2,6 +2,7 @@ package org.yamcs.tctm;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -12,7 +13,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
@@ -34,7 +34,7 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
     protected int port=10031;
     protected volatile boolean disabled=false;
 
-    protected Logger log=LoggerFactory.getLogger(this.getClass().getName());
+    protected final Logger log;
     private TmSink tmSink;
     
 
@@ -50,16 +50,15 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
         this.yamcsInstance = instance;
         this.name = name;
         this.timeService = YamcsServer.getTimeService(instance);
+        log = YamcsServer.getLogger(this.getClass(), instance);
     }
 
     public TcpTmProvider(String instance, String name, String spec) throws ConfigurationException  {
-        this.yamcsInstance = instance;
-        this.name = name;
-
+        this(instance, name);
+        
         YConfiguration c=YConfiguration.getConfiguration("tcp");
         host=c.getString(spec, "tmHost");
         port=c.getInt(spec, "tmPort");
-        this.timeService = YamcsServer.getTimeService(instance);
     }
 
     protected void openSocket() throws IOException {
@@ -99,7 +98,7 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
             try {
                 if (tmSocket==null) {
                     openSocket();
-                    log.info("TM connection established to "+host+" port "+port);
+                    log.info("TM connection established to "+host+":"+port);
                 } 
                 byte hdr[] = new byte[6];
                 if(!readWithBlocking(hdr,0,6))
@@ -112,13 +111,14 @@ public class TcpTmProvider extends AbstractExecutionThreadService implements TmP
                 packetcount++;
                 break;
             } catch (IOException e) {
-                log.info("Cannot open or read from TM socket at "+host+":"+port+": "+e+"; retrying in 10 seconds.");
+                String exc = (e instanceof ConnectException) ? ((ConnectException) e).getMessage() : e.toString();
+                log.info("Cannot open or read TM socket "+host+":"+port+" '"+exc+"'. Retrying in 10s");
                 try {tmSocket.close();} catch (Exception e2) {}
                 tmSocket=null;
                 try {
                     Thread.sleep(10000);
                 } catch (InterruptedException e1) {
-                    log.warn("exception "+ e1.toString()+" thrown when sleeping 10 sec");
+                    log.warn("Exception "+ e1.toString()+" while sleeping for 10s");
                     return null;
                 }
             }

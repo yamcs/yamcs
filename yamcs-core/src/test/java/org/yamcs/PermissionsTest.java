@@ -4,25 +4,19 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.List;
-
 import org.junit.Test;
 import org.yamcs.api.ws.WebSocketRequest;
-import org.yamcs.protobuf.Archive.DumpArchiveRequest;
-import org.yamcs.protobuf.Archive.DumpArchiveResponse;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
-import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
-import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.utils.HttpClient;
 import org.yamcs.utils.TimeEncoding;
@@ -32,39 +26,17 @@ import io.netty.handler.codec.http.HttpMethod;
 
 public class PermissionsTest extends AbstractIntegrationTest {
           
-    public void testRetrieveDataFromArchive() throws Exception {
-        generateData("2016-02-03T10:00:00", 3600);
-        NamedObjectId p1_1_6id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6").build();
-        NamedObjectId p1_3_1id = NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FixedStringPara1_3_1").build();
-
-        ParameterReplayRequest prr = ParameterReplayRequest.newBuilder().addNameFilter(p1_1_6id).addNameFilter(p1_3_1id).build();
-        DumpArchiveRequest dumpRequest = DumpArchiveRequest.newBuilder().setParameterRequest(prr)
-                .setUtcStart("2016-02-03T10:10:00").setUtcStop("2016-02-03T10:10:02").build();
-        String response = httpClient.doGetRequest("http://localhost:9190/api/archive/IntegrationTest", toJson(dumpRequest, SchemaArchive.DumpArchiveRequest.WRITE), currentUser);
-        DumpArchiveResponse rdar = (fromJson(response, SchemaArchive.DumpArchiveResponse.MERGE)).build();
-        List<ParameterData> plist = rdar.getParameterDataList();
-        assertNotNull(plist);
-        assertEquals(4, plist.size());
-        ParameterValue pv0 = plist.get(0).getParameter(0);
-        assertEquals("2016-02-03T10:10:00.000", pv0.getGenerationTimeUTC());
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", pv0.getId().getName());
-        ParameterValue pv3 = plist.get(3).getParameter(0);
-        assertEquals("2016-02-03T10:10:01.000", pv3.getGenerationTimeUTC());
-        assertEquals("/REFMDB/SUBSYS1/FixedStringPara1_3_1", pv3.getId().getName());
-    }
-
-
     @Test
     public void testAuthenticationWebServices() throws Exception {
         UsernamePasswordToken wrongUser = new UsernamePasswordToken("baduser", "wrongpassword");
         currentUser = wrongUser;
         boolean gotException = false;
         try {
-            testRetrieveDataFromArchive();
+            httpClient.doGetRequest("http://localhost:9190/api/user", null, currentUser);
         } catch (Exception e) {
             gotException = true;
         }
-        assertTrue("replay request should be denied to user", gotException);
+        assertTrue("request with wrong credentials should be denied to user", gotException);
     }
 
     @Test
@@ -76,9 +48,8 @@ public class PermissionsTest extends AbstractIntegrationTest {
 
         // Check that integer parameter replay is ok
         generateData("2015-03-02T10:00:00", 3600);
-        String integerId = "/REFMDB/SUBSYS1/IntegerPara1_1_6";
         String url = "http://localhost:9190/api/archive/IntegrationTest/parameters";
-        url += integerId;
+        url += "/REFMDB/SUBSYS1/IntegerPara1_1_6";
         url += "?start=2015-03-02T10:10:00&stop=2015-03-02T10:10:02&order=asc";
         
         String response = httpClient.doGetRequest(url, null, currentUser);
@@ -125,7 +96,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
         cmdreq = getCommand(5, "float_arg", "-15", "double_arg", "0");
         resp = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/FLOAT_ARG_TC",
                 HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE), currentUser);
-        assertTrue("Should get permission exception message", resp.contains("ForbiddenException"));
+        assertTrue("Should get 404 when no permission (shouldn't be able to derive existence)", resp.contains("No such command"));
     }
 
     @Test

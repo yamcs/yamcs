@@ -6,8 +6,7 @@ import org.yamcs.ConfigurationException;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- * Starts an HTTP server (if not already started by another instance) and registers this yamcs instance to allow
- * web requests to http://url/instanceName/... 
+ * Registers web services for an instance. 
  * 
  * @author nm
  *
@@ -15,12 +14,11 @@ import com.google.common.util.concurrent.AbstractService;
 public class YamcsWebService extends AbstractService {
     
     private String yamcsInstance;
-    private HttpSocketServer server;
+    private HttpServer server;
     
     public YamcsWebService(String yamcsInstance) throws ConfigurationException {
         this.yamcsInstance = yamcsInstance;
-        StaticFileRequestHandler.init();
-        this.server = HttpSocketServer.getInstance();        
+        this.server = HttpServer.getInstance();        
     }
 
     @Override

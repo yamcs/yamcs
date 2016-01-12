@@ -20,6 +20,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
@@ -46,26 +47,29 @@ public class WebSocketServerHandler {
 
     //these two are valid after the socket has been upgraded and they are practical final
     Channel channel;
-    WebSocketProcessorClient yprocClient;
+    WebSocketProcessorClient processorClient;
 
     // Provides access to the various resources served through this websocket
     private Map<String, AbstractWebSocketResource> resourcesByName = new HashMap<>();
 
     public void handleHttpRequest(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance, AuthenticationToken authToken) throws Exception {
         if(!(req instanceof FullHttpRequest)) throw new RuntimeException("Full HTTP request expected");
-        if(yprocClient==null) {
-            String applicationName = determineApplicationName(req);
-            this.yprocClient=new WebSocketProcessorClient(yamcsInstance, this, applicationName, authToken);
+        if(processorClient==null) {
+            String applicationName = determineApplicationName(ctx, req);
+            this.processorClient=new WebSocketProcessorClient(yamcsInstance, this, applicationName, authToken);
         }
         
         this.channel=ctx.channel();
         
         // Handshake
+        log.debug("Upgrading {} to WebSocket", ctx.channel().remoteAddress());
         WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(this.getWebSocketLocation(yamcsInstance, req), null, false);
         this.handshaker = wsFactory.newHandshaker(req);
         if (this.handshaker == null) {
+            log.info("{} {} {}", req.getMethod(), req.getUri(), HttpResponseStatus.UPGRADE_REQUIRED.code());
             WebSocketServerHandshakerFactory.sendUnsupportedWebSocketVersionResponse(ctx.channel());
         } else {
+            log.info("{} {} {}", req.getMethod(), req.getUri(), HttpResponseStatus.SWITCHING_PROTOCOLS.code());
             this.handshaker.handshake(ctx.channel(), (FullHttpRequest)req);
         }
     }
@@ -75,23 +79,21 @@ public class WebSocketServerHandler {
      * JS WebSocket API doesn't support custom http headers. We should maybe think of making this part of our
      * protocol instead.
      */
-    private String determineApplicationName(HttpRequest req) {
+    private String determineApplicationName(ChannelHandlerContext ctx, HttpRequest req) {
         if (req.headers().contains(HttpHeaders.Names.USER_AGENT)) {
             String userAgent = req.headers().get(HttpHeaders.Names.USER_AGENT);
             return (userAgent.contains("Mozilla")) ? "yamcs-web" : userAgent;
         } else {
-            // Origin is always present, according to spec.
-            return "Unknown (" + req.headers().get(HttpHeaders.Names.ORIGIN) +")";
+            return "Unknown (" + ctx.channel().remoteAddress() +")";
         }
     }
 
     public void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame) {
         try {
             try {
-                log.debug("received websocket frame {}", frame);
-                // Check for closing frame
+                log.debug("Received frame {}", frame);
                 if (frame instanceof CloseWebSocketFrame) {
-                    yprocClient.quit();
+                    processorClient.quit();
                     this.handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
                     return;
                 } else if (frame instanceof PingWebSocketFrame) {
@@ -103,7 +105,7 @@ public class WebSocketServerHandler {
                         decoder = new JsonDecoder();
                     if (encoder == null)
                         encoder = new JsonEncoder();
-                } else if (frame instanceof  BinaryWebSocketFrame) {
+                } else if (frame instanceof BinaryWebSocketFrame) {
                     if (decoder == null)
                         decoder = new ProtobufDecoder();
                     if (encoder == null)
@@ -118,7 +120,7 @@ public class WebSocketServerHandler {
                     WebSocketDecodeContext msg = decoder.decodeMessage(in);
                     AbstractWebSocketResource resource = resourcesByName.get(msg.getResource());
                     if (resource != null) {
-                        WebSocketReplyData reply = resource.processRequest(msg, decoder, yprocClient.getAuthToken());
+                        WebSocketReplyData reply = resource.processRequest(msg, decoder, processorClient.getAuthToken());
                         if(reply!=null) {
                             sendReply(reply);
                         }
@@ -184,9 +186,9 @@ public class WebSocketServerHandler {
     }
 
     public void channelDisconnected(Channel c) {
-        if(yprocClient!=null) {
+        if(processorClient!=null) {
             log.info("Channel "+c.remoteAddress()+" disconnected");
-            yprocClient.quit();
+            processorClient.quit();
         }
     }
 }

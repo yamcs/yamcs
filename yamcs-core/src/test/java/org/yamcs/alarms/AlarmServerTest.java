@@ -165,9 +165,8 @@ public class AlarmServerTest {
     
     @Test
     public void testMoreSevere() {
-        assertTrue(AlarmServer.moreSevere(MonitoringResult.CRITICAL_HIGH, MonitoringResult.WARNING_LOW));
-        assertFalse(AlarmServer.moreSevere(MonitoringResult.WARNING_LOW, MonitoringResult.CRITICAL_HIGH));
-        assertFalse(AlarmServer.moreSevere(MonitoringResult.CRITICAL_HIGH, MonitoringResult.CRITICAL));
+        assertTrue(AlarmServer.moreSevere(MonitoringResult.CRITICAL, MonitoringResult.WARNING));
+        assertFalse(AlarmServer.moreSevere(MonitoringResult.WARNING, MonitoringResult.CRITICAL));
         assertFalse(AlarmServer.moreSevere(MonitoringResult.CRITICAL, MonitoringResult.CRITICAL));
     }
     

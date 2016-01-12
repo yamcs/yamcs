@@ -1,6 +1,7 @@
 package org.yamcs.tctm;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -19,9 +20,6 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
-
-import com.google.common.util.concurrent.AbstractService;
-
 import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -29,6 +27,8 @@ import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
+
+import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Sends raw ccsds packets on Tcp socket.
@@ -50,12 +50,13 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
     private NamedObjectId sv_linkStatus_id, sp_dataCount_id;
 
     private SystemParametersCollector sysParamCollector;
-    protected Logger log=LoggerFactory.getLogger(this.getClass().getName());
+    protected final Logger log;
     private String yamcsInstance;
     private String name;
     TimeService timeService;
     
     public TcpTcUplinker(String yamcsInstance, String name, String spec) throws ConfigurationException {
+        log=YamcsServer.getLogger(this.getClass(), yamcsInstance);
         YConfiguration c=YConfiguration.getConfiguration("tcp");
         this.yamcsInstance=yamcsInstance;
         host=c.getString(spec, "tcHost");
@@ -69,12 +70,15 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
         timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
-    protected TcpTcUplinker() {} // dummy constructor which is automatically invoked by subclass constructors
+    protected TcpTcUplinker() {
+        log=LoggerFactory.getLogger(this.getClass().getName());
+    } // dummy constructor which is automatically invoked by subclass constructors
 
     public TcpTcUplinker(String host, int port) {
         this.host=host;
         this.port=port;
         openSocket();
+        log=LoggerFactory.getLogger(this.getClass().getName());
     }
 
     protected long getCurrentTime() {
@@ -100,9 +104,10 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
             socketChannel.socket().setKeepAlive(true);
             selector = Selector.open();
             selectionKey=socketChannel.register(selector,SelectionKey.OP_WRITE|SelectionKey.OP_READ);
-            log.info("TC connection established to "+host+" port "+port);
+            log.info("TC connection established to "+host+":"+port);
         } catch (IOException e) {
-            log.info("Cannot open TC connection to "+host+":"+port+": "+e+"; retrying in 10 seconds");
+            String exc = (e instanceof ConnectException) ? ((ConnectException) e).getMessage() : e.toString();
+            log.info("Cannot open TC connection to "+host+":"+port+" '"+exc+"'. Retrying in 10s");
             try {socketChannel.close();} catch (Exception e1) {}
             try {selector.close();} catch (Exception e1) {}
             socketChannel=null;
@@ -116,8 +121,7 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
             selector.close();
             socketChannel=null;
         } catch (IOException e) {
-            e.printStackTrace();
-            log.warn("Exception caught when checking if the socket to "+host+":"+port+" is open:", e);
+            log.warn("Exception caught when checking if the socket to "+host+":"+port+" is open", e);
         }
     }
     /**

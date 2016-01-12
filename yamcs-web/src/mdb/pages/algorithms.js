@@ -17,7 +17,8 @@
 
         $rootScope.pageTitle = 'Algorithms | Yamcs';
 
-        mdbService.listAlgorithms(qname, {
+        mdbService.listAlgorithms({
+            namespace: qname,
             recurse: (qname === '/yamcs')
         }).then(function (data) {
             vm.algorithms = data;

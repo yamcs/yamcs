@@ -285,27 +285,12 @@ $.extend(USS.Field.prototype, {
                          return 'disabled';
                     case 'IN_LIMITS':
                          return 'in_limits';
-                    case 'NOMINAL_LIMIT_VIOLATION':
-                    case 'NOMINAL_LOW_LIMIT_VIOLATION':
-                    case 'NOMINAL_HIGH_LIMIT_VIOLATION':
                     case 'WATCH':
-                    case 'WATCH_LOW':
-                    case 'WATCH_HIGH':
                     case 'WARNING':
-                    case 'WARNING_LOW':
-                    case 'WARNING_HIGH':
                     case 'DISTRESS':
-                    case 'DISTRESS_LOW':
-                    case 'DISTRESS_HIGH':
                          return 'nominal_limit_violation';
-                    case 'DANGER_LOW_LIMIT_VIOLATION':
-                    case 'DANGER_HIGH_LIMIT_VIOLATION':
                     case 'CRITICAL':
-                    case 'CRITICAL_LOW':
-                    case 'CRITICAL_HIGH':
                     case 'SEVERE':
-                    case 'SEVERE_LOW':
-                    case 'SEVERE_HIGH':
                          return 'danger_limit_violation';
                     case undefined:
                          return 'undefined';

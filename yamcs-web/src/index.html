@@ -5,6 +5,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Yamcs</title>
+  <link rel="shortcut icon" href="/_static/_site/core/images/favicon.ico">
+  <link rel="apple-touch-icon image_src" href="/_static/_site/core/images/apple-touch-icon.png">
 
   <!-- inject:css -->
   <!-- endinject -->
@@ -53,6 +55,13 @@
              ng-repeat-end class="btn btn-default btn-lg"
              ng-href="{{ instance.name }}"
              role="button" style="margin-right: 1em;">{{ instance.name }} &raquo;</a>
+        </p>
+        <p ng-if="!instances.length">
+          <strong>Yamcs is running, but no instances were configured.</strong>
+        </p>
+        <p ng-if="!instances.length">
+          An instance is like a domain. A database is created for every instance separately.<br>
+          Read more about how to setup Yamcs at <a href="http://www.yamcs.org/docs/server">http://www.yamcs.org/docs/server</a>
         </p>
         <p>&nbsp;</p>
         <p>&nbsp;</p>

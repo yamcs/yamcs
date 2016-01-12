@@ -5,6 +5,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -17,12 +19,11 @@ public class RestStreams {
     private static AtomicInteger streamCounter = new AtomicInteger();
     private static final Logger log = LoggerFactory.getLogger(RestStreams.class);
     
-    public static void streamAndWait(RestRequest req, String selectSql, RestStreamSubscriber s) throws RestException {
-        stream(req, selectSql, s).await();
+    public static void streamAndWait(String instance, String selectSql, RestStreamSubscriber s) throws HttpException {
+        stream(instance, selectSql, s).await();
     }
     
-    public static StreamSubscriberWrapper stream(RestRequest req, String selectSql, RestStreamSubscriber s) throws RestException {
-        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
+    public static StreamSubscriberWrapper stream(String instance, String selectSql, RestStreamSubscriber s) throws HttpException {
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
         
         String streamName = "rest_archive" + streamCounter.incrementAndGet();

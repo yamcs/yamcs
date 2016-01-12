@@ -76,7 +76,7 @@ public class XtceDbFactory {
             if(o instanceof Map) {
                 loaderTree.addChild(getLoaderTree(c, (Map<String, Object>) o));
             } else {
-                throw new ConfigurationException("expected of type Map instead of "+o.getClass());
+                throw new ConfigurationException("Expected type Map instead of "+o.getClass());
             }
         }
 
@@ -92,7 +92,7 @@ public class XtceDbFactory {
                 }
             } catch (IOException e) {
                 if (new File(getFullName(filename) + ".serialized").exists()) {
-                    log.warn("can't check the consistency date of the serialized database: ", e);
+                    log.warn("can't check the consistency date of the serialized database", e);
                 }
                 loadSerialized = false;
             }
@@ -105,7 +105,7 @@ public class XtceDbFactory {
                 db=loadSerializedInstance(getFullName(filename.toString()) + ".serialized");
                 serializedLoaded = true;
             } catch (Exception e) {
-                log.info("Cannot load serialized database: ", e);
+                log.info("Cannot load serialized database", e);
                 db = null;
             }
         }
@@ -145,7 +145,7 @@ public class XtceDbFactory {
                 saveSerializedInstance(db, filename.toString());
                 log.info("Serialized database saved locally");
             } catch (Exception e) {
-                log.warn("Cannot save serialized MDB: ", e);
+                log.warn("Cannot save serialized MDB", e);
             }
         }
         return db;
@@ -320,7 +320,7 @@ public class XtceDbFactory {
                 if(o instanceof Map) {
                     ltree.addChild(getLoaderTree(c, (Map<String, Object>) o));
                 } else {
-                    throw new ConfigurationException("expected of type Map instead of "+o.getClass());
+                    throw new ConfigurationException("Expected type Map instead of "+o.getClass());
                 }
             }
         }
@@ -381,12 +381,12 @@ public class XtceDbFactory {
 
     private static XtceDb loadSerializedInstance(String filename) throws IOException, ClassNotFoundException {
         ObjectInputStream in = null;
-        log.info("Attempting to load serialized xtce database from file: " + filename);
+        log.debug("Loading serialized XTCE DB from: " + filename);
         in = new ObjectInputStream(new FileInputStream(filename));
         XtceDb db = (XtceDb) in.readObject();
         in.close();
-        log.info("Loaded xtce database with " + db.getSequenceContainers().size()
-                + " containers, " + db.getParameterNames().size() + " parameters and "+db.getMetaCommands().size()+" commands");
+        log.info("Loaded XTCE DB with {} containers, {} parameters and {} commands",
+                db.getSequenceContainers().size(), db.getParameterNames().size(), db.getMetaCommands().size());
         return db;
     }
 

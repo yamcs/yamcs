@@ -10,6 +10,7 @@ var angularFilesort = require('gulp-angular-filesort'),
     ngAnnotate = require('gulp-ng-annotate'),
     path = require('path'),
     rename = require('gulp-rename'),
+    sourcemaps = require('gulp-sourcemaps'),
     uglify = require('gulp-uglify'),
     watch = require('gulp-watch');
 
@@ -25,11 +26,15 @@ gulp.task('bower-main', ['clean'], function () {
     var cssFilter = gulpFilter('**/*.css', {restore: true});
     return gulp.src(bowerFiles())
         .pipe(jsFilter)
-        .pipe(concat('vendor.js'))
-        //.pipe(uglify()) // TODO make conditional because slow
+            .pipe(sourcemaps.init())
+                .pipe(concat('vendor.js'))
+                //.pipe(uglify()) // TODO make conditional because slow
+            .pipe(sourcemaps.write())
         .pipe(jsFilter.restore)
         .pipe(cssFilter)
-        .pipe(concat('vendor.css'))
+            .pipe(sourcemaps.init())
+                .pipe(concat('vendor.css'))
+            .pipe(sourcemaps.write())
         .pipe(cssFilter.restore)
         .pipe(gulpFilter(['*', '!bootstrap.js', '!bootstrap.less', '!**glyphicons**']))
         .pipe(gulp.dest('./build/_site'));
@@ -92,7 +97,7 @@ gulp.task('html', ['clean'], function () {
 });
 
 gulp.task('img', ['clean'], function () {
-    return gulp.src('./src/**/*.png')
+    return gulp.src(['./src/**/*.png', './src/**/*.ico'])
         .pipe(gulp.dest('./build/_site'));
 });
 

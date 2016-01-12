@@ -204,30 +204,22 @@ public class AlarmServer extends AbstractService {
         if (mr1 == mr2) return false;
         switch (mr2) {
         case WATCH:
-        case WATCH_LOW:
-        case WATCH_HIGH:
-            if (mr1 == MonitoringResult.WARNING || mr1 == MonitoringResult.WARNING_LOW || mr1 == MonitoringResult.WARNING_HIGH) {
+            if (mr1 == MonitoringResult.WARNING) {
                 return true;
             }
             // fall
         case WARNING:
-        case WARNING_LOW:
-        case WARNING_HIGH:
-            if (mr1 == MonitoringResult.DISTRESS || mr1 == MonitoringResult.DISTRESS_LOW || mr1 == MonitoringResult.DISTRESS_HIGH) {
+            if (mr1 == MonitoringResult.DISTRESS) {
                 return true;
             }
             // fall
         case DISTRESS:
-        case DISTRESS_LOW:
-        case DISTRESS_HIGH:
-            if (mr1 == MonitoringResult.CRITICAL || mr1 == MonitoringResult.CRITICAL_LOW || mr1 == MonitoringResult.CRITICAL_HIGH) {
+            if (mr1 == MonitoringResult.CRITICAL) {
                 return true;
             }
             // fall
         case CRITICAL:
-        case CRITICAL_LOW:
-        case CRITICAL_HIGH:
-            if (mr1 == MonitoringResult.SEVERE || mr1 == MonitoringResult.SEVERE_LOW || mr1 == MonitoringResult.SEVERE_HIGH) {
+            if (mr1 == MonitoringResult.SEVERE) {
                 return true;
             }
         default:

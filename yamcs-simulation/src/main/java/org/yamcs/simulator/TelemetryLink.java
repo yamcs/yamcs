@@ -133,7 +133,6 @@ public class TelemetryLink {
             conn.setTcSocket(conn.getTcServerSocket().accept());
 
             Socket tcSocket = conn.getTcSocket();
-            log.info("Connected TC {}:{}", tcSocket.getInetAddress(), tcSocket.getPort());
             logMessage(conn.getId(), "Connected TC: "
                     + tcSocket.getInetAddress() + ":"
                     + tcSocket.getPort());

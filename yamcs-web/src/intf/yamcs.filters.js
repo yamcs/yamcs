@@ -74,21 +74,13 @@
         Outputs an up- or down-pointing arrow if the monitoring result of the monitoring result is LOW or HIGH
      */
     .filter('lohi', function() {
-        return function (monitoringResult) {
-            if (!monitoringResult) return '';
-            switch (monitoringResult) {
-                case 'WATCH_LOW':
-                case 'WARNING_LOW':
-                case 'DISTRESS_LOW':
-                case 'CRITICAL_LOW':
-                case 'SEVERE_LOW':
+        return function (rangeCondition) {
+            if (!rangeCondition) return '';
+            switch (rangeCondition) {
+                case 'LOW':
                     return ' (low)';
                     //return '<small><span class="glyphicon glyphicon-arrow-down"></span></small>';
-                case 'WATCH_HIGH':
-                case 'WARNING_HIGH':
-                case 'DISTRESS_HIGH':
-                case 'CRITICAL_HIGH':
-                case 'SEVERE_HIGH':
+                case 'HIGH':
                     return ' (high)';
                     //return '<small><span class="glyphicon glyphicon-arrow-up"></span></small>';
                 default:
@@ -136,20 +128,10 @@
             if (!monitoringResult) return '';
             switch (monitoringResult) {
                 case 'WATCH': return 'Watch';
-                case 'WATCH_LOW': return 'Watch Low';
-                case 'WATCH_HIGH': return 'Watch High';
                 case 'WARNING': return 'Warning';
-                case 'WARNING_LOW': return 'Warning Low';
-                case 'WARNING_HIGH': return 'Warning High';
                 case 'DISTRESS': return 'Distress';
-                case 'DISTRESS_LOW': return 'Distress Low';
-                case 'DISTRESS_HIGH': return 'Distress High';
                 case 'CRITICAL': return 'Critical';
-                case 'CRITICAL_LOW': return 'Critical Low';
-                case 'CRITICAL_HIGH': return 'Critical High';
                 case 'SEVERE': return 'Severe';
-                case 'SEVERE_LOW': return 'Severe Low';
-                case 'SEVERE_HIGH': return 'Severe High';
                 case 'IN_LIMITS': return 'In Limits';
                 default: console.log('should handle value ' + monitoringResult); return '';
             }
@@ -164,24 +146,14 @@
             if (!monitoringResult) return 0;
             switch (monitoringResult) {
                 case 'WATCH':
-                case 'WATCH_LOW':
-                case 'WATCH_HIGH':
                     return 1;
                 case 'WARNING':
-                case 'WARNING_LOW':
-                case 'WARNING_HIGH':
                     return 2;
                 case 'DISTRESS':
-                case 'DISTRESS_LOW':
-                case 'DISTRESS_HIGH':
                     return 3;
                 case 'CRITICAL':
-                case 'CRITICAL_LOW':
-                case 'CRITICAL_HIGH':
                     return 4;
                 case 'SEVERE':
-                case 'SEVERE_LOW':
-                case 'SEVERE_HIGH':
                     return 5;
                 default:
                     return 0;

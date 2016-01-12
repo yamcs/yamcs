@@ -4,13 +4,16 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.MediaType;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.HttpHandler;
+import org.yamcs.web.HttpHandler.ChunkedTransferStats;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 
 /**
  * Reads a yamcs replay and maps it directly to an output buffer. If that buffer grows larger
@@ -24,17 +27,20 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
     
     private ByteBuf buf;
     protected ByteBufOutputStream bufOut;
+    private ChannelFuture lastChannelFuture;
     
     protected RestRequest req;
-    protected String contentType;
+    protected MediaType contentType;
     protected boolean failed = false;
+    private ChunkedTransferStats stats;
     
-    public ParameterReplayToChunkedTransferEncoder(RestRequest req, String contentType) throws RestException {
+    public ParameterReplayToChunkedTransferEncoder(RestRequest req, MediaType contentType) throws HttpException {
         super();
         this.req = req;
         this.contentType = contentType;
         resetBuffer();
-        RestUtils.startChunkedTransfer(req, contentType);
+        lastChannelFuture = HttpHandler.startChunkedTransfer(req.getChannelHandlerContext(), contentType);
+        stats = req.getChannelHandlerContext().attr(HttpHandler.CTX_CHUNK_STATS).get();
     }
     
     protected void resetBuffer() {
@@ -56,7 +62,7 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
             processParameterData(pdata, bufOut);
             if (buf.readableBytes() >= CHUNK_TRESHOLD) {
                 closeBufferOutputStream();
-                RestUtils.writeChunk(req, buf);
+                writeChunk();
                 resetBuffer();
             }
         } catch (IOException e) {
@@ -71,24 +77,24 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
     @Override
     public void stateChanged(ReplayStatus rs) {
         if (failed) {
-            log.info("Closing channel because transfer failed");
+            log.warn("Closing channel because transfer failed");
             req.getChannelHandlerContext().channel().close();
             return;
         }
         try {
             closeBufferOutputStream();
             if (buf.readableBytes() > 0) {
-                RestUtils.writeChunk(req, buf).addListener(new ChannelFutureListener() {
-                    @Override
-                    public void operationComplete(ChannelFuture future) throws Exception {
-                        RestUtils.stopChunkedTransfer(req);
-                    }
-                });
-            } else {
-                RestUtils.stopChunkedTransfer(req);
+                writeChunk();
             }
+            HttpHandler.stopChunkedTransfer(req.getChannelHandlerContext(), lastChannelFuture);
         } catch (IOException e) {
             log.error("Could not write final chunk of data", e);
         }
+    }
+    
+    private void writeChunk() throws IOException {
+        stats.totalBytes += buf.readableBytes();
+        stats.chunkCount++;
+        lastChannelFuture = HttpHandler.writeChunk(req.getChannelHandlerContext(), buf);
     }
 }

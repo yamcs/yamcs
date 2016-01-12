@@ -17,7 +17,8 @@
 
         $rootScope.pageTitle = 'Containers | Yamcs';
 
-        mdbService.listContainers(qname, {
+        mdbService.listContainers({
+            namespace: qname,
             recurse: (qname === '/yamcs')
         }).then(function (data) {
             vm.containers = data;

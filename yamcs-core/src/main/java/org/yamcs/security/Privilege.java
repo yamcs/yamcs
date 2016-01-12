@@ -47,23 +47,24 @@ public class Privilege {
     }
 
     public static boolean usePrivileges = true;
+    private static String defaultUser; // Only if !usePrivileges. Could eventually replace usePrivileges i guess
 
     private static Realm realm;
-    public static String realmName;
+    private static String realmName;
 
-    static final Hashtable<String, String> contextEnv = new Hashtable<String, String>();
+    static final Hashtable<String, String> contextEnv = new Hashtable<>();
 
     public static int maxNoSessions;
     public static Privilege instance;
     // time to cache a user entry
     static final int PRIV_CACHE_TIME = 30*1000;
     // time to cache a certificate to username mapping
-    static private final ConcurrentHashMap<AuthenticationToken, Future<User>> cache = new ConcurrentHashMap<AuthenticationToken, Future<User>>();
+    static private final ConcurrentHashMap<AuthenticationToken, Future<User>> cache = new ConcurrentHashMap<>();
     static Logger log = LoggerFactory.getLogger(Privilege.class);
 
     public enum Type {
         SYSTEM, TC, TM_PACKET, TM_PARAMETER, TM_PARAMETER_SET
-    };
+    }
 
     /**
      * Load configuration once only.
@@ -77,10 +78,26 @@ public class Privilege {
             if(usePrivileges) {
                 String realmClass = conf.getString("realm");
                 realm = loadRealm(realmClass);
+            } else {
+                // Intended migration path is that this could replace 'privileges=false', but the interaction with
+                // HornetQAuthManager is still unclear to me. Looks like a dupe. (fdi)
+                if (!conf.containsKey("defaultUser")) {
+                    throw new ConfigurationException("'defaultUser' must be specified when privileges are not enabled. For example 'admin', 'anonymous' or 'guest'");
+                }
+                String defaultUserString = conf.getString("defaultUser");
+                if (defaultUserString.isEmpty() || defaultUserString.contains(":")) {
+                    throw new ConfigurationException("Invalid name '" + defaultUserString + "' for default user");
+                }
+                defaultUser = defaultUserString;
             }
         } catch (ConfigurationException e) {
-            log.error("Failed to load 'privileges' configuration: ", e);
-            System.exit( -1 );
+            log.error("Failed to load 'privileges' configuration", e);
+            System.exit(-1);
+        }
+        if(Privilege.usePrivileges) {
+            log.info("Privileges enabled, authenticating and authorising from "+realmName);
+        } else {
+            log.warn("Privileges disabled, all connections are allowed and have full permissions");
         }
     }
 
@@ -92,7 +109,7 @@ public class Privilege {
                     .loadClass(realmClass).newInstance();
             realmName = realm.getClass().getSimpleName();
         } catch (Exception e) {
-            throw new ConfigurationException("Unable to load the realm class :" + realmClass, e);
+            throw new ConfigurationException("Unable to load the realm class: " + realmClass, e);
         }
         return realm;
     }
@@ -191,7 +208,16 @@ public class Privilege {
         return user.hasPrivilege(type, privilege);
     }
 
-
+    public static String getRealmName() {
+        return realmName;
+    }
+    
+    /**
+     * Returns the default user if this server is unsecured. Returns null in all other cases.
+     */
+    public static String getDefaultUser() {
+        return defaultUser;
+    }
 
     /**
      * Get packet names this user has appropriate privileges for.

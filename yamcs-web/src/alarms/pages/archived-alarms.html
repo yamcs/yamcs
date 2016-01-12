@@ -80,7 +80,7 @@
             <img ng-src="/_static/_site/alarms/images/level{{ alarm.triggerLevel }}.png" uib-tooltip="{{ alarm.triggerValue.monitoringResult | monitoringValue }}">
             <small>
               Reached {{ alarm.triggerValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
-              with {{ alarm.triggerValue | stringValue }}<span ng-bind-html="alarm.triggerValue.monitoringResult | lohi"></span>
+              with {{ alarm.triggerValue | stringValue }}<span ng-bind-html="alarm.triggerValue.rangeCondition | lohi"></span>
             </small>
           </dd>
 
@@ -89,7 +89,7 @@
             <img ng-src="/_static/_site/alarms/images/level{{ alarm.mostSevereLevel }}.png" uib-tooltip="{{ alarm.mostSevereValue.monitoringResult | monitoringValue }}">
             <small>
               Reached {{ alarm.mostSevereValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
-              with {{ alarm.mostSevereValue | stringValue }}<span ng-bind-html="alarm.mostSevereValue.monitoringResult | lohi"></span>
+              with {{ alarm.mostSevereValue | stringValue }}<span ng-bind-html="alarm.mostSevereValue.rangeCondition | lohi"></span>
             </small>
           </dd>
 
@@ -98,7 +98,7 @@
             <img ng-src="/_static/_site/alarms/images/level{{ alarm.currentLevel }}.png" uib-tooltip="{{ alarm.currentValue.monitoringResult | monitoringValue }}">
             <small>
               <strong>{{ alarm.currentValue | stringValue }}</strong>
-              <span ng-bind-html="alarm.currentValue.monitoringResult | lohi"></span>
+              <span ng-bind-html="alarm.currentValue.rangeCondition | lohi"></span>
               &ndash; {{ alarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
             </small>
           </dd>

@@ -24,18 +24,6 @@ mkdir -p $TARGET/web
 rm -rf $TARGET/lib
 mkdir -p $TARGET/lib/ext
 
-for f in $YAMCS_HOME/yamcs-core/etc/* ; do
-    case "$f" in
-        *.sample)
-            FILENAME=$(basename "$f")
-            cp -an "$f" $TARGET/etc/${FILENAME%.*}
-            ;;
-        *)
-            cp -an "$f" $TARGET/etc/
-            ;;
-    esac
-done
-
 cp -an $YAMCS_HOME/yamcs-core/bin/* $TARGET/bin
 
 ln -fs $YAMCS_HOME/yamcs-core/target/*.jar $TARGET/lib
@@ -47,8 +35,7 @@ if [ -f make-live-devel-local.sh ] ; then
     sh make-live-devel-local.sh $TARGET
 else
     # Assume YSS simulator deployment
-    # no -an because then doesn't override renamed sample files
-    cp $YAMCS_HOME/yamcs-simulation/etc/* $TARGET/etc
+    cp -an $YAMCS_HOME/yamcs-simulation/etc/* $TARGET/etc
     cp -an $YAMCS_HOME/yamcs-simulation/bin/* $TARGET/bin
 
     ln -fs $YAMCS_HOME/yamcs-simulation/target/*.jar $TARGET/lib
@@ -62,3 +49,16 @@ else
     mkdir -p $YAMCS_DATA/simulator/profiles
     cp -an $YAMCS_HOME/yamcs-simulation/profiles/* $YAMCS_DATA/simulator/profiles
 fi
+
+# Add sample config (if not already present)
+for f in $YAMCS_HOME/yamcs-core/etc/* ; do
+    case "$f" in
+        *.sample)
+            FILENAME=$(basename "$f")
+            cp -an "$f" $TARGET/etc/${FILENAME%.*}
+            ;;
+        *)
+            cp -an "$f" $TARGET/etc/
+            ;;
+    esac
+done

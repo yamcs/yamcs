@@ -12,6 +12,7 @@ import org.yamcs.api.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
+import org.yamcs.protobuf.Pvalue.RangeCondition;
 import org.yamcs.utils.StringConvertors;
 import org.yamcs.xtce.AlarmReportType;
 import org.yamcs.xtce.AlarmType;
@@ -201,30 +202,32 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
             eventProducer.sendInfo("no monitoring", "Parameter "+pv.getParameter().getQualifiedName()+" has changed to value "+StringConvertors.toString(pv.getEngValue(), false));
             return;
         }
-        switch(pv.getMonitoringResult()) {
-        case WATCH_LOW:
-        case WARNING_LOW:
-            eventProducer.sendWarning(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" is too low");
-            break;
-        case WATCH_HIGH:
-        case WARNING_HIGH:
-            eventProducer.sendWarning(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" is too high");
-            break;
-        case DISTRESS_LOW:
-        case CRITICAL_LOW:
-        case SEVERE_LOW:
-            eventProducer.sendError(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" is too low");
-            break;
-        case DISTRESS_HIGH:
-        case CRITICAL_HIGH:
-        case SEVERE_HIGH:
-            eventProducer.sendError(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" is too high");
-            break;
-        case IN_LIMITS:
+        
+        if (pv.getMonitoringResult() == MonitoringResult.IN_LIMITS) {
             eventProducer.sendInfo(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" has changed to value "+StringConvertors.toString(pv.getEngValue(), false));
-            break;
-        default:
-            throw new IllegalStateException("Unexpected monitoring result: "+pv.getMonitoringResult());
+        } else {
+            String message;
+            if (pv.getRangeCondition() == RangeCondition.LOW) {
+                message = "Parameter "+pv.getParameter().getQualifiedName()+" is too low";
+            } else if (pv.getRangeCondition() == RangeCondition.HIGH) {
+                message = "Parameter "+pv.getParameter().getQualifiedName()+" is too high";
+            } else {
+                throw new IllegalStateException("Unexpected range condition: "+pv.getRangeCondition());                
+            }
+            
+            switch (pv.getMonitoringResult()) {
+            case WATCH:
+            case WARNING:
+                eventProducer.sendWarning(pv.getMonitoringResult().toString(), message);
+                break;
+            case DISTRESS:
+            case CRITICAL:
+            case SEVERE:
+                eventProducer.sendError(pv.getMonitoringResult().toString(), message);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected monitoring result: "+pv.getMonitoringResult());
+            }
         }
     }
     

@@ -1,6 +1,11 @@
 language: java
 jdk: oraclejdk8
 
+sudo: false
+cache:
+  directories:
+    - $HOME/.m2
+
 script: mvn -Dsurefire.useFile=false test && mvn -Dtest=PermissionsTest -pl yamcs-core test
 
 

@@ -22,11 +22,11 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestUtils;
-import org.yamcs.web.rest.RestUtils.IntervalResult;
+import org.yamcs.web.rest.RestRequest.IntervalResult;
 import org.yamcs.web.rest.archive.RestDownsampler.Sample;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
@@ -135,11 +135,11 @@ public final class ArchiveHelper {
         return result;
     }
 
-    final static ReplayRequest toParameterReplayRequest(RestRequest req, NamedObjectId id, boolean descendByDefault)
-            throws RestException {
+    final static ReplayRequest toParameterReplayRequest(RestRequest req, Parameter p, boolean descendByDefault)
+            throws HttpException {
         ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
         rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
-        IntervalResult ir = RestUtils.scanForInterval(req);
+        IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) {
             rrb.setStart(ir.getStart());
         }
@@ -147,7 +147,8 @@ public final class ArchiveHelper {
             rrb.setStop(ir.getStop());
         }
         rrb.setEndAction(EndAction.QUIT);
-        rrb.setReverse(RestUtils.asksDescending(req, descendByDefault));
+        rrb.setReverse(req.asksDescending(descendByDefault));
+        NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
         rrb.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id));
         return rrb.build();
     }

@@ -139,17 +139,17 @@ public class YConfiguration {
         InputStream is;
         if(prefix!=null) {
             if((is=YConfiguration.class.getResourceAsStream("/"+prefix+name))!=null) {
-                log.info( "Reading configuration from "+new File( YConfiguration.class.getResource("/"+prefix+name).getFile() ).getAbsolutePath() );
+                log.debug("Reading "+new File(YConfiguration.class.getResource("/"+prefix+name).getFile()).getAbsolutePath());
                 return is;
             }
         }
         
-        //see if the users has a own version of the file
+        //see if the users has an own version of the file
         File f=new File(userConfigDirectory+name);
         if(f.exists()) {
             try {
                 is=new FileInputStream(f);
-                log.info( "Reading configuration from "+f.getAbsolutePath() );
+                log.debug("Reading "+f.getAbsolutePath());
                 return is;
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -158,7 +158,7 @@ public class YConfiguration {
         if((is=YConfiguration.class.getResourceAsStream(name))==null) {
             throw(new ConfigurationException("Cannot find resource "+name));
         }
-        log.info( "Reading configuration from "+new File( YConfiguration.class.getResource(name).getFile() ).getAbsolutePath() );
+        log.debug("Reading "+new File(YConfiguration.class.getResource(name).getFile()).getAbsolutePath());
         return is;
     }
 
@@ -182,12 +182,12 @@ public class YConfiguration {
 
     /**
      * returns the first entry in the config file if it's a map. Otherwise throws an error
-     * @return
      */
+    @SuppressWarnings("unchecked")
     public Map<String, Object> getFirstMap() throws ConfigurationException {
         Object o=root.values().iterator().next();
         if(o instanceof Map) {
-            return (Map)o;
+            return (Map<String, Object>) o;
         } else {
             throw new ConfigurationException("the first entry in the config is of type "+o.getClass()+" and not Map");
         }

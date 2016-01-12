@@ -206,7 +206,6 @@ public class ParameterFormatter {
                     l.add(0, TimeEncoding.toString(lastLineInstant));
                 }
                 csvWriter.writeRecord(l.toArray(new String[0]));
-                csvWriter.flush();
                 previousLine=line;
                 linesSaved++;
             } else {

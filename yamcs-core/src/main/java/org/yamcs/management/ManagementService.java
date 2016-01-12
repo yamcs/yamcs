@@ -59,8 +59,6 @@ import com.google.common.util.concurrent.Service;
  */
 public class ManagementService implements YProcessorListener {
     
-    public static final String ANONYMOUS = "anonymous";
-    
     final MBeanServer mbeanServer;
     HornetQManagement hornetMgr;
     HornetQProcessorManagement hornetProcessorMgr;
@@ -208,15 +206,15 @@ public class ManagementService implements YProcessorListener {
         linkListeners.forEach(l -> l.unregisterLink(instance, name));
     }
     
-    public CommandQueueManager getQueueManager(String instance, String channelName) throws YamcsException {
+    public CommandQueueManager getQueueManager(String instance, String processorName) throws YamcsException {
         for(int i=0;i<qmanagers.size();i++) {
             CommandQueueManager cqm=qmanagers.get(i);
-            if(cqm.getInstance().equals(instance) && cqm.getChannelName().equals(channelName)) {
+            if(cqm.getInstance().equals(instance) && cqm.getChannelName().equals(processorName)) {
                 return cqm;
             }
         }
 
-        throw new YamcsException("Cannot find a command queue manager for "+instance+"."+channelName);
+        throw new YamcsException("Cannot find a command queue manager for "+instance+"/"+processorName);
     }
     
     public List<CommandQueueManager> getQueueManagers() {
@@ -230,7 +228,7 @@ public class ManagementService implements YProcessorListener {
                 mbeanServer.registerMBean(cci, ObjectName.getInstance(tld+"."+yproc.getInstance()+":type=processors,name="+yproc.getName()));
             }
         } catch (Exception e) {
-            log.warn("Got exception when registering a yprocessor", e);
+            log.warn("Got exception when registering a processor", e);
         }
     }
 
@@ -239,7 +237,7 @@ public class ManagementService implements YProcessorListener {
             try {
                 mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+yproc.getInstance()+":type=processors,name="+yproc.getName()));
             } catch (Exception e) {
-                log.warn("Got exception when unregistering a yprocessor", e);
+                log.warn("Got exception when unregistering a processor", e);
             }
         }
     }
@@ -287,29 +285,34 @@ public class ManagementService implements YProcessorListener {
             }
             managementListeners.forEach(l -> l.clientInfoChanged(ci));
         } catch (Exception e) {
-            log.warn("Got exception when switching a processor", e);
+            log.warn("Got exception when switching processor", e);
         }
 
     }
 
     public void createProcessor(ProcessorManagementRequest cr, AuthenticationToken authToken) throws YamcsException{
-        log.info("Creating a new yproc instance="+cr.getInstance()+" name="+cr.getName()+" type="+cr.getType()+" spec="+cr.getSpec()+"' persistent="+cr.getPersistent());
+        log.info("Creating new processor instance="+cr.getInstance()+" name="+cr.getName()+" type="+cr.getType()+" spec="+cr.getSpec()+"' persistent="+cr.getPersistent());
         
-        String userName = (authToken != null && authToken.getPrincipal() != null) ? authToken.getPrincipal().toString() : ANONYMOUS;
+        String username;
+        if (authToken != null && authToken.getPrincipal() != null) {
+            username = authToken.getPrincipal().toString();
+        } else {
+            username = Privilege.getDefaultUser();
+        }
         if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.SYSTEM, "MayControlYProcessor")) {
             if(cr.getPersistent()) {
-                log.warn("User "+userName+" is not allowed to create persistent yprocessors");
-                throw new YamcsException("permission denied");
+                log.warn("User "+username+" is not allowed to create persistent processors");
+                throw new YamcsException("Permission denied");
             }
             if(!"Archive".equals(cr.getType())) {
-                log.warn("User "+userName+" is not allowed to create yprocessors of type "+cr.getType());
-                throw new YamcsException("permission denied");
+                log.warn("User "+username+" is not allowed to create processors of type "+cr.getType());
+                throw new YamcsException("Permission denied");
             }
             for(int i=0;i<cr.getClientIdCount();i++) {
                 ClientInfo si=clients.get(cr.getClientId(i)).getClientInfo();
-                if(!userName.equals(si.getUsername())) {
-                    log.warn("User "+userName+" is not allowed to connect "+si.getUsername()+" to a new yprocessor "+cr.getName() );
-                    throw new YamcsException("permission denied");
+                if(!username.equals(si.getUsername())) {
+                    log.warn("User "+username+" is not allowed to connect "+si.getUsername()+" to new processor "+cr.getName() );
+                    throw new YamcsException("Permission denied");
                 }
             }
         }
@@ -324,7 +327,7 @@ public class ManagementService implements YProcessorListener {
             } else {
                 spec = cr.getSpec();
             }
-            yproc = ProcessorFactory.create(cr.getInstance(), cr.getName(), cr.getType(), userName, spec);
+            yproc = ProcessorFactory.create(cr.getInstance(), cr.getName(), cr.getType(), username, spec);
             yproc.setPersistent(cr.getPersistent());
             for(int i=0;i<cr.getClientIdCount();i++) {
                 ClientControlImpl cci=clients.get(cr.getClientId(i));
@@ -336,7 +339,7 @@ public class ManagementService implements YProcessorListener {
                 }
             }
             if(n>0 || cr.getPersistent()) {
-                log.info("starting new yprocessor'" + yproc.getName() + "' with " + yproc.getConnectedClients() + " clients");
+                log.info("Starting new processor '" + yproc.getName() + "' with " + yproc.getConnectedClients() + " clients");
                 yproc.start();
             } else {
                 yproc.quit();
@@ -353,24 +356,29 @@ public class ManagementService implements YProcessorListener {
 
     public void connectToProcessor(ProcessorManagementRequest cr, AuthenticationToken usertoken) throws YamcsException {
         YProcessor chan=YProcessor.getInstance(cr.getInstance(), cr.getName());
-        if(chan==null) throw new YamcsException("Unexisting yproc ("+cr.getInstance()+", "+cr.getName()+") specified");
+        if(chan==null) throw new YamcsException("Unexisting processor "+cr.getInstance()+"/"+cr.getName()+" specified");
 
 
-        String userName = (usertoken != null && usertoken.getPrincipal() != null) ? usertoken.getPrincipal().toString() : ANONYMOUS;
-        log.debug("User "+ userName+" wants to connect clients "+cr.getClientIdList()+" to processor "+cr.getName());
+        String username;
+        if  (usertoken != null && usertoken.getPrincipal() != null) {
+            username = usertoken.getPrincipal().toString();
+        } else {
+            username = Privilege.getDefaultUser();
+        }
+        log.debug("User "+ username+" wants to connect clients "+cr.getClientIdList()+" to processor "+cr.getName());
 
 
         if(!Privilege.getInstance().hasPrivilege(usertoken, Privilege.Type.SYSTEM, "MayControlYProcessor") &&
-                !((chan.isPersistent() || chan.getCreator().equals(userName)))) {
-            log.warn("User "+userName+" is not allowed to connect users to yproc "+cr.getName() );
+                !((chan.isPersistent() || chan.getCreator().equals(username)))) {
+            log.warn("User "+username+" is not allowed to connect users to processor "+cr.getName() );
             throw new YamcsException("permission denied");
         }
         if(!Privilege.getInstance().hasPrivilege(usertoken, Privilege.Type.SYSTEM, "MayControlYProcessor")) {
             for(int i=0; i<cr.getClientIdCount(); i++) {
                 ClientInfo si=clients.get(cr.getClientId(i)).getClientInfo();
-                if(!userName.equals(si.getUsername())) {
-                    log.warn("User "+userName+" is not allowed to connect "+si.getUsername()+" to yprocessor "+cr.getName());
-                    throw new YamcsException("permission denied");
+                if(!username.equals(si.getUsername())) {
+                    log.warn("User "+username+" is not allowed to connect "+si.getUsername()+" to processor "+cr.getName());
+                    throw new YamcsException("Permission denied");
                 }
             }
         }

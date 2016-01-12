@@ -8,11 +8,11 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ParameterValue;
 import org.yamcs.YProcessor;
+import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
@@ -55,7 +55,7 @@ public class SystemParametersProvider extends AbstractService implements StreamS
     @Override
     public void init(YProcessor yproc) throws ConfigurationException {
         String instance = yproc.getInstance();
-        log=LoggerFactory.getLogger(this.getClass().getName()+"["+yproc.getName()+"]");
+        log=YamcsServer.getLogger(this.getClass(), yproc);
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
         stream=ydb.getStream(SystemParametersCollector.STREAM_NAME);
         if(stream==null) throw new ConfigurationException("Cannot find a stream named "+SystemParametersCollector.STREAM_NAME);
@@ -110,7 +110,7 @@ public class SystemParametersProvider extends AbstractService implements StreamS
     private synchronized SystemParameter createParameterForName(String fqname) {
         SystemParameter sv = variables.get(fqname);
         if(sv==null) {
-            log.info("Creating new SystemParameter for fqname={}", fqname);
+            log.debug("Creating {}", fqname);
             sv = SystemParameter.getForFullyQualifiedName(fqname, DataSource.SYSTEM);
             variables.put(fqname, sv);
             xtceDb.getSystemParameterDb().registerSystemParameter(sv);

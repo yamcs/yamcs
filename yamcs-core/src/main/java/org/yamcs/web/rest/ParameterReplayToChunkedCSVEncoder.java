@@ -1,15 +1,15 @@
 package org.yamcs.web.rest;
 
-import static org.yamcs.web.AbstractRequestHandler.CSV_MIME_TYPE;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.List;
 
+import org.yamcs.api.MediaType;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.ParameterFormatter;
+import org.yamcs.web.HttpException;
 
 import io.netty.buffer.ByteBufOutputStream;
 
@@ -22,8 +22,8 @@ public class ParameterReplayToChunkedCSVEncoder extends ParameterReplayToChunked
     private List<NamedObjectId> idList;
     private ParameterFormatter formatter;
     
-    public ParameterReplayToChunkedCSVEncoder(RestRequest req, List<NamedObjectId> idList) throws RestException {
-        super(req, CSV_MIME_TYPE);
+    public ParameterReplayToChunkedCSVEncoder(RestRequest req, List<NamedObjectId> idList) throws HttpException {
+        super(req, MediaType.CSV);
         this.idList = idList;
         formatter.setWriteHeader(true);
     }

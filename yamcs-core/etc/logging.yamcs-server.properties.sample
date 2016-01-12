@@ -6,8 +6,10 @@ java.util.logging.FileHandler.limit = 20000000
 java.util.logging.FileHandler.count = 50
 java.util.logging.FileHandler.formatter = org.yamcs.CompactFormatter
 
-java.util.logging.ConsoleHandler.level = WARNING
-java.util.logging.ConsoleHandler.formatter = org.yamcs.CompactFormatter
+java.util.logging.ConsoleHandler.level = INFO
+java.util.logging.ConsoleHandler.formatter = org.yamcs.ConsoleFormatter
 
 
 org.yamcs.level=FINE
+org.hornetq.level=WARNING
+io.netty.level=WARNING

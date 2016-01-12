@@ -19,13 +19,14 @@ import org.yamcs.ConfigurationException;
  *
  */
 public abstract class AbstractFileLoader implements SpaceSystemLoader {
-    static Logger log=LoggerFactory.getLogger(AbstractFileLoader.class.getName());
+    protected final Logger log;
     protected String configName, path;
     
     
     public AbstractFileLoader(String path) throws ConfigurationException {
         this.path = path;
         this.configName=new File(path).getName()+"-"+path.hashCode();
+        log=LoggerFactory.getLogger(getClass());
     }
     
     @Override
@@ -39,10 +40,10 @@ public abstract class AbstractFileLoader implements SpaceSystemLoader {
                 try {
                     Date serializedDate=sdf.parse(line.substring(configName.length()+1));
                     if(serializedDate.getTime()>=f.lastModified()) {
-                        log.info("Serialized flatfile ppdb "+configName+" is up to date.");
+                        log.debug("Serialized flatfile ppdb "+configName+" is up to date");
                         return false;
                     } else {
-                        log.info("Serialized flatfile ppdb"+configName+" is NOT up to date: serializedDate="+serializedDate+" mdbConsistencyDate="+new Date(f.lastModified()));
+                        log.debug("Serialized flatfile ppdb"+configName+" is NOT up to date: serializedDate="+serializedDate+" mdbConsistencyDate="+new Date(f.lastModified()));
                         return true;
                     }
                 } catch (ParseException e) {

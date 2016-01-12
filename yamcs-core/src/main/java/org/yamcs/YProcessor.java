@@ -14,7 +14,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
@@ -84,11 +83,11 @@ public class YProcessor extends AbstractService {
     private boolean parameterCacheEnabled = false;
     private boolean parameterCacheAll = false;
 
-    static Logger log=LoggerFactory.getLogger(YProcessor.class.getName());
+    final Logger log;
     static Set<YProcessorListener> listeners=new CopyOnWriteArraySet<>(); //send notifications for added and removed processors to this
 
     private boolean quitting;
-    //a synchronous channel waits for all the clients to deliver tm packets and parameters
+    //a synchronous processor waits for all the clients to deliver tm packets and parameters
     private boolean synchronous=false;
     XtceTmProcessor tmProcessor;
 
@@ -104,13 +103,14 @@ public class YProcessor extends AbstractService {
 
     public YProcessor(String yamcsInstance, String name, String type, String creator) throws YProcessorException {
         if((name==null) || "".equals(name)) {
-            throw new YProcessorException("The processor name can not be empty");
+            throw new YProcessorException("The processor name must not be empty");
         }
-        log.info("creating a new channel name="+name+" type="+type);
         this.yamcsInstance=yamcsInstance;
         this.name=name;
         this.creator=creator;
         this.type=type;
+        log=YamcsServer.getLogger(YProcessor.class, this);
+        log.info("Creating new processor '{}' of type '{}'", name, type);
     }
 
 

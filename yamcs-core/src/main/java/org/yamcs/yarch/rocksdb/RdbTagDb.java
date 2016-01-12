@@ -32,7 +32,7 @@ public class RdbTagDb implements TagDb {
     RdbTagDb(String path) throws RocksDBException {
         db = RocksDB.open(path);
 
-        log.info("opened {}: {} ", path, db.getProperty("rocksdb.stats"));
+        log.debug("opened {}: {} ", path, db.getProperty("rocksdb.stats"));
         String num = db.getProperty("rocksdb.estimate-num-keys");
 
         if("0".equals(num)) {

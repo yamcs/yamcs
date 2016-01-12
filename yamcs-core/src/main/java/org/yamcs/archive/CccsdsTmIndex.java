@@ -14,13 +14,14 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.NotThreadSafe;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
-import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.Tuple;
-import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.utils.TimeEncoding;
+import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.CcsdsPacket;
+import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.YarchDatabase;
 
 /**
  * Completeness index of CCSDS telemetry. There is one rocksdb table:
@@ -55,7 +56,7 @@ public class CccsdsTmIndex implements TmIndex {
      * @throws RocksDBException 
      */
     public CccsdsTmIndex(String instance, boolean readonly) throws IOException {
-        log=LoggerFactory.getLogger(this.getClass().getName()+"["+instance+"]");
+        log=YamcsServer.getLogger(this.getClass(), instance);
 
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
 
@@ -77,7 +78,7 @@ public class CccsdsTmIndex implements TmIndex {
     private void openDb(String filename) throws RocksDBException {
         db = RocksDB.open(filename);
         long numKeys = db.getLongProperty("rocksdb.estimate-num-keys");
-        log.info("opened "+filename+" with "+numKeys+" records");
+        log.info("Opened "+filename+" with "+numKeys+" records");
         if(numKeys==0) initDbs();
 
     }
@@ -104,7 +105,7 @@ public class CccsdsTmIndex implements TmIndex {
     }
 
     public synchronized void addPacket(short apid, long instant, short seq) throws RocksDBException {
-        System.out.println("adding apid: "+apid+" instant: "+instant+" seq: "+seq);
+        //System.out.println("adding apid: "+apid+" instant: "+instant+" seq: "+seq);
         RocksIterator it = db.newIterator();
         try {
             it.seek(Record.key(apid, instant, seq));
@@ -127,7 +128,7 @@ public class CccsdsTmIndex implements TmIndex {
 
             it.prev();
             rleft = new Record(it.key(),it.value());
-            System.out.println("here rleft: "+rleft+" rright: "+rright);
+            //System.out.println("here rleft: "+rleft+" rright: "+rright);
 
             cleft = compare(apid,instant,seq,rleft);
             //	System.out.println("arleft="+arleft+"\narright="+arright);

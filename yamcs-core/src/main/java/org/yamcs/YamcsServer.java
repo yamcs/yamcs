@@ -43,6 +43,8 @@ import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.HornetQBufferOutputStream;
 import org.yamcs.utils.YObjectLoader;
+import org.yamcs.web.HttpServer;
+import org.yamcs.web.StaticFileHandler;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -71,7 +73,7 @@ public class YamcsServer {
     List<Service> serviceList=new ArrayList<Service>();
 
     Logger log;
-    static Logger staticlog=LoggerFactory.getLogger(YamcsServer.class.getName());
+    static Logger staticlog=LoggerFactory.getLogger(YamcsServer.class);
 
     /**in the shutdown, allow servies this number of seconds for stopping*/
     public static int SERVICE_STOP_GRACE_TIME = 10;
@@ -82,14 +84,13 @@ public class YamcsServer {
     static private String serverId;
     
     @SuppressWarnings("unchecked")
-    YamcsServer(String instance) throws HornetQException, IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {
+    YamcsServer(String instance) throws HornetQException, IOException, StreamSqlException, ParseException, YamcsApiException {
         this.instance=instance;
         
         //TODO - fix bootstrap issue 
         instances.put(instance, this);
         
-        
-        log=LoggerFactory.getLogger(YamcsServer.class.getName()+"["+instance+"]");
+        log=getLogger(YamcsServer.class, instance);
         
         YConfiguration conf=YConfiguration.getConfiguration("yamcs."+instance);
         loadTimeService();
@@ -111,7 +112,7 @@ public class YamcsServer {
             } else {
                 throw new ConfigurationException("Services can either be specified by classname, or by {class: classname, args: ....} map. Cannot load a service from "+servobj);
             }
-            log.info("loading service from "+servclass);
+            log.info("Loading service "+servclass);
             YObjectLoader<Service> objLoader = new YObjectLoader<Service>();
             Service serv;
             if(args == null) {
@@ -135,7 +136,11 @@ public class YamcsServer {
             }
         }
     }
-
+    
+    public static HttpServer setupHttpServer() {
+        StaticFileHandler.init();
+        return HttpServer.getInstance();
+    }
 
     static YamcsSession yamcsSession;
     static YamcsClient ctrlAddressClient;
@@ -175,7 +180,22 @@ public class YamcsServer {
             ys.stop();
         }
     }
-
+    
+    /**
+     * Return a logger decorated with the applicable yamcs instance 
+     * <p>Convenience method
+     */
+    public static Logger getLogger(Class<?> clazz, String instance) {
+        return LoggerFactory.getLogger(clazz.getName() + "["+instance+"]");
+    }
+    
+    /**
+     * Return a logger decorated with the applicable yamcs instance and processor 
+     * <p>Convenience method
+     */
+    public static Logger getLogger(Class<?> clazz, YProcessor processor) {
+        return LoggerFactory.getLogger(clazz.getName() + "["+processor.getInstance()+"/" +processor.getName()+ "]");
+    }
 
     public void stop() {
         for(int i = serviceList.size()-1; i>=0; i--) {
@@ -200,9 +220,19 @@ public class YamcsServer {
     public static void setupYamcsServer() throws Exception  {
         YConfiguration c=YConfiguration.getConfiguration("yamcs");
         final List<String>instArray=c.getList("instances");
+        
+        if (instArray.isEmpty()) {
+            staticlog.warn("No instances");
+        } else if (instArray.size() == 1) {
+            staticlog.info("1 instance: " + instArray.get(0));
+        } else {
+            staticlog.info(instArray.size() + " instances: " + String.join(", ", instArray));
+        }
+        
         for(String inst:instArray) {
             instances.put(inst, new YamcsServer(inst));
         }
+        
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread t, Throwable thrown) {
@@ -248,7 +278,7 @@ public class YamcsServer {
                 }
             }
         });
-        System.out.println("yamcsstartup success");
+        staticlog.info("Server running... press ctrl-c to stop");
     }
 
     public static YamcsInstances getYamcsInstances() {
@@ -318,7 +348,7 @@ public class YamcsServer {
                 id = InetAddress.getLocalHost().getHostName();
             }
             serverId = id;
-            staticlog.info("Using {} as serverId", serverId);
+            staticlog.debug("Using serverId {}", serverId);
             return serverId;
         } catch (ConfigurationException e) {
             throw e;
@@ -377,6 +407,7 @@ public class YamcsServer {
             YConfiguration.setup();
             serverId = deriveServerId();
             setupSecurity();
+            setupHttpServer();
             setupHornet();
             org.yamcs.yarch.management.ManagementService.setup(true);
             ManagementService.setup(true,true);

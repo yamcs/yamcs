@@ -25,8 +25,8 @@ import org.yamcs.api.YamcsSession;
  *
  */
 public class HornetQAuthManager implements HornetQSecurityManager {
-	static Logger log = LoggerFactory.getLogger("org.yamcs.security.HornetQAuthManager");
-	private Map<String, ArrayList<String>> configuredUserCache = new HashMap<String, ArrayList<String>>();
+	static Logger log = LoggerFactory.getLogger(HornetQAuthManager.class);
+	private Map<String, ArrayList<String>> configuredUserCache = new HashMap<>();
 	/** If null (default), anonymous connections will be rejected. */
 	private String defaultUser = null;
 	
@@ -63,10 +63,10 @@ public class HornetQAuthManager implements HornetQSecurityManager {
 	@Override
 	public void start() throws Exception {
 		configuredUserCache.clear();
-		if( Privilege.usePrivileges ) {
-			log.info( "Privileges enabled, authenticating and authorising from "+Privilege.realmName+"." );
+		if(Privilege.usePrivileges) {
+			log.info("Privileges enabled, authenticating and authorising from "+Privilege.getRealmName());
 		} else {
-			log.warn( "Privileges disabled, all connections are allowed and have full permissions." );
+			log.warn("Privileges disabled, all connections are allowed and have full permissions");
 		}
 	}
 
@@ -85,26 +85,26 @@ public class HornetQAuthManager implements HornetQSecurityManager {
 				log.debug( "Default user '{}' given role '{}'.",username, role );
 			}
 		} else {
-			log.debug( "addRole('{}','{}') called but will perform no function.",username, role );
+			log.debug( "addRole('{}','{}') called but will perform no function",username, role );
 		}
 	}
 
 	@Override
 	public void addUser(String username, String password) {
 		// Do not support specifying normal users through config
-		log.debug( "addUser('{}', ***) called but will perform no function.",username );
+		log.debug( "addUser('{}', ***) called but will perform no function",username );
 	}
 
 	@Override
 	public void removeRole(String username, String role) {
 		// Do not support specifying normal users through config
-		log.debug( "removeRole('{}', '{}') called but will perform no function.",username,role );
+		log.debug( "removeRole('{}', '{}') called but will perform no function",username,role );
 	}
 
 	@Override
 	public void removeUser(String username) {
 		// Do not support specifying normal users through config
-		log.debug( "removeUser('{}') called but will perform no function.",username );
+		log.debug( "removeUser('{}') called but will perform no function",username );
 	}
 
 	@Override
@@ -115,7 +115,7 @@ public class HornetQAuthManager implements HornetQSecurityManager {
 		}
 		defaultUser = username;
 		configuredUserCache.put(defaultUser, new ArrayList<String>());
-		log.info( "Default user (used for anonymous connections) set to '{}'.",username );
+		log.info( "Default user (used for anonymous connections) set to '{}'",username );
 		log.warn( "Anonymous connections allowed, will be treated as user '{}'", username );
 	}
 
@@ -137,7 +137,7 @@ public class HornetQAuthManager implements HornetQSecurityManager {
 		//if( ! HornetQAuthPrivilege.authenticated(username, password) ) {
 			return false;
 		}
-		log.info( "User '{}' authenticated with " + Privilege.realmName, username );
+		log.info("User '{}' authenticated with {}", username, Privilege.getRealmName());
 		return true;
 	}
 

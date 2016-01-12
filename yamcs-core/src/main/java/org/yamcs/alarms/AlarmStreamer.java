@@ -2,9 +2,9 @@ package org.yamcs.alarms;
 
 import java.util.ArrayList;
 
-import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.security.Privilege;
 import org.yamcs.tctm.PpProviderAdapter;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -84,7 +84,7 @@ public class AlarmStreamer implements AlarmListener {
         tdef.addColumn("acknowledgedBy", DataType.STRING);
         String username = activeAlarm.usernameThatAcknowledged;
         if (username == null) {
-            username = (activeAlarm.autoAcknowledge) ? "autoAcknowledged" : ManagementService.ANONYMOUS;
+            username = (activeAlarm.autoAcknowledge) ? "autoAcknowledged" : Privilege.getDefaultUser();
         }
         al.add(username);
         

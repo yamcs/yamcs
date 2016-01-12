@@ -17,7 +17,8 @@
 
         $rootScope.pageTitle = 'Parameters | Yamcs';
 
-        mdbService.listParameters(qname, {
+        mdbService.listParameters({
+            namespace: qname,
             recurse: includesNested()
         }).then(function (data) {
             vm.parameters = data;

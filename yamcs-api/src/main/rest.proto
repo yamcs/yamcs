@@ -9,6 +9,10 @@ import "alarms.proto";
 import "commanding.proto";
 import "yamcsManagement.proto";
 
+message GetApiOverviewResponse {
+  repeated string url = 1;
+}
+
 message ListParameterInfoResponse {
   repeated mdb.ParameterInfo parameter = 1;
 }

@@ -120,6 +120,7 @@ public abstract class AbstractIntegrationTest {
         YConfiguration.setup("IntegrationTest");
         ManagementService.setup(false, false);
         org.yamcs.yarch.management.ManagementService.setup(false);
+        YamcsServer.setupHttpServer();
         YamcsServer.setupHornet();
         YamcsServer.setupYamcsServer();
     }

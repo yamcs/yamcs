@@ -14,11 +14,11 @@ import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
-import org.yamcs.web.rest.BadRequestException;
-import org.yamcs.web.rest.InternalServerErrorException;
-import org.yamcs.web.rest.RestException;
+import org.yamcs.security.AuthenticationToken;
+import org.yamcs.web.BadRequestException;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.rest.RestReplayListener;
-import org.yamcs.web.rest.RestRequest;
 
 import com.google.protobuf.MessageLite;
 
@@ -37,13 +37,12 @@ public class RestReplays {
      * TODO we should be more helpful here with catching errored state and
      * throwing it up as RestException
      */
-    public static ReplayWrapper replay(RestRequest req, ReplayRequest replayRequest, RestReplayListener l) throws RestException {
-        String instance = req.getFromContext(RestRequest.CTX_INSTANCE);
+    public static ReplayWrapper replay(String instance, AuthenticationToken token, ReplayRequest replayRequest, RestReplayListener l) throws HttpException {
         ReplayServer replayServer = getReplayServer(instance);
         
         ReplayWrapper wrapper = new ReplayWrapper(l);
         try {
-             YarchReplay yarchReplay = replayServer.createReplay(replayRequest, wrapper, req.getAuthToken());
+             YarchReplay yarchReplay = replayServer.createReplay(replayRequest, wrapper, token);
              wrapper.setYarchReplay(yarchReplay);
              yarchReplay.start();
              return wrapper;
@@ -52,8 +51,8 @@ public class RestReplays {
         }
     }
     
-    public static void replayAndWait(RestRequest req, ReplayRequest replayRequest, RestReplayListener l) throws RestException {
-        replay(req, replayRequest, l).await();
+    public static void replayAndWait(String instance, AuthenticationToken token, ReplayRequest replayRequest, RestReplayListener l) throws HttpException {
+        replay(instance, token, replayRequest, l).await();
     }
     
     private static ReplayServer getReplayServer(String instance) throws BadRequestException {
