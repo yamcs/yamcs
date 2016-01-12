@@ -15,7 +15,7 @@
             <img ng-src="/_static/_site/alarms/images/level{{ activeAlarm.triggerLevel }}.png" uib-tooltip="{{ activeAlarm.triggerValue.monitoringResult | monitoringValue }}">
             <small>
               Reached {{ activeAlarm.triggerValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
-              with {{ activeAlarm.triggerValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="activeAlarm.triggerValue.monitoringResult | lohi"></span>
+              with {{ activeAlarm.triggerValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="activeAlarm.triggerValue.rangeCondition | lohi"></span>
             </small>
           </dd>
 
@@ -24,7 +24,7 @@
             <img ng-src="/_static/_site/alarms/images/level{{ activeAlarm.mostSevereLevel }}.png" uib-tooltip="{{ activeAlarm.mostSevereValue.monitoringResult | monitoringValue }}">
             <small>
               Reached {{ activeAlarm.mostSevereValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
-              with {{ activeAlarm.mostSevereValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="activeAlarm.mostSevereValue.monitoringResult | lohi"></span>
+              with {{ activeAlarm.mostSevereValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="activeAlarm.mostSevereValue.rangeCondition | lohi"></span>
             </small>
           </dd>
 
@@ -32,7 +32,7 @@
           <dd>
             <img ng-src="/_static/_site/alarms/images/level{{ activeAlarm.currentLevel }}.png" uib-tooltip="{{ activeAlarm.currentValue.monitoringResult | monitoringValue }}">
             <small>
-              <strong>{{ activeAlarm.currentValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}</strong><span ng-bind-html="activeAlarm.currentValue.monitoringResult | lohi"></span>
+              <strong>{{ activeAlarm.currentValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}</strong><span ng-bind-html="activeAlarm.currentValue.rangeCondition | lohi"></span>
               &ndash; {{ activeAlarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
             </small>
           </dd>
@@ -172,7 +172,7 @@
               <img ng-src="/_static/_site/alarms/images/level{{ alarm.triggerLevel }}.png" uib-tooltip="{{ alarm.triggerValue.monitoringResult | monitoringValue }}">
               <small>
                 Reached {{ alarm.triggerValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
-                with {{ alarm.triggerValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="alarm.triggerValue.monitoringResult | lohi"></span>
+                with {{ alarm.triggerValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="alarm.triggerValue.rangeCondition | lohi"></span>
               </small>
             </dd>
 
@@ -181,7 +181,7 @@
               <img ng-src="/_static/_site/alarms/images/level{{ alarm.mostSevereLevel }}.png" uib-tooltip="{{ alarm.mostSevereValue.monitoringResult | monitoringValue }}">
               <small>
                 Reached {{ alarm.mostSevereValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
-                with {{ alarm.mostSevereValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="alarm.mostSevereValue.monitoringResult | lohi"></span>
+                with {{ alarm.mostSevereValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="alarm.mostSevereValue.rangeCondition | lohi"></span>
               </small>
             </dd>
 
@@ -190,7 +190,7 @@
               <img ng-src="/_static/_site/alarms/images/level{{ alarm.currentLevel }}.png" uib-tooltip="{{ alarm.currentValue.monitoringResult | monitoringValue }}">
               <small>
                 <strong>{{ alarm.currentValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}</strong>
-                <span ng-bind-html="alarm.currentValue.monitoringResult | lohi"></span>
+                <span ng-bind-html="alarm.currentValue.rangeCondition | lohi"></span>
                 &ndash; {{ alarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
               </small>
             </dd>

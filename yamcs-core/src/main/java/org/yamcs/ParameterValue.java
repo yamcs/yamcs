@@ -348,6 +348,9 @@ public class ParameterValue {
         if(monitoringResult!=null) {
             gpvb.setMonitoringResult(monitoringResult);
         }
+        if(rangeCondition!=null) {
+            gpvb.setRangeCondition(rangeCondition);
+        }
 
         // TODO make this optional
         gpvb.setAcquisitionTimeUTC(TimeEncoding.toString(getAcquisitionTime()));
