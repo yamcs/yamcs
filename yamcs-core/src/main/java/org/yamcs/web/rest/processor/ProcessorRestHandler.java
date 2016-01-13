@@ -64,7 +64,7 @@ public class ProcessorRestHandler extends RestHandler {
     @Route(path = "/api/processors", method = "GET")
     public ChannelFuture listProcessors(RestRequest req) throws HttpException {
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
-        for (YProcessor processor : YProcessor.getChannels()) {
+        for (YProcessor processor : YProcessor.getProcessors()) {
             response.addProcessor(toProcessorInfo(processor, req, true));
         }
         return sendOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
@@ -75,7 +75,7 @@ public class ProcessorRestHandler extends RestHandler {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
-        for (YProcessor processor : YProcessor.getChannels(instance)) {
+        for (YProcessor processor : YProcessor.getProcessors(instance)) {
             response.addProcessor(toProcessorInfo(processor, req, true));
         }
         return sendOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);

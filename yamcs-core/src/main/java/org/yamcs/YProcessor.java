@@ -357,14 +357,14 @@ public class YProcessor extends AbstractService {
         return instances.get(key(yamcsInstance,name));
     }
     /**
-     * Increase with one the number of connected clients to the named channel and return the channel.
+     * Increase with one the number of connected clients to the named processor and return the processor.
      * @param name
-     * @return the channel where with the given name
+     * @return the processor with the given name
      * @throws YProcessorException
      */
     public static YProcessor connect(String yamcsInstance, String name, YProcessorClient s) throws YProcessorException {
         YProcessor ds=instances.get(key(yamcsInstance,name));
-        if(ds==null) throw new YProcessorException("There is no channel named '"+name+"'");
+        if(ds==null) throw new YProcessorException("There is no processor named '"+name+"'");
         ds.connect(s);
         return ds;
     }
@@ -374,12 +374,12 @@ public class YProcessor extends AbstractService {
      */
     public synchronized void connect(YProcessorClient s) throws YProcessorException {
         log.debug("Session "+name+" has one more user: " +s);
-        if(quitting) throw new YProcessorException("This channel has been closed");
+        if(quitting) throw new YProcessorException("This processor has been closed");
         connectedClients.add(s);
     }
 
     /**
-     * Disconnects a client from this channel. If the channel has no more clients, quit.
+     * Disconnects a client from this processor. If the processor has no more clients, quit.
      *
      */
     public void disconnect(YProcessorClient s) {
@@ -387,7 +387,7 @@ public class YProcessor extends AbstractService {
         boolean hasToQuit=false;
         synchronized(this) {
             connectedClients.remove(s);
-            log.info("channel "+name+" has one less user: connectedUsers: "+connectedClients.size());
+            log.info("processor "+name+" has one less user: connectedUsers: "+connectedClients.size());
             if((connectedClients.isEmpty())&&(!persistent)) {
                 hasToQuit=true;
             }
@@ -396,11 +396,11 @@ public class YProcessor extends AbstractService {
     }
 
 
-    public static Collection<YProcessor> getChannels() {
+    public static Collection<YProcessor> getProcessors() {
         return instances.values();
     }
     
-    public static Collection<YProcessor> getChannels(String instance) {
+    public static Collection<YProcessor> getProcessors(String instance) {
         List<YProcessor> processors = new ArrayList<>();
         for (YProcessor processor : instances.values()) {
             if (instance.equals(processor.getInstance())) {
@@ -412,24 +412,23 @@ public class YProcessor extends AbstractService {
 
 
     /**
-     * Closes the channel by stoping the tm/pp and tc
+     * Closes the processor by stoping the tm/pp and tc
      * It can be that there are still clients connected, but they will not get any data and new clients can not connect to
-     * these channels anymore. Once it is close, you can create a channel with the same name which will make it maybe a bit 
+     * these processors anymore. Once it is close, you can create a processor with the same name which will make it maybe a bit 
      * confusing :(
      *
      */
     @Override
     public void doStop() {
         if(quitting)return;
-        log.info("Channel "+name+" quitting");
+        log.info("Processor "+name+" quitting");
         quitting=true;
         instances.remove(key(yamcsInstance,name));
         for(ParameterProvider p:parameterProviders) {
             p.stopAsync();
         }
-        //if(commandHistoryListener!=null) commandHistoryListener.channelStopped();
         if(commandReleaser!=null) commandReleaser.stopAsync();
-        log.info("Channel "+name+" is out of business");
+        log.info("Processor "+name+" is out of business");
         listeners.forEach(l -> l.yProcessorClosed(this));
         ManagementService.getInstance().unregisterYProcessor(this);
         synchronized(this) {
@@ -441,11 +440,11 @@ public class YProcessor extends AbstractService {
     }
 
 
-    public static void addProcessorListener(YProcessorListener channelListener) {
-        listeners.add(channelListener);
+    public static void addProcessorListener(YProcessorListener processorListener) {
+        listeners.add(processorListener);
     }
-    public static void removeYProcListener(YProcessorListener channelListener) {
-        listeners.remove(channelListener);
+    public static void removeYProcListener(YProcessorListener processorListener) {
+        listeners.remove(processorListener);
     }
 
     public boolean isPersistent() {
@@ -505,7 +504,7 @@ public class YProcessor extends AbstractService {
 
     /**
      *
-     * @return the yamcs instance this channel is part of
+     * @return the yamcs instance this processor is part of
      */
     public String getInstance() {
         return yamcsInstance;

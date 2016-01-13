@@ -89,7 +89,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
             wsHandler.sendReply(toAckReply(ctx.getRequestId()));
             
             // Send current set of processors
-            for (YProcessor processor : YProcessor.getChannels()) {
+            for (YProcessor processor : YProcessor.getProcessors()) {
                 ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
                 wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
             }

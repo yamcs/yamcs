@@ -49,7 +49,7 @@ public class YamcsToGpbAssembler {
             instanceb.setClientsUrl(instanceUrl + "{/processor}/clients");
         }
         
-        for (YProcessor processor : YProcessor.getChannels(instanceb.getName())) {
+        for (YProcessor processor : YProcessor.getProcessors(instanceb.getName())) {
             instanceb.addProcessor(ProcessorRestHandler.toProcessorInfo(processor, req, false));
         }
         return instanceb.build();
