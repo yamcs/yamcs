@@ -129,9 +129,6 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <argLine>-Djava.library.path=/usr/local/lib</argLine>
-          <parallel>suites</parallel>
-          <threadCount>1</threadCount>
-          <perCoreThreadCount>false</perCoreThreadCount>
            <systemProperties>
     		  <property>
      		   <name>java.util.logging.config.file</name>
