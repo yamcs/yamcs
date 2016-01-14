@@ -57,10 +57,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 
 /**
  * Matches a request uri to a registered route handler. Stops on the first
- * match. Every instance can register a different set of routes, if the magic
- * token :instance appears in the path, than this is used to point to an
- * instance-specific route, otherwise the first registered match from any
- * instance is called.
+ * match.
  * <p>
  * The Router itself has the same granularity as HttpServer: one instance only.
  * <p>
