@@ -88,18 +88,19 @@ public class Subscription {
     }
     
     public void addSequenceEntry(SequenceEntry se) {
+        
         boolean containerAlreadyAdded=container2EntryMap.containsKey(se.getSequenceContainer());
         
         addContainer2Entry(se.getSequenceContainer(), se);
         SequenceEntry setmp=se;
         SequenceContainer sctmp=se.getSequenceContainer();
         //if this entry's location is relative to the previous one, then we have to add also that one in the list
-        while(setmp.getReferenceLocation()==SequenceEntry.ReferenceLocationType.previousEntry){
+        if(setmp.getReferenceLocation()==SequenceEntry.ReferenceLocationType.previousEntry) {
             if(setmp.getIndex()>0) {
-                setmp=sctmp.getEntryList().get(setmp.getIndex()-1);
+                setmp = sctmp.getEntryList().get(setmp.getIndex()-1);
             } else { //continue with the basecontainer if we are at the first entry
-                sctmp=sctmp.getBaseContainer();
-                setmp=sctmp.getEntryList().get(sctmp.getEntryList().size()-1);
+                sctmp = sctmp.getBaseContainer();
+                setmp = sctmp.getEntryList().get(sctmp.getEntryList().size()-1);
             }
             addSequenceEntry(setmp);
         }
