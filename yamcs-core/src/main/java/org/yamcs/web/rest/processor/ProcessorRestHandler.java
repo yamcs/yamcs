@@ -155,7 +155,7 @@ public class ProcessorRestHandler extends RestHandler {
     @Route(path = "/api/processors/:instance", method = "POST")
     public ChannelFuture createProcessorForInstance(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        XtceDb mdb = XtceDbFactory.createInstance(instance);
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
         
         CreateProcessorRequest request = req.bodyAsMessage(SchemaRest.CreateProcessorRequest.MERGE).build();
 
