@@ -278,7 +278,13 @@ public class YamcsServer {
                 }
             }
         });
-        staticlog.info("Server running... press ctrl-c to stop");
+        if(System.getenv("YAMCS_DAEMON")==null) {
+            staticlog.info("Server running... press ctrl-c to stop");
+        }
+        else
+        {
+            staticlog.info("yamcsstartup success");
+        }
     }
 
     public static YamcsInstances getYamcsInstances() {
