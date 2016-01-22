@@ -96,7 +96,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
                 archivePanel.onWindowResized();
             }
         });
-        
+
         setContentPane(archivePanel);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         pack();

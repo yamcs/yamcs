@@ -5,6 +5,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsVersion;
 import org.yamcs.api.*;
+import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.YamcsManagement.*;
 import org.yamcs.ui.*;
 import org.yamcs.ui.archivebrowser.ArchiveIndexReceiver;
@@ -634,7 +635,7 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
         }
         String name=newYProcName.getText();
         ProcessorWidget type = (ProcessorWidget)processorChooser.getSelectedItem();
-        String spec = type.getSpec();
+        Yamcs.ReplayRequest spec = type.getSpec();
         if(hasAdminRights) {
             persistent=persistentCheckBox.isSelected();
         }
