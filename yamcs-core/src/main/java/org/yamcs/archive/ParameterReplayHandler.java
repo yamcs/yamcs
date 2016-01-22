@@ -97,6 +97,8 @@ public class ParameterReplayHandler implements ReplayHandler, ParameterWithIdCon
             pidrm.addRequest(plist, authToken);
         } catch (InvalidIdentification e) {
             NamedObjectList nol=NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
+            if(yproc != null)
+                yproc.doStop();
             throw new YamcsException("InvalidIdentification", "Invalid identification", nol);
         }
 

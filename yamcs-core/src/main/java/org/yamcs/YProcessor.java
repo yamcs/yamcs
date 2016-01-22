@@ -436,7 +436,8 @@ public class YProcessor extends AbstractService {
                 s.yProcessorQuit();
             }
         }
-        notifyStopped();
+        if(getState() == ServiceState.RUNNING || getState() == ServiceState.STOPPING)
+            notifyStopped();
     }
 
 
