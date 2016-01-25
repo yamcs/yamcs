@@ -281,7 +281,6 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                System.out.println("processing updateQueue "+cqi);
                 QueuesTableModel model=queuesModels.get(cqi.getInstance()+"."+cqi.getProcessorName());
                 
                 model.updateQueue(cqi);

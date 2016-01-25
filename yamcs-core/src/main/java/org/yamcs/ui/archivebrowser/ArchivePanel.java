@@ -85,7 +85,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             replayPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Replay Control"));
             replayPanel.setToolTipText("Doubleclick between the start/stop locators to reposition the replay.");
             replayPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-           // fixedTop.add(replayPanel);
+           fixedTop.add(replayPanel);
         }
 
         // This is a bit clumsy right now with the inner classes, but will make more

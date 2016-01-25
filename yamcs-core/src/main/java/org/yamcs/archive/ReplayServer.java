@@ -101,7 +101,7 @@ public class ReplayServer extends AbstractService {
             return yr;
         } catch (final Exception e) {
             log.warn("Got exception when creating a replay object: ", e);
-            throw new YamcsException("Got exception when creating a replay", e);
+            throw new YamcsException("Got exception when creating a replay. " + e.getMessage(), e);
         }
     }
 

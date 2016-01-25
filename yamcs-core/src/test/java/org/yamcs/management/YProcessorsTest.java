@@ -19,6 +19,7 @@ import org.yamcs.YProcessorException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.Yamcs;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.ui.YProcessorControlClient;
 import org.yamcs.ui.YProcessorListener;
@@ -63,7 +64,9 @@ public class YProcessorsTest {
         yconnector.connect(YamcsConnectData.parse("yamcs:///")).get(5,TimeUnit.SECONDS);
 
         try {
-            ccc.createProcessor("yproctest0", "test1", "dummy", "test", false, new int[]{10,14});
+
+            Yamcs.ReplayRequest rr = Yamcs.ReplayRequest.newBuilder().build();
+            ccc.createProcessor("yproctest0", "test1", "dummy", rr, false, new int[]{10,14});
             assertTrue("YamcsException was expected", false);
         } catch(YamcsException e) {
             assertEquals("createYProcessor invoked with a list full of invalid client ids", e.getMessage());
@@ -80,8 +83,9 @@ public class YProcessorsTest {
         ccc.setYProcessorListener(ml);
         Future<String> f=yconnector.connect(YamcsConnectData.parse("yamcs:///"));
         f.get(5, TimeUnit.SECONDS);
-        
-        ccc.createProcessor("yproctest1", "yproc1", "dummy", "", true, new int[0]);
+
+        Yamcs.ReplayRequest rr = Yamcs.ReplayRequest.newBuilder().build();
+        ccc.createProcessor("yproctest1", "yproc1", "dummy", rr, true, new int[0]);
         
         MyYProcClient client=new MyYProcClient();
         YProcessor yp=YProcessor.getInstance("yproctest1", "yproc1");
@@ -92,7 +96,7 @@ public class YProcessorsTest {
         
         ManagementService.getInstance().registerClient("yproctest1", "yproc1", client);
         
-        ccc.createProcessor("yproctest1", "yproc2", "dummy", "", false, new int[]{1});
+        ccc.createProcessor("yproctest1", "yproc2", "dummy", rr, false, new int[]{1});
         
         Thread.sleep(3000); //to make sure that this event will not overwrite the previous yproctest1,yproc1 one 
         ccc.connectToYProcessor("yproctest1", "yproc1", new int[]{1}); //this one should trigger the closing of non permanent yproc2 because no more client connected
@@ -245,7 +249,7 @@ public class YProcessorsTest {
         private TmProcessor tmProcessor;
 
 
-        public DummyTmProvider(String instance, String spec) {
+        public DummyTmProvider(String instance, Yamcs.ReplayRequest spec) {
         }
 
         @Override

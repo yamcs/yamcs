@@ -1,6 +1,8 @@
 package org.yamcs.ui.yamcsmonitor;
 
+import org.yamcs.protobuf.Yamcs;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.MdbMappings;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -169,23 +171,49 @@ public class ArchiveProcWidget extends ProcessorWidget {
     }
 
     @Override
-    public String getSpec() {
+    public Yamcs.ReplayRequest getSpec() {
         if ( start < 0 ) {
             YamcsMonitor.theApp.showMessage("Please specify a start date and a stop date first.");
             return null;
         }
 
-        StringBuffer spec = new StringBuffer(archiveInstance+" "+start + " " + stop + " ");
-        spec.append(loopButton.isSelected() ? "LOOP" : "STOP");
-        if ( speedRealtimeRadio.isSelected() ) { spec.append(" REALTIME 1"); }
-        else if ( speedFixedRadio.isSelected() ) { spec.append(" FIXED_DELAY 200"); }
-        else { spec.append(" AFAP"); } // should never happen
-        ListModel model = packetList.getModel();
-        for ( int i = 0; i < model.getSize(); ++i ) {
-            spec.append(" ");
-            spec.append(model.getElementAt(i));
+        Yamcs.ReplayRequest.Builder rr= Yamcs.ReplayRequest.newBuilder().setEndAction(Yamcs.EndAction.STOP)
+                .setStart(start).setStop(stop)
+                .setSpeed(Yamcs.ReplaySpeed.newBuilder().setType(Yamcs.ReplaySpeed.ReplaySpeedType.AFAP).build());
+
+        // set end action
+        if(loopButton.isSelected())
+            rr.setEndAction(Yamcs.EndAction.LOOP);
+        else
+            rr.setEndAction(Yamcs.EndAction.STOP);
+
+        // set speed
+        Yamcs.ReplaySpeed.Builder rs = Yamcs.ReplaySpeed.newBuilder();
+        if ( speedRealtimeRadio.isSelected() )
+        {
+            rs.setType(Yamcs.ReplaySpeed.ReplaySpeedType.REALTIME);
+            rs.setParam(1);
         }
-        return spec.toString();
+        else if (speedFixedRadio.isSelected())
+        {
+            rs.setType(Yamcs.ReplaySpeed.ReplaySpeedType.FIXED_DELAY);
+            rs.setParam(200);
+        }
+        else
+        {
+            rs.setType(Yamcs.ReplaySpeed.ReplaySpeedType.AFAP);
+        }
+        rr.setSpeed(rs.build());
+
+        // list of packets
+        ListModel model = packetList.getModel();
+        Yamcs.PacketReplayRequest.Builder prr= Yamcs.PacketReplayRequest.newBuilder();
+        for(int i = 0; i < model.getSize(); i++) {
+            prr.addNameFilter(Yamcs.NamedObjectId.newBuilder().setNamespace(MdbMappings.MDB_OPSNAME).setName(model.getElementAt(i).toString()));
+        }
+        rr.setPacketRequest(prr);
+
+        return rr.build();
     }
 }
 

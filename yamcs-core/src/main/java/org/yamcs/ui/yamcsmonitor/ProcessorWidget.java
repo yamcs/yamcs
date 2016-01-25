@@ -1,5 +1,7 @@
 package org.yamcs.ui.yamcsmonitor;
 
+import org.yamcs.protobuf.Yamcs;
+
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
 
@@ -30,7 +32,7 @@ public abstract class ProcessorWidget {
     /**
      * Returns the spec string forwarded to createChannel()
      */
-    public abstract String getSpec();
+    public abstract Yamcs.ReplayRequest getSpec();
     
     /**
      * Whether this channel type needs an archive browser
