@@ -193,13 +193,21 @@ public class YarchDatabase {
         }
     }
 
-    TableDefinition deserializeTableDefinition(File f) throws FileNotFoundException, IOException, ClassNotFoundException {	    
+    TableDefinition deserializeTableDefinition(File f) throws FileNotFoundException, IOException, ClassNotFoundException {
+    	if(f.length()==0) {
+    		throw new IOException("Cannot load table definition from empty file "+f);
+    	}
         String fn=f.getName();
         String tblName=fn.substring(0,fn.length()-4);
         Yaml yaml = new Yaml(new TableDefinitionConstructor());
         FileInputStream fis=new FileInputStream(f);
-        TableDefinition tblDef=(TableDefinition) yaml.load(fis); 
+        Object o = yaml.load(fis);
+        if(!(o instanceof TableDefinition)) {
+        	throw new IOException("Cannot load table definition from "+f+": object is "+o.getClass().getName()+"; should be "+TableDefinition.class.getName());
+        }
+        TableDefinition tblDef=(TableDefinition) o;
         fis.close();
+
         tblDef.setName(tblName);
         tblDef.setDb(this);
         if(!tblDef.hasCustomDataDir()) tblDef.setDataDir(getRoot());
