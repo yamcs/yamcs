@@ -686,6 +686,17 @@ public class XtceStaxReader {
             throw new XMLStreamException("Unnamed integer parameter type");
         }
 
+        value = readAttribute("sizeInBits", xmlEvent.asStartElement());
+        if (value != null) {
+            int sizeInBits = Integer.parseInt(value);
+            integerParamType.setSizeInBits(sizeInBits);
+        }
+        value = readAttribute("signed", xmlEvent.asStartElement());
+        if (value != null) {
+            boolean signed = Boolean.parseBoolean(value);
+            integerParamType. setSigned(signed);
+        }
+        
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
