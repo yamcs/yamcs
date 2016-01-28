@@ -91,8 +91,7 @@ public class Privilege {
                 defaultUser = defaultUserString;
             }
         } catch (ConfigurationException e) {
-            log.error("Failed to load 'privileges' configuration", e);
-            System.exit(-1);
+            throw new ConfigurationException("Failed to load 'privileges' configuration", e);
         }
         if(Privilege.usePrivileges) {
             log.info("Privileges enabled, authenticating and authorising from "+realmName);
