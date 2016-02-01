@@ -154,7 +154,10 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
     
     @Override
     public boolean canProvide(Parameter param) {
-	return dvIndex.get(param.getOpsName())!=null;
+        if(param.getQualifiedName() == null)
+            return dvIndex.get(param.getOpsName()) != null;
+        else
+	        return dvIndex.get(param.getQualifiedName())!=null;
     }
 
 
