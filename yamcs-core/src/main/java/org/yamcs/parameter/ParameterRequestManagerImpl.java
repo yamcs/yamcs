@@ -280,16 +280,16 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
      * @throws InvalidIdentification
      */
     private void addItemToRequest(int id, Parameter para, ParameterProvider provider) {
-	if(!param2RequestMap.contains(para)) {
+	if(!param2RequestMap.containsKey(para)) {
 	    //this parameter is not requested by any other request
-	    if(param2RequestMap.putIfAbsent(para, new SubscriptionArray())==null ) {
-		if(!cacheAll) {
+        param2RequestMap.put(para, new SubscriptionArray());
+        if(!cacheAll) {
 		    provider.startProviding(para);
 		}
 		if(alarmChecker!=null) {
 		    alarmChecker.parameterSubscribed(para);
 		}
-	    }
+
 	}
 	SubscriptionArray al_req = param2RequestMap.get(para);
 	al_req.add(id);

@@ -116,9 +116,20 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
 
     @Override
     public void startProvidingAll() {
-	// TODO Auto-generated method stub
-
+        log.debug("Requested to provide all");
+        for(DerivedValue dv:derivedValues)
+        {
+            requestedValues.add(dv);
+            try {
+                parameterRequestManager.addItemsToRequest(subscriptionId, Arrays.asList(dv.getArgumentIds()));
+            } catch (InvalidIdentification e) {
+                log.error("InvalidIdentification caught when subscribing to the items required for the derived value "+dv.def+"\n\t The invalid items are:"+e.invalidParameters, e);
+            } catch (InvalidRequestIdentification e) {
+                log.error("InvalidRequestIdentification caught when subscribing to the items required for the derived value "+dv.def, e);
+            }
+        }
     }
+
     //TODO 2.0 unsubscribe from the requested values
     @Override
     public void stopProviding(Parameter paramDef) {
@@ -143,7 +154,7 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
     
     @Override
     public boolean canProvide(Parameter param) {
-	return dvIndex.get(param.getQualifiedName())!=null;
+	return dvIndex.get(param.getOpsName())!=null;
     }
 
 
