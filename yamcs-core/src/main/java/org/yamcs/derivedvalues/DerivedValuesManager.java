@@ -89,6 +89,9 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
     public void addAll(Collection<DerivedValue> dvalues) {
 	derivedValues.addAll(dvalues);
 	for(DerivedValue dv:dvalues) {
+        // quick hack to remove qualified name to remain compatible with previous displays
+        dv.def.setQualifiedName(null);
+
 	    dvIndex.add(dv.def);
 	}
     }
@@ -121,7 +124,8 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
         {
             requestedValues.add(dv);
             try {
-                parameterRequestManager.addItemsToRequest(subscriptionId, Arrays.asList(dv.getArgumentIds()));
+                if(dv.getArgumentIds().length > 0 && dv.getArgumentIds()[0] != null)
+                    parameterRequestManager.addItemsToRequest(subscriptionId, Arrays.asList(dv.getArgumentIds()));
             } catch (InvalidIdentification e) {
                 log.error("InvalidIdentification caught when subscribing to the items required for the derived value "+dv.def+"\n\t The invalid items are:"+e.invalidParameters, e);
             } catch (InvalidRequestIdentification e) {
@@ -164,12 +168,7 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
     
     @Override
     public Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification {
-	Parameter p;
-	if(paraId.hasNamespace()) {
-	    p=dvIndex.get(paraId.getNamespace(), paraId.getName());
-	} else {
-	    p=dvIndex.get(paraId.getName());
-	}
+	Parameter p=dvIndex.get(paraId.getName());
 	if(p!=null) {
 	    return p;
 	} else {
