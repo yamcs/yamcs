@@ -65,7 +65,7 @@ public class DerivedValuesTest {
 	YProcessor c=  createChannel("testFloatAdd");
 	ParameterRequestManagerImpl prm=c.getParameterRequestManager();
 	List<Parameter> paraList=new ArrayList<Parameter>();
-	paraList.add(prm.getParameter("/DV/test_float_add"));
+	paraList.add(prm.getParameter("test_float_add"));
 	paraList.add(prm.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
 	final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
 
@@ -106,7 +106,7 @@ public class DerivedValuesTest {
 	YProcessor c=  createChannel("testJavascriptFloatAdd");
 	ParameterRequestManagerImpl prm=c.getParameterRequestManager();
 	List<Parameter> paraList=new ArrayList<Parameter>();
-	paraList.add(prm.getParameter("/DV/test_float_add_js"));
+	paraList.add(prm.getParameter("test_float_add_js"));
 	paraList.add(prm.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
 
 	final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();

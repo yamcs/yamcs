@@ -128,8 +128,8 @@ public class SystemParametersProvider extends AbstractService implements StreamS
     }
 
     @Override
-    public boolean canProvide(Parameter para) {        
-        return para.getQualifiedName().startsWith(SystemParameterDb.YAMCS_SPACESYSTEM_NAME);
+    public boolean canProvide(Parameter para) {
+            return para.getQualifiedName() != null && para.getQualifiedName().startsWith(SystemParameterDb.YAMCS_SPACESYSTEM_NAME);
     }
 
     
