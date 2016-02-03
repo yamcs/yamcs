@@ -113,6 +113,10 @@ public class YarchReplay implements StreamSubscriber {
         currentRequest = newRequest;
         handlers=new HashMap<ProtoDataType,ReplayHandler>();
         
+        if (currentRequest.hasParameterRequest()) {
+            throw new YamcsException("The replay cannot handle directly parameters. Please create a replay processor for that");
+        }
+        
         
         if (currentRequest.hasEventRequest())
             handlers.put(ProtoDataType.EVENT, new EventReplayHandler());
@@ -120,8 +124,6 @@ public class YarchReplay implements StreamSubscriber {
             handlers.put(ProtoDataType.TM_PACKET, new XtceTmReplayHandler(xtceDb));
         if (currentRequest.hasPpRequest())
             handlers.put(ProtoDataType.PP, new PpReplayHandler(xtceDb));
-        if (currentRequest.hasParameterRequest())
-            handlers.put(ProtoDataType.PARAMETER, new ParameterReplayHandler(instance, xtceDb, authToken));
         if (currentRequest.hasCommandHistoryRequest())
             handlers.put(ProtoDataType.CMD_HISTORY, new CommandHistoryReplayHandler(instance));
         

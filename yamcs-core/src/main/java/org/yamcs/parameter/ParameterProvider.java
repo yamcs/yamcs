@@ -15,11 +15,11 @@ import org.yamcs.xtce.Parameter;
  */
 public interface ParameterProvider extends Service {
     /**
-     * Called before the startup to pass on the channel and initialise whatever needed
+     * Called before the startup to pass on the processor and initialise whatever needed
      * @param channel
      * @throws ConfigurationException 
      */
-    public abstract void init(YProcessor channel) throws ConfigurationException;
+    public abstract void init(YProcessor processor) throws ConfigurationException;
 
     /**
      * Send parameters to this listener.

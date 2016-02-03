@@ -1,16 +1,16 @@
 package org.yamcs.web.rest;
 
-import org.yamcs.archive.ReplayListener;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.Yamcs.ReplayStatus;
+import java.util.List;
 
-import com.google.protobuf.MessageLite;
+import org.yamcs.parameter.ParameterValueWithId;
+import org.yamcs.parameter.ParameterWithIdConsumer;
+
 
 /**
  * Expected class type for use with {@link RestReplays}
  * Adds functionality for stopping a replay, and has support for pagination
  */
-public abstract class RestReplayListener implements ReplayListener {
+public abstract class RestReplayListener implements ParameterWithIdConsumer {
     
     private final boolean paginate;
     private final long pos;
@@ -41,28 +41,24 @@ public abstract class RestReplayListener implements ReplayListener {
         return abortReplay;
     }
 
-    @Override
-    public void stateChanged(ReplayStatus rs) {
-        // NOP
-    }
     
     @Override
-    public void newData(ProtoDataType type, MessageLite data) {
-        MessageLite filteredData = filter(type, data);
+    public void update(int subscriptionId, List<ParameterValueWithId> params) {
+        List<ParameterValueWithId> filteredData = filter(params);
         if (filteredData == null) return;
         
         if (paginate) {
             if (rowNr >= pos) {
                 if (emitted < limit) {
                     emitted++;
-                    onNewData(type, filteredData);
+                    onParameterData(filteredData);
                 } else {
                     requestReplayAbortion();
                 }
             }
             rowNr++;
         } else {
-            onNewData(type, filteredData);
+            onParameterData(filteredData);
         }
     }
     
@@ -70,9 +66,13 @@ public abstract class RestReplayListener implements ReplayListener {
      * Override to filter out some replay data. Null means excluded.
      * (which also means it will not be counted towards the pagination.
      */
-    public MessageLite filter(ProtoDataType type, MessageLite data) {
-        return data;
+    public List<ParameterValueWithId> filter(List<ParameterValueWithId> params) {
+        return params;
     }
     
-    public abstract void onNewData(ProtoDataType type, MessageLite data);
+    public abstract void onParameterData(List<ParameterValueWithId> params);
+    
+    public void replayFinished(){
+        
+    };
 }

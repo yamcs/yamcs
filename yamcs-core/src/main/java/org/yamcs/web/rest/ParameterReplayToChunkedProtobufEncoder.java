@@ -1,8 +1,9 @@
 package org.yamcs.web.rest;
 
 import java.io.IOException;
+import java.util.List;
 
-import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.api.MediaType;
 import org.yamcs.protobuf.SchemaPvalue;
@@ -23,8 +24,9 @@ public class ParameterReplayToChunkedProtobufEncoder extends ParameterReplayToCh
     }
     
     @Override
-    public void processParameterData(ParameterData pdata, ByteBufOutputStream bufOut) throws IOException {
-        for (ParameterValue pval : pdata.getParameterList()) {
+    public void processParameterData(List<ParameterValueWithId> params, ByteBufOutputStream bufOut) throws IOException {
+        for (ParameterValueWithId pvalid : params) {
+            ParameterValue pval = pvalid.toGbpParameterValue();
             if (MediaType.PROTOBUF.equals(contentType)) {
                 pval.writeDelimitedTo(bufOut);
             } else {
@@ -34,4 +36,5 @@ public class ParameterReplayToChunkedProtobufEncoder extends ParameterReplayToCh
             }
         }
     }
+
 }

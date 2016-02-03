@@ -2,12 +2,15 @@ package org.yamcs.tctm;
 
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
+import org.yamcs.NoPermissionException;
 import org.yamcs.ParameterValue;
 import org.yamcs.TmProcessor;
 import org.yamcs.YProcessor;
@@ -20,9 +23,15 @@ import org.yamcs.archive.ReplayServer;
 import org.yamcs.archive.YarchReplay;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterRequestManagerImpl;
+import org.yamcs.parameter.ParameterValueWithId;
+import org.yamcs.parameter.ParameterWithIdConsumer;
+import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.NamedObjectList;
+import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
@@ -31,9 +40,12 @@ import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.SystemToken;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SystemParameterDb;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.Subscription;
 import org.yamcs.xtceproc.XtceDbFactory;
+import org.yamcs.xtceproc.XtceTmProcessor;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.protobuf.MessageLite;
@@ -54,9 +66,9 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     EndAction endAction;
     static Logger log=LoggerFactory.getLogger(ReplayService.class.getName());
 
-    ReplayRequest replayRequest;
+    ReplayRequest originalReplayRequest;
     private HashSet<Parameter> subscribedParameters=new HashSet<Parameter>();
-    private ParameterRequestManager parameterRequestManager;
+    private ParameterRequestManagerImpl parameterRequestManager;
     TmProcessor tmProcessor;
     volatile long dataCount=0;
     final XtceDb xtceDb;
@@ -65,30 +77,24 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     private final String yamcsInstance;
     YarchReplay yarchReplay;
     YProcessor yprocessor;
-    
-   
+    //the originalReplayRequest contains possibly only parameters.
+    //the modified one sent to the ReplayServer contains the raw data required for extracting/processing those parameters
+    ReplayRequest.Builder rawDataRequest;
+
+
     public ReplayService(String instance, ReplayRequest spec) throws YProcessorException, ConfigurationException {
         this.yamcsInstance = instance;
-        this.replayRequest = spec;
+        this.originalReplayRequest = spec;
+        rawDataRequest = originalReplayRequest.toBuilder().clearParameterRequest();
+
+
         xtceDb = XtceDbFactory.getInstance(instance);
-        createReplay();
     }
 
 
-    private void createReplay() throws YProcessorException {
-        ReplayServer replayServer = YamcsServer.getService(yamcsInstance, ReplayServer.class);
-        if(replayServer==null) {
-            throw new YProcessorException("ReplayServer not configured for this instance");
-        }
-        try {
-            yarchReplay = replayServer.createReplay(replayRequest, this, new SystemToken());
-        } catch (YamcsException e) {
-            log.error("Exception creating the replay", e);
-            throw new YProcessorException("Exception creating the replay",e);
-        }
-    }
-    
-    
+
+
+
     @Override
     public void init(YProcessor proc) throws ConfigurationException {
         this.yprocessor = proc;
@@ -96,7 +102,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
 
     @Override
     public void init(YProcessor proc, TmProcessor tmProcessor) {
-        this.tmProcessor=tmProcessor;
+        this.tmProcessor = tmProcessor;
         this.yprocessor = proc;
     }
 
@@ -104,10 +110,9 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     public boolean isArchiveReplay() {
         return true;
     }
-    
+
     @Override
     public void newData(ProtoDataType type, MessageLite data) {
-      //  System.out.println("ReplayService new Data received: "+data);
         switch(type) {
         case TM_PACKET:
             dataCount++;
@@ -126,14 +131,14 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
                     params.add(pv);
                     replayTime = pv.getGenerationTime();
                 }
-                
+
             }
             parameterRequestManager.update(params);
             break;
-          default:
-                log.error("Unexpected data type {} received");            
+        default:
+            log.error("Unexpected data type {} received");            
         }
-        
+
     }
 
     @Override
@@ -156,9 +161,68 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         notifyStopped();
     }
 
+    //finds out all raw data (TM and PP) required to provide the needed parameters.
+    // in order to do this, subscribe to all parameters from the list
+    private void createRawSubscription() throws YamcsException {
+        List<NamedObjectId> plist = originalReplayRequest.getParameterRequest().getNameFilterList();
+        if(plist.isEmpty()) return; 
 
+        ParameterWithIdRequestHelper pidrm = new ParameterWithIdRequestHelper(parameterRequestManager, new ParameterWithIdConsumer() {
+            @Override
+            public void update(int subscriptionId, List<ParameterValueWithId> params) {//ignore data, we create this subscription just to get the list of dependent containers and PPs
+            }
+        });
+        int subscriptionId;
+        try {
+            subscriptionId = pidrm.addRequest(plist, new SystemToken());
+        } catch (InvalidIdentification e) {
+            NamedObjectList nol=NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
+            throw new YamcsException("InvalidIdentification", "Invalid identification", nol);
+        } catch (NoPermissionException e) {
+            throw new RuntimeException("Unexpected No permission");
+        }
+
+        XtceTmProcessor tmproc = yprocessor.getTmProcessor();
+        Subscription subscription = tmproc.getSubscription();
+        Collection<SequenceContainer> containers = subscription.getContainers();
+
+
+        if((containers==null)|| (containers.isEmpty())) {
+            log.debug("No container required for the parameter subscription");
+        } else {
+            PacketReplayRequest.Builder rawPacketRequest = originalReplayRequest.getPacketRequest().toBuilder();
+            for(SequenceContainer sc: containers) {
+                rawPacketRequest.addNameFilter(NamedObjectId.newBuilder().setName(sc.getQualifiedName()).build());
+            }
+            rawDataRequest.setPacketRequest(rawPacketRequest);
+            log.debug("after TM subscription, the request contains the following packets: "+rawPacketRequest);
+        }
+        
+        pidrm.removeRequest(subscriptionId);
+    }
+
+    private void createReplay() throws YProcessorException {
+        ReplayServer replayServer = YamcsServer.getService(yamcsInstance, ReplayServer.class);
+        if(replayServer==null) {
+            throw new YProcessorException("ReplayServer not configured for this instance");
+        }
+        try {
+            yarchReplay = replayServer.createReplay(rawDataRequest.build(), this, new SystemToken());
+        } catch (YamcsException e) {
+            log.error("Exception creating the replay", e);
+            throw new YProcessorException("Exception creating the replay",e);
+        }
+    }
     @Override
     public void doStart() {
+        try {
+            createRawSubscription();
+            createReplay();
+        } catch (YamcsException | YProcessorException e){
+            notifyFailed(e);
+            return;
+        }
+        
         yarchReplay.start();
         notifyStarted();
     }
@@ -186,7 +250,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
 
     @Override
     public void setParameterListener(ParameterRequestManager parameterRequestManager) {
-        this.parameterRequestManager = parameterRequestManager;
+        this.parameterRequestManager = (ParameterRequestManagerImpl)parameterRequestManager;
     }
 
     @Override
@@ -212,19 +276,26 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     @Override
     public boolean canProvide(NamedObjectId id) {
         boolean result = false;
-        if(xtceDb.getParameter(id)!=null) {
-            result=true;
+        Parameter p = xtceDb.getParameter(id); 
+        if(p!=null) {
+            result= canProvide(p);
         } else { //check if it's system parameter
-           if(SystemParameterDb.isSystemParameter(id)) {
-               result = true;
-           }
+            if(SystemParameterDb.isSystemParameter(id)) {
+                result = true;
+            }
         }
         return result;
     }
 
     @Override
     public boolean canProvide(Parameter p) {
-        return true;
+        boolean result;
+        if(xtceDb.getParameterEntries(p)!=null) {
+            result = false;
+        } else {
+            result = true;
+        }
+        return result;
     }
 
     @Override
@@ -234,7 +305,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
             if(SystemParameterDb.isSystemParameter(id)) {
                 p = xtceDb.getSystemParameterDb().getSystemParameter(id, true);
             }
-            
+
         }
         if(p==null) {
             throw new InvalidIdentification();
@@ -245,16 +316,12 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
 
     @Override
     public ReplaySpeed getSpeed() {
-        return replayRequest.getSpeed();
+        return originalReplayRequest.getSpeed();
     }
 
     @Override
     public ReplayRequest getReplayRequest() {
-        if(yarchReplay!=null) {
-            return yarchReplay.getCurrentReplayRequest();
-        } else {
-            return replayRequest;
-        }
+        return originalReplayRequest;
     }
 
     @Override
@@ -273,6 +340,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
 
     @Override
     public void changeSpeed(ReplaySpeed speed) {
-       yarchReplay.changeSpeed(speed);        
+        yarchReplay.changeSpeed(speed);        
     }
+
 }

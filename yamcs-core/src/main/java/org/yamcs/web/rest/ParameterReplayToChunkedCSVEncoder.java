@@ -3,10 +3,12 @@ package org.yamcs.web.rest;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.api.MediaType;
-import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.parameter.ParameterValueWithId;
+import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.web.HttpException;
@@ -37,8 +39,12 @@ public class ParameterReplayToChunkedCSVEncoder extends ParameterReplayToChunked
     }
     
     @Override
-    public void processParameterData(ParameterData pdata, ByteBufOutputStream bufOut) throws IOException {
-        formatter.writeParameters(pdata.getParameterList());
+    public void processParameterData(List<ParameterValueWithId> params, ByteBufOutputStream bufOut) throws IOException {
+        List<ParameterValue> pvlist = new ArrayList<>();
+        for(ParameterValueWithId pvalid: params) {
+            pvlist.add(pvalid.toGbpParameterValue());
+        }
+        formatter.writeParameters(pvlist);
     }
     
     @Override

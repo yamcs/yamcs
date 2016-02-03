@@ -1,12 +1,12 @@
 package org.yamcs.web.rest;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
-import org.yamcs.protobuf.Pvalue.ParameterData;
-import org.yamcs.protobuf.Yamcs.ReplayStatus;
+import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpHandler;
 import org.yamcs.web.HttpHandler.ChunkedTransferStats;
@@ -53,13 +53,13 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
     }
     
     @Override
-    public void onParameterData(ParameterData pdata) {
+    public void onParameterData(List<ParameterValueWithId> params) {
         if (failed) {
             log.warn("Already failed. Ignoring parameter data");
             return;
         }
         try {
-            processParameterData(pdata, bufOut);
+            processParameterData(params, bufOut);
             if (buf.readableBytes() >= CHUNK_TRESHOLD) {
                 closeBufferOutputStream();
                 writeChunk();
@@ -72,10 +72,10 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
         }
     }
     
-    public abstract void processParameterData(ParameterData pdata, ByteBufOutputStream bufOut) throws IOException;
+    public abstract void processParameterData(List<ParameterValueWithId> params, ByteBufOutputStream bufOut) throws IOException;
     
     @Override
-    public void stateChanged(ReplayStatus rs) {
+    public void replayFinished() {
         if (failed) {
             log.warn("Closing channel because transfer failed");
             req.getChannelHandlerContext().channel().close();

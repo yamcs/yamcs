@@ -29,6 +29,10 @@ import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
+import org.yamcs.protobuf.Yamcs.ReplayStatus;
+import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.utils.TimeEncoding;
@@ -127,7 +131,7 @@ public class CliParameterExtractor {
             prr=getRequest(Arrays.copyOfRange(args, k, args.length));
         }
         
-        ReplayRequest rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT)
+        ReplayRequest rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT).setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build())
             .setParameterRequest(prr)
             .setStart(start).setStop(stop).build();
       
@@ -162,11 +166,18 @@ public class CliParameterExtractor {
             @Override
             public void onMessage(ClientMessage pmsg) {
                 try {
-                    int t=pmsg.getIntProperty(DATA_TYPE_HEADER_NAME);
+                    int t = pmsg.getIntProperty(DATA_TYPE_HEADER_NAME);
                     ProtoDataType pdt=ProtoDataType.valueOf(t);
                     if(pdt==ProtoDataType.STATE_CHANGE) {
-                        pf.close();
-                        semaphore.release();
+                        ReplayStatus status = (ReplayStatus) decode(pmsg, ReplayStatus.newBuilder());
+                        if(status.getState()==ReplayState.CLOSED) {
+                            pf.close();
+                            semaphore.release();
+                        } else if(status.getState()==ReplayState.ERROR) {
+                            System.err.println("Got error during retrieval: "+status.getErrorMessage());
+                            pf.close();
+                            semaphore.release();
+                        }
                     } else {
                         ParameterData pdata=(ParameterData)decode(pmsg, ParameterData.newBuilder());
                         pf.writeParameters(pdata.getParameterList());

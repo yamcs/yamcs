@@ -9,20 +9,26 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ProcessorFactory;
+import org.yamcs.YProcessor;
+import org.yamcs.YProcessorListener;
 import org.yamcs.YamcsException;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.archive.ReplayListener;
 import org.yamcs.archive.ReplayServer;
-import org.yamcs.archive.YarchReplay;
+import org.yamcs.parameter.ParameterValueWithId;
+import org.yamcs.parameter.ParameterWithIdConsumer;
+import org.yamcs.parameter.ParameterWithIdRequestHelper;
+import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.Instant;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
@@ -31,13 +37,11 @@ import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.StringMessage;
-import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.HqClientMessageToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.xtce.MdbMappings;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
-import com.google.protobuf.MessageLite;
 
 /**
  * Provides connection to the replay server via hornetq
@@ -52,7 +56,8 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
     final YamcsClient msgClient;
     final YamcsSession yamcsSession;
     final ReplayServer replayServer;
-
+    static AtomicInteger count = new AtomicInteger();
+    
     public HornetQReplayServer(ReplayServer replayServer) throws HornetQException, YamcsApiException {
         this.replayServer = replayServer;
         this.instance = replayServer.getInstance();
@@ -152,17 +157,22 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
                 }
             }
         }
+       
+        
 
         HornetQReplayListener listener = new HornetQReplayListener(dataAddress);
-        YarchReplay yr = replayServer.createReplay(replayRequest, listener, authToken);
-        listener.replay = yr;
+        
+        YProcessor yproc = ProcessorFactory.create(instance, "HornetQReplay_"+count.incrementAndGet(), "ArchiveRetrieval", "internal", replayRequest);
+        listener.yproc = yproc;
+        
+        ParameterWithIdRequestHelper pidrm = new ParameterWithIdRequestHelper(yproc.getParameterRequestManager(), listener);
+        pidrm.addRequest(replayRequest.getParameterRequest().getNameFilterList(), authToken);
+        
+        yproc.addProcessorListener(listener);
         (new Thread(listener)).start();
 
         StringMessage addr=StringMessage.newBuilder().setMessage(listener.yclient.rpcAddress.toString()).build();
         msgClient.sendReply(replyto,"PACKET_REPLAY_CREATED", addr);
-
-
-    
     }
 
     @Override
@@ -176,18 +186,20 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
     }
     
     
-    static class HornetQReplayListener implements ReplayListener, Runnable {        
+    static class HornetQReplayListener implements Runnable, YProcessorListener, ParameterWithIdConsumer {        
         YamcsSession ysession;
         YamcsClient yclient;
         SimpleString dataAddress;
         volatile boolean quitting = false;
+        YProcessor yproc;
+        
         public HornetQReplayListener( SimpleString dataAddress)  throws IOException, HornetQException, YamcsException, YamcsApiException {
             this.dataAddress = dataAddress;
             ysession = YamcsSession.newBuilder().build();
             yclient = ysession.newClientBuilder().setRpc(true).setDataProducer(true).build();
             Protocol.killProducerOnConsumerClosed(yclient.dataProducer, dataAddress);
         }
-        YarchReplay replay;
+        
         
         @Override
         public void run() {
@@ -205,30 +217,26 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
                     }
                     try {
                         String req=msg.getStringProperty(REQUEST_TYPE_HEADER_NAME);
-                        AuthenticationToken authToken = new HqClientMessageToken(msg, null);
 
                         log.debug("received a new request: "+req);
                         if("Start".equalsIgnoreCase(req)) {
-                            replay.start();
+                            yproc.start();
                             yclient.sendReply(replyto, "OK", null);
                         } else if("GetReplayStatus".equalsIgnoreCase(req)) {
-                            ReplayStatus status=ReplayStatus.newBuilder().setState(replay.getState()).build();
+                            ReplayStatus status=ReplayStatus.newBuilder().setState(yproc.getReplayState()).build();
                             yclient.sendReply(replyto, "REPLY_STATUS", status);
                         } else if("Pause".equalsIgnoreCase(req)){
-                            replay.pause();
+                            yproc.pause();
                             yclient.sendReply(replyto, "OK", null);
                         } else if("Resume".equalsIgnoreCase(req)){
-                            replay.start();
+                            yproc.start();
                             yclient.sendReply(replyto, "OK", null);
                         } else if("Quit".equalsIgnoreCase(req)){
                             quit();
                             yclient.sendReply(replyto, "OK", null);
                         } else if("Seek".equalsIgnoreCase(req)){
                             Instant inst=(Instant) decode(msg, Instant.newBuilder());
-                            replay.seek(inst.getInstant());
-                            yclient.sendReply(replyto, "OK", null);
-                        } else if("ChangeReplayRequest".equalsIgnoreCase(req)){
-                            replay.setRequest((ReplayRequest)decode(msg, ReplayRequest.newBuilder()), authToken);
+                            yproc.seek(inst.getInstant());
                             yclient.sendReply(replyto, "OK", null);
                         } else  {
                             throw new YamcsException("Unknown request '"+req+"'");
@@ -244,7 +252,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
                 e.printStackTrace();
             }
         }
-
+/*
         @Override
         public void newData(ProtoDataType type, MessageLite data) {
             try {
@@ -253,21 +261,55 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
                 log.warn("Got exception when sending data to client", e);
                 quit();
             }
+        }        
+  */      
+        public void quit() {
+            quitting = true;
+            yproc.quit();
         }
 
+
         @Override
-        public void stateChanged(ReplayStatus rs) {
-            try {
-                yclient.sendData(dataAddress, ProtoDataType.STATE_CHANGE, rs);
+        public void processorAdded(YProcessor processor) {
+        }
+
+
+        @Override
+        public void yProcessorClosed(YProcessor processor) {
+            if(processor!=yproc) return;
+            sendProcessorState();
+        }
+
+
+        @Override
+        public void processorStateChanged(YProcessor processor) {
+            if(processor!=yproc) return;
+            sendProcessorState();
+        }
+
+        private void sendProcessorState() {
+            try { 
+                ReplayStatus.Builder rsb=ReplayStatus.newBuilder().setState(yproc.getReplayState());
+                yclient.sendData(dataAddress, ProtoDataType.STATE_CHANGE, rsb.build());
             } catch (HornetQException e) {
                 log.warn("Got exception when signaling state change", e);
                 quit();
             }
         }
-        
-        public void quit() {
-            quitting = true;
-            replay.quit();
+
+        @Override
+        public void update(int subscriptionId, List<ParameterValueWithId> params) {
+            ParameterData.Builder pd = ParameterData.newBuilder();
+            for(ParameterValueWithId pvwi:params) {
+                pd.addParameter(pvwi.getParameterValue().toGpb(pvwi.getId()));
+            }
+            try {
+                yclient.sendData(dataAddress, ProtoDataType.PARAMETER, pd.build());
+            } catch (HornetQException e) {
+                log.warn("Got exception when sending data to client", e);
+                quit();
+            }
+            
         }
     }
 }

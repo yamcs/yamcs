@@ -73,6 +73,9 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     public ParameterRequestManagerImpl(YProcessor yproc, XtceTmProcessor tmProcessor) throws ConfigurationException {
 	this.yproc = yproc;
 	log = LoggerFactory.getLogger(this.getClass().getName()+"["+yproc.getName()+"]");
+	cacheAll = yproc.cacheAllParameters();
+	
+	
 	tmProcessor.setParameterListener(this);
 	addParameterProvider(tmProcessor);
 	if(yproc.hasAlarmChecker()) {
@@ -86,7 +89,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 	if(yproc.isParameterCacheEnabled()) {
 	    parameterCache = new ParameterCache();		   
 	}
-	cacheAll = yproc.cacheAllParameters();
+	
 	executor = yproc.getExecutor();
     }
 
@@ -100,9 +103,23 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 	    if(parameterProvider instanceof SoftwareParameterManager) {
 		spm = (SoftwareParameterManager) parameterProvider;
 	    }
-	}
+	} 
     }
 
+
+    /**
+     * This is called after all the parameter providers have been added but before the start.
+     * We subscribe to all parameters if cacheAll is enabled
+     *  this way we give the opportunity to the ReplayService to find out what is required to retrieve from the ReplayServer  
+     */
+    public void init() {
+        if(cacheAll) {
+            for(ParameterProvider prov: parameterProviders.values()) {
+                prov.startProvidingAll();
+            }
+        }
+    }
+    
     /** Added by AMI on request of NM during a remote email session. */
     public int generateDummyRequestId() {
 	return lastSubscriptionId.incrementAndGet();
@@ -139,10 +156,10 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     public int addRequest(final List<Parameter> paraList, final ParameterConsumer tpc) throws InvalidIdentification {
 	List<ParameterProvider> providers = getProviders(paraList);
 	final int id=lastSubscriptionId.incrementAndGet();
-	log.debug("new request with subscriptionId "+id+" for itemList="+paraList);
+	log.debug("new request with subscriptionId {} with {} items", id, paraList.size());
 
 	for(int i=0;i<paraList.size();i++) {
-	    log.trace("adding to subscriptionID:{} item:{} ",id, paraList.get(i));
+	    log.trace("adding to subscriptionID: {} item:{}, provider: {} ",id, paraList.get(i).getQualifiedName(), providers.get(i));
 	    addItemToRequest(id, paraList.get(i), providers.get(i));
 	    //log.info("afterwards the subscription looks like: "+toString());
 	}
@@ -163,7 +180,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     public int addRequest(final Parameter para, final ParameterConsumer tpc) throws InvalidIdentification {
 	ParameterProvider provider=getProvider(para);
 	final int id=lastSubscriptionId.incrementAndGet();
-	log.debug("new request with subscriptionId "+id+" for parameter: "+para);
+	log.debug("new request with subscriptionId {} for parameter: {}, provider: {}", id, para.getQualifiedName(), provider);
 	addItemToRequest(id, para, provider);
 	request2ParameterConsumerMap.put(id, tpc);
 	
@@ -182,7 +199,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 	int id=lastSubscriptionId.incrementAndGet();
 	log.debug("new request with subscriptionId "+id+" for itemList="+paraList);
 	for(int i=0;i<paraList.size();i++) {
-	    log.trace("adding to subscriptionID:{} item:{} ",id, paraList.get(i));
+	    log.trace("adding to subscriptionID:{} item:{}",id, paraList.get(i));
 	    addItemToRequest(id, paraList.get(i), providers.get(i));
 	    //log.info("afterwards the subscription looks like: "+toString());
 	}
@@ -537,11 +554,6 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 	if(alarmServer!=null) {
 	    alarmServer.startAsync();
 	}
-	
-	if(cacheAll) {
-	    for(ParameterProvider pp:parameterProviders.values()) {
-		pp.startProvidingAll();
-	    }
-	}
     }
+
 }

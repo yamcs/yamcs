@@ -317,10 +317,7 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 	    engine.put("updated", updated);
 
 	    try {
-		// long ts = System.currentTimeMillis();
 		engine.eval(programCode);
-		// System.out.println("script time "+(System.currentTimeMillis()
-		// - ts));
 		updated = (Boolean) engine.get("updated");
 		if (updated) {
 		    Object res = engine.get(getParameter().getName());

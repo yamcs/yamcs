@@ -20,7 +20,7 @@ import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.utils.TimeEncoding;
+import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.NamedDescriptionIndex;
 import org.yamcs.xtce.Parameter;
@@ -51,9 +51,17 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
     public DerivedValuesManager(String yamcsInstance) {
 	//do nothing here, all the work is done in init
     }
+    
+    /**
+     * this is called when the DerivedValuesManager is defined as parameter provider in the Archive(replay) processors
+     * We don't do anything with the replayRequest so we ignore it. 
+     */
+    public DerivedValuesManager(String yamcsInstance, ReplayRequest replayRequest) {
+        //do nothing here, all the work is done in init
+    }
+    
     YProcessor yproc;
 
-    @SuppressWarnings("unchecked")
     @Override
     public void init(YProcessor yproc) throws ConfigurationException {
 	this.parameterRequestManager = yproc.getParameterRequestManager();
@@ -71,7 +79,6 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
 	if(conf.containsKey(mdbconfig+"_derivedValuesProviders")) {
 	    List<String> providers=conf.getList(mdbconfig+"_derivedValuesProviders");
 	    for(String p:providers) {
-		Class<DerivedValuesProvider> c;
 		try {
 		    YObjectLoader<DerivedValuesProvider> loader = new YObjectLoader<>();
 		    DerivedValuesProvider provider = loader.loadObject(p, xtcedb);

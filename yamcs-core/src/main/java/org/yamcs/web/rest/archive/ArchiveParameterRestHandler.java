@@ -3,12 +3,14 @@ package org.yamcs.web.rest.archive;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
+import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
@@ -16,7 +18,6 @@ import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
@@ -39,7 +40,6 @@ import org.yamcs.xtce.SystemParameterDb;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
-import com.google.protobuf.MessageLite;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -84,9 +84,9 @@ public class ArchiveParameterRestHandler extends RestHandler {
         RestReplays.replayAndWait(instance, req.getAuthToken(), rr.build(), new RestReplayListener() {
 
             @Override
-            public void onNewData(ProtoDataType type, MessageLite data) {
-                ParameterData pdata = (ParameterData) data;
-                for (ParameterValue pval : pdata.getParameterList()) {
+            public void onParameterData(List<ParameterValueWithId> params) {
+                for (ParameterValueWithId pvalid : params) {
+                    org.yamcs.ParameterValue pval = pvalid.getParameterValue();
                     switch (pval.getEngValue().getType()) {
                     case DOUBLE:
                         sampler.process(pval.getGenerationTime(), pval.getEngValue().getDoubleValue());
@@ -150,13 +150,18 @@ public class ArchiveParameterRestHandler extends RestHandler {
                 RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit) {
 
                     @Override
-                    public void onParameterData(ParameterData pdata) {
+                    public void onParameterData(List<ParameterValueWithId> params) {
                         try {
-                            csvFormatter.writeParameters(pdata.getParameterList());
+                            List<ParameterValue> pvlist = new ArrayList<>();
+                            for(ParameterValueWithId pvalid: params) {
+                                pvlist.add(pvalid.toGbpParameterValue());
+                            }
+                            csvFormatter.writeParameters(pvlist);
                         } catch (IOException e) {
                             log.error("Error while writing parameter line", e);
                         }
                     }
+
                 };
                 replayListener.setNoRepeat(noRepeat);
                 RestReplays.replayAndWait(instance, req.getAuthToken(), rr, replayListener);
@@ -169,9 +174,12 @@ public class ArchiveParameterRestHandler extends RestHandler {
             RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit) {
                 
                 @Override
-                public void onParameterData(ParameterData pdata) {
-                    resultb.addAllParameter(pdata.getParameterList());
+                public void onParameterData(List<ParameterValueWithId> params) {
+                    for(ParameterValueWithId pvalid: params) {
+                        resultb.addParameter(pvalid.toGbpParameterValue());
+                    }
                 }
+
             };
             replayListener.setNoRepeat(noRepeat);
             RestReplays.replayAndWait(instance, req.getAuthToken(), rr, replayListener);
