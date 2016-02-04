@@ -27,8 +27,8 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
 
     YamcsConnector yconnector;
     YamcsClient yamcsClient;
-    
-    
+
+
     public YamcsArchiveIndexReceiver(YamcsConnector yconnector) {
         this.yconnector=yconnector;
         yconnector.addConnectionListener(this);
@@ -46,10 +46,10 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
             return;
         }
         if( instance == null ) {
-        	indexListener.receiveArchiveRecordsError( "No yamcs instance to get data from" );
-        	return;
+            indexListener.receiveArchiveRecordsError( "No yamcs instance to get data from" );
+            return;
         }
-        Thread receivingThread=new Thread(){
+        yconnector.getExecutor().submit(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -59,11 +59,11 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
                     if(interval.hasStop()) request.setStop(interval.getStop());
                     request.setDefaultNamespace(MdbMappings.MDB_OPSNAME).setSendAllPp(true).setSendAllTm(true).setSendAllCmd(true);
                     request.setSendCompletenessIndex(true);
-             //       yamcsClient.executeRpc(Protocol.getYarchIndexControlAddress(instance), "getIndex", request.build(), null);
+                    //       yamcsClient.executeRpc(Protocol.getYarchIndexControlAddress(instance), "getIndex", request.build(), null);
                     yamcsClient.sendRequest(Protocol.getYarchIndexControlAddress(instance), "getIndex", request.build());
                     while(true) {
                         IndexResult ir=(IndexResult) yamcsClient.receiveData(IndexResult.newBuilder());
-                    //    System.out.println("Received ")
+                        //    System.out.println("Received ")
                         if(ir==null) {
                             indexListener.receiveArchiveRecordsFinished();
                             break;
@@ -78,48 +78,44 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
                     receiving=false;
                 }
             };
-        };
-        receivingThread.start();
+        });
     }
 
 
-	@Override
-	public void getTag(final String instance, final TimeInterval interval) {
-	    //System.out.println("receiving tags for "+instance);
-	        if(receiving){
-	            indexListener.log("already receiving data");
-	            return;
-	        }
-	        Thread receivingThread=new Thread(){
-	            @Override
-	            public void run() {
-	                try {
-	                    int seq=0;
-	                    IndexRequest.Builder request=IndexRequest.newBuilder().setInstance(instance);
-	                    if(interval.hasStart())request.setStart(interval.getStart());
-	                    if(interval.hasStop()) request.setStop(interval.getStop());
-	                    yamcsClient.sendRequest(Protocol.getYarchIndexControlAddress(instance), "getTag", request.build());
-	                    while(true) {
-	                        TagResult tr=(TagResult) yamcsClient.receiveData(TagResult.newBuilder());
-	                        if(tr==null) {
-	                            indexListener.receiveTagsFinished();
-	                            break;
-	                        }
-	                        indexListener.receiveTags(tr.getTagList());
-	                        seq++;
-	                    }
-	                } catch (Exception e) {
-	                    e.printStackTrace();
-	                    indexListener.receiveArchiveRecordsError(e.getMessage());
-	                }  finally {
-	                    receiving=false;
-	                }
-	            };
-	        };
-	        receivingThread.start();
-
-		
-	}
+    @Override
+    public void getTag(final String instance, final TimeInterval interval) {
+        //System.out.println("receiving tags for "+instance);
+        if(receiving){
+            indexListener.log("already receiving data");
+            return;
+        }
+        yconnector.getExecutor().submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    int seq=0;
+                    IndexRequest.Builder request=IndexRequest.newBuilder().setInstance(instance);
+                    if(interval.hasStart())request.setStart(interval.getStart());
+                    if(interval.hasStop()) request.setStop(interval.getStop());
+                    yamcsClient.sendRequest(Protocol.getYarchIndexControlAddress(instance), "getTag", request.build());
+                    while(true) {
+                        TagResult tr=(TagResult) yamcsClient.receiveData(TagResult.newBuilder());
+                        if(tr==null) {
+                            indexListener.receiveTagsFinished();
+                            break;
+                        }
+                        indexListener.receiveTags(tr.getTagList());
+                        seq++;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    indexListener.receiveArchiveRecordsError(e.getMessage());
+                }  finally {
+                    receiving=false;
+                }
+            };
+        });
+    }
 
 
     @Override
@@ -132,7 +128,7 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
             indexListener.log("Failed to insert tag: "+e.getMessage());
         }
     }
-    
+
     @Override
     public void updateTag(String instance, ArchiveTag oldTag, ArchiveTag newTag) {
         UpsertTagRequest utr=UpsertTagRequest.newBuilder().setOldTag(oldTag).setNewTag(newTag).build();
@@ -142,7 +138,7 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
         } catch (Exception e) {
             indexListener.log("Failed to insert tag: "+e.getMessage());
         }
-        
+
     }
 
     @Override
@@ -161,7 +157,7 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
         return true;
     }
 
-  
+
     @Override
     public void connecting(String url) {
         indexListener.connecting(url);
@@ -191,6 +187,6 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
 
     @Override
     public void log(String message) {
-       indexListener.log(message);
+        indexListener.log(message);
     }
 }
