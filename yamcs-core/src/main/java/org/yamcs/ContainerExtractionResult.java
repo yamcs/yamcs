@@ -10,49 +10,49 @@ import org.yamcs.xtce.SequenceContainer;
  */
 public class ContainerExtractionResult {
 
-    private SequenceContainer container;
-    private ByteBuffer containerContent;
-    private int locationInContainerInBits;
-    
-    private long acquisitionTime;
-    private long generationTime;
-	
-    public ContainerExtractionResult(SequenceContainer container,
-                    ByteBuffer containerContent,
-                    int locationInContainerInBits,
-                    long acquisitionTime,
-                    long generationTime) {
-		this.container = container;
-		this.containerContent = containerContent;
-		this.locationInContainerInBits = locationInContainerInBits;
-		this.acquisitionTime = acquisitionTime;
-		this.generationTime = generationTime;
-		
-		containerContent.position(0);
-	}
+    final private SequenceContainer container;
+    final private ByteBuffer containerContent;
+    final private int locationInContainerInBits;
 
-	public SequenceContainer getContainer() {
-		return container;
-	}
-	
-	public ByteBuffer getContainerContent() {
-	    return containerContent;
-	}
-	
-	public int getLocationInContainerInBits() {
-	    return locationInContainerInBits;
-	}
-	
-	public long getAcquisitionTime() {
-	    return acquisitionTime;
-	}
-	
-	public long getGenerationTime() {
-	    return generationTime;
-	}
-	
-	@Override
-	public String toString() {
-	    return container.toString();
-	}
+    final private long acquisitionTime;
+    final private long generationTime;
+
+    public ContainerExtractionResult(SequenceContainer container,
+            ByteBuffer containerContent,
+            int locationInContainerInBits,
+            long acquisitionTime,
+            long generationTime) {
+        this.container = container;
+        this.containerContent = containerContent;
+        this.locationInContainerInBits = locationInContainerInBits;
+        this.acquisitionTime = acquisitionTime;
+        this.generationTime = generationTime;
+
+        containerContent.position(0);
+    }
+
+    public SequenceContainer getContainer() {
+        return container;
+    }
+
+    public ByteBuffer getContainerContent() {
+        return containerContent;
+    }
+
+    public int getLocationInContainerInBits() {
+        return locationInContainerInBits;
+    }
+
+    public long getAcquisitionTime() {
+        return acquisitionTime;
+    }
+
+    public long getGenerationTime() {
+        return generationTime;
+    }
+
+    @Override
+    public String toString() {
+        return container.toString();
+    }
 }
