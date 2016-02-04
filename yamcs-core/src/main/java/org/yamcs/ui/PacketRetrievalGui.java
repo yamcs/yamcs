@@ -48,7 +48,9 @@ import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
+import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
+import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.utils.CcsdsPacket;
@@ -142,9 +144,9 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
             String stopWinCompatibleDateTime  = TimeEncoding.toWinCompatibleDateTime(stopInstant);
 
             String fileName = String.format("%s_packets_%s_%s.dump"
-                            ,prefix
-                            ,startWinCompatibleDateTime
-                            ,stopWinCompatibleDateTime);
+                    ,prefix
+                    ,startWinCompatibleDateTime
+                    ,stopWinCompatibleDateTime);
             fileChooser.setSelectedFile(new File(fileChooser.getSelectedFile(), fileName));
         }
     }
@@ -158,7 +160,7 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
             outputFile=fileChooser.getSelectedFile();
             if(outputFile.exists()) {
                 if(JOptionPane.showConfirmDialog(this, "Are you sure you want to overwrite "+outputFile,"Overwrite file?",JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE)
-                                ==JOptionPane.NO_OPTION) {
+                        ==JOptionPane.NO_OPTION) {
                     return;
                 }
             }
@@ -179,8 +181,8 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
                 ysession=YamcsSession.newBuilder().setConnectionParams(ycd).build();
                 yclient=ysession.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
                 ReplayRequest.Builder rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT)
-                                .setStart(startInstant).setStop(stopInstant).setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build());
-                
+                        .setStart(startInstant).setStop(stopInstant).setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build());
+
                 PacketReplayRequest.Builder prr=PacketReplayRequest.newBuilder();
                 for(String pn:packetNames) {
                     prr.addNameFilter(NamedObjectId.newBuilder().setNamespace(MdbMappings.MDB_OPSNAME).setName(pn));
@@ -228,16 +230,21 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
     public void onMessage(ClientMessage msg) {
         int t=msg.getIntProperty(DATA_TYPE_HEADER_NAME);
         ProtoDataType pdt=ProtoDataType.valueOf(t);
-        if(pdt==ProtoDataType.STATE_CHANGE) {
-            replayFinished();
-            return;
-        }
-        if(pdt!=ProtoDataType.TM_PACKET) {
-            exception(new Exception("Unexpected data type "+t));
-            return;
-        }
-        TmPacketData data;
         try {
+            if(pdt==ProtoDataType.STATE_CHANGE) {
+                ReplayStatus status = (ReplayStatus) decode(msg, ReplayStatus.newBuilder());
+                if(status.getState()==ReplayState.CLOSED) {
+                    replayFinished();
+                } else if(status.getState()==ReplayState.ERROR) {
+                    exception(new Exception("Got error during retrieval: "+status.getErrorMessage()));
+                }
+                return;
+            } else if(pdt!=ProtoDataType.TM_PACKET) {
+                exception(new Exception("Unexpected data type "+t));
+                return;
+            }
+            TmPacketData data;
+
             data = (TmPacketData)decode(msg, TmPacketData.newBuilder());
             packetReceived(new CcsdsPacket(data.getPacket().asReadOnlyByteBuffer()));
         } catch (YamcsApiException e) {
@@ -268,36 +275,36 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
             e1.printStackTrace();
         }
         SwingUtilities.invokeLater(
-                        new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    packetFormatter.close();
-                                } catch (IOException e) {
-                                    JOptionPane.showMessageDialog(parent, "Error when closing the output file: "+e.getMessage(), "Error when closing the output file", JOptionPane.ERROR_MESSAGE);
-                                }
-                                if(progressMonitor.isCanceled()) {
-                                    JOptionPane.showMessageDialog(parent, "Retrieval canceled. "+count+" packets retrieved");
-                                } else {
-                                    progressMonitor.close();
-                                    float speed=(downloadSize*1000)/(1024*(System.currentTimeMillis()-downloadStartTime));
-                                    JOptionPane.showMessageDialog(parent, "The packet retrieval finished successfully. "+count+" packets retrieved in "+outputFile+". Retrieval speed: "+speed+" KiB/sec");
-                                }
-                            }
-                        });
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            packetFormatter.close();
+                        } catch (IOException e) {
+                            JOptionPane.showMessageDialog(parent, "Error when closing the output file: "+e.getMessage(), "Error when closing the output file", JOptionPane.ERROR_MESSAGE);
+                        }
+                        if(progressMonitor.isCanceled()) {
+                            JOptionPane.showMessageDialog(parent, "Retrieval canceled. "+count+" packets retrieved");
+                        } else {
+                            progressMonitor.close();
+                            float speed=(downloadSize*1000)/(1024*(System.currentTimeMillis()-downloadStartTime));
+                            JOptionPane.showMessageDialog(parent, "The packet retrieval finished successfully. "+count+" packets retrieved in "+outputFile+". Retrieval speed: "+speed+" KiB/sec");
+                        }
+                    }
+                });
     }
 
     public void exception(final Exception e) {
         final String message;
         message=e.toString();
         SwingUtilities.invokeLater(
-                        new Runnable() {
-                            @Override
-                            public void run() {
-                                JOptionPane.showMessageDialog(parent, message, message, JOptionPane.ERROR_MESSAGE);
-                                progressMonitor.close();
-                            }
-                        });
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        JOptionPane.showMessageDialog(parent, message, message, JOptionPane.ERROR_MESSAGE);
+                        progressMonitor.close();
+                    }
+                });
     }
 }
 
