@@ -6,6 +6,7 @@ import static org.yamcs.api.Protocol.REQUEST_TYPE_HEADER_NAME;
 import static org.yamcs.api.Protocol.decode;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -16,6 +17,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.YProcessor;
 import org.yamcs.YProcessorListener;
@@ -25,6 +27,9 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.archive.ReplayServer;
+import org.yamcs.container.ContainerWithId;
+import org.yamcs.container.ContainerWithIdConsumer;
+import org.yamcs.container.ContainerWithIdRequestHelper;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
@@ -37,11 +42,13 @@ import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.StringMessage;
+import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.HqClientMessageToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.xtce.MdbMappings;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
+import com.google.protobuf.ByteString;
 
 /**
  * Provides connection to the replay server via hornetq
@@ -91,6 +98,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
                     if("createReplay".equalsIgnoreCase(request)) {
                         createReplay(msg, replyto, dataAddress);
                     } else  {
+                        log.warn("Received unknonw request '"+request+"'");
                         throw new YamcsException("Unknown request '"+request+"'");
                     }
                 } catch (YamcsException e) {
@@ -168,6 +176,17 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
         ParameterWithIdRequestHelper pidrm = new ParameterWithIdRequestHelper(yproc.getParameterRequestManager(), listener);
         pidrm.addRequest(replayRequest.getParameterRequest().getNameFilterList(), authToken);
         
+       
+        PacketReplayRequest packetReq = replayRequest.getPacketRequest();
+        if(packetReq!=null && packetReq.getNameFilterCount()>0) {
+            ContainerWithIdRequestHelper cirh = new ContainerWithIdRequestHelper(yproc.getContainerRequestManager(), listener);
+            for(NamedObjectId id: packetReq.getNameFilterList()) {
+                cirh.subscribe(id);
+            }
+        }
+        
+        
+        
         yproc.addProcessorListener(listener);
         (new Thread(listener)).start();
 
@@ -186,7 +205,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
     }
     
     
-    static class HornetQReplayListener implements Runnable, YProcessorListener, ParameterWithIdConsumer {        
+    static class HornetQReplayListener implements Runnable, YProcessorListener, ParameterWithIdConsumer, ContainerWithIdConsumer {        
         YamcsSession ysession;
         YamcsClient yclient;
         SimpleString dataAddress;
@@ -241,7 +260,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
                         } else  {
                             throw new YamcsException("Unknown request '"+req+"'");
                         }
-                    } catch (YamcsException e) {
+                    } catch (YamcsException | IllegalStateException e) { //the illegal state exception will be thrown when starting the processor
                         log.warn("sending error reply ", e);
                         yclient.sendErrorReply(replyto, e.getMessage());
 
@@ -310,6 +329,21 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
                 quit();
             }
             
+        }
+
+
+        @Override
+        public void processContainer(ContainerWithId cwi, ContainerExtractionResult cer) {
+            TmPacketData pd = TmPacketData.newBuilder().setId(cwi.getId())
+                    .setReceptionTime(cer.getAcquisitionTime())
+                    .setGenerationTime(cer.getGenerationTime())
+                    .setPacket(ByteString.copyFrom(cer.getContainerContent())).build();
+            try {
+                yclient.sendData(dataAddress, ProtoDataType.TM_PACKET, pd);
+            } catch (HornetQException e) {
+                log.warn("Got exception when sending data to client", e);
+                quit();
+            }
         }
     }
 }
