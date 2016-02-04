@@ -30,27 +30,27 @@ public class Protocol {
 
     private static ProducerKiller killer;
     public static SimpleString getYarchReplayControlAddress(String instance) {
-	return new SimpleString(instance+".replayControl");
+        return new SimpleString(instance+".replayControl");
     }
 
     public static SimpleString getYarchIndexControlAddress(String instance) {
-	return new SimpleString(instance+".indexControl");
+        return new SimpleString(instance+".indexControl");
     }
 
     public static SimpleString getEventRealtimeAddress(String instance) {
-	return new SimpleString(instance+".events_realtime");
+        return new SimpleString(instance+".events_realtime");
     }
 
     public static SimpleString getParameterRealtimeAddress(String instance) {
-	return new SimpleString(instance+".parameters_realtime");
+        return new SimpleString(instance+".parameters_realtime");
     }
 
     public static SimpleString getPacketRealtimeAddress(String instance) {
-	return new SimpleString(instance+".tm_realtime");
+        return new SimpleString(instance+".tm_realtime");
     }
 
     public static SimpleString getPacketAddress(String instance, String streamName) {
-	return new SimpleString(instance+"."+streamName);
+        return new SimpleString(instance+"."+streamName);
     }
 
     final static public String MSG_TYPE_HEADER_NAME="yamcs-content";
@@ -66,7 +66,7 @@ public class Protocol {
     final static public SimpleString REPLYTO_HEADER_NAME=new SimpleString("yamcs-reply-to");
 
     final public static String IN_VM_FACTORY = "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory";
-    
+
     /**
      * used to send chunks of data in a stream
      */
@@ -116,34 +116,34 @@ public class Protocol {
 
 
     public static MessageLite decode(ClientMessage msg, MessageLite.Builder builder) throws YamcsApiException {
-	try {
-	    HornetQBuffer buf = msg.getBodyBuffer();
-	    return builder.mergeFrom(new HornetQBufferInputStream(buf)).build();
-	} catch(IOException e) {
-	    throw new YamcsApiException(e.getMessage(), e);
-	}
+        try {
+            HornetQBuffer buf = msg.getBodyBuffer();
+            return builder.mergeFrom(new HornetQBufferInputStream(buf)).build();
+        } catch(IOException e) {
+            throw new YamcsApiException(e.getMessage(), e);
+        }
     }
 
     public static MessageLite.Builder decodeBuilder(ClientMessage msg, MessageLite.Builder builder) throws YamcsApiException {
-	try {
-	    HornetQBuffer buf = msg.getBodyBuffer();
-	    return builder.mergeFrom(new HornetQBufferInputStream(buf));
-	} catch(IOException e) {
-	    throw new YamcsApiException(e.getMessage(), e);
-	}
+        try {
+            HornetQBuffer buf = msg.getBodyBuffer();
+            return builder.mergeFrom(new HornetQBufferInputStream(buf));
+        } catch(IOException e) {
+            throw new YamcsApiException(e.getMessage(), e);
+        }
     }
 
     public static void encode(ClientMessage msg, MessageLite ml){
-	try {
-	    ml.writeTo(new HornetQBufferOutputStream(msg.getBodyBuffer()));
-	} catch (IOException e) {
-	    throw new RuntimeException(e);
-	}
+        try {
+            ml.writeTo(new HornetQBufferOutputStream(msg.getBodyBuffer()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static boolean endOfStream(ClientMessage msg) {
-	int type=msg.getIntProperty(DATA_TYPE_HEADER_NAME);
-	return (type==ProtoDataType.STATE_CHANGE.getNumber());
+        int type=msg.getIntProperty(DATA_TYPE_HEADER_NAME);
+        return (type==ProtoDataType.STATE_CHANGE.getNumber());
     }
 
     /**
@@ -152,71 +152,71 @@ public class Protocol {
      * @param a
      * @throws Exception
      */
-     public static synchronized void killProducerOnConsumerClosed(ClientProducer p, SimpleString a) {
-	 if((killer==null) || killer.session.isClosed()) {//killer.session gets closed when the hornetq is stopped (during test execution by maven)
-	     try {
-		 killer=new ProducerKiller();
-	     } catch (Exception e) {
-		 log.error("Could not create ProducerKiller", e);
-	     }
-	 }
-	 if(killer!=null) killer.add(p,a);
-     }
+    public static synchronized void killProducerOnConsumerClosed(ClientProducer p, SimpleString a) {
+        if((killer==null) || killer.session.isClosed()) {//killer.session gets closed when the hornetq is stopped (during test execution by maven)
+            try {
+                killer=new ProducerKiller();
+            } catch (Exception e) {
+                log.error("Could not create ProducerKiller", e);
+            }
+        }
+        if(killer!=null) killer.add(p,a);
+    }
 
-     /**
-      * this is supposed to close the data producers that are stuck writing into queues 
-      * for which there is no consumer (e.g. when the consumer loses the network connection to the server) 
-      *
-      */
-     static class ProducerKiller implements MessageHandler {
-	 ClientSession session;
-	 Map<SimpleString, ClientProducer> producers=new ConcurrentHashMap<SimpleString, ClientProducer>();
-	 ServerLocator locator;
-	 
-	 ProducerKiller() throws Exception {
-	     locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(IN_VM_FACTORY));
-	     ClientSessionFactory factory =  locator.createSessionFactory();
+    /**
+     * this is supposed to close the data producers that are stuck writing into queues 
+     * for which there is no consumer (e.g. when the consumer loses the network connection to the server) 
+     *
+     */
+    static class ProducerKiller implements MessageHandler {
+        ClientSession session;
+        Map<SimpleString, ClientProducer> producers=new ConcurrentHashMap<SimpleString, ClientProducer>();
+        ServerLocator locator;
 
-	     session = factory.createSession(YamcsSession.hornetqInvmUser, YamcsSession.hornetqInvmPass, false, true, true, true, 1);
+        ProducerKiller() throws Exception {
+            locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(IN_VM_FACTORY));
+            ClientSessionFactory factory =  locator.createSessionFactory();
 
-	     //          session.createQueue("example", "example", true);
-	     session.createTemporaryQueue("hornetq.notifications","ProducerKiller");
-	     ClientConsumer consumer=session.createConsumer("ProducerKiller");
-	     consumer.setMessageHandler(this);
-	     session.start();
-	 }
-	 public void add(ClientProducer p, SimpleString a) {
-	     producers.put(a,p);
-	 }
-	 @Override
-	 public void onMessage(ClientMessage msg) {
-	     String hq_notifType=msg.getStringProperty("_HQ_NotifType");
+            session = factory.createSession(YamcsSession.hornetqInvmUser, YamcsSession.hornetqInvmPass, false, true, true, true, 1);
 
-	     if("CONSUMER_CLOSED".equals(hq_notifType)){
-		 SimpleString hq_address=msg.getSimpleStringProperty("_HQ_Address");
-		 ClientProducer p=producers.remove(hq_address);
-		 if(p!=null && !p.isClosed()) {
-		     try {
-			 p.close();
-			 log.warn("closing producer {} because the consumer to the address {} has closed",p, hq_address);
-		     } catch (HornetQException e) {
-			 e.printStackTrace();
-		     }
-		 }
-	     }
+            //          session.createQueue("example", "example", true);
+            session.createTemporaryQueue("hornetq.notifications","ProducerKiller");
+            ClientConsumer consumer=session.createConsumer("ProducerKiller");
+            consumer.setMessageHandler(this);
+            session.start();
+        }
+        public void add(ClientProducer p, SimpleString a) {
+            producers.put(a,p);
+        }
+        @Override
+        public void onMessage(ClientMessage msg) {
+            String hq_notifType=msg.getStringProperty("_HQ_NotifType");
 
-	 }
-	public void close() {
-	    if(locator!=null) {
-		locator.close();
-	    }
-	}
-     }
-     /**
-      * Close killer (used in order to reduce warnings during maven builds
-      */
-     public static synchronized void closeKiller() {
-	 if(killer!=null) killer.close();
-     }
+            if("CONSUMER_CLOSED".equals(hq_notifType)){
+                SimpleString hq_address=msg.getSimpleStringProperty("_HQ_Address");
+                ClientProducer p=producers.remove(hq_address);
+                if(p!=null && !p.isClosed()) {
+                    try {
+                        log.warn("closing producer {} because the consumer to the address {} has closed",p, hq_address);
+                        p.close();
+                    } catch (HornetQException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+        }
+        public void close() {
+            if(locator!=null) {
+                locator.close();
+            }
+        }
+    }
+    /**
+     * Close killer (used in order to reduce warnings during maven builds
+     */
+    public static synchronized void closeKiller() {
+        if(killer!=null) killer.close();
+    }
 
 }
