@@ -4,6 +4,9 @@ package org.yamcs.api;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
@@ -31,10 +34,10 @@ public class YamcsConnector implements SessionFailureListener {
     static Logger log= LoggerFactory.getLogger(YamcsConnector.class);
     private boolean retry = true;
     private boolean reconnecting = false;
+    final private ExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
     public YamcsConnector() {}
-    public YamcsConnector(boolean retry)
-    {
+    public YamcsConnector(boolean retry) {
         this.retry = retry;
     }
 
@@ -82,7 +85,7 @@ public class YamcsConnector implements SessionFailureListener {
         return doConnect();
     }
 
-     private FutureTask<String> doConnect() {
+    private FutureTask<String> doConnect() {
         if(connected) disconnect();
         final String url=connectionParams.getUrl();
 
@@ -150,7 +153,7 @@ public class YamcsConnector implements SessionFailureListener {
                 }
             };
         }, url);
-        new Thread(future).start();
+        executor.submit(future);
         return future;
     }
 
@@ -208,5 +211,9 @@ public class YamcsConnector implements SessionFailureListener {
 
     public void close() throws HornetQException {
         yamcsSession.close();
+    }
+
+    public ExecutorService getExecutor() {
+        return executor;
     }
 }
