@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
+import org.yamcs.protobuf.Yamcs.PpReplayRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
@@ -85,7 +87,6 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     public ReplayService(String instance, ReplayRequest spec) throws YProcessorException, ConfigurationException {
         this.yamcsInstance = instance;
         this.originalReplayRequest = spec;
-        rawDataRequest = originalReplayRequest.toBuilder().clearParameterRequest();
 
 
         xtceDb = XtceDbFactory.getInstance(instance);
@@ -162,8 +163,12 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     }
 
     //finds out all raw data (TM and PP) required to provide the needed parameters.
-    // in order to do this, subscribe to all parameters from the list
+    // in order to do this, subscribe to all parameters from the list, then check in the tmProcessor subscription which containers are needed
+    // and in the subscribedParameters which PPs may be required
     private void createRawSubscription() throws YamcsException {
+        rawDataRequest = originalReplayRequest.toBuilder().clearParameterRequest();
+        
+        
         List<NamedObjectId> plist = originalReplayRequest.getParameterRequest().getNameFilterList();
         if(plist.isEmpty()) return; 
 
@@ -186,19 +191,38 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         Subscription subscription = tmproc.getSubscription();
         Collection<SequenceContainer> containers = subscription.getContainers();
 
+   
 
+        
         if((containers==null)|| (containers.isEmpty())) {
             log.debug("No container required for the parameter subscription");
         } else {
             PacketReplayRequest.Builder rawPacketRequest = originalReplayRequest.getPacketRequest().toBuilder();
+            
             for(SequenceContainer sc: containers) {
                 rawPacketRequest.addNameFilter(NamedObjectId.newBuilder().setName(sc.getQualifiedName()).build());
             }
-            rawDataRequest.setPacketRequest(rawPacketRequest);
             log.debug("after TM subscription, the request contains the following packets: "+rawPacketRequest);
+            rawDataRequest.setPacketRequest(rawPacketRequest);
         }
         
         pidrm.removeRequest(subscriptionId);
+        
+        //now check for PPs
+        
+        Set<String> pprecordings = new HashSet<>();
+        for(Parameter p: subscribedParameters) {
+            pprecordings.add(p.getRecordingGroup());
+        }
+        if(pprecordings.isEmpty()) {
+            log.debug("No addition pp group added to the subscription");
+        } else {
+            PpReplayRequest.Builder pprr = originalReplayRequest.getPpRequest().toBuilder();
+            pprr.addAllGroupNameFilter(pprecordings);
+            rawDataRequest.setPpRequest(pprr.build());
+            
+        }
+        
     }
 
     private void createReplay() throws YProcessorException {
@@ -255,6 +279,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
 
     @Override
     public void startProviding(Parameter paramDef) {
+        
         synchronized(subscribedParameters) {
             subscribedParameters.add(paramDef);
         }

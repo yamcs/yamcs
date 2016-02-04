@@ -106,7 +106,7 @@ public class ContainerRequestManager implements ContainerListener {
             SequenceContainer def = result.getContainer();
             if (!subscriptions.containsKey(def)) continue;
             for (ContainerConsumer subscriber : subscriptions.get(def)) {               
-                subscriber.processContainer(def, result.getContainerContent());
+                subscriber.processContainer(result);
             }
         }
     }

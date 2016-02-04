@@ -2,7 +2,6 @@ package org.yamcs;
 
 import static org.junit.Assert.assertEquals;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -100,8 +99,8 @@ public class ContainerRequestManagerTest {
         List<SequenceContainer> received = new ArrayList<SequenceContainer>();
 
         @Override
-        public void processContainer(SequenceContainer sc, ByteBuffer content) {
-            received.add(sc);
+        public void processContainer(ContainerExtractionResult cer) {
+            received.add(cer.getContainer());
         }
 
         void reset() {

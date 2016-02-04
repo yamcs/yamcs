@@ -1,7 +1,6 @@
 package org.yamcs.commanding;
 
-import java.nio.ByteBuffer;
-
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.YProcessor;
 import org.yamcs.commanding.CommandVerificationHandler.VerifResult;
 import org.yamcs.container.ContainerConsumer;
@@ -21,7 +20,7 @@ class ContainerVerifier extends Verifier implements ContainerConsumer {
     
     
     @Override
-    public void processContainer(SequenceContainer sc, ByteBuffer content) {
+    public void processContainer(ContainerExtractionResult cer) {
         ContainerRequestManager crm = yproc.getContainerRequestManager();
         crm.unsubscribe(this, container);
         cvh.onVerifierFinished(this, VerifResult.OK);

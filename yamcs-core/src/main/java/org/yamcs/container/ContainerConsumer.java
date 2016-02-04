@@ -1,9 +1,8 @@
 package org.yamcs.container;
 
-import java.nio.ByteBuffer;
 
-import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.ContainerExtractionResult;
 
 public interface ContainerConsumer {
-    void processContainer(SequenceContainer sc, ByteBuffer content);
+    void processContainer(ContainerExtractionResult cer);
 }

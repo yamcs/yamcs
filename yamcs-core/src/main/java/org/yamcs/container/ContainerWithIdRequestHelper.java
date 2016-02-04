@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.SequenceContainer;
@@ -50,16 +51,18 @@ public class ContainerWithIdRequestHelper implements ContainerConsumer {
     }
         
     @Override
-    public void processContainer(SequenceContainer container,  ByteBuffer content) {
+    public void processContainer(ContainerExtractionResult cer) {
+        SequenceContainer container = cer.getContainer();
+        ByteBuffer content = cer.getContainerContent();
         boolean found = false;
         for(ContainerWithId cwi: subscription) {
             if(cwi.def==container) {
-                listener.processContainer(cwi, content);
+                listener.processContainer(cwi, cer);
                 found = true;
             }
         }
         if(!found) { //comes from subscribeAll
-            listener.processContainer(new ContainerWithId(container, null), content);
+            listener.processContainer(new ContainerWithId(container, null), cer);
         }
     }
 }
