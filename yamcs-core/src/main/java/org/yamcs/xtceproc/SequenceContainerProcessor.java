@@ -35,18 +35,18 @@ public class SequenceContainerProcessor {
         if(entries!=null) {
             for (SequenceEntry se:entries) {
                 try {
-                    if(pcontext.bitPosition >= pcontext.bb.capacity()*8)
-                    {
-                        // Packet does not contain more parameters
-                        log.info("Packet does not contain more parameter");
-                        break;
-                    }
                     switch(se.getReferenceLocation()) {
                     case previousEntry:
                         pcontext.bitPosition+=se.getLocationInContainerInBits();
                         break;
                     case containerStart:
                         pcontext.bitPosition=se.getLocationInContainerInBits();
+                    }
+                    if(pcontext.bitPosition >= pcontext.bb.capacity()*8)
+                    {
+                        // Packet does not contain more parameters
+                        log.info("Packet does not contain more parameter");
+                        break;
                     }
                     if(se.getRepeatEntry()==null) {
                         pcontext.sequenceEntryProcessor.extract(se);
