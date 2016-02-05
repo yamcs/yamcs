@@ -30,13 +30,8 @@ public class PermissionsTest extends AbstractIntegrationTest {
     public void testAuthenticationWebServices() throws Exception {
         UsernamePasswordToken wrongUser = new UsernamePasswordToken("baduser", "wrongpassword");
         currentUser = wrongUser;
-        boolean gotException = false;
-        try {
-            httpClient.doGetRequest("http://localhost:9190/api/user", null, currentUser);
-        } catch (Exception e) {
-            gotException = true;
-        }
-        assertTrue("request with wrong credentials should be denied to user", gotException);
+        String response = httpClient.doGetRequest("http://localhost:9190/api/user", null, currentUser);
+        assertTrue(response.contains("Unauthorized"));
     }
 
     @Test

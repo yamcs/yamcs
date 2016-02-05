@@ -132,11 +132,7 @@ public class HttpClient {
         @Override
         public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
             if (msg instanceof HttpResponse) {
-                 HttpResponse response = (HttpResponse) msg;
-                 int code = response.getStatus().code();
-                 if(code<200||code>=300) {
-                     exception = new RuntimeException(response.toString());
-                 }
+//                 HttpResponse response = (HttpResponse) msg;
             }
             if (msg instanceof HttpContent) {
                 HttpContent content = (HttpContent) msg;
