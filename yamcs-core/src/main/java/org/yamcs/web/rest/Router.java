@@ -244,7 +244,7 @@ public class Router {
             log.error("Reporting internal server error to client", e);
             RestHandler.sendRestError(req, e.getStatus(), e);
         } catch (HttpException e) {
-            log.warn("Sending nominal exception back to client", e);
+            log.warn("Sending nominal exception back to client: {}", e.getMessage());
             RestHandler.sendRestError(req, e.getStatus(), e);
         } catch (Throwable t) {
             log.error("Unexpected error " + t, t);
