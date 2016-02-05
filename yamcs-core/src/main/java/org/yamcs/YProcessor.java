@@ -278,7 +278,6 @@ public class YProcessor extends AbstractService {
      */
     @Override
     public void doStart() {
-        try {
         if(tmPacketProvider!=null) {
             tmPacketProvider.startAsync();
         }
@@ -317,9 +316,6 @@ public class YProcessor extends AbstractService {
         }
         notifyStarted();
         propagateProcessorStateChange();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private void startIfNecessary(Service service) {
