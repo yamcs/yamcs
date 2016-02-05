@@ -53,3 +53,17 @@ Archive:
         parameterCache:
             enabled: true
             cacheAll: true
+
+            
+#used for performing archive retrievals (e.g. parameter-extractor.sh)
+# we do not want cache in order to extract the minimum data necessary
+ArchiveRetrieval:
+    telemetryProvider:
+        class: org.yamcs.tctm.ReplayService
+    parameterProviders:
+       # manages legacy derived values
+       - class: org.yamcs.derivedvalues.DerivedValuesManager
+    config:
+        parameterCache:
+            enabled: false
+            
