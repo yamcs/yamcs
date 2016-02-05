@@ -81,6 +81,8 @@ public class User {
 
 	public boolean hasPrivilege(Privilege.Type type, String privilege) {
 		Set<String> priv = null;
+        if(privilege == null)
+            return true;
 		switch (type) {
             case TM_PARAMETER:
                 priv = this.tmParaPrivileges;
