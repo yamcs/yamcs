@@ -70,9 +70,7 @@ public class YamlRealm implements Realm {
                     } catch (Exception e) {
                         log.error("Unable to validate hashed password, please check format of the hash.", e);
                     }
-                }
-                else
-                {
+                } else {
                     passwordValid = password.equals(usernamePasswordToken.getPasswordS());
                 }
                 return passwordValid;
@@ -112,10 +110,8 @@ public class YamlRealm implements Realm {
                 user.tcPrivileges.addAll(getPrivileges(conf, role, tc_privileges));
                 user.systemPrivileges.addAll(getPrivileges(conf, role, system_privileges));
             }
-        }
-        catch (Exception e)
-        {
-            log.warn("Unable to load user " + usernamePasswordToken + " from YamlRealm", e);
+        } catch (ConfigurationException e)  {
+            log.warn("Unable to load user " + usernamePasswordToken + " from YamlRealm: {}", e.getMessage());
         }
 
         user.setAuthenticated(authenticates(authenticationToken));
@@ -123,14 +119,11 @@ public class YamlRealm implements Realm {
     }
 
 
-    private List getPrivileges(YConfiguration conf, String role, String privilegesType)
-    {
+    private List getPrivileges(YConfiguration conf, String role, String privilegesType) {
         List result = null;
         try {
             result = conf.getList("roles", role, privilegesType);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             log.warn("No privileges of type " + privilegesType + " for role " + role);
             result = new LinkedList<>();
         }
