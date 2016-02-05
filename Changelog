@@ -1,9 +1,11 @@
-Version 0.29.1 Released
+Version 0.29.1 Released 05-Feb-2015
 - more improvements to the yamcs-web: alarm history, events
 - converted the CCSDS Index to RocksDB from TokyoCabinet
 - removed TokyoCabinet (still available as a separate module)
 - more REST interface improvements: filtering events, command history, raw packet download
 - removed dependency on HornetQ in the IndexServer
+- added command history replay in replay processors
+- better distinction between replay (=via processor) and retrieval (=directly from archive without any reprocessing)
 
 Version 0.29.0 Released 10-Nov-2015
 - added the posibility to configure TM archiving on fine grained level
