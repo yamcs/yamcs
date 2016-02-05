@@ -97,7 +97,7 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
                 sendPlainTextError(ctx, BAD_REQUEST);
                 return;
             } catch (UnauthorizedException e) {
-                sendUnauthorized(ctx);
+                sendUnauthorized(ctx, req);
                 return;
             }
         }
@@ -182,13 +182,12 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
         return ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
     
-    private ChannelFuture sendUnauthorized(ChannelHandlerContext ctx) {
+    private ChannelFuture sendUnauthorized(ChannelHandlerContext ctx, HttpRequest request) {
         ByteBuf buf = Unpooled.copiedBuffer(HttpResponseStatus.UNAUTHORIZED.toString() + "\r\n", CharsetUtil.UTF_8);
         
         HttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.UNAUTHORIZED, buf);
         setHeader(res, HttpHeaders.Names.WWW_AUTHENTICATE, "Basic realm=\"" + Privilege.getRealmName() + "\"");
         
-        HttpRequest request = ctx.attr(CTX_HTTP_REQUEST).get();
         log.warn("{} {} {} [realm=\"{}\"]", request.getMethod(), request.getUri(), res.getStatus().code(), Privilege.getRealmName());
         return ctx.writeAndFlush(res).addListener(ChannelFutureListener.CLOSE);
     }
