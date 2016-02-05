@@ -1,1 +1,5 @@
+services:
+    - org.yamcs.archive.ReplayServer
+    
+    
 mdb: refmdb

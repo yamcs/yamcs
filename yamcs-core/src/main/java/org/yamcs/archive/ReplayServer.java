@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
-import org.yamcs.hornetq.HornetQReplayServer;
+import org.yamcs.hornetq.HornetQRetrievalServer;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
@@ -21,7 +21,11 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- *Yarch replay server based on hornetq
+ * Yarch replay server based on hornetq
+ *
+ * A note about terminology: we call this replay because it provides capability to speed control/pause/resume.
+ * However, it is not replay in terms of reprocessing the data - the data is sent as recorded in the streams.
+ *
  * @author nm
  *
  */
@@ -32,7 +36,7 @@ public class ReplayServer extends AbstractService {
     final String instance;
 
     AtomicInteger replayCount=new AtomicInteger();
-    HornetQReplayServer hqReplayServer;
+    HornetQRetrievalServer hqRetrievalServer;
     
     public ReplayServer(String instance) {
         this.instance = instance;
@@ -111,9 +115,9 @@ public class ReplayServer extends AbstractService {
     @Override
     protected void doStart() {
         try {
-            hqReplayServer = new HornetQReplayServer(this);
-            hqReplayServer.startAsync();
-            hqReplayServer.awaitRunning();
+            hqRetrievalServer = new HornetQRetrievalServer(this);
+            hqRetrievalServer.startAsync();
+            hqRetrievalServer.awaitRunning();
             notifyStarted();
         } catch (Exception e) {
             notifyFailed(e);
@@ -122,8 +126,8 @@ public class ReplayServer extends AbstractService {
 
     @Override
     public void doStop() {
-        hqReplayServer.stopAsync();
-        hqReplayServer.awaitTerminated();
+        hqRetrievalServer.stopAsync();
+        hqRetrievalServer.awaitTerminated();
         notifyStopped();
     }
 

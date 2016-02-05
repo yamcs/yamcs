@@ -29,8 +29,12 @@ public class Protocol {
     static Logger log=LoggerFactory.getLogger(Protocol.class.getName());
 
     private static ProducerKiller killer;
-    public static SimpleString getYarchReplayControlAddress(String instance) {
+    public static SimpleString getReplayControlAddress(String instance) {
         return new SimpleString(instance+".replayControl");
+    }
+    
+    public static SimpleString getYarchRetrievalControlAddress(String instance) {
+        return new SimpleString(instance+".retrievalControl");
     }
 
     public static SimpleString getYarchIndexControlAddress(String instance) {

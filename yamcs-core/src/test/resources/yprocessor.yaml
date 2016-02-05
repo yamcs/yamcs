@@ -1,0 +1,64 @@
+# this file defines the diferrent channels
+# channel is where TM/TC processing happends inside Yamcs.
+#
+# each channel uses a source of TM packets, one or more sources of parameters and a command releaser
+#  all of these are optional
+#
+# Note that when you are adding a telemetryProvider, you are implicitly adding also a XtceTmProcessor that provides parameters
+#
+#
+#all the supported channel types
+# 
+types: [realtime, Archive]
+
+
+
+realtime:
+    telemetryProvider: 
+       class: org.yamcs.StreamTmPacketProvider
+       args: 
+           streams: ["tm_realtime"]
+    commandReleaser:
+       class: org.yamcs.StreamTcCommandReleaser
+       args:
+           stream: "tc_realtime"
+    parameterProviders:
+#       - class: org.yamcs.tctm.StreamPpProvider
+#         args:
+#           stream: "pp_realtime"
+       # implements XTCE algorithms
+       - class: org.yamcs.algorithms.AlgorithmManager
+       # implements provider of parameters from sys_var stream (these are collected and sent on this stream by SystemParametersCollector service)
+       - class: org.yamcs.parameter.SystemParametersProvider
+       # manages software parameters
+       - class: org.yamcs.parameter.SoftwareParameterManager
+    config:
+        #check alarms and also enable the alarm server (that keeps track of unacknowledged alarms)
+        alarm:
+            check: true
+            server: enabled
+        parameterCache:
+            enabled: true
+            cacheAll: true
+
+
+Archive:
+    telemetryProvider: 
+        class: org.yamcs.tctm.ReplayService
+    config:
+        parameterCache:
+            enabled: true
+            cacheAll: true
+
+#used for performing archive retrievals (e.g. parameter-extractor.sh)
+# we do not want cache in order to extract the minimum data necessary
+ArchiveRetrieval:
+    telemetryProvider:
+        class: org.yamcs.tctm.ReplayService
+    parameterProviders:
+       # manages legacy derived values
+       - class: org.yamcs.derivedvalues.DerivedValuesManager
+    config:
+        parameterCache:
+            enabled: false
+

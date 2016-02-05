@@ -29,6 +29,10 @@ public class YamcsException extends Exception {
         this.extra=extra.toByteArray();
     }
     
+    public YamcsException(String type, String message) {
+        super(message);
+        this.type=type;
+    }
     
     public YamcsException(String type, String message, byte[] extra) {
         super(message);

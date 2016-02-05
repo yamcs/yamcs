@@ -1,11 +1,14 @@
 package org.yamcs.commanding;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.yamcs.cmdhistory.CommandHistoryFilter;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
+import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.tctm.TcUplinkerAdapter;
@@ -151,7 +154,7 @@ public class PreparedCommand {
     }
 
     public static PreparedCommand fromTuple(Tuple t) {
-        CommandId cmdId=getCommandId(t);
+        CommandId cmdId = getCommandId(t);
         PreparedCommand pc=new PreparedCommand(cmdId);
         for(int i=0;i<t.size();i++) {
             ColumnDefinition cd=t.getColumnDefinition(i);
@@ -167,7 +170,21 @@ public class PreparedCommand {
         
         return pc;
     }
-
+    public static PreparedCommand fromCommandHistoryEntry(CommandHistoryEntry che) {
+        CommandId cmdId = che.getCommandId();
+        PreparedCommand pc = new PreparedCommand(cmdId);
+        
+        pc.attributes = che.getAttrList();
+        
+        return pc;
+    }
+    
+    public CommandHistoryEntry toCommandHistoryEntry() {
+        CommandHistoryEntry.Builder cheb = CommandHistoryEntry.newBuilder().setCommandId(id);
+        cheb.addAllAttr(attributes);
+        return cheb.build();
+    }
+    
     public void setStringAttribute(String name, String value) {
         int i;
         for(i =0; i<attributes.size(); i++) {

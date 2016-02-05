@@ -538,7 +538,7 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
             ReplayRequest rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT)
                     .setParameterRequest(prr).setStart(start).setStop(stop).setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build()).build();
 
-            StringMessage answer=(StringMessage) yclient.executeRpc(Protocol.getYarchReplayControlAddress(ycd.instance), "createReplay", rr, StringMessage.newBuilder());
+            StringMessage answer=(StringMessage) yclient.executeRpc(Protocol.getReplayControlAddress(ycd.instance), "createReplay", rr, StringMessage.newBuilder());
             SimpleString replayAddress=new SimpleString(answer.getMessage());
 
             yclient.dataConsumer.setMessageHandler(this);

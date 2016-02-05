@@ -100,7 +100,7 @@ public class CliPacketDump {
         YamcsSession ysession=YamcsSession.newBuilder().setConnectionParams(ycd).build();
         YamcsClient yclient=ysession.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
         
-        StringMessage answer = (StringMessage) yclient.executeRpc(Protocol.getYarchReplayControlAddress(ycd.getInstance()),
+        StringMessage answer = (StringMessage) yclient.executeRpc(Protocol.getYarchRetrievalControlAddress(ycd.getInstance()),
                         "createReplay", rrb.build(), StringMessage.newBuilder());
         SimpleString packetReplayAddress=new SimpleString(answer.getMessage());
             

@@ -2,7 +2,6 @@ package org.yamcs.cmdhistory;
 
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,24 +11,17 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidCommandId;
 import org.yamcs.YProcessor;
-import org.yamcs.tctm.TcUplinkerAdapter;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Yamcs.Value;
-import org.yamcs.utils.TimeEncoding;
-import org.yamcs.utils.ValueUtility;
-import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.StreamSubscriber;
-import org.yamcs.yarch.Tuple;
-import org.yamcs.yarch.YarchDatabase;
 
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- * Handles filtered requests for command history.
+ * Part of processors: handles filtered requests for command history.
  * 
  *  We handle two kind of subscriptions:
  *   - subscription to specific commands
@@ -42,7 +34,7 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class CommandHistoryRequestManager extends AbstractService implements StreamSubscriber {
+public class CommandHistoryRequestManager extends AbstractService {
     private ConcurrentHashMap<CommandId, CommandHistoryEntry> activeCommands=new ConcurrentHashMap<CommandId,CommandHistoryEntry>();
     private ConcurrentHashMap<CommandId, ConcurrentLinkedQueue<CommandHistoryConsumer>> cmdSubcriptions = new ConcurrentHashMap<CommandId ,ConcurrentLinkedQueue<CommandHistoryConsumer>>();
     private ConcurrentHashMap<CommandHistoryFilter,CommandHistoryConsumer> historySubcriptions = new ConcurrentHashMap<CommandHistoryFilter,CommandHistoryConsumer>();
@@ -57,13 +49,9 @@ public class CommandHistoryRequestManager extends AbstractService implements Str
     final YProcessor processor;
 
     public CommandHistoryRequestManager(YProcessor processor) throws ConfigurationException {
-        this.processor=processor;
+        this.processor = processor;
         this.instance = processor.getInstance();
-        if(processor!=null) {
-            log=LoggerFactory.getLogger(this.getClass().getName()+"["+processor.getName()+"]");
-        } else {
-            log=LoggerFactory.getLogger(this.getClass().getName());
-        }
+        log=LoggerFactory.getLogger(this.getClass().getName()+"["+processor.getName()+"]");
     }
 
 
@@ -145,7 +133,7 @@ public class CommandHistoryRequestManager extends AbstractService implements Str
      * Called when a new command has to be added to the command history 
      *  (i.e. when a users sends a telecommand)
      */
-    private void addCommand(PreparedCommand pc) {
+    public void addCommand(PreparedCommand pc) {
         log.debug("addCommand cmdId="+pc);
         CommandHistoryEntry che = CommandHistoryEntry.newBuilder().setCommandId(pc.getCommandId()).build();
         
@@ -170,7 +158,7 @@ public class CommandHistoryRequestManager extends AbstractService implements Str
      * @throws InvalidCommandID the command does not appear in the activeCommands hash
      *  
      */
-    private void updateCommand(CommandId cmdId, String key, Value value) throws InvalidCommandId {
+    public void updateCommand(CommandId cmdId, String key, Value value) throws InvalidCommandId {
         log.debug("updateCommand cmdId={} key={} value={}", new Object[]{cmdId, key, value});
         CommandHistoryEntry che=activeCommands.get(cmdId);
         if(che==null) {
@@ -201,51 +189,20 @@ public class CommandHistoryRequestManager extends AbstractService implements Str
 
     @Override
     protected void doStart() {
-        YarchDatabase ydb = YarchDatabase.getInstance(instance);
-        Stream realtimeStream = ydb.getStream(YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME);
-        if(realtimeStream == null) {
-            String msg ="Cannot find stream '"+YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME+" in instance "+instance; 
-            log.error(msg);
-            notifyFailed(new ConfigurationException(msg));
-        } else {
-            realtimeStream.addSubscriber(this);
-            notifyStarted();
-        }
-
-
+        notifyStarted();
     }
 
 
 
     @Override
     protected void doStop() {
-        realtimeCmdHistoryStream.removeSubscriber(this);
         notifyStopped();
     }
 
-    @Override
-    public void onTuple(Stream s, Tuple tuple) {
-        if(tuple.hasColumn("source")) {
-            PreparedCommand pc=PreparedCommand.fromTuple(tuple);
-            addCommand(pc);
-        } else {
-            int i=TcUplinkerAdapter.TC_TUPLE_DEFINITION.getColumnDefinitions().size();
-            CommandId cmdId=PreparedCommand.getCommandId(tuple);
-            List<ColumnDefinition> columns=tuple.getDefinition().getColumnDefinitions();
-            while(i<columns.size()) {
-                ColumnDefinition cd=columns.get(i++);
-                String key=cd.getName();
-                try {
-                    Value v = ValueUtility.getColumnValue(cd, tuple.getColumn(key));
-                    updateCommand(cmdId, key, v);
-                } catch (InvalidCommandId e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+
+
+    public String getInstance() {
+        return instance;
     }
 
-    @Override
-    public void streamClosed(Stream s) {
-    }
 }

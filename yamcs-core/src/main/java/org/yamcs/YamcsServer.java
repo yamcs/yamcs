@@ -97,7 +97,7 @@ public class YamcsServer {
                 
         ManagementService managementService=ManagementService.getInstance();
         StreamInitializer.createStreams(instance);
-        
+        YProcessor.addProcessorListener(managementService);
         
         List<Object> services=conf.getList("services");
         for(Object servobj:services) {
@@ -417,6 +417,7 @@ public class YamcsServer {
             setupHornet();
             org.yamcs.yarch.management.ManagementService.setup(true);
             ManagementService.setup(true,true);
+            
             setupYamcsServer();
 
         } catch (ConfigurationException e) {

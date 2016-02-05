@@ -207,7 +207,7 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, Me
                         .setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build())
                         .setEndAction(EndAction.QUIT).setEventRequest(err).build();
                 
-                SimpleString replayServer=Protocol.getYarchReplayControlAddress(yconnector.getConnectionParams().getInstance());
+                SimpleString replayServer=Protocol.getYarchRetrievalControlAddress(yconnector.getConnectionParams().getInstance());
                 StringMessage answer=(StringMessage) msgClient.executeRpc(replayServer, "createReplay", crr, StringMessage.newBuilder());
                 SimpleString replayAddress=new SimpleString(answer.getMessage());
                 eventViewer.log("Retrieving archived events from "+TimeEncoding.toString(params.start)+" to "+TimeEncoding.toString(params.stop));

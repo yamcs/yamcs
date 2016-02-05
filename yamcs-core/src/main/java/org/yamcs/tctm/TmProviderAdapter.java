@@ -26,7 +26,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- * Loads multiple TmPacketProviders and inject all the packets into a defined stream
+ * Loads multiple TmPacketSource and inject all the packets into a defined stream
  * @author nm
  *
  */

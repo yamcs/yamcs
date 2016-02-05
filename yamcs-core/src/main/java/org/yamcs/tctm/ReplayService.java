@@ -22,12 +22,16 @@ import org.yamcs.archive.PacketWithTime;
 import org.yamcs.archive.ReplayListener;
 import org.yamcs.archive.ReplayServer;
 import org.yamcs.archive.YarchReplay;
+import org.yamcs.cmdhistory.CommandHistoryProvider;
+import org.yamcs.cmdhistory.CommandHistoryRequestManager;
+import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
+import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -59,7 +63,7 @@ import com.google.protobuf.MessageLite;
  * @author nm
  * 
  */
-public class ReplayService extends AbstractService implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider {
+public class ReplayService extends AbstractService implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider, CommandHistoryProvider {
     static final long timeout=10000;
 
     boolean loop;
@@ -82,8 +86,9 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     //the originalReplayRequest contains possibly only parameters.
     //the modified one sent to the ReplayServer contains the raw data required for extracting/processing those parameters
     ReplayRequest.Builder rawDataRequest;
+    CommandHistoryRequestManager commandHistoryRequestManager;
 
-
+    
     public ReplayService(String instance, ReplayRequest spec) throws YProcessorException, ConfigurationException {
         this.yamcsInstance = instance;
         this.originalReplayRequest = spec;
@@ -117,7 +122,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         switch(type) {
         case TM_PACKET:
             dataCount++;
-            TmPacketData tpd=(TmPacketData)data;
+            TmPacketData tpd = (TmPacketData)data;
             replayTime = tpd.getGenerationTime();
             tmProcessor.processPacket(new PacketWithTime(tpd.getReceptionTime(), tpd.getGenerationTime(), tpd.getPacket().toByteArray()));
             break;
@@ -135,6 +140,10 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
 
             }
             parameterRequestManager.update(params);
+            break;
+        case CMD_HISTORY:
+            CommandHistoryEntry che = (CommandHistoryEntry) data;
+            commandHistoryRequestManager.addCommand(PreparedCommand.fromCommandHistoryEntry(che));
             break;
         default:
             log.error("Unexpected data type {} received");            
@@ -366,6 +375,15 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     @Override
     public void changeSpeed(ReplaySpeed speed) {
         yarchReplay.changeSpeed(speed);        
+    }
+
+
+
+
+
+    @Override
+    public void setCommandHistoryRequestManager(CommandHistoryRequestManager chrm) {
+        this.commandHistoryRequestManager = chrm;
     }
 
 }

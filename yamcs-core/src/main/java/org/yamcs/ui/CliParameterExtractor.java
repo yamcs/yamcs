@@ -148,7 +148,7 @@ public class CliParameterExtractor {
         SimpleString packetReplayAddress=null;
         
         try {
-            StringMessage answer = (StringMessage) yclient.executeRpc(Protocol.getYarchReplayControlAddress(ycd.getInstance()),
+            StringMessage answer = (StringMessage) yclient.executeRpc(Protocol.getReplayControlAddress(ycd.getInstance()),
                         "createReplay", rr, StringMessage.newBuilder());
             packetReplayAddress=new SimpleString(answer.getMessage());
         } catch (YamcsException e) {

@@ -142,7 +142,7 @@ public class EventRecordingTest extends YarchTestCase {
                 .setEventRequest(err)
                 .setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build())
                 .build();
-        SimpleString replayServer=Protocol.getYarchReplayControlAddress(context.getDbName());
+        SimpleString replayServer=Protocol.getYarchRetrievalControlAddress(context.getDbName());
         StringMessage answer=(StringMessage) msgClient.executeRpc(replayServer, "createReplay", rr, StringMessage.newBuilder());
         
         SimpleString replayAddress=new SimpleString(answer.getMessage());

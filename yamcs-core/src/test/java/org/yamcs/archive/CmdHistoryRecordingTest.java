@@ -45,7 +45,7 @@ public class CmdHistoryRecordingTest extends YarchTestCase {
     static EmbeddedHornetQ hornetServer;
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        hornetServer=YamcsServer.setupHornet();
+        hornetServer = YamcsServer.setupHornet();
     }
 
     @AfterClass
@@ -110,8 +110,8 @@ public class CmdHistoryRecordingTest extends YarchTestCase {
         CommandHistoryReplayRequest chr = CommandHistoryReplayRequest.newBuilder().build();
         ReplayRequest rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT).
                     setCommandHistoryRequest(chr).build();
-        SimpleString replayServer=Protocol.getYarchReplayControlAddress(ydb.getName());
-        StringMessage answer=(StringMessage) yclient.executeRpc(replayServer, "createReplay", rr, StringMessage.newBuilder());
+        SimpleString retrievalServer=Protocol.getYarchRetrievalControlAddress(ydb.getName());
+        StringMessage answer=(StringMessage) yclient.executeRpc(retrievalServer, "createReplay", rr, StringMessage.newBuilder());
         
         SimpleString replayAddress=new SimpleString(answer.getMessage());
         yclient.executeRpc(replayAddress, "start", null, null);

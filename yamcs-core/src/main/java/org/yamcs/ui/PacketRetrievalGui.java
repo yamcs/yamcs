@@ -188,7 +188,7 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
                     prr.addNameFilter(NamedObjectId.newBuilder().setNamespace(MdbMappings.MDB_OPSNAME).setName(pn));
                 }
                 rr.setPacketRequest(prr);
-                StringMessage answer=(StringMessage) yclient.executeRpc(Protocol.getYarchReplayControlAddress(ycd.instance), "createReplay", rr.build(), StringMessage.newBuilder());
+                StringMessage answer=(StringMessage) yclient.executeRpc(Protocol.getYarchRetrievalControlAddress(ycd.instance), "createReplay", rr.build(), StringMessage.newBuilder());
                 SimpleString replayAddress=new SimpleString(answer.getMessage());
 
                 yclient.dataConsumer.setMessageHandler(this);
