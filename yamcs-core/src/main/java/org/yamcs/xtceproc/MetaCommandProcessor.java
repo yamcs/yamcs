@@ -86,7 +86,6 @@ public class MetaCommandProcessor {
                         v= argTypeInitialValue;
                     args.put(a,  v);
                 } catch (Exception e) {
-                    e.printStackTrace();
                     throw new ErrorInCommand("Cannot assign value to "+a.getName()+": "+e.getMessage());
                 }
             }
