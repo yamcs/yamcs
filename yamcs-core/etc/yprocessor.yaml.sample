@@ -40,6 +40,10 @@ realtime:
         parameterCache:
             enabled: true
             cacheAll: true
+        tmProcessor:
+         #if container entries fit outside the binary packet, setting this to true will cause the error to be ignored, otherwise an exception will be printed in the yamcs logs
+             ignoreOutOfContainerEntries: false
+
 
 
 Archive:

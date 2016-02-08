@@ -3,6 +3,7 @@ package org.yamcs.xtceproc;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,8 +46,24 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     public final YProcessor processor;
     public final XtceDb xtcedb;
     final XtceTmExtractor tmExtractor;
+    final String CONFIG_KEY_ignoreOutOfContainerEntries = "ignoreOutOfContainerEntries";
     
-    
+    public XtceTmProcessor(YProcessor proc, Map<String, Object> tmProcessorConfig) {
+	log=LoggerFactory.getLogger(this.getClass().getName()+"["+proc.getName()+"]");
+	this.processor=proc;
+	this.xtcedb=proc.getXtceDb();
+	tmExtractor=new XtceTmExtractor(xtcedb);
+	if(tmProcessorConfig != null) {
+	    if(tmProcessorConfig.containsKey(CONFIG_KEY_ignoreOutOfContainerEntries)) {
+	        Object o = tmProcessorConfig.get(CONFIG_KEY_ignoreOutOfContainerEntries);
+	        if(!(o instanceof Boolean)) {
+	            throw new ConfigurationException(CONFIG_KEY_ignoreOutOfContainerEntries+" has to be a boolean");
+	        }
+	        boolean iooce = (Boolean) o;
+	        tmExtractor.setIgnoreOutOfContainerEntries(iooce);
+	    }
+	}
+    } 
     public XtceTmProcessor(YProcessor proc) {
         log=LoggerFactory.getLogger(this.getClass().getName()+"["+proc.getName()+"]");
         this.processor=proc;
@@ -66,6 +83,14 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
         tmExtractor=new XtceTmExtractor(xtcedb);
     }
 
+    /**
+     * See {@link XtceTmExtractor#setIgnoreOutOfContainerEntries}
+     * @param ignoreOutOfContainerEntries
+     */
+    public void setIgnoreOutOfContainerEntries(boolean ignoreOutOfContainerEntries) {
+        tmExtractor.setIgnoreOutOfContainerEntries(ignoreOutOfContainerEntries);
+    }
+    
     @Override
     public void init(YProcessor channel) throws ConfigurationException {
 

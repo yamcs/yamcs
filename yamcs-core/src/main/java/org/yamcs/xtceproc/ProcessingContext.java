@@ -15,7 +15,7 @@ import org.yamcs.xtce.CriteriaEvaluator;
  *
  */
 public class ProcessingContext {	
-	ByteBuffer bb;
+	final ByteBuffer bb;
 	public int bitPosition;
 	
 	//Keeps track of the absolute offset of the container where the processing takes place. 
@@ -33,17 +33,22 @@ public class ProcessingContext {
 	public long expirationTime = TimeEncoding.INVALID_INSTANT;
 	
 	ProcessingStatistics stats;
+	//if set to true, out of packet parameters will be silently ignored, otherwise an exception will be thrown
+	final boolean ignoreOutOfContainerEntries;
 	
-	public SequenceContainerProcessor sequenceContainerProcessor=new SequenceContainerProcessor(this);
-	public SequenceEntryProcessor sequenceEntryProcessor=new SequenceEntryProcessor(this);
-	public ParameterTypeProcessor parameterTypeProcessor=new ParameterTypeProcessor(this);
-	public DataEncodingDecoder dataEncodingProcessor=new DataEncodingDecoder(this);
-	public ValueProcessor valueProcessor=new ValueProcessor(this);
-	public CriteriaEvaluator criteriaEvaluator;
+	
+	
+	final public SequenceContainerProcessor sequenceContainerProcessor=new SequenceContainerProcessor(this);
+	final public SequenceEntryProcessor sequenceEntryProcessor=new SequenceEntryProcessor(this);
+	final public ParameterTypeProcessor parameterTypeProcessor=new ParameterTypeProcessor(this);
+	final public DataEncodingDecoder dataEncodingProcessor=new DataEncodingDecoder(this);
+	final public ValueProcessor valueProcessor=new ValueProcessor(this);
+	final public CriteriaEvaluator criteriaEvaluator;
 	
 	public ProcessingContext(ByteBuffer bb, int containerAbsoluteByteOffset, int bitPosition, Subscription subscription, 
 		ParameterValueList params, ArrayList<ContainerExtractionResult> containers, 
-	        long acquisitionTime, long generationTime, ProcessingStatistics stats) {
+	        long acquisitionTime, long generationTime, ProcessingStatistics stats,
+	        boolean ignoreOutOfContainerEntries) {
 		this.bb = bb;
 		this.containerAbsoluteByteOffset=containerAbsoluteByteOffset;
 		this.bitPosition = bitPosition;
@@ -54,5 +59,6 @@ public class ProcessingContext {
 		this.generationTime = generationTime;
 		this.stats = stats;
 		this.criteriaEvaluator = new CriteriaEvaluatorImpl(paramResult);
+		this.ignoreOutOfContainerEntries = ignoreOutOfContainerEntries;
 	}
 }

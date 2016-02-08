@@ -56,6 +56,9 @@ import com.google.common.util.concurrent.Service;
  *
  */
 public class YProcessor extends AbstractService {
+    private final String CONFIG_KEY_tmProcessor ="tmProcessor";
+
+    
     static private Map<String,YProcessor>instances=Collections.synchronizedMap(new HashMap<String,YProcessor>());
     private ParameterRequestManagerImpl parameterRequestManager;
     private ContainerRequestManager containerRequestManager;
@@ -124,6 +127,8 @@ public class YProcessor extends AbstractService {
         
         xtcedb=XtceDbFactory.getInstance(yamcsInstance);
         timeService = YamcsServer.getTimeService(yamcsInstance);
+        Map<String, Object> tmProcessorConfig = null;
+
         synchronized(instances) {
             if(instances.containsKey(key(yamcsInstance,name))) throw new YProcessorException("A processor named '"+name+"' already exists in instance "+yamcsInstance);
             if(config!=null) {
@@ -140,7 +145,13 @@ public class YProcessor extends AbstractService {
                             throw new ConfigurationException("parameterCache configuration should be a map");
                         }
                         configureParameterCache((Map<String, Object>) o);
-                    }else {
+                    } else if(CONFIG_KEY_tmProcessor.equals(c)) {
+                        Object o = config.get(c);
+                        if(!(o instanceof Map)) {
+                            throw new ConfigurationException(CONFIG_KEY_tmProcessor+ " configuration should be a map");
+                        }
+                        tmProcessorConfig = (Map<String, Object>) o;
+                    } else {
                         log.warn("Ignoring unknown config key '"+c+"'");
                     }
                 }
@@ -158,7 +169,7 @@ public class YProcessor extends AbstractService {
 
 
             // Shared between prm and crm
-            tmProcessor = new XtceTmProcessor(this);
+            tmProcessor = new XtceTmProcessor(this, tmProcessorConfig);
             if(tmPacketProvider!=null) {
                 tmPacketProvider.init(this, tmProcessor);
             }
