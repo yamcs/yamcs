@@ -208,6 +208,9 @@
         } else if (period === '3m') {
             before.setDate(now.getDate() - (3*31));
             beforeIso = before.toISOString();
+        } else if (period === '1y') {
+            before.setDate(now.getDate() - 365);
+            beforeIso = before.toISOString();
         }
 
         return tmService.getParameterSamples(qname, {
