@@ -27,18 +27,25 @@ public class HornetQIndexRequestListener implements IndexRequestListener {
     @Override
     public void processData(IndexResult indexResult) throws Exception {
         if (first) {
-            yamcsSession=YamcsSession.newBuilder().build();
-            yamcsClient=yamcsSession.newClientBuilder().setRpc(false).setDataProducer(true).build();
-            Protocol.killProducerOnConsumerClosed(yamcsClient.dataProducer, dataAddress);
-            first = false;
+            createYamcsClient();
         }
         yamcsClient.sendData(dataAddress, ProtoDataType.ARCHIVE_INDEX, indexResult);
     }
 
+    private void createYamcsClient() throws Exception {
+        yamcsSession=YamcsSession.newBuilder().build();
+        yamcsClient=yamcsSession.newClientBuilder().setRpc(false).setDataProducer(true).build();
+        Protocol.killProducerOnConsumerClosed(yamcsClient.dataProducer, dataAddress);
+        first = false;
+    }
+    
     @Override
     public void finished(boolean success) {
         if (success) {
             try {
+                if (first) {
+                    createYamcsClient();
+                }
                 yamcsClient.sendDataEnd(dataAddress);
             } catch (Exception e) {
                 log.error("got exception while sending the response", e);
