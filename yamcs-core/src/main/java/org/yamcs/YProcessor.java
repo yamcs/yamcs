@@ -422,7 +422,7 @@ public class YProcessor extends AbstractService {
         boolean hasToQuit=false;
         synchronized(this) {
             connectedClients.remove(s);
-            log.info("processor "+name+" has one less user: connectedUsers: "+connectedClients.size());
+            log.info("Processor "+name+" has one less user: connectedUsers: "+connectedClients.size());
             if((connectedClients.isEmpty())&&(!persistent)) {
                 hasToQuit=true;
             }
@@ -449,7 +449,7 @@ public class YProcessor extends AbstractService {
     /**
      * Closes the processor by stoping the tm/pp and tc
      * It can be that there are still clients connected, but they will not get any data and new clients can not connect to
-     * these processors anymore. Once it is close, you can create a processor with the same name which will make it maybe a bit 
+     * these processors anymore. Once it is closed, you can create a processor with the same name which will make it maybe a bit 
      * confusing :(
      *
      */

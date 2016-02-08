@@ -121,7 +121,6 @@
         }
 
         function subscribeParameters(parameters, callback) {
-            //console.log('sending ws subscribe of qname ' + qname);
             socket.on('open', function () {
                 doSubscribeParameters(parameters, true);
             });

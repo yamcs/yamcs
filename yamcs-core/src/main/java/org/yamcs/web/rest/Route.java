@@ -20,7 +20,7 @@ public @interface Route {
     /**
      * HTTP method or methods by which this rule is available. By default set to "GET".
      * <p>
-     * Implementation note: can't using netty's HttpMethod because it's not an enum
+     * Implementation note: can't use netty's HttpMethod because it's not an enum
      */
     String[] method() default { "GET" };
     

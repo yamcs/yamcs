@@ -60,8 +60,8 @@ USS.parseDataBinding = function(e) {
             db[n]=$('string:nth-child(2)', val).text();
         });
         if(db.Opsname!==undefined) {
-            db.parameterName=db.Opsname;
-            db.parameterNamespace = USS.opsNamespace;
+            db.parameterName=db.Opsname.trim();
+            db.parameterNamespace = USS.opsNamespace.trim();
          } else {
             console.log("External Data source without Opsname", ds);
          }
