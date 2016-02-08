@@ -120,7 +120,7 @@ public class ListPacket {
     }
 
     public ParameterValue getParameterColumn(Parameter p) {
-        return columnParameters.getLast(p);
+        return columnParameters.getLastInserted(p);
     }
 
     public String getName() {

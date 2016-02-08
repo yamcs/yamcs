@@ -57,6 +57,7 @@ import com.google.common.util.concurrent.Service;
  */
 public class YProcessor extends AbstractService {
     private final String CONFIG_KEY_tmProcessor ="tmProcessor";
+    private final String CONFIG_KEY_parameterCache ="parameterCache";
 
     
     static private Map<String,YProcessor>instances=Collections.synchronizedMap(new HashMap<String,YProcessor>());
@@ -87,6 +88,8 @@ public class YProcessor extends AbstractService {
 
     private boolean parameterCacheEnabled = false;
     private boolean parameterCacheAll = false;
+    private long parameterCacheDuration = 10*60*1000;
+
 
     final Logger log;
     static Set<YProcessorListener> listeners=new CopyOnWriteArraySet<>(); //send notifications for added and removed processors to this
@@ -139,7 +142,7 @@ public class YProcessor extends AbstractService {
                             throw new ConfigurationException("alarm configuration should be a map");
                         }
                         configureAlarms((Map<String, Object>) o);
-                    } else if("parameterCache".equals(c)) {
+                    } else if(CONFIG_KEY_parameterCache.equals(c)) {
                         Object o = config.get(c);
                         if(!(o instanceof Map)) {
                             throw new ConfigurationException("parameterCache configuration should be a map");
@@ -260,6 +263,15 @@ public class YProcessor extends AbstractService {
             parameterCacheAll = (Boolean)v;
             if(parameterCacheAll) parameterCacheEnabled=true;
         }
+        
+        v = cacheConfig.get("duration");
+        if(v!=null) {
+            if(!(v instanceof Integer)) {
+                throw new ConfigurationException("Unknown value '"+v+"' for parameterCache -> duration. Integer (number of seconds) expected .");
+            }
+            parameterCacheDuration = (Integer)v *1000L;
+        }
+
     }
 
     private static String key(String instance, String name) {
@@ -574,6 +586,10 @@ public class YProcessor extends AbstractService {
 
     public boolean isParameterCacheEnabled () {
         return parameterCacheEnabled;
+    }
+
+    public long parameterCacheDuration() {
+        return parameterCacheDuration;
     }
 
     public boolean cacheAllParameters() {

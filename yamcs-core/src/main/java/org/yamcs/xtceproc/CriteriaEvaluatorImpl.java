@@ -79,7 +79,7 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
 	
 	
 	private ResolvedValue resolveParameter(ParameterInstanceRef paramRef) {
-        ParameterValue pv = params.getLast((paramRef).getParameter());
+        ParameterValue pv = params.getLastInserted((paramRef).getParameter());
         if(pv==null) { 
         	return null;
         }
