@@ -8,7 +8,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -64,7 +63,6 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     AlarmServer alarmServer;
     SoftwareParameterManager spm;
     ParameterCache parameterCache;
-    final private ExecutorService executor ;
     
     /**
      * Creates a new ParameterRequestManager, configured to listen to the
@@ -89,8 +87,6 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
         if(yproc.isParameterCacheEnabled()) {
             parameterCache = new ParameterCache(yproc.parameterCacheDuration());
         }
-
-        executor = yproc.getExecutor();
     }
 
     public void addParameterProvider(ParameterProvider parameterProvider) {
@@ -539,8 +535,22 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
         return parameterCache.getValues(plist);
     }
 
-    public ParameterValue getValueFromCache(Parameter param) {
+    /**
+     * Get the last value from cache for a specific parameters
+     * @param param
+     * @return
+     */
+    public ParameterValue getLastValueFromCache(Parameter param) {
         return parameterCache.getLastValue(param);
+    }
+    
+    /**
+     * Get all the values from cache for a specific parameters
+     * @param param
+     * @return
+     */
+    public List<ParameterValue> getValuesFromCache(Parameter param) {
+        return parameterCache.getAllValues(param);
     }
     
     public void start() {
