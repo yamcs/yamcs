@@ -71,9 +71,9 @@ public class IntegerDataEncoding extends DataEncoding {
         if(encoding == Encoding.string) return stringValue;
         
         if(sizeInBits>32) {
-            return Long.parseLong(stringValue);
+            return Long.decode(stringValue);
         } else {
-            return (int)Long.parseLong(stringValue);
+            return Long.decode(stringValue).intValue();
         }
     }
 
