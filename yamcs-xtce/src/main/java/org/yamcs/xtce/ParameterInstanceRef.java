@@ -11,51 +11,51 @@ import java.io.Serializable;
  *
  */
 public class ParameterInstanceRef implements Serializable {
-	private static final long serialVersionUID = 200906191236L;
-	private Parameter parameter;
-	
-	private boolean useCalibratedValue=true;
-	private int instance=0;
-	
-	public ParameterInstanceRef(Parameter para) {
-		this.parameter=para;
-	}
-	
-	public ParameterInstanceRef(Parameter para, boolean useCalibratedValue) {
-		this.parameter=para;
-		this.useCalibratedValue=useCalibratedValue;
-	}
-    
-	public ParameterInstanceRef(boolean useCalibratedValue) {
+    private static final long serialVersionUID = 200906191236L;
+    private Parameter parameter;
+
+    private boolean useCalibratedValue=true;
+    private int instance=0;
+
+    public ParameterInstanceRef(Parameter para) {
+        this.parameter=para;
+    }
+
+    public ParameterInstanceRef(Parameter para, boolean useCalibratedValue) {
+        this.parameter=para;
         this.useCalibratedValue=useCalibratedValue;
     }
-	
+
+    public ParameterInstanceRef(boolean useCalibratedValue) {
+        this.useCalibratedValue=useCalibratedValue;
+    }
+
     public void setParameter(Parameter para) {
         this.parameter=para;
     }	
-	
-	public Parameter getParameter() {
-		return parameter;
-	}
-	
-	public boolean useCalibratedValue() {
-		return useCalibratedValue;
-	}
-	
-	public void setUseCalibratedValue(boolean useCalibratedValue) {
-	    this.useCalibratedValue=useCalibratedValue;
-	}
 
-	public void setInstance(int instance) {
-	    this.instance = instance;
-	}
-	
-	public int getInstance() {
-	    return instance;
-	}
-	
-	@Override
-	public String toString() {
-	    return parameter.getQualifiedName()+" instance:"+instance;
-	}
+    public Parameter getParameter() {
+        return parameter;
+    }
+
+    public boolean useCalibratedValue() {
+        return useCalibratedValue;
+    }
+
+    public void setUseCalibratedValue(boolean useCalibratedValue) {
+        this.useCalibratedValue=useCalibratedValue;
+    }
+
+    public void setInstance(int instance) {
+        this.instance = instance;
+    }
+
+    public int getInstance() {
+        return instance;
+    }
+
+    @Override
+    public String toString() {
+        return parameter.getQualifiedName()+" instance:"+instance;
+    }
 }
