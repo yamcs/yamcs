@@ -127,12 +127,8 @@ public class Privilege {
 
     public static synchronized Privilege getInstance() {
         if (instance == null)
-            try {
-                instance = new Privilege() {};
-            } catch (ConfigurationException e) {
-                System.err.println("Could not create privileges: " + e);
-                System.exit(-1);
-            }
+            instance = new Privilege() {};
+            
         return instance;
     }
 
