@@ -2,9 +2,7 @@ package org.yamcs.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.YamcsSession;
 
 import javax.naming.AuthenticationException;
 import javax.naming.Context;
@@ -19,9 +17,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
-import java.util.concurrent.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by msc on 05/05/15.
@@ -39,7 +34,6 @@ public class LdapRealm implements Realm {
     static Logger log = LoggerFactory.getLogger(LdapRealm.class);
 
     static {
-        try {
             YConfiguration conf = YConfiguration.getConfiguration("privileges");
 
             String host = conf.getString("ldaphost");
@@ -53,11 +47,6 @@ public class LdapRealm implements Realm {
             contextEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
             contextEnv.put(Context.PROVIDER_URL, "ldap://" + host);
             contextEnv.put("com.sun.jndi.ldap.connect.pool", "true");
-
-        } catch (ConfigurationException e) {
-            log.error("Failed to load 'ldap' configuration: ", e);
-            System.exit(-1);
-        }
     }
 
     private String getUserDn(User user) {

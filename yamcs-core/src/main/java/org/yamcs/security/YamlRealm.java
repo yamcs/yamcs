@@ -5,9 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 
-import javax.naming.Context;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
 /**
@@ -25,15 +22,9 @@ public class YamlRealm implements Realm {
     static String system_privileges = "system_privileges";
 
     static {
-        try {
-            YConfiguration privConf = YConfiguration.getConfiguration("privileges");
-            configFileName = privConf.getString("yamlRealmFilename");
-            configFileName = configFileName.substring(0, configFileName.length()-5); // remove the .yaml
-
-        } catch (ConfigurationException e) {
-            log.error("Failed to load 'ldap' configuration: ", e);
-            System.exit(-1);
-        }
+        YConfiguration privConf = YConfiguration.getConfiguration("privileges");
+        configFileName = privConf.getString("yamlRealmFilename");
+        configFileName = configFileName.substring(0, configFileName.length()-5); // remove the .yaml
     }
 
     @Override
