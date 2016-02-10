@@ -200,7 +200,7 @@ public class DerivedValuesTest {
 
     static class FloatAddDv extends DerivedValue {
 	public FloatAddDv(String name, String[] argnames) {
-	    super(name, getParams(argnames));
+	    super(name, "DV", getParams(argnames));
 	}
 
 

@@ -29,6 +29,7 @@ import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.MdbMappings;
+import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 
@@ -118,14 +119,13 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
     }
 
     void loadTag_SpaceSystem(Element el) {
-	ssName = el.getAttribute("name");
+	ssName = NameDescription.PATH_SEPARATOR+el.getAttribute("name"); //we create this at the root, perhaps could be configurable
 	algoCount = 0;
 	NodeList nl = el.getElementsByTagName("TelemetryMetaData");
 	for (int i = 0; i < nl.getLength(); ++i) {
 	    loadTag_TelemetryMetaData((Element) nl.item(i));
 	}
-	log.debug(String.format("Loaded %d algorithms from \"%s\"", algoCount,
-		ssName));
+	log.debug(String.format("Loaded %d algorithms from \"%s\"", algoCount, ssName));
     }
 
     void loadTag_TelemetryMetaData(Element el) {
@@ -169,8 +169,7 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 	if (currentCode == null) {
 	    log.warn(String.format("Algorithm %s: no code", currentAlgo));
 	} else {
-	    Algorithm a = new Algorithm(currentEngine, currentCode,
-		    currentInputParams, currentOutputParam);
+	    Algorithm a = new Algorithm(currentEngine, currentCode, currentInputParams, currentOutputParam);
 	    a.getParameter().setQualifiedName("/" + ssName + "/" + currentOutputParam);
 	    derivedValues.add(a);
 	    ++algoCount;
@@ -258,8 +257,7 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
     Parameter[] getParameters(String[] opsnames) {
 	Parameter[] params = new Parameter[opsnames.length];
 	for (int i = 0; i < params.length; i++) {
-	    params[i] = xtcedb.getParameter(MdbMappings.MDB_OPSNAME,
-		    opsnames[i]);
+	    params[i] = xtcedb.getParameter(MdbMappings.MDB_OPSNAME,  opsnames[i]);
 	}
 	return params;
     }
@@ -269,7 +267,7 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 	ScriptEngine engine;
 
 	Algorithm(ScriptEngine engine, String programCode, String[] inputParams, String outputParam) {
-	    super(outputParam, getParameters(inputParams));
+	    super(outputParam, ssName, getParameters(inputParams));
 	    this.engine = engine;
 	    this.programCode = programCode;
 	}
