@@ -35,7 +35,21 @@ public class ValueUtility {
     public static Value getTimestampValue(long x) {
         return Value.newBuilder().setType(Value.Type.TIMESTAMP).setTimestampValue(x).build(); 
     }
+    
 
+    public static Value getBooleanValue(boolean b) {
+        return Value.newBuilder().setType(Value.Type.BOOLEAN).setBooleanValue(b).build(); 
+    }
+    
+
+    public static Value getFloatValue(float f) {
+        return Value.newBuilder().setType(Value.Type.FLOAT).setFloatValue(f).build();
+    }
+    
+    public static Value getDoubleValue(double d) {
+        return Value.newBuilder().setType(Value.Type.DOUBLE).setDoubleValue(d).build();
+    }
+    
     public static Value getColumnValue(ColumnDefinition cd, Object v) {
         switch (cd.getType().val) { //TODO all types
         case INT:
@@ -167,5 +181,4 @@ public class ValueUtility {
             throw new IllegalStateException("Unexpected type " + a.getType());
         }
     }
-
 }

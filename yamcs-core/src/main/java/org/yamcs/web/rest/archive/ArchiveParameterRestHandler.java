@@ -86,29 +86,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
             @Override
             public void onParameterData(List<ParameterValueWithId> params) {
                 for (ParameterValueWithId pvalid : params) {
-                    org.yamcs.ParameterValue pval = pvalid.getParameterValue();
-                    switch (pval.getEngValue().getType()) {
-                    case DOUBLE:
-                        sampler.process(pval.getGenerationTime(), pval.getEngValue().getDoubleValue());
-                        break;
-                    case FLOAT:
-                        sampler.process(pval.getGenerationTime(), pval.getEngValue().getFloatValue());
-                        break;
-                    case SINT32:
-                        sampler.process(pval.getGenerationTime(), pval.getEngValue().getSint32Value());
-                        break;
-                    case SINT64:
-                        sampler.process(pval.getGenerationTime(), pval.getEngValue().getSint64Value());
-                        break;
-                    case UINT32:
-                        sampler.process(pval.getGenerationTime(), pval.getEngValue().getUint32Value()&0xFFFFFFFFL);
-                        break;
-                    case UINT64:
-                        sampler.process(pval.getGenerationTime(), pval.getEngValue().getUint64Value());
-                        break;
-                    default:
-                        log.warn("Unexpected value type " + pval.getEngValue().getType());
-                    }
+                    sampler.process(pvalid.getParameterValue());
                 }
             }
         });

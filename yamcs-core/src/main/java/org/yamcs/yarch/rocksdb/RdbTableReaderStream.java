@@ -20,11 +20,12 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchDatabase;
 
 public class RdbTableReaderStream extends AbstractTableReaderStream implements Runnable, DbReaderStream {
-    static AtomicInteger count=new AtomicInteger(0);
+    static AtomicInteger count = new AtomicInteger(0);
     final PartitioningSpec partitioningSpec;
     final RdbPartitionManager partitionManager;
     final TableDefinition tableDefinition;
-
+    private long numRecordsRead = 0;
+    
     protected RdbTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, RdbPartitionManager partitionManager, boolean ascending, boolean follow) {
         super(ydb, tblDef, partitionManager, ascending, follow);
         this.tableDefinition=tblDef;
@@ -71,6 +72,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
         } else {
             return readDescending(partitions, rangeStart, strictStart, rangeEnd, strictEnd);
         }
+     
     }
     
     private boolean readAscending(List<Partition> partitions, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
@@ -117,6 +119,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
                 if(!found) {
                     it.dispose();                                        
                 } else {
+                    numRecordsRead++;
                     orderedQueue.add(new RdbRawTuple(it.key(), it.value(), it, i++));
                 }
             }
@@ -130,6 +133,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
                 }
                 rt.iterator.next();
                 if(rt.iterator.isValid()) {
+                    numRecordsRead++;
                     rt.key=rt.iterator.key();
                     rt.value=rt.iterator.value();
                     orderedQueue.add(rt);
@@ -248,6 +252,10 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
                 rt.iterator.dispose();                
             }
         }
+    }
+
+    public long getNumRecordsRead() {
+        return numRecordsRead;
     }
 
     class RdbRawTuple extends RawTuple {       

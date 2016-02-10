@@ -1,5 +1,6 @@
 package org.yamcs.algorithms;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import org.yamcs.ParameterValue;
@@ -24,7 +25,10 @@ public abstract class ValueBinding {
     public void updateValue(ParameterValue newValue) {
         acquisitionStatus = newValue.getAcquisitionStatus();
         monitoringResult = newValue.getMonitoringResult();
-        acquisitionTime = TimeEncoding.toCalendar(newValue.getAcquisitionTime()).getTime();
+        if(newValue.hasAcquisitionTime()) {
+            Calendar cal = TimeEncoding.toCalendar(newValue.getAcquisitionTime());
+            acquisitionTime = cal.getTime();
+        }
         acquisitionTimeMs = newValue.getAcquisitionTime();
         generationTime = TimeEncoding.toCalendar(newValue.getGenerationTime()).getTime();
         generationTimeMs = newValue.getGenerationTime();

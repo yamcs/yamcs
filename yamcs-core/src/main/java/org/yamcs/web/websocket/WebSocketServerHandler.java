@@ -129,7 +129,7 @@ public class WebSocketServerHandler {
                     }
                 }
             } catch (WebSocketException e) {
-                log.debug("Returning nominal exception back to the client", e);
+                log.debug("Returning nominal exception back to the client: {}", e.getMessage());
                 sendException(e);
             }
         } catch (Exception e) {

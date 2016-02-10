@@ -20,25 +20,26 @@ import org.slf4j.LoggerFactory;
  * we take a rough assumption based on the first result, and up until validEnd.
  */
 public class RestDownsampler {
-    
+
     private static final Logger log = LoggerFactory.getLogger(RestDownsampler.class);
     private static final int DEFAULT_INTERVAL_COUNT = 500;
-    
-    
+
+
     private TreeMap<Long, Sample> samplesByTime;
     private long start;
     private final long projectedEnd;
     private final int intervalCount;
+    private long lastSampleTime;
     
     public RestDownsampler(long projectedEnd) {
         this(projectedEnd, DEFAULT_INTERVAL_COUNT);
     }
-    
+
     public RestDownsampler(long projectedEnd, int intervalCount) {
         this.projectedEnd = projectedEnd;
         this.intervalCount = intervalCount;
     }
-    
+
     private void initializeIntervals(long start) {
         this.start = start;
         samplesByTime = new TreeMap<>();
@@ -47,18 +48,19 @@ public class RestDownsampler {
             samplesByTime.put(i, null);
         }
     }
-    
+
     /**
      * Assumes timesorted processing, as the first entry will be used to
      * determine the time spread of the buckets, up until validEnd. :-/
      */
     public void process(long time, double value) {
         if (time > projectedEnd || time < start) return;
-        
+        lastSampleTime = time;
+
         if (samplesByTime == null) {
             initializeIntervals(time);
         }
-        
+
         Entry<Long, Sample> entry = samplesByTime.floorEntry(time);
         if (entry == null) {
             log.warn("No interval for value " + value);
@@ -68,7 +70,7 @@ public class RestDownsampler {
         if (sample == null) samplesByTime.put(entry.getKey(), new Sample(time, value));
         else sample.process(time, value);
     }
-    
+
     public List<Sample> collect() {
         if (samplesByTime == null) return Collections.emptyList();
         return samplesByTime.values().stream().filter(s -> s != null).collect(Collectors.toList());
@@ -84,13 +86,13 @@ public class RestDownsampler {
         double max;
         double avg;
         int n;
-        
+
         public Sample(long t, double value) {
             avgt = t;
             min = avg = max = value;
             n = 1;
         }
-        
+
         public void process(long t, double value) {
             if (value < min) min = value;
             if (value > max) max = value;
@@ -100,10 +102,40 @@ public class RestDownsampler {
             avg -= (avg / n);
             avg += (value / n);
         }
-        
+
         @Override
         public String toString() {
             return String.format("%s (min=%s, max=%s, n=%s)", avg, min, max, n);
         }
+    }
+
+    public void process(org.yamcs.ParameterValue pval) {
+        switch (pval.getEngValue().getType()) {
+        case DOUBLE:
+            process(pval.getGenerationTime(), pval.getEngValue().getDoubleValue());
+            break;
+        case FLOAT:
+            process(pval.getGenerationTime(), pval.getEngValue().getFloatValue());
+            break;
+        case SINT32:
+            process(pval.getGenerationTime(), pval.getEngValue().getSint32Value());
+            break;
+        case SINT64:
+            process(pval.getGenerationTime(), pval.getEngValue().getSint64Value());
+            break;
+        case UINT32:
+            process(pval.getGenerationTime(), pval.getEngValue().getUint32Value()&0xFFFFFFFFL);
+            break;
+        case UINT64:
+            process(pval.getGenerationTime(), pval.getEngValue().getUint64Value());
+            break;
+        default:
+            log.warn("Unexpected value type " + pval.getEngValue().getType());
+        }
+
+    }
+
+    public long lastSampleTime() {
+        return lastSampleTime;
     }
 }

@@ -42,6 +42,7 @@ public abstract class RestReplayListener implements ParameterWithIdConsumer {
     }
 
     
+    
     @Override
     public void update(int subscriptionId, List<ParameterValueWithId> params) {
         List<ParameterValueWithId> filteredData = filter(params);
@@ -62,6 +63,24 @@ public abstract class RestReplayListener implements ParameterWithIdConsumer {
         }
     }
     
+    //fast path for one parameter only
+    public void update(ParameterValueWithId pvwid) {
+        pvwid = filter(pvwid);
+        if (pvwid == null) return;
+        if (paginate) {
+            if (rowNr >= pos) {
+                if (emitted < limit) {
+                    emitted++;
+                    onParameterData(pvwid);
+                } else {
+                    requestReplayAbortion();
+                }
+            }
+            rowNr++;
+        } else {
+            onParameterData(pvwid);
+        }
+    }
     /**
      * Override to filter out some replay data. Null means excluded.
      * (which also means it will not be counted towards the pagination.
@@ -70,9 +89,14 @@ public abstract class RestReplayListener implements ParameterWithIdConsumer {
         return params;
     }
     
-    public abstract void onParameterData(List<ParameterValueWithId> params);
+    //fast path of the above with one parameter
+    public ParameterValueWithId filter(ParameterValueWithId pvwid) {
+        return pvwid;
+    }
     
-    public void replayFinished(){
-        
-    };
+    public void onParameterData(List<ParameterValueWithId> params){};
+    
+    public void onParameterData(ParameterValueWithId pvwid){};
+    
+    public void replayFinished(){};
 }

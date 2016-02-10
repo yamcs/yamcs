@@ -18,18 +18,18 @@ public class SequenceContainerProcessor {
     SequenceContainerProcessor(ProcessingContext pcontext) {
         this.pcontext=pcontext;
     }
-    
+
     public void extract(SequenceContainer seq) {
         //First add it to the result
         pcontext.containerResult.add(new ContainerExtractionResult(seq, pcontext.bb
-                        .asReadOnlyBuffer(), pcontext.bitPosition, pcontext.acquisitionTime, pcontext.generationTime));
-        
+                .asReadOnlyBuffer(), pcontext.bitPosition, pcontext.acquisitionTime, pcontext.generationTime));
+
         RateInStream ris = seq.getRateInStream();
         if(ris != null) {
             pcontext.expirationTime = pcontext.acquisitionTime + ris.getMaxInterval();
         }
-        
-        int maxposition = pcontext.bitPosition;
+        int maxposition=pcontext.bitPosition;
+
         //then extract the entries
         TreeSet<SequenceEntry> entries=pcontext.subscription.getEntries(seq);
         if(entries!=null) {
@@ -42,12 +42,12 @@ public class SequenceContainerProcessor {
                     case containerStart:
                         pcontext.bitPosition=se.getLocationInContainerInBits();
                     }
-                    if(pcontext.bitPosition >= pcontext.bb.capacity()*8)
-                    {
-                        // Packet does not contain more parameters
-                        log.info("Packet does not contain more parameter");
+                    
+                    if(pcontext.ignoreOutOfContainerEntries && (pcontext.bitPosition >= pcontext.bb.capacity()*8)) {
+                        //the next entry is outside of the packet
                         break;
                     }
+
                     if(se.getRepeatEntry()==null) {
                         pcontext.sequenceEntryProcessor.extract(se);
                     } else { //this entry is repeated several times
@@ -70,10 +70,10 @@ public class SequenceContainerProcessor {
                 if(pcontext.bitPosition>maxposition) maxposition=pcontext.bitPosition;
             }
         }
-    
+
         HashSet<SequenceContainer> inheritingContainers=pcontext.subscription.getInheritingContainers(seq);
         boolean hasDerived=false;
-        
+
         if(inheritingContainers!=null) {
             //And then any derived containers
             int bitp=pcontext.bitPosition;

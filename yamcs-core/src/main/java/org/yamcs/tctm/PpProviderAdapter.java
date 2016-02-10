@@ -17,7 +17,6 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.PpListener;
 import org.yamcs.tctm.PpProvider;
 import org.yamcs.time.TimeService;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;

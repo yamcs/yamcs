@@ -1,5 +1,7 @@
 package org.yamcs;
 
+import java.util.List;
+
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.protobuf.Mdb.AlarmRange;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
@@ -29,16 +31,16 @@ public class ParameterValue {
     private final Parameter def;
     private final String paramFqn;
 
-    
+
     ParameterEntry entry;
     int absoluteBitOffset, bitSize;
 
-    public Value rawValue;
+    private Value rawValue;
     private Value engValue;
-    private long acquisitionTime;
+    private long acquisitionTime = TimeEncoding.INVALID_INSTANT;
     private long generationTime;
     private long expirationTime = TimeEncoding.INVALID_INSTANT;
-    
+
     private AcquisitionStatus acquisitionStatus;
     private boolean processingStatus;
     private MonitoringResult monitoringResult;
@@ -46,11 +48,11 @@ public class ParameterValue {
     private RangeCondition rangeCondition;
 
 
-    public FloatRange watchRange=null;
-    public FloatRange warningRange=null;
-    public FloatRange distressRange=null;
-    public FloatRange criticalRange=null;
-    public FloatRange severeRange=null;
+    public FloatRange watchRange = null;
+    public FloatRange warningRange = null;
+    public FloatRange distressRange = null;
+    public FloatRange criticalRange = null;
+    public FloatRange severeRange = null;
 
 
     /**
@@ -60,7 +62,7 @@ public class ParameterValue {
     public ParameterValue(Parameter def) {
         this.def=def;
         paramFqn = def.getQualifiedName();
-        
+
         setAcquisitionStatus(AcquisitionStatus.ACQUIRED);
         setProcessingStatus(true);
     }
@@ -68,7 +70,7 @@ public class ParameterValue {
         this.def = null;
         this.paramFqn = fqn;
     }
-   
+
     public int getAbsoluteBitOffset() {
         return absoluteBitOffset;
     }
@@ -160,7 +162,7 @@ public class ParameterValue {
     public void setDeltaMonitoringResult(MonitoringResult m) {
         deltaMonitoringResult=m;
     }
-    
+
     public void setRangeCondition(RangeCondition rangeCondition) {
         this.rangeCondition = rangeCondition;
     }
@@ -177,7 +179,7 @@ public class ParameterValue {
     public Parameter getParameter() {
         return def;
     }
-    
+
     public String getParameterQualifiedNamed() {
         return paramFqn;
     }
@@ -189,7 +191,7 @@ public class ParameterValue {
     public MonitoringResult getMonitoringResult() {
         return monitoringResult;
     }
-    
+
     public RangeCondition getRangeCondition() {
         return rangeCondition;
     }
@@ -308,19 +310,24 @@ public class ParameterValue {
     public void setExpirationTime(long et) {
         this.expirationTime = et;
     }
-    
+
     public long getExpirationTime() {
         return expirationTime;
     }
 
-    
+    public void setEngValue(Value engValue) {
+        this.engValue = engValue;
+    }
+
     public org.yamcs.protobuf.Pvalue.ParameterValue toGpb(NamedObjectId id) {
         org.yamcs.protobuf.Pvalue.ParameterValue.Builder gpvb=org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
-                .setAcquisitionStatus(getAcquisitionStatus())
-                .setAcquisitionTime(getAcquisitionTime())
+                .setAcquisitionStatus(getAcquisitionStatus())               
                 .setGenerationTime(getGenerationTime())
                 .setProcessingStatus(getProcessingStatus());
 
+        if(acquisitionTime!=TimeEncoding.INVALID_INSTANT) {
+            gpvb.setAcquisitionTime(acquisitionTime);
+        }
         if(engValue!=null) {
             gpvb.setEngValue(engValue);
         }
@@ -332,7 +339,9 @@ public class ParameterValue {
         }
 
         // TODO make this optional
-        gpvb.setAcquisitionTimeUTC(TimeEncoding.toString(getAcquisitionTime()));
+        if(acquisitionTime!=TimeEncoding.INVALID_INSTANT) {
+            gpvb.setAcquisitionTimeUTC(TimeEncoding.toString(getAcquisitionTime()));
+        }
         gpvb.setGenerationTimeUTC(TimeEncoding.toString(getGenerationTime()));
 
         if(expirationTime!=TimeEncoding.INVALID_INSTANT) {
@@ -356,7 +365,7 @@ public class ParameterValue {
         if(getRawValue()!=null) gpvb.setRawValue(getRawValue());
         return gpvb.build();
     }
-    
+
     private static AlarmRange toGpbAlarmRange(AlarmLevelType gpbLevel, FloatRange floatRange) {
         AlarmRange.Builder rangeb = AlarmRange.newBuilder();
         rangeb.setLevel(gpbLevel);
@@ -369,19 +378,29 @@ public class ParameterValue {
 
     public static ParameterValue fromGpb(Parameter pdef, org.yamcs.protobuf.Pvalue.ParameterValue gpv) {
         ParameterValue pv=new ParameterValue(pdef);
+
         pv.setAcquisitionStatus(gpv.getAcquisitionStatus());
-        pv.setAcquisitionTime(gpv.getAcquisitionTime());
-        if(gpv.hasExpirationTime())
-        {
+        pv.setEngineeringValue(gpv.getEngValue());
+
+        if(gpv.hasAcquisitionTime()) {
+            pv.setAcquisitionTime(gpv.getAcquisitionTime());
+        }
+
+        if(gpv.hasExpirationTime()) {
             pv.setExpirationTime(gpv.getExpirationTime());
         }
-        pv.setEngineeringValue(gpv.getEngValue());
-        pv.setGenerationTime(gpv.getGenerationTime());
+
+        if(gpv.hasGenerationTime()) {
+            pv.setGenerationTime(gpv.getGenerationTime());
+        }
         if(gpv.hasMonitoringResult())
             pv.setMonitoringResult(gpv.getMonitoringResult());
+
         if(gpv.hasRangeCondition())
             pv.setRangeCondition(gpv.getRangeCondition());
+
         pv.setProcessingStatus(gpv.getProcessingStatus());
+
         if(gpv.hasRawValue()) {
             pv.setRawValue(gpv.getRawValue());
         }
@@ -389,12 +408,53 @@ public class ParameterValue {
     }
 
     
+    public void addAlarmRanges(List<AlarmRange> alarmRangeList) {
+        for(AlarmRange ar: alarmRangeList) {
+            switch(ar.getLevel()){
+                case WATCH:
+                    watchRange = fromGbpAlarmRange(ar); 
+                    break;
+                case WARNING:
+                    warningRange = fromGbpAlarmRange(ar);
+                    break;
+                case DISTRESS:
+                    distressRange = fromGbpAlarmRange(ar);
+                    break;
+                case CRITICAL:
+                    criticalRange = fromGbpAlarmRange(ar);
+                    break;
+                case SEVERE:
+                    severeRange = fromGbpAlarmRange(ar);
+                    break;
+                case NORMAL: //never used
+            }
+        } 
+    }
+
+    public boolean hasAcquisitionTime() {
+        return acquisitionTime != TimeEncoding.INVALID_INSTANT;
+    }
+
+    private FloatRange fromGbpAlarmRange(AlarmRange ar) {
+        double minInclusive = ar.hasMinInclusive()?ar.getMinInclusive():Double.NEGATIVE_INFINITY;
+        double maxInclusive = ar.hasMaxInclusive()?ar.getMaxInclusive():Double.POSITIVE_INFINITY;
+        return new FloatRange(minInclusive, maxInclusive);
+    }
+    
     @Override
     public String toString() {
         StringBuilder sb=new StringBuilder();
-        sb.append("name: ").append(def.getName());
+        sb.append("name: ");
+        if(def!=null) {
+            sb.append(def.getName());
+        } else {
+            sb.append(paramFqn);
+        }
         if(rawValue!=null) sb.append(" rawValue: {").append(rawValue.toString()).append("}");
         if(engValue!=null) sb.append(" engValue: {").append(engValue.toString()).append("}");
         return sb.toString();
     }
+    
+
+
 }

@@ -55,6 +55,7 @@ import io.protostuff.JsonIOUtil;
 import io.protostuff.Schema;
 
 public abstract class AbstractIntegrationTest {
+    final String yamcsInstance = "IntegrationTest";
     PacketProvider packetProvider;
     YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190, "IntegrationTest");
     MyWsListener wsListener;
@@ -67,7 +68,7 @@ public abstract class AbstractIntegrationTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-      //  enableDebugging();
+        enableDebugging();
         setupYamcs();
     }
 

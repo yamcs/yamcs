@@ -70,7 +70,11 @@ public class YProcessor extends AbstractService {
     private CommandHistoryRequestManager commandHistoryRequestManager;
 
     private CommandingManager commandingManager;
+
+    private final String CONFIG_KEY_alarm ="alarm";
+
     private CommandHistoryProvider commandHistoryProvider;
+
 
     private TmPacketProvider tmPacketProvider;
     private CommandReleaser commandReleaser;
@@ -105,8 +109,6 @@ public class YProcessor extends AbstractService {
 
     TimeService timeService;
 
-    
-    
     @GuardedBy("this")
     HashSet<YProcessorClient> connectedClients= new HashSet<YProcessorClient>();
 
@@ -126,25 +128,25 @@ public class YProcessor extends AbstractService {
 
     @SuppressWarnings("unchecked")
     void init(TcTmService tctms, Map<String, Object> config) throws YProcessorException, ConfigurationException {
-        
-        xtcedb=XtceDbFactory.getInstance(yamcsInstance);
+        xtcedb = XtceDbFactory.getInstance(yamcsInstance);
+
         timeService = YamcsServer.getTimeService(yamcsInstance);
         Map<String, Object> tmProcessorConfig = null;
-
+        
         synchronized(instances) {
             if(instances.containsKey(key(yamcsInstance,name))) throw new YProcessorException("A processor named '"+name+"' already exists in instance "+yamcsInstance);
             if(config!=null) {
                 for(String c: config.keySet()) {
-                    if("alarm".equals(c)) {
+                    if(CONFIG_KEY_alarm.equals(c)) {
                         Object o = config.get(c);
                         if(!(o instanceof Map)) {
-                            throw new ConfigurationException("alarm configuration should be a map");
+                            throw new ConfigurationException(CONFIG_KEY_alarm+" configuration should be a map");
                         }
                         configureAlarms((Map<String, Object>) o);
                     } else if(CONFIG_KEY_parameterCache.equals(c)) {
                         Object o = config.get(c);
                         if(!(o instanceof Map)) {
-                            throw new ConfigurationException("parameterCache configuration should be a map");
+                            throw new ConfigurationException(CONFIG_KEY_parameterCache + " configuration should be a map");
                         }
                         configureParameterCache((Map<String, Object>) o);
                     } else if(CONFIG_KEY_tmProcessor.equals(c)) {
@@ -193,6 +195,7 @@ public class YProcessor extends AbstractService {
 
             parameterRequestManager.init();
             
+
             if(commandReleaser!=null) {
                 try {
                     this.commandHistoryPublisher=new YarchCommandHistoryAdapter(yamcsInstance);
@@ -318,7 +321,6 @@ public class YProcessor extends AbstractService {
         if(tmProcessor!=null) {
             tmProcessor.startAsync();
         }
-        
         if(commandReleaser!=null) {
             commandReleaser.startAsync();
             commandReleaser.awaitRunning();
@@ -341,15 +343,17 @@ public class YProcessor extends AbstractService {
         for(ParameterProvider pprov: parameterProviders) {
             pprov.startAsync();
         }
-        
-        
         parameterRequestManager.start();
 
         if(tmPacketProvider!=null) {
             tmPacketProvider.awaitRunning();
         }
+        if(tmProcessor!=null) {
+            tmProcessor.awaitRunning();
+        }
+        
         notifyStarted();
-        propagateProcessorStateChange();
+        propagateProcessorStateChange();        
     }
 
     private void startIfNecessary(Service service) {
@@ -595,7 +599,6 @@ public class YProcessor extends AbstractService {
         return alarmServerEnabled;
     }
 
-
     public ScheduledThreadPoolExecutor getTimer() {
         return timer;
     }
@@ -620,14 +623,10 @@ public class YProcessor extends AbstractService {
         awaitTerminated();
     }
 
-
-
     public void start() {
         startAsync();
         awaitRunning();
     }
-
-
 
     public void notifyStateChange() {
         propagateProcessorStateChange();        

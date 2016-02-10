@@ -137,7 +137,6 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
                     params.add(pv);
                     replayTime = pv.getGenerationTime();
                 }
-
             }
             parameterRequestManager.update(params);
             break;

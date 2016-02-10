@@ -23,7 +23,7 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
     private void generateData(String utcStart, int numPackets) {
         long t0 = TimeEncoding.parse(utcStart);
         for (int i=0;i <numPackets; i++) {
-                packetGenerator.setGenerationTime(t0+1000*i);
+            packetGenerator.setGenerationTime(t0+1000*i);
             packetGenerator.generate_PKT1_1();
             packetGenerator.generate_PKT1_3();
         }

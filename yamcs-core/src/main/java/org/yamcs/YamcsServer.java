@@ -81,6 +81,9 @@ public class YamcsServer {
     
     static TimeService realtimeTimeService = new RealtimeTimeService();
     
+    //used for unit tests
+    static TimeService mockupTimeService;
+    
     static private String serverId;
     
     @SuppressWarnings("unchecked")
@@ -446,7 +449,11 @@ public class YamcsServer {
         if(instances.containsKey(yamcsInstance)) {
             return instances.get(yamcsInstance).getTimeService();
         } else {
-            return realtimeTimeService; //happens from unit tests
+            if(mockupTimeService!=null) {
+                return mockupTimeService;
+            } else {            
+                return realtimeTimeService; //happens from unit tests
+            }
         }
         
     }
@@ -466,5 +473,9 @@ public class YamcsServer {
         YamcsServer ys = YamcsServer.getInstance(yamcsInstance);
         if(ys==null) return null;
         return ys.getService(serviceClass);
+    }
+    
+    public static void setMockupTimeService(TimeService timeService) {
+        mockupTimeService = timeService;
     }
 }

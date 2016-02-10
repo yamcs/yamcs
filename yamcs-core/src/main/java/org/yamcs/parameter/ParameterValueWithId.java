@@ -16,6 +16,11 @@ public class ParameterValueWithId {
     private ParameterValue pv;
     private NamedObjectId id;
 
+    public ParameterValueWithId(ParameterValue pv, NamedObjectId id) {
+        this.pv = pv;
+        this.id = id;
+    }
+
     public void setId(NamedObjectId id) {
 	this.id = id;
     }

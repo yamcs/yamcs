@@ -160,9 +160,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
                 }
 
                 for(NamedObjectId id:idList) {
-                    ParameterValueWithId pvwi = new ParameterValueWithId();
-                    pvwi.setParameterValue(pv);
-                    pvwi.setId(id);
+                    ParameterValueWithId pvwi = new ParameterValueWithId(pv, id);
                     plist.add(pvwi);
                 }	    
             }
@@ -193,9 +191,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             }
 
             for(NamedObjectId id:l) {
-                ParameterValueWithId pvwi = new ParameterValueWithId();
-                pvwi.setParameterValue(pv);
-                pvwi.setId(id);
+                ParameterValueWithId pvwi = new ParameterValueWithId(pv, id);
                 plist.add(pvwi);
             }	    
         }

@@ -1,5 +1,6 @@
 package org.yamcs.utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
@@ -8,6 +9,15 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 
 public class FileUtils {
+    
+    public static void deleteRecursively(String path)  throws IOException {
+        deleteRecursively(new File(path).toPath());
+    }
+    
+    public static void deleteRecursively(File f)  throws IOException {
+        deleteRecursively(f.toPath());
+    }
+    
     public static void deleteRecursively(Path dirToRemove) throws IOException {
 	Files.walkFileTree(dirToRemove, new FileVisitor<Path>() {
 	    @Override

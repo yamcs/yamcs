@@ -9,6 +9,7 @@ services:
     - org.yamcs.archive.EventRecorder
     - org.yamcs.archive.ReplayServer
     - org.yamcs.archive.IndexServer
+    - org.yamcs.parameterarchive.ParameterArchive
     - class: org.yamcs.YProcessorCreatorService
       args: 
          name: "realtime"

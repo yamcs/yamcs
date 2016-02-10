@@ -173,7 +173,9 @@ public class YarchDatabase {
                         }
 
                         getStorageEngine(tblDef).loadTable(tblDef);
-                        managementService.registerTable(dbname, tblDef);
+                        if(managementService!=null) {
+                            managementService.registerTable(dbname, tblDef);
+                        }
                         tables.put(tblDef.getName(), tblDef);
                         log.debug("loaded table definition "+tblDef.getName()+" from "+f);
                     } catch (IOException e) {

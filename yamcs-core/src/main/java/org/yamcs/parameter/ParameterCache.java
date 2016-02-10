@@ -59,7 +59,7 @@ public class ParameterCache {
      * @param plist
      * @return
      */
-    List<ParameterValue> getValues(List<Parameter> plist) {
+    public List<ParameterValue> getValues(List<Parameter> plist) {
         //use a bitset to clear out the parameters that have already been found
         BitSet bs = new BitSet(plist.size());
         List<ParameterValue> result = new ArrayList<ParameterValue>(plist.size());
@@ -96,7 +96,7 @@ public class ParameterCache {
      * @param plist
      * @return
      */
-    ParameterValue getLastValue(Parameter p) {
+    public ParameterValue getLastValue(Parameter p) {
         CacheEntry ce = cache.get(p);
         if(ce==null) return null;
         ParameterValueList pvlist = ce.getLast();
@@ -110,7 +110,7 @@ public class ParameterCache {
      * @param plist
      * @return
      */
-    List<ParameterValue> getAllValues(Parameter p) {
+    public List<ParameterValue> getAllValues(Parameter p) {
         CacheEntry ce = cache.get(p);
         if(ce==null) return null;
 

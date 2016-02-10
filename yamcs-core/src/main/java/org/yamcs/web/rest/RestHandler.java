@@ -221,7 +221,7 @@ public abstract class RestHandler extends RouteHandler {
         }
         
         if (p == null) {
-            throw new NotFoundException(req, "No such parameter");
+            throw new NotFoundException(req, "No such parameter  '"+id+"'");
         } else {
             return p;
         }

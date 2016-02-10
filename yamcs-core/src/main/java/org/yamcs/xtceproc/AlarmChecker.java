@@ -37,9 +37,9 @@ import org.yamcs.xtce.ParameterType;
 public class AlarmChecker {
 
     private AlarmReporter alarmReporter;
-   
+
     private AlarmServer alarmServer;
-    
+
     private final int subscriptionId;
     ParameterRequestManagerImpl prm;
     Logger log = LoggerFactory.getLogger(this.getClass());
@@ -87,18 +87,18 @@ public class AlarmChecker {
             }
         }
     }
-    
+
     /**
      * Updates the supplied ParameterValues with monitoring (out of limits)
      * information.
      */
     public void performAlarmChecking(Collection<ParameterValue> pvals) {
-	    CriteriaEvaluator criteriaEvaluator = new CriteriaEvaluatorImpl(lastValues);
-		for(ParameterValue pval:pvals) {
-		    if(pval.getParameter().getParameterType()!=null && pval.getParameter().getParameterType().hasAlarm()) {
-			performAlarmChecking(pval, criteriaEvaluator);
-		    } //else do not set the MonitoringResult
-		}
+        CriteriaEvaluator criteriaEvaluator = new CriteriaEvaluatorImpl(lastValues);
+        for(ParameterValue pval:pvals) {
+            if(pval.getParameter().getParameterType()!=null && pval.getParameter().getParameterType().hasAlarm()) {
+                performAlarmChecking(pval, criteriaEvaluator);
+            } //else do not set the MonitoringResult
+        }
     }
 
     public void enableReporting(AlarmReporter reporter) {
@@ -136,7 +136,7 @@ public class AlarmChecker {
         } else {
             throw new IllegalStateException("Unexpected integer value");
         }
-        
+
         // Determine applicable ranges based on context
         boolean mon=false;
         AlarmType alarmType=null;
@@ -159,7 +159,7 @@ public class AlarmChecker {
             staticAlarmRanges=defaultAlarm.getStaticAlarmRanges();
             minViolations=defaultAlarm.getMinViolations();
         }
-        
+
         // Set MonitoringResult
         pv.setMonitoringResult(null); // The default is DISABLED, but set it to null, so that below code is more readable
         if(staticAlarmRanges!=null) {
@@ -186,7 +186,7 @@ public class AlarmChecker {
         } else {
             throw new IllegalStateException("Unexpected float value");
         }
-        
+
         // Determine applicable AlarmType based on context
         boolean mon=false;
         AlarmType alarmType=null;
@@ -209,13 +209,13 @@ public class AlarmChecker {
             staticAlarmRanges=defaultAlarm.getStaticAlarmRanges();
             minViolations=defaultAlarm.getMinViolations();
         }
-        
+
         // Set MonitoringResult	
         pv.setMonitoringResult(null); // The default is DISABLED, but set it to null, so that below code is more readable
         if(staticAlarmRanges!=null) {
             checkStaticAlarmRanges(pv, doubleCalValue, staticAlarmRanges);
         }
-        
+
         // Notify when severity changes
         if(alarmReporter!=null) {
             alarmReporter.reportNumericParameterEvent(pv, alarmType, minViolations);
@@ -280,11 +280,11 @@ public class AlarmChecker {
                 pv.setRangeCondition(RangeCondition.HIGH);
             }
         }
-        
+
         if (pv.getMonitoringResult() == null) {
-        	pv.setMonitoringResult(MonitoringResult.IN_LIMITS);
+            pv.setMonitoringResult(MonitoringResult.IN_LIMITS);
         }
-        
+
         pv.setWatchRange(watchRange);
         pv.setWarningRange(warningRange);
         pv.setDistressRange(distressRange);
@@ -295,7 +295,7 @@ public class AlarmChecker {
     private void performAlarmCheckingEnumerated(EnumeratedParameterType ept, ParameterValue pv, CriteriaEvaluator criteriaEvaluator) {
         pv.setMonitoringResult(null); // Default is DISABLED, but that doesn't seem fit when we are checking
         String s=pv.getEngValue().getStringValue();
-        
+
         EnumerationAlarm alarm=ept.getDefaultAlarm();
         int minViolations=(alarm==null)?1:alarm.getMinViolations();
         if(ept.getContextAlarmList()!=null) {
@@ -312,7 +312,7 @@ public class AlarmChecker {
             for(EnumerationAlarmItem eai:alarm.getAlarmList()) {
                 if(eai.getEnumerationValue().getLabel().equals(s)) level=eai.getAlarmLevel();
             }
-        
+
             switch(level) {
             case normal:
                 pv.setMonitoringResult(MonitoringResult.IN_LIMITS);
@@ -338,7 +338,7 @@ public class AlarmChecker {
                 alarmReporter.reportEnumeratedParameterEvent(pv, alarm, minViolations);
             }
         }
-        
+
 
         if(alarmServer!=null) {
             alarmServer.update(pv, minViolations);

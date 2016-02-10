@@ -217,6 +217,140 @@ public final class SchemaPvalue
         }
     }
 
+    public static final class ParameterStatus
+    {
+        public static final org.yamcs.protobuf.SchemaPvalue.ParameterStatus.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaPvalue.ParameterStatus.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaPvalue.ParameterStatus.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaPvalue.ParameterStatus.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Pvalue.ParameterStatus>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Pvalue.ParameterStatus message) throws java.io.IOException
+            {
+                if(message.hasAcquisitionStatus())
+                    output.writeString(1, message.getAcquisitionStatus().name(), false);
+                if(message.hasMonitoringResult())
+                    output.writeString(2, message.getMonitoringResult().name(), false);
+                if(message.hasRangeCondition())
+                    output.writeString(3, message.getRangeCondition().name(), false);
+                for(org.yamcs.protobuf.Mdb.AlarmRange alarmRange : message.getAlarmRangeList())
+                    output.writeObject(4, alarmRange, org.yamcs.protobuf.SchemaMdb.AlarmRange.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Pvalue.ParameterStatus message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaPvalue.ParameterStatus.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaPvalue.ParameterStatus.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Pvalue.ParameterStatus> typeClass()
+            {
+                return org.yamcs.protobuf.Pvalue.ParameterStatus.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Pvalue.ParameterStatus.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Pvalue.ParameterStatus.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Pvalue.ParameterStatus message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Pvalue.ParameterStatus newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Pvalue.ParameterStatus.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Pvalue.ParameterStatus.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setAcquisitionStatus(org.yamcs.protobuf.Pvalue.AcquisitionStatus.valueOf(input.readString()));
+                            break;
+                        case 2:
+                            builder.setMonitoringResult(org.yamcs.protobuf.Pvalue.MonitoringResult.valueOf(input.readString()));
+                            break;
+                        case 3:
+                            builder.setRangeCondition(org.yamcs.protobuf.Pvalue.RangeCondition.valueOf(input.readString()));
+                            break;
+                        case 4:
+                            builder.addAlarmRange(input.mergeObject(org.yamcs.protobuf.Mdb.AlarmRange.newBuilder(), org.yamcs.protobuf.SchemaMdb.AlarmRange.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Pvalue.ParameterStatus.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Pvalue.ParameterStatus.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Pvalue.ParameterStatus.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaPvalue.ParameterStatus.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaPvalue.ParameterStatus.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Pvalue.ParameterStatus.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Pvalue.ParameterStatus.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Pvalue.ParameterStatus.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Pvalue.ParameterStatus.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Pvalue.ParameterStatus.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "acquisitionStatus";
+                case 2: return "monitoringResult";
+                case 3: return "rangeCondition";
+                case 4: return "alarmRange";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("acquisitionStatus", 1);
+            fieldMap.put("monitoringResult", 2);
+            fieldMap.put("rangeCondition", 3);
+            fieldMap.put("alarmRange", 4);
+        }
+    }
+
     public static final class ParameterData
     {
         public static final org.yamcs.protobuf.SchemaPvalue.ParameterData.MessageSchema WRITE =

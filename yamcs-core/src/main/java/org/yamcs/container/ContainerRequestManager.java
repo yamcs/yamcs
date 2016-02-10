@@ -33,7 +33,7 @@ public class ContainerRequestManager implements ContainerListener {
      * created XtceTmProcessor.
      */
     public ContainerRequestManager(YProcessor yamcsChannel) {
-        this(yamcsChannel, new XtceTmProcessor(yamcsChannel));
+        this(yamcsChannel, new XtceTmProcessor(yamcsChannel, null));
     }
 
     /**

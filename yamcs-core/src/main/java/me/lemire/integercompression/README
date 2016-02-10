@@ -1,0 +1,8 @@
+This is integer compression code copied from 
+https://github.com/lemire/JavaFastPFOR
+
+We copied it here (instead of using the library via Maven) because we want 
+to make sure that we control 100% the format of the archive data and do not want 
+to have some incompatibility by later upgrading the library to a newer version.
+
+In addition we copied just the classes that we actually use.

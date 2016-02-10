@@ -48,4 +48,17 @@ public abstract class RestParameterReplayListener extends RestReplayListener {
             return params;
         }
     }
+    public ParameterValueWithId filter(ParameterValueWithId pvwid) {
+        if (noRepeat) {
+            ParameterValue pval = pvwid.getParameterValue();
+            if (!ValueUtility.equals(lastValue, pval.getEngValue())) {
+                lastValue = pval.getEngValue();
+                return pvwid;
+            } else {
+                return null;
+            }
+        } else {
+            return pvwid;
+        }
+    }  
 }

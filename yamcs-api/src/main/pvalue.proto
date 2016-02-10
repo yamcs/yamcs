@@ -51,6 +51,16 @@ message ParameterValue {
   repeated mdb.AlarmRange alarmRange = 25;
 }
 
+
+// used in the ParameterArchive to store the status flags associated to one parameter value
+message ParameterStatus {
+  optional AcquisitionStatus acquisitionStatus = 1;
+  optional MonitoringResult monitoringResult = 2;
+  optional RangeCondition rangeCondition = 3;
+  // context-dependent ranges
+  repeated mdb.AlarmRange alarmRange = 4;
+}
+
 message ParameterData {
   repeated ParameterValue parameter = 1;
 
