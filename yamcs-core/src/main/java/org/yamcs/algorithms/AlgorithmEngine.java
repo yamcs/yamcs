@@ -138,7 +138,7 @@ public class AlgorithmEngine {
         for(InputParameter inputParameter:def.getInputSet()) {
             ParameterInstanceRef pInstance = inputParameter.getParameterInstance();
             for(ParameterValue pval:allItems) {
-                if(pInstance.getParameter().equals(pval.def)) {
+                if(pInstance.getParameter().equals(pval.getParameter())) {
                     if(getLookbackSize(pInstance.getParameter())==0) {
                         updateInput(inputParameter, pval);
                     } else {

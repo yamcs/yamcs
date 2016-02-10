@@ -155,14 +155,14 @@ public class PpProviderAdapter extends AbstractService {
             cols.add(seqNum);
             cols.add(timeService.getMissionTime());
             for(ParameterValue pv:params) {
-                String qualifiedName = pv.def.getQualifiedName();
+                String qualifiedName = pv.getParameter().getQualifiedName();
                 if( qualifiedName == null || qualifiedName.isEmpty() ) {
-                    qualifiedName = pv.def.getName();
+                    qualifiedName = pv.getParameter().getName();
                     log.trace( "Using namespaced name for PP "+qualifiedName+" because fully qualified name not available." );
                 }
                 int idx=tdef.getColumnIndex(qualifiedName);
                 if(idx!=-1) {
-                    log.warn("duplicate value for "+pv.def+"\nfirst: "+cols.get(idx)+"\n second: "+pv.toGpb(null));
+                    log.warn("duplicate value for "+pv.getParameter()+"\nfirst: "+cols.get(idx)+"\n second: "+pv.toGpb(null));
                     continue;
                 }
                 tdef.addColumn(qualifiedName, paraDataType);

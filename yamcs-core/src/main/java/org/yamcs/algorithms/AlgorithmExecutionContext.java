@@ -53,8 +53,8 @@ public class AlgorithmExecutionContext {
 
     public void updateHistoryWindows(List<ParameterValue> pvals) {
         for(ParameterValue pval:pvals) {
-            if(buffersByParam.containsKey(pval.def)) {
-                buffersByParam.get(pval.def).update(pval);
+            if(buffersByParam.containsKey(pval.getParameter())) {
+                buffersByParam.get(pval.getParameter()).update(pval);
             } else if(parent!=null){
                 parent.updateHistoryWindow(pval);
             }
@@ -62,8 +62,8 @@ public class AlgorithmExecutionContext {
     }
 
     private void updateHistoryWindow(ParameterValue pval) {
-        if(buffersByParam.containsKey(pval.def)) {
-            buffersByParam.get(pval.def).update(pval);
+        if(buffersByParam.containsKey(pval.getParameter())) {
+            buffersByParam.get(pval.getParameter()).update(pval);
         }
     }
 

@@ -171,7 +171,7 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 	} else {
 	    Algorithm a = new Algorithm(currentEngine, currentCode,
 		    currentInputParams, currentOutputParam);
-	    a.def.setQualifiedName("/" + ssName + "/" + currentOutputParam);
+	    a.getParameter().setQualifiedName("/" + ssName + "/" + currentOutputParam);
 	    derivedValues.add(a);
 	    ++algoCount;
 	}

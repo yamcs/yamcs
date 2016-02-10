@@ -446,8 +446,8 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
         if(params==null) return;
         
         for(Iterator<ParameterValue> it=params.iterator();it.hasNext();) {
-            ParameterValue pv=it.next();
-            Parameter pDef=pv.def;
+            ParameterValue pv = it.next();
+            Parameter pDef = pv.getParameter();
             SubscriptionArray cowal = param2RequestMap.get(pDef); 
             //now walk through the requests and add this item to their delivery list
             if(cowal==null) continue;

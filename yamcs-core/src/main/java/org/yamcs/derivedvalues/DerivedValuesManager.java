@@ -97,9 +97,9 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
 	derivedValues.addAll(dvalues);
 	for(DerivedValue dv:dvalues) {
         // quick hack to remove qualified name to remain compatible with previous displays
-        dv.def.setQualifiedName(null);
+        dv.getParameter().setQualifiedName(null);
 
-	    dvIndex.add(dv.def);
+	    dvIndex.add(dv.getParameter());
 	}
     }
 
@@ -110,14 +110,14 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
     @Override
     public void startProviding(Parameter paramDef) {
 	for (DerivedValue dv:derivedValues){
-	    if(dv.def==paramDef) {
+	    if(dv.getParameter()==paramDef) {
 		requestedValues.add(dv);
 		try {
 		    parameterRequestManager.addItemsToRequest(subscriptionId, Arrays.asList(dv.getArgumentIds()));
 		} catch (InvalidIdentification e) {
-		    log.error("InvalidIdentification caught when subscribing to the items required for the derived value "+dv.def+"\n\t The invalid items are:"+e.invalidParameters, e);
+		    log.error("InvalidIdentification caught when subscribing to the items required for the derived value "+dv.getParameter()+"\n\t The invalid items are:"+e.invalidParameters, e);
 		} catch (InvalidRequestIdentification e) {
-		    log.error("InvalidRequestIdentification caught when subscribing to the items required for the derived value "+dv.def, e);
+		    log.error("InvalidRequestIdentification caught when subscribing to the items required for the derived value "+dv.getParameter(), e);
 		}
 		return;
 	    }
@@ -134,9 +134,9 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
                 if(dv.getArgumentIds().length > 0 && dv.getArgumentIds()[0] != null)
                     parameterRequestManager.addItemsToRequest(subscriptionId, Arrays.asList(dv.getArgumentIds()));
             } catch (InvalidIdentification e) {
-                log.error("InvalidIdentification caught when subscribing to the items required for the derived value "+dv.def+"\n\t The invalid items are:"+e.invalidParameters, e);
+                log.error("InvalidIdentification caught when subscribing to the items required for the derived value "+dv.getParameter()+"\n\t The invalid items are:"+e.invalidParameters, e);
             } catch (InvalidRequestIdentification e) {
-                log.error("InvalidRequestIdentification caught when subscribing to the items required for the derived value "+dv.def, e);
+                log.error("InvalidRequestIdentification caught when subscribing to the items required for the derived value "+dv.getParameter(), e);
             }
         }
     }
@@ -146,7 +146,7 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
     public void stopProviding(Parameter paramDef) {
 	for (Iterator<DerivedValue> it=requestedValues.iterator();it.hasNext(); ){
 	    DerivedValue dv=it.next();
-	    if(dv.def==paramDef) {
+	    if(dv.getParameter()==paramDef) {
 		it.remove();
 		return;
 	    }
@@ -210,7 +210,7 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
 		    dv.setGenerationTime(items.get(0).getGenerationTime());
 		}
 	    } catch (Exception e) {
-		log.warn("got exception when updating derived value "+dv.def+": "+Arrays.toString(e.getStackTrace()));
+		log.warn("got exception when updating derived value "+dv.getParameter()+": "+Arrays.toString(e.getStackTrace()));
 	    }
 	}
 	return r;

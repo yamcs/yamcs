@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ParameterValue;
 import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.ParameterEntry;
-import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceEntry;
 
 public class SequenceEntryProcessor {
@@ -51,9 +50,7 @@ public class SequenceEntryProcessor {
     }
 
     private void extractParameterEntry(ParameterEntry pe) {
-        ParameterType ptype=pe.getParameter().getParameterType();
-        ParameterValue pv=pcontext.parameterTypeProcessor.extract(ptype);
-        pv.setParameter(pe.getParameter());
+        ParameterValue pv = pcontext.parameterTypeProcessor.extract(pe.getParameter());
         pv.setAcquisitionTime(pcontext.acquisitionTime);
         pv.setGenerationTime(pcontext.generationTime);
         pv.setExpirationTime(pcontext.expirationTime);

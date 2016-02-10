@@ -117,11 +117,11 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
         }
         
         if(alarmType.getAlarmReportType()==AlarmReportType.ON_VALUE_CHANGE) {
-            ParameterValue oldPv=lastValuePerParameter.get(pv.def);
+            ParameterValue oldPv=lastValuePerParameter.get(pv.getParameter());
             if(oldPv!=null && hasChanged(oldPv, pv)) {
                 sendUpdateEvent=true;
             }
-            lastValuePerParameter.put(pv.def, pv);
+            lastValuePerParameter.put(pv.getParameter(), pv);
         }
         
         if(pv.getMonitoringResult()==MonitoringResult.IN_LIMITS) {
@@ -161,11 +161,11 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
         }
 
         if(alarmType.getAlarmReportType()==AlarmReportType.ON_VALUE_CHANGE) {
-            ParameterValue oldPv=lastValuePerParameter.get(pv.def);
+            ParameterValue oldPv=lastValuePerParameter.get(pv.getParameter());
             if(oldPv!=null && hasChanged(oldPv, pv)) {
                 sendUpdateEvent=true;
             }
-            lastValuePerParameter.put(pv.def, pv);
+            lastValuePerParameter.put(pv.getParameter(), pv);
         }
         
         if(pv.getMonitoringResult()==MonitoringResult.IN_LIMITS) {

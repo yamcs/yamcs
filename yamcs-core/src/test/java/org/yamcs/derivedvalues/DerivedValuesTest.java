@@ -180,7 +180,7 @@ public class DerivedValuesTest {
 
 	public MyDerivedValuesProvider(XtceDb xtcedb) {
 	    FloatAddDv dv1=new FloatAddDv("test_float_add", new String[]{"/REFMDB/SUBSYS1/FloatPara1_1_2", "/REFMDB/SUBSYS1/FloatPara1_1_3"});
-	    dv1.def.setQualifiedName("/DV/test_float_add");
+	    dv1.getParameter().setQualifiedName("/DV/test_float_add");
 	    dvalues.add(dv1);
 	}
 	@Override

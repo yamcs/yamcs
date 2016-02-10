@@ -48,8 +48,9 @@ public class ParameterTypeProcessor {
      *  Extracts the parameter from the packet.
      * @return value of the parameter after extraction
      */
-    public ParameterValue extract(ParameterType ptype) {
-        ParameterValue pv=new ParameterValue(null);
+    public ParameterValue extract(Parameter param) {
+        ParameterType ptype = param.getParameterType();
+        ParameterValue pv=new ParameterValue(param);
         pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset*8+pcontext.bitPosition);
         pv.setBitSize(((BaseDataType)ptype).getEncoding().getSizeInBits());
         pcontext.dataEncodingProcessor.extractRaw(((BaseDataType)ptype).getEncoding(), pv);

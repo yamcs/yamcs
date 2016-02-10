@@ -24,7 +24,12 @@ public class ParameterValue {
         return deltaMonitoringResult;
     }
 
-    public Parameter def;
+    //the definition of the parameter may be null if we do not have a reference to an XtceDB object 
+    // this could happen if the ParameterValue is extracted from the ParameterArchive
+    private final Parameter def;
+    private final String paramFqn;
+
+    
     ParameterEntry entry;
     int absoluteBitOffset, bitSize;
 
@@ -54,42 +59,16 @@ public class ParameterValue {
      */
     public ParameterValue(Parameter def) {
         this.def=def;
+        paramFqn = def.getQualifiedName();
         
         setAcquisitionStatus(AcquisitionStatus.ACQUIRED);
         setProcessingStatus(true);
     }
-
-    /**
-     * Called only from the cascading provider 
-	public ParameterValue(Parameter def, TelemetryItemProperty[] itemProps) {
-		this.def=def;
-		for(TelemetryItemProperty ip:itemProps) {
-			switch(ip.discriminator().value()) {
-			case TelemetryItemProperties._ACQUISITION_STATUS :
-				acquisitionStatus=ip; break;
-			case TelemetryItemProperties._ACQUISITION_TIME :
-				acquisitionTime=ip.acquisitionTime().time; break;
-			case TelemetryItemProperties._DANGER_LIMIT_HIGH_VALUE :
-				errorRangeHigh=ip; break;
-			case TelemetryItemProperties._DANGER_LIMIT_LOW_VALUE :
-				errorRangeLow=ip; break;
-			case TelemetryItemProperties._ENGINEERING_VALUE :
-				engValue=ip.value(); break;
-			case TelemetryItemProperties._MONITORING_RESULT :
-				monitoringResult=ip; break;
-			case TelemetryItemProperties._DELTA_MONITORING_RESULT :
-				deltaMonitoringResult=ip; break;
-			case TelemetryItemProperties._SOFT_LIMIT_HIGH_VALUE :
-				warningRangeHigh=ip; break;
-			case TelemetryItemProperties._SOFT_LIMIT_LOW_VALUE :
-				warningRangeLow=ip; break;
-			case TelemetryItemProperties._PROCESSING_STATUS:
-				processingStatus=ip;break;
-
-			}
-		}
-	}
-     */
+    public ParameterValue(String fqn) {
+        this.def = null;
+        this.paramFqn = fqn;
+    }
+   
     public int getAbsoluteBitOffset() {
         return absoluteBitOffset;
     }
@@ -112,10 +91,6 @@ public class ParameterValue {
 
     public ParameterEntry getParameterEntry() {
         return entry;
-    }
-
-    public void setParameter(Parameter parameter) {
-        this.def=parameter;
     }
 
     public void setAcquisitionStatus(AcquisitionStatus a) {
@@ -201,6 +176,10 @@ public class ParameterValue {
      */
     public Parameter getParameter() {
         return def;
+    }
+    
+    public String getParameterQualifiedNamed() {
+        return paramFqn;
     }
 
     public long getGenerationTime() {
@@ -409,6 +388,7 @@ public class ParameterValue {
         return pv;
     }
 
+    
     @Override
     public String toString() {
         StringBuilder sb=new StringBuilder();

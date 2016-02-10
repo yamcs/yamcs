@@ -82,7 +82,7 @@ public class AlarmChecker {
     public void updateParameters(Collection<ParameterValue> pvals) {
         synchronized(lastValues) {
             for(ParameterValue pv: pvals) {
-                lastValues.removeFirst(pv.def);
+                lastValues.removeFirst(pv.getParameter());
                 lastValues.add(pv);
             }
         }
