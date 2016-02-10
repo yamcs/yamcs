@@ -106,6 +106,7 @@ public class ParameterCache {
     /**
      * Returns all values from the cache for the parameter or null if there is no value cached
      * 
+     * The parameter are returned in descending order (newest parameter is returned first)
      * @param plist
      * @return
      */

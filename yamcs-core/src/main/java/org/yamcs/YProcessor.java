@@ -23,6 +23,8 @@ import org.yamcs.commanding.CommandQueueManager;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.CommandingManager;
 import org.yamcs.container.ContainerRequestManager;
+import org.yamcs.parameter.ParameterCache;
+import org.yamcs.parameter.ParameterCacheConfig;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
@@ -86,11 +88,8 @@ public class YProcessor extends AbstractService {
     private String creator="system";
     private boolean persistent=false;
 
-    private boolean parameterCacheEnabled = false;
-    private boolean parameterCacheAll = false;
-    private long parameterCacheDuration = 10*60*1000;
-
-
+    ParameterCacheConfig parameterCacheConfig = new ParameterCacheConfig(false, false, 0);
+    
     final Logger log;
     static Set<YProcessorListener> listeners=new CopyOnWriteArraySet<>(); //send notifications for added and removed processors to this
 
@@ -247,21 +246,33 @@ public class YProcessor extends AbstractService {
     }
 
     private void configureParameterCache(Map<String, Object> cacheConfig) {
+        boolean enabled = false;
+        boolean cacheAll = false;
+        long duration = 10*60*1000;
+        
         Object v = cacheConfig.get("enabled");
         if(v!=null) {
             if(!(v instanceof Boolean)) {
                 throw new ConfigurationException("Unknown value '"+v+"' for parameterCache -> enabled. Boolean expected.");
             }
-            parameterCacheEnabled = (Boolean)v;
+            enabled = (Boolean)v;
         }
-
+        if(!enabled) { //this is the default but print a warning if there are some things configured
+            Set<String> keySet = cacheConfig.keySet();
+            keySet.remove("enabled");
+            if(!keySet.isEmpty()) {
+                log.warn("Parmeter cache is disabled, the following keys are ignored: {}, use enable: true to enable the parameter cache", keySet);
+            }
+            return;
+        }
+        
         v = cacheConfig.get("cacheAll");
         if(v!=null) {
             if(!(v instanceof Boolean)) {
                 throw new ConfigurationException("Unknown value '"+v+"' for parameterCache -> cacheAll. Boolean expected.");
             }
-            parameterCacheAll = (Boolean)v;
-            if(parameterCacheAll) parameterCacheEnabled=true;
+            cacheAll = (Boolean)v;
+            if(cacheAll) enabled=true;
         }
         
         v = cacheConfig.get("duration");
@@ -269,9 +280,14 @@ public class YProcessor extends AbstractService {
             if(!(v instanceof Integer)) {
                 throw new ConfigurationException("Unknown value '"+v+"' for parameterCache -> duration. Integer (number of seconds) expected .");
             }
-            parameterCacheDuration = (Integer)v *1000L;
+            duration = (Integer)v *1000L;
         }
+<<<<<<< HEAD
 
+=======
+        parameterCacheConfig = new ParameterCacheConfig(enabled, cacheAll, duration);
+        
+>>>>>>> 1992f1c... create a separate class for holding the parameter cache configuration
     }
 
     private static String key(String instance, String name) {
@@ -583,19 +599,6 @@ public class YProcessor extends AbstractService {
     public boolean hasAlarmServer() {
         return alarmServerEnabled;
     }
-
-    public boolean isParameterCacheEnabled () {
-        return parameterCacheEnabled;
-    }
-
-    public long parameterCacheDuration() {
-        return parameterCacheDuration;
-    }
-
-    public boolean cacheAllParameters() {
-        return parameterCacheAll;
-    }
-
 
 
     public ScheduledThreadPoolExecutor getTimer() {

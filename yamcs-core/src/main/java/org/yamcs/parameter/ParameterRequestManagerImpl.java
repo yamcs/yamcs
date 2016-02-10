@@ -63,6 +63,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     AlarmServer alarmServer;
     SoftwareParameterManager spm;
     ParameterCache parameterCache;
+    ParameterCacheConfig cacheConfig;
     
     /**
      * Creates a new ParameterRequestManager, configured to listen to the
@@ -71,7 +72,8 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     public ParameterRequestManagerImpl(YProcessor yproc, XtceTmProcessor tmProcessor) throws ConfigurationException {
         this.yproc = yproc;
         log = LoggerFactory.getLogger(this.getClass().getName()+"["+yproc.getName()+"]");
-        cacheAll = yproc.cacheAllParameters();
+        cacheConfig = yproc.getPameterCacheConfig();
+        cacheAll = cacheConfig.cacheAll;
 	
 	
         tmProcessor.setParameterListener(this);
@@ -84,8 +86,8 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
             alarmChecker.enableServer(alarmServer);
         }
 
-        if(yproc.isParameterCacheEnabled()) {
-            parameterCache = new ParameterCache(yproc.parameterCacheDuration());
+        if(cacheConfig.enabled) {
+            parameterCache = new ParameterCache(cacheConfig.duration);
         }
     }
 
@@ -546,6 +548,8 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     
     /**
      * Get all the values from cache for a specific parameters
+     * 
+     * The parameter are returned in descending order (newest parameter is returned first)
      * @param param
      * @return
      */
@@ -557,5 +561,9 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
         if(alarmServer!=null) {
             alarmServer.startAsync();
         }
+    }
+
+    public ParameterCache getParameterCache() {
+        return parameterCache;
     }
 }
