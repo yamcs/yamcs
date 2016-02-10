@@ -16,11 +16,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ContainerExtractionResult;
-import org.yamcs.ProcessorFactory;
-import org.yamcs.YProcessor;
-import org.yamcs.YProcessorListener;
-import org.yamcs.YamcsException;
+import org.yamcs.*;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
@@ -181,10 +177,16 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
         
         YProcessor yproc = ProcessorFactory.create(instance, "HornetQReplay_"+count.incrementAndGet(), "ArchiveRetrieval", "internal", replayRequest);
         listener.yproc = yproc;
-        
-        ParameterWithIdRequestHelper pidrm = new ParameterWithIdRequestHelper(yproc.getParameterRequestManager(), listener);
-        pidrm.addRequest(replayRequest.getParameterRequest().getNameFilterList(), authToken);
-        
+
+        try {
+            ParameterWithIdRequestHelper pidrm = new ParameterWithIdRequestHelper(yproc.getParameterRequestManager(), listener);
+            pidrm.addRequest(replayRequest.getParameterRequest().getNameFilterList(), authToken);
+        } catch (InvalidIdentification e) {
+            NamedObjectList nol=NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
+            if(yproc != null)
+                yproc.doStop();
+            throw new YamcsException("InvalidIdentification", "Invalid identification", nol);
+        }
        
         PacketReplayRequest packetReq = replayRequest.getPacketRequest();
         if(packetReq!=null && packetReq.getNameFilterCount()>0) {
