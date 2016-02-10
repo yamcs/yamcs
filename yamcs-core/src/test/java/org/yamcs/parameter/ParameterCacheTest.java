@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.ParameterValue;
 import org.yamcs.utils.ValueUtility;
@@ -154,7 +155,7 @@ public class ParameterCacheTest {
     static int numParam = 300;
     static int numReaders = 10;
     @Test
-    
+    @Ignore
     public void testConcurrency() throws InterruptedException {
         
         final ParameterCache pcache = new ParameterCache(1000);
