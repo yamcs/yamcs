@@ -282,12 +282,7 @@ public class YProcessor extends AbstractService {
             }
             duration = (Integer)v *1000L;
         }
-<<<<<<< HEAD
-
-=======
         parameterCacheConfig = new ParameterCacheConfig(enabled, cacheAll, duration);
-        
->>>>>>> 1992f1c... create a separate class for holding the parameter cache configuration
     }
 
     private static String key(String instance, String name) {
@@ -636,5 +631,14 @@ public class YProcessor extends AbstractService {
 
     public void notifyStateChange() {
         propagateProcessorStateChange();        
+    }
+
+
+    public ParameterCacheConfig getPameterCacheConfig() {
+        return parameterCacheConfig;
+    }
+    
+    public ParameterCache getParameterCache() {
+        return parameterRequestManager.getParameterCache();
     }
 }
