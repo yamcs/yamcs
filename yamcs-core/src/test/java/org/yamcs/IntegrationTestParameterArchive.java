@@ -14,6 +14,8 @@ import org.yamcs.parameterarchive.ParameterGroupIdDb;
 import org.yamcs.parameterarchive.ParameterIdDb;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Pvalue.TimeSeries;
+import org.yamcs.protobuf.Pvalue.TimeSeries.Sample;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.utils.HttpClient;
@@ -58,10 +60,10 @@ public class IntegrationTestParameterArchive extends AbstractIntegrationTest {
         Value engValue;
         ParameterData pdata;
         org.yamcs.protobuf.Pvalue.ParameterValue pv;
+        TimeSeries vals;
+        Sample s0;
         
-        
-        
-        //first a request before the consolidation, should return data from cache
+        //first two requests before the consolidation, should return data from cache
         httpClient = new HttpClient();
         resp = httpClient.doRequest("http://localhost:9190/api/archive/IntegrationTest/parameters2/REFMDB/SUBSYS1/FloatPara1_1_2?start=2015-01-02T10:00:00&stop=2015-01-02T11:00:00", HttpMethod.GET, null, currentUser);
         pdata = fromJson(resp, SchemaPvalue.ParameterData.MERGE).build();
@@ -70,22 +72,32 @@ public class IntegrationTestParameterArchive extends AbstractIntegrationTest {
         assertEquals(0.167291805148, engValue.getFloatValue(), 1e-5);
         
         
+        httpClient = new HttpClient();
+        resp = httpClient.doRequest("http://localhost:9190/api/archive/IntegrationTest/parameters2/REFMDB/SUBSYS1/FloatPara1_1_2/samples?start=2015-01-02T11:40:00&stop=2015-01-02T12:00:00", HttpMethod.GET, null, currentUser);
+        vals = (fromJson(resp, SchemaPvalue.TimeSeries.MERGE)).build();
+        assertEquals(500, vals.getSampleCount());
+        s0 = vals.getSample(0);
+        assertEquals(0.167291805148, s0.getMin(), 1e-5);
+        assertEquals(0.167291805148, s0.getMax(), 1e-5);
+        assertEquals(0.167291805148, s0.getAvg(), 1e-5);
+        
+        
         ParameterArchive parameterArchive = YamcsServer.getService(yamcsInstance, ParameterArchive.class);
         Future<?> f = parameterArchive.reprocess(TimeEncoding.parse("2015-01-02T10:00:00"), TimeEncoding.parse("2016-01-02T11:00:00"));
         f.get();
         //parameterArchive.printKeys(System.out);
        
         
-        /*
+        
         httpClient = new HttpClient();
         resp = httpClient.doRequest("http://localhost:9190/api/archive/IntegrationTest/parameters2/REFMDB/SUBSYS1/FloatPara1_1_2/samples?start=2015-01-02T10:00:00&stop=2015-01-02T11:00:00", HttpMethod.GET, null, currentUser);
-        TimeSeries vals = (fromJson(resp, SchemaPvalue.TimeSeries.MERGE)).build();
+        vals = (fromJson(resp, SchemaPvalue.TimeSeries.MERGE)).build();
         assertEquals(500, vals.getSampleCount());
-        Sample s0 = vals.getSample(0);
+        s0 = vals.getSample(0);
         assertEquals(0.167291805148, s0.getMin(), 1e-5);
         assertEquals(0.167291805148, s0.getMax(), 1e-5);
         assertEquals(0.167291805148, s0.getAvg(), 1e-5);
-        */
+        
       
         httpClient = new HttpClient();
         resp = httpClient.doRequest("http://localhost:9190/api/archive/IntegrationTest/parameters2/REFMDB/SUBSYS1/FloatPara1_1_2?start=2015-01-02T10:00:00&stop=2015-01-02T11:00:00", HttpMethod.GET, null, currentUser);

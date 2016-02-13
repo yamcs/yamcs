@@ -15,9 +15,7 @@ import org.yamcs.ParameterValue;
 import org.yamcs.YProcessor;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
-import org.yamcs.archive.ReplayListener;
 import org.yamcs.parameter.ParameterCache;
-import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameterarchive.MultiParameterDataRetrieval;
 import org.yamcs.parameterarchive.MultipleParameterValueRequest;
@@ -89,45 +87,39 @@ public class ArchiveParameter2RestHandler extends RestHandler {
         long stop = req.getQueryParameterAsDate("stop", TimeEncoding.getWallclockTime());
 
         RestDownsampler sampler = new RestDownsampler(stop);
-
         ParameterArchive parchive = getParameterArchive(instance);
         ParameterIdDb piddb = parchive.getParameterIdDb();
 
-        ParameterId[] pids = piddb.get(p.getQualifiedName());
-        if(pids.length==0) {
-            log.warn("No parameter id found in the parmaeter archive for {}", p.getQualifiedName());
-            throw new NotFoundException(req);
+        ParameterCache pcache = null;
+        if(realtimeProcessor!=null) {
+            pcache = realtimeProcessor.getParameterCache();
         }
-        ParameterGroupIdDb pgidDb = parchive.getParameterGroupIdDb();
-        for(ParameterId pid: pids) {
-            int parameterId = pid.pid;
-            Value.Type engType = pids[0].engType;
 
-            int[] pgids = pgidDb.getAllGroups(parameterId);
-            if(pgids.length ==0 ){
-                log.error("Found no parameter group for parameter Id {}", parameterId);
-                continue;
+        ParameterId[] pids = piddb.get(p.getQualifiedName());
+        if(pids == null) {
+            log.warn("No parameter id found in the parmaeter archive for {}", p.getQualifiedName());
+            if(pcache!=null) {
+                sampleDataFromCache(pcache, p, start, stop, sampler);
             }
-            log.info("Executing a single parameter value request for time interval [{} - {}] parameterId: {} and parameter groups: {}", TimeEncoding.toString(start), TimeEncoding.toString(stop), parameterId, Arrays.toString(pgids));
-            SingleParameterValueRequest spvr = new SingleParameterValueRequest(start, stop, parameterId, pgids, true);
-            sampleDataForParameterId(parchive, engType, spvr, sampler);
-            if(realtimeProcessor!=null) {
-                //grab some data from the realtime processor cache
-                ParameterRequestManagerImpl prm = realtimeProcessor.getParameterRequestManager();
-                List<org.yamcs.ParameterValue> pvlist = prm.getValuesFromCache(p);
-                if(pvlist!=null) {
-                    int n = pvlist.size();
-                    for(int i = 0; i<n; i++) {
-                        org.yamcs.ParameterValue pv = pvlist.get(i);
-                        if(pv.getGenerationTime() > stop) break;
-                        if(pv.getGenerationTime() > sampler.lastSampleTime()) {
-                            sampler.process(pv);
-                        }
-                    }
+        } else {
+            ParameterGroupIdDb pgidDb = parchive.getParameterGroupIdDb();
+            for(ParameterId pid: pids) {
+                int parameterId = pid.pid;
+                Value.Type engType = pids[0].engType;
+
+                int[] pgids = pgidDb.getAllGroups(parameterId);
+                if(pgids.length ==0 ){
+                    log.error("Found no parameter group for parameter Id {}", parameterId);
+                    continue;
+                }
+                log.info("Executing a single parameter value request for time interval [{} - {}] parameterId: {} and parameter groups: {}", TimeEncoding.toString(start), TimeEncoding.toString(stop), parameterId, Arrays.toString(pgids));
+                SingleParameterValueRequest spvr = new SingleParameterValueRequest(start, stop, parameterId, pgids, true);
+                sampleDataForParameterId(parchive, engType, spvr, sampler);
+                if(pcache!=null) {
+                    sampleDataFromCache(pcache, p, start, stop, sampler);
                 }
             }
         }
-
 
         TimeSeries.Builder series = TimeSeries.newBuilder();
         for (Sample s : sampler.collect()) {
@@ -135,6 +127,22 @@ public class ArchiveParameter2RestHandler extends RestHandler {
         }
 
         return sendOK(req, series.build(), SchemaPvalue.TimeSeries.WRITE);
+    }
+
+    private void sampleDataFromCache(ParameterCache pcache, Parameter p, long start, long stop, RestDownsampler sampler) {
+        //grab some data from the realtime processor cache
+        List<org.yamcs.ParameterValue> pvlist = pcache.getAllValues(p);
+        if(pvlist!=null) {
+            int n = pvlist.size();
+            for(int i = n-1; i>=0; i--) {
+                org.yamcs.ParameterValue pv = pvlist.get(i);
+                if(pv.getGenerationTime() < start) continue;
+                if(pv.getGenerationTime() > stop) break;
+                if(pv.getGenerationTime() > sampler.lastSampleTime()) {
+                    sampler.process(pv);
+                }
+            }
+        }
     }
 
     private void sampleDataForParameterId(ParameterArchive parchive, Value.Type engType, SingleParameterValueRequest spvr, RestDownsampler sampler) throws HttpException {
@@ -294,7 +302,7 @@ public class ArchiveParameter2RestHandler extends RestHandler {
                     public void onParameterData(ParameterValueWithId  pvwid) {
                         resultb.addParameter(pvwid.toGbpParameterValue());
                     }
-                    
+
                     @Override
                     public void update(ParameterValueWithId pvwid) {
                         super.update(pvwid);
