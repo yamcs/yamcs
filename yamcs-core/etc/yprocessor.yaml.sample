@@ -73,7 +73,6 @@ ParameterArchive:
 ArchiveRetrieval:
     telemetryProvider:
         class: org.yamcs.tctm.ReplayService
-    parameterProviders:      
     config:
         parameterCache:
             enabled: false
