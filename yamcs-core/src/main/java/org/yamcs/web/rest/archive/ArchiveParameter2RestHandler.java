@@ -15,6 +15,7 @@ import org.yamcs.ParameterValue;
 import org.yamcs.YProcessor;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
+import org.yamcs.archive.ReplayListener;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueWithId;
@@ -211,40 +212,40 @@ public class ArchiveParameter2RestHandler extends RestHandler {
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
-        
+
         NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build(); //TODO this should use the requested name rather than the qualified one
-        
+
         if(req.hasQueryParameter("pos")) throw new BadRequestException("pos not supported");
         int limit = req.getQueryParameterAsInt("limit", 100);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
         long start = req.getQueryParameterAsDate("start", 0);
         long stop = req.getQueryParameterAsDate("stop", TimeEncoding.getWallclockTime());
-        
+
         boolean ascending = !req.asksDescending(true);
 
         ParameterArchive parchive = getParameterArchive(instance);
         ParameterIdDb piddb = parchive.getParameterIdDb();
-
-        ParameterId[] pids = piddb.get(p.getQualifiedName());
-        if(pids.length==0) {
-            log.warn("No parameter id found in the parmaeter archive for {}", p.getQualifiedName());
-            throw new NotFoundException(req);
-        }
-        ParameterGroupIdDb pgidDb = parchive.getParameterGroupIdDb();
         IntArray pidArray = new IntArray();
         IntArray pgidArray = new IntArray();
 
-        for(ParameterId pid:pids) {
-            int[] pgids = pgidDb.getAllGroups(pid.pid);
-            for(int pgid: pgids) {
-                pidArray.add(pid.pid);
-                pgidArray.add(pgid);
+        ParameterId[] pids = piddb.get(p.getQualifiedName());
+        if(pids != null) {
+            log.warn("No parameter id found in the parmaeter archive for {}", p.getQualifiedName());
+            ParameterGroupIdDb pgidDb = parchive.getParameterGroupIdDb();
+
+            for(ParameterId pid:pids) {
+                int[] pgids = pgidDb.getAllGroups(pid.pid);
+                for(int pgid: pgids) {
+                    pidArray.add(pid.pid);
+                    pgidArray.add(pgid);
+                }
+            }
+
+            if(pidArray.isEmpty()) {
+                log.error("No parameter group id found in the parameter archive for {}", p.getQualifiedName());
+                throw new NotFoundException(req);
             }
         }
-        if(pidArray.isEmpty()) {
-            log.error("No parameter group id found in the parameter archive for {}", p.getQualifiedName());
-            throw new NotFoundException(req);
-        } 
         String[] pnames = new String[pidArray.size()];
         Arrays.fill(pnames, p.getQualifiedName());
         MultipleParameterValueRequest mpvr = new MultipleParameterValueRequest(start, stop, pnames, pidArray.toArray(), pgidArray.toArray(), ascending);
@@ -258,7 +259,7 @@ public class ArchiveParameter2RestHandler extends RestHandler {
         if(realtimeProcessor!=null) {
             pcache = realtimeProcessor.getParameterCache();
         }
-        
+
         if (req.asksFor(MediaType.CSV)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
             try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new ByteBufOutputStream(buf)))) {
@@ -293,6 +294,11 @@ public class ArchiveParameter2RestHandler extends RestHandler {
                     public void onParameterData(ParameterValueWithId  pvwid) {
                         resultb.addParameter(pvwid.toGbpParameterValue());
                     }
+                    
+                    @Override
+                    public void update(ParameterValueWithId pvwid) {
+                        super.update(pvwid);
+                    }
                 };
 
                 replayListener.setNoRepeat(noRepeat);
@@ -308,6 +314,7 @@ public class ArchiveParameter2RestHandler extends RestHandler {
     private void retrieveParameterData(ParameterArchive parchive,  ParameterCache pcache, Parameter p, NamedObjectId id,
             MultipleParameterValueRequest mpvr, RestParameterReplayListener replayListener) throws RocksDBException, DecodingException {
 
+
         MutableLong lastParameterTime = new MutableLong(TimeEncoding.INVALID_INSTANT);
         Consumer<ParameterIdValueList> consumer = new Consumer<ParameterIdValueList>() {
             boolean first = true;
@@ -316,14 +323,7 @@ public class ArchiveParameter2RestHandler extends RestHandler {
                 lastParameterTime.l = pidvList.getValues().get(0).getGenerationTime();
                 if(first && !mpvr.isAscending() && (pcache!=null)) { //retrieve data from cache first
                     first = false;
-                    List<ParameterValue> pvlist = pcache.getAllValues(p);
-                    if(pvlist!=null) {
-                        for(ParameterValue pv:pvlist) {
-                            if(pv.getGenerationTime()>mpvr.getStop()) continue;
-                            if(pv.getGenerationTime() <= lastParameterTime.l) break;
-                            replayListener.update(new ParameterValueWithId(pv, id));
-                        }
-                    }
+                    sendFromCache(p, id, pcache, false, lastParameterTime.l, mpvr.getStop(), replayListener);
                 }
                 ParameterValue pv = pidvList.getValues().get(0);
                 replayListener.update(new ParameterValueWithId(pv, id));
@@ -334,35 +334,39 @@ public class ArchiveParameter2RestHandler extends RestHandler {
         mpdr.retrieve(consumer);
 
         //now add some data from cache
-        if(mpvr.isAscending() && (pcache!=null)) {
-            List<org.yamcs.ParameterValue> pvlist = pcache.getAllValues(p);
-            if(pvlist!=null) {
-                int n = pvlist.size();
-                for(int i = n-1; i>=0 ; i-- ) {
-                    org.yamcs.ParameterValue pv = pvlist.get(i);
-                    if(pv.getGenerationTime() >= mpvr.getStop()) break;
-                    if(pv.getGenerationTime()> lastParameterTime.l) {
-                        replayListener.update(new ParameterValueWithId(pv, id));
-                    }
+        if (pcache!=null) {
+            if(mpvr.isAscending())  {
+                sendFromCache(p, id, pcache, true, lastParameterTime.l, mpvr.getStop(), replayListener);      
+            } else if (lastParameterTime.l==TimeEncoding.INVALID_INSTANT) {  //no data retrieved from archive, but maybe there is still something in the cache to send
+                sendFromCache(p, id, pcache, false, mpvr.getStart(), mpvr.getStop(), replayListener);
+            }
+        }
+    }
+
+    //send data from cache with timestamps in (start, stop) if ascending or (start, stop] if descending interval 
+    private void sendFromCache(Parameter p, NamedObjectId id, ParameterCache pcache, boolean ascending, long start, long stop, RestParameterReplayListener replayListener) {
+        List<ParameterValue> pvlist = pcache.getAllValues(p);
+        if(pvlist==null) return;
+
+        if(ascending) {
+            int n = pvlist.size();
+            for(int i = n-1; i>=0 ; i-- ) {
+                org.yamcs.ParameterValue pv = pvlist.get(i);
+                if(pv.getGenerationTime() >= stop) break;
+                if(pv.getGenerationTime()> start) {
+                    replayListener.update(new ParameterValueWithId(pv, id));
+                    if(replayListener.isReplayAbortRequested()) break;
                 }
             }
         } else {
-            if(lastParameterTime.l==TimeEncoding.INVALID_INSTANT && pcache!=null) { 
-                //no data retrieved from archive, but maybe there is still something in the cache to send
-                List<ParameterValue> pvlist = pcache.getAllValues(p);
-                if(pvlist!=null) {
-                    for(ParameterValue pv:pvlist) {
-                        if(pv.getGenerationTime()>mpvr.getStop()) continue;
-                        if(pv.getGenerationTime() <= mpvr.getStart()) break;
-                        replayListener.update(new ParameterValueWithId(pv, id));
-                    }
-                }
+            for(ParameterValue pv:pvlist) {
+                if(pv.getGenerationTime()>stop) continue;
+                if(pv.getGenerationTime() <= start) break;
+                replayListener.update(new ParameterValueWithId(pv, id));
+                if(replayListener.isReplayAbortRequested()) break;
             }
         }
-
     }
-
-
     private YProcessor getRealtimeProc(String instance, RestRequest req) throws NotFoundException {
         String processorName;
         if(req.hasQueryParameter("norealtime")) {

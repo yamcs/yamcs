@@ -53,11 +53,28 @@ public class IntegrationTestParameterArchive extends AbstractIntegrationTest {
       //  Logger.getLogger("org.yamcs").setLevel(Level.INFO);
         Logger.getLogger("org.yamcs.parameterarchive").setLevel(Level.ALL);
         generateData("2015-01-02T10:00:00", 2*3600);
+        
+        String resp;
+        Value engValue;
+        ParameterData pdata;
+        org.yamcs.protobuf.Pvalue.ParameterValue pv;
+        
+        
+        
+        //first a request before the consolidation, should return data from cache
+        httpClient = new HttpClient();
+        resp = httpClient.doRequest("http://localhost:9190/api/archive/IntegrationTest/parameters2/REFMDB/SUBSYS1/FloatPara1_1_2?start=2015-01-02T10:00:00&stop=2015-01-02T11:00:00", HttpMethod.GET, null, currentUser);
+        pdata = fromJson(resp, SchemaPvalue.ParameterData.MERGE).build();
+        assertEquals(100, pdata.getParameterCount());
+        engValue = pdata.getParameter(0).getEngValue();
+        assertEquals(0.167291805148, engValue.getFloatValue(), 1e-5);
+        
+        
         ParameterArchive parameterArchive = YamcsServer.getService(yamcsInstance, ParameterArchive.class);
         Future<?> f = parameterArchive.reprocess(TimeEncoding.parse("2015-01-02T10:00:00"), TimeEncoding.parse("2016-01-02T11:00:00"));
         f.get();
         //parameterArchive.printKeys(System.out);
-        String resp;
+       
         
         /*
         httpClient = new HttpClient();
@@ -69,14 +86,12 @@ public class IntegrationTestParameterArchive extends AbstractIntegrationTest {
         assertEquals(0.167291805148, s0.getMax(), 1e-5);
         assertEquals(0.167291805148, s0.getAvg(), 1e-5);
         */
-        ParameterData pdata;
-        org.yamcs.protobuf.Pvalue.ParameterValue pv;
-        
+      
         httpClient = new HttpClient();
         resp = httpClient.doRequest("http://localhost:9190/api/archive/IntegrationTest/parameters2/REFMDB/SUBSYS1/FloatPara1_1_2?start=2015-01-02T10:00:00&stop=2015-01-02T11:00:00", HttpMethod.GET, null, currentUser);
         pdata = fromJson(resp, SchemaPvalue.ParameterData.MERGE).build();
         assertEquals(100, pdata.getParameterCount());
-        Value engValue = pdata.getParameter(0).getEngValue();
+        engValue = pdata.getParameter(0).getEngValue();
         assertEquals(0.167291805148, engValue.getFloatValue(), 1e-5);
         
         httpClient = new HttpClient();
