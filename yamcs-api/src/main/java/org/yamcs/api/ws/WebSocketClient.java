@@ -47,6 +47,7 @@ public class WebSocketClient {
     private URI uri;
     private Channel nettyChannel;
     private String userAgent;
+    private Integer timeoutMs=null;
     private AtomicBoolean enableReconnection = new AtomicBoolean(true);
     private AtomicInteger seqId = new AtomicInteger(1);
     private String username;
@@ -71,7 +72,10 @@ public class WebSocketClient {
     public void setUserAgent(String userAgent) {
         this.userAgent = userAgent;
     }
-
+    public void setConnectionTimeoutMs(int timeoutMs)
+    {
+        this.timeoutMs = timeoutMs;
+    }
     public void connect() {
         connect(false);
     }
@@ -104,7 +108,12 @@ public class WebSocketClient {
                 .group(group)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .channel(NioSocketChannel.class);
-        
+
+        if(timeoutMs!=null)
+        {
+            bootstrap = bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeoutMs);
+        }
+
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
@@ -124,6 +133,7 @@ public class WebSocketClient {
                 if (future.isSuccess()) {
                     nettyChannel = future.channel();
                 } else {
+                    callback.connectionFailed(future.cause());
                     if (enableReconnection.get()) {
                         // Set-up reconnection attempts every second
                         // during initial set-up.
