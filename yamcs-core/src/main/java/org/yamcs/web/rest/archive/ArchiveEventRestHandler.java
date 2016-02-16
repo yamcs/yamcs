@@ -7,6 +7,7 @@ import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YamcsServer;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.api.MediaType;
@@ -122,6 +123,9 @@ public class ArchiveEventRestHandler extends RestHandler {
             eventProducer = EventProducerFactory.getEventProducer(instance);
             eventProducerMap.put(instance, eventProducer);
         }
+
+        // update event reception time
+        event = event.toBuilder().setReceptionTime(YamcsServer.getTimeService(instance).getMissionTime()).build();
 
         // send event
         log.debug("Adding event from REST API: " + event.toString());
