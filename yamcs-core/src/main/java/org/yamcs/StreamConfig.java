@@ -7,12 +7,9 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.StreamConfig.StandardStreamType;
-import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.yarch.YarchDatabase;
 
 /**
  * Stores the value of the streamConfiguration parameter from yamcs.instance.yaml
@@ -41,7 +38,6 @@ public class StreamConfig {
     }
     
     private StreamConfig(String yamcsInstance) {
-        YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
         XtceDb xtceDb = XtceDbFactory.getInstance(yamcsInstance);
         YConfiguration yconf = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
         if(!yconf.containsKey("streamConfig")) {
