@@ -3,16 +3,17 @@ package org.yamcs.web.rest.archive;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.EventProducer;
+import org.yamcs.api.EventProducerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.protobuf.Rest.ListEventsResponse;
 import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.HttpException;
@@ -36,6 +37,8 @@ import io.netty.channel.ChannelFuture;
 public class ArchiveEventRestHandler extends RestHandler {
     
     private static final Logger log = LoggerFactory.getLogger(ArchiveEventRestHandler.class);
+
+    Map<String, EventProducer> eventProducerMap = new HashMap<>();
 
     @Route(path = "/api/archive/:instance/events", method = "GET")
     public ChannelFuture listEvents(RestRequest req) throws HttpException {
@@ -101,5 +104,28 @@ public class ArchiveEventRestHandler extends RestHandler {
             
             return sendOK(req, responseb.build(), SchemaRest.ListEventsResponse.WRITE);
         }
+    }
+
+
+    @Route(path = "/api/archive/:instance/events", method = "POST")
+    public ChannelFuture issueCommand(RestRequest req) throws HttpException {
+
+        // get event from request
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        Event event = req.bodyAsMessage(SchemaYamcs.Event.MERGE).build();
+
+        // get event producer for this instance
+        EventProducer eventProducer = null;
+        if(eventProducerMap.containsKey(instance))
+            eventProducer = eventProducerMap.get(instance);
+        else {
+            eventProducer = EventProducerFactory.getEventProducer(instance);
+            eventProducerMap.put(instance, eventProducer);
+        }
+
+        // send event
+        log.debug("Adding event from REST API: " + event.toString());
+        eventProducer.sendEvent(event);
+        return sendOK(req);
     }
 }
