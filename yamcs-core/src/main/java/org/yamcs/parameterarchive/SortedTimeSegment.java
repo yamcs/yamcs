@@ -303,4 +303,12 @@ public class SortedTimeSegment extends BaseSegment implements ValueSegment {
     public BaseSegment consolidate() {
         throw new UnsupportedOperationException("consolidate not supported");
     }
+
+    /**
+     * duration in milliseconds of one segment
+     * @return
+     */
+    public static long getSegmentDuration() {
+        return TIMESTAMP_MASK+1;
+    }
 }

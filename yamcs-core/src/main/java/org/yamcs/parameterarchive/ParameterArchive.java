@@ -6,14 +6,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
@@ -26,6 +23,8 @@ import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
+import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.DecodingException;
@@ -35,7 +34,6 @@ import org.yamcs.yarch.YarchDatabase;
 import com.google.common.util.concurrent.AbstractService;
 
 public class ParameterArchive  extends AbstractService {
-    static Map<String, ParameterArchive> instances = new HashMap<String, ParameterArchive>();
     static final byte[] CF_NAME_meta_p2pid = "meta_p2pid".getBytes(StandardCharsets.US_ASCII);
     static final byte[] CF_NAME_meta_pgid2pg = "meta_pgid2pg".getBytes(StandardCharsets.US_ASCII); 
     static final byte[] CF_NAME_data_prefix = "data_".getBytes(StandardCharsets.US_ASCII);
@@ -52,14 +50,15 @@ public class ParameterArchive  extends AbstractService {
     private TreeMap<Long, Partition> partitions = new TreeMap<Long, ParameterArchive.Partition>();
     SegmentEncoderDecoder vsEncoder = new SegmentEncoderDecoder();
     public final static boolean STORE_RAW_VALUES = true; 
-    ScheduledThreadPoolExecutor executor=new ScheduledThreadPoolExecutor(1);
        
-    //how often the near realtime filling should run
-    // data in between should be obtainable from the parameter cache
-    private long nrtFillTime = 10*60*1000;
     final TimeService timeService;
+    private Map<String, Object> backFillerConfig;
+    private Map<String, Object> realtimeFillerConfig;
+    private boolean realtimeFillerEnabled = false;
+    private BackFiller backFiller;
     
-    public ParameterArchive(String instance) throws RocksDBException {
+    public ParameterArchive(String instance, Map<String, Object> args) throws RocksDBException {
+      
         this.yamcsInstance = instance;
         this.timeService = YamcsServer.getTimeService(instance);
         String dbpath = YarchDatabase.getInstance(instance).getRoot() +"/ParameterArchive";
@@ -72,7 +71,40 @@ public class ParameterArchive  extends AbstractService {
         parameterIdMap = new ParameterIdDb(rdb, p2pid_cfh);
         parameterGroupIdMap = new ParameterGroupIdDb(rdb, pgid2pg_cfh);
         
+        if(args!=null) {
+            processConfig(args);
+        } else {
+            backFiller = new BackFiller(this, null);
+        }
        // HttpServer.getInstance().registerRouteHandler(yamcsInstance, new ArchiveParameter2RestHandler());
+    }
+
+    public ParameterArchive(String instance) throws RocksDBException {
+        this(instance, null);
+        
+    }
+
+    
+    private void processConfig(Map<String, Object> args) {
+        for(String s:args.keySet()) {
+            if("backFiller".equals(s)) {
+                backFillerConfig = YConfiguration.getMap(args, s);
+                boolean backFillerEnabled = true;
+                log.debug("backFillerConfig: {}", backFillerConfig);
+                if(backFillerConfig.containsKey("enabled")) {
+                    backFillerEnabled  = YConfiguration.getBoolean(backFillerConfig, "enabled");
+                }
+                if(backFillerEnabled) {
+                    backFiller = new BackFiller(this, backFillerConfig);
+                }
+            } else if("realtimeFiller".equals(s)) {
+                realtimeFillerConfig = YConfiguration.getMap(args, s);
+                realtimeFillerEnabled = YConfiguration.getBoolean(realtimeFillerConfig, "enabled", false);
+                log.debug("realtimeFillerConfig: {}", realtimeFillerConfig);
+            } else {
+                throw new ConfigurationException("Unkwnon keyword '"+s+"' in parameter archive configuration: "+args);
+            }
+        }
     }
 
     private void createDb(String dbpath) throws RocksDBException {
@@ -153,15 +185,6 @@ public class ParameterArchive  extends AbstractService {
         return cf;
     }
 
-
-    static synchronized ParameterArchive getInstance(String instance) throws RocksDBException {
-        ParameterArchive pdb = instances.get(instance);
-        if(pdb==null) {
-            pdb = new ParameterArchive(instance);
-            instances.put(instance, pdb);
-        }
-        return pdb;
-    }
 
     public ParameterIdDb getParameterIdDb() {
         return parameterIdMap;
@@ -269,26 +292,12 @@ public class ParameterArchive  extends AbstractService {
 
     public Future<?> reprocess(long start, long stop) {
         log.debug("Scheduling a reprocess for interval [{} - {}]", TimeEncoding.toString(start), TimeEncoding.toString(stop));
-        return executor.schedule(()->doReprocess(start,stop), 0, TimeUnit.SECONDS);
+        if(backFiller==null) {
+            throw new ConfigurationException("backFilling is not enabled");
+        }
+        return backFiller.scheduleFillingTask(start, stop);
     }
 
-    /**
-     * runs periodically to build the archive near realtime
-     */
-    private void fillNearRealtime() {
-        long currentTime = timeService.getMissionTime();
-        reprocess(currentTime-2*nrtFillTime, currentTime);
-    }
-    
-    private void doReprocess(long start, long stop) {
-        ArchiveFillerTask aft;
-        try {
-            aft = new ArchiveFillerTask(this, start, stop);
-            aft.run();
-        } catch (Exception e) {
-            log.error("Error when running the archive filler task",e);
-        }
-    }
 
     /** 
      * a copy of the partitions from start to stop inclusive
@@ -359,13 +368,17 @@ public class ParameterArchive  extends AbstractService {
     @Override
     protected void doStart() {
         notifyStarted();
-        executor.scheduleAtFixedRate(this::fillNearRealtime, nrtFillTime, nrtFillTime, TimeUnit.MILLISECONDS);
+        if(backFiller!=null) {
+            backFiller.start();
+        }
     }
 
     @Override
     protected void doStop() {
         rdb.close();
-        executor.shutdown();
+        if(backFiller!=null) {
+            backFiller.stop();
+        }
         notifyStopped();
     }
 
