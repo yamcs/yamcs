@@ -219,6 +219,7 @@ public class YConfiguration {
 
     /****************************** Map configs*/
 
+    @SuppressWarnings("unchecked")
     static public Map<String, Object> getMap(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
         Object o=m.get(key);
@@ -367,6 +368,25 @@ public class YConfiguration {
     /********************** int configs */
     static public int getInt(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
+        Object o=m.get(key);
+        if(o instanceof Integer) {
+            return (Integer)o;
+        } else {
+            throw new ConfigurationException(confPath.get(m), "mapping for key '"+key+"' is of type "+getUnqualfiedClassName(o)+" and not Integer");
+        }
+    }
+    /**
+     * return the m.get(key) as an int if it's present or v if it is not.
+     * 
+     * If the key is present but the value is not an integer, a ConfigurationException is thrown.
+     * @param m
+     * @param key
+     * @param v
+     * @return
+     * @throws ConfigurationException
+     */
+    static public int getInt(Map<String, Object> m, String key, int v) throws ConfigurationException {
+        if(!m.containsKey(key)) return v;
         Object o=m.get(key);
         if(o instanceof Integer) {
             return (Integer)o;
