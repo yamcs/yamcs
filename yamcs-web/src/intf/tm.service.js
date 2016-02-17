@@ -31,7 +31,7 @@
     }
 
     /* @ngInject */
-    function tmService($http, $log, socket, yamcsInstance) {
+    function tmService($http, $log, socket, yamcsInstance, remoteConfig) {
 
         socket.on('PARAMETER', function(pdata) {
             var params = pdata['parameter'];
@@ -75,7 +75,11 @@
         }
 
         function getParameterSamples(qname, options) {
-            var targetUrl = '/api/archive/' + yamcsInstance + '/parameters' + qname + '/samples';
+            if(!!remoteConfig['useParameterArchive']) {
+                var targetUrl = '/api/archive/' + yamcsInstance + '/parameters2' + qname + '/samples';
+            } else {
+                var targetUrl = '/api/archive/' + yamcsInstance + '/parameters' + qname + '/samples';
+            }
             targetUrl += toQueryString(options);
             return $http.get(targetUrl).then(function (response) {
                     return response.data;
@@ -86,7 +90,11 @@
         }
 
         function getParameterHistory(qname, options) {
-            var targetUrl = '/api/archive/' + yamcsInstance + '/parameters' + qname;
+            if(!!remoteConfig['useParameterArchive']) {
+                var targetUrl = '/api/archive/' + yamcsInstance + '/parameters2' + qname;
+            } else {
+                var targetUrl = '/api/archive/' + yamcsInstance + '/parameters' + qname;
+            }
             targetUrl += toQueryString(options);
             return $http.get(targetUrl).then(function (response) {
                 return response.data;
