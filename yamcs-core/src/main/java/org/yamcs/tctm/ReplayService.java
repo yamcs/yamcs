@@ -132,10 +132,12 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
             ArrayList<ParameterValue> params=new ArrayList<ParameterValue>(pd.getParameterCount());
             for(org.yamcs.protobuf.Pvalue.ParameterValue pbPv:pd.getParameterList()) {
                 Parameter ppDef = xtceDb.getParameter(pbPv.getId());
-                ParameterValue pv = ParameterValue.fromGpb(ppDef, pbPv);
-                if(pv!=null) {
+                if(ppDef!=null) {
+                    ParameterValue pv = ParameterValue.fromGpb(ppDef, pbPv);
                     params.add(pv);
                     replayTime = pv.getGenerationTime();
+                } else { //this may happen if the xtcedb has been changed from when the archive has been built
+                    log.trace("Received value for a parameter id not in xtceDb: {}", pbPv.getId());
                 }
             }
             parameterRequestManager.update(params);
