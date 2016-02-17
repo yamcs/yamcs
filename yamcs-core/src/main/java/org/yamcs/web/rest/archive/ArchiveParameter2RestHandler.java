@@ -97,7 +97,7 @@ public class ArchiveParameter2RestHandler extends RestHandler {
 
         ParameterId[] pids = piddb.get(p.getQualifiedName());
         if(pids == null) {
-            log.warn("No parameter id found in the parmaeter archive for {}", p.getQualifiedName());
+            log.warn("No parameter id found in the parameter archive for {}", p.getQualifiedName());
             if(pcache!=null) {
                 sampleDataFromCache(pcache, p, start, stop, sampler);
             }
@@ -238,7 +238,7 @@ public class ArchiveParameter2RestHandler extends RestHandler {
 
         ParameterId[] pids = piddb.get(p.getQualifiedName());
         if(pids != null) {
-            log.warn("No parameter id found in the parmaeter archive for {}", p.getQualifiedName());
+            
             ParameterGroupIdDb pgidDb = parchive.getParameterGroupIdDb();
 
             for(ParameterId pid:pids) {
@@ -253,10 +253,13 @@ public class ArchiveParameter2RestHandler extends RestHandler {
                 log.error("No parameter group id found in the parameter archive for {}", p.getQualifiedName());
                 throw new NotFoundException(req);
             }
+        } else {
+            log.warn("No parameter id found in the parameter archive for {}", p.getQualifiedName());
         }
         String[] pnames = new String[pidArray.size()];
         Arrays.fill(pnames, p.getQualifiedName());
         MultipleParameterValueRequest mpvr = new MultipleParameterValueRequest(start, stop, pnames, pidArray.toArray(), pgidArray.toArray(), ascending);
+        mpvr.setRetrieveRawValues(true);
         // do not use set limit because the data can be filtered down (e.g. noRepeat) and the limit applies the final filtered data not to the input
         // one day the parameter archive will be smarter and do the filtering inside
         //mpvr.setLimit(limit);
