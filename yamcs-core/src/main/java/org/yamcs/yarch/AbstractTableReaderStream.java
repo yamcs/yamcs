@@ -116,7 +116,7 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
         if(emit) emitTuple(lastEmitted);
         return emit;
     }
-    
+
     protected boolean emitIfNotPastStart (RawTuple rt,  byte[] rangeStart, boolean strictStart) {
         boolean emit=true;
         if(rangeStart!=null) { //check if we have reached the start
@@ -139,7 +139,7 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
     @Override
     public boolean addRelOpFilter(ColumnExpression cexpr, RelOp relOp, Object value) throws StreamSqlException {
         if(tableDefinition.isIndexedByKey(cexpr.getName())) {
-            ColumnDefinition cdef=tableDefinition.getColumnDefinition(cexpr.getName());
+            ColumnDefinition cdef = tableDefinition.getColumnDefinition(cexpr.getName());
             Comparable<Object> cv=null;
             try {
                 cv=(Comparable<Object>)DataType.castAs(cdef.getType(),value);
@@ -174,11 +174,11 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
             }
             return true;
         } else if((relOp==RelOp.EQUAL) && tableDefinition.hasPartitioning()) {
-            PartitioningSpec pspec=tableDefinition.getPartitioningSpec();
+            PartitioningSpec pspec = tableDefinition.getPartitioningSpec();
             if (cexpr.getName().equals(pspec.valueColumn)) {
                 Set<Object> values=new HashSet<Object>();
                 values.add(value);
-                values=transformEnums(values);
+                values = transformEnums(values);
                 if(partitionValueFilter==null) {
                     partitionValueFilter=values;
                 } else {
@@ -192,27 +192,32 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
 
 
     //if the value partitioning column is of type Enum, we have to convert all the values 
-    // from String to Short
+    // from String to Short - the values that do not have an enum are eliminated
+
     // if partitioning value is not an enum, return it unchanged
     private Set<Object> transformEnums(Set<Object> values) {
         PartitioningSpec pspec=tableDefinition.getPartitioningSpec();
         ColumnDefinition cd=tableDefinition.getColumnDefinition(pspec.valueColumn);
 
         if(cd.getType()==DataType.ENUM) { 
-            BiMap<String, Short> enumValues=tableDefinition.getEnumValues(pspec.valueColumn);
+            BiMap<String, Short> enumValues = tableDefinition.getEnumValues(pspec.valueColumn);
+
             Set<Object> v1=new HashSet<Object>();
-            for(Object o: values) {
-                Object o1=enumValues.get(o);
-                if(o1==null) {
-                    log.debug("no enum value for column: {} value: {}", pspec.valueColumn, o);
-                } else {
-                    v1.add(o1);
+            if(enumValues!=null) { //else there is no value in the table yet
+                for(Object o: values) {
+                    Object o1 = enumValues.get(o);
+                    if(o1==null) {
+                        log.debug("no enum value for column: {} value: {}", pspec.valueColumn, o);
+                    } else {
+                        v1.add(o1);
+                    }
                 }
             }
             values=v1;
         }
         return values;
     }
+
     /**
      * currently adds only filters on value based partitions
      */
@@ -222,7 +227,7 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
         PartitioningSpec pspec=tableDefinition.getPartitioningSpec();
 
         if((pspec.valueColumn==null) || (!pspec.valueColumn.equals(cexpr.getName()))) return false;
-        values=transformEnums(values);
+        values = transformEnums(values);
 
         if(partitionValueFilter==null) {
             partitionValueFilter=values;

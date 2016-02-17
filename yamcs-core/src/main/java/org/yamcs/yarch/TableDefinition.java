@@ -286,15 +286,15 @@ public class TableDefinition {
        if((enumValues!=null) && ((b=enumValues.get(columnName))!=null) && b.containsKey(v)) return; 
        
        log.debug("Adding enum value "+v+" for "+name+"."+columnName);
-       serializedEmumValues=new HashMap<String, BiMap<String, Short>>();
+       serializedEmumValues = new HashMap<String, BiMap<String, Short>>();
        if(enumValues!=null) serializedEmumValues.putAll(enumValues);
-       b =serializedEmumValues.remove(columnName);
+       b = serializedEmumValues.remove(columnName);
        BiMap<String, Short> b2= HashBiMap.create();
        if(b!=null) b2.putAll(b);
        b2.put(v, (short)b2.size());
        serializedEmumValues.put(columnName, b2);
        ydb.serializeTableDefinition(this);
-       enumValues=serializedEmumValues;
+       enumValues = serializedEmumValues;
        cs.setEnumValues(b2);
    }
 
@@ -311,7 +311,7 @@ public class TableDefinition {
        if((enumValues==null) || ((b=enumValues.get(columnName))==null) || (v1=b.get(value))==null) {
            ColumnSerializer cs=getColumnSerializer(columnName);
            addEnumValue(cs, value);
-           enumValue=enumValues.get(columnName).get(value);
+           enumValue = enumValues.get(columnName).get(value);
        } else {
            enumValue = v1;
        }
