@@ -16,9 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ParameterValue;
 import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.DecodingException;
-import org.yamcs.utils.TimeEncoding;
 
 
 public class MultiParameterDataRetrieval {

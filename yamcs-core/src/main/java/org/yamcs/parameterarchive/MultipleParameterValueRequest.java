@@ -11,6 +11,8 @@ public class MultipleParameterValueRequest {
     //these shall also be considered final - just that I didn't want the constructor to get very long
     boolean retrieveEngValues = true;
     boolean retrieveParamStatus = true;
+    boolean retrieveRawValues = false;
+    
     int limit = -1;
     
     public MultipleParameterValueRequest(long start, long stop, String[] parameterNames, int[] parameterIds, int[] parameterGroupIds,  boolean ascending) {
@@ -26,7 +28,7 @@ public class MultipleParameterValueRequest {
     }
     
   
-    boolean retrieveRawValues = false;
+    
     public boolean isRetrieveRawValues() {
         return retrieveRawValues;
     }

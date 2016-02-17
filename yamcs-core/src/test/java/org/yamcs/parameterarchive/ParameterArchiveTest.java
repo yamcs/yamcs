@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.rocksdb.RocksDBException;
 import org.yamcs.ParameterValue;
 import org.yamcs.YamcsServer;
+import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -238,6 +239,13 @@ public class ParameterArchiveTest {
         
         List<ParameterValueArray> l1d = retrieveSingleParamSingleGroup(0, TimeEncoding.MAX_INSTANT, p1id, pg1id , false, false, true, true);
         checkEquals(false, true, true, l1d.get(0), pv1_1, pv1_0);
+        
+        List<ParameterIdValueList> params = retrieveMultipleParameters(0, TimeEncoding.MAX_INSTANT, new int[]{p1id}, new int[] {pg1id}, true);
+        assertEquals(2, params.size());
+        ParameterIdValueList pidvl =  params.get(0);
+        System.out.println("pidvl: "+pidvl.getValues());
+        checkEquals(params.get(0), 100, pv1_0);
+        
     }
     
     
@@ -564,7 +572,7 @@ public class ParameterArchiveTest {
         }
         MultipleParameterValueRequest mpvr = new MultipleParameterValueRequest(start, stop, parameterNames, parameterIds, parameterGroupIds, ascending);
         mpvr.setLimit(limit);
-        
+        mpvr.setRetrieveRawValues(true);
         MultiParameterDataRetrieval mpdr = new MultiParameterDataRetrieval(parchive, mpvr);
         MultiValueConsumer c = new MultiValueConsumer();
         mpdr.retrieve(c);
