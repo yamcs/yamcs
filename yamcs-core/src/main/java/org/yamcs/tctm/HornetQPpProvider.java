@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.api.Protocol;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.hornetq.StreamAdapter;
@@ -102,8 +101,30 @@ public class HornetQPpProvider extends  AbstractService implements PpProvider, M
         if(disabled) return;
         try {
             ParameterData pd = (ParameterData)Protocol.decode(msg, ParameterData.newBuilder());
+            long genTime;
+            if(pd.hasGenerationTime()) {
+                genTime = pd.getGenerationTime();
+            } else {
+                Long l = msg.getLongProperty(PpProviderAdapter.PP_TUPLE_COL_GENTIME);
+                if(l!=null) {
+                    genTime = l;
+                } else {
+                    log.warn("Cannot find generation time either in the body or in the header of the message");
+                    return;
+                }
+            }
+            String ppGroup;
+            if(pd.hasGroup()) {
+                ppGroup = pd.getGroup();
+            } else {
+                ppGroup = msg.getStringProperty(PpProviderAdapter.PP_TUPLE_COL_PPGROUP);
+                if(ppGroup == null) {
+                    log.warn("Cannot find PP group either in the body or in the header of the message");
+                    return;
+                }
+            }
             totalPpCount += pd.getParameterCount();
-            ppListener.updateParams(pd.getGenerationTime(), pd.getGroup(), pd.getSeqNum(), pd.getParameterList());
+            ppListener.updateParams(genTime, ppGroup, pd.getSeqNum(), pd.getParameterList());
         } catch(Exception e){
             log.warn( "{} for message: {}", e.getMessage(), msg);
         }

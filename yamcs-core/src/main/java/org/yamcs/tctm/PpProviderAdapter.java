@@ -174,8 +174,8 @@ public class PpProviderAdapter extends AbstractService {
         
         @Override
         public void updateParams(long gentime, String group, int seqNum, Collection<org.yamcs.protobuf.Pvalue.ParameterValue> params) {
-            TupleDefinition tdef=PP_TUPLE_DEFINITION.copy();
-            List<Object> cols=new ArrayList<Object>(4+params.size());
+            TupleDefinition tdef = PP_TUPLE_DEFINITION.copy();
+            List<Object> cols = new ArrayList<Object>(4+params.size());
             cols.add(gentime);
             cols.add(group);
             cols.add(seqNum);
