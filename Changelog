@@ -1,3 +1,7 @@
+Version 0.29.2 Released 19-Feb-2015
+- implemented ParameterArchive
+- various small bug fixes
+
 Version 0.29.1 Released 05-Feb-2015
 - more improvements to the yamcs-web: alarm history, events
 - converted the CCSDS Index to RocksDB from TokyoCabinet
