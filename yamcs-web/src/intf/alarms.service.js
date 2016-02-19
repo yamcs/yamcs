@@ -175,24 +175,14 @@
 
         function toNumericLevel(monitoringResult) {
             switch (monitoringResult) {
-            case 'WATCH_HIGH':
-            case 'WATCH_LOW':
             case 'WATCH':
                 return 1;
-            case 'WARNING_HIGH':
-            case 'WARNING_LOW':
             case 'WARNING':
                 return 2;
-            case 'DISTRESS_HIGH':
-            case 'DISTRESS_LOW':
             case 'DISTRESS':
                 return 3;
-            case 'CRITICAL_HIGH':
-            case 'CRITICAL_LOW':
             case 'CRITICAL':
                 return 4;
-            case 'SEVERE_HIGH':
-            case 'SEVERE_LOW':
             case 'SEVERE':
                 return 5;
             default:
