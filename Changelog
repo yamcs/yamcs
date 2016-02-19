@@ -1,3 +1,7 @@
+Version 0.29.3 Released
+- added backFiller config in the ParameterArchive
+- added an option in the web displays to use the ParameterArchive for parameter sampling and history
+
 Version 0.29.2 Released 19-Feb-2015
 - implemented ParameterArchive
 - various small bug fixes
