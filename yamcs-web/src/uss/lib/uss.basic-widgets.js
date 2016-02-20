@@ -235,7 +235,7 @@ $.extend(USS.Field.prototype, {
         }
 
         var id = USS.getParameterFromWidget(this);
-        var yamcsInstance = location.pathname.match(/\/([^\/]*)\/?/)[1];;
+        var yamcsInstance = location.pathname.match(/\/([^\/]*)\/?/)[1];
         var rectLink = svg.link(parent, '/' + yamcsInstance + '/mdb/' + id.namespace + '/' + id.name, {});
         svg.rect(rectLink, 0, 0, this.width, this.height, settings);
 

@@ -4,7 +4,7 @@
         .factory('displaysService', displaysService);
 
     /* @ngInject */
-    function displaysService($http, socket, tmService, $log, yamcsInstance) {
+    function displaysService($http, $log, socket, yamcsInstance, tmService, ussService) {
 
         socket.on('PARAMETER', function(pdata) {
             var params = pdata.parameter;
@@ -17,7 +17,7 @@
                 }
                 for (var j = 0; j < dbs.length; j++) {
                     // TODO refactor this, should not know about uss
-                    USS.updateWidget(dbs[j], p);
+                    ussService.updateWidget(dbs[j], p);
                 }
             }
         });

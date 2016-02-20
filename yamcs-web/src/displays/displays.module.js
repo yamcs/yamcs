@@ -2,7 +2,7 @@
     'use strict';
 
     angular
-        .module('yamcs.displays', ['yamcs.core'])
+        .module('yamcs.displays', ['yamcs.core', 'yamcs.uss'])
         .directive('displaysPane', displaysPane)
         .directive('embeddedDisplay', embeddedDisplay)
         .config(configure);
@@ -24,7 +24,7 @@
     }
 
     /* @ngInject */
-    function embeddedDisplay(displaysService, tmService, $rootScope) {
+    function embeddedDisplay(displaysService, tmService, $rootScope, ussService) {
         return {
             restrict: 'A',
             scope: { ref: '@' },
@@ -35,7 +35,7 @@
                 elem.data('spinner').spin(elem[0]);
 
                 displaysService.getDisplay(attrs['ref']).then(function(rawDisplay) {
-                    USS.drawAndConnectDisplay(rawDisplay, elem, tmService, function(display) {
+                    ussService.drawAndConnectDisplay(rawDisplay, elem, tmService, function(display) {
 
                         // 'Leak' canvas color
                         // This should not be done here. But I'm not yet fully understanding angular
@@ -47,6 +47,10 @@
                             $('body').css('background-color', '');
                         });
                     });
+                });
+
+                scope.$on('$destroy', function() {
+                    console.log('destroy on embedded display');
                 });
             }
         }

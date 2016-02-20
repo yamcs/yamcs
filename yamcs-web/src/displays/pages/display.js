@@ -12,5 +12,8 @@
         $rootScope.pageTitle = displayName + ' | Yamcs';
         vm.displayName = displayName;
 
+        $scope.$on('$destroy', function() {
+            console.log('destroy on display');
+        });
     }
 })();
