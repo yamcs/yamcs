@@ -34,8 +34,11 @@
                 }
                 elem.data('spinner').spin(elem[0]);
 
-                displaysService.getDisplay(attrs['ref']).then(function(rawDisplay) {
-                    ussService.drawAndConnectDisplay(rawDisplay, elem, tmService, function(display) {
+                displaysService.getDisplay(attrs['ref']).then(function(sourceCode) {
+                    ussService.drawDisplay(sourceCode, elem, function(display) {
+
+                        tmService.subscribeParameters(display.parameters);
+                        tmService.subscribeComputations(display.parameters);
 
                         // 'Leak' canvas color
                         // This should not be done here. But I'm not yet fully understanding angular
@@ -43,14 +46,17 @@
                         //elem.parents('.main').css('background-color', display.bgcolor);
                         $('body').css('background-color', display.bgcolor);
                         elem.data('spinner').stop();
-                        scope.$on('$destroy', function () {
-                            $('body').css('background-color', '');
-                        });
                     });
                 });
 
                 scope.$on('$destroy', function() {
                     console.log('destroy on embedded display');
+
+                    // Return intentionally leaked background color to the default
+                    $('body').css('background-color', '');
+
+                    // TODO
+                    //unsubscribe
                 });
             }
         }

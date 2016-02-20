@@ -9,16 +9,14 @@
     function ussService() {
 
         return {
-            drawAndConnectDisplay: drawAndConnectDisplay,
+            drawDisplay: drawDisplay,
             updateWidget: updateWidget
         };
 
-        function drawAndConnectDisplay(data, targetDiv, tmService, doneFunction) {
+        function drawDisplay(sourceCode, targetDiv, doneFunction) {
             $(targetDiv).svg({onLoad: function () {
                 var display = new USS.Display(targetDiv);
-                display.parseAndDraw(data);
-                tmService.subscribeParameters(display.parameters);
-                tmService.subscribeComputations(display.parameters);
+                display.parseAndDraw(sourceCode);
                 if (doneFunction) doneFunction(display);
             }});
         }
