@@ -4,23 +4,7 @@
         .factory('displaysService', displaysService);
 
     /* @ngInject */
-    function displaysService($http, $log, socket, yamcsInstance, tmService, ussService) {
-
-        socket.on('PARAMETER', function(pdata) {
-            var params = pdata.parameter;
-            for(var i = 0; i < params.length; i++) {
-                var p = params[i];
-                var dbs = tmService.subscribedParameters[p.id.name];
-                if (!dbs) {
-                    //$log.error('Cannot find bindings for '+ p.id.name, tmService.subscribedParameters);
-                    continue;
-                }
-                for (var j = 0; j < dbs.length; j++) {
-                    // TODO refactor this, should not know about uss
-                    ussService.updateWidget(dbs[j], p);
-                }
-            }
-        });
+    function displaysService($http, $log, yamcsInstance) {
 
         return {
             listDisplays: listDisplays,

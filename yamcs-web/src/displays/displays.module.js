@@ -24,7 +24,7 @@
     }
 
     /* @ngInject */
-    function embeddedDisplay(displaysService, tmService, $rootScope, ussService) {
+    function embeddedDisplay(displaysService, tmService, ussService) {
         return {
             restrict: 'A',
             scope: { ref: '@' },
@@ -47,6 +47,21 @@
                         $('body').css('background-color', display.bgcolor);
                         elem.data('spinner').stop();
                     });
+                });
+
+                scope.$on('yamcs.tm.pvals', function(event, data) {
+                    for(var i = 0; i < data.length; i++) {
+                        var p = data[i];
+                        var dbs = tmService.subscribedParameters[p.id.name];
+                        if (!dbs) {
+                            //$log.error('Cannot find bindings for '+ p.id.name, tmService.subscribedParameters);
+                            continue;
+                        }
+                        for (var j = 0; j < dbs.length; j++) {
+                            // TODO refactor this, should not know about uss
+                            ussService.updateWidget(dbs[j], p);
+                        }
+                    }
                 });
 
                 scope.$on('$destroy', function() {

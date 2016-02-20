@@ -31,10 +31,11 @@
     }
 
     /* @ngInject */
-    function tmService($http, $log, socket, yamcsInstance, remoteConfig) {
+    function tmService($http, $log, $rootScope, socket, yamcsInstance, remoteConfig) {
 
         socket.on('PARAMETER', function(pdata) {
             var params = pdata['parameter'];
+            $rootScope.$broadcast('yamcs.tm.pvals', params);
             for(var i=0; i<params.length; i++) {
                 var p = params[i];
 
