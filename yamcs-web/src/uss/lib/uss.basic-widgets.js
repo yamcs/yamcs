@@ -159,6 +159,43 @@ USS.Display.prototype = {
             opts.dataBindings.push(db);
         });
         return opts;
+    },
+    getParameters: function() {
+        var paraList=[];
+        for(var paraname in this.parameters) {
+            var p=this.parameters[paraname];
+            if (p.type=='ExternalDataSource') {
+                paraList.push({name: p.name, namespace: p.namespace});
+            }
+        }
+        return paraList;
+    },
+    updateBindings: function (pvals) {
+        for(var i = 0; i < pvals.length; i++) {
+            var p = pvals[i];
+            var dbs = this.parameters[p.id.name];
+            if (dbs && dbs.bindings) {
+                for (var j = 0; j < dbs.bindings.length; j++) {
+                    dbs.bindings[j].updateWidget(p);
+                }
+            }
+        }
+    },
+    getComputations: function() {
+        var compDefList=[];
+        for(var paraname in parameters) {
+            var p=parameters[paraname];
+            if (p.type=='Computation') {
+                var cdef={name: paraname, expression: p.expression, argument: [], language: 'jformula'};
+                var args=p.args;
+                for(var i=0;i<args.length;i++) {
+                    var a=args[i];
+                    cdef.argument.push({name: a.Opsname, namespace: 'MDB:OPS Name'});
+                }
+                compDefList.push(cdef);
+            }
+        }
+        return compDefList;
     }
 };
 

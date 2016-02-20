@@ -13,7 +13,7 @@ public @interface Route {
     
     /**
      * Currently must be an absolute path. Specify route params by preceding
-     * them with a column, followed by their identifying name.
+     * them with a colon, followed by their identifying name.
      */
     String path();
 

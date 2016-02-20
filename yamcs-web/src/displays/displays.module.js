@@ -23,12 +23,21 @@
         };
     }
 
+    /*
+        The embedded display directive creates a display instance that holds its
+        own state (bindings) in local angular scope.
+        Currently still TODO is to unsubscribe in a way that would not impact
+        potential other parallel subscriptions
+     */
     /* @ngInject */
     function embeddedDisplay(displaysService, tmService, ussService) {
         return {
             restrict: 'A',
             scope: { ref: '@' },
             link: function(scope, elem, attrs) {
+
+                var displayWidget;
+
                 if (!elem.data('spinner')) {
                     elem.data('spinner', new Spinner());
                 }
@@ -36,9 +45,10 @@
 
                 displaysService.getDisplay(attrs['ref']).then(function(sourceCode) {
                     ussService.drawDisplay(sourceCode, elem, function(display) {
+                        displayWidget = display;
 
-                        tmService.subscribeParameters(display.parameters);
-                        tmService.subscribeComputations(display.parameters);
+                        tmService.subscribeParameters(display.getParameters());
+                        ///tmService.subscribeComputations(display.getComputations());
 
                         // 'Leak' canvas color
                         // This should not be done here. But I'm not yet fully understanding angular
@@ -50,16 +60,8 @@
                 });
 
                 scope.$on('yamcs.tm.pvals', function(event, data) {
-                    for(var i = 0; i < data.length; i++) {
-                        var p = data[i];
-                        var dbs = tmService.subscribedParameters[p.id.name];
-                        if (!dbs) {
-                            //$log.error('Cannot find bindings for '+ p.id.name, tmService.subscribedParameters);
-                            continue;
-                        }
-                        for (var j = 0; j < dbs.length; j++) {
-                            dbs[j].updateWidget(p);
-                        }
+                    if (displayWidget) {
+                        displayWidget.updateBindings(data);
                     }
                 });
 

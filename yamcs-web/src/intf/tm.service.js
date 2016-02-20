@@ -10,14 +10,6 @@
     var parameterListenersBySubscriptionId = {};
     var subscriptionId = 0;
 
-
-    /*
-     * TODO USS only
-     * Collects databindings (from displays or not)
-     */
-    var subscribedParameters = {};
-    var invalidDataBindings = {};
-
     function idsMatch(a, b) {
         var aHas = a.hasOwnProperty('namespace');
         var bHas = b.hasOwnProperty('namespace');
@@ -58,10 +50,7 @@
             // TODO USS only. Should be unsplit and partially moved
             subscribeParameters: subscribeParameters,
             // TODO USS only. Should be unsplit and partially moved
-            subscribeComputations: subscribeComputations,
-
-            // TEMP should not be exposed, but need to understand 'bindings' first
-            subscribedParameters: subscribedParameters
+            subscribeComputations: subscribeComputations
         };
 
         function getParameter(qname, options) {
@@ -147,51 +136,18 @@
             }
         }
 
-        function addSubscribedParameter(paraname, p) {
-           var dbs=subscribedParameters[paraname];
-           if(!dbs) {
-               dbs = [];
-               subscribedParameters[paraname]=dbs;
-           }
-           var pdb = p.bindings;
-           for(var j = 0; j < pdb.length; j++){
-               dbs.push(pdb[j]);
-           }
-        }
+        function doSubscribeParameters(parameters) {
+            if (parameters.length == 0) return;
 
-        function doSubscribeParameters(parameters, addToList) {
-            var paraList=[];
-            for(var paraname in parameters) {
-                var p=parameters[paraname];
-                if (p.type=='ExternalDataSource') {
-                    if(addToList) addSubscribedParameter(paraname, p);
-                    paraList.push({name: p.name, namespace: p.namespace});
-                }
-            }
-
-            if(paraList.length==0) return;
-            //console.log(paraList);
-            var that=this;
-            socket.emit('parameter', 'subscribe', {list: paraList}, null,
-                function(exceptionType, exceptionMsg) { //exception handler
-                    if (exceptionType == 'InvalidIdentification') {
-                        var invalidParams=exceptionMsg.list;
-                        console.log('The following parameters are invalid: ', invalidParams);
-                        for(var i=0; i<invalidParams.length; i++) {
-                            var name=invalidParams[i].name;
-                            var db=parameters[name];
-                            delete parameters[name];
-                            invalidDataBindings[name]=db;
-                        }
-                        console.log('retrying without them');
-                        doSubscribeParameters(parameters, false);
-                } else {
-                    console.log('got exception from subscription: ', exceptionType, exceptionMsg);
-                }
+            socket.emit('parameter', 'subscribe2', {
+                abortOnInvalid: false,
+                id: parameters
             });
         }
 
-        function doSubscribeComputations(parameters, addToList) {
+        function doSubscribeComputations(parameters) {
+            if (parameters.length == 0) return;
+
             var compDefList=[];
             for(var paraname in parameters) {
                 var p=parameters[paraname];
@@ -203,13 +159,11 @@
                         cdef.argument.push({name: a.Opsname, namespace: 'MDB:OPS Name'});
                     }
                     compDefList.push(cdef);
-                    if(addToList) addSubscribedParameter(paraname, p);
+                    if(addToList) registerParameterBindings(paraname, p);
                 }
             }
             if(compDefList.length == 0) return;
-            //console.log(paraList);
-            //console.log('compDefList: ', compDefList);
-            var that=this;
+
             socket.emit('parameter', 'subscribeComputations', {compDef: compDefList}, null,
                 function(exceptionType, exceptionMsg) { //exception handler
                     if(exceptionType == 'InvalidIdentification') {

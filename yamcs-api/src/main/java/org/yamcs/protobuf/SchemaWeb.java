@@ -888,4 +888,246 @@ public final class SchemaWeb
         }
     }
 
+    public static final class ParameterSubscriptionRequest
+    {
+        public static final org.yamcs.protobuf.SchemaWeb.ParameterSubscriptionRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaWeb.ParameterSubscriptionRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaWeb.ParameterSubscriptionRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaWeb.ParameterSubscriptionRequest.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Web.ParameterSubscriptionRequest>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Web.ParameterSubscriptionRequest message) throws java.io.IOException
+            {
+                if(message.hasAbortOnInvalid())
+                    output.writeBool(1, message.getAbortOnInvalid(), false);
+                for(org.yamcs.protobuf.Yamcs.NamedObjectId id : message.getIdList())
+                    output.writeObject(2, id, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Web.ParameterSubscriptionRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaWeb.ParameterSubscriptionRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaWeb.ParameterSubscriptionRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Web.ParameterSubscriptionRequest> typeClass()
+            {
+                return org.yamcs.protobuf.Web.ParameterSubscriptionRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Web.ParameterSubscriptionRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Web.ParameterSubscriptionRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Web.ParameterSubscriptionRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Web.ParameterSubscriptionRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Web.ParameterSubscriptionRequest.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Web.ParameterSubscriptionRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setAbortOnInvalid(input.readBool());
+                            break;
+                        case 2:
+                            builder.addId(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Web.ParameterSubscriptionRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Web.ParameterSubscriptionRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Web.ParameterSubscriptionRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaWeb.ParameterSubscriptionRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaWeb.ParameterSubscriptionRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Web.ParameterSubscriptionRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Web.ParameterSubscriptionRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Web.ParameterSubscriptionRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Web.ParameterSubscriptionRequest.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Web.ParameterSubscriptionRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "abortOnInvalid";
+                case 2: return "id";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("abortOnInvalid", 1);
+            fieldMap.put("id", 2);
+        }
+    }
+
+    public static final class ParameterSubscriptionResponse
+    {
+        public static final org.yamcs.protobuf.SchemaWeb.ParameterSubscriptionResponse.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaWeb.ParameterSubscriptionResponse.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaWeb.ParameterSubscriptionResponse.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaWeb.ParameterSubscriptionResponse.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Web.ParameterSubscriptionResponse>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Web.ParameterSubscriptionResponse message) throws java.io.IOException
+            {
+                for(org.yamcs.protobuf.Yamcs.NamedObjectId valid : message.getValidList())
+                    output.writeObject(1, valid, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
+
+                for(org.yamcs.protobuf.Yamcs.NamedObjectId invalid : message.getInvalidList())
+                    output.writeObject(2, invalid, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Web.ParameterSubscriptionResponse message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaWeb.ParameterSubscriptionResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaWeb.ParameterSubscriptionResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Web.ParameterSubscriptionResponse> typeClass()
+            {
+                return org.yamcs.protobuf.Web.ParameterSubscriptionResponse.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Web.ParameterSubscriptionResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Web.ParameterSubscriptionResponse.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Web.ParameterSubscriptionResponse message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Web.ParameterSubscriptionResponse newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Web.ParameterSubscriptionResponse.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Web.ParameterSubscriptionResponse.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.addValid(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
+
+                            break;
+                        case 2:
+                            builder.addInvalid(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Web.ParameterSubscriptionResponse.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Web.ParameterSubscriptionResponse.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Web.ParameterSubscriptionResponse.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaWeb.ParameterSubscriptionResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaWeb.ParameterSubscriptionResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Web.ParameterSubscriptionResponse.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Web.ParameterSubscriptionResponse.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Web.ParameterSubscriptionResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Web.ParameterSubscriptionResponse.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Web.ParameterSubscriptionResponse.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "valid";
+                case 2: return "invalid";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("valid", 1);
+            fieldMap.put("invalid", 2);
+        }
+    }
+
 }

@@ -24,7 +24,9 @@ import org.yamcs.protobuf.Comp.ComputationDefList;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.SchemaComp;
 import org.yamcs.protobuf.SchemaPvalue;
+import org.yamcs.protobuf.SchemaWeb;
 import org.yamcs.protobuf.SchemaYamcs;
+import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
@@ -71,6 +73,11 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         case WSR_subscribe:
             NamedObjectList subscribeList = decoder.decodeMessageData(ctx, SchemaYamcs.NamedObjectList.MERGE).build();
             return subscribe(ctx.getRequestId(), subscribeList, authToken);
+        case "subscribe2":
+            // TODO Experimental, but intended to replace WSR_subscribe in a next version. Provides same functionality
+            // but with the option to ignore invalid parameters and continue with the subscription
+            ParameterSubscriptionRequest req = decoder.decodeMessageData(ctx, SchemaWeb.ParameterSubscriptionRequest.MERGE).build();
+            return subscribe2(ctx.getRequestId(), req, authToken);
         case WSR_subscribeAll:
             StringMessage stringMessage = decoder.decodeMessageData(ctx, SchemaYamcs.StringMessage.MERGE).build();
             return subscribeAll(ctx.getRequestId(), stringMessage.getMessage(), authToken);
@@ -87,6 +94,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         }
     }
 
+    @Deprecated
     private WebSocketReplyData subscribe(int requestId, NamedObjectList paraList, AuthenticationToken authToken) throws WebSocketException {
         List<NamedObjectId> idlist = paraList.getListList();
         try {
@@ -95,14 +103,14 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
             } else {
                 subscriptionId=pidrm.addRequest(idlist, authToken);
             }
-                WebSocketReplyData reply = toAckReply(requestId);
-                wsHandler.sendReply(reply);
-                if(pidrm.hasParameterCache()) {
-                    List<ParameterValueWithId> pvlist = pidrm.getValuesFromCache(idlist, authToken);
-                    if(!pvlist.isEmpty()) {
-                        update(subscriptionId, pvlist);
-                    }
+            WebSocketReplyData reply = toAckReply(requestId);
+            wsHandler.sendReply(reply);
+            if(pidrm.hasParameterCache()) {
+                List<ParameterValueWithId> pvlist = pidrm.getValuesFromCache(idlist, authToken);
+                if(!pvlist.isEmpty()) {
+                    update(subscriptionId, pvlist);
                 }
+            }
             
             return null;
         } catch (InvalidIdentification e) {
@@ -119,6 +127,65 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         } catch (NoPermissionException e) {
         	log.error("no permission for parameters", e);
         	throw new WebSocketException(requestId, "internal error: "+e.toString(), e);
+        }
+    }
+    
+    private WebSocketReplyData subscribe2(int requestId, ParameterSubscriptionRequest req, AuthenticationToken authToken) throws WebSocketException {
+        List<NamedObjectId> idList = req.getIdList();
+        boolean abortOnInvalid = req.hasAbortOnInvalid() && req.getAbortOnInvalid();
+        try {
+            try {
+                if(subscriptionId!=-1) {
+                    pidrm.addItemsToRequest(subscriptionId, idList, authToken);
+                } else {
+                    subscriptionId=pidrm.addRequest(idList, authToken);
+                }
+            } catch (InvalidIdentification e) {
+                if (abortOnInvalid) {
+                    NamedObjectList nol = NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
+                    WebSocketException ex = new WebSocketException(requestId, e);
+                    ex.attachData("InvalidIdentification", nol, SchemaYamcs.NamedObjectList.WRITE);
+                    throw ex;
+                } else {
+                    idList = new ArrayList<>(idList);
+                    idList.removeAll(e.invalidParameters);
+                    if (idList.isEmpty()) {
+                        log.warn("All requested parameters were invalid");
+                    } else { 
+                        log.warn("Got invalid parameters, but continuing subscribe attempt with valids: {} ", idList);
+                        if(subscriptionId!=-1) {
+                            pidrm.addItemsToRequest(subscriptionId, idList, authToken);
+                        } else {
+                            subscriptionId=pidrm.addRequest(idList, authToken);
+                        }
+                    }
+                    // TODO send back invalid list as part of nominal response. Requires work in the websocket framework which
+                    // currently only supports ACK responses in the reply itself
+                }
+            }
+            
+            WebSocketReplyData reply = toAckReply(requestId);
+            wsHandler.sendReply(reply);
+            if(pidrm.hasParameterCache()) {
+                List<ParameterValueWithId> pvlist = pidrm.getValuesFromCache(idList, authToken);
+                if(!pvlist.isEmpty()) {
+                    update(subscriptionId, pvlist);
+                }
+            }
+                
+            return null;
+        } catch (InvalidIdentification e) {
+            log.error("got invalid identification. Likely coming from cache", e);
+            throw new WebSocketException(requestId, "internal error: "+e.toString(), e);
+        } catch (InvalidRequestIdentification e) {
+            log.error("got invalid subscription id", e);
+            throw new WebSocketException(requestId, "internal error: "+e.toString(), e);
+        } catch (NoPermissionException e) {
+            log.error("no permission for parameters", e);
+            throw new WebSocketException(requestId, "internal error: "+e.toString(), e);
+        } catch (IOException e) {
+            log.error("Exception when sending data", e);
+            return null;
         }
     }
 
