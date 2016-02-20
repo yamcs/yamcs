@@ -1,8 +1,14 @@
 package org.yamcs.web.rest;
 
-import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.protostuff.JsonIOUtil;
+import io.protostuff.Schema;
 
 import java.io.IOException;
 
@@ -19,6 +25,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.security.Privilege;
+import org.yamcs.utils.StringConvertors;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpHandler;
@@ -36,16 +43,9 @@ import org.yamcs.yarch.YarchDatabase;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.protobuf.MessageLite;
-
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.protostuff.JsonIOUtil;
-import io.protostuff.Schema;
+import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
  * Contains utility methods for REST handlers. May eventually refactor this out.
@@ -216,12 +216,12 @@ public abstract class RestHandler extends RouteHandler {
         }
         
         if (p != null && !authorised(req, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
-            log.warn("Parameter {} found, but withheld due to insufficient privileges. Returning 404 instead", id);
+            log.warn("Parameter {} found, but withheld due to insufficient privileges. Returning 404 instead", StringConvertors.idToString(id));
             p = null;
         }
         
         if (p == null) {
-            throw new NotFoundException(req, "No such parameter  '"+id+"'");
+            throw new NotFoundException(req, "No parameter named " + StringConvertors.idToString(id));
         } else {
             return p;
         }
@@ -264,7 +264,7 @@ public abstract class RestHandler extends RouteHandler {
         }
         
         if (cmd != null && !authorised(req, Privilege.Type.TC, cmd.getQualifiedName())) {
-            log.warn("Command {} found, but withheld due to insufficient privileges. Returning 404 instead", id);
+            log.warn("Command {} found, but withheld due to insufficient privileges. Returning 404 instead", StringConvertors.idToString(id));
             cmd = null;
         }
         
