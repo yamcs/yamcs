@@ -105,13 +105,39 @@ USS.Display.prototype = {
                         }
                         this.parameters[db.parameterName] = para;
                     }
-                    var binding={};
-                    binding.dynamicProperty=db.dynamicProperty;
+                    var binding = {
+                        dynamicProperty: db.dynamicProperty,
+                        widget: w,
+                        updateWidget: function(para) {
+                            console.log('heh2');
+
+                            switch (this.dynamicProperty) {
+                                case USS.dp_VALUE:
+                                    if (this.widget.updateValue === undefined) {
+                                        //console.log('no updateValue for ', widget);
+                                        return;
+                                    }
+                                    this.widget.updateValue(para, this.usingRaw);
+                                    break;
+                                case USS.dp_X:
+                                    this.widget.updatePosition(para, 'x', this.usingRaw);
+                                    break;
+                                case USS.dp_Y:
+                                    this.widget.updatePosition(para, 'y', this.usingRaw);
+                                    break;
+                                case USS.dp_FILL_COLOR:
+                                    this.widget.updateFillColor(para, this.usingRaw);
+                                    break;
+                                default:
+                                    console.log('TODO update dynamic property: ', this.dynamicProperty);
+                            }
+                        }
+                    };
+
                     if(db.usingRaw !== undefined) {
                         binding.usingRaw=db.usingRaw;
                     }
-                   
-                    binding.widget = w;
+
                     para.bindings.push(binding);
                 }
            }

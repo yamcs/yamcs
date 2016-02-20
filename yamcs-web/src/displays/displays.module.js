@@ -58,8 +58,7 @@
                             continue;
                         }
                         for (var j = 0; j < dbs.length; j++) {
-                            // TODO refactor this, should not know about uss
-                            ussService.updateWidget(dbs[j], p);
+                            dbs[j].updateWidget(p);
                         }
                     }
                 });
