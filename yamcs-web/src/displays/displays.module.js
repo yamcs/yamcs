@@ -48,7 +48,7 @@
                         displayWidget = display;
 
                         tmService.subscribeParameters(display.getParameters());
-                        ///tmService.subscribeComputations(display.getComputations());
+                        tmService.subscribeComputations(display.getComputations());
 
                         // 'Leak' canvas color
                         // This should not be done here. But I'm not yet fully understanding angular

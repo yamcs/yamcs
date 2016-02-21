@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -132,7 +133,6 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
     
     private WebSocketReplyData subscribe2(int requestId, ParameterSubscriptionRequest req, AuthenticationToken authToken) throws WebSocketException {
         List<NamedObjectId> idList = req.getIdList();
-        boolean abortOnInvalid = req.hasAbortOnInvalid() && req.getAbortOnInvalid();
         try {
             try {
                 if(subscriptionId!=-1) {
@@ -141,7 +141,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                     subscriptionId=pidrm.addRequest(idList, authToken);
                 }
             } catch (InvalidIdentification e) {
-                if (abortOnInvalid) {
+                if (req.hasAbortOnInvalid() && req.getAbortOnInvalid()) {
                     NamedObjectList nol = NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
                     WebSocketException ex = new WebSocketException(requestId, e);
                     ex.attachData("InvalidIdentification", nol, SchemaYamcs.NamedObjectList.WRITE);
@@ -217,28 +217,69 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
     private WebSocketReplyData subscribeComputations(int requestId, ComputationDefList cdefList, AuthenticationToken authToken)
             throws WebSocketException {
 
-        List<NamedObjectId> argList=new ArrayList<>();
-        for(ComputationDef c: cdefList.getCompDefList()) {
-            argList.addAll(c.getArgumentList());
+        List<ComputationDef> computations = cdefList.getCompDefList();
+        List<NamedObjectId> allArguments=new ArrayList<>();
+        for(ComputationDef computation : computations) {
+            allArguments.addAll(computation.getArgumentList());
         }
 
         try {
-            if(compSubscriptionId!=-1) {
-                pidrm.addItemsToRequest(compSubscriptionId, argList, authToken);
-            } else {
-        	compSubscriptionId=pidrm.addRequest(argList, authToken);
+            try {
+                if(compSubscriptionId!=-1) {
+                    pidrm.addItemsToRequest(compSubscriptionId, allArguments, authToken);
+                } else {
+                    compSubscriptionId=pidrm.addRequest(allArguments, authToken);
+                }
+            } catch (InvalidIdentification e) {
+                if (cdefList.hasAbortOnInvalid() && cdefList.getAbortOnInvalid()) {
+                    NamedObjectList nol=NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
+                    WebSocketException ex = new WebSocketException(requestId, e);
+                    ex.attachData("InvalidIdentification", nol, SchemaYamcs.NamedObjectList.WRITE);
+                    throw ex;
+                } else {
+                    //remove computations that have as arguments the invalid parameters
+                    computations = new ArrayList<>();
+                    allArguments = new ArrayList<>();
+                    ListIterator<ComputationDef> it = computations.listIterator();
+                    while (it.hasNext()) {
+                        ComputationDef computation = it.next();
+                        boolean remove = false;
+                        for (NamedObjectId argId : computation.getArgumentList()) {
+                            if (e.invalidParameters.contains(argId)) {
+                                remove = true;
+                                break;
+                            }
+                        }
+                        if (remove) {
+                            it.remove();
+                        } else {
+                            allArguments.addAll(computation.getArgumentList());
+                        }
+                    }
+                    
+                    if (computations.isEmpty()) {
+                        log.warn("All requested computations have invalid arguments");
+                    } else { 
+                        log.warn("Got invalid computation arguments, but continuing subscribe attempt with remaining valids: {} ", computations);
+                        if(compSubscriptionId!=-1) {
+                            pidrm.addItemsToRequest(compSubscriptionId, allArguments, authToken);
+                        } else {
+                            compSubscriptionId=pidrm.addRequest(allArguments, authToken);
+                        }
+                    }
+                    // TODO send back invalid list as part of nominal response. Requires work in the websocket framework which
+                    // currently only supports ACK responses in the reply itself
+                }
             }
         } catch (InvalidIdentification e) {
-            NamedObjectList nol=NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
-            WebSocketException ex = new WebSocketException(requestId, e);
-            ex.attachData("InvalidIdentification", nol, SchemaYamcs.NamedObjectList.WRITE);
-            throw ex;
+            log.error("got invalid identification. Should not happen, because checked before", e);
+            throw new WebSocketException(requestId, "internal error: "+e.toString(), e);
         } catch (NoPermissionException e) {
             throw new WebSocketException(requestId, "No permission", e);
         }
         
         try {
-            for(ComputationDef cdef:cdefList.getCompDefList()) {
+            for(ComputationDef cdef : computations) {
                 Computation c = ComputationFactory.getComputation(cdef);
                 compList.add(c);
             }
@@ -246,7 +287,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
             log.warn("Cannot create computation: ", e);
             throw new WebSocketException(requestId, "Could not create computation", e);
         }
-    return toAckReply(requestId);
+        return toAckReply(requestId);
     }
 
     private WebSocketReplyData unsubscribeAll(int requestId) throws WebSocketException {

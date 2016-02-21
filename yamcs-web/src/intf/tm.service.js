@@ -47,9 +47,7 @@
             subscribeParameter: subscribeParameter,
             unsubscribeParameter: unsubscribeParameter,
 
-            // TODO USS only. Should be unsplit and partially moved
             subscribeParameters: subscribeParameters,
-            // TODO USS only. Should be unsplit and partially moved
             subscribeComputations: subscribeComputations
         };
 
@@ -118,87 +116,34 @@
             delete parameterListenersBySubscriptionId[subscriptionId];
         }
 
-        function subscribeParameters(parameters, callback) {
-            socket.on('open', function () {
-                doSubscribeParameters(parameters, true);
-            });
-            if (socket.isConnected()) {
-                doSubscribeParameters(parameters, true);
-            }
-        }
-
-        function subscribeComputations(parameters, callback) {
-            socket.on('open', function () {
-                doSubscribeComputations(parameters, true);
-            });
-            if (socket.isConnected()) {
-                doSubscribeComputations(parameters, true);
-            }
-        }
-
-        function doSubscribeParameters(parameters) {
+        function subscribeParameters(parameters) {
             if (parameters.length == 0) return;
-
-            socket.emit('parameter', 'subscribe2', {
+            var msg = {
                 abortOnInvalid: false,
                 id: parameters
+            };
+
+            socket.on('open', function () {
+                socket.emit('parameter', 'subscribe2', msg);
             });
+            if (socket.isConnected()) {
+                socket.emit('parameter', 'subscribe2', msg);
+            }
         }
 
-        function doSubscribeComputations(parameters) {
-            if (parameters.length == 0) return;
+        function subscribeComputations(computations) {
+            if(computations.length == 0) return;
+            var msg = {
+                abortOnInvalid: false,
+                computations: computations
+            };
 
-            var compDefList=[];
-            for(var paraname in parameters) {
-                var p=parameters[paraname];
-                if (p.type=='Computation') {
-                    var cdef={name: paraname, expression: p.expression, argument: [], language: 'jformula'};
-                    var args=p.args;
-                    for(var i=0;i<args.length;i++) {
-                        var a=args[i];
-                        cdef.argument.push({name: a.Opsname, namespace: 'MDB:OPS Name'});
-                    }
-                    compDefList.push(cdef);
-                    if(addToList) registerParameterBindings(paraname, p);
-                }
+            socket.on('open', function () {
+                socket.emit('parameter', 'subscribeComputations', msg);
+            });
+            if (socket.isConnected()) {
+                socket.emit('parameter', 'subscribeComputations', msg);
             }
-            if(compDefList.length == 0) return;
-
-            socket.emit('parameter', 'subscribeComputations', {compDef: compDefList}, null,
-                function(exceptionType, exceptionMsg) { //exception handler
-                    if(exceptionType == 'InvalidIdentification') {
-                        var invalidParams=exceptionMsg.list;
-                        console.log('The following parameters are invalid: ', invalidParams);
-                        //remove computations that have as arguments the invalid parameters
-                        for(var i=0; i<invalidParams.length; i++) {
-                            var invParaName=invalidParams[i].name;
-                            var cnameToRemove=null;
-                            for(var paraname in parameters) {
-                                var p=parameters[paraname];
-                                if (p.type=='Computation') {
-                                    var args=p.args;
-                                    for(var k=0; k<args.length; k++) {
-                                        var a=args[k];
-                                        if(invParaName == a.Opsname) {
-                                            cnameToRemove = paraname;
-                                            break;
-                                        }
-                                    }
-                                    if(cnameToRemove) break;
-                                }
-                            }
-                            if(cnameToRemove) {
-                                var db=parameters[cnameToRemove];
-                                delete parameters[cnameToRemove];
-                                invalidDataBindings[cnameToRemove]=db;
-                            }
-                        }
-                        console.log('retrying without them');
-                        doSubscribeComputations(parameters, false);
-                    } else {
-                        console.log('got exception from subscription: ', exceptionType, exceptionMsg);
-                    }
-                });
         }
 
         function toQueryString(options) {

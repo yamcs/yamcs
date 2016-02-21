@@ -155,6 +155,8 @@ public final class SchemaComp
                 for(org.yamcs.protobuf.Comp.ComputationDef compDef : message.getCompDefList())
                     output.writeObject(1, compDef, org.yamcs.protobuf.SchemaComp.ComputationDef.WRITE, true);
 
+                if(message.hasAbortOnInvalid())
+                    output.writeBool(2, message.getAbortOnInvalid(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Comp.ComputationDefList message)
             {
@@ -198,6 +200,9 @@ public final class SchemaComp
                             builder.addCompDef(input.mergeObject(org.yamcs.protobuf.Comp.ComputationDef.newBuilder(), org.yamcs.protobuf.SchemaComp.ComputationDef.MERGE));
 
                             break;
+                        case 2:
+                            builder.setAbortOnInvalid(input.readBool());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -239,6 +244,7 @@ public final class SchemaComp
             switch(number)
             {
                 case 1: return "compDef";
+                case 2: return "abortOnInvalid";
                 default: return null;
             }
         }
@@ -251,6 +257,7 @@ public final class SchemaComp
         static
         {
             fieldMap.put("compDef", 1);
+            fieldMap.put("abortOnInvalid", 2);
         }
     }
 

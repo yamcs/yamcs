@@ -69,8 +69,8 @@ message RestExceptionMessage {
 }
 
 message ParameterSubscriptionRequest {
-  optional bool abortOnInvalid = 1;
-  repeated yamcs.NamedObjectId id = 2;
+  repeated yamcs.NamedObjectId id = 1;
+  optional bool abortOnInvalid = 2;
 }
 
 message ParameterSubscriptionResponse {

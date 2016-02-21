@@ -899,11 +899,11 @@ public final class SchemaWeb
         {
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Web.ParameterSubscriptionRequest message) throws java.io.IOException
             {
-                if(message.hasAbortOnInvalid())
-                    output.writeBool(1, message.getAbortOnInvalid(), false);
                 for(org.yamcs.protobuf.Yamcs.NamedObjectId id : message.getIdList())
-                    output.writeObject(2, id, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
+                    output.writeObject(1, id, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
 
+                if(message.hasAbortOnInvalid())
+                    output.writeBool(2, message.getAbortOnInvalid(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Web.ParameterSubscriptionRequest message)
             {
@@ -944,11 +944,11 @@ public final class SchemaWeb
                         case 0:
                             return;
                         case 1:
-                            builder.setAbortOnInvalid(input.readBool());
-                            break;
-                        case 2:
                             builder.addId(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
 
+                            break;
+                        case 2:
+                            builder.setAbortOnInvalid(input.readBool());
                             break;
                         default:
                             input.handleUnknownField(number, this);
@@ -990,8 +990,8 @@ public final class SchemaWeb
         {
             switch(number)
             {
-                case 1: return "abortOnInvalid";
-                case 2: return "id";
+                case 1: return "id";
+                case 2: return "abortOnInvalid";
                 default: return null;
             }
         }
@@ -1003,8 +1003,8 @@ public final class SchemaWeb
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("abortOnInvalid", 1);
-            fieldMap.put("id", 2);
+            fieldMap.put("id", 1);
+            fieldMap.put("abortOnInvalid", 2);
         }
     }
 

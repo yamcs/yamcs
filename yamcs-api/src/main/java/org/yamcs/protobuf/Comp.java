@@ -1264,6 +1264,16 @@ public final class Comp {
      */
     org.yamcs.protobuf.Comp.ComputationDefOrBuilder getCompDefOrBuilder(
         int index);
+
+    // optional bool abortOnInvalid = 2;
+    /**
+     * <code>optional bool abortOnInvalid = 2;</code>
+     */
+    boolean hasAbortOnInvalid();
+    /**
+     * <code>optional bool abortOnInvalid = 2;</code>
+     */
+    boolean getAbortOnInvalid();
   }
   /**
    * Protobuf type {@code comp.ComputationDefList}
@@ -1324,6 +1334,11 @@ public final class Comp {
               compDef_.add(input.readMessage(org.yamcs.protobuf.Comp.ComputationDef.PARSER, extensionRegistry));
               break;
             }
+            case 16: {
+              bitField0_ |= 0x00000001;
+              abortOnInvalid_ = input.readBool();
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -1366,6 +1381,7 @@ public final class Comp {
       return PARSER;
     }
 
+    private int bitField0_;
     // repeated .comp.ComputationDef compDef = 1;
     public static final int COMPDEF_FIELD_NUMBER = 1;
     private java.util.List<org.yamcs.protobuf.Comp.ComputationDef> compDef_;
@@ -1402,8 +1418,25 @@ public final class Comp {
       return compDef_.get(index);
     }
 
+    // optional bool abortOnInvalid = 2;
+    public static final int ABORTONINVALID_FIELD_NUMBER = 2;
+    private boolean abortOnInvalid_;
+    /**
+     * <code>optional bool abortOnInvalid = 2;</code>
+     */
+    public boolean hasAbortOnInvalid() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional bool abortOnInvalid = 2;</code>
+     */
+    public boolean getAbortOnInvalid() {
+      return abortOnInvalid_;
+    }
+
     private void initFields() {
       compDef_ = java.util.Collections.emptyList();
+      abortOnInvalid_ = false;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -1426,6 +1459,9 @@ public final class Comp {
       for (int i = 0; i < compDef_.size(); i++) {
         output.writeMessage(1, compDef_.get(i));
       }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBool(2, abortOnInvalid_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -1438,6 +1474,10 @@ public final class Comp {
       for (int i = 0; i < compDef_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, compDef_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(2, abortOnInvalid_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1562,6 +1602,8 @@ public final class Comp {
         } else {
           compDefBuilder_.clear();
         }
+        abortOnInvalid_ = false;
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -1589,6 +1631,7 @@ public final class Comp {
       public org.yamcs.protobuf.Comp.ComputationDefList buildPartial() {
         org.yamcs.protobuf.Comp.ComputationDefList result = new org.yamcs.protobuf.Comp.ComputationDefList(this);
         int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
         if (compDefBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
             compDef_ = java.util.Collections.unmodifiableList(compDef_);
@@ -1598,6 +1641,11 @@ public final class Comp {
         } else {
           result.compDef_ = compDefBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.abortOnInvalid_ = abortOnInvalid_;
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -1638,6 +1686,9 @@ public final class Comp {
               compDefBuilder_.addAllMessages(other.compDef_);
             }
           }
+        }
+        if (other.hasAbortOnInvalid()) {
+          setAbortOnInvalid(other.getAbortOnInvalid());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -1912,6 +1963,39 @@ public final class Comp {
         return compDefBuilder_;
       }
 
+      // optional bool abortOnInvalid = 2;
+      private boolean abortOnInvalid_ ;
+      /**
+       * <code>optional bool abortOnInvalid = 2;</code>
+       */
+      public boolean hasAbortOnInvalid() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional bool abortOnInvalid = 2;</code>
+       */
+      public boolean getAbortOnInvalid() {
+        return abortOnInvalid_;
+      }
+      /**
+       * <code>optional bool abortOnInvalid = 2;</code>
+       */
+      public Builder setAbortOnInvalid(boolean value) {
+        bitField0_ |= 0x00000002;
+        abortOnInvalid_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool abortOnInvalid = 2;</code>
+       */
+      public Builder clearAbortOnInvalid() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        abortOnInvalid_ = false;
+        onChanged();
+        return this;
+      }
+
       // @@protoc_insertion_point(builder_scope:comp.ComputationDefList)
     }
 
@@ -1945,9 +2029,10 @@ public final class Comp {
       "\n\ncomp.proto\022\004comp\032\013yamcs.proto\"l\n\016Compu" +
       "tationDef\022\014\n\004name\030\001 \002(\t\022\022\n\nexpression\030\002 " +
       "\002(\t\022&\n\010argument\030\003 \003(\0132\024.yamcs.NamedObjec" +
-      "tId\022\020\n\010language\030\004 \001(\t\";\n\022ComputationDefL" +
+      "tId\022\020\n\010language\030\004 \001(\t\"S\n\022ComputationDefL" +
       "ist\022%\n\007compDef\030\001 \003(\0132\024.comp.ComputationD" +
-      "efB\024\n\022org.yamcs.protobuf"
+      "ef\022\026\n\016abortOnInvalid\030\002 \001(\010B\024\n\022org.yamcs." +
+      "protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -1965,7 +2050,7 @@ public final class Comp {
           internal_static_comp_ComputationDefList_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_comp_ComputationDefList_descriptor,
-              new java.lang.String[] { "CompDef", });
+              new java.lang.String[] { "CompDef", "AbortOnInvalid", });
           return null;
         }
       };

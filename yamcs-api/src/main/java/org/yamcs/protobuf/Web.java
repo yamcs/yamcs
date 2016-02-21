@@ -7007,40 +7007,40 @@ public final class Web {
   public interface ParameterSubscriptionRequestOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // optional bool abortOnInvalid = 1;
+    // repeated .yamcs.NamedObjectId id = 1;
     /**
-     * <code>optional bool abortOnInvalid = 1;</code>
-     */
-    boolean hasAbortOnInvalid();
-    /**
-     * <code>optional bool abortOnInvalid = 1;</code>
-     */
-    boolean getAbortOnInvalid();
-
-    // repeated .yamcs.NamedObjectId id = 2;
-    /**
-     * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
     java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> 
         getIdList();
     /**
-     * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
     org.yamcs.protobuf.Yamcs.NamedObjectId getId(int index);
     /**
-     * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
     int getIdCount();
     /**
-     * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
     java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
         getIdOrBuilderList();
     /**
-     * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
     org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getIdOrBuilder(
         int index);
+
+    // optional bool abortOnInvalid = 2;
+    /**
+     * <code>optional bool abortOnInvalid = 2;</code>
+     */
+    boolean hasAbortOnInvalid();
+    /**
+     * <code>optional bool abortOnInvalid = 2;</code>
+     */
+    boolean getAbortOnInvalid();
   }
   /**
    * Protobuf type {@code web.ParameterSubscriptionRequest}
@@ -7093,17 +7093,17 @@ public final class Web {
               }
               break;
             }
-            case 8: {
-              bitField0_ |= 0x00000001;
-              abortOnInvalid_ = input.readBool();
-              break;
-            }
-            case 18: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
                 id_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
-                mutable_bitField0_ |= 0x00000002;
+                mutable_bitField0_ |= 0x00000001;
               }
               id_.add(input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000001;
+              abortOnInvalid_ = input.readBool();
               break;
             }
           }
@@ -7114,7 +7114,7 @@ public final class Web {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
           id_ = java.util.Collections.unmodifiableList(id_);
         }
         this.unknownFields = unknownFields.build();
@@ -7149,61 +7149,61 @@ public final class Web {
     }
 
     private int bitField0_;
-    // optional bool abortOnInvalid = 1;
-    public static final int ABORTONINVALID_FIELD_NUMBER = 1;
-    private boolean abortOnInvalid_;
-    /**
-     * <code>optional bool abortOnInvalid = 1;</code>
-     */
-    public boolean hasAbortOnInvalid() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
-    }
-    /**
-     * <code>optional bool abortOnInvalid = 1;</code>
-     */
-    public boolean getAbortOnInvalid() {
-      return abortOnInvalid_;
-    }
-
-    // repeated .yamcs.NamedObjectId id = 2;
-    public static final int ID_FIELD_NUMBER = 2;
+    // repeated .yamcs.NamedObjectId id = 1;
+    public static final int ID_FIELD_NUMBER = 1;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> id_;
     /**
-     * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
     public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getIdList() {
       return id_;
     }
     /**
-     * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
     public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
         getIdOrBuilderList() {
       return id_;
     }
     /**
-     * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
     public int getIdCount() {
       return id_.size();
     }
     /**
-     * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
     public org.yamcs.protobuf.Yamcs.NamedObjectId getId(int index) {
       return id_.get(index);
     }
     /**
-     * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
     public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getIdOrBuilder(
         int index) {
       return id_.get(index);
     }
 
+    // optional bool abortOnInvalid = 2;
+    public static final int ABORTONINVALID_FIELD_NUMBER = 2;
+    private boolean abortOnInvalid_;
+    /**
+     * <code>optional bool abortOnInvalid = 2;</code>
+     */
+    public boolean hasAbortOnInvalid() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional bool abortOnInvalid = 2;</code>
+     */
+    public boolean getAbortOnInvalid() {
+      return abortOnInvalid_;
+    }
+
     private void initFields() {
-      abortOnInvalid_ = false;
       id_ = java.util.Collections.emptyList();
+      abortOnInvalid_ = false;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -7223,11 +7223,11 @@ public final class Web {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBool(1, abortOnInvalid_);
-      }
       for (int i = 0; i < id_.size(); i++) {
-        output.writeMessage(2, id_.get(i));
+        output.writeMessage(1, id_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBool(2, abortOnInvalid_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -7238,13 +7238,13 @@ public final class Web {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(1, abortOnInvalid_);
-      }
       for (int i = 0; i < id_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, id_.get(i));
+          .computeMessageSize(1, id_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(2, abortOnInvalid_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -7363,14 +7363,14 @@ public final class Web {
 
       public Builder clear() {
         super.clear();
-        abortOnInvalid_ = false;
-        bitField0_ = (bitField0_ & ~0x00000001);
         if (idBuilder_ == null) {
           id_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000001);
         } else {
           idBuilder_.clear();
         }
+        abortOnInvalid_ = false;
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -7399,19 +7399,19 @@ public final class Web {
         org.yamcs.protobuf.Web.ParameterSubscriptionRequest result = new org.yamcs.protobuf.Web.ParameterSubscriptionRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-          to_bitField0_ |= 0x00000001;
-        }
-        result.abortOnInvalid_ = abortOnInvalid_;
         if (idBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
             id_ = java.util.Collections.unmodifiableList(id_);
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000001);
           }
           result.id_ = id_;
         } else {
           result.id_ = idBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.abortOnInvalid_ = abortOnInvalid_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -7428,14 +7428,11 @@ public final class Web {
 
       public Builder mergeFrom(org.yamcs.protobuf.Web.ParameterSubscriptionRequest other) {
         if (other == org.yamcs.protobuf.Web.ParameterSubscriptionRequest.getDefaultInstance()) return this;
-        if (other.hasAbortOnInvalid()) {
-          setAbortOnInvalid(other.getAbortOnInvalid());
-        }
         if (idBuilder_ == null) {
           if (!other.id_.isEmpty()) {
             if (id_.isEmpty()) {
               id_ = other.id_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000001);
             } else {
               ensureIdIsMutable();
               id_.addAll(other.id_);
@@ -7448,7 +7445,7 @@ public final class Web {
               idBuilder_.dispose();
               idBuilder_ = null;
               id_ = other.id_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000001);
               idBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getIdFieldBuilder() : null;
@@ -7456,6 +7453,9 @@ public final class Web {
               idBuilder_.addAllMessages(other.id_);
             }
           }
+        }
+        if (other.hasAbortOnInvalid()) {
+          setAbortOnInvalid(other.getAbortOnInvalid());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -7490,46 +7490,13 @@ public final class Web {
       }
       private int bitField0_;
 
-      // optional bool abortOnInvalid = 1;
-      private boolean abortOnInvalid_ ;
-      /**
-       * <code>optional bool abortOnInvalid = 1;</code>
-       */
-      public boolean hasAbortOnInvalid() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
-      }
-      /**
-       * <code>optional bool abortOnInvalid = 1;</code>
-       */
-      public boolean getAbortOnInvalid() {
-        return abortOnInvalid_;
-      }
-      /**
-       * <code>optional bool abortOnInvalid = 1;</code>
-       */
-      public Builder setAbortOnInvalid(boolean value) {
-        bitField0_ |= 0x00000001;
-        abortOnInvalid_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional bool abortOnInvalid = 1;</code>
-       */
-      public Builder clearAbortOnInvalid() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        abortOnInvalid_ = false;
-        onChanged();
-        return this;
-      }
-
-      // repeated .yamcs.NamedObjectId id = 2;
+      // repeated .yamcs.NamedObjectId id = 1;
       private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> id_ =
         java.util.Collections.emptyList();
       private void ensureIdIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
           id_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>(id_);
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000001;
          }
       }
 
@@ -7537,7 +7504,7 @@ public final class Web {
           org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> idBuilder_;
 
       /**
-       * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getIdList() {
         if (idBuilder_ == null) {
@@ -7547,7 +7514,7 @@ public final class Web {
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public int getIdCount() {
         if (idBuilder_ == null) {
@@ -7557,7 +7524,7 @@ public final class Web {
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public org.yamcs.protobuf.Yamcs.NamedObjectId getId(int index) {
         if (idBuilder_ == null) {
@@ -7567,7 +7534,7 @@ public final class Web {
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public Builder setId(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
@@ -7584,7 +7551,7 @@ public final class Web {
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public Builder setId(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
@@ -7598,7 +7565,7 @@ public final class Web {
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public Builder addId(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
         if (idBuilder_ == null) {
@@ -7614,7 +7581,7 @@ public final class Web {
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public Builder addId(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
@@ -7631,7 +7598,7 @@ public final class Web {
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public Builder addId(
           org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
@@ -7645,7 +7612,7 @@ public final class Web {
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public Builder addId(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
@@ -7659,7 +7626,7 @@ public final class Web {
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public Builder addAllId(
           java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
@@ -7673,12 +7640,12 @@ public final class Web {
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public Builder clearId() {
         if (idBuilder_ == null) {
           id_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000001);
           onChanged();
         } else {
           idBuilder_.clear();
@@ -7686,7 +7653,7 @@ public final class Web {
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public Builder removeId(int index) {
         if (idBuilder_ == null) {
@@ -7699,14 +7666,14 @@ public final class Web {
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder getIdBuilder(
           int index) {
         return getIdFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getIdOrBuilder(
           int index) {
@@ -7716,7 +7683,7 @@ public final class Web {
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
            getIdOrBuilderList() {
@@ -7727,14 +7694,14 @@ public final class Web {
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addIdBuilder() {
         return getIdFieldBuilder().addBuilder(
             org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addIdBuilder(
           int index) {
@@ -7742,7 +7709,7 @@ public final class Web {
             index, org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId id = 2;</code>
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
        */
       public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId.Builder> 
            getIdBuilderList() {
@@ -7755,12 +7722,45 @@ public final class Web {
           idBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder>(
                   id_,
-                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  ((bitField0_ & 0x00000001) == 0x00000001),
                   getParentForChildren(),
                   isClean());
           id_ = null;
         }
         return idBuilder_;
+      }
+
+      // optional bool abortOnInvalid = 2;
+      private boolean abortOnInvalid_ ;
+      /**
+       * <code>optional bool abortOnInvalid = 2;</code>
+       */
+      public boolean hasAbortOnInvalid() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional bool abortOnInvalid = 2;</code>
+       */
+      public boolean getAbortOnInvalid() {
+        return abortOnInvalid_;
+      }
+      /**
+       * <code>optional bool abortOnInvalid = 2;</code>
+       */
+      public Builder setAbortOnInvalid(boolean value) {
+        bitField0_ |= 0x00000002;
+        abortOnInvalid_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool abortOnInvalid = 2;</code>
+       */
+      public Builder clearAbortOnInvalid() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        abortOnInvalid_ = false;
+        onChanged();
+        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:web.ParameterSubscriptionRequest)
@@ -8920,8 +8920,8 @@ public final class Web {
       "\n\013MessageType\022\t\n\005REPLY\020\002\022\r\n\tEXCEPTION\020\003\022" +
       "\010\n\004DATA\020\004\"1\n\024RestExceptionMessage\022\014\n\004typ" +
       "e\030\001 \001(\t\022\013\n\003msg\030\002 \001(\t\"X\n\034ParameterSubscri" +
-      "ptionRequest\022\026\n\016abortOnInvalid\030\001 \001(\010\022 \n\002" +
-      "id\030\002 \003(\0132\024.yamcs.NamedObjectId\"k\n\035Parame" +
+      "ptionRequest\022 \n\002id\030\001 \003(\0132\024.yamcs.NamedOb" +
+      "jectId\022\026\n\016abortOnInvalid\030\002 \001(\010\"k\n\035Parame" +
       "terSubscriptionResponse\022#\n\005valid\030\001 \003(\0132\024",
       ".yamcs.NamedObjectId\022%\n\007invalid\030\002 \003(\0132\024." +
       "yamcs.NamedObjectIdB\024\n\022org.yamcs.protobu" +
@@ -8973,7 +8973,7 @@ public final class Web {
           internal_static_web_ParameterSubscriptionRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_web_ParameterSubscriptionRequest_descriptor,
-              new java.lang.String[] { "AbortOnInvalid", "Id", });
+              new java.lang.String[] { "Id", "AbortOnInvalid", });
           internal_static_web_ParameterSubscriptionResponse_descriptor =
             getDescriptor().getMessageTypes().get(4);
           internal_static_web_ParameterSubscriptionResponse_fieldAccessorTable = new

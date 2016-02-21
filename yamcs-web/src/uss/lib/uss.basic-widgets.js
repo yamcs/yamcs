@@ -183,8 +183,8 @@ USS.Display.prototype = {
     },
     getComputations: function() {
         var compDefList=[];
-        for(var paraname in parameters) {
-            var p=parameters[paraname];
+        for(var paraname in this.parameters) {
+            var p=this.parameters[paraname];
             if (p.type=='Computation') {
                 var cdef={name: paraname, expression: p.expression, argument: [], language: 'jformula'};
                 var args=p.args;
