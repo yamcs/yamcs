@@ -1,9 +1,17 @@
 (function() {
     'use strict';
 
-    angular
-        .module('yamcs.core')
-        .directive('yPlot', yPlot);
+    /**
+     * Plot directive using dygraphs.
+     *
+     * Converts, holds and updates data and exposes control methods for use in a controller.
+     * However it does NOT send out any data requests itself, instead relying on callbacks
+     * that are sent back to a controller (e.g. zoom event).
+     *
+     * While this plot directive is currently used only in one controller, this explicit separation
+     * is intended so that its use could eventually be extended to other places.
+     */
+    angular.module('yamcs.core').directive('yPlot', yPlot);
 
     /* @ngInject */
     function yPlot($log, configService) {
@@ -12,7 +20,7 @@
             restrict: 'EA',
             scope: {
                 pinfo: '=',
-                pdata: '=',
+                rangeSamples: '=',
                 alarms: '=',
                 control: '=' // Optionally allows controlling this directive from the outside
             },
@@ -33,9 +41,10 @@
                 };
                 var g = makePlot(plotEl[0], scope.pinfo, model);
                 g.ready(function () {
-                    scope.$watch(attrs.pdata, function (pdata) {
-                        updateModel(pdata);
-                        updateGraph(g, pdata, model);
+                    scope.$watch(attrs.rangeSamples, function (rangeSamples) {
+                        var rangeData = convertSampleDataToDygraphs(rangeSamples);
+                        updateModel(rangeData);
+                        updateGraph(g, rangeData, model);
                     });
                 });
 
@@ -63,8 +72,8 @@
                     }
                 };
                 scope.__control.repaint = function() {
-                    updateModel(scope.pdata);
-                    updateGraph(g, scope.pdata, model);
+                    updateModel(scope.rangeSamples);
+                    updateGraph(g, scope.rangeSamples, model);
                 };
                 scope.__control.initialized = true;
 
@@ -78,25 +87,6 @@
                     }
                     model.hasData = match;
                 }
-                /*scope.$watch('range', function(range) {
-                    var qname = pinfo['qualifiedName'];
-
-                    if (data.length > 0) {
-                        g.resetZoom();
-                    }
-
-                    valueRange = calculateInitialPlotRange(pinfo);
-                    data.length = 0;
-
-                    // Add new set of data
-                    loadHistoricData(spinContainer, g, qname, range, data, valueRange, ctx, spinner);
-
-                    // Reset again to cover edge case where we start from empty but zoomed graph
-                    // (buggy dygraphs)
-                    if (data.length > 0) {
-                        g.resetZoom();
-                    }
-                });*/
             }
         };
 
@@ -286,5 +276,40 @@
                 g.updateOptions({ valueRange: valueRange });
             }
         }
+    }
+
+    /**
+     * Converts the REST sample data to native dygraphs format
+     * http://dygraphs.com/data.html#array
+     */
+    function convertSampleDataToDygraphs(incomingData) {
+        var rangeMin, rangeMax;
+        var points = [];
+        if (incomingData['sample']) {
+            for (var i = 0; i < incomingData['sample'].length; i++) {
+                var sample = incomingData['sample'][i];
+                var t = new Date();
+                t.setTime(Date.parse(sample['time']));
+                var v = sample['avg'];
+                var min = sample['min'];
+                var max = sample['max'];
+
+                if (typeof rangeMin === 'undefined') {
+                    rangeMin = min;
+                    rangeMax = max;
+                } else {
+                    if (rangeMin > min) rangeMin = min;
+                    if (rangeMax < max) rangeMax = max;
+                }
+                points.push([t, [min, v, max]]);
+            }
+        }
+
+        return [{
+            //name: qname,
+            points: points,
+            min: rangeMin,
+            max: rangeMax
+        }];
     }
 })();

@@ -18,7 +18,7 @@
 
         var urlname = '/' + $routeParams['ss'] + '/' + $routeParams.name;
 
-        $scope.pdata = [{
+        $scope.rangeSamples = [{
             name: null,
             points: [],
             min: null,
@@ -96,7 +96,7 @@
                     $scope.plotController.emptyPlot();
                     loadHistoricData(tmService, qname, mode).then(function (data) {
                         $scope.plotController.stopSpinner();
-                        $scope.pdata = [ data ];
+                        $scope.rangeSamples = data;
                         loadingHistory = false;
                     });
                 }
@@ -174,12 +174,12 @@
 
             var t = new Date();
             t.setTime(Date.parse(pval['generationTimeUTC']));
-            scope.pdata[0]['points'].push([t, [val,val,val]]);
-            if (scope.pdata[0]['min'] === null || scope.pdata[0]['min'] > val) {
-                scope.pdata[0]['min'] = val;
+            scope.rangeSamples[0]['points'].push([t, [val,val,val]]);
+            if (scope.rangeSamples[0]['min'] === null || scope.rangeSamples[0]['min'] > val) {
+                scope.rangeSamples[0]['min'] = val;
             }
-            if (scope.pdata[0]['max'] === null || scope.pdata[0]['max'] < val) {
-                scope.pdata[0]['max'] = val;
+            if (scope.rangeSamples[0]['max'] === null || scope.rangeSamples[0]['max'] < val) {
+                scope.rangeSamples[0]['max'] = val;
             }
             if (scope.hasOwnProperty('plotController')) {
                 scope.plotController.repaint();
@@ -224,35 +224,6 @@
         return tmService.getParameterSamples(qname, {
             start: beforeIso.slice(0, -1),
             stop: nowIso.slice(0, -1)
-        }).then(function (incomingData) {
-            var rangeMin, rangeMax;
-            var points = [];
-            if (incomingData['sample']) {
-                for (var i = 0; i < incomingData['sample'].length; i++) {
-                    var sample = incomingData['sample'][i];
-                    var t = new Date();
-                    t.setTime(Date.parse(sample['time']));
-                    var v = sample['avg'];
-                    var min = sample['min'];
-                    var max = sample['max'];
-
-                    if (typeof rangeMin === 'undefined') {
-                        rangeMin = min;
-                        rangeMax = max;
-                    } else {
-                        if (rangeMin > min) rangeMin = min;
-                        if (rangeMax < max) rangeMax = max;
-                    }
-                    points.push([t, [min, v, max]]);
-                }
-            }
-
-            return {
-                name: qname,
-                points: points,
-                min: rangeMin,
-                max: rangeMax
-            };
         });
     }
 
