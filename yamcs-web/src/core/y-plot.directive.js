@@ -22,7 +22,8 @@
                 pinfo: '=',
                 rangeSamples: '=',
                 alarms: '=',
-                control: '=' // Optionally allows controlling this directive from the outside
+                control: '=', // Optionally allows controlling this directive from the outside
+                onZoom: '&'
             },
             link: function(scope, element, attrs) {
                 var plotWrapper = angular.element('<div>');
@@ -39,7 +40,7 @@
                     valueRange: [null, null],
                     spinning: false
                 };
-                var g = makePlot(plotEl[0], scope.pinfo, model);
+                var g = makePlot(plotEl[0], scope, model);
                 g.ready(function () {
                     scope.$watch(attrs.rangeSamples, function (rangeSamples) {
                         var rangeData = convertSampleDataToDygraphs(rangeSamples);
@@ -90,10 +91,10 @@
             }
         };
 
-        function makePlot(containingDiv, pinfo, model) {
-            model.valueRange = calculateInitialPlotRange(pinfo);
-            var guidelines = calculateGuidelines(pinfo);
-            var label = pinfo['qualifiedName'];
+        function makePlot(containingDiv, scope, model) {
+            model.valueRange = calculateInitialPlotRange(scope.pinfo);
+            var guidelines = calculateGuidelines(scope.pinfo);
+            var label = scope.pinfo['qualifiedName'];
 
             return new Dygraph(containingDiv, 'X\n', {
                 legend: 'always',
@@ -115,6 +116,13 @@
                 },
                 rightGap: 0,
                 labelsUTC: configService.get('utcOnly', false),
+                zoomCallback: function(minDate, maxDate) {
+                    // Report to controller
+                    scope.onZoom({
+                        startDate: new Date(minDate),
+                        stopDate: new Date(maxDate)
+                    });
+                },
                 underlayCallback: function(canvasCtx, area, g) {
                     var prevAlpha = canvasCtx.globalAlpha;
                     canvasCtx.globalAlpha = 0.4;
