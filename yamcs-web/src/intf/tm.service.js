@@ -5,11 +5,6 @@
         .module('yamcs.intf')
         .factory('tmService', tmService);
 
-    // These should be renamed once the below todo is resolved
-    var parameterListeners = [];
-    var parameterListenersBySubscriptionId = {};
-    var subscriptionId = 0;
-
     function idsMatch(a, b) {
         var aHas = a.hasOwnProperty('namespace');
         var bHas = b.hasOwnProperty('namespace');
@@ -28,25 +23,12 @@
         socket.on('PARAMETER', function(pdata) {
             var params = pdata['parameter'];
             $rootScope.$broadcast('yamcs.tm.pvals', params);
-            for(var i=0; i<params.length; i++) {
-                var p = params[i];
-
-                for (var j = 0; j < parameterListeners.length; j++) {
-                    var requestId = parameterListeners[j].id;
-                    if (idsMatch(requestId, p.id)) {
-                        parameterListeners[j]['callback'](p);
-                    }
-                }
-            }
         });
 
         return {
             getParameter: getParameter,
             getParameterSamples: getParameterSamples,
             getParameterHistory: getParameterHistory,
-            subscribeParameter: subscribeParameter,
-            unsubscribeParameter: unsubscribeParameter,
-
             subscribeParameters: subscribeParameters,
             subscribeComputations: subscribeComputations
         };
@@ -91,31 +73,6 @@
                 throw messageToException(message);
             });
         }
-
-        function subscribeParameter(id, callback) {
-            //console.log('sub request for ', id);
-
-            socket.on('open', function () {
-                doSingleSubscribe(id, callback);
-            });
-            if (socket.isConnected()) {
-                doSingleSubscribe(id, callback);
-            }
-        }
-
-        function doSingleSubscribe(parameterId, callback) {
-            var subId = ++subscriptionId;
-            parameterListeners.push({id: parameterId, callback: callback});
-            parameterListenersBySubscriptionId[subId] = callback;
-            socket.emit('parameter', 'subscribe', {list:[parameterId]}, null, function (et, msg) {
-                console.log('got exception from subscription: ', et, msg);
-            });
-        }
-
-        function unsubscribeParameter(subscriptionId) {
-            delete parameterListenersBySubscriptionId[subscriptionId];
-        }
-
         function subscribeParameters(parameters) {
             if (parameters.length == 0) return;
             var msg = {

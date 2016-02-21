@@ -33,24 +33,32 @@
             $scope.info = mapAlarmRanges(data);
             var qname = $scope.info['qualifiedName'];
 
+            $scope.$on('yamcs.tm.pvals', function(event, pvals) {
+                for(var i = 0; i < pvals.length; i++) {
+                    var pval = pvals[i];
+                    if (pval.id.name === qname) {
+                        $scope.para = pval;
+                        // Live data is added to the plot, except when we are loading a chunk of historic
+                        // data. This may mean that we miss a few points though, but that's acceptable for now.
+                        if (!loadingHistory && $scope.isNumeric()) {
+                            appendPoint($scope, pval, $filter);
+                        } else {
+                            console.log('ignoring a point');
+                        }
+                    }
+                }
+            });
+
             alarmsService.listAlarmsForParameter(qname).then(function (alarms) {
                 $scope.alarms = alarms;
 
                 // Both dependencies are now fetched (could improve towards parallel requests though)
                 // So continue on
 
-                // Live data is added to the plot, except when we are loading a chunk of historic
-                // data. This may mean that we miss a few points though, but that's acceptable for now.
-                var subscriptionId = tmService.subscribeParameter({name: qname}, function (data) {
-                    $scope.para = data;
-                    if (!loadingHistory && $scope.isNumeric()) {
-                        appendPoint($scope, data, $filter);
-                    } else {
-                        //console.log('ignoring a point');
-                    }
-                });
+                tmService.subscribeParameters([{name: qname}]);
+
                 $scope.$on('$destroy', function() {
-                    tmService.unsubscribeParameter(subscriptionId);
+                    // TODO tmService.unsubscribeParameter(subscriptionId);
                 });
 
                 tmService.getParameterHistory(qname, {
