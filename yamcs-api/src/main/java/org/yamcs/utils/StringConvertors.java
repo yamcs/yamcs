@@ -4,6 +4,7 @@ package org.yamcs.utils;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
@@ -135,5 +136,24 @@ public class StringConvertors {
         } else {
             return "'" + id.getName() + "' (no namespace)";
         }
+    }
+    
+    /**
+     * Convert a list of NamedObjectId to a pretty string for use in log messages etc. This gives a
+     * better formatting than the default protobuf-generated toString.
+     */
+    public static String idListToString(List<NamedObjectId> idList) {
+        if (idList == null) return "null";
+        StringBuilder buf = new StringBuilder("[");
+        boolean first = true;
+        for (NamedObjectId id : idList) {
+            if (first) {
+                first = false;
+            } else {
+                buf.append(", ");
+            }
+            buf.append(idToString(id));
+        }
+        return buf.append("]").toString();
     }
 }

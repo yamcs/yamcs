@@ -34,6 +34,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.utils.StringConvertors;
 import org.yamcs.web.Computation;
 import org.yamcs.web.ComputationFactory;
 
@@ -150,9 +151,13 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                     idList = new ArrayList<>(idList);
                     idList.removeAll(e.invalidParameters);
                     if (idList.isEmpty()) {
-                        log.warn("All requested parameters were invalid");
-                    } else { 
-                        log.warn("Got invalid parameters, but continuing subscribe attempt with valids: {} ", idList);
+                        log.warn("Received subscribe attempt will all-invalid parameters");
+                    } else {
+                        log.warn("Received subscribe attempt with {} invalid parameters. Subscription will continue with {} remaining valids.",
+                                e.invalidParameters.size(), idList.size());
+                        if (log.isDebugEnabled()) {
+                            log.debug("The invalid IDs are: {}", StringConvertors.idListToString(e.invalidParameters));
+                        }
                         if(subscriptionId!=-1) {
                             pidrm.addItemsToRequest(subscriptionId, idList, authToken);
                         } else {
