@@ -42,7 +42,8 @@
                     allPoints: [],
                     splicedPoints: [], // when the range is combined with a detail range
                     min_y: null,
-                    max_y: null
+                    max_y: null,
+                    isRangeSelectorMouseDown: false
                 };
                 var g = makePlot(plotEl[0], scope, model);
                 g.ready(function () {
@@ -52,7 +53,6 @@
                      * by the controller.
                      */
                     scope.$watch(attrs.samples, function (samples) {
-                        console.log('incoming samples', samples);
                         var pointData = convertSampleDataToDygraphs(samples);
                         model.allPoints = pointData[0].points;
                         model.splicedPoints = model.allPoints;
@@ -60,9 +60,28 @@
                         model.max_y = pointData[0].max;
                         model.hasData = model.allPoints.length > 0;
 
-                        console.log('got model.allPoints', model.allPoints);
                         updateGraph(g, model);
-                        console.log('aa2');
+                    });
+
+                    /**
+                     * Dygraphs does not have a nice hook for range selector, so force it
+                     */
+                    var rangeEl = plotEl.find('.dygraph-rangesel-fgcanvas, .dygraph-rangesel-zoomhandle');
+                    var windowEl = $(window);
+                    rangeEl.on('mousedown.yamcs touchstart.yamcs', function(evt) {
+                        model.isRangeSelectorMouseDown = true;
+
+                        // On up, load new detail data
+                        windowEl.off('mouseup.yamcs touchend.yamcs');
+                        windowEl.on('mouseup.yamcs touchend.yamcs', function(evt) {
+                            windowEl.off('mouseup.yamcs touchend.yamcs');
+                            model.isRangeSelectorMouseDown = false;
+                            var xAxisRange = g.xAxisRange();
+                            scope.onZoom({
+                                startDate: new Date(xAxisRange[0]),
+                                stopDate: new Date(xAxisRange[1])
+                            });
+                        });
                     });
                 });
 
@@ -157,11 +176,14 @@
                 rightGap: 0,
                 labelsUTC: configService.get('utcOnly', false),
                 zoomCallback: function(minDate, maxDate) {
-                    // Report to controller
-                    scope.onZoom({
-                        startDate: new Date(minDate),
-                        stopDate: new Date(maxDate)
-                    });
+                    // Dragging range handles causes many-many zoomCallbacks
+                    if (!model.isRangeSelectorMouseDown) {
+                        // Report to controller
+                        scope.onZoom({
+                            startDate: new Date(minDate),
+                            stopDate: new Date(maxDate)
+                        });
+                    }
                 },
                 underlayCallback: function(canvasCtx, area, g) {
                     var prevAlpha = canvasCtx.globalAlpha;
