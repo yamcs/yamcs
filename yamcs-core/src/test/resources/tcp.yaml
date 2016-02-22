@@ -1,0 +1,8 @@
+test_default:
+    tcHost: localhost
+    tcPort: 10025
+
+test0:
+    tcHost: localhost
+    tcPort: 10025
+    minimumTcPacketLength: 0

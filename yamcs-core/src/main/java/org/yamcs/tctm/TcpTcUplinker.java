@@ -45,7 +45,7 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
     protected CcsdsSeqAndChecksumFiller seqAndChecksumFiller=new CcsdsSeqAndChecksumFiller();
     protected ScheduledThreadPoolExecutor timer;
     protected volatile boolean disabled=false;
-    protected int minimumTcPacketLength=48; //the minimum size of the CCSDS packets uplinked
+    protected int minimumTcPacketLength = 48; //the minimum size of the CCSDS packets uplinked
     volatile long tcCount;
     private NamedObjectId sv_linkStatus_id, sp_dataCount_id;
 
@@ -57,14 +57,14 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
     
     public TcpTcUplinker(String yamcsInstance, String name, String spec) throws ConfigurationException {
         log=YamcsServer.getLogger(this.getClass(), yamcsInstance);
-        YConfiguration c=YConfiguration.getConfiguration("tcp");
+        YConfiguration c = YConfiguration.getConfiguration("tcp");
         this.yamcsInstance=yamcsInstance;
         host=c.getString(spec, "tcHost");
         port=c.getInt(spec, "tcPort");
         this.name = name;
-        try {
-            minimumTcPacketLength=c.getInt("tcp."+spec+".minimumTcPacketLength");
-        } catch (ConfigurationException e) {
+        if(c.containsKey(spec, "minimumTcPacketLength")) {
+            minimumTcPacketLength = c.getInt(spec, "minimumTcPacketLength");
+        } else {
             log.debug("minimumTcPacketLength not defined, using the default value "+minimumTcPacketLength);
         }
         timeService = YamcsServer.getTimeService(yamcsInstance);
@@ -356,6 +356,10 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
         ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus());
         ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataCount());
         return Arrays.asList(linkStatus, dataCount);
+    }
+
+    public int getMiniminimumTcPacketLength() {
+        return minimumTcPacketLength;
     }
 }
 
