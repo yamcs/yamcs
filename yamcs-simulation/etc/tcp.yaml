@@ -5,7 +5,7 @@
 #    tmPort:
 #    tcHost:
 #    tcPort:
-#    minimumTcPacketLength (by default 48)
+#    minimumTcPacketLength (by default -1 which means no minimum length)
 
 local:
     tmHost: localhost

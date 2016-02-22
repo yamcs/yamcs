@@ -45,7 +45,7 @@ public class TcpTcUplinker extends AbstractService implements Runnable, TcUplink
     protected CcsdsSeqAndChecksumFiller seqAndChecksumFiller=new CcsdsSeqAndChecksumFiller();
     protected ScheduledThreadPoolExecutor timer;
     protected volatile boolean disabled=false;
-    protected int minimumTcPacketLength = 48; //the minimum size of the CCSDS packets uplinked
+    protected int minimumTcPacketLength = -1; //the minimum size of the CCSDS packets uplinked
     volatile long tcCount;
     private NamedObjectId sv_linkStatus_id, sp_dataCount_id;
 
