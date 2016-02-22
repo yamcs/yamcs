@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -48,10 +50,15 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ManagementResource;
 import org.yamcs.xtce.SequenceContainer;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.protobuf.MessageLite;
+import com.google.protobuf.MessageLite.Builder;
 
 import io.protostuff.JsonIOUtil;
+import io.protostuff.JsonInput;
 import io.protostuff.Schema;
 
 public abstract class AbstractIntegrationTest {
@@ -170,6 +177,25 @@ public abstract class AbstractIntegrationTest {
         T msg = schema.newMessage();
         JsonIOUtil.mergeFrom(reader, msg, schema, false);
         return msg;
+    }
+    
+    //parses a series of messages (not really a list because they are not separated by "," and do not have start and end of list ([ ])
+    <T extends MessageLite> List<T> allFromJson(String jsonstr, Schema schema) throws IOException {
+        
+        StringReader reader = new StringReader(jsonstr);
+        JsonParser parser = JsonIOUtil.DEFAULT_JSON_FACTORY.createParser(reader);
+        JsonInput input = new JsonInput(parser);
+        
+        List<T> r = new ArrayList<>();
+        while(true) {
+            JsonToken t = parser.nextToken();
+            if(t==null) break;
+            if (t != JsonToken.START_OBJECT) throw new RuntimeException("Expected: "+JsonToken.START_OBJECT+", got: "+t);
+            MessageLite.Builder msgb = (Builder) schema.newMessage();
+            schema.mergeFrom(input, msgb);
+            r.add((T)msgb.build());
+        }
+        return r;
     }
 
     class MyWsListener implements WebSocketClientCallback {

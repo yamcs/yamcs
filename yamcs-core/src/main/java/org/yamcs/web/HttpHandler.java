@@ -288,8 +288,8 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
     private static ChannelFuture writeEmptyLastContent(ChannelHandlerContext ctx) {
         HttpRequest request = ctx.attr(CTX_HTTP_REQUEST).get();
         ChunkedTransferStats stats = ctx.attr(CTX_CHUNK_STATS).get();
-        log.info("{} {} --- Finished chunked transfer ({} B)",
-                request.getMethod(), request.getUri(), stats.totalBytes);
+        int totalBytes = (stats!=null) ?stats.totalBytes:0;
+        log.info("{} {} --- Finished chunked transfer ({} B)", request.getMethod(), request.getUri(), totalBytes);
         ChannelFuture chunkWriteFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         return chunkWriteFuture.addListener(ChannelFutureListener.CLOSE);
     }

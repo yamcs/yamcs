@@ -125,8 +125,19 @@ public class HistogramStreamTest extends YarchTestCase {
         final List<Tuple> tuples=suckAll("testEmptyStream_out");
         assertEquals(0, tuples.size());
         
+        
+        String query1 = "create stream testEmptyStream_out1 as select * from testEmptyStream histogram(name) where last>76797379324836000";
+        ydb.execute(query1);
+        final List<Tuple> tuples1 = suckAll("testEmptyStream_out1");
+        assertEquals(0, tuples1.size());
+        
+        
+        String query2 = "create stream testEmptyStream_out2 as select * from testEmptyStream histogram(name) where first>76797379324836000";
+        ydb.execute(query2);
+        final List<Tuple> tuples2 = suckAll("testEmptyStream_out2");
+        assertEquals(0, tuples2.size());
+        
+        
         ydb.execute("drop table testEmptyStream");
     }
-    
-
 }

@@ -100,13 +100,16 @@ class IndexRequestProcessor implements Runnable {
             
             if(req.getSendAllCmd()) ok=sendHistogramData(CommandHistoryRecorder.TABLE_NAME, "cmdName", 2000, null);
             if(req.getSendAllEvent()) ok=sendHistogramData(EventRecorder.TABLE_NAME, "source", 2000, null);
-            
             if(ok && req.getSendCompletenessIndex()) ok=sendCompletenessIndex();
         } catch (Exception e) {
             log.error("got exception while sending the response", e);
             ok=false;
         } finally {
-        	indexRequestListener.finished(ok);
+            try {
+                indexRequestListener.finished(ok);
+            } catch (Exception e) {
+                log.error("Error when sending finished signal ", e);
+            }
         }
     }
 

@@ -169,14 +169,15 @@ public class RdbHistogramDb extends HistogramDb {
             if(cfh==null) {
                 finished = true;
             } else {
-                it=histoDb.newIterator(cfh);
+                it = histoDb.newIterator(cfh);
                 if(!interval.hasStart()) {
                     it.seek(Segment.key(0, zerobytes));
                 } else {
                     int sstart=(int)(interval.getStart()/groupingFactor);
                     it.seek(Segment.key(sstart, zerobytes));
                 }
-                if(!readNextSegments()) {
+                
+                if(!it.isValid() || !readNextSegments()) {
                     finished=true;
                 }
             }
@@ -184,8 +185,8 @@ public class RdbHistogramDb extends HistogramDb {
 
         //reads all the segments with the same sstart time
         protected boolean readNextSegments() {
-            ByteBuffer bb=ByteBuffer.wrap(it.key());
-            int sstart=bb.getInt();
+            ByteBuffer bb = ByteBuffer.wrap(it.key());
+            int sstart = bb.getInt();
             if(sstart==Integer.MAX_VALUE) return false;
             records.clear();
             while(true) {

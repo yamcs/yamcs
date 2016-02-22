@@ -1,8 +1,8 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -12,10 +12,12 @@ import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
 import org.yamcs.protobuf.Rest.EditClientRequest;
 import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ParameterResource;
+
 
 public class IntegrationTestArchive extends AbstractIntegrationTest {
     
@@ -73,6 +75,21 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
 
         cinfo = getClientInfo();
         assertEquals("realtime", cinfo.getProcessorName());
+    }
+    
+    @Test
+    public void testIndex() throws Exception {
+        generateData("2015-01-01T10:00:00", 3600);
+        enableDebugging();
+        //make a request with a future time
+        String response ;
+        
+        response = httpClient.doGetRequest("http://localhost:9190/api/archive/IntegrationTest/indexes/packets?start=2015-01-01T00:00:00", null, currentUser);
+        List<ArchiveRecord> arlist = allFromJson(response, org.yamcs.protobuf.SchemaYamcs.ArchiveRecord.MERGE);
+        assertEquals(4, arlist.size());
+        
+        response = httpClient.doGetRequest("http://localhost:9190/api/archive/IntegrationTest/indexes/packets?start=2035-01-01T00:00:00", null, currentUser);
+        assertTrue(response.isEmpty());
     }
 
 }
