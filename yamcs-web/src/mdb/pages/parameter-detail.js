@@ -1,12 +1,11 @@
 (function() {
     'use strict';
 
-    angular
-        .module('yamcs.mdb')
-        .controller('MDBParameterDetailController', MDBParameterDetailController);
+    angular.module('yamcs.mdb').controller('MDBParameterDetailController', MDBParameterDetailController);
 
     /* @ngInject */
     function MDBParameterDetailController($rootScope, $scope, $routeParams, $filter, $uibModal, tmService, mdbService, configService, alarmsService) {
+        $rootScope.pageTitle = $routeParams.name + ' | Yamcs';
 
         // Will be augmented when passed into directive
         $scope.plotController = {};
@@ -14,11 +13,8 @@
         $scope.plotctx = {
             range: configService.get('initialPlotRange', '1h')
         };
-        $rootScope.pageTitle = $routeParams.name + ' | Yamcs';
 
-        var urlname = '/' + $routeParams['ss'] + '/' + $routeParams.name;
-
-        $scope.rangeSamples = [{
+        $scope.samples = [{
             name: null,
             points: [],
             min: null,
@@ -28,10 +24,21 @@
         var loadingHistory = false;
 
         $scope.alarms = [];
-        mdbService.getParameterInfo(urlname).then(function (data) {
+        mdbService.getParameterInfo('/' + $routeParams['ss'] + '/' + $routeParams.name).then(function (data) {
 
             $scope.info = mapAlarmRanges(data);
             var qname = $scope.info['qualifiedName'];
+
+            // Called by plot directive when user zooms. Load detailed samples.
+            $scope.onZoom = function(startDate, stopDate) {
+                console.log('uhuh request to load extent', startDate, stopDate);
+                tmService.getParameterSamples(qname, {
+                    start: startDate.toISOString().slice(0, -1),
+                    stop: stopDate.toISOString().slice(0, -1)
+                }).then(function (data) {
+                    $scope.plotController.spliceDetailSamples(data);
+                });
+            };
 
             $scope.$on('yamcs.tm.pvals', function(event, pvals) {
                 for(var i = 0; i < pvals.length; i++) {
@@ -41,7 +48,7 @@
                         // Live data is added to the plot, except when we are loading a chunk of historic
                         // data. This may mean that we miss a few points though, but that's acceptable for now.
                         if (!loadingHistory && $scope.isNumeric()) {
-                            appendPoint($scope, pval, $filter);
+                            ///appendPoint($scope, pval, $filter);
                         } else {
                             console.log('ignoring a point');
                         }
@@ -61,12 +68,14 @@
                     // TODO tmService.unsubscribeParameter(subscriptionId);
                 });
 
+                /* TODO TEMP DONT COMMIT
                 tmService.getParameterHistory(qname, {
                     norepeat: true,
                     limit: 10
                 }).then(function (historyData) {
                     $scope.values = historyData['parameter'];
                 });
+                */
 
                 $scope.activeAlarms = alarmsService.getActiveAlarms(); // Live collection
                 $scope.activeAlarm = alarmsService.getActiveAlarmForParameter(qname);
@@ -96,7 +105,7 @@
                     $scope.plotController.emptyPlot();
                     loadHistoricData(tmService, qname, mode).then(function (data) {
                         $scope.plotController.stopSpinner();
-                        $scope.rangeSamples = data;
+                        $scope.samples = data;
                         loadingHistory = false;
                     });
                 }
@@ -174,12 +183,12 @@
 
             var t = new Date();
             t.setTime(Date.parse(pval['generationTimeUTC']));
-            scope.rangeSamples[0]['points'].push([t, [val,val,val]]);
-            if (scope.rangeSamples[0]['min'] === null || scope.rangeSamples[0]['min'] > val) {
-                scope.rangeSamples[0]['min'] = val;
+            scope.samples[0]['points'].push([t, [val,val,val]]);
+            if (scope.samples[0]['min'] === null || scope.samples[0]['min'] > val) {
+                scope.samples[0]['min'] = val;
             }
-            if (scope.rangeSamples[0]['max'] === null || scope.rangeSamples[0]['max'] < val) {
-                scope.rangeSamples[0]['max'] = val;
+            if (scope.samples[0]['max'] === null || scope.samples[0]['max'] < val) {
+                scope.samples[0]['max'] = val;
             }
             if (scope.hasOwnProperty('plotController')) {
                 scope.plotController.repaint();

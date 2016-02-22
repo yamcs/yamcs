@@ -20,7 +20,7 @@
             restrict: 'EA',
             scope: {
                 pinfo: '=',
-                rangeSamples: '=',
+                samples: '=', // The complete set of samples (does not include zoom detail)
                 alarms: '=',
                 control: '=', // Optionally allows controlling this directive from the outside
                 onZoom: '&'
@@ -38,14 +38,31 @@
                 var model = {
                     hasData: false,
                     valueRange: [null, null],
-                    spinning: false
+                    spinning: false,
+                    allPoints: [],
+                    splicedPoints: [], // when the range is combined with a detail range
+                    min_y: null,
+                    max_y: null
                 };
                 var g = makePlot(plotEl[0], scope, model);
                 g.ready(function () {
-                    scope.$watch(attrs.rangeSamples, function (rangeSamples) {
-                        var rangeData = convertSampleDataToDygraphs(rangeSamples);
-                        updateModel(rangeData);
-                        updateGraph(g, rangeData, model);
+
+                    /**
+                     * Loads or reloads the full-range of data of the plot as provided
+                     * by the controller.
+                     */
+                    scope.$watch(attrs.samples, function (samples) {
+                        console.log('incoming samples', samples);
+                        var pointData = convertSampleDataToDygraphs(samples);
+                        model.allPoints = pointData[0].points;
+                        model.splicedPoints = model.allPoints;
+                        model.min_y = pointData[0].min;
+                        model.max_y = pointData[0].max;
+                        model.hasData = model.allPoints.length > 0;
+
+                        console.log('got model.allPoints', model.allPoints);
+                        updateGraph(g, model);
+                        console.log('aa2');
                     });
                 });
 
@@ -61,9 +78,11 @@
                     model.spinning = false;
                     spinner.stop();
                 };
-                scope.__control.emptyPlot = function () {
+                scope.__control.emptyPlot = function () { // TODO should not be controlled externally? samples=null should be used instead
                     model.hasData = false;
-                    updateGraph(g, [], model);
+                    model.allPoints = [];
+                    model.splicedPoints = [];
+                    updateGraph(g, model);
                 };
                 scope.__control.resetZoom = function () {
                     // dygraphs gives errors when resetting with empty plot,
@@ -73,21 +92,41 @@
                     }
                 };
                 scope.__control.repaint = function() {
-                    updateModel(scope.rangeSamples);
-                    updateGraph(g, scope.rangeSamples, model);
+                    ///updateModel(scope.samples);
+                    updateGraph(g, model);
                 };
-                scope.__control.initialized = true;
 
-                function updateModel(pdata) {
-                    var match = false;
-                    for (var i = 0; i < pdata.length; i++) {
-                        if (pdata[i]['points'].length > 0) {
-                            match = true;
-                            break;
-                        }
+                /**
+                 * Loads a subset of data for plot. Useful for resampling
+                 * zoomed ranges.
+                 */
+                scope.__control.spliceDetailSamples = function(detailSamples) {
+                    // [ [t, [min, v, max]], [t, [min, v, max]], ...  ]
+                    var allPoints = model.allPoints;
+                    var detailPoints = convertSampleDataToDygraphs(detailSamples)[0].points;
+
+                    if (detailPoints.length) {
+                        var dt0 = detailPoints[0];
+                        var dtn = detailPoints[detailPoints.length - 1];
+
+                        // Search insert position by comparing on 't'
+                        var insertStartIdx = _.sortedIndexBy(allPoints, dt0, function(v) { return v[0]; });
+                        var insertStopIdx = _.sortedLastIndexBy(allPoints, dtn, function(v) { return v[0]; });
+
+                        // Spliced
+                        model.splicedPoints = [];
+                        Array.prototype.push.apply(model.splicedPoints, allPoints.slice(0, insertStartIdx));
+                        Array.prototype.push.apply(model.splicedPoints, detailPoints);
+                        Array.prototype.push.apply(model.splicedPoints, allPoints.slice(insertStopIdx));
+
+                        //console.log('got all', JSON.stringify(model.allPoints));
+                        //console.log('got detail', JSON.stringify(detailPoints));
+                        //console.log('got spliced', JSON.stringify(model.splicedPoints));
+                        updateGraph(g, model);
                     }
-                    model.hasData = match;
-                }
+                };
+
+                scope.__control.initialized = true;
             }
         };
 
@@ -106,9 +145,10 @@
                 axisLabelColor: '#666',
                 axisLabelFontSize: 11,
                 digitsAfterDecimal: 6,
-                panEdgeFraction: 0,
+                //panEdgeFraction: 0,
                 labels: ['Generation Time', label],
                 labelsDiv: 'parameter-detail-legend',
+                showRangeSelector: true,
                 valueRange: model.valueRange,
                 yRangePad: 10,
                 axes: {
@@ -251,14 +291,14 @@
             else $log.error('Unknown level ' + level);
         }
 
-        function updateGraph(g, pdata, model) {
-            if (pdata.length === 0 || pdata[0]['points'].length === 0) {
+        function updateGraph(g, model) {
+            if (model.splicedPoints.length === 0) {
                 g.updateOptions({ file: 'x\n' });
             } else {
-                updateValueRange(g, model.valueRange, pdata[0]['min'], pdata[0]['max']);
+                updateValueRange(g, model.valueRange, model.min_y, model.max_y);
                 g.updateOptions({
-                    file: pdata[0]['points'],
-                    drawPoints: pdata[0]['points'].length < 50
+                    file: model.splicedPoints,
+                    drawPoints: model.splicedPoints.length < 50
                 });
 
                 /*g.setAnnotations([{
