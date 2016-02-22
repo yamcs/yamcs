@@ -100,9 +100,9 @@
             $scope.$watchGroup(['plotctx.range', 'plotController.initialized'], function (values) {
                 var mode = values[0];
                 if ($scope.plotController.initialized) {
-                    $scope.plotController.startSpinner(); // before emptyPlot, so effects get considered in empty redraw
+                    $scope.plotController.startSpinner(); // before setting samples to null, so effects get considered in empty redraw
                     loadingHistory = true;
-                    $scope.plotController.emptyPlot();
+                    $scope.samples = null;
                     loadHistoricData(tmService, qname, mode).then(function (data) {
                         $scope.plotController.stopSpinner();
                         $scope.samples = data;

@@ -13,6 +13,20 @@
      */
     angular.module('yamcs.core').directive('yPlot', yPlot);
 
+    // Dygraphs does not have a nice hook that gets called on pan end (other than hacking it in onDrawCallback)
+    // So modify their code...
+    var origEndPan = Dygraph.Interaction.endPan;
+    Dygraph.Interaction.endPan = function(event, g, context) {
+        origEndPan(event, g, context);
+        if (g.getFunctionOption('yamcs_panCallback')) {
+            var xAxisRange = g.xAxisRange();
+            var x1 = new Date(xAxisRange[0]);
+            var x2 = new Date(xAxisRange[1]);
+            g.getFunctionOption('yamcs_panCallback').call(g, x1, x2, g.yAxisRanges());
+        }
+    };
+    Dygraph.endPan = Dygraph.Interaction.endPan;
+
     /* @ngInject */
     function yPlot($log, configService) {
 
@@ -53,13 +67,21 @@
                      * by the controller.
                      */
                     scope.$watch(attrs.samples, function (samples) {
-                        var pointData = convertSampleDataToDygraphs(samples);
-                        model.allPoints = pointData[0].points;
-                        model.splicedPoints = model.allPoints;
-                        model.min_y = pointData[0].min;
-                        model.max_y = pointData[0].max;
-                        model.hasData = model.allPoints.length > 0;
+                        if (samples) {
+                            var pointData = convertSampleDataToDygraphs(samples);
+                            model.allPoints = pointData[0].points;
+                            model.splicedPoints = model.allPoints;
+                            model.min_y = pointData[0].min;
+                            model.max_y = pointData[0].max;
+                        } else {
+                            if (model.hasData) {
+                                g.resetZoom();
+                            }
+                            model.allPoints = [];
+                            model.splicedPoints = [];
+                        }
 
+                        model.hasData = model.allPoints.length > 0;
                         updateGraph(g, model);
                     });
 
@@ -97,19 +119,6 @@
                     model.spinning = false;
                     spinner.stop();
                 };
-                scope.__control.emptyPlot = function () { // TODO should not be controlled externally? samples=null should be used instead
-                    model.hasData = false;
-                    model.allPoints = [];
-                    model.splicedPoints = [];
-                    updateGraph(g, model);
-                };
-                scope.__control.resetZoom = function () {
-                    // dygraphs gives errors when resetting with empty plot,
-                    // so work around that
-                    if (hasData) {
-                        g.resetZoom();
-                    }
-                };
                 scope.__control.repaint = function() {
                     ///updateModel(scope.samples);
                     updateGraph(g, model);
@@ -117,7 +126,8 @@
 
                 /**
                  * Loads a subset of data for plot. Useful for resampling
-                 * zoomed ranges.
+                 * zoomed ranges. Currently discards any previously loaded detail
+                 * in favour of new detail.
                  */
                 scope.__control.spliceDetailSamples = function(detailSamples) {
                     // [ [t, [min, v, max]], [t, [min, v, max]], ...  ]
@@ -178,8 +188,16 @@
                 zoomCallback: function(minDate, maxDate) {
                     // Dragging range handles causes many-many zoomCallbacks
                     if (!model.isRangeSelectorMouseDown) {
-                        // Report to controller
-                        scope.onZoom({
+                        scope.onZoom({ // Report to controller
+                            startDate: new Date(minDate),
+                            stopDate: new Date(maxDate)
+                        });
+                    }
+                },
+                yamcs_panCallback: function(minDate, maxDate) {
+                    // Dragging range handles causes many-many zoomCallbacks
+                    if (!model.isRangeSelectorMouseDown) {
+                        scope.onZoom({ // Report to controller
                             startDate: new Date(minDate),
                             stopDate: new Date(maxDate)
                         });
