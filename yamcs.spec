@@ -1,6 +1,6 @@
 Name: 		yamcs
 Version: 	$VERSION$+r$REVISION$
-Release: 	9
+Release: 	10
 
 Group:		MCS
 Summary: 	Mission Control System
@@ -21,7 +21,11 @@ Yet another Mission Control System
 %setup 
 
 %build
-cd yamcs-web && npm install && gulp && cd ..
+
+%if %{_buildweb}
+  cd yamcs-web && npm install && gulp && cd ..
+%endif
+
 mvn clean compile package -Dmaven.test.skip=true -Dmaven.buildNumber.doUpdate=false
 
 %install
@@ -40,7 +44,9 @@ cp yamcs-core/target/yamcs*.jar %{buildroot}/%{prefix}/lib
 cp -a yamcs-core/misc/init.d %{buildroot}/etc/
 cp -a yamcs-api/src/main/*.proto %{buildroot}/%{prefix}/lib/
 
+%if %{_buildweb}
 cp -a yamcs-web/build/*  %{buildroot}/%{prefix}/web/
+%endif
 
 cp -a yamcs-simulation/target/*jar %{buildroot}/%{prefix}/lib/
 cp -a yamcs-simulation/bin %{buildroot}/%{prefix}/
@@ -81,6 +87,8 @@ fi
 %post
 
 %changelog
+* Tue Feb 23 2016 nm
+- added an option to disable building yamcs-web part of the rpm
 * Mon Nov 16 2015 fdi
 - add build step for yamcs-web
 * Wed Sep 24 2014 nm
