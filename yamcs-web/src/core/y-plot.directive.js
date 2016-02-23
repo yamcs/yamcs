@@ -134,10 +134,10 @@
                     updateGraph(g, model);
                 };
                 scope.__control.toggleGrid = function () {
-                    if (g.getOption('gridLineColor') == '#222') {
-                        g.updateOptions({ gridLineColor: '#444' });
+                    if (g.getOption('drawGrid')) {
+                        g.updateOptions({ drawGrid: false });
                     } else {
-                        g.updateOptions({ gridLineColor: '#222' });
+                        g.updateOptions({ drawGrid: true });
                     }
                 };
 
@@ -241,6 +241,7 @@
 
             return new Dygraph(containingDiv, 'X\n', {
                 legend: 'always',
+                drawGrid: false,
                 drawPoints: true,
                 showRoller: false,
                 customBars: true,

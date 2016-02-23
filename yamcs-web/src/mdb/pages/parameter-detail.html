@@ -3,57 +3,7 @@
     <h1 class="page-header">{{ info.name }} <small>{{ info.qualifiedName | spaceSystem }}</small></h1>
   </div>
 
-  <uib-alert ng-if="activeAlarm" type="danger" style="margin-top: 0.5em;">
-    <strong>Out of limits detected {{ (activeAlarm.triggerValue.generationTimeUTC | parseUTC).fromNow() }}</strong><br>
-    <span ng-if="!activeAlarm.acknowledgeInfo">Unacknowledged</span>
-    <span ng-if="activeAlarm.acknowledgeInfo">Acknowledged {{ activeAlarm.acknowledgeInfo.acknowledgeTimeUTC | parseUTC | formatDate:'pretty_short':true }}</span>
-    <div class="container-fluid" style="margin-top: 0.5em;">
-      <div class="col-md-6">
-        <dl class="dl-horizontal">
-          <dt>Activation Level</dt>
-          <dd>
-            <img ng-src="/_static/_site/alarms/images/level{{ activeAlarm.triggerLevel }}.png" uib-tooltip="{{ activeAlarm.triggerValue.monitoringResult | monitoringValue }}">
-            <small>
-              Reached {{ activeAlarm.triggerValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
-              with {{ activeAlarm.triggerValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="activeAlarm.triggerValue.rangeCondition | lohi"></span>
-            </small>
-          </dd>
-
-          <dt>Highest Level</dt>
-          <dd>
-            <img ng-src="/_static/_site/alarms/images/level{{ activeAlarm.mostSevereLevel }}.png" uib-tooltip="{{ activeAlarm.mostSevereValue.monitoringResult | monitoringValue }}">
-            <small>
-              Reached {{ activeAlarm.mostSevereValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
-              with {{ activeAlarm.mostSevereValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}<span ng-bind-html="activeAlarm.mostSevereValue.rangeCondition | lohi"></span>
-            </small>
-          </dd>
-
-          <dt>Current Value</dt>
-          <dd>
-            <img ng-src="/_static/_site/alarms/images/level{{ activeAlarm.currentLevel }}.png" uib-tooltip="{{ activeAlarm.currentValue.monitoringResult | monitoringValue }}">
-            <small>
-              <strong>{{ activeAlarm.currentValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}</strong><span ng-bind-html="activeAlarm.currentValue.rangeCondition | lohi"></span>
-              &ndash; {{ activeAlarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short':true }}
-            </small>
-          </dd>
-        </dl>
-      </div>
-
-      <div class="col-md-5">
-        <blockquote ng-if="activeAlarm.acknowledgeInfo" style="font-size: small">
-          <span class="glyphicon glyphicon-comment"></span>
-          {{ activeAlarm.acknowledgeInfo.acknowledgeMessage | nvl:'(without comment)' }}
-          <footer>{{ activeAlarm.acknowledgeInfo.acknowledgedBy }}</footer>
-        </blockquote>
-      </div>
-
-      <div class="col-md-1 text-right">
-        <button ng-if="!activeAlarm.acknowledgeInfo" class="btn btn-sm btn-danger" ng-click="openAcknowledge(activeAlarm)">Acknowledge</button>
-      </div>
-    </div>
-  </uib-alert>
-
-  <p ng-if="!activeAlarm">&nbsp;</p>
+  <p>&nbsp;</p>
 
   <div class="container-fluid">
     <div class="row">
@@ -68,7 +18,7 @@
         <small style="color: #6f6f6f">Source: {{ info.dataSource|capitalize }}</small>
       </div>
 
-      <div class="col-md-6">
+      <div class="col-md-6" style="padding-top: 1em;">
         <dl class="dl-horizontal">
           <dt>Qualified&nbsp;Name</dt>
           <dd>{{ info.qualifiedName }}</dd>
@@ -88,6 +38,51 @@
       </div>
 
       <div class="col-md-4">
+        <div class="panel panel-danger" ng-if="activeAlarm" type="danger" style="margin-top: 0.5em;">
+          <div class="panel-heading">
+            <strong>Out of limits detected {{ (activeAlarm.triggerValue.generationTimeUTC | parseUTC).fromNow() }}</strong><br>
+            <span ng-if="!activeAlarm.acknowledgeInfo">Unacknowledged</span>
+            <span ng-if="activeAlarm.acknowledgeInfo">Acknowledged {{ activeAlarm.acknowledgeInfo.acknowledgeTimeUTC | parseUTC | formatDate:'pretty_short':true }}</span>
+          </div>
+          <div class="panel-body">
+            <dl class="dl-horizontal dl-left dl-100">
+              <dt>Activation</dt>
+              <dd>
+                <img ng-src="/_static/_site/alarms/images/level{{ activeAlarm.triggerLevel }}.png" uib-tooltip="{{ activeAlarm.triggerValue.monitoringResult | monitoringValue }}">
+                <small>
+                  {{ activeAlarm.triggerValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
+                  with {{ activeAlarm.triggerValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}
+                </small>
+              </dd>
+
+              <dt>Highest Level</dt>
+              <dd>
+                <img ng-src="/_static/_site/alarms/images/level{{ activeAlarm.mostSevereLevel }}.png" uib-tooltip="{{ activeAlarm.mostSevereValue.monitoringResult | monitoringValue }}">
+                <small>
+                  {{ activeAlarm.mostSevereValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
+                  with {{ activeAlarm.mostSevereValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}
+                </small>
+              </dd>
+
+              <dt>Current Level</dt>
+              <dd>
+                <img ng-src="/_static/_site/alarms/images/level{{ activeAlarm.currentLevel }}.png" uib-tooltip="{{ activeAlarm.currentValue.monitoringResult | monitoringValue }}">
+                <small>
+                  {{ activeAlarm.currentValue.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
+                  with {{ activeAlarm.currentValue | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}
+                </small>
+              </dd>
+            </dl>
+
+            <blockquote ng-if="activeAlarm.acknowledgeInfo" style="font-size: small">
+              <span class="glyphicon glyphicon-comment"></span>
+              {{ activeAlarm.acknowledgeInfo.acknowledgeMessage | nvl:'(without comment)' }}
+              <footer>{{ activeAlarm.acknowledgeInfo.acknowledgedBy }}</footer>
+            </blockquote>
+
+            <button ng-if="!activeAlarm.acknowledgeInfo" class="btn btn-sm btn-danger" ng-click="openAcknowledge(activeAlarm)">Acknowledge</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -141,7 +136,7 @@
           <div class="row" ng-if="!alarms.length">
             <div class="col-md-1">-</div>
           </div>
-          <div class="row" ng-repeat-start="alarm in alarms | filter:filterTable" style="cursor: pointer; border-top: 1px solid #ddd;" ng-click="alarm.expanded = !alarm.expanded">
+          <div class="row" ng-repeat-start="alarm in alarms | filter:filterTable" style="cursor: pointer; border-top: 1px solid #333;" ng-click="alarm.expanded = !alarm.expanded">
             <div class="col-md-3">
               <span ng-if="alarm.urgent" class="glyphicon glyphicon-flag" style="color: #c9302c"></span>
               <strong>Out of limits</strong>
@@ -172,7 +167,7 @@
           <div class="row" ng-repeat-end uib-collapse="!alarm.expanded">
             <div class="col-md-1"></div>
             <div class="col-md-6">
-              <dl class="dl-horizontal">
+              <dl class="dl-horizontal dl-100">
                 <dt>Activation Level</dt>
                 <dd>
                   <img ng-src="/_static/_site/alarms/images/level{{ alarm.triggerLevel }}.png" uib-tooltip="{{ alarm.triggerValue.monitoringResult | monitoringValue }}">

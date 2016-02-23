@@ -18,7 +18,7 @@
 
   <br>
   <div class="container-fluid">
-    <div class="row" ng-repeat-start="alarm in vm.alarms" style="border-top: 1px solid #ddd;">
+    <div class="row" ng-repeat-start="alarm in vm.alarms" style="border-top: 1px solid #333;">
       <div class="col-md-3">
         <strong><a href="/{{ yamcsInstance }}/mdb{{ alarm.triggerValue.id.name }}" class="subtle">{{ alarm.triggerValue.id.name | name }}</a> out of limits</strong><br>
         <small>{{ alarm.triggerValue.id.name | spaceSystem }}</small>
