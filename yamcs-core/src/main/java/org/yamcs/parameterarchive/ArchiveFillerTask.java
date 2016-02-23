@@ -28,18 +28,20 @@ class ArchiveFillerTask implements ParameterConsumer {
     protected final ParameterGroupIdDb parameterGroupIdMap;
 
     //ignore any data older than this
-    long collectionSegmentStart;
+    protected long collectionSegmentStart;
     
     long threshold = 60000;
 
-    public ArchiveFillerTask(ParameterArchive parameterArchive, long collectionSegmentStart) {
-        this.collectionSegmentStart = collectionSegmentStart;
+    public ArchiveFillerTask(ParameterArchive parameterArchive) {
         this.parameterArchive = parameterArchive;
         this.parameterIdMap = parameterArchive.getParameterIdDb();
         this.parameterGroupIdMap = parameterArchive.getParameterGroupIdDb();
     }
     
-    
+
+    void setCollectionSegmentStart(long collectionSegmentStart) {
+        this.collectionSegmentStart = collectionSegmentStart;
+    }
     
     /**
      * adds the parameters to the pgSegments structure and return the highest timestamp or -1 if all parameters have been ignored (because they were too old)
@@ -133,7 +135,7 @@ class ArchiveFillerTask implements ParameterConsumer {
         
         long nextSegmentStart = SortedTimeSegment.getNextSegmentStart(collectionSegmentStart);
         
-        while(t>nextSegmentStart + threshold) {
+        while(t > nextSegmentStart + threshold) {
             Map<Integer, PGSegment> m = pgSegments.remove(collectionSegmentStart);
             if(m!=null) {
                 log.debug("Writing to archive the segment: [{} - {})", TimeEncoding.toString(collectionSegmentStart), TimeEncoding.toString(nextSegmentStart));

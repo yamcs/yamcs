@@ -265,6 +265,15 @@ public class YConfiguration {
         }
     }
 
+    static public String getString(Map m, String key, String defaultValue) throws ConfigurationException {
+       if(m.containsKey(key)) {
+           return getString(m, key);
+       }  else {
+           return defaultValue;
+       }
+    }
+
+    
     public String getString(String key) throws ConfigurationException {
         return getString(root, key);
     }

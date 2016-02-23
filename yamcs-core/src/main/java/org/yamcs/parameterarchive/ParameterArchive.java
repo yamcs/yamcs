@@ -56,6 +56,7 @@ public class ParameterArchive  extends AbstractService {
     private Map<String, Object> realtimeFillerConfig;
     private boolean realtimeFillerEnabled = false;
     private BackFiller backFiller;
+    private RealtimeArchiveFiller realtimeFiller;
     
     public ParameterArchive(String instance, Map<String, Object> args) throws RocksDBException {
       
@@ -101,6 +102,9 @@ public class ParameterArchive  extends AbstractService {
                 realtimeFillerConfig = YConfiguration.getMap(args, s);
                 realtimeFillerEnabled = YConfiguration.getBoolean(realtimeFillerConfig, "enabled", false);
                 log.debug("realtimeFillerConfig: {}", realtimeFillerConfig);
+                if(realtimeFillerEnabled) {
+                    realtimeFiller = new RealtimeArchiveFiller(this, realtimeFillerConfig);
+                }
             } else {
                 throw new ConfigurationException("Unkwnon keyword '"+s+"' in parameter archive configuration: "+args);
             }
@@ -371,6 +375,9 @@ public class ParameterArchive  extends AbstractService {
         if(backFiller!=null) {
             backFiller.start();
         }
+        if(realtimeFiller!=null) {
+            realtimeFiller.start();
+        }
     }
 
     @Override
@@ -379,6 +386,11 @@ public class ParameterArchive  extends AbstractService {
         if(backFiller!=null) {
             backFiller.stop();
         }
+        
+        if(realtimeFiller!=null) {
+            realtimeFiller.stop();
+        }
+        
         notifyStopped();
     }
 

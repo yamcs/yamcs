@@ -95,7 +95,8 @@ public class BackFiller {
             start = SortedTimeSegment.getSegmentStart(start);
             stop = SortedTimeSegment.getSegmentEnd(stop)+1;
             
-            ArchiveFillerTask aft = new ArchiveFillerTask(parchive, start);
+            ArchiveFillerTask aft = new ArchiveFillerTask(parchive);
+            aft.setCollectionSegmentStart(start);
             String timePeriod = '['+TimeEncoding.toString(start)+"-"+ TimeEncoding.toString(stop)+')';
             log.info("Starting an parameter archive fillup for interval {}", timePeriod );
 
