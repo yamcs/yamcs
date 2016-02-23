@@ -5,7 +5,10 @@ import static org.yamcs.api.Protocol.DATA_TYPE_HEADER_NAME;
 import static org.yamcs.api.Protocol.decode;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,6 +22,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.tctm.PpProviderAdapter;
+import org.yamcs.StreamInitializer;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
@@ -119,16 +123,18 @@ public class PpTupleTranslatorTest extends YarchTestCase {
 
     @Test
     public void testTranslation() throws Exception {
-        // Make sure the stream is created
+        StreamInitializer streamInit = new StreamInitializer(context.getDbName());
+        streamInit.createStreams();
+        
         PpRecorder ppRecorder = new PpRecorder(context.getDbName());
         ppRecorder.startAsync();
 
         // Get the stream
-        Stream rtstream = ydb.getStream( PpRecorder.REALTIME_PP_STREAM_NAME );
+        Stream rtstream = ydb.getStream( "pp_realtime" );
         assertNotNull(rtstream);
 
         // Add the adapter under test
-        SimpleString address = new SimpleString( PpRecorder.REALTIME_PP_STREAM_NAME );
+        SimpleString address = new SimpleString("pp_realtime");
         StreamAdapter streamAdapter = new StreamAdapter( rtstream, address, new PpTupleTranslator() );
 
         // Create a client to generate messages with

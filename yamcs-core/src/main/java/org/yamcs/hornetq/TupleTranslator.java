@@ -12,14 +12,11 @@ import org.yamcs.yarch.TupleDefinition;
 
 public interface TupleTranslator {
     /**
-     * 
-     * Can throw InvalidParameterException
      * @return the original msg
      */
     ClientMessage buildMessage(ClientMessage msg, Tuple tuple);
     /**
      * 
-     * Can throw InvalidParameterException
      * @param message
      * @return
      */

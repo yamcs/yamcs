@@ -7,12 +7,10 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
-
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
-
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
@@ -24,7 +22,15 @@ import org.yamcs.api.YamcsSession;
  *  - it creates a queue with a filter on hornet side
  *  - it remembers a thread local version of the tuple in transition on yarch side
  *
+ *
+ * this class is deprecated because it converts data in both directions whereas we want to be able to do it separately and have the incoming data as Data Links.
+ * 
+ *  The HornetQ XYZ Providers shall be used for HornetQ to stream translator and the HornetQXYZService (based on AbstractHornetQTranslatorService) in the other direction.
+ *  
+ *  Currently used only for events - once event providers are also shown as data links, we should get rid of this.
+ *  
  */
+@Deprecated
 public class StreamAdapter implements StreamSubscriber, MessageHandler {
     final private SimpleString hornetAddress;
     final private TupleTranslator translator;

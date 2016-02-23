@@ -17,7 +17,6 @@ import org.yamcs.yarch.TupleDefinition;
 /**
  * Translates between Processed Parameter tuples and HornetQ messages.
  * @author atu
- *
  */
 public class PpTupleTranslator implements TupleTranslator {
 

@@ -1,0 +1,5 @@
+    
+mdb: refmdb
+
+streamConfig:
+  param: [pp_realtime]

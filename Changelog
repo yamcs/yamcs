@@ -2,6 +2,8 @@ Version 0.29.3 Released
 - added backFiller config in the ParameterArchive
 - added an option in the web displays to use the ParameterArchive for parameter sampling and history
 - added a -noweb parameter to make-rpm.sh script to disable building the web stuff inside the rpm
+- implemented realtimeFiller for the parameter archive
+- un-hardcoded the stream names in the PpRecorder such that system parameters can also be recorded
 
 Version 0.29.2 Released 19-Feb-2015
 - implemented ParameterArchive

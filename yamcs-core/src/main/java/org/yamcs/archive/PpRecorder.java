@@ -2,19 +2,23 @@ package org.yamcs.archive;
 
 import static org.yamcs.tctm.PpProviderAdapter.PP_TUPLE_DEFINITION;
 
-import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.StreamConfig;
+import org.yamcs.YConfiguration;
+import org.yamcs.StreamConfig.StandardStreamType;
+import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.tctm.PpProviderAdapter;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
 
 import com.google.common.util.concurrent.AbstractService;
 
-
 /**
  * PpRecorder
- * Records Parameters 
+ * Records (processed) Parameters 
  * 
  * The base table definition is {@link PpProviderAdapter}
  * @author nm
@@ -25,12 +29,14 @@ public class PpRecorder extends AbstractService {
     String archiveInstance;
     Stream realtimeStream, dumpStream;
 
-    static public final String REALTIME_PP_STREAM_NAME="pp_realtime";
-    static public final String DUMP_PP_STREAM_NAME="pp_dump";
     static public final String TABLE_NAME="pp";
 
-    public PpRecorder(String archiveInstance) throws IOException, ConfigurationException{
-        this.archiveInstance=archiveInstance;
+    public PpRecorder(String yamcsInstance) {
+        this(yamcsInstance, null);
+    }
+    
+    public PpRecorder(String yamcsInstance, Map<String, Object> config) {
+        this.archiveInstance=yamcsInstance;
         YarchDatabase ydb=YarchDatabase.getInstance(archiveInstance);
         try {
             String cols=PP_TUPLE_DEFINITION.getStringDefinition1();
@@ -38,20 +44,30 @@ public class PpRecorder extends AbstractService {
                 String query="create table "+TABLE_NAME+"("+cols+", primary key(gentime, seqNum)) histogram(ppgroup) partition by time_and_value(gentime,ppgroup) table_format=compressed";
                 ydb.execute(query);
             }
-            if(ydb.getStream(REALTIME_PP_STREAM_NAME )==null) {
-                ydb.execute("create stream "+REALTIME_PP_STREAM_NAME+PP_TUPLE_DEFINITION.getStringDefinition());
+            
+            StreamConfig sc = StreamConfig.getInstance(yamcsInstance);            
+            if(config==null || !config.containsKey("streams")) {
+                List<StreamConfigEntry> sceList = sc.getEntries(StandardStreamType.param);
+                for(StreamConfigEntry sce: sceList){
+                    ydb.execute("insert into "+TABLE_NAME+" select * from "+sce.getName());
+                }
+            } else if(config != null && config.containsKey("streams")){
+                List<String> streamNames = YConfiguration.getList(config, "streams");
+                for(String sn: streamNames) {
+                    StreamConfigEntry sce = sc.getEntry(StandardStreamType.param, sn);
+                    if(sce==null) {
+                        throw new ConfigurationException("No stream config found for '"+sn+"'");
+                    }
+                    ydb.execute("insert into "+TABLE_NAME+" select * from "+sce.getName());
+                }
             }
-            if(ydb.getStream(DUMP_PP_STREAM_NAME )==null) {
-                ydb.execute("create stream "+DUMP_PP_STREAM_NAME+PP_TUPLE_DEFINITION.getStringDefinition());
-            }
-
-            ydb.execute("create stream pp_is("+cols+")");
-            ydb.execute("insert into "+TABLE_NAME+" select * from "+REALTIME_PP_STREAM_NAME);
-            ydb.execute("insert into "+TABLE_NAME+" select * from "+DUMP_PP_STREAM_NAME);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new ConfigurationException("exception when creating pp input stream", e);
         }
     }
+    
+    
 
     @Override
     protected void doStart() {
