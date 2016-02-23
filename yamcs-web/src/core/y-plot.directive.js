@@ -28,7 +28,7 @@
     Dygraph.endPan = Dygraph.Interaction.endPan;
 
     /* @ngInject */
-    function yPlot($log, configService) {
+    function yPlot($log, $interval, $filter, configService) {
 
         return {
             restrict: 'EA',
@@ -37,7 +37,8 @@
                 samples: '=', // The complete set of samples (does not include zoom detail)
                 alarms: '=',
                 control: '=', // Optionally allows controlling this directive from the outside
-                onZoom: '&'
+                onZoom: '&',
+                refresh: '@' // Interval at which to refresh the plot
             },
             link: function(scope, element, attrs) {
                 var plotWrapper = angular.element('<div>');
@@ -49,14 +50,17 @@
 
                 element.prepend(plotWrapper);
 
+                // Dict holding latest averaged realtime (polled by refresher)
+                var pendingRealtime;
+
                 var model = {
                     hasData: false,
                     valueRange: [null, null],
                     spinning: false,
                     allPoints: [],
                     splicedPoints: [], // when the range is combined with a detail range
-                    min_y: null,
-                    max_y: null,
+                    min_y: undefined,
+                    max_y: undefined,
                     isRangeSelectorMouseDown: false
                 };
                 var g = makePlot(plotEl[0], scope, model);
@@ -67,6 +71,7 @@
                      * by the controller.
                      */
                     scope.$watch(attrs.samples, function (samples) {
+                        pendingRealtime = null;
                         if (samples) {
                             var pointData = convertSampleDataToDygraphs(samples);
                             model.allPoints = pointData[0].points;
@@ -107,6 +112,12 @@
                     });
                 });
 
+                // Refreshes if there are new realtime points
+                var refresher = $interval(refreshPlot, attrs.refresh || 5000);
+                scope.$on('$destroy', function() {
+                    $interval.cancel(refresher);
+                });
+
                 scope.__control = scope.control || {};
                 var spinner = new Spinner({color: '#ccc'});
                 scope.__control.startSpinner = function() {
@@ -124,11 +135,44 @@
                 };
 
                 /**
+                 * Averages incoming realtime. Picked up by the refresher at
+                 * regular intervals.
+                 */
+                scope.__control.appendPoint = function(pval) {
+                    if (pval && pval.hasOwnProperty('engValue')) {
+                        var t = Date.parse(pval['generationTimeUTC']);
+                        var val = $filter('stringValue')(pval);
+
+                        if (pendingRealtime) {
+                            var n = ++pendingRealtime['n'];
+                            pendingRealtime['avgt'] -= pendingRealtime['avgt'] / n;
+                            pendingRealtime['avgt'] += t / n;
+                            pendingRealtime['avg'] -= pendingRealtime['avg'] / n;
+                            pendingRealtime['avg'] += val / n;
+                            pendingRealtime['min'] = Math.min(val, pendingRealtime['min']);
+                            pendingRealtime['max'] = Math.max(val, pendingRealtime['max']);
+                        } else {
+                            pendingRealtime = {
+                                avgt: t,
+                                avg: val,
+                                min: val,
+                                max: val,
+                                n: 1
+                            }
+                        }
+                    }
+                };
+
+                /**
                  * Loads a subset of data for plot. Useful for resampling
                  * zoomed ranges. Currently discards any previously loaded detail
                  * in favour of new detail.
                  */
                 scope.__control.spliceDetailSamples = function(detailSamples) {
+                    if (!detailSamples) {
+                        return;
+                    }
+
                     // [ [t, [min, v, max]], [t, [min, v, max]], ...  ]
                     var allPoints = model.allPoints;
                     var detailPoints = convertSampleDataToDygraphs(detailSamples)[0].points;
@@ -147,14 +191,36 @@
                         Array.prototype.push.apply(model.splicedPoints, detailPoints);
                         Array.prototype.push.apply(model.splicedPoints, allPoints.slice(insertStopIdx));
 
-                        //console.log('got all', JSON.stringify(model.allPoints));
-                        //console.log('got detail', JSON.stringify(detailPoints));
-                        //console.log('got spliced', JSON.stringify(model.splicedPoints));
                         updateGraph(g, model);
                     }
                 };
 
                 scope.__control.initialized = true;
+
+                function refreshPlot() {
+                    if (!pendingRealtime) {
+                        return;
+                    }
+
+                    var t = new Date();
+                    t.setTime(pendingRealtime['avgt']);
+                    var dypoint = [
+                        t, [ pendingRealtime['min'], pendingRealtime['avg'], pendingRealtime['max']]
+                    ];
+
+                    console.log('refresh plot from ' + pendingRealtime['n'] + ' points ... ', dypoint);
+                    if (model.hasData) {
+                        model.min_y = Math.min(model.min_y, dypoint[1][0]);
+                        model.max_y = Math.max(model.max_y, dypoint[1][2]);
+                    } else {
+                        model.min_y = dypoint[1][0];
+                        model.max_y = dypoint[1][2];
+                    }
+                    model.allPoints.push(dypoint);
+                    model.hasData = true;
+                    pendingRealtime = null;
+                    updateGraph(g, model);
+                }
             }
         };
 

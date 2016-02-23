@@ -4,7 +4,7 @@
     angular.module('yamcs.mdb').controller('MDBParameterDetailController', MDBParameterDetailController);
 
     /* @ngInject */
-    function MDBParameterDetailController($rootScope, $scope, $routeParams, $q, $filter, $uibModal, tmService, mdbService, configService, alarmsService) {
+    function MDBParameterDetailController($rootScope, $scope, $routeParams, $q, $uibModal, tmService, mdbService, configService, alarmsService) {
         $rootScope.pageTitle = $routeParams.name + ' | Yamcs';
 
         // Will be augmented when passed into directive
@@ -52,7 +52,7 @@
                         // Live data is added to the plot, except when we are loading a chunk of historic
                         // data. This may mean that we miss a few points though, but that's acceptable for now.
                         if (!loadingHistory && $scope.isNumeric()) {
-                            ///appendPoint($scope, pval, $filter);
+                            $scope.plotController.appendPoint(pval);
                         } else {
                             console.log('ignoring a point');
                         }
@@ -223,25 +223,6 @@
                 start: beforeIso.slice(0, -1),
                 stop: nowIso.slice(0, -1)
             }, lastSamplePromiseCanceler);
-        }
-    }
-
-    function appendPoint(scope, pval, filter) {
-        if (pval && pval.hasOwnProperty('engValue')) {
-            var val = filter('stringValue')(pval);
-
-            var t = new Date();
-            t.setTime(Date.parse(pval['generationTimeUTC']));
-            scope.samples[0]['points'].push([t, [val,val,val]]);
-            if (scope.samples[0]['min'] === null || scope.samples[0]['min'] > val) {
-                scope.samples[0]['min'] = val;
-            }
-            if (scope.samples[0]['max'] === null || scope.samples[0]['max'] < val) {
-                scope.samples[0]['max'] = val;
-            }
-            if (scope.hasOwnProperty('plotController')) {
-                scope.plotController.repaint();
-            }
         }
     }
 

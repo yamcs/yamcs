@@ -1,24 +1,10 @@
 (function () {
     'use strict';
 
-    angular
-        .module('yamcs.intf')
-        .factory('tmService', tmService);
-
-    function idsMatch(a, b) {
-        var aHas = a.hasOwnProperty('namespace');
-        var bHas = b.hasOwnProperty('namespace');
-        if (aHas !== bHas) {
-            return false;
-        } else if (aHas) {
-            return (a.name === b.name) && (a.namespace === b.namespace);
-        } else {
-            return (a.name === b.name);
-        }
-    }
+    angular.module('yamcs.intf').factory('tmService', tmService);
 
     /* @ngInject */
-    function tmService($http, $log, $q, $rootScope, socket, yamcsInstance, remoteConfig) {
+    function tmService($http, $log, $rootScope, socket, yamcsInstance, remoteConfig) {
 
         socket.on('PARAMETER', function(pdata) {
             var params = pdata['parameter'];
@@ -30,7 +16,7 @@
             getParameterSamples: getParameterSamples,
             getParameterHistory: getParameterHistory,
             subscribeParameters: subscribeParameters,
-            subscribeComputations: subscribeComputations,
+            subscribeComputations: subscribeComputations
         };
 
         function getParameter(qname, options) {
@@ -56,7 +42,7 @@
                 ngOpts['timeout'] = canceler.promise;
             }
             return $http.get(targetUrl, ngOpts).then(function (response) {
-                    return response.data;
+                return response.data;
             }).catch(function (message) {
                 if (message['data']) {
                     $log.error('XHR failed', message);
@@ -127,6 +113,18 @@
                 name: message['data']['type'],
                 message: message['data']['msg']
             };
+        }
+
+        function idsMatch(a, b) {
+            var aHas = a.hasOwnProperty('namespace');
+            var bHas = b.hasOwnProperty('namespace');
+            if (aHas !== bHas) {
+                return false;
+            } else if (aHas) {
+                return (a.name === b.name) && (a.namespace === b.namespace);
+            } else {
+                return (a.name === b.name);
+            }
         }
     }
 })();
