@@ -133,6 +133,13 @@
                 scope.__control.repaint = function() {
                     updateGraph(g, model);
                 };
+                scope.__control.toggleGrid = function () {
+                    if (g.getOption('gridLineColor') == '#222') {
+                        g.updateOptions({ gridLineColor: '#444' });
+                    } else {
+                        g.updateOptions({ gridLineColor: '#222' });
+                    }
+                };
 
                 /**
                  * Averages incoming realtime. Picked up by the refresher at
@@ -217,6 +224,9 @@
                         model.max_y = dypoint[1][2];
                     }
                     model.allPoints.push(dypoint);
+                    if (model.splicedPoints.length > 0) {
+                        model.splicedPoints.push(dypoint);
+                    }
                     model.hasData = true;
                     pendingRealtime = null;
                     updateGraph(g, model);
@@ -275,14 +285,14 @@
                     var prevAlpha = canvasCtx.globalAlpha;
                     canvasCtx.globalAlpha = 0.4;
 
-                    if (!model.hasData && !model.spinning) {
+                    /*if (!model.hasData && !model.spinning) {
                         canvasCtx.font = '20px Verdana';
                         canvasCtx.textAlign = 'center';
                         canvasCtx.textBaseline = 'middle';
                         var textX = area.x + (area.w / 2);
                         var textY = area.y + (area.h / 2);
                         canvasCtx.fillText('no data for this range', textX, textY);
-                    }
+                    }*/
 
                     guidelines.forEach(function(guideline) {
                         if (guideline['y2'] === null)

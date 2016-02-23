@@ -159,6 +159,9 @@
                 size: 'md'
             });
         };
+        $scope.toggleGrid = function() {
+            $scope.plotController.toggleGrid();
+        };
 
         $scope.expandAlarms = function() {
             for (var i = 0; i < $scope.alarms.length; i++) {
