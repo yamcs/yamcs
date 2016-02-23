@@ -120,7 +120,6 @@
                     spinner.stop();
                 };
                 scope.__control.repaint = function() {
-                    ///updateModel(scope.samples);
                     updateGraph(g, model);
                 };
 

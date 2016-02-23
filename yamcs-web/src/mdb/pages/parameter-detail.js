@@ -4,7 +4,7 @@
     angular.module('yamcs.mdb').controller('MDBParameterDetailController', MDBParameterDetailController);
 
     /* @ngInject */
-    function MDBParameterDetailController($rootScope, $scope, $routeParams, $filter, $uibModal, tmService, mdbService, configService, alarmsService) {
+    function MDBParameterDetailController($rootScope, $scope, $routeParams, $q, $filter, $uibModal, tmService, mdbService, configService, alarmsService) {
         $rootScope.pageTitle = $routeParams.name + ' | Yamcs';
 
         // Will be augmented when passed into directive
@@ -22,6 +22,7 @@
         }];
 
         var loadingHistory = false;
+        var lastSamplePromiseCanceler;
 
         $scope.alarms = [];
         mdbService.getParameterInfo('/' + $routeParams['ss'] + '/' + $routeParams.name).then(function (data) {
@@ -31,11 +32,14 @@
 
             // Called by plot directive when user zooms. Load detailed samples.
             $scope.onZoom = function(startDate, stopDate) {
-                console.log('uhuh request to load extent', startDate, stopDate);
+                if (lastSamplePromiseCanceler) {
+                    lastSamplePromiseCanceler.resolve();
+                }
+                lastSamplePromiseCanceler = $q.defer();
                 tmService.getParameterSamples(qname, {
                     start: startDate.toISOString().slice(0, -1),
                     stop: stopDate.toISOString().slice(0, -1)
-                }).then(function (data) {
+                }, lastSamplePromiseCanceler).then(function (data) {
                     $scope.plotController.spliceDetailSamples(data);
                 });
             };
@@ -103,7 +107,7 @@
                     $scope.plotController.startSpinner(); // before setting samples to null, so effects get considered in empty redraw
                     loadingHistory = true;
                     $scope.samples = null;
-                    loadHistoricData(tmService, qname, mode).then(function (data) {
+                    loadHistoricData(qname, mode).then(function (data) {
                         $scope.plotController.stopSpinner();
                         $scope.samples = data;
                         loadingHistory = false;
@@ -174,6 +178,51 @@
             } else {
                 return false;
             }
+        };
+
+        function loadHistoricData(qname, period) {
+            var now = new Date();
+            var nowIso = now.toISOString();
+            var before = new Date(now.getTime());
+            var beforeIso = nowIso;
+            if (period === '15m') {
+                before.setMinutes(now.getMinutes() - 15);
+                beforeIso = before.toISOString();
+            } else if (period === '30m') {
+                before.setMinutes(now.getMinutes() - 30);
+                beforeIso = before.toISOString();
+            } else if (period === '1h') {
+                before.setHours(now.getHours() - 1);
+                beforeIso = before.toISOString();
+            } else if (period === '5h') {
+                before.setHours(now.getHours() - 5);
+                beforeIso = before.toISOString();
+            } else if (period === '1d') {
+                before.setDate(now.getDate() - 1);
+                beforeIso = before.toISOString();
+            } else if (period === '1w') {
+                before.setDate(now.getDate() - 7);
+                beforeIso = before.toISOString();
+            } else if (period === '1m') {
+                before.setDate(now.getDate() - 31);
+                beforeIso = before.toISOString();
+            } else if (period === '3m') {
+                before.setDate(now.getDate() - (3*31));
+                beforeIso = before.toISOString();
+            } else if (period === '1y') {
+                before.setDate(now.getDate() - 365);
+                beforeIso = before.toISOString();
+            }
+
+
+            if (lastSamplePromiseCanceler) {
+                lastSamplePromiseCanceler.resolve();
+            }
+            lastSamplePromiseCanceler = $q.defer();
+            return tmService.getParameterSamples(qname, {
+                start: beforeIso.slice(0, -1),
+                stop: nowIso.slice(0, -1)
+            }, lastSamplePromiseCanceler);
         }
     }
 
@@ -194,46 +243,6 @@
                 scope.plotController.repaint();
             }
         }
-    }
-
-    function loadHistoricData(tmService, qname, period) {
-        var now = new Date();
-        var nowIso = now.toISOString();
-        var before = new Date(now.getTime());
-        var beforeIso = nowIso;
-        if (period === '15m') {
-            before.setMinutes(now.getMinutes() - 15);
-            beforeIso = before.toISOString();
-        } else if (period === '30m') {
-            before.setMinutes(now.getMinutes() - 30);
-            beforeIso = before.toISOString();
-        } else if (period === '1h') {
-            before.setHours(now.getHours() - 1);
-            beforeIso = before.toISOString();
-        } else if (period === '5h') {
-            before.setHours(now.getHours() - 5);
-            beforeIso = before.toISOString();
-        } else if (period === '1d') {
-            before.setDate(now.getDate() - 1);
-            beforeIso = before.toISOString();
-        } else if (period === '1w') {
-            before.setDate(now.getDate() - 7);
-            beforeIso = before.toISOString();
-        } else if (period === '1m') {
-            before.setDate(now.getDate() - 31);
-            beforeIso = before.toISOString();
-        } else if (period === '3m') {
-            before.setDate(now.getDate() - (3*31));
-            beforeIso = before.toISOString();
-        } else if (period === '1y') {
-            before.setDate(now.getDate() - 365);
-            beforeIso = before.toISOString();
-        }
-
-        return tmService.getParameterSamples(qname, {
-            start: beforeIso.slice(0, -1),
-            stop: nowIso.slice(0, -1)
-        });
     }
 
     function mapAlarmRanges(info) {

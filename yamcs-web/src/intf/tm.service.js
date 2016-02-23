@@ -18,7 +18,7 @@
     }
 
     /* @ngInject */
-    function tmService($http, $log, $rootScope, socket, yamcsInstance, remoteConfig) {
+    function tmService($http, $log, $q, $rootScope, socket, yamcsInstance, remoteConfig) {
 
         socket.on('PARAMETER', function(pdata) {
             var params = pdata['parameter'];
@@ -30,7 +30,7 @@
             getParameterSamples: getParameterSamples,
             getParameterHistory: getParameterHistory,
             subscribeParameters: subscribeParameters,
-            subscribeComputations: subscribeComputations
+            subscribeComputations: subscribeComputations,
         };
 
         function getParameter(qname, options) {
@@ -38,24 +38,32 @@
             targetUrl += toQueryString(options);
             return $http.get(targetUrl).then(function (response) {
                 return response.data;
-            }).catch(function (e) {
-                $log.error('XHR failed', e);
+            }).catch(function (message) {
+                $log.error('XHR failed', message);
                 throw messageToException(message);
             });
         }
 
-        function getParameterSamples(qname, options) {
+        function getParameterSamples(qname, options, canceler) {
             if(!!remoteConfig['useParameterArchive']) {
                 var targetUrl = '/api/archive/' + yamcsInstance + '/parameters2' + qname + '/samples';
             } else {
                 var targetUrl = '/api/archive/' + yamcsInstance + '/parameters' + qname + '/samples';
             }
             targetUrl += toQueryString(options);
-            return $http.get(targetUrl).then(function (response) {
+            var ngOpts = {};
+            if (canceler) {
+                ngOpts['timeout'] = canceler.promise;
+            }
+            return $http.get(targetUrl, ngOpts).then(function (response) {
                     return response.data;
             }).catch(function (message) {
-                $log.error('XHR failed', message);
-                throw messageToException(message);
+                if (message['data']) {
+                    $log.error('XHR failed', message);
+                    throw messageToException(message);
+                } else {
+                    $log.info('Canceled a pending request');
+                }
             });
         }
 
