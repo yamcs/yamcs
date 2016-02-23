@@ -108,7 +108,7 @@
                 });
 
                 scope.__control = scope.control || {};
-                var spinner = new Spinner();
+                var spinner = new Spinner({color: '#ccc'});
                 scope.__control.startSpinner = function() {
                     if (!model.spinning) {
                         model.spinning = true;
@@ -170,7 +170,8 @@
                 showRoller: false,
                 customBars: true,
                 animatedZooms: true,
-                gridLineColor: 'lightgray',
+                gridLineColor: '#444',
+                axisLineColor: '#333',
                 axisLabelColor: '#666',
                 axisLabelFontSize: 11,
                 digitsAfterDecimal: 6,
@@ -178,6 +179,8 @@
                 labels: ['Generation Time', label],
                 labelsDiv: 'parameter-detail-legend',
                 showRangeSelector: true,
+                rangeSelectorPlotStrokeColor: '#333',
+                rangeSelectorPlotFillColor: '#008080',
                 valueRange: model.valueRange,
                 yRangePad: 10,
                 axes: {

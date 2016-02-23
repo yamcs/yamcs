@@ -58,7 +58,7 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-md-2">
-        <span style="font-size: 20px; font-weight: bolder; white-space: nowrap">
+        <span style="font-size: 24px; font-weight: bolder; white-space: nowrap; color: #8c74ad">
           <span ng-if="para">{{ para | stringValue }}</span>
           <span ng-if="!para">---</span>
           {{ info.type.unitSet | joinBy:'unit':' ' }}
@@ -258,7 +258,7 @@
             <div class="col-md-1">-</div>
           </div>
         </div>
-        <dl class="dl-horizontal" ng-if="para.monitoringResult != 'DISABLED' && isNumeric()">
+        <dl class="dl-horizontal dl-left dl-100" ng-if="para.monitoringResult != 'DISABLED' && isNumeric()">
           <dt>High Limits</dt>
           <dd>
             <span ng-if="info.severe | has:'maxInclusive'">
@@ -303,7 +303,7 @@
         <div class="section" style="margin-top: 1em;" ng-if="info.type.dataEncoding">
           <h2>Packet Definition</h2>
         </div>
-        <dl class="dl-horizontal" ng-if="info.type.dataEncoding">
+        <dl class="dl-horizontal dl-left dl-100" ng-if="info.type.dataEncoding">
           <dt>Raw Type</dt>
           <dd>
             {{ info.type.dataEncoding.type | capitalize | nvl:'-' }}

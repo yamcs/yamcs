@@ -10,6 +10,7 @@ var angularFilesort = require('gulp-angular-filesort'),
     ngAnnotate = require('gulp-ng-annotate'),
     path = require('path'),
     rename = require('gulp-rename'),
+    replace = require('gulp-replace'),
     sourcemaps = require('gulp-sourcemaps'),
     uglify = require('gulp-uglify'),
     watch = require('gulp-watch');
@@ -28,6 +29,8 @@ gulp.task('bower-main', ['clean'], function () {
         .pipe(jsFilter)
             .pipe(sourcemaps.init())
                 .pipe(concat('vendor.js'))
+                // Ugh, this replace because dygraphs doesn't make pan overlay configurable
+                .pipe(replace('rgba(240, 240, 240, 0.6)', 'rgba(0, 0, 0, 0.4)'))
                 //.pipe(uglify()) // TODO make conditional because slow
             .pipe(sourcemaps.write())
         .pipe(jsFilter.restore)

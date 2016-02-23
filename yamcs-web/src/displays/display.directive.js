@@ -19,7 +19,7 @@
                 var displayWidget;
 
                 if (!elem.data('spinner')) {
-                    elem.data('spinner', new Spinner());
+                    elem.data('spinner', new Spinner({color: '#ccc'}));
                 }
                 elem.data('spinner').spin(elem[0]);
 
