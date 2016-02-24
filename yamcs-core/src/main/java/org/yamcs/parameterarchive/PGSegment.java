@@ -85,6 +85,10 @@ public class PGSegment {
             return new IntValueSegment(false);
         case FLOAT:
             return new FloatValueSegment();
+        case SINT64:
+            return new LongValueSegment(true);
+        case UINT64:
+            return new LongValueSegment(false);
        default:
          return new GenericValueSegment();
         }

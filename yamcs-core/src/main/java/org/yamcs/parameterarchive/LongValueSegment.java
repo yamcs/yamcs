@@ -5,28 +5,31 @@ import java.util.List;
 
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.utils.DecodingException;
+import org.yamcs.utils.LongArray;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.utils.VarIntUtil;
 
 public class LongValueSegment extends BaseSegment implements ValueSegment {
     boolean signed;
     final static int SUBFORMAT_ID_RAW = 0;
+    LongArray values;
+    
     
     LongValueSegment(boolean signed) {
         super(FORMAT_ID_UInt64ValueSegment);
+        values = new LongArray();
         this.signed = signed;
     }
 
-
-    long[] values;
+ 
     
     @Override
     public void writeTo(ByteBuffer bb) {
-        writeHeader(SUBFORMAT_ID_RAW,bb);
-        int n = values.length;
+        writeHeader(SUBFORMAT_ID_RAW, bb);
+        int n = values.size();
         VarIntUtil.writeVarInt32(bb, n);
         for(int i=0; i<n; i++) {
-            VarIntUtil.writeVarInt64(bb, values[i]);
+            bb.putLong(values.get(i));
         }
     }
 
@@ -47,9 +50,9 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
         signed = (((x>>4)&1)==1);
         
         int n = VarIntUtil.readVarInt32(bb);
-        values = new long[n];
+        values = new LongArray(n);
         for(int i=0; i<n; i++) {
-            values[i]=VarIntUtil.readVarInt64(bb);
+            values.add(bb.getLong());
         }
     }
 
@@ -61,17 +64,29 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
     
     public static LongValueSegment  consolidate(List<Value> values, boolean signed) {
         LongValueSegment segment = new LongValueSegment(signed);
+        segment.signed = signed;
         int n = values.size();
-        segment.values = new long[n];
-        for(int i =0;i<n; i++) {
-            segment.values[i] = values.get(i).getUint64Value();
+    
+        if(signed) {
+            for(int i =0;i<n; i++) {
+                segment.add(values.get(i).getSint64Value());
+            } 
+        } else {
+            for(int i =0;i<n; i++) {
+                segment.add(values.get(i).getUint64Value());
+            }
         }
         return segment;
     }
 
+    private void add(long x) {
+       values.add(x);
+    }
+
+    
     @Override
     public int getMaxSerializedSize() {
-        return 4+8*values.length; //4 for the size plus 8 for each element
+        return 4+8*values.size(); //4 for the size plus 8 for each element
     }
 
     @Override
@@ -79,11 +94,11 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
         long[] r = new long[posStop-posStart];
         if(ascending) {
             for(int i = posStart; i<posStop; i++) {
-                r[i-posStart] = values[i];
+                r[i-posStart] = values.get(i);
             }
         } else {
             for(int i = posStop; i>posStart; i--) {
-                r[posStop-i] = values[i];
+                r[posStop-i] = values.get(i);
             }
         }
         
@@ -92,23 +107,32 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
 
     @Override
     public Value getValue(int index) {
-        return ValueUtility.getUint64Value(values[index]);
+        if(signed) {
+            return ValueUtility.getSint64Value(values.get(index));
+        } else {
+            return ValueUtility.getUint64Value(values.get(index));
+        }
     }
 
     @Override
     public int size() {
-        return values.length;
+        return values.size();
     }
     
-    @Override
-    public void add(int pos, Value engValue) {
-        throw new UnsupportedOperationException("add not supported");
-        
-    }
 
     @Override
-    public BaseSegment consolidate() {
-        throw new UnsupportedOperationException("consolidate not supported");
+    public void add(int pos, Value v) {
+        if(signed) {
+            values.add(pos, v.getSint64Value());
+        } else {
+            values.add(pos, v.getUint64Value());
+        }
+    }
+
+
+    @Override
+    public LongValueSegment consolidate() {
+        return this;
     }
     
 }
