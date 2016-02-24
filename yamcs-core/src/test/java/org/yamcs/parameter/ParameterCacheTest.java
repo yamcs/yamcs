@@ -275,13 +275,13 @@ public class ParameterCacheTest {
     
     ParameterValue getUint64ParameterValue(Parameter p, long t) {
         ParameterValue pv = new ParameterValue(p);
-        pv.setAcquisitionTime(t);
+        pv.setGenerationTime(t);
         pv.setEngineeringValue(ValueUtility.getUint64Value(t));
         return pv;
     }
     ParameterValue getParameterValue(Parameter p, long timestamp) {
         ParameterValue pv = new ParameterValue(p);
-        pv.setAcquisitionTime(timestamp);
+        pv.setGenerationTime(timestamp);
         pv.setEngineeringValue(ValueUtility.getStringValue(p.getName()+"_"+timestamp));
         return pv;
     }
