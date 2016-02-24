@@ -92,7 +92,7 @@ public class YProcessor extends AbstractService {
     private String creator="system";
     private boolean persistent=false;
 
-    ParameterCacheConfig parameterCacheConfig = new ParameterCacheConfig(false, false, 0);
+    ParameterCacheConfig parameterCacheConfig = new ParameterCacheConfig(false, false, 0, 0);
     
     final Logger log;
     static Set<YProcessorListener> listeners=new CopyOnWriteArraySet<>(); //send notifications for added and removed processors to this
@@ -277,15 +277,10 @@ public class YProcessor extends AbstractService {
             cacheAll = (Boolean)v;
             if(cacheAll) enabled=true;
         }
+        duration = 1000L * YConfiguration.getInt(cacheConfig, "duration", 600);
+        int maxNumEntries = YConfiguration.getInt(cacheConfig, "maxNumEntries", 4096);
         
-        v = cacheConfig.get("duration");
-        if(v!=null) {
-            if(!(v instanceof Integer)) {
-                throw new ConfigurationException("Unknown value '"+v+"' for parameterCache -> duration. Integer (number of seconds) expected .");
-            }
-            duration = (Integer)v *1000L;
-        }
-        parameterCacheConfig = new ParameterCacheConfig(enabled, cacheAll, duration);
+        parameterCacheConfig = new ParameterCacheConfig(enabled, cacheAll, duration, maxNumEntries);
     }
 
     private static String key(String instance, String name) {

@@ -29,8 +29,11 @@ import org.yamcs.xtce.Parameter;
 public class ParameterCache {
     final ConcurrentHashMap<Parameter, CacheEntry> cache = new ConcurrentHashMap<Parameter, CacheEntry>();
     final long timeToCache;
-    public ParameterCache(long timeToCache) {
-        this.timeToCache = timeToCache;
+    final int maxNumEntries;
+    
+    public ParameterCache(ParameterCacheConfig cacheConfig) {
+        this.timeToCache = cacheConfig.maxDuration;
+        this.maxNumEntries = cacheConfig.maxNumEntries;
     }
     /**
      * update the parameters in the cache
@@ -44,7 +47,7 @@ public class ParameterCache {
             Parameter p = pv.getParameter();
             CacheEntry ce = cache.get(p);
             if(ce==null) {
-                ce = new CacheEntry(p, timeToCache);
+                ce = new CacheEntry(p, timeToCache, maxNumEntries);
                 cache.put(p, ce);
             }
             ce.add(pvlist);
@@ -130,13 +133,14 @@ public class ParameterCache {
         private  ParameterValueList[] elements;
         int tail = 0;
         static final int INITIAL_CAPACITY = 128;
-        static final int MAX_CAPACITY = 4096;
         final long timeToCache;
+        final int maxNumEntries;
         ReadWriteLock lock = new ReentrantReadWriteLock();
-
-        public CacheEntry(Parameter p, long timeToCache) {
+        
+        public CacheEntry(Parameter p, long timeToCache, int maxNumEntries) {
             this.parameter = p;
             this.timeToCache = timeToCache;
+            this.maxNumEntries = maxNumEntries;
             elements = new ParameterValueList[INITIAL_CAPACITY];
         }
 
@@ -182,8 +186,12 @@ public class ParameterCache {
                     ParameterValue oldpv = pv1.getFirstInserted(parameter);
                     ParameterValue newpv = pvlist.getFirstInserted(parameter);
                     if((oldpv==null) || (newpv==null)) return; // shouldn't happen
-
-                    if(newpv.getAcquisitionTime()-oldpv.getAcquisitionTime()<timeToCache) {
+                    if(newpv.getGenerationTime() < oldpv.getGenerationTime()) {
+                        // parameter older than the last one in the queue -> ignore
+                        return;
+                    }
+                    
+                    if(newpv.getGenerationTime()-oldpv.getGenerationTime()<timeToCache) {
                         doubleCapacity();
                     }
                 }
@@ -196,7 +204,7 @@ public class ParameterCache {
 
         private void doubleCapacity() {
             int capacity = elements.length;
-            if(capacity>=MAX_CAPACITY) return;
+            if(capacity>=maxNumEntries) return;
 
             int newCapacity = 2*capacity;
 

@@ -18,8 +18,9 @@ public class ParameterCacheTest {
     
     @Test
     public void test1() {
+        ParameterCacheConfig pcc = new ParameterCacheConfig(true, true, 1000, 4096);
         //100 ms
-        ParameterCache pcache = new ParameterCache(1000); //1 second
+        ParameterCache pcache = new ParameterCache(pcc); //1 second
         assertNull(pcache.getLastValue(p1));
         
         ParameterValue p1v1 = getParameterValue(p1, 10);
@@ -47,7 +48,8 @@ public class ParameterCacheTest {
     
     @Test
     public void testCircularity() {
-        ParameterCache pcache = new ParameterCache(1000); //1 second
+        ParameterCacheConfig pcc = new ParameterCacheConfig(true, true, 1000, 4096);
+        ParameterCache pcache = new ParameterCache(pcc); //1 second
         assertNull(pcache.getLastValue(p1));
         List<ParameterValue> expectedPVlist = new ArrayList<>();
         for(int i=0;i<10;i++) {
@@ -89,7 +91,8 @@ public class ParameterCacheTest {
     
     @Test
     public void testResize() {
-        ParameterCache pcache = new ParameterCache(2000); //should keep at least 200 samples
+        ParameterCacheConfig pcc = new ParameterCacheConfig(true, true, 2000, 4096);
+        ParameterCache pcache = new ParameterCache(pcc); //should keep at least 200 samples
         assertNull(pcache.getLastValue(p1));
         List<ParameterValue> expectedPVlist = new ArrayList<>();
         for(int i=0;i<256;i++) {
@@ -118,6 +121,40 @@ public class ParameterCacheTest {
         }
         
     }
+    
+    @Test
+    public void testMaxSize() {
+        ParameterCacheConfig pcc = new ParameterCacheConfig(true, true, 2000, 128);
+        ParameterCache pcache = new ParameterCache(pcc); //should keep max 128 samples
+        assertNull(pcache.getLastValue(p1));
+        List<ParameterValue> expectedPVlist = new ArrayList<>();
+        for(int i=0;i<256;i++) {
+            ParameterValue pv = getUint64ParameterValue(p1, i*10L);
+            expectedPVlist.add(pv);
+            pcache.update(Arrays.asList(pv));
+        }
+        
+        List<ParameterValue> pvlist = pcache.getAllValues(p1);
+        assertEquals(128, pvlist.size());
+        for(int i=0; i<128; i++) {
+            assertEquals(expectedPVlist.get(255-i), pvlist.get(i));
+        }
+        ParameterValue pv = getUint64ParameterValue(p1, 256*10L);
+        pcache.update(Arrays.asList(pv));
+        expectedPVlist.add(pv);
+        
+        pv = getUint64ParameterValue(p1, 257*10L);
+        pcache.update(Arrays.asList(pv));
+        expectedPVlist.add(pv);
+        
+        pvlist = pcache.getAllValues(p1);
+        assertEquals(128, pvlist.size());
+        for(int i=0; i<128; i++) {
+            assertEquals(expectedPVlist.get(257-i), pvlist.get(i));
+        }
+        
+    }
+    
     /**
      * 
      * Perforamnce tests for different syncrhonization strategies in ParameterCache.CacheEntry
@@ -157,8 +194,8 @@ public class ParameterCacheTest {
     @Test
     @Ignore
     public void testConcurrency() throws InterruptedException {
-        
-        final ParameterCache pcache = new ParameterCache(1000);
+        ParameterCacheConfig pcc = new ParameterCacheConfig(true, true, 1000, 4096);
+        final ParameterCache pcache = new ParameterCache(pcc);
         Thread writer = new Thread(new Runnable() {
             @Override
             public void run() {

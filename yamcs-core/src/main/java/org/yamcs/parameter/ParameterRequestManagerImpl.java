@@ -87,7 +87,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
         }
 
         if(cacheConfig.enabled) {
-            parameterCache = new ParameterCache(cacheConfig.duration);
+            parameterCache = new ParameterCache(cacheConfig);
         }
     }
 
