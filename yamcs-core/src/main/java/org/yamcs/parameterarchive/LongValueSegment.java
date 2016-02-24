@@ -13,15 +13,18 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
     boolean signed;
     final static int SUBFORMAT_ID_RAW = 0;
     LongArray values;
-    
-    
+
+
     LongValueSegment(boolean signed) {
-        super(FORMAT_ID_UInt64ValueSegment);
+        super(FORMAT_ID_LongValueSegment);
         values = new LongArray();
         this.signed = signed;
     }
 
- 
+
+    private LongValueSegment() {
+        super(FORMAT_ID_IntValueSegment);
+    }
     
     @Override
     public void writeTo(ByteBuffer bb) {
@@ -42,31 +45,35 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
         bb.put((byte)x);
     }
 
-    
+
     private void parse(ByteBuffer bb) throws DecodingException {
         byte x = bb.get();
         int subFormatId = x&0xF;
         if(subFormatId!=SUBFORMAT_ID_RAW) throw new DecodingException("Unknown subformatId "+subFormatId+" for LongValueSegment");
         signed = (((x>>4)&1)==1);
-        
+       
         int n = VarIntUtil.readVarInt32(bb);
+        
+        if(bb.limit()-bb.position() < 8*n) {
+            throw new DecodingException("Cannot decode long segment: expected "+(8*n)+" bytes and only "+(bb.limit()-bb.position())+ " available");
+        }
         values = new LongArray(n);
         for(int i=0; i<n; i++) {
             values.add(bb.getLong());
         }
     }
 
-    public static LongValueSegment parseFrom(ByteBuffer bb, boolean signed) throws DecodingException {
-        LongValueSegment r = new LongValueSegment(signed);
+    public static LongValueSegment parseFrom(ByteBuffer bb) throws DecodingException {
+        LongValueSegment r = new LongValueSegment();
         r.parse(bb);
         return r;
     }
-    
+
     public static LongValueSegment  consolidate(List<Value> values, boolean signed) {
         LongValueSegment segment = new LongValueSegment(signed);
         segment.signed = signed;
         int n = values.size();
-    
+
         if(signed) {
             for(int i =0;i<n; i++) {
                 segment.add(values.get(i).getSint64Value());
@@ -80,10 +87,10 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
     }
 
     private void add(long x) {
-       values.add(x);
+        values.add(x);
     }
 
-    
+
     @Override
     public int getMaxSerializedSize() {
         return 4+8*values.size(); //4 for the size plus 8 for each element
@@ -101,7 +108,7 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
                 r[posStop-i] = values.get(i);
             }
         }
-        
+
         return r;
     }
 
@@ -118,7 +125,7 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
     public int size() {
         return values.size();
     }
-    
+
 
     @Override
     public void add(int pos, Value v) {
@@ -134,5 +141,5 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
     public LongValueSegment consolidate() {
         return this;
     }
-    
+
 }

@@ -22,7 +22,7 @@ public abstract class BaseSegment {
     public static final byte FORMAT_ID_BooleanValueSegment = 15;
     public static final byte FORMAT_ID_FloatValueSegment = 16;
     public static final byte FORMAT_ID_DoubleValueSegment = 17;
-    public static final byte FORMAT_ID_UInt64ValueSegment = 18;
+    public static final byte FORMAT_ID_LongValueSegment = 18;
     public static final byte FORMAT_ID_BinaryValueSegment = 19;
     
     
@@ -76,8 +76,8 @@ public abstract class BaseSegment {
             return FloatValueSegment.parseFrom(bb);
         case FORMAT_ID_DoubleValueSegment:
             return DoubleValueSegment.parseFrom(bb);
-        case FORMAT_ID_UInt64ValueSegment:
-            return LongValueSegment.parseFrom(bb, false);
+        case FORMAT_ID_LongValueSegment:
+            return LongValueSegment.parseFrom(bb);
         case FORMAT_ID_BinaryValueSegment:
             return BinaryValueSegment.parseFrom(bb);
         default:
