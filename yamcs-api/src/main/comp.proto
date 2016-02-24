@@ -13,4 +13,5 @@ message ComputationDef {
 
 message ComputationDefList {
   repeated ComputationDef compDef = 1;
+  optional bool abortOnInvalid = 2;
 }

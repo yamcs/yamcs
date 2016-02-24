@@ -59,8 +59,7 @@
       <th>Generated</th>
     </tr>
 
-    <tr ng-repeat="event in vm.events | filter:vm.filterTable | orderBy:'-generationTime'"
-        ng-class="{warning: event.severity == 'WARNING', danger: event.severity == 'ERROR'}">
+    <tr ng-repeat="event in vm.events | filter:vm.filterTable | orderBy:'-generationTime'">
       <td style="text-align: center;">
         <span ng-if="event.severity == 'INFO'" class="label label-info">Info</span>
         <span ng-if="event.severity == 'WARNING'" class="label label-warning">Warning</span>

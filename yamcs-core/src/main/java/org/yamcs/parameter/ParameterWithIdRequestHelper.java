@@ -14,6 +14,7 @@ import org.yamcs.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
+import org.yamcs.utils.StringConvertors;
 import org.yamcs.xtce.Parameter;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -74,7 +75,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
                 checkParameterPrivilege(authToken, p.getQualifiedName());
                 NamedObjectId id = idList.get(i);
                 if(subscr.containsEntry(p, id)) {
-                    log.info("Ignoring duplicate subscription for ({},{})", p.getName(), id);
+                    log.info("Ignoring duplicate subscription for '{}', id: {}", p.getName(), StringConvertors.idToString(id));
                     continue;
                 }
                 subscr.put(p, id);
@@ -147,7 +148,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     public void updateItems(int subscriptionId, List<ParameterValue> items) {
         ListMultimap<Parameter, NamedObjectId> subscription = subscriptions.get(subscriptionId);
         if(subscription==null) { //probably the subscription has just been removed
-            log.debug("Recevied an updateItems for an unknown subscription "+subscriptionId);
+            log.debug("Received an updateItems for an unknown subscription "+subscriptionId);
             return;
         }
         List<ParameterValueWithId> plist = new ArrayList<ParameterValueWithId>(items.size());

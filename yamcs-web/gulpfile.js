@@ -10,6 +10,7 @@ var angularFilesort = require('gulp-angular-filesort'),
     ngAnnotate = require('gulp-ng-annotate'),
     path = require('path'),
     rename = require('gulp-rename'),
+    replace = require('gulp-replace'),
     sourcemaps = require('gulp-sourcemaps'),
     uglify = require('gulp-uglify'),
     watch = require('gulp-watch');
@@ -28,6 +29,8 @@ gulp.task('bower-main', ['clean'], function () {
         .pipe(jsFilter)
             .pipe(sourcemaps.init())
                 .pipe(concat('vendor.js'))
+                // Ugh, this replace because dygraphs doesn't make pan overlay configurable
+                .pipe(replace('rgba(240, 240, 240, 0.6)', 'rgba(0, 0, 0, 0.4)'))
                 //.pipe(uglify()) // TODO make conditional because slow
             .pipe(sourcemaps.write())
         .pipe(jsFilter.restore)
@@ -71,20 +74,20 @@ gulp.task('less', ['clean'], function () {
 gulp.task('js-uss', ['clean'], function () {
     // Order is important for these
     return gulp.src([
-            '**/uss.js',
-            '**/uss.basic-widgets.js',
-            '**/uss.graph.js',
-            '**/uss.meters.js',
-            '**/jquery.svg.js',
-            '**/sprintf-0.7-beta1.js'
-            //'**/highcharts.src.js'
+            '**/lib/uss.js',
+            '**/lib/uss.basic-widgets.js',
+            '**/lib/uss.graph.js',
+            '**/lib/uss.meters.js',
+            '**/lib/jquery.svg.js',
+            '**/lib/sprintf-0.7-beta1.js'
+            //'**/lib/highcharts.src.js'
         ])
-        .pipe(concat('uss.js'))
+        .pipe(concat('uss-lib.js'))
         .pipe(gulp.dest('./build/_site/uss'));
 });
 
 gulp.task('js', ['clean', 'js-uss'], function () {
-    return gulp.src(['./src/**/*.js', '!./src/**/uss/*'])
+    return gulp.src(['./src/**/*.js', '!./src/**/uss/lib/*'])
         .pipe(ngAnnotate())
         .pipe(angularFilesort())
         .pipe(concat('yamcs-web.js'))
@@ -110,7 +113,7 @@ gulp.task('config', ['clean'], function () {
 // Updates the CSS and JS references defined in the root html files
 gulp.task('index', ['clean', 'bower', 'css', 'less', 'js'], function () {
     return gulp.src('./src/*.html')
-        .pipe(inject(gulp.src(['./build/_site/vendor.js', './build/_site/uss/uss.js'], {read: false}),
+        .pipe(inject(gulp.src(['./build/_site/vendor.js', './build/_site/uss/uss-lib.js'], {read: false}),
             {ignorePath: '/build', addPrefix: '/_static', name: 'bower'}))
         .pipe(inject(gulp.src('./build/_site/yamcs-web.js', {}),
             {ignorePath: '/build', addPrefix: '/_static'}))

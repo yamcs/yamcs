@@ -12,40 +12,6 @@ var USS = {
    dp_FILL_COLOR: 'FILL_COLOR'
 }; //USS namespace
 
-USS.drawAndConnectDisplay = function (data, targetDiv, tmService, doneFunction) {
-    $(targetDiv).svg({onLoad: function () {
-        var display = new USS.Display(targetDiv);
-        display.parseAndDraw(data);
-        tmService.subscribeParameters(display.parameters);
-        tmService.subscribeComputations(display.parameters);
-        if (doneFunction) doneFunction(display);
-    }});
-};
-
-USS.updateWidget = function (db, para) {
-    var widget=db.widget;
-    switch (db.dynamicProperty) {
-        case USS.dp_VALUE:
-            if (widget.updateValue === undefined) {
-                //console.log('no updateValue for ', widget);
-                return;
-            }
-            widget.updateValue(para, db.usingRaw);
-            break;
-        case USS.dp_X:
-            widget.updatePosition(para, 'x', db.usingRaw);
-            break;
-        case USS.dp_Y:
-            widget.updatePosition(para, 'y', db.usingRaw);
-            break;
-        case USS.dp_FILL_COLOR:
-            widget.updateFillColor(para, db.usingRaw);
-            break;
-        default:
-            console.log('TODO update dynamic property: ', db.dynamicProperty);
-    }
-};
-
 USS.parseDataBinding = function(e) {
     var db=new Object();
     db.dynamicProperty=$(e).children('DynamicProperty').text();

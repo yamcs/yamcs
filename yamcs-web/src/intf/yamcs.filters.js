@@ -42,6 +42,9 @@
             if (!param) return '';
             if(usingRaw) {
                 var rv = param.rawValue;
+                if (rv === undefined) {
+                    return '';
+                }
                 var res = '';
                 if (rv['type'] === 'STRING') res += '\'';
                 for(var idx in rv) {
@@ -90,6 +93,19 @@
     })
 
     /*
+        Replaces the input value with the replacemet if it is not set
+     */
+    .filter('nvl', function () {
+        return function (value, replacement) {
+            if (value === undefined || value === null) {
+                return replacement;
+            } else {
+                return value;
+            }
+        };
+    })
+
+    /*
         Converts monitoringResult to a twitter bootstrap class
      */
     .filter('monitoringClass', function () {
@@ -97,20 +113,10 @@
             if (!monitoringResult) return '';
             switch (monitoringResult) {
                 case 'WATCH':
-                case 'WATCH_LOW':
-                case 'WATCH_HIGH':
                 case 'WARNING':
-                case 'WARNING_LOW':
-                case 'WARNING_HIGH':
                 case 'DISTRESS':
-                case 'DISTRESS_LOW':
-                case 'DISTRESS_HIGH':
                 case 'CRITICAL':
-                case 'CRITICAL_LOW':
-                case 'CRITICAL_HIGH':
                 case 'SEVERE':
-                case 'SEVERE_LOW':
-                case 'SEVERE_HIGH':
                     return 'danger';
                 case 'IN_LIMITS':
                     return 'success';

@@ -67,3 +67,13 @@ message RestExceptionMessage {
   optional string type = 1;
   optional string msg = 2;
 }
+
+message ParameterSubscriptionRequest {
+  repeated yamcs.NamedObjectId id = 1;
+  optional bool abortOnInvalid = 2;
+}
+
+message ParameterSubscriptionResponse {
+  repeated yamcs.NamedObjectId valid = 1;
+  repeated yamcs.NamedObjectId invalid = 2;
+}

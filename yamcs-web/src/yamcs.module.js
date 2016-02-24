@@ -9,7 +9,8 @@
             'yamcs.events',
             'yamcs.home',
             'yamcs.intf',
-            'yamcs.mdb'
+            'yamcs.mdb',
+            'yamcs.uss'
         ])
         .config(configureModule);
 

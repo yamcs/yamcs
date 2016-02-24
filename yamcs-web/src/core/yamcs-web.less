@@ -1,5 +1,12 @@
 @import "../../bower_components/bootstrap/less/bootstrap.less";
 
+@body-bg:               lighten(#080808, 10%);
+@text-color:            #6F6F6F;  /*@text-color: rgb(200, 200, 200);*/
+@link-color: rgb(255, 255, 255);
+@link-hover-color: rgb(255, 255, 255);
+
+@font-size-base: 12px;
+
 @font-size-h1:            ceil((@font-size-base * 1.14)); // ~16px
 @font-size-h2:            floor((@font-size-base * 1.14)); // ~16px
 @font-size-h3:            @font-size-base;
@@ -7,18 +14,84 @@
 @font-size-h5:            @font-size-base;
 @font-size-h6:            ceil((@font-size-base * 0.85)); // ~12px
 
+@brand-success: rgb(98, 196, 98);
+@brand-warning: rgb(248, 148, 6);
+@brand-danger: rgb(238, 95, 91);
+
+/*@table-bg: lighten(@body-bg, 3%);*/
+@table-bg-accent: lighten(@table-bg, 3%);
+@table-bg-hover: lighten(@table-bg, 12%);
+@table-border-color: #333; /*darken(@gray-darker, 5%);*/
+
+@btn-default-color: rgb(255, 255, 255);
+@btn-default-bg: @gray-dark;
+@btn-default-border: @gray-dark;
+@btn-primary-color: @btn-default-color;
+@btn-success-color: @btn-default-color;
+@btn-info-color: @btn-default-color;
+@btn-warning-color: @btn-default-color;
+@btn-danger-color: @btn-default-color;
+
+@state-success-text: rgb(255, 255, 255);
+@state-success-bg: @brand-success;
+@state-info-text: rgb(255, 255, 255);
+@state-info-bg: @brand-info;
+@state-warning-text: rgb(255, 255, 255);
+@state-warning-bg: @brand-warning;
+@state-danger-text: rgb(255, 255, 255);
+@state-danger-bg: @brand-danger;
+
+@nav-link-hover-bg: #111;
+@nav-tabs-link-hover-border-color: @body-bg;
+@nav-tabs-border-color: #333;
+@nav-tabs-active-link-hover-bg: @body-bg;
+@nav-tabs-active-link-hover-color: rgb(255, 255, 255);
+@nav-tabs-active-link-hover-border-color: #333;
+@nav-tabs-justified-link-border-color: @nav-tabs-border-color;
+
+@panel-bg: @body-bg;
+@panel-inner-border: #333;
+@panel-footer-bg: @panel-default-heading-bg;
+@panel-default-text: #fff;
+@panel-default-border: #333;
+@panel-default-heading-bg: lighten(@body-bg, 10%);
+
+@dropdown-bg: @gray-dark;
+@dropdown-fallback-border: @gray-darker;
+@dropdown-divider-bg: @gray-darker;
+@dropdown-link-color: @text-color;
+@dropdown-link-hover-color: rgb(255, 255, 255);
+@dropdown-link-hover-bg: #111;
+@dropdown-link-active-color: rgb(255, 255, 255);
+
+@list-group-bg: lighten(@body-bg, 5%);
+@list-group-border: rgba(0, 0, 0, 0.6);
+@list-group-hover-bg: lighten(@body-bg, 10%);
+@list-group-link-color: @text-color;
+@list-group-link-heading-color: rgb(255, 255, 255);
+
+/*@modal-content-bg: lighten(@body-bg, 10%);
+@modal-content-border-color: rgba(0,0,0,.2);
+@modal-content-fallback-border-color: #999;
+@modal-backdrop-bg: #000;
+@modal-header-border-color:   #e5e5e5;
+@modal-footer-border-color:   @modal-header-border-color;*/
+
+@jumbotron-bg: rgb(39, 43, 48);
+
+@hr-border: #333;
+
 div.section {
-  border-bottom: 1px solid #eee;
+  color: #c3cdd2;
+  border-bottom: 1px solid #444;
   margin-bottom: 0.5em;
+  margin-top: 2em;
 
   h2 {
     padding-bottom: 0;
     margin-top: 0;
+    font-weight: normal;
   }
-}
-
-.navbar-nav li.active a {
-  border-left: 2px solid #528bff;
 }
 
 /* Move down content because we have a fixed navbar that is 50px tall */
@@ -63,7 +136,12 @@ body {
  * Hide default border to remove 1px line.
  */
 .navbar-fixed-top {
-  border: 0;
+  /*border: 0;*/
+  background-color: #222;
+
+  .btn-link {
+    border: 0;
+  }
 }
 
 .sidebar {
@@ -111,14 +189,16 @@ a.subtle {
 
 .nav.nav-sidebar > li > a:hover,
 .nav.nav-sidebar > li > a:focus {
-  background-color: #31363f;
+  /*background-color: #31363f;*/
+  background-color: #3c3f41;
 }
 
 .nav.nav-sidebar > li.active > a,
 .nav.nav-sidebar > li.active > a:hover,
 .nav.nav-sidebar > li.active > a:focus {
   color: #fff;
-  background-color: #428bca;
+  /*background-color: #428bca;*/
+  /*background-color: #3c3f41;*/
 }
 
 ul.nav-sidebar-sub > li > a {
@@ -128,14 +208,16 @@ ul.nav-sidebar-sub > li > a {
 
 ul.nav.nav-sidebar-sub > li > a:hover,
 ul.nav.nav-sidebar-sub > li > a:focus {
-  background-color: #31363f;
+  /*background-color: #31363f;*/
+  background-color: #3c3f41;
 }
 
 ul.nav.nav-sidebar-sub > li.active > a,
 ul.nav.nav-sidebar-sub > li.active > a:hover,
 ul.nav.nav-sidebar-sub > li.active > a:focus {
   color: #fff;
-  background-color: #428bca;
+  /*background-color: #428bca;*/
+  background-color: #3c3f41;
 }
 
 .main {
@@ -151,6 +233,35 @@ ul.nav.nav-sidebar-sub > li.active > a:focus {
 
 .main .page-header {
   margin: 0;
+  color: #6f6f6f;
+  border-color: #6f6f6f;
+
+  & small {
+    color: #eee;
+  }
+}
+
+dt {
+  font-weight: normal !important;
+}
+
+dd {
+  /*color: #eac160;*/
+}
+
+dl.dl-left {
+  & dt {
+    text-align: left;
+  }
+}
+
+dl.dl-100 {
+  & dt {
+    width: 90px !important;
+  }
+  & dd {
+    margin-left: 100px !important;
+  }
 }
 
 .main h3 {

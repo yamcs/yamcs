@@ -19,6 +19,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.security.Privilege;
+import org.yamcs.utils.StringConvertors;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpHandler;
@@ -215,13 +216,19 @@ public abstract class RestHandler extends RouteHandler {
             p = mdb.getParameter(id);
         }
         
+        // It could also be a system parameter
+        if (p == null) {
+            String rootedName = pathName.startsWith("/") ? pathName : "/" + pathName;
+            p = mdb.getSystemParameterDb().getSystemParameter(rootedName, false);
+        }
+        
         if (p != null && !authorised(req, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
-            log.warn("Parameter {} found, but withheld due to insufficient privileges. Returning 404 instead", id);
+            log.warn("Parameter {} found, but withheld due to insufficient privileges. Returning 404 instead", StringConvertors.idToString(id));
             p = null;
         }
         
         if (p == null) {
-            throw new NotFoundException(req, "No such parameter  '"+id+"'");
+            throw new NotFoundException(req, "No parameter named " + StringConvertors.idToString(id));
         } else {
             return p;
         }
@@ -264,7 +271,7 @@ public abstract class RestHandler extends RouteHandler {
         }
         
         if (cmd != null && !authorised(req, Privilege.Type.TC, cmd.getQualifiedName())) {
-            log.warn("Command {} found, but withheld due to insufficient privileges. Returning 404 instead", id);
+            log.warn("Command {} found, but withheld due to insufficient privileges. Returning 404 instead", StringConvertors.idToString(id));
             cmd = null;
         }
         

@@ -11,13 +11,13 @@ import org.slf4j.LoggerFactory;
 
 /**
  * One-pass downsampler for time-series data (i.e. numeric archived parameters),
- * where the recorded data points are not known upfront.
+ * where the number of recorded data points are not known upfront.
  * <p>
  * The output is not a bunch of parameter values, but instead a range of values
  * limited to n, which should be fit for inclusion in plots.
  * <p>
- * This is *NOT* perfect. The range of returned times is not known upfront, so
- * we take a rough assumption based on the first result, and up until validEnd.
+ * This is *NOT* perfect. The range of returned items is not known upfront, so
+ * a rough assumption is made based on the first result, and up until validEnd.
  */
 public class RestDownsampler {
 
@@ -110,6 +110,10 @@ public class RestDownsampler {
     }
 
     public void process(org.yamcs.ParameterValue pval) {
+        if (pval.getParameter().getParameterType() == null) {
+            // FIXME Prevents flooding the log for non-numeric system parameters without a type
+            return;
+        }
         switch (pval.getEngValue().getType()) {
         case DOUBLE:
             process(pval.getGenerationTime(), pval.getEngValue().getDoubleValue());
