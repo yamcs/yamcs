@@ -8,7 +8,7 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-md-2">
-        <span style="font-size: 24px; font-weight: bolder; white-space: nowrap; color: #8c74ad">
+        <span style="font-size: 24px; font-weight: bolder; white-space: nowrap; color: #006f6f">
           <span ng-if="para">{{ para | stringValue }}</span>
           <span ng-if="!para">---</span>
           {{ info.type.unitSet | joinBy:'unit':' ' }}
@@ -88,7 +88,7 @@
 
     <div class="section" ng-if="isNumeric()">
       <div class="btn-toolbar pull-right" role="toolbar" style="margin-left: 0; padding-bottom: 0.5em;">
-        <div id="parameter-detail-legend" style="float: left;"></div>
+        <div id="parameter-detail-legend" style="float: left; padding-right: 2em;"></div>
         <div class="btn-group btn-group-xs" role="group" style="float: left;">
           <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'1h'">1h</label>
           <label class="btn btn-default" ng-model="plotctx.range" uib-btn-radio="'5h'">5h</label>
@@ -103,7 +103,7 @@
             <span class="glyphicon glyphicon-menu-down"></span>
           </button>
           <ul class="uib-dropdown-menu dropdown-menu-right">
-            <li><a href="#" ng-click="toggleGrid()">Toggle Grid</a></li>
+            <li><a href="#" ng-click="plotController.toggleGrid()">Toggle Grid</a></li>
             <!--li><a href="#">&#x2713; {{ info.name }}</a></li>
             <li role="separator" class="divider"></li>
             <li><a href="#" ng-click="addParameterModal()">Add Parameter...</a></li-->
@@ -124,7 +124,7 @@
 
     <div class="container-fluid" style="padding: 0;">
       <div class="col-md-9" style="padding-left: 0;">
-        <div class="section" style="margin-top: 1.5em;">
+        <div class="section">
           <div class="btn-toolbar pull-right" role="toolbar" style="margin-left: 0; padding-bottom: 0.5em;">
             <button ng-if="alarms.length" ng-click="expandAlarms()" class="btn btn-default btn-xs">▼ Expand All</button>
             <button ng-if="alarms.length" ng-click="collapseAlarms()" class="btn btn-default btn-xs">▶ Collapse All</button>
@@ -207,7 +207,7 @@
           </div>
         </div>
 
-        <div class="section" style="margin-top: 1em;">
+        <div class="section">
           <div class="btn-toolbar pull-right" ng-if="false && values.length">
             <div class="btn-group">
               <button type="button" class="btn btn-default btn-xs">Export CSV</button>
@@ -233,7 +233,7 @@
               {{ val.generationTimeUTC | parseUTC | formatDate:'pretty_short' }}
             </td>
             <td>{{ val | stringValue }} {{ info.type.unitSet | joinBy:'unit':' ' }}</td>
-            <td>{{ val | stringValue:true }}</td>
+            <td>{{ val | stringValue:true | nvl:'-' }}</td>
             <td></td>
             <td ng-if="val.monitoringResult">
               <img ng-src="/_static/_site/alarms/images/level{{ val.monitoringResult | monitoringLevel }}.png" uib-tooltip="{{ val.monitoringResult | monitoringValue }}">
@@ -245,7 +245,7 @@
         </table>
       </div>
       <div class="col-md-3" style="padding-right: 0;">
-        <div class="section" style="margin-top: 1.5em;" ng-if="para.monitoringResult != 'DISABLED'">
+        <div class="section" ng-if="para.monitoringResult != 'DISABLED'">
           <h2>Monitoring Definition</h2>
         </div>
 
@@ -296,7 +296,7 @@
           </dd>
         </dl>
 
-        <div class="section" style="margin-top: 1em;" ng-if="info.type.dataEncoding">
+        <div class="section" ng-if="info.type.dataEncoding">
           <h2>Packet Definition</h2>
         </div>
         <dl class="dl-horizontal dl-left dl-100" ng-if="info.type.dataEncoding">

@@ -22,6 +22,7 @@
         }];
 
         var loadingHistory = false;
+        var apparentlyNumericSystemParameter = false;
         var lastSamplePromiseCanceler;
 
         $scope.alarms = [];
@@ -72,14 +73,23 @@
                     // TODO tmService.unsubscribeParameter(subscriptionId);
                 });
 
-                /* TODO TEMP DONT COMMIT
                 tmService.getParameterHistory(qname, {
                     norepeat: true,
                     limit: 10
                 }).then(function (historyData) {
                     $scope.values = historyData['parameter'];
+
+                    // FIXME additional checks for system parameters which don't have a type :(
+                    if (qname.indexOf('/yamcs') === 0 && $scope.values.length > 0) {
+                        var valType = $scope.values[0]['engValue']['type'];
+                        if (valType === 'SINT64'
+                                || valType === 'UINT64'
+                                || valType === 'SINT32'
+                                || valType === 'UINT32') {
+                            apparentlyNumericSystemParameter = true;
+                        }
+                    }
                 });
-                */
 
                 $scope.activeAlarms = alarmsService.getActiveAlarms(); // Live collection
                 $scope.activeAlarm = alarmsService.getActiveAlarmForParameter(qname);
@@ -159,9 +169,6 @@
                 size: 'md'
             });
         };
-        $scope.toggleGrid = function() {
-            $scope.plotController.toggleGrid();
-        };
 
         $scope.expandAlarms = function() {
             for (var i = 0; i < $scope.alarms.length; i++) {
@@ -178,9 +185,10 @@
         $scope.isNumeric = function() {
             if ($scope.hasOwnProperty('info') && $scope.info.hasOwnProperty('type') && $scope.info.type.hasOwnProperty('engType')) {
                 return $scope.info.type.engType === 'float' || $scope.info.type.engType === 'integer';
-            } else {
-                return false;
+            } else if (apparentlyNumericSystemParameter) {
+                return true;
             }
+            return false;
         };
 
         function loadHistoricData(qname, period) {
@@ -216,7 +224,6 @@
                 before.setDate(now.getDate() - 365);
                 beforeIso = before.toISOString();
             }
-
 
             if (lastSamplePromiseCanceler) {
                 lastSamplePromiseCanceler.resolve();

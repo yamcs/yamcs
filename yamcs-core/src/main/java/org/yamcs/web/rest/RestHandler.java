@@ -1,14 +1,8 @@
 package org.yamcs.web.rest;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.protostuff.JsonIOUtil;
-import io.protostuff.Schema;
+import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
 
@@ -43,9 +37,16 @@ import org.yamcs.yarch.YarchDatabase;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.protobuf.MessageLite;
-import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.protostuff.JsonIOUtil;
+import io.protostuff.Schema;
 
 /**
  * Contains utility methods for REST handlers. May eventually refactor this out.
@@ -213,6 +214,12 @@ public abstract class RestHandler extends RouteHandler {
             // Maybe some non-xtce namespace like MDB:OPS Name
             id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
             p = mdb.getParameter(id);
+        }
+        
+        // It could also be a system parameter
+        if (p == null) {
+            String rootedName = pathName.startsWith("/") ? pathName : "/" + pathName;
+            p = mdb.getSystemParameterDb().getSystemParameter(rootedName, false);
         }
         
         if (p != null && !authorised(req, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {

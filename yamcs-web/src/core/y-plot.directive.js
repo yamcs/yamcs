@@ -215,7 +215,7 @@
                         t, [ pendingRealtime['min'], pendingRealtime['avg'], pendingRealtime['max']]
                     ];
 
-                    console.log('refresh plot from ' + pendingRealtime['n'] + ' points ... ', dypoint);
+                    //console.log('refresh plot from ' + pendingRealtime['n'] + ' points ... ', dypoint);
                     if (model.hasData) {
                         model.min_y = Math.min(model.min_y, dypoint[1][0]);
                         model.max_y = Math.max(model.max_y, dypoint[1][2]);
@@ -245,7 +245,7 @@
                 drawPoints: true,
                 showRoller: false,
                 customBars: true,
-                animatedZooms: true,
+                strokeWidth: 2,
                 gridLineColor: '#444',
                 axisLineColor: '#333',
                 axisLabelColor: '#666',
@@ -281,6 +281,12 @@
                             stopDate: new Date(maxDate)
                         });
                     }
+                },
+                drawHighlightPointCallback: function(g, seriesName, ctx, cx, cy, color, radius) {
+                    ctx.beginPath();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.arc(cx, cy, radius, 0, 2 * Math.PI, false);
+                    ctx.fill();
                 },
                 underlayCallback: function(canvasCtx, area, g) {
                     var prevAlpha = canvasCtx.globalAlpha;
@@ -379,7 +385,7 @@
         function calculateInitialPlotRange(pinfo) {
             var min = null;
             var max = null;
-            if (pinfo.hasOwnProperty('type') && pinfo['type'].hasOwnProperty('defaultAlarm')) {
+            if (pinfo && pinfo.hasOwnProperty('type') && pinfo['type'].hasOwnProperty('defaultAlarm')) {
                 var defaultAlarm = pinfo['type']['defaultAlarm'];
                 if (defaultAlarm.hasOwnProperty('staticAlarmRange')) {
                     defaultAlarm['staticAlarmRange'].forEach(function (range) {

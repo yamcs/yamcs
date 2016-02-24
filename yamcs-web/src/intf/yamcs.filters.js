@@ -42,6 +42,9 @@
             if (!param) return '';
             if(usingRaw) {
                 var rv = param.rawValue;
+                if (rv === undefined) {
+                    return '';
+                }
                 var res = '';
                 if (rv['type'] === 'STRING') res += '\'';
                 for(var idx in rv) {
@@ -87,6 +90,19 @@
                     return '';
             }
         }
+    })
+
+    /*
+        Replaces the input value with the replacemet if it is not set
+     */
+    .filter('nvl', function () {
+        return function (value, replacement) {
+            if (value === undefined || value === null) {
+                return replacement;
+            } else {
+                return value;
+            }
+        };
     })
 
     /*

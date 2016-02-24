@@ -17,17 +17,17 @@ import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterValueWithId;
+import org.yamcs.parameterarchive.ConsumerAbortException;
 import org.yamcs.parameterarchive.MultiParameterDataRetrieval;
 import org.yamcs.parameterarchive.MultipleParameterValueRequest;
 import org.yamcs.parameterarchive.ParameterArchive;
 import org.yamcs.parameterarchive.ParameterGroupIdDb;
 import org.yamcs.parameterarchive.ParameterIdDb;
+import org.yamcs.parameterarchive.ParameterIdDb.ParameterId;
 import org.yamcs.parameterarchive.ParameterIdValueList;
 import org.yamcs.parameterarchive.ParameterValueArray;
-import org.yamcs.parameterarchive.ParameterIdDb.ParameterId;
 import org.yamcs.parameterarchive.SingleParameterDataRetrieval;
 import org.yamcs.parameterarchive.SingleParameterValueRequest;
-import org.yamcs.parameterarchive.ConsumerAbortException;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.SchemaPvalue;
@@ -47,10 +47,7 @@ import org.yamcs.web.rest.RestParameterReplayListener;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.archive.RestDownsampler.Sample;
-import org.yamcs.xtce.FloatParameterType;
-import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
@@ -76,12 +73,16 @@ public class ArchiveParameter2RestHandler extends RestHandler {
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
         YProcessor realtimeProcessor = getRealtimeProc(instance, req);
 
+        /*
+        TODO check commented out, in order to support sampling system parameters
+        which don't have a type
+        
         ParameterType ptype = p.getParameterType();
         if (ptype == null) {
             throw new BadRequestException("Requested parameter has no type");
         } else if (!(ptype instanceof FloatParameterType) && !(ptype instanceof IntegerParameterType)) {
             throw new BadRequestException("Only integer or float parameters can be sampled. Got " + ptype.getTypeAsString());
-        }
+        }*/
 
         long start = req.getQueryParameterAsDate("start", 0);
         long stop = req.getQueryParameterAsDate("stop", TimeEncoding.getWallclockTime());
