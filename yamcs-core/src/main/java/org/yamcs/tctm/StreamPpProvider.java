@@ -7,7 +7,7 @@ import java.util.Map;
 import org.yamcs.YProcessor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;

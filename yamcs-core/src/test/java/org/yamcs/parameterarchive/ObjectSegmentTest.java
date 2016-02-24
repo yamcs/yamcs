@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 import java.nio.ByteBuffer;
 
 import org.junit.Test;
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Mdb.AlarmRange;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;

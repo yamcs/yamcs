@@ -3,7 +3,7 @@ package org.yamcs.xtceproc;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 import org.yamcs.xtce.Argument;
 
 /**

@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.Parameter;
 
 /**

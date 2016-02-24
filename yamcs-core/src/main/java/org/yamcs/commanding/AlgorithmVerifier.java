@@ -8,7 +8,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.InvalidCommandId;
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.Value;
 import org.yamcs.YProcessor;
 import org.yamcs.algorithms.AlgorithmExecListener;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
@@ -17,7 +18,7 @@ import org.yamcs.cmdhistory.CommandHistoryConsumer;
 import org.yamcs.commanding.CommandVerificationHandler.VerifResult;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.CommandVerifier;
@@ -59,7 +60,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
             Parameter p = xtcedb.getSystemParameterDb().getSystemParameter(fqn, true);
 
             ParameterValue pv = new ParameterValue(p);
-            pv.setEngineeringValue(cha.getValue());
+            pv.setEngineeringValue(ValueUtility.fromGpb(cha.getValue()));
             pvList.add(pv);
         }
         Map<Argument, Value> argAssignment = pc.getArgAssignment();

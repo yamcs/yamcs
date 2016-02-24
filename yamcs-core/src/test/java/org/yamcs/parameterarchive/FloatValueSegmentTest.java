@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.ValueUtility;
 

@@ -2,6 +2,8 @@ package org.yamcs;
 
 import java.util.ArrayList;
 
+import org.yamcs.parameter.ParameterValue;
+
 /**
  * Used by the ParameterRequestManager to deliver parameters.
  * 

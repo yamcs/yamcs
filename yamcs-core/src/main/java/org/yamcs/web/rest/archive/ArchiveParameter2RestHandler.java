@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.YProcessor;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
@@ -132,11 +132,11 @@ public class ArchiveParameter2RestHandler extends RestHandler {
 
     private void sampleDataFromCache(ParameterCache pcache, Parameter p, long start, long stop, RestDownsampler sampler) {
         //grab some data from the realtime processor cache
-        List<org.yamcs.ParameterValue> pvlist = pcache.getAllValues(p);
+        List<org.yamcs.parameter.ParameterValue> pvlist = pcache.getAllValues(p);
         if(pvlist!=null) {
             int n = pvlist.size();
             for(int i = n-1; i>=0; i--) {
-                org.yamcs.ParameterValue pv = pvlist.get(i);
+                org.yamcs.parameter.ParameterValue pv = pvlist.get(i);
                 if(pv.getGenerationTime() < start) continue;
                 if(pv.getGenerationTime() > stop) break;
                 if(pv.getGenerationTime() > sampler.lastSampleTime()) {
@@ -363,7 +363,7 @@ public class ArchiveParameter2RestHandler extends RestHandler {
         if(ascending) {
             int n = pvlist.size();
             for(int i = n-1; i>=0 ; i-- ) {
-                org.yamcs.ParameterValue pv = pvlist.get(i);
+                org.yamcs.parameter.ParameterValue pv = pvlist.get(i);
                 if(pv.getGenerationTime() >= stop) break;
                 if(pv.getGenerationTime()> start) {
                     replayListener.update(new ParameterValueWithId(pv, id));

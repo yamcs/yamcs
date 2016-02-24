@@ -3,7 +3,7 @@ package org.yamcs.parameterarchive;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 
 class MyValueConsummer implements Consumer<TimedValue> {
     ArrayList<Long> times = new ArrayList<>();

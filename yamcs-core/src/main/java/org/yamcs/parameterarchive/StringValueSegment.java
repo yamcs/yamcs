@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.ValueUtility;
 

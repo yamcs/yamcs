@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
 
@@ -19,7 +19,7 @@ public class ParameterCacheTest {
     @Test
     public void test1() {
         ParameterCacheConfig pcc = new ParameterCacheConfig(true, true, 1000, 4096);
-        //100 ms
+       
         ParameterCache pcache = new ParameterCache(pcc); //1 second
         assertNull(pcache.getLastValue(p1));
         
@@ -275,13 +275,13 @@ public class ParameterCacheTest {
     
     ParameterValue getUint64ParameterValue(Parameter p, long t) {
         ParameterValue pv = new ParameterValue(p);
-        pv.setAcquisitionTime(t);
+        pv.setGenerationTime(t);
         pv.setEngineeringValue(ValueUtility.getUint64Value(t));
         return pv;
     }
     ParameterValue getParameterValue(Parameter p, long timestamp) {
         ParameterValue pv = new ParameterValue(p);
-        pv.setAcquisitionTime(timestamp);
+        pv.setGenerationTime(timestamp);
         pv.setEngineeringValue(ValueUtility.getStringValue(p.getName()+"_"+timestamp));
         return pv;
     }

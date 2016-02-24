@@ -1,16 +1,16 @@
 package org.yamcs.commanding;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.yamcs.cmdhistory.CommandHistoryFilter;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.protobuf.ValueHelper;
+import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.parameter.Value;
 import org.yamcs.tctm.TcUplinkerAdapter;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Argument;
@@ -84,8 +84,8 @@ public class PreparedCommand {
 
     public String getStringAttribute(String attrname) {
         CommandHistoryAttribute a=getAttribute(attrname);
-        Value v = a.getValue();
-        if((a!=null) && (v.getType()==Value.Type.STRING)) return v.getStringValue();
+        Value v = ValueUtility.fromGpb(a.getValue());
+        if((a!=null) && (v.getType()==Type.STRING)) return v.getStringValue();
         return null;
     }
 
@@ -131,7 +131,7 @@ public class PreparedCommand {
         }
         
         for(CommandHistoryAttribute a:attributes) {
-            td.addColumn(a.getName(), ValueUtility.getYarchType(a.getValue()));
+            td.addColumn(a.getName(), ValueUtility.getYarchType(a.getValue().getType()));
             al.add(ValueUtility.getYarchValue(a.getValue()));
         }
         Tuple t =  new Tuple(td, al.toArray());
@@ -159,10 +159,11 @@ public class PreparedCommand {
         for(int i=0;i<t.size();i++) {
             ColumnDefinition cd=t.getColumnDefinition(i);
             String name=cd.getName();
+            Value v = ValueUtility.getColumnValue(cd, t.getColumn(i));
             if(CNAME_GENTIME.equals(name) || CNAME_ORIGIN.equals(name) || CNAME_SEQNUM.equals(name)) continue;
             CommandHistoryAttribute a=CommandHistoryAttribute.newBuilder()
                     .setName(name)
-                    .setValue(ValueUtility.getColumnValue(cd, t.getColumn(i)))
+                    .setValue(ValueUtility.toGbp(v))
                     .build();
             pc.attributes.add(a);
         }
@@ -193,7 +194,7 @@ public class PreparedCommand {
         }
         CommandHistoryAttribute a=CommandHistoryAttribute.newBuilder()
                 .setName(name)
-                .setValue(ValueUtility.getStringValue(value))
+                .setValue(ValueHelper.newValue(value))
                 .build();
         if(i<attributes.size()) {
             attributes.set(i, a);
@@ -205,7 +206,7 @@ public class PreparedCommand {
     public void addStringAttribute(String name, String value) {
         CommandHistoryAttribute a=CommandHistoryAttribute.newBuilder()
                 .setName(name)
-                .setValue(ValueUtility.getStringValue(value))
+                .setValue(ValueHelper.newValue(value))
                 .build();
         attributes.add(a);
     }

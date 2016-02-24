@@ -3,7 +3,7 @@ package org.yamcs.parameterarchive;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.StringConvertors;
 import org.yamcs.utils.TimeEncoding;

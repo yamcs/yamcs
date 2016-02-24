@@ -3,7 +3,7 @@ package org.yamcs.parameterarchive;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.utils.VarIntUtil;

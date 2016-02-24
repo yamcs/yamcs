@@ -2,9 +2,9 @@ package org.yamcs.parameterarchive;
 
 import static org.junit.Assert.*;
 
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
-import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;

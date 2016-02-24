@@ -55,7 +55,7 @@ public class CommandHistoryReplayHandler implements ReplayHandler {
                 ||PreparedCommand.CNAME_CMDNAME.equals(name)) continue;
             che.addAttr(CommandHistoryAttribute.newBuilder()
                     .setName(name)
-                    .setValue(ValueUtility.getColumnValue(cd, t.getColumn(i)))
+                    .setValue(ValueUtility.toGbp(ValueUtility.getColumnValue(cd, t.getColumn(i))))
                     .build());
         }
         return che.build();

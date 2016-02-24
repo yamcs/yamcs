@@ -1,7 +1,17 @@
 package org.yamcs.utils;
 
-import org.yamcs.protobuf.ValueHelper;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.parameter.BinaryValue;
+import org.yamcs.parameter.BooleanValue;
+import org.yamcs.parameter.DoubleValue;
+import org.yamcs.parameter.FloatValue;
+import org.yamcs.parameter.SInt32Value;
+import org.yamcs.parameter.SInt64Value;
+import org.yamcs.parameter.StringValue;
+import org.yamcs.parameter.TimestampValue;
+import org.yamcs.parameter.UInt32Value;
+import org.yamcs.parameter.UInt64Value;
+import org.yamcs.parameter.Value;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 
@@ -9,47 +19,47 @@ import com.google.protobuf.ByteString;
 
 public class ValueUtility {
     public static Value getUint32Value(int x) {
-        return Value.newBuilder().setType(Value.Type.UINT32).setUint32Value(x).build(); 
+        return new UInt32Value(x); 
     }
 
     public static Value getSint32Value(int x) {
-        return Value.newBuilder().setType(Value.Type.SINT32).setSint32Value(x).build(); 
+        return new SInt32Value(x); 
     }
 
     public static Value getUint64Value(long x) {
-        return Value.newBuilder().setType(Value.Type.UINT64).setUint64Value(x).build(); 
+        return new UInt64Value(x); 
     }
 
     public static Value getSint64Value(long x) {
-        return Value.newBuilder().setType(Value.Type.SINT64).setSint64Value(x).build(); 
+        return new SInt64Value(x); 
     }
 
     public static Value getStringValue(String x) {
-        return Value.newBuilder().setType(Value.Type.STRING).setStringValue(x).build(); 
+        return new StringValue(x); 
     }
 
     public static Value getBinaryValue(byte[] x) {
-        return Value.newBuilder().setType(Value.Type.BINARY).setBinaryValue(ByteString.copyFrom(x)).build(); 
+        return new BinaryValue(x); 
     }
 
     public static Value getTimestampValue(long x) {
-        return Value.newBuilder().setType(Value.Type.TIMESTAMP).setTimestampValue(x).build(); 
+        return new TimestampValue(x); 
     }
-    
+
 
     public static Value getBooleanValue(boolean b) {
-        return Value.newBuilder().setType(Value.Type.BOOLEAN).setBooleanValue(b).build(); 
+        return new BooleanValue(b); 
     }
-    
+
 
     public static Value getFloatValue(float f) {
-        return Value.newBuilder().setType(Value.Type.FLOAT).setFloatValue(f).build();
+        return new FloatValue(f); 
     }
-    
+
     public static Value getDoubleValue(double d) {
-        return Value.newBuilder().setType(Value.Type.DOUBLE).setDoubleValue(d).build();
+        return new DoubleValue(d);
     }
-    
+
     public static Value getColumnValue(ColumnDefinition cd, Object v) {
         switch (cd.getType().val) { //TODO all types
         case INT:
@@ -57,11 +67,11 @@ public class ValueUtility {
         case STRING:
             return getStringValue((String)v);
         case TIMESTAMP:
-            return ValueHelper.newTimestampValue((Long)v);
+            return getTimestampValue((Long)v);
         case BINARY:
             return getBinaryValue((byte[])v);
         case BOOLEAN:
-            return ValueHelper.newValue((Boolean)v);
+            return getBooleanValue((Boolean)v);
         }
         throw new RuntimeException("cannot convert type to value "+cd.getType());
     }
@@ -70,7 +80,7 @@ public class ValueUtility {
     public static Object getYarchValue(Value v) {
         switch(v.getType()) {
         case BINARY:
-            return v.getBinaryValue().toByteArray();
+            return v.getBinaryValue();
         case SINT32:
             return v.getSint32Value();
         case UINT32:
@@ -92,9 +102,35 @@ public class ValueUtility {
         }
         throw new RuntimeException("cannot values of type "+v.getType());
     }
-    
-    public static DataType getYarchType(Value v) {
+
+    public static Object getYarchValue(org.yamcs.protobuf.Yamcs.Value v) {
         switch(v.getType()) {
+        case BINARY:
+            return v.getBinaryValue();
+        case SINT32:
+            return v.getSint32Value();
+        case UINT32:
+            return v.getUint32Value();
+        case DOUBLE:
+            return v.getDoubleValue();
+        case FLOAT:
+            return (double)v.getFloatValue();
+        case STRING:
+            return v.getStringValue();
+        case TIMESTAMP:
+            return v.getTimestampValue();
+        case BOOLEAN:
+            return v.getBooleanValue();
+        case SINT64:
+            return v.getSint64Value();
+        case UINT64:
+            return v.getSint64Value();
+        }
+        throw new RuntimeException("cannot values of type "+v.getType());
+    }
+
+    public static DataType getYarchType(Type type) {
+        switch(type) {
         case BINARY:
             return DataType.BINARY;
         case SINT32:
@@ -110,7 +146,7 @@ public class ValueUtility {
         case TIMESTAMP:
             return DataType.TIMESTAMP;
         }
-        throw new RuntimeException("cannot values of type "+v.getType());
+        throw new RuntimeException("cannot values of type "+type);
     }
     
     public static boolean equals(Value a, Value b) {
@@ -120,7 +156,7 @@ public class ValueUtility {
             return true;
         if (a.getType() != b.getType())
             return false;
-        
+
         switch (a.getType()) {
         case BINARY:
             return a.getBinaryValue().equals(b.getBinaryValue());
@@ -146,7 +182,7 @@ public class ValueUtility {
             throw new IllegalStateException("Unexpected type " + a.getType());
         }
     }
-    
+
     // Not perfect. Should also compare compatible types
     public static int compare(Value a, Value b) {
         if (a == null ^ b == null)
@@ -155,7 +191,7 @@ public class ValueUtility {
             return 0;
         if (a.getType() != b.getType())
             return a.getType().compareTo(b.getType());
-        
+
         switch (a.getType()) {
         case BINARY:
             return String.valueOf(a).compareTo(String.valueOf(b)); // TODO ?
@@ -181,4 +217,62 @@ public class ValueUtility {
             throw new IllegalStateException("Unexpected type " + a.getType());
         }
     }
+
+    public static org.yamcs.protobuf.Yamcs.Value toGbp(Value v) {
+        org.yamcs.protobuf.Yamcs.Value.Builder b = org.yamcs.protobuf.Yamcs.Value.newBuilder();
+        b.setType(v.getType());
+        switch (v.getType()) {
+        case BINARY:
+            return b.setBinaryValue(ByteString.copyFrom(v.getBinaryValue())).build();
+        case BOOLEAN:
+            return b.setBooleanValue(v.getBooleanValue()).build();
+        case DOUBLE:
+            return b.setDoubleValue(v.getDoubleValue()).build();
+        case FLOAT:
+            return b.setFloatValue(v.getFloatValue()).build();
+        case SINT32:
+            return b.setSint32Value(v.getSint32Value()).build();
+        case SINT64:
+            return b.setSint64Value(v.getSint64Value()).build();
+        case STRING:
+            return b.setStringValue(v.getStringValue()).build();
+        case TIMESTAMP:
+            return b.setTimestampValue(v.getTimestampValue()).build();
+        case UINT32:
+            return b.setUint32Value(v.getUint32Value()).build();
+        case UINT64:
+            return b.setUint64Value(v.getUint64Value()).build();
+        default:
+            throw new IllegalStateException("Unexpected type " + v.getType());
+        }
+    }
+
+    public static Value fromGpb(org.yamcs.protobuf.Yamcs.Value v) {
+        switch (v.getType()) {
+        case BINARY:
+            return new BinaryValue(v.getBinaryValue().toByteArray());
+        case BOOLEAN:
+            return new BooleanValue(v.getBooleanValue());
+        case DOUBLE:
+            return new DoubleValue(v.getDoubleValue());
+        case FLOAT:
+            return new FloatValue(v.getFloatValue());
+        case SINT32:
+            return new SInt32Value(v.getSint32Value());
+        case SINT64:
+            return new SInt64Value(v.getSint64Value());
+        case STRING:
+            return new StringValue(v.getStringValue());
+        case TIMESTAMP:
+            return new TimestampValue(v.getTimestampValue());
+        case UINT32:
+            return new UInt32Value(v.getUint32Value());
+        case UINT64:
+            return new UInt64Value(v.getUint64Value());
+        default:
+            throw new IllegalStateException("Unexpected type " + v.getType());
+        }
+    }
+
+   
 }

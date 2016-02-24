@@ -2,7 +2,7 @@ package org.yamcs.alarms;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.TimeEncoding;
 
 public class ActiveAlarm {

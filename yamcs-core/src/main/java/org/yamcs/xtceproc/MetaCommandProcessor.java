@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.yamcs.ErrorInCommand;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentType;

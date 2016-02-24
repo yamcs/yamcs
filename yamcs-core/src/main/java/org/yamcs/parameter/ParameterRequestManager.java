@@ -2,7 +2,7 @@ package org.yamcs.parameter;
 
 import java.util.Collection;
 
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 
 /**
  * This is the ParameterRequestManager

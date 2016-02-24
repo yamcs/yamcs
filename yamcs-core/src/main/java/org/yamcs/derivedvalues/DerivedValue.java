@@ -1,6 +1,6 @@
 package org.yamcs.derivedvalues;
 
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.xml.XtceAliasSet;

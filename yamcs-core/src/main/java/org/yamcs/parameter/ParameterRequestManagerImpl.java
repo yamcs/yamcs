@@ -16,7 +16,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.YProcessor;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;

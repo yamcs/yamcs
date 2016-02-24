@@ -109,7 +109,7 @@ public class RestDownsampler {
         }
     }
 
-    public void process(org.yamcs.ParameterValue pval) {
+    public void process(org.yamcs.parameter.ParameterValue pval) {
         if (pval.getParameter().getParameterType() == null) {
             // FIXME Prevents flooding the log for non-numeric system parameters without a type
             return;

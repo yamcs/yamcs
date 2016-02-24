@@ -7,12 +7,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.AlarmReporter;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.AlarmType;
@@ -125,13 +126,13 @@ public class AlarmChecker {
 
     private void performAlarmCheckingInteger(IntegerParameterType ipt, ParameterValue pv, CriteriaEvaluator criteriaEvaluator) {
         long intCalValue=0;
-        if(pv.getEngValue().hasSint32Value()) {
+        if(pv.getEngValue().getType()==Type.SINT32) {
             intCalValue=pv.getEngValue().getSint32Value();
-        } else if(pv.getEngValue().hasUint32Value()) { 
+        } else if(pv.getEngValue().getType()==Type.UINT32) { 
             intCalValue=0xFFFFFFFFL & pv.getEngValue().getUint32Value();
-        } else if(pv.getEngValue().hasSint64Value()) {
+        } else if(pv.getEngValue().getType()==Type.SINT64) {
             intCalValue=pv.getEngValue().getSint64Value();
-        } else if(pv.getEngValue().hasUint64Value()) {
+        } else if(pv.getEngValue().getType()==Type.UINT64) {
             intCalValue=pv.getEngValue().getUint64Value();
         } else {
             throw new IllegalStateException("Unexpected integer value");
@@ -179,9 +180,9 @@ public class AlarmChecker {
 
     private void performAlarmCheckingFloat(FloatParameterType fpt, ParameterValue pv, CriteriaEvaluator criteriaEvaluator) {
         double doubleCalValue=0;
-        if(pv.getEngValue().hasFloatValue()) {
+        if(pv.getEngValue().getType()==Type.FLOAT) {
             doubleCalValue=pv.getEngValue().getFloatValue();
-        } else if(pv.getEngValue().hasDoubleValue()) {
+        } else if(pv.getEngValue().getType()==Type.DOUBLE) {
             doubleCalValue=pv.getEngValue().getDoubleValue();
         } else {
             throw new IllegalStateException("Unexpected float value");

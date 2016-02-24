@@ -11,12 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.ParameterValue;
 import org.yamcs.YProcessor;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.NamedDescriptionIndex;
 import org.yamcs.xtce.Parameter;
@@ -74,7 +73,7 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
         for(org.yamcs.protobuf.Pvalue.ParameterValue gpv: gpvList) {
             Parameter p = getParam(gpv.getId());
             if(subscribedParams.contains(p)) {
-                org.yamcs.ParameterValue pv =  org.yamcs.ParameterValue.fromGpb(p, gpv);
+                org.yamcs.parameter.ParameterValue pv =  org.yamcs.parameter.ParameterValue.fromGpb(p, gpv);
                 long t;
                 if(yproc!=null) {
                     t=yproc.getCurrentTime();
@@ -114,7 +113,7 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
             if(p==null) {
                 throw new IllegalArgumentException("Cannot find a local(software) parameter for '"+gpv.getId()+"'");
             }
-            ParameterTypeProcessor.checkEngValueAssignment(p, gpv.getEngValue());
+            ParameterTypeProcessor.checkEngValueAssignment(p, ValueUtility.fromGpb(gpv.getEngValue()));
         }
         //then filter out the subscribed ones and send it to PRM
         executor.submit(new Runnable() {

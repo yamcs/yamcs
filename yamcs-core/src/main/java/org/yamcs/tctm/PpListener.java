@@ -2,7 +2,7 @@ package org.yamcs.tctm;
 
 import java.util.Collection;
 
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 
 
 public interface PpListener {

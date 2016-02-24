@@ -4,7 +4,7 @@ import java.nio.ByteOrder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BooleanDataEncoding;
 import org.yamcs.xtce.DataEncoding;

@@ -3,9 +3,9 @@ package org.yamcs.web.rest;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 import org.yamcs.utils.ValueUtility;
 
 

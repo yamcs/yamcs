@@ -4,7 +4,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.yarch.streamsql.NotSupportedException;
 
 import org.yamcs.xtce.BinaryDataEncoding;
