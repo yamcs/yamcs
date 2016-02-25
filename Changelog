@@ -5,6 +5,7 @@ Version 0.29.3 Released
 - implemented realtimeFiller for the parameter archive
 - un-hardcoded the stream names in the PpRecorder such that system parameters can also be recorded
 - various web improvements
+- replaced internal use of protbuf Value with java org.yamcs.parameter.Value to reduce memory usage
 
 Version 0.29.2 Released 19-Feb-2015
 - implemented ParameterArchive
