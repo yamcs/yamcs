@@ -283,10 +283,8 @@ public class YamcsServer {
         });
         if(System.getenv("YAMCS_DAEMON")==null) {
             staticlog.info("Server running... press ctrl-c to stop");
-        }
-        else
-        {
-            staticlog.info("yamcsstartup success");
+        } else {//the init.d/yamcs-server depends on this line on the standard output, do not change it (without changing the script also)!
+            System.out.println("yamcsstartup success");
         }
     }
 
