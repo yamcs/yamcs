@@ -2,7 +2,7 @@ package org.yamcs.cmdhistory;
 
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 
 /**
  * Interface implemented by all the classes that want to receive command history events.

@@ -4,7 +4,7 @@ package org.yamcs.xtceproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ErrorInCommand;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 import org.yamcs.xtce.*;
 
 public class MetaCommandContainerProcessor {

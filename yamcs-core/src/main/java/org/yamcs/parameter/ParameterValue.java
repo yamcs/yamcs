@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.parameter;
 
 import java.util.List;
 
@@ -8,13 +8,11 @@ import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.FloatRange;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
-
-import com.google.protobuf.ByteString;
 
 /** 
  * Holds the value of a parameter
@@ -214,93 +212,75 @@ public class ParameterValue {
     }
 
     public void setRawValue(byte[] b) {
-        rawValue=Value.newBuilder().setType(Value.Type.BINARY)
-                .setBinaryValue(ByteString.copyFrom(b)).build();
+        rawValue = new BinaryValue(b);
     }
 
     public void setRawValue(float f) {
-        rawValue=Value.newBuilder().setType(Value.Type.FLOAT)
-                .setFloatValue(f).build();
+        rawValue = new FloatValue(f);
     }
 
     public void setRawValue(double d) {
-        rawValue=Value.newBuilder().setType(Value.Type.DOUBLE)
-                .setDoubleValue(d).build();
+        rawValue = new DoubleValue(d);
     }
 
     public void setRawValue(boolean b) {
-        rawValue=Value.newBuilder().setType(Value.Type.BOOLEAN)
-                .setBooleanValue(b).build();
+        rawValue = new BooleanValue(b);
     }
 
     public void setRawValue(String s) {
-        rawValue=Value.newBuilder().setType(Value.Type.STRING)
-                .setStringValue(s).build();
+        rawValue = new StringValue(s);
     }
 
     public void setRawSignedInteger(int x) {
-        rawValue=Value.newBuilder().setType(Value.Type.SINT32)
-                .setSint32Value(x).build();
+        rawValue = new SInt32Value(x);
     }
 
     public void setRawUnsignedInteger(int x) {
-        rawValue=Value.newBuilder().setType(Value.Type.UINT32)
-                .setUint32Value(x).build();
+        rawValue = new UInt32Value(x);
     }
 
     public void setRawSignedLong(long x) {
-        rawValue=Value.newBuilder().setType(Value.Type.SINT64)
-                .setSint64Value(x).build();
+        rawValue = new SInt64Value(x);
     }
 
     public void setRawUnsignedLong(long x) {
-        rawValue=Value.newBuilder().setType(Value.Type.UINT64)
-                .setUint64Value(x).build();
+        rawValue = new UInt64Value(x);
     }
 
     public void setStringValue(String s) {
-        engValue=Value.newBuilder().setType(Value.Type.STRING)
-                .setStringValue(s).build();
+        engValue = new StringValue(s);
     }
 
     public void setBinaryValue(byte[] v) {
-        engValue = Value.newBuilder().setType(Value.Type.BINARY)
-                .setBinaryValue(ByteString.copyFrom(v)).build();
+        engValue = new BinaryValue(v);
     }
 
     public void setBooleanValue(boolean b) {
-        engValue = Value.newBuilder().setType(Value.Type.BOOLEAN)
-                .setBooleanValue(b).build();
+        engValue = new BooleanValue(b);
     }
 
     public void setDoubleValue(double v) {
-        engValue = Value.newBuilder().setType(Value.Type.DOUBLE)
-                .setDoubleValue(v).build();
+        engValue = new DoubleValue(v);
     }
 
     public void setFloatValue(float v) {
-        engValue = Value.newBuilder().setType(Value.Type.FLOAT)
-                .setFloatValue(v).build();
+        engValue = new FloatValue(v);
     }
 
     public void setSignedIntegerValue(int v) {
-        engValue = Value.newBuilder().setType(Value.Type.SINT32)
-                .setSint32Value(v).build();
+        engValue = new SInt32Value(v);
     }
 
     public void setUnsignedIntegerValue(int v) {
-        engValue = Value.newBuilder().setType(Value.Type.UINT32)
-                .setUint32Value(v).build();
+        engValue = new UInt32Value(v);
     }
 
     public void setSignedLongValue(long v) {
-        engValue = Value.newBuilder().setType(Value.Type.SINT64)
-                .setSint64Value(v).build();
+        engValue = new SInt64Value(v);
     }
 
     public void setUnsignedLongValue(long v) {
-        engValue = Value.newBuilder().setType(Value.Type.UINT64)
-                .setUint64Value(v).build();
+        engValue = new UInt64Value(v);
     }
 
     public void setEngineeringValue(Value ev) {
@@ -329,7 +309,7 @@ public class ParameterValue {
             gpvb.setAcquisitionTime(acquisitionTime);
         }
         if(engValue!=null) {
-            gpvb.setEngValue(engValue);
+            gpvb.setEngValue(ValueUtility.toGbp(engValue));
         }
         if(monitoringResult!=null) {
             gpvb.setMonitoringResult(monitoringResult);
@@ -362,7 +342,7 @@ public class ParameterValue {
             gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.SEVERE, severeRange));
 
         if(id!=null) gpvb.setId(id);
-        if(getRawValue()!=null) gpvb.setRawValue(getRawValue());
+        if(rawValue!=null) gpvb.setRawValue(ValueUtility.toGbp(rawValue));
         return gpvb.build();
     }
 
@@ -380,7 +360,7 @@ public class ParameterValue {
         ParameterValue pv=new ParameterValue(pdef);
 
         pv.setAcquisitionStatus(gpv.getAcquisitionStatus());
-        pv.setEngineeringValue(gpv.getEngValue());
+        pv.setEngineeringValue(ValueUtility.fromGpb(gpv.getEngValue()));
 
         if(gpv.hasAcquisitionTime()) {
             pv.setAcquisitionTime(gpv.getAcquisitionTime());
@@ -402,7 +382,7 @@ public class ParameterValue {
         pv.setProcessingStatus(gpv.getProcessingStatus());
 
         if(gpv.hasRawValue()) {
-            pv.setRawValue(gpv.getRawValue());
+            pv.setRawValue(ValueUtility.fromGpb(gpv.getRawValue()));
         }
         return pv;
     }

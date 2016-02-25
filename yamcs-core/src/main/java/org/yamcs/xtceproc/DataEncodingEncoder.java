@@ -5,7 +5,7 @@ import java.nio.ByteOrder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.DataEncoding;
@@ -243,7 +243,7 @@ public class DataEncodingEncoder {
         }
         byte[] v;
         if(rawValue.getType()==Type.BINARY) {
-            v = rawValue.getBinaryValue().toByteArray(); 
+            v = rawValue.getBinaryValue(); 
         } else if (rawValue.getType() == Type.STRING) {
             v = rawValue.getStringValue().getBytes(); //TBD encoding
         } else {

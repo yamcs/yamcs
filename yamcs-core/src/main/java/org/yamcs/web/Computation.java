@@ -2,7 +2,7 @@ package org.yamcs.web;
 
 import java.util.Map;
 
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 
 public interface Computation {

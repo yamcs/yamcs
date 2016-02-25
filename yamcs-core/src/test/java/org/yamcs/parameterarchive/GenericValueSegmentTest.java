@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 import java.nio.ByteBuffer;
 
 import org.junit.Test;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 import org.yamcs.utils.ValueUtility;
 
 public class GenericValueSegmentTest {

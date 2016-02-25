@@ -1,6 +1,6 @@
 package org.yamcs.algorithms;
 
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.StringConvertors;
 
 /**

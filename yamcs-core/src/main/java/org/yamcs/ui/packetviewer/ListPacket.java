@@ -7,7 +7,7 @@ import java.io.IOException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.xtce.Parameter;
 

@@ -3,7 +3,7 @@ package org.yamcs.parameterarchive;
 import java.util.function.Consumer;
 
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 
 public class SegmentIterator {
     final SortedTimeSegment timeSegment;

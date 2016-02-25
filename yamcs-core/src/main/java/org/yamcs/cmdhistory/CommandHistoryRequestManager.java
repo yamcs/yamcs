@@ -15,7 +15,8 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.yarch.Stream;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -166,7 +167,7 @@ public class CommandHistoryRequestManager extends AbstractService {
             throw new InvalidCommandId("received an update for a command not in my active list: "+cmdId      );
         }
 
-        CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder().setName(key).setValue(value).build();
+        CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder().setName(key).setValue(ValueUtility.toGbp(value)).build();
         CommandHistoryEntry che1 = CommandHistoryEntry.newBuilder(che).addAttr(cha).build();
         activeCommands.put(cmdId, che1);
 

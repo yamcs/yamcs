@@ -2,7 +2,7 @@ package org.yamcs.parameter;
 
 import java.util.List;
 
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 
 /**
  * Used by the ParameterRequestManager to deliver parameters

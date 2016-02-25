@@ -28,9 +28,10 @@ import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
@@ -90,7 +91,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
         
-        Value v = req.bodyAsMessage(SchemaYamcs.Value.MERGE).build();
+        Value v = ValueUtility.fromGpb(req.bodyAsMessage(SchemaYamcs.Value.MERGE).build());
         try {
             mgr.updateParameter(p, v);
         } catch (IllegalArgumentException e) {

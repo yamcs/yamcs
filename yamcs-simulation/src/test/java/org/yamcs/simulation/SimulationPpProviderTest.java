@@ -15,7 +15,7 @@ import javax.xml.bind.Marshaller;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;

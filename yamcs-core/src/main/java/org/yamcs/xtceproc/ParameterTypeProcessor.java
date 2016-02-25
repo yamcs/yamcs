@@ -4,9 +4,9 @@ import java.nio.ByteBuffer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.BinaryParameterType;
@@ -33,14 +33,14 @@ public class ParameterTypeProcessor {
         this.pcontext=pcontext;
     }
 
-    static Multimap<Class<? extends ParameterType>, Value.Type> allowedAssignments = 
-	    new ImmutableSetMultimap.Builder<Class<? extends ParameterType>, Value.Type>()
-	    	   .putAll(BinaryParameterType.class, Value.Type.BINARY)
-	           .putAll(BooleanParameterType.class, Value.Type.BOOLEAN)
-	    	   .putAll(EnumeratedParameterType.class, Value.Type.STRING)
-	           .putAll(FloatParameterType.class, Value.Type.FLOAT, Value.Type.DOUBLE)
-	           .putAll(IntegerParameterType.class, Value.Type.UINT32, Value.Type.SINT32, Value.Type.SINT64, Value.Type.UINT64)
-	           .putAll(StringParameterType.class, Value.Type.STRING)
+    static Multimap<Class<? extends ParameterType>, org.yamcs.protobuf.Yamcs.Value.Type> allowedAssignments = 
+	    new ImmutableSetMultimap.Builder<Class<? extends ParameterType>, org.yamcs.protobuf.Yamcs.Value.Type>()
+	    	   .putAll(BinaryParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.BINARY)
+	           .putAll(BooleanParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.BOOLEAN)
+	    	   .putAll(EnumeratedParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.STRING)
+	           .putAll(FloatParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.FLOAT, org.yamcs.protobuf.Yamcs.Value.Type.DOUBLE)
+	           .putAll(IntegerParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.UINT32, org.yamcs.protobuf.Yamcs.Value.Type.SINT32, org.yamcs.protobuf.Yamcs.Value.Type.SINT64, org.yamcs.protobuf.Yamcs.Value.Type.UINT64)
+	           .putAll(StringParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.STRING)
 	           .build();
 	    
     
@@ -127,7 +127,7 @@ public class ParameterTypeProcessor {
         } else if (rawValue.getType() == Type.BOOLEAN) {
             pval.setBooleanValue(rawValue.getBooleanValue());
         } else if (rawValue.getType() == Type.BINARY) {
-            ByteBuffer buf=rawValue.getBinaryValue().asReadOnlyByteBuffer();
+            ByteBuffer buf = ByteBuffer.wrap(rawValue.getBinaryValue());
             pval.setBooleanValue(false);
             while(buf.hasRemaining()) {
                 if(buf.get()!=0xFF) {
@@ -141,7 +141,7 @@ public class ParameterTypeProcessor {
     }
 
     private static void calibrateBinary(BinaryParameterType bpt, ParameterValue pval) {
-        pval.setBinaryValue(pval.getRawValue().getBinaryValue().toByteArray());
+        pval.setBinaryValue(pval.getRawValue().getBinaryValue());
     }
 
     private static void calibrateInteger(IntegerParameterType ipt, ParameterValue pval) {

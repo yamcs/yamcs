@@ -3,8 +3,7 @@ package org.yamcs.xtceproc;
 import java.util.List;
 
 import org.yamcs.ErrorInCommand;
-import org.yamcs.protobuf.ValueHelper;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.StringConvertors;
 import org.yamcs.utils.ValueUtility;
@@ -47,8 +46,9 @@ public class ArgumentTypeProcessor {
     }
 
     private static Value decalibrateEnumerated(EnumeratedArgumentType atype, Value v) {
-        if(v.getType()!=Value.Type.STRING) throw new IllegalArgumentException("Enumerated decalibrations only available for strings");
-        return Value.newBuilder().setType(Value.Type.SINT64).setSint64Value(atype.decalibrate(v.getStringValue())).build();
+        if(v.getType()!=Type.STRING) throw new IllegalArgumentException("Enumerated decalibrations only available for strings");
+        
+        return ValueUtility.getSint64Value(atype.decalibrate(v.getStringValue()));
     }
 
 
@@ -86,15 +86,15 @@ public class ArgumentTypeProcessor {
 
         if (ipt.getSizeInBits() <= 32) {
             if (ipt.isSigned()) {
-                raw = Value.newBuilder().setType(Value.Type.SINT32).setSint32Value((int) longDecalValue).build();
+                raw = ValueUtility.getSint32Value((int) longDecalValue);
             } else {
-                raw = Value.newBuilder().setType(Value.Type.UINT32).setUint32Value((int) longDecalValue).build();
+                raw = ValueUtility.getUint32Value((int) longDecalValue);
             }
         } else {
             if (ipt.isSigned()) {
-                raw = Value.newBuilder().setType(Value.Type.SINT64).setSint64Value(longDecalValue).build();            	
+                raw = ValueUtility.getSint64Value(longDecalValue);            	
             } else {
-                raw = Value.newBuilder().setType(Value.Type.UINT64).setUint64Value(longDecalValue).build();
+                raw = ValueUtility.getUint64Value(longDecalValue);
             }
         }
         return raw;
@@ -139,9 +139,9 @@ public class ArgumentTypeProcessor {
         double doubleCalValue = (calibrator == null) ? doubleValue:calibrator.calibrate(doubleValue);
         Value raw;
         if(sizeInBits == 32) {
-            raw = Value.newBuilder().setType(Value.Type.FLOAT).setFloatValue((float)doubleCalValue).build();
+            raw = ValueUtility.getFloatValue((float)doubleCalValue);
         } else {
-            raw = Value.newBuilder().setType(Value.Type.DOUBLE).setDoubleValue(doubleCalValue).build();
+            raw = ValueUtility.getDoubleValue(doubleCalValue);
         }
         return raw;
     }    
@@ -171,23 +171,23 @@ public class ArgumentTypeProcessor {
         if (type instanceof IntegerArgumentType) {
             if(((IntegerArgumentType) type).getInitialValue() == null)
                 return null;
-            return ValueHelper.newValue(((IntegerArgumentType) type).getInitialValue());
+            return ValueUtility.getStringValue(((IntegerArgumentType) type).getInitialValue());
         } else if (type instanceof FloatArgumentType) {
-            return ValueHelper.newValue(((FloatArgumentType) type).getInitialValue());
+            return ValueUtility.getDoubleValue(((FloatArgumentType) type).getInitialValue());
         } else if (type instanceof StringArgumentType) {
             if(((StringArgumentType) type).getInitialValue() == null)
                 return null;
-            return ValueHelper.newValue(((StringArgumentType) type).getInitialValue());
+            return ValueUtility.getStringValue(((StringArgumentType) type).getInitialValue());
         } else if (type instanceof BinaryArgumentType) {
 
             if(((BinaryArgumentType) type).getInitialValue() == null)
                 return null;
-            return ValueHelper.newValue(((BinaryArgumentType) type).getInitialValue());
+            return ValueUtility.getBinaryValue(((BinaryArgumentType) type).getInitialValue());
         } else if (type instanceof EnumeratedArgumentType) {
 
             if(((EnumeratedArgumentType) type).getInitialValue() == null)
                 return null;
-            return ValueHelper.newValue(((EnumeratedArgumentType) type).getInitialValue());
+            return ValueUtility.getStringValue(((EnumeratedArgumentType) type).getInitialValue());
         }
         return null;
     }
@@ -224,9 +224,9 @@ public class ArgumentTypeProcessor {
                     throw new ErrorInCommand("Value "+d+" is not in the range required for the type "+type);
                 }
             }
-            v = ValueHelper.newValue(d);
+            v = ValueUtility.getDoubleValue(d);
         } else if(type instanceof StringArgumentType) {
-            v = ValueHelper.newValue(argumentValue);
+            v = ValueUtility.getStringValue(argumentValue);
             IntegerRange r = ((StringArgumentType)type).getSizeRangeInCharacters();
 
             if(r!=null) {
@@ -241,7 +241,7 @@ public class ArgumentTypeProcessor {
 
         } else if (type instanceof BinaryArgumentType) {
             byte[] b = StringConvertors.hexStringToArray(argumentValue);
-            v = ValueHelper.newValue(b);
+            v = ValueUtility.getBinaryValue(b);
         } else if (type instanceof EnumeratedArgumentType) {
             EnumeratedArgumentType enumType = (EnumeratedArgumentType)type;
             List<ValueEnumeration> vlist = enumType.getValueEnumerationList();
@@ -254,10 +254,10 @@ public class ArgumentTypeProcessor {
             if(!found) {
                 throw new ErrorInCommand("Value '"+argumentValue+"' supplied for enumeration argument cannot be found in enumeration list "+vlist);
             }
-            v = ValueHelper.newValue(argumentValue);
+            v = ValueUtility.getStringValue(argumentValue);
         } else if (type instanceof BooleanArgumentType) {
             boolean b = Boolean.parseBoolean(argumentValue);
-            v = ValueHelper.newValue(b);
+            v = ValueUtility.getBooleanValue(b);
         } else {
             throw new IllegalArgumentException("Cannot parse values of type "+type);
         }

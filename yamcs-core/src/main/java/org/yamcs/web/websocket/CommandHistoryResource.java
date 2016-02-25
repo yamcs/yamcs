@@ -14,8 +14,9 @@ import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.utils.ValueUtility;
 
 /**
  * Provides realtime command history subscription via web.
@@ -89,7 +90,7 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
 
     @Override
     public void updatedCommand(CommandId cmdId, long changeDate, String key, Value value) {
-        CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder().setName(key).setValue(value).build();
+        CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder().setName(key).setValue(ValueUtility.toGbp(value)).build();
         CommandHistoryEntry entry = CommandHistoryEntry.newBuilder().setCommandId(cmdId).addAttr(cha).build();
         doSend(entry);
     }

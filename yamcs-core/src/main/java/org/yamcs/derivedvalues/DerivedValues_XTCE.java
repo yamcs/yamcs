@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;
@@ -281,7 +281,7 @@ public class DerivedValues_XTCE implements DerivedValuesProvider {
 		// Now, update the engine
 		switch (v.getType()) {
 		case BINARY:
-		    engine.put(pname, v.getBinaryValue().toByteArray());
+		    engine.put(pname, v.getBinaryValue());
 		    break;
 		case DOUBLE:
 		    engine.put(pname, v.getDoubleValue());

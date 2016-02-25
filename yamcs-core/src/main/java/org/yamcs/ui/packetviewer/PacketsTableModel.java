@@ -6,8 +6,8 @@ import java.util.Vector;
 
 import javax.swing.table.DefaultTableModel;
 
-import org.yamcs.ParameterValue;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.Value;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;

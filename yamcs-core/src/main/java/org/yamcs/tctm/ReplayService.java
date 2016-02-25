@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.NoPermissionException;
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.TmProcessor;
 import org.yamcs.YProcessor;
 import org.yamcs.YProcessorException;

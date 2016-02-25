@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Test;
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.xtce.Parameter;
 

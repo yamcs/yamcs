@@ -42,9 +42,10 @@ import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 import org.yamcs.security.HqClientMessageToken;
 import org.yamcs.security.Privilege;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.MdbMappings;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
@@ -372,7 +373,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
         @Override
         public void updatedCommand(CommandId cmdId, long changeDate, String key, Value value) {
             CommandHistoryEntry.Builder cheb = CommandHistoryEntry.newBuilder().setCommandId(cmdId);
-            cheb.addAttr(CommandHistoryAttribute.newBuilder().setName(key).setTime(changeDate).setValue(value).build());
+            cheb.addAttr(CommandHistoryAttribute.newBuilder().setName(key).setTime(changeDate).setValue(ValueUtility.toGbp(value)).build());
             try {
                 yclient.sendData(dataAddress, ProtoDataType.CMD_HISTORY, cheb.build());
             } catch (HornetQException e) {

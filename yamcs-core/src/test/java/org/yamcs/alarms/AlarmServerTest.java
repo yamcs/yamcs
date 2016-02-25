@@ -9,7 +9,7 @@ import java.util.Queue;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.xtce.Parameter;

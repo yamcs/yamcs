@@ -7,9 +7,10 @@ import me.lemire.integercompression.FastPFOR128;
 import me.lemire.integercompression.IntWrapper;
 
 import org.yamcs.protobuf.ValueHelper;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.SortedIntArray;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.utils.VarIntUtil;
 
 /**
@@ -272,7 +273,7 @@ public class SortedTimeSegment extends BaseSegment implements ValueSegment {
 
     @Override
     public Value getValue(int index) {        
-        return ValueHelper.newTimestampValue(getTime(index));
+        return ValueUtility.getTimestampValue(getTime(index));
     }
 
     public long getSegmentEnd() {

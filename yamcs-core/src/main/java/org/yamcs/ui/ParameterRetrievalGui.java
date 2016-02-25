@@ -68,7 +68,6 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.utils.ParameterFormatter;
-import org.yamcs.utils.PetParameterFormatter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.MdbMappings;
 
@@ -97,7 +96,6 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
     JButton recentButton;
     ConnectionParameters connectionParams;
     private ParameterFormatter parameterFormatter;
-    JCheckBox petOutput;
     ParameterSelectDialog selectDialog;
 
     YamcsSession ysession;
@@ -174,8 +172,6 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
         optionsPanel.add(timeWindowPanel);
         ignoreInvalidParameters=new JCheckBox("Ignore Invalid Parameters");
         optionsPanel.add(ignoreInvalidParameters);
-        petOutput=new JCheckBox("Output in PET format");
-        optionsPanel.add(petOutput);
 
         gbc.gridwidth=1;gbc.weighty = 1.0;gbc.weightx = 0.0;
         getContentPane().add(optionsPanel,gbc);
@@ -508,11 +504,7 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
         progressMonitor=new ProgressMonitor(parent,"Saving parameters","0 lines saved",0,(int)((stop-start)/1000));
         try {
             writer=new BufferedWriter(new FileWriter(fileNameTextField.getText()));
-            if(petOutput.isSelected()) {
-                parameterFormatter=new PetParameterFormatter(writer, paramList);
-            } else {
-                parameterFormatter=new ParameterFormatter(writer, paramList);
-            }
+            parameterFormatter=new ParameterFormatter(writer, paramList);
             parameterFormatter.setPrintTime(printTime.isSelected());
             parameterFormatter.setPrintRaw(printRaw.isSelected());
             parameterFormatter.setPrintUnique(printUnique.isSelected());

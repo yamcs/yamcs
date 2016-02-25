@@ -3,7 +3,7 @@ package org.yamcs.parameterarchive;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.ValueUtility;
 
@@ -32,13 +32,13 @@ public class BinaryValueSegment extends ObjectSegment<byte[]> implements ValueSe
 
     @Override
     public void add(int pos, Value v) {
-       add(pos, v.getBinaryValue().toByteArray());
+       add(pos, v.getBinaryValue());
     }
     
     public static BinaryValueSegment consolidate(List<Value> values) {
         BinaryValueSegment bvs = new BinaryValueSegment(true);
         for(Value v: values) {
-            bvs.add(v.getBinaryValue().toByteArray());
+            bvs.add(v.getBinaryValue());
         }
         return bvs.consolidate();
     }

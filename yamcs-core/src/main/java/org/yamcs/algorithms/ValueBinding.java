@@ -3,7 +3,7 @@ package org.yamcs.algorithms;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.utils.TimeEncoding;

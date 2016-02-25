@@ -5,9 +5,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.DecodingException;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.utils.VarIntUtil;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -39,7 +40,7 @@ public class GenericValueSegment extends BaseSegment implements ValueSegment {
     public void writeTo(ByteBuffer bb) {
         VarIntUtil.writeVarInt32(bb, values.size());
         for(Value v: values) {
-            byte[] b = v.toByteArray();
+            byte[] b = ValueUtility.toGbp(v).toByteArray();
             VarIntUtil.writeVarInt32(bb, b.length);
             bb.put(b);
         }
@@ -56,7 +57,8 @@ public class GenericValueSegment extends BaseSegment implements ValueSegment {
             byte[] b = new byte[size];
             bb.get(b);
             try {
-                values.add(Value.parseFrom(b));
+                Value v = ValueUtility.fromGpb(org.yamcs.protobuf.Yamcs.Value.parseFrom(b));
+                values.add(v);
             } catch (InvalidProtocolBufferException e) {
                 throw new DecodingException("Failed to decode Value: ",e);
             }
@@ -101,7 +103,7 @@ public class GenericValueSegment extends BaseSegment implements ValueSegment {
     public int getMaxSerializedSize() {
         int size = 4*values.size(); //max 4 bytes for storing each value's size
         for(Value v: values) {
-            size += v.getSerializedSize();
+            size += ValueUtility.toGbp(v).getSerializedSize();
         }
         return size;
     }
@@ -155,9 +157,7 @@ public class GenericValueSegment extends BaseSegment implements ValueSegment {
         for(int i=0; i<values1.size(); i++) {
             Value v1 = values1.get(i);
             Value v2 = values2.get(i);
-            byte[] b1 = v1.toByteArray();
-            byte[] b2 = v2.toByteArray();
-            if(!Arrays.equals(b1, b2)) return false;
+            if(!v1.equals(v2)) return false; 
         }
         return true;
     }

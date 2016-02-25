@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.GuardedBy;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
 import org.yamcs.YProcessor;

@@ -3,7 +3,7 @@ package org.yamcs.algorithms;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.yamcs.ParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.Parameter;
 
 public class WindowBufferTest {
