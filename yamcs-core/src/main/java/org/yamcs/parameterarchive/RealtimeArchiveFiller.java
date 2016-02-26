@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.YConfiguration;
 import org.yamcs.YProcessor;
 
@@ -38,14 +39,24 @@ public class RealtimeArchiveFiller extends ArchiveFillerTask {
     @Override
     public void updateItems(int subscriptionId, List<ParameterValue> items) {
         executor.execute(()-> {
-            super.updateItems(subscriptionId, items);
+            try {
+                super.updateItems(subscriptionId, items);
+            } catch(Exception e) {
+                log.error("Error when adding data to realtime segments", e);
+            }
         });
     }
     
     public void flush() {
-        log.debug("Flushing {} segments", pgSegments.values().size());
-        for(Map<Integer, PGSegment> m :pgSegments.values()) {
-            consolidateAndWriteToArchive(m.values());
+        try {
+            for(Map.Entry<Long, Map<Integer, PGSegment>> k:pgSegments.entrySet()) {
+                Map <Integer, PGSegment> m = k.getValue();
+                long sstart = k.getKey();
+                log.debug("Writing to archive the segment: [{} - {})", TimeEncoding.toString(sstart), TimeEncoding.toString(SortedTimeSegment.getNextSegmentStart(sstart)));
+                consolidateAndWriteToArchive(m.values());
+            }
+        } catch(Exception e) {
+            log.error("Error when flusing data to parameter archive ", e);
         }
     }
     
