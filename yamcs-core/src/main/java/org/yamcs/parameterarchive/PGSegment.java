@@ -89,6 +89,8 @@ public class PGSegment {
             return new LongValueSegment(true);
         case UINT64:
             return new LongValueSegment(false);
+        case DOUBLE:
+            return new DoubleValueSegment();
        default:
          return new GenericValueSegment();
         }

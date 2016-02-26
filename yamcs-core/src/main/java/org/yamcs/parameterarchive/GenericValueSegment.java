@@ -87,11 +87,10 @@ public class GenericValueSegment extends BaseSegment implements ValueSegment {
         case FLOAT:
         case UINT64:
         case SINT64:
+        case DOUBLE:
             throw new IllegalStateException("should not be here; specific segments shall be used for this type: "+type);
         case BOOLEAN:
             return BooleanValueSegment.consolidate(values);
-        case DOUBLE:
-            return DoubleValueSegment.consolidate(values);
         case TIMESTAMP:
 
         default:

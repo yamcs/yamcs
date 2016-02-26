@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.DecodingException;
+import org.yamcs.utils.DoubleArray;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.utils.VarIntUtil;
 
@@ -12,7 +13,7 @@ import org.yamcs.utils.VarIntUtil;
 public class DoubleValueSegment extends BaseSegment implements ValueSegment {
     final static byte SUBFORMAT_ID_RAW = 0;
     
-    double[] doubles;
+    DoubleArray values;
     
     DoubleValueSegment() {
         super(FORMAT_ID_DoubleValueSegment);
@@ -22,10 +23,10 @@ public class DoubleValueSegment extends BaseSegment implements ValueSegment {
     @Override
     public void writeTo(ByteBuffer bb) {
         bb.put(SUBFORMAT_ID_RAW);
-        int n = doubles.length;
+        int n = values.size();
         VarIntUtil.writeVarInt32(bb, n);
         for(int i=0;i<n;i++) {
-            bb.putDouble(doubles[i]);
+            bb.putDouble(values.get(i));
         }
     }
 
@@ -35,10 +36,10 @@ public class DoubleValueSegment extends BaseSegment implements ValueSegment {
             throw new DecodingException("Uknown sub format id: "+fid);
         }
         int n = VarIntUtil.readVarInt32(bb);
-        doubles = new double[n];
+        values = new DoubleArray(n);
         
         for(int i=0;i<n;i++) {
-            doubles[i]= bb.getDouble();
+            values.add(bb.getDouble());
         }
     }
     public static DoubleValueSegment parseFrom(ByteBuffer bb) throws DecodingException {
@@ -49,20 +50,20 @@ public class DoubleValueSegment extends BaseSegment implements ValueSegment {
 
     @Override
     public Value getValue(int index) {
-        return ValueUtility.getDoubleValue(doubles[index]);
+        return ValueUtility.getDoubleValue(values.get(index));
     }
 
     @Override
     public int getMaxSerializedSize() {
-        return 4+8*doubles.length;
+        return 4+8*values.size();
     }
     
-    static DoubleValueSegment consolidate(List<Value> values) {
+    static DoubleValueSegment consolidate(List<Value> v) {
         DoubleValueSegment fvs = new DoubleValueSegment();
-        int n = values.size();
-        fvs.doubles = new double[n];
+        int n = v.size();
+        fvs.values = new DoubleArray(n);
         for(int i=0; i<n; i++) {
-            fvs.doubles[i] = values.get(i).getDoubleValue();
+            fvs.values.add(v.get(i).getDoubleValue());
         }
         return fvs;
     }
@@ -72,11 +73,11 @@ public class DoubleValueSegment extends BaseSegment implements ValueSegment {
         double[] r = new double[posStop-posStart];
         if(ascending) {
             for(int i = posStart; i<posStop; i++) {
-                r[i-posStart] = doubles[i];
+                r[i-posStart] = values.get(i);
             }
         } else {
             for(int i = posStop; i>posStart; i--) {
-                r[posStop-i] = doubles[i];
+                r[posStop-i] = values.get(i);
             }
         }
         
@@ -86,17 +87,16 @@ public class DoubleValueSegment extends BaseSegment implements ValueSegment {
 
     @Override
     public int size() {
-        return doubles.length;
+        return values.size();
     }
     
     @Override
     public void add(int pos, Value engValue) {
-        throw new UnsupportedOperationException("add not supported");
-        
+        values.add(pos, engValue.getDoubleValue());
     }
 
     @Override
-    public BaseSegment consolidate() {
-        throw new UnsupportedOperationException("consolidate not supported");
+    public DoubleValueSegment consolidate() {
+        return this;
     }
 }
