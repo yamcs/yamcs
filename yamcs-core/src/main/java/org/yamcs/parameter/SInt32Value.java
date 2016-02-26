@@ -31,4 +31,8 @@ public class SInt32Value extends Value {
         return false;
     }
 
+    @Override
+    public String toString() {
+        return Integer.toString(v);
+    }
 }

@@ -30,4 +30,9 @@ public class UInt32Value extends Value {
         }
         return false;
     }
+    
+    @Override
+    public String toString() {
+        return Integer.toUnsignedString(v);
+    }
 }

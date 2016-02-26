@@ -30,4 +30,9 @@ public class SInt64Value extends Value {
         }
         return false;
     }
+    
+    @Override
+    public String toString() {
+        return Long.toString(v);
+    }
 }

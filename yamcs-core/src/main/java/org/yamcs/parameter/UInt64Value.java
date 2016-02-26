@@ -30,4 +30,9 @@ public class UInt64Value extends Value {
         }
         return false;
     }
+    
+    @Override
+    public String toString() {
+        return Long.toUnsignedString(v);
+    }
 }
