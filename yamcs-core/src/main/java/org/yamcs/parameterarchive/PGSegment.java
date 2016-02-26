@@ -105,10 +105,7 @@ public class PGSegment {
      * @param instant
      * @param sortedPvList
      */
-    public void addRecord(long instant, List<ParameterValue> sortedPvList) {
-        if(consolidated) {
-            throw new IllegalStateException("PGSegment is consolidated");
-        }
+    public void addRecord(long instant, List<ParameterValue> sortedPvList) {       
         if(sortedPvList.size() != parameterIds.size()) {
             throw new IllegalArgumentException("Wrong number of values passed: "+sortedPvList.size()+";expected "+engValueSegments.size());
         }
