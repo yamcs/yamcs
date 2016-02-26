@@ -40,4 +40,8 @@ public class SingleParameterValueRequest {
     public void setRetrieveParameterStatus(boolean b) {
         this.retrieveParameterStatus = b;
     }
+    
+    public int[] getParameterGroupIds() {
+        return parameterGroupIds;
+    }
 }
