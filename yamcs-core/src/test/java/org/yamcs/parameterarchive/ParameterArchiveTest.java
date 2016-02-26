@@ -243,7 +243,6 @@ public class ParameterArchiveTest {
         List<ParameterIdValueList> params = retrieveMultipleParameters(0, TimeEncoding.MAX_INSTANT, new int[]{p1id}, new int[] {pg1id}, true);
         assertEquals(2, params.size());
         ParameterIdValueList pidvl =  params.get(0);
-        System.out.println("pidvl: "+pidvl.getValues());
         checkEquals(params.get(0), 100, pv1_0);
         
     }
