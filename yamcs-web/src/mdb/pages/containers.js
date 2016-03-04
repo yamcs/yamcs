@@ -1,9 +1,7 @@
 (function () {
     'use strict';
 
-    angular
-        .module('yamcs.mdb')
-        .controller('MDBContainersController',  MDBContainersController);
+    angular.module('yamcs.mdb').controller('MDBContainersController',  MDBContainersController);
 
     /* @ngInject */
     function MDBContainersController($rootScope, mdbService, $routeParams) {
@@ -14,6 +12,7 @@
         vm.qname = qname;
         vm.title = qname;
         vm.mdbType = 'containers';
+        vm.containersLoaded = false;
 
         $rootScope.pageTitle = 'Containers | Yamcs';
 
@@ -22,6 +21,7 @@
             recurse: (qname === '/yamcs')
         }).then(function (data) {
             vm.containers = data;
+            vm.containersLoaded = true;
             return vm.containers;
         });
     }

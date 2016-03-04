@@ -6,7 +6,7 @@
 
   <p>&nbsp;</p>
 
-  <uib-alert type="info" ng-if="!vm.commands.length">
+  <uib-alert type="info" ng-if="vm.commandsLoaded && !vm.commands.length">
     <span class="glyphicon glyphicon-info-sign"></span>
     No commands for this space system
   </uib-alert>
