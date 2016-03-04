@@ -5,7 +5,6 @@ import org.yamcs.web.rest.Router;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
@@ -25,9 +24,9 @@ public class HttpServerInitializer extends ChannelInitializer<SocketChannel> {
         ChannelPipeline pipeline = ch.pipeline();
         pipeline.addLast("decoder", new HttpRequestDecoder());
         pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
-        pipeline.addLast("deflater", new HttpContentCompressor());
-        pipeline.addLast("encoder", new HttpResponseEncoder());
         
+        pipeline.addLast("encoder", new HttpResponseEncoder());
+        pipeline.addLast("deflater", new SmartHttpContentCompressor());
         pipeline.addLast("streamer", new ChunkedWriteHandler());
         pipeline.addLast("handler", new HttpHandler(apiRouter));
     }
