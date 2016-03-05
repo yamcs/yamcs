@@ -31,6 +31,8 @@ WAIT_FOR_START=30
 case "$1" in
     start)
         echo -n "Starting the yamcs server...   "
+        #set a high open file limit to avoid problems with rocksdb opening too many files
+        ulimit -n 10000
         alreadyrunning=0
         if [ -s $PID_FILE ] ; then
             pid=`cat $PID_FILE`
