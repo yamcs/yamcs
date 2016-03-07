@@ -5,7 +5,7 @@ import java.util.List;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.utils.StringConvertors;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.BinaryArgumentType;
@@ -240,7 +240,7 @@ public class ArgumentTypeProcessor {
             }
 
         } else if (type instanceof BinaryArgumentType) {
-            byte[] b = StringConvertors.hexStringToArray(argumentValue);
+            byte[] b = StringConverter.hexStringToArray(argumentValue);
             v = ValueUtility.getBinaryValue(b);
         } else if (type instanceof EnumeratedArgumentType) {
             EnumeratedArgumentType enumType = (EnumeratedArgumentType)type;

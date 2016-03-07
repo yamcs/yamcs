@@ -28,4 +28,9 @@ public class FloatValue extends Value {
         return (obj instanceof FloatValue)
                && (Float.floatToIntBits(((FloatValue)obj).v) == Float.floatToIntBits(v));
     }
+    
+    @Override
+    public String toString() {
+        return Float.toString(v);
+    }
 }

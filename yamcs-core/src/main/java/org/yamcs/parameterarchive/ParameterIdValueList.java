@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.Value;
 import org.yamcs.utils.IntArray;
-import org.yamcs.utils.StringConvertors;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -41,9 +41,10 @@ public class ParameterIdValueList {
         sb.append(TimeEncoding.toCombinedFormat(instant)+" [");
         boolean first = true;
         for(int i=0 ; i<pids.size();i++) {
+            Value ev = values.get(i).getEngValue();
             if(first) first = false;
             else sb.append(", ");
-            sb.append(pids.get(i)+": "+StringConvertors.toString(values.get(i).getEngValue()));
+            sb.append(pids.get(i)+": ("+ev.getType()+")"+ev);
         }
         sb.append("]");
         return sb.toString();

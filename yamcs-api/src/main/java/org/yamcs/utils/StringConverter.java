@@ -11,7 +11,7 @@ import org.yamcs.protobuf.Yamcs.Value;
 
 
 
-public class StringConvertors {
+public class StringConverter {
 
     static SimpleDateFormat sdf=new SimpleDateFormat("yyyy/DDD HH:mm:ss.SSS");
     static final BigInteger B64 = BigInteger.ZERO.setBit(64);
@@ -98,19 +98,9 @@ public class StringConvertors {
         }
         bb.reset();
         return sb.toString();
-    }
-
-    public static String ccsdsArrayToHexString(byte[] b) {
-        StringBuffer sb =new StringBuffer();
-        for (int i=0;i<b.length;i++) {
-            String s=Integer.toString(b[i]&0xFF,16);
-            if(s.length()==1) s="0"+s;
-            sb.append(s.toUpperCase());
-            if((i==5)||(i==15)||(i==19)) sb.append("|");
-        }
-        return sb.toString();
-    }
-
+    }  
+    
+    
     /**
      * Convert a hex string into a byte array. No check is done if the string has an even number of
      * hex digits. The last one is ignored in case the number is odd.
@@ -124,7 +114,8 @@ public class StringConvertors {
         }
         return b;
     }
-
+    
+    
     /**
      * Convert a NamedObjectId to a pretty string for use in log messages etc. This gives a
      * better formatting than the default protobuf-generated toString.

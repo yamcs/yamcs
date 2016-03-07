@@ -5,17 +5,17 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.nio.ByteBuffer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.TmProcessor;
 import org.yamcs.YConfiguration;
 import org.yamcs.archive.PacketWithTime;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
 import org.yamcs.utils.CcsdsPacket;
-import org.yamcs.utils.StringConvertors;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 
 
@@ -198,7 +198,7 @@ public class MulticastTmProvider extends AbstractExecutionThreadService implemen
         MulticastTmProvider tm=new MulticastTmProvider("239.192.0.1",31002);
         PacketWithTime pwrt=null;
         while((pwrt=tm.getNextPacket())!=null) {
-            System.out.println("got new packet:\n"+StringConvertors.arrayToHexString(pwrt.getPacket()));
+            System.out.println("got new packet:\n"+StringConverter.arrayToHexString(pwrt.getPacket()));
         }
     }
 

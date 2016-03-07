@@ -14,7 +14,7 @@ import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest.Assignment;
 import org.yamcs.protobuf.Rest.IssueCommandResponse;
 import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.utils.StringConvertors;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
@@ -121,7 +121,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
         response.setQueue(queue.getName());
         response.setSource(preparedCommand.getSource());
         response.setBinary(ByteString.copyFrom(preparedCommand.getBinary()));
-        response.setHex(StringConvertors.arrayToHexString(preparedCommand.getBinary()));
+        response.setHex(StringConverter.arrayToHexString(preparedCommand.getBinary()));
         return sendOK(req, response.build(), SchemaRest.IssueCommandResponse.WRITE);
     }
 }

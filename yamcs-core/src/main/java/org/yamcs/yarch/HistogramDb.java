@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 import org.yamcs.TimeInterval;
-import org.yamcs.utils.StringConvertors;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -61,7 +61,7 @@ public abstract class HistogramDb {
 	    c++;
 	    float freq=0;
 	    if(r.getStart()!=r.getStop())freq=(1000*(float)(r.getNumTuples()-1)/(float)(r.getStop()-r.getStart()));
-	    System.out.println(String.format(format, StringConvertors.arrayToHexString(r.getColumnv()), TimeEncoding.toCombinedFormat(r.getStart()), TimeEncoding.toCombinedFormat(r.getStop()),r.getNumTuples(), freq));
+	    System.out.println(String.format(format, StringConverter.arrayToHexString(r.getColumnv()), TimeEncoding.toCombinedFormat(r.getStart()), TimeEncoding.toCombinedFormat(r.getStop()),r.getNumTuples(), freq));
 
 	}
 

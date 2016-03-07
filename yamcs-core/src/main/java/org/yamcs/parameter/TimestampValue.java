@@ -1,6 +1,7 @@
 package org.yamcs.parameter;
 
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.TimeEncoding;
 
 public class TimestampValue extends Value {
    final long v;
@@ -29,5 +30,10 @@ public class TimestampValue extends Value {
             return v == ((TimestampValue)obj).v;
         }
         return false;
+    }
+    
+    @Override
+    public String toString() {
+        return TimeEncoding.toString(v);
     }
 }

@@ -31,4 +31,9 @@ public class BooleanValue extends Value {
         }
         return false;
     }
+    
+    
+    public String toString() {
+        return Boolean.toString(v);
+    }
 }

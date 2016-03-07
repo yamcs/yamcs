@@ -14,7 +14,6 @@ import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
-import org.yamcs.utils.StringConvertors;
 import org.yamcs.xtce.AlarmReportType;
 import org.yamcs.xtce.AlarmType;
 import org.yamcs.xtce.Parameter;
@@ -200,12 +199,12 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
     private void sendValueChangeEvent(ParameterValue pv) {
         if(pv.getMonitoringResult() == null)
         {
-            eventProducer.sendInfo("no monitoring", "Parameter "+pv.getParameter().getQualifiedName()+" has changed to value "+StringConvertors.toString(pv.getEngValue(), false));
+            eventProducer.sendInfo("no monitoring", "Parameter "+pv.getParameter().getQualifiedName()+" has changed to value "+pv.getEngValue());
             return;
         }
         
         if (pv.getMonitoringResult() == MonitoringResult.IN_LIMITS) {
-            eventProducer.sendInfo(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" has changed to value "+StringConvertors.toString(pv.getEngValue(), false));
+            eventProducer.sendInfo(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" has changed to value "+pv.getEngValue());
         } else {
             String message;
             if (pv.getRangeCondition() == RangeCondition.LOW) {
@@ -253,8 +252,7 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
     
     private boolean hasChanged(ParameterValue pvOld, ParameterValue pvNew) {
         // Crude string value comparison.
-        return !StringConvertors.toString(pvOld.getEngValue(), false)
-                .equals(StringConvertors.toString(pvNew.getEngValue(), false));
+        return !pvOld.getEngValue().equals(pvNew.getEngValue());
     }
     
     private static class ActiveAlarm {

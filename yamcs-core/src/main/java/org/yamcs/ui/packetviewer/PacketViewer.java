@@ -90,7 +90,6 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 import org.yamcs.ui.PrefsObject;
 import org.yamcs.utils.CcsdsPacket;
-import org.yamcs.utils.StringConvertors;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.Calibrator;
@@ -809,8 +808,8 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                     // add new row for parameter table
 
                     vec[0] = value.getParameter();
-                    vec[1] = StringConvertors.toString(value.getEngValue(), false);
-                    vec[2] = StringConvertors.toString(value.getRawValue(), false);
+                    vec[1] = value.getEngValue().toString();
+                    vec[2] = value.getRawValue().toString();
 
                     vec[3] = value.getWarningRange() == null ? "" : Double.toString(value.getWarningRange().getMinInclusive());
                     vec[4] = value.getWarningRange() == null ? "" : Double.toString(value.getWarningRange().getMaxInclusive());;

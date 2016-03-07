@@ -9,9 +9,8 @@ import java.util.Arrays;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.archive.PacketWithTime;
-
 import org.yamcs.utils.CcsdsPacket;
-import org.yamcs.utils.StringConvertors;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -44,7 +43,7 @@ public class TmFileReader  {
             inputStream.close();
             return null;
         } else if(res!=4){
-            System.err.println("fourb: "+StringConvertors.arrayToHexString(fourb));
+            System.err.println("fourb: "+StringConverter.arrayToHexString(fourb));
             inputStream.close();
             throw new IOException("Could only read "+res+" out of 4 bytes. Corrupted file?");
         } 

@@ -162,8 +162,8 @@ public class ParameterFormatter {
             if(pv!=null) {
                 Value ev=pv.getEngValue();
                 if(ev!=null) {
-                    sb.append(StringConvertors.toString(ev, false));
-                    l.add(StringConvertors.toString(ev, false));
+                    sb.append(StringConverter.toString(ev, false));
+                    l.add(StringConverter.toString(ev, false));
                 } else {
                     System.err.println("got parameter without an engineering value for "+entry.getKey());
                     //skip=true;
@@ -171,8 +171,8 @@ public class ParameterFormatter {
                 if(printRaw) {
                     Value rv=pv.getRawValue();
                     if(rv!=null) {
-                        sb.append(StringConvertors.toString(rv, false));
-                        l.add(StringConvertors.toString(rv, false));
+                        sb.append(StringConverter.toString(rv, false));
+                        l.add(StringConverter.toString(rv, false));
                     } else {
                         l.add("");
                     }

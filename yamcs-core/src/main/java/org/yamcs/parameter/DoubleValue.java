@@ -28,4 +28,9 @@ public class DoubleValue extends Value {
         return (obj instanceof DoubleValue)
                && (Double.doubleToLongBits(((DoubleValue)obj).v) == Double.doubleToLongBits(v));
     }
+    
+    @Override
+    public String toString() {
+        return Double.toString(v);
+    }
 }

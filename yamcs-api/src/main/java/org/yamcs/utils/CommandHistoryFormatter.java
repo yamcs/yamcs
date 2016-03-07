@@ -64,7 +64,7 @@ public class CommandHistoryFormatter {
                 values.add(null);
             }
             int idx = columns.get(name);
-            String value = StringConvertors.toString(a.getValue(), false);
+            String value = StringConverter.toString(a.getValue(), false);
        //     System.out.println("value: "+value);
             //value = value.replaceAll("[\n\t]", " ");
             values.set(idx, value);

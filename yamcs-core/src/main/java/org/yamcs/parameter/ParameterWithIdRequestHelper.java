@@ -14,7 +14,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
-import org.yamcs.utils.StringConvertors;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.Parameter;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -75,7 +75,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
                 checkParameterPrivilege(authToken, p.getQualifiedName());
                 NamedObjectId id = idList.get(i);
                 if(subscr.containsEntry(p, id)) {
-                    log.info("Ignoring duplicate subscription for '{}', id: {}", p.getName(), StringConvertors.idToString(id));
+                    log.info("Ignoring duplicate subscription for '{}', id: {}", p.getName(), StringConverter.idToString(id));
                     continue;
                 }
                 subscr.put(p, id);

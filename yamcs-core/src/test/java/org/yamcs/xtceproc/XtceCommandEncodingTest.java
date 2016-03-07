@@ -10,7 +10,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.yamcs.ErrorInCommand;
-import org.yamcs.utils.StringConvertors;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
@@ -72,7 +72,7 @@ public class XtceCommandEncodingTest {
         byte[] b = MetaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
         ByteBuffer bb = ByteBuffer.wrap(b);
         bb.order(ByteOrder.LITTLE_ENDIAN);
-        System.out.println("command buffer: "+StringConvertors.arrayToHexString(b));
+        System.out.println("command buffer: "+StringConverter.arrayToHexString(b));
         assertEquals(0x0A0B, bb.getShort());
         assertEquals(0x12, bb.getShort());
     }
@@ -141,7 +141,7 @@ public class XtceCommandEncodingTest {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/INT64_ARG_TC");
         List<ArgumentAssignment> arguments = getArgAssignment("p1", "0X0102030405060708", "p2", "0xF102030405060708", "p3", "-0X0102030405060708");
         byte[] b = MetaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
-        assertEquals("0102030405060708F102030405060708FEFDFCFBFAF9F8F8", StringConvertors.arrayToHexString(b));
+        assertEquals("0102030405060708F102030405060708FEFDFCFBFAF9F8F8", StringConverter.arrayToHexString(b));
     }
 
     private List<ArgumentAssignment> getArgAssignment(String ...v) {

@@ -15,7 +15,7 @@ import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.StringMessage;
-import org.yamcs.utils.StringConvertors;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 
 
@@ -93,7 +93,7 @@ public class RealtimeParameterTest {
             System.out.println("-------------received "+pdata.getParameterCount()+" parameters:");
             for(int i=0;i<pdata.getParameterCount();i++) {
                 ParameterValue pv=pdata.getParameter(i);
-                System.out.println(String.format("%-25s %-30s %s", TimeEncoding.toString(pv.getAcquisitionTime()), pv.getId().getName(), StringConvertors.toString(pv.getEngValue(),false)));
+                System.out.println(String.format("%-25s %-30s %s", TimeEncoding.toString(pv.getAcquisitionTime()), pv.getId().getName(), StringConverter.toString(pv.getEngValue(),false)));
                 //System.out.println(pv);
             }
             System.out.println();

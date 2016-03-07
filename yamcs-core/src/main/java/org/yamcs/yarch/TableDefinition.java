@@ -9,7 +9,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.utils.StringConvertors;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.streamsql.ColumnNotFoundException;
 import org.yamcs.yarch.streamsql.GenericStreamSqlException;
 import org.yamcs.yarch.streamsql.NotSupportedException;
@@ -386,8 +386,8 @@ public class TableDefinition {
             }
         } catch (IOException e) {
             throw new RuntimeException("cannot deserialize ("
-                        +StringConvertors.byteBufferToHexString(ByteBuffer.wrap(k))+ ","
-                        +StringConvertors.byteBufferToHexString(ByteBuffer.wrap(v))
+                        +StringConverter.byteBufferToHexString(ByteBuffer.wrap(k))+ ","
+                        +StringConverter.byteBufferToHexString(ByteBuffer.wrap(v))
                         +")", e);
         }
 

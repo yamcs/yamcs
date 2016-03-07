@@ -31,4 +31,9 @@ public class StringValue extends Value {
         return false;
     }
     
+    @Override
+    public String toString() {
+        return v;
+    }
+    
 }

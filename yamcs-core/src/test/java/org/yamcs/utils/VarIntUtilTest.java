@@ -38,7 +38,7 @@ public class VarIntUtilTest {
 
     @Test
     public void testInvalid() {
-        ByteBuffer bb = ByteBuffer.wrap(StringConvertors.hexStringToArray("8182838485"));
+        ByteBuffer bb = ByteBuffer.wrap(StringConverter.hexStringToArray("8182838485"));
         try {
             VarIntUtil.readVarInt32(bb);
             fail("Should have thrown an exception");

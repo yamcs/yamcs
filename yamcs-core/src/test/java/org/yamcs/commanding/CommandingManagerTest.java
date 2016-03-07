@@ -15,7 +15,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.CcsdsPacket;
-import org.yamcs.utils.StringConvertors;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
@@ -38,7 +38,7 @@ public class CommandingManagerTest {
         MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC");
         assertNotNull(mc);
         byte[] b= MetaCommandProcessor.buildCommand(mc, new ArrayList<ArgumentAssignment>()).getCmdPacket();
-        assertEquals("ABCDEFAB", StringConvertors.arrayToHexString(b));
+        assertEquals("ABCDEFAB", StringConverter.arrayToHexString(b));
 
     }
 
@@ -47,7 +47,7 @@ public class CommandingManagerTest {
         MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/FIXED_VALUE_TC");
         assertNotNull(mc);
         byte[] b= MetaCommandProcessor.buildCommand(mc, new ArrayList<ArgumentAssignment>()).getCmdPacket();
-        assertEquals("ABCD901408081808", StringConvertors.arrayToHexString(b));
+        assertEquals("ABCD901408081808", StringConverter.arrayToHexString(b));
 
     }
     @Test
@@ -55,7 +55,7 @@ public class CommandingManagerTest {
         MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/INT_ARG_TC");
         assertNotNull(mc);
         byte[] b= MetaCommandProcessor.buildCommand(mc, new ArrayList<ArgumentAssignment>()).getCmdPacket();
-        assertEquals("ABCD901408081808", StringConvertors.arrayToHexString(b));
+        assertEquals("ABCD901408081808", StringConverter.arrayToHexString(b));
 
     }
 

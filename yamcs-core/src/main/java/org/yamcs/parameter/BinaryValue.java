@@ -3,6 +3,7 @@ package org.yamcs.parameter;
 import java.util.Arrays;
 
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.StringConverter;
 
 public class BinaryValue extends Value {
     final  byte[] v;
@@ -37,5 +38,10 @@ public class BinaryValue extends Value {
         }
         
         return false;
+    }
+    
+    @Override
+    public String toString() {
+        return StringConverter.arrayToHexString(v);
     }
 }

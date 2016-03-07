@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.yamcs.utils.StringConvertors;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.CommandVerifier.TerminationAction;
 import org.yamcs.xtce.NameReference.ResolvedAction;
@@ -1039,7 +1039,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                         throw new SpreadsheetLoadException(ctx, "default value is not specified for "+argname+" which is a FixedValue on line "+(i+1));
                     }					
                     String hexValue = cells[IDX_CMD_DEFVALUE].getContents();
-                    byte[] binaryValue = StringConvertors.hexStringToArray(hexValue);
+                    byte[] binaryValue = StringConverter.hexStringToArray(hexValue);
 
                     if(!hasColumn(cells, IDX_CMD_SIZEINBITS)) {
                         throw new SpreadsheetLoadException(ctx, "sizeInBits is not specified for "+argname+" which is a FixedValue on line "+(i+1));

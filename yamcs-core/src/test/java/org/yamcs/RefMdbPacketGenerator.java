@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.utils.GpsCcsdsTime;
-import org.yamcs.utils.StringConvertors;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.SequenceContainer;
 
@@ -472,11 +472,11 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         bb.position(offset);
 
         // 16-bit signed integer (in sign-magnitude)
-        bb.put(StringConvertors.hexStringToArray("BA50"));
+        bb.put(StringConverter.hexStringToArray("BA50"));
         // 6 (000110), filler (000), -6 (100110) (sign-magnitude)
-        bb.put(StringConvertors.hexStringToArray("1846"));
+        bb.put(StringConverter.hexStringToArray("1846"));
         // 6 (000110), filler (000), -6 (111010) (2's complement)
-        bb.put(StringConvertors.hexStringToArray("187A"));
+        bb.put(StringConverter.hexStringToArray("187A"));
     }
 
     private void fill_PKT1_8(ByteBuffer bb, int pIntegerPara18_1, int pIntegerPara18_2) {
