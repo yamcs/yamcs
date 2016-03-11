@@ -106,7 +106,7 @@ public class Subscription {
         }
         if(se.getRepeatEntry()!=null) {
             if(se.getRepeatEntry().getCount() instanceof DynamicIntegerValue) {
-                addParameter(((DynamicIntegerValue) se.getRepeatEntry().getCount()).getParameter());
+                addParameter(((DynamicIntegerValue) se.getRepeatEntry().getCount()).getParameterInstnaceRef().getParameter());
             }
         }
         if(!containerAlreadyAdded)

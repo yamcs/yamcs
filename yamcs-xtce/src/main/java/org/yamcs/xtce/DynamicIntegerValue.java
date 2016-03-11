@@ -9,19 +9,23 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class DynamicIntegerValue extends IntegerValue {
-	private static final long serialVersionUID=200706091239L;
-	transient static Logger log=LoggerFactory.getLogger(DynamicIntegerValue.class.getName());
-	Parameter parameter;
-	
-    public void setParameter(Parameter parameter) {
-        this.parameter = parameter;
+    private static final long serialVersionUID=201603101239L;
+    
+    transient static Logger log=LoggerFactory.getLogger(DynamicIntegerValue.class.getName());
+    ParameterInstanceRef instanceRef;;
+
+
+    public void setParameterInstanceRef(ParameterInstanceRef pir) {
+        this.instanceRef = pir;
     }
-    public Parameter getParameter() {
-        return parameter;
+
+    public ParameterInstanceRef getParameterInstnaceRef() {
+        return instanceRef;
     }
     
     @Override
     public String toString() {
-        return "DynamicIntegerValue(parameter="+getParameter().getName()+")";
+        return "DynamicIntegerValue(parameterInstance="+instanceRef.getParameter().getName()+")";
     }
+
 }

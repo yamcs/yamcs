@@ -191,9 +191,9 @@ public class XtceToGpbAssembler {
         } else if (xtceRepeat.getCount() instanceof DynamicIntegerValue) {
             DynamicIntegerValue val = (DynamicIntegerValue) xtceRepeat.getCount();
             if (detail == DetailLevel.SUMMARY) {
-                b.setDynamicCount(toParameterInfo(val.getParameter(), instanceURL, DetailLevel.LINK, options));
+                b.setDynamicCount(toParameterInfo(val.getParameterInstnaceRef().getParameter(), instanceURL, DetailLevel.LINK, options));
             } else if (detail == DetailLevel.FULL) {
-                b.setDynamicCount(toParameterInfo(val.getParameter(), instanceURL, DetailLevel.FULL, options));
+                b.setDynamicCount(toParameterInfo(val.getParameterInstnaceRef().getParameter(), instanceURL, DetailLevel.FULL, options));
             }
         } else {
             throw new IllegalStateException("Unexpected repeat count " + xtceRepeat.getCount());

@@ -24,14 +24,18 @@ import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.ComparisonList;
 import org.yamcs.xtce.DataEncoding;
+import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.EnumeratedParameterType;
+import org.yamcs.xtce.FixedIntegerValue;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
+import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.NameReference;
+import org.yamcs.xtce.Repeat;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.NameReference.ResolvedAction;
 import org.yamcs.xtce.NameReference.Type;
@@ -150,6 +154,9 @@ public class XtceStaxReader {
     private static final String  XTCE_MathOperationCalibrator   = "MathOperationCalibrator";
     private static final String  XTCE_Term                      = "Term";
     private static final String  XTCE_SplinePoint               = "SplinePoint";
+    private static final String  XTCE_Count                     = "Count";
+    private static final String  XTCE_IntegerValue              = "IntegerValue";
+    private static final String  XTCE_ParameterInstanceRef      = "ParameterInstanceRef";
 
     /**
      * Logging subsystem
@@ -696,13 +703,13 @@ public class XtceStaxReader {
             boolean signed = Boolean.parseBoolean(value);
             integerParamType. setSigned(signed);
         }
-        
+
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_UnitSet)) {
                 integerParamType.addAllUnits(readXtceUnitSet());
-               
+
             } else if (isStartElementWithName(XTCE_IntegerDataEncoding)) {
                 integerParamType.setEncoding(readXtceIntegerDataEncoding());
             } else if (isEndElementWithName(XTCE_IntegerParameterType)) {
@@ -1421,7 +1428,7 @@ public class XtceStaxReader {
             throw new XMLStreamException("Reference to parameter is missing");
         }
 
-        SequenceEntry.ReferenceLocationType locationType = SequenceEntry.ReferenceLocationType.containerStart;
+        SequenceEntry.ReferenceLocationType locationType = SequenceEntry.ReferenceLocationType.previousEntry; //default
         Parameter parameter = spaceSystem.getParameter(refName);
         ParameterEntry parameterEntry=null;
         if (parameter != null) {
@@ -1446,7 +1453,8 @@ public class XtceStaxReader {
             if (isStartElementWithName(XTCE_LocationInContainerInBits)) {
                 readXtceLocationInContainerInBits(parameterEntry);
             } else if (isStartElementWithName(XTCE_RepeatEntry)) {
-                skipXtceSection(XTCE_RepeatEntry);
+                Repeat r = readXtceRepeatEntry();
+                parameterEntry.setRepeatEntry(r);
             } else if (isStartElementWithName(XTCE_IncludeCondition)) {
                 skipXtceSection(XTCE_IncludeCondition);
             } else if (isEndElementWithName(XTCE_ParameterRefEntry)) {
@@ -1454,6 +1462,93 @@ public class XtceStaxReader {
             }
         }
     }
+
+    private Repeat readXtceRepeatEntry() throws  XMLStreamException {
+        log.trace(XTCE_RepeatEntry);
+        Repeat r = new Repeat();
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+
+            if (isStartElementWithName(XTCE_Count)) {
+                r.setCount(readXtceIntegerValue(XTCE_Count));
+            } else if (isStartElementWithName("FromBinaryTransformAlgorithm")) {
+                skipXtceSection("FromBinaryTransformAlgorithm");
+            } else if (isStartElementWithName("ToBinaryTransformAlgorithm")) {
+                skipXtceSection("ToBinaryTransformAlgorithm");
+            } else if (isEndElementWithName(XTCE_RepeatEntry)) {
+                return r;
+            }
+        }
+    }
+
+
+
+    private IntegerValue readXtceIntegerValue(String tagName) throws XMLStreamException {
+        log.trace(tagName);
+        checkStartElementPreconditions();
+        IntegerValue v = null;
+
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+            if (isStartElementWithName(XTCE_FixedValue)) {
+                v = new FixedIntegerValue(readXtceFixedValue());
+            } else if (isStartElementWithName(XTCE_DynamicValue)) {
+                v = readDynamicValue();
+            } else if (isEndElementWithName(tagName)) {
+                return v;
+            }
+        }
+    }
+
+
+    private DynamicIntegerValue readDynamicValue() throws XMLStreamException {
+        log.trace(XTCE_DynamicValue);
+
+        checkStartElementPreconditions();
+        DynamicIntegerValue v = new DynamicIntegerValue();
+
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+            if (isStartElementWithName(XTCE_ParameterInstanceRef)) {
+                ParameterInstanceRef pir = readXtceParameterInstanceRef();
+                v.setParameterInstanceRef(pir);
+            } else if (isEndElementWithName(XTCE_DynamicValue)) {
+                return v;
+            }
+        }
+    }
+
+
+    private ParameterInstanceRef readXtceParameterInstanceRef() throws XMLStreamException {
+        log.trace(XTCE_ParameterInstanceRef);
+        String paramRef = readAttribute("parameterRef", xmlEvent.asStartElement());
+        if(paramRef==null) {
+            throw new XMLStreamException("Reference to parameter is missing");
+        }
+
+        final ParameterInstanceRef instanceRef = new ParameterInstanceRef(true);
+
+        NameReference nr=new NameReference(paramRef, Type.PARAMETER_TYPE,
+                new ResolvedAction() {
+            @Override
+            public boolean resolved(NameDescription nd) {
+                instanceRef.setParameter((Parameter) nd);
+                return true;
+            }
+        });
+
+        Parameter parameter = spaceSystem.getParameter(paramRef);
+        if(parameter!=null) {
+            if(!nr.resolved(parameter)) {
+                spaceSystem.addUnresolvedReference(nr);
+            }
+        } else {
+            spaceSystem.addUnresolvedReference(nr);
+        }
+
+        return instanceRef;
+    }
+
 
     private void readXtceLocationInContainerInBits(ParameterEntry entry) throws XMLStreamException {
         log.trace(XTCE_LocationInContainerInBits);

@@ -13,6 +13,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.YConfiguration;
 import org.yamcs.xtce.xml.XtceStaxReader;
 
 /**
@@ -29,9 +30,9 @@ public class XtceLoader implements SpaceSystemLoader {
      * Logger
      */
     transient static Logger log = LoggerFactory.getLogger(XtceLoader.class.getName());
-    
+
     Set<String> excludedContainers;
-    
+
     /**
      * Constructor
      */
@@ -40,17 +41,14 @@ public class XtceLoader implements SpaceSystemLoader {
         initialize();
     }
 
-    @SuppressWarnings("unchecked")
     public XtceLoader(Map<String, Object> config) {
         if(!config.containsKey("file")) {
             throw new ConfigurationException("the configuration has to contain the keyword 'file' pointing to the XTCE file to be loaded");
         }
         this.xtceFileName = (String) config.get("file");
-        Object o = config.get("excludeTmContainers");
-        if(o instanceof List<?>)  {
-            excludedContainers = new HashSet<String>((List<String>)o);    
-        } else {
-            throw new ConfigurationException("Excluded containers has to be a list. In the current config it is a "+o.getClass());
+        if(config.containsKey("excludeTmContainers")) {
+            List<String> ec = YConfiguration.getList(config, "excludeTmContainers");
+            excludedContainers = new HashSet<String>(ec);    
         }
     }
 
@@ -91,7 +89,7 @@ public class XtceLoader implements SpaceSystemLoader {
 
                     String xtceFileVersion = line.substring(nameTagPos + 6,
                             line.indexOf('"', nameTagPos + 6));
-                    
+
                     return xtceFileVersion + Long.toString(file.lastModified());
                 }
             }

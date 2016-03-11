@@ -58,12 +58,12 @@ public class XtceTmExtractorTest {
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
 
-        ByteBuffer bb=tmGenerator.generate_PKT1_1();
+        ByteBuffer bb = tmGenerator.generate_PKT1_1();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
         
         //System.out.println("PKT11 buffer: "+StringConvertors.arrayToHexString(bb.array()));
         // System.out.println("received: "+received);
-        ParameterValueList received=tmExtractor.getParameterResult();
+        ParameterValueList received = tmExtractor.getParameterResult();
         Parameter p = xtcedb.getParameter("/REFMDB/SUBSYS1/IntegerPara1_1");
         ParameterValue pv=received.getLastInserted(p);
         assertEquals(tmGenerator.pIntegerPara1_1, pv.getEngValue().getUint32Value());

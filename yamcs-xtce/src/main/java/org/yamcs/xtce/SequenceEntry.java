@@ -35,7 +35,7 @@ public abstract class SequenceEntry implements Serializable, Comparable<Sequence
 	 * or relative to the end of the previous entry (previousEntry)
 	 */
 	public enum ReferenceLocationType {containerStart, previousEntry};
-	ReferenceLocationType referenceLocation=ReferenceLocationType.previousEntry;
+	ReferenceLocationType referenceLocation = ReferenceLocationType.previousEntry;
 	/**
 	 * May be used when this entry repeats itself in the sequence container.  
 	 * If null, the entry does not repeat.

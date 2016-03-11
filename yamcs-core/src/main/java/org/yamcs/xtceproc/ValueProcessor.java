@@ -1,20 +1,12 @@
 package org.yamcs.xtceproc;
 
-import java.nio.ByteOrder;
-import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.yarch.streamsql.NotSupportedException;
-
-import org.yamcs.xtce.BinaryDataEncoding;
-import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.FixedIntegerValue;
-import org.yamcs.xtce.FloatDataEncoding;
-import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerValue;
-import org.yamcs.xtce.StringDataEncoding;
+import org.yamcs.xtce.Parameter;
 
 public class ValueProcessor {
     ProcessingContext pcontext;
@@ -35,12 +27,13 @@ public class ValueProcessor {
     }
 
     private long getDynamicIntegerValue(DynamicIntegerValue div) {
+        Parameter pref = div.getParameterInstnaceRef().getParameter();
         for(ParameterValue pv:pcontext.paramResult) {
-            if(pv.getParameter()==div.getParameter()) {
+            if(pv.getParameter()==pref) {
                 return pv.getEngValue().getUint32Value();
             }
         }
-        log.warn("Could not find the parameter in the list of extracted parameters, parameter:" + div.getParameter());
+        log.warn("Could not find the parameter in the list of extracted parameters, parameter:" + pref);
         return 0;
     }
 

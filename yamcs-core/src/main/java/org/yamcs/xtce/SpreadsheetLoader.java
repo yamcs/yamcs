@@ -45,7 +45,6 @@ import jxl.read.biff.BiffException;
  */
 public class SpreadsheetLoader extends AbstractFileLoader {
     protected HashMap<String,Calibrator> calibrators = new HashMap<String, Calibrator>();
-    protected HashMap<String,ArrayList<LimitDef>> limits = new HashMap<String,ArrayList<LimitDef>>();
     protected HashMap<String,EnumerationDefinition> enumerations = new HashMap<String, EnumerationDefinition>();
     protected HashMap<String,Parameter> parameters = new HashMap<String, Parameter>();
     protected HashSet<Parameter> outputParameters = new HashSet<Parameter>(); // Outputs to algorithms
@@ -2392,16 +2391,15 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             se.repeatEntry = new Repeat();
             try {
                 int rep = Integer.decode(repeat);
-                se.repeatEntry.count = new FixedIntegerValue();
-                ((FixedIntegerValue)se.repeatEntry.count).value = rep;
+                se.repeatEntry.count = new FixedIntegerValue(rep);
                 return rep;
             } catch (NumberFormatException e) {
                 se.repeatEntry.count = new DynamicIntegerValue();
-                Parameter repeatparam=parameters.get(repeat);
+                Parameter repeatparam = parameters.get(repeat);
                 if(repeatparam==null) {
                     throw new SpreadsheetLoadException(ctx, "Cannot find the parameter for repeat "+repeat);
                 }
-                ((DynamicIntegerValue)se.repeatEntry.count).parameter = repeatparam;	
+                ((DynamicIntegerValue)se.repeatEntry.count).setParameterInstanceRef(new ParameterInstanceRef(repeatparam, true));	
                 return -1;
             }
         } else {
@@ -2433,14 +2431,6 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         return contents;
     }
 
-    private static class LimitDef {
-        public LimitDef(String condition, AlarmRanges ranges) {
-            this.condition=condition;
-            this.ranges=ranges;
-        }
-        String condition;
-        AlarmRanges ranges;
-    }
 
     /**
      * Temporary value holder for the enumeration definition (because
