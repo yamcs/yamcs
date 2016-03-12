@@ -68,6 +68,20 @@
             <tagBase>https://svn.apache.org/repos/asf/maven/components/releases</tagBase>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>1.5</version>
+          <executions>
+            <execution>
+              <id>sign-artifacts</id>
+              <phase>verify</phase>
+              <goals>
+                <goal>sign</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
       
     </pluginManagement>
@@ -128,44 +142,11 @@
     </plugins>
   </reporting>
 
-  <repositories>
-    <repository>
-      <id>repository.jboss.org</id>
-      <url>http://repository.jboss.org/nexus/content/groups/public/</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>yamcs-mvn-repo-releases</id>
-      <url>https://raw.github.com/yamcs/mvn-repo/master/releases/</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>yamcs-mvn-repo-snapshots</id>
-      <url>https://raw.github.com/yamcs/mvn-repo/master/snapshots/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
-
   <distributionManagement>
-  <!-- use the following if you're not using a snapshot version. -->
-  <repository>
-    <id>github-releases</id>
-    <name>GitHub Yamcs Repo releases</name>
-    <url>file:///home/nm/git/yamcs-mvn-repo/releases</url>
-  </repository>
-  <!-- use the following if you ARE using a snapshot version. -->
-  <snapshotRepository>
-    <id>github-snapshot</id>
-    <name>Github Yamcs repo snapshots</name>
-    <url>file:///home/nm/git/yamcs-mvn-repo/snapshots</url>
-    <uniqueVersion>false</uniqueVersion>
-  </snapshotRepository>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
   </distributionManagement>
 
  <profiles>
@@ -196,6 +177,17 @@
                                     </goals>
                                 </execution>
                             </executions>
+                        </plugin>
+                        <plugin>
+                          <groupId>org.sonatype.plugins</groupId>
+                          <artifactId>nexus-staging-maven-plugin</artifactId>
+                          <version>1.6.3</version>
+                          <extensions>true</extensions>
+                          <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                          </configuration>
                         </plugin>
                     </plugins>
                 </pluginManagement>
