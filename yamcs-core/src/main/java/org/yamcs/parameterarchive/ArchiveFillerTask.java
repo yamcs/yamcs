@@ -114,7 +114,7 @@ class ArchiveFillerTask implements ParameterConsumer {
     
     /**
      * writes data into the archive
-     * @param pgs
+     * @param pgList
      */
     protected void consolidateAndWriteToArchive(Collection<PGSegment> pgList) {
         for(PGSegment pgs: pgList) {

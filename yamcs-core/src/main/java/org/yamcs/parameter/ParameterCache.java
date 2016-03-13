@@ -38,7 +38,7 @@ public class ParameterCache {
     /**
      * update the parameters in the cache
 
-     * @param parameterList
+     * @param pvs - parameter value list
      */
     public void update(Collection<ParameterValue> pvs) {
         //System.out.println("ParameterCache ------- updated with "+pvs);
@@ -96,7 +96,7 @@ public class ParameterCache {
 
     /**
      * Returns last cached value for parameter or null if there is no value in the cache
-     * @param plist
+     * @param p - parameter for which the last value is returned
      * @return
      */
     public ParameterValue getLastValue(Parameter p) {
@@ -110,7 +110,7 @@ public class ParameterCache {
      * Returns all values from the cache for the parameter or null if there is no value cached
      * 
      * The parameter are returned in descending order (newest parameter is returned first)
-     * @param plist
+     * @param p - parameter for which all values are returned
      * @return
      */
     public List<ParameterValue> getAllValues(Parameter p) {

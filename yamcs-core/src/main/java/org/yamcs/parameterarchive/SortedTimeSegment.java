@@ -134,7 +134,7 @@ public class SortedTimeSegment extends BaseSegment implements ValueSegment {
     }
     /**
      * returns the end of the segment where the instant fits
-     * @param segmentId
+     * @param instant
      * @return
      */
     public static long getSegmentEnd(long instant) {
@@ -165,7 +165,7 @@ public class SortedTimeSegment extends BaseSegment implements ValueSegment {
      * performs a binary search in the time segment and returns the position of t or where t would fit in. 
      * 
      * @see java.util.Arrays#binarySearch(int[], int)
-     * @param x
+     * @param instant
      * @return
      */
     public int search(long instant) {
@@ -188,8 +188,7 @@ public class SortedTimeSegment extends BaseSegment implements ValueSegment {
     }
 
     /**
-     * Encode the time array 
-     * @return
+     * Encode the time array
      */
     @Override
     public void writeTo(ByteBuffer bb) {

@@ -42,16 +42,15 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
      * Constructs a packet provider that sends packets from a file at the indicated speed. 
      * If the parameter loop is set to true, then jump back at the beginning of the file once the end has been reached.
      * @param fileName
-     * @param loop
      * @param delayBetweenPackets
      * @throws FileNotFoundException
      */
-    public FileTmPacketProvider(String fileName, String eas, long delayBetweenPackets) throws FileNotFoundException {
+    public FileTmPacketProvider(String fileName, String endActionStr, long delayBetweenPackets) throws FileNotFoundException {
         this.fileName = fileName;
         this.delayBetweenPackets=delayBetweenPackets;
-        if (eas.equalsIgnoreCase("LOOP")) endAction=EndAction.LOOP;
-        else if (eas.equalsIgnoreCase("QUIT")) endAction=EndAction.QUIT;
-        else if (eas.equalsIgnoreCase("STOP")) endAction=EndAction.STOP;
+        if (endActionStr.equalsIgnoreCase("LOOP")) endAction=EndAction.LOOP;
+        else if (endActionStr.equalsIgnoreCase("QUIT")) endAction=EndAction.QUIT;
+        else if (endActionStr.equalsIgnoreCase("STOP")) endAction=EndAction.STOP;
         log.debug("attempting to open file " + this.fileName);
         tmFileReader = new TmFileReader(this.fileName);
         timeService = new RealtimeTimeService();
@@ -106,7 +105,7 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
         return true;
     }
     /**
-     * @param delayBetweenPakets the delayBetweenPakets to set
+     * @param delayBetweenPackets the delayBetweenPakets to set
      */
     public void setDelayBetweenPackets(int delayBetweenPackets) {
         this.delayBetweenPackets = delayBetweenPackets;

@@ -23,7 +23,7 @@ public class BitWriter {
     /**
      * Constructs a BitWriter around an existing ByteBuffer
      *
-     * @param n
+     * @param bb
      */
     public BitWriter(ByteBuffer bb) {
         this.bb = bb;

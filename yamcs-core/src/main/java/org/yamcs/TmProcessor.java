@@ -15,9 +15,9 @@ import org.yamcs.xtce.SequenceContainer;
  */
 public interface TmProcessor extends TmSink {
     /**
-     * processes packets starting conforming to the given definition
+     * processes packets derived from the given root container
      * @param pwrt
-     * @param def
+     * @param rootContainer
      */
     public void processPacket(PacketWithTime pwrt, SequenceContainer rootContainer);
     

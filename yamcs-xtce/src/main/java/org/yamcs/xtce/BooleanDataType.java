@@ -20,7 +20,7 @@ public class BooleanDataType extends BaseDataType {
     
     
     /**
-     * Returns {@link Boolean.parseBoolean(stringValue)}
+     * Returns {@link Boolean#parseBoolean(String)}
      */
     public Object parseString(String stringValue) {
         return Boolean.parseBoolean(stringValue);

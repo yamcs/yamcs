@@ -113,7 +113,7 @@ public class StreamConfig {
     }
     /**
      * returns the stream config with the given type and name or null if it has not been defined
-     * @param tm
+     * @param type
      * @param streamName
      * @return
      */

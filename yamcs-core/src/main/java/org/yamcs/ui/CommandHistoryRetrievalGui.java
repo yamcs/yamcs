@@ -66,11 +66,8 @@ public class CommandHistoryRetrievalGui extends JFrame implements MessageHandler
 	
 	/**
 	 * Creates a new window that requests parameter deliveries
-	 * @param app
 	 * @param parent
-	 * @param packetNames
-	 * @param startTime
-	 * @param stopTime
+	 * 
 	 */
 	public CommandHistoryRetrievalGui(ConnectionParameters connectionParams, Component parent) {
 		super("Save Command History");

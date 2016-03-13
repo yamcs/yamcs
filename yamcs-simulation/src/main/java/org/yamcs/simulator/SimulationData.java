@@ -2,7 +2,7 @@ package org.yamcs.simulator;
 
 /**
  * Represents one tuple of simulated data.
- * Almost like a Map<String,String>. Provides some easy accessors.
+ * Almost like a Map&lt;String,String&gt;. Provides some easy accessors.
  */
 public class SimulationData {
     

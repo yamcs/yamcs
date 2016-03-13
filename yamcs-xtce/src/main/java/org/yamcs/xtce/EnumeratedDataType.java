@@ -65,8 +65,6 @@ public class EnumeratedDataType extends BaseDataType {
 
     /**
      * Add range to enumeration list
-     * @param value Integer value
-     * @param label Label associated with value
      */
     public void addEnumerationRange(double min, double max, boolean isMinInclusive, boolean isMaxInclusive, String label) {
         assert(min < max);

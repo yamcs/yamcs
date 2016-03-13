@@ -7,7 +7,7 @@ import org.yamcs.parameter.ParameterWithIdConsumer;
 
 
 /**
- * Expected class type for use with {@link RestReplays}
+ * Expected class type for use with {@link org.yamcs.web.rest.archive.RestReplays}
  * Adds functionality for stopping a replay, and has support for pagination
  */
 public abstract class RestReplayListener implements ParameterWithIdConsumer {

@@ -13,7 +13,8 @@ public class FloatDataEncoding extends DataEncoding {
     StringDataEncoding stringEncoding=null;
 
     /**
-     * FloadDataEncoding of type {@link FloatDataEncoding.Encoding.IEEE754_1985}
+     * FloadDataEncoding of type {@link FloatDataEncoding.Encoding#IEEE754_1985}
+     * 
      * @param name
      * @param sizeInBits
      */

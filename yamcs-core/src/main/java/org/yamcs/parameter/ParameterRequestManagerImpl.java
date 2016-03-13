@@ -205,26 +205,25 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 
     /**
      * Create request with a given id. This is called when switching yprocessors, the id is coming from the other channel.
-     * @param subscriptionID
-     * @param itemList
+     * @param subscriptionId - subscription id
+     * @param paraList
      * @param tpc
-     * @return
      * @throws InvalidIdentification
      */
-    public void addRequest(int id, List<Parameter> paraList, ParameterConsumer tpc) throws InvalidIdentification {
+    public void addRequest(int subscriptionId, List<Parameter> paraList, ParameterConsumer tpc) throws InvalidIdentification {
         List<ParameterProvider> providers=getProviders(paraList);
         for(int i=0;i<paraList.size();i++) {
-            log.trace("creating subscriptionID:{} with item:{}",id, paraList.get(i));
-            addItemToRequest(id, paraList.get(i), providers.get(i));
+            log.trace("creating subscriptionID:{} with item:{}",subscriptionId, paraList.get(i));
+            addItemToRequest(subscriptionId, paraList.get(i), providers.get(i));
             //log.info("afterwards the subscription looks like: "+toString());
         }
-        request2ParameterConsumerMap.put(id, tpc);
+        request2ParameterConsumerMap.put(subscriptionId, tpc);
     }
 
     /**
      * Add items to an request id. 
-     * @param subscriptionID
-     * @param itemList
+     * @param subscriptionId
+     * @param para
      * @throws InvalidIdentification
      */
     public void addItemsToRequest(final int subscriptionId, final Parameter para) throws InvalidIdentification, InvalidRequestIdentification {
@@ -240,9 +239,9 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     }
     
     /**
-     * Add items to an request id. 
-     * @param subscriptionID
-     * @param itemList
+     * Add items to a subscription. 
+     * @param subscriptionId
+     * @param paraList - list of parameters that are added to the subscription
      * @throws InvalidIdentification
      */
     public void addItemsToRequest(final int subscriptionId, final List<Parameter> paraList) throws InvalidIdentification, InvalidRequestIdentification {

@@ -261,7 +261,7 @@ public class YarchDatabase {
 
     /**
      * Adds a stream to the dictionary making it "official"
-     * @param s
+     * @param stream
      * @throws YarchException
      */
     public void addStream(AbstractStream stream) throws YarchException {

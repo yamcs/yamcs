@@ -21,7 +21,7 @@ public class JsonDecoder implements WebSocketDecoder {
 
     /**
      * Decodes the first few common wrapper fields of an incoming web socket message.<br>
-     * Sample: [1,1,2,{"<resource>":"<operation>", "data": <undecoded remainder>}]
+     * Sample: [1,1,2,{"&lt;resource&gt;":"&lt;operation&gt;", "data": &lt;undecoded remainder&gt;}]
      */
     @Override
     public WebSocketDecodeContext decodeMessage(InputStream in) throws WebSocketException {

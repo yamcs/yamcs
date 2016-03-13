@@ -23,7 +23,6 @@ public class SortedIntArray {
     /**
      * Creates a sorted int array with a default initial capacity
      * 
-     * @param capacity
      */
     public SortedIntArray() {
         a = new int[DEFAULT_CAPACITY];
@@ -50,10 +49,9 @@ public class SortedIntArray {
     }
 
     /**
-     * Inserts value to the array and return the position on which has been added
+     * Inserts value to the array and return the position on which has been inserted
      * 
-     * 
-     * @param id
+     * @param x - value to be inserted
      */
     public int insert(int x) {
         int pos = Arrays.binarySearch(a, 0, length, x);
@@ -248,8 +246,8 @@ public class SortedIntArray {
     
     /**
      * returns true if this array contains the value
-     * @param pid
-     * @return
+     * @param x - value to check
+     * 
      */
     public boolean contains(int x) {
         return Arrays.binarySearch(a, 0, length, x)>=0;

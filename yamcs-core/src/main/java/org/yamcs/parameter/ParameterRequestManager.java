@@ -14,8 +14,7 @@ import org.yamcs.parameter.ParameterValue;
 public interface ParameterRequestManager {
 	/**
 	 * Called each time some parameters have been updated.
-	 * @param paramDefs
-	 * @param paramValues
+	 * @param params - new delivered parameter values
 	 */
 	public abstract void update(Collection<ParameterValue> params);
 }

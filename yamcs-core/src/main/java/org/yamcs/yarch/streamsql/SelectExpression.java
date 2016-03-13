@@ -16,12 +16,12 @@ import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
 /**
  * Corresponds to a queries like 
- *      "select 2*x, x+sum(y+3) from t[...] where x>5 group by x"
+ *      "select 2*x, x+sum(y+3) from t[...] where x&gt;5 group by x"
  * chain of data/processing (D=Data, P=Processing, agg=aggregate):
  * 
  * (D1)   inputDef             (x,y)                                
  *    
- * (P1.1) where filter         (x>5)                  
+ * (P1.1) where filter         (x&gt;5)                  
  * (P1.2) aggInputList   
  * 
  * (D2)   aggInputDef          (x,y+3)
@@ -42,7 +42,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
  * @author nm
  *
  */
-class SelectExpression implements StreamExpression {
+public class SelectExpression implements StreamExpression {
 	List<SelectItem> selectList; // a,b+4,c
 	TupleSourceExpression tupleSourceExpression; //t,u,v (but only one table/stream supported for the moment)
 	Expression whereClause; //x and y

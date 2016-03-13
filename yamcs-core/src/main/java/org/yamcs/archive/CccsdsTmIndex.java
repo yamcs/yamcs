@@ -48,12 +48,9 @@ public class CccsdsTmIndex implements TmIndex {
 
 
     /**
-     * Open the tmindex
-     * if readonly is specified, it is open only for reading and no streams are subscribed
-     * @param fileprefix
-     * @param lock
+     * if readonly is specified, it is open only for reading 
+     * 
      * @throws IOException
-     * @throws RocksDBException 
      */
     public CccsdsTmIndex(String instance, boolean readonly) throws IOException {
         log=YamcsServer.getLogger(this.getClass(), instance);

@@ -141,7 +141,6 @@ public class ColumnSerializer {
     }
 
     /**
-     * @param outputStream
      * @throws IOException
      */
     public void serialize(DataOutput stream, Object v) throws IOException {

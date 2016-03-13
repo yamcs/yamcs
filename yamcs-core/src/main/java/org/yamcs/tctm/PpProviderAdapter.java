@@ -32,7 +32,7 @@ import com.google.common.util.concurrent.AbstractService;
  * 
  * Injects processed parameters from PpProviders into yamcs streams.
  *
- * To the base definition there is one column for each parameter name with the type PROTOBUF({@link org.yamcs.protobuf.pvalue.ParameterValue}
+ * To the base definition there is one column for each parameter name with the type PROTOBUF({@link org.yamcs.protobuf.Pvalue.ParameterValue})
 
  * @author nm
  *

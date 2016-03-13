@@ -102,8 +102,7 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
     YamcsClient yclient;
 
     /**
-     * Creates a new window that requests parameter delivieries
-     * @param app
+     * Creates a new window that requests parameter deliveries
      * @param parent
      */
     public ParameterRetrievalGui(ConnectionParameters connectionParameters, Component parent) {

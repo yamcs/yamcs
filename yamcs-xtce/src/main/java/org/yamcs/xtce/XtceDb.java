@@ -213,19 +213,16 @@ public class XtceDb implements Serializable {
     }
 
     /**
-     * @param itemID
+     * 
      * @return list of ParameterEntry corresponding to a given parameter.
-     * @throws InvalidIdentification
      */
     public List<ParameterEntry> getParameterEntries(Parameter p) {
         return parameter2ParameterEntryMap.get(p);
     }
 
     /**
-     * @param itemID
      * @return list of ContainerEntry corresponding to a given sequence
      *         container.
-     * @throws InvalidIdentification
      */
     public List<ContainerEntry> getContainerEntries(SequenceContainer sc) {
         return sequenceContainer2ContainerEntryMap.get(sc);

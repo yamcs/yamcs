@@ -67,9 +67,9 @@ public class Subscription {
     }
     
     /**
-     * Called in the desperate cases when this container is part of other containers through aggregation. 
-     * The parent container will need to know the size of this one so we add everything.
-     * @param subscription
+     * Called in the cases when seq is part of other containers through aggregation. 
+     * The parent container will need to know the size of this one so we add all entries of seq.
+     * @param seq
      */
     public void addAll(SequenceContainer seq) {
         for(SequenceEntry se:seq.getEntryList()) {
@@ -114,8 +114,8 @@ public class Subscription {
     }
     
     /**
-     * Add to the passed subscription all the entries and containers on which this parameter depends
-     * @param subscription
+     * Add to the subscription all the entries and containers on which this parameter depends
+     * @param parameter
      */
     public void addParameter(Parameter parameter) {
         List<ParameterEntry> tpips=xtcedb.getParameterEntries(parameter);

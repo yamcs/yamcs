@@ -27,46 +27,46 @@ import javax.xml.datatype.XMLGregorianCalendar;
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType>
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="description" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="parameterSequence" maxOccurs="unbounded">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="parameter" maxOccurs="unbounded">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attribute name="spaceSystem" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                           &lt;attribute name="paraName" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                           &lt;attribute name="valueType" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                           &lt;attribute name="value" type="{http://www.w3.org/2001/XMLSchema}decimal" />
- *                           &lt;attribute name="monitoringResult" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                           &lt;attribute name="generationStep" type="{http://www.w3.org/2001/XMLSchema}int" />
- *                           &lt;attribute name="aquisitionStep" type="{http://www.w3.org/2001/XMLSchema}int" />
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                 &lt;/sequence>
- *                 &lt;attribute name="repeat" type="{http://www.w3.org/2001/XMLSchema}int" />
- *                 &lt;attribute name="loop" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                 &lt;attribute name="stepOffset" type="{http://www.w3.org/2001/XMLSchema}int" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *       &lt;/sequence>
- *       &lt;attribute name="startDate" type="{http://www.w3.org/2001/XMLSchema}dateTime" />
- *       &lt;attribute name="stepLengthMs" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="loop" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="description" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
+ *         &lt;element name="parameterSequence" maxOccurs="unbounded"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="parameter" maxOccurs="unbounded"&gt;
+ *                     &lt;complexType&gt;
+ *                       &lt;complexContent&gt;
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                           &lt;attribute name="spaceSystem" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                           &lt;attribute name="paraName" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                           &lt;attribute name="valueType" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                           &lt;attribute name="value" type="{http://www.w3.org/2001/XMLSchema}decimal" /&gt;
+ *                           &lt;attribute name="monitoringResult" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                           &lt;attribute name="generationStep" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *                           &lt;attribute name="aquisitionStep" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *                         &lt;/restriction&gt;
+ *                       &lt;/complexContent&gt;
+ *                     &lt;/complexType&gt;
+ *                   &lt;/element&gt;
+ *                 &lt;/sequence&gt;
+ *                 &lt;attribute name="repeat" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *                 &lt;attribute name="loop" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *                 &lt;attribute name="stepOffset" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="startDate" type="{http://www.w3.org/2001/XMLSchema}dateTime" /&gt;
+ *       &lt;attribute name="stepLengthMs" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="loop" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -223,32 +223,32 @@ public class PpSimulation {
      * <p>The following schema fragment specifies the expected content contained within this class.
      * 
      * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="parameter" maxOccurs="unbounded">
-     *           &lt;complexType>
-     *             &lt;complexContent>
-     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                 &lt;attribute name="spaceSystem" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *                 &lt;attribute name="paraName" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *                 &lt;attribute name="valueType" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *                 &lt;attribute name="value" type="{http://www.w3.org/2001/XMLSchema}decimal" />
-     *                 &lt;attribute name="monitoringResult" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *                 &lt;attribute name="generationStep" type="{http://www.w3.org/2001/XMLSchema}int" />
-     *                 &lt;attribute name="aquisitionStep" type="{http://www.w3.org/2001/XMLSchema}int" />
-     *               &lt;/restriction>
-     *             &lt;/complexContent>
-     *           &lt;/complexType>
-     *         &lt;/element>
-     *       &lt;/sequence>
-     *       &lt;attribute name="repeat" type="{http://www.w3.org/2001/XMLSchema}int" />
-     *       &lt;attribute name="loop" type="{http://www.w3.org/2001/XMLSchema}boolean" />
-     *       &lt;attribute name="stepOffset" type="{http://www.w3.org/2001/XMLSchema}int" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
+     * &lt;complexType&gt;
+     *   &lt;complexContent&gt;
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *       &lt;sequence&gt;
+     *         &lt;element name="parameter" maxOccurs="unbounded"&gt;
+     *           &lt;complexType&gt;
+     *             &lt;complexContent&gt;
+     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *                 &lt;attribute name="spaceSystem" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+     *                 &lt;attribute name="paraName" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+     *                 &lt;attribute name="valueType" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+     *                 &lt;attribute name="value" type="{http://www.w3.org/2001/XMLSchema}decimal" /&gt;
+     *                 &lt;attribute name="monitoringResult" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+     *                 &lt;attribute name="generationStep" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+     *                 &lt;attribute name="aquisitionStep" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+     *               &lt;/restriction&gt;
+     *             &lt;/complexContent&gt;
+     *           &lt;/complexType&gt;
+     *         &lt;/element&gt;
+     *       &lt;/sequence&gt;
+     *       &lt;attribute name="repeat" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+     *       &lt;attribute name="loop" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+     *       &lt;attribute name="stepOffset" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+     *     &lt;/restriction&gt;
+     *   &lt;/complexContent&gt;
+     * &lt;/complexType&gt;
      * </pre>
      * 
      * 
@@ -376,19 +376,19 @@ public class PpSimulation {
          * <p>The following schema fragment specifies the expected content contained within this class.
          * 
          * <pre>
-         * &lt;complexType>
-         *   &lt;complexContent>
-         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *       &lt;attribute name="spaceSystem" type="{http://www.w3.org/2001/XMLSchema}string" />
-         *       &lt;attribute name="paraName" type="{http://www.w3.org/2001/XMLSchema}string" />
-         *       &lt;attribute name="valueType" type="{http://www.w3.org/2001/XMLSchema}string" />
-         *       &lt;attribute name="value" type="{http://www.w3.org/2001/XMLSchema}decimal" />
-         *       &lt;attribute name="monitoringResult" type="{http://www.w3.org/2001/XMLSchema}string" />
-         *       &lt;attribute name="generationStep" type="{http://www.w3.org/2001/XMLSchema}int" />
-         *       &lt;attribute name="aquisitionStep" type="{http://www.w3.org/2001/XMLSchema}int" />
-         *     &lt;/restriction>
-         *   &lt;/complexContent>
-         * &lt;/complexType>
+         * &lt;complexType&gt;
+         *   &lt;complexContent&gt;
+         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+         *       &lt;attribute name="spaceSystem" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+         *       &lt;attribute name="paraName" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+         *       &lt;attribute name="valueType" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+         *       &lt;attribute name="value" type="{http://www.w3.org/2001/XMLSchema}decimal" /&gt;
+         *       &lt;attribute name="monitoringResult" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+         *       &lt;attribute name="generationStep" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+         *       &lt;attribute name="aquisitionStep" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+         *     &lt;/restriction&gt;
+         *   &lt;/complexContent&gt;
+         * &lt;/complexType&gt;
          * </pre>
          * 
          * 

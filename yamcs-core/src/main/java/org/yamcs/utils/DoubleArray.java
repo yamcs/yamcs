@@ -21,8 +21,6 @@ public class DoubleArray {
     
     /**
      * Creates a sorted int array with a default initial capacity
-     * 
-     * @param capacity
      */
     public DoubleArray() {
         a = new double[DEFAULT_CAPACITY];
@@ -52,7 +50,7 @@ public class DoubleArray {
     /**
      * add value to the array 
      * 
-     * @param id
+     * @param x
      */
     public void add(double x) {
         ensureCapacity(length+1);

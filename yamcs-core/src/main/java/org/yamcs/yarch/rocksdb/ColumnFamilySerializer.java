@@ -6,8 +6,6 @@ package org.yamcs.yarch.rocksdb;
  * 
  * This class allows to use other objects for column families by providing a serialization/deserialization from Object to byte[]
  * 	
- * @param value
- * @return
  */
 public interface ColumnFamilySerializer {
 	public byte[] objectToByteArray(Object value);

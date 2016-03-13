@@ -154,7 +154,6 @@ public class Protocol {
      * Closes producer when a consumer for address a has been detected as dead
      * @param p
      * @param a
-     * @throws Exception
      */
     public static synchronized void killProducerOnConsumerClosed(ClientProducer p, SimpleString a) {
         if((killer==null) || killer.session.isClosed()) {//killer.session gets closed when the hornetq is stopped (during test execution by maven)

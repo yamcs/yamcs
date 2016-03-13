@@ -21,8 +21,6 @@ public class IntArray {
     
     /**
      * Creates a sorted int array with a default initial capacity
-     * 
-     * @param capacity
      */
     public IntArray() {
         a = new int[DEFAULT_CAPACITY];
@@ -54,7 +52,7 @@ public class IntArray {
     /**
      * add value to the array 
      * 
-     * @param id
+     * @param x - value to be added
      */
     public void add(int x) {
         ensureCapacity(length+1);

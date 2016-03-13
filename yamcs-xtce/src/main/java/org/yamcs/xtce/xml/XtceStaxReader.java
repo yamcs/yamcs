@@ -192,11 +192,10 @@ public class XtceStaxReader {
 
 
     /**
-     * Reading of the XML XTCE file, contents are stored in the Xtce instance
+     * Reading of the XML XTCE file
      * 
-     * @param xtceDb
-     *            Instance where the read information will be stored, must not
-     *            be null
+     * @return returns the SpaceSystem read from the XML file
+     * 
      */
     public SpaceSystem readXmlDocument(String fileName) throws NullPointerException, Exception {
 

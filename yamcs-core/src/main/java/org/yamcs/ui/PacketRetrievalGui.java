@@ -84,11 +84,7 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
 
     /**
      * Creates a new window that requests parameter deliveries
-     * @param app
-     * @param parent
-     * @param packetNames
-     * @param startTime
-     * @param stopTime
+     * 
      */
     public PacketRetrievalGui(ConnectionParameters connectionParams, Component parent) {
         super("Dump Telemetry Packets");

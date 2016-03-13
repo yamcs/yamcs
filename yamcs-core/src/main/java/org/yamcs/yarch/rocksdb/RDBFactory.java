@@ -44,7 +44,6 @@ public class RDBFactory implements Runnable {
      * Opens or create a database.
      * 
      * 
-     * @param tblDef - table definition containing the partition manager as well as the data directory
      * @param absolutePath - absolute path - should be a directory
      * @param readonly
      * @return
@@ -169,7 +168,8 @@ public class RDBFactory implements Runnable {
 
     /**
      * Close the DB if open (called when dropping the table)
-     * @param f
+     * 
+     * @param absolutePath
      */
     public synchronized void closeIfOpen(String absolutePath) {
         DbAndAccessTime daat = databases.remove(absolutePath);

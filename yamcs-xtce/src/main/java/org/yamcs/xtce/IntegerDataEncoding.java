@@ -14,7 +14,7 @@ public class IntegerDataEncoding extends DataEncoding {
     StringDataEncoding stringEncoding=null;
 
     /**
-     * IntegerDataEncoding of type {@link IntegerDataEncoding.Encoding.unsigned}
+     * IntegerDataEncoding of type {@link IntegerDataEncoding.Encoding#unsigned}
      * @param name
      * @param sizeInBits
      */

@@ -175,8 +175,9 @@ public class TimeEncoding {
     }
     
     /**
-     * Conversion from standard *nix time in milliseconds to GPS time.
-     * @param milliseconds Unix time in milliseconds, input parameter
+     * Conversion from instant to GPS time (milliseconds since the GPS epoch).
+     * @param instant TimeEncoding instant
+     * 
      * @return GPS time
      */
     public static long toGpsTimeMillisec(final long instant) {
@@ -255,7 +256,10 @@ public class TimeEncoding {
     
     /**
      * Transforms UNIX time expressed in seconds and microseconds since 1970 to instant
-     * @param milliseconds
+     * WARNING: this conversion will loose precision (microsecond to millisecond)
+     * 
+     * @param seconds
+     * @param microseconds
      * @return
      */
     public static long fromUnixTime(long seconds, int microseconds) {

@@ -19,7 +19,7 @@ public class SubscriptionArray {
     /**
      * add subscription id to the array
      * If it's already in the array, the operation has no effect
-     * @param id
+     * @param subscriptionId
      */
     public void add(int subscriptionId) {
 	lock.lock();

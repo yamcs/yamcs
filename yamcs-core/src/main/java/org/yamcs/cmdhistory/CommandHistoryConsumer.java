@@ -12,14 +12,14 @@ import org.yamcs.parameter.Value;
 public interface CommandHistoryConsumer {
 	/**
 	 * Called when a new command matching the filters has been added to the history
-	 * @param che
+	 * @param pc
 	 */
 	void addedCommand(PreparedCommand pc);
 	
 	
 	/**
 	 * Called when the history of a command matching the filters has been updated
-	 * @param kvp
+	 *
 	 */
 	void updatedCommand(CommandId cmdId, long changeDate, String key, Value value);
 

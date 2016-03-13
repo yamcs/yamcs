@@ -398,14 +398,6 @@ public class YamcsServer {
 
     /**
      * @param args
-     * @throws ConfigurationException
-     * @throws IOException
-     * @throws YProcessorException
-     * @throws InvalidName
-     * @throws AdapterInactive
-     * @throws WrongPolicy
-     * @throws ServantNotActive
-     * @throws java.text.ParseException
      */
     public static void main(String[] args) {
         if(args.length>0) printOptionsAndExit();

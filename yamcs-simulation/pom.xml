@@ -9,10 +9,16 @@
     <relativePath>..</relativePath>
   </parent>
 
+
   <artifactId>yamcs-simulation</artifactId>
   <packaging>jar</packaging>
   <name>Yamcs Simulation</name>
   
+  <properties>
+    <skipStaging>true</skipStaging>
+    <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+  </properties>
+
   <dependencies>
     <dependency>
         <groupId>org.yamcs</groupId>

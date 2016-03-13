@@ -305,8 +305,8 @@ public class ParameterArchive  extends AbstractService {
 
     /** 
      * a copy of the partitions from start to stop inclusive
-     * @param startPartition
-     * @param stopPartition
+     * @param startPartitionId
+     * @param stopPartitionId
      * @return
      */
     public NavigableMap<Long, Partition> getPartitions(long startPartitionId, long stopPartitionId) {

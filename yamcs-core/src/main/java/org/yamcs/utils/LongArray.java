@@ -21,8 +21,6 @@ public class LongArray {
     
     /**
      * Creates a sorted int array with a default initial capacity
-     * 
-     * @param capacity
      */
     public LongArray() {
         a = new long[DEFAULT_CAPACITY];
@@ -54,7 +52,7 @@ public class LongArray {
     /**
      * add value to the array 
      * 
-     * @param id
+     * @param x - value to be added
      */
     public void add(long x) {
         ensureCapacity(length+1);
@@ -165,7 +163,7 @@ public class LongArray {
     }
 
     /**
-     * get the backing array. It's length will be >= than the size of the array.
+     * get the backing array. It's length will be &ge; than the size of the array.
      * @return
      */
     public long[] array() {

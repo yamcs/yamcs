@@ -28,12 +28,11 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 /**
- * Preferences dialog under Edit->Preferences menu. Dialog is modal.
+ * Preferences dialog under Edit-&gt;Preferences menu. Dialog is modal.
  * 
  * @author mu
  */
-public class PreferencesDialog extends JDialog implements ActionListener
-{
+public class PreferencesDialog extends JDialog implements ActionListener {
 
     private static final long  serialVersionUID   = 1L;
     private JPanel             jContentPane       = null; // @jve:decl-index=0:visual-constraint="10,10"

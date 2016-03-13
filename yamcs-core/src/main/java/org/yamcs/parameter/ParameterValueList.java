@@ -12,7 +12,7 @@ import org.yamcs.xtce.Parameter;
  * 
  * Stores a collection of ParameterValue indexed on Parameter
  * 
- * It works like a LinkedHashMap<Parameter, LinkedList<ParameterValue>>  
+ * It works like a LinkedHashMap&lt;Parameter, LinkedList&lt;ParameterValue&gt;&gt;  
  *
  * 
  * Not thread safe

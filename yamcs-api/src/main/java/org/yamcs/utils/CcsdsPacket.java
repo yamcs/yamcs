@@ -87,8 +87,6 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
 	}
 
 	/**
-	 * 
-	 * @param data.bb
 	 * @return time in seconds since 6 Jan 1980
 	 */
 	public long getCoarseTime() {

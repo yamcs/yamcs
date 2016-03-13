@@ -2,8 +2,10 @@ package org.yamcs;
 
 /**
  * Exception thrown if there is an error in configuration.
+ * 
  * If the config problem is related to a file, the confPath is the something like
- *  filename.yaml:key1->subkey2->subkey3...
+ *  filename.yaml: key1-&gt;subkey2-&gt;subkey3...
+ *  
  * @author nm
  *
  */

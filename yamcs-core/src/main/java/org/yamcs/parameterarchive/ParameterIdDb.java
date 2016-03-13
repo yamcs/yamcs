@@ -50,9 +50,11 @@ public class ParameterIdDb {
      * 
      * 
      * @param paramFqn
-     * @param type
+     * @param engType
+     * @param rawType
+     * 
      * @return
-     * @throws ParameterArchive if there was an error creating and storing a new parameter_id
+     * @throws ParameterArchiveException if there was an error creating and storing a new parameter_id
      */
     public synchronized int createAndGet(String paramFqn, Value.Type engType, Value.Type rawType) throws ParameterArchiveException {
         int type = numericType(engType, rawType);
@@ -161,7 +163,7 @@ public class ParameterIdDb {
      * return null if no parameter id exists for that fqn.
      * 
      * 
-     * @param qualifiedName
+     * @param fqn - fully qualified name of the parameter for which the ids are returned
      * @return
      */
     public synchronized ParameterId[] get(String fqn) {

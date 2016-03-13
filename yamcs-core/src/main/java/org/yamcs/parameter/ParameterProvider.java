@@ -15,8 +15,8 @@ import org.yamcs.xtce.Parameter;
  */
 public interface ParameterProvider extends Service {
     /**
-     * Called before the startup to pass on the processor and initialise whatever needed
-     * @param channel
+     * Called before the startup to pass on the processor and initialize whatever needed
+     * @param processor
      * @throws ConfigurationException 
      */
     public abstract void init(YProcessor processor) throws ConfigurationException;
@@ -48,17 +48,16 @@ public interface ParameterProvider extends Service {
 
     /**
      * Returns whether or not a given parameter can be provided by this provider
-     * @param itemId
      * @return
      */
-    public abstract boolean canProvide(NamedObjectId para);
+    public abstract boolean canProvide(NamedObjectId paraId);
     /**
-     * Returns the parameterDefinition corresponding to the itemId
-     * @param itemId
+     * Returns the parameterDefinition corresponding to the parameter id
+     * @param paraId - id of the parameter that is returned
      * @return
      * @throws InvalidIdentification
      */
-    public abstract Parameter getParameter(NamedObjectId para) throws InvalidIdentification;
+    public abstract Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification;
 
     public abstract boolean canProvide(Parameter param);
 }

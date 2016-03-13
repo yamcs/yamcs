@@ -12,7 +12,7 @@ import org.yamcs.yarch.streamsql.RelOp;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.ValueExpression;
 /**
- * Expressions of type "x > y"
+ * Expressions of type "x &gt; y"
  * @author nm
  *
  */

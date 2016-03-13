@@ -22,7 +22,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
  * @author nm
  *
  */
-class TupleSourceExpression {
+public class TupleSourceExpression {
     String objectName=null;
     StreamExpression streamExpression=null;
     BigDecimal histogramMergeTime=null;

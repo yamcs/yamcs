@@ -8,7 +8,7 @@ public class ValidRangeChecker {
     /**
      * checks that x is in the range and returns true if it is and false if it's not
      * @param fvr
-     * @param d
+     * @param x
      * @return
      */
     public static boolean checkFloatRange(FloatValidRange fvr, double x) {
@@ -18,8 +18,8 @@ public class ValidRangeChecker {
 
     /**
      * checks that x is in the range and returns true if it is and false if it's not
-     * @param fvr
-     * @param d
+     * @param vr - range to check against
+     * @param x
      * @return
      */
     public static boolean checkIntegerRange(IntegerValidRange vr, long x) {

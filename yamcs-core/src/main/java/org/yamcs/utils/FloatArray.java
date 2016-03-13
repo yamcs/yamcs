@@ -22,7 +22,6 @@ public class FloatArray {
     /**
      * Creates a sorted int array with a default initial capacity
      * 
-     * @param capacity
      */
     public FloatArray() {
         a = new float[DEFAULT_CAPACITY];
@@ -52,7 +51,7 @@ public class FloatArray {
     /**
      * add value to the array 
      * 
-     * @param id
+     * @param x - value to be added
      */
     public void add(float x) {
         ensureCapacity(length+1);

@@ -47,10 +47,7 @@ public class ColumnValueSerializer implements ColumnFamilySerializer {
         }
     }
     /**
-     * this is the reverse of the {@link #valueToByteArray(Object value)}
-     * @param part
-     * @param dt
-     * @return
+     * this is the reverse of the {@link #objectToByteArray(Object value)}
      */
     public Object byteArrayToObject(byte[] b) {
         if(Arrays.equals(b, NULL_COLUMN_FAMILY)) return null;

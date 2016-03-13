@@ -26,8 +26,6 @@ public class TmFileReader  {
     /**
      * Constructs a reader for telemetry files 
      * @param fileName
-     * @param loop
-     * @param delayBetweenPackets
      * @throws FileNotFoundException
      */
     public TmFileReader(String fileName) throws FileNotFoundException {

@@ -24,7 +24,6 @@ public class NumericAlarm extends AlarmType implements Serializable {
     *    The alarm also requires the spanOfInterest in both samples and seconds to have passed before it is to trigger.  
     *    For time based rate of change alarms, the time specified in spanOfInterestInSeconds is used to calculate the change. 
     *    For sample based rate of change alarms, the change is calculated over the number of samples specified in spanOfInterestInSeconds.
-    * @return
     */
     private AlarmRanges changeAlarmRanges = null;
    

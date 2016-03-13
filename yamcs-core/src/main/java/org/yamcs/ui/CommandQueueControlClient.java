@@ -120,8 +120,8 @@ public class CommandQueueControlClient implements ConnectionListener {
     
     /**
      * Send a message to the server to release the command
-     * @param cmdId
-     * @param rebuild indicate that the binary shall be rebuilt (new timestamp, new pvt checks, etc)
+     * @param cqe - reference to the command to be released
+     * @param rebuild - indicate that the binary shall be rebuilt (new timestamp, new pvt checks, etc)
      * @throws YamcsException 
      */
     public void sendCommand(CommandQueueEntry cqe, boolean rebuild) throws YamcsApiException, YamcsException {

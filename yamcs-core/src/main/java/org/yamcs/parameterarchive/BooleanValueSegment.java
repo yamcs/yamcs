@@ -19,12 +19,9 @@ public class BooleanValueSegment extends BaseSegment implements ValueSegment {
     
     
     /**
-     * Add the parameter value on position pos
-     * @param pos
-     * @param parameterValue
+     * write the segment to buffer
+     * @param bb
      */
-   
-
     @Override
     public void writeTo(ByteBuffer bb) {
         long[]la = bitSet.toLongArray();

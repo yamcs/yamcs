@@ -74,12 +74,8 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
     private volatile String selectedInstance;
 	
 	/**
-	 * Just keeps a reference to the passed orb and rootPOA
 	 * 
-	 * @param cqs 
-	 * @throws CommandQueueException 
-	 * @throws ServantNotActive 
-	 * @throws InsufficientPrivileges 
+	 * 
 	 */
 	public CommandQueueDisplay(YamcsConnector yconnector, boolean isAdmin)	{
 		super(VERTICAL_SPLIT);

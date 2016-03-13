@@ -254,12 +254,11 @@ public class ParameterTypeProcessor {
     }
     
     /**
-     * Checks that a value can be assigned to a parameter
+     * Checks that a value can be assigned to a parameter as enginnering value
      * Throws an IllegalArgumentException if not
      * 
-     * TODO: we should infact assign a new value
      * @param p
-     * @param gpv
+     * @param engValue
      */
     public static void checkEngValueAssignment(Parameter p, Value engValue) {
 	ParameterType ptype = p.getParameterType();

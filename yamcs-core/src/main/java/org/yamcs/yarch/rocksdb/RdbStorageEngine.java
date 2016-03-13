@@ -143,7 +143,7 @@ public class RdbStorageEngine implements StorageEngine {
 
     /**
      * Called from unit tests to cleanup before the next test
-     * @param ydb2
+     * @param ydb
      */
     public static synchronized void removeInstance(YarchDatabase ydb) {
         RdbStorageEngine rse = instances.remove(ydb);

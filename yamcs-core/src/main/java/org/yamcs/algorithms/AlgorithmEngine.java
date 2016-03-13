@@ -50,7 +50,7 @@ import com.google.protobuf.ByteString;
  * <p>
  * This class will create and compile on-the-fly ValueBinding implementations for every
  * unique combination of raw and eng types. The reason for this is to get the mapping
- * correct from Java to JavaScript. Rhino (the default JavaScript engine for JDK<=7)
+ * correct from Java to JavaScript. Rhino (the default JavaScript engine for JDK &le; 7)
  * will map java Float, Integer, etc towards javascript Object, instead of Number. As
  * a result, in javascript, using the plus operator on two supposed numbers would do a
  * string concatenation instead of an addition.

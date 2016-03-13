@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 /**
  * BitReader is a wrapper around the ByteBuffer that allows to read individual bits.
  * 
- * All the writings/readings are performed from a temporary long;
+ * All the readings are performed from a temporary long;
  *  
  * @author nm
  *
@@ -16,9 +16,9 @@ public class BitReader {
     final private ByteBuffer bb;
     
     /**
-     * Constructs a buffer of size 8*n backed by an long[n] array. You need to allocate one bit more than required to store the data
+     * Construct the BitReader as a wrapper around bb
      *
-     * @param n
+     * @param bb
      */
     public BitReader(ByteBuffer bb) {
         this.bb = bb;

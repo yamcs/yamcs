@@ -14,7 +14,7 @@ import org.yamcs.utils.SortedIntArray;
 
 /**
  * Stores a map between 
- * List<parameter_id> and ParameterGroup_id.
+ * List&lt;parameter_id&gt; and ParameterGroup_id.
  * 
  * Stores data one column family:
  * pgid2pg 

@@ -36,9 +36,9 @@ public class RdbHistogramDb extends HistogramDb {
     static final byte[] zerobytes=new byte[0];
     /**
      * Open the  histogram db
-     * lock is false when called as a standalone program to inspect the index
-     * @param file
-     * @param lock
+     * readonly is true when called as a standalone program to inspect the index
+
+     * @param filename
      * @throws IOException
      */
     public RdbHistogramDb(YarchDatabase ydb, String filename, boolean readonly) throws IOException {

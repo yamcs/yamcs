@@ -13,7 +13,7 @@ package org.yamcs.xtce;
  *   This is used only while reading the database, then all the references are resolved and we use 
  *   Java references to real objects
  *   
- *    The ResolvAction.resolv will be called once the reference is resolved in {@link: org.yamcs.xtce.XtceDb}
+ *    The ResolvAction.resolv will be called once the reference is resolved.
  */
 public class NameReference {
     public enum Type {SEQUENCE_CONTAINTER, PARAMETER, PARAMETER_TYPE, META_COMMAND};

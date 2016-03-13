@@ -99,46 +99,6 @@ public class MissionDatabaseService {
 	}
 
 
-	
-	/**
-	 * 
-	 * @param host
-	 * @param port
-	 * @return
-	 */
-//	public List<YamcsInstance> getYamcsInstances(String host, int port) {
-//		YamcsClient msgClient = null;
-//		YamcsSession ys = null;
-//		try {
-//			ys = YamcsSession.newBuilder().setConnectionParams(host, port)
-//					.build();
-//			msgClient = ys.newClientBuilder().setRpc(true).build();
-//			YamcsInstances ainst = (YamcsInstances) msgClient.executeRpc(
-//					Protocol.YAMCS_SERVER_CONTROL_ADDRESS, "getYamcsInstances",
-//					null, YamcsInstances.newBuilder());
-//
-//			return ainst.getInstanceList();
-//		} catch (Exception e) {
-//			logger.error("Failed to get list of yamcs instances from {}:{}",
-//					host, port);
-//			return Collections.emptyList();
-//		} finally {
-//			try {
-//				if (msgClient != null)
-//					msgClient.close();
-//			} catch (Exception e) {
-//				logger.error("", e);
-//			}
-//
-//			try {
-//				if (ys != null)
-//					ys.close();
-//			} catch (Exception e) {
-//				logger.error("", e);
-//			}
-//		}
-//	}
-
 	public XtceDb getXtceDb(String mdbName) {
 		return xtceDbMap.get(mdbName);
 	}

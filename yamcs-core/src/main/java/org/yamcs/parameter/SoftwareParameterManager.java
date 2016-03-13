@@ -103,7 +103,7 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
 
     /**
      * update the list of parameters.
-     *  - resolves NamedObjectId -> Parameter 
+     *  - resolves NamedObjectId -&gt; Parameter 
      *  - sends the result to PRM
      */
     public void updateParameters(final List<org.yamcs.protobuf.Pvalue.ParameterValue> gpvList) {

@@ -172,7 +172,7 @@ public abstract class PartitionManager {
         return plist;
     }
     /**
-     * Keeps a value -> partition map for a specific time interval    
+     * Keeps a value -&gt; partition map for a specific time interval    
      *
      */
     public static class Interval {

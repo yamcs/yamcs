@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @see SelectExpression
+ * @see org.yamcs.yarch.streamsql.SelectExpression
  *
  */
 public class SelectStream extends AbstractStream implements StreamSubscriber {
@@ -32,9 +32,7 @@ public class SelectStream extends AbstractStream implements StreamSubscriber {
      * @param ydb
      * @param input
      * @param cWhereClause if null, then no where filtering
-     * @param aggInputList if null, then aggregates get as input the inputDef
      * @param wp if null, then no windowProcessing (aggInputList is also null in this case)
-     * @param aggregateOutputDef
      * @param cselectList
      * @param outputDef //output definition containing the expanded stars
      * @param minOutputDef //output definition where stars are not included

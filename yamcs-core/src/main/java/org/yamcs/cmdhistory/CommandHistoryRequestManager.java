@@ -55,14 +55,12 @@ public class CommandHistoryRequestManager extends AbstractService {
         log=LoggerFactory.getLogger(this.getClass().getName()+"["+processor.getName()+"]");
     }
 
-
-
     /**
      * Add a consumer to the subscriber list for a command
      * @param cmdId
      * @param consumer
      * @return all the entries existing so far for the command
-     * @throws InvalidCommandID
+     * @throws InvalidCommandId
      */
     public CommandHistoryEntry subscribeCommand(CommandId cmdId, CommandHistoryConsumer consumer) throws InvalidCommandId {
         CommandHistoryEntry che=activeCommands.get(cmdId);
@@ -156,7 +154,7 @@ public class CommandHistoryRequestManager extends AbstractService {
      * @param cmdId 
      * @param key 
      * @param value 
-     * @throws InvalidCommandID the command does not appear in the activeCommands hash
+     * @throws InvalidCommandId the command does not appear in the activeCommands hash
      *  
      */
     public void updateCommand(CommandId cmdId, String key, Value value) throws InvalidCommandId {

@@ -13,7 +13,8 @@ import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
 /**
  * Sends histogram data to a stream.
- * The definition of the emitted tuples is in {@link org.yamcs.yarch.streamsql.TupleSourceExpression}
+ * 
+ * The definition of the emitted tuples is in {@link org.yamcs.yarch.streamsql.TupleSourceExpression#bind}
  * 
  * @author nm
  *

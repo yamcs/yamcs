@@ -6,19 +6,45 @@
   <packaging>pom</packaging>
   <name>Yamcs</name>
   <description>Yet Another Mission Control System</description>
+
   <version>0.29.4-SNAPSHOT</version>
 
+  <url>https://github.com/yamcs/yamcs.git</url>
+  
+  <licenses>
+    <license>
+      <name>GNU Affero General Public License (AGPL)</name>
+      <url>http://www.gnu.org/licenses/agpl-3.0.html</url>
+    </license>
+  </licenses>
+  
+  
   <scm>
     <connection>scm:git:git@github.com:yamcs/yamcs.git</connection>
     <developerConnection>scm:git:git@github.com:yamcs/yamcs.git</developerConnection>
     <url>http://github.com/yamcs/yamcs</url>
-    </scm>
+  </scm>
 
   <organization>
     <name>Space Applications Services</name>
     <url>http://www.spaceapplications.com</url>
   </organization>
 
+   <developers>
+    <developer>
+      <id>fqqb</id>
+      <name>Fabian Diet</name>
+    </developer>
+    <developer>
+      <id>m-sc</id>
+      <name>Mathieu Schmitt</name>
+    </developer>
+    <developer>
+      <id>xpromache</id>
+      <name>Nicolae Mihalache</name>
+    </developer>
+  </developers>
+      
   <properties>
     <RESTLET_VERSION>2.0.5</RESTLET_VERSION>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -26,9 +52,8 @@
   </properties>
 
   <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
+    <plugins>
+      <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>2.3.2</version>
@@ -79,12 +104,48 @@
               <goals>
                 <goal>sign</goal>
               </goals>
+
             </execution>
           </executions>
         </plugin>
-      </plugins>
-      
-    </pluginManagement>
+      <plugin>
+           <groupId>org.sonatype.plugins</groupId>
+           <artifactId>nexus-staging-maven-plugin</artifactId>
+           <version>1.6.3</version>
+           <extensions>true</extensions>
+           <configuration>
+              <serverId>ossrh</serverId>
+              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+              <autoReleaseAfterClose>true</autoReleaseAfterClose>
+            </configuration>
+         </plugin>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-source-plugin</artifactId>
+      <version>2.2.1</version>
+      <executions>
+        <execution>
+          <id>attach-sources</id>
+          <goals>
+            <goal>jar-no-fork</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-javadoc-plugin</artifactId>
+      <version>2.9.1</version>
+      <executions>
+        <execution>
+          <id>attach-javadocs</id>
+          <goals>
+            <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
   </build>
 
   <dependencyManagement>

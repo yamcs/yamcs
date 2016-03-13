@@ -11,7 +11,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 
 /**
  * Represents a column in a query, for example x and y below:
- * select x from table where y>0
+ * select x from table where y &gt; 0
  * @author nm
  *
  */

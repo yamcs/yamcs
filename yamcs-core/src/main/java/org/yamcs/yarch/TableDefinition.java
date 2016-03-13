@@ -198,10 +198,10 @@ public class TableDefinition {
      * sets the customDataDir 
      *   - if true, the dataDir will not be discarded after serialisation, so the next time the server is restarted it will stay to the set value.
      *   - if false, at restart the dataDir will be set to the YarchDatabase.dataDir
-     * @param dataDir
+     * @param customDataDir
      */
-    public void setCustomDataDir(boolean b) {
-        this.customDataDir=b;
+    public void setCustomDataDir(boolean customDataDir) {
+        this.customDataDir = customDataDir;
     }
 
     public boolean hasCustomDataDir() {
@@ -300,8 +300,6 @@ public class TableDefinition {
 
    /**
     * get the enum value corresponding to a column, creating it if it does not exist
-    * @param valueColumn
-    * @param value
     * @return
     */
    public Short addAndGetEnumValue(String columnName, String value) {
@@ -401,7 +399,6 @@ public class TableDefinition {
     
     /**
      * Returns true if this is the first column of the key
-     * @param channelType
      * @return
      */
     public boolean isIndexedByKey(String cname) {

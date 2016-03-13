@@ -48,7 +48,7 @@ import com.google.common.util.concurrent.AbstractService;
  *  - for each command that is sent, based on the sender it finds the queue where the command should go
  *  - depending on the queue state the command can be immediately sent, stored in the queue or rejected
  *  - when the command is immediately sent or rejected, the command queue monitor is not notified
- *  - if the command has transmissionConstraints with timeout>0, the command can sit in the queue even if the queue is not blocked
+ *  - if the command has transmissionConstraints with timeout &gt; 0, the command can sit in the queue even if the queue is not blocked
  *
  * Note: the update of the command monitors is done in the same thread. That means that if the connection to one 
  *  of the monitors is lost, there may be a delay of a few seconds. As the monitoring clients will be priviledged users
@@ -77,10 +77,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     
 
     /**
-     * Constructs a Command Queue Manager having the given history manager and tc uplinker.
-     *  The parameters have to be not null.
-     * @param commandHistoryListener
-     * @param commandReleaser
+     * Constructs a Command Queue Manager.
+     *
      * @throws ConfigurationException in case there is an error in the configuration file. 
      *         Note: if the configuration file doesn't exist, this exception is not thrown.
      */
@@ -407,8 +405,6 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     /**
      * Called via CORBA to remove a command from the queue
      * @param commandId
-     * @throws CommandQueueException
-     * @throws InsufficientPrivileges
      */
     public synchronized PreparedCommand rejectCommand(CommandId commandId, String username) {
         log.info("called to remove command: "+commandId);
@@ -449,8 +445,6 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     /**
      * Called from external client to release a command from the queue
      * @param commandId
-     * @throws CommandQueueException
-     * @throws InsufficientPrivileges
      */
     public synchronized PreparedCommand sendCommand(CommandId commandId, boolean rebuild) {
         PreparedCommand command=null;
@@ -488,7 +482,6 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      * Called from external clients to change the state of the queue
      * @param queueName the queue whose state has to be set
      * @param newState the new state of the queue
-     * @throws CommandQueueException thrown when there is no queue with the given name
      */
     public synchronized CommandQueue setQueueState(String queueName, QueueState newState/*, boolean rebuild*/) {
         CommandQueue queue =null;

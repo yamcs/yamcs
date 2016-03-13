@@ -163,7 +163,7 @@ public class RestRequest {
     }
     
     /**
-     * Returns the username of the authenticated user. Or {@link Privilege.getDefaultUser()} if the user
+     * Returns the username of the authenticated user. Or {@link Privilege#getDefaultUser()} if the user
      * is not authenticated.
      */
     public String getUsername() {
