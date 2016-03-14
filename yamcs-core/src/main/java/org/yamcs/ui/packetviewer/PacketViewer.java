@@ -72,7 +72,6 @@ import org.hornetq.utils.HornetQBufferInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.parameter.ParameterValue;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.api.ConnectionListener;
@@ -84,6 +83,7 @@ import org.yamcs.api.YamcsConnectData;
 import org.yamcs.api.YamcsConnector;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
@@ -132,30 +132,30 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
     JSplitPane mainsplit;
     FindParameterBar findBar;
     ListPacket currentPacket;
-    OpenFileDialog openFileDialog; 
+    OpenFileDialog openFileDialog;
     static Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
     static final SimpleDateFormat dateTimeFormatFine = new SimpleDateFormat("yyyy.MM.dd/DDD HH:mm:ss.SSS");
     YamcsConnector yconnector;
     YamcsClient yclient;
     ConnectDialog connectDialog;
     GoToPacketDialog goToPacketDialog;
-    Preferences uiPrefs; 
+    Preferences uiPrefs;
 
     ConnectionParameters connectionParams;
     //used for decoding full packets
     XtceTmProcessor tmProcessor;
-    
-    
+
+
     boolean authenticationEnabled = false;
     String streamName;
     private String defaultNamespace;
-   
-    
+
+
     public PacketViewer() throws ConfigurationException {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         uiPrefs = Preferences.userNodeForPackage(PacketViewer.class);
-        
+
         YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
         if(config.containsKey("authenticationEnabled")) {
             authenticationEnabled = config.getBoolean("authenticationEnabled");
@@ -226,7 +226,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         StyleConstants.setForeground(highlightedStyle, parametersTable.getSelectionForeground());
         hexText.setEditable(false);
 
-        JScrollPane hexScrollpane = new JScrollPane(hexText);        
+        JScrollPane hexScrollpane = new JScrollPane(hexText);
         hexScrollpane.getViewport().setBackground(hexText.getBackground());
         hexSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, parameterPanel, hexScrollpane);
         removeBorders(hexSplit);
@@ -359,7 +359,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         menuitem = new JMenuItem("Clear", KeyEvent.VK_C);
         menuitem.setActionCommand("clear");
         menuitem.addActionListener(this);
-        menu.add(menuitem);        
+        menu.add(menuitem);
     }
 
     void updateTitle() {
@@ -518,14 +518,14 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         }
 
         tmProcessor=new XtceTmProcessor(xtcedb);
-        
+
         tmProcessor.setParameterListener(this);
         tmProcessor.startProvidingAll();
         tmProcessor.startAsync();
         log(String.format("Loaded definition of %d sequence container%s and %d parameter%s"
                 , xtcedb.getSequenceContainers().size(), (xtcedb.getSequenceContainers().size() != 1 ? "s":"")
                 , xtcedb.getParameterNames().size(), (xtcedb.getParameterNames().size() != 1 ? "s":"")));
-        
+
         packetsTable.setupParameterColumns();
         return true;
     }
@@ -555,7 +555,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         tmProcessor.startProvidingAll();
         tmProcessor.startAsync();
         packetsTable.setupParameterColumns();
-        
+
         log("Loaded "+xtcedb.getSequenceContainers().size()+" sequence containers and "+xtcedb.getParameterNames().size()+" parameters");
 
         return true;
@@ -580,68 +580,79 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
 
                     clearWindow();
                     int progressMax = (maxLines == -1) ? (int)(lastFile.length()>>10) : maxLines;
-        progress = new ProgressMonitor(theApp, String.format("Loading %s", lastFile.getName()),  null, 0, progressMax);
+                progress = new ProgressMonitor(theApp, String.format("Loading %s", lastFile.getName()),  null, 0, progressMax);
 
-        int packetCount = 0;
-        while (!progress.isCanceled()) {
-            res = reader.read(fourb, 0, 4);
-            if (res != 4) break;
-            buf = ByteBuffer.allocate(16);
-            if ((fourb[0] & 0xe8) == 0x08) {// CCSDS packet
-                buf.put(fourb, 0, 4);
-                if((r=reader.read(buf.array(), 4, 12))!=12) throw new ShortReadException(16, r, offset);
-            } else if((fourb[2]==0) && (fourb[3]==0)) { //hrdp packet - first 4 bytes are packet size in little endian
-                if((r=reader.skip(6))!=6) throw new ShortReadException(6, r, offset);
-                offset+=10;
-                if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16, r, offset);            
-            } else {//pacts packet
-                isPacts=true;
-                //System.out.println("pacts packet");
-                // read ASCII header up to the second blank
-                int i, j;
-                StringBuffer hdr = new StringBuffer();
-                j = 0;
-                for(i=0;i<4;i++) {
-                    hdr.append((char)fourb[i]);
-                    if ( fourb[i] == 32 ) ++j;
-                }
-                offset+=4;
-                while((j < 2) && (i < 20)) {
-                    int c = reader.read();
-                    if(c==-1)throw new ShortReadException(1, 0, offset);
-                    offset++;
-                    hdr.append((char)c);
-                    if ( c == 32 ) ++j;
-                    i++;
-                }
-                if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16,r,offset);
-            }
-            len = CcsdsPacket.getCccsdsPacketLength(buf) + 7;
-            if(len<16) {
-                log("Short packet read: length: "+len);
-                break;
-            }
-            byte[] bufn = new byte[len];
-            System.arraycopy(buf.array(), 0, bufn, 0, 16);
-            r=reader.read(bufn, 16, len-16);
-            if (r != len - 16) throw new ShortReadException(len-16, r, offset);
-            
-            packet = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(bufn))
-                    .setReceptionTime(TimeEncoding.getWallclockTime()).build();
-            
-            
-            offset += len;
-            if(isPacts) {
-                if(reader.skip(1)!=1) throw new ShortReadException(1, 0, offset);
-                offset+=1;
-            }
-            publish(packet);
+                int packetCount = 0;
+                while (!progress.isCanceled()) {
+                    res = reader.read(fourb, 0, 4);
+                    if (res != 4) break;
+                    buf = ByteBuffer.allocate(16);
+                    long gentime = TimeEncoding.INVALID_INSTANT;
+                    int seqcount = -1;
+                    if ((fourb[0] & 0xe8) == 0x08) {// CCSDS packet
+                        buf.put(fourb, 0, 4);
+                        if((r=reader.read(buf.array(), 4, 12))!=12) throw new ShortReadException(16, r, offset);
+                        gentime = CcsdsPacket.getInstant(buf);
+                        seqcount = CcsdsPacket.getSequenceCount(buf);
+                    } else if((fourb[2]==0) && (fourb[3]==0)) { //hrdp packet - first 4 bytes are packet size in little endian
+                        if((r=reader.skip(6))!=6) throw new ShortReadException(6, r, offset);
+                        offset+=10;
+                        if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16, r, offset);
+                    } else {//pacts packet
+                        isPacts=true;
+                        //System.out.println("pacts packet");
+                        // read ASCII header up to the second blank
+                        int i, j;
+                        StringBuffer hdr = new StringBuffer();
+                        j = 0;
+                        for(i=0;i<4;i++) {
+                            hdr.append((char)fourb[i]);
+                            if ( fourb[i] == 32 ) ++j;
+                        }
+                        offset+=4;
+                        while((j < 2) && (i < 20)) {
+                            int c = reader.read();
+                            if(c==-1)throw new ShortReadException(1, 0, offset);
+                            offset++;
+                            hdr.append((char)c);
+                            if ( c == 32 ) ++j;
+                            i++;
+                        }
+                        if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16,r,offset);
+                    }
+                    len = CcsdsPacket.getCccsdsPacketLength(buf) + 7;
+                    if(len<16) {
+                        log("Short packet read: length: "+len);
+                        break;
+                    }
+                    byte[] bufn = new byte[len];
+                    System.arraycopy(buf.array(), 0, bufn, 0, 16);
+                    r=reader.read(bufn, 16, len-16);
+                    if (r != len - 16) throw new ShortReadException(len-16, r, offset);
 
-            packetCount++;
-            if (packetCount == maxLines) break;
-            progress.setProgress((maxLines == -1) ? (int)(offset>>10) : packetCount);
-        }
-        reader.close();
+                    TmPacketData.Builder packetb = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(bufn))
+                            .setReceptionTime(TimeEncoding.getWallclockTime());
+                    if (gentime != TimeEncoding.INVALID_INSTANT) {
+                        packetb.setGenerationTime(gentime);
+                    }
+                    if (seqcount >= 0) {
+                        packetb.setSequenceNumber(seqcount);
+                    }
+                    packet = packetb.build();
+
+
+                    offset += len;
+                    if(isPacts) {
+                        if(reader.skip(1)!=1) throw new ShortReadException(1, 0, offset);
+                        offset+=1;
+                    }
+                    publish(packet);
+
+                    packetCount++;
+                    if (packetCount == maxLines) break;
+                    progress.setProgress((maxLines == -1) ? (int)(offset>>10) : packetCount);
+                }
+                reader.close();
                 } catch (Exception x) {
                     x.printStackTrace();
                     final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
@@ -667,7 +678,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                         clearWindow();
                         log(String.format("Cancelled loading %s", lastFile.getName()));
                     } else {
-                        log(String.format("Loaded %d packet%s from \"%s\"", 
+                        log(String.format("Loaded %d packet%s from \"%s\"",
                                 packetsTable.getRowCount(),
                                 packetsTable.getRowCount()!=1?"s":"", lastFile.getPath()));
                     }
@@ -1042,7 +1053,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
     }
 
     private void setStreamName(String streamName) {
-        this.streamName = streamName;        
+        this.streamName = streamName;
     }
 
     public static void main(String[] args) throws ConfigurationException, URISyntaxException {
