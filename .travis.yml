@@ -6,6 +6,6 @@ cache:
   directories:
     - $HOME/.m2
 
-script: mvn -Dsurefire.useFile=false test && mvn -Dtest=PermissionsTest -pl yamcs-core test
+script: mvn -Dsurefire.useFile=false -Dgpg.skip test && mvn -Dtest=PermissionsTest -Dgpg.skip -pl yamcs-core test
 
 
