@@ -30,6 +30,7 @@ services:
          realtimeFiller: 
              enabled: true
              flushInterval: 60
+    - org.yamcs.hornetq.HornetQReplayServer
 
 #name of the class that is used for the TM index. If not specified, org.yamcs.archive.GenericCccsdsTmIndex is used
 #tmIndexer: 
