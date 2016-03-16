@@ -154,7 +154,7 @@ public class StreamAdapterTest extends YarchTestCase {
             ClientMessage msg=ys.session.createMessage(false);
             msg.getBodyBuffer().writeInt(i);
             msg.getBodyBuffer().writeDouble(i*10);
-            msg1Client.dataProducer.send(hornetAddress, msg);
+            msg1Client.sendData(hornetAddress, msg);
         }
         
         assertTrue(semaphore.tryAcquire(5, TimeUnit.SECONDS));

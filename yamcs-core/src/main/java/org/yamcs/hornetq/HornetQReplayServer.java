@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.*;
@@ -52,7 +53,8 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
 import com.google.protobuf.ByteString;
 
 /**
- * Provides capability to perform replays via HornetQ
+ * Provides capability to perform replays via HornetQ by initiating new processors.
+ * It allows to retrieve parameters via HornetQ
  * 
  * @author nm
  *
@@ -199,7 +201,6 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
         
         
         YProcessor.addProcessorListener(listener);
-        (new Thread(listener)).start();
 
         StringMessage addr=StringMessage.newBuilder().setMessage(listener.yclient.rpcAddress.toString()).build();
         msgClient.sendReply(replyto,"PACKET_REPLAY_CREATED", addr);
@@ -216,7 +217,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
     }
     
     
-    static class HornetQReplayListener implements Runnable, YProcessorListener, ParameterWithIdConsumer, ContainerWithIdConsumer, CommandHistoryConsumer {        
+    static class HornetQReplayListener implements YProcessorListener, ParameterWithIdConsumer, ContainerWithIdConsumer, CommandHistoryConsumer, MessageHandler {        
         YamcsSession ysession;
         YamcsClient yclient;
         SimpleString dataAddress;
@@ -227,61 +228,61 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
             this.dataAddress = dataAddress;
             ysession = YamcsSession.newBuilder().build();
             yclient = ysession.newClientBuilder().setRpc(true).setDataProducer(true).build();
-            Protocol.killProducerOnConsumerClosed(yclient.dataProducer, dataAddress);
+            Protocol.killProducerOnConsumerClosed(yclient.getDataProducer(), dataAddress);
+            yclient.rpcConsumer.setMessageHandler(this);
         }
         
         
         @Override
-        public void run() {
+        public void onMessage(ClientMessage msg) {
+            if(msg==null) {
+                if(!quitting) log.warn("null message received from the control queue");
+            }
+
+            SimpleString replyto=msg.getSimpleStringProperty(REPLYTO_HEADER_NAME);
+            if(replyto==null) {
+                log.warn("did not receive a replyto header. Ignoring the request");
+            }
             try {
-                while(!quitting) {
-                    ClientMessage msg=yclient.rpcConsumer.receive();
-                    if(msg==null) {
-                        if(!quitting) log.warn("null message received from the control queue");
-                        continue;
-                    }
-                    SimpleString replyto=msg.getSimpleStringProperty(REPLYTO_HEADER_NAME);
-                    if(replyto==null) {
-                        log.warn("did not receive a replyto header. Ignoring the request");
-                        continue;
-                    }
-                    try {
-                        String req=msg.getStringProperty(REQUEST_TYPE_HEADER_NAME);
+                String req=msg.getStringProperty(REQUEST_TYPE_HEADER_NAME);
 
-                        log.debug("received a new request: "+req);
-                        if("Start".equalsIgnoreCase(req)) {
-                            yproc.start();
-                            yclient.sendReply(replyto, "OK", null);
-                        } else if("GetReplayStatus".equalsIgnoreCase(req)) {
-                            ReplayStatus status=ReplayStatus.newBuilder().setState(yproc.getReplayState()).build();
-                            yclient.sendReply(replyto, "REPLY_STATUS", status);
-                        } else if("Pause".equalsIgnoreCase(req)){
-                            yproc.pause();
-                            yclient.sendReply(replyto, "OK", null);
-                        } else if("Resume".equalsIgnoreCase(req)){
-                            yproc.start();
-                            yclient.sendReply(replyto, "OK", null);
-                        } else if("Quit".equalsIgnoreCase(req)){
-                            quit();
-                            yclient.sendReply(replyto, "OK", null);
-                        } else if("Seek".equalsIgnoreCase(req)){
-                            Instant inst=(Instant) decode(msg, Instant.newBuilder());
-                            yproc.seek(inst.getInstant());
-                            yclient.sendReply(replyto, "OK", null);
-                        } else  {
-                            throw new YamcsException("Unknown request '"+req+"'");
-                        }
-                    } catch (YamcsException | IllegalStateException e) { //the illegal state exception will be thrown when starting the processor
-                        log.warn("sending error reply ", e);
-                        yclient.sendErrorReply(replyto, e.getMessage());
-
-                    }
+                log.debug("received a new request: "+req);
+                if("Start".equalsIgnoreCase(req)) {
+                    yproc.start();
+                    yclient.sendReply(replyto, "OK", null);
+                } else if("GetReplayStatus".equalsIgnoreCase(req)) {
+                    ReplayStatus status=ReplayStatus.newBuilder().setState(yproc.getReplayState()).build();
+                    yclient.sendReply(replyto, "REPLY_STATUS", status);
+                } else if("Pause".equalsIgnoreCase(req)){
+                    yproc.pause();
+                    yclient.sendReply(replyto, "OK", null);
+                } else if("Resume".equalsIgnoreCase(req)){
+                    yproc.start();
+                    yclient.sendReply(replyto, "OK", null);
+                } else if("Quit".equalsIgnoreCase(req)){
+                    quit();
+                    yclient.sendReply(replyto, "OK", null);
+                } else if("Seek".equalsIgnoreCase(req)){
+                    Instant inst=(Instant) decode(msg, Instant.newBuilder());
+                    yproc.seek(inst.getInstant());
+                    yclient.sendReply(replyto, "OK", null);
+                } else  {
+                    throw new YamcsException("Unknown request '"+req+"'");
                 }
+            } catch (YamcsException | IllegalStateException e) { //the illegal state exception will be thrown when starting the processor
+                log.warn("sending error reply ", e);
+                try {
+                    yclient.sendErrorReply(replyto, e.getMessage());
+                } catch (HornetQException e1) {
+                   log.error("Error when sending error reply", e1);
+                }
+
             } catch (Exception e) {
                 log.warn("caught exception in packet reply: ", e);
                 e.printStackTrace();
             }
         }
+        
 /*
         @Override
         public void newData(ProtoDataType type, MessageLite data) {
@@ -308,6 +309,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
         public void yProcessorClosed(YProcessor processor) {
             if(processor!=yproc) return;
             sendProcessorState();
+            if(!quitting) quitting = true;
         }
 
 
@@ -320,7 +322,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
         private void sendProcessorState() {
             try { 
                 ReplayStatus.Builder rsb=ReplayStatus.newBuilder().setState(yproc.getReplayState());
-                yclient.sendData(dataAddress, ProtoDataType.STATE_CHANGE, rsb.build());
+                yclient.sendData(dataAddress, ProtoDataType.STATE_CHANGE, rsb.build());                
             } catch (HornetQException e) {
                 log.warn("Got exception when signaling state change", e);
                 quit();
@@ -381,5 +383,8 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
                 quit();
             }
         }
+
+
+        
     }
 }

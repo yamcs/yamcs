@@ -145,7 +145,7 @@ public class HornetQCommandQueueManagement implements CommandQueueListener {
 
         Protocol.encode(msg, cqe);
         try {
-            yclient.dataProducer.send(CMDQUEUE_INFO_ADDRESS, msg);
+            yclient.sendData(CMDQUEUE_INFO_ADDRESS, msg);
         } catch (HornetQException e) {
             log.error("exception when updating command queue status");
             e.printStackTrace();
@@ -163,7 +163,7 @@ public class HornetQCommandQueueManagement implements CommandQueueListener {
         msg.putStringProperty(HDR_EVENT_NAME, "queueUpdated");
         Protocol.encode(msg, cqi);
         try {
-            yclient.dataProducer.send(CMDQUEUE_INFO_ADDRESS, msg);
+            yclient.sendData(CMDQUEUE_INFO_ADDRESS, msg);
         } catch (HornetQException e) {
             log.error("exception when updating command queue status");
             e.printStackTrace();

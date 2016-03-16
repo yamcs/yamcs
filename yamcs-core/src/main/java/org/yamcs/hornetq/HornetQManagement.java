@@ -111,7 +111,7 @@ public class HornetQManagement implements LinkListener {
             String lvn=linkInfo.getInstance()+"."+linkInfo.getName();
             msg.putStringProperty(Message.HDR_LAST_VALUE_NAME, new SimpleString(lvn));
             Protocol.encode(msg, linkInfo);
-            yclient.dataProducer.send(LINK_INFO_ADDRESS, msg);
+            yclient.sendData(LINK_INFO_ADDRESS, msg);
         }   catch (HornetQException e) {
             log.error("Exception while updating link status: ", e);
         }

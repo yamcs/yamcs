@@ -148,7 +148,7 @@ public class HornetQProcessorManagement implements ManagementListener {
         }
         Protocol.encode(msg, ci);
         try {
-            yclient.dataProducer.send(YPROCESSOR_INFO_ADDRESS, msg);
+            yclient.sendData(YPROCESSOR_INFO_ADDRESS, msg);
         } catch (HornetQException e) {
             log.error("Exception when sending yproc event: ", e);
         }
@@ -162,7 +162,7 @@ public class HornetQProcessorManagement implements ManagementListener {
             msg.putStringProperty(Message.HDR_LAST_VALUE_NAME, new SimpleString(lvn));
             msg.setExpiration(System.currentTimeMillis()+2000);
             Protocol.encode(msg, stats);
-            yclient.dataProducer.send(YPROCESSOR_STATISTICS_ADDRESS, msg);
+            yclient.sendData(YPROCESSOR_STATISTICS_ADDRESS, msg);
         } catch (HornetQException e){
             log.error("got exception when sending the yproc processing statistics: ", e);
         }
@@ -195,7 +195,7 @@ public class HornetQProcessorManagement implements ManagementListener {
         }
         Protocol.encode(msg, ci);
         try {
-            yclient.dataProducer.send(YPROCESSOR_INFO_ADDRESS, msg);
+            yclient.sendData(YPROCESSOR_INFO_ADDRESS, msg);
         } catch (HornetQException e) {
             log.error("exception when sedning client event: ", e);
         }

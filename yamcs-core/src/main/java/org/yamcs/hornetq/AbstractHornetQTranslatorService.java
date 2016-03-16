@@ -90,7 +90,7 @@ public class AbstractHornetQTranslatorService extends AbstractService {
                         
                         ClientMessage msg=translator.buildMessage(yamcsClient.get().getYamcsSession().createMessage(false), tuple);
                         msg.putIntProperty(StreamAdapter.UNIQUEID_HDR_NAME, StreamAdapter.UNIQUEID);
-                        yamcsClient.get().dataProducer.send(hornetAddress, msg);
+                        yamcsClient.get().sendData(hornetAddress, msg);
                     } catch (IllegalArgumentException e) {
                         log.warn(e.getMessage());
                     } catch (HornetQException e) {

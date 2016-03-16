@@ -5,15 +5,11 @@ import static org.yamcs.api.Protocol.DATA_TYPE_HEADER_NAME;
 import static org.yamcs.api.Protocol.decode;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
@@ -70,7 +66,7 @@ public class PpTupleTranslatorTest extends YarchTestCase {
      * @param ys
      * @return
      */
-    public static Message getMessage( YamcsSession ys ) {
+    public static ClientMessage getMessage( YamcsSession ys ) {
         Builder b = ParameterData.newBuilder();
         b.addParameter( 
                 ParameterValue.newBuilder().setEngValue( 
@@ -163,7 +159,7 @@ public class PpTupleTranslatorTest extends YarchTestCase {
         // Now send some messages
         final int numMessages = 100;
         for( int i=0; i<numMessages; i++ ) {
-            msgClient.dataProducer.send( address, getMessage( ys ) );
+            msgClient.sendData( address, getMessage( ys ) );
         }		
         Thread.sleep( 3000 );
 

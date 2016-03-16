@@ -336,7 +336,7 @@ public class YamcsServer {
             oos.writeObject(xtcedb);
             oos.close();
             ctrlAddressClient.sendReply(replyTo, "OK", null);
-            ctrlAddressClient.dataProducer.send(dataAddress, msg);
+            ctrlAddressClient.sendData(dataAddress, msg);
         } catch (ConfigurationException e) {
             YamcsException ye=new YamcsException(e.toString());
             ctrlAddressClient.sendErrorReply(replyTo, ye);

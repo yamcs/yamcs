@@ -49,7 +49,7 @@ public class ProducerKillerTest {
         YamcsSession ys1=YamcsSession.newBuilder().build();
         final YamcsClient yclient1=ys1.newClientBuilder().setDataProducer(true).build();
         
-        Protocol.killProducerOnConsumerClosed(yclient1.dataProducer, dataClient.dataAddress);
+        Protocol.killProducerOnConsumerClosed(yclient1.getDataProducer(), dataClient.dataAddress);
         
         Thread t=new Thread(new Runnable() {
             @Override
@@ -58,9 +58,9 @@ public class ProducerKillerTest {
                     int i=0;
                     while(true) {
                       //  System.out.println("sending message "+i);
-                        ClientMessage msg=ys.session.createMessage(false);
+                        ClientMessage msg = ys.session.createMessage(false);
                         msg.getBodyBuffer().writeBytes(new byte[1500]);
-                        yclient1.dataProducer.send(dataClient.dataAddress, msg);
+                        yclient1.sendData(dataClient.dataAddress, msg);
                         i++;
                     }
                 } catch (HornetQException e) {

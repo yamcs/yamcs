@@ -40,7 +40,8 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
 import com.google.protobuf.MessageLite;
 
 /**
- * Provides connection to the replay server via hornetq
+ * Provides connection to the replay server via hornetq 
+ * It allows to retrieve "raw" data (tm, events, cmd_history) but not parameters
  * 
  * 
  * @author nm
@@ -187,7 +188,7 @@ public class HornetQRetrievalServer extends AbstractExecutionThreadService {
             this.dataAddress = dataAddress;
             ysession = YamcsSession.newBuilder().build();
             yclient = ysession.newClientBuilder().setRpc(true).setDataProducer(true).build();
-            Protocol.killProducerOnConsumerClosed(yclient.dataProducer, dataAddress);
+            Protocol.killProducerOnConsumerClosed(yclient.getDataProducer(), dataAddress);
         }
         YarchReplay replay;
         

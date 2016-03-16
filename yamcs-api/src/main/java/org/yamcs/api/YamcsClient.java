@@ -59,12 +59,12 @@ public class YamcsClient {
     public ClientConsumer rpcConsumer;
     public ClientProducer rpcProducer;
 
-    public ClientProducer dataProducer;
+    private ClientProducer dataProducer;
 
     public long rpcTimeout=10000;
     long dataTimeout=10000;
 
-    private YamcsSession yamcsSession;
+    private final YamcsSession yamcsSession;
 
 
     YamcsClient(YamcsSession yamcsSession) {
@@ -72,10 +72,12 @@ public class YamcsClient {
     }
 
     public void sendErrorReply(SimpleString replyto, String message) throws HornetQException {
-        ClientMessage replyMsg = yamcsSession.session.createMessage(false);
-        replyMsg.putStringProperty(MSG_TYPE_HEADER_NAME, "ERROR");
-        replyMsg.putStringProperty(ERROR_MSG_HEADER_NAME, message);
-        rpcProducer.send(replyto, replyMsg);
+        synchronized(yamcsSession) {
+            ClientMessage replyMsg = yamcsSession.session.createMessage(false);
+            replyMsg.putStringProperty(MSG_TYPE_HEADER_NAME, "ERROR");
+            replyMsg.putStringProperty(ERROR_MSG_HEADER_NAME, message);
+            rpcProducer.send(replyto, replyMsg);
+        }
     }
 
     /**
@@ -88,63 +90,71 @@ public class YamcsClient {
      * @throws HornetQException
      */
     public void sendErrorReply(SimpleString replyto, YamcsException e) throws HornetQException {
-        ClientMessage replyMsg = yamcsSession.session.createMessage(false);
-        replyMsg.putStringProperty(MSG_TYPE_HEADER_NAME, "ERROR");
-        replyMsg.putStringProperty(ERROR_MSG_HEADER_NAME, e.getMessage());
+        synchronized(yamcsSession) {
+            ClientMessage replyMsg = yamcsSession.session.createMessage(false);
+            replyMsg.putStringProperty(MSG_TYPE_HEADER_NAME, "ERROR");
+            replyMsg.putStringProperty(ERROR_MSG_HEADER_NAME, e.getMessage());
 
-        String type=e.getType();
-        if(type!=null) replyMsg.putStringProperty(ERROR_TYPE_HEADER_NAME, type);
+            String type=e.getType();
+            if(type!=null) replyMsg.putStringProperty(ERROR_TYPE_HEADER_NAME, type);
 
-        byte[] body=e.getExtra();
-        if(body!=null) replyMsg.getBodyBuffer().writeBytes(body);;
+            byte[] body=e.getExtra();
+            if(body!=null) replyMsg.getBodyBuffer().writeBytes(body);;
 
-        rpcProducer.send(replyto, replyMsg);
+            rpcProducer.send(replyto, replyMsg);
+        }
     }
 
     public void sendReply(SimpleString replyto, String response, MessageLite body) throws HornetQException {
-        ClientMessage replyMsg = yamcsSession.session.createMessage(false);
-        replyMsg.putStringProperty(MSG_TYPE_HEADER_NAME, response);
-        if(body!=null) encode(replyMsg, body);
-        rpcProducer.send(replyto, replyMsg);
+        synchronized(yamcsSession) {
+            ClientMessage replyMsg = yamcsSession.session.createMessage(false);
+            replyMsg.putStringProperty(MSG_TYPE_HEADER_NAME, response);
+            if(body!=null) encode(replyMsg, body);
+            rpcProducer.send(replyto, replyMsg);
+        }
     }
 
 
 
     public void sendRequest(SimpleString toAddress, String request, MessageLite body) throws HornetQException {
-        ClientMessage msg=yamcsSession.session.createMessage(false);
-        msg.putStringProperty(REPLYTO_HEADER_NAME, rpcAddress);
-        if(dataAddress!=null) 
-            msg.putStringProperty(DATA_TO_HEADER_NAME, dataAddress);
-        msg.putStringProperty(REQUEST_TYPE_HEADER_NAME, request);
-        if(body!=null)  encode(msg,body);
-        rpcProducer.send(toAddress, msg);
+        synchronized(yamcsSession) {
+            ClientMessage msg=yamcsSession.session.createMessage(false);
+            msg.putStringProperty(REPLYTO_HEADER_NAME, rpcAddress);
+            if(dataAddress!=null) 
+                msg.putStringProperty(DATA_TO_HEADER_NAME, dataAddress);
+            msg.putStringProperty(REQUEST_TYPE_HEADER_NAME, request);
+            if(body!=null)  encode(msg,body);
+            rpcProducer.send(toAddress, msg);
+        }
     }
 
 
     public MessageLite executeRpc(SimpleString toAddress, String request, MessageLite body, MessageLite.Builder responseBuilder) throws YamcsApiException, YamcsException {
-        try {
-            sendRequest(toAddress, request, body);
-            ClientMessage msg = rpcConsumer.receive(rpcTimeout);
-            if(msg==null) throw new YamcsApiException("did not receive a response to "+request+" in "+rpcTimeout+" milliseconds");
-            String resp=msg.getStringProperty(MSG_TYPE_HEADER_NAME);
-            if("ERROR".equals(resp)) {
-                String type=null;
-                if(msg.containsProperty(ERROR_TYPE_HEADER_NAME)) {
-                    type=msg.getStringProperty(ERROR_TYPE_HEADER_NAME);
+        synchronized(yamcsSession) {
+            try {
+                sendRequest(toAddress, request, body);
+                ClientMessage msg = rpcConsumer.receive(rpcTimeout);
+                if(msg==null) throw new YamcsApiException("did not receive a response to "+request+" in "+rpcTimeout+" milliseconds");
+                String resp=msg.getStringProperty(MSG_TYPE_HEADER_NAME);
+                if("ERROR".equals(resp)) {
+                    String type=null;
+                    if(msg.containsProperty(ERROR_TYPE_HEADER_NAME)) {
+                        type=msg.getStringProperty(ERROR_TYPE_HEADER_NAME);
+                    }
+                    String errormsg=msg.getStringProperty(ERROR_MSG_HEADER_NAME);
+                    int size=msg.getBodySize();
+                    byte[] extra=null;
+                    if(size>0) {
+                        extra=new byte[size];
+                        msg.getBodyBuffer().readBytes(extra);
+                    }
+                    throw new YamcsException(type, errormsg, extra);
                 }
-                String errormsg=msg.getStringProperty(ERROR_MSG_HEADER_NAME);
-                int size=msg.getBodySize();
-                byte[] extra=null;
-                if(size>0) {
-                    extra=new byte[size];
-                    msg.getBodyBuffer().readBytes(extra);
-                }
-                throw new YamcsException(type, errormsg, extra);
+                if(responseBuilder==null) return null;
+                else return decode(msg, responseBuilder);
+            } catch (HornetQException e) {
+                throw new YamcsApiException(e.getMessage(), e);
             }
-            if(responseBuilder==null) return null;
-            else return decode(msg, responseBuilder);
-        } catch (HornetQException e) {
-            throw new YamcsApiException(e.getMessage(), e);
         }
     }
 
@@ -156,20 +166,26 @@ public class YamcsClient {
     }
 
     public void sendDataError(SimpleString toAddress, String message) throws IOException, HornetQException {
-        sendData(toAddress, ProtoDataType.DT_ERROR, StringMessage.newBuilder().setMessage(message).build());
+        synchronized(yamcsSession) {
+            sendData(toAddress, ProtoDataType.DT_ERROR, StringMessage.newBuilder().setMessage(message).build());
+        }
     }
 
     public void sendData(SimpleString toAddress, org.yamcs.protobuf.Yamcs.ProtoDataType type, MessageLite data) throws HornetQException {
-        ClientMessage msg=yamcsSession.session.createMessage(false);
-        msg.putIntProperty(DATA_TYPE_HEADER_NAME, type.getNumber());
-        if(data!=null)encode(msg,data);
-        dataProducer.send(toAddress, msg);
+        synchronized(yamcsSession) {
+            ClientMessage msg=yamcsSession.session.createMessage(false);
+            msg.putIntProperty(DATA_TYPE_HEADER_NAME, type.getNumber());
+            if(data!=null)encode(msg,data);
+            dataProducer.send(toAddress, msg);
+        }
     }
 
     public void sendDataEnd(SimpleString toAddress) throws HornetQException {
-        ClientMessage msg=yamcsSession.session.createMessage(false);
-        msg.putIntProperty(DATA_TYPE_HEADER_NAME, ProtoDataType.STATE_CHANGE.getNumber());
-        dataProducer.send(toAddress,msg);
+        synchronized(yamcsSession) {
+            ClientMessage msg=yamcsSession.session.createMessage(false);
+            msg.putIntProperty(DATA_TYPE_HEADER_NAME, ProtoDataType.STATE_CHANGE.getNumber());
+            dataProducer.send(toAddress,msg);
+        }
     }
     /**
      * Receives and decodes data
@@ -211,19 +227,17 @@ public class YamcsClient {
      * @throws HornetQException
      */
     public void sendEvent(SimpleString toAddress, String eventName, MessageLite data) throws HornetQException {
-        ClientMessage msg=yamcsSession.session.createMessage(false);
-        msg.putStringProperty(HDR_EVENT_NAME, eventName);
-        if(data!=null)encode(msg,data);
-        dataProducer.send(toAddress, msg);
+        synchronized(yamcsSession) {
+            ClientMessage msg=yamcsSession.session.createMessage(false);
+            msg.putStringProperty(HDR_EVENT_NAME, eventName);
+            if(data!=null)encode(msg,data);
+            dataProducer.send(toAddress, msg);
+        }
     }
 
 
     public YamcsSession getYamcsSession() {
         return yamcsSession;
-    }
-
-    public void setYamcsSession(YamcsSession yamcsSession) {
-        this.yamcsSession = yamcsSession;
     }
 
 
@@ -361,6 +375,12 @@ public class YamcsClient {
      * @throws HornetQException
      */
     public synchronized void sendData(SimpleString hornetAddress, ClientMessage msg) throws HornetQException {
-        dataProducer.send(hornetAddress, msg);        
+        synchronized(yamcsSession) {
+            dataProducer.send(hornetAddress, msg);
+        }
+    }
+
+    public ClientProducer getDataProducer() {
+        return dataProducer;
     }
 }

@@ -35,7 +35,7 @@ public class HornetQIndexRequestListener implements IndexRequestListener {
     private void createYamcsClient() throws Exception {
         yamcsSession=YamcsSession.newBuilder().build();
         yamcsClient=yamcsSession.newClientBuilder().setRpc(false).setDataProducer(true).build();
-        Protocol.killProducerOnConsumerClosed(yamcsClient.dataProducer, dataAddress);
+        Protocol.killProducerOnConsumerClosed(yamcsClient.getDataProducer(), dataAddress);
         first = false;
     }
     

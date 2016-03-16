@@ -157,7 +157,7 @@ public class CcsdsCompletenessGui extends JFrame implements ArchiveIndexListener
            
             ClientMessage msg = yconnector.getSession().session.createMessage(false);
             Protocol.encode(msg, request);
-            yclient.dataProducer.send(new SimpleString(prefs.getInstance()+"."+DASS_PLAYBACK_REQUEST_ADDRESS), msg);
+            yclient.sendData(new SimpleString(prefs.getInstance()+"."+DASS_PLAYBACK_REQUEST_ADDRESS), msg);
         } catch (HornetQException e) {
             e.printStackTrace();
         }

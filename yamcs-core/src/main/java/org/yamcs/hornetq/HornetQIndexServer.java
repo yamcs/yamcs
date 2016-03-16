@@ -58,7 +58,7 @@ public class HornetQIndexServer extends AbstractExecutionThreadService {
     public void run() {
         try {
             while(!quitting) {
-                ClientMessage msg=msgClient.rpcConsumer.receive();
+                ClientMessage msg = msgClient.rpcConsumer.receive();
                 if(msg==null) {
                     if(quitting) break;
                     log.warn("null message received from the control queue");

@@ -146,7 +146,7 @@ public class ConcurrencyTest extends YarchTestCase {
 	    }
 	});
 	s.start();
-	assertTrue(semaphore.tryAcquire(1000, TimeUnit.SECONDS));
+	assertTrue(semaphore.tryAcquire(10, TimeUnit.SECONDS));
 
 	isf.quitting=true;
 	Thread.sleep(1000);
