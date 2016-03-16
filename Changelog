@@ -1,3 +1,7 @@
+Version 0.29.4 Released 
+- fix changing speed in the replays
+- fix hornetq replays which were never releasing the threads
+
 Version 0.29.3 Released 28-Feb-2016
 - added backFiller config in the ParameterArchive
 - added an option in the web displays to use the ParameterArchive for parameter sampling and history
