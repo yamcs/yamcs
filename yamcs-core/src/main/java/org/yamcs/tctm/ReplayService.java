@@ -375,7 +375,9 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
 
     @Override
     public void changeSpeed(ReplaySpeed speed) {
-        yarchReplay.changeSpeed(speed);        
+        yarchReplay.changeSpeed(speed);
+        // need to change the replay request to get the proper value when getReplayRequest() is called
+        originalReplayRequest = originalReplayRequest.toBuilder().setSpeed(speed).build();
     }
 
 

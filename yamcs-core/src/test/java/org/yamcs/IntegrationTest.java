@@ -5,15 +5,21 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterRequestManagerImpl;
+import org.yamcs.protobuf.*;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -24,10 +30,6 @@ import org.yamcs.protobuf.Rest.BulkGetParameterValueResponse;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
-import org.yamcs.protobuf.SchemaPvalue;
-import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.protobuf.SchemaYamcs;
-import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
@@ -35,13 +37,17 @@ import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
+import org.yamcs.tctm.ReplayService;
 import org.yamcs.utils.HttpClient;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ManagementResource;
 
 import com.google.protobuf.MessageLite;
 
 import io.netty.handler.codec.http.HttpMethod;
 import io.protostuff.Schema;
+import org.yamcs.xtceproc.XtceDbFactory;
+import org.yamcs.xtceproc.XtceTmProcessor;
 
 
 public class IntegrationTest extends AbstractIntegrationTest {
@@ -394,6 +400,46 @@ public class IntegrationTest extends AbstractIntegrationTest {
         Value p2eng = p2.getEngValue();
         assertEquals(Type.UINT32 , p2eng.getType());
         assertEquals(packetProvider.pIntegerPara1_1_7 , p2eng.getUint32Value());
+    }
+
+
+    @Test
+    public void testChangeReplaySpeed() throws Exception {
+
+        // generate some data
+        for (int i=0;i <100; i++) packetGenerator.generate_PKT1_1();
+
+        // sget client info
+        ClientInfo ci = getClientInfo();
+
+        // Create replay
+        Rest.CreateProcessorRequest cpr = Rest.CreateProcessorRequest.newBuilder()
+        .setName("replay_test")
+                .setStart(TimeEncoding.toString(0))
+                .setStop(TimeEncoding.toString(TimeEncoding.MAX_INSTANT))
+                .setLoop(false)
+                .setPersistent(true)
+                .addParaname("/REFMDB/SUBSYS1/IntegerPara1_1_6")
+                .addClientId(ci.getId()).build();
+        String resp1 = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest", HttpMethod.POST, toJson(cpr, SchemaRest.CreateProcessorRequest.WRITE), currentUser);
+        Assert.assertEquals(resp1, "");
+
+        // Check speed is 1.0
+        ProcessorInfo pi1 = getProcessorInfo();
+        Yamcs.ReplaySpeed speed1 = pi1.getReplayRequest().getSpeed();
+        Assert.assertTrue(speed1.getParam() == 1.0f);
+
+        // Set replay speed to 2.0
+        Rest.EditProcessorRequest epr = Rest.EditProcessorRequest.newBuilder()
+                .setSpeed("2x").build();
+        String resp2 = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/replay_test", HttpMethod.POST, toJson(epr, SchemaRest.EditProcessorRequest.WRITE), currentUser);
+        Assert.assertEquals(resp2, "");
+
+        // Check speed is 2.0
+        ProcessorInfo pi2 = getProcessorInfo();
+        Yamcs.ReplaySpeed speed2 = pi2.getReplayRequest().getSpeed();
+        Assert.assertTrue(speed2.getParam() == 2.0f);
+
     }
   
    
