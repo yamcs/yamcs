@@ -3,7 +3,7 @@ package org.yamcs.cmdhistory;
 import java.util.List;
 
 import org.yamcs.ConfigurationException;
-import org.yamcs.InvalidCommandId;
+import org.yamcs.commanding.InvalidCommandId;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandId;

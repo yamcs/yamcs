@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.commanding;
 
 import org.yamcs.protobuf.Commanding.CommandId;
 
