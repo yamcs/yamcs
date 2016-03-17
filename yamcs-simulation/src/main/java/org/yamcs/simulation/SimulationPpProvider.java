@@ -23,7 +23,6 @@ import org.yamcs.simulation.generated.PpSimulation;
 import org.yamcs.simulation.generated.PpSimulation.ParameterSequence;
 import org.yamcs.tctm.PpDataLink;
 import org.yamcs.tctm.PpListener;
-import org.yamcs.tctm.PpProvider;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.Parameter;
