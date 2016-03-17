@@ -51,6 +51,10 @@ else
         echo "ERROR: could not create $YAMCS_DATA/simulator/profiles - please create it and make sure this script has write permissions in it!"
         exit 1
     fi
+    if [ ! -w "$YAMCS_DATA/simulator/profiles" ]; then
+        echo "ERROR: please make sure this script has write permissions in the $YAMCS_DATA/simulator/profiles folder!"
+        exit 2
+    fi
     cp -an $YAMCS_HOME/yamcs-simulation/profiles/* $YAMCS_DATA/simulator/profiles
 fi
 
