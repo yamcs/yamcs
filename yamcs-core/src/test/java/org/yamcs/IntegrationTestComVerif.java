@@ -15,7 +15,6 @@ import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.tctm.TcDataLink;
-import org.yamcs.tctm.TcUplinker;
 
 import com.google.common.util.concurrent.AbstractService;
 
