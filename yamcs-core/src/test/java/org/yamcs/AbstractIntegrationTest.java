@@ -50,7 +50,6 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ManagementResource;
 import org.yamcs.xtce.SequenceContainer;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.util.concurrent.AbstractService;
