@@ -1,8 +1,6 @@
 ############################################ testinst configuration  ############################################################################
 services:  
-    - org.yamcs.tctm.TmProviderAdapter
-    - org.yamcs.tctm.PpProviderAdapter
-    - org.yamcs.tctm.TcUplinkerAdapter
+    - org.yamcs.tctm.DataLinkInitialiser
     - org.yamcs.archive.XtceTmRecorder
     - org.yamcs.archive.FSEventDecoder
     - org.yamcs.archive.PpRecorder
@@ -34,13 +32,13 @@ services:
 eventDecoders: []
 
 #config the tm providers started by the TmProviderAdapter
-tmProviders:
+tmDataLinks:
     - class: org.yamcs.AbstractIntegrationTest$PacketProvider
       spec: /storage/yamcs-incoming/eyops/tm
       stream: tm_realtime
 
 #config the pp providers started by the PpProviderAdapter
-ppProviders: []
+ppDataLinks: []
      #- class: org.yamcs.tctm.MulticastPpProvider
      #  spec: cdmcs-s
      #  stream: pp_realtime
@@ -48,8 +46,8 @@ ppProviders: []
 
 
 # config the tc uplinkers
-tcUplinkers:
-    - class: org.yamcs.IntegrationTestComVerif$MyTcUplinliker
+tcDataLinks:
+    - class: org.yamcs.IntegrationTestComVerif$MyTcDataLink
       stream: tc_realtime
 
 #Specify which MDB configuration to use, references a named section in mdb.yaml 
