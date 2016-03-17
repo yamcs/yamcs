@@ -32,6 +32,7 @@ import com.google.common.util.concurrent.AbstractService;
  */
 public class TmDataLinkInitialiser extends AbstractService {
     final static public String KEY_tmProviders = "tmProviders";
+    final static public String KEY_tmDataLinks = "tmDataLinks";
     
     private Collection<TmPacketDataLink> tmproviders=new ArrayList<TmPacketDataLink>();
     final String yamcsInstance;
@@ -55,8 +56,9 @@ public class TmDataLinkInitialiser extends AbstractService {
         this.yamcsInstance = yamcsInstance;
         YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
         
-        YConfiguration c=YConfiguration.getConfiguration("yamcs."+yamcsInstance);
-        List providers=c.getList(KEY_tmProviders);
+        YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
+        
+        List providers = c.containsKey(KEY_tmDataLinks)?c.getList(KEY_tmDataLinks):c.getList(KEY_tmProviders);
         int count=1;
         for(Object o:providers) {
             if(!(o instanceof Map<?, ?>)) throw new ConfigurationException("tmProvider has to be a Map and not a "+o.getClass());

@@ -1,12 +1,12 @@
 package org.yamcs.tctm;
 
+import com.google.common.util.concurrent.Service;
+
 /**
  * Interface for components providing parameters aquired from external systems.
  * @author nm
  *
- * @deprecated this interface has been renamed to {@link PpDataLink} for clarity
  */
-@Deprecated
-public interface PpProvider extends PpDataLink {
+public interface PpDataLink extends Service, Link {
 	public void setPpListener(PpListener ppListener);
 }

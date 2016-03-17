@@ -15,7 +15,6 @@ import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.PpListener;
-import org.yamcs.tctm.PpProvider;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.yarch.DataType;
@@ -38,6 +37,7 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class PpProviderAdapter extends AbstractService {
+    public static final String KEY_ppDataLinks = "ppDataLinks";
     public static final String KEY_ppProviders = "ppProviders";
     
     public static final String PP_TUPLE_COL_RECTIME = "rectime";
@@ -45,7 +45,7 @@ public class PpProviderAdapter extends AbstractService {
     public static final String PP_TUPLE_COL_PPGROUP = "ppgroup";
     public static final String PP_TUPLE_COL_GENTIME = "gentime";
     String yamcsInstance;
-    private Collection<PpProvider> ppproviders=new ArrayList<PpProvider>();
+    private Collection<PpDataLink> ppproviders=new ArrayList<PpDataLink>();
     final private Logger log;
 
     static public final TupleDefinition PP_TUPLE_DEFINITION=new TupleDefinition();
@@ -70,7 +70,8 @@ public class PpProviderAdapter extends AbstractService {
         YConfiguration c=YConfiguration.getConfiguration("yamcs."+yamcsInstance);
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
         @SuppressWarnings("rawtypes")
-        List providers=c.getList(KEY_ppProviders);
+        List providers = c.containsKey(KEY_ppDataLinks)?c.getList(KEY_ppDataLinks):c.getList(KEY_ppProviders);
+        
         int count=1;
         for(Object o:providers) {
             if(!(o instanceof Map)) throw new ConfigurationException("ppProvider has to be a Map and not a "+o.getClass());
@@ -97,9 +98,9 @@ public class PpProviderAdapter extends AbstractService {
             }
             final Stream stream=s;
 
-            YObjectLoader<PpProvider> objloader=new YObjectLoader<PpProvider>();
+            YObjectLoader<PpDataLink> objloader=new YObjectLoader<PpDataLink>();
 
-            PpProvider prov= null;
+            PpDataLink prov= null;
             if(args!=null) {
                 prov = objloader.loadObject(className, yamcsInstance, providerName, args);
             } else {
@@ -118,7 +119,7 @@ public class PpProviderAdapter extends AbstractService {
 
     @Override
     protected void doStart() {
-        for(PpProvider prov:ppproviders) {
+        for(PpDataLink prov:ppproviders) {
             prov.startAsync();
         }
         notifyStarted();
@@ -131,7 +132,7 @@ public class PpProviderAdapter extends AbstractService {
 
     @Override
     protected void doStop() {
-        for(PpProvider prov:ppproviders) {
+        for(PpDataLink prov:ppproviders) {
             prov.stopAsync();
         }
         notifyStopped();

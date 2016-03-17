@@ -37,7 +37,7 @@ services:
 eventDecoders: []
 
 #config the tm providers started by the TmProviderAdapter
-tmProviders:
+tmDataLinks:
     - class: org.yamcs.tctm.TcpTmDataLink
       name: tm_realtime
       spec: local
@@ -47,14 +47,14 @@ tmProviders:
       spec: localDump
       stream: tm_dump
 
-ppProviders:
+ppDataLinks:
     - class: org.yamcs.simulation.SimulationPpProvider
       stream: pp_realtime
       args: {simulationDataPath: "etc/gs-simulation.xml"}
 
 
 # config the tc uplinkers
-tcUplinkers: 
+tcDataLinks: 
     - class: org.yamcs.tctm.TcpTcUplinker
       spec: local
       stream: tc_realtime

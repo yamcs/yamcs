@@ -30,20 +30,20 @@ public class DataLinkInitialiser extends AbstractService {
     public DataLinkInitialiser(String yamcsInstance) throws ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException, IOException {
         YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
         List<Service> services = new ArrayList<Service>();
-        if(c.containsKey(TmDataLinkInitialiser.KEY_tmProviders)) {
+        if(c.containsKey(TmDataLinkInitialiser.KEY_tmDataLinks)) {
             tmDataLinkInitialiser = new TmDataLinkInitialiser(yamcsInstance);
             services.add(tmDataLinkInitialiser);
         }
-        if(c.containsKey(TcUplinkerAdapter.KEY_tcUplinkers)) {
+        if(c.containsKey(TcUplinkerAdapter.KEY_tcDataLinks)) {
             tcDataLinkInitialiser = new TcUplinkerAdapter(yamcsInstance);
             services.add(tcDataLinkInitialiser);
         }
-        if(c.containsKey(PpProviderAdapter.KEY_ppProviders)) {
+        if(c.containsKey(PpProviderAdapter.KEY_ppDataLinks)) {
             ppDataLinkInitialiser = new PpProviderAdapter(yamcsInstance);
             services.add(ppDataLinkInitialiser);
         }
         if(services.isEmpty()) {
-            throw new ConfigurationException("None of the "+TmDataLinkInitialiser.KEY_tmProviders+", "+TcUplinkerAdapter.KEY_tcUplinkers+" or "+PpProviderAdapter.KEY_ppProviders+" configured");
+            throw new ConfigurationException("None of the "+TmDataLinkInitialiser.KEY_tmDataLinks+", "+TcUplinkerAdapter.KEY_tcDataLinks+" or "+PpProviderAdapter.KEY_ppDataLinks+" configured");
         }
         serviceManager = new ServiceManager(services);
     }

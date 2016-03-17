@@ -21,6 +21,7 @@ import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
 import org.yamcs.simulation.generated.PpSimulation;
 import org.yamcs.simulation.generated.PpSimulation.ParameterSequence;
+import org.yamcs.tctm.PpDataLink;
 import org.yamcs.tctm.PpListener;
 import org.yamcs.tctm.PpProvider;
 import org.yamcs.utils.TimeEncoding;
@@ -34,8 +35,7 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
 // Command line to generate xml classes:
 //[...]/yamcs/yamcs-simulation/src/main/resources/org/yamcs/xsd$ xjc simulation_data.xsd -p org.yamcs.simulation.generated -d [...]/yamcs/yamcs-simulation/src/main/java/
-public class SimulationPpProvider extends AbstractExecutionThreadService
-		implements PpProvider, Runnable {
+public class SimulationPpProvider extends AbstractExecutionThreadService implements PpDataLink, Runnable {
 	protected volatile long datacount = 0;
 	private PpListener ppListener;
 	protected volatile boolean disabled = false;

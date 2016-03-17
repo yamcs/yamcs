@@ -1,16 +1,11 @@
 package org.yamcs.tctm;
 
-import org.yamcs.cmdhistory.CommandHistoryPublisher;
-import org.yamcs.commanding.PreparedCommand;
-
-import com.google.common.util.concurrent.Service;
-
 /**
- * Interface for sending a telecommand
+ * Interface implemented by components that send commands to the outer universe
  * @author nm
- *
+ * 
+ * @deprecated this interface has been renamed to {@link TcDataLink} for clarity
  */
-public interface TcUplinker extends Link, Service {
-	void sendTc(PreparedCommand preparedCommand);
-	void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryListener);
+@Deprecated
+public interface TcUplinker extends TcDataLink {
 }

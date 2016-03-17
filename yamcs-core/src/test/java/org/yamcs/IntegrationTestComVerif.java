@@ -14,6 +14,7 @@ import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.tctm.TcDataLink;
 import org.yamcs.tctm.TcUplinker;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -94,7 +95,7 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
         assertEquals("/REFMDB/SUBSYS1/ALG_VERIF_TC", cmdid.getCommandName());
         assertEquals(4, cmdid.getSequenceNumber());
         assertEquals("IntegrationTest", cmdid.getOrigin());
-        packetGenerator.generateAlgVerifCmdAck((short)25, MyTcUplinliker.seqNum, (byte)0, 0);
+        packetGenerator.generateAlgVerifCmdAck((short)25, MyTcDataLink.seqNum, (byte)0, 0);
 
 
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
@@ -115,7 +116,7 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
         assertEquals("packetSeqNum", cha.getName());
         assertEquals(5000, cha.getValue().getSint32Value());
 
-        packetGenerator.generateAlgVerifCmdAck((short)25, MyTcUplinliker.seqNum, (byte)1, 5);
+        packetGenerator.generateAlgVerifCmdAck((short)25, MyTcDataLink.seqNum, (byte)1, 5);
 
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
@@ -141,11 +142,11 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
 
 
 
-    public static class MyTcUplinliker extends AbstractService implements TcUplinker {
+    public static class MyTcDataLink extends AbstractService implements TcDataLink {
         static short seqNum = 5000;
         CommandHistoryPublisher commandHistoryPublisher;
         
-        public MyTcUplinliker(String yamcsInstance, String name) {
+        public MyTcDataLink(String yamcsInstance, String name) {
         }
 
         @Override

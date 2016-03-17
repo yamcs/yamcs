@@ -12,7 +12,6 @@ import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.management.ManagementService;
-import org.yamcs.tctm.TcUplinker;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -33,9 +32,11 @@ import org.yamcs.api.YamcsClient;
  *
  */
 public class TcUplinkerAdapter extends AbstractService {
-    private Collection<TcUplinker> tcuplinkers=new ArrayList<TcUplinker>();
+    private Collection<TcDataLink> tcuplinkers=new ArrayList<TcDataLink>();
     final String yamcsInstance;
+    final static public String KEY_tcDataLinks = "tcDataLinks";
     final static public String KEY_tcUplinkers = "tcUplinkers";
+    
     
     static public final TupleDefinition TC_TUPLE_DEFINITION=new TupleDefinition();
     //this is the commandId (used as the primary key when recording), the rest will be handled dynamically
@@ -58,8 +59,8 @@ public class TcUplinkerAdapter extends AbstractService {
 	//new StreamAdapter(realtimeStream, new SimpleString(archiveInstance+".tc.realtime"), new TmTupleTranslator());
 
 
-	YConfiguration c=YConfiguration.getConfiguration("yamcs."+yamcsInstance);
-	List uplinkers = c.getList(KEY_tcUplinkers);
+	YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
+	List uplinkers = c.containsKey(KEY_tcDataLinks)?c.getList(KEY_tcDataLinks):c.getList(KEY_tcUplinkers);
 	int count=1;
 	for(Object o:uplinkers) {
 	    if(!(o instanceof Map)) throw new ConfigurationException("uplinker has to be Map and not a "+o.getClass());
@@ -89,9 +90,9 @@ public class TcUplinkerAdapter extends AbstractService {
 	    }
 	    stream = ydb.getStream(streamName);
 	    if(stream==null) throw new ConfigurationException("Cannot find stream '"+streamName+"'");
-	    YObjectLoader<TcUplinker> objloader=new YObjectLoader<TcUplinker>();
+	    YObjectLoader<TcDataLink> objloader=new YObjectLoader<TcDataLink>();
 	    
-	    final TcUplinker tcuplinker = (args==null)?objloader.loadObject(className, yamcsInstance, name): objloader.loadObject(className, yamcsInstance, name, args);
+	    final TcDataLink tcuplinker = (args==null)?objloader.loadObject(className, yamcsInstance, name): objloader.loadObject(className, yamcsInstance, name, args);
 	    if(!enabledAtStartup) tcuplinker.disable();
 
 	    stream.addSubscriber(new StreamSubscriber() {
@@ -115,7 +116,7 @@ public class TcUplinkerAdapter extends AbstractService {
 
     @Override
     protected void doStart() {
-	for(TcUplinker tcuplinker:tcuplinkers) {
+	for(TcDataLink tcuplinker:tcuplinkers) {
 	    tcuplinker.startAsync();
 	}
 	notifyStarted();
@@ -123,7 +124,7 @@ public class TcUplinkerAdapter extends AbstractService {
 
     @Override
     protected void doStop() {
-	for(TcUplinker tcuplinker:tcuplinkers) {
+	for(TcDataLink tcuplinker:tcuplinkers) {
 	    tcuplinker.stopAsync();
 	}
 	notifyStopped();
