@@ -31,7 +31,7 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class TmProviderAdapter extends AbstractService {
-    private Collection<TmPacketSource> tmproviders=new ArrayList<TmPacketSource>();
+    private Collection<TmPacketDataLink> tmproviders=new ArrayList<TmPacketDataLink>();
     final String archiveInstance;
     final static public String GENTIME_COLUMN="gentime";
     final static public String SEQNUM_COLUMN="seqNum";
@@ -80,9 +80,9 @@ public class TmProviderAdapter extends AbstractService {
                 throw new ConfigurationException("Cannot find stream '"+streamName+"'");
             }
             final Stream stream=s;
-            YObjectLoader<TmPacketSource> objloader=new YObjectLoader<TmPacketSource>();
+            YObjectLoader<TmPacketDataLink> objloader=new YObjectLoader<TmPacketDataLink>();
         
-            TmPacketSource prov= null;
+            TmPacketDataLink prov= null;
             if(args!=null) {
                 prov = objloader.loadObject(className, archiveInstance, name, args);
             } else {
@@ -111,7 +111,7 @@ public class TmProviderAdapter extends AbstractService {
     
     @Override
     protected void doStart() {
-        for(TmPacketSource prov:tmproviders) {
+        for(TmPacketDataLink prov:tmproviders) {
             prov.startAsync();
         }
         notifyStarted();
@@ -119,7 +119,7 @@ public class TmProviderAdapter extends AbstractService {
 
     @Override
     protected void doStop() {
-        for(TmPacketSource prov:tmproviders) {
+        for(TmPacketDataLink prov:tmproviders) {
             prov.stopAsync();
         }
         notifyStopped();

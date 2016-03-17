@@ -1,15 +1,19 @@
 package org.yamcs.utils;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.YamcsServer;
 
 public class YObjectLoader<T> {
-
+    static Logger log=LoggerFactory.getLogger(YamcsServer.class);
     /**
-     * Loads classes defined in the yamcs server or clientconfiguration properties
+     * Loads classes defined in the yamcs server or client configuration properties
      * @param className
      * @param args
      * @return
@@ -19,8 +23,8 @@ public class YObjectLoader<T> {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public T loadObject(String className, Object... args) throws ConfigurationException, IOException {
         try {
-            Class ic=Class.forName(className);
-            Constructor<T> constructor=null;
+            Class ic = Class.forName(className);
+            Constructor<T> constructor = null;
             Constructor[] constructors = ic.getConstructors();
             for(Constructor c:constructors) {
                 Class<?>[] params = c.getParameterTypes();
@@ -49,6 +53,7 @@ public class YObjectLoader<T> {
                 sb.append(")");
                 throw new ConfigurationException(sb.toString());
             } else {
+                checkDeprecated(ic);
                 return constructor.newInstance(args);
             }
         } catch (InvocationTargetException e) {
@@ -67,5 +72,29 @@ public class YObjectLoader<T> {
         } catch (Exception e) {
             throw new ConfigurationException("Cannot instantiate object from class "+className+": "+e, e);
         }
+    }
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private void checkDeprecated(Class objclass) {
+        Annotation a  = objclass.getAnnotation(Deprecated.class);
+        if(a!=null) {
+            log.warn("The class {} is deprecated. Please check the javadoc for alternatives.", objclass.getName());
+        }
+        Class c = objclass.getSuperclass();
+        while(c!=null) {
+            a  = c.getAnnotation(Deprecated.class);
+            if(a!=null) {
+                log.warn("The class {} extended by {} is deprecated. Please check the javadoc for alternatives.", c.getName(), objclass.getName());
+            }
+            
+            c = c.getSuperclass();
+        }
+        for(Class i: objclass.getInterfaces()) {
+            a  = i.getAnnotation(Deprecated.class);
+            if(a!=null) {
+                log.warn("The class {} implements interface {} which is deprecated. Please check the javadoc for alternatives.", objclass.getName(),  i.getName());
+            }
+        }
+        
     }
 }
