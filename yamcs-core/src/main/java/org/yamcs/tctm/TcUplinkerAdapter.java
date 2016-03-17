@@ -35,7 +35,8 @@ import org.yamcs.api.YamcsClient;
 public class TcUplinkerAdapter extends AbstractService {
     private Collection<TcUplinker> tcuplinkers=new ArrayList<TcUplinker>();
     final String yamcsInstance;
-
+    final static public String KEY_tcUplinkers = "tcUplinkers";
+    
     static public final TupleDefinition TC_TUPLE_DEFINITION=new TupleDefinition();
     //this is the commandId (used as the primary key when recording), the rest will be handled dynamically
     static {
@@ -58,7 +59,7 @@ public class TcUplinkerAdapter extends AbstractService {
 
 
 	YConfiguration c=YConfiguration.getConfiguration("yamcs."+yamcsInstance);
-	List uplinkers=c.getList("tcUplinkers");
+	List uplinkers = c.getList(KEY_tcUplinkers);
 	int count=1;
 	for(Object o:uplinkers) {
 	    if(!(o instanceof Map)) throw new ConfigurationException("uplinker has to be Map and not a "+o.getClass());

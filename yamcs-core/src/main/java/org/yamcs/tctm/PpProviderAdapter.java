@@ -38,6 +38,8 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class PpProviderAdapter extends AbstractService {
+    public static final String KEY_ppProviders = "ppProviders";
+    
     public static final String PP_TUPLE_COL_RECTIME = "rectime";
     public static final String PP_TUPLE_COL_SEQ_NUM = "seqNum";
     public static final String PP_TUPLE_COL_PPGROUP = "ppgroup";
@@ -68,12 +70,12 @@ public class PpProviderAdapter extends AbstractService {
         YConfiguration c=YConfiguration.getConfiguration("yamcs."+yamcsInstance);
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
         @SuppressWarnings("rawtypes")
-        List providers=c.getList("ppProviders");
+        List providers=c.getList(KEY_ppProviders);
         int count=1;
         for(Object o:providers) {
             if(!(o instanceof Map)) throw new ConfigurationException("ppProvider has to be a Map and not a "+o.getClass());
             @SuppressWarnings({ "rawtypes", "unchecked" })
-            Map<String, Object> m=(Map)o;
+            Map<String, Object> m = (Map)o;
             String className=YConfiguration.getString(m, "class");
             Object args=null;
             if(m.containsKey("args")) {

@@ -1,9 +1,7 @@
 ############################################ testinst configuration  ############################################################################
 services:
     #loads all the tm providers specified in the tmproviders section below. Creates all the necessary streams
-    - org.yamcs.tctm.TmProviderAdapter
-    - org.yamcs.tctm.PpProviderAdapter
-    - org.yamcs.tctm.TcUplinkerAdapter
+    - org.yamcs.tctm.DataLinkInitialiser
     - class: org.yamcs.archive.XtceTmRecorder
     - org.yamcs.archive.FSEventDecoder
     - org.yamcs.archive.PpRecorder
@@ -40,11 +38,11 @@ eventDecoders: []
 
 #config the tm providers started by the TmProviderAdapter
 tmProviders:
-    - class: org.yamcs.tctm.TcpTmProvider
+    - class: org.yamcs.tctm.TcpTmDataLink
       name: tm_realtime
       spec: local
       stream: tm_realtime
-    - class: org.yamcs.tctm.TcpTmProvider
+    - class: org.yamcs.tctm.TcpTmDataLink
       name: tm_dump
       spec: localDump
       stream: tm_dump
