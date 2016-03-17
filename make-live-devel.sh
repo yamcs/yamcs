@@ -47,6 +47,10 @@ else
     YAMCS_DATA=/storage/yamcs-data/
     # create the yamcs_data directory and add the simulator profiles
     mkdir -p $YAMCS_DATA/simulator/profiles
+    if [ $? -ne 0 ]; then
+        echo "ERROR: could not create $YAMCS_DATA/simulator/profiles - please create it and make sure this script has write permissions in it!"
+        exit 1
+    fi
     cp -an $YAMCS_HOME/yamcs-simulation/profiles/* $YAMCS_DATA/simulator/profiles
 fi
 
