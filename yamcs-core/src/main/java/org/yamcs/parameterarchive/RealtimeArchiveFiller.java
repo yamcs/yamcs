@@ -16,13 +16,15 @@ import org.yamcs.YProcessor;
 public class RealtimeArchiveFiller extends ArchiveFillerTask {
     ScheduledThreadPoolExecutor executor=new ScheduledThreadPoolExecutor(1);
     int flushInterval = 300; //seconds
-    protected Logger log = LoggerFactory.getLogger(this.getClass());
+    final Logger log;
     String processorName = "realtime";
     final String yamcsInstance;
     
     public RealtimeArchiveFiller(ParameterArchive parameterArchive, Map<String, Object> config) {
         super(parameterArchive);
         this.yamcsInstance = parameterArchive.getYamcsInstance();
+        log = LoggerFactory.getLogger(this.getClass().getName()+"["+yamcsInstance+"]");
+        
         if(config!=null) {
             parseConfig(config);
         }

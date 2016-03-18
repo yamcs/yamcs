@@ -12,13 +12,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterConsumer;
-import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.parameter.Value;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
 
 class ArchiveFillerTask implements ParameterConsumer {
     final ParameterArchive parameterArchive;
-    protected Logger log = LoggerFactory.getLogger(this.getClass());
+    final Logger log;
     
     long numParams = 0;
     
@@ -33,7 +34,11 @@ class ArchiveFillerTask implements ParameterConsumer {
     long threshold = 60000;
 
     public ArchiveFillerTask(ParameterArchive parameterArchive) {
+        log = LoggerFactory.getLogger(this.getClass().getName()+"["+parameterArchive.getYamcsInstance()+"]");
+
         this.parameterArchive = parameterArchive;
+        
+        
         this.parameterIdMap = parameterArchive.getParameterIdDb();
         this.parameterGroupIdMap = parameterArchive.getParameterGroupIdDb();
     }
@@ -157,8 +162,14 @@ class ArchiveFillerTask implements ParameterConsumer {
 
         void add(ParameterValue pv) {
             String fqn = pv.getParameterQualifiedNamed();
-            Value.Type engType = pv.getEngValue().getType();
-            Value.Type rawType = (pv.getRawValue()==null)? null: pv.getRawValue().getType();
+            Value engValue = pv.getEngValue();
+            if(engValue==null) {
+                log.warn("Ignoring parameter without engineering value: {} ", pv.getParameterQualifiedNamed());
+                return;
+            }
+            Value rawValue = pv.getRawValue();
+            Type engType = engValue.getType();
+            Type rawType = (rawValue==null)? null: rawValue.getType();
             int parameterId = parameterIdMap.createAndGet(fqn, engType, rawType);
 
             int pos = parameterIdArray.insert(parameterId);
