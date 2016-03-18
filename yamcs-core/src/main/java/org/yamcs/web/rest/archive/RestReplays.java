@@ -4,8 +4,6 @@ package org.yamcs.web.rest.archive;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.YProcessor;
 import org.yamcs.parameter.ParameterValueWithId;
@@ -24,8 +22,6 @@ import org.yamcs.web.rest.RestReplayListener;
  */
 public class RestReplays {
     static AtomicInteger count = new AtomicInteger();
-    
-    private static final Logger log = LoggerFactory.getLogger(RestReplays.class);
     
     /**
      * launches a replay will only return when the replay is done (either
@@ -76,7 +72,7 @@ public class RestReplays {
         @Override
         public void update(int subscriptionId, List<ParameterValueWithId> params) {
             if (!wrappedListener.isReplayAbortRequested()) {
-                wrappedListener.onParameterData(params);;
+                wrappedListener.update(subscriptionId, params);
             } else {
                 yproc.quit();
             }

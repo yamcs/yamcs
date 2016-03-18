@@ -150,7 +150,6 @@ public class ArchiveParameterRestHandler extends RestHandler {
         } else {
             ParameterData.Builder resultb = ParameterData.newBuilder();
             RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit) {
-                
                 @Override
                 public void onParameterData(List<ParameterValueWithId> params) {
                     for(ParameterValueWithId pvalid: params) {

@@ -94,9 +94,9 @@ public abstract class RestReplayListener implements ParameterWithIdConsumer {
         return pvwid;
     }
     
-    public void onParameterData(List<ParameterValueWithId> params){};
+    protected void onParameterData(List<ParameterValueWithId> params){};
     
-    public void onParameterData(ParameterValueWithId pvwid){};
+    protected void onParameterData(ParameterValueWithId pvwid){};
     
     public void replayFinished(){};
 }
