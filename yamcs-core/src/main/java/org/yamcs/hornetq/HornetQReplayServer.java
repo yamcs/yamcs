@@ -306,10 +306,19 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
 
 
         @Override
-        public void yProcessorClosed(YProcessor processor) {
+        public void yProcessorClosed(YProcessor processor) {            
             if(processor!=yproc) return;
+            log.debug("processor closed");
+            
             sendProcessorState();
-            if(!quitting) quitting = true;
+            quitting = true;
+            YProcessor.removeProcessorListener(this);
+            
+            try {
+                ysession.close();
+            } catch (HornetQException e) {
+                log.warn("Error when closing yclient", e);
+            }
         }
 
 
@@ -320,6 +329,8 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
         }
 
         private void sendProcessorState() {
+            if(quitting) return;
+            
             try { 
                 ReplayStatus.Builder rsb=ReplayStatus.newBuilder().setState(yproc.getReplayState());
                 yclient.sendData(dataAddress, ProtoDataType.STATE_CHANGE, rsb.build());                
@@ -331,6 +342,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
 
         @Override
         public void update(int subscriptionId, List<ParameterValueWithId> params) {
+            if(quitting) return;
             ParameterData.Builder pd = ParameterData.newBuilder();
             for(ParameterValueWithId pvwi:params) {
                 pd.addParameter(pvwi.getParameterValue().toGpb(pvwi.getId()));
@@ -362,6 +374,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
 
         @Override
         public void addedCommand(PreparedCommand pc) {
+            if(quitting) return;
             CommandHistoryEntry che = pc.toCommandHistoryEntry();
             try {
                 yclient.sendData(dataAddress, ProtoDataType.CMD_HISTORY, che);
@@ -374,6 +387,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
 
         @Override
         public void updatedCommand(CommandId cmdId, long changeDate, String key, Value value) {
+            if(quitting) return;
             CommandHistoryEntry.Builder cheb = CommandHistoryEntry.newBuilder().setCommandId(cmdId);
             cheb.addAttr(CommandHistoryAttribute.newBuilder().setName(key).setTime(changeDate).setValue(ValueUtility.toGbp(value)).build());
             try {
@@ -383,8 +397,5 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
                 quit();
             }
         }
-
-
-        
     }
 }
