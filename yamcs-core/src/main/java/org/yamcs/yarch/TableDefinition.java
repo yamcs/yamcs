@@ -144,11 +144,12 @@ public class TableDefinition {
     public void setPartitioningSpec(PartitioningSpec pspec) throws StreamSqlException {
         if((pspec.type==PartitioningSpec._type.TIME) || 
                 (pspec.type==PartitioningSpec._type.TIME_AND_VALUE)){
-            ColumnDefinition cd=keyDef.getColumn(0);
-            if(cd.getType()!=DataType.TIMESTAMP) throw new GenericStreamSqlException("time partition specified on a column of type "+cd.getType());
-            if (!keyDef.getColumn(0).getName().equals(pspec.timeColumn)) {
-                throw new NotSupportedException("time partitions supported only on the primary key");
+            ColumnDefinition cd=keyDef.getColumn(pspec.timeColumn);
+            if(cd==null) {
+                throw new GenericStreamSqlException("time partition specified on a column not part of the primary key: '"+pspec.timeColumn+"'");
             }
+            if(cd.getType()!=DataType.TIMESTAMP) throw new GenericStreamSqlException("time partition specified on a column of type "+cd.getType());
+            if(!keyDef.getColumn(0).getName().equals(pspec.timeColumn)) throw new GenericStreamSqlException("time partition supported only on the first column of the primary key");
         }
 
         if((pspec.type==PartitioningSpec._type.VALUE) || 
