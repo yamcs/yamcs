@@ -11,11 +11,8 @@ import org.yamcs.utils.DecodingException;
  *
  */
 public abstract class BaseSegment {
-    
     public static final byte FORMAT_ID_SortedTimeValueSegment = 1;
-    
     public static final byte FORMAT_ID_ParameterStatusSegment = 2;
-    
     public static final byte FORMAT_ID_GenericValueSegment = 10;    
     public static final byte FORMAT_ID_IntValueSegment = 11;
     public static final byte FORMAT_ID_StringValueSegment = 13;
@@ -46,11 +43,10 @@ public abstract class BaseSegment {
     /**
      * returns an array containing the values in the range [posStart, posStop) if ascending or [posStop, posStart) if descending
      * 
-     * 
      * @param posStart
      * @param posStop
      * @param ascending
-     * @return
+     * @return an array containing the values in the specified range
      */
     public abstract Object getRange(int posStart, int posStop, boolean ascending) ;
     

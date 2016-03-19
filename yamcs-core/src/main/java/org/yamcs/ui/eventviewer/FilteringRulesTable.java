@@ -310,7 +310,7 @@ public class FilteringRulesTable extends AbstractTableModel {
     /**
      * 
      * @param event
-     * @return
+     * @return 
      */
     public AlertType getAlertType(Event event) {
         AlertType alert = new AlertType();

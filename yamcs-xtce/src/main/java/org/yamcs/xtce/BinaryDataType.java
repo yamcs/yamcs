@@ -54,7 +54,7 @@ public class BinaryDataType extends BaseDataType {
      * if the string contains something else than 0-9, a-f, a NumberFormatException is thrown from Integer.parseInt with radix 16
      * 
      * @param s
-     * @return
+     * @return byte array resulted from parsing the string
      */
     public static byte[] hexStringToArray(String s) {
         if((s.length() & 1) == 1) {

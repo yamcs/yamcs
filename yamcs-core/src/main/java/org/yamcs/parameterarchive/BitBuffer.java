@@ -98,7 +98,7 @@ public class BitBuffer {
 
     /**
      * flush the temporary field to the array and return the backing array 
-     * @return
+     * @return the backing array
      */
     public long[] getArray() {
         if(offset<a.length) {
@@ -109,6 +109,7 @@ public class BitBuffer {
     
     /**
      * get the size of the backing array containing data
+     * @return the size of the backing array
      * 
      * */
     public int getSize() {
@@ -129,7 +130,7 @@ public class BitBuffer {
     
     /**
      * flush the temporary field to the backing array and return a byte[] copy of the backing long array
-     * @return
+     * @return a byte[] copy of the backing long array
      */
     public byte[] toByteArray() {
         byte[] b= new byte[offset*8+8];

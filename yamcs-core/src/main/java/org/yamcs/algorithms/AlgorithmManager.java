@@ -216,7 +216,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
      * Create a new algorithm execution context. 
      * 
      * @param name - name of the context 
-     * @return
+     * @return the newly created context
      */
     public AlgorithmExecutionContext createContext(String name) {
         return new AlgorithmExecutionContext(name, globalCtx);
@@ -403,7 +403,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
      * Update parameters in context and run the affected algorithms 
      * @param items
      * @param ctx
-     * @return
+     * @return the parameters resulting from running the algorithms
      */
     public ArrayList<ParameterValue> updateParameters(List<ParameterValue> items, AlgorithmExecutionContext ctx) {
         ArrayList<ParameterValue> newItems=new ArrayList<ParameterValue>();
