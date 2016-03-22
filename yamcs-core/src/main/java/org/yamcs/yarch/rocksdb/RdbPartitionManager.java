@@ -123,8 +123,8 @@ public class RdbPartitionManager extends PartitionManager {
             }
 
             YRDB rdb = rdbFactory.getRdb(f.getAbsolutePath(), new ColumnValueSerializer(tableDefinition), true);
-
-            rdb.createColumnFamily(value);
+            if(value!=null) rdb.createColumnFamily(value);
+       
             rdbFactory.dispose(rdb);
             return new RdbPartition(pinfo.partitionStart, pinfo.partitionEnd, value, pinfo.dir+"/"+tableDefinition.getName());			
         } catch (RocksDBException e) {
@@ -149,7 +149,8 @@ public class RdbPartitionManager extends PartitionManager {
                 f.mkdirs();
             }
             YRDB rdb = rdbFactory.getRdb(f.getAbsolutePath(), new ColumnValueSerializer(tableDefinition), true);
-            rdb.createColumnFamily(value);
+            if(value!=null) rdb.createColumnFamily(value);
+
             rdbFactory.dispose(rdb);
             return new RdbPartition(Long.MIN_VALUE, Long.MAX_VALUE, value, tableDefinition.getName());			
         } catch (RocksDBException e) {

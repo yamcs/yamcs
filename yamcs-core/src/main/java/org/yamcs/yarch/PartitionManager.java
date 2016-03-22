@@ -86,7 +86,7 @@ public abstract class PartitionManager {
     /**
      * Creates (if not already existing) and returns the partition in which the instant,value should be written.
      * instant can be invalid (in case value only or no partitioning)
-     * value can be null (in case 
+     * value can be null (in case of no value partitioning)
      *  
      * @return a Partition
      */

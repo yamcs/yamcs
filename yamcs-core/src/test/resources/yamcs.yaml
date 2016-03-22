@@ -18,3 +18,17 @@ incomingDir: /tmp/yamcs-incoming
 maxBinaryLength: 1048576
 
 storageEngines: [rocksdb]
+
+rdbConfig:
+     tableConfig:
+        - tableNamePattern: NonePartition
+          maxOpenFiles: 100
+          columnFamilyOptions: 
+              targetFileSizeBase: 10240 #in KB
+              targetFileSizeMultiplier: 10
+              maxBytesForLevelBase: 102400  #in KB
+              maxBytesForLevelMultiplier: 10
+              writeBufferSize: 50240        #in KB
+              maxWriteBufferNumber: 2
+          tableFormatConfig:
+              blockSize: 512 #KB

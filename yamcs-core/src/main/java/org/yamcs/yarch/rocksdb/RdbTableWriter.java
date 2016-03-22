@@ -213,7 +213,7 @@ public class RdbTableWriter extends TableWriter {
     /**
      * get the filename where the tuple would fit (can be a partition)
      * @param t
-     * @return
+     * @return the partition where the tuple fits
      * @throws IOException if there was an error while creating the directories where the file should be located
      */
     public RdbPartition getDbPartition(Tuple t) throws IOException {

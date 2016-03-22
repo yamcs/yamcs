@@ -91,7 +91,7 @@ public class YConfiguration {
             System.getProperties().put("cacheDirectory", yamcsDirectory+File.separatorChar+"cache"+File.separatorChar);
             userConfigDirectory=yamcsDirectory+File.separatorChar+"etc";
         }
-        
+
         if(System.getProperty("java.util.logging.config.file")==null) {
             try {
                 LogManager.getLogManager().readConfiguration(getConfigurationStream("/logging.properties"));
@@ -111,20 +111,40 @@ public class YConfiguration {
     }
 
 
+    /**
+     * Loads (if not already loaded) and returns a configuration corresponding to a file <subsystem>.yaml
+     *
+     * This method does not reload the configuration file if it has changed.
+     * 
+     * @param subsystem
+     * @return the loaded configuration
+     * @throws ConfigurationException if the configuration file could not be found or not loaded (e.g. error in yaml formatting)
+     */
     public synchronized static YConfiguration getConfiguration(String subsystem) throws ConfigurationException {
         if(subsystem.contains("..") || subsystem.contains("/")) throw new ConfigurationException("Invalid subsystem '"+subsystem+"'");
-            YConfiguration c=configurations.get(subsystem);
-            if(c==null) {
-                try {
-                    c=new YConfiguration(subsystem);
-                } catch (IOException e){
-                    throw new ConfigurationException("Cannot load configuration for subsystem "+subsystem+": "+e);
-                }
-                configurations.put(subsystem, c);
+        YConfiguration c = configurations.get(subsystem);
+        if(c==null) {
+            try {
+                c=new YConfiguration(subsystem);
+            } catch (IOException e){
+                throw new ConfigurationException("Cannot load configuration for subsystem "+subsystem+": "+e);
             }
-            return c;
+            configurations.put(subsystem, c);
         }
+        return c;
+    }
 
+    
+    /**
+     * Loads and returns a configuration corresponding to a file <subsystem>.yaml
+     * 
+     * This method reloads the configuration file always.
+     * 
+     * @param subsystem
+     * @param reload
+     * @return the loaded configuration
+     * @throws ConfigurationException if the configuration file could not be found or not loaded (e.g. error in yaml formatting)
+     */
     public synchronized static YConfiguration getConfiguration(String subsystem, boolean reload) throws ConfigurationException {
         if(reload) {
             YConfiguration c = configurations.get(subsystem);
@@ -143,7 +163,7 @@ public class YConfiguration {
                 return is;
             }
         }
-        
+
         //see if the users has an own version of the file
         File f=new File(userConfigDirectory+name);
         if(f.exists()) {
@@ -256,7 +276,7 @@ public class YConfiguration {
      */
     static public String getString(Map m, String key) throws ConfigurationException {
         checkKey(m, key);
-        
+
         Object o=m.get(key);
         if(o instanceof String) {
             return (String)o;
@@ -266,14 +286,14 @@ public class YConfiguration {
     }
 
     static public String getString(Map m, String key, String defaultValue) throws ConfigurationException {
-       if(m.containsKey(key)) {
-           return getString(m, key);
-       }  else {
-           return defaultValue;
-       }
+        if(m.containsKey(key)) {
+            return getString(m, key);
+        }  else {
+            return defaultValue;
+        }
     }
 
-    
+
     public String getString(String key) throws ConfigurationException {
         return getString(root, key);
     }
@@ -290,7 +310,7 @@ public class YConfiguration {
         Map<String, Object> m=getMap(key,key1);
         return getString(m, key2);
     }
-    
+
     @SuppressWarnings("unchecked")
     public <T> List<T> getList(String key) throws ConfigurationException {
         return (List<T>) getList(root, key);
@@ -391,8 +411,8 @@ public class YConfiguration {
      * @param m
      * @param key
      * @param v
-     * @return
-     * @throws ConfigurationException
+     * @return the value from the map or the passed value if the map does not contain the key
+     * @throws ConfigurationException if the key is present but it's not an int
      */
     static public int getInt(Map<String, Object> m, String key, int v) throws ConfigurationException {
         if(!m.containsKey(key)) return v;
@@ -403,7 +423,27 @@ public class YConfiguration {
             throw new ConfigurationException(confPath.get(m), "mapping for key '"+key+"' is of type "+getUnqualfiedClassName(o)+" and not Integer");
         }
     }
-
+    
+    /**
+     * return the m.get(key) as an long if it's present or v if it is not.
+     * 
+     * @param m
+     * @param key
+     * @param v
+     * @return the value from the map or the passed value if the map does not contain the key
+     * @throws ConfigurationException if the key is present but it's not an long
+     */
+    static public long getLong(Map<String, Object> m, String key, long v) throws ConfigurationException {
+        if(!m.containsKey(key)) return v;
+        Object o=m.get(key);
+        if(o instanceof Integer) {
+            return (Integer)o;
+        } else if(o instanceof Long) {
+            return (Long)o;
+        } else {
+            throw new ConfigurationException(confPath.get(m), "mapping for key '"+key+"' is of type "+getUnqualfiedClassName(o)+" and not Integer or Long");
+        }
+    }
 
     public int getInt(String key) throws ConfigurationException {
         return getInt(root,key);
@@ -413,11 +453,11 @@ public class YConfiguration {
         Map<String, Object> m=getMap(key);
         return getInt(m, key1);
     }
-    
+
     public boolean isList(String key) {
         return isList(root, key);
     }
-    
+
     public boolean isList(Map m, String key) {
         checkKey(m, key);
         Object o = m.get(key);
