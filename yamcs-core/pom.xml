@@ -133,7 +133,7 @@
    		   </property>
             </systemProperties>
           <excludes>
-             <exclude>**/PermissionsTest.java</exclude>
+             <!-- <exclude>**/PermissionsTest.java</exclude> -->
              <exclude>**/*$*</exclude> <!-- this excludes the inner classes which causes maven to get stuck somehow -->
           </excludes> 
         </configuration>
