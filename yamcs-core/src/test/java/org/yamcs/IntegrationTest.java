@@ -315,6 +315,42 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals("OK", cha.getValue().getStringValue());
     }
 
+    @Test
+    public void testUpdateCommandHistory() throws Exception {
+
+        // Send a command a store its commandId
+        IssueCommandRequest cmdreq = getCommand(5, "uint32_arg", "1000");
+        String resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST, cmdreq, SchemaRest.IssueCommandRequest.WRITE);
+        assertTrue(resp.contains("binary"));
+        Rest.IssueCommandResponse commandResponse = (fromJson(resp, SchemaRest.IssueCommandResponse.MERGE)).build();
+
+        // insert two values in the command history
+        CommandId commandId = commandResponse.getCommandQueueEntry().getCmdId();
+        Rest.UpdateCommandHistoryRequest.Builder updateHistoryRequest = Rest.UpdateCommandHistoryRequest.newBuilder().setCmdId(commandId);
+        updateHistoryRequest.addHistoryEntry(Rest.UpdateCommandHistoryRequest.KeyValue.newBuilder().setKey("testKey1").setValue("testValue1"));
+        updateHistoryRequest.addHistoryEntry(Rest.UpdateCommandHistoryRequest.KeyValue.newBuilder().setKey("testKey2").setValue("testValue2"));
+        doRealtimeRequest("/commandhistory/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST, updateHistoryRequest.build(), SchemaRest.UpdateCommandHistoryRequest.WRITE);
+
+        // Query command history and check that we can retreive the inserted values
+        String respDl = httpClient.doRequest("http://localhost:9190/api/archive/IntegrationTest/downloads/commands", HttpMethod.GET, null, currentUser);
+        List<CommandHistoryEntry> commandHistoryEntries = allFromJson(respDl, SchemaCommanding.CommandHistoryEntry.MERGE);
+        List<CommandHistoryAttribute> commandHistoryAttributes = commandHistoryEntries.get(commandHistoryEntries.size()-1).getAttrList();
+        boolean foundKey1 = false, foundKey2 = false;
+        for (CommandHistoryAttribute cha : commandHistoryAttributes) {
+            if(cha.getName().equals("testKey1")  &&
+                    cha.getValue().getStringValue().equals("testValue1") )
+            {
+                foundKey1 = true;
+            }
+            if(cha.getName().equals("testKey2")  &&
+                    cha.getValue().getStringValue().equals("testValue2") )
+            {
+                foundKey2 = true;
+            }
+        }
+        assertTrue(foundKey1);
+        assertTrue(foundKey2);
+    }
 
     @Test
     public void testWsManagement() throws Exception {

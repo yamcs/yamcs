@@ -1,5 +1,6 @@
 package org.yamcs.commanding;
 
+import java.security.Permission;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -86,6 +87,16 @@ public class CommandingManager extends AbstractService {
     public CommandQueue sendCommand(AuthenticationToken authToken, PreparedCommand pc) {
         log.debug("sendCommand commandSource="+pc.getSource());
         return commandQueueManager.addCommand(authToken, pc);
+    }
+
+    public void addToCommandHistory(CommandId commandId, String key, String value, AuthenticationToken authToken) throws NoPermissionException {
+        if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.SYSTEM, Privilege.SystemPrivilege.MayModifyCommandHistory.name()))
+        {
+            log.warn("Throwing InsufficientPrivileges for lack of COMMANDING privilege for user "+authToken);
+            throw new NoPermissionException("User has no privilege to update command history ");
+        }
+
+        commandQueueManager.addToCommandHistory(commandId, key, value);
     }
 
     public YProcessor getChannel() {
