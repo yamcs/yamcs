@@ -76,7 +76,8 @@ public class RdbPartitionManager extends PartitionManager {
         RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
         String tblName = tableDefinition.getName();
         String dataDir = tableDefinition.getDataDir();
-        YRDB rdb = rdbFactory.getRdb(dataDir+"/"+dir+"/"+tblName, new ColumnValueSerializer(tableDefinition), false);
+        String absolutePath = dir.isEmpty()?dataDir+"/"+tblName:dataDir+"/"+dir+"/"+tblName;
+        YRDB rdb = rdbFactory.getRdb(absolutePath, new ColumnValueSerializer(tableDefinition), false);
 
         for(Object o: rdb.getColumnFamilies()) {
             if(pinfo!=null) {
