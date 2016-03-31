@@ -5,15 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -940,6 +933,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     protected void loadCommandSheet(boolean required) {
         Sheet sheet = switchToSheet(SHEET_COMMANDS, required);
         if(sheet==null) return;
+        Cell[] firstRow = jumpToRow(sheet, 0);
 
         HashMap<String, MetaCommand> commands = new HashMap<String, MetaCommand>();
 
@@ -968,6 +962,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
             if("".equals(parent)) parent=null;
 
+
+
             // absoluteOffset is the absolute offset of the first argument or FixedValue in the container
             int absoluteOffset=-1;
             if(parent==null) {
@@ -979,13 +975,19 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     parent=parent.substring(0, x);
                 }
             }
-            // create a new SequenceContainer that will hold the parameters (i.e. SequenceEntries) for the ORDINARY/SUB/AGGREGATE packets, 
+
+            // create a new SequenceContainer that will hold the parameters (i.e. SequenceEntries) for the ORDINARY/SUB/AGGREGATE packets,
             //and register that new SequenceContainer in the containers hashmap
             MetaCommandContainer container = new MetaCommandContainer(name);
             MetaCommand cmd = new MetaCommand(name);
             cmd.setMetaCommandContainer(container);
             commands.put(name, cmd);
-            cmd.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+name);
+
+            // load aliases
+            XtceAliasSet xas=new XtceAliasSet();
+            xas.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+name);
+            addAdditionalAliases(firstRow, cells, xas);
+            cmd.setAliasSet(xas);
 
             if(hasColumn(cells, IDX_CMD_FLAGS)) {			
                 String flags = cells[IDX_CMD_FLAGS].getContents();
@@ -1093,9 +1095,6 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 }
             } 
 
-            XtceAliasSet xas=new XtceAliasSet();
-            xas.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+container.getName());
-            container.setAliasSet(xas);
 
             spaceSystem.addMetaCommand(cmd);
         }
