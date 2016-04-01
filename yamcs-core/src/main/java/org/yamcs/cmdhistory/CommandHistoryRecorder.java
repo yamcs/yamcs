@@ -49,7 +49,7 @@ public class CommandHistoryRecorder extends AbstractService {
                 notifyFailed(new Exception("The stream "+YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME+" has not been found"));
                 return;
             }
-            ydb.execute("insert_append into "+TABLE_NAME+" select * from "+YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME);
+            ydb.execute("upsert_append into "+TABLE_NAME+" select * from "+YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME);
             
             stream=ydb.getStream(YarchCommandHistoryAdapter.DUMP_CMDHIST_STREAM_NAME);
             if(stream==null) {
@@ -57,7 +57,7 @@ public class CommandHistoryRecorder extends AbstractService {
                 notifyFailed(new Exception("The stream "+YarchCommandHistoryAdapter.DUMP_CMDHIST_STREAM_NAME+" has not been found"));
                 return;
             }
-            ydb.execute("insert_append into "+TABLE_NAME+" select * from "+YarchCommandHistoryAdapter.DUMP_CMDHIST_STREAM_NAME);
+            ydb.execute("upsert_append into "+TABLE_NAME+" select * from "+YarchCommandHistoryAdapter.DUMP_CMDHIST_STREAM_NAME);
             
             
         } catch (Exception e) {
