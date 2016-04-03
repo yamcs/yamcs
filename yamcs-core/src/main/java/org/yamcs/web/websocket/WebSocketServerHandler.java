@@ -75,14 +75,12 @@ public class WebSocketServerHandler {
     }
 
     /**
-     * Tries to use an application name as provided by the client. Special logic is needed for uss-web, since
-     * JS WebSocket API doesn't support custom http headers. We should maybe think of making this part of our
-     * protocol instead.
+     * Tries to use an application name as provided by the client. For browsers (since overriding
+     * websocket headers is not supported) this will be the browser's standard user-agent string.
      */
     private String determineApplicationName(ChannelHandlerContext ctx, HttpRequest req) {
         if (req.headers().contains(HttpHeaders.Names.USER_AGENT)) {
-            String userAgent = req.headers().get(HttpHeaders.Names.USER_AGENT);
-            return (userAgent.contains("Mozilla")) ? "yamcs-web" : userAgent;
+            return req.headers().get(HttpHeaders.Names.USER_AGENT);
         } else {
             return "Unknown (" + ctx.channel().remoteAddress() +")";
         }
