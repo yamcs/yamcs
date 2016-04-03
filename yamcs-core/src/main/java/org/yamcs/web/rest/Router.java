@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YamcsVersion;
 import org.yamcs.parameterarchive.ParameterArchiveMaintenanceRestHandler;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse;
 import org.yamcs.protobuf.SchemaRest;
@@ -338,14 +339,15 @@ public class Router {
     
         @Route(path="/api", method="GET")
         public ChannelFuture getApiOverview(RestRequest req) throws HttpException {
-            
+            GetApiOverviewResponse.Builder responseb = GetApiOverviewResponse.newBuilder();
+            responseb.setYamcsVersion(YamcsVersion.version);
+
             // Unique accross http methods, and according to insertion order
             Set<String> urls = new LinkedHashSet<>();
             for (Map<HttpMethod, RouteConfig> map : defaultRoutes.values()) {
                 map.values().forEach(v -> urls.add(v.originalPath));
             }
-            
-            GetApiOverviewResponse.Builder responseb = GetApiOverviewResponse.newBuilder();
+
             urls.forEach(url -> responseb.addUrl(url));
             
             return sendOK(req, responseb.build(), SchemaRest.GetApiOverviewResponse.WRITE);

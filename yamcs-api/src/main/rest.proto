@@ -10,7 +10,8 @@ import "commanding.proto";
 import "yamcsManagement.proto";
 
 message GetApiOverviewResponse {
-  repeated string url = 1;
+  optional string yamcsVersion = 1;
+  repeated string url = 2;
 }
 
 message ListParameterInfoResponse {
