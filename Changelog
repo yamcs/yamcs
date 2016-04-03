@@ -1,6 +1,13 @@
 Version 0.29.4 Released 
 - fix changing speed in the replays
 - fix hornetq replays which were never releasing the threads
+- added posibility to configure RocksDB options
+- added checks for preventing one rocksdb database being open twice
+- changed tables to use default rocksdb partition if no partitioning is defined (previously an extra null partition was created) 
+  the code is backward compatbile. If old null partitions are present, they will be used instead of the default parttion.
+- parameter archive: 
+  - implemented some sanity checks to avoid,  detect and better report corruption or inconsistencies. 
+  - added a REST call that allows removing entire partitions (in order to recreate them from scratch from the raw data)
 
 Version 0.29.3 Released 28-Feb-2016
 - added backFiller config in the ParameterArchive
