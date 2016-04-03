@@ -129,18 +129,6 @@ public class PGSegment {
         }
     }
 
-    public void retrieveValues(SingleParameterValueRequest pvr, Consumer<TimedValue> consumer) {
-        int pidx = parameterIds.search(pvr.parameterId);
-        if(pidx<0) {
-            throw new IllegalArgumentException("Received a parameter id "+pvr.parameterId+" that is not part of this parameter group");
-        }
-        ValueSegment engValues = pvr.retrieveEngineeringValues?engValueSegments.get(pidx):null;
-        ValueSegment rawValues = pvr.retrieveRawValues?rawValueSegments.get(pidx):null;
-        ParameterStatusSegment paramStatus= pvr.retrieveParameterStatus?parameterStatusSegments.get(pidx):null;
-        
-        new SegmentIterator(timeSegment, engValues, rawValues, paramStatus, pvr.start, pvr.stop, pvr.ascending).forEachRemaining(consumer);
-    }
- 
     
     public void consolidate() {
         consolidated = true;
