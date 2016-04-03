@@ -50,7 +50,7 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
 
     private static final String STATIC_PATH = "_static";
     private static final String API_PATH = "api";
-    
+
     public static final AttributeKey<HttpRequest> CTX_HTTP_REQUEST = AttributeKey.valueOf("request");
     public static final AttributeKey<ChunkedTransferStats> CTX_CHUNK_STATS = AttributeKey.valueOf("chunkedTransferStats");
     public static final AttributeKey<String> CTX_ATTACHMENT_NAME = AttributeKey.valueOf("attachmentName");
@@ -59,12 +59,12 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
 
     private static StaticFileHandler fileRequestHandler = new StaticFileHandler();
     private Router apiRouter;
-    private WebSocketServerHandler webSocketHandler = new WebSocketServerHandler();    
-    
+    private WebSocketServerHandler webSocketHandler = new WebSocketServerHandler();
+
     public HttpHandler(Router apiRouter) {
         this.apiRouter = apiRouter;
     }
-    
+
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof FullHttpRequest) {
@@ -77,11 +77,17 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
             return;
         }
     }
-    
+
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         webSocketHandler.channelDisconnected(ctx.channel());
         super.channelInactive(ctx);
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        log.error("Will close channel due to exception", cause);
+        ctx.close();
     }
 
     private void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
@@ -101,14 +107,14 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
                 return;
             }
         }
-        
+
         // Store in context, mainly for use by full-response loggers
         ctx.attr(CTX_HTTP_REQUEST).set(req);
-        
+
         String[] path = req.getUri().split("/", 3); //uri starts with / so path[0] is always empty
         switch (path[1]) {
         case STATIC_PATH:
-            if (path.length == 2) { //do not accept "/_static/" (i.e. directory listing) requests 
+            if (path.length == 2) { //do not accept "/_static/" (i.e. directory listing) requests
                 sendPlainTextError(ctx, FORBIDDEN);
                 return;
             }
@@ -127,7 +133,7 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
                 sendPlainTextError(ctx, NOT_FOUND);
                 return;
             }
-            
+
             if (path.length > 2) {
                 String[] rpath = path[2].split("/", 2);
                 String handler = rpath[0];
@@ -135,7 +141,7 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
                     webSocketHandler.handleHttpRequest(ctx, req, yamcsInstance, authToken);
                 } else {
                     // Everything else is handled by angular's router (enables deep linking in html5 mode)
-                    fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/instance.html");                
+                    fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/instance.html");
                 }
             } else {
                 fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/instance.html");
@@ -143,12 +149,12 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
             return;
         }
     }
-    
+
     private AuthenticationToken authenticate(ChannelHandlerContext ctx, HttpRequest req) throws BadRequestException, UnauthorizedException {
         if (!req.headers().contains(HttpHeaders.Names.AUTHORIZATION)) {
             throw new UnauthorizedException("Authorization required, but nothing provided");
         }
-        
+
         String authorizationHeader = req.headers().get(HttpHeaders.Names.AUTHORIZATION);
         if (!authorizationHeader.startsWith("Basic ")) { // Exact case only
             throw new BadRequestException("Unsupported Authorization header '" + authorizationHeader + "'");
@@ -173,7 +179,7 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
         }
         return token;
     }
-    
+
     public ChannelFuture sendRedirect(ChannelHandlerContext ctx, String newUri) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.FOUND);
         response.headers().set(HttpHeaders.Names.LOCATION, newUri);
@@ -181,24 +187,24 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
         log.info("{} {} {}", request.getMethod(), request.getUri(), HttpResponseStatus.FOUND.code());
         return ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
-    
+
     private ChannelFuture sendUnauthorized(ChannelHandlerContext ctx, HttpRequest request) {
         ByteBuf buf = Unpooled.copiedBuffer(HttpResponseStatus.UNAUTHORIZED.toString() + "\r\n", CharsetUtil.UTF_8);
-        
+
         HttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.UNAUTHORIZED, buf);
         setHeader(res, HttpHeaders.Names.WWW_AUTHENTICATE, "Basic realm=\"" + Privilege.getRealmName() + "\"");
-        
+
         log.warn("{} {} {} [realm=\"{}\"]", request.getMethod(), request.getUri(), res.getStatus().code(), Privilege.getRealmName());
         return ctx.writeAndFlush(res).addListener(ChannelFutureListener.CLOSE);
     }
-    
+
     public static ChannelFuture sendPlainTextError(ChannelHandlerContext ctx, HttpResponseStatus status) {
         FullHttpResponse response = new DefaultFullHttpResponse(
                 HTTP_1_1, status, Unpooled.copiedBuffer(status + "\r\n", CharsetUtil.UTF_8));
         response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/plain; charset=UTF-8");
         return sendError(ctx, response);
     }
-    
+
     public static ChannelFuture sendError(ChannelHandlerContext ctx, HttpResponse response) {
         HttpRequest request = ctx.attr(CTX_HTTP_REQUEST).get();
         if (request != null) {
@@ -209,18 +215,18 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
 
         return ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
-    
+
     public static ChannelFuture sendOK(ChannelHandlerContext ctx, HttpResponse response) {
         HttpRequest request = ctx.attr(CTX_HTTP_REQUEST).get();
         log.info("{} {} {}", request.getMethod(), request.getUri(), response.getStatus().code());
         ChannelFuture writeFuture = ctx.writeAndFlush(response);
-        
+
         if (!isKeepAlive(request)) {
             writeFuture.addListener(ChannelFutureListener.CLOSE);
         }
         return writeFuture;
     }
-    
+
     /**
      * Sends base HTTP response indicating the use of chunked transfer encoding
      */
@@ -231,7 +237,7 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(Names.TRANSFER_ENCODING, HttpHeaders.Values.CHUNKED);
         response.headers().set(Names.CONTENT_TYPE, contentType);
-        
+
         // Set Content-Disposition header so that supporting clients will treat response as a downloadable file
         if (ctx.attr(CTX_ATTACHMENT_NAME).get() != null) {
             String filename = ctx.attr(CTX_ATTACHMENT_NAME).get();
@@ -239,7 +245,7 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
         }
         return ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
     }
-    
+
     public static ChannelFuture writeChunk(ChannelHandlerContext ctx, ByteBuf buf) throws IOException {
         Channel ch = ctx.channel();
         if (!ch.isOpen()) {
@@ -260,7 +266,7 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
         }
         return writeFuture;
     }
-    
+
     /**
      * Send empty chunk downstream to signal succesful end of response.
      * <p>
@@ -284,7 +290,7 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
             writeEmptyLastContent(ctx);
         }
     }
-    
+
     private static ChannelFuture writeEmptyLastContent(ChannelHandlerContext ctx) {
         HttpRequest request = ctx.attr(CTX_HTTP_REQUEST).get();
         ChunkedTransferStats stats = ctx.attr(CTX_CHUNK_STATS).get();
@@ -293,7 +299,7 @@ public class HttpHandler extends SimpleChannelInboundHandler<Object> {
         ChannelFuture chunkWriteFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         return chunkWriteFuture.addListener(ChannelFutureListener.CLOSE);
     }
-    
+
     public static class ChunkedTransferStats {
         public int totalBytes = 0;
         public int chunkCount = 0;

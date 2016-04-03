@@ -36,18 +36,19 @@ import io.protostuff.Schema;
  */
 public class WebSocketServerHandler {
 
-    final static Logger log=LoggerFactory.getLogger(WebSocketServerHandler.class.getName());
+    private final static Logger log = LoggerFactory.getLogger(WebSocketServerHandler.class.getName());
 
     public static final String WEBSOCKET_PATH = "_websocket";
     private WebSocketServerHandshaker handshaker;
-    private int dataSeqCount=-1;
+    private int dataSeqCount = -1;
+    private int droppedWrites = 0; // Consecutive dropped writes used to free up resources
 
     private WebSocketDecoder decoder;
     private WebSocketEncoder encoder;
 
     //these two are valid after the socket has been upgraded and they are practical final
-    Channel channel;
-    WebSocketProcessorClient processorClient;
+    private Channel channel;
+    private WebSocketProcessorClient processorClient;
 
     // Provides access to the various resources served through this websocket
     private Map<String, AbstractWebSocketResource> resourcesByName = new HashMap<>();
@@ -58,9 +59,9 @@ public class WebSocketServerHandler {
             String applicationName = determineApplicationName(ctx, req);
             this.processorClient=new WebSocketProcessorClient(yamcsInstance, this, applicationName, authToken);
         }
-        
+
         this.channel=ctx.channel();
-        
+
         // Handshake
         log.debug("Upgrading {} to WebSocket", ctx.channel().remoteAddress());
         WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(this.getWebSocketLocation(yamcsInstance, req), null, false);
@@ -111,7 +112,7 @@ public class WebSocketServerHandler {
                 } else {
                     throw new WebSocketException(WSConstants.NO_REQUEST_ID, String.format("%s frame types not supported", frame.getClass().getName()));
                 }
-                
+
                 ByteBuf binary = frame.content();
                 if (binary != null) {
                     InputStream in = new ByteBufInputStream(binary);
@@ -158,7 +159,7 @@ public class WebSocketServerHandler {
             log.warn("Dropping reply message because channel is not writable");
             return;
         }
-        
+
         WebSocketFrame frame = encoder.encodeReply(reply);
         channel.writeAndFlush(frame);
     }
@@ -169,16 +170,29 @@ public class WebSocketServerHandler {
     }
 
     /**
-     * Sends actual data over the web socket
+     * Sends actual data over the web socket. If the channel is not or no longer
+     * writable, the message is dropped. TODO A better approach could be to await the
+     * write for a little while, like we do for chunked writes, but doing so
+     * in-thread would currently cause other yamcs-level subscribers to block as
+     * well for certain types of requests. Needs work.
      */
     public <T> void sendData(ProtoDataType dataType, T data, Schema<T> schema) throws IOException {
         dataSeqCount++;
         if(!channel.isOpen()) throw new IOException("Channel not open");
-        
+
         if(!channel.isWritable()) {
-            log.warn("Dropping " + dataType + " message because channel is not writable");
+            log.warn("Dropping {} message for client [id={}, username={}] because channel is not or no longer writable",
+                    dataType, processorClient.getClientId(), processorClient.getUsername());
+            droppedWrites++;
+
+            if (droppedWrites == 5) {
+                log.warn("Too many failed writes for client [id={}, username={}]. Forcing disconnect",
+                        processorClient.getClientId(), processorClient.getUsername());
+                channel.disconnect();
+            }
             return;
         }
+        droppedWrites = 0;
         WebSocketFrame frame = encoder.encodeData(dataSeqCount, dataType, data, schema);
         channel.writeAndFlush(frame);
     }
