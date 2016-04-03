@@ -10,11 +10,11 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.stream.ChunkedWriteHandler;
 
 
-public class HttpServerInitializer extends ChannelInitializer<SocketChannel> {
+public class HttpServerChannelInitializer extends ChannelInitializer<SocketChannel> {
 
     private Router apiRouter;
 
-    public HttpServerInitializer(Router apiRouter) {
+    public HttpServerChannelInitializer(Router apiRouter) {
         this.apiRouter = apiRouter;
     }
 
@@ -25,6 +25,11 @@ public class HttpServerInitializer extends ChannelInitializer<SocketChannel> {
         pipeline.addLast(new ChunkedWriteHandler());
         pipeline.addLast(new HttpObjectAggregator(65536));
         pipeline.addLast(new SmartHttpContentCompressor());
-        pipeline.addLast(new HttpHandler(apiRouter));
+        pipeline.addLast(new HttpRequestHandler(apiRouter));
+
+        // Currently added dynamically due to websocketPath not fixed
+        //pipeline.addLast(new WebSocketServerProtocolHandler(websocketPath));
+        //pipeline.addLast(new WebSocketFrameHandler<TextWebSocketFrame>());
+        //pipeline.addLast(new WebSocketFrameHandler<BinaryWebSocketFrame>());
     }
 }

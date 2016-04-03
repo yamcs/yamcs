@@ -24,7 +24,7 @@ import org.yamcs.protobuf.Rest.GetApiOverviewResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.web.HttpException;
-import org.yamcs.web.HttpHandler;
+import org.yamcs.web.HttpRequestHandler;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.MethodNotAllowedException;
 import org.yamcs.web.RouteHandler;
@@ -171,7 +171,7 @@ public class Router {
             if (match != null) {
                 dispatch(restReq, match);
             } else {
-                HttpHandler.sendPlainTextError(ctx, HttpResponseStatus.NOT_FOUND);
+                HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.NOT_FOUND);
             }
         } catch (URISyntaxException e) {
             RestHandler.sendRestError(restReq, HttpResponseStatus.INTERNAL_SERVER_ERROR, e);

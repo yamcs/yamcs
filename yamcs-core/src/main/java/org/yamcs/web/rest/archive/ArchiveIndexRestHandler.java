@@ -18,8 +18,8 @@ import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
-import org.yamcs.web.HttpHandler;
-import org.yamcs.web.HttpHandler.ChunkedTransferStats;
+import org.yamcs.web.HttpRequestHandler;
+import org.yamcs.web.HttpRequestHandler.ChunkedTransferStats;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
@@ -32,16 +32,16 @@ import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
 import io.protostuff.JsonIOUtil;
 
-/** 
+/**
  * Serves archive indexes through a web api.
  *
  * <p>These responses use chunked encoding with an unspecified content length, which enables
  * us to send large dumps without needing to determine a content length on the server.
  */
 public class ArchiveIndexRestHandler extends RestHandler {
-    
+
     private static final Logger log = LoggerFactory.getLogger(ArchiveIndexRestHandler.class);
-    
+
     /**
      * indexes a combination of multiple indexes. If nothing is specified, returns empty
      */
@@ -49,7 +49,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
     public void downloadIndexes(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
-        
+
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
         IntervalResult ir = req.scanForInterval();
@@ -67,7 +67,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
                 }
             }
         }
-        
+
         Set<String> filter = new HashSet<>();
         if (req.hasQueryParameter("filter")) {
             for (String names : req.getQueryParameterList("filter")) {
@@ -76,7 +76,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
                 }
             }
         }
-        
+
         if (filter.isEmpty() && requestb.getTmPacketCount() == 0) {
             requestb.setSendAllTm(true);
             requestb.setSendAllPp(true);
@@ -90,19 +90,19 @@ public class ArchiveIndexRestHandler extends RestHandler {
             requestb.setSendAllEvent(filter.contains("events"));
             requestb.setSendCompletenessIndex(filter.contains("completeness"));
         }
-        
+
         try {
             indexServer.submitIndexRequest(requestb.build(), new ChunkedIndexResultProtobufEncoder(req, false));
         } catch (YamcsException e) {
             log.error("Error while processing index request", e);
         }
     }
-    
+
     @Route(path = "/api/archive/:instance/indexes/packets", method = "GET")
     public void downloadPacketIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
-        
+
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
         IntervalResult ir = req.scanForInterval();
@@ -123,19 +123,19 @@ public class ArchiveIndexRestHandler extends RestHandler {
         if (requestb.getTmPacketCount() == 0) {
             requestb.setSendAllTm(true);
         }
-        
+
         try {
             indexServer.submitIndexRequest(requestb.build(), new ChunkedIndexResultProtobufEncoder(req, true));
         } catch (YamcsException e) {
             log.error("Error while processing index request", e);
         }
     }
-    
+
     @Route(path = "/api/archive/:instance/indexes/pp", method = "GET")
     public void downloadPpIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
-        
+
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
         IntervalResult ir = req.scanForInterval();
@@ -146,19 +146,19 @@ public class ArchiveIndexRestHandler extends RestHandler {
             requestb.setStop(ir.getStop());
         }
         requestb.setSendAllPp(true);
-        
+
         try {
             indexServer.submitIndexRequest(requestb.build(), new ChunkedIndexResultProtobufEncoder(req, true));
         } catch (YamcsException e) {
             log.error("Error while processing index request", e);
         }
     }
-    
+
     @Route(path = "/api/archive/:instance/indexes/commands", method = "GET")
     public void downloadCommandHistoryIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
-        
+
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
         IntervalResult ir = req.scanForInterval();
@@ -169,19 +169,19 @@ public class ArchiveIndexRestHandler extends RestHandler {
             requestb.setStop(ir.getStop());
         }
         requestb.setSendAllCmd(true);
-        
+
         try {
             indexServer.submitIndexRequest(requestb.build(), new ChunkedIndexResultProtobufEncoder(req, true));
         } catch (YamcsException e) {
             log.error("Error while processing index request", e);
         }
     }
-    
+
     @Route(path = "/api/archive/:instance/indexes/events", method = "GET")
     public void downloadEventIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
-        
+
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
         IntervalResult ir = req.scanForInterval();
@@ -192,19 +192,19 @@ public class ArchiveIndexRestHandler extends RestHandler {
             requestb.setStop(ir.getStop());
         }
         requestb.setSendAllEvent(true);
-        
+
         try {
             indexServer.submitIndexRequest(requestb.build(), new ChunkedIndexResultProtobufEncoder(req, true));
         } catch (YamcsException e) {
             log.error("Error while processing index request", e);
         }
     }
-    
+
     @Route(path = "/api/archive/:instance/indexes/completeness", method = "GET")
     public void downloadCompletenessIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
-        
+
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
         IntervalResult ir = req.scanForInterval();
@@ -215,30 +215,30 @@ public class ArchiveIndexRestHandler extends RestHandler {
             requestb.setStop(ir.getStop());
         }
         requestb.setSendCompletenessIndex(true);
-        
+
         try {
             indexServer.submitIndexRequest(requestb.build(), new ChunkedIndexResultProtobufEncoder(req, true));
         } catch (YamcsException e) {
             log.error("Error while processing index request", e);
         }
     }
-    
+
     private static class ChunkedIndexResultProtobufEncoder implements IndexRequestListener {
-        
+
         private static final Logger log = LoggerFactory.getLogger(ChunkedIndexResultProtobufEncoder.class);
         private static final int CHUNK_TRESHOLD = 8096;
-        
+
         private final RestRequest req;
         private final MediaType contentType;
         private final boolean unpack;
-        
+
         private ByteBuf buf;
         private ByteBufOutputStream bufOut;
         private ChannelFuture lastChannelFuture;
         private ChunkedTransferStats stats;
-        
+
         private boolean first;
-        
+
         // If unpack, the result will be a stream of Archive Records, otherwise IndexResult
         public ChunkedIndexResultProtobufEncoder(RestRequest req, boolean unpack) {
             this.req = req;
@@ -247,7 +247,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
             resetBuffer();
             first = true;
         }
-        
+
         private void resetBuffer() {
             buf = req.getChannelHandlerContext().alloc().buffer();
             bufOut = new ByteBufOutputStream(buf);
@@ -256,8 +256,8 @@ public class ArchiveIndexRestHandler extends RestHandler {
         @Override
         public void processData(IndexResult indexResult) throws Exception {
             if (first) {
-                lastChannelFuture = HttpHandler.startChunkedTransfer(req.getChannelHandlerContext(), contentType);
-                stats = req.getChannelHandlerContext().attr(HttpHandler.CTX_CHUNK_STATS).get();
+                lastChannelFuture = HttpRequestHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType, null);
+                stats = req.getChannelHandlerContext().attr(HttpRequestHandler.CTX_CHUNK_STATS).get();
                 first = false;
             }
             if (unpack) {
@@ -273,7 +273,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
                 resetBuffer();
             }
         }
-        
+
         private void bufferArchiveRecord(ArchiveRecord msg) throws IOException {
             if (MediaType.PROTOBUF.equals(contentType)) {
                 msg.writeDelimitedTo(bufOut);
@@ -283,7 +283,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
                 generator.close();
             }
         }
-        
+
         private void bufferIndexResult(IndexResult msg) throws IOException {
             if (MediaType.PROTOBUF.equals(contentType)) {
                 msg.writeDelimitedTo(bufOut);
@@ -301,20 +301,20 @@ public class ArchiveIndexRestHandler extends RestHandler {
                 if (buf.readableBytes() > 0) {
                     writeChunk();
                 }
-                HttpHandler.stopChunkedTransfer(req.getChannelHandlerContext(), lastChannelFuture);
+                HttpRequestHandler.stopChunkedTransfer(req.getChannelHandlerContext(), lastChannelFuture);
             } catch (IOException e) {
                 log.error("Could not write final chunk of data", e);
                 req.getChannelHandlerContext().close();
             }
         }
-        
+
         private void writeChunk() throws IOException {
             stats.totalBytes += buf.readableBytes();
             stats.chunkCount++;
-            lastChannelFuture = HttpHandler.writeChunk(req.getChannelHandlerContext(), buf);
+            lastChannelFuture = HttpRequestHandler.writeChunk(req.getChannelHandlerContext(), buf);
         }
     }
-    
+
     private IndexServer verifyIndexServer(RestRequest req, String instance) throws HttpException {
         verifyInstance(req, instance);
         IndexServer indexServer = YamcsServer.getService(instance, IndexServer.class);

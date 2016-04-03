@@ -47,18 +47,18 @@ public class StaticFileHandler extends RouteHandler {
     static MimetypesFileTypeMap mimeTypesMap;
     public static final int HTTP_CACHE_SECONDS = 60;
     private static boolean zeroCopyEnabled = true;
-    
+
     private static final Logger log = LoggerFactory.getLogger(StaticFileHandler.class.getName());
-    
+
     public static void init() throws ConfigurationException {
         if(mimeTypesMap!=null) return;
-    
+
         InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("mime.types");
         if(is==null) {
             throw new ConfigurationException("Cannot find the mime.types file in the classpath");
         }
         mimeTypesMap=new MimetypesFileTypeMap(is);
-        
+
         YConfiguration yconfig = YConfiguration.getConfiguration("yamcs");
         if (yconfig.isList("webRoot")) {
             @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -74,15 +74,15 @@ public class StaticFileHandler extends RouteHandler {
             zeroCopyEnabled = yconfig.getBoolean("zeroCopyEnabled");
         }
     }
-    
+
     void handleStaticFileRequest(ChannelHandlerContext ctx, HttpRequest req, String rawPath) throws Exception {
         log.debug("Handling static file request for {}", rawPath);
         String path = sanitizePath(rawPath);
         if (path == null) {
-            HttpHandler.sendPlainTextError(ctx, FORBIDDEN);
+            HttpRequestHandler.sendPlainTextError(ctx, req, FORBIDDEN);
             return;
         }
-        
+
         File file = null;
         boolean match = false;
         for (String webRoot : WEB_Roots) { // Stop on first match
@@ -95,11 +95,11 @@ public class StaticFileHandler extends RouteHandler {
 
         if (!match) {
             log.warn("File {} does not exist or is hidden. Searched under {}", path, WEB_Roots);
-            HttpHandler.sendPlainTextError(ctx, NOT_FOUND);
+            HttpRequestHandler.sendPlainTextError(ctx, req, NOT_FOUND);
             return;
         }
         if (!file.isFile()) {
-            HttpHandler.sendPlainTextError(ctx, FORBIDDEN);
+            HttpRequestHandler.sendPlainTextError(ctx, req, FORBIDDEN);
             return;
         }
 
@@ -109,7 +109,7 @@ public class StaticFileHandler extends RouteHandler {
             SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
             Date ifModifiedSinceDate = dateFormatter.parse(ifModifiedSince);
 
-            // Only compare up to the second because the datetime format we send to the client does not have milliseconds 
+            // Only compare up to the second because the datetime format we send to the client does not have milliseconds
             long ifModifiedSinceDateSeconds = ifModifiedSinceDate.getTime() / 1000;
             long fileLastModifiedSeconds = file.lastModified() / 1000;
             if (ifModifiedSinceDateSeconds == fileLastModifiedSeconds) {
@@ -117,12 +117,12 @@ public class StaticFileHandler extends RouteHandler {
                 return;
             }
         }
-        
+
         RandomAccessFile raf;
         try {
             raf = new RandomAccessFile(file, "r");
         } catch (FileNotFoundException ignore) {
-            HttpHandler.sendPlainTextError(ctx, NOT_FOUND);
+            HttpRequestHandler.sendPlainTextError(ctx, req, NOT_FOUND);
             return;
         }
         long fileLength = raf.length();
@@ -145,7 +145,7 @@ public class StaticFileHandler extends RouteHandler {
             sendFileFuture = ctx.writeAndFlush(new DefaultFileRegion(raf.getChannel(), 0, fileLength), ctx.newProgressivePromise());
             // Write the end marker.
             lastContentFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
-        } else {           
+        } else {
             //to be replaced with HttpChunkedInput when netty is upgraded.
             sendFileFuture = ctx.writeAndFlush(new ChunkedFile(raf, 0, fileLength, 8192),  ctx.newProgressivePromise());
             // the HttpChunkedInput will take care of the end marker so the next line can be replaced with this one:
@@ -174,24 +174,24 @@ public class StaticFileHandler extends RouteHandler {
                 }
             }
         });
-        
+
         log.info("{} {} 200", req.getMethod(), req.getUri());
         if (!HttpHeaders.isKeepAlive(req)) {
             lastContentFuture.addListener(ChannelFutureListener.CLOSE);
         }
     }
-    
-        
+
+
     /**
      * Sets the content type header for the HTTP Response
-     * 
+     *
      * @param file
      *            file to extract content type
      */
     private static void setContentTypeHeader(HttpResponse response, File file) {
         response.headers().set(Names.CONTENT_TYPE, mimeTypesMap.getContentType(file.getPath()));
     }
-    
+
     /**
      * Sets the Date and Cache headers for the HTTP Response
      *
@@ -213,7 +213,7 @@ public class StaticFileHandler extends RouteHandler {
         response.headers().set(Names.LAST_MODIFIED, dateFormatter.format(new Date(fileToCache.lastModified())));
     }
 
-    
+
     /**
      * When file timestamp is the same as what the browser is sending up, send a "304 Not Modified"
      */
@@ -224,8 +224,8 @@ public class StaticFileHandler extends RouteHandler {
         // Close the connection as soon as the error message is sent.
         ctx.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
-    
-        
+
+
     private String sanitizePath(String path) {
         path = path.replace('/', File.separatorChar);
 
@@ -235,8 +235,8 @@ public class StaticFileHandler extends RouteHandler {
         }
 
         if (path.contains(File.separator + ".") ||
-            path.contains("." + File.separator) ||
-            path.startsWith(".") || path.endsWith(".")) {
+                path.contains("." + File.separator) ||
+                path.startsWith(".") || path.endsWith(".")) {
             return null;
         }
 

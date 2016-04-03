@@ -22,16 +22,18 @@ import org.yamcs.security.AuthenticationToken;
  * Provides access to any Processor/Client info over web socket
  */
 public class ManagementResource extends AbstractWebSocketResource implements ManagementListener {
+
+    private static final Logger log = LoggerFactory.getLogger(ManagementResource.class);
+
     public static final String OP_getProcessorInfo = "getProcessorInfo";
     public static final String OP_getClientInfo = "getClientInfo";
     public static final String OP_subscribe = "subscribe";
-    private Logger log;
+
     private int clientId;
-    
-    public ManagementResource(YProcessor yproc, WebSocketServerHandler wsHandler, int clientId) {
+
+    public ManagementResource(YProcessor yproc, WebSocketFrameHandler wsHandler, int clientId) {
         super(yproc, wsHandler);
         wsHandler.addResource("management", this);
-        log = LoggerFactory.getLogger(ManagementResource.class.getName() + "[" + yproc.getInstance() + "]");
         this.clientId = clientId;
     }
 
@@ -48,7 +50,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
             throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
         }
     }
-    
+
     private WebSocketReplyData processGetProcessorInfoRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
         int requestId = ctx.getRequestId();
         ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
@@ -61,7 +63,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
         }
         return null;
     }
-    
+
     //return client info of this client
     private WebSocketReplyData processGetClientInfoRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
         int requestId = ctx.getRequestId();
@@ -76,7 +78,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
         }
         return null;
     }
-    
+
     /**
      * Registers for updates on any processor or client. Sends the current set
      * of processor, and clients (in that order) to the requester.
@@ -87,13 +89,13 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
     private WebSocketReplyData processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
         try {
             wsHandler.sendReply(toAckReply(ctx.getRequestId()));
-            
+
             // Send current set of processors
             for (YProcessor processor : YProcessor.getProcessors()) {
                 ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
                 wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
             }
-            
+
             // Send current set of clients
             Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
             for (ClientInfo client : clients) {
@@ -122,7 +124,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
             log.error("Exception when sending data", e);
         }
     }
-    
+
     @Override
     public void processorStateChanged(ProcessorInfo processorInfo) {
         try {
@@ -150,7 +152,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
             log.error("Exception when sending data", e);
         }
     }
-    
+
     @Override
     public void clientInfoChanged(ClientInfo ci) {
         ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.CONNECTED).setCurrentClient(ci.getId() == clientId).build();
@@ -164,7 +166,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
     @Override
     public void clientUnregistered(ClientInfo ci) {
         if (ci.getId() == clientId) return;
-        
+
         ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.DISCONNECTED).setCurrentClient(false).build();
         try {
             wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo, SchemaYamcsManagement.ClientInfo.WRITE);
@@ -172,7 +174,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
             log.error("Exception when sending data", e);
         }
     }
-    
+
     @Override
     public void statisticsUpdated(YProcessor processor, Statistics stats) {
         try {

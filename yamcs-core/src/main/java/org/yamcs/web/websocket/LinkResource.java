@@ -19,11 +19,10 @@ import org.yamcs.security.AuthenticationToken;
  * Provides realtime data-link subscription via web.
  */
 public class LinkResource extends AbstractWebSocketResource implements LinkListener {
-    Logger log;
+    private static final Logger log = LoggerFactory.getLogger(LinkResource.class);
 
-    public LinkResource(YProcessor channel, WebSocketServerHandler wsHandler) {
+    public LinkResource(YProcessor channel, WebSocketFrameHandler wsHandler) {
         super(channel, wsHandler);
-        log = LoggerFactory.getLogger(LinkResource.class.getName() + "[" + channel.getInstance() + "]");
         wsHandler.addResource("links", this);
     }
 
@@ -41,11 +40,11 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
 
     private WebSocketReplyData subscribe(int requestId) throws WebSocketException {
         ManagementService mservice = ManagementService.getInstance();
-        
+
         try {
             WebSocketReplyData reply = toAckReply(requestId);
             wsHandler.sendReply(reply);
-            
+
             for (LinkInfo linkInfo : mservice.getLinkInfo()) {
                 sendLinkInfo(LinkEvent.Type.REGISTERED, linkInfo);
             }
@@ -56,7 +55,7 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
             return null;
         }
     }
-    
+
     private WebSocketReplyData unsubscribe(int requestId) throws WebSocketException {
         ManagementService mservice = ManagementService.getInstance();
         mservice.removeLinkListener(this);
@@ -72,24 +71,24 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
     @Override
     public void switchYProcessor(YProcessor newProcessor, AuthenticationToken authToken) throws YProcessorException {
     }
-    
+
     @Override
     public void registerLink(LinkInfo linkInfo) {
         sendLinkInfo(LinkEvent.Type.REGISTERED, linkInfo);
     }
-    
+
     @Override
     public void unregisterLink(String instance, String name) {
         // TODO Currently not handled correctly by ManagementService
-        
+
     }
-    
+
     @Override
     public void linkChanged(LinkInfo linkInfo) {
         sendLinkInfo(LinkEvent.Type.UPDATED, linkInfo);
     }
-    
-    private void sendLinkInfo(LinkEvent.Type type, LinkInfo linkInfo) {        
+
+    private void sendLinkInfo(LinkEvent.Type type, LinkInfo linkInfo) {
         try {
             LinkEvent.Builder linkb = LinkEvent.newBuilder();
             linkb.setType(type);

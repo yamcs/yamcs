@@ -13,10 +13,10 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.NoPermissionException;
-import org.yamcs.parameter.ParameterValue;
 import org.yamcs.YProcessor;
 import org.yamcs.YProcessorException;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
@@ -39,7 +39,7 @@ import org.yamcs.web.Computation;
 import org.yamcs.web.ComputationFactory;
 
 /**
- * Provides realtime parameter subscription via web.  
+ * Provides realtime parameter subscription via web.
  *
  * TODO better deal with exceptions
  *
@@ -47,13 +47,14 @@ import org.yamcs.web.ComputationFactory;
  *
  */
 public class ParameterResource extends AbstractWebSocketResource implements ParameterWithIdConsumer {
-    Logger log;
-    int subscriptionId=-1;
+    private static final Logger log = LoggerFactory.getLogger(ParameterResource.class);
+
+    private int subscriptionId = -1;
     public static final String WSR_subscribe = "subscribe";
     public static final String WSR_unsubscribe = "unsubscribe";
     public static final String WSR_subscribeAll = "subscribeAll";
     public static final String WSR_unsubscribeAll = "unsubscribeAll";
-    
+
     //subscription id used for computations
     int compSubscriptionId=-1;
 
@@ -61,9 +62,8 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
 
     ParameterWithIdRequestHelper pidrm;
 
-    public ParameterResource(YProcessor yproc, WebSocketServerHandler wsHandler) {
+    public ParameterResource(YProcessor yproc, WebSocketFrameHandler wsHandler) {
         super(yproc, wsHandler);
-        log = LoggerFactory.getLogger(ParameterResource.class.getName() + "[" + yproc.getInstance() + "]");
         pidrm = new ParameterWithIdRequestHelper(yproc.getParameterRequestManager(), this);
         wsHandler.addResource("parameter", this);
     }
@@ -113,7 +113,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                     update(subscriptionId, pvlist);
                 }
             }
-            
+
             return null;
         } catch (InvalidIdentification e) {
             NamedObjectList nol = NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
@@ -127,11 +127,11 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
             log.error("Exception when sending data", e);
             return null;
         } catch (NoPermissionException e) {
-        	log.error("no permission for parameters", e);
-        	throw new WebSocketException(requestId, "internal error: "+e.toString(), e);
+            log.error("no permission for parameters", e);
+            throw new WebSocketException(requestId, "internal error: "+e.toString(), e);
         }
     }
-    
+
     private WebSocketReplyData subscribe2(int requestId, ParameterSubscriptionRequest req, AuthenticationToken authToken) throws WebSocketException {
         List<NamedObjectId> idList = req.getIdList();
         try {
@@ -168,7 +168,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                     // currently only supports ACK responses in the reply itself
                 }
             }
-            
+
             WebSocketReplyData reply = toAckReply(requestId);
             wsHandler.sendReply(reply);
             if(pidrm.hasParameterCache()) {
@@ -177,7 +177,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                     update(subscriptionId, pvlist);
                 }
             }
-                
+
             return null;
         } catch (InvalidIdentification e) {
             log.error("got invalid identification. Likely coming from cache", e);
@@ -207,7 +207,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         }
     }
 
-	private WebSocketReplyData subscribeAll(int requestId, String namespace, AuthenticationToken authToken) throws WebSocketException {
+    private WebSocketReplyData subscribeAll(int requestId, String namespace, AuthenticationToken authToken) throws WebSocketException {
         if(subscriptionId!=-1) {
             throw new WebSocketException(requestId, "Already subscribed for this client");
         }
@@ -217,7 +217,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
             throw new WebSocketException(requestId, "No permission", e);
         }
         return toAckReply(requestId);
-	}
+    }
 
     private WebSocketReplyData subscribeComputations(int requestId, ComputationDefList cdefList, AuthenticationToken authToken)
             throws WebSocketException {
@@ -261,10 +261,10 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                             allArguments.addAll(computation.getArgumentList());
                         }
                     }
-                    
+
                     if (computations.isEmpty()) {
                         log.warn("All requested computations have invalid arguments");
-                    } else { 
+                    } else {
                         log.warn("Got invalid computation arguments, but continuing subscribe attempt with remaining valids: {} ", computations);
                         if(compSubscriptionId!=-1) {
                             pidrm.addItemsToRequest(compSubscriptionId, allArguments, authToken);
@@ -282,7 +282,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         } catch (NoPermissionException e) {
             throw new WebSocketException(requestId, "No permission", e);
         }
-        
+
         try {
             for(ComputationDef cdef : computations) {
                 Computation c = ComputationFactory.getComputation(cdef);
@@ -345,7 +345,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
             if(pv!=null) pd.addParameter(pv);
         }
         if(pd.getParameterCount()==0) return;
-        
+
         try {
             wsHandler.sendData(ProtoDataType.PARAMETER, pd.build(), SchemaPvalue.ParameterData.WRITE);
         } catch (Exception e) {
