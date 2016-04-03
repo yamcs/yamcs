@@ -84,6 +84,8 @@ public abstract class RestReplayListener implements ParameterWithIdConsumer {
     /**
      * Override to filter out some replay data. Null means excluded.
      * (which also means it will not be counted towards the pagination.
+     * @param params 
+     * @return filtered data
      */
     public List<ParameterValueWithId> filter(List<ParameterValueWithId> params) {
         return params;
