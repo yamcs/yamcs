@@ -11199,6 +11199,31 @@ public final class YamcsManagement {
      * </pre>
      */
     boolean getCurrentClient();
+
+    // optional int64 loginTime = 8;
+    /**
+     * <code>optional int64 loginTime = 8;</code>
+     */
+    boolean hasLoginTime();
+    /**
+     * <code>optional int64 loginTime = 8;</code>
+     */
+    long getLoginTime();
+
+    // optional string loginTimeUTC = 9;
+    /**
+     * <code>optional string loginTimeUTC = 9;</code>
+     */
+    boolean hasLoginTimeUTC();
+    /**
+     * <code>optional string loginTimeUTC = 9;</code>
+     */
+    java.lang.String getLoginTimeUTC();
+    /**
+     * <code>optional string loginTimeUTC = 9;</code>
+     */
+    com.google.protobuf.ByteString
+        getLoginTimeUTCBytes();
   }
   /**
    * Protobuf type {@code yamcsManagement.ClientInfo}
@@ -11290,6 +11315,16 @@ public final class YamcsManagement {
             case 56: {
               bitField0_ |= 0x00000040;
               currentClient_ = input.readBool();
+              break;
+            }
+            case 64: {
+              bitField0_ |= 0x00000080;
+              loginTime_ = input.readInt64();
+              break;
+            }
+            case 74: {
+              bitField0_ |= 0x00000100;
+              loginTimeUTC_ = input.readBytes();
               break;
             }
           }
@@ -11642,6 +11677,65 @@ public final class YamcsManagement {
       return currentClient_;
     }
 
+    // optional int64 loginTime = 8;
+    public static final int LOGINTIME_FIELD_NUMBER = 8;
+    private long loginTime_;
+    /**
+     * <code>optional int64 loginTime = 8;</code>
+     */
+    public boolean hasLoginTime() {
+      return ((bitField0_ & 0x00000080) == 0x00000080);
+    }
+    /**
+     * <code>optional int64 loginTime = 8;</code>
+     */
+    public long getLoginTime() {
+      return loginTime_;
+    }
+
+    // optional string loginTimeUTC = 9;
+    public static final int LOGINTIMEUTC_FIELD_NUMBER = 9;
+    private java.lang.Object loginTimeUTC_;
+    /**
+     * <code>optional string loginTimeUTC = 9;</code>
+     */
+    public boolean hasLoginTimeUTC() {
+      return ((bitField0_ & 0x00000100) == 0x00000100);
+    }
+    /**
+     * <code>optional string loginTimeUTC = 9;</code>
+     */
+    public java.lang.String getLoginTimeUTC() {
+      java.lang.Object ref = loginTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          loginTimeUTC_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string loginTimeUTC = 9;</code>
+     */
+    public com.google.protobuf.ByteString
+        getLoginTimeUTCBytes() {
+      java.lang.Object ref = loginTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        loginTimeUTC_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       instance_ = "";
       id_ = 0;
@@ -11650,6 +11744,8 @@ public final class YamcsManagement {
       processorName_ = "";
       state_ = org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState.CONNECTED;
       currentClient_ = false;
+      loginTime_ = 0L;
+      loginTimeUTC_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -11692,6 +11788,12 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         output.writeBool(7, currentClient_);
       }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        output.writeInt64(8, loginTime_);
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        output.writeBytes(9, getLoginTimeUTCBytes());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -11728,6 +11830,14 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(7, currentClient_);
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(8, loginTime_);
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(9, getLoginTimeUTCBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -11859,6 +11969,10 @@ public final class YamcsManagement {
         bitField0_ = (bitField0_ & ~0x00000020);
         currentClient_ = false;
         bitField0_ = (bitField0_ & ~0x00000040);
+        loginTime_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000080);
+        loginTimeUTC_ = "";
+        bitField0_ = (bitField0_ & ~0x00000100);
         return this;
       }
 
@@ -11915,6 +12029,14 @@ public final class YamcsManagement {
           to_bitField0_ |= 0x00000040;
         }
         result.currentClient_ = currentClient_;
+        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+          to_bitField0_ |= 0x00000080;
+        }
+        result.loginTime_ = loginTime_;
+        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+          to_bitField0_ |= 0x00000100;
+        }
+        result.loginTimeUTC_ = loginTimeUTC_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -11959,6 +12081,14 @@ public final class YamcsManagement {
         }
         if (other.hasCurrentClient()) {
           setCurrentClient(other.getCurrentClient());
+        }
+        if (other.hasLoginTime()) {
+          setLoginTime(other.getLoginTime());
+        }
+        if (other.hasLoginTimeUTC()) {
+          bitField0_ |= 0x00000100;
+          loginTimeUTC_ = other.loginTimeUTC_;
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -12405,6 +12535,113 @@ public final class YamcsManagement {
       public Builder clearCurrentClient() {
         bitField0_ = (bitField0_ & ~0x00000040);
         currentClient_ = false;
+        onChanged();
+        return this;
+      }
+
+      // optional int64 loginTime = 8;
+      private long loginTime_ ;
+      /**
+       * <code>optional int64 loginTime = 8;</code>
+       */
+      public boolean hasLoginTime() {
+        return ((bitField0_ & 0x00000080) == 0x00000080);
+      }
+      /**
+       * <code>optional int64 loginTime = 8;</code>
+       */
+      public long getLoginTime() {
+        return loginTime_;
+      }
+      /**
+       * <code>optional int64 loginTime = 8;</code>
+       */
+      public Builder setLoginTime(long value) {
+        bitField0_ |= 0x00000080;
+        loginTime_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 loginTime = 8;</code>
+       */
+      public Builder clearLoginTime() {
+        bitField0_ = (bitField0_ & ~0x00000080);
+        loginTime_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // optional string loginTimeUTC = 9;
+      private java.lang.Object loginTimeUTC_ = "";
+      /**
+       * <code>optional string loginTimeUTC = 9;</code>
+       */
+      public boolean hasLoginTimeUTC() {
+        return ((bitField0_ & 0x00000100) == 0x00000100);
+      }
+      /**
+       * <code>optional string loginTimeUTC = 9;</code>
+       */
+      public java.lang.String getLoginTimeUTC() {
+        java.lang.Object ref = loginTimeUTC_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          loginTimeUTC_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string loginTimeUTC = 9;</code>
+       */
+      public com.google.protobuf.ByteString
+          getLoginTimeUTCBytes() {
+        java.lang.Object ref = loginTimeUTC_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          loginTimeUTC_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string loginTimeUTC = 9;</code>
+       */
+      public Builder setLoginTimeUTC(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000100;
+        loginTimeUTC_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string loginTimeUTC = 9;</code>
+       */
+      public Builder clearLoginTimeUTC() {
+        bitField0_ = (bitField0_ & ~0x00000100);
+        loginTimeUTC_ = getDefaultInstance().getLoginTimeUTC();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string loginTimeUTC = 9;</code>
+       */
+      public Builder setLoginTimeUTCBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000100;
+        loginTimeUTC_ = value;
         onChanged();
         return this;
       }
@@ -22416,52 +22653,53 @@ public final class YamcsManagement {
       "yStatus.ReplayState\022\013\n\003url\030\n \001(\t\022\022\n\nclie" +
       "ntsUrl\030\013 \001(\t\022\025\n\rparametersUrl\030\014 \001(\t\022\023\n\013c" +
       "ommandsUrl\030\r \001(\t\022\030\n\020commandQueuesUrl\030\016 \001" +
-      "(\t\"\353\001\n\nClientInfo\022\020\n\010instance\030\001 \002(\t\022\n\n\002i" +
+      "(\t\"\224\002\n\nClientInfo\022\020\n\010instance\030\001 \002(\t\022\n\n\002i" +
       "d\030\002 \002(\005\022\020\n\010username\030\003 \001(\t\022\027\n\017application" +
       "Name\030\004 \001(\t\022\025\n\rprocessorName\030\005 \001(\t\0226\n\005sta" +
       "te\030\006 \001(\0162\'.yamcsManagement.ClientInfo.Cl",
-      "ientState\022\025\n\rcurrentClient\030\007 \001(\010\".\n\013Clie" +
-      "ntState\022\r\n\tCONNECTED\020\000\022\020\n\014DISCONNECTED\020\001" +
-      "\"\334\001\n\010UserInfo\022\r\n\005login\030\001 \001(\t\022/\n\nclientIn" +
-      "fo\030\002 \003(\0132\033.yamcsManagement.ClientInfo\022\r\n" +
-      "\005roles\030\003 \003(\t\022\030\n\020tmParaPrivileges\030\004 \003(\t\022\033" +
-      "\n\023tmParaSetPrivileges\030\005 \003(\t\022\032\n\022tmPacketP" +
-      "rivileges\030\006 \003(\t\022\024\n\014tcPrivileges\030\007 \003(\t\022\030\n" +
-      "\020systemPrivileges\030\010 \003(\t\"\277\001\n\014TmStatistics" +
-      "\022\022\n\npacketName\030\001 \002(\t\022\027\n\017receivedPackets\030" +
-      "\002 \001(\003\022\024\n\014lastReceived\030\003 \001(\003\022\027\n\017lastRecei",
-      "vedUTC\030\010 \001(\t\022\026\n\016lastPacketTime\030\004 \001(\003\022\031\n\021" +
-      "lastPacketTimeUTC\030\007 \001(\t\022 \n\030subscribedPar" +
-      "ameterCount\030\006 \001(\005\"\223\001\n\nStatistics\022\020\n\010inst" +
-      "ance\030\001 \002(\t\022\026\n\016yProcessorName\030\002 \002(\t\022.\n\007tm" +
-      "stats\030\003 \003(\0132\035.yamcsManagement.TmStatisti" +
-      "cs\022\023\n\013lastUpdated\030\004 \001(\003\022\026\n\016lastUpdatedUT" +
-      "C\030\005 \001(\t\"\266\002\n\032ProcessorManagementRequest\022H" +
-      "\n\toperation\030\001 \001(\01625.yamcsManagement.Proc" +
-      "essorManagementRequest.Operation\022\020\n\010inst" +
-      "ance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\014\n\004type\030\004 \001(\t\022\014",
-      "\n\004spec\030\005 \001(\t\022\020\n\010clientId\030\006 \003(\005\022\031\n\npersis" +
-      "tent\030\007 \001(\010:\005false\022(\n\nreplaySpec\030\010 \001(\0132\024." +
-      "yamcs.ReplayRequest\";\n\tOperation\022\024\n\020CREA" +
-      "TE_PROCESSOR\020\000\022\030\n\024CONNECT_TO_PROCESSOR\020\001" +
-      "\"\355\001\n\020ProcessorRequest\022>\n\toperation\030\001 \001(\016" +
-      "2+.yamcsManagement.ProcessorRequest.Oper" +
-      "ation\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\020\n" +
-      "\010seekTime\030\004 \001(\003\022\'\n\013replaySpeed\030\005 \001(\0132\022.y" +
-      "amcs.ReplaySpeed\">\n\tOperation\022\t\n\005PAUSE\020\002" +
-      "\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\022\020\n\014CHANGE_SPEED\020\005",
-      "\"\243\001\n\010LinkInfo\022\020\n\010instance\030\001 \002(\t\022\014\n\004name\030" +
-      "\002 \002(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006str" +
-      "eam\030\005 \001(\t\022\020\n\010disabled\030\006 \001(\010\022\016\n\006status\030\007 " +
-      "\001(\t\022\021\n\tdataCount\030\010 \001(\003\022\026\n\016detailedStatus" +
-      "\030\t \001(\t\"\236\001\n\tLinkEvent\022-\n\004type\030\001 \001(\0162\037.yam" +
-      "csManagement.LinkEvent.Type\022+\n\010linkInfo\030" +
-      "\002 \001(\0132\031.yamcsManagement.LinkInfo\"5\n\004Type" +
-      "\022\016\n\nREGISTERED\020\001\022\020\n\014UNREGISTERED\020\002\022\013\n\007UP" +
-      "DATED\020\003*\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010STAR" +
-      "TING\020\001\022\013\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTER",
-      "MINATED\020\004\022\n\n\006FAILED\020\005B\024\n\022org.yamcs.proto" +
-      "buf"
+      "ientState\022\025\n\rcurrentClient\030\007 \001(\010\022\021\n\tlogi" +
+      "nTime\030\010 \001(\003\022\024\n\014loginTimeUTC\030\t \001(\t\".\n\013Cli" +
+      "entState\022\r\n\tCONNECTED\020\000\022\020\n\014DISCONNECTED\020" +
+      "\001\"\334\001\n\010UserInfo\022\r\n\005login\030\001 \001(\t\022/\n\nclientI" +
+      "nfo\030\002 \003(\0132\033.yamcsManagement.ClientInfo\022\r" +
+      "\n\005roles\030\003 \003(\t\022\030\n\020tmParaPrivileges\030\004 \003(\t\022" +
+      "\033\n\023tmParaSetPrivileges\030\005 \003(\t\022\032\n\022tmPacket" +
+      "Privileges\030\006 \003(\t\022\024\n\014tcPrivileges\030\007 \003(\t\022\030" +
+      "\n\020systemPrivileges\030\010 \003(\t\"\277\001\n\014TmStatistic" +
+      "s\022\022\n\npacketName\030\001 \002(\t\022\027\n\017receivedPackets",
+      "\030\002 \001(\003\022\024\n\014lastReceived\030\003 \001(\003\022\027\n\017lastRece" +
+      "ivedUTC\030\010 \001(\t\022\026\n\016lastPacketTime\030\004 \001(\003\022\031\n" +
+      "\021lastPacketTimeUTC\030\007 \001(\t\022 \n\030subscribedPa" +
+      "rameterCount\030\006 \001(\005\"\223\001\n\nStatistics\022\020\n\010ins" +
+      "tance\030\001 \002(\t\022\026\n\016yProcessorName\030\002 \002(\t\022.\n\007t" +
+      "mstats\030\003 \003(\0132\035.yamcsManagement.TmStatist" +
+      "ics\022\023\n\013lastUpdated\030\004 \001(\003\022\026\n\016lastUpdatedU" +
+      "TC\030\005 \001(\t\"\266\002\n\032ProcessorManagementRequest\022" +
+      "H\n\toperation\030\001 \001(\01625.yamcsManagement.Pro" +
+      "cessorManagementRequest.Operation\022\020\n\010ins",
+      "tance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\014\n\004type\030\004 \001(\t\022" +
+      "\014\n\004spec\030\005 \001(\t\022\020\n\010clientId\030\006 \003(\005\022\031\n\npersi" +
+      "stent\030\007 \001(\010:\005false\022(\n\nreplaySpec\030\010 \001(\0132\024" +
+      ".yamcs.ReplayRequest\";\n\tOperation\022\024\n\020CRE" +
+      "ATE_PROCESSOR\020\000\022\030\n\024CONNECT_TO_PROCESSOR\020" +
+      "\001\"\355\001\n\020ProcessorRequest\022>\n\toperation\030\001 \001(" +
+      "\0162+.yamcsManagement.ProcessorRequest.Ope" +
+      "ration\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\020" +
+      "\n\010seekTime\030\004 \001(\003\022\'\n\013replaySpeed\030\005 \001(\0132\022." +
+      "yamcs.ReplaySpeed\">\n\tOperation\022\t\n\005PAUSE\020",
+      "\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\022\020\n\014CHANGE_SPEED\020" +
+      "\005\"\243\001\n\010LinkInfo\022\020\n\010instance\030\001 \002(\t\022\014\n\004name" +
+      "\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006st" +
+      "ream\030\005 \001(\t\022\020\n\010disabled\030\006 \001(\010\022\016\n\006status\030\007" +
+      " \001(\t\022\021\n\tdataCount\030\010 \001(\003\022\026\n\016detailedStatu" +
+      "s\030\t \001(\t\"\236\001\n\tLinkEvent\022-\n\004type\030\001 \001(\0162\037.ya" +
+      "mcsManagement.LinkEvent.Type\022+\n\010linkInfo" +
+      "\030\002 \001(\0132\031.yamcsManagement.LinkInfo\"5\n\004Typ" +
+      "e\022\016\n\nREGISTERED\020\001\022\020\n\014UNREGISTERED\020\002\022\013\n\007U" +
+      "PDATED\020\003*\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010STA",
+      "RTING\020\001\022\013\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTE" +
+      "RMINATED\020\004\022\n\n\006FAILED\020\005B\024\n\022org.yamcs.prot" +
+      "obuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -22515,7 +22753,7 @@ public final class YamcsManagement {
           internal_static_yamcsManagement_ClientInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcsManagement_ClientInfo_descriptor,
-              new java.lang.String[] { "Instance", "Id", "Username", "ApplicationName", "ProcessorName", "State", "CurrentClient", });
+              new java.lang.String[] { "Instance", "Id", "Username", "ApplicationName", "ProcessorName", "State", "CurrentClient", "LoginTime", "LoginTimeUTC", });
           internal_static_yamcsManagement_UserInfo_descriptor =
             getDescriptor().getMessageTypes().get(8);
           internal_static_yamcsManagement_UserInfo_fieldAccessorTable = new

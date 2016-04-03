@@ -98,6 +98,8 @@ message ClientInfo {
   optional string processorName = 5;
   optional ClientState state = 6;
   optional bool currentClient = 7; //Only used for clients that register themselves (websocket)
+  optional int64 loginTime = 8;
+  optional string loginTimeUTC = 9;
 }
 
 message UserInfo {

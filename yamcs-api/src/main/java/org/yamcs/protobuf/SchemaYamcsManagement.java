@@ -1124,6 +1124,10 @@ public final class SchemaYamcsManagement
                     output.writeString(6, message.getState().name(), false);
                 if(message.hasCurrentClient())
                     output.writeBool(7, message.getCurrentClient(), false);
+                if(message.hasLoginTime())
+                    output.writeInt64(8, message.getLoginTime(), false);
+                if(message.hasLoginTimeUTC())
+                    output.writeString(9, message.getLoginTimeUTC(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.ClientInfo message)
             {
@@ -1184,6 +1188,12 @@ public final class SchemaYamcsManagement
                         case 7:
                             builder.setCurrentClient(input.readBool());
                             break;
+                        case 8:
+                            builder.setLoginTime(input.readInt64());
+                            break;
+                        case 9:
+                            builder.setLoginTimeUTC(input.readString());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -1231,6 +1241,8 @@ public final class SchemaYamcsManagement
                 case 5: return "processorName";
                 case 6: return "state";
                 case 7: return "currentClient";
+                case 8: return "loginTime";
+                case 9: return "loginTimeUTC";
                 default: return null;
             }
         }
@@ -1249,6 +1261,8 @@ public final class SchemaYamcsManagement
             fieldMap.put("processorName", 5);
             fieldMap.put("state", 6);
             fieldMap.put("currentClient", 7);
+            fieldMap.put("loginTime", 8);
+            fieldMap.put("loginTimeUTC", 9);
         }
     }
 
