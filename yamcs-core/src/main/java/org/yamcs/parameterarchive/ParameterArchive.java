@@ -233,7 +233,7 @@ public class ParameterArchive  extends AbstractService {
         rdb.write(wo, writeBatch);
     }
 
-    private void writeToBatch(WriteBatch writeBatch, PGSegment pgs) throws RocksDBException{
+    private void writeToBatch(WriteBatch writeBatch, PGSegment pgs) throws RocksDBException {
         long segStart = pgs.getSegmentStart();
         long partitionId = Partition.getPartitionId(segStart);
         Partition p = createAndGetPartition(partitionId);
@@ -252,6 +252,10 @@ public class ParameterArchive  extends AbstractService {
         for(int i=0; i<consolidated.size(); i++) {
             BaseSegment vs= consolidated.get(i);
             int parameterId = pgs.getParameterId(i);
+            if(vs.size()!=timeSegment.size()) {
+                throw new RuntimeException("Trying to write to archive an engineering value segment whose size is different than the time segment "+vs.size()+" vs "+timeSegment.size()
+                        +"for parameerId: "+parameterId+" and segmentt: ["+TimeEncoding.toString(timeSegment.getSegmentStart())+" - " + TimeEncoding.toString(timeSegment.getSegmentEnd())+"]");
+            }
             byte[] engKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getSegmentStart(), SegmentKey.TYPE_ENG_VALUE).encode();
             byte[] engValue = vsEncoder.encode(vs);
             writeBatch.put(p.dataCfh, engKey, engValue);
@@ -259,6 +263,10 @@ public class ParameterArchive  extends AbstractService {
             if(STORE_RAW_VALUES && consolidatedRawValues!=null) {
                 BaseSegment rvs = consolidatedRawValues.get(i);
                 if(rvs!=null) {
+                    if(rvs.size()!=timeSegment.size()) {
+                        throw new RuntimeException("Trying to write to archive an raw value segment whose size is different than the time segment "+rvs.size()+" vs "+timeSegment.size()
+                                +"for parameerId: "+parameterId+" and segmentt: ["+TimeEncoding.toString(timeSegment.getSegmentStart())+" - " + TimeEncoding.toString(timeSegment.getSegmentEnd())+"]");
+                    }
                     byte[] rawKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getSegmentStart(), SegmentKey.TYPE_RAW_VALUE).encode();
                     byte[] rawValue = vsEncoder.encode(rvs);
                     writeBatch.put(p.dataCfh, rawKey, rawValue);
@@ -266,6 +274,10 @@ public class ParameterArchive  extends AbstractService {
                 }
             }
             ParameterStatusSegment pss = satusSegments.get(i);
+            if(pss.size()!=timeSegment.size()) {
+                throw new RuntimeException("Trying to write to archive an parameter status segment whose size is different than the time segment "+pss.size()+" vs "+timeSegment.size()
+                        +"for parameerId: "+parameterId+" and segmentt: ["+TimeEncoding.toString(timeSegment.getSegmentStart())+" - " + TimeEncoding.toString(timeSegment.getSegmentEnd())+"]");
+            }
             byte[] pssKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getSegmentStart(), SegmentKey.TYPE_PARAMETER_STATUS).encode();
             byte[] pssValue = vsEncoder.encode(pss);
             writeBatch.put(p.dataCfh, pssKey, pssValue);
@@ -307,7 +319,7 @@ public class ParameterArchive  extends AbstractService {
      * a copy of the partitions from start to stop inclusive
      * @param startPartitionId
      * @param stopPartitionId
-     * @return
+     * @return a navigable map of partitions sorted by their id
      */
     public NavigableMap<Long, Partition> getPartitions(long startPartitionId, long stopPartitionId) {
         if((startPartitionId& Partition.TIMESTAMP_MASK) != 0) {
@@ -347,6 +359,10 @@ public class ParameterArchive  extends AbstractService {
 
         public static long getPartitionEnd(long partitionId) {
             return partitionId  | TIMESTAMP_MASK;
+        }
+        
+        public String toString() {
+            return "partition: ["+TimeEncoding.toString(partitionId)+" - "+TimeEncoding.toString(getPartitionEnd(partitionId))+"]";
         }
     }
 
@@ -424,5 +440,24 @@ public class ParameterArchive  extends AbstractService {
                 it.next();
             }
         }
+    }
+    
+    /**
+     * Delete all partitions that overlap with [start, stop) segment.
+     * @param start
+     * @param stop
+     * @throws RocksDBException 
+     * @return all the partitions removed
+     */
+    public NavigableMap<Long, Partition> deletePartitions(long start, long stop) throws RocksDBException {
+        long startPartitionId = Partition.getPartitionId(start);
+        long stopPartitionId = Partition.getPartitionId(stop);
+        NavigableMap<Long, Partition> parts = getPartitions(startPartitionId, stopPartitionId);
+        for(Partition p: parts.values()) {
+            rdb.dropColumnFamily(p.dataCfh);
+            partitions.remove(p.partitionId);
+        }
+        
+        return parts;
     }
 }

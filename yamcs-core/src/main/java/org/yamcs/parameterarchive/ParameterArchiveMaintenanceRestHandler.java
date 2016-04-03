@@ -2,15 +2,19 @@ package org.yamcs.parameterarchive;
 
 
 import java.util.Arrays;
+import java.util.NavigableMap;
 
+import org.rocksdb.RocksDBException;
 import org.yamcs.YamcsServer;
 import org.yamcs.parameterarchive.ParameterArchive;
+import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.parameterarchive.ParameterIdDb.ParameterId;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.security.Privilege;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
+import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Route;
@@ -50,6 +54,42 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
         }
         
         return sendOK(req);
+    }
+    
+    @Route(path = "/api/archive/:instance/parameterArchive/deletePartitions")
+    public ChannelFuture deletePartition(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        checkPrivileges(req);
+            
+        if(!req.hasQueryParameter("start")) {
+            throw new BadRequestException("no start specified");
+        }
+        if(!req.hasQueryParameter("stop")) {
+            throw new BadRequestException("no stop specified");
+        }
+        long start = req.getQueryParameterAsDate("start");
+        long stop = req.getQueryParameterAsDate("stop");
+        
+        
+        ParameterArchive parchive = getParameterArchive(instance);
+        try {
+            NavigableMap<Long, Partition> removed = parchive.deletePartitions(start, stop);
+            StringBuilder sb = new StringBuilder();
+            sb.append("removed the following partitions: ");
+            boolean first = true;
+            for(Partition p: removed.values()) {
+                if(first) first= false; else sb.append(", ");
+                sb.append(p.toString());
+            }
+            StringMessage sm = StringMessage.newBuilder().setMessage(sb.toString()).build();
+            
+            return sendOK(req, sm, org.yamcs.protobuf.SchemaYamcs.StringMessage.WRITE);
+            
+        } catch (RocksDBException e){
+            throw new InternalServerErrorException(e.getMessage());
+        }
+        
+       
     }
     
     @Route(path = "/api/archive/:instance/parameterArchive/info/parameter/:name*")

@@ -2,6 +2,8 @@ package org.yamcs.parameterarchive;
 
 import java.nio.ByteBuffer;
 
+import org.yamcs.utils.StringConverter;
+
 /**
  * Holder, encoder and decoder for the segment keys (in the sense of key,value storage used for RocksDb)
  *   
@@ -49,6 +51,6 @@ class SegmentKey {
     public String toString() {
         return "SegmentKey [parameterId=" + parameterId + ", parameterGroupId="
                 + parameterGroupId + ", segmentStart=" + segmentStart
-                + ", type=" + type + "]";
+                + ", type=" + type + " encoded: "+StringConverter.arrayToHexString(encode())+"]";
     }
 }

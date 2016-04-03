@@ -17,6 +17,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.utils.DecodingException;
+import org.yamcs.utils.TimeEncoding;
 
 
 public class MultiParameterDataRetrieval {
@@ -98,7 +99,26 @@ public class MultiParameterDataRetrieval {
                         rawValueSegment = pit.engValue();
                     }
                 }
-
+                //do some sanity checks
+                long numRecords = timeSegment.size();
+                if(engValueSegment!=null && engValueSegment.size()!=numRecords) {
+                    throw new DecodingException("EngValueSegment has a different number of records than timeSegment: "+engValueSegment.size()+" vs "+timeSegment.size()
+                            + " for segment: ["+TimeEncoding.toString(timeSegment.getSegmentStart())+" - " + TimeEncoding.toString(timeSegment.getSegmentEnd())+"]"
+                            + " offending key: "+pit.key());
+                }
+                
+                if(rawValueSegment!=null && rawValueSegment.size()!=numRecords) {
+                    throw new DecodingException("RawValueSegment has a different number of records than timeSegment: "+rawValueSegment.size()+" vs "+timeSegment.size()
+                            + " for segment: ["+TimeEncoding.toString(timeSegment.getSegmentStart())+" - " + TimeEncoding.toString(timeSegment.getSegmentEnd())+"]"
+                            + " offending key: "+pit.key());
+                }
+                
+                if(paramStatuSegment!=null && paramStatuSegment.size()!=numRecords) {
+                    throw new DecodingException("ParmaeterStatusSegment has a different number of records than timeSegment: "+paramStatuSegment.size()+" vs "+timeSegment.size()
+                            + " for segment: ["+TimeEncoding.toString(timeSegment.getSegmentStart()) +" - " + TimeEncoding.toString(timeSegment.getSegmentEnd())+"]"
+                            + " offending key: "+pit.key());
+                }
+                
                 merger.currentParameterGroupId = pit.getParameterGroupId();
                 merger.currentParameterId = pit.getParameterId();
                 merger.currentParameterName = partition2ParameterName.get(pit);
