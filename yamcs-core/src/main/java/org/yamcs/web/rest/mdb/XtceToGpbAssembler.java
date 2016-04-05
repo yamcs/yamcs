@@ -409,6 +409,12 @@ public class XtceToGpbAssembler {
 
     public static ArgumentTypeInfo toArgumentTypeInfo(ArgumentType argumentType) {
         ArgumentTypeInfo.Builder infob = ArgumentTypeInfo.newBuilder();
+
+        if(((BaseDataType)argumentType).getEncoding()!=null)
+        {
+            infob.setDataEncoding(toDataEncodingInfo(((BaseDataType)argumentType).getEncoding()));
+        }
+
         infob.setEngType(argumentType.getTypeAsString());
         for (UnitType ut: argumentType.getUnitSet()) {
             infob.addUnitSet(toUnitInfo(ut));
