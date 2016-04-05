@@ -24,6 +24,7 @@ import org.yamcs.protobuf.Mdb.InputParameterInfo;
 import org.yamcs.protobuf.Mdb.OutputParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
+import org.yamcs.protobuf.Mdb.ArgumentTypeInfo;
 import org.yamcs.protobuf.Mdb.RepeatInfo;
 import org.yamcs.protobuf.Mdb.SequenceEntryInfo;
 import org.yamcs.protobuf.Mdb.SignificanceInfo;
@@ -35,51 +36,8 @@ import org.yamcs.protobuf.YamcsManagement.HistoryInfo;
 import org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
-import org.yamcs.xtce.AlarmRanges;
-import org.yamcs.xtce.Algorithm;
-import org.yamcs.xtce.Argument;
-import org.yamcs.xtce.ArgumentAssignment;
-import org.yamcs.xtce.ArgumentType;
-import org.yamcs.xtce.BinaryDataEncoding;
-import org.yamcs.xtce.BooleanDataEncoding;
-import org.yamcs.xtce.Calibrator;
-import org.yamcs.xtce.Comparison;
-import org.yamcs.xtce.ComparisonList;
-import org.yamcs.xtce.ContainerEntry;
-import org.yamcs.xtce.DataEncoding;
-import org.yamcs.xtce.DataSource;
-import org.yamcs.xtce.DynamicIntegerValue;
-import org.yamcs.xtce.EnumeratedParameterType;
-import org.yamcs.xtce.EnumerationAlarm;
+import org.yamcs.xtce.*;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
-import org.yamcs.xtce.FixedIntegerValue;
-import org.yamcs.xtce.FloatDataEncoding;
-import org.yamcs.xtce.FloatParameterType;
-import org.yamcs.xtce.FloatRange;
-import org.yamcs.xtce.Header;
-import org.yamcs.xtce.History;
-import org.yamcs.xtce.InputParameter;
-import org.yamcs.xtce.IntegerDataEncoding;
-import org.yamcs.xtce.IntegerParameterType;
-import org.yamcs.xtce.MetaCommand;
-import org.yamcs.xtce.NumericAlarm;
-import org.yamcs.xtce.OnParameterUpdateTrigger;
-import org.yamcs.xtce.OnPeriodicRateTrigger;
-import org.yamcs.xtce.OperatorType;
-import org.yamcs.xtce.OutputParameter;
-import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterEntry;
-import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.Repeat;
-import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.SequenceEntry;
-import org.yamcs.xtce.Significance;
-import org.yamcs.xtce.SpaceSystem;
-import org.yamcs.xtce.StringDataEncoding;
-import org.yamcs.xtce.TransmissionConstraint;
-import org.yamcs.xtce.TriggerSetType;
-import org.yamcs.xtce.UnitType;
-import org.yamcs.xtce.ValueEnumeration;
 
 public class XtceToGpbAssembler {
     
@@ -273,12 +231,7 @@ public class XtceToGpbAssembler {
         }
         if (xtceArgument.getArgumentType() != null) {
             ArgumentType xtceType = xtceArgument.getArgumentType();
-            b.setType(xtceType.getTypeAsString());
-            if (xtceType.getUnitSet() != null) {
-                for (UnitType xtceUnit : xtceType.getUnitSet()) {
-                    b.addUnitSet(toUnitInfo(xtceUnit));        
-                }
-            }
+            b.setType(toArgumentTypeInfo(xtceType));
         }
         return b.build();
     }
@@ -452,6 +405,35 @@ public class XtceToGpbAssembler {
         }
         return infob.build();
     }
+
+
+    public static ArgumentTypeInfo toArgumentTypeInfo(ArgumentType argumentType) {
+        ArgumentTypeInfo.Builder infob = ArgumentTypeInfo.newBuilder();
+        infob.setEngType(argumentType.getTypeAsString());
+        for (UnitType ut: argumentType.getUnitSet()) {
+            infob.addUnitSet(toUnitInfo(ut));
+        }
+
+        if (argumentType instanceof IntegerArgumentType) {
+            IntegerArgumentType iat = (IntegerArgumentType) argumentType;
+            if (iat.getValidRange() != null) {
+                infob.setRangeMin(iat.getValidRange().getMinInclusive());
+                infob.setRangeMax(iat.getValidRange().getMaxInclusive());
+            }
+        } else if (argumentType instanceof FloatArgumentType) {
+            FloatArgumentType fat = (FloatArgumentType) argumentType;
+            if (fat.getValidRange() != null) {
+                infob.setRangeMin(fat.getValidRange().getMinInclusive());
+                infob.setRangeMax(fat.getValidRange().getMaxInclusive());
+            }
+        } else if (argumentType instanceof EnumeratedArgumentType) {
+            EnumeratedArgumentType eat = (EnumeratedArgumentType) argumentType;
+            for (ValueEnumeration xtceValue : eat.getValueEnumerationList()) {
+                infob.addEnumValue(toEnumValue(xtceValue));
+            }
+        }
+        return infob.build();
+    }
     
     // Simplifies the XTCE structure a bit for outside use.
     // String-encoded numeric types see some sort of two-step conversion from raw to eng
@@ -522,8 +504,8 @@ public class XtceToGpbAssembler {
         return result + ")";
     }
     
-    public static ParameterTypeInfo.EnumValue toEnumValue(ValueEnumeration xtceValue) {
-        ParameterTypeInfo.EnumValue.Builder b = ParameterTypeInfo.EnumValue.newBuilder();
+    public static Mdb.EnumValue toEnumValue(ValueEnumeration xtceValue) {
+        Mdb.EnumValue.Builder b = Mdb.EnumValue.newBuilder();
         b.setValue(xtceValue.getValue());
         b.setLabel(xtceValue.getLabel());
         return b.build();

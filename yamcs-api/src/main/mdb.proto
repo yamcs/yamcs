@@ -59,11 +59,12 @@ message DataEncodingInfo {
   optional string defaultCalibrator = 5;
 }
 
-message ParameterTypeInfo {
-  message EnumValue {
+message EnumValue {
     optional int64 value = 1;
     optional string label = 2;
-  }
+}
+
+message ParameterTypeInfo {
   optional string engType = 1;
   optional DataEncodingInfo dataEncoding = 2;
   repeated UnitInfo unitSet = 3;
@@ -82,12 +83,20 @@ message ParameterInfo {
   optional string url = 8;
 }
 
+message ArgumentTypeInfo {
+    optional string engType = 1;
+    optional DataEncodingInfo dataEncoding = 2;
+    repeated UnitInfo unitSet = 3;
+    repeated EnumValue enumValue = 5;
+    optional double rangeMin = 6;
+    optional double rangeMax = 7;
+}
+
 message ArgumentInfo {
   optional string name = 1;
   optional string description = 2;
-  optional string type = 3;
+  optional ArgumentTypeInfo type = 3;
   optional string initialValue = 4;
-  repeated UnitInfo unitSet = 5;
 }
 
 message ArgumentAssignmentInfo {
