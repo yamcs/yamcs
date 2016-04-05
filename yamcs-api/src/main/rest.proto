@@ -108,13 +108,23 @@ message IssueCommandRequest {
   optional string origin = 2;
   optional int32 sequenceNumber = 3;
   optional bool dryRun = 4;
+  optional string comment = 5;
 }
 
 message IssueCommandResponse {
-  optional string queue = 1;
+  optional commanding.CommandQueueEntry commandQueueEntry = 1;
   optional string source = 2;
   optional string hex = 3;
   optional bytes binary = 4;
+}
+
+message UpdateCommandHistoryRequest {
+    message KeyValue {
+        required string key = 1;
+        required string value = 2;
+    }
+    required commanding.CommandId cmdId = 1;
+    repeated KeyValue historyEntry = 2;
 }
 
 message CreateProcessorRequest {

@@ -161,8 +161,8 @@ public class CommandHistoryRequestManager extends AbstractService {
         log.debug("updateCommand cmdId={} key={} value={}", new Object[]{cmdId, key, value});
         CommandHistoryEntry che=activeCommands.get(cmdId);
         if(che==null) {
-            log.error("received an update for a command not in my active list: "+cmdId);
-            throw new InvalidCommandId("received an update for a command not in my active list: "+cmdId      );
+            // If the commandId is valid, add the command in the active list, this case happens if an old command history is updated.
+            che = CommandHistoryEntry.newBuilder().setCommandId(cmdId).build();
         }
 
         CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder().setName(key).setValue(ValueUtility.toGbp(value)).build();

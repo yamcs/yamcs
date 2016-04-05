@@ -10,6 +10,9 @@ import org.yamcs.YamcsException;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueManager;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.management.ManagementGpbHelper;
+import org.yamcs.protobuf.Commanding;
+import org.yamcs.protobuf.Rest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest.Assignment;
 import org.yamcs.protobuf.Rest.IssueCommandResponse;
@@ -49,12 +52,14 @@ public class ProcessorCommandRestHandler extends RestHandler {
         String origin = "";
         int sequenceNumber = 0;
         boolean dryRun = false;
+        String comment = null;
         List<ArgumentAssignment> assignments = new ArrayList<>();
         if (req.hasBody()) {
             IssueCommandRequest request = req.bodyAsMessage(SchemaRest.IssueCommandRequest.MERGE).build();
             if (request.hasOrigin()) origin = request.getOrigin();
             if (request.hasDryRun()) dryRun = request.getDryRun();
             if (request.hasSequenceNumber()) sequenceNumber = request.getSequenceNumber();
+            if (request.hasComment()) comment = request.getComment();
             for (Assignment a : request.getAssignmentList()) {
                 assignments.add(new ArgumentAssignment(a.getName(), a.getValue()));
             }
@@ -115,13 +120,48 @@ public class ProcessorCommandRestHandler extends RestHandler {
             queue = mgr.getQueue(req.getAuthToken(), preparedCommand);
         } else {
             queue = processor.getCommandingManager().sendCommand(req.getAuthToken(), preparedCommand);
+            if(comment != null) {
+                try {
+                    processor.getCommandingManager().addToCommandHistory(preparedCommand.getCommandId(), "Comment", comment, req.getAuthToken());
+                } catch (NoPermissionException e) {
+                    throw new ForbiddenException(e);
+                }
+            }
         }
+
+        Commanding.CommandQueueEntry cqe = ManagementGpbHelper.toCommandQueueEntry(queue, preparedCommand);
         
         IssueCommandResponse.Builder response = IssueCommandResponse.newBuilder();
-        response.setQueue(queue.getName());
+        response.setCommandQueueEntry(cqe);
         response.setSource(preparedCommand.getSource());
         response.setBinary(ByteString.copyFrom(preparedCommand.getBinary()));
         response.setHex(StringConverter.arrayToHexString(preparedCommand.getBinary()));
         return sendOK(req, response.build(), SchemaRest.IssueCommandResponse.WRITE);
+    }
+
+    @Route(path = "/api/processors/:instance/:processor/commandhistory/:name*", method = "POST")
+    public ChannelFuture updateCommandHistory(RestRequest req) throws HttpException {
+        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        if (!processor.hasCommanding()) {
+            throw new BadRequestException("Commanding not activated for this processor");
+        }
+
+        try {
+            if (req.hasBody()) {
+                Rest.UpdateCommandHistoryRequest request = req.bodyAsMessage(SchemaRest.UpdateCommandHistoryRequest.MERGE).build();
+                Commanding.CommandId cmdId = request.getCmdId();
+
+                for (Rest.UpdateCommandHistoryRequest.KeyValue historyEntry : request.getHistoryEntryList()) {
+                    processor.getCommandingManager().addToCommandHistory(cmdId, historyEntry.getKey(), historyEntry.getValue(), req.getAuthToken());
+                }
+            }
+        }
+        catch (NoPermissionException e) {
+            throw new ForbiddenException(e);
+        } catch (YamcsException e) { // could be anything, consider as internal server error
+            throw new InternalServerErrorException(e);
+        }
+
+        return sendOK(req);
     }
 }

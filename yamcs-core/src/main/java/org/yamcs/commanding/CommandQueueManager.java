@@ -233,7 +233,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             if(pc.getMetaCommand().hasTransmissionConstraints()) {
                 startTransmissionConstraintChecker(q, pc);
             } else {
-                addToCommandHistory(pc, CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
+                addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY, "NA");
                 q.remove(pc, true);
                 releaseCommand(q, pc, true, false);
             }
@@ -252,7 +252,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     private void onTransmissionContraintCheckPending(TransmissionConstraintChecker tcChecker) {
-        addToCommandHistory(tcChecker.pc, CommandHistoryPublisher.TransmissionContraints_KEY, "PENDING");
+        addToCommandHistory(tcChecker.pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY, "PENDING");
     }
     
     private void onTransmissionContraintCheckFinished(TransmissionConstraintChecker tcChecker) {
@@ -277,10 +277,10 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             return; //command has been removed in the meanwhile
         }
         if(status==TCStatus.OK) {
-            addToCommandHistory(pc, CommandHistoryPublisher.TransmissionContraints_KEY, "OK");
+            addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY, "OK");
             releaseCommand(q, pc, true, false);
         } else if(status == TCStatus.TIMED_OUT) {
-            addToCommandHistory(pc, CommandHistoryPublisher.TransmissionContraints_KEY, "NOK");
+            addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY, "NOK");
             failedCommand(q, pc, "Transmission constraints check failed",true);
         }
     }
@@ -325,8 +325,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
     }
 
-    private void addToCommandHistory(PreparedCommand pc, String key, String value) {
-        commandHistoryListener.updateStringKey(pc.getCommandId(), key, value);
+    public void addToCommandHistory(CommandId commandId, String key, String value) {
+        commandHistoryListener.updateStringKey(commandId, key, value);
     }
     /**
      * send a negative ack for a command.
@@ -334,7 +334,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      * @param notify notify or not the monitoring clients.
      */
     private void failedCommand(CommandQueue cq, PreparedCommand pc, String reason, boolean notify) {
-        addToCommandHistory(pc, CommandHistoryPublisher.CommandFailed_KEY, reason);
+        addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.CommandFailed_KEY, reason);
         //Notify the monitoring clients
         if(notify) {
             for(CommandQueueListener m:monitoringClients) {

@@ -6,15 +6,13 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.yamcs.api.ws.WebSocketRequest;
+import org.yamcs.protobuf.*;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
-import org.yamcs.protobuf.SchemaPvalue;
-import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.security.UsernamePasswordToken;
@@ -22,6 +20,9 @@ import org.yamcs.utils.HttpClient;
 import org.yamcs.utils.TimeEncoding;
 
 import io.netty.handler.codec.http.HttpMethod;
+
+import java.io.IOException;
+import java.util.List;
 
 
 public class PermissionsTest extends AbstractIntegrationTest {
@@ -124,6 +125,33 @@ public class PermissionsTest extends AbstractIntegrationTest {
         HttpClient httpClient = new HttpClient();
         String response = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/parameters/mset", HttpMethod.POST, toJson(bulkPvals.build(), SchemaRest.BulkSetParameterValueRequest.WRITE), currentUser);
         assertTrue("Permission should be denied", response.contains("ForbiddenException"));
+    }
+
+    @Test
+    public void testPermissionUpdateCommandHistory() throws Exception {
+
+        // testUser does not have the permission to update the command history
+        // operator has the permission
+
+        UsernamePasswordToken testuser = new UsernamePasswordToken("testuser", "password");
+        currentUser = testuser;
+        String response = updateCommandHistory();
+        assertTrue("Permission should be denied", response.contains("ForbiddenException"));
+
+        UsernamePasswordToken operator = new UsernamePasswordToken("operator", "password");
+        currentUser = operator;
+        String response2 = updateCommandHistory();
+        assertTrue("Permission should be granted", !response2.contains("ForbiddenException"));
+
+    }
+
+
+    private String updateCommandHistory() throws Exception {
+        // insert a value in the command history on dummy command id
+        Commanding.CommandId commandId = Commanding.CommandId.newBuilder().setSequenceNumber(0).setOrigin("").setGenerationTime(0).build();
+        Rest.UpdateCommandHistoryRequest.Builder updateHistoryRequest = Rest.UpdateCommandHistoryRequest.newBuilder().setCmdId(commandId);
+        updateHistoryRequest.addHistoryEntry(Rest.UpdateCommandHistoryRequest.KeyValue.newBuilder().setKey("testKey1").setValue("testValue1"));
+        return httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/commandhistory/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST, toJson(updateHistoryRequest.build(), SchemaRest.UpdateCommandHistoryRequest.WRITE), currentUser);
     }
 
 
