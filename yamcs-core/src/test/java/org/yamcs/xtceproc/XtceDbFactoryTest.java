@@ -9,13 +9,8 @@ import static org.junit.Assert.assertSame;
 import org.junit.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.management.ManagementService;
-import org.yamcs.xtce.NameDescription;
-import org.yamcs.xtce.NameReference;
+import org.yamcs.xtce.*;
 import org.yamcs.xtce.NameReference.Type;
-import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.SpaceSystem;
-import org.yamcs.xtce.XtceDb;
 
 
 public class XtceDbFactoryTest {
@@ -133,6 +128,44 @@ public class XtceDbFactoryTest {
         nd=XtceDbFactory.findReference(db.getRootSpaceSystem(), new NameReference("../SUBSYS1/IntegerPara1_1", Type.PARAMETER, null), ss);
         assertNotNull(nd);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1", nd.getQualifiedName());
+    }
+
+    @Test
+    public void testParameterAliases() throws Exception {
+        YConfiguration.setup("refmdb");
+        ManagementService.setup(false, false);
+        XtceDbFactory.reset();
+
+        XtceDb db = XtceDbFactory.getInstance("refmdb");
+
+        Parameter p = db.getParameter("/REFMDB/SUBSYS1/IntegerPara1_1");
+        assertNotNull(p);
+        String aliasPathname = p.getAlias("MDB:Pathname");
+        assertEquals("/ccsds-default/PKT1/IntegerPara1_1", aliasPathname);
+
+        String aliasParam = p.getAlias("MDB:AliasParam");
+        assertEquals("AliasParam1", aliasParam);
+
+    }
+
+    @Test
+    public void testCommandAliases() throws Exception {
+        YConfiguration.setup("refmdb");
+        ManagementService.setup(false, false);
+        XtceDbFactory.reset();
+
+        XtceDb db = XtceDbFactory.getInstance("refmdb");
+
+        MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC");
+        assertNotNull(cmd1);
+        String alias = cmd1.getAlias("MDB:Alias1");
+        assertEquals("AlternativeName1", alias);
+
+        MetaCommand cmd2 = db.getMetaCommand("/REFMDB/SUBSYS1/FIXED_VALUE_TC");
+        assertNotNull(cmd1);
+        alias = cmd2.getAlias("MDB:Alias1");
+        assertEquals("AlternativeName2", alias);
+
     }
     
     @Test
