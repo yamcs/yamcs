@@ -22,6 +22,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
@@ -32,16 +33,15 @@ import io.netty.util.CharsetUtil;
 public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
 
     private static final Logger log = LoggerFactory.getLogger(WebSocketClientHandler.class);
-    
+
     private final WebSocketClientHandshaker handshaker;
     private final WebSocketClient client;
-    
+
     private WebSocketClientCallback callback;
-    
+
     private ChannelPromise handshakeFuture;
 
-    public WebSocketClientHandler(WebSocketClientHandshaker handshaker, WebSocketClient client,
-            WebSocketClientCallback callback) {
+    public WebSocketClientHandler(WebSocketClientHandshaker handshaker, WebSocketClient client, WebSocketClientCallback callback) {
         this.handshaker = handshaker;
         this.client = client;
         this.callback = callback;
@@ -65,7 +65,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
     public void channelInactive(ChannelHandlerContext ctx) {
         log.info("WebSocket Client disconnected!");
         callback.disconnected();
-        
+
         if (client.isReconnectionEnabled())
             ctx.channel().eventLoop().schedule(() -> client.connect(), 1L, TimeUnit.SECONDS);
     }
@@ -95,6 +95,9 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
             BinaryWebSocketFrame binaryFrame = (BinaryWebSocketFrame) frame;
             log.debug("WebSocket Client received message of size {} ", binaryFrame.content().readableBytes());
             processFrame(binaryFrame);
+        } else if (frame instanceof PingWebSocketFrame) {
+            frame.content().retain();
+            ch.writeAndFlush(new PongWebSocketFrame(frame.content()));
         } else if (frame instanceof PongWebSocketFrame) {
             log.info("WebSocket Client received pong");
         } else if (frame instanceof CloseWebSocketFrame) {
@@ -134,20 +137,20 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
             log.warn("Received an exception for a request I did not send (or was already finished) seqNum: {}", reqId);
             return;
         }
-        
+
         // TODO this doesn't belong here, we should make this an option in the request and do it server-side
         if ("InvalidIdentification".equals(exceptionData.getType())) {
             // Well that's unfortunate, we need to resend another subscription with
             // the invalid parameters excluded
             byte[] barray = exceptionData.getData().toByteArray();
             NamedObjectList invalidList = NamedObjectList.newBuilder().mergeFrom(barray).build();
-            
+
             WebSocketRequest req = pair.request;
             if(!req.getResource().equals("parameter") || !req.getOperation().equals("subscribe")) {
                 log.warn("Received an InvalidIdentification exception for a request that is not a parameter/subscribe request, seqNum: {}", reqId);
                 return;
             }
-        
+
             NamedObjectList requestedIdList = (NamedObjectList) req.getRequestData();
             Set<NamedObjectId> requestedIds = new HashSet<>(requestedIdList.getListList());
             for (NamedObjectId invalidId : invalidList.getListList()) {
@@ -155,10 +158,10 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
                 callback.onInvalidIdentification(invalidId);
                 requestedIds.remove(invalidId);
             }
-        
+
             // Get rid of the current pending request
             client.forgetUpstreamRequest(reqId);
-            
+
             if(!requestedIds.isEmpty()) {
                 // And have another go at it
                 NamedObjectList nol = NamedObjectList.newBuilder().addAllList(requestedIds).build();
