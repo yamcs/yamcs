@@ -1232,11 +1232,11 @@ public final class SchemaMdb
                     output.writeString(1, message.getName(), false);
                 if(message.hasDescription())
                     output.writeString(2, message.getDescription(), false);
-                if(message.hasType())
-                    output.writeObject(3, message.getType(), org.yamcs.protobuf.SchemaMdb.ArgumentTypeInfo.WRITE, false);
-
                 if(message.hasInitialValue())
                     output.writeString(4, message.getInitialValue(), false);
+                if(message.hasType())
+                    output.writeObject(6, message.getType(), org.yamcs.protobuf.SchemaMdb.ArgumentTypeInfo.WRITE, false);
+
             }
             public boolean isInitialized(org.yamcs.protobuf.Mdb.ArgumentInfo message)
             {
@@ -1282,12 +1282,12 @@ public final class SchemaMdb
                         case 2:
                             builder.setDescription(input.readString());
                             break;
-                        case 3:
-                            builder.setType(input.mergeObject(org.yamcs.protobuf.Mdb.ArgumentTypeInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.ArgumentTypeInfo.MERGE));
-
-                            break;
                         case 4:
                             builder.setInitialValue(input.readString());
+                            break;
+                        case 6:
+                            builder.setType(input.mergeObject(org.yamcs.protobuf.Mdb.ArgumentTypeInfo.newBuilder(), org.yamcs.protobuf.SchemaMdb.ArgumentTypeInfo.MERGE));
+
                             break;
                         default:
                             input.handleUnknownField(number, this);
@@ -1331,8 +1331,8 @@ public final class SchemaMdb
             {
                 case 1: return "name";
                 case 2: return "description";
-                case 3: return "type";
                 case 4: return "initialValue";
+                case 6: return "type";
                 default: return null;
             }
         }
@@ -1346,8 +1346,8 @@ public final class SchemaMdb
         {
             fieldMap.put("name", 1);
             fieldMap.put("description", 2);
-            fieldMap.put("type", 3);
             fieldMap.put("initialValue", 4);
+            fieldMap.put("type", 6);
         }
     }
 

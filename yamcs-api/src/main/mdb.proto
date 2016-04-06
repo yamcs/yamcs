@@ -91,13 +91,15 @@ message ArgumentTypeInfo {
     optional double rangeMin = 6;
     optional double rangeMax = 7;
 }
-
 message ArgumentInfo {
-  optional string name = 1;
-  optional string description = 2;
-  optional ArgumentTypeInfo type = 3;
-  optional string initialValue = 4;
+    optional string name = 1;
+    optional string description = 2;
+    //optional string type = 3;
+    optional string initialValue = 4;
+    // repeated UnitInfo unitSet = 5;
+    optional ArgumentTypeInfo type = 6;
 }
+
 
 message ArgumentAssignmentInfo {
   optional string name = 1;

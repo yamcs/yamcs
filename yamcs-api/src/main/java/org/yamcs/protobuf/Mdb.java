@@ -9505,34 +9505,58 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getDescriptionBytes();
 
-    // optional .mdb.ArgumentTypeInfo type = 3;
-    /**
-     * <code>optional .mdb.ArgumentTypeInfo type = 3;</code>
-     */
-    boolean hasType();
-    /**
-     * <code>optional .mdb.ArgumentTypeInfo type = 3;</code>
-     */
-    org.yamcs.protobuf.Mdb.ArgumentTypeInfo getType();
-    /**
-     * <code>optional .mdb.ArgumentTypeInfo type = 3;</code>
-     */
-    org.yamcs.protobuf.Mdb.ArgumentTypeInfoOrBuilder getTypeOrBuilder();
-
     // optional string initialValue = 4;
     /**
      * <code>optional string initialValue = 4;</code>
+     *
+     * <pre>
+     *optional string type = 3;
+     * </pre>
      */
     boolean hasInitialValue();
     /**
      * <code>optional string initialValue = 4;</code>
+     *
+     * <pre>
+     *optional string type = 3;
+     * </pre>
      */
     java.lang.String getInitialValue();
     /**
      * <code>optional string initialValue = 4;</code>
+     *
+     * <pre>
+     *optional string type = 3;
+     * </pre>
      */
     com.google.protobuf.ByteString
         getInitialValueBytes();
+
+    // optional .mdb.ArgumentTypeInfo type = 6;
+    /**
+     * <code>optional .mdb.ArgumentTypeInfo type = 6;</code>
+     *
+     * <pre>
+     * repeated UnitInfo unitSet = 5;
+     * </pre>
+     */
+    boolean hasType();
+    /**
+     * <code>optional .mdb.ArgumentTypeInfo type = 6;</code>
+     *
+     * <pre>
+     * repeated UnitInfo unitSet = 5;
+     * </pre>
+     */
+    org.yamcs.protobuf.Mdb.ArgumentTypeInfo getType();
+    /**
+     * <code>optional .mdb.ArgumentTypeInfo type = 6;</code>
+     *
+     * <pre>
+     * repeated UnitInfo unitSet = 5;
+     * </pre>
+     */
+    org.yamcs.protobuf.Mdb.ArgumentTypeInfoOrBuilder getTypeOrBuilder();
   }
   /**
    * Protobuf type {@code mdb.ArgumentInfo}
@@ -9595,9 +9619,14 @@ public final class Mdb {
               description_ = input.readBytes();
               break;
             }
-            case 26: {
+            case 34: {
+              bitField0_ |= 0x00000004;
+              initialValue_ = input.readBytes();
+              break;
+            }
+            case 50: {
               org.yamcs.protobuf.Mdb.ArgumentTypeInfo.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000004) == 0x00000004)) {
+              if (((bitField0_ & 0x00000008) == 0x00000008)) {
                 subBuilder = type_.toBuilder();
               }
               type_ = input.readMessage(org.yamcs.protobuf.Mdb.ArgumentTypeInfo.PARSER, extensionRegistry);
@@ -9605,12 +9634,7 @@ public final class Mdb {
                 subBuilder.mergeFrom(type_);
                 type_ = subBuilder.buildPartial();
               }
-              bitField0_ |= 0x00000004;
-              break;
-            }
-            case 34: {
               bitField0_ |= 0x00000008;
-              initialValue_ = input.readBytes();
               break;
             }
           }
@@ -9739,39 +9763,25 @@ public final class Mdb {
       }
     }
 
-    // optional .mdb.ArgumentTypeInfo type = 3;
-    public static final int TYPE_FIELD_NUMBER = 3;
-    private org.yamcs.protobuf.Mdb.ArgumentTypeInfo type_;
-    /**
-     * <code>optional .mdb.ArgumentTypeInfo type = 3;</code>
-     */
-    public boolean hasType() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
-    }
-    /**
-     * <code>optional .mdb.ArgumentTypeInfo type = 3;</code>
-     */
-    public org.yamcs.protobuf.Mdb.ArgumentTypeInfo getType() {
-      return type_;
-    }
-    /**
-     * <code>optional .mdb.ArgumentTypeInfo type = 3;</code>
-     */
-    public org.yamcs.protobuf.Mdb.ArgumentTypeInfoOrBuilder getTypeOrBuilder() {
-      return type_;
-    }
-
     // optional string initialValue = 4;
     public static final int INITIALVALUE_FIELD_NUMBER = 4;
     private java.lang.Object initialValue_;
     /**
      * <code>optional string initialValue = 4;</code>
+     *
+     * <pre>
+     *optional string type = 3;
+     * </pre>
      */
     public boolean hasInitialValue() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
      * <code>optional string initialValue = 4;</code>
+     *
+     * <pre>
+     *optional string type = 3;
+     * </pre>
      */
     public java.lang.String getInitialValue() {
       java.lang.Object ref = initialValue_;
@@ -9789,6 +9799,10 @@ public final class Mdb {
     }
     /**
      * <code>optional string initialValue = 4;</code>
+     *
+     * <pre>
+     *optional string type = 3;
+     * </pre>
      */
     public com.google.protobuf.ByteString
         getInitialValueBytes() {
@@ -9804,11 +9818,45 @@ public final class Mdb {
       }
     }
 
+    // optional .mdb.ArgumentTypeInfo type = 6;
+    public static final int TYPE_FIELD_NUMBER = 6;
+    private org.yamcs.protobuf.Mdb.ArgumentTypeInfo type_;
+    /**
+     * <code>optional .mdb.ArgumentTypeInfo type = 6;</code>
+     *
+     * <pre>
+     * repeated UnitInfo unitSet = 5;
+     * </pre>
+     */
+    public boolean hasType() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional .mdb.ArgumentTypeInfo type = 6;</code>
+     *
+     * <pre>
+     * repeated UnitInfo unitSet = 5;
+     * </pre>
+     */
+    public org.yamcs.protobuf.Mdb.ArgumentTypeInfo getType() {
+      return type_;
+    }
+    /**
+     * <code>optional .mdb.ArgumentTypeInfo type = 6;</code>
+     *
+     * <pre>
+     * repeated UnitInfo unitSet = 5;
+     * </pre>
+     */
+    public org.yamcs.protobuf.Mdb.ArgumentTypeInfoOrBuilder getTypeOrBuilder() {
+      return type_;
+    }
+
     private void initFields() {
       name_ = "";
       description_ = "";
-      type_ = org.yamcs.protobuf.Mdb.ArgumentTypeInfo.getDefaultInstance();
       initialValue_ = "";
+      type_ = org.yamcs.protobuf.Mdb.ArgumentTypeInfo.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -9829,10 +9877,10 @@ public final class Mdb {
         output.writeBytes(2, getDescriptionBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeMessage(3, type_);
+        output.writeBytes(4, getInitialValueBytes());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeBytes(4, getInitialValueBytes());
+        output.writeMessage(6, type_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -9853,11 +9901,11 @@ public final class Mdb {
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(3, type_);
+          .computeBytesSize(4, getInitialValueBytes());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(4, getInitialValueBytes());
+          .computeMessageSize(6, type_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -9980,13 +10028,13 @@ public final class Mdb {
         bitField0_ = (bitField0_ & ~0x00000001);
         description_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
+        initialValue_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
         if (typeBuilder_ == null) {
           type_ = org.yamcs.protobuf.Mdb.ArgumentTypeInfo.getDefaultInstance();
         } else {
           typeBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000004);
-        initialValue_ = "";
         bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
@@ -10027,15 +10075,15 @@ public final class Mdb {
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
+        result.initialValue_ = initialValue_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
         if (typeBuilder_ == null) {
           result.type_ = type_;
         } else {
           result.type_ = typeBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
-          to_bitField0_ |= 0x00000008;
-        }
-        result.initialValue_ = initialValue_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -10062,13 +10110,13 @@ public final class Mdb {
           description_ = other.description_;
           onChanged();
         }
-        if (other.hasType()) {
-          mergeType(other.getType());
-        }
         if (other.hasInitialValue()) {
-          bitField0_ |= 0x00000008;
+          bitField0_ |= 0x00000004;
           initialValue_ = other.initialValue_;
           onChanged();
+        }
+        if (other.hasType()) {
+          mergeType(other.getType());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -10245,133 +10293,24 @@ public final class Mdb {
         return this;
       }
 
-      // optional .mdb.ArgumentTypeInfo type = 3;
-      private org.yamcs.protobuf.Mdb.ArgumentTypeInfo type_ = org.yamcs.protobuf.Mdb.ArgumentTypeInfo.getDefaultInstance();
-      private com.google.protobuf.SingleFieldBuilder<
-          org.yamcs.protobuf.Mdb.ArgumentTypeInfo, org.yamcs.protobuf.Mdb.ArgumentTypeInfo.Builder, org.yamcs.protobuf.Mdb.ArgumentTypeInfoOrBuilder> typeBuilder_;
-      /**
-       * <code>optional .mdb.ArgumentTypeInfo type = 3;</code>
-       */
-      public boolean hasType() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
-      }
-      /**
-       * <code>optional .mdb.ArgumentTypeInfo type = 3;</code>
-       */
-      public org.yamcs.protobuf.Mdb.ArgumentTypeInfo getType() {
-        if (typeBuilder_ == null) {
-          return type_;
-        } else {
-          return typeBuilder_.getMessage();
-        }
-      }
-      /**
-       * <code>optional .mdb.ArgumentTypeInfo type = 3;</code>
-       */
-      public Builder setType(org.yamcs.protobuf.Mdb.ArgumentTypeInfo value) {
-        if (typeBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          type_ = value;
-          onChanged();
-        } else {
-          typeBuilder_.setMessage(value);
-        }
-        bitField0_ |= 0x00000004;
-        return this;
-      }
-      /**
-       * <code>optional .mdb.ArgumentTypeInfo type = 3;</code>
-       */
-      public Builder setType(
-          org.yamcs.protobuf.Mdb.ArgumentTypeInfo.Builder builderForValue) {
-        if (typeBuilder_ == null) {
-          type_ = builderForValue.build();
-          onChanged();
-        } else {
-          typeBuilder_.setMessage(builderForValue.build());
-        }
-        bitField0_ |= 0x00000004;
-        return this;
-      }
-      /**
-       * <code>optional .mdb.ArgumentTypeInfo type = 3;</code>
-       */
-      public Builder mergeType(org.yamcs.protobuf.Mdb.ArgumentTypeInfo value) {
-        if (typeBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) == 0x00000004) &&
-              type_ != org.yamcs.protobuf.Mdb.ArgumentTypeInfo.getDefaultInstance()) {
-            type_ =
-              org.yamcs.protobuf.Mdb.ArgumentTypeInfo.newBuilder(type_).mergeFrom(value).buildPartial();
-          } else {
-            type_ = value;
-          }
-          onChanged();
-        } else {
-          typeBuilder_.mergeFrom(value);
-        }
-        bitField0_ |= 0x00000004;
-        return this;
-      }
-      /**
-       * <code>optional .mdb.ArgumentTypeInfo type = 3;</code>
-       */
-      public Builder clearType() {
-        if (typeBuilder_ == null) {
-          type_ = org.yamcs.protobuf.Mdb.ArgumentTypeInfo.getDefaultInstance();
-          onChanged();
-        } else {
-          typeBuilder_.clear();
-        }
-        bitField0_ = (bitField0_ & ~0x00000004);
-        return this;
-      }
-      /**
-       * <code>optional .mdb.ArgumentTypeInfo type = 3;</code>
-       */
-      public org.yamcs.protobuf.Mdb.ArgumentTypeInfo.Builder getTypeBuilder() {
-        bitField0_ |= 0x00000004;
-        onChanged();
-        return getTypeFieldBuilder().getBuilder();
-      }
-      /**
-       * <code>optional .mdb.ArgumentTypeInfo type = 3;</code>
-       */
-      public org.yamcs.protobuf.Mdb.ArgumentTypeInfoOrBuilder getTypeOrBuilder() {
-        if (typeBuilder_ != null) {
-          return typeBuilder_.getMessageOrBuilder();
-        } else {
-          return type_;
-        }
-      }
-      /**
-       * <code>optional .mdb.ArgumentTypeInfo type = 3;</code>
-       */
-      private com.google.protobuf.SingleFieldBuilder<
-          org.yamcs.protobuf.Mdb.ArgumentTypeInfo, org.yamcs.protobuf.Mdb.ArgumentTypeInfo.Builder, org.yamcs.protobuf.Mdb.ArgumentTypeInfoOrBuilder> 
-          getTypeFieldBuilder() {
-        if (typeBuilder_ == null) {
-          typeBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.yamcs.protobuf.Mdb.ArgumentTypeInfo, org.yamcs.protobuf.Mdb.ArgumentTypeInfo.Builder, org.yamcs.protobuf.Mdb.ArgumentTypeInfoOrBuilder>(
-                  type_,
-                  getParentForChildren(),
-                  isClean());
-          type_ = null;
-        }
-        return typeBuilder_;
-      }
-
       // optional string initialValue = 4;
       private java.lang.Object initialValue_ = "";
       /**
        * <code>optional string initialValue = 4;</code>
+       *
+       * <pre>
+       *optional string type = 3;
+       * </pre>
        */
       public boolean hasInitialValue() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
        * <code>optional string initialValue = 4;</code>
+       *
+       * <pre>
+       *optional string type = 3;
+       * </pre>
        */
       public java.lang.String getInitialValue() {
         java.lang.Object ref = initialValue_;
@@ -10386,6 +10325,10 @@ public final class Mdb {
       }
       /**
        * <code>optional string initialValue = 4;</code>
+       *
+       * <pre>
+       *optional string type = 3;
+       * </pre>
        */
       public com.google.protobuf.ByteString
           getInitialValueBytes() {
@@ -10402,38 +10345,203 @@ public final class Mdb {
       }
       /**
        * <code>optional string initialValue = 4;</code>
+       *
+       * <pre>
+       *optional string type = 3;
+       * </pre>
        */
       public Builder setInitialValue(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000008;
+  bitField0_ |= 0x00000004;
         initialValue_ = value;
         onChanged();
         return this;
       }
       /**
        * <code>optional string initialValue = 4;</code>
+       *
+       * <pre>
+       *optional string type = 3;
+       * </pre>
        */
       public Builder clearInitialValue() {
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000004);
         initialValue_ = getDefaultInstance().getInitialValue();
         onChanged();
         return this;
       }
       /**
        * <code>optional string initialValue = 4;</code>
+       *
+       * <pre>
+       *optional string type = 3;
+       * </pre>
        */
       public Builder setInitialValueBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000008;
+  bitField0_ |= 0x00000004;
         initialValue_ = value;
         onChanged();
         return this;
+      }
+
+      // optional .mdb.ArgumentTypeInfo type = 6;
+      private org.yamcs.protobuf.Mdb.ArgumentTypeInfo type_ = org.yamcs.protobuf.Mdb.ArgumentTypeInfo.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Mdb.ArgumentTypeInfo, org.yamcs.protobuf.Mdb.ArgumentTypeInfo.Builder, org.yamcs.protobuf.Mdb.ArgumentTypeInfoOrBuilder> typeBuilder_;
+      /**
+       * <code>optional .mdb.ArgumentTypeInfo type = 6;</code>
+       *
+       * <pre>
+       * repeated UnitInfo unitSet = 5;
+       * </pre>
+       */
+      public boolean hasType() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional .mdb.ArgumentTypeInfo type = 6;</code>
+       *
+       * <pre>
+       * repeated UnitInfo unitSet = 5;
+       * </pre>
+       */
+      public org.yamcs.protobuf.Mdb.ArgumentTypeInfo getType() {
+        if (typeBuilder_ == null) {
+          return type_;
+        } else {
+          return typeBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .mdb.ArgumentTypeInfo type = 6;</code>
+       *
+       * <pre>
+       * repeated UnitInfo unitSet = 5;
+       * </pre>
+       */
+      public Builder setType(org.yamcs.protobuf.Mdb.ArgumentTypeInfo value) {
+        if (typeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          type_ = value;
+          onChanged();
+        } else {
+          typeBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000008;
+        return this;
+      }
+      /**
+       * <code>optional .mdb.ArgumentTypeInfo type = 6;</code>
+       *
+       * <pre>
+       * repeated UnitInfo unitSet = 5;
+       * </pre>
+       */
+      public Builder setType(
+          org.yamcs.protobuf.Mdb.ArgumentTypeInfo.Builder builderForValue) {
+        if (typeBuilder_ == null) {
+          type_ = builderForValue.build();
+          onChanged();
+        } else {
+          typeBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000008;
+        return this;
+      }
+      /**
+       * <code>optional .mdb.ArgumentTypeInfo type = 6;</code>
+       *
+       * <pre>
+       * repeated UnitInfo unitSet = 5;
+       * </pre>
+       */
+      public Builder mergeType(org.yamcs.protobuf.Mdb.ArgumentTypeInfo value) {
+        if (typeBuilder_ == null) {
+          if (((bitField0_ & 0x00000008) == 0x00000008) &&
+              type_ != org.yamcs.protobuf.Mdb.ArgumentTypeInfo.getDefaultInstance()) {
+            type_ =
+              org.yamcs.protobuf.Mdb.ArgumentTypeInfo.newBuilder(type_).mergeFrom(value).buildPartial();
+          } else {
+            type_ = value;
+          }
+          onChanged();
+        } else {
+          typeBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000008;
+        return this;
+      }
+      /**
+       * <code>optional .mdb.ArgumentTypeInfo type = 6;</code>
+       *
+       * <pre>
+       * repeated UnitInfo unitSet = 5;
+       * </pre>
+       */
+      public Builder clearType() {
+        if (typeBuilder_ == null) {
+          type_ = org.yamcs.protobuf.Mdb.ArgumentTypeInfo.getDefaultInstance();
+          onChanged();
+        } else {
+          typeBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000008);
+        return this;
+      }
+      /**
+       * <code>optional .mdb.ArgumentTypeInfo type = 6;</code>
+       *
+       * <pre>
+       * repeated UnitInfo unitSet = 5;
+       * </pre>
+       */
+      public org.yamcs.protobuf.Mdb.ArgumentTypeInfo.Builder getTypeBuilder() {
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return getTypeFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .mdb.ArgumentTypeInfo type = 6;</code>
+       *
+       * <pre>
+       * repeated UnitInfo unitSet = 5;
+       * </pre>
+       */
+      public org.yamcs.protobuf.Mdb.ArgumentTypeInfoOrBuilder getTypeOrBuilder() {
+        if (typeBuilder_ != null) {
+          return typeBuilder_.getMessageOrBuilder();
+        } else {
+          return type_;
+        }
+      }
+      /**
+       * <code>optional .mdb.ArgumentTypeInfo type = 6;</code>
+       *
+       * <pre>
+       * repeated UnitInfo unitSet = 5;
+       * </pre>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Mdb.ArgumentTypeInfo, org.yamcs.protobuf.Mdb.ArgumentTypeInfo.Builder, org.yamcs.protobuf.Mdb.ArgumentTypeInfoOrBuilder> 
+          getTypeFieldBuilder() {
+        if (typeBuilder_ == null) {
+          typeBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.yamcs.protobuf.Mdb.ArgumentTypeInfo, org.yamcs.protobuf.Mdb.ArgumentTypeInfo.Builder, org.yamcs.protobuf.Mdb.ArgumentTypeInfoOrBuilder>(
+                  type_,
+                  getParentForChildren(),
+                  isClean());
+          type_ = null;
+        }
+        return typeBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:mdb.ArgumentInfo)
@@ -25784,8 +25892,8 @@ public final class Mdb {
       "Info\022!\n\tenumValue\030\005 \003(\0132\016.mdb.EnumValue\022",
       "\020\n\010rangeMin\030\006 \001(\001\022\020\n\010rangeMax\030\007 \001(\001\"l\n\014A" +
       "rgumentInfo\022\014\n\004name\030\001 \001(\t\022\023\n\013description" +
-      "\030\002 \001(\t\022#\n\004type\030\003 \001(\0132\025.mdb.ArgumentTypeI" +
-      "nfo\022\024\n\014initialValue\030\004 \001(\t\"5\n\026ArgumentAss" +
+      "\030\002 \001(\t\022\024\n\014initialValue\030\004 \001(\t\022#\n\004type\030\006 \001" +
+      "(\0132\025.mdb.ArgumentTypeInfo\"5\n\026ArgumentAss" +
       "ignmentInfo\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t" +
       "\"\326\001\n\020SignificanceInfo\022E\n\020consequenceLeve" +
       "l\030\001 \001(\0162+.mdb.SignificanceInfo.Significa" +
@@ -25917,7 +26025,7 @@ public final class Mdb {
           internal_static_mdb_ArgumentInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mdb_ArgumentInfo_descriptor,
-              new java.lang.String[] { "Name", "Description", "Type", "InitialValue", });
+              new java.lang.String[] { "Name", "Description", "InitialValue", "Type", });
           internal_static_mdb_ArgumentAssignmentInfo_descriptor =
             getDescriptor().getMessageTypes().get(10);
           internal_static_mdb_ArgumentAssignmentInfo_fieldAccessorTable = new
