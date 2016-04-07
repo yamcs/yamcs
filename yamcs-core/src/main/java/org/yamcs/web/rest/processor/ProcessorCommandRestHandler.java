@@ -33,6 +33,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import com.google.protobuf.ByteString;
 
 import io.netty.channel.ChannelFuture;
+import org.yaml.snakeyaml.util.UriEncoder;
 
 /**
  * Processes command requests
@@ -45,9 +46,11 @@ public class ProcessorCommandRestHandler extends RestHandler {
         if (!processor.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this processor");
         }
-        
+
+        String requestCommandName = UriEncoder.decode(req.getRouteParam("name"));
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
-        MetaCommand cmd = verifyCommand(req, mdb, req.getRouteParam("name"));
+        MetaCommand cmd = verifyCommand(req, mdb, requestCommandName);
+
 
         String origin = "";
         int sequenceNumber = 0;
@@ -78,6 +81,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
                 dryRun = req.getQueryParameterAsBoolean("dryRun");
                 break;
             case "pretty":
+            case "nolink":
                 break;
             default:
                 String value = req.getQueryParameter(p);
@@ -92,7 +96,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
             
             //make the source - should perhaps come from the client
             StringBuilder sb = new StringBuilder();
-            sb.append(cmd.getQualifiedName());
+            sb.append(requestCommandName);
             sb.append("(");
             boolean first = true;
             for(ArgumentAssignment aa:assignments) {
