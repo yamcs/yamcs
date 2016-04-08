@@ -173,6 +173,8 @@ public class ArgumentTypeProcessor {
                 return null;
             return ValueUtility.getStringValue(((IntegerArgumentType) type).getInitialValue());
         } else if (type instanceof FloatArgumentType) {
+            if(((FloatArgumentType) type).getInitialValue() == null)
+                return null;
             return ValueUtility.getDoubleValue(((FloatArgumentType) type).getInitialValue());
         } else if (type instanceof StringArgumentType) {
             if(((StringArgumentType) type).getInitialValue() == null)

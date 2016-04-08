@@ -13,9 +13,9 @@ public class FloatDataType extends NumericDataType {
     /**
      * XTCE: Initial value is always given in calibrated form
      */
-    double initialValue;
+    Double initialValue;
 
-    public double getInitialValue() {
+    public Double getInitialValue() {
         return initialValue;
     }
     public void setInitialValue(double initialValue) {

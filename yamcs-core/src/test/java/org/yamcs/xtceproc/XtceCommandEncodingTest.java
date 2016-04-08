@@ -38,6 +38,27 @@ public class XtceCommandEncodingTest {
     }
 
     @Test
+    public void floatCommandDefault()
+    {
+        // encode command
+        XtceDb xtcedb=XtceDbFactory.createInstance("refmdb");
+        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
+        boolean errorInCommand = false;
+
+        try {
+            // should complain that parameter has not been assigned
+            List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>();
+            byte[] b = MetaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        }
+        catch (ErrorInCommand e)
+        {
+            errorInCommand = true;
+        }
+
+        assertTrue(errorInCommand);
+    }
+
+    @Test
     public void stringCommand() throws ErrorInCommand {
         XtceDb xtcedb = XtceDbFactory.createInstance("refmdb");
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/STRING_ARG_TC");
@@ -86,13 +107,11 @@ public class XtceCommandEncodingTest {
         arguments.add(argumentAssignment1);
         byte[] b = MetaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
 
-        assertEquals(1<<7, b[0]&0xFF);
-        
-        
+        assertEquals(0b11000000, b[0]&0xFF);
     }
     
     @Test
-    public void booleanCommandFalse() throws ErrorInCommand {
+    public void booleanCommandFalseTrue() throws ErrorInCommand {
         XtceDb xtcedb = XtceDbFactory.createInstance("refmdb");
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/BOOLEAN_ARG_TC");
         List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>() ;
@@ -100,7 +119,10 @@ public class XtceCommandEncodingTest {
         arguments.add(argumentAssignment1);
         byte[] b = MetaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
 
-        assertEquals(0, b[0]&0xFF);
+        // - assigned false
+        // - default argument assignemnt true
+        assertEquals(0b01000000, b[0]&0xFF);
+
         
     }
    
