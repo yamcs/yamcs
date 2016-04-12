@@ -39,6 +39,8 @@ import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.xtce.*;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
 
+import javax.xml.bind.DatatypeConverter;
+
 public class XtceToGpbAssembler {
     
     public enum DetailLevel {
@@ -232,10 +234,18 @@ public class XtceToGpbAssembler {
         if (xtceArgument.getArgumentType() != null) {
             ArgumentType xtceType = xtceArgument.getArgumentType();
             b.setType(toArgumentTypeInfo(xtceType));
+            if (!b.hasInitialValue()){
+                String initialValue = null;
+                initialValue = getArgumentTypeInitialValue(xtceArgument.getArgumentType());
+                if(initialValue != null)
+                {
+                    b.setInitialValue(initialValue);
+                }
+            }
         }
         return b.build();
     }
-    
+
     public static ArgumentAssignmentInfo toArgumentAssignmentInfo(ArgumentAssignment xtceArgument) {
         ArgumentAssignmentInfo.Builder b = ArgumentAssignmentInfo.newBuilder();
         b.setName(xtceArgument.getArgumentName());
@@ -404,6 +414,36 @@ public class XtceToGpbAssembler {
             }
         }
         return infob.build();
+    }
+
+
+    private static String getArgumentTypeInitialValue(ArgumentType argumentType) {
+        if(argumentType == null)
+            return null;
+        if (argumentType instanceof IntegerArgumentType) {
+            return ((IntegerArgumentType) argumentType).getInitialValue();
+        } else if (argumentType instanceof FloatArgumentType)
+        {
+            return ((FloatArgumentType) argumentType).getInitialValue() != null ? ((FloatArgumentType) argumentType).getInitialValue() + "" : null;
+        }
+        else if (argumentType instanceof EnumeratedArgumentType)
+        {
+            return ((EnumeratedArgumentType) argumentType).getInitialValue();
+        }
+        else if (argumentType instanceof StringArgumentType)
+        {
+            return ((StringArgumentType) argumentType).getInitialValue();
+        }
+        else if (argumentType instanceof BinaryArgumentType)
+        {
+            byte[] initialValue = ((BinaryArgumentType) argumentType).getInitialValue();
+            return initialValue != null ? DatatypeConverter.printHexBinary(initialValue) : null;
+        }
+        else if (argumentType instanceof BooleanArgumentType)
+        {
+            return ((BooleanArgumentType) argumentType).getInitialValue() != null ? ((BooleanArgumentType) argumentType).getInitialValue().toString() : null;
+        }
+        return null;
     }
 
 

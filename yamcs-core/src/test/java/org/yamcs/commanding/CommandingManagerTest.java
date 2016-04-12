@@ -71,7 +71,7 @@ public class CommandingManagerTest {
 
         byte[] b= MetaCommandProcessor.buildCommand(mc, aaList).getCmdPacket();
 
-        assertEquals(12, b.length);
+        assertEquals(16, b.length);
         ByteBuffer bb = ByteBuffer.wrap(b);
 
         assertEquals(-10.23, bb.getFloat(), 1e-5);
