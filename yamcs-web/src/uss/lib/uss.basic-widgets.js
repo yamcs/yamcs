@@ -320,9 +320,9 @@ $.extend(USS.Field.prototype, {
         if (!ftxt)
             return; // TODO temp until we unregister bindings upon window close
         ftxt.textContent = v;
-        var dqi=this.getDqi(para);
-        svg.configure(ftxt, {class: dqi + "-foreground"});
         if(!this.overrideDqi) {
+            var dqi=this.getDqi(para);
+            svg.configure(ftxt, {class: dqi + "-foreground"});
             var fbg = svg.getElementById(this.id + "-background");
             svg.configure(fbg, {class: dqi+"-background"});
         }
