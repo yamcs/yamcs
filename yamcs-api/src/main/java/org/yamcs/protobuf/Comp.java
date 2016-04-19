@@ -1240,29 +1240,29 @@ public final class Comp {
   public interface ComputationDefListOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // repeated .comp.ComputationDef compDef = 1;
+    // repeated .comp.ComputationDef computation = 1;
     /**
-     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     * <code>repeated .comp.ComputationDef computation = 1;</code>
      */
     java.util.List<org.yamcs.protobuf.Comp.ComputationDef> 
-        getCompDefList();
+        getComputationList();
     /**
-     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     * <code>repeated .comp.ComputationDef computation = 1;</code>
      */
-    org.yamcs.protobuf.Comp.ComputationDef getCompDef(int index);
+    org.yamcs.protobuf.Comp.ComputationDef getComputation(int index);
     /**
-     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     * <code>repeated .comp.ComputationDef computation = 1;</code>
      */
-    int getCompDefCount();
+    int getComputationCount();
     /**
-     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     * <code>repeated .comp.ComputationDef computation = 1;</code>
      */
     java.util.List<? extends org.yamcs.protobuf.Comp.ComputationDefOrBuilder> 
-        getCompDefOrBuilderList();
+        getComputationOrBuilderList();
     /**
-     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     * <code>repeated .comp.ComputationDef computation = 1;</code>
      */
-    org.yamcs.protobuf.Comp.ComputationDefOrBuilder getCompDefOrBuilder(
+    org.yamcs.protobuf.Comp.ComputationDefOrBuilder getComputationOrBuilder(
         int index);
 
     // optional bool abortOnInvalid = 2;
@@ -1328,10 +1328,10 @@ public final class Comp {
             }
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                compDef_ = new java.util.ArrayList<org.yamcs.protobuf.Comp.ComputationDef>();
+                computation_ = new java.util.ArrayList<org.yamcs.protobuf.Comp.ComputationDef>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              compDef_.add(input.readMessage(org.yamcs.protobuf.Comp.ComputationDef.PARSER, extensionRegistry));
+              computation_.add(input.readMessage(org.yamcs.protobuf.Comp.ComputationDef.PARSER, extensionRegistry));
               break;
             }
             case 16: {
@@ -1348,7 +1348,7 @@ public final class Comp {
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-          compDef_ = java.util.Collections.unmodifiableList(compDef_);
+          computation_ = java.util.Collections.unmodifiableList(computation_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -1382,40 +1382,40 @@ public final class Comp {
     }
 
     private int bitField0_;
-    // repeated .comp.ComputationDef compDef = 1;
-    public static final int COMPDEF_FIELD_NUMBER = 1;
-    private java.util.List<org.yamcs.protobuf.Comp.ComputationDef> compDef_;
+    // repeated .comp.ComputationDef computation = 1;
+    public static final int COMPUTATION_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Comp.ComputationDef> computation_;
     /**
-     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     * <code>repeated .comp.ComputationDef computation = 1;</code>
      */
-    public java.util.List<org.yamcs.protobuf.Comp.ComputationDef> getCompDefList() {
-      return compDef_;
+    public java.util.List<org.yamcs.protobuf.Comp.ComputationDef> getComputationList() {
+      return computation_;
     }
     /**
-     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     * <code>repeated .comp.ComputationDef computation = 1;</code>
      */
     public java.util.List<? extends org.yamcs.protobuf.Comp.ComputationDefOrBuilder> 
-        getCompDefOrBuilderList() {
-      return compDef_;
+        getComputationOrBuilderList() {
+      return computation_;
     }
     /**
-     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     * <code>repeated .comp.ComputationDef computation = 1;</code>
      */
-    public int getCompDefCount() {
-      return compDef_.size();
+    public int getComputationCount() {
+      return computation_.size();
     }
     /**
-     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     * <code>repeated .comp.ComputationDef computation = 1;</code>
      */
-    public org.yamcs.protobuf.Comp.ComputationDef getCompDef(int index) {
-      return compDef_.get(index);
+    public org.yamcs.protobuf.Comp.ComputationDef getComputation(int index) {
+      return computation_.get(index);
     }
     /**
-     * <code>repeated .comp.ComputationDef compDef = 1;</code>
+     * <code>repeated .comp.ComputationDef computation = 1;</code>
      */
-    public org.yamcs.protobuf.Comp.ComputationDefOrBuilder getCompDefOrBuilder(
+    public org.yamcs.protobuf.Comp.ComputationDefOrBuilder getComputationOrBuilder(
         int index) {
-      return compDef_.get(index);
+      return computation_.get(index);
     }
 
     // optional bool abortOnInvalid = 2;
@@ -1435,7 +1435,7 @@ public final class Comp {
     }
 
     private void initFields() {
-      compDef_ = java.util.Collections.emptyList();
+      computation_ = java.util.Collections.emptyList();
       abortOnInvalid_ = false;
     }
     private byte memoizedIsInitialized = -1;
@@ -1443,8 +1443,8 @@ public final class Comp {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      for (int i = 0; i < getCompDefCount(); i++) {
-        if (!getCompDef(i).isInitialized()) {
+      for (int i = 0; i < getComputationCount(); i++) {
+        if (!getComputation(i).isInitialized()) {
           memoizedIsInitialized = 0;
           return false;
         }
@@ -1456,8 +1456,8 @@ public final class Comp {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      for (int i = 0; i < compDef_.size(); i++) {
-        output.writeMessage(1, compDef_.get(i));
+      for (int i = 0; i < computation_.size(); i++) {
+        output.writeMessage(1, computation_.get(i));
       }
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBool(2, abortOnInvalid_);
@@ -1471,9 +1471,9 @@ public final class Comp {
       if (size != -1) return size;
 
       size = 0;
-      for (int i = 0; i < compDef_.size(); i++) {
+      for (int i = 0; i < computation_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, compDef_.get(i));
+          .computeMessageSize(1, computation_.get(i));
       }
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
@@ -1587,7 +1587,7 @@ public final class Comp {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getCompDefFieldBuilder();
+          getComputationFieldBuilder();
         }
       }
       private static Builder create() {
@@ -1596,11 +1596,11 @@ public final class Comp {
 
       public Builder clear() {
         super.clear();
-        if (compDefBuilder_ == null) {
-          compDef_ = java.util.Collections.emptyList();
+        if (computationBuilder_ == null) {
+          computation_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000001);
         } else {
-          compDefBuilder_.clear();
+          computationBuilder_.clear();
         }
         abortOnInvalid_ = false;
         bitField0_ = (bitField0_ & ~0x00000002);
@@ -1632,14 +1632,14 @@ public final class Comp {
         org.yamcs.protobuf.Comp.ComputationDefList result = new org.yamcs.protobuf.Comp.ComputationDefList(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
-        if (compDefBuilder_ == null) {
+        if (computationBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            compDef_ = java.util.Collections.unmodifiableList(compDef_);
+            computation_ = java.util.Collections.unmodifiableList(computation_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
-          result.compDef_ = compDef_;
+          result.computation_ = computation_;
         } else {
-          result.compDef_ = compDefBuilder_.build();
+          result.computation_ = computationBuilder_.build();
         }
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000001;
@@ -1661,29 +1661,29 @@ public final class Comp {
 
       public Builder mergeFrom(org.yamcs.protobuf.Comp.ComputationDefList other) {
         if (other == org.yamcs.protobuf.Comp.ComputationDefList.getDefaultInstance()) return this;
-        if (compDefBuilder_ == null) {
-          if (!other.compDef_.isEmpty()) {
-            if (compDef_.isEmpty()) {
-              compDef_ = other.compDef_;
+        if (computationBuilder_ == null) {
+          if (!other.computation_.isEmpty()) {
+            if (computation_.isEmpty()) {
+              computation_ = other.computation_;
               bitField0_ = (bitField0_ & ~0x00000001);
             } else {
-              ensureCompDefIsMutable();
-              compDef_.addAll(other.compDef_);
+              ensureComputationIsMutable();
+              computation_.addAll(other.computation_);
             }
             onChanged();
           }
         } else {
-          if (!other.compDef_.isEmpty()) {
-            if (compDefBuilder_.isEmpty()) {
-              compDefBuilder_.dispose();
-              compDefBuilder_ = null;
-              compDef_ = other.compDef_;
+          if (!other.computation_.isEmpty()) {
+            if (computationBuilder_.isEmpty()) {
+              computationBuilder_.dispose();
+              computationBuilder_ = null;
+              computation_ = other.computation_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              compDefBuilder_ = 
+              computationBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                   getCompDefFieldBuilder() : null;
+                   getComputationFieldBuilder() : null;
             } else {
-              compDefBuilder_.addAllMessages(other.compDef_);
+              computationBuilder_.addAllMessages(other.computation_);
             }
           }
         }
@@ -1695,8 +1695,8 @@ public final class Comp {
       }
 
       public final boolean isInitialized() {
-        for (int i = 0; i < getCompDefCount(); i++) {
-          if (!getCompDef(i).isInitialized()) {
+        for (int i = 0; i < getComputationCount(); i++) {
+          if (!getComputation(i).isInitialized()) {
             
             return false;
           }
@@ -1723,244 +1723,244 @@ public final class Comp {
       }
       private int bitField0_;
 
-      // repeated .comp.ComputationDef compDef = 1;
-      private java.util.List<org.yamcs.protobuf.Comp.ComputationDef> compDef_ =
+      // repeated .comp.ComputationDef computation = 1;
+      private java.util.List<org.yamcs.protobuf.Comp.ComputationDef> computation_ =
         java.util.Collections.emptyList();
-      private void ensureCompDefIsMutable() {
+      private void ensureComputationIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          compDef_ = new java.util.ArrayList<org.yamcs.protobuf.Comp.ComputationDef>(compDef_);
+          computation_ = new java.util.ArrayList<org.yamcs.protobuf.Comp.ComputationDef>(computation_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.yamcs.protobuf.Comp.ComputationDef, org.yamcs.protobuf.Comp.ComputationDef.Builder, org.yamcs.protobuf.Comp.ComputationDefOrBuilder> compDefBuilder_;
+          org.yamcs.protobuf.Comp.ComputationDef, org.yamcs.protobuf.Comp.ComputationDef.Builder, org.yamcs.protobuf.Comp.ComputationDefOrBuilder> computationBuilder_;
 
       /**
-       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       * <code>repeated .comp.ComputationDef computation = 1;</code>
        */
-      public java.util.List<org.yamcs.protobuf.Comp.ComputationDef> getCompDefList() {
-        if (compDefBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(compDef_);
+      public java.util.List<org.yamcs.protobuf.Comp.ComputationDef> getComputationList() {
+        if (computationBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(computation_);
         } else {
-          return compDefBuilder_.getMessageList();
+          return computationBuilder_.getMessageList();
         }
       }
       /**
-       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       * <code>repeated .comp.ComputationDef computation = 1;</code>
        */
-      public int getCompDefCount() {
-        if (compDefBuilder_ == null) {
-          return compDef_.size();
+      public int getComputationCount() {
+        if (computationBuilder_ == null) {
+          return computation_.size();
         } else {
-          return compDefBuilder_.getCount();
+          return computationBuilder_.getCount();
         }
       }
       /**
-       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       * <code>repeated .comp.ComputationDef computation = 1;</code>
        */
-      public org.yamcs.protobuf.Comp.ComputationDef getCompDef(int index) {
-        if (compDefBuilder_ == null) {
-          return compDef_.get(index);
+      public org.yamcs.protobuf.Comp.ComputationDef getComputation(int index) {
+        if (computationBuilder_ == null) {
+          return computation_.get(index);
         } else {
-          return compDefBuilder_.getMessage(index);
+          return computationBuilder_.getMessage(index);
         }
       }
       /**
-       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       * <code>repeated .comp.ComputationDef computation = 1;</code>
        */
-      public Builder setCompDef(
+      public Builder setComputation(
           int index, org.yamcs.protobuf.Comp.ComputationDef value) {
-        if (compDefBuilder_ == null) {
+        if (computationBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureCompDefIsMutable();
-          compDef_.set(index, value);
+          ensureComputationIsMutable();
+          computation_.set(index, value);
           onChanged();
         } else {
-          compDefBuilder_.setMessage(index, value);
+          computationBuilder_.setMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       * <code>repeated .comp.ComputationDef computation = 1;</code>
        */
-      public Builder setCompDef(
+      public Builder setComputation(
           int index, org.yamcs.protobuf.Comp.ComputationDef.Builder builderForValue) {
-        if (compDefBuilder_ == null) {
-          ensureCompDefIsMutable();
-          compDef_.set(index, builderForValue.build());
+        if (computationBuilder_ == null) {
+          ensureComputationIsMutable();
+          computation_.set(index, builderForValue.build());
           onChanged();
         } else {
-          compDefBuilder_.setMessage(index, builderForValue.build());
+          computationBuilder_.setMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       * <code>repeated .comp.ComputationDef computation = 1;</code>
        */
-      public Builder addCompDef(org.yamcs.protobuf.Comp.ComputationDef value) {
-        if (compDefBuilder_ == null) {
+      public Builder addComputation(org.yamcs.protobuf.Comp.ComputationDef value) {
+        if (computationBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureCompDefIsMutable();
-          compDef_.add(value);
+          ensureComputationIsMutable();
+          computation_.add(value);
           onChanged();
         } else {
-          compDefBuilder_.addMessage(value);
+          computationBuilder_.addMessage(value);
         }
         return this;
       }
       /**
-       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       * <code>repeated .comp.ComputationDef computation = 1;</code>
        */
-      public Builder addCompDef(
+      public Builder addComputation(
           int index, org.yamcs.protobuf.Comp.ComputationDef value) {
-        if (compDefBuilder_ == null) {
+        if (computationBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureCompDefIsMutable();
-          compDef_.add(index, value);
+          ensureComputationIsMutable();
+          computation_.add(index, value);
           onChanged();
         } else {
-          compDefBuilder_.addMessage(index, value);
+          computationBuilder_.addMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       * <code>repeated .comp.ComputationDef computation = 1;</code>
        */
-      public Builder addCompDef(
+      public Builder addComputation(
           org.yamcs.protobuf.Comp.ComputationDef.Builder builderForValue) {
-        if (compDefBuilder_ == null) {
-          ensureCompDefIsMutable();
-          compDef_.add(builderForValue.build());
+        if (computationBuilder_ == null) {
+          ensureComputationIsMutable();
+          computation_.add(builderForValue.build());
           onChanged();
         } else {
-          compDefBuilder_.addMessage(builderForValue.build());
+          computationBuilder_.addMessage(builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       * <code>repeated .comp.ComputationDef computation = 1;</code>
        */
-      public Builder addCompDef(
+      public Builder addComputation(
           int index, org.yamcs.protobuf.Comp.ComputationDef.Builder builderForValue) {
-        if (compDefBuilder_ == null) {
-          ensureCompDefIsMutable();
-          compDef_.add(index, builderForValue.build());
+        if (computationBuilder_ == null) {
+          ensureComputationIsMutable();
+          computation_.add(index, builderForValue.build());
           onChanged();
         } else {
-          compDefBuilder_.addMessage(index, builderForValue.build());
+          computationBuilder_.addMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       * <code>repeated .comp.ComputationDef computation = 1;</code>
        */
-      public Builder addAllCompDef(
+      public Builder addAllComputation(
           java.lang.Iterable<? extends org.yamcs.protobuf.Comp.ComputationDef> values) {
-        if (compDefBuilder_ == null) {
-          ensureCompDefIsMutable();
-          super.addAll(values, compDef_);
+        if (computationBuilder_ == null) {
+          ensureComputationIsMutable();
+          super.addAll(values, computation_);
           onChanged();
         } else {
-          compDefBuilder_.addAllMessages(values);
+          computationBuilder_.addAllMessages(values);
         }
         return this;
       }
       /**
-       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       * <code>repeated .comp.ComputationDef computation = 1;</code>
        */
-      public Builder clearCompDef() {
-        if (compDefBuilder_ == null) {
-          compDef_ = java.util.Collections.emptyList();
+      public Builder clearComputation() {
+        if (computationBuilder_ == null) {
+          computation_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000001);
           onChanged();
         } else {
-          compDefBuilder_.clear();
+          computationBuilder_.clear();
         }
         return this;
       }
       /**
-       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       * <code>repeated .comp.ComputationDef computation = 1;</code>
        */
-      public Builder removeCompDef(int index) {
-        if (compDefBuilder_ == null) {
-          ensureCompDefIsMutable();
-          compDef_.remove(index);
+      public Builder removeComputation(int index) {
+        if (computationBuilder_ == null) {
+          ensureComputationIsMutable();
+          computation_.remove(index);
           onChanged();
         } else {
-          compDefBuilder_.remove(index);
+          computationBuilder_.remove(index);
         }
         return this;
       }
       /**
-       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       * <code>repeated .comp.ComputationDef computation = 1;</code>
        */
-      public org.yamcs.protobuf.Comp.ComputationDef.Builder getCompDefBuilder(
+      public org.yamcs.protobuf.Comp.ComputationDef.Builder getComputationBuilder(
           int index) {
-        return getCompDefFieldBuilder().getBuilder(index);
+        return getComputationFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       * <code>repeated .comp.ComputationDef computation = 1;</code>
        */
-      public org.yamcs.protobuf.Comp.ComputationDefOrBuilder getCompDefOrBuilder(
+      public org.yamcs.protobuf.Comp.ComputationDefOrBuilder getComputationOrBuilder(
           int index) {
-        if (compDefBuilder_ == null) {
-          return compDef_.get(index);  } else {
-          return compDefBuilder_.getMessageOrBuilder(index);
+        if (computationBuilder_ == null) {
+          return computation_.get(index);  } else {
+          return computationBuilder_.getMessageOrBuilder(index);
         }
       }
       /**
-       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       * <code>repeated .comp.ComputationDef computation = 1;</code>
        */
       public java.util.List<? extends org.yamcs.protobuf.Comp.ComputationDefOrBuilder> 
-           getCompDefOrBuilderList() {
-        if (compDefBuilder_ != null) {
-          return compDefBuilder_.getMessageOrBuilderList();
+           getComputationOrBuilderList() {
+        if (computationBuilder_ != null) {
+          return computationBuilder_.getMessageOrBuilderList();
         } else {
-          return java.util.Collections.unmodifiableList(compDef_);
+          return java.util.Collections.unmodifiableList(computation_);
         }
       }
       /**
-       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       * <code>repeated .comp.ComputationDef computation = 1;</code>
        */
-      public org.yamcs.protobuf.Comp.ComputationDef.Builder addCompDefBuilder() {
-        return getCompDefFieldBuilder().addBuilder(
+      public org.yamcs.protobuf.Comp.ComputationDef.Builder addComputationBuilder() {
+        return getComputationFieldBuilder().addBuilder(
             org.yamcs.protobuf.Comp.ComputationDef.getDefaultInstance());
       }
       /**
-       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       * <code>repeated .comp.ComputationDef computation = 1;</code>
        */
-      public org.yamcs.protobuf.Comp.ComputationDef.Builder addCompDefBuilder(
+      public org.yamcs.protobuf.Comp.ComputationDef.Builder addComputationBuilder(
           int index) {
-        return getCompDefFieldBuilder().addBuilder(
+        return getComputationFieldBuilder().addBuilder(
             index, org.yamcs.protobuf.Comp.ComputationDef.getDefaultInstance());
       }
       /**
-       * <code>repeated .comp.ComputationDef compDef = 1;</code>
+       * <code>repeated .comp.ComputationDef computation = 1;</code>
        */
       public java.util.List<org.yamcs.protobuf.Comp.ComputationDef.Builder> 
-           getCompDefBuilderList() {
-        return getCompDefFieldBuilder().getBuilderList();
+           getComputationBuilderList() {
+        return getComputationFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
           org.yamcs.protobuf.Comp.ComputationDef, org.yamcs.protobuf.Comp.ComputationDef.Builder, org.yamcs.protobuf.Comp.ComputationDefOrBuilder> 
-          getCompDefFieldBuilder() {
-        if (compDefBuilder_ == null) {
-          compDefBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+          getComputationFieldBuilder() {
+        if (computationBuilder_ == null) {
+          computationBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               org.yamcs.protobuf.Comp.ComputationDef, org.yamcs.protobuf.Comp.ComputationDef.Builder, org.yamcs.protobuf.Comp.ComputationDefOrBuilder>(
-                  compDef_,
+                  computation_,
                   ((bitField0_ & 0x00000001) == 0x00000001),
                   getParentForChildren(),
                   isClean());
-          compDef_ = null;
+          computation_ = null;
         }
-        return compDefBuilder_;
+        return computationBuilder_;
       }
 
       // optional bool abortOnInvalid = 2;
@@ -2029,10 +2029,10 @@ public final class Comp {
       "\n\ncomp.proto\022\004comp\032\013yamcs.proto\"l\n\016Compu" +
       "tationDef\022\014\n\004name\030\001 \002(\t\022\022\n\nexpression\030\002 " +
       "\002(\t\022&\n\010argument\030\003 \003(\0132\024.yamcs.NamedObjec" +
-      "tId\022\020\n\010language\030\004 \001(\t\"S\n\022ComputationDefL" +
-      "ist\022%\n\007compDef\030\001 \003(\0132\024.comp.ComputationD" +
-      "ef\022\026\n\016abortOnInvalid\030\002 \001(\010B\024\n\022org.yamcs." +
-      "protobuf"
+      "tId\022\020\n\010language\030\004 \001(\t\"W\n\022ComputationDefL" +
+      "ist\022)\n\013computation\030\001 \003(\0132\024.comp.Computat" +
+      "ionDef\022\026\n\016abortOnInvalid\030\002 \001(\010B\024\n\022org.ya" +
+      "mcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -2050,7 +2050,7 @@ public final class Comp {
           internal_static_comp_ComputationDefList_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_comp_ComputationDefList_descriptor,
-              new java.lang.String[] { "CompDef", "AbortOnInvalid", });
+              new java.lang.String[] { "Computation", "AbortOnInvalid", });
           return null;
         }
       };

@@ -222,7 +222,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
     private WebSocketReplyData subscribeComputations(int requestId, ComputationDefList cdefList, AuthenticationToken authToken)
             throws WebSocketException {
 
-        List<ComputationDef> computations = cdefList.getCompDefList();
+        List<ComputationDef> computations = cdefList.getComputationList();
         List<NamedObjectId> allArguments=new ArrayList<>();
         for(ComputationDef computation : computations) {
             allArguments.addAll(computation.getArgumentList());
