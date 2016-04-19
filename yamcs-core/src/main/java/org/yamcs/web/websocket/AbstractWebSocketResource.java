@@ -13,22 +13,22 @@ import org.yamcs.security.AuthenticationToken;
 public abstract class AbstractWebSocketResource {
 
     protected YProcessor processor;
-    protected WebSocketServerHandler wsHandler;
+    protected WebSocketFrameHandler wsHandler;
 
 
-    public AbstractWebSocketResource(YProcessor processor, WebSocketServerHandler wsHandler) {
+    public AbstractWebSocketResource(YProcessor processor, WebSocketFrameHandler wsHandler) {
         this.processor = processor;
         this.wsHandler = wsHandler;
     }
 
     /**
      * Process a request and return a reply.
-     * The reply can be null if the implementor of the resource takes care itself of sending the reply 
+     * The reply can be null if the implementor of the resource takes care itself of sending the reply
      *   - this has been added because the parameterClient wants to send some date data immediately after reply
      */
     public abstract WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder, AuthenticationToken authToken)
             throws WebSocketException;
-    
+
     /**
      * Called when the web socket is closed
      */
@@ -40,7 +40,7 @@ public abstract class AbstractWebSocketResource {
                 .setSequenceNumber(requestId)
                 .build();
     }
-    
+
     public void switchYProcessor(YProcessor processor, AuthenticationToken authToken)  throws YProcessorException {
         this.processor = processor;
     }

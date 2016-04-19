@@ -17,19 +17,20 @@ import org.yamcs.utils.TimeEncoding;
 
 
 public class TimeResource extends AbstractWebSocketResource {
-    private Logger log;
+
+    private static final Logger log = LoggerFactory.getLogger(TimeResource.class);
+
     public static final String OP_subscribe = "subscribe";
-    static ScheduledThreadPoolExecutor timer =  new ScheduledThreadPoolExecutor(1);
-    
-    ScheduledFuture<?> future = null;
-    
-    public TimeResource(YProcessor yproc, WebSocketServerHandler wsHandler) {
+    private static ScheduledThreadPoolExecutor timer =  new ScheduledThreadPoolExecutor(1);
+
+    private ScheduledFuture<?> future = null;
+
+    public TimeResource(YProcessor yproc, WebSocketFrameHandler wsHandler) {
         super(yproc, wsHandler);
         wsHandler.addResource("time", this);
-        log = LoggerFactory.getLogger(TimeResource.class.getName() + "[" + yproc.getInstance() + "]");
     }
-    
-    
+
+
     @Override
     public WebSocketReplyData processRequest(WebSocketDecodeContext ctx,    WebSocketDecoder decoder, AuthenticationToken authToken)   throws WebSocketException {
         switch (ctx.getOperation()) {
@@ -39,29 +40,25 @@ public class TimeResource extends AbstractWebSocketResource {
             throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
         }
     }
-    
-    
+
+
     private WebSocketReplyData processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
-        future = timer.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    long currentTime = processor.getCurrentTime();
-                    TimeInfo ti = TimeInfo.newBuilder().setCurrentTime(currentTime).setCurrentTimeUTC(TimeEncoding.toString(currentTime)).build();
-                    wsHandler.sendData(ProtoDataType.TIME_INFO, ti, SchemaYamcs.TimeInfo.WRITE);
-                } catch (IOException e) {
-                    log.debug("Could not send time info data", e);
-                }
+        future = timer.scheduleAtFixedRate(() -> {
+            try {
+                long currentTime = processor.getCurrentTime();
+                TimeInfo ti = TimeInfo.newBuilder().setCurrentTime(currentTime).setCurrentTimeUTC(TimeEncoding.toString(currentTime)).build();
+                wsHandler.sendData(ProtoDataType.TIME_INFO, ti, SchemaYamcs.TimeInfo.WRITE);
+            } catch (IOException e) {
+                log.debug("Could not send time info data", e);
             }
         }, 1, 1, TimeUnit.SECONDS);
         return toAckReply(ctx.getRequestId());
-    }      
-    
+    }
+
     @Override
     public void quit() {
         if(future!=null) {
             future.cancel(false);
         }
     }
-
 }

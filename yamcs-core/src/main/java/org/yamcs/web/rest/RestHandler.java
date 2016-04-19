@@ -22,7 +22,7 @@ import org.yamcs.security.Privilege;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
-import org.yamcs.web.HttpHandler;
+import org.yamcs.web.HttpRequestHandler;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.RouteHandler;
@@ -52,17 +52,17 @@ import io.protostuff.Schema;
  * Contains utility methods for REST handlers. May eventually refactor this out.
  */
 public abstract class RestHandler extends RouteHandler {
-    
+
     private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
     private static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
-    
+
     protected static ChannelFuture sendOK(RestRequest restRequest) {
         ChannelHandlerContext ctx = restRequest.getChannelHandlerContext();
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
         setContentLength(httpResponse, 0);
-        return HttpHandler.sendOK(ctx, httpResponse);
+        return HttpRequestHandler.sendOK(ctx, restRequest.getHttpRequest(), httpResponse);
     }
-    
+
     protected static <T extends MessageLite> ChannelFuture sendOK(RestRequest restRequest, T responseMsg, Schema<T> responseSchema) throws HttpException {
         ByteBuf body = restRequest.getChannelHandlerContext().alloc().buffer();
         ByteBufOutputStream channelOut = new ByteBufOutputStream(body);
@@ -78,27 +78,27 @@ public abstract class RestHandler extends RouteHandler {
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }
-        
+
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
         setContentTypeHeader(httpResponse, restRequest.deriveTargetContentType().toString());
         setContentLength(httpResponse, body.readableBytes());
-        return HttpHandler.sendOK(restRequest.getChannelHandlerContext(), httpResponse);
+        return HttpRequestHandler.sendOK(restRequest.getChannelHandlerContext(), restRequest.getHttpRequest(), httpResponse);
     }
-    
+
     protected static ChannelFuture sendOK(RestRequest restRequest, MediaType contentType, ByteBuf body) {
         ChannelHandlerContext ctx = restRequest.getChannelHandlerContext();
         if (body == null) {
             HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
             setContentLength(httpResponse, 0);
-            return HttpHandler.sendOK(ctx, httpResponse);
+            return HttpRequestHandler.sendOK(ctx, restRequest.getHttpRequest(), httpResponse);
         } else {
             HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
             setContentTypeHeader(httpResponse, contentType.toString());
             setContentLength(httpResponse, body.readableBytes());
-            return HttpHandler.sendOK(ctx, httpResponse);
+            return HttpRequestHandler.sendOK(ctx, restRequest.getHttpRequest(), httpResponse);
         }
     }
-    
+
     static void sendRestError(RestRequest req, HttpResponseStatus status, Throwable t) {
         MediaType contentType = req.deriveTargetContentType();
         ChannelHandlerContext ctx = req.getChannelHandlerContext();
@@ -113,11 +113,11 @@ public abstract class RestHandler extends RouteHandler {
                 HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
                 setContentTypeHeader(response, MediaType.JSON.toString()); // UTF-8 by default IETF RFC4627
                 setContentLength(response, buf.readableBytes());
-                HttpHandler.sendError(ctx, response);
+                HttpRequestHandler.sendError(ctx, req.getHttpRequest(), response);
             } catch (IOException e2) {
                 log.error("Could not create JSON Generator", e2);
                 log.debug("Original exception not sent to client", t);
-                HttpHandler.sendPlainTextError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                HttpRequestHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
             }
         } else if (MediaType.PROTOBUF.equals(contentType)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
@@ -127,17 +127,17 @@ public abstract class RestHandler extends RouteHandler {
                 HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
                 setContentTypeHeader(response, MediaType.PROTOBUF.toString());
                 setContentLength(response, buf.readableBytes());
-                HttpHandler.sendError(ctx, response);
+                HttpRequestHandler.sendError(ctx, req.getHttpRequest(), response);
             } catch (IOException e2) {
                 log.error("Could not write to channel buffer", e2);
                 log.debug("Original exception not sent to client", t);
-                HttpHandler.sendPlainTextError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                HttpRequestHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
             }
         } else {
-            HttpHandler.sendPlainTextError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+            HttpRequestHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     /**
      * Just a little shortcut because builders are dead ugly
      */
@@ -149,14 +149,14 @@ public abstract class RestHandler extends RouteHandler {
         }
         return exceptionb;
     }
-    
+
     protected static String verifyInstance(RestRequest req, String instance) throws NotFoundException {
         if (!YamcsServer.hasInstance(instance)) {
             throw new NotFoundException(req, "No instance named '" + instance + "'");
         }
         return instance;
     }
-    
+
     protected static LinkInfo verifyLink(RestRequest req, String instance, String linkName) throws NotFoundException {
         verifyInstance(req, instance);
         LinkInfo linkInfo = ManagementService.getInstance().getLinkInfo(instance, linkName);
@@ -165,7 +165,7 @@ public abstract class RestHandler extends RouteHandler {
         }
         return linkInfo;
     }
-    
+
     protected static ClientInfo verifyClient(RestRequest req, int clientId) throws NotFoundException {
         ClientInfo ci = ManagementService.getInstance().getClientInfo(clientId);
         if (ci == null) {
@@ -174,7 +174,7 @@ public abstract class RestHandler extends RouteHandler {
             return ci;
         }
     }
-    
+
     protected static YProcessor verifyProcessor(RestRequest req, String instance, String processorName) throws NotFoundException {
         verifyInstance(req, instance);
         YProcessor processor = YProcessor.getInstance(instance, processorName);
@@ -184,29 +184,29 @@ public abstract class RestHandler extends RouteHandler {
             return processor;
         }
     }
-    
+
     protected static String verifyNamespace(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
         if (mdb.getNamespaces().contains(pathName)) {
             return pathName;
         }
-        
+
         String rooted = "/" + pathName;
         if (mdb.getNamespaces().contains(rooted)) {
             return rooted;
         }
-        
+
         throw new NotFoundException(req, "No such namespace");
     }
-    
+
     protected static Parameter verifyParameter(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
             throw new NotFoundException(req, "No such parameter (missing namespace?)");
         }
-        
+
         String namespace = pathName.substring(0, lastSlash);
         String name = pathName.substring(lastSlash + 1);
-        
+
         // First try with a prefixed slash (should be the common case)
         NamedObjectId id = NamedObjectId.newBuilder().setNamespace("/" + namespace).setName(name).build();
         Parameter p = mdb.getParameter(id);
@@ -215,25 +215,25 @@ public abstract class RestHandler extends RouteHandler {
             id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
             p = mdb.getParameter(id);
         }
-        
+
         // It could also be a system parameter
         if (p == null) {
             String rootedName = pathName.startsWith("/") ? pathName : "/" + pathName;
             p = mdb.getSystemParameterDb().getSystemParameter(rootedName, false);
         }
-        
+
         if (p != null && !authorised(req, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
             log.warn("Parameter {} found, but withheld due to insufficient privileges. Returning 404 instead", StringConverter.idToString(id));
             p = null;
         }
-        
+
         if (p == null) {
             throw new NotFoundException(req, "No parameter named " + StringConverter.idToString(id));
         } else {
             return p;
         }
     }
-    
+
     protected static Stream verifyStream(RestRequest req, YarchDatabase ydb, String streamName) throws NotFoundException {
         Stream stream = ydb.getStream(streamName);
         if (stream == null) {
@@ -242,7 +242,7 @@ public abstract class RestHandler extends RouteHandler {
             return stream;
         }
     }
-    
+
     protected static TableDefinition verifyTable(RestRequest req, YarchDatabase ydb, String tableName) throws NotFoundException {
         TableDefinition table = ydb.getTable(tableName);
         if (table == null) {
@@ -251,16 +251,16 @@ public abstract class RestHandler extends RouteHandler {
             return table;
         }
     }
-    
+
     protected static MetaCommand verifyCommand(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
             throw new NotFoundException(req, "No such command (missing namespace?)");
         }
-        
+
         String namespace = pathName.substring(0, lastSlash);
         String name = pathName.substring(lastSlash + 1);
-        
+
         // First try with a prefixed slash (should be the common case)
         NamedObjectId id = NamedObjectId.newBuilder().setNamespace("/" + namespace).setName(name).build();
         MetaCommand cmd = mdb.getMetaCommand(id);
@@ -269,71 +269,71 @@ public abstract class RestHandler extends RouteHandler {
             id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
             cmd = mdb.getMetaCommand(id);
         }
-        
+
         if (cmd != null && !authorised(req, Privilege.Type.TC, cmd.getQualifiedName())) {
             log.warn("Command {} found, but withheld due to insufficient privileges. Returning 404 instead", StringConverter.idToString(id));
             cmd = null;
         }
-        
+
         if (cmd == null) {
             throw new NotFoundException(req, "No such command");
         } else {
             return cmd;
         }
     }
-    
+
     protected static Algorithm verifyAlgorithm(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
             throw new NotFoundException(req, "No such algorithm (missing namespace?)");
         }
-        
+
         String namespace = pathName.substring(0, lastSlash);
         String name = pathName.substring(lastSlash + 1);
-        
+
         // First try with a prefixed slash (should be the common case)
         NamedObjectId id = NamedObjectId.newBuilder().setNamespace("/" + namespace).setName(name).build();
         Algorithm algorithm = mdb.getAlgorithm(id);
         if (algorithm != null) {
             return algorithm;
         }
-        
+
         // Maybe some non-xtce namespace like MDB:OPS Name
         id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
         algorithm = mdb.getAlgorithm(id);
         if (algorithm != null) {
             return algorithm;
         }
-        
+
         throw new NotFoundException(req, "No such algorithm");
     }
-    
+
     protected static SequenceContainer verifyContainer(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
             throw new NotFoundException(req, "No such container (missing namespace?)");
         }
-        
+
         String namespace = pathName.substring(0, lastSlash);
         String name = pathName.substring(lastSlash + 1);
-        
+
         // First try with a prefixed slash (should be the common case)
         NamedObjectId id = NamedObjectId.newBuilder().setNamespace("/" + namespace).setName(name).build();
         SequenceContainer container = mdb.getSequenceContainer(id);
         if (container != null) {
             return container;
         }
-        
+
         // Maybe some non-xtce namespace like MDB:OPS Name
         id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
         container = mdb.getSequenceContainer(id);
         if (container != null) {
             return container;
         }
-        
+
         throw new NotFoundException(req, "No such container");
     }
-    
+
     protected static AlarmServer verifyAlarmServer(YProcessor processor) throws BadRequestException {
         if (!processor.hasAlarmServer()) {
             String instance = processor.getInstance();
@@ -343,7 +343,7 @@ public abstract class RestHandler extends RouteHandler {
             return processor.getParameterRequestManager().getAlarmServer();
         }
     }
-    
+
     protected static boolean authorised(RestRequest req, Privilege.Type type, String privilege) {
         return Privilege.getInstance().hasPrivilege(req.getAuthToken(), type, privilege);
     }

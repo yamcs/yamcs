@@ -25,11 +25,10 @@ import org.yamcs.security.AuthenticationToken;
  * Provides realtime command queue subscription via web.
  */
 public class CommandQueueResource extends AbstractWebSocketResource implements CommandQueueListener {
-    Logger log;
+    private static final Logger log = LoggerFactory.getLogger(CommandQueueResource.class);
 
-    public CommandQueueResource(YProcessor processor, WebSocketServerHandler wsHandler) {
+    public CommandQueueResource(YProcessor processor, WebSocketFrameHandler wsHandler) {
         super(processor, wsHandler);
-        log = LoggerFactory.getLogger(CommandQueueResource.class.getName() + "[" + processor.getInstance() + "]");
         wsHandler.addResource("cqueues", this);
     }
 
@@ -56,7 +55,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
             return null;
         }
     }
-    
+
     private WebSocketReplyData unsubscribe(int requestId) throws WebSocketException {
         doUnsubscribe();
         return toAckReply(requestId);
@@ -66,7 +65,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
     public void quit() {
         doUnsubscribe();
     }
-    
+
     private void doSubscribe() {
         ManagementService mservice = ManagementService.getInstance();
         CommandQueueManager cqueueManager = mservice.getCommandQueueManager(processor);
@@ -77,7 +76,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
             }
         }
     }
-    
+
     private void doUnsubscribe() {
         ManagementService mservice = ManagementService.getInstance();
         CommandQueueManager cqueueManager = mservice.getCommandQueueManager(processor);
@@ -92,7 +91,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
         processor = newProcessor;
         doSubscribe();
     }
-    
+
     @Override
     public void updateQueue(CommandQueue q) {
         CommandQueueInfo info = ManagementGpbHelper.toCommandQueueInfo(q);
@@ -143,6 +142,6 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
         } catch (Exception e) {
             log.warn("got error when sending command queue event, quitting", e);
             quit();
-        }   
+        }
     }
 }

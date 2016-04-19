@@ -30,7 +30,7 @@ public class RestDownsampler {
     private final long projectedEnd;
     private final int intervalCount;
     private long lastSampleTime;
-    
+
     public RestDownsampler(long projectedEnd) {
         this(projectedEnd, DEFAULT_INTERVAL_COUNT);
     }
@@ -110,7 +110,7 @@ public class RestDownsampler {
     }
 
     public void process(org.yamcs.parameter.ParameterValue pval) {
-        if (pval.getParameter().getParameterType() == null) {
+        if (pval.getParameter().getParameterType() == null || pval.getEngValue() == null) {
             // FIXME Prevents flooding the log for non-numeric system parameters without a type
             return;
         }

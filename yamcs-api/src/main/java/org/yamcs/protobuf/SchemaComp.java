@@ -152,8 +152,8 @@ public final class SchemaComp
         {
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Comp.ComputationDefList message) throws java.io.IOException
             {
-                for(org.yamcs.protobuf.Comp.ComputationDef compDef : message.getCompDefList())
-                    output.writeObject(1, compDef, org.yamcs.protobuf.SchemaComp.ComputationDef.WRITE, true);
+                for(org.yamcs.protobuf.Comp.ComputationDef computation : message.getComputationList())
+                    output.writeObject(1, computation, org.yamcs.protobuf.SchemaComp.ComputationDef.WRITE, true);
 
                 if(message.hasAbortOnInvalid())
                     output.writeBool(2, message.getAbortOnInvalid(), false);
@@ -197,7 +197,7 @@ public final class SchemaComp
                         case 0:
                             return;
                         case 1:
-                            builder.addCompDef(input.mergeObject(org.yamcs.protobuf.Comp.ComputationDef.newBuilder(), org.yamcs.protobuf.SchemaComp.ComputationDef.MERGE));
+                            builder.addComputation(input.mergeObject(org.yamcs.protobuf.Comp.ComputationDef.newBuilder(), org.yamcs.protobuf.SchemaComp.ComputationDef.MERGE));
 
                             break;
                         case 2:
@@ -243,7 +243,7 @@ public final class SchemaComp
         {
             switch(number)
             {
-                case 1: return "compDef";
+                case 1: return "computation";
                 case 2: return "abortOnInvalid";
                 default: return null;
             }
@@ -256,7 +256,7 @@ public final class SchemaComp
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("compDef", 1);
+            fieldMap.put("computation", 1);
             fieldMap.put("abortOnInvalid", 2);
         }
     }

@@ -147,11 +147,11 @@ public class RestRequest {
             case "binary":
                 return MediaType.OCTET_STREAM.equals(mediaType);
             default:
-                return mediaType.equals(getQueryParameter("format"));
+                return mediaType.is(getQueryParameter("format"));
             }
         } else {
             return getHttpRequest().headers().contains(Names.ACCEPT)
-                    && getHttpRequest().headers().get(Names.ACCEPT).equals(mediaType);
+                    && mediaType.is(getHttpRequest().headers().get(Names.ACCEPT));
         }
     }
     

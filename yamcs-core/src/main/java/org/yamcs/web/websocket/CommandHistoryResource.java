@@ -8,13 +8,13 @@ import org.yamcs.cmdhistory.CommandHistoryConsumer;
 import org.yamcs.cmdhistory.CommandHistoryFilter;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.parameter.Value;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.utils.ValueUtility;
 
@@ -22,12 +22,12 @@ import org.yamcs.utils.ValueUtility;
  * Provides realtime command history subscription via web.
  */
 public class CommandHistoryResource extends AbstractWebSocketResource implements CommandHistoryConsumer {
-    Logger log;
-    int subscriptionId=-1;
+    private static final Logger log = LoggerFactory.getLogger(CommandHistoryResource.class);
 
-    public CommandHistoryResource(YProcessor channel, WebSocketServerHandler wsHandler) {
+    private int subscriptionId=-1;
+
+    public CommandHistoryResource(YProcessor channel, WebSocketFrameHandler wsHandler) {
         super(channel, wsHandler);
-        log = LoggerFactory.getLogger(CommandHistoryResource.class.getName() + "[" + channel.getInstance() + "]");
         wsHandler.addResource("cmdhistory", this);
     }
 
@@ -69,7 +69,7 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
         if (chrm != null) {
             filter = chrm.unsubscribeCommandHistory(subscriptionId);
         }
-        
+
         this.processor = c;
 
         if (processor.hasCommanding()) {

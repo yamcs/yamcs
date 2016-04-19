@@ -155,7 +155,7 @@
 
         function toQueryString(options) {
             if (!options) return '?nolink';
-            var result = '?nolink';
+            var result = '?nolink&pretty=no';
             for (var opt in options) {
                 if (options.hasOwnProperty(opt)) {
                     result += '&' + opt + '=' + options[opt];

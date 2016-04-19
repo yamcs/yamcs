@@ -340,15 +340,6 @@ public class XtceToGpbAssembler {
             if (p.getShortDescription() != null) {
                 b.setShortDescription(p.getShortDescription());
             }
-            if (p.getLongDescription() != null) {
-                b.setLongDescription(p.getLongDescription());
-            }
-            if (p.getAliasSet() != null) {
-                Map<String, String> aliases = p.getAliasSet().getAliases();
-                for(Entry<String, String> me : aliases.entrySet()) {
-                    b.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
-                }
-            }
             DataSource xtceDs = p.getDataSource();
             if (xtceDs != null) {
                 switch (xtceDs) {
@@ -378,39 +369,53 @@ public class XtceToGpbAssembler {
                 }
             }
             if(p.getParameterType() != null)
-                b.setType(toParameterTypeInfo(p.getParameterType()));
+                b.setType(toParameterTypeInfo(p.getParameterType(), detail));
+        }
+        
+        if (detail == DetailLevel.FULL) {
+            if (p.getLongDescription() != null) {
+                b.setLongDescription(p.getLongDescription());
+            }
+            if (p.getAliasSet() != null) {
+                Map<String, String> aliases = p.getAliasSet().getAliases();
+                for(Entry<String, String> me : aliases.entrySet()) {
+                    b.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+                }
+            }
         }
         
         return b.build();
     }
 
-    public static ParameterTypeInfo toParameterTypeInfo(ParameterType parameterType) {
+    public static ParameterTypeInfo toParameterTypeInfo(ParameterType parameterType, DetailLevel detail) {
         ParameterTypeInfo.Builder infob = ParameterTypeInfo.newBuilder();
-        if (parameterType.getEncoding() != null) {
-            infob.setDataEncoding(toDataEncodingInfo(parameterType.getEncoding()));
-        }
         infob.setEngType(parameterType.getTypeAsString());
         for (UnitType ut: parameterType.getUnitSet()) {
             infob.addUnitSet(toUnitInfo(ut));
         }
-        
-        if (parameterType instanceof IntegerParameterType) {
-            IntegerParameterType ipt = (IntegerParameterType) parameterType;
-            if (ipt.getDefaultAlarm() != null) {
-                infob.setDefaultAlarm(toAlarmInfo(ipt.getDefaultAlarm()));
+        if (detail == DetailLevel.FULL) {
+            if (parameterType.getEncoding() != null) {
+                infob.setDataEncoding(toDataEncodingInfo(parameterType.getEncoding()));
             }
-        } else if (parameterType instanceof FloatParameterType) {
-            FloatParameterType fpt = (FloatParameterType) parameterType;
-            if (fpt.getDefaultAlarm() != null) {
-                infob.setDefaultAlarm(toAlarmInfo(fpt.getDefaultAlarm()));
-            }
-        } else if (parameterType instanceof EnumeratedParameterType) {
-            EnumeratedParameterType ept = (EnumeratedParameterType) parameterType;
-            if (ept.getDefaultAlarm() != null) {
-                infob.setDefaultAlarm(toAlarmInfo(ept.getDefaultAlarm()));
-            }
-            for (ValueEnumeration xtceValue : ept.getValueEnumerationList()) {
-                infob.addEnumValue(toEnumValue(xtceValue));
+            
+            if (parameterType instanceof IntegerParameterType) {
+                IntegerParameterType ipt = (IntegerParameterType) parameterType;
+                if (ipt.getDefaultAlarm() != null) {
+                    infob.setDefaultAlarm(toAlarmInfo(ipt.getDefaultAlarm()));
+                }
+            } else if (parameterType instanceof FloatParameterType) {
+                FloatParameterType fpt = (FloatParameterType) parameterType;
+                if (fpt.getDefaultAlarm() != null) {
+                    infob.setDefaultAlarm(toAlarmInfo(fpt.getDefaultAlarm()));
+                }
+            } else if (parameterType instanceof EnumeratedParameterType) {
+                EnumeratedParameterType ept = (EnumeratedParameterType) parameterType;
+                if (ept.getDefaultAlarm() != null) {
+                    infob.setDefaultAlarm(toAlarmInfo(ept.getDefaultAlarm()));
+                }
+                for (ValueEnumeration xtceValue : ept.getValueEnumerationList()) {
+                    infob.addEnumValue(toEnumValue(xtceValue));
+                }
             }
         }
         return infob.build();

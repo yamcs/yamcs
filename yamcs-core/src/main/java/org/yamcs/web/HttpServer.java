@@ -90,7 +90,7 @@ public class HttpServer {
             .channel(NioServerSocketChannel.class)
             .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
             .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-            .childHandler(new HttpServerInitializer(apiRouter));
+            .childHandler(new HttpServerChannelInitializer(apiRouter));
         
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port));

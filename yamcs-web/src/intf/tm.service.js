@@ -86,7 +86,7 @@
             if(computations.length == 0) return;
             var msg = {
                 abortOnInvalid: false,
-                computations: computations
+                computation: computations
             };
 
             socket.on('open', function () {

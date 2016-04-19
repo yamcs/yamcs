@@ -1,13 +1,12 @@
 (function () {
     'use strict';
 
-    angular
-        .module('yamcs.mdb')
-        .controller('MDBAlgorithmsController',  MDBAlgorithmsController);
+    angular.module('yamcs.mdb').controller('MDBAlgorithmsController',  MDBAlgorithmsController);
 
     /* @ngInject */
     function MDBAlgorithmsController($rootScope, mdbService, $routeParams) {
         var vm = this;
+        vm.algorithmsLoaded = false;
 
         var qname = '/' + $routeParams['ss'];
 
@@ -22,6 +21,7 @@
             recurse: (qname === '/yamcs')
         }).then(function (data) {
             vm.algorithms = data;
+            vm.algorithmsLoaded = true;
             return vm.algorithms;
         });
     }

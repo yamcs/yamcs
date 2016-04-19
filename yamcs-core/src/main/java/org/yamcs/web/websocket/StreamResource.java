@@ -30,16 +30,17 @@ import org.yamcs.yarch.YarchDatabase;
  * Capable of producing and consuming yarch Stream data (Tuples) over web socket
  */
 public class StreamResource extends AbstractWebSocketResource {
+
+    private static final Logger log = LoggerFactory.getLogger(StreamResource.class);
+
     public static final String OP_subscribe = "subscribe";
     public static final String OP_publish = "publish";
-    private Logger log;
-    
+
     private List<Subscription> subscriptions = new ArrayList<>();
-    
-    public StreamResource(YProcessor yproc, WebSocketServerHandler wsHandler) {
+
+    public StreamResource(YProcessor yproc, WebSocketFrameHandler wsHandler) {
         super(yproc, wsHandler);
         wsHandler.addResource("stream", this);
-        log = LoggerFactory.getLogger(StreamResource.class.getName() + "[" + yproc.getInstance() + "]");
     }
 
     @Override
@@ -53,10 +54,10 @@ public class StreamResource extends AbstractWebSocketResource {
             throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
         }
     }
-    
+
     private WebSocketReplyData processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
-        
+
         // Optionally read body. If it's not provided, suppose the subscription concerns
         // the stream of the current processor (TODO currently doesn't work with JSON).
         Stream stream;
@@ -70,7 +71,7 @@ public class StreamResource extends AbstractWebSocketResource {
         } else {
             stream = ydb.getStream(processor.getName());
         }
-        
+
         StreamSubscriber subscriber = new StreamSubscriber() {
 
             @Override
@@ -87,14 +88,14 @@ public class StreamResource extends AbstractWebSocketResource {
             public void streamClosed(Stream stream) {
             }
         };
-        
+
         stream.addSubscriber(subscriber);
         subscriptions.add(new Subscription(stream, subscriber));
         return toAckReply(ctx.getRequestId());
     }
-    
+
     private static DataType dataTypeFromValue(Value value) {
-        switch (value.getType()) {    
+        switch (value.getType()) {
         case SINT32:
             return DataType.INT;
         case DOUBLE:
@@ -109,7 +110,7 @@ public class StreamResource extends AbstractWebSocketResource {
             throw new IllegalArgumentException("Unexpected value type " + value.getType());
         }
     }
-    
+
     private Object makeTupleColumn(WebSocketDecodeContext ctx, String name, Value value, DataType columnType) throws WebSocketException {
         // Sanity check. We should perhaps find a better way to do all of this
         switch (columnType.val) {
@@ -148,19 +149,19 @@ public class StreamResource extends AbstractWebSocketResource {
             throw new IllegalArgumentException("Tuple column type " + columnType.val + " is currently not supported");
         }
     }
-    
+
     private WebSocketReplyData processPublishRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
-        
+
         StreamData req = decoder.decodeMessageData(ctx, SchemaArchive.StreamData.MERGE).build();
         Stream stream = ydb.getStream(req.getStream());
         if (stream == null) {
             throw new WebSocketException(ctx.getRequestId(), "Cannot find stream '" + req.getStream() + "'");
         }
-        
+
         TupleDefinition tdef = stream.getDefinition();
         List<Object> tupleColumns = new ArrayList<>();
-        
+
         // 'fixed' colums
         for (ColumnDefinition cdef : stream.getDefinition().getColumnDefinitions()) {
             ColumnData providedField = findColumnValue(req, cdef.getName());
@@ -171,7 +172,7 @@ public class StreamResource extends AbstractWebSocketResource {
             Object column = makeTupleColumn(ctx, cdef.getName(), providedField.getValue(), cdef.getType());
             tupleColumns.add(column);
         }
-        
+
         // 'dynamic' columns
         for (ColumnData val : req.getColumnList()) {
             if (stream.getDefinition().getColumn(val.getName()) == null) {
@@ -181,13 +182,13 @@ public class StreamResource extends AbstractWebSocketResource {
                 tupleColumns.add(column);
             }
         }
-        
+
         Tuple t = new Tuple(tdef, tupleColumns);
         log.info("Emitting tuple {} to {}", t, stream.getName());
         stream.emitTuple(t);
         return toAckReply(ctx.getRequestId());
     }
-    
+
     private static ColumnData findColumnValue(StreamData tupleData, String name) {
         for (ColumnData val : tupleData.getColumnList()) {
             if (val.getName().equals(name)) {
@@ -203,11 +204,11 @@ public class StreamResource extends AbstractWebSocketResource {
             subscription.stream.removeSubscriber(subscription.subscriber);
         }
     }
-    
+
     private static class Subscription {
         Stream stream;
         StreamSubscriber subscriber;
-        
+
         Subscription(Stream stream, StreamSubscriber subscriber) {
             this.stream = stream;
             this.subscriber = subscriber;

@@ -46,7 +46,6 @@
   </developers>
       
   <properties>
-    <RESTLET_VERSION>2.0.5</RESTLET_VERSION>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <hornetQVersion>2.4.6.Final</hornetQVersion>
   </properties>

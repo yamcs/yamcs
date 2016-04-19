@@ -20,15 +20,14 @@ import org.yamcs.yarch.YarchDatabase;
  * Provides realtime event subscription via web.
  */
 public class EventResource extends AbstractWebSocketResource {
-    private final Logger log;
-    
+    private static final Logger log = LoggerFactory.getLogger(EventResource.class);
+
     private Stream stream;
     private StreamSubscriber streamSubscriber;
-    
 
-    public EventResource(YProcessor channel, WebSocketServerHandler wsHandler) {
+
+    public EventResource(YProcessor channel, WebSocketFrameHandler wsHandler) {
         super(channel, wsHandler);
-        log = LoggerFactory.getLogger(EventResource.class.getName() + "[" + channel.getInstance() + "]");
         wsHandler.addResource("events", this);
         YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
         stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
@@ -51,7 +50,7 @@ public class EventResource extends AbstractWebSocketResource {
         doSubscribe();
         return toAckReply(requestId);
     }
-    
+
     @Override
     public void switchYProcessor(YProcessor newProcessor, AuthenticationToken authToken) throws YProcessorException {
         doUnsubscribe();
@@ -60,7 +59,7 @@ public class EventResource extends AbstractWebSocketResource {
         stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
         doSubscribe();
     }
-    
+
     private WebSocketReplyData unsubscribe(int requestId) throws WebSocketException {
         doUnsubscribe();
         return toAckReply(requestId);
@@ -70,7 +69,7 @@ public class EventResource extends AbstractWebSocketResource {
     public void quit() {
         doUnsubscribe();
     }
-    
+
     private void doSubscribe() {
         if (stream != null) {
             streamSubscriber = new StreamSubscriber() {
@@ -96,10 +95,10 @@ public class EventResource extends AbstractWebSocketResource {
             stream.addSubscriber(streamSubscriber);
         }
     }
-    
+
     private void doUnsubscribe() {
         if (streamSubscriber != null) {
-            stream.removeSubscriber(streamSubscriber);       
+            stream.removeSubscriber(streamSubscriber);
         }
         streamSubscriber = null;
     }

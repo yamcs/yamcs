@@ -6,7 +6,7 @@
 
   <p>&nbsp;</p>
 
-  <uib-alert type="info" ng-if="!vm.algorithms.length">
+  <uib-alert type="info" ng-if="vm.algorithmsLoaded && !vm.algorithms.length">
     <span class="glyphicon glyphicon-info-sign"></span>
     No algorithms for this space system
   </uib-alert>

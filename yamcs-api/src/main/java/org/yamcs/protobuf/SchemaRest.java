@@ -18,8 +18,10 @@ public final class SchemaRest
         {
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.GetApiOverviewResponse message) throws java.io.IOException
             {
+                if(message.hasYamcsVersion())
+                    output.writeString(1, message.getYamcsVersion(), false);
                 for(String url : message.getUrlList())
-                    output.writeString(1, url, true);
+                    output.writeString(2, url, true);
             }
             public boolean isInitialized(org.yamcs.protobuf.Rest.GetApiOverviewResponse message)
             {
@@ -60,6 +62,9 @@ public final class SchemaRest
                         case 0:
                             return;
                         case 1:
+                            builder.setYamcsVersion(input.readString());
+                            break;
+                        case 2:
                             builder.addUrl(input.readString());
                             break;
                         default:
@@ -102,7 +107,8 @@ public final class SchemaRest
         {
             switch(number)
             {
-                case 1: return "url";
+                case 1: return "yamcsVersion";
+                case 2: return "url";
                 default: return null;
             }
         }
@@ -114,7 +120,8 @@ public final class SchemaRest
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("url", 1);
+            fieldMap.put("yamcsVersion", 1);
+            fieldMap.put("url", 2);
         }
     }
 

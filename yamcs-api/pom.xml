@@ -15,6 +15,7 @@
 	<description>Used by external clients to communicate with Yamcs.</description>
 
 	<properties>
+		<protostuffVersion>1.4.0</protostuffVersion>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -24,7 +25,7 @@
 			<plugin>  <!-- Protostuff can be compiled from command line with  mvn protostuff:compile -->
 				<groupId>io.protostuff</groupId>
 				<artifactId>protostuff-maven-plugin</artifactId>
-				<version>1.3.3</version>
+				<version>${protostuffVersion}</version>
 				<configuration>
 					<protoModules>
 						<protoModule>
@@ -211,13 +212,13 @@
 		<dependency>
 			<groupId>io.protostuff</groupId>
 			<artifactId>protostuff-api</artifactId>
-			<version>1.3.3</version>
+			<version>${protostuffVersion}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>io.protostuff</groupId>
 			<artifactId>protostuff-json</artifactId>
-			<version>1.3.3</version>
+			<version>${protostuffVersion}</version>
 		</dependency>
 
 
