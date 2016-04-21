@@ -37,7 +37,7 @@ public class StreamCommandHistoryProvider  extends AbstractService implements Co
 
     @Override
     public void onTuple(Stream s, Tuple tuple) {
-        if(tuple.hasColumn("source")) {
+        if(tuple.hasColumn(PreparedCommand.CNAME_SOURCE) && tuple.hasColumn(PreparedCommand.CNAME_BINARY)) {
             PreparedCommand pc=PreparedCommand.fromTuple(tuple);
             chrm.addCommand(pc);
         } else {
