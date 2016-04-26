@@ -64,6 +64,7 @@ public class SqlBuilder {
             boolean first = true;
             for (String condition : conditions) {
                 if (!first) buf.append(" and ");
+                else first=false;
                 buf.append(condition);
             }
         }
