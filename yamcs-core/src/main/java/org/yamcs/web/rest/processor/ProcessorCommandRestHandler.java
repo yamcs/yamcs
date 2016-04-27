@@ -25,9 +25,7 @@ import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Route;
-import org.yamcs.xtce.ArgumentAssignment;
-import org.yamcs.xtce.MetaCommand;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtce.*;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.protobuf.ByteString;
@@ -100,12 +98,22 @@ public class ProcessorCommandRestHandler extends RestHandler {
             sb.append("(");
             boolean first = true;
             for(ArgumentAssignment aa:assignments) {
+                Argument a = preparedCommand.getMetaCommand().getArgument(aa.getArgumentName());
                 if(!first) {
                     sb.append(", ");
                 } else {
                     first = false;
                 }
-                sb.append(aa.getArgumentName()).append(": ").append(aa.getArgumentValue());
+                sb.append(aa.getArgumentName()).append(": ");
+
+                boolean needDelimiter = a.getArgumentType() instanceof StringArgumentType || a.getArgumentType() instanceof EnumeratedArgumentType;
+                if(needDelimiter) {
+                    sb.append("\"");
+                }
+                sb.append(aa.getArgumentValue());
+                if(needDelimiter) {
+                    sb.append("\"");
+                }
             }
             sb.append(")");
             preparedCommand.setSource(sb.toString());
