@@ -106,7 +106,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
                 }
                 sb.append(aa.getArgumentName()).append(": ");
 
-                boolean needDelimiter = a.getArgumentType() instanceof StringArgumentType || a.getArgumentType() instanceof EnumeratedArgumentType;
+                boolean needDelimiter = a !=null && (a.getArgumentType() instanceof StringArgumentType || a.getArgumentType() instanceof EnumeratedArgumentType);
                 if(needDelimiter) {
                     sb.append("\"");
                 }
