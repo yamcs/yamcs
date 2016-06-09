@@ -26,6 +26,7 @@ import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
 import org.yamcs.protobuf.Yamcs.EndAction;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.StringMessage;
@@ -127,6 +128,33 @@ public class CmdHistoryRecordingTest extends YarchTestCase {
         ClientMessage msg=yclient.dataConsumer.receive(5000);
         assertNotNull(msg);
         ProtoDataType dt=ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
+        assertEquals(ProtoDataType.STATE_CHANGE, dt);
+        
+        
+        CommandHistoryReplayRequest chr1 = CommandHistoryReplayRequest.newBuilder()
+                .addNameFilter(NamedObjectId.newBuilder().setName("test0").build())
+                .addNameFilter(NamedObjectId.newBuilder().setName("test10").build())
+                .addNameFilter(NamedObjectId.newBuilder().setName("test20").build())
+                .build();
+        ReplayRequest rr1=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT).
+                    setCommandHistoryRequest(chr1).build();
+        StringMessage answer1 = (StringMessage) yclient.executeRpc(retrievalServer, "createReplay", rr1, StringMessage.newBuilder());
+        
+        SimpleString replayAddress1=new SimpleString(answer1.getMessage());
+        yclient.executeRpc(replayAddress1, "start", null, null);
+        for(int i=0; i<3; i++) {
+            msg=yclient.dataConsumer.receive(5000);
+            assertNotNull(msg);
+            dt = ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
+            assertEquals(ProtoDataType.CMD_HISTORY, dt);
+            CommandHistoryEntry cmd=(CommandHistoryEntry)decode(msg, CommandHistoryEntry.newBuilder());
+            assertEquals(10*i, cmd.getCommandId().getGenerationTime());
+            assertEquals("test"+(10*i), cmd.getCommandId().getCommandName());
+        }
+        
+        msg = yclient.dataConsumer.receive(5000);
+        assertNotNull(msg);
+        dt = ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
         assertEquals(ProtoDataType.STATE_CHANGE, dt);
         
         yclient.close();

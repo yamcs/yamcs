@@ -24,9 +24,9 @@ public class YarchCommandHistoryAdapter implements CommandHistoryPublisher {
     final String instance;
     
     public YarchCommandHistoryAdapter(String archiveInstance) throws StreamSqlException, ParseException {
-        this.instance=archiveInstance;
-        YarchDatabase ydb=YarchDatabase.getInstance(archiveInstance);
-        stream=ydb.getStream(REALTIME_CMDHIST_STREAM_NAME);
+        this.instance = archiveInstance;
+        YarchDatabase ydb = YarchDatabase.getInstance(archiveInstance);
+        stream = ydb.getStream(REALTIME_CMDHIST_STREAM_NAME);
     }
 
     @Override
@@ -34,7 +34,7 @@ public class YarchCommandHistoryAdapter implements CommandHistoryPublisher {
         TupleDefinition td=TcUplinkerAdapter.TC_TUPLE_DEFINITION.copy();
         td.addColumn(key, DataType.STRING);
         
-        Tuple t=new Tuple(td, new Object[] {
+        Tuple t = new Tuple(td, new Object[] {
                 cmdId.getGenerationTime(),
                 cmdId.getOrigin(),
                 cmdId.getSequenceNumber(),

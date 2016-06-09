@@ -5,6 +5,8 @@ import org.yamcs.cmdhistory.CommandHistoryRecorder;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
+import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.utils.ValueUtility;
@@ -26,7 +28,7 @@ public class CommandHistoryReplayHandler implements ReplayHandler {
 
     @Override
     public void setRequest(ReplayRequest newRequest) throws YamcsException {
-        this.request=newRequest;
+        this.request = newRequest;
     }
 
     @Override
@@ -35,10 +37,36 @@ public class CommandHistoryReplayHandler implements ReplayHandler {
         sb.append("SELECT ").append(ProtoDataType.CMD_HISTORY.getNumber()).
            append(",* from "+CommandHistoryRecorder.TABLE_NAME);
         appendTimeClause(sb, request);
+        
+        CommandHistoryReplayRequest cmdHistReq = request.getCommandHistoryRequest();
+        if(cmdHistReq.getNameFilterCount()>0) {
+            if(request.hasStart() || (request.hasStop())) {
+                sb.append(" AND ");
+            } else {
+                sb.append(" WHERE ");
+            }
+            sb.append("cmdName IN (");
+            boolean first = true;
+            for(NamedObjectId id: cmdHistReq.getNameFilterList()) { //TODO - do something with the namespace
+                if(first) {
+                   first = false; 
+                } else {
+                    sb.append(", ");
+                }
+                String cmdName = sanitize(id.getName());
+                sb.append("'").append(cmdName).append("'");
+            }
+            sb.append(")");
+        }
+        
         if(request.hasReverse() && request.getReverse()) {
             sb.append(" ORDER DESC");
         }
         return sb.toString();
+    }
+
+    private String sanitize(String name) {
+        return name.replace("'", "").replace("\n", "");
     }
 
     @Override

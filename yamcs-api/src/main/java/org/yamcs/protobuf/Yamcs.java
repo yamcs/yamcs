@@ -15151,6 +15151,12 @@ public final class Yamcs {
           return false;
         }
       }
+      if (hasCommandHistoryRequest()) {
+        if (!getCommandHistoryRequest().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -15600,6 +15606,12 @@ public final class Yamcs {
         }
         if (hasPacketRequest()) {
           if (!getPacketRequest().isInitialized()) {
+            
+            return false;
+          }
+        }
+        if (hasCommandHistoryRequest()) {
+          if (!getCommandHistoryRequest().isInitialized()) {
             
             return false;
           }
@@ -18870,6 +18882,51 @@ public final class Yamcs {
 
   public interface CommandHistoryReplayRequestOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
+
+    // repeated .yamcs.NamedObjectId nameFilter = 1;
+    /**
+     * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+     *
+     * <pre>
+     * No filter, means all commands are sent
+     * </pre>
+     */
+    java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> 
+        getNameFilterList();
+    /**
+     * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+     *
+     * <pre>
+     * No filter, means all commands are sent
+     * </pre>
+     */
+    org.yamcs.protobuf.Yamcs.NamedObjectId getNameFilter(int index);
+    /**
+     * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+     *
+     * <pre>
+     * No filter, means all commands are sent
+     * </pre>
+     */
+    int getNameFilterCount();
+    /**
+     * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+     *
+     * <pre>
+     * No filter, means all commands are sent
+     * </pre>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
+        getNameFilterOrBuilderList();
+    /**
+     * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+     *
+     * <pre>
+     * No filter, means all commands are sent
+     * </pre>
+     */
+    org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getNameFilterOrBuilder(
+        int index);
   }
   /**
    * Protobuf type {@code yamcs.CommandHistoryReplayRequest}
@@ -18904,6 +18961,7 @@ public final class Yamcs {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       initFields();
+      int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
@@ -18921,6 +18979,14 @@ public final class Yamcs {
               }
               break;
             }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                nameFilter_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              nameFilter_.add(input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -18929,6 +18995,9 @@ public final class Yamcs {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          nameFilter_ = java.util.Collections.unmodifiableList(nameFilter_);
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -18960,13 +19029,76 @@ public final class Yamcs {
       return PARSER;
     }
 
+    // repeated .yamcs.NamedObjectId nameFilter = 1;
+    public static final int NAMEFILTER_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> nameFilter_;
+    /**
+     * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+     *
+     * <pre>
+     * No filter, means all commands are sent
+     * </pre>
+     */
+    public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getNameFilterList() {
+      return nameFilter_;
+    }
+    /**
+     * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+     *
+     * <pre>
+     * No filter, means all commands are sent
+     * </pre>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
+        getNameFilterOrBuilderList() {
+      return nameFilter_;
+    }
+    /**
+     * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+     *
+     * <pre>
+     * No filter, means all commands are sent
+     * </pre>
+     */
+    public int getNameFilterCount() {
+      return nameFilter_.size();
+    }
+    /**
+     * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+     *
+     * <pre>
+     * No filter, means all commands are sent
+     * </pre>
+     */
+    public org.yamcs.protobuf.Yamcs.NamedObjectId getNameFilter(int index) {
+      return nameFilter_.get(index);
+    }
+    /**
+     * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+     *
+     * <pre>
+     * No filter, means all commands are sent
+     * </pre>
+     */
+    public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getNameFilterOrBuilder(
+        int index) {
+      return nameFilter_.get(index);
+    }
+
     private void initFields() {
+      nameFilter_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
+      for (int i = 0; i < getNameFilterCount(); i++) {
+        if (!getNameFilter(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -18974,6 +19106,9 @@ public final class Yamcs {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
+      for (int i = 0; i < nameFilter_.size(); i++) {
+        output.writeMessage(1, nameFilter_.get(i));
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -18983,6 +19118,10 @@ public final class Yamcs {
       if (size != -1) return size;
 
       size = 0;
+      for (int i = 0; i < nameFilter_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, nameFilter_.get(i));
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
       return size;
@@ -19091,6 +19230,7 @@ public final class Yamcs {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getNameFilterFieldBuilder();
         }
       }
       private static Builder create() {
@@ -19099,6 +19239,12 @@ public final class Yamcs {
 
       public Builder clear() {
         super.clear();
+        if (nameFilterBuilder_ == null) {
+          nameFilter_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          nameFilterBuilder_.clear();
+        }
         return this;
       }
 
@@ -19125,6 +19271,16 @@ public final class Yamcs {
 
       public org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest buildPartial() {
         org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest result = new org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest(this);
+        int from_bitField0_ = bitField0_;
+        if (nameFilterBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            nameFilter_ = java.util.Collections.unmodifiableList(nameFilter_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.nameFilter_ = nameFilter_;
+        } else {
+          result.nameFilter_ = nameFilterBuilder_.build();
+        }
         onBuilt();
         return result;
       }
@@ -19140,11 +19296,43 @@ public final class Yamcs {
 
       public Builder mergeFrom(org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest other) {
         if (other == org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest.getDefaultInstance()) return this;
+        if (nameFilterBuilder_ == null) {
+          if (!other.nameFilter_.isEmpty()) {
+            if (nameFilter_.isEmpty()) {
+              nameFilter_ = other.nameFilter_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureNameFilterIsMutable();
+              nameFilter_.addAll(other.nameFilter_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.nameFilter_.isEmpty()) {
+            if (nameFilterBuilder_.isEmpty()) {
+              nameFilterBuilder_.dispose();
+              nameFilterBuilder_ = null;
+              nameFilter_ = other.nameFilter_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              nameFilterBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getNameFilterFieldBuilder() : null;
+            } else {
+              nameFilterBuilder_.addAllMessages(other.nameFilter_);
+            }
+          }
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
 
       public final boolean isInitialized() {
+        for (int i = 0; i < getNameFilterCount(); i++) {
+          if (!getNameFilter(i).isInitialized()) {
+            
+            return false;
+          }
+        }
         return true;
       }
 
@@ -19164,6 +19352,319 @@ public final class Yamcs {
           }
         }
         return this;
+      }
+      private int bitField0_;
+
+      // repeated .yamcs.NamedObjectId nameFilter = 1;
+      private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> nameFilter_ =
+        java.util.Collections.emptyList();
+      private void ensureNameFilterIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          nameFilter_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>(nameFilter_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> nameFilterBuilder_;
+
+      /**
+       * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+       *
+       * <pre>
+       * No filter, means all commands are sent
+       * </pre>
+       */
+      public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getNameFilterList() {
+        if (nameFilterBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(nameFilter_);
+        } else {
+          return nameFilterBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+       *
+       * <pre>
+       * No filter, means all commands are sent
+       * </pre>
+       */
+      public int getNameFilterCount() {
+        if (nameFilterBuilder_ == null) {
+          return nameFilter_.size();
+        } else {
+          return nameFilterBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+       *
+       * <pre>
+       * No filter, means all commands are sent
+       * </pre>
+       */
+      public org.yamcs.protobuf.Yamcs.NamedObjectId getNameFilter(int index) {
+        if (nameFilterBuilder_ == null) {
+          return nameFilter_.get(index);
+        } else {
+          return nameFilterBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+       *
+       * <pre>
+       * No filter, means all commands are sent
+       * </pre>
+       */
+      public Builder setNameFilter(
+          int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
+        if (nameFilterBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureNameFilterIsMutable();
+          nameFilter_.set(index, value);
+          onChanged();
+        } else {
+          nameFilterBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+       *
+       * <pre>
+       * No filter, means all commands are sent
+       * </pre>
+       */
+      public Builder setNameFilter(
+          int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
+        if (nameFilterBuilder_ == null) {
+          ensureNameFilterIsMutable();
+          nameFilter_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          nameFilterBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+       *
+       * <pre>
+       * No filter, means all commands are sent
+       * </pre>
+       */
+      public Builder addNameFilter(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
+        if (nameFilterBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureNameFilterIsMutable();
+          nameFilter_.add(value);
+          onChanged();
+        } else {
+          nameFilterBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+       *
+       * <pre>
+       * No filter, means all commands are sent
+       * </pre>
+       */
+      public Builder addNameFilter(
+          int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
+        if (nameFilterBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureNameFilterIsMutable();
+          nameFilter_.add(index, value);
+          onChanged();
+        } else {
+          nameFilterBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+       *
+       * <pre>
+       * No filter, means all commands are sent
+       * </pre>
+       */
+      public Builder addNameFilter(
+          org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
+        if (nameFilterBuilder_ == null) {
+          ensureNameFilterIsMutable();
+          nameFilter_.add(builderForValue.build());
+          onChanged();
+        } else {
+          nameFilterBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+       *
+       * <pre>
+       * No filter, means all commands are sent
+       * </pre>
+       */
+      public Builder addNameFilter(
+          int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
+        if (nameFilterBuilder_ == null) {
+          ensureNameFilterIsMutable();
+          nameFilter_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          nameFilterBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+       *
+       * <pre>
+       * No filter, means all commands are sent
+       * </pre>
+       */
+      public Builder addAllNameFilter(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
+        if (nameFilterBuilder_ == null) {
+          ensureNameFilterIsMutable();
+          super.addAll(values, nameFilter_);
+          onChanged();
+        } else {
+          nameFilterBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+       *
+       * <pre>
+       * No filter, means all commands are sent
+       * </pre>
+       */
+      public Builder clearNameFilter() {
+        if (nameFilterBuilder_ == null) {
+          nameFilter_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          nameFilterBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+       *
+       * <pre>
+       * No filter, means all commands are sent
+       * </pre>
+       */
+      public Builder removeNameFilter(int index) {
+        if (nameFilterBuilder_ == null) {
+          ensureNameFilterIsMutable();
+          nameFilter_.remove(index);
+          onChanged();
+        } else {
+          nameFilterBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+       *
+       * <pre>
+       * No filter, means all commands are sent
+       * </pre>
+       */
+      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder getNameFilterBuilder(
+          int index) {
+        return getNameFilterFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+       *
+       * <pre>
+       * No filter, means all commands are sent
+       * </pre>
+       */
+      public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getNameFilterOrBuilder(
+          int index) {
+        if (nameFilterBuilder_ == null) {
+          return nameFilter_.get(index);  } else {
+          return nameFilterBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+       *
+       * <pre>
+       * No filter, means all commands are sent
+       * </pre>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
+           getNameFilterOrBuilderList() {
+        if (nameFilterBuilder_ != null) {
+          return nameFilterBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(nameFilter_);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+       *
+       * <pre>
+       * No filter, means all commands are sent
+       * </pre>
+       */
+      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addNameFilterBuilder() {
+        return getNameFilterFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+       *
+       * <pre>
+       * No filter, means all commands are sent
+       * </pre>
+       */
+      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addNameFilterBuilder(
+          int index) {
+        return getNameFilterFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
+       *
+       * <pre>
+       * No filter, means all commands are sent
+       * </pre>
+       */
+      public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId.Builder> 
+           getNameFilterBuilderList() {
+        return getNameFilterFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
+          getNameFilterFieldBuilder() {
+        if (nameFilterBuilder_ == null) {
+          nameFilterBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder>(
+                  nameFilter_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          nameFilter_ = null;
+        }
+        return nameFilterBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:yamcs.CommandHistoryReplayRequest)
@@ -23955,36 +24456,37 @@ public final class Yamcs {
       "\022\026\n\007sendRaw\030\002 \001(\010:\005false\022 \n\021performMonit" +
       "oring\030\003 \001(\010:\005false\"?\n\023PacketReplayReques" +
       "t\022(\n\nnameFilter\030\001 \003(\0132\024.yamcs.NamedObjec",
-      "tId\"\024\n\022EventReplayRequest\"\035\n\033CommandHist" +
-      "oryReplayRequest\"*\n\017PpReplayRequest\022\027\n\017g" +
-      "roupNameFilter\030\001 \003(\t\"\333\001\n\014ReplayStatus\022.\n" +
-      "\005state\030\001 \002(\0162\037.yamcs.ReplayStatus.Replay" +
-      "State\022%\n\007request\030\002 \001(\0132\024.yamcs.ReplayReq" +
-      "uest\022\024\n\014errorMessage\030\003 \001(\t\"^\n\013ReplayStat" +
-      "e\022\022\n\016INITIALIZATION\020\000\022\013\n\007RUNNING\020\001\022\013\n\007ST" +
-      "OPPED\020\002\022\t\n\005ERROR\020\003\022\n\n\006PAUSED\020\004\022\n\n\006CLOSED" +
-      "\020\005\"\207\001\n\014TmPacketData\022\025\n\rreceptionTime\030\001 \002" +
-      "(\003\022\016\n\006packet\030\002 \002(\014\022\026\n\016generationTime\030\003 \001",
-      "(\003\022\026\n\016sequenceNumber\030\004 \001(\005\022 \n\002id\030\005 \001(\0132\024" +
-      ".yamcs.NamedObjectId\"7\n\010TimeInfo\022\023\n\013curr" +
-      "entTime\030\001 \001(\003\022\026\n\016currentTimeUTC\030\002 \001(\t\"\233\002" +
-      "\n\005Event\022\016\n\006source\030\001 \002(\t\022\026\n\016generationTim" +
-      "e\030\002 \002(\003\022\025\n\rreceptionTime\030\003 \002(\003\022\021\n\tseqNum" +
-      "ber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007message\030\006 \002(\t" +
-      "\0222\n\010severity\030\007 \001(\0162\032.yamcs.Event.EventSe" +
-      "verity:\004INFO\022\031\n\021generationTimeUTC\030\010 \001(\t\022" +
-      "\030\n\020receptionTimeUTC\030\t \001(\t\"1\n\rEventSeveri" +
-      "ty\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020\002*\005\010d",
-      "\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022\010\n\004" +
-      "STOP\020\003*\306\002\n\rProtoDataType\022\014\n\010DT_ERROR\020\001\022\020" +
-      "\n\014STATE_CHANGE\020\002\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022" +
-      "\t\n\005EVENT\020\005\022\021\n\rARCHIVE_INDEX\020\006\022\017\n\013ARCHIVE" +
-      "_TAG\020\007\022\r\n\tPARAMETER\020\010\022\017\n\013CMD_HISTORY\020\t\022\022" +
-      "\n\016PROCESSOR_INFO\020\n\022\017\n\013CLIENT_INFO\020\013\022\031\n\025P" +
-      "ROCESSING_STATISTICS\020\014\022\017\n\013STREAM_DATA\020\r\022" +
-      "\016\n\nALARM_DATA\020\016\022\r\n\tTIME_INFO\020\017\022\016\n\nLINK_E" +
-      "VENT\020\020\022\026\n\022COMMAND_QUEUE_INFO\020\021\022\027\n\023COMMAN" +
-      "D_QUEUE_EVENT\020\022B\024\n\022org.yamcs.protobuf"
+      "tId\"\024\n\022EventReplayRequest\"G\n\033CommandHist" +
+      "oryReplayRequest\022(\n\nnameFilter\030\001 \003(\0132\024.y" +
+      "amcs.NamedObjectId\"*\n\017PpReplayRequest\022\027\n" +
+      "\017groupNameFilter\030\001 \003(\t\"\333\001\n\014ReplayStatus\022" +
+      ".\n\005state\030\001 \002(\0162\037.yamcs.ReplayStatus.Repl" +
+      "ayState\022%\n\007request\030\002 \001(\0132\024.yamcs.ReplayR" +
+      "equest\022\024\n\014errorMessage\030\003 \001(\t\"^\n\013ReplaySt" +
+      "ate\022\022\n\016INITIALIZATION\020\000\022\013\n\007RUNNING\020\001\022\013\n\007" +
+      "STOPPED\020\002\022\t\n\005ERROR\020\003\022\n\n\006PAUSED\020\004\022\n\n\006CLOS" +
+      "ED\020\005\"\207\001\n\014TmPacketData\022\025\n\rreceptionTime\030\001",
+      " \002(\003\022\016\n\006packet\030\002 \002(\014\022\026\n\016generationTime\030\003" +
+      " \001(\003\022\026\n\016sequenceNumber\030\004 \001(\005\022 \n\002id\030\005 \001(\013" +
+      "2\024.yamcs.NamedObjectId\"7\n\010TimeInfo\022\023\n\013cu" +
+      "rrentTime\030\001 \001(\003\022\026\n\016currentTimeUTC\030\002 \001(\t\"" +
+      "\233\002\n\005Event\022\016\n\006source\030\001 \002(\t\022\026\n\016generationT" +
+      "ime\030\002 \002(\003\022\025\n\rreceptionTime\030\003 \002(\003\022\021\n\tseqN" +
+      "umber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007message\030\006 \002" +
+      "(\t\0222\n\010severity\030\007 \001(\0162\032.yamcs.Event.Event" +
+      "Severity:\004INFO\022\031\n\021generationTimeUTC\030\010 \001(" +
+      "\t\022\030\n\020receptionTimeUTC\030\t \001(\t\"1\n\rEventSeve",
+      "rity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020\002*\005" +
+      "\010d\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022\010" +
+      "\n\004STOP\020\003*\306\002\n\rProtoDataType\022\014\n\010DT_ERROR\020\001" +
+      "\022\020\n\014STATE_CHANGE\020\002\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020" +
+      "\004\022\t\n\005EVENT\020\005\022\021\n\rARCHIVE_INDEX\020\006\022\017\n\013ARCHI" +
+      "VE_TAG\020\007\022\r\n\tPARAMETER\020\010\022\017\n\013CMD_HISTORY\020\t" +
+      "\022\022\n\016PROCESSOR_INFO\020\n\022\017\n\013CLIENT_INFO\020\013\022\031\n" +
+      "\025PROCESSING_STATISTICS\020\014\022\017\n\013STREAM_DATA\020" +
+      "\r\022\016\n\nALARM_DATA\020\016\022\r\n\tTIME_INFO\020\017\022\016\n\nLINK" +
+      "_EVENT\020\020\022\026\n\022COMMAND_QUEUE_INFO\020\021\022\027\n\023COMM",
+      "AND_QUEUE_EVENT\020\022B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -24110,7 +24612,7 @@ public final class Yamcs {
           internal_static_yamcs_CommandHistoryReplayRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcs_CommandHistoryReplayRequest_descriptor,
-              new java.lang.String[] { });
+              new java.lang.String[] { "NameFilter", });
           internal_static_yamcs_PpReplayRequest_descriptor =
             getDescriptor().getMessageTypes().get(20);
           internal_static_yamcs_PpReplayRequest_fieldAccessorTable = new

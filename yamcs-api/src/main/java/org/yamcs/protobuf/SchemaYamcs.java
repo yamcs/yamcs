@@ -2544,6 +2544,9 @@ public final class SchemaYamcs
         {
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest message) throws java.io.IOException
             {
+                for(org.yamcs.protobuf.Yamcs.NamedObjectId nameFilter : message.getNameFilterList())
+                    output.writeObject(1, nameFilter, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
+
             }
             public boolean isInitialized(org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest message)
             {
@@ -2583,6 +2586,10 @@ public final class SchemaYamcs
                     {
                         case 0:
                             return;
+                        case 1:
+                            builder.addNameFilter(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
+
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -2623,6 +2630,7 @@ public final class SchemaYamcs
         {
             switch(number)
             {
+                case 1: return "nameFilter";
                 default: return null;
             }
         }
@@ -2634,6 +2642,7 @@ public final class SchemaYamcs
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
+            fieldMap.put("nameFilter", 1);
         }
     }
 
