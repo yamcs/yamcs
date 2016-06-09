@@ -8,6 +8,7 @@ Version 0.29.4 Released
 - parameter archive: 
   - implemented some sanity checks to avoid,  detect and better report corruption or inconsistencies. 
   - added a REST call that allows removing entire partitions (in order to recreate them from scratch from the raw data)
+- added possibility to filter command history requests by command names
 
 Version 0.29.3 Released 28-Feb-2016
 - added backFiller config in the ParameterArchive
