@@ -13,7 +13,7 @@ public class EventReplayHandler implements ReplayHandler {
     
     @Override
     public void setRequest(ReplayRequest newRequest) throws YamcsException {
-        this.request=newRequest;
+        this.request = newRequest;
     }
 
     @Override
