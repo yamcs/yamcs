@@ -9,6 +9,7 @@ Version 0.29.4 Released
   - implemented some sanity checks to avoid,  detect and better report corruption or inconsistencies. 
   - added a REST call that allows removing entire partitions (in order to recreate them from scratch from the raw data)
 - added possibility to filter command history requests by command names
+- bug fix in PacketViewer: when connecting to Yamcs, first disconnect if already connected, otherwise two connections will be open in parallel showing all packets duplicate
 
 Version 0.29.3 Released 28-Feb-2016
 - added backFiller config in the ParameterArchive

@@ -461,7 +461,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
             if(connectDialog==null) {
                 connectDialog=new ConnectDialog(this, authenticationEnabled, true, true, true);
             }
-            int ret=connectDialog.showDialog();
+            int ret = connectDialog.showDialog();
             if(ret==ConnectDialog.APPROVE_OPTION) {
                 streamName = connectDialog.getStreamName();
                 connectYamcs(connectDialog.getConnectData());
@@ -747,8 +747,8 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
 
     void connectYamcs(YamcsConnectData ycd) {
         disconnect();
-        connectionParams=ycd;
-        yconnector=new YamcsConnector();
+        connectionParams = ycd;
+        yconnector = new YamcsConnector();
         yconnector.addConnectionListener(this);
         yconnector.connect(ycd);
         updateTitle();
@@ -756,6 +756,9 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
 
 
     void disconnect() {
+        if(yconnector!=null) {
+            yconnector.disconnect();
+        }
         connectionParams = null;
         updateTitle();
     }
