@@ -30,6 +30,7 @@ import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
+import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.HqClientMessageToken;
@@ -103,14 +104,21 @@ public class HornetQRetrievalServer extends AbstractExecutionThreadService {
 
     /**
      * create a new packet replay object
+     * @param requestMsg - message containing in the body the protobuf ReplayRequest
+     * @param replyto - address used to send the response message
+     * @param dataAddress - address used to send the data
+     * @throws YamcsApiException 
+     * @throws YamcsException 
+     * @throws HornetQException 
+     * @throws IOException 
      */
-    public void createReplay(ClientMessage msg, SimpleString replyto, SimpleString dataAddress) throws Exception {
-        ReplayRequest replayRequest=(ReplayRequest)decode(msg, ReplayRequest.newBuilder());
+    public void createReplay(ClientMessage requestMsg, SimpleString replyto, SimpleString dataAddress) throws YamcsException, YamcsApiException, IOException, HornetQException {
+        ReplayRequest replayRequest = (ReplayRequest) decode(requestMsg, ReplayRequest.newBuilder());
         HqClientMessageToken authToken = null;
 
         if( Privilege.usePrivileges ) {
             Privilege priv = Privilege.getInstance();
-            authToken = new HqClientMessageToken(msg, null);
+            authToken = new HqClientMessageToken(requestMsg, null);
 
             // Check privileges for requested parameters
             if (replayRequest.hasParameterRequest()) {
@@ -196,7 +204,7 @@ public class HornetQRetrievalServer extends AbstractExecutionThreadService {
         public void run() {
             try {
                 while(!quitting) {
-                    ClientMessage msg=yclient.rpcConsumer.receive();
+                    ClientMessage msg = yclient.rpcConsumer.receive();
                     if(msg==null) {
                         if(!quitting) log.warn("null message received from the control queue");
                         continue;
@@ -262,6 +270,10 @@ public class HornetQRetrievalServer extends AbstractExecutionThreadService {
         public void stateChanged(ReplayStatus rs) {
             try {
                 yclient.sendData(dataAddress, ProtoDataType.STATE_CHANGE, rs);
+                if((rs.getState()==ReplayState.CLOSED) || (rs.getState()==ReplayState.ERROR)) {
+                    quit();
+                }
+                
             } catch (HornetQException e) {
                 log.warn("Got exception when signaling state change", e);
                 quit();
