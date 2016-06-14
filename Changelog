@@ -1,4 +1,5 @@
 Version 0.29.4 Released 
+- fix 0.29.3 packaging error related to StringCovertors moved to yamcs-core from yamcs-api
 - fix changing speed in the replays
 - fix hornetq replays which were never releasing the threads
 - added posibility to configure RocksDB options
@@ -10,6 +11,8 @@ Version 0.29.4 Released
   - added a REST call that allows removing entire partitions (in order to recreate them from scratch from the raw data)
 - added possibility to filter command history requests by command names
 - bug fix in PacketViewer: when connecting to Yamcs, first disconnect if already connected, otherwise two connections will be open in parallel showing all packets duplicate
+- bug fix in PacketViwer: when loading file with CCSDS packets, the generation time in the left column is invalid
+
 
 Version 0.29.3 Released 28-Feb-2016
 - added backFiller config in the ParameterArchive
