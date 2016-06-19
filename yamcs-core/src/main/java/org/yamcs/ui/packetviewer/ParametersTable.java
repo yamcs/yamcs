@@ -239,7 +239,7 @@ public class ParametersTable extends JTable implements ListSelectionListener {
             rowsWithSearchResults.clear();
             Vector rowData = ((DefaultTableModel) getModel()).getDataVector();
             for(int i = 0; i < rowData.size(); i++) {
-                String opsName = (String)((Vector) rowData.get(i)).get(0);
+                String opsName = ((Parameter)((Vector) rowData.get(i)).get(0)).getName();
                 if (opsName.toLowerCase().contains(searchTerm)) {
                     rowsWithSearchResults.add(i);
                 }

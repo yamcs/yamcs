@@ -12,6 +12,7 @@ Version 0.29.4 Released
 - added possibility to filter command history requests by command names
 - bug fix in PacketViewer: when connecting to Yamcs, first disconnect if already connected, otherwise two connections will be open in parallel showing all packets duplicate
 - bug fix in PacketViwer: when loading file with CCSDS packets, the generation time in the left column is invalid
+- bug fix in PacketViwer: searching (ctrl+F) proceduces a ClassCastException
 
 
 Version 0.29.3 Released 28-Feb-2016
