@@ -16,12 +16,13 @@ public abstract class BaseSegment {
     public static final byte FORMAT_ID_GenericValueSegment = 10;    
     public static final byte FORMAT_ID_IntValueSegment = 11;
     public static final byte FORMAT_ID_StringValueSegment = 13;
-    public static final byte FORMAT_ID_BooleanValueSegment = 15;
+    @Deprecated
+    public static final byte FORMAT_ID_OldBooleanValueSegment = 15;
     public static final byte FORMAT_ID_FloatValueSegment = 16;
     public static final byte FORMAT_ID_DoubleValueSegment = 17;
     public static final byte FORMAT_ID_LongValueSegment = 18;
     public static final byte FORMAT_ID_BinaryValueSegment = 19;
-    
+    public static final byte FORMAT_ID_BooleanValueSegment = 20;
     
     protected byte formatId;
     
@@ -67,7 +68,7 @@ public abstract class BaseSegment {
         case FORMAT_ID_StringValueSegment:
             return  StringValueSegment.parseFrom(bb);
         case FORMAT_ID_BooleanValueSegment:
-            return BooleanValueSegment.parseFrom(bb);
+            return OldBooleanValueSegment.parseFrom(bb);
         case FORMAT_ID_FloatValueSegment:
             return FloatValueSegment.parseFrom(bb);
         case FORMAT_ID_DoubleValueSegment:

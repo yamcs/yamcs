@@ -10,17 +10,18 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.utils.VarIntUtil;
 
 /**
- * Boolean value sgement uses BitSet to represent the boolean values as a set of bits
+ * Old implementation of the boolean segment, not used because it doesn't remember the segment size
  * 
  * @author nm
  *
  */
-public class BooleanValueSegment extends BaseSegment implements ValueSegment {
+@Deprecated
+public class OldBooleanValueSegment extends BaseSegment implements ValueSegment {
     BitSet bitSet;
-    int size;
     
-    private BooleanValueSegment() {
-        super(FORMAT_ID_BooleanValueSegment);
+    
+    OldBooleanValueSegment() {
+        super(FORMAT_ID_OldBooleanValueSegment);
     }
     
     
@@ -30,8 +31,6 @@ public class BooleanValueSegment extends BaseSegment implements ValueSegment {
      */
     @Override
     public void writeTo(ByteBuffer bb) {
-        VarIntUtil.writeVarInt32(bb, size);
-        
         long[]la = bitSet.toLongArray();
         VarIntUtil.writeVarInt32(bb, la.length);
         
@@ -41,7 +40,6 @@ public class BooleanValueSegment extends BaseSegment implements ValueSegment {
     }
 
     private void parse(ByteBuffer bb) throws DecodingException {
-        size = VarIntUtil.readVarInt32(bb);
         int n = VarIntUtil.readVarInt32(bb);
         long[]la = new long[n];
         for(int i=0; i<n; i++) {
@@ -50,15 +48,15 @@ public class BooleanValueSegment extends BaseSegment implements ValueSegment {
         bitSet = BitSet.valueOf(la);
     }
     
-    public static BooleanValueSegment parseFrom(ByteBuffer bb) throws DecodingException {
-        BooleanValueSegment r = new BooleanValueSegment();
+    public static OldBooleanValueSegment parseFrom(ByteBuffer bb) throws DecodingException {
+        OldBooleanValueSegment r = new OldBooleanValueSegment();
         r.parse(bb);
         return r;
     }
 
     @Override
     public int getMaxSerializedSize() {
-        return 8+bitSet.size()/8;
+        return 4+bitSet.size()/8;
     }
 
     @Override
@@ -66,12 +64,11 @@ public class BooleanValueSegment extends BaseSegment implements ValueSegment {
         return ValueUtility.getBooleanValue(bitSet.get(index));
     }
     
-    static BooleanValueSegment consolidate(List<Value> values) {
-        BooleanValueSegment bvs = new BooleanValueSegment();
+    static OldBooleanValueSegment consolidate(List<Value> values) {
+        OldBooleanValueSegment bvs = new OldBooleanValueSegment();
         int n = values.size();
         
         bvs.bitSet = new BitSet(n);
-        bvs.size = values.size();
         for(int i=0; i<n; i++) {
             bvs.bitSet.set(i, values.get(i).getBooleanValue());
         }
@@ -100,7 +97,7 @@ public class BooleanValueSegment extends BaseSegment implements ValueSegment {
      */
     @Override
     public int size() {
-        return size;
+        return bitSet.size();
     }
 
 

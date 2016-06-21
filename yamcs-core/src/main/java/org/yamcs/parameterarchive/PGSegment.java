@@ -134,7 +134,8 @@ public class PGSegment {
         consolidated = true;
         consolidatedValueSegments  = new ArrayList<BaseSegment>(engValueSegments.size());
         for(ValueSegment gvs: engValueSegments) {
-            consolidatedValueSegments.add(gvs.consolidate());
+            BaseSegment bs = gvs.consolidate();
+            consolidatedValueSegments.add(bs);
         }
         if(storeRawValues && rawValueSegments.size()>0) {
             consolidatedRawValueSegments  = new ArrayList<BaseSegment>(engValueSegments.size());

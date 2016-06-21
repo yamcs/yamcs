@@ -31,7 +31,7 @@ public class ParameterIdDb {
     final RocksDB db;
     final ColumnFamilyHandle p2pid_cfh;
     final static int TIMESTAMP_PARA_ID=0;
-    
+
     //parameter fqn -> parameter type -> parameter id
     Map<String, Map<Integer, Integer>> p2pidCache = new HashMap<>();
     int highestParaId = TIMESTAMP_PARA_ID;
@@ -58,7 +58,7 @@ public class ParameterIdDb {
      */
     public synchronized int createAndGet(String paramFqn, Value.Type engType, Value.Type rawType) throws ParameterArchiveException {
         int type = numericType(engType, rawType);
-        
+
         Map<Integer, Integer> m = p2pidCache.get(paramFqn);
         if(m==null) {
             m = new HashMap<Integer, Integer>();
@@ -72,7 +72,7 @@ public class ParameterIdDb {
         }
         return pid;
     }
-    
+
     /**
      * get a parameter id for a parameter that only has engineering value
      * @param paramFqn
@@ -83,7 +83,7 @@ public class ParameterIdDb {
         return createAndGet(paramFqn, engType, null);
     }
 
-    
+
     //compose a numeric type from engType and rawType (we assume that no more than 2^15 types will ever exist)
     private int numericType(Value.Type engType, Value.Type rawType) {
         int et = (engType==null)? 0xFFFF:engType.getNumber();
@@ -143,8 +143,8 @@ public class ParameterIdDb {
             for(Map.Entry<Integer, Integer> e: m.entrySet()) {
                 int parameterId = e.getValue();
                 int et = e.getKey()>>16;
-                int rt = e.getKey()&0xFFFF;
-                out.println("\t("+getType(et)+", "+getType(rt)+") -> "+parameterId);
+        int rt = e.getKey()&0xFFFF;
+        out.println("\t("+getType(et)+", "+getType(rt)+") -> "+parameterId);
             }
         }
     }
@@ -164,14 +164,14 @@ public class ParameterIdDb {
      * 
      * 
      * @param fqn - fully qualified name of the parameter for which the ids are returned
-     * @return
+     * @return  all parameters ids for a given qualified name or null if no parameter id exists for that fqn
      */
     public synchronized ParameterId[] get(String fqn) {
         Map<Integer, Integer> m = p2pidCache.get(fqn);
         if(m==null) {
             return null;
         }
-        
+
         ParameterId[] r = new ParameterId[m.size()];
         int i = 0;
         for(Entry<Integer, Integer> e: m.entrySet()) {
@@ -180,11 +180,28 @@ public class ParameterIdDb {
         return r;
     }
 
+    /**
+     * returns the parameter FQN for the given parameterId - relatively expensive operation
+     * @param parameterId
+     * 
+     * @return parameterFQN or null if there is no parameter with the given id
+     */
+    public String getParameterbyId(int parameterId) {
+        for(Map.Entry<String, Map<Integer, Integer>> e: p2pidCache.entrySet()) {
+            Map<Integer, Integer> m = e.getValue();
+            if(m.containsValue(parameterId)) {
+                return e.getKey();
+            }
+        }
+        return null;
+    }
+    
+    
     public static class ParameterId {
         public final int pid;
         public final Type engType;
         public final Type rawType;
-        
+
         public ParameterId(int pid, int numericType) {
             this.pid = pid;
             int et =  numericType>>16;
@@ -192,11 +209,13 @@ public class ParameterIdDb {
             this.engType = getType(et);
             this.rawType = getType(rt);
         }
-       
+
         @Override
         public String toString() {
             return "ParameterId [pid=" + pid + ", engType=" + engType
                     + ", rawType=" + rawType + "]";
         }
     }
+
+
 }
