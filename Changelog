@@ -1,4 +1,4 @@
-Version 0.29.4 Released 
+Version 0.29.4 Released 26-June-2016
 - fix 0.29.3 packaging error related to StringCovertors moved to yamcs-core from yamcs-api
 - fix changing speed in the replays
 - fix hornetq replays which were never releasing the threads
