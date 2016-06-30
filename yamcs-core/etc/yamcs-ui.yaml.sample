@@ -2,7 +2,7 @@
 authenticationEnabled: false
 
 #tools that show in the menu of the archive browser
-archiveBrowserTools:
-   - name: "CCSDS Gap Retrieval"
-     class: org.yamcs.ui.CcsdsCompletenessGui
+archiveBrowserTools: []
+#   - name: "CCSDS Gap Retrieval"
+#     class: org.yamcs.ui.CcsdsCompletenessGui
   
