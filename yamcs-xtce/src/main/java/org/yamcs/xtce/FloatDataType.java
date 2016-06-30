@@ -30,7 +30,7 @@ public class FloatDataType extends NumericDataType {
         return sizeInBits;
     }
     public void setSizeInBits(int sizeInBits) {
-        this.sizeInBits=sizeInBits;
+        this.sizeInBits = sizeInBits;
     }
 
     public void setValidRange(FloatValidRange validRange) {

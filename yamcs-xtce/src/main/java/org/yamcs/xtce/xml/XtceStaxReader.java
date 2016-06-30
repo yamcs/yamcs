@@ -513,6 +513,7 @@ public class XtceStaxReader {
     XMLStreamException {
         FloatParameterType floatParamType = null;
 
+        
         log.trace(XTCE_FloatParameterType);
         checkStartElementPreconditions();
 
@@ -524,6 +525,16 @@ public class XtceStaxReader {
             throw new XMLStreamException("Unnamed float parameter type");
         }
 
+        value = readAttribute("sizeInBits", xmlEvent.asStartElement());
+        
+        if (value != null) {
+            int sizeInBits = Integer.parseInt(value);
+            if(sizeInBits!=32 && sizeInBits!=64){
+                throw new XMLStreamException("Float encoding "+sizeInBits+" not supported; Only 32 and 64 bits are supported");
+            }
+            floatParamType.setSizeInBits(sizeInBits);
+        } 
+        
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
@@ -562,6 +573,7 @@ public class XtceStaxReader {
                 // ok, this encoding is supported by the class implicitly
             } else if ("MILSTD_1750A".equalsIgnoreCase(value)) {
                 log.error("Encoding MILSTD_1750A is not currently supported.");
+                throw new XMLStreamException("Encoding MILSTD_1750A is not currently supported.");
             } else {
                 throw new XMLStreamException();
             }
