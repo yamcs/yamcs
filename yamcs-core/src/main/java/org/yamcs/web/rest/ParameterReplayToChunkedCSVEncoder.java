@@ -21,12 +21,10 @@ import io.netty.buffer.ByteBufOutputStream;
  */
 public class ParameterReplayToChunkedCSVEncoder extends ParameterReplayToChunkedTransferEncoder {
     
-    private List<NamedObjectId> idList;
     private ParameterFormatter formatter;
     
     public ParameterReplayToChunkedCSVEncoder(RestRequest req, List<NamedObjectId> idList) throws HttpException {
-        super(req, MediaType.CSV);
-        this.idList = idList;
+        super(req, MediaType.CSV, idList);
         formatter.setWriteHeader(true);
     }
     

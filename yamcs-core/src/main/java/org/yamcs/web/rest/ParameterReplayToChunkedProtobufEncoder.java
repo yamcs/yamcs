@@ -3,9 +3,9 @@ package org.yamcs.web.rest;
 import java.io.IOException;
 import java.util.List;
 
+import org.yamcs.api.MediaType;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.api.MediaType;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.web.HttpException;
 
@@ -20,7 +20,7 @@ import io.protostuff.JsonIOUtil;
 public class ParameterReplayToChunkedProtobufEncoder extends ParameterReplayToChunkedTransferEncoder {
     
     public ParameterReplayToChunkedProtobufEncoder(RestRequest req) throws HttpException {
-        super(req, req.deriveTargetContentType());
+        super(req, req.deriveTargetContentType(), null);
     }
     
     @Override
