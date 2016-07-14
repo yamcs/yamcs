@@ -77,9 +77,6 @@ public class CommandingManagerTest {
         assertEquals(-10.23, bb.getFloat(), 1e-5);
 
         assertEquals(25.4d, bb.getDouble(), 1e-20);
-
-
-
     }
 
     @Test

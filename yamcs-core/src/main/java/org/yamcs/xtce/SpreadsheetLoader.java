@@ -1539,8 +1539,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         } else if ( "fixedstring".equalsIgnoreCase( rawType ) ) {
             // v1.7 String type
             // FIXEDSTRING
-            if(sizeInBits==-1) throw new SpreadsheetLoadException(ctx, "Bit length is mandatory for fixedstring raw type");
+            if(sizeInBits==-1) throw new SpreadsheetLoadException(ctx, "SizeInBits is mandatory for fixedstring raw type");
             encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.Fixed);
+            if((sizeInBits&0x7)!=0) {
+                throw new SpreadsheetLoadException(ctx, "SizeInBits has to be multiple of 8 for fixedstring raw type");
+            }
             encoding.setSizeInBits(sizeInBits);
         } else if ( rawType.toLowerCase().startsWith( "terminatedstring" ) ) {
             // v1.7 String type

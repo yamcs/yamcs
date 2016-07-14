@@ -137,17 +137,20 @@ public class DataEncodingEncoder {
             throw new IllegalStateException("String Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition);        	
         }
 
-        byte[] b = v.getBytes(); //TBD
+        byte[] rawValueBytes = v.getBytes(); //TBD encoding
 
         switch(sde.getSizeType()) {
         case Fixed:
             int byteOffset = pcontext.bitPosition/8;
-            int sizeInBytes=sde.getSizeInBits()/8;
-            if(sizeInBytes>b.length) sizeInBytes = b.length;
+            int sdeSizeInBytes = sde.getSizeInBits()/8;
+            int sizeInBytes = (sdeSizeInBytes > rawValueBytes.length)?rawValueBytes.length:sdeSizeInBytes;
+           
             pcontext.bb.position(byteOffset);
-            pcontext.bb.put(b, 0, sizeInBytes);
-            byte[] blank =new byte[sde.getSizeInBits() - sizeInBytes];
-            pcontext.bb.put(blank);
+            pcontext.bb.put(rawValueBytes, 0, sizeInBytes);
+            if(sdeSizeInBytes>rawValueBytes.length) { //fill up with nulls to reach the required size
+                byte[] nulls = new byte[sdeSizeInBytes - sizeInBytes];
+                pcontext.bb.put(nulls);
+            }
             pcontext.bitPosition+=sde.getSizeInBits();
             break;
         case LeadingSize:
@@ -155,15 +158,15 @@ public class DataEncodingEncoder {
             byteOffset = pcontext.bitPosition/8;
             switch(sde.getSizeInBitsOfSizeTag()) {
             case 8:
-                pcontext.bb.put(byteOffset, (byte) b.length);
+                pcontext.bb.put(byteOffset, (byte) rawValueBytes.length);
                 pcontext.bitPosition+=8;
                 break;
             case 16: 
-                pcontext.bb.putShort(byteOffset, (short) b.length);
+                pcontext.bb.putShort(byteOffset, (short) rawValueBytes.length);
                 pcontext.bitPosition+=16;
                 break;
             case 32: 
-                pcontext.bb.putInt(byteOffset, (short) b.length);
+                pcontext.bb.putInt(byteOffset, (short) rawValueBytes.length);
                 pcontext.bitPosition+=32;
                 break;
             default:
@@ -171,13 +174,13 @@ public class DataEncodingEncoder {
             }
             byteOffset = pcontext.bitPosition/8;
             pcontext.bb.position(byteOffset);
-            pcontext.bb.put(b, 0, b.length);
+            pcontext.bb.put(rawValueBytes, 0, rawValueBytes.length);
             pcontext.bitPosition = pcontext.bb.position() * 8;
             break;
         case TerminationChar:
             byteOffset=pcontext.bitPosition/8;
             pcontext.bb.position(byteOffset);
-            pcontext.bb.put(b, 0, b.length);
+            pcontext.bb.put(rawValueBytes, 0, rawValueBytes.length);
             pcontext.bb.put(sde.getTerminationChar());
             pcontext.bitPosition = pcontext.bb.position() * 8;
             break;

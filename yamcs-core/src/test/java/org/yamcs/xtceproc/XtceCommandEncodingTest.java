@@ -78,9 +78,9 @@ public class XtceCommandEncodingTest {
                 97, 98, 99, 100, 101, 102, 0,   // abcdef
                 98, 98, 98, 98, 0x2C,           // aaaa
                 0, 4, 99, 99, 99, 99,           // bbbb
-                100, 100, 100, 100, 0, 0, 0     // dddd
+                100, 100, 100, 100, 0, 0     // dddd
         };
-        Assert.assertTrue(Arrays.equals(b, expectedResult));
+        assertEquals(StringConverter.arrayToHexString(expectedResult), StringConverter.arrayToHexString(b));
     }
     
     @Test
