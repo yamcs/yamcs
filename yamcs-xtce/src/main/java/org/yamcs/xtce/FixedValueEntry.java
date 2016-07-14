@@ -17,7 +17,7 @@ public class FixedValueEntry extends SequenceEntry {
 
     //The fixed value
     final byte[] binaryValue;
-    //the size in bits of the value - this should be not more than the length in bits of the binaryValue
+    //the size in bits of the value - this should not be more than the length in bits of the binaryValue
     final int sizeInBits;
 
     public FixedValueEntry(int position, MetaCommandContainer container, int locationInContainerInBits, ReferenceLocationType location, String name, byte[] binaryValue, int sizeInBits) {
@@ -30,13 +30,16 @@ public class FixedValueEntry extends SequenceEntry {
     public byte[] getBinaryValue() {
         return binaryValue;
     }
+    
     public int getSizeInBits() {
         return sizeInBits;
     }
+    
     @Override
     public String toString() {
         return "FixedValueEntry position:"+getIndex()+", container:"+container.getName()+
                 " locationInContainer:"+getLocationInContainerInBits()+" from:"+getReferenceLocation()+
+                ", sizeInBits: "+sizeInBits+
                 ", binaryValue: "+StringConverter.arrayToHexString(binaryValue);
     }
 }

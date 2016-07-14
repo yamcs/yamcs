@@ -82,7 +82,43 @@ public class XtceCommandEncodingTest {
         };
         assertEquals(StringConverter.arrayToHexString(expectedResult), StringConverter.arrayToHexString(b));
     }
+    @Test
+    public void cgsLikeStringCommand() throws ErrorInCommand {
+        XtceDb xtcedb = XtceDbFactory.createInstance("refmdb");
+        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/CGS_LIKE_STRING_ARG_TC");
+        List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>() ;
+        ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("string_arg1", "aaaa");
+        arguments.add(argumentAssignment1);
+        ArgumentAssignment argumentAssignment2 = new ArgumentAssignment("string_arg2", "bbbb");
+        arguments.add(argumentAssignment2);
+        byte[] b = MetaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+
+        byte[] expectedResult = {
+                0, 4, 97, 97, 97, 97, 0, 0,   // aaaa
+                98, 98, 98, 98, 0x2C, 0       // bbbb
+                
+        };
+        assertEquals(StringConverter.arrayToHexString(expectedResult), StringConverter.arrayToHexString(b));
+    }
     
+    @Test
+    public void binaryCommand() throws ErrorInCommand {
+        XtceDb xtcedb = XtceDbFactory.createInstance("refmdb");
+        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/BINARY_ARG_TC");
+        List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>() ;
+        ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("binary_arg1", "0102");
+        arguments.add(argumentAssignment1);
+        ArgumentAssignment argumentAssignment2 = new ArgumentAssignment("binary_arg2", "0A1B");
+        arguments.add(argumentAssignment2);
+        byte[] b = MetaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+
+        byte[] expectedResult = {
+                0x01, 0x02, 0, 0, 0, 
+                0x0A, 0x1B, 0, 0, 0, 0    
+                
+        };
+        assertEquals(StringConverter.arrayToHexString(expectedResult), StringConverter.arrayToHexString(b));
+    }
     @Test
     public void littleEndianUint() throws ErrorInCommand {
         XtceDb xtcedb = XtceDbFactory.createInstance("refmdb");

@@ -40,20 +40,28 @@ public class StringDataEncoding extends DataEncoding {
 
     @Override
     public String toString() {
-        String out=getSizeType()+"(";
+        StringBuffer sb = new StringBuffer();
+        sb.append("StringDataEncoding size: ");        
+        sb.append(getSizeType()).append("(");
         switch(sizeType) {
         case Fixed:
-            out+="fixedSizeInBits="+getSizeInBits();
+            sb.append("fixedSizeInBits="+getSizeInBits());
             break;
         case LeadingSize:
-            out+="sizeInBitsOfSizeTag="+sizeInBitsOfSizeTag;
+            sb.append("sizeInBitsOfSizeTag="+sizeInBitsOfSizeTag);
+            if(getSizeInBits()!=-1) {
+                sb.append(", minSizeInBits="+getSizeInBits());
+            }
             break;
         case TerminationChar:
-            out+="terminationChar="+terminationChar;
+            sb.append("terminationChar="+terminationChar);
+            if(getSizeInBits()!=-1) {
+                sb.append(", minSizeInBits="+getSizeInBits());
+            }
             break;
         }
-        return "StringDataEncoding size: "+out+")";
-
+        sb.append(")");
+        return sb.toString();
     }
 
     @Override

@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.nio.ByteOrder;
 
 public abstract class DataEncoding extends NameDescription implements Serializable {
-    private static final long serialVersionUID=200805131551L;
+    private static final long serialVersionUID = 200805131551L;
 
     protected int sizeInBits;
     transient ByteOrder byteOrder=ByteOrder.BIG_ENDIAN; //DIFFERS_FROM_XTCE in xtce is bloody complicated
@@ -28,7 +28,7 @@ public abstract class DataEncoding extends NameDescription implements Serializab
     }
     
     public void setSizeInBits(int sizeInBits) {
-        this.sizeInBits=sizeInBits;
+        this.sizeInBits = sizeInBits;
     }
 
     public ByteOrder getByteOrder() {

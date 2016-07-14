@@ -212,6 +212,7 @@ public class MetaCommand extends NameDescription {
     public void print(PrintStream out) {
         out.print("MetaCommand name: "+name+" abstract:"+abstractCmd);
         if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());
+                
         if(!transmissionContstraintList.isEmpty()) {
             out.print(", TransmissionConstraints: ");
             out.print(transmissionContstraintList.toString());
@@ -226,9 +227,11 @@ public class MetaCommand extends NameDescription {
             out.print(verifierList.toString());
         }
         out.println();
+        if(baseMetaCommand!=null) {
+            out.println("\t baseMetaCommand: "+baseMetaCommand.getName()+" with argument assignment:" +argumentAssignmentList);
+        }
+        
+        
         commandContainer.print(out);
     }
-
-
-  
 }

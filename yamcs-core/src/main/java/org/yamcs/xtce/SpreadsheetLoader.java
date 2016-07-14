@@ -1520,8 +1520,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 }
                 ((IntegerDataEncoding)encoding).defaultCalibrator = c;
             }
-        } else if ("bytestream".equalsIgnoreCase(rawType)) {
-            if(sizeInBits==-1) throw new SpreadsheetLoadException(ctx, "Bit length is mandatory for bytestream parameters");
+        } else if ("binary".equalsIgnoreCase(rawType) || "bytestream".equalsIgnoreCase(rawType)) {
+            if(sizeInBits==-1) throw new SpreadsheetLoadException(ctx, "Bit length is mandatory for binary parameters");
             encoding=new BinaryDataEncoding(name, sizeInBits);
         } else if ("boolean".equalsIgnoreCase(rawType)) {
             if(sizeInBits!=-1) throw new SpreadsheetLoadException(ctx, "Bit length is not allowed for boolean parameters (defaults to 1). Use any other raw type if you want to specify the bitlength");
@@ -1549,6 +1549,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             // v1.7 String type
             // TERMINATEDSTRING
             encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.TerminationChar);
+            encoding.setSizeInBits(sizeInBits);
             // Use specified byte if found, otherwise accept class default.
             int startBracket = rawType.indexOf( '(' );
             if( startBracket != -1 ) {
@@ -1566,6 +1567,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             // v1.7 String type
             // PREPENDEDSIZESTRING
             encoding=new StringDataEncoding( name, StringDataEncoding.SizeType.LeadingSize );
+            encoding.setSizeInBits(sizeInBits);
             // Use specified size if found, otherwise accept class default.
             int startBracket = rawType.indexOf( '(' );
             if( startBracket != -1 ) {

@@ -138,7 +138,8 @@ public class DataEncodingEncoder {
         }
 
         byte[] rawValueBytes = v.getBytes(); //TBD encoding
-
+        int initialBitPosition = pcontext.bitPosition;
+        
         switch(sde.getSizeType()) {
         case Fixed:
             int byteOffset = pcontext.bitPosition/8;
@@ -155,6 +156,7 @@ public class DataEncodingEncoder {
             break;
         case LeadingSize:
             pcontext.bb.order(ByteOrder.BIG_ENDIAN); //TBD
+            
             byteOffset = pcontext.bitPosition/8;
             switch(sde.getSizeInBitsOfSizeTag()) {
             case 8:
@@ -172,8 +174,8 @@ public class DataEncodingEncoder {
             default:
                 throw new IllegalArgumentException("SizeInBits of Size Tag of "+sde.getSizeInBitsOfSizeTag()+" not supported");        		
             }
-            byteOffset = pcontext.bitPosition/8;
-            pcontext.bb.position(byteOffset);
+            int rvByteOffset = pcontext.bitPosition/8;
+            pcontext.bb.position(rvByteOffset);
             pcontext.bb.put(rawValueBytes, 0, rawValueBytes.length);
             pcontext.bitPosition = pcontext.bb.position() * 8;
             break;
@@ -182,8 +184,14 @@ public class DataEncodingEncoder {
             pcontext.bb.position(byteOffset);
             pcontext.bb.put(rawValueBytes, 0, rawValueBytes.length);
             pcontext.bb.put(sde.getTerminationChar());
+            
             pcontext.bitPosition = pcontext.bb.position() * 8;
             break;
+        }
+        
+        int newBitPosition = pcontext.bitPosition;
+        if((sde.getSizeInBits()!=-1) && (newBitPosition-initialBitPosition<sde.getSizeInBits())) {
+            pcontext.bitPosition = initialBitPosition+sde.getSizeInBits();
         }
     }
 
@@ -241,7 +249,7 @@ public class DataEncodingEncoder {
     }
 
     private void encodeRawBinary(BinaryDataEncoding bde, Value rawValue) {
-        if(pcontext.bitPosition%8!=0) {
+        if((pcontext.bitPosition&7)!=0) {
             throw new IllegalStateException("Binary Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition);        
         }
         byte[] v;
@@ -254,9 +262,8 @@ public class DataEncodingEncoder {
         }
         int sizeInBytes = bde.getSizeInBits()/8;
         if(sizeInBytes>v.length) sizeInBytes = v.length;
+        pcontext.bb.position(pcontext.bitPosition/8);
         pcontext.bb.put(v, 0, sizeInBytes);
         pcontext.bitPosition+=bde.getSizeInBits();
     }
-
-
 }
