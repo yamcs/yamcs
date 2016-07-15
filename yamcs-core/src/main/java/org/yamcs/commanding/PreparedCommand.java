@@ -211,6 +211,10 @@ public class PreparedCommand {
         attributes.add(a);
     }
 
+    public void addAttribute(CommandHistoryAttribute cha) {
+        attributes.add(cha);
+    }
+    
     public byte[] getBinary() {
         return binary;
     }
@@ -250,5 +254,4 @@ public class PreparedCommand {
     public Map<Argument, Value> getArgAssignment() {
         return argAssignment;
     }
-    
 }
