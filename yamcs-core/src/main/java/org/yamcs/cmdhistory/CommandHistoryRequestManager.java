@@ -99,7 +99,7 @@ public class CommandHistoryRequestManager extends AbstractService {
      */
     public int subscribeCommandHistory(String commandsOrigin, long commandsSince, CommandHistoryConsumer consumer) {
         log.debug("commandsOrigin={}", commandsOrigin);
-        CommandHistoryFilter filter=new CommandHistoryFilter(subscriptionIdGenerator.getAndIncrement(), commandsOrigin, commandsSince);
+        CommandHistoryFilter filter = new CommandHistoryFilter(subscriptionIdGenerator.getAndIncrement(), commandsOrigin, commandsSince);
         historySubcriptions.put(filter,consumer);
         return filter.subscriptionId;
     }
@@ -172,7 +172,7 @@ public class CommandHistoryRequestManager extends AbstractService {
 
         long changeDate = processor.getCurrentTime();
         for(Iterator<CommandHistoryFilter> it=historySubcriptions.keySet().iterator();it.hasNext();) {
-            CommandHistoryFilter filter=it.next();
+            CommandHistoryFilter filter = it.next();
             if(filter.matches(che)){
                 historySubcriptions.get(filter).updatedCommand(cmdId, changeDate, key, value);
             }
