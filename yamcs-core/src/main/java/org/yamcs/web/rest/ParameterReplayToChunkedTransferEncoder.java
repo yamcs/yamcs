@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.parameter.ParameterValueWithId;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpRequestHandler;
 import org.yamcs.web.HttpRequestHandler.ChunkedTransferStats;
@@ -31,13 +32,15 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
 
     protected RestRequest req;
     protected MediaType contentType;
+    protected List<NamedObjectId> idList;
     protected boolean failed = false;
     private ChunkedTransferStats stats;
 
-    public ParameterReplayToChunkedTransferEncoder(RestRequest req, MediaType contentType) throws HttpException {
+    public ParameterReplayToChunkedTransferEncoder(RestRequest req, MediaType contentType, List<NamedObjectId> idList) throws HttpException {
         super();
         this.req = req;
         this.contentType = contentType;
+        this.idList = idList;
         resetBuffer();
         lastChannelFuture = HttpRequestHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType, null);
         stats = req.getChannelHandlerContext().attr(HttpRequestHandler.CTX_CHUNK_STATS).get();

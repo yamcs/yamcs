@@ -18,8 +18,10 @@ import org.yamcs.archive.XtceTmRecorder;
 import org.yamcs.cmdhistory.CommandHistoryRecorder;
 import org.yamcs.protobuf.Archive.TableData.TableRecord;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
+import org.yamcs.protobuf.Rest.BulkDownloadParameterValueRequest;
 import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaCommanding;
+import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
@@ -29,6 +31,7 @@ import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.security.Privilege;
 import org.yamcs.tctm.TmProviderAdapter;
 import org.yamcs.ui.ParameterRetrievalGui;
 import org.yamcs.web.BadRequestException;
@@ -65,46 +68,59 @@ import io.netty.buffer.ByteBufOutputStream;
  */
 public class ArchiveDownloadRestHandler extends RestHandler {
     
-    // TODO needs more work. Which is also why it's not documented yet
-    // In general, i'm just not the biggest fan of these 'profiles'. But if we do it, we should
-    // support POST, PATCH, GET etc
-    @Route(path = "/api/archive/:instance/downloads/parameters", method = "GET")
+    @Route(path = "/api/archive/:instance/downloads/parameters", method = {"GET", "POST"})
     public void downloadParameters(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         
         ReplayRequest.Builder rr = ReplayRequest.newBuilder().setEndAction(EndAction.QUIT);
         rr.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
         
-        IntervalResult ir = req.scanForInterval();
-        if (ir.hasStart()) {
-            rr.setStart(req.getQueryParameterAsDate("start"));
-        }
-        if (ir.hasStop()) {
-            rr.setStop(req.getQueryParameterAsDate("stop"));
-        }
+        // First try from body
+        BulkDownloadParameterValueRequest request = req.bodyAsMessage(SchemaRest.BulkDownloadParameterValueRequest.MERGE).build();
+        if (request.hasStart()) rr.setStart(RestRequest.parseTime(request.getStart()));
+        if (request.hasStop()) rr.setStop(RestRequest.parseTime(request.getStop()));        
         
+        // Next, try query param (potentially overriding previous)
+        IntervalResult ir = req.scanForInterval();
+        if (ir.hasStart()) rr.setStart(req.getQueryParameterAsDate("start"));
+        if (ir.hasStop()) rr.setStop(req.getQueryParameterAsDate("stop"));
+        
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        List<NamedObjectId> ids = new ArrayList<>();
         if (req.getQueryParameters().containsKey("profile")) {
             String profile = req.getQueryParameter("profile");
             String filename = YarchDatabase.getHome() + "/" + instance + "/profiles/" + profile + ".profile";
-            List<NamedObjectId> ids;
+
             try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
                 ids = ParameterRetrievalGui.loadParameters(reader);
-                rr.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids));
             } catch (FileNotFoundException e) {
                 throw new BadRequestException("No profile '" + profile + "' could be found");
             } catch (IOException e) {
                 throw new InternalServerErrorException("Could not load profile file", e);
             }
-            
-            if (req.asksFor(MediaType.CSV)) {
-                RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, ids);
-                RestReplays.replay(instance, req.getAuthToken(), rr.build(), l);
-            } else {
-                RestParameterReplayListener l = new ParameterReplayToChunkedProtobufEncoder(req);
-                RestReplays.replay(instance, req.getAuthToken(), rr.build(), l);
-            }
         } else {
-            throw new BadRequestException("profile query parameter must be specified. This operation needs more integration work");
+            for (NamedObjectId id:request.getIdList()) {
+                Parameter p = mdb.getParameter(id);
+                if(p==null) {
+                    throw new BadRequestException("Invalid parameter name specified "+id);
+                }
+                if(!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
+                    throw new BadRequestException("Insufficient privileges for parameter " + p.getQualifiedName());
+                }
+                ids.add(id);
+            }
+        }
+        if (ids.isEmpty()) {
+            throw new BadRequestException("Empty parameter list");
+        }
+        rr.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids));
+        
+        if (req.asksFor(MediaType.CSV)) {
+            RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, ids);
+            RestReplays.replay(instance, req.getAuthToken(), rr.build(), l);
+        } else {
+            RestParameterReplayListener l = new ParameterReplayToChunkedProtobufEncoder(req);
+            RestReplays.replay(instance, req.getAuthToken(), rr.build(), l);
         }
     }
     

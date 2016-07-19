@@ -15,6 +15,7 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.rest.RestReplayListener;
 
+import com.google.common.util.concurrent.MoreExecutors;
 
 
 /**
@@ -61,6 +62,7 @@ public class RestReplays {
         ReplayWrapper(RestReplayListener l, YProcessor yproc) {
             this.wrappedListener = l;
             this.yproc = yproc;
+            yproc.addListener(l, MoreExecutors.directExecutor());
         }
         
         

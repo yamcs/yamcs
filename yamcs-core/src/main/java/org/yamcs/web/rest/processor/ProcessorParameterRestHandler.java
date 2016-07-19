@@ -18,6 +18,7 @@ import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.parameter.SoftwareParameterManager;
+import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkGetParameterValueResponse;
@@ -28,7 +29,6 @@ import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.parameter.Value;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.utils.ValueUtility;
@@ -168,7 +168,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         return sendOK(req, pval, SchemaPvalue.ParameterValue.WRITE);
     }
     
-    @Route(path = "/api/processors/:instance/:processor/parameters/mget", method = "GET", priority=true)
+    @Route(path = "/api/processors/:instance/:processor/parameters/mget", method = {"GET", "POST"}, priority=true)
     public ChannelFuture getParameterValues(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         

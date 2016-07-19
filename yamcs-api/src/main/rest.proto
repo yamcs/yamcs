@@ -48,6 +48,12 @@ message BulkSetParameterValueRequest {
   repeated SetParameterValueRequest request = 1;
 }
 
+message BulkDownloadParameterValueRequest {
+  optional string start = 1;
+  optional string stop = 2;
+  repeated yamcs.NamedObjectId id = 3;
+}
+
 message ListContainerInfoResponse {
   repeated mdb.ContainerInfo container = 1;
 }

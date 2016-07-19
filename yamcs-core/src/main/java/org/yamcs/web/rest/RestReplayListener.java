@@ -5,12 +5,15 @@ import java.util.List;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 
+import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.Service.State;
+
 
 /**
  * Expected class type for use with {@link org.yamcs.web.rest.archive.RestReplays}
  * Adds functionality for stopping a replay, and has support for pagination
  */
-public abstract class RestReplayListener implements ParameterWithIdConsumer {
+public abstract class RestReplayListener extends Service.Listener implements ParameterWithIdConsumer {
     
     private final boolean paginate;
     private final long pos;
@@ -40,8 +43,16 @@ public abstract class RestReplayListener implements ParameterWithIdConsumer {
     public boolean isReplayAbortRequested() {
         return abortReplay;
     }
-
     
+    @Override
+    public void failed(State from, Throwable failure) {
+        replayFinished();
+    }
+    
+    @Override
+    public void terminated(State from) {
+        replayFinished();
+    }
     
     @Override
     public void update(int subscriptionId, List<ParameterValueWithId> params) {
@@ -83,8 +94,7 @@ public abstract class RestReplayListener implements ParameterWithIdConsumer {
     }
     /**
      * Override to filter out some replay data. Null means excluded.
-     * (which also means it will not be counted towards the pagination.
-     * @param params 
+     * (which also means it will not be counted towards the pagination).
      * @return filtered data
      */
     public List<ParameterValueWithId> filter(List<ParameterValueWithId> params) {
