@@ -5,6 +5,7 @@ Version 0.29.5
 - fixed REST parameter download  not finishing properly
 - allow profile based downloads
 - support downloading multiple parameters at the same time
+- fixed reading non-value RocksDB partitions from disk at startup
 
 
 Version 0.29.4 Released 26-June-2016
