@@ -40,6 +40,7 @@ mkdir -p %{buildroot}/%{prefix}/web/
 cp -a yamcs-core/lib %{buildroot}/%{prefix}/
 cp -a yamcs-core/etc %{buildroot}/%{prefix}/
 cp -a yamcs-core/bin %{buildroot}/%{prefix}/
+rm yamcs-core/target/yamcs-*-sources.jar
 cp yamcs-core/target/yamcs*.jar %{buildroot}/%{prefix}/lib
 cp -a yamcs-core/misc/init.d %{buildroot}/etc/
 cp -a yamcs-api/src/main/*.proto %{buildroot}/%{prefix}/lib/
@@ -48,6 +49,7 @@ cp -a yamcs-api/src/main/*.proto %{buildroot}/%{prefix}/lib/
 cp -a yamcs-web/build/*  %{buildroot}/%{prefix}/web/
 %endif
 
+rm yamcs-simulation/target/yamcs-*-sources.jar
 cp -a yamcs-simulation/target/*jar %{buildroot}/%{prefix}/lib/
 cp -a yamcs-simulation/bin %{buildroot}/%{prefix}/
 
