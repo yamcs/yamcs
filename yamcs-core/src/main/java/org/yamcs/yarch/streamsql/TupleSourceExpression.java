@@ -30,8 +30,8 @@ public class TupleSourceExpression {
     //when histoColumn is set, the objectName must be a table having histograms on that column
     String histoColumn;
     
-    boolean ascending=true;
-    boolean follow=true;
+    boolean ascending = true;
+    boolean follow = true;
 
     //after binding
     TupleDefinition definition;
