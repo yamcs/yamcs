@@ -53,8 +53,8 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
 
     @Override
     public void run() {
-        log.debug("starting a table stream from table "+tableDefinition.getName()
-                +" with rangeIndexFilter:" +rangeIndexFilter+"\n partitionFilter:"+partitionValueFilter);
+        log.debug("starting a table stream from table {} with rangeIndexFilter {} \n partitionFilter: {}",
+                tableDefinition.getName(), rangeIndexFilter, partitionValueFilter);
 
         try {         
             Iterator<List<Partition>> partitionIterator;
@@ -81,7 +81,7 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
                     partitionIterator = partitionManager.reverseIterator(partitionValueFilter);
                 }
             }
-
+            
             while((!quit) && partitionIterator.hasNext()) {
                 List<Partition> partitions=partitionIterator.next();
                 boolean endReached=runPartitions(partitions, rangeIndexFilter);

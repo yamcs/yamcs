@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitionManager;
+import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TimePartitionSchema.PartitionInfo;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.TableDefinition;
@@ -46,15 +47,14 @@ public class RdbPartitionManager extends PartitionManager {
         String[] files=new File(dataDir+"/"+dir).list();
         for(String s:files) {
             File f = new File(dataDir +"/"+dir+"/"+s);
+            
             if(!f.isDirectory()) continue;
-
             if(s.equals(tblName)) {
                 File currentf = new File(dataDir+"/"+dir+"/"+s+"/CURRENT");
                 if(currentf.exists()) {
-                    
                     PartitionInfo pinfo = partitioningSpec.timePartitioningSchema.parseDir(dir);
                     try {
-                        readDb(pinfo, dir);
+                        readDb(partitioningSpec, pinfo, dir);
                     } catch (Exception e) {
                         log.error("cannot open database partition for table "+tableDefinition.getName()+" at '"+dir, e );
                         continue;
@@ -71,46 +71,76 @@ public class RdbPartitionManager extends PartitionManager {
 
     /** 
      * Called at startup to read existing partitions from disk
+     * @param partitioningSpec 
      */
-    private void readDb(PartitionInfo pinfo, String dir) throws RocksDBException, IOException {
+    private void readDb(PartitioningSpec partitioningSpec, PartitionInfo pinfo, String dir) throws RocksDBException, IOException {
+        log.trace("reading partition from {} pinfo: {}", dir, pinfo);
         RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
         String tblName = tableDefinition.getName();
         String dataDir = tableDefinition.getDataDir();
         String absolutePath = dir.isEmpty()?dataDir+"/"+tblName:dataDir+"/"+dir+"/"+tblName;
         YRDB rdb = rdbFactory.getRdb(absolutePath, new ColumnValueSerializer(tableDefinition), false);
-
-        for(Object o: rdb.getColumnFamilies()) {
-            if(pinfo!=null) {
-                addPartition(pinfo, o);
-            } else {
-                addPartition(o);
+        
+        if((partitioningSpec.type==PartitioningSpec._type.TIME_AND_VALUE) ||  (partitioningSpec.type==PartitioningSpec._type.VALUE)) {
+            for(Object o: rdb.getColumnFamilies()) {
+                if(pinfo!=null) {
+                    addPartitionByTimeAndValue(pinfo, o);
+                } else {
+                    addPartitionByValue(o);
+                }
             }
+        } else if(partitioningSpec.type==PartitioningSpec._type.TIME) {
+            addPartitionByTime(pinfo);
+        } else {
+            addPartitionByNone();
         }
     }
+
 
     /** 
      * Called at startup when reading existing partitions from disk
      */
-    private void addPartition(PartitionInfo pinfo, Object v) {	   	   
+    private void addPartitionByTime(PartitionInfo pinfo) {               
+        Interval intv = intervals.get(pinfo.partitionStart);      
+
+        if(intv==null) {            
+            intv=new Interval(pinfo.partitionStart, pinfo.partitionEnd);
+            intervals.put(pinfo.partitionStart, intv);
+        }
+        Partition p = new RdbPartition(pinfo.partitionStart, pinfo.partitionEnd, null, pinfo.dir+"/"+tableDefinition.getName());
+        intv.addTimePartition(p);
+    }   
+    
+    /** 
+     * Called at startup when reading existing partitions from disk
+     */
+    private void addPartitionByTimeAndValue(PartitionInfo pinfo, Object v) {	   	   
         Interval intv = intervals.get(pinfo.partitionStart);	  
 
         if(intv==null) {	    
-            intv=new Interval(pinfo.partitionStart, pinfo.partitionEnd);
+            intv = new Interval(pinfo.partitionStart, pinfo.partitionEnd);
             intervals.put(pinfo.partitionStart, intv);
         }
         Partition p=new RdbPartition(pinfo.partitionStart, pinfo.partitionEnd, v, pinfo.dir+"/"+tableDefinition.getName());
         intv.add(v, p);
     }	
-    
+
     /** 
      * Called at startup when reading existing partitions from disk
      */
-    private void addPartition(Object v) {             
+    private void addPartitionByValue(Object v) {             
         Partition p = new RdbPartition(Long.MIN_VALUE, Long.MAX_VALUE, v, tableDefinition.getName());             
         pcache.add(v, p);
     }   
-    
 
+    /** 
+     * Called at startup when reading existing partitions from disk
+     */
+    private void addPartitionByNone() {             
+        Partition p = new RdbPartition(Long.MIN_VALUE, Long.MAX_VALUE, null, tableDefinition.getName());             
+        pcache.add(null, p);
+    }   
+    
     @Override
     protected Partition createPartition(PartitionInfo pinfo, Object value) throws IOException {
         try {
@@ -125,13 +155,12 @@ public class RdbPartitionManager extends PartitionManager {
 
             YRDB rdb = rdbFactory.getRdb(f.getAbsolutePath(), new ColumnValueSerializer(tableDefinition), true);
             if(value!=null) rdb.createColumnFamily(value);
-       
+
             rdbFactory.dispose(rdb);
             return new RdbPartition(pinfo.partitionStart, pinfo.partitionEnd, value, pinfo.dir+"/"+tableDefinition.getName());			
         } catch (RocksDBException e) {
 
             log.error("Error when creating partition "+pinfo+" for value "+value+": ", e);
-            System.exit(1);
             throw new IOException(e);
 
         }

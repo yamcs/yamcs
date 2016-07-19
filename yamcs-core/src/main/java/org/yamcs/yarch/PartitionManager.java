@@ -68,10 +68,12 @@ public abstract class PartitionManager {
      * @param start
      * @param partitionValueFilter values
      * 
+     * @return an iterator over the partitions starting at the specified start time
+     * 
      */
     public Iterator<List<Partition>> iterator(long start, Set<Object> partitionValueFilter) {
         Iterator<Entry<Long, Interval>> it=intervals.entrySet().iterator();
-        PartitionIterator pi=new PartitionIterator(partitioningSpec, it, partitionValueFilter, false);
+        PartitionIterator pi = new PartitionIterator(partitioningSpec, it, partitionValueFilter, false);
         pi.jumpToStart(start);
         return pi;
     }
@@ -85,10 +87,14 @@ public abstract class PartitionManager {
 
     /**
      * Creates (if not already existing) and returns the partition in which the instant,value should be written.
-     * instant can be invalid (in case value only or no partitioning)
+     *
      * value can be null (in case of no value partitioning)
+     * 
+     * @param instant - time for which the partition has to be created - can be TimeEncoding.INVALID in case value only or no partitioning 
+     * @param value - value for which the partition has to be created - can be null in case of time only or no partitioning
      *  
      * @return a Partition
+     * @throws IOException 
      */
     public synchronized Partition createAndGetPartition(long instant, Object value) throws IOException {
         Partition partition;
@@ -121,7 +127,8 @@ public abstract class PartitionManager {
     /**
      * Gets partition where tuple has to be written. Creates the partition if necessary.
      * @param t
-     * @return
+     * 
+     * @return the partition where the tuple has to be written
      * @throws IOException 
      */
     public synchronized Partition getPartitionForTuple(Tuple t) throws IOException {
@@ -161,8 +168,9 @@ public abstract class PartitionManager {
 
 
     /**
-     * returns a collection of all existing partitions
-     * @return
+     * Retrieves the existing partitions
+     * 
+     * @return list of all existing partitions
      */
     public List<Partition> getPartitions() {
         List<Partition> plist = new ArrayList<Partition>();
@@ -193,11 +201,21 @@ public abstract class PartitionManager {
             else return partitions.get(value);
         }
         
+        public void addTimePartition(Partition partition) {
+            partitions.put(NON_NULL, partition);
+        }
+        
+        /**
+         * Add a partition
+         * 
+         * @param value - can be null in case of time based partitioning
+         * @param partition
+         */
         public void add(Object value, Partition partition) {
             if(value!=null) {
                 partitions.put(value, partition);
             } else {
-                partitions.put(NON_NULL, partition);
+                addTimePartition(partition);
             }
         }
         
