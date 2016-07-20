@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
@@ -47,10 +48,13 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     private NamedObjectId sp_jvmTotalMemory_id;
     private NamedObjectId sp_jvmMemoryUsed_id;
     private NamedObjectId sp_jvmTheadCount_id;
-    
+    final static public int JVM_COLLECTION_INTERVAL = 10;
+    private boolean provideJvmVariables = false;
+    private int jvmCollectionCountdown = 0; 
+
     ScheduledThreadPoolExecutor timer;
     final Stream stream;
-    
+
 
     int seqCount = 0;
     final private Logger log;
@@ -60,20 +64,22 @@ public class SystemParametersCollector extends AbstractService implements Runnab
 
     final String instance;
     TimeService timeService;
-    
-    
+
+
     static public SystemParametersCollector getInstance(String instance) {
         synchronized(instances) {
             return instances.get(instance);
         }
     }
 
-
     public SystemParametersCollector(String instance) throws ConfigurationException {
+        this(instance, null);
+    }
+    public SystemParametersCollector(String instance, Map<String, Object> args) throws ConfigurationException {
         this.instance = instance;
-       
         log=LoggerFactory.getLogger(this.getClass().getName()+"["+instance+"]");
-
+        processArgs(args);
+        
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
         Stream s=ydb.getStream(STREAM_NAME);
         if(s==null) {
@@ -81,34 +87,40 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         }
         stream=s;
         timeService = YamcsServer.getInstance(instance).getTimeService();
-        
+
         serverId = YamcsServer.getServerId();
         namespace = SystemParameterDb.YAMCS_SPACESYSTEM_NAME+NameDescription.PATH_SEPARATOR+serverId;
         log.debug("Using {} as serverId, and {} as namespace for system parameters", serverId, namespace);
-        
-        sp_jvmTotalMemory_id = NamedObjectId.newBuilder().setName(namespace+"/jvmTotalMemory").build();
-        log.debug("publishing jvmTotalMemory with parameter id {}", sp_jvmTotalMemory_id);
-        
-        sp_jvmMemoryUsed_id = NamedObjectId.newBuilder().setName(namespace+"/jvmMemoryUsed").build();
-        log.debug("publishing jvmMemoryUsed with parameter id {}", sp_jvmMemoryUsed_id);
-        
-        sp_jvmTheadCount_id = NamedObjectId.newBuilder().setName(namespace+"/jvmThreadCount").build();
-        log.debug("publishing jvmThreadCount with parameter id {}", sp_jvmTheadCount_id);
-        
+        if(provideJvmVariables) {
+            sp_jvmTotalMemory_id = NamedObjectId.newBuilder().setName(namespace+"/jvmTotalMemory").build();
+            log.debug("publishing jvmTotalMemory with parameter id {}", sp_jvmTotalMemory_id);
+
+            sp_jvmMemoryUsed_id = NamedObjectId.newBuilder().setName(namespace+"/jvmMemoryUsed").build();
+            log.debug("publishing jvmMemoryUsed with parameter id {}", sp_jvmMemoryUsed_id);
+
+            sp_jvmTheadCount_id = NamedObjectId.newBuilder().setName(namespace+"/jvmThreadCount").build();
+            log.debug("publishing jvmThreadCount with parameter id {}", sp_jvmTheadCount_id);
+        }
         synchronized(instances) {
             instances.put(instance, this);    
         }
-        
-      
     }
 
+    private void processArgs(Map<String, Object> args) {
+        if(args==null) return;
+        if(args.containsKey("provideJvmVariables")) {
+            provideJvmVariables = YConfiguration.getBoolean(args, "provideJvmVariables");
+        }
+    }
+    
+    
     @Override
     public void doStart() {
         timer = new ScheduledThreadPoolExecutor(1);
         timer.scheduleAtFixedRate(this, 1000L, frequencyMillisec, TimeUnit.MILLISECONDS);
         notifyStarted();
     }
-    
+
     @Override
     public void doStop() {
         timer.shutdown();
@@ -121,7 +133,13 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     @Override
     public void run() {
         List<ParameterValue> params = new ArrayList<ParameterValue>();
-        collectJvmParameters(params);
+        if(provideJvmVariables) {
+            jvmCollectionCountdown--;
+            if(jvmCollectionCountdown<=0) {
+                collectJvmParameters(params);
+                jvmCollectionCountdown = JVM_COLLECTION_INTERVAL;
+            }
+        } 
         for(SystemParametersProducer p: providers) {
             try {
                 Collection<ParameterValue> pvc =p.getSystemParameters();
@@ -131,8 +149,8 @@ public class SystemParametersCollector extends AbstractService implements Runnab
             }
         }
         long gentime = timeService.getMissionTime();
-        
-        
+
+
         if(params.isEmpty()) return;
 
         TupleDefinition tdef=PpProviderAdapter.PP_TUPLE_DEFINITION.copy();
@@ -161,7 +179,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         ParameterValue jvmTotalMemory = SystemParametersCollector.getPV(sp_jvmTotalMemory_id, time, r.totalMemory()/1024);
         ParameterValue jvmMemoryUsed = SystemParametersCollector.getPV(sp_jvmMemoryUsed_id, time, (r.totalMemory()-r.freeMemory())/1024);
         ParameterValue jvmThreadCount = SystemParametersCollector.getUnsignedIntPV(sp_jvmTheadCount_id, time, Thread.activeCount());
-        
+
         params.add(jvmTotalMemory);
         params.add(jvmMemoryUsed);
         params.add(jvmThreadCount);
@@ -172,7 +190,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         log.debug("Registering system variables provider {}", p);
         providers.add(p);
     }
-    
+
     /**
      * this is the namespace all system variables should be in
      * @return
@@ -180,8 +198,8 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     public String getNamespace() {
         return namespace;
     }
-    
-    
+
+
     public static ParameterValue getPV(NamedObjectId id, long time, String v) {
         return ParameterValue.newBuilder()
                 .setId(id)
@@ -191,8 +209,8 @@ public class SystemParametersCollector extends AbstractService implements Runnab
                 .setEngValue(Value.newBuilder().setType(Type.STRING).setStringValue(v).build())
                 .build();
     }
-    
-    
+
+
 
     public static ParameterValue getPV(NamedObjectId id, long time, long v) {
         return ParameterValue.newBuilder()
@@ -203,8 +221,8 @@ public class SystemParametersCollector extends AbstractService implements Runnab
                 .setEngValue(Value.newBuilder().setType(Type.SINT64).setSint64Value(v).build())
                 .build();
     }
-    
-    
+
+
     public static ParameterValue getUnsignedIntPV(NamedObjectId id, long time, int v) {
         return ParameterValue.newBuilder()
                 .setId(id)
