@@ -43,7 +43,7 @@ import org.yamcs.xtce.XtceLoader;
 public class XtceDbFactory {
     static Logger log = LoggerFactory.getLogger(XtceDbFactory.class);
 
-    
+
     /**
      * map instance names and config names to databases
      */
@@ -72,7 +72,7 @@ public class XtceDbFactory {
         // settings
         //
         loaderTree= new LoaderTree(new RootSpaceSystemLoader());
-        
+
         List<Object> list=c.getList(configSection);
         for(Object o: list) {
             if(o instanceof Map) {
@@ -116,10 +116,10 @@ public class XtceDbFactory {
             //Construct a Space System with one branch from the config file and the other one /yamcs for system variables
             SpaceSystem rootSs = loaderTree.load();
             SystemParameterDb sysDb = new SystemParameterDb();
-            
+
             rootSs.addSpaceSystem(sysDb.getYamcsSpaceSystem());
             //rootSs.setHeader(xss.getHeader());
-            
+
             int n;
             while((n=resolveReferences(rootSs, rootSs, sysDb))>0 ){};
             StringBuffer sb=new StringBuffer();
@@ -127,9 +127,9 @@ public class XtceDbFactory {
             if(n==0) throw new ConfigurationException("Cannot resolve (circular?) references: "+ sb.toString());
             setQualifiedNames(rootSs, "");
             db = new XtceDb(rootSs);
-            
+
             db.setSystemParameterDb(sysDb);
-            
+
             //set the root sequence container as the first root sequence container found in the sub-systems. 
             for(SpaceSystem ss: rootSs.getSubSystems()) {
                 SequenceContainer seqc = ss.getRootSequenceContainer();
@@ -137,7 +137,7 @@ public class XtceDbFactory {
                     db.setRootSequenceContainer(seqc);
                 }
             }
-            
+
             db.buildIndexMaps();
         }
         // log.info("Loaded database with "+instance.sid2TcPacketMap.size()+" TC, "+instance.sid2SequenceContainertMap.size()+" TM containers, "+instance.sid2ParameterMap.size()+" TM parameters and "+instance.upcOpsname2PpMap.size()+" processed parameters");
@@ -155,8 +155,11 @@ public class XtceDbFactory {
 
     /*collects a description for all unresolved references into the StringBuffer to raise an error*/
     private static void collectUnresolvedReferences(SpaceSystem ss, StringBuffer sb) {
-        for(NameReference nr: ss.getUnresolvedReferences()) {
-            sb.append("system").append(ss.getName()).append(" ").append(nr.toString()).append("\n");
+        List<NameReference> refs = ss.getUnresolvedReferences();
+        if(refs!=null) {
+            for(NameReference nr: ss.getUnresolvedReferences()) {
+                sb.append("system").append(ss.getName()).append(" ").append(nr.toString()).append("\n");
+            }
         }
         for(SpaceSystem ss1:ss.getSubSystems()) {
             collectUnresolvedReferences(ss1, sb);
@@ -172,10 +175,10 @@ public class XtceDbFactory {
      */
     private static int resolveReferences(SpaceSystem rootSs, SpaceSystem ss, SystemParameterDb sysDb) throws ConfigurationException {
         List<NameReference> refs = ss.getUnresolvedReferences();
-        
+
         //This can happen when we deserialise the SpaceSystem since the unresolved references is a transient list.
         if(refs==null) refs = Collections.emptyList();
-        
+
         int n = (refs.size()==0)?-1:0;
 
         Iterator<NameReference> it = refs.iterator();
@@ -206,7 +209,7 @@ public class XtceDbFactory {
         return n;
     }
 
-    
+
 
 
     /**
@@ -282,7 +285,7 @@ public class XtceDbFactory {
         case SEQUENCE_CONTAINTER:
             return ss.getSequenceContainer(name);
         case META_COMMAND:
-        	return ss.getMetaCommand(name);
+            return ss.getMetaCommand(name);
         }
         //shouldn't arrive here
         return null;
@@ -432,14 +435,14 @@ public class XtceDbFactory {
         }
         return db;
     }
-    
+
     public static synchronized XtceDb getInstanceByConfig(String yamcsInstance, String config) throws ConfigurationException {
         Map<String, XtceDb> dbConfigs = instance2DbConfigs.get(yamcsInstance);
         if (dbConfigs == null) {
             dbConfigs = new HashMap<>();
             instance2DbConfigs.put(yamcsInstance, dbConfigs);
         }
-        
+
         XtceDb db=dbConfigs.get(config);
         if(db==null) {
             db=createInstance(config);
@@ -447,7 +450,7 @@ public class XtceDbFactory {
         }
         return db;
     }
-    
+
     /**
      * forgets any singleton
      */
@@ -543,7 +546,7 @@ public class XtceDbFactory {
             }
         }
     }
-    
+
     //fake loader for the root (empty) space system
     static class RootSpaceSystemLoader implements SpaceSystemLoader {
         @Override
@@ -566,6 +569,6 @@ public class XtceDbFactory {
             rootSs.setParent(rootSs);
             return rootSs;
         }
-        
+
     }    
 }
