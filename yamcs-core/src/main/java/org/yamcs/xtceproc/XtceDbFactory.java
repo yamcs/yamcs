@@ -10,6 +10,8 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -102,7 +104,7 @@ public class XtceDbFactory {
 
         if (loadSerialized) {
             try {
-                db=loadSerializedInstance(getFullName(filename.toString()) + ".serialized");
+                db = loadSerializedInstance(getFullName(filename.toString()) + ".serialized");
                 serializedLoaded = true;
             } catch (Exception e) {
                 log.info("Cannot load serialized database", e);
@@ -169,10 +171,14 @@ public class XtceDbFactory {
      * @return the number of references resolved or -1 if there was no reference to be resolved
      */
     private static int resolveReferences(SpaceSystem rootSs, SpaceSystem ss, SystemParameterDb sysDb) throws ConfigurationException {
-        List<NameReference> refs=ss.getUnresolvedReferences();
-        int n= (refs.size()==0)?-1:0;
+        List<NameReference> refs = ss.getUnresolvedReferences();
+        
+        //This can happen when we deserialise the SpaceSystem since the unresolved references is a transient list.
+        if(refs==null) refs = Collections.emptyList();
+        
+        int n = (refs.size()==0)?-1:0;
 
-        Iterator<NameReference> it=refs.iterator();
+        Iterator<NameReference> it = refs.iterator();
         while (it.hasNext()) {
             NameReference nr=it.next();
 
@@ -192,7 +198,7 @@ public class XtceDbFactory {
         for(SpaceSystem ss1:ss.getSubSystems()) {
             int m = resolveReferences(rootSs, ss1, sysDb);
             if(n==-1) {
-                n=m;
+                n = m;
             } else if(m>0) {
                 n+=m;
             }
