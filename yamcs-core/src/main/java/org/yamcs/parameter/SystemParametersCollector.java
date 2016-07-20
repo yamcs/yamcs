@@ -44,6 +44,10 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     List<SystemParametersProducer> providers = new CopyOnWriteArrayList<SystemParametersProducer>();
     final static String PP_GROUP =  "yamcs";
     final static String STREAM_NAME="sys_param";
+    private NamedObjectId sp_jvmTotalMemory_id;
+    private NamedObjectId sp_jvmMemoryUsed_id;
+    private NamedObjectId sp_jvmTheadCount_id;
+    
     ScheduledThreadPoolExecutor timer;
     final Stream stream;
     
@@ -82,9 +86,20 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         namespace = SystemParameterDb.YAMCS_SPACESYSTEM_NAME+NameDescription.PATH_SEPARATOR+serverId;
         log.debug("Using {} as serverId, and {} as namespace for system parameters", serverId, namespace);
         
+        sp_jvmTotalMemory_id = NamedObjectId.newBuilder().setName(namespace+"/jvmTotalMemory").build();
+        log.debug("publishing jvmTotalMemory with parameter id {}", sp_jvmTotalMemory_id);
+        
+        sp_jvmMemoryUsed_id = NamedObjectId.newBuilder().setName(namespace+"/jvmMemoryUsed").build();
+        log.debug("publishing jvmMemoryUsed with parameter id {}", sp_jvmMemoryUsed_id);
+        
+        sp_jvmTheadCount_id = NamedObjectId.newBuilder().setName(namespace+"/jvmThreadCount").build();
+        log.debug("publishing jvmThreadCount with parameter id {}", sp_jvmTheadCount_id);
+        
         synchronized(instances) {
             instances.put(instance, this);    
         }
+        
+      
     }
 
     @Override
@@ -105,7 +120,8 @@ public class SystemParametersCollector extends AbstractService implements Runnab
      */
     @Override
     public void run() {
-        Collection<ParameterValue> params = new ArrayList<ParameterValue>();
+        List<ParameterValue> params = new ArrayList<ParameterValue>();
+        collectJvmParameters(params);
         for(SystemParametersProducer p: providers) {
             try {
                 Collection<ParameterValue> pvc =p.getSystemParameters();
@@ -115,6 +131,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
             }
         }
         long gentime = timeService.getMissionTime();
+        
         
         if(params.isEmpty()) return;
 
@@ -137,6 +154,19 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         Tuple t=new Tuple(tdef, cols);
         stream.emitTuple(t);
     }
+
+    private void collectJvmParameters(List<ParameterValue> params) {
+        long time = timeService.getMissionTime();
+        Runtime r = Runtime.getRuntime();
+        ParameterValue jvmTotalMemory = SystemParametersCollector.getPV(sp_jvmTotalMemory_id, time, r.totalMemory()/1024);
+        ParameterValue jvmMemoryUsed = SystemParametersCollector.getPV(sp_jvmMemoryUsed_id, time, (r.totalMemory()-r.freeMemory())/1024);
+        ParameterValue jvmThreadCount = SystemParametersCollector.getUnsignedIntPV(sp_jvmTheadCount_id, time, Thread.activeCount());
+        
+        params.add(jvmTotalMemory);
+        params.add(jvmMemoryUsed);
+        params.add(jvmThreadCount);
+    }
+
 
     public void registerProvider(SystemParametersProducer p, Collection<Parameter> params) {
         log.debug("Registering system variables provider {}", p);
@@ -171,6 +201,17 @@ public class SystemParametersCollector extends AbstractService implements Runnab
                 .setAcquisitionTime(time)
                 .setGenerationTime(time)
                 .setEngValue(Value.newBuilder().setType(Type.SINT64).setSint64Value(v).build())
+                .build();
+    }
+    
+    
+    public static ParameterValue getUnsignedIntPV(NamedObjectId id, long time, int v) {
+        return ParameterValue.newBuilder()
+                .setId(id)
+                .setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
+                .setAcquisitionTime(time)
+                .setGenerationTime(time)
+                .setEngValue(Value.newBuilder().setType(Type.UINT64).setUint64Value(v).build())
                 .build();
     }
 }
