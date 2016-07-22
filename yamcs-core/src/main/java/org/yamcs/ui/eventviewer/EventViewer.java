@@ -706,16 +706,30 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             CsvWriter writer=null;
             try {
                 writer=new CsvWriter(new FileOutputStream(file), '\t', Charset.forName("UTF-8"));
-                writer.writeRecord(new String[] {"Source","Generation Time","Reception Time","Event Type","Event Text"});
+                int cols = tableModel.getColumnCount();
+                String[] colNames = new String[cols];
+                colNames[0] = "Source";
+                colNames[1] = "Generation Time";
+                colNames[2] = "Reception Time";
+                colNames[3] = "Event Type";
+                colNames[4] = "Event Text";
+                for (int i = 5; i < cols; i++) {
+                    colNames[i] = tableModel.getColumnName(i);
+                }
+                writer.writeRecord(colNames);
                 writer.setForceQualifier(true);
                 int iend = tableModel.getRowCount();
-                for (int i=0; i<iend; i++) {
-                    writer.writeRecord(new String[] {
-                                    (String) tableModel.getValueAt(i, 0),
-                                    (String) tableModel.getValueAt(i, 1),
-                                    (String) tableModel.getValueAt(i, 2),
-                                    (String) tableModel.getValueAt(i, 3),
-                                    ((Event) tableModel.getValueAt(i, 4)).getMessage()});
+                for (int i = 0; i < iend; i++) {
+                    String[] rec = new String[cols];
+                    rec[0] = (String) tableModel.getValueAt(i, 0);
+                    rec[1] = (String) tableModel.getValueAt(i, 1);
+                    rec[2] = (String) tableModel.getValueAt(i, 2);
+                    rec[3] = (String) tableModel.getValueAt(i, 3);
+                    rec[4] = ((Event) tableModel.getValueAt(i, 4)).getMessage();
+                    for (int j = 5; j < cols; j++) {
+                        rec[j] = (String) tableModel.getValueAt(i, j);
+                    }
+                    writer.writeRecord(rec);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
