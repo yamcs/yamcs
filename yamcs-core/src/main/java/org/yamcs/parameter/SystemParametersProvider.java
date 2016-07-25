@@ -85,7 +85,7 @@ public class SystemParametersProvider extends AbstractService implements StreamS
         List<ParameterValue> params=new ArrayList<ParameterValue>();
         for(int i=4;i<tuple.size();i++) {
             org.yamcs.protobuf.Pvalue.ParameterValue gpv=(org.yamcs.protobuf.Pvalue.ParameterValue)tuple.getColumn(i);
-            String name=tuple.getColumnDefinition(i).getName();
+            String name = tuple.getColumnDefinition(i).getName();
             SystemParameter sv = variables.get(name);
             if(sv==null) {
                 sv = (SystemParameter) xtceDb.getParameter(name);
@@ -112,6 +112,7 @@ public class SystemParametersProvider extends AbstractService implements StreamS
         if(sv==null) {
             log.debug("Creating {}", fqname);
             sv = SystemParameter.getForFullyQualifiedName(fqname, DataSource.SYSTEM);
+            
             variables.put(fqname, sv);
             xtceDb.getSystemParameterDb().registerSystemParameter(sv);
         }
@@ -145,7 +146,11 @@ public class SystemParametersProvider extends AbstractService implements StreamS
     
     /**
      * Get (and possibly create) system parameter. 
-     * The parameter may be in the xtcedb in case it is referred to by an algorithm. Otherwise is created on the fly and not added to XtceDB.
+     * The parameter may be in the XtceDB in case it is referred to by an algorithm. Otherwise is created on the fly and not added to XtceDB.
+     * 
+     * @param fqname - the fully qualified name of the parameter to be returned 
+     * 
+     * @return the system parameter having the fqname. 
      */
     public SystemParameter getSystemParameter(String fqname) {
         SystemParameter sv = variables.get(fqname);

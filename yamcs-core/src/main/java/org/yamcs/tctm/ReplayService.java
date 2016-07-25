@@ -78,6 +78,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     TmProcessor tmProcessor;
     volatile long dataCount=0;
     final XtceDb xtceDb;
+    final SystemParameterDb sysParamDb;
     volatile long replayTime;
 
     private final String yamcsInstance;
@@ -92,9 +93,8 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     public ReplayService(String instance, ReplayRequest spec) throws YProcessorException, ConfigurationException {
         this.yamcsInstance = instance;
         this.originalReplayRequest = spec;
-
-
         xtceDb = XtceDbFactory.getInstance(instance);
+        sysParamDb = xtceDb.getSystemParameterDb();
     }
 
 
@@ -128,10 +128,17 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
             break;
         case PP:
             //convert from protobuf ParameterValue to internal ParameterValue 
-            ParameterData pd=(ParameterData)data;
+            ParameterData pd = (ParameterData)data;
             ArrayList<ParameterValue> params=new ArrayList<ParameterValue>(pd.getParameterCount());
             for(org.yamcs.protobuf.Pvalue.ParameterValue pbPv:pd.getParameterList()) {
-                Parameter ppDef = xtceDb.getParameter(pbPv.getId());
+                
+                Parameter ppDef;
+                if(SystemParameterDb.isSystemParameter(pbPv.getId())) {
+                    ppDef = sysParamDb.getSystemParameter(pbPv.getId(), true);
+                } else {
+                    ppDef = xtceDb.getParameter(pbPv.getId());
+                }
+                
                 if(ppDef!=null) {
                     ParameterValue pv = ParameterValue.fromGpb(ppDef, pbPv);
                     params.add(pv);
@@ -177,8 +184,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     // and in the subscribedParameters which PPs may be required
     private void createRawSubscription() throws YamcsException {
         rawDataRequest = originalReplayRequest.toBuilder().clearParameterRequest();
-        
-        
+                
         List<NamedObjectId> plist = originalReplayRequest.getParameterRequest().getNameFilterList();
         if(plist.isEmpty()) return; 
 
@@ -201,8 +207,6 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         Subscription subscription = tmproc.getSubscription();
         Collection<SequenceContainer> containers = subscription.getContainers();
 
-   
-
         
         if((containers==null)|| (containers.isEmpty())) {
             log.debug("No container required for the parameter subscription");
@@ -221,6 +225,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         //now check for PPs
         
         Set<String> pprecordings = new HashSet<>();
+        
         for(Parameter p: subscribedParameters) {
             pprecordings.add(p.getRecordingGroup());
         }
@@ -379,10 +384,6 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         // need to change the replay request to get the proper value when getReplayRequest() is called
         originalReplayRequest = originalReplayRequest.toBuilder().setSpeed(speed).build();
     }
-
-
-
-
 
     @Override
     public void setCommandHistoryRequestManager(CommandHistoryRequestManager chrm) {

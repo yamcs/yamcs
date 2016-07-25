@@ -9,8 +9,10 @@ package org.yamcs.xtce;
  * @author nm
  * 
  */
-public class SystemParameter extends Parameter {   
-    public SystemParameter(String spaceSystemName, String name, DataSource ds) {
+public class SystemParameter extends Parameter {
+    private static final long serialVersionUID = 2L;
+    
+    private SystemParameter(String spaceSystemName, String name, DataSource ds) {
         super(name);
         setQualifiedName(spaceSystemName+"/"+name);
         addAlias(spaceSystemName, name);
@@ -18,7 +20,14 @@ public class SystemParameter extends Parameter {
     }
 
     public static SystemParameter getForFullyQualifiedName(String fqname, DataSource ds) {
-        return new SystemParameter(NameDescription.getSubsystemName(fqname), NameDescription.getName(fqname), ds);
+        SystemParameter sp = new SystemParameter(NameDescription.getSubsystemName(fqname), NameDescription.getName(fqname), ds);
+        //set the recording name "/yamcs/a/b/c" -> "/yamcs/a"
+        int pos = fqname.indexOf(PATH_SEPARATOR, 0);
+        pos = fqname.indexOf(PATH_SEPARATOR, pos+1);
+        pos = fqname.indexOf(PATH_SEPARATOR, pos+1);
+        sp.setRecordingGroup(fqname.substring(0, pos));
+        
+        return sp;
     }
 
     @Override

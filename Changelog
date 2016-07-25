@@ -7,6 +7,7 @@ Version 0.29.5
 - support downloading multiple parameters at the same time
 - fixed reading non-value RocksDB partitions from disk at startup
 - publish jvmTotalMemory, jvmMemoryUsed and jvmThreadCount as system parameter to allow monitoring java memory usage (in KB) and number of active threads
+- fix recording and replay of system parameters; all of them are using /yamcs/<instance-id> as recording group.
 
 
 Version 0.29.4 Released 26-June-2016

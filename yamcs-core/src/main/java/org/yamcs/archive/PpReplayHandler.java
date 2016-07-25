@@ -28,7 +28,7 @@ public class PpReplayHandler implements ReplayHandler {
 
     @Override
     public void setRequest(ReplayRequest newRequest) {
-        this.request=newRequest;
+        this.request = newRequest;
         currentGroups.clear();
         currentGroups.addAll(newRequest.getPpRequest().getGroupNameFilterList());
     }

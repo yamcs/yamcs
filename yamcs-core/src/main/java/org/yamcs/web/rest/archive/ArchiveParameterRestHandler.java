@@ -63,9 +63,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
         
         ParameterType ptype = p.getParameterType();
-        if (ptype == null) {
-            throw new BadRequestException("Requested parameter has no type");
-        } else if (!(ptype instanceof FloatParameterType) && !(ptype instanceof IntegerParameterType)) {
+        if ((ptype != null) && (!(ptype instanceof FloatParameterType) && !(ptype instanceof IntegerParameterType))) {
             throw new BadRequestException("Only integer or float parameters can be sampled. Got " + ptype.getTypeAsString());
         }
         
@@ -112,10 +110,6 @@ public class ArchiveParameterRestHandler extends RestHandler {
         int limit = req.getQueryParameterAsInt("limit", 100);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
         
-        // syspar provider is not currently added to replay channels, so it only generates errors
-        if (SystemParameterDb.isSystemParameter(id)) {
-            return sendOK(req, ParameterData.newBuilder().build(), SchemaPvalue.ParameterData.WRITE);
-        }
         
         ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, p, true);
 

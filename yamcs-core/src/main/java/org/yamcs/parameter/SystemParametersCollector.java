@@ -43,7 +43,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     static Map<String,SystemParametersCollector> instances=new HashMap<String,SystemParametersCollector>();
     static long frequencyMillisec=1000;
     List<SystemParametersProducer> providers = new CopyOnWriteArrayList<SystemParametersProducer>();
-    final static String PP_GROUP =  "yamcs";
+    
     final static String STREAM_NAME="sys_param";
     private NamedObjectId sp_jvmTotalMemory_id;
     private NamedObjectId sp_jvmMemoryUsed_id;
@@ -156,7 +156,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         TupleDefinition tdef=PpProviderAdapter.PP_TUPLE_DEFINITION.copy();
         List<Object> cols=new ArrayList<Object>(4+params.size());
         cols.add(gentime);
-        cols.add(PP_GROUP);
+        cols.add(namespace);
         cols.add(seqCount);
         cols.add(timeService.getMissionTime());
         for(ParameterValue pv:params) {
@@ -192,8 +192,9 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     }
 
     /**
-     * this is the namespace all system variables should be in
-     * @return
+     * this is the namespace all system parameters should be in
+     * 
+     * @return the namespace to be used by the system parameters
      */
     public String getNamespace() {
         return namespace;

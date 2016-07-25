@@ -78,9 +78,9 @@
                     limit: 10
                 }).then(function (historyData) {
                     $scope.values = historyData['parameter'];
-
-                    // FIXME additional checks for system parameters which don't have a type :(
-                    if (qname.indexOf('/yamcs') === 0 && $scope.values.length > 0) {
+                    
+                    // additional checks for system parameters which don't have a type :(
+                    if ($scope.values && qname.indexOf('/yamcs') === 0 && $scope.values.length > 0) {
                         var valType = $scope.values[0]['engValue']['type'];
                         if (valType === 'SINT64'
                                 || valType === 'UINT64'

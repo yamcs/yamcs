@@ -106,8 +106,11 @@ public class SystemParameterDb implements Serializable {
         DataSource ds = getSystemParameterDataSource(fqname);
         
         String[] a = Pattern.compile(String.valueOf(NameDescription.PATH_SEPARATOR), Pattern.LITERAL).split(fqname);
+        if(a.length<2) throw new IllegalArgumentException("Cannot create a system parameter with name '"+fqname+"'");
+        
         SpaceSystem ss = getOrCreateSpaceSystemForSplitName(a);
-        SystemParameter sp = (SystemParameter)ss.getParameter(a[a.length-1]);   
+        SystemParameter sp = (SystemParameter)ss.getParameter(a[a.length-1]);
+        
         if(sp==null) {
             sp = SystemParameter.getForFullyQualifiedName(fqname, ds);
             registerSystemParameter(sp, ss);
