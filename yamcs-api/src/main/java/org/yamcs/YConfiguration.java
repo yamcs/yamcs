@@ -424,6 +424,18 @@ public class YConfiguration {
         }
     }
     
+    static public long getLong(Map<String, Object> m, String key) throws ConfigurationException {
+        checkKey(m, key);
+        Object o=m.get(key);
+        if(o instanceof Integer) {
+            return (Integer)o;
+        } else if(o instanceof Long) {
+            return (Long)o;
+        } else {
+            throw new ConfigurationException(confPath.get(m), "mapping for key '"+key+"' is of type "+getUnqualfiedClassName(o)+" and not Integer or Long");
+        }
+    }
+    
     /**
      * return the m.get(key) as an long if it's present or v if it is not.
      * 

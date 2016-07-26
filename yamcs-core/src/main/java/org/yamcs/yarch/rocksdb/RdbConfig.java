@@ -151,20 +151,20 @@ public class RdbConfig {
             if(m.containsKey(KEY_cfOptions)) {
                 Map<String, Object> cm = YConfiguration.getMap(m, KEY_cfOptions);
                 if(cm.containsKey("targetFileSizeBase")) {
-                    cfOptions.setTargetFileSizeBase(1024 * YConfiguration.getInt(cm, "targetFileSizeBase"));
-                    options.setTargetFileSizeBase(1024 * YConfiguration.getInt(cm, "targetFileSizeBase"));
+                    cfOptions.setTargetFileSizeBase(1024 * YConfiguration.getLong(cm, "targetFileSizeBase"));
+                    options.setTargetFileSizeBase(1024 * YConfiguration.getLong(cm, "targetFileSizeBase"));
                 }
                 if(cm.containsKey("targetFileSizeMultiplier")) {
                     cfOptions.setTargetFileSizeMultiplier(YConfiguration.getInt(cm, "targetFileSizeMultiplier"));
                     options.setTargetFileSizeMultiplier(YConfiguration.getInt(cm, "targetFileSizeMultiplier"));
                 }
                 if(cm.containsKey("maxBytesForLevelBase")) {
-                    cfOptions.setMaxBytesForLevelBase(1024 * YConfiguration.getInt(cm, "maxBytesForLevelBase"));
-                    options.setMaxBytesForLevelBase(1024 * YConfiguration.getInt(cm, "maxBytesForLevelBase"));
+                    cfOptions.setMaxBytesForLevelBase(1024 * YConfiguration.getLong(cm, "maxBytesForLevelBase"));
+                    options.setMaxBytesForLevelBase(1024 * YConfiguration.getLong(cm, "maxBytesForLevelBase"));
                 }
                 if(cm.containsKey("writeBufferSize")) {
-                    cfOptions.setWriteBufferSize(1024*YConfiguration.getInt(cm, "writeBufferSize"));
-                    options.setWriteBufferSize(1024*YConfiguration.getInt(cm, "writeBufferSize"));
+                    cfOptions.setWriteBufferSize(1024 * YConfiguration.getLong(cm, "writeBufferSize"));
+                    options.setWriteBufferSize(1024 * YConfiguration.getLong(cm, "writeBufferSize"));
                 }
                 if(cm.containsKey("maxBytesForLevelMultiplier")) {
                     cfOptions.setMaxBytesForLevelMultiplier(YConfiguration.getInt(cm, "maxBytesForLevelMultiplier"));
@@ -178,7 +178,7 @@ public class RdbConfig {
                     Map<String, Object> tfc = YConfiguration.getMap(m, KEY_tfConfig);
                     BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
                     if(tfc.containsKey("blockSize")) {
-                        tableFormatConfig.setBlockSize(1024L*YConfiguration.getInt(cm, "blockSize"));
+                        tableFormatConfig.setBlockSize(1024L*YConfiguration.getLong(cm, "blockSize"));
                     }
                     options.setTableFormatConfig(tableFormatConfig);
                     cfOptions.setTableFormatConfig(tableFormatConfig);
