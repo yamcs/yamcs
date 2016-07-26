@@ -8,6 +8,7 @@ Version 0.29.5
 - fixed reading non-value RocksDB partitions from disk at startup
 - publish jvmTotalMemory, jvmMemoryUsed and jvmThreadCount as system parameter to allow monitoring java memory usage (in KB) and number of active threads
 - fix recording and replay of system parameters; all of them are using /yamcs/<instance-id> as recording group.
+- updated to rocksdb 4.8.0 (to solve some weird bug on 32bits column family options being ignored)
 
 
 Version 0.29.4 Released 26-June-2016

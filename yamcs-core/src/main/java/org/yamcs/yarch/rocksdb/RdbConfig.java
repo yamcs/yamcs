@@ -78,7 +78,7 @@ public class RdbConfig {
         defaultOptions.setEnv(env);
         defaultOptions.setCreateIfMissing(true);
         
-        defaultDBOptions = new DBOptions();
+        defaultDBOptions = new DBOptions().setCreateIfMissing(true);
     }
     
     /**

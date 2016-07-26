@@ -56,7 +56,8 @@ public class YRDB {
         DBOptions dbopt = (tc==null)? rdbConfig.getDefaultDBOptions():tc.getDBOptions();
         
         this.path = dir;
-        if(f.exists()) {
+        File current = new File(dir+File.separatorChar+"CURRENT");
+        if(current.exists()) {
             List<byte[]> cfl = RocksDB.listColumnFamilies(opt, dir);
             
             if(cfl!=null) {
