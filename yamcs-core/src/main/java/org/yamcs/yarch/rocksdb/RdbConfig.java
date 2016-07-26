@@ -68,12 +68,13 @@ public class RdbConfig {
             m.put(KEY_tableNamePattern, "tm");
             Map<String, Object> cfm = new HashMap<String, Object>();
             m.put(KEY_cfOptions, cfm);
-            cfm.put("maxWriteBufferNumber", 10*1024);
+            cfm.put("writeBufferSize", 10*1024);//10MB
             TableConfig tm = new TableConfig(m);
             tblConfigList.add(tm);
         }
         env = Env.getDefault();
-        defaultColumnFamilyOptions = new ColumnFamilyOptions();
+        defaultColumnFamilyOptions = new ColumnFamilyOptions().setWriteBufferSize(2*1024*1024);//2MB
+        
         defaultOptions = new Options();
         defaultOptions.setEnv(env);
         defaultOptions.setCreateIfMissing(true);
@@ -174,6 +175,11 @@ public class RdbConfig {
                     cfOptions.setMaxWriteBufferNumber(YConfiguration.getInt(cm, "maxWriteBufferNumber"));
                     options.setMaxWriteBufferNumber(YConfiguration.getInt(cm, "maxWriteBufferNumber"));
                 }
+                if(cm.containsKey("minWriteBufferNumberToMerge")) {
+                    cfOptions.setMinWriteBufferNumberToMerge(YConfiguration.getInt(cm, "minWriteBufferNumberToMerge"));
+                    options.setMinWriteBufferNumberToMerge(YConfiguration.getInt(cm, "minWriteBufferNumberToMerge"));
+                }
+                
                 if(cm.containsKey(KEY_tfConfig)) {
                     Map<String, Object> tfc = YConfiguration.getMap(m, KEY_tfConfig);
                     BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
