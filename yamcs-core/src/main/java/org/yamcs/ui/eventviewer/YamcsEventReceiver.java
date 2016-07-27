@@ -20,11 +20,11 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
-import org.hornetq.api.core.client.SessionFailureListener;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.api.core.client.SessionFailureListener;
 import org.yamcs.YamcsException;
 import org.yamcs.api.ConnectionListener;
 import org.yamcs.api.Protocol;
@@ -76,14 +76,14 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, Me
             yamcsClient=yconnector.getSession().newClientBuilder()
                 .setDataConsumer(new SimpleString(yconnector.getConnectionParams().getInstance()+".events_realtime"), null).build();
             yamcsClient.dataConsumer.setMessageHandler(this);
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             eventViewer.log(e.getMessage());
             e.printStackTrace();
         }
     }
     
     @Override
-    public void beforeReconnect(HornetQException arg0) {
+    public void beforeReconnect(ActiveMQException arg0) {
         //should not be called because reconnection is not configured in the factory
     }
 
@@ -248,7 +248,7 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, Me
     }
 
     @Override
-    public void connectionFailed(HornetQException exception, boolean failedOver) {
+    public void connectionFailed(ActiveMQException exception, boolean failedOver) {
         // TODO Auto-generated method stub
         
     }
@@ -267,5 +267,12 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, Me
 
     @Override
     public void log(String message) {
+    }
+
+    @Override
+    public void connectionFailed(ActiveMQException exception,
+            boolean failedOver, String scaleDownTargetNodeID) {
+        // TODO Auto-generated method stub
+        
     }  
 }

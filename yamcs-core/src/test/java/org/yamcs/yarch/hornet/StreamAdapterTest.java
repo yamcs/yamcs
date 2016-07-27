@@ -5,11 +5,11 @@ import static org.junit.Assert.*;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
-import org.hornetq.core.server.embedded.EmbeddedHornetQ;
+import org.apache.activemq.artemis.api.core.ActiveMQBuffer;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -27,7 +27,7 @@ import org.yamcs.yarch.YarchTestCase;
 
 public class StreamAdapterTest extends YarchTestCase {
     int n=10;
-    static EmbeddedHornetQ hornetServer;
+    static EmbeddedActiveMQ hornetServer;
     
     
     @BeforeClass
@@ -173,7 +173,7 @@ class MyTupleTranslator implements TupleTranslator {
     public ClientMessage buildMessage(ClientMessage msg, Tuple tuple) {
         int x=(Integer)tuple.getColumn("x");
         double d=(Double)tuple.getColumn("d");
-        HornetQBuffer body=msg.getBodyBuffer();
+        ActiveMQBuffer body=msg.getBodyBuffer();
         body.writeInt(x);
         body.writeDouble(d);
         return msg;
@@ -181,7 +181,7 @@ class MyTupleTranslator implements TupleTranslator {
 
     @Override
     public Tuple buildTuple(TupleDefinition tdef, ClientMessage msg) {
-        HornetQBuffer body=msg.getBodyBuffer();
+        ActiveMQBuffer body=msg.getBodyBuffer();
         return new Tuple(tdef, new Object[]{body.readInt(), body.readDouble()});
     }
     

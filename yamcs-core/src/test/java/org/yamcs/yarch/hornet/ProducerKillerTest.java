@@ -2,28 +2,27 @@ package org.yamcs.yarch.hornet;
 
 import static org.junit.Assert.*;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
-import org.hornetq.core.client.impl.DelegatingSession;
-import org.hornetq.core.remoting.impl.netty.NettyConnection;
-import org.hornetq.core.server.embedded.EmbeddedHornetQ;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.core.client.impl.ClientSessionImpl;
+import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnection;
+import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.security.HornetQAuthManager;
-
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
 
 
 public class ProducerKillerTest {
-    static EmbeddedHornetQ hornetServer;
+    static EmbeddedActiveMQ hornetServer;
     
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        hornetServer = new EmbeddedHornetQ();
+        hornetServer = new EmbeddedActiveMQ();
         hornetServer.setConfigResourcePath("hornetq-configuration-tpk.xml");
         hornetServer.setSecurityManager( new HornetQAuthManager() );
         hornetServer.start();
@@ -41,7 +40,7 @@ public class ProducerKillerTest {
             @Override
             public void onMessage(ClientMessage msg) {
             //    System.out.println(Thread.currentThread()+" received the first message: "+msg+", closing connection");
-                NettyConnection nc=(NettyConnection)((DelegatingSession)ys.session).getConnection().getTransportConnection();
+                NettyConnection nc=(NettyConnection)((ClientSessionImpl)ys.session).getConnection().getTransportConnection();
                 nc.close();
             }
         });
@@ -63,7 +62,7 @@ public class ProducerKillerTest {
                         yclient1.sendData(dataClient.dataAddress, msg);
                         i++;
                     }
-                } catch (HornetQException e) {
+                } catch (ActiveMQException e) {
                     e.printStackTrace();
                 }
             }

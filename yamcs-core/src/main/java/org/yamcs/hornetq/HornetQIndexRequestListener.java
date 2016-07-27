@@ -1,7 +1,7 @@
 package org.yamcs.hornetq;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.Protocol;
@@ -53,12 +53,12 @@ public class HornetQIndexRequestListener implements IndexRequestListener {
         }
         try {
             if (yamcsClient != null) yamcsClient.close();
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             log.warn("Got exception while closing client", e);
         }
         try {
             if( yamcsSession != null ) yamcsSession.close();
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             log.warn("Got exception while closing client", e);
         }
     }

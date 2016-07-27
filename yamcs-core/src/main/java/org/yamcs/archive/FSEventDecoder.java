@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
 import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ThreadSafe;
@@ -86,7 +86,7 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
             dumpAddress=new SimpleString(instance+".events_dump");
             yamcsSession = YamcsSession.newBuilder().build();
             msgClient = yamcsSession.newClientBuilder().setDataProducer(true).build();
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             throw new ConfigurationException(e.toString());
         } catch (YamcsApiException e) {
             throw new ConfigurationException(e.getMessage(),e);
@@ -146,7 +146,7 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
                 for(Event ev:events) {
                     msgClient.sendData(address, ProtoDataType.EVENT, ev);
                 }
-            } catch (HornetQException e) {
+            } catch (ActiveMQException e) {
                 log.warn("Exception when sending event: ", e);
             }
         }
@@ -158,7 +158,7 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
     protected void doStop() {
 	try {
 	    yamcsSession.close();
-	} catch (HornetQException e) {
+	} catch (ActiveMQException e) {
 	    log.error("Error when closing the yamcsSession", e);
 	}
         notifyStopped();        

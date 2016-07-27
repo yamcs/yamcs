@@ -9,10 +9,10 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
-import org.hornetq.core.server.embedded.EmbeddedHornetQ;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -39,14 +39,14 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchTestCase;
 
 /**
- * Generates and saves some some events and then it performs a replay via HornetQ
+ * Generates and saves some some events and then it performs a replay via ActiveMQ
  * 
  * 
  * @author nm
  *
  */
 public class EventRecordingTest extends YarchTestCase {
-    static EmbeddedHornetQ hornetServer;
+    static EmbeddedActiveMQ hornetServer;
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         hornetServer=YamcsServer.setupHornet();

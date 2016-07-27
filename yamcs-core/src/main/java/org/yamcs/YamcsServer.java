@@ -16,11 +16,11 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
-import org.hornetq.core.server.embedded.EmbeddedHornetQ;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.Protocol;
@@ -38,7 +38,7 @@ import org.yamcs.security.HqClientMessageToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
-import org.yamcs.utils.HornetQBufferOutputStream;
+import org.yamcs.utils.ActiveMQBufferOutputStream;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.web.HttpServer;
 import org.yamcs.web.StaticFileHandler;
@@ -61,7 +61,7 @@ import com.google.common.util.concurrent.Service.State;
  *
  */
 public class YamcsServer {
-    static EmbeddedHornetQ hornetServer;
+    static EmbeddedActiveMQ hornetServer;
     static Map<String, YamcsServer> instances=new LinkedHashMap<String, YamcsServer>();
     final static private String SERVER_ID_KEY="serverId";
 
@@ -84,7 +84,7 @@ public class YamcsServer {
     static private String serverId;
     
     @SuppressWarnings("unchecked")
-    YamcsServer(String instance) throws HornetQException, IOException, StreamSqlException, ParseException, YamcsApiException {
+    YamcsServer(String instance) throws ActiveMQException, IOException, StreamSqlException, ParseException, YamcsApiException {
         this.instance=instance;
         
         //TODO - fix bootstrap issue 
@@ -145,7 +145,7 @@ public class YamcsServer {
     static YamcsSession yamcsSession;
     static YamcsClient ctrlAddressClient;
 
-    public static EmbeddedHornetQ setupHornet() throws Exception {
+    public static EmbeddedActiveMQ setupHornet() throws Exception {
         //divert hornetq logging
         System.setProperty("org.jboss.logging.provider", "slf4j");
 
@@ -158,7 +158,7 @@ public class YamcsServer {
         }
         catch (Exception e){}
 
-        hornetServer = new EmbeddedHornetQ();
+        hornetServer = new EmbeddedActiveMQ();
         hornetServer.setSecurityManager( new HornetQAuthManager() );
         if(hornetqConfigFile != null)
             hornetServer.setConfigResourcePath(hornetqConfigFile);
@@ -315,7 +315,7 @@ public class YamcsServer {
         return aib.build();
     }
 
-    private static void sendMissionDatabase(MissionDatabaseRequest mdr, SimpleString replyTo, SimpleString dataAddress) throws HornetQException {
+    private static void sendMissionDatabase(MissionDatabaseRequest mdr, SimpleString replyTo, SimpleString dataAddress) throws ActiveMQException {
         final XtceDb xtcedb;
         try {
             if(mdr.hasInstance()) {
@@ -329,7 +329,7 @@ public class YamcsServer {
             }
         
             ClientMessage msg=yamcsSession.session.createMessage(false);
-            ObjectOutputStream oos=new ObjectOutputStream(new HornetQBufferOutputStream(msg.getBodyBuffer()));
+            ObjectOutputStream oos=new ObjectOutputStream(new ActiveMQBufferOutputStream(msg.getBodyBuffer()));
             oos.writeObject(xtcedb);
             oos.close();
             ctrlAddressClient.sendReply(replyTo, "OK", null);
@@ -390,7 +390,7 @@ public class YamcsServer {
     
     public static void configureNonBlocking(SimpleString dataAddress) {
 	//TODO
-	//Object o=hornetServer.getHornetQServer().getManagementService().getResource(dataAddress.toString());
+	//Object o=hornetServer.getActiveMQServer().getManagementService().getResource(dataAddress.toString());
     }
 
     /**

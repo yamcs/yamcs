@@ -4,7 +4,7 @@ import org.yamcs.ConfigurationException;
 
 
 /**
- * receives data from HornetQ and publishes it into a yamcs stream
+ * receives data from ActiveMQ and publishes it into a yamcs stream
  * 
  * @author nm
  *

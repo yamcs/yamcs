@@ -1,7 +1,7 @@
 package org.yamcs.ui;
 
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
 
 import org.yamcs.YamcsException;
 import org.yamcs.api.ConnectionListener;

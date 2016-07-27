@@ -10,9 +10,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.HornetQExceptionType;
-import org.hornetq.api.core.client.SessionFailureListener;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.ActiveMQExceptionType;
+import org.apache.activemq.artemis.api.core.client.SessionFailureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
@@ -58,9 +58,9 @@ public class YamcsConnector implements SessionFailureListener {
             }
             ys.close();
             return instances;
-        } catch ( HornetQException hqe ) {
+        } catch ( ActiveMQException hqe ) {
             // If we don't have permissions, treat as a failed connection
-            if( hqe.getType() == HornetQExceptionType.SECURITY_EXCEPTION || hqe.getType() == HornetQExceptionType.SESSION_CREATION_REJECTED ) {
+            if( hqe.getType() == ActiveMQExceptionType.SECURITY_EXCEPTION || hqe.getType() == ActiveMQExceptionType.SESSION_CREATION_REJECTED ) {
                 String message = "Connection failed with security exception: " + hqe.getMessage();
                 log.warn( message );
                 if( connected ) {
@@ -121,7 +121,7 @@ public class YamcsConnector implements SessionFailureListener {
                         } catch (YamcsApiException e) {
                             // If we don't have permissions, treat as a failed connection and don't re-try
                             Throwable cause = e.getCause();
-                            if( cause != null && cause instanceof HornetQException && ((HornetQException)cause).getType() == HornetQExceptionType.SECURITY_EXCEPTION ) {
+                            if( cause != null && cause instanceof ActiveMQException && ((ActiveMQException)cause).getType() == ActiveMQExceptionType.SECURITY_EXCEPTION ) {
                                 String message = "Connection failed with security exception: " + e.getMessage();
                                 log.warn( message );
                                 if( connected ) {
@@ -165,7 +165,7 @@ public class YamcsConnector implements SessionFailureListener {
         try {
             yamcsSession.close();
             connected=false;
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             for(ConnectionListener cl:connectionListeners)
                 cl.log(e.toString());
         }
@@ -184,7 +184,7 @@ public class YamcsConnector implements SessionFailureListener {
     }
 
     @Override
-    public void connectionFailed(HornetQException e, boolean failedOver) {
+    public void connectionFailed(ActiveMQException e, boolean failedOver) {
         connected=false;
         for(ConnectionListener cl:connectionListeners) {
             cl.disconnected();
@@ -194,7 +194,7 @@ public class YamcsConnector implements SessionFailureListener {
     }
 
     @Override
-    public void beforeReconnect(HornetQException e) {
+    public void beforeReconnect(ActiveMQException e) {
         //should not be called because reconnection is not configured in the factory
         //log.warn("Before reconnect: ", creatorContext);
         log.warn("Before reconnect: ", e);
@@ -209,11 +209,14 @@ public class YamcsConnector implements SessionFailureListener {
         return connectionParams;
     }
 
-    public void close() throws HornetQException {
+    public void close() throws ActiveMQException {
         yamcsSession.close();
     }
 
     public ExecutorService getExecutor() {
         return executor;
+    }
+    @Override
+    public void connectionFailed(ActiveMQException exception,  boolean failedOver, String scaleDownTargetNodeID) {
     }
 }

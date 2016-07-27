@@ -3,17 +3,17 @@ package org.yamcs.utils;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.hornetq.api.core.HornetQBuffer;
+import org.apache.activemq.artemis.api.core.ActiveMQBuffer;
 
 /**
- * OutputStream that writes into an HornetQBuffer
+ * OutputStream that writes into an ActiveMQBuffer
  * @author nm
  *
  */
-public class HornetQBufferOutputStream extends OutputStream {
-    private final HornetQBuffer hqb;
+public class ActiveMQBufferOutputStream extends OutputStream {
+    private final ActiveMQBuffer hqb;
 
-    public HornetQBufferOutputStream(HornetQBuffer out) { 
+    public ActiveMQBufferOutputStream(ActiveMQBuffer out) { 
 	this.hqb = out;
     }
 

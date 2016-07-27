@@ -6,9 +6,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ObjectInputStream;
 
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.core.server.embedded.EmbeddedHornetQ;
-import org.hornetq.utils.HornetQBufferInputStream;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
+import org.apache.activemq.artemis.utils.ActiveMQBufferInputStream;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -20,7 +20,7 @@ import org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest;
 import org.yamcs.xtce.XtceDb;
 
 public class YamcsServerTest {
-    static EmbeddedHornetQ hornetServer;
+    static EmbeddedActiveMQ hornetServer;
     
     @BeforeClass
     public static void setupYamcs() throws Exception {
@@ -44,7 +44,7 @@ public class YamcsServerTest {
         yc.executeRpc(Protocol.YAMCS_SERVER_CONTROL_ADDRESS, "getMissionDatabase", mdr, null);
         ClientMessage msg=yc.dataConsumer.receive(5000);
         assertNotNull(msg);
-        ObjectInputStream ois=new ObjectInputStream(new HornetQBufferInputStream(msg.getBodyBuffer()));
+        ObjectInputStream ois=new ObjectInputStream(new ActiveMQBufferInputStream(msg.getBodyBuffer()));
         Object o=ois.readObject();
         assertTrue(o instanceof XtceDb);
         XtceDb xtcedb=(XtceDb) o;

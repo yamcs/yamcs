@@ -1,5 +1,5 @@
 package org.yamcs.security;
-import org.hornetq.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
 
 /**
  * Created by msc on 05/05/15.

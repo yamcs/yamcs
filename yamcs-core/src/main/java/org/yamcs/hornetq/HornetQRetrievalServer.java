@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
@@ -57,7 +57,7 @@ public class HornetQRetrievalServer extends AbstractExecutionThreadService {
     final YamcsSession yamcsSession;
     final ReplayServer replayServer;
 
-    public HornetQRetrievalServer(ReplayServer replayServer) throws HornetQException, YamcsApiException {
+    public HornetQRetrievalServer(ReplayServer replayServer) throws ActiveMQException, YamcsApiException {
         this.replayServer = replayServer;
         this.instance = replayServer.getInstance();
         yamcsSession = YamcsSession.newBuilder().build();
@@ -109,10 +109,10 @@ public class HornetQRetrievalServer extends AbstractExecutionThreadService {
      * @param dataAddress - address used to send the data
      * @throws YamcsApiException 
      * @throws YamcsException 
-     * @throws HornetQException 
+     * @throws ActiveMQException 
      * @throws IOException 
      */
-    public void createReplay(ClientMessage requestMsg, SimpleString replyto, SimpleString dataAddress) throws YamcsException, YamcsApiException, IOException, HornetQException {
+    public void createReplay(ClientMessage requestMsg, SimpleString replyto, SimpleString dataAddress) throws YamcsException, YamcsApiException, IOException, ActiveMQException {
         ReplayRequest replayRequest = (ReplayRequest) decode(requestMsg, ReplayRequest.newBuilder());
         HqClientMessageToken authToken = null;
 
@@ -164,7 +164,7 @@ public class HornetQRetrievalServer extends AbstractExecutionThreadService {
             }
         }
 
-        HornetQReplayListener listener = new HornetQReplayListener(dataAddress);
+        ActiveMQReplayListener listener = new ActiveMQReplayListener(dataAddress);
         YarchReplay yr = replayServer.createReplay(replayRequest, listener, authToken);
         listener.replay = yr;
         (new Thread(listener)).start();
@@ -181,18 +181,18 @@ public class HornetQRetrievalServer extends AbstractExecutionThreadService {
         try {
             msgClient.close();
             yamcsSession.close();
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             log.warn("Got exception when closing the session", e);
         }
     }
     
     
-    static class HornetQReplayListener implements ReplayListener, Runnable {        
+    static class ActiveMQReplayListener implements ReplayListener, Runnable {        
         YamcsSession ysession;
         YamcsClient yclient;
         SimpleString dataAddress;
         volatile boolean quitting = false;
-        public HornetQReplayListener( SimpleString dataAddress)  throws IOException, HornetQException, YamcsException, YamcsApiException {
+        public ActiveMQReplayListener( SimpleString dataAddress)  throws IOException, ActiveMQException, YamcsException, YamcsApiException {
             this.dataAddress = dataAddress;
             ysession = YamcsSession.newBuilder().build();
             yclient = ysession.newClientBuilder().setRpc(true).setDataProducer(true).build();
@@ -260,7 +260,7 @@ public class HornetQRetrievalServer extends AbstractExecutionThreadService {
         public void newData(ProtoDataType type, MessageLite data) {
             try {
                 yclient.sendData(dataAddress, type, data);
-            } catch (HornetQException e) {
+            } catch (ActiveMQException e) {
                 log.warn("Got exception when sending data to client", e);
                 quit();
             }
@@ -274,7 +274,7 @@ public class HornetQRetrievalServer extends AbstractExecutionThreadService {
                     quit();
                 }
                 
-            } catch (HornetQException e) {
+            } catch (ActiveMQException e) {
                 log.warn("Got exception when signaling state change", e);
                 quit();
             }

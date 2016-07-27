@@ -5,15 +5,15 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
-import org.hornetq.core.remoting.impl.netty.TransportConstants;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.TransportConfiguration;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.ClientSession;
+import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
+import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
+import org.apache.activemq.artemis.api.core.client.ServerLocator;
+import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory;
+import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
 
 public class YamcsSession {
     boolean invm=true;
@@ -62,7 +62,7 @@ public class YamcsSession {
 	return new YamcsClient.ClientBuilder(this);
     }
 
-    public void close() throws HornetQException {
+    public void close() throws ActiveMQException {
 	try {
 	    if (session != null)
 		session.close();
@@ -81,7 +81,7 @@ public class YamcsSession {
 	    String username = null;
 	    String password = null;
 	    if(invm) {
-		locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(Protocol.IN_VM_FACTORY));
+		locator = ActiveMQClient.createServerLocatorWithoutHA(new TransportConfiguration(Protocol.IN_VM_FACTORY));
 		sessionFactory =  locator.createSessionFactory();
 		username = hornetqInvmUser;
 		password = hornetqInvmPass;
@@ -90,10 +90,10 @@ public class YamcsSession {
 		    Map<String, Object> tcpConfig =new HashMap<String,Object>();
 		    tcpConfig.put(TransportConstants.HOST_PROP_NAME, ycd.host);
 		    tcpConfig.put(TransportConstants.PORT_PROP_NAME, ycd.port);
-		    locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName(),tcpConfig));
+		    locator = ActiveMQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName(),tcpConfig));
 		    sessionFactory =  locator.createSessionFactory();
 		} else {
-		    locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+		    locator = ActiveMQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
 		    sessionFactory =  locator.createSessionFactory();
 		}
 		username = ycd.username;
@@ -103,12 +103,12 @@ public class YamcsSession {
 	    // guest auth and authz (if allowed by server)
 	    session = sessionFactory.createSession(username, password, false, true, true, preAcknowledge, 1);
 	    session.start();
-	} catch( HornetQException e ) {
-	    // Pass specific HornetQExceptions as our cause, helps identify
+	} catch( ActiveMQException e ) {
+	    // Pass specific ActiveMQExceptions as our cause, helps identify
 	    // permissions problems
 	    try {
 		close();
-	    } catch (HornetQException e1) {}
+	    } catch (ActiveMQException e1) {}
 	    throw new YamcsApiException( e.getMessage(), e );
 	} catch(Exception e) {
 	    // Pass Exception's cause as our cause.
@@ -116,7 +116,7 @@ public class YamcsSession {
 	    // close everything
 	    try {
 		close();
-	    } catch (HornetQException e1) {} 
+	    } catch (ActiveMQException e1) {} 
 	    throw new YamcsApiException(e.getMessage(), e.getCause());
 	}
     }

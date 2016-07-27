@@ -5,15 +5,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.hornetq.core.security.CheckType;
-import org.hornetq.core.security.Role;
-import org.hornetq.spi.core.security.HornetQSecurityManager;
+import org.apache.activemq.artemis.core.security.CheckType;
+import org.apache.activemq.artemis.core.security.Role;
+import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.YamcsSession;
 
 /**
- * Authenticates and authorises HornetQ sessions from configured realm.
+ * Authenticates and authorises ActiveMQ sessions from configured realm.
  * 
  * See {@link Privilege} for information on authentication, authorisation and caching
  * 
@@ -24,169 +24,131 @@ import org.yamcs.api.YamcsSession;
  * @author atu
  *
  */
-public class HornetQAuthManager implements HornetQSecurityManager {
-	static Logger log = LoggerFactory.getLogger(HornetQAuthManager.class);
-	private Map<String, ArrayList<String>> configuredUserCache = new HashMap<>();
-	/** If null (default), anonymous connections will be rejected. */
-	private String defaultUser = null;
-	
-	/**
-	 * Determines if no restrictions should be applied to the specified user,
-	 * which can mean either that privileges are disabled (everyone has all
-	 * privilieges), or that the user is an in-process user.
-	 * 
-	 * Internal messaging user (in-vm user) is the only current super-user.
-	 * Null username or password always returns false if privileges enabled.
-	 * 
-	 * @param username
-	 * @param password
-	 * @return True if configured to not use privileges (see {@link Privilege})
-	 * 	or if username and password match a super user.
-	 */
-	public boolean isSuperUser( String username, String password ) {
-		if( !Privilege.usePrivileges ) {
-			return true;
-		}
-		// Anonymous is never super user when using Privileges
-		if( username == null || password == null ) {
-			return false;
-		}
-		// Currently only server processes can be super-user
-		return username.equals( YamcsSession.hornetqInvmUser ) && password.equals( YamcsSession.hornetqInvmPass );
-	}
-	
-	@Override
-	public boolean isStarted() {
-		return true;
-	}
+public class HornetQAuthManager implements ActiveMQSecurityManager {
+    static Logger log = LoggerFactory.getLogger(HornetQAuthManager.class);
+    private Map<String, ArrayList<String>> configuredUserCache = new HashMap<>();
+    /** If null (default), anonymous connections will be rejected. */
+    private String defaultUser = null;
 
-	@Override
-	public void start() throws Exception {
-		configuredUserCache.clear();
-		if(Privilege.usePrivileges) {
-			log.info("Privileges enabled, authenticating and authorising from "+Privilege.getRealmName());
-		} else {
-			log.warn("Privileges disabled, all connections are allowed and have full permissions");
-		}
-	}
+    /**
+     * Determines if no restrictions should be applied to the specified user,
+     * which can mean either that privileges are disabled (everyone has all
+     * privilieges), or that the user is an in-process user.
+     * 
+     * Internal messaging user (in-vm user) is the only current super-user.
+     * Null username or password always returns false if privileges enabled.
+     * 
+     * @param username
+     * @param password
+     * @return True if configured to not use privileges (see {@link Privilege})
+     * 	or if username and password match a super user.
+     */
+    public boolean isSuperUser( String username, String password ) {
+        if( !Privilege.usePrivileges ) {
+            return true;
+        }
+        // Anonymous is never super user when using Privileges
+        if( username == null || password == null ) {
+            return false;
+        }
+        // Currently only server processes can be super-user
+        return username.equals( YamcsSession.hornetqInvmUser ) && password.equals( YamcsSession.hornetqInvmPass );
+    }
+/*
 
-	@Override
-	public void stop() throws Exception {
-		log.debug( "stop" );
-		configuredUserCache.clear();
-	}
+    @Override
+    public void addRole(String username, String role) {
+        // Allow setting a default user from config, used for anonymous connections,
+        if( username != null && username == defaultUser ) {
+            if( configuredUserCache.containsKey( defaultUser ) ) {
+                configuredUserCache.get(defaultUser).add( role );
+                log.debug( "Default user '{}' given role '{}'.",username, role );
+            }
+        } else {
+            log.debug( "addRole('{}','{}') called but will perform no function",username, role );
+        }
+    }
 
-	@Override
-	public void addRole(String username, String role) {
-		// Allow setting a default user from config, used for anonymous connections,
-		if( username != null && username == defaultUser ) {
-			if( configuredUserCache.containsKey( defaultUser ) ) {
-				configuredUserCache.get(defaultUser).add( role );
-				log.debug( "Default user '{}' given role '{}'.",username, role );
-			}
-		} else {
-			log.debug( "addRole('{}','{}') called but will perform no function",username, role );
-		}
-	}
+    @Override
+    public void setDefaultUser(String username) {
+        // Allow setting a default user from config, used for anonymous connections,
+        if( defaultUser != null ) {
+            configuredUserCache.remove( defaultUser );
+        }
+        defaultUser = username;
+        configuredUserCache.put(defaultUser, new ArrayList<String>());
+        log.info( "Default user (used for anonymous connections) set to '{}'",username );
+        log.warn( "Anonymous connections allowed, will be treated as user '{}'", username );
+    }
+*/
+    @Override
+    public boolean validateUser(String username, String password) {
+        // Allow all? Looks for invm processes, or if privileges disabled.
+        if( isSuperUser( username, password ) ) {
+            return true;
+        }
 
-	@Override
-	public void addUser(String username, String password) {
-		// Do not support specifying normal users through config
-		log.debug( "addUser('{}', ***) called but will perform no function",username );
-	}
+        // Anonymous user taken as default user...
+        if( username == null ) {
+            // If no default user, anonymous connections are not allowed.
+            return ( defaultUser != null );
+        }
 
-	@Override
-	public void removeRole(String username, String role) {
-		// Do not support specifying normal users through config
-		log.debug( "removeRole('{}', '{}') called but will perform no function",username,role );
-	}
+        if( ! Privilege.getInstance().authenticates(new UsernamePasswordToken(username, password))){
 
-	@Override
-	public void removeUser(String username) {
-		// Do not support specifying normal users through config
-		log.debug( "removeUser('{}') called but will perform no function",username );
-	}
+            //if( ! ActiveMQAuthPrivilege.authenticated(username, password) ) {
+            return false;
+        }
+        log.info("User '{}' authenticated with {}", username, Privilege.getRealmName());
+        return true;
+    }
 
-	@Override
-	public void setDefaultUser(String username) {
-		// Allow setting a default user from config, used for anonymous connections,
-		if( defaultUser != null ) {
-			configuredUserCache.remove( defaultUser );
-		}
-		defaultUser = username;
-		configuredUserCache.put(defaultUser, new ArrayList<String>());
-		log.info( "Default user (used for anonymous connections) set to '{}'",username );
-		log.warn( "Anonymous connections allowed, will be treated as user '{}'", username );
-	}
+    /**
+     * @param configuredRoles - Set of roles configured for the component being accessed.
+     * @param checkType - Permission being sought.
+     */
+    @Override
+    public boolean validateUserAndRole(String username, String password, Set<Role> configuredRoles, CheckType checkType) {
+        // Allow all? Looks for invm processes, or if privileges disabled.
+        if( isSuperUser( username, password ) ) {
+            return true;
+        }
 
-	@Override
-	public boolean validateUser(String username, String password) {
-		// Allow all? Looks for invm processes, or if privileges disabled.
-		if( isSuperUser( username, password ) ) {
-			return true;
-		}
-		
-		// Anonymous user taken as default user...
-		if( username == null ) {
-			// If no default user, anonymous connections are not allowed.
-			return ( defaultUser != null );
-		}
+        // Anonymous user taken as default user if set
+        if( username == null ) {
+            if( defaultUser == null ) {
+                return false;
+            }
+            // Default user is only in config, not in realm, so check perms now
+            username = defaultUser;
+            for( Role configuredRole : configuredRoles ) {
+                if( configuredUserCache.get( defaultUser ).contains( configuredRole.getName() ) && checkType.hasRole( configuredRole ) ) {
+                    return true;
+                }
+            }
+        }
 
-		if( ! Privilege.getInstance().authenticates(new UsernamePasswordToken(username, password))){
+        // If required roles not configured, warn as configuration error
+        if( configuredRoles == null ) {
+            log.warn( "No roles configured, cannot validate '{}' for check '{}'", username, checkType );
+            return false;
+        }
 
-		//if( ! HornetQAuthPrivilege.authenticated(username, password) ) {
-			return false;
-		}
-		log.info("User '{}' authenticated with {}", username, Privilege.getRealmName());
-		return true;
-	}
+        // Use configuration to set security-invalidation-interval and always
+        // check authentication in this method.
+        if( ! validateUser( username, password ) ) {
+            return false;
+        }
 
-	/**
-	 * @param configuredRoles - Set of roles configured for the component being accessed.
-	 * @param checkType - Permission being sought.
-	 */
-	@Override
-	public boolean validateUserAndRole(String username, String password, Set<Role> configuredRoles, CheckType checkType) {
-		// Allow all? Looks for invm processes, or if privileges disabled.
-		if( isSuperUser( username, password ) ) {
-			return true;
-		}
-		
-		// Anonymous user taken as default user if set
-		if( username == null ) {
-			if( defaultUser == null ) {
-				return false;
-			}
-			// Default user is only in config, not in realm, so check perms now
-			username = defaultUser;
-			for( Role configuredRole : configuredRoles ) {
-				if( configuredUserCache.get( defaultUser ).contains( configuredRole.getName() ) && checkType.hasRole( configuredRole ) ) {
-					return true;
-				}
-			}
-		}
-		
-		// If required roles not configured, warn as configuration error
-		if( configuredRoles == null ) {
-			log.warn( "No roles configured, cannot validate '{}' for check '{}'", username, checkType );
-			return false;
-		}
-		
-		// Use configuration to set security-invalidation-interval and always
-		// check authentication in this method.
-		if( ! validateUser( username, password ) ) {
-			return false;
-		}
-		
-		Privilege p = Privilege.getInstance();
-		UsernamePasswordToken userToken = new UsernamePasswordToken(username, password);
-		for( Role configuredRole : configuredRoles ) {
-			if( p.hasRole(userToken, configuredRole.getName() ) && checkType.hasRole( configuredRole ) ) {
-				return true;
-			}
-		}
+        Privilege p = Privilege.getInstance();
+        UsernamePasswordToken userToken = new UsernamePasswordToken(username, password);
+        for( Role configuredRole : configuredRoles ) {
+            if( p.hasRole(userToken, configuredRole.getName() ) && checkType.hasRole( configuredRole ) ) {
+                return true;
+            }
+        }
 
-		log.trace( "User '{}' does not have any of '{}' for '{}'", username, configuredRoles, checkType );
-		return false;
-	}
+        log.trace( "User '{}' does not have any of '{}' for '{}'", username, configuredRoles, checkType );
+        return false;
+    }
 }

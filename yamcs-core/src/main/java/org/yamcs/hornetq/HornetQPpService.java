@@ -5,7 +5,7 @@ import java.util.List;
 import org.yamcs.ConfigurationException;
 
 /**
- * takes Parameter data from yarch streams and publishes it to hornetq address (reverse of HornetQPpProvider)
+ * takes Parameter data from yarch streams and publishes it to hornetq address (reverse of ActiveMQPpProvider)
  * 
  * To avoid a ping-pong effect:
  *  - it creates a queue with a filter on hornet side

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hornetq.api.core.HornetQException;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.YamcsApiException;
@@ -27,7 +27,7 @@ public class DataLinkInitialiser extends AbstractService {
     PpProviderAdapter ppDataLinkInitialiser;
     ServiceManager  serviceManager;
     
-    public DataLinkInitialiser(String yamcsInstance) throws ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException, IOException {
+    public DataLinkInitialiser(String yamcsInstance) throws ConfigurationException, StreamSqlException, ParseException, ActiveMQException, YamcsApiException, IOException {
         YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
         List<Service> services = new ArrayList<Service>();
         if(c.containsKey(TmDataLinkInitialiser.KEY_tmDataLinks)) {

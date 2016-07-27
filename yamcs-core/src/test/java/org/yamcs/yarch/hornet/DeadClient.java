@@ -7,30 +7,29 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
-import org.hornetq.core.client.impl.DelegatingSession;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyConnection;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
-import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.JournalType;
-import org.hornetq.core.server.impl.HornetQServerImpl;
-import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
-import org.hornetq.core.settings.impl.AddressSettings;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.TransportConfiguration;
+import org.apache.activemq.artemis.api.core.client.ClientConsumer;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.ClientProducer;
+import org.apache.activemq.artemis.api.core.client.ClientSession;
+import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
+import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
+import org.apache.activemq.artemis.api.core.client.ServerLocator;
+import org.apache.activemq.artemis.core.client.impl.ClientSessionFactoryImpl;
+import org.apache.activemq.artemis.core.client.impl.ClientSessionImpl;
+import org.apache.activemq.artemis.core.config.Configuration;
+import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
+import org.apache.activemq.artemis.core.remoting.impl.invm.InVMAcceptorFactory;
+import org.apache.activemq.artemis.core.remoting.impl.invm.InVMConnectorFactory;
+import org.apache.activemq.artemis.core.remoting.impl.netty.NettyAcceptorFactory;
+import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnection;
+import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory;
+import org.apache.activemq.artemis.core.server.ActiveMQServer;
+import org.apache.activemq.artemis.core.server.JournalType;
+import org.apache.activemq.artemis.core.server.impl.ActiveMQServerImpl;
+import org.apache.activemq.artemis.core.settings.impl.AddressFullMessagePolicy;
+import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
 
 
 public class DeadClient {
@@ -41,7 +40,7 @@ public class DeadClient {
         @Override
         public void run() {
             try {
-                ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+                ServerLocator locator = ActiveMQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
                 ClientSessionFactory factory =  locator.createSessionFactory();
                 ClientSession session = factory.createSession(false, true, true, true);
 
@@ -68,10 +67,10 @@ public class DeadClient {
         @Override
         public void run() {
             try {
-                ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+                ServerLocator locator = ActiveMQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
                 ClientSessionFactory factory =  locator.createSessionFactory();
                 ClientSession session = factory.createSession(false, true, true, true);
-                NettyConnection nc=(NettyConnection)((DelegatingSession)session).getConnection().getTransportConnection();
+                NettyConnection nc=(NettyConnection)((ClientSessionImpl)session).getConnection().getTransportConnection();
 
                 session.createTemporaryQueue("tempAddress","tempQueue");
                 ClientConsumer consumer = session.createConsumer("tempQueue",false);
@@ -91,7 +90,7 @@ public class DeadClient {
             SimpleDateFormat sdf=new SimpleDateFormat("hh:mm:ss.SSS");
             try {
                 Thread.sleep(2000);
-                ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+                ServerLocator locator = ActiveMQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
                 ClientSessionFactory factory =  locator.createSessionFactory();
                 ClientSession session = factory.createSession(false, true, true, true);
                 producer=session.createProducer("tempAddress");
@@ -135,7 +134,7 @@ public class DeadClient {
         config.setPersistenceEnabled(false);
     //    config.setManagementNotificationAddress(new SimpleString("hornetq.notifications"));
         //   System.out.println("config="+config.);
-        HornetQServer server = new HornetQServerImpl(config);
+        ActiveMQServer server = new ActiveMQServerImpl(config);
 
         // new Thread(new SlowClient.ServerControl(server)).start();
 

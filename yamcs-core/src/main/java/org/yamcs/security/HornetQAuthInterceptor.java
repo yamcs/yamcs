@@ -5,14 +5,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.Interceptor;
-import org.hornetq.api.core.Message;
-import org.hornetq.core.protocol.core.Packet;
-import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionCloseMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
-import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.Interceptor;
+import org.apache.activemq.artemis.api.core.Message;
+import org.apache.activemq.artemis.core.protocol.core.Packet;
+import org.apache.activemq.artemis.core.protocol.core.impl.wireformat.CreateSessionMessage;
+import org.apache.activemq.artemis.core.protocol.core.impl.wireformat.SessionCloseMessage;
+import org.apache.activemq.artemis.core.protocol.core.impl.wireformat.SessionSendMessage;
+import org.apache.activemq.artemis.spi.core.protocol.RemotingConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,11 +29,11 @@ import org.slf4j.LoggerFactory;
  */
 public class HornetQAuthInterceptor implements Interceptor {
 	public static final String USERNAME_PROPERTY = "username";
-	static Logger log = LoggerFactory.getLogger("org.yamcs.security.HornetQAuthInterceptor");
+	static Logger log = LoggerFactory.getLogger("org.yamcs.security.ActiveMQAuthInterceptor");
 	private Map<Object, AuthInjectionAssociation> cache = Collections.synchronizedMap( new HashMap<Object, AuthInjectionAssociation>() );
 	
 	@Override
-	public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException {
+	public boolean intercept(Packet packet, RemotingConnection connection) throws ActiveMQException {
 		Object id = connection.getID();
 		AuthInjectionAssociation assoc = cache.get( id );
 		

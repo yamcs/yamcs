@@ -4,10 +4,10 @@ import static org.yamcs.api.Protocol.*;
 
 import java.util.List;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +45,7 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
     ParameterWithIdRequestHelper prh;
     YamcsSession yamcsSession;
     
-    public RealtimeParameterService(YProcessor channel) throws HornetQException, YamcsApiException {
+    public RealtimeParameterService(YProcessor channel) throws ActiveMQException, YamcsApiException {
 	this.channel=channel;
 	prh = new ParameterWithIdRequestHelper(channel.getParameterRequestManager(), this);
 
@@ -66,7 +66,7 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
 
     }
 
-    private void processRequest(ClientMessage msg) throws YamcsApiException, HornetQException {
+    private void processRequest(ClientMessage msg) throws YamcsApiException, ActiveMQException {
 	SimpleString replyto=msg.getSimpleStringProperty(REPLYTO_HEADER_NAME);
 
 	if(replyto==null) {
@@ -98,7 +98,7 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
 
 
     private void subscribe( SimpleString replyto, SimpleString dataAddress, ClientMessage msg)
-			throws HornetQException {
+			throws ActiveMQException {
 	List<NamedObjectId> paraList=null;
 	try {
 	    paraList= ((NamedObjectList)Protocol.decode(msg, NamedObjectList.newBuilder())).getListList();
@@ -131,7 +131,7 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
 	}
 
 
-    private void unsubscribe( SimpleString replyto, SimpleString dataAddress, ClientMessage msg) throws HornetQException {
+    private void unsubscribe( SimpleString replyto, SimpleString dataAddress, ClientMessage msg) throws ActiveMQException {
 	List<NamedObjectId> paraList=null;
 	try {
 	    paraList= ((NamedObjectList)Protocol.decode(msg, NamedObjectList.newBuilder())).getListList();
@@ -158,7 +158,7 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
     }
 
 
-	private void subscribeAll(SimpleString replyto, SimpleString dataAddress, ClientMessage msg) throws HornetQException {
+	private void subscribeAll(SimpleString replyto, SimpleString dataAddress, ClientMessage msg) throws ActiveMQException {
 
 		String namespace=null;
 		try {
@@ -183,7 +183,7 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
 		}
 	}
 
-    private void unsubscribeAll(SimpleString replyto, SimpleString dataAddress, ClientMessage msg) throws HornetQException {
+    private void unsubscribeAll(SimpleString replyto, SimpleString dataAddress, ClientMessage msg) throws ActiveMQException {
 	if(!subscriptions.containsValue(dataAddress)) {
 	    yclient.sendErrorReply(replyto, "not subscribed for this address");
 	    return;
@@ -211,7 +211,7 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
 	} 
 	try {
 	    yclient.sendData(addr, ProtoDataType.PARAMETER, pd.build());
-	} catch (HornetQException e) {
+	} catch (ActiveMQException e) {
 	    subscriptions.remove(addr);
 	    log.warn("got error when sending parameter updates, removing any subscription of "+addr,e);
 	}
@@ -220,7 +220,7 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
     public void quit() {
 	try {
 	    yamcsSession.close();
-	} catch (HornetQException e) {
+	} catch (ActiveMQException e) {
 	    log.warn("Error when closing yamcsSession", e);
 	}
     }

@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.hornetq.core.server.embedded.EmbeddedHornetQ;
+import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
 
 
 public class YProcessorsTest {
-   static EmbeddedHornetQ hornetServer;
+   static EmbeddedActiveMQ hornetServer;
     @BeforeClass
     public static void setupHornetAndManagement() throws Exception {
         YConfiguration.setup("YProcessorsTest");

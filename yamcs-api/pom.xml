@@ -195,9 +195,9 @@
 			<version>4.0.13.Final</version>
 		</dependency>
 		<dependency>
-			<groupId>org.hornetq</groupId>
-			<artifactId>hornetq-core-client</artifactId>
-			<version>${hornetQVersion}</version>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>artemis-core-client</artifactId>
+			<version>${artemisVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.yaml</groupId>

@@ -4,7 +4,7 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
-import org.hornetq.api.core.HornetQException;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
@@ -15,7 +15,7 @@ import org.yaml.snakeyaml.Yaml;
 
 
 /**
- * An EventProducer that publishes events over HornetQ
+ * An EventProducer that publishes events over ActiveMQ
  * <p>
  * By default, repeated message are detected and reduced, resulting in pseudo
  * events with a message like 'last event repeated X times'. This behaviour can
@@ -64,7 +64,7 @@ public class HornetQEventProducer extends AbstractEventProducer implements Conne
             while(!queue.isEmpty()) {
                 yclient.sendData(address, ProtoDataType.EVENT, queue.poll());
             }
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             e.printStackTrace();
         }
     }
@@ -85,7 +85,7 @@ public class HornetQEventProducer extends AbstractEventProducer implements Conne
     public void close() {
         try {
             yconnector.close();
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             e.printStackTrace();
         }
     }
@@ -98,7 +98,7 @@ public class HornetQEventProducer extends AbstractEventProducer implements Conne
         if(yconnector.isConnected()) {
             try {
                 yclient.sendData(address, ProtoDataType.EVENT, event);
-            } catch (HornetQException e) {
+            } catch (ActiveMQException e) {
                 logger.error("Failed to send event ",e);
             }
         } else {

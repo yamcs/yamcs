@@ -1,7 +1,7 @@
 package org.yamcs.api.ack;
 
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
 
 /**
  * Yamcs-specific {@link MessageHandler} that supports client-side acknowledgment of messages

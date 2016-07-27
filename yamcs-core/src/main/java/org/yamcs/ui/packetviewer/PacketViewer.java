@@ -64,11 +64,11 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
-import org.hornetq.utils.HornetQBufferInputStream;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.utils.ActiveMQBufferInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
@@ -539,7 +539,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
             yc.executeRpc(Protocol.YAMCS_SERVER_CONTROL_ADDRESS, "getMissionDatabase", mdr, null);
             ClientMessage msg=yc.dataConsumer.receive(5000);
 
-            ObjectInputStream ois=new ObjectInputStream(new HornetQBufferInputStream(msg.getBodyBuffer()));
+            ObjectInputStream ois=new ObjectInputStream(new ActiveMQBufferInputStream(msg.getBodyBuffer()));
             Object o=ois.readObject();
             xtcedb=(XtceDb) o;
             yc.close();
@@ -954,9 +954,6 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                     }
                 }
             });
-        } catch (HornetQException e) {
-            log(e.toString());
-            e.printStackTrace();
         } catch(Exception e) {
             log(e.toString());
             e.printStackTrace();

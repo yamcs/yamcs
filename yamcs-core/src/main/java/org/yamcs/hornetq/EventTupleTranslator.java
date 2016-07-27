@@ -1,6 +1,6 @@
 package org.yamcs.hornetq;
 
-import org.hornetq.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.protobuf.Yamcs.Event;

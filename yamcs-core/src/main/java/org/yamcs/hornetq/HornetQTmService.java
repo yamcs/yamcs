@@ -4,7 +4,7 @@ import java.util.List;
 import org.yamcs.ConfigurationException;
 
 /**
- * takes TM data from yarch streams and publishes it to hornetq address (reverse of HornetQTmProvider)
+ * takes TM data from yarch streams and publishes it to hornetq address (reverse of ActiveMQTmProvider)
  *
  */
 public class HornetQTmService extends AbstractHornetQTranslatorService {

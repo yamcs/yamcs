@@ -3,12 +3,12 @@ package org.yamcs.api;
 import java.io.IOException;
 import java.util.UUID;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientConsumer;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.ClientProducer;
+import org.apache.activemq.artemis.api.core.client.ClientSession;
 import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
@@ -71,7 +71,7 @@ public class YamcsClient {
         this.yamcsSession=yamcsSession;
     }
 
-    public void sendErrorReply(SimpleString replyto, String message) throws HornetQException {
+    public void sendErrorReply(SimpleString replyto, String message) throws ActiveMQException {
         synchronized(yamcsSession) {
             ClientMessage replyMsg = yamcsSession.session.createMessage(false);
             replyMsg.putStringProperty(MSG_TYPE_HEADER_NAME, "ERROR");
@@ -81,15 +81,15 @@ public class YamcsClient {
     }
 
     /**
-     * Sends a HornetQ message containing an YamcsException.
+     * Sends a ActiveMQ message containing an YamcsException.
      * The exception type and string message are encoded in the headers while the extra payload (if any) is encoded in the body
      * 
      * The exception extra arguments are encoded as 
      * @param replyto
      * @param e
-     * @throws HornetQException
+     * @throws ActiveMQException
      */
-    public void sendErrorReply(SimpleString replyto, YamcsException e) throws HornetQException {
+    public void sendErrorReply(SimpleString replyto, YamcsException e) throws ActiveMQException {
         synchronized(yamcsSession) {
             ClientMessage replyMsg = yamcsSession.session.createMessage(false);
             replyMsg.putStringProperty(MSG_TYPE_HEADER_NAME, "ERROR");
@@ -105,7 +105,7 @@ public class YamcsClient {
         }
     }
 
-    public void sendReply(SimpleString replyto, String response, MessageLite body) throws HornetQException {
+    public void sendReply(SimpleString replyto, String response, MessageLite body) throws ActiveMQException {
         synchronized(yamcsSession) {
             ClientMessage replyMsg = yamcsSession.session.createMessage(false);
             replyMsg.putStringProperty(MSG_TYPE_HEADER_NAME, response);
@@ -116,7 +116,7 @@ public class YamcsClient {
 
 
 
-    public void sendRequest(SimpleString toAddress, String request, MessageLite body) throws HornetQException {
+    public void sendRequest(SimpleString toAddress, String request, MessageLite body) throws ActiveMQException {
         synchronized(yamcsSession) {
             ClientMessage msg=yamcsSession.session.createMessage(false);
             msg.putStringProperty(REPLYTO_HEADER_NAME, rpcAddress);
@@ -152,26 +152,26 @@ public class YamcsClient {
                 }
                 if(responseBuilder==null) return null;
                 else return decode(msg, responseBuilder);
-            } catch (HornetQException e) {
+            } catch (ActiveMQException e) {
                 throw new YamcsApiException(e.getMessage(), e);
             }
         }
     }
 
-    public void close() throws HornetQException {
+    public void close() throws ActiveMQException {
         if(rpcProducer!=null) rpcProducer.close();
         if(rpcConsumer!=null) rpcConsumer.close();
         if(dataConsumer!=null) dataConsumer.close();
         if(dataProducer!=null) dataProducer.close();
     }
 
-    public void sendDataError(SimpleString toAddress, String message) throws IOException, HornetQException {
+    public void sendDataError(SimpleString toAddress, String message) throws IOException, ActiveMQException {
         synchronized(yamcsSession) {
             sendData(toAddress, ProtoDataType.DT_ERROR, StringMessage.newBuilder().setMessage(message).build());
         }
     }
 
-    public void sendData(SimpleString toAddress, org.yamcs.protobuf.Yamcs.ProtoDataType type, MessageLite data) throws HornetQException {
+    public void sendData(SimpleString toAddress, org.yamcs.protobuf.Yamcs.ProtoDataType type, MessageLite data) throws ActiveMQException {
         synchronized(yamcsSession) {
             ClientMessage msg=yamcsSession.session.createMessage(false);
             msg.putIntProperty(DATA_TYPE_HEADER_NAME, type.getNumber());
@@ -180,7 +180,7 @@ public class YamcsClient {
         }
     }
 
-    public void sendDataEnd(SimpleString toAddress) throws HornetQException {
+    public void sendDataEnd(SimpleString toAddress) throws ActiveMQException {
         synchronized(yamcsSession) {
             ClientMessage msg=yamcsSession.session.createMessage(false);
             msg.putIntProperty(DATA_TYPE_HEADER_NAME, ProtoDataType.STATE_CHANGE.getNumber());
@@ -191,7 +191,7 @@ public class YamcsClient {
      * Receives and decodes data
      *  Returns null if the FINISH message is received
      */
-    public MessageLite receiveData(MessageLite.Builder dataBuilder) throws YamcsException, YamcsApiException, HornetQException {
+    public MessageLite receiveData(MessageLite.Builder dataBuilder) throws YamcsException, YamcsApiException, ActiveMQException {
         ClientMessage msg = dataConsumer.receive(dataTimeout);
         if(msg==null) throw new YamcsException("did not received a data message, timeout"+dataTimeout);
         int dt=msg.getIntProperty(DATA_TYPE_HEADER_NAME);
@@ -205,7 +205,7 @@ public class YamcsClient {
     }
 
 
-    public MessageLite receiveImmediate(MessageLite.Builder dataBuilder) throws YamcsException, YamcsApiException, HornetQException {
+    public MessageLite receiveImmediate(MessageLite.Builder dataBuilder) throws YamcsException, YamcsApiException, ActiveMQException {
         ClientMessage msg = dataConsumer.receive(dataTimeout);
         if(msg==null) return null;
         int dt = msg.getIntProperty(DATA_TYPE_HEADER_NAME);
@@ -224,9 +224,9 @@ public class YamcsClient {
      * @param toAddress
      * @param eventName name of the event to be encoded in the {@value Protocol#HDR_EVENT_NAME} header
      * @param data
-     * @throws HornetQException
+     * @throws ActiveMQException
      */
-    public void sendEvent(SimpleString toAddress, String eventName, MessageLite data) throws HornetQException {
+    public void sendEvent(SimpleString toAddress, String eventName, MessageLite data) throws ActiveMQException {
         synchronized(yamcsSession) {
             ClientMessage msg=yamcsSession.session.createMessage(false);
             msg.putStringProperty(HDR_EVENT_NAME, eventName);
@@ -330,7 +330,7 @@ public class YamcsClient {
             return this;
         }
 
-        public YamcsClient build() throws HornetQException {
+        public YamcsClient build() throws ActiveMQException {
             YamcsClient c=new YamcsClient(yamcsSession);
             if(rpc) {
                 c.rpcAddress = (rpcAddress==null)?new SimpleString(RPC_ADDRESS_PREFIX + UUID.randomUUID().toString()):rpcAddress;
@@ -354,7 +354,7 @@ public class YamcsClient {
             return c; 
         }
 
-        static void createAddressAndQueue(ClientSession session, SimpleString a, SimpleString q, SimpleString filter) throws HornetQException {
+        static void createAddressAndQueue(ClientSession session, SimpleString a, SimpleString q, SimpleString filter) throws ActiveMQException {
             if(!session.queueQuery(q).isExists()) {
                 if(filter==null) {
                     session.createTemporaryQueue(a, q);
@@ -372,9 +372,9 @@ public class YamcsClient {
      *      
      * @param hornetAddress
      * @param msg
-     * @throws HornetQException
+     * @throws ActiveMQException
      */
-    public synchronized void sendData(SimpleString hornetAddress, ClientMessage msg) throws HornetQException {
+    public synchronized void sendData(SimpleString hornetAddress, ClientMessage msg) throws ActiveMQException {
         synchronized(yamcsSession) {
             dataProducer.send(hornetAddress, msg);
         }

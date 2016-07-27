@@ -11,10 +11,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.*;
@@ -53,8 +53,8 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
 import com.google.protobuf.ByteString;
 
 /**
- * Provides capability to perform replays via HornetQ by initiating new processors.
- * It allows to retrieve parameters via HornetQ
+ * Provides capability to perform replays via ActiveMQ by initiating new processors.
+ * It allows to retrieve parameters via ActiveMQ
  * 
  * @author nm
  *
@@ -68,7 +68,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
     final YamcsSession yamcsSession;
     static AtomicInteger count = new AtomicInteger();
     
-    public HornetQReplayServer(String instance) throws HornetQException, YamcsApiException {
+    public HornetQReplayServer(String instance) throws ActiveMQException, YamcsApiException {
         this.instance = instance;
         yamcsSession = YamcsSession.newBuilder().build();
         msgClient = yamcsSession.newClientBuilder().setRpcAddress(Protocol.getReplayControlAddress(instance)).build();
@@ -176,9 +176,9 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
        
         
 
-        HornetQReplayListener listener = new HornetQReplayListener(dataAddress);
+        ActiveMQReplayListener listener = new ActiveMQReplayListener(dataAddress);
         
-        YProcessor yproc = ProcessorFactory.create(instance, "HornetQReplay_"+count.incrementAndGet(), "ArchiveRetrieval", "internal", replayRequest);
+        YProcessor yproc = ProcessorFactory.create(instance, "ActiveMQReplay_"+count.incrementAndGet(), "ArchiveRetrieval", "internal", replayRequest);
         listener.yproc = yproc;
 
         try {
@@ -211,20 +211,20 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
         try {
             msgClient.close();
             yamcsSession.close();
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             log.warn("Got exception when closing the session", e);
         }
     }
     
     
-    static class HornetQReplayListener implements YProcessorListener, ParameterWithIdConsumer, ContainerWithIdConsumer, CommandHistoryConsumer, MessageHandler {        
+    static class ActiveMQReplayListener implements YProcessorListener, ParameterWithIdConsumer, ContainerWithIdConsumer, CommandHistoryConsumer, MessageHandler {        
         YamcsSession ysession;
         YamcsClient yclient;
         SimpleString dataAddress;
         volatile boolean quitting = false;
         YProcessor yproc;
         
-        public HornetQReplayListener( SimpleString dataAddress)  throws IOException, HornetQException, YamcsException, YamcsApiException {
+        public ActiveMQReplayListener( SimpleString dataAddress)  throws IOException, ActiveMQException, YamcsException, YamcsApiException {
             this.dataAddress = dataAddress;
             ysession = YamcsSession.newBuilder().build();
             yclient = ysession.newClientBuilder().setRpc(true).setDataProducer(true).build();
@@ -273,7 +273,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
                 log.warn("sending error reply ", e);
                 try {
                     yclient.sendErrorReply(replyto, e.getMessage());
-                } catch (HornetQException e1) {
+                } catch (ActiveMQException e1) {
                    log.error("Error when sending error reply", e1);
                 }
 
@@ -288,7 +288,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
         public void newData(ProtoDataType type, MessageLite data) {
             try {
                 yclient.sendData(dataAddress, type, data);
-            } catch (HornetQException e) {
+            } catch (ActiveMQException e) {
                 log.warn("Got exception when sending data to client", e);
                 quit();
             }
@@ -316,7 +316,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
             
             try {
                 ysession.close();
-            } catch (HornetQException e) {
+            } catch (ActiveMQException e) {
                 log.warn("Error when closing yclient", e);
             }
         }
@@ -334,7 +334,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
             try { 
                 ReplayStatus.Builder rsb=ReplayStatus.newBuilder().setState(yproc.getReplayState());
                 yclient.sendData(dataAddress, ProtoDataType.STATE_CHANGE, rsb.build());                
-            } catch (HornetQException e) {
+            } catch (ActiveMQException e) {
                 log.warn("Got exception when signaling state change", e);
                 quit();
             }
@@ -349,7 +349,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
             }
             try {
                 yclient.sendData(dataAddress, ProtoDataType.PARAMETER, pd.build());
-            } catch (HornetQException e) {
+            } catch (ActiveMQException e) {
                 log.warn("Got exception when sending data to client", e);
                 quit();
             }
@@ -365,7 +365,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
                     .setPacket(ByteString.copyFrom(cer.getContainerContent())).build();
             try {
                 yclient.sendData(dataAddress, ProtoDataType.TM_PACKET, pd);
-            } catch (HornetQException e) {
+            } catch (ActiveMQException e) {
                 log.warn("Got exception when sending data to client", e);
                 quit();
             }
@@ -378,7 +378,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
             CommandHistoryEntry che = pc.toCommandHistoryEntry();
             try {
                 yclient.sendData(dataAddress, ProtoDataType.CMD_HISTORY, che);
-            } catch (HornetQException e) {
+            } catch (ActiveMQException e) {
                 log.warn("Got exception when sending cmd history data to client", e);
                 quit();
             }
@@ -392,7 +392,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
             cheb.addAttr(CommandHistoryAttribute.newBuilder().setName(key).setTime(changeDate).setValue(ValueUtility.toGbp(value)).build());
             try {
                 yclient.sendData(dataAddress, ProtoDataType.CMD_HISTORY, cheb.build());
-            } catch (HornetQException e) {
+            } catch (ActiveMQException e) {
                 log.warn("Got exception when sending cmd history data to client", e);
                 quit();
             }

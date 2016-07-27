@@ -2,8 +2,8 @@ package org.yamcs.archive;
 
 
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.hornetq.EventTupleTranslator;
 import org.yamcs.hornetq.StreamAdapter;
@@ -29,7 +29,7 @@ public class EventRecorder extends AbstractService {
 
     StreamAdapter rtStreamAdapter, dumpStreamAdapter;
 
-    public EventRecorder(String instance) throws StreamSqlException, ParseException, HornetQException, YamcsApiException {
+    public EventRecorder(String instance) throws StreamSqlException, ParseException, ActiveMQException, YamcsApiException {
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
         if(ydb.getTable(TABLE_NAME)==null) {
             ydb.execute("create table "+TABLE_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'), primary key(gentime, source, seqNum)) histogram(source) partition by time(gentime) table_format=compressed");

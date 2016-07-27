@@ -7,10 +7,10 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
@@ -25,7 +25,7 @@ import org.yamcs.api.YamcsSession;
  *
  * this class is deprecated because it converts data in both directions whereas we want to be able to do it separately and have the incoming data as Data Links.
  * 
- *  The HornetQ XYZ Providers shall be used for HornetQ to stream translator and the HornetQXYZService (based on AbstractHornetQTranslatorService) in the other direction.
+ *  The ActiveMQ XYZ Providers shall be used for ActiveMQ to stream translator and the ActiveMQXYZService (based on AbstractActiveMQTranslatorService) in the other direction.
  *  
  *  Currently used only for events - once event providers are also shown as data links, we should get rid of this.
  *  
@@ -44,7 +44,7 @@ public class StreamAdapter implements StreamSubscriber, MessageHandler {
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
     ThreadLocal<Tuple> currentProcessingTuple=new ThreadLocal<Tuple>();
     
-    public StreamAdapter(Stream stream, SimpleString hornetAddress, TupleTranslator translator) throws HornetQException, YamcsApiException {
+    public StreamAdapter(Stream stream, SimpleString hornetAddress, TupleTranslator translator) throws ActiveMQException, YamcsApiException {
         this.stream=stream;
         this.hornetAddress=hornetAddress;
         this.translator=translator;
@@ -69,7 +69,7 @@ public class StreamAdapter implements StreamSubscriber, MessageHandler {
             yClient.sendData(hornetAddress, msg);
         } catch (IllegalArgumentException e) {
             log.warn(e.getMessage());
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             log.warn("Got exception when sending message:", e);
         }
     }
@@ -94,7 +94,7 @@ public class StreamAdapter implements StreamSubscriber, MessageHandler {
     public void quit() {
         try {
             yamcsSession.close();
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             log.warn("Got exception when quiting:", e);
         }
         stream.removeSubscriber(this);

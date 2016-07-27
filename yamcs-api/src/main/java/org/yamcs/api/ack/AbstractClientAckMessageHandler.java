@@ -3,8 +3,8 @@ package org.yamcs.api.ack;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +68,7 @@ public abstract class AbstractClientAckMessageHandler implements ClientAckMessag
       } else {
         try {
           m.acknowledge();
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
           logger.warn("failed to ack message received from archive, ignoring");
         }
       }
@@ -82,7 +82,7 @@ public abstract class AbstractClientAckMessageHandler implements ClientAckMessag
     } else {
       try {
         message.acknowledge();
-      } catch (HornetQException e) {
+      } catch (ActiveMQException e) {
         logger.warn("failed to ack message received from archive, ignoring");
       }
     }

@@ -1,12 +1,12 @@
 package org.yamcs.hornetq;
 
-import org.hornetq.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
 
 /**
- * Translates between tuples and HornetQ messages.
+ * Translates between tuples and ActiveMQ messages.
  * 
  **/
 

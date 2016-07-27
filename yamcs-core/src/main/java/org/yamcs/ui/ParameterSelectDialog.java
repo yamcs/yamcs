@@ -27,9 +27,9 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.utils.HornetQBufferInputStream;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.utils.ActiveMQBufferInputStream;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.Protocol;
@@ -138,7 +138,7 @@ public class ParameterSelectDialog extends JDialog implements ActionListener, Ke
 	searchField.requestFocusInWindow();
     }
 
-    private YamcsClient createYamcsClient() throws YamcsApiException, HornetQException {
+    private YamcsClient createYamcsClient() throws YamcsApiException, ActiveMQException {
 	YamcsClient yamcsClient = null;
 	YamcsSession ys=YamcsSession.newBuilder().setConnectionParams(connectData).build();
 	yamcsClient=ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
@@ -184,7 +184,7 @@ public class ParameterSelectDialog extends JDialog implements ActionListener, Ke
 	    MissionDatabaseRequest mdr = MissionDatabaseRequest.newBuilder().setInstance(connectData.getInstance()).build();
 	    yamcsClient.executeRpc(Protocol.YAMCS_SERVER_CONTROL_ADDRESS, "getMissionDatabase", mdr, null);
 	    ClientMessage msg=yamcsClient.dataConsumer.receive(5000);
-	    ois=new ObjectInputStream(new HornetQBufferInputStream(msg.getBodyBuffer()));
+	    ois=new ObjectInputStream(new ActiveMQBufferInputStream(msg.getBodyBuffer()));
 	    Object o=ois.readObject();
 	    xtcedb=(XtceDb) o;
 	    setLoadSuccess();
@@ -195,12 +195,12 @@ public class ParameterSelectDialog extends JDialog implements ActionListener, Ke
 	    if( yamcsClient != null ) {
 		try {
 		    yamcsClient.close();
-		} catch (HornetQException e) {
+		} catch (ActiveMQException e) {
 		    // Ignore
 		}
 		try {
 		    yamcsClient.getYamcsSession().close();
-		} catch (HornetQException e) {
+		} catch (ActiveMQException e) {
 		    // Ignore
 		}
 	    }
@@ -319,7 +319,7 @@ public class ParameterSelectDialog extends JDialog implements ActionListener, Ke
 	return null;
     }
 
-    public static void main( String[] args ) throws YamcsApiException, HornetQException, ConfigurationException {
+    public static void main( String[] args ) throws YamcsApiException, ActiveMQException, ConfigurationException {
 	YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
 
 	YamcsConnectData ycd = YamcsConnectDialog.showDialog(null, true, config.getBoolean("authenticationEnabled"));

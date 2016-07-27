@@ -5,11 +5,11 @@ import static org.yamcs.api.Protocol.LINK_INFO_ADDRESS;
 import static org.yamcs.api.Protocol.REPLYTO_HEADER_NAME;
 import static org.yamcs.api.Protocol.REQUEST_TYPE_HEADER_NAME;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.Message;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.Message;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
@@ -33,7 +33,7 @@ public class HornetQManagement implements LinkListener {
     
     ManagementService mservice;
     
-    public HornetQManagement(ManagementService mservice) throws YamcsApiException, HornetQException {
+    public HornetQManagement(ManagementService mservice) throws YamcsApiException, ActiveMQException {
         this.mservice=mservice;       
         
         if(ysession!=null) return;
@@ -59,7 +59,7 @@ public class HornetQManagement implements LinkListener {
     }
     
     
-    private void processLinkControlMessage(ClientMessage msg) throws YamcsApiException, HornetQException {
+    private void processLinkControlMessage(ClientMessage msg) throws YamcsApiException, ActiveMQException {
         SimpleString replyto=msg.getSimpleStringProperty(REPLYTO_HEADER_NAME);
         if(replyto==null) {
             log.warn("Did not receive a replyto header. Ignoring the request");
@@ -88,7 +88,7 @@ public class HornetQManagement implements LinkListener {
     public void stop() {
         try {
             ysession.close();
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             log.error("Failed to close the yamcs session",e);
         }
     }
@@ -112,7 +112,7 @@ public class HornetQManagement implements LinkListener {
             msg.putStringProperty(Message.HDR_LAST_VALUE_NAME, new SimpleString(lvn));
             Protocol.encode(msg, linkInfo);
             yclient.sendData(LINK_INFO_ADDRESS, msg);
-        }   catch (HornetQException e) {
+        }   catch (ActiveMQException e) {
             log.error("Exception while updating link status: ", e);
         }
     }

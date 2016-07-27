@@ -1,9 +1,9 @@
 package org.yamcs.tctm;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
@@ -22,7 +22,7 @@ import org.yamcs.hornetq.StreamAdapter;
 
 
 /**
- * receives data from HornetQ and publishes it into a yamcs stream
+ * receives data from ActiveMQ and publishes it into a yamcs stream
  * 
  * @author nm
  *
@@ -38,7 +38,7 @@ public class HornetQTmDataLink extends  AbstractService implements TmPacketDataL
     final TimeService timeService;
 
     public HornetQTmDataLink(String instance, String name, String hornetAddress) throws ConfigurationException  {
-        SimpleString queue = new SimpleString(hornetAddress+"-HornetQTmProvider");
+        SimpleString queue = new SimpleString(hornetAddress+"-ActiveMQTmProvider");
 
         try {
             yamcsSession=YamcsSession.newBuilder().build();
@@ -121,7 +121,7 @@ public class HornetQTmDataLink extends  AbstractService implements TmPacketDataL
         try {
             msgClient.dataConsumer.setMessageHandler(this);
             notifyStarted();
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             log.error("Failed to set message handler");
             notifyFailed(e);
         }
@@ -132,7 +132,7 @@ public class HornetQTmDataLink extends  AbstractService implements TmPacketDataL
         try {
             msgClient.close();
             notifyStopped();
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             log.error("Got exception when quiting:", e);
             notifyFailed(e);
         }

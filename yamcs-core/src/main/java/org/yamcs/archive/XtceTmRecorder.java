@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.hornetq.api.core.HornetQException;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
@@ -68,7 +68,7 @@ public class XtceTmRecorder extends AbstractService {
         RECORDED_TM_TUPLE_DEFINITION.addColumn(PNAME_COLUMN, DataType.ENUM); //container name (XTCE qualified name) 
     }
 
-    public XtceTmRecorder(String yamcsInstance) throws IOException, ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException {
+    public XtceTmRecorder(String yamcsInstance) throws IOException, ConfigurationException, StreamSqlException, ParseException, ActiveMQException, YamcsApiException {
         this(yamcsInstance, null);
     }
     final TimeService timeService;
@@ -80,10 +80,10 @@ public class XtceTmRecorder extends AbstractService {
      * @throws ConfigurationException
      * @throws StreamSqlException
      * @throws ParseException
-     * @throws HornetQException
+     * @throws ActiveMQException
      * @throws YamcsApiException
      */
-    public XtceTmRecorder(String yamcsInstance, Map<String, Object> config) throws IOException, ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException {
+    public XtceTmRecorder(String yamcsInstance, Map<String, Object> config) throws IOException, ConfigurationException, StreamSqlException, ParseException, ActiveMQException, YamcsApiException {
 
         this.yamcsInstance = yamcsInstance;
         log=LoggerFactory.getLogger(this.getClass().getName()+"["+yamcsInstance+"]");

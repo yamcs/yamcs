@@ -3,7 +3,7 @@ package org.yamcs.hornetq;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 
-import org.hornetq.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.yamcs.tctm.PpProviderAdapter;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
@@ -15,7 +15,7 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
 /**
- * Translates between Processed Parameter tuples and HornetQ messages.
+ * Translates between Processed Parameter tuples and ActiveMQ messages.
  * @author atu
  */
 public class PpTupleTranslator implements TupleTranslator {

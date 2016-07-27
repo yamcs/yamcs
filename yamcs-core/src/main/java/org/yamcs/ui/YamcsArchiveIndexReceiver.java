@@ -2,7 +2,7 @@ package org.yamcs.ui;
 
 
 
-import org.hornetq.api.core.HornetQException;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.yamcs.TimeInterval;
 import org.yamcs.YamcsException;
 import org.yamcs.ui.archivebrowser.ArchiveIndexListener;
@@ -168,7 +168,7 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
         try {
             yamcsClient=yconnector.getSession().newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
             indexListener.log("connected to "+yconnector.getUrl());
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             e.printStackTrace();
             indexListener.log("Failed to build yamcs client: "+e.getMessage());
         }

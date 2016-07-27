@@ -5,9 +5,9 @@ import static org.yamcs.api.Protocol.REPLYTO_HEADER_NAME;
 import static org.yamcs.api.Protocol.REQUEST_TYPE_HEADER_NAME;
 import static org.yamcs.api.Protocol.decode;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.TimeInterval;
@@ -41,7 +41,7 @@ public class HornetQIndexServer extends AbstractExecutionThreadService {
     
     volatile boolean quitting=false;
 
-    public HornetQIndexServer(IndexServer indexServer, TagDb tagDb) throws HornetQException, YamcsApiException {
+    public HornetQIndexServer(IndexServer indexServer, TagDb tagDb) throws ActiveMQException, YamcsApiException {
         this.indexServer = indexServer;
         this.tagDb = tagDb;
         this.instance = indexServer.getInstance();
@@ -98,7 +98,7 @@ public class HornetQIndexServer extends AbstractExecutionThreadService {
                                 if(trb.getTagCount()>500) {
                                     try {
                                         msgClient.sendData(dataAddress, ProtoDataType.ARCHIVE_TAG, trb.build());
-                                    } catch (HornetQException e) {
+                                    } catch (ActiveMQException e) {
                                         throw new RuntimeException(e);
                                     }
                                     trb=TagResult.newBuilder().setInstance(instance);
@@ -111,7 +111,7 @@ public class HornetQIndexServer extends AbstractExecutionThreadService {
                                     if(trb.getTagCount()>0)
                                         msgClient.sendData(dataAddress, ProtoDataType.ARCHIVE_TAG, trb.build());
                                     msgClient.sendDataEnd(dataAddress);
-                                } catch (HornetQException e) {
+                                } catch (ActiveMQException e) {
                                     throw new RuntimeException(e);
                                 }
                             }
@@ -165,12 +165,12 @@ public class HornetQIndexServer extends AbstractExecutionThreadService {
     protected void triggerShutdown() {
         try {
             quit();
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             log.error("Failed to shutdown", e);
         }
     }
     
-    public void quit() throws HornetQException {
+    public void quit() throws ActiveMQException {
         quitting=true;
         msgClient.close();
         yamcsSession.close();

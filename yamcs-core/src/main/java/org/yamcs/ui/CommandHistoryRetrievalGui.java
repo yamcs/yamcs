@@ -25,10 +25,10 @@ import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.yamcs.api.ConnectionParameters;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
@@ -193,7 +193,7 @@ public class CommandHistoryRetrievalGui extends JFrame implements MessageHandler
 		try {
 		    yclient.close();
 			ysession.close();
-		} catch (HornetQException e1) {
+		} catch (ActiveMQException e1) {
 			e1.printStackTrace();
 		}
 		SwingUtilities.invokeLater(

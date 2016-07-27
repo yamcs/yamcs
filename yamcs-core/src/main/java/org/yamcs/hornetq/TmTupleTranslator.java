@@ -1,6 +1,6 @@
 package org.yamcs.hornetq;
 
-import org.hornetq.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
@@ -12,7 +12,7 @@ import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.tctm.TmProviderAdapter;
 
 /**
- * Translates between tuples as defined in {@link TmProviderAdapter} and HornetQ messages containing TmPacketData
+ * Translates between tuples as defined in {@link TmProviderAdapter} and ActiveMQ messages containing TmPacketData
  * @author nm
  *
  */

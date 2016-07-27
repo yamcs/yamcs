@@ -7,11 +7,11 @@ import static org.yamcs.api.Protocol.YPROCESSOR_CONTROL_ADDRESS;
 import static org.yamcs.api.Protocol.YPROCESSOR_INFO_ADDRESS;
 import static org.yamcs.api.Protocol.YPROCESSOR_STATISTICS_ADDRESS;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.Message;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.Message;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
@@ -43,7 +43,7 @@ public class HornetQProcessorManagement implements ManagementListener {
 
     static public final String YPR_createProcessor = "createProcessor";
 
-    public HornetQProcessorManagement(ManagementService mservice) throws YamcsApiException, HornetQException {
+    public HornetQProcessorManagement(ManagementService mservice) throws YamcsApiException, ActiveMQException {
         this.mservice=mservice;
 
         if(ysession!=null) return;
@@ -70,7 +70,7 @@ public class HornetQProcessorManagement implements ManagementListener {
 
 
 
-    private void processControlMessage(ClientMessage msg) throws YamcsApiException, HornetQException {
+    private void processControlMessage(ClientMessage msg) throws YamcsApiException, ActiveMQException {
         HqClientMessageToken usertoken= new HqClientMessageToken(msg, null);
 
         SimpleString replyto=msg.getSimpleStringProperty(REPLYTO_HEADER_NAME);
@@ -149,7 +149,7 @@ public class HornetQProcessorManagement implements ManagementListener {
         Protocol.encode(msg, ci);
         try {
             yclient.sendData(YPROCESSOR_INFO_ADDRESS, msg);
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             log.error("Exception when sending yproc event: ", e);
         }
     }
@@ -163,7 +163,7 @@ public class HornetQProcessorManagement implements ManagementListener {
             msg.setExpiration(System.currentTimeMillis()+2000);
             Protocol.encode(msg, stats);
             yclient.sendData(YPROCESSOR_STATISTICS_ADDRESS, msg);
-        } catch (HornetQException e){
+        } catch (ActiveMQException e){
             log.error("got exception when sending the yproc processing statistics: ", e);
         }
     }
@@ -196,7 +196,7 @@ public class HornetQProcessorManagement implements ManagementListener {
         Protocol.encode(msg, ci);
         try {
             yclient.sendData(YPROCESSOR_INFO_ADDRESS, msg);
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             log.error("exception when sedning client event: ", e);
         }
     }
@@ -204,7 +204,7 @@ public class HornetQProcessorManagement implements ManagementListener {
     public void close() {
         try {
             ysession.close();
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             log.error("Failed to close the yamcs session", e);
         }
     }

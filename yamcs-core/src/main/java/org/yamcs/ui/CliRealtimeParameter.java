@@ -12,10 +12,10 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.concurrent.Semaphore;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.yamcs.YamcsException;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
@@ -69,7 +69,7 @@ public class CliRealtimeParameter {
      * yamcs://aces-test/aces-test  aces_SHM_HP_SET aces_SHM_HP_MEAS aces_SHM_IS_HEATER
      * 
      */
-    public static void main(String[] args) throws YamcsApiException, URISyntaxException, HornetQException, IOException, YamcsException, InterruptedException {
+    public static void main(String[] args) throws YamcsApiException, URISyntaxException, ActiveMQException, IOException, YamcsException, InterruptedException {
         if(args.length<1) printUsageAndExit(null);
         
         int k=0, timewindow = -1;

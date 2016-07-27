@@ -6,11 +6,11 @@ import static org.yamcs.api.Protocol.HDR_EVENT_NAME;
 import static org.yamcs.api.Protocol.REPLYTO_HEADER_NAME;
 import static org.yamcs.api.Protocol.REQUEST_TYPE_HEADER_NAME;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.Message;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.Message;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
@@ -43,7 +43,7 @@ public class HornetQCommandQueueManagement implements CommandQueueListener {
 
     static Logger log=LoggerFactory.getLogger(HornetQCommandQueueManagement.class.getName());
 
-    public HornetQCommandQueueManagement(ManagementService managementService) throws YamcsApiException, HornetQException {
+    public HornetQCommandQueueManagement(ManagementService managementService) throws YamcsApiException, ActiveMQException {
         this.managementService = managementService;
 
         if(ysession!=null) return;
@@ -70,7 +70,7 @@ public class HornetQCommandQueueManagement implements CommandQueueListener {
         });
     }
 
-    private void processQueueControlMessage(ClientMessage msg) throws YamcsApiException, HornetQException {
+    private void processQueueControlMessage(ClientMessage msg) throws YamcsApiException, ActiveMQException {
         SimpleString replyto=msg.getSimpleStringProperty(REPLYTO_HEADER_NAME);
         if(replyto==null) {
             log.warn("Did not receive a replyto header. Ignoring the request");
@@ -146,7 +146,7 @@ public class HornetQCommandQueueManagement implements CommandQueueListener {
         Protocol.encode(msg, cqe);
         try {
             yclient.sendData(CMDQUEUE_INFO_ADDRESS, msg);
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             log.error("exception when updating command queue status");
             e.printStackTrace();
         }
@@ -164,7 +164,7 @@ public class HornetQCommandQueueManagement implements CommandQueueListener {
         Protocol.encode(msg, cqi);
         try {
             yclient.sendData(CMDQUEUE_INFO_ADDRESS, msg);
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             log.error("exception when updating command queue status");
             e.printStackTrace();
         }
@@ -173,7 +173,7 @@ public class HornetQCommandQueueManagement implements CommandQueueListener {
     public void stop() {
         try {
             ysession.close();
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             log.error("Failed to close the yamcs session", e);
         }
     }

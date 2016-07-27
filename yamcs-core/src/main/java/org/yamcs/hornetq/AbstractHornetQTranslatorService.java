@@ -13,9 +13,9 @@ import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
 
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
@@ -23,7 +23,7 @@ import org.yamcs.api.YamcsSession;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- * takes data from yarch streams and publishes it to hornetq address (reverse of HornetQTmProvider)
+ * takes data from yarch streams and publishes it to hornetq address (reverse of ActiveMQTmProvider)
  * 
  *
  */
@@ -74,7 +74,7 @@ public class AbstractHornetQTranslatorService extends AbstractService {
 
     @Override
     public String toString() {
-        return "HornetQTmService";
+        return "ActiveMQTmService";
     }
 
 
@@ -82,7 +82,7 @@ public class AbstractHornetQTranslatorService extends AbstractService {
     protected void doStart() {
         for(Stream s:streams) {
             final SimpleString hornetAddress = new SimpleString(instance+"."+s.getName());
-            log.debug("Starting providing tuples from stream {} as messages on {} HornetQ address", s.getName(), hornetAddress.toString());
+            log.debug("Starting providing tuples from stream {} as messages on {} ActiveMQ address", s.getName(), hornetAddress.toString());
             StreamSubscriber ss = new StreamSubscriber() {
                 @Override
                 public void onTuple(Stream stream, Tuple tuple) {
@@ -93,7 +93,7 @@ public class AbstractHornetQTranslatorService extends AbstractService {
                         yamcsClient.get().sendData(hornetAddress, msg);
                     } catch (IllegalArgumentException e) {
                         log.warn(e.getMessage());
-                    } catch (HornetQException e) {
+                    } catch (ActiveMQException e) {
                         log.warn("Got exception when sending message:", e);
                     }
                 }

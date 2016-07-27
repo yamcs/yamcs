@@ -2,7 +2,7 @@ package org.yamcs.api;
 
 import static org.junit.Assert.assertEquals;
 
-import org.hornetq.core.server.embedded.EmbeddedHornetQ;
+import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -11,7 +11,7 @@ import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.yarch.YarchTestCase;
 
 public class EventProducerTest extends YarchTestCase {
-    static EmbeddedHornetQ hornetServer;
+    static EmbeddedActiveMQ hornetServer;
     
     @BeforeClass
     public static void setUpBeforeClass1() throws Exception {

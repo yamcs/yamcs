@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Random;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Protocol;
@@ -27,7 +27,7 @@ public class EventSim {
     YamcsClient msgClient;
     volatile boolean quitting;
     final SimpleString address;
-    EventSim(String instance, String host, int port) throws YamcsApiException, HornetQException {
+    EventSim(String instance, String host, int port) throws YamcsApiException, ActiveMQException {
         YamcsSession ys=YamcsSession.newBuilder().setConnectionParams(host,port).build();
         msgClient=ys.newClientBuilder().setDataProducer(true).build();
         address=Protocol.getEventRealtimeAddress(instance);
@@ -49,7 +49,7 @@ public class EventSim {
         }
     }
 
-    public void sendEvents() throws HornetQException, IOException, InterruptedException {
+    public void sendEvents() throws ActiveMQException, IOException, InterruptedException {
         Random random=new Random();
         int i=0;
         while(!quitting) {
@@ -74,7 +74,7 @@ public class EventSim {
     }
     /**
      * @param args
-     * @throws HornetQException 
+     * @throws ActiveMQException 
      * @throws IOException 
      */
     public static void main(String[] args) throws Exception {

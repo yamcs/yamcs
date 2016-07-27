@@ -80,7 +80,7 @@ public class Privilege {
                 realm = loadRealm(realmClass);
             } else {
                 // Intended migration path is that this could replace 'privileges=false', but the interaction with
-                // HornetQAuthManager is still unclear to me. Looks like a dupe. (fdi)
+                // ActiveMQAuthManager is still unclear to me. Looks like a dupe. (fdi)
                 if (!conf.containsKey("defaultUser")) {
                     throw new ConfigurationException("'defaultUser' must be specified when privileges are not enabled. For example 'admin', 'anonymous' or 'guest'");
                 }

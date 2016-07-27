@@ -5,23 +5,23 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.client.MessageHandler;
-import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.utils.HornetQBufferInputStream;
+import org.apache.activemq.artemis.api.core.ActiveMQBuffer;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.TransportConfiguration;
+import org.apache.activemq.artemis.api.core.client.ClientConsumer;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.ClientProducer;
+import org.apache.activemq.artemis.api.core.client.ClientSession;
+import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
+import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.api.core.client.ServerLocator;
+import org.apache.activemq.artemis.utils.ActiveMQBufferInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.utils.HornetQBufferOutputStream;
+import org.yamcs.utils.ActiveMQBufferOutputStream;
 
 import com.google.protobuf.MessageLite;
 
@@ -69,7 +69,7 @@ public class Protocol {
     final static public SimpleString YAMCS_SERVER_CONTROL_ADDRESS=new SimpleString("yamcsControl");
     final static public SimpleString REPLYTO_HEADER_NAME=new SimpleString("yamcs-reply-to");
 
-    final public static String IN_VM_FACTORY = "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory";
+    final public static String IN_VM_FACTORY = "org.apache.activemq.artemis.core.remoting.impl.invm.InVMConnectorFactory";
 
     /**
      * used to send chunks of data in a stream
@@ -121,8 +121,8 @@ public class Protocol {
 
     public static MessageLite decode(ClientMessage msg, MessageLite.Builder builder) throws YamcsApiException {
         try {
-            HornetQBuffer buf = msg.getBodyBuffer();
-            return builder.mergeFrom(new HornetQBufferInputStream(buf)).build();
+            ActiveMQBuffer buf = msg.getBodyBuffer();
+            return builder.mergeFrom(new ActiveMQBufferInputStream(buf)).build();
         } catch(IOException e) {
             throw new YamcsApiException(e.getMessage(), e);
         }
@@ -130,8 +130,8 @@ public class Protocol {
 
     public static MessageLite.Builder decodeBuilder(ClientMessage msg, MessageLite.Builder builder) throws YamcsApiException {
         try {
-            HornetQBuffer buf = msg.getBodyBuffer();
-            return builder.mergeFrom(new HornetQBufferInputStream(buf));
+            ActiveMQBuffer buf = msg.getBodyBuffer();
+            return builder.mergeFrom(new ActiveMQBufferInputStream(buf));
         } catch(IOException e) {
             throw new YamcsApiException(e.getMessage(), e);
         }
@@ -139,7 +139,7 @@ public class Protocol {
 
     public static void encode(ClientMessage msg, MessageLite ml){
         try {
-            ml.writeTo(new HornetQBufferOutputStream(msg.getBodyBuffer()));
+            ml.writeTo(new ActiveMQBufferOutputStream(msg.getBodyBuffer()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -177,7 +177,7 @@ public class Protocol {
         ServerLocator locator;
 
         ProducerKiller() throws Exception {
-            locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(IN_VM_FACTORY));
+            locator = ActiveMQClient.createServerLocatorWithoutHA(new TransportConfiguration(IN_VM_FACTORY));
             ClientSessionFactory factory =  locator.createSessionFactory();
 
             session = factory.createSession(YamcsSession.hornetqInvmUser, YamcsSession.hornetqInvmPass, false, true, true, true, 1);
@@ -202,7 +202,7 @@ public class Protocol {
                     try {
                         log.warn("closing producer {} because the consumer to the address {} has closed",p, hq_address);
                         p.close();
-                    } catch (HornetQException e) {
+                    } catch (ActiveMQException e) {
                         e.printStackTrace();
                     }
                 }

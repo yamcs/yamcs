@@ -19,8 +19,8 @@
       <version>${project.version}</version>
       <exclusions>
         <exclusion>
-          <groupId>org.hornetq</groupId>
-          <artifactId>hornetq-core-client</artifactId>
+          <groupId>org.apache.activemq</groupId>
+          <artifactId>artemis-core-client</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -74,9 +74,9 @@
       <version>2.6.10</version>
     </dependency>
     <dependency>
-      <groupId>org.hornetq</groupId>
-      <artifactId>hornetq-server</artifactId>
-      <version>${hornetQVersion}</version>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>artemis-server</artifactId>
+      <version>${artemisVersion}</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>

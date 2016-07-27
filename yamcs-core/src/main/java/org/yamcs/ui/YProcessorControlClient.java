@@ -1,9 +1,9 @@
 package org.yamcs.ui;
 
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.yamcs.YamcsException;
 import org.yamcs.api.ConnectionListener;
 import org.yamcs.api.Constants;
@@ -47,7 +47,7 @@ public class YProcessorControlClient implements ConnectionListener {
 
     }
 
-    public void createProcessor(String instance, String name, String type, Yamcs.ReplayRequest spec, boolean persistent, int[] clients) throws YamcsException, YamcsApiException, HornetQException {
+    public void createProcessor(String instance, String name, String type, Yamcs.ReplayRequest spec, boolean persistent, int[] clients) throws YamcsException, YamcsApiException, ActiveMQException {
 
         Yamcs.ReplayRequest.Builder rp = Yamcs.ReplayRequest.newBuilder();
 
@@ -181,7 +181,7 @@ public class YProcessorControlClient implements ConnectionListener {
     @Override
     public void log(String message) {}
 
-    public void close() throws HornetQException {
+    public void close() throws ActiveMQException {
         yclient.close();
     }  
 }

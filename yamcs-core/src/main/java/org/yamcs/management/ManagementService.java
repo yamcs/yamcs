@@ -54,7 +54,7 @@ import com.google.common.util.concurrent.Service;
  * Responsible for integrating with core yamcs classes, encoding to protobuf,
  * and forwarding aggregated info downstream.
  * <p>
- * Notable examples of downstream listeners are the MBeanServer, the HornetQ-business,
+ * Notable examples of downstream listeners are the MBeanServer, the ActiveMQ-business,
  * and subscribed websocket clients.
  */
 public class ManagementService implements YProcessorListener {
