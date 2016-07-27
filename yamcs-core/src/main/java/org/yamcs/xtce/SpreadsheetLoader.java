@@ -516,7 +516,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 if ((!"enumerated".equalsIgnoreCase(engtype)) && (calib!=null)) {
                     Calibrator c = calibrators.get(calib);
                     if (c == null) {
-                        throw new SpreadsheetLoadException(ctx, "Parameter " + name + " is supposed to have a calibrator '" + calib + "' but the calibrator does not exist");
+                        String msg = "Parameter " + name + " is supposed to have a calibrator '" + calib + "' but the calibrator does not exist.";
+                        if(enumerations.containsKey(calib)) {
+                            msg+=" Instead an enumeration with this name exists.";
+                        }
+                        throw new SpreadsheetLoadException(ctx, msg);
                     }
                     ((IntegerDataEncoding)encoding).defaultCalibrator = c;
                 }
