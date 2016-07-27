@@ -6,5 +6,5 @@ dataDir: /tmp/yamcs-IntegrationTest-data
 webRoot: /tmp/yamcs-web
 webPort: 9190
 
-hornetqConfigFile: hornetq-configuration-secure.xml
+artemisConfigFile: artemis-secure.xml
 

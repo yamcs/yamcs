@@ -1,0 +1,56 @@
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns="urn:activemq"
+               xsi:schemaLocation="urn:activemq /schema/artemis-server.xsd">
+               
+	<core xmlns="urn:activemq:core">
+		<persistence-enabled>false</persistence-enabled>
+		<security-enabled>false</security-enabled>
+		<journal-type>NIO</journal-type>
+
+		<management-notification-address>hornetq.notifications
+		</management-notification-address>
+		<!-- set these even when no clustering is activated to avoid warnings about 
+			security settings -->
+		<cluster-user>HORNETQ.CLUSTER.ADMIN.USER</cluster-user>
+		<cluster-password>uhchmPeLAcGdo</cluster-password>
+
+		<!-- Connectors -->
+		<connectors>
+			<connector name="in-vm">vm://0</connector>
+		</connectors>
+
+		<acceptors>
+			<acceptor name="in-vm">vm://0</acceptor>
+			<!-- <acceptor name="netty"> <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class> 
+				<param key="host" value="${hornetq.remoting.netty.host:0.0.0.0}"/> <param 
+				key="port" value="${hornetq.remoting.netty.port:5445}"/> <param key="use-nio" 
+				value="true"/> </acceptor> -->
+		</acceptors>
+
+		<address-settings>
+			<!-- make sure that the deliveries to data addresses don't consume all 
+				the memory -->
+			<address-setting match="tempDataAddress.#">
+				<max-size-bytes>100000</max-size-bytes>
+				<address-full-policy>BLOCK</address-full-policy>
+			</address-setting>
+
+			<!-- link info queues (TM/TC downlink/upling status) keep only the last 
+				value for each link -->
+			<address-setting match="linkInfo">
+				<last-value-queue>true</last-value-queue>
+			</address-setting>
+
+			<!-- channel info queues keep only the last value for each channel -->
+			<address-setting match="channelInfo">
+				<last-value-queue>true</last-value-queue>
+			</address-setting>
+
+			<!-- CommandQueue info queue keep only the last value for each command -->
+			<address-setting match="cmdQueueInfo">
+				<last-value-queue>true</last-value-queue>
+			</address-setting>
+
+		</address-settings>
+	</core>
+</configuration>

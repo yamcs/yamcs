@@ -1,6 +1,8 @@
-<configuration xmlns="urn:hornetq"
-               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns="urn:activemq"
+               xsi:schemaLocation="urn:activemq /schema/artemis-server.xsd">
+               
+<core xmlns="urn:activemq:core">
 
     <persistence-enabled>false</persistence-enabled>
     <security-enabled>true</security-enabled>
@@ -9,34 +11,21 @@
 
 
 
-    <management-notification-address>hornetq.notifications</management-notification-address>
+    <management-notification-address>activemq.notifications</management-notification-address>
     <!-- set these even when no clustering is activated to avoid warnings about security settings -->
     <cluster-user>HORNETQ.CLUSTER.ADMIN.USER</cluster-user>
     <cluster-password>uhchmPeLAcGdo</cluster-password>
 
-    <!-- Connectors -->
-    <connectors>
-        <connector name="in-vm">
-            <factory-class>org.hornetq.core.remoting.impl.invm.InVMConnectorFactory</factory-class>
-        </connector>
-        <connector name="netty">
-            <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
-            <param key="host"  value="${hornetq.remoting.netty.host:0.0.0.0}"/>
-            <param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
-        </connector>
-    </connectors>
+   <!-- Connectors -->
+	<connectors>
+            <connector name="in-vm">vm://0</connector>
+            <connector name="netty">tcp://0.0.0.0:5445/</connector>
+        </connectors>
 
-    <acceptors>
-        <acceptor name="in-vm">
-            <factory-class>org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory</factory-class>
-        </acceptor>
-        <acceptor name="netty">
-            <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
-            <param key="host"  value="${hornetq.remoting.netty.host:0.0.0.0}"/>
-            <param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
-            <param key="use-nio"  value="true"/>
-        </acceptor>
-    </acceptors>
+        <acceptors>
+            <acceptor name="in-vm">vm://0</acceptor>
+            <acceptor name="netty">tcp://0.0.0.0:5445</acceptor>
+        </acceptors>
 
     <address-settings>
         <!-- make sure that the deliveries to data addresses don't consume all the memory-->
@@ -62,9 +51,9 @@
 
     </address-settings>
 
-    <remoting-interceptors>
-        <class-name>org.yamcs.security.HornetQAuthInterceptor</class-name>
-    </remoting-interceptors>
+    <remoting-incoming-interceptors>
+       <class-name>org.yamcs.security.ArtemisAuthInterceptor</class-name>
+    </remoting-incoming-interceptors>
 
     <!-- Match an address, determine what roles are required for which queue action. -->
     <!-- The closest matched setting is used exclusively, no inheritance. -->
@@ -197,5 +186,5 @@
         </security-setting>
     </security-settings>
 
-
+</core>
 </configuration>

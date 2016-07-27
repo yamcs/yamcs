@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * @author atu
  *
  */
-public class HornetQAuthInterceptor implements Interceptor {
+public class ArtemisAuthInterceptor implements Interceptor {
 	public static final String USERNAME_PROPERTY = "username";
 	static Logger log = LoggerFactory.getLogger("org.yamcs.security.ActiveMQAuthInterceptor");
 	private Map<Object, AuthInjectionAssociation> cache = Collections.synchronizedMap( new HashMap<Object, AuthInjectionAssociation>() );
@@ -140,7 +140,7 @@ public class HornetQAuthInterceptor implements Interceptor {
 }
 
 /**
- * Used by {@link HornetQAuthInterceptor} to associate a connection with a username.
+ * Used by {@link ArtemisAuthInterceptor} to associate a connection with a username.
  * 
  * @author atu
  *

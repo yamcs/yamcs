@@ -156,9 +156,9 @@ public class Protocol {
      * @param a
      */
     public static synchronized void killProducerOnConsumerClosed(ClientProducer p, SimpleString a) {
-        if((killer==null) || killer.session.isClosed()) {//killer.session gets closed when the hornetq is stopped (during test execution by maven)
+        if((killer==null) || killer.session.isClosed()) {//killer.session gets closed when the artemis is stopped (during test execution by maven)
             try {
-                killer=new ProducerKiller();
+                killer = new ProducerKiller();
             } catch (Exception e) {
                 log.error("Could not create ProducerKiller", e);
             }
@@ -183,8 +183,8 @@ public class Protocol {
             session = factory.createSession(YamcsSession.hornetqInvmUser, YamcsSession.hornetqInvmPass, false, true, true, true, 1);
 
             //          session.createQueue("example", "example", true);
-            session.createTemporaryQueue("hornetq.notifications","ProducerKiller");
-            ClientConsumer consumer=session.createConsumer("ProducerKiller");
+            session.createTemporaryQueue("activemq.notifications","ProducerKiller");
+            ClientConsumer consumer = session.createConsumer("ProducerKiller");
             consumer.setMessageHandler(this);
             session.start();
         }
@@ -193,14 +193,15 @@ public class Protocol {
         }
         @Override
         public void onMessage(ClientMessage msg) {
-            String hq_notifType=msg.getStringProperty("_HQ_NotifType");
+            System.out.println("msg: "+msg);
+            String amq_notifType = msg.getStringProperty("_AMQ_NotifType");
 
-            if("CONSUMER_CLOSED".equals(hq_notifType)){
-                SimpleString hq_address=msg.getSimpleStringProperty("_HQ_Address");
-                ClientProducer p=producers.remove(hq_address);
+            if("CONSUMER_CLOSED".equals(amq_notifType)){
+                SimpleString amq_address=msg.getSimpleStringProperty("_AMQ_Address");
+                ClientProducer p=producers.remove(amq_address);
                 if(p!=null && !p.isClosed()) {
                     try {
-                        log.warn("closing producer {} because the consumer to the address {} has closed",p, hq_address);
+                        log.warn("closing producer {} because the consumer to the address {} has closed",p, amq_address);
                         p.close();
                     } catch (ActiveMQException e) {
                         e.printStackTrace();
@@ -221,5 +222,4 @@ public class Protocol {
     public static synchronized void closeKiller() {
         if(killer!=null) killer.close();
     }
-
 }

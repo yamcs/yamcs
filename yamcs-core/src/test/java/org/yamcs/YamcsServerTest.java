@@ -27,7 +27,7 @@ public class YamcsServerTest {
         YConfiguration.setup("YamcsServer");
         ManagementService.setup(false, false);
         org.yamcs.yarch.management.ManagementService.setup(false);
-        hornetServer=YamcsServer.setupHornet();
+        hornetServer=YamcsServer.setupArtemis();
         YamcsServer.setupYamcsServer();
     }
     

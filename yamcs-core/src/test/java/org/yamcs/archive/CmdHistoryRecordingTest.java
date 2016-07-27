@@ -46,7 +46,7 @@ public class CmdHistoryRecordingTest extends YarchTestCase {
     static EmbeddedActiveMQ hornetServer;
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        hornetServer = YamcsServer.setupHornet();
+        hornetServer = YamcsServer.setupArtemis();
     }
 
     @AfterClass

@@ -41,7 +41,7 @@ public class YProcessorsTest {
     @BeforeClass
     public static void setupHornetAndManagement() throws Exception {
         YConfiguration.setup("YProcessorsTest");
-        hornetServer=YamcsServer.setupHornet();
+        hornetServer = YamcsServer.setupArtemis();
         ManagementService.setup(true,true);
     }
     
@@ -77,8 +77,8 @@ public class YProcessorsTest {
 
     @Test
     public void createAndSwitchYProc() throws Exception {
-        YamcsConnector yconnector=new YamcsConnector();
-        YProcessorControlClient ccc=new YProcessorControlClient(yconnector);
+        YamcsConnector yconnector = new YamcsConnector();
+        YProcessorControlClient ccc = new YProcessorControlClient(yconnector);
         MyListener ml=new MyListener("yproctest1");
         ccc.setYProcessorListener(ml);
         Future<String> f=yconnector.connect(YamcsConnectData.parse("yamcs:///"));

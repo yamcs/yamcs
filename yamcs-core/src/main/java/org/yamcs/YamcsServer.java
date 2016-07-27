@@ -61,7 +61,7 @@ import com.google.common.util.concurrent.Service.State;
  *
  */
 public class YamcsServer {
-    static EmbeddedActiveMQ hornetServer;
+    static EmbeddedActiveMQ artemisServer;
     static Map<String, YamcsServer> instances=new LinkedHashMap<String, YamcsServer>();
     final static private String SERVER_ID_KEY="serverId";
 
@@ -145,34 +145,33 @@ public class YamcsServer {
     static YamcsSession yamcsSession;
     static YamcsClient ctrlAddressClient;
 
-    public static EmbeddedActiveMQ setupHornet() throws Exception {
-        //divert hornetq logging
+    public static EmbeddedActiveMQ setupArtemis() throws Exception {
+        //divert artemis logging
         System.setProperty("org.jboss.logging.provider", "slf4j");
 
-        // load optional configuration file name for hornetq,
-        // otherwise default will be hornetq-configuration.xml
-        String hornetqConfigFile = null;
-        try{
-            YConfiguration c=YConfiguration.getConfiguration("yamcs");
-            hornetqConfigFile = c.getString("hornetqConfigFile");
+        // load optional configuration file name for ActiveMQ Artemis,
+        // otherwise default will be artemis.xml
+        String artemisConfigFile = "artemis.xml";
+        YConfiguration c = YConfiguration.getConfiguration("yamcs");
+        if(c.containsKey("artemisConfigFile")) {
+            artemisConfigFile = c.getString("artemisConfigFile");    
         }
-        catch (Exception e){}
 
-        hornetServer = new EmbeddedActiveMQ();
-        hornetServer.setSecurityManager( new HornetQAuthManager() );
-        if(hornetqConfigFile != null)
-            hornetServer.setConfigResourcePath(hornetqConfigFile);
-        hornetServer.start();
+        artemisServer = new EmbeddedActiveMQ();
+        artemisServer.setSecurityManager( new HornetQAuthManager() );
+        if(artemisConfigFile != null)
+            artemisServer.setConfigResourcePath(artemisConfigFile);
+        artemisServer.start();
         //create already the queue here to reduce (but not eliminate :( ) the chance that somebody connects to it before yamcs is started fully
-        yamcsSession=YamcsSession.newBuilder().build();
-        ctrlAddressClient=yamcsSession.newClientBuilder().setRpcAddress(Protocol.YAMCS_SERVER_CONTROL_ADDRESS).setDataProducer(true).build();
-        return hornetServer;
+        yamcsSession = YamcsSession.newBuilder().build();
+        ctrlAddressClient = yamcsSession.newClientBuilder().setRpcAddress(Protocol.YAMCS_SERVER_CONTROL_ADDRESS).setDataProducer(true).build();
+        return artemisServer;
     }
 
     public static void stopHornet() throws Exception {
         yamcsSession.close();
         Protocol.closeKiller();
-        hornetServer.stop();
+        artemisServer.stop();
     }
 
     public static void shutDown() throws Exception {
@@ -404,7 +403,7 @@ public class YamcsServer {
             serverId = deriveServerId();
             setupSecurity();
             setupHttpServer();
-            setupHornet();
+            setupArtemis();
             org.yamcs.yarch.management.ManagementService.setup(true);
             ManagementService.setup(true,true);
             

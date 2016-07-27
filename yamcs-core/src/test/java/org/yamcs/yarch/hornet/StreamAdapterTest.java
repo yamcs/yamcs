@@ -32,7 +32,7 @@ public class StreamAdapterTest extends YarchTestCase {
     
     @BeforeClass
     public static void setUpBeforeClass1() throws Exception {
-        hornetServer=YamcsServer.setupHornet();
+        hornetServer=YamcsServer.setupArtemis();
     }
 
     @AfterClass

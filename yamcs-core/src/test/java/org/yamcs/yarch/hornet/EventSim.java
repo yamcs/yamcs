@@ -95,7 +95,7 @@ public class EventSim {
         }
         if(instance==null) printUsageAndExit();
         YConfiguration.setup();
-        YamcsServer.setupHornet();
+        YamcsServer.setupArtemis();
         
         TimeEncoding.setUp();
       //  Configuration.setup();

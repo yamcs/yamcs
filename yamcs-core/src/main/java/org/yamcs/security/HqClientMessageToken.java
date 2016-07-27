@@ -7,6 +7,6 @@ import org.apache.activemq.artemis.api.core.client.ClientMessage;
 public class HqClientMessageToken extends UsernamePasswordToken {
 
     public HqClientMessageToken(ClientMessage message, String password) {
-        super( message.getStringProperty( HornetQAuthInterceptor.USERNAME_PROPERTY ), password);
+        super( message.getStringProperty( ArtemisAuthInterceptor.USERNAME_PROPERTY ), password);
     }
 }

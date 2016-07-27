@@ -128,7 +128,7 @@ public abstract class AbstractIntegrationTest {
         ManagementService.setup(false, false);
         org.yamcs.yarch.management.ManagementService.setup(false);
         YamcsServer.setupHttpServer();
-        YamcsServer.setupHornet();
+        YamcsServer.setupArtemis();
         YamcsServer.setupYamcsServer();
     }
 

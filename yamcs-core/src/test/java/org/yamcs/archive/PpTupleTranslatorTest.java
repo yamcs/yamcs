@@ -50,7 +50,7 @@ public class PpTupleTranslatorTest extends YarchTestCase {
     public static final String COL_DOUBLE = "/pp/double";
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        hornetServer=YamcsServer.setupHornet();
+        hornetServer=YamcsServer.setupArtemis();
     }
 
     @AfterClass
