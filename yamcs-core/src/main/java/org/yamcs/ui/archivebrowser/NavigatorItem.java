@@ -1,9 +1,10 @@
 package org.yamcs.ui.archivebrowser;
 
-import org.yamcs.api.YamcsConnector;
 import org.yamcs.protobuf.Yamcs;
+import org.yamcs.ui.YamcsConnector;
 
 import javax.swing.*;
+
 import java.util.List;
 
 /**

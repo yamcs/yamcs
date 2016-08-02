@@ -1,17 +1,17 @@
 package org.yamcs.ui;
 
 
-import org.apache.activemq.artemis.api.core.ActiveMQException;
-import org.apache.activemq.artemis.api.core.client.ClientMessage;
-import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.yamcs.YamcsException;
-import org.yamcs.api.ConnectionListener;
 import org.yamcs.api.Constants;
-import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
-import org.yamcs.api.YamcsConnector;
+import org.yamcs.api.ws.ConnectionListener;
+import org.yamcs.api.ws.WebSocketClient;
+import org.yamcs.api.ws.WebSocketClientCallback;
+import org.yamcs.api.ws.WebSocketRequest;
+import org.yamcs.api.ws.WebSocketResponseHandler;
 import org.yamcs.protobuf.SchemaYamcs;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
@@ -19,26 +19,23 @@ import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 
-import static org.yamcs.api.Protocol.YPROCESSOR_INFO_ADDRESS;
-import static org.yamcs.api.Protocol.YPROCESSOR_CONTROL_ADDRESS;
-import static org.yamcs.api.Protocol.YPROCESSOR_STATISTICS_ADDRESS;
 
 /**
  * controls yprocessors in yamcs server via hornetq
  * @author nm
  *
  */
-public class YProcessorControlClient implements ConnectionListener {
+public class ProcessorControlClient implements ConnectionListener, WebSocketClientCallback {
     YamcsConnector yconnector;
-    YProcessorListener yamcsMonitor;
-    YamcsClient yclient;
+    ProcessorListener yamcsMonitor;
+    
 
-    public YProcessorControlClient(YamcsConnector yconnector) {
+    public ProcessorControlClient(YamcsConnector yconnector) {
         this.yconnector=yconnector;
         yconnector.addConnectionListener(this);
     }
 
-    public void setYProcessorListener(YProcessorListener yamcsMonitor) {
+    public void setYProcessorListener(ProcessorListener yamcsMonitor) {
         this.yamcsMonitor=yamcsMonitor;
     }
 
@@ -47,7 +44,7 @@ public class YProcessorControlClient implements ConnectionListener {
 
     }
 
-    public void createProcessor(String instance, String name, String type, Yamcs.ReplayRequest spec, boolean persistent, int[] clients) throws YamcsException, YamcsApiException, ActiveMQException {
+    public void createProcessor(String instance, String name, String type, Yamcs.ReplayRequest spec, boolean persistent, int[] clients) throws YamcsException, YamcsApiException{
 
         Yamcs.ReplayRequest.Builder rp = Yamcs.ReplayRequest.newBuilder();
 
@@ -59,7 +56,7 @@ public class YProcessorControlClient implements ConnectionListener {
         for(int i=0;i<clients.length;i++) {
             crb.addClientId(clients[i]);
         }
-        yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, Constants.YPR_createProcessor, crb.build(), null);
+        //yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, Constants.YPR_createProcessor, crb.build(), null);
     }
 
     public void connectToYProcessor(String instance, String name, int[] clients) throws YamcsException, YamcsApiException {
@@ -68,26 +65,26 @@ public class YProcessorControlClient implements ConnectionListener {
         for(int i=0;i<clients.length;i++) {
             crb.addClientId(clients[i]);
         }
-        yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, Constants.YPR_connectToProcessor, crb.build(), null);
+       // yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, Constants.YPR_connectToProcessor, crb.build(), null);
     }
 
     public void pauseArchiveReplay(String instance, String name) throws YamcsException, YamcsApiException {
         ProcessorRequest.Builder crb = ProcessorRequest.newBuilder()
         .setInstance(instance).setName(name);
-        yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, Constants.YPR_pauseReplay, crb.build(), null);
+     //   yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, Constants.YPR_pauseReplay, crb.build(), null);
     }
 
     public void resumeArchiveReplay(String instance, String name) throws YamcsApiException, YamcsException {
         ProcessorRequest.Builder crb = ProcessorRequest.newBuilder()
         .setInstance(instance).setName(name);
-        yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, Constants.YPR_resumeReplay, crb.build(), null);
+     //   yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, Constants.YPR_resumeReplay, crb.build(), null);
     }
 
 
     public void seekArchiveReplay(String instance, String name, long newPosition) throws YamcsApiException, YamcsException  {
         ProcessorRequest.Builder crb = ProcessorRequest.newBuilder()
         .setInstance(instance).setName(name).setSeekTime(newPosition);
-        yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, "seekReplay", crb.build(), null);
+      //  yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, "seekReplay", crb.build(), null);
     }
 
 
@@ -95,38 +92,10 @@ public class YProcessorControlClient implements ConnectionListener {
     public void connecting(String url) { }
 
     public void receiveInitialConfig() {
+        
         try {
-            if(yclient==null) {
-                yclient=yconnector.getSession().newClientBuilder()
-                .setRpc(true).setDataConsumer(YPROCESSOR_INFO_ADDRESS, null).build();
-            } else {
-                yclient.dataConsumer.setMessageHandler(null);
-            }
-
-            YamcsClient browser=yconnector.getSession().newClientBuilder().setDataConsumer(YPROCESSOR_INFO_ADDRESS, YPROCESSOR_INFO_ADDRESS).setBrowseOnly(true).build();
-            yclient=yconnector.getSession().newClientBuilder()
-            .setRpc(true).setDataConsumer(YPROCESSOR_INFO_ADDRESS, null).build();
-
-            ClientMessage m1;
-            while((m1=browser.dataConsumer.receiveImmediate())!=null) {//send all the messages from the queue first
-                sendUpdate(m1);
-            }
-            browser.close();
-
-
-            yclient.dataConsumer.setMessageHandler(new MessageHandler() {
-                @Override
-                public void onMessage(ClientMessage msg) {
-                    sendUpdate(msg);
-                }
-            });
-            YamcsClient yclientStats=yconnector.getSession().newClientBuilder().setDataConsumer(YPROCESSOR_STATISTICS_ADDRESS, null).build();
-            yclientStats.dataConsumer.setMessageHandler(new MessageHandler() {
-                @Override
-                public void onMessage(ClientMessage msg) {
-                    sendStatistics(msg);
-                }
-            });
+            WebSocketRequest wsr = new WebSocketRequest("blalbla", "bubu");
+            yconnector.performSubscription(wsr, this);
         } catch (Exception e) {
             e.printStackTrace();
             yamcsMonitor.log("error when retrieving link info: "+e.getMessage());
@@ -135,12 +104,12 @@ public class YProcessorControlClient implements ConnectionListener {
 
     @Override
     public void connected(String url) {
-        yclient=null;
         receiveInitialConfig();
     }
 
-    private void sendUpdate(ClientMessage msg) {
-        try {
+    @Override
+    public void onMessage(WebSocketSubscriptionData data) {
+    /*    try {
             String eventName=msg.getStringProperty(Protocol.HDR_EVENT_NAME);
             if("yprocUpdated".equals(eventName)) {
                 ProcessorInfo ci = (ProcessorInfo)Protocol.decode(msg, ProcessorInfo.newBuilder());
@@ -159,9 +128,9 @@ public class YProcessorControlClient implements ConnectionListener {
             }
         } catch (YamcsApiException e) {
             yamcsMonitor.log("Error when decoding message "+e.getMessage());
-        }
+        }*/
     }
-
+/*
     private void sendStatistics(ClientMessage msg) {
         try {
             Statistics s = (Statistics)Protocol.decode(msg, Statistics.newBuilder());
@@ -169,19 +138,16 @@ public class YProcessorControlClient implements ConnectionListener {
         } catch (YamcsApiException e) {
             yamcsMonitor.log("Error when decoding message "+e.getMessage());
         }
-    }
+    }*/
+    
     @Override
     public void connectionFailed(String url, YamcsException exception) {    }
 
     @Override
     public void disconnected() {
-        yclient=null;
     }
 
     @Override
     public void log(String message) {}
 
-    public void close() throws ActiveMQException {
-        yclient.close();
-    }  
 }

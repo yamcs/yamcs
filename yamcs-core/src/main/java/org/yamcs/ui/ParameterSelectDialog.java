@@ -37,6 +37,7 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsConnectData;
 import org.yamcs.api.YamcsConnectDialog;
+import org.yamcs.api.YamcsConnectDialog.YamcsConnectDialogResult;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest;
 import org.yamcs.xtce.Parameter;
@@ -321,17 +322,17 @@ public class ParameterSelectDialog extends JDialog implements ActionListener, Ke
 
     public static void main( String[] args ) throws YamcsApiException, ActiveMQException, ConfigurationException {
 	YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
-
-	YamcsConnectData ycd = YamcsConnectDialog.showDialog(null, true, config.getBoolean("authenticationEnabled"));
-	if( ycd.isOk ) {
-	    ParameterSelectDialog psd = new ParameterSelectDialog(null, ycd);
+/*ARTEMIS
+	YamcsConnectDialogResult ycd = YamcsConnectDialog.showDialog(null, true, config.getBoolean("authenticationEnabled"));
+	if( ycd.isOk() ) {
+	    ParameterSelectDialog psd = new ParameterSelectDialog(null, ycd.getConnectionProperties()e);
 	    List<String> params = psd.showDialog();
 	    if( params != null ) {
 		for( String param : params ) {
 		    System.out.println( param );
 		}
 	    }
-	}
+	}*/
 	System.exit(0);
     }
 }

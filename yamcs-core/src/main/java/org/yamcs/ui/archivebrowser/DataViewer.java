@@ -2,16 +2,17 @@ package org.yamcs.ui.archivebrowser;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.api.YamcsConnector;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.ui.CommandHistoryRetrievalGui;
 import org.yamcs.ui.PacketRetrievalGui;
 import org.yamcs.ui.ParameterRetrievalGui;
 import org.yamcs.ui.UiColors;
+import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.TimeEncoding;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -326,7 +327,7 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
         } else if (cmd.equals("start-parameter-retrieval")) {
             Selection sel = dataView.getSelection();
             if(parameterGui==null) {
-                parameterGui=new ParameterRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
+           //ARTEMIS     parameterGui=new ParameterRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
             }
             parameterGui.setValues(archivePanel.archiveBrowser.getInstance(), sel.getStartInstant(), sel.getStopInstant());
             parameterGui.setVisible(true);
@@ -334,7 +335,7 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
 
             Selection sel = dataView.getSelection();
             if (cmdHistGui == null) {
-                cmdHistGui = new CommandHistoryRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
+                //ARTEMIS        cmdHistGui = new CommandHistoryRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
             }
             cmdHistGui.setValues(archivePanel.archiveBrowser.getInstance(), null, sel.getStartInstant(), sel.getStopInstant());
             cmdHistGui.setVisible(true);

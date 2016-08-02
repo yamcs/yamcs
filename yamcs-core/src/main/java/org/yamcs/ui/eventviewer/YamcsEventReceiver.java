@@ -26,10 +26,9 @@ import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.apache.activemq.artemis.api.core.client.SessionFailureListener;
 import org.yamcs.YamcsException;
-import org.yamcs.api.ConnectionListener;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsClient;
-import org.yamcs.api.YamcsConnector;
+import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.EventReplayRequest;
@@ -37,6 +36,7 @@ import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
+import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.TimeEncoding;
 
 public class YamcsEventReceiver implements ConnectionListener, EventReceiver, MessageHandler, SessionFailureListener {
@@ -72,6 +72,7 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, Me
 
     @Override
     public void connected(String url) {
+        /*
         try {
             yamcsClient=yconnector.getSession().newClientBuilder()
                 .setDataConsumer(new SimpleString(yconnector.getConnectionParams().getInstance()+".events_realtime"), null).build();
@@ -80,6 +81,7 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, Me
             eventViewer.log(e.getMessage());
             e.printStackTrace();
         }
+        */
     }
     
     @Override
@@ -197,7 +199,8 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, Me
             this.params=params;
         }
         @Override
-        public void run() {
+        public void run() {//ARTEMIS
+            /*
             try {
                 YamcsClient msgClient=yconnector.getSession().newClientBuilder().setRpc(true).setDataConsumer(null, null).
                     build();
@@ -243,7 +246,7 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, Me
                 e.printStackTrace();
                 eventViewer.log(e.toString());
             }
-            
+            */
         }
     }
 

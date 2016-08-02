@@ -9,7 +9,7 @@ public class VarIntUtil {
      * 
      * @param buf
      * @param x
-     * @return
+     * @return the decoded integer
      */
     static public int writeVarint32(byte[] buf, int pos, int x) {
         while ((x & ~0x7F) != 0) {

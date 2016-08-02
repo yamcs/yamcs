@@ -21,7 +21,6 @@ public class UsernamePasswordToken implements AuthenticationToken {
      * @param password
      */
     public UsernamePasswordToken(final String username, final char[] password) {
-
         this.username = username;
         this.password = password;
     }

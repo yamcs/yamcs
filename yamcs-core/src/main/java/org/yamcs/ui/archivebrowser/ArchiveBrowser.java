@@ -4,17 +4,18 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.TimeInterval;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
-import org.yamcs.api.ConnectionListener;
 import org.yamcs.api.YamcsConnectData;
 import org.yamcs.api.YamcsConnectDialog;
-import org.yamcs.api.YamcsConnector;
+import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.ui.YamcsArchiveIndexReceiver;
+import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -73,8 +74,10 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         closeMenuItem.setActionCommand("exit");
         closeMenuItem.addActionListener(this);
         fileMenu.add(closeMenuItem);
-
-        menuBar.add(getToolsMenu());
+        JMenu toolsMenu = getToolsMenu();
+        if(toolsMenu!=null) {
+            menuBar.add(toolsMenu);
+        }
    
         /*
          * BUTTONS
@@ -104,6 +107,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
 
     protected JMenu getToolsMenu() throws ConfigurationException, IOException {
         YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
+        if(!config.containsKey("archiveBrowserTools")) return null;
         List<Map<String, String>> tools=config.getList("archiveBrowserTools");
         
         JMenu toolsMenu = new JMenu("Tools");
@@ -347,19 +351,22 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         
         final boolean enableAuth = aetmp;
         archiveBrowser.connectMenuItem.addActionListener(new ActionListener() {
+            
             @Override
             public void actionPerformed(ActionEvent e) {
+                /*ARTEMIS
                 YamcsConnectData ycd=YamcsConnectDialog.showDialog(archiveBrowser, false, enableAuth);
                 if(ycd.isOk) {
                     yconnector.connect(ycd);
                 }
+                */
             }
         });
            
         ir.setIndexListener(archiveBrowser);
         yconnector.addConnectionListener(archiveBrowser);
         if(params!=null) {
-            yconnector.connect(params);
+          //  yconnector.connect(params); ARTEMIS
         }
         
         Runtime.getRuntime().addShutdownHook(new Thread() {

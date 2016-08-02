@@ -1,36 +1,35 @@
 package org.yamcs.ui;
 
+import java.util.concurrent.Future;
 
-
-import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.yamcs.TimeInterval;
 import org.yamcs.YamcsException;
 import org.yamcs.ui.archivebrowser.ArchiveIndexListener;
 import org.yamcs.ui.archivebrowser.ArchiveIndexReceiver;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.MdbMappings;
-
-import org.yamcs.api.YamcsConnector;
-import org.yamcs.api.ConnectionListener;
-import org.yamcs.api.Protocol;
-import org.yamcs.api.YamcsClient;
+import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.rest.BulkRestDataReceiver;
+import org.yamcs.api.rest.RestClient;
+import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.DeleteTagRequest;
-import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.TagResult;
 import org.yamcs.protobuf.Yamcs.UpsertTagRequest;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
 public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveIndexReceiver {
     ArchiveIndexListener indexListener;
 
-    volatile private boolean  receiving=false;
+    volatile private boolean receiving = false;
 
     YamcsConnector yconnector;
-    YamcsClient yamcsClient;
 
 
     public YamcsArchiveIndexReceiver(YamcsConnector yconnector) {
-        this.yconnector=yconnector;
+        this.yconnector = yconnector;
         yconnector.addConnectionListener(this);
     }
 
@@ -49,28 +48,34 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
             indexListener.receiveArchiveRecordsError( "No yamcs instance to get data from" );
             return;
         }
+
         yconnector.getExecutor().submit(new Runnable() {
             @Override
             public void run() {
                 try {
-                    int seq=0;
-                    IndexRequest.Builder request=IndexRequest.newBuilder().setInstance(instance);
-                    if(interval.hasStart())request.setStart(interval.getStart());
-                    if(interval.hasStop()) request.setStop(interval.getStop());
-                    request.setDefaultNamespace(MdbMappings.MDB_OPSNAME).setSendAllPp(true).setSendAllTm(true).setSendAllCmd(true);
-                    request.setSendCompletenessIndex(true);
-                    //       yamcsClient.executeRpc(Protocol.getYarchIndexControlAddress(instance), "getIndex", request.build(), null);
-                    yamcsClient.sendRequest(Protocol.getYarchIndexControlAddress(instance), "getIndex", request.build());
-                    while(true) {
-                        IndexResult ir=(IndexResult) yamcsClient.receiveData(IndexResult.newBuilder());
-                        //    System.out.println("Received ")
-                        if(ir==null) {
-                            indexListener.receiveArchiveRecordsFinished();
-                            break;
+                    RestClient restClient = yconnector.getRestClient();
+                    StringBuilder resource = new StringBuilder().append("/archive/"+instance+"/indexes?");
+
+                    if(interval.hasStart()) resource.append("start="+TimeEncoding.toString(interval.getStart()));
+                    if(interval.hasStop()) resource.append("&stop="+TimeEncoding.toString(interval.getStop()));
+
+                    Future<Void> f = restClient.doBulkGetRequest(resource.toString(), new BulkRestDataReceiver() {
+                        @Override
+                        public void receiveData(byte[] data) throws YamcsApiException {
+                            try {
+                                indexListener.receiveArchiveRecords(IndexResult.parseFrom(data));
+                            } catch (InvalidProtocolBufferException e) {
+                                throw new YamcsApiException("Error parsing index result: "+e.getMessage());
+                            }
                         }
-                        indexListener.receiveArchiveRecords(ir);
-                        seq++;
-                    }
+                        @Override
+                        public void receiveException(Throwable t) {
+                            indexListener.receiveArchiveRecordsError(t.getMessage());
+                        }
+                    });
+
+                    f.get();
+                    indexListener.receiveArchiveRecordsFinished();
                 } catch (Exception e) {
                     e.printStackTrace();
                     indexListener.receiveArchiveRecordsError(e.toString());
@@ -93,20 +98,30 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
             @Override
             public void run() {
                 try {
-                    int seq=0;
-                    IndexRequest.Builder request=IndexRequest.newBuilder().setInstance(instance);
-                    if(interval.hasStart())request.setStart(interval.getStart());
-                    if(interval.hasStop()) request.setStop(interval.getStop());
-                    yamcsClient.sendRequest(Protocol.getYarchIndexControlAddress(instance), "getTag", request.build());
-                    while(true) {
-                        TagResult tr=(TagResult) yamcsClient.receiveData(TagResult.newBuilder());
-                        if(tr==null) {
-                            indexListener.receiveTagsFinished();
-                            break;
+                    RestClient restClient = yconnector.getRestClient();
+                    StringBuilder resource = new StringBuilder().append("/archive/"+instance+"/tags?");
+
+                    if(interval.hasStart()) resource.append("start="+TimeEncoding.toString(interval.getStart()));
+                    if(interval.hasStop()) resource.append("&stop="+TimeEncoding.toString(interval.getStop()));
+
+                    Future<Void> f = restClient.doBulkGetRequest(resource.toString(), new BulkRestDataReceiver() {
+                        @Override
+                        public void receiveData(byte[] data) throws YamcsApiException {
+                            try {
+                                indexListener.receiveTags(TagResult.parseFrom(data).getTagList());
+                            } catch (InvalidProtocolBufferException e) {
+                                throw new YamcsApiException("Error parsing tag result: "+e.getMessage());
+                            }
                         }
-                        indexListener.receiveTags(tr.getTagList());
-                        seq++;
-                    }
+                        @Override
+                        public void receiveException(Throwable t) {
+                            indexListener.receiveArchiveRecordsError(t.getMessage());
+                        }
+                    });
+
+                    f.get();
+                    indexListener.receiveTagsFinished();
+                    
                 } catch (Exception e) {
                     e.printStackTrace();
                     indexListener.receiveArchiveRecordsError(e.getMessage());
@@ -122,8 +137,8 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
     public void insertTag(String instance, ArchiveTag tag) {
         UpsertTagRequest utr=UpsertTagRequest.newBuilder().setNewTag(tag).build();
         try {
-            ArchiveTag ntag=(ArchiveTag)yamcsClient.executeRpc((Protocol.getYarchIndexControlAddress(instance)), "upsertTag", utr, ArchiveTag.newBuilder());
-            indexListener.tagAdded(ntag);
+        //    ArchiveTag ntag=(ArchiveTag)yamcsClient.executeRpc((Protocol.getYarchIndexControlAddress(instance)), "upsertTag", utr, ArchiveTag.newBuilder());
+         //   indexListener.tagAdded(ntag);
         } catch (Exception e) {
             indexListener.log("Failed to insert tag: "+e.getMessage());
         }
@@ -133,8 +148,8 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
     public void updateTag(String instance, ArchiveTag oldTag, ArchiveTag newTag) {
         UpsertTagRequest utr=UpsertTagRequest.newBuilder().setOldTag(oldTag).setNewTag(newTag).build();
         try {
-            ArchiveTag ntag=(ArchiveTag)yamcsClient.executeRpc((Protocol.getYarchIndexControlAddress(instance)), "upsertTag", utr, ArchiveTag.newBuilder());
-            indexListener.tagChanged(oldTag, ntag);
+       //     ArchiveTag ntag=(ArchiveTag)yamcsClient.executeRpc((Protocol.getYarchIndexControlAddress(instance)), "upsertTag", utr, ArchiveTag.newBuilder());
+        //    indexListener.tagChanged(oldTag, ntag);
         } catch (Exception e) {
             indexListener.log("Failed to insert tag: "+e.getMessage());
         }
@@ -145,8 +160,8 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
     public void deleteTag(String instance, ArchiveTag tag) {
         DeleteTagRequest dtr=DeleteTagRequest.newBuilder().setTag(tag).build();
         try {
-            ArchiveTag rtag=(ArchiveTag)yamcsClient.executeRpc((Protocol.getYarchIndexControlAddress(instance)), "deleteTag", dtr, ArchiveTag.newBuilder());
-            indexListener.tagRemoved(rtag);
+        //    ArchiveTag rtag=(ArchiveTag)yamcsClient.executeRpc((Protocol.getYarchIndexControlAddress(instance)), "deleteTag", dtr, ArchiveTag.newBuilder());
+        //    indexListener.tagRemoved(rtag);
         } catch (Exception e) {
             indexListener.log("Failed to remove tag: "+e.getMessage());
         }
@@ -165,6 +180,7 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
 
     @Override
     public void connected(String url) {
+        /*ARTEMIS
         try {
             yamcsClient=yconnector.getSession().newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
             indexListener.log("connected to "+yconnector.getUrl());
@@ -172,7 +188,7 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
             e.printStackTrace();
             indexListener.log("Failed to build yamcs client: "+e.getMessage());
         }
-
+         */
     }
 
     @Override

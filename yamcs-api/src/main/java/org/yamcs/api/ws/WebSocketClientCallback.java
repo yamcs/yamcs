@@ -17,7 +17,7 @@ public interface WebSocketClientCallback {
     default void connectionFailed(Throwable t) {}
     
     /**
-     * When a previously successfulconnection was disconnected
+     * When a previously successful connection was disconnected
      */
     default void disconnected() {}
     

@@ -27,7 +27,7 @@ public class EventProducerTest extends YarchTestCase {
     public void testEventProducer() throws Exception {
         String url = "yamcs:///"+ydb.getName();
         YamcsSession ys=YamcsSession.newBuilder().setConnectionParams(url).build();
-        HornetQEventProducer ep= new HornetQEventProducer(YamcsConnectData.parse(url));
+        WebSocketEventProducer ep= new WebSocketEventProducer(YamcsConnectData.parse(url));
         ep.setSource("testing");
         
         YamcsClient yc=ys.newClientBuilder().setDataConsumer(Protocol.getEventRealtimeAddress(ydb.getName()),null).build();
@@ -55,7 +55,7 @@ public class EventProducerTest extends YarchTestCase {
         assertEquals("msgInfo", ev.getMessage());
         assertEquals(2, ev.getSeqNumber());
         
-        ((HornetQEventProducer) ep).close();
+        ((WebSocketEventProducer) ep).close();
         
         ys.close();
     }

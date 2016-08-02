@@ -25,6 +25,8 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
 
     private static final Logger log = LoggerFactory.getLogger(ManagementResource.class);
 
+    public static final String RESOURCE_NAME = "management";
+    
     public static final String OP_getProcessorInfo = "getProcessorInfo";
     public static final String OP_getClientInfo = "getClientInfo";
     public static final String OP_subscribe = "subscribe";
@@ -33,7 +35,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
 
     public ManagementResource(YProcessor yproc, WebSocketFrameHandler wsHandler, int clientId) {
         super(yproc, wsHandler);
-        wsHandler.addResource("management", this);
+        wsHandler.addResource(RESOURCE_NAME, this);
         this.clientId = clientId;
     }
 

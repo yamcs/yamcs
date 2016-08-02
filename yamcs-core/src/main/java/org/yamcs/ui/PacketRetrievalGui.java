@@ -41,6 +41,7 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsConnectData;
 import org.yamcs.api.YamcsSession;
+import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
@@ -77,7 +78,7 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
     ProgressMonitor progressMonitor;
     private File outputFile;
     private OutputStream outputStream;
-    ConnectionParameters connectionParams;
+    YamcsConnectionProperties connectionParams;
     PacketFormatter packetFormatter;
     YamcsSession ysession;
     YamcsClient yclient;
@@ -86,10 +87,10 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
      * Creates a new window that requests parameter deliveries
      * 
      */
-    public PacketRetrievalGui(ConnectionParameters connectionParams, Component parent) {
+    public PacketRetrievalGui(YamcsConnectionProperties connectionParams, Component parent) {
         super("Dump Telemetry Packets");
-        this.connectionParams=connectionParams;
-        this.parent=parent;
+        this.connectionParams = connectionParams;
+        this.parent = parent;
 
         Container frameContentPane=getContentPane();
         frameContentPane.setLayout(new GridBagLayout());
@@ -149,6 +150,7 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
 
     @Override
     public void actionPerformed(ActionEvent ae) {
+        /*ARTEMIS
         String cmd = ae.getActionCommand();
         if(cmd.equals("CancelSelection")) {
             setVisible(false);
@@ -172,8 +174,8 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
                 packetFormatter.setWithoutCcsds(withoutCcsds.isSelected());
                 packetFormatter.setWithPacts(pactsFakeHeaders.isSelected());
 
-                YamcsConnectData ycd=(YamcsConnectData)connectionParams;
-                ycd.instance=archiveInstance;
+                YamcsConnectionProperties ycd=(YamcsConnectionProperties)connectionParams;
+               ycd.instance=archiveInstance;
                 ysession=YamcsSession.newBuilder().setConnectionParams(ycd).build();
                 yclient=ysession.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
                 ReplayRequest.Builder rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT)
@@ -189,9 +191,10 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
 
                 yclient.dataConsumer.setMessageHandler(this);
                 yclient.executeRpc(replayAddress, "start", null, null);
+                
             } catch (FileNotFoundException e1) {
                 JOptionPane.showMessageDialog(parent, "Cannot open file: "+e1.getMessage(),"Cannot open file",JOptionPane.ERROR_MESSAGE);
-            } catch (YamcsException e) {
+            } catch (Exception e) {
                 if("InvalidIdentification".equals(e.getType())) {
                     StringBuffer errorMessage = new StringBuffer( "Some packet names are invalid:\n" );
                     try {
@@ -216,6 +219,7 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
                 JOptionPane.showMessageDialog(parent, "Exception when retrieving data: "+e,"Exception when retrieving data",JOptionPane.ERROR_MESSAGE);
             }
         }
+        */
     }
 
     int count;

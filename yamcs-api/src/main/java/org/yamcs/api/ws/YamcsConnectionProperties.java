@@ -1,29 +1,55 @@
 package org.yamcs.api.ws;
 
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Properties;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.UsernamePasswordToken;
 
 public class YamcsConnectionProperties {
-    private String host;
-    private int port;
+    private String host = "localhost";
+    private int port = 8090;
     private String instance;
+    AuthenticationToken authToken;
     
+    boolean ssl;
+    
+    final private String PREF_FILENAME = "YamcsConnectionProperties"; //relative to the <home>/.yamcs directory
+    public YamcsConnectionProperties() {
+
+    }
+
     public YamcsConnectionProperties(String host, int port, String instance) {
         this.host = host;
         this.port = port;
         this.instance = instance;
     }
-    
+
+    public YamcsConnectionProperties(String host, int port) {
+        this(host, port, (AuthenticationToken) null);
+    }
+
+    public YamcsConnectionProperties(String host, int port, AuthenticationToken authToken) {
+        this.host = host;
+        this.port = port;
+        this.authToken = authToken;
+    }
+
     public String getHost() {
         return host;
     }
-    
+
     public int getPort() {
         return port;
     }
-    
+
     public String getInstance() {
         return instance;
     }
@@ -46,8 +72,119 @@ public class YamcsConnectionProperties {
             throw new ConfigurationException("Invalid URL", e);
         }
     }
-    
+
     public String getYamcsConnectionString() {
         return "yamcs://" + host + ":" + port + "/" + instance;
     }
+
+    public void load() {
+        try {
+            Properties p=new Properties();
+            String home = System.getProperty("user.home")+"/.yamcs";
+            p.load(new FileInputStream(home+"/"+PREF_FILENAME));
+            host=p.getProperty("host");
+            try {port=Integer.parseInt(p.getProperty("port"));} catch (NumberFormatException e){};
+
+            instance = p.getProperty("instance");
+            if(p.containsKey("username")) {
+                authToken = new UsernamePasswordToken(p.getProperty("username"), (char[])null);
+            }
+        } catch (IOException e) {}
+    }
+
+    public void save() {
+        Properties p=new Properties();
+        p.setProperty("host",host);
+        p.setProperty("port",Integer.toString(port));
+        if(instance!=null) p.setProperty("instance", instance);
+        if(authToken instanceof UsernamePasswordToken) {
+            UsernamePasswordToken upt = (UsernamePasswordToken) authToken;
+            p.setProperty("username", upt.getUsername());
+        }
+        try {
+            String home = System.getProperty("user.home")+"/.yamcs";
+            (new File(home)).mkdirs();
+            p.store(new FileOutputStream(home+"/"+PREF_FILENAME),
+                    "Yamcs connect dialog properties cache");
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+    }
+
+
+    public void setInstance(String instance) {
+        this.instance = instance;
+    }
+
+    public void setSsl(boolean ssl) {
+        this.ssl = ssl;
+    }
+    @Override
+    public YamcsConnectionProperties clone() {
+        try {
+            return (YamcsConnectionProperties)super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);//this can't happen
+        }
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    /**
+     * Return the base REST API URL for connecting to yamcs
+     *
+     * @return A sting of the shape http://host:port/api
+     */
+    public String getRestApiUrl() {
+        return "http://"+host+":"+port+"/api";
+    }
+
+    public AuthenticationToken getAuthenticationToken() {
+        return authToken;
+    }
+    public void setAuthenticationToke(AuthenticationToken authToken) {
+        this.authToken = authToken;
+    }
+    
+    /**
+     * uri is protocol://[[username]:[password]@][host[:port]]/[instance]
+     * @param uri
+     * @return an object containing the connection properties
+     * @throws URISyntaxException
+     */
+    public static YamcsConnectionProperties parse(String uri) throws  URISyntaxException {
+        YamcsConnectionProperties ycd=new YamcsConnectionProperties();
+        URI u = new URI(uri);
+        if(!"http".equals(u.getScheme()) && !"https".equals(u.getScheme())) {
+            throw new URISyntaxException(uri, "only http or https scheme allowed");
+        }
+        if("https".equals(u.getScheme())) {
+            ycd.ssl=true;
+        }
+        if(u.getPort()!=-1) ycd.port=u.getPort();
+        ycd.host=u.getHost();
+
+        if( u.getUserInfo() != null ) {
+            String[] ui = u.getRawUserInfo().split(":");
+            String username = ui[0];
+            char[] password = null;
+            if( ui.length > 1 ) {
+                password = ui[1].toCharArray();
+            }
+            ycd.authToken = new UsernamePasswordToken(username, password);
+        }
+
+        String[] pc=u.getPath().split("/");
+        if(pc.length>3) throw new URISyntaxException(uri, "Can only support instance/address paths");
+        if(pc.length>1) ycd.instance=pc[1];
+
+        return ycd;
+    }
+
 }

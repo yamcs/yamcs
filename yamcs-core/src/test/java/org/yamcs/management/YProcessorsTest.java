@@ -21,11 +21,11 @@ import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.security.AuthenticationToken;
-import org.yamcs.ui.YProcessorControlClient;
-import org.yamcs.ui.YProcessorListener;
+import org.yamcs.ui.ProcessorControlClient;
+import org.yamcs.ui.ProcessorListener;
+import org.yamcs.ui.YamcsConnector;
 import org.yamcs.YamcsException;
-import org.yamcs.api.YamcsConnectData;
-import org.yamcs.api.YamcsConnector;
+import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
@@ -58,10 +58,10 @@ public class YProcessorsTest {
     
     @Test
     public void createYProcessorWithoutClient() throws Exception {
-        YamcsConnector yconnector=new YamcsConnector();
-        YProcessorControlClient ccc=new YProcessorControlClient(yconnector);
+        YamcsConnector yconnector = new YamcsConnector();
+        ProcessorControlClient ccc = new ProcessorControlClient(yconnector);
         ccc.setYProcessorListener(new MyListener("YProcessorsTest"));
-        yconnector.connect(YamcsConnectData.parse("yamcs:///")).get(5,TimeUnit.SECONDS);
+        yconnector.connect(YamcsConnectionProperties.parse("http://localhost:20888/")).get(5,TimeUnit.SECONDS);
 
         try {
 
@@ -71,17 +71,16 @@ public class YProcessorsTest {
         } catch(YamcsException e) {
             assertEquals("createYProcessor invoked with a list full of invalid client ids", e.getMessage());
         }
-        ccc.close();
         yconnector.disconnect();
     }
 
     @Test
     public void createAndSwitchYProc() throws Exception {
         YamcsConnector yconnector = new YamcsConnector();
-        YProcessorControlClient ccc = new YProcessorControlClient(yconnector);
+        ProcessorControlClient ccc = new ProcessorControlClient(yconnector);
         MyListener ml=new MyListener("yproctest1");
         ccc.setYProcessorListener(ml);
-        Future<String> f=yconnector.connect(YamcsConnectData.parse("yamcs:///"));
+        Future<YamcsConnectionProperties> f=yconnector.connect(YamcsConnectionProperties.parse("http://localhost:20888/"));
         f.get(5, TimeUnit.SECONDS);
 
         Yamcs.ReplayRequest rr = Yamcs.ReplayRequest.newBuilder().build();
@@ -105,7 +104,6 @@ public class YProcessorsTest {
         yp.quit();
         
         Thread.sleep(3000);//to allow for events to come
-        ccc.close();
         yconnector.disconnect();
         
         assertEquals(2, ml.yprocUpdated.size());
@@ -160,7 +158,7 @@ public class YProcessorsTest {
        
     }
     
-    static class MyListener implements YProcessorListener {
+    static class MyListener implements ProcessorListener {
         Map<String, ProcessorInfo> yprocUpdated=Collections.synchronizedMap(new HashMap<String, ProcessorInfo>());
         List<ProcessorInfo> yprocClosedList=Collections.synchronizedList(new ArrayList<ProcessorInfo>());
         List<ClientInfo> clientUpdatedList=Collections.synchronizedList(new ArrayList<ClientInfo>());

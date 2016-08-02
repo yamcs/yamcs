@@ -65,12 +65,12 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
-import org.yamcs.api.ConnectionListener;
 import org.yamcs.api.YamcsConnectData;
 import org.yamcs.api.YamcsConnectDialog;
-import org.yamcs.api.YamcsConnector;
+import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
+import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.TimeEncoding;
 
 import com.csvreader.CsvWriter;
@@ -547,10 +547,10 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     public void actionPerformed(ActionEvent e) {
         String cmd = e.getActionCommand();
         if (cmd.equals("connect")) {
-            YamcsConnectData ycd=YamcsConnectDialog.showDialog(this, true, authenticationEnabled);
+            /*ARTEMISYamcsConnectData ycd=YamcsConnectDialog.showDialog(this, true, authenticationEnabled);
             if( ycd.isOk ) {
             	yconnector.connect(ycd);
-            }
+            }*/
         } else if (cmd.equals("retrieve_past")) {
             eventReceiver.retrievePastEvents();
         } else if (cmd.equals("switch_rule_status")) {
@@ -1015,7 +1015,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         YamcsConnector yconnector=new YamcsConnector();
         YamcsEventReceiver eventReceiver = new YamcsEventReceiver(yconnector);
         EventViewer ev=new EventViewer(yconnector, eventReceiver);
-        if(ycd!=null) yconnector.connect(ycd);
+     //ARTEMIS   if(ycd!=null) yconnector.connect(ycd);
     }
 
     @Override

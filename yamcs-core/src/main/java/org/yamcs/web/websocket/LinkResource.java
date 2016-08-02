@@ -20,18 +20,22 @@ import org.yamcs.security.AuthenticationToken;
  */
 public class LinkResource extends AbstractWebSocketResource implements LinkListener {
     private static final Logger log = LoggerFactory.getLogger(LinkResource.class);
-
+    
+    public static final String RESOURCE_NAME = "links";
+    public static final String OP_subscribe = "subscribe";
+    public static final String OP_unsubscribe = "unsubscribe";
+    
     public LinkResource(YProcessor channel, WebSocketFrameHandler wsHandler) {
         super(channel, wsHandler);
-        wsHandler.addResource("links", this);
+        wsHandler.addResource(RESOURCE_NAME, this);
     }
 
     @Override
     public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder, AuthenticationToken authenticationToken) throws WebSocketException {
         switch (ctx.getOperation()) {
-        case "subscribe":
+        case OP_subscribe:
             return subscribe(ctx.getRequestId());
-        case "unsubscribe":
+        case OP_unsubscribe:
             return unsubscribe(ctx.getRequestId());
         default:
             throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '"+ctx.getOperation()+"'");

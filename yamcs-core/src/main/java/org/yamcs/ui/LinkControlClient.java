@@ -1,17 +1,16 @@
 package org.yamcs.ui;
 
-import org.apache.activemq.artemis.api.core.client.ClientMessage;
-import org.apache.activemq.artemis.api.core.client.MessageHandler;
-
 import org.yamcs.YamcsException;
-import org.yamcs.api.ConnectionListener;
-import org.yamcs.api.Protocol;
-import static org.yamcs.api.Protocol.LINK_INFO_ADDRESS;
-import static org.yamcs.api.Protocol.LINK_CONTROL_ADDRESS;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
-import org.yamcs.api.YamcsConnector;
+import org.yamcs.api.ws.ConnectionListener;
+import org.yamcs.api.ws.WebSocketClientCallback;
+import org.yamcs.api.ws.WebSocketRequest;
+import org.yamcs.api.ws.WebSocketResponseHandler;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
+import org.yamcs.protobuf.YamcsManagement.LinkEvent;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
+import org.yamcs.web.websocket.LinkResource;
 
 
 /**
@@ -19,14 +18,13 @@ import org.yamcs.protobuf.YamcsManagement.LinkInfo;
  * @author nm
  *
  */
-public class LinkControlClient implements ConnectionListener {
+public class LinkControlClient implements ConnectionListener, WebSocketResponseHandler, WebSocketClientCallback {
     LinkListener linkListener;
     YamcsConnector yconnector;
-    YamcsClient yclient;
     
     
     public LinkControlClient(YamcsConnector yconnector) {
-        this.yconnector=yconnector;
+        this.yconnector = yconnector;
         yconnector.addConnectionListener(this);
     }
 
@@ -35,54 +33,23 @@ public class LinkControlClient implements ConnectionListener {
     }
     
     public void enable(LinkInfo li) throws YamcsApiException, YamcsException{
-        yclient.executeRpc(LINK_CONTROL_ADDRESS, "enableLink", li, null);
+//        yclient.executeRpc(LINK_CONTROL_ADDRESS, "enableLink", li, null);
     }
 
     public void disable(LinkInfo li) throws YamcsApiException, YamcsException {
-        yclient.executeRpc(LINK_CONTROL_ADDRESS, "disableLink", li, null);
+ //       yclient.executeRpc(LINK_CONTROL_ADDRESS, "disableLink", li, null);
     }
 
     /**
      * reads the full link status
      */
     public void receiveInitialConfig() {
-        try {
-            if(yclient==null) {
-                yclient=yconnector.getSession().newClientBuilder().setDataConsumer(LINK_INFO_ADDRESS, null).setRpc(true).build();
-            } else {
-                yclient.dataConsumer.setMessageHandler(null); //unsubscribe temporarely
-            }
-            YamcsClient browser=yconnector.getSession().newClientBuilder().setDataConsumer(LINK_INFO_ADDRESS, LINK_INFO_ADDRESS).setBrowseOnly(true).build();
-            ClientMessage msg;
-            while((msg=browser.dataConsumer.receiveImmediate())!=null) {//send all the messages from the queue first
-                LinkInfo li=(LinkInfo)Protocol.decode(msg, LinkInfo.newBuilder());
-                linkListener.updateLink(li);
-            }
-            browser.close();
-
-            yclient.dataConsumer.setMessageHandler(new MessageHandler() {
-                @Override
-                public void onMessage(ClientMessage msg1) {
-                    try {
-                        LinkInfo li = (LinkInfo)Protocol.decode(msg1, LinkInfo.newBuilder());
-                        linkListener.updateLink(li);
-                    } catch (YamcsApiException e) {
-                        linkListener.log("Error when decoding message "+e.getMessage());
-                    }
-
-                }
-            });
-        } catch(Exception e) {
-            e.printStackTrace();
-            linkListener.log("Error when updating links "+e.getMessage());
-        }
+        WebSocketRequest wsr = new WebSocketRequest(LinkResource.RESOURCE_NAME, LinkResource.OP_subscribe);
+        yconnector.performSubscription(wsr, this);
     }
-
-   
 
     @Override
     public void connected(String url) {
-        yclient=null;
         receiveInitialConfig();
     }
 
@@ -91,7 +58,6 @@ public class LinkControlClient implements ConnectionListener {
 
     @Override
     public void disconnected() {
-        yclient=null;
     }
 
     @Override
@@ -100,4 +66,16 @@ public class LinkControlClient implements ConnectionListener {
     @Override
     public void connecting(String url) {    }
 
+    @Override
+    public void onException(WebSocketExceptionData e) {
+        System.out.println("LinkControlClient.onException "+e);
+    }
+
+    @Override
+    public void onMessage(WebSocketSubscriptionData data) {
+        if(data.hasLinkEvent()) {
+            LinkEvent linkEv = data.getLinkEvent();
+            linkListener.updateLink(linkEv.getLinkInfo());
+        }
+    }
 }

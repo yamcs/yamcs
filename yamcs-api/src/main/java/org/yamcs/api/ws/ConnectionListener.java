@@ -1,4 +1,4 @@
-package org.yamcs.api;
+package org.yamcs.api.ws;
 
 import java.util.EventListener;
 

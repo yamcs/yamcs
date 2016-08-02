@@ -2,11 +2,17 @@ package org.yamcs;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
+import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.rest.BulkRestDataReceiver;
+import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.WebSocketRequest;
+import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
@@ -17,6 +23,8 @@ import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ParameterResource;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 
 
 public class IntegrationTestArchive extends AbstractIntegrationTest {
@@ -30,8 +38,6 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
             packetGenerator.generate_PKT1_3();
         }
     }
-    
-    
 
     @Test
     public void testReplay() throws Exception {
@@ -80,8 +86,7 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
     @Test
     public void testIndex() throws Exception {
         generateData("2015-01-01T10:00:00", 3600);
-        enableDebugging();
-        //make a request with a future time
+       
         String response ;
         
         response = httpClient.doGetRequest("http://localhost:9190/api/archive/IntegrationTest/indexes/packets?start=2015-01-01T00:00:00", null, currentUser);
@@ -90,6 +95,34 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
         
         response = httpClient.doGetRequest("http://localhost:9190/api/archive/IntegrationTest/indexes/packets?start=2035-01-01T00:00:00", null, currentUser);
         assertTrue(response.isEmpty());
+    }
+
+    
+    @Test
+    public void testIndexWithRestClient() throws Exception {
+        generateData("2015-02-01T10:00:00", 3600);
+        RestClient restClient = new RestClient(new YamcsConnectionProperties("localhost", 9190, currentUser));
+        List<ArchiveRecord> arlist = new ArrayList<ArchiveRecord>();
+        
+        CompletableFuture<Void> f = restClient.doBulkGetRequest("/archive/IntegrationTest/indexes/packets?start=2015-02-01T00:00:00", new BulkRestDataReceiver() {
+            
+            @Override
+            public void receiveException(Throwable t) {
+                fail(t.getMessage());
+            }
+            
+            @Override
+            public void receiveData(byte[] data) throws YamcsApiException {
+                try {
+                    arlist.add(ArchiveRecord.parseFrom(data));
+                } catch (InvalidProtocolBufferException e) {
+                    throw new YamcsApiException("Cannot decode ArchiveRecord: "+e.getMessage(), e);
+                }
+            }
+        });
+        
+        f.get();
+        assertEquals(4, arlist.size());
     }
 
 }

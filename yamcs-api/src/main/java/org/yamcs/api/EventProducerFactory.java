@@ -107,7 +107,7 @@ public class EventProducerFactory {
 
         if(producer==null) {
             log.debug("Creating a YamcsEventProducer connected to {}", ycd.getUrl());
-            producer = new HornetQEventProducer(ycd);
+            producer = new WebSocketEventProducer(ycd);
         }
         
         return producer;

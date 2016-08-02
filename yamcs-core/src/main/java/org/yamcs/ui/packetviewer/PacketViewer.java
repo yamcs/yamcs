@@ -74,13 +74,12 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
-import org.yamcs.api.ConnectionListener;
 import org.yamcs.api.ConnectionParameters;
 import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsConnectData;
-import org.yamcs.api.YamcsConnector;
+import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
@@ -89,6 +88,7 @@ import org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 import org.yamcs.ui.PrefsObject;
+import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.BaseDataType;
@@ -535,7 +535,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         log("Loading remote XTCE db "+configName);
         MissionDatabaseRequest mdr = MissionDatabaseRequest.newBuilder().setDbConfigName(configName).build();
         try {
-            YamcsClient yc=yconnector.getSession().newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
+           /*ARTEMIS YamcsClient yc=yconnector.getSession().newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
             yc.executeRpc(Protocol.YAMCS_SERVER_CONTROL_ADDRESS, "getMissionDatabase", mdr, null);
             ClientMessage msg=yc.dataConsumer.receive(5000);
 
@@ -543,7 +543,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
             Object o=ois.readObject();
             xtcedb=(XtceDb) o;
             yc.close();
-            ois.close();
+            ois.close();*/
         } catch (Exception e) {
             showError(e.getMessage());
             return false;
@@ -750,7 +750,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         connectionParams = ycd;
         yconnector = new YamcsConnector();
         yconnector.addConnectionListener(this);
-        yconnector.connect(ycd);
+    //ARTEMIS    yconnector.connect(ycd);
         updateTitle();
     }
 
@@ -908,6 +908,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
 
     @Override
     public void connected(String url) {
+        /*
         YamcsConnectData ycd=yconnector.getConnectionParams();
         try {
             log("connected to "+url);
@@ -958,6 +959,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
             log(e.toString());
             e.printStackTrace();
         }
+        */
 
     }
 

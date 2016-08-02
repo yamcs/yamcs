@@ -3,23 +3,19 @@ package org.yamcs.ui;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.apache.activemq.artemis.api.core.client.ClientMessage;
-import org.apache.activemq.artemis.api.core.client.MessageHandler;
-
 import org.yamcs.YamcsException;
-import org.yamcs.api.ConnectionListener;
-import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
 
-import static org.yamcs.api.Protocol.CMDQUEUE_INFO_ADDRESS;
-import static org.yamcs.api.Protocol.CMDQUEUE_CONTROL_ADDRESS;
-import static org.yamcs.api.Protocol.HDR_EVENT_NAME;
 
-import org.yamcs.api.YamcsClient;
-import org.yamcs.api.YamcsConnector;
+import org.yamcs.api.rest.RestClient;
+import org.yamcs.api.ws.ConnectionListener;
+import org.yamcs.api.ws.WebSocketClient;
+import org.yamcs.api.ws.WebSocketRequest;
+import org.yamcs.api.ws.WebSocketResponseHandler;
 import org.yamcs.protobuf.Commanding.CommandQueueEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Commanding.CommandQueueRequest;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 
 /**
  * Controls yamcs command queues via Hornet
@@ -28,12 +24,11 @@ import org.yamcs.protobuf.Commanding.CommandQueueRequest;
  * @author nm
  *
  */
-public class CommandQueueControlClient implements ConnectionListener {
+public class CommandQueueControlClient implements ConnectionListener, WebSocketResponseHandler {
     YamcsConnector yconnector;
-    YamcsClient yclient;
-    
+
     List<CommandQueueListener> listeners=new CopyOnWriteArrayList<CommandQueueListener>(); //listeners for instance.chanelName
-    
+
     public CommandQueueControlClient(YamcsConnector yconnector) {
         this.yconnector=yconnector;
         yconnector.addConnectionListener(this);
@@ -43,32 +38,18 @@ public class CommandQueueControlClient implements ConnectionListener {
         listeners.add(cmdQueueListener);
     }
 
-    
+
     @Override
     public void connected(String url) {
-        yclient=null;
         receiveInitialConfig();
     }
 
     /*this should do some filtering for the registered listeners*/
     public void receiveInitialConfig() {
         try {
-            if(yclient!=null) yclient.dataConsumer.setMessageHandler(null);
-            YamcsClient browser=yconnector.getSession().newClientBuilder().setDataConsumer(CMDQUEUE_INFO_ADDRESS, CMDQUEUE_INFO_ADDRESS).setBrowseOnly(true).build();
-            yclient=yconnector.getSession().newClientBuilder().setDataConsumer(CMDQUEUE_INFO_ADDRESS, null).setRpc(true).build();
-
-            ClientMessage msg;
-            while((msg=browser.dataConsumer.receiveImmediate())!=null) {//send all the messages from the queue first
-                sendUpdate(msg);
-            }
-            browser.close();
-
-            yclient.dataConsumer.setMessageHandler(new MessageHandler() {
-                @Override
-                public void onMessage(ClientMessage m) {
-                    sendUpdate(m);
-                }
-            });
+            WebSocketClient wsClient = yconnector.getWebSocketClient();
+            WebSocketRequest wsr = new WebSocketRequest("bla", "bla");
+            wsClient.sendRequest(wsr, this);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -76,48 +57,23 @@ public class CommandQueueControlClient implements ConnectionListener {
         }
     }
 
-    private void sendUpdate(ClientMessage msg) {
-    	try {
-    		String eventName=msg.getStringProperty(HDR_EVENT_NAME);
-    		for(int i=0;i<listeners.size();i++) {
-    			CommandQueueListener cql=listeners.get(i);
-    			if("commandAdded".equals(eventName)) {
-    				CommandQueueEntry cqe=(CommandQueueEntry)Protocol.decode(msg, CommandQueueEntry.newBuilder());
-    				cql.commandAdded(cqe);
-    			} else if("commandRejected".equals(eventName)) {
-    				CommandQueueEntry cqe=(CommandQueueEntry)Protocol.decode(msg, CommandQueueEntry.newBuilder());
-    				cql.commandRejected(cqe);
-    			} else if("commandSent".equals(eventName)) {
-    				CommandQueueEntry cqe=(CommandQueueEntry)Protocol.decode(msg, CommandQueueEntry.newBuilder());
-    				cql.commandSent(cqe);
-    			} else if("queueUpdated".equals(eventName)) {
-    				CommandQueueInfo cqi=(CommandQueueInfo)Protocol.decode(msg, CommandQueueInfo.newBuilder());
-    				listeners.get(i).updateQueue(cqi);
-    			} else {
-    				cql.log("received an unknown event on the command update queue: '"+eventName+"'");
-    			}
-    		}
-        } catch (YamcsApiException e) {
-            sendLog("error when decoding command queue info message: "+e);
+
+    private void sendLog(String message) {
+        for(int i=0;i<listeners.size();i++) {
+            listeners.get(i).log(message);
         }
     }
-    
-    private void sendLog(String message) {
-    	 for(int i=0;i<listeners.size();i++) {
-             listeners.get(i).log(message);
-         }
-    }
-    
+
     /**
      * Send a message to the server to change the queue state.
      * If newState=ENABLED, then changing the queue state may result in some commands being sent.
      *  The rebuild flag indicates that the command shall be rebuild (new timestamp, new pvt checks, etc)
      */
     public void setQueueState(CommandQueueInfo cqi, boolean rebuild) throws YamcsApiException, YamcsException {
-    	 CommandQueueRequest cqr=CommandQueueRequest.newBuilder().setQueueInfo(cqi).setRebuild(rebuild).build();
-         yclient.executeRpc(CMDQUEUE_CONTROL_ADDRESS, "setQueueState", cqr, null);
+        RestClient restClient = yconnector.getRestClient();
+    //    restClient.doGetRequest("/");
     }
-    
+
     /**
      * Send a message to the server to release the command
      * @param cqe - reference to the command to be released
@@ -125,20 +81,21 @@ public class CommandQueueControlClient implements ConnectionListener {
      * @throws YamcsException 
      */
     public void sendCommand(CommandQueueEntry cqe, boolean rebuild) throws YamcsApiException, YamcsException {
-       CommandQueueRequest cqr=CommandQueueRequest.newBuilder().setQueueEntry(cqe).setRebuild(rebuild).build();
-       yclient.executeRpc(CMDQUEUE_CONTROL_ADDRESS, "sendCommand", cqr, null);
-        
+        RestClient restClient = yconnector.getRestClient();
+        CommandQueueRequest cqr=CommandQueueRequest.newBuilder().setQueueEntry(cqe).setRebuild(rebuild).build();
+      //  yclient.executeRpc(CMDQUEUE_CONTROL_ADDRESS, "sendCommand", cqr, null);
     }
-    
+
     /**
      * Send a message to the server to reject the command
      * @param cqe
      */
     public void rejectCommand(CommandQueueEntry cqe) throws YamcsApiException, YamcsException {
         CommandQueueRequest cqr=CommandQueueRequest.newBuilder().setQueueEntry(cqe).build();
-        yclient.executeRpc(CMDQUEUE_CONTROL_ADDRESS, "rejectCommand", cqr, null);
+        RestClient restClient = yconnector.getRestClient();
+        //yclient.executeRpc(CMDQUEUE_CONTROL_ADDRESS, "rejectCommand", cqr, null);
     }
-    
+
     @Override
     public void connecting(String url) {    }
 
@@ -150,4 +107,32 @@ public class CommandQueueControlClient implements ConnectionListener {
 
     @Override
     public void log(String message) {}
+
+    @Override
+    public void onException(WebSocketExceptionData e) {
+        /*
+        try {
+            String eventName=msg.getStringProperty(HDR_EVENT_NAME);
+            for(int i=0;i<listeners.size();i++) {
+                CommandQueueListener cql=listeners.get(i);
+                if("commandAdded".equals(eventName)) {
+                    CommandQueueEntry cqe=(CommandQueueEntry)Protocol.decode(msg, CommandQueueEntry.newBuilder());
+                    cql.commandAdded(cqe);
+                } else if("commandRejected".equals(eventName)) {
+                    CommandQueueEntry cqe=(CommandQueueEntry)Protocol.decode(msg, CommandQueueEntry.newBuilder());
+                    cql.commandRejected(cqe);
+                } else if("commandSent".equals(eventName)) {
+                    CommandQueueEntry cqe=(CommandQueueEntry)Protocol.decode(msg, CommandQueueEntry.newBuilder());
+                    cql.commandSent(cqe);
+                } else if("queueUpdated".equals(eventName)) {
+                    CommandQueueInfo cqi=(CommandQueueInfo)Protocol.decode(msg, CommandQueueInfo.newBuilder());
+                    listeners.get(i).updateQueue(cqi);
+                } else {
+                    cql.log("received an unknown event on the command update queue: '"+eventName+"'");
+                }
+            }
+        } catch (YamcsApiException e) {
+            sendLog("error when decoding command queue info message: "+e);
+        }*/
+    }
 }

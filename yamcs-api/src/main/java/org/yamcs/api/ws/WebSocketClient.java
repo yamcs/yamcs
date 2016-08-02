@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.MediaType;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 
 import io.netty.bootstrap.Bootstrap;
@@ -41,10 +42,9 @@ public class WebSocketClient {
 
     private static final Logger log = LoggerFactory.getLogger(WebSocketClient.class);
 
-    private WebSocketClientCallback callback;
+    private final WebSocketClientCallback callback;
     
     private EventLoopGroup group = new NioEventLoopGroup();
-    private URI uri;
     private Channel nettyChannel;
     private String userAgent;
     private Integer timeoutMs=null;
@@ -52,40 +52,49 @@ public class WebSocketClient {
     private AtomicInteger seqId = new AtomicInteger(1);
     private String username;
     private String password;
-
+    YamcsConnectionProperties yprops;
+    final boolean useProtobuf;
+    
     // Keeps track of sent subscriptions, so that we can do a resend when we get
     // an InvalidException on some of them :-(
     private Map<Integer, RequestResponsePair> requestResponsePairBySeqId = new ConcurrentHashMap<>();
 
+    public WebSocketClient(WebSocketClientCallback callback) {
+        this.callback = callback;
+        this.useProtobuf = true;
+    }
     public WebSocketClient(YamcsConnectionProperties yprops, WebSocketClientCallback callback) {
         this(yprops, callback, null, null);
     }
 
-    public WebSocketClient(YamcsConnectionProperties yprops, WebSocketClientCallback callback, String username,
-            String password) {
-        this.uri = yprops.webSocketURI();
+    public WebSocketClient(YamcsConnectionProperties yprops, WebSocketClientCallback callback, String username, String password) {
+        this.yprops = yprops;
         this.callback = callback;
         this.username = username;
         this.password = password;
+        this.useProtobuf = true;
     }
-
+    public void setConnectionProperties(YamcsConnectionProperties yprops) {
+        this.yprops=yprops;
+    }
     public void setUserAgent(String userAgent) {
         this.userAgent = userAgent;
     }
-    public void setConnectionTimeoutMs(int timeoutMs)
-    {
+    
+    public void setConnectionTimeoutMs(int timeoutMs) {
         this.timeoutMs = timeoutMs;
     }
-    public void connect() {
-        connect(false);
+    
+    public ChannelFuture connect() {
+        return connect(false);
     }
 
-    public void connect(boolean enableReconnection) {
+    public ChannelFuture connect(boolean enableReconnection) {
         this.enableReconnection.set(enableReconnection);
-        createBootstrap();
+        return createBootstrap();
     }
 
-    private void createBootstrap() {
+    private ChannelFuture createBootstrap() {
         HttpHeaders header = new DefaultHttpHeaders();
         if (userAgent != null) {
             header.add(HttpHeaders.Names.USER_AGENT, userAgent);
@@ -99,6 +108,10 @@ public class WebSocketClient {
             String authorization = "Basic " + credentialsB64;
             header.add(HttpHeaders.Names.AUTHORIZATION, authorization);
         }
+        if(useProtobuf) {
+            header.add(HttpHeaders.Names.ACCEPT, MediaType.PROTOBUF);
+        }
+        URI uri = yprops.webSocketURI();
 
         WebSocketClientHandshaker handshaker = WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13,
                 null, false, header);
@@ -109,8 +122,7 @@ public class WebSocketClient {
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .channel(NioSocketChannel.class);
 
-        if(timeoutMs!=null)
-        {
+        if(timeoutMs!=null) {
             bootstrap = bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeoutMs);
         }
 
@@ -143,6 +155,7 @@ public class WebSocketClient {
                 }
             }
         });
+        return future;
     }
 
     /**
@@ -179,6 +192,10 @@ public class WebSocketClient {
         return enableReconnection.get();
     }
 
+    public boolean isUseProtobuf() {
+        return useProtobuf;
+    }
+   
     public void disconnect() {
         enableReconnection.set(false);
         log.info("WebSocket Client sending close");
@@ -234,5 +251,9 @@ public class WebSocketClient {
         
         Thread.sleep(5000);
         client.shutdown();
+    }
+    public boolean isConnected() {
+        // TODO Auto-generated method stub
+        return false;
     }
 }

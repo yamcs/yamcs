@@ -43,8 +43,7 @@ import javax.swing.table.*;
 
 import org.yamcs.ui.CommandQueueControlClient;
 import org.yamcs.ui.CommandQueueListener;
-
-import org.yamcs.api.YamcsConnector;
+import org.yamcs.ui.YamcsConnector;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.CommandQueueEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;

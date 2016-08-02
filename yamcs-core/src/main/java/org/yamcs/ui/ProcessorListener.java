@@ -6,7 +6,7 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 
 
 
-public interface YProcessorListener {
+public interface ProcessorListener {
 
     public void log(String text);
 

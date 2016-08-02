@@ -5,8 +5,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -17,8 +15,6 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
-import org.yamcs.parameter.ParameterRequestManager;
-import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.protobuf.*;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
@@ -37,7 +33,6 @@ import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
-import org.yamcs.tctm.ReplayService;
 import org.yamcs.utils.HttpClient;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ManagementResource;
@@ -46,8 +41,6 @@ import com.google.protobuf.MessageLite;
 
 import io.netty.handler.codec.http.HttpMethod;
 import io.protostuff.Schema;
-import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.xtceproc.XtceTmProcessor;
 
 
 public class IntegrationTest extends AbstractIntegrationTest {
@@ -367,11 +360,6 @@ public class IntegrationTest extends AbstractIntegrationTest {
     }
 
 
-
-    @Test
-    public void testRetrieveIndex() throws Exception {
-
-    }
 
     /*
     private ValidateCommandRequest getValidateCommand(String cmdName, int seq, String... args) {
