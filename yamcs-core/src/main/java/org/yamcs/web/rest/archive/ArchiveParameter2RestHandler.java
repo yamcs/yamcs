@@ -11,11 +11,11 @@ import java.util.function.Consumer;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.parameter.ParameterValue;
 import org.yamcs.YProcessor;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.parameter.ParameterCache;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameterarchive.ConsumerAbortException;
 import org.yamcs.parameterarchive.MultiParameterDataRetrieval;
@@ -220,9 +220,8 @@ public class ArchiveParameter2RestHandler extends RestHandler {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
-
-        NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build(); //TODO this should use the requested name rather than the qualified one
+        NamedObjectId requestedId = verifyParameterId(req, mdb, req.getRouteParam("name"));
+        Parameter p = mdb.getParameter(requestedId);
 
         if(req.hasQueryParameter("pos")) throw new BadRequestException("pos not supported");
         int limit = req.getQueryParameterAsInt("limit", 100);
@@ -275,7 +274,7 @@ public class ArchiveParameter2RestHandler extends RestHandler {
         if (req.asksFor(MediaType.CSV)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
             try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new ByteBufOutputStream(buf)))) {
-                List<NamedObjectId> idList = Arrays.asList(id);
+                List<NamedObjectId> idList = Arrays.asList(requestedId);
                 ParameterFormatter csvFormatter = new ParameterFormatter(bw, idList);
                 limit++; // Allow one extra line for the CSV header
                 RestParameterReplayListener replayListener = new RestParameterReplayListener(0, limit) {
@@ -292,7 +291,7 @@ public class ArchiveParameter2RestHandler extends RestHandler {
                 };
 
                 replayListener.setNoRepeat(noRepeat);
-                retrieveParameterData(parchive, pcache, p, id, mpvr, replayListener);
+                retrieveParameterData(parchive, pcache, p, requestedId, mpvr, replayListener);
 
             } catch (IOException|DecodingException|RocksDBException e) {
                 throw new InternalServerErrorException(e);
@@ -314,7 +313,7 @@ public class ArchiveParameter2RestHandler extends RestHandler {
                 };
 
                 replayListener.setNoRepeat(noRepeat);
-                retrieveParameterData(parchive, pcache, p, id, mpvr, replayListener);
+                retrieveParameterData(parchive, pcache, p, requestedId, mpvr, replayListener);
             } catch (DecodingException|RocksDBException e) {
                 throw new InternalServerErrorException(e);
             }
