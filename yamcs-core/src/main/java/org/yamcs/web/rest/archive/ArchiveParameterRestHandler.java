@@ -36,10 +36,8 @@ import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.SystemParameterDb;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
-
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -103,8 +101,8 @@ public class ArchiveParameterRestHandler extends RestHandler {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
-        NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
+        NamedObjectId requestedId = verifyParameterId(req, mdb, req.getRouteParam("name"));
+        Parameter p = mdb.getParameter(requestedId);
         
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
@@ -116,7 +114,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         if (req.asksFor(MediaType.CSV)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
             try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new ByteBufOutputStream(buf)))) {
-                List<NamedObjectId> idList = Arrays.asList(id);
+                List<NamedObjectId> idList = Arrays.asList(requestedId);
                 ParameterFormatter csvFormatter = new ParameterFormatter(bw, idList);
                 limit++; // Allow one extra line for the CSV header
                 RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit) {

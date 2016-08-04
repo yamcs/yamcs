@@ -28,6 +28,7 @@ import org.yamcs.web.NotFoundException;
 import org.yamcs.web.RouteHandler;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -200,8 +201,16 @@ public abstract class RestHandler extends RouteHandler {
 
         throw new NotFoundException(req, "No such namespace");
     }
-
+    
+    protected static NamedObjectId verifyParameterId(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
+        return verifyParameterWithId(req, mdb, pathName).requestedId;
+    }
+    
     protected static Parameter verifyParameter(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
+        return verifyParameterWithId(req, mdb, pathName).item;
+    }
+
+    private static NameDescriptionWithId<Parameter> verifyParameterWithId(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
             throw new NotFoundException(req, "No such parameter (missing namespace?)");
@@ -233,7 +242,7 @@ public abstract class RestHandler extends RouteHandler {
         if (p == null) {
             throw new NotFoundException(req, "No parameter named " + StringConverter.idToString(id));
         } else {
-            return p;
+            return new NameDescriptionWithId<Parameter>(p, id);
         }
     }
 
@@ -349,5 +358,15 @@ public abstract class RestHandler extends RouteHandler {
 
     protected static boolean authorised(RestRequest req, Privilege.Type type, String privilege) {
         return Privilege.getInstance().hasPrivilege(req.getAuthToken(), type, privilege);
+    }
+    
+    private static class NameDescriptionWithId<T extends NameDescription> {
+        T item;
+        NamedObjectId requestedId;
+        
+        NameDescriptionWithId(T item, NamedObjectId requestedId) {
+            this.item = item;
+            this.requestedId = requestedId;
+        }
     }
 }
