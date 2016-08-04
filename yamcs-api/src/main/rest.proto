@@ -52,6 +52,7 @@ message BulkDownloadParameterValueRequest {
   optional string start = 1;
   optional string stop = 2;
   repeated yamcs.NamedObjectId id = 3;
+  optional string namespace = 4; // Namespace used to display parameter names in e.g. csv header. Only used when no parameter ids were specified.
 }
 
 message ListContainerInfoResponse {

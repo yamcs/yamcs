@@ -1,8 +1,5 @@
 package org.yamcs.web.rest.archive;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,11 +29,10 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.Privilege;
+import org.yamcs.security.Privilege.Type;
 import org.yamcs.tctm.TmDataLinkInitialiser;
-import org.yamcs.ui.ParameterRetrievalGui;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
-import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.rest.ParameterReplayToChunkedCSVEncoder;
 import org.yamcs.web.rest.ParameterReplayToChunkedProtobufEncoder;
 import org.yamcs.web.rest.RestHandler;
@@ -87,31 +83,30 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         List<NamedObjectId> ids = new ArrayList<>();
-        if (req.getQueryParameters().containsKey("profile")) {
-            String profile = req.getQueryParameter("profile");
-            String filename = YarchDatabase.getHome() + "/" + instance + "/profiles/" + profile + ".profile";
-
-            try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
-                ids = ParameterRetrievalGui.loadParameters(reader);
-            } catch (FileNotFoundException e) {
-                throw new BadRequestException("No profile '" + profile + "' could be found");
-            } catch (IOException e) {
-                throw new InternalServerErrorException("Could not load profile file", e);
+        for (NamedObjectId id : request.getIdList()) {
+            Parameter p = mdb.getParameter(id);
+            if (p == null) {
+                throw new BadRequestException("Invalid parameter name specified "+id);
             }
-        } else {
-            for (NamedObjectId id:request.getIdList()) {
-                Parameter p = mdb.getParameter(id);
-                if(p==null) {
-                    throw new BadRequestException("Invalid parameter name specified "+id);
-                }
-                if(!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
-                    throw new BadRequestException("Insufficient privileges for parameter " + p.getQualifiedName());
-                }
-                ids.add(id);
+            if (!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName())) {
+                throw new BadRequestException("Insufficient privileges for parameter " + p.getQualifiedName());
             }
+            ids.add(id);
         }
         if (ids.isEmpty()) {
-            throw new BadRequestException("Empty parameter list");
+            for (Parameter p : mdb.getParameters()) {
+                if (!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName())) {
+                    continue;
+                }
+                if (request.hasNamespace()) {
+                    String alias = p.getAlias(request.getNamespace());
+                    if (alias != null) {
+                        ids.add(NamedObjectId.newBuilder().setNamespace(request.getNamespace()).setName(alias).build());
+                    }
+                } else {
+                    ids.add(NamedObjectId.newBuilder().setName(p.getQualifiedName()).build());
+                }
+            }
         }
         rr.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids));
         
@@ -129,13 +124,14 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
+        NamedObjectId requestedId = verifyParameterId(req, mdb, req.getRouteParam("name"));
+        Parameter p = mdb.getParameter(requestedId);
         
         ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, p, false);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
         
         if (req.asksFor(MediaType.CSV)) {
-            List<NamedObjectId> idList = Arrays.asList(NamedObjectId.newBuilder().setName(p.getQualifiedName()).build());
+            List<NamedObjectId> idList = Arrays.asList(requestedId);
             RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, idList);
             l.setNoRepeat(noRepeat);
             RestReplays.replay(instance, req.getAuthToken(), rr, l);

@@ -1081,6 +1081,8 @@ public final class SchemaRest
                 for(org.yamcs.protobuf.Yamcs.NamedObjectId id : message.getIdList())
                     output.writeObject(3, id, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
 
+                if(message.hasNamespace())
+                    output.writeString(4, message.getNamespace(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Rest.BulkDownloadParameterValueRequest message)
             {
@@ -1130,6 +1132,9 @@ public final class SchemaRest
                             builder.addId(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
 
                             break;
+                        case 4:
+                            builder.setNamespace(input.readString());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -1173,6 +1178,7 @@ public final class SchemaRest
                 case 1: return "start";
                 case 2: return "stop";
                 case 3: return "id";
+                case 4: return "namespace";
                 default: return null;
             }
         }
@@ -1187,6 +1193,7 @@ public final class SchemaRest
             fieldMap.put("start", 1);
             fieldMap.put("stop", 2);
             fieldMap.put("id", 3);
+            fieldMap.put("namespace", 4);
         }
     }
 
