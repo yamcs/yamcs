@@ -224,7 +224,7 @@ public class YamcsConnectDialog extends JDialog implements ActionListener {
                 YamcsConnectionProperties tmp =  new YamcsConnectionProperties(host, port);
                 tmp.setAuthenticationToke(authToken);
                 RestClient restClient = new RestClient(tmp);
-                List<YamcsInstance> yinstances = restClient.getYamcsInstances();
+                List<YamcsInstance> yinstances = restClient.blockingGetYamcsInstances();
                 instanceCombo.removeAllItems();
                 for(YamcsInstance ai:yinstances) instanceCombo.addItem(ai.getName());
                 instanceCombo.setPopupVisible(true);

@@ -2,26 +2,25 @@ package org.yamcs.ui;
 
 
 import org.yamcs.YamcsException;
-import org.yamcs.api.Constants;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.ws.ConnectionListener;
-import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
-import org.yamcs.api.ws.WebSocketResponseHandler;
-import org.yamcs.protobuf.SchemaYamcs;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
+import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
+import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
+import org.yamcs.web.websocket.ManagementResource;
 
 
 /**
- * controls yprocessors in yamcs server via hornetq
+ * controls processors in yamcs server via websocket
+ * 
  * @author nm
  *
  */
@@ -31,7 +30,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
     
 
     public ProcessorControlClient(YamcsConnector yconnector) {
-        this.yconnector=yconnector;
+        this.yconnector = yconnector;
         yconnector.addConnectionListener(this);
     }
 
@@ -92,14 +91,8 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
     public void connecting(String url) { }
 
     public void receiveInitialConfig() {
-        
-        try {
-            WebSocketRequest wsr = new WebSocketRequest("blalbla", "bubu");
-            yconnector.performSubscription(wsr, this);
-        } catch (Exception e) {
-            e.printStackTrace();
-            yamcsMonitor.log("error when retrieving link info: "+e.getMessage());
-        }
+        WebSocketRequest wsr = new WebSocketRequest(ManagementResource.RESOURCE_NAME, ManagementResource.OP_subscribe);
+        yconnector.performSubscription(wsr, this);
     }
 
     @Override
@@ -109,36 +102,29 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
 
     @Override
     public void onMessage(WebSocketSubscriptionData data) {
-    /*    try {
-            String eventName=msg.getStringProperty(Protocol.HDR_EVENT_NAME);
-            if("yprocUpdated".equals(eventName)) {
-                ProcessorInfo ci = (ProcessorInfo)Protocol.decode(msg, ProcessorInfo.newBuilder());
-                yamcsMonitor.processorUpdated(ci);
-            } else if("yprocClosed".equals(eventName)) {
-                ProcessorInfo ci = (ProcessorInfo)Protocol.decode(msg, ProcessorInfo.newBuilder());
-                yamcsMonitor.yProcessorClosed(ci);
-            } else if("clientUpdated".equals(eventName)) {
-                ClientInfo ci=(ClientInfo)Protocol.decode(msg, ClientInfo.newBuilder());
-                yamcsMonitor.clientUpdated(ci);
-            } else if("clientDisconnected".equals(eventName)) {
-                ClientInfo ci=(ClientInfo)Protocol.decode(msg, ClientInfo.newBuilder());
-                yamcsMonitor.clientDisconnected(ci);
+        if(data.hasProcessorInfo()) {
+            ProcessorInfo procInfo = data.getProcessorInfo();
+            ServiceState servState = procInfo.getState();
+            if(servState==ServiceState.TERMINATED || servState ==ServiceState.FAILED) {
+                yamcsMonitor.processorClosed(procInfo);
             } else {
-                yamcsMonitor.log("Received unknwon message '"+eventName+"'");
+                yamcsMonitor.processorUpdated(procInfo);
             }
-        } catch (YamcsApiException e) {
-            yamcsMonitor.log("Error when decoding message "+e.getMessage());
-        }*/
-    }
-/*
-    private void sendStatistics(ClientMessage msg) {
-        try {
-            Statistics s = (Statistics)Protocol.decode(msg, Statistics.newBuilder());
-            yamcsMonitor.updateStatistics(s);
-        } catch (YamcsApiException e) {
-            yamcsMonitor.log("Error when decoding message "+e.getMessage());
         }
-    }*/
+        if(data.hasClientInfo()) {
+            ClientInfo cinfo = data.getClientInfo();
+            ClientState cstate = cinfo.getState();
+            if(cstate==ClientState.DISCONNECTED) {
+                yamcsMonitor.clientUpdated(cinfo);
+            } else {
+                yamcsMonitor.clientUpdated(cinfo);
+            }
+        }
+        if(data.hasStatistics()) {
+            Statistics s = data.getStatistics();
+            yamcsMonitor.updateStatistics(s);
+        }
+    }
     
     @Override
     public void connectionFailed(String url, YamcsException exception) {    }

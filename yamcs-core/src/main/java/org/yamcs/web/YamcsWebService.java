@@ -16,7 +16,7 @@ public class YamcsWebService extends AbstractService {
     private String yamcsInstance;
     private HttpServer server;
     
-    public YamcsWebService(String yamcsInstance) throws ConfigurationException {
+    public YamcsWebService(String yamcsInstance) throws ConfigurationException, InterruptedException {
         this.yamcsInstance = yamcsInstance;
         this.server = HttpServer.getInstance();        
     }

@@ -160,6 +160,7 @@ public class Router {
     }
     
     public void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req, AuthenticationToken token) {
+       
         QueryStringDecoder qsDecoder = new QueryStringDecoder(req.getUri());
         RestRequest restReq = new RestRequest(ctx, req, qsDecoder, token);
         
@@ -172,11 +173,13 @@ public class Router {
             if (match != null) {
                 dispatch(restReq, match);
             } else {
+                log.info("No route matching URI: '{}'", req.getUri());
                 HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.NOT_FOUND);
             }
         } catch (URISyntaxException e) {
             RestHandler.sendRestError(restReq, HttpResponseStatus.INTERNAL_SERVER_ERROR, e);
         } catch (MethodNotAllowedException e) {
+            log.info("Method {} not allowed for URI: '{}'", req.getMethod(), req.getUri());
             RestHandler.sendRestError(restReq, e.getStatus(), e);
         }
     }

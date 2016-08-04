@@ -48,10 +48,18 @@ public class YamcsConnector implements WebSocketClientCallback {
     private boolean reconnecting = false;
     final private ExecutorService executor = Executors.newSingleThreadScheduledExecutor();
     List<YamcsInstance> instances;
+    final String aplicationName;
     
-    public YamcsConnector() {}
-    public YamcsConnector(boolean retry) {
+    /**
+     * 
+     * @param aplicationName - application name that is passed on via web socket (as UserAgent) to be displayed in the YamcsMonitor
+     */
+    public YamcsConnector(String aplicationName) {
+        this(true, aplicationName);
+    }
+    public YamcsConnector(boolean retry, String aplicationName) {
         this.retry = retry;
+        this.aplicationName = aplicationName;
     }
 
 
@@ -70,11 +78,13 @@ public class YamcsConnector implements WebSocketClientCallback {
     }
 
     
+    
     private FutureTask<YamcsConnectionProperties> doConnect() {
         if(connected) disconnect();
         
         restClient = new RestClient(connectionParams);
         wsClient = new WebSocketClient(connectionParams, this);
+        wsClient.setUserAgent(aplicationName);
         
         FutureTask<YamcsConnectionProperties> future=new FutureTask<>(new Runnable() {
             @Override
@@ -97,7 +107,7 @@ public class YamcsConnector implements WebSocketClientCallback {
                     for(int i=0;i<maxAttempts;i++) {
                         try {
                             log.debug("Connecting to {} attempt {}", connectingTo, i);
-                            instances = restClient.getYamcsInstances();
+                            instances = restClient.blockingGetYamcsInstances();
                             if(connectionParams.getInstance()==null) { //find first the default instance
                                 connectionParams.setInstance(instances.get(0).getName());
                             }
@@ -135,6 +145,16 @@ public class YamcsConnector implements WebSocketClientCallback {
         return future;
     }
 
+    @Override
+    public void disconnected() {
+        String msg ="Connection to "+connectionParams.getHost()+":"+connectionParams.getPort()+" lost";
+        if(connected) log.warn(msg);
+        for(ConnectionListener cl:connectionListeners) {
+            if(connected) cl.log(msg);
+            cl.disconnected();
+        }
+    }
+    
     public void disconnect() {
         log.warn("Disconnection requested");
         if(!connected)

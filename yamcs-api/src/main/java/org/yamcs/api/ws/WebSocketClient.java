@@ -159,8 +159,9 @@ public class WebSocketClient {
     }
 
     /**
-     * Adds said event to the queue. As soon as the web socket is established,
-     * queue will be iterated.
+     * Performs the request in a different thread
+     * 
+     * @param request 
      */
     public void sendRequest(WebSocketRequest request) {
         group.execute(() -> doSendRequest(request, null));

@@ -43,7 +43,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(ArchiveIndexRestHandler.class);
 
     /**
-     * indexes a combination of multiple indexes. If nothing is specified, returns empty
+     * indexes a combination of multiple indexes. If nothing is specified, sends all available
      */
     @Route(path = "/api/archive/:instance/indexes", method = "GET")
     public void downloadIndexes(RestRequest req) throws HttpException {

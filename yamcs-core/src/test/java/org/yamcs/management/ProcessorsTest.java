@@ -36,7 +36,7 @@ import com.google.common.util.concurrent.AbstractService;
 import static org.junit.Assert.*;
 
 
-public class YProcessorsTest {
+public class ProcessorsTest {
    static EmbeddedActiveMQ hornetServer;
     @BeforeClass
     public static void setupHornetAndManagement() throws Exception {
@@ -58,7 +58,7 @@ public class YProcessorsTest {
     
     @Test
     public void createYProcessorWithoutClient() throws Exception {
-        YamcsConnector yconnector = new YamcsConnector();
+        YamcsConnector yconnector = new YamcsConnector("ProcessorTest");
         ProcessorControlClient ccc = new ProcessorControlClient(yconnector);
         ccc.setYProcessorListener(new MyListener("YProcessorsTest"));
         yconnector.connect(YamcsConnectionProperties.parse("http://localhost:20888/")).get(5,TimeUnit.SECONDS);
@@ -76,7 +76,7 @@ public class YProcessorsTest {
 
     @Test
     public void createAndSwitchYProc() throws Exception {
-        YamcsConnector yconnector = new YamcsConnector();
+        YamcsConnector yconnector = new YamcsConnector("ProcessorTest");
         ProcessorControlClient ccc = new ProcessorControlClient(yconnector);
         MyListener ml=new MyListener("yproctest1");
         ccc.setYProcessorListener(ml);
@@ -190,7 +190,7 @@ public class YProcessorsTest {
         }
 
         @Override
-        public void yProcessorClosed(ProcessorInfo ci) {
+        public void processorClosed(ProcessorInfo ci) {
             if(instance.equals(ci.getInstance()))
                 yprocClosedList.add(ci);
         }

@@ -91,7 +91,7 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
             authenticationEnabled = config.getBoolean("authenticationEnabled");
         }
 
-        yconnector = new YamcsConnector();
+        yconnector = new YamcsConnector("YamcsMonitor");
         yconnector.addConnectionListener(this);
         
         processorControl = new ProcessorControlClient(yconnector);
@@ -587,7 +587,6 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
         commandQueueDisplay.setSelectedInstance(newInstance);
 
         linkTableModel.clear();
-        linkControl.receiveInitialConfig();
         processorTableModel.clear();
         processorControl.receiveInitialConfig();
         commandQueueDisplay.update();
@@ -659,6 +658,10 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
         //	ArchivePanel.setNormalPointer(frame);
     }
 
+    public void connect(YamcsConnectionProperties ycp) {
+        yconnector.connect(ycp);
+    }
+    
     @Override
     public void actionPerformed( ActionEvent ae ) {
         String cmd = ae.getActionCommand();
@@ -884,7 +887,7 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
             public void run() {
                 allProcessors.add(ci.getInstance()+"."+ci.getName());
                 if(!ci.getInstance().equals(selectedInstance)) return;
-                boolean added=processorTableModel.upsertYProc(ci);
+                boolean added = processorTableModel.upsertYProc(ci);
                 buildClientListPopup();
                 archiveBrowserSelector.archivePanel.replayPanel.updateProcessorInfol(ci);
                 if(added && ci.getHasCommanding() && hasAdminRights) {
@@ -897,14 +900,14 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
      * Called by the server when a processor has been closed
      */
     @Override
-    public void yProcessorClosed(final ProcessorInfo ci) {
+    public void processorClosed(final ProcessorInfo pinfo) {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                allProcessors.remove(ci.getInstance()+"."+ci.getName());
-                if(!ci.getInstance().equals(selectedInstance)) return;
-                processorTableModel.removeProcessor(ci.getInstance(), ci.getName());
-                commandQueueDisplay.removeProcessor(ci.getInstance(), ci.getName());
+                allProcessors.remove(pinfo.getInstance()+"."+pinfo.getName());
+                if(!pinfo.getInstance().equals(selectedInstance)) return;
+                processorTableModel.removeProcessor(pinfo.getInstance(), pinfo.getName());
+                commandQueueDisplay.removeProcessor(pinfo.getInstance(), pinfo.getName());
                 buildClientListPopup();
             }
         });
@@ -952,7 +955,7 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
         System.err.println("-na:\tRun in non-admin mode - hide some options which will raise no permission exception (as to not confuse the user)");
         System.err.println("url:\tConnect at startup to the given yamcs url");
         System.err.println("-h:\tShow this help text");
-        System.err.println("Example:\n\t yamcs-monitor.sh yamcs://yamcs:5445/");
+        System.err.println("Example:\n\t yamcs-monitor.sh http://yamcs:8090/");
         System.exit(1);
     }
 
@@ -963,7 +966,7 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
                 hasAdminRights=false;
             } else if(args[i].equals("-h")) {
                 printUsageAndExit();
-            } else if(args[i].startsWith("yamcs://")) {
+            } else if(args[i].startsWith("http://")|| args[i].startsWith("https://")) {
                 initialUrl=args[i];
             } else {
                 printUsageAndExit();
@@ -972,7 +975,7 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
         YConfiguration.setup();
         final YamcsMonitor app=new YamcsMonitor();
 
-        final YamcsConnectData ycd=(initialUrl==null)?null:YamcsConnectData.parse(initialUrl);
+        final YamcsConnectionProperties ycd=(initialUrl==null)?null:YamcsConnectionProperties.parse(initialUrl);
         //Schedule a job for the event-dispatching thread:
         //creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -980,7 +983,7 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
             public void run() {
                 app.createAndShowGUI();
                 if(ycd!=null) {
-                   // app.connect(ycd);
+                    app.connect(ycd);
                 }
             }
         });

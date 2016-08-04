@@ -8,7 +8,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.web.rest.Router;
 
@@ -25,42 +24,50 @@ import io.netty.handler.logging.LoggingHandler;
  * Runs a simple http server based on Netty
  */
 public class HttpServer {
-    
+
     private static final Logger log = LoggerFactory.getLogger(HttpServer.class);
-    
+
     private final int port;
     private static HttpServer instance;
 
     private Map<String, YamcsWebService> yamcsInstances=new ConcurrentHashMap<>();
     private EventLoopGroup bossGroup;
-    
+
     private Router apiRouter = new Router();
-    
-    
-    public synchronized static HttpServer getInstance() throws ConfigurationException {
+
+
+    public synchronized static HttpServer getInstance(){
         if(instance==null) {
-            int port = YConfiguration.getConfiguration("yamcs").getInt("webPort");
-            instance=new HttpServer(port);
-            instance.run();
+            try {
+                setup();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e); //shouldn't happen since the webserver is setup from the main java class
+            }
         } 
         return instance;
     }
-    
+
+    public static void setup() throws InterruptedException {
+        int port = YConfiguration.getConfiguration("yamcs").getInt("webPort");
+        instance = new HttpServer(port);
+        instance.run();
+    }
+
     public HttpServer(int port) {
         this.port = port;
     }
-    
+
     public void registerYamcsInstance(String yamcsInstance, YamcsWebService service) {
         yamcsInstances.put(yamcsInstance, service);
     }
-    
+
     public void unregisterYamcsInstance(String yamcsInstance) {
         yamcsInstances.remove(yamcsInstance);
         if(yamcsInstances.isEmpty()) {
             instance.shutdown();
         }
     }
-    
+
     private void shutdown() {
         bossGroup.shutdownGracefully();
     }
@@ -68,33 +75,33 @@ public class HttpServer {
     public boolean isInstanceRegistered(String yamcsInstance) {
         return yamcsInstances.containsKey(yamcsInstance);
     }
-    
+
     public YamcsWebService getYamcsWebService(String yamcsInstance) {
         return yamcsInstances.get(yamcsInstance);
     }
-    
+
     public void registerRouteHandler(String yamcsInstance, RouteHandler routeHandler) {
         apiRouter.registerRouteHandler(yamcsInstance, routeHandler);
     }
-    
-    public void run() {
+
+    public void run() throws InterruptedException {
         // Configure the server.
 
         bossGroup = new NioEventLoopGroup(1);
         //Note that while the thread pools created with this method are unbounded, netty will limit the number
         //of workers to 2*number of CPU
         EventLoopGroup workerGroup = new NioEventLoopGroup();
-       
+
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workerGroup)
-            .channel(NioServerSocketChannel.class)
-            .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
-            .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-            .childHandler(new HttpServerChannelInitializer(apiRouter));
-        
+        .channel(NioServerSocketChannel.class)
+        .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
+        .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+        .childHandler(new HttpServerChannelInitializer(apiRouter));
+
         // Bind and start to accept incoming connections.
-        bootstrap.bind(new InetSocketAddress(port));
-        
+        bootstrap.bind(new InetSocketAddress(port)).sync();
+
         try {
             log.info("Web address: http://{}:{}/", InetAddress.getLocalHost().getHostName(), port);
         } catch (UnknownHostException e) {
@@ -102,7 +109,7 @@ public class HttpServer {
         }
     }
 
-    public static void main(String[] args) throws ConfigurationException {
+    public static void main(String[] args) throws Exception {
         HttpServer.getInstance().registerYamcsInstance("byops", new YamcsWebService("byops"));
     }
 }

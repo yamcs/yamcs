@@ -338,7 +338,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
              }
         }
         TimeEncoding.setUp();
-        final YamcsConnector yconnector=new YamcsConnector();
+        final YamcsConnector yconnector=new YamcsConnector("ArchiveBrowser");
         final ArchiveIndexReceiver ir=new YamcsArchiveIndexReceiver(yconnector);
         final ArchiveBrowser archiveBrowser = new ArchiveBrowser(yconnector, ir, false);
         YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");

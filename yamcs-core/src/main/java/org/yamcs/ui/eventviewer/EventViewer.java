@@ -1012,7 +1012,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
                 printUsageAndExit();
             }        
         } 
-        YamcsConnector yconnector=new YamcsConnector();
+        YamcsConnector yconnector=new YamcsConnector("EventViewer");
         YamcsEventReceiver eventReceiver = new YamcsEventReceiver(yconnector);
         EventViewer ev=new EventViewer(yconnector, eventReceiver);
      //ARTEMIS   if(ycd!=null) yconnector.connect(ycd);

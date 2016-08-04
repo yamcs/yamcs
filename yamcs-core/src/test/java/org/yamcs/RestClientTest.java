@@ -18,7 +18,7 @@ public class RestClientTest  extends AbstractIntegrationTest {
         RestClient restClient = new RestClient(ycp);
         Exception e = null;
         try {
-            restClient.getYamcsInstances();
+            restClient.blockingGetYamcsInstances();
         } catch (Exception e1) {
             e=e1;
         }
@@ -31,7 +31,7 @@ public class RestClientTest  extends AbstractIntegrationTest {
         YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190);
         ycp.setAuthenticationToke(admin);
         RestClient restClient = new RestClient(ycp);
-        List<YamcsInstance> instances = restClient.getYamcsInstances();
+        List<YamcsInstance> instances = restClient.blockingGetYamcsInstances();
         
         assertEquals(1, instances.size());
         assertEquals("IntegrationTest", instances.get(0).getName());
@@ -43,7 +43,7 @@ public class RestClientTest  extends AbstractIntegrationTest {
         YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190);
         ycp.setAuthenticationToke(admin);
         RestClient restClient = new RestClient(ycp);
-        List<YamcsInstance> instances = restClient.getYamcsInstances();
+        List<YamcsInstance> instances = restClient.blockingGetYamcsInstances();
         
         assertEquals(1, instances.size());
         assertEquals("IntegrationTest", instances.get(0).getName());

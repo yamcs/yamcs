@@ -100,6 +100,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         default:
             String yamcsInstance = path[1];
             if (!HttpServer.getInstance().isInstanceRegistered(yamcsInstance)) {
+                log.info("Invalid instance requested: '{}'", yamcsInstance);
                 sendPlainTextError(ctx, req, NOT_FOUND);
                 return;
             }

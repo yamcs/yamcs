@@ -38,12 +38,14 @@ public class LinkRestHandler extends RestHandler {
         return sendOK(req, responseb.build(), SchemaRest.ListLinkInfoResponse.WRITE);
     }
     
+    @Route(path="/api/links/:instance/:name", method="GET")
     @Route(path="/api/links/:instance/link/:name", method="GET")
     public ChannelFuture getLink(RestRequest req) throws HttpException {
         LinkInfo linkInfo = verifyLink(req, req.getRouteParam("instance"), req.getRouteParam("name"));
         return sendOK(req, linkInfo, SchemaYamcsManagement.LinkInfo.WRITE);
     }
     
+    @Route(path="/api/links/:instance/:name", method={"PATCH", "PUT", "POST"})
     @Route(path="/api/links/:instance/link/:name", method={"PATCH", "PUT", "POST"})
     public ChannelFuture editLink(RestRequest req) throws HttpException {
         LinkInfo linkInfo = verifyLink(req, req.getRouteParam("instance"), req.getRouteParam("name"));

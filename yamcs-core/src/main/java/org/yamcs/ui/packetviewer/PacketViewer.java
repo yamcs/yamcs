@@ -748,7 +748,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
     void connectYamcs(YamcsConnectData ycd) {
         disconnect();
         connectionParams = ycd;
-        yconnector = new YamcsConnector();
+        yconnector = new YamcsConnector("PacketViewer");
         yconnector.addConnectionListener(this);
     //ARTEMIS    yconnector.connect(ycd);
         updateTitle();

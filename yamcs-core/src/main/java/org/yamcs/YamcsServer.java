@@ -137,9 +137,9 @@ public class YamcsServer {
         }
     }
     
-    public static HttpServer setupHttpServer() {
+    public static void setupHttpServer() throws ConfigurationException, InterruptedException {
         StaticFileHandler.init();
-        return HttpServer.getInstance();
+        HttpServer.setup();
     }
 
     static YamcsSession yamcsSession;
