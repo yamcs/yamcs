@@ -134,7 +134,7 @@ public class YConfiguration {
         return c;
     }
 
-    
+
     /**
      * Loads and returns a configuration corresponding to a file <subsystem>.yaml
      * 
@@ -352,16 +352,23 @@ public class YConfiguration {
 
     /**********************Boolean configs*/
     /**
-     * Returns m.get(key) if it exists and is of type boolean, otherwise throws an exception
+     * Returns m.get(key) if it exists and is of type boolean,
+     * if m.get(key) exists and is not boolean, throw an exception.
+     * if m.get(key) does not exist, return the default value. 
      * @param m
      * @param key
-     * @return
+     * @param defaultValue - the default value to return if m.get(key) does not exist.
+     * @return the boolean config value
      * @throws ConfigurationException
      */
     static public boolean getBoolean(Map<String, Object> m, String key, boolean defaultValue)  throws ConfigurationException {
         Object o=m.get(key);
-        if((o!=null) && (o instanceof Boolean)) {
-            return (Boolean)o;
+        if(o!=null){
+            if (o instanceof Boolean) {
+                return (Boolean)o;    
+            } else {
+                throw new ConfigurationException(confPath.get(m), "mapping for key '"+key+"' is of type "+getUnqualfiedClassName(o)+" and not Boolean (use true or false without quotes)");
+            }
         } else {
             return defaultValue;
         }
@@ -393,6 +400,9 @@ public class YConfiguration {
     }
 
 
+    public boolean getBoolean(String key, boolean defaultValue) {
+        return getBoolean(root, key, defaultValue);
+    }
 
     /********************** int configs */
     static public int getInt(Map<String, Object> m, String key) throws ConfigurationException {
@@ -423,7 +433,7 @@ public class YConfiguration {
             throw new ConfigurationException(confPath.get(m), "mapping for key '"+key+"' is of type "+getUnqualfiedClassName(o)+" and not Integer");
         }
     }
-    
+
     static public long getLong(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
         Object o=m.get(key);
@@ -435,7 +445,7 @@ public class YConfiguration {
             throw new ConfigurationException(confPath.get(m), "mapping for key '"+key+"' is of type "+getUnqualfiedClassName(o)+" and not Integer or Long");
         }
     }
-    
+
     /**
      * return the m.get(key) as an long if it's present or v if it is not.
      * 
@@ -475,4 +485,5 @@ public class YConfiguration {
         Object o = m.get(key);
         return (o instanceof List);
     }
+
 }

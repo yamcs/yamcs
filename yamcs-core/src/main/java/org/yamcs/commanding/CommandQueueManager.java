@@ -300,8 +300,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     // Notify the monitoring clients
-    private void notifySent(CommandQueue q, PreparedCommand pc)
-    {
+    private void notifySent(CommandQueue q, PreparedCommand pc) {
         for(CommandQueueListener m:monitoringClients) {
             try {
                 m.commandSent(q, pc);
@@ -313,8 +312,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         notifyUpdateQueue(q);
     }
 
-    private void notifyUpdateQueue(CommandQueue q)
-    {
+    private void notifyUpdateQueue(CommandQueue q) {
         for(CommandQueueListener m:monitoringClients) {
             try {
                 m.updateQueue(q);

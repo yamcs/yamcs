@@ -1,8 +1,13 @@
 package org.yamcs.ui;
 
 
+import io.netty.handler.codec.http.HttpMethod;
+
+import java.util.concurrent.CompletableFuture;
+
 import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
@@ -58,12 +63,20 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         //yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, Constants.YPR_createProcessor, crb.build(), null);
     }
 
-    public void connectToYProcessor(String instance, String name, int[] clients) throws YamcsException, YamcsApiException {
-        ProcessorManagementRequest.Builder crb = ProcessorManagementRequest.newBuilder()
-        .setInstance(instance).setName(name);
+    public void connectToProcessor(String instance, String processorName, int[] clients) throws YamcsException, YamcsApiException {
+        RestClient restClient = yconnector.getRestClient();
+                
         for(int i=0;i<clients.length;i++) {
-            crb.addClientId(clients[i]);
+            //PATCH /api/clients/:id
+            String resource = "/clients/"+clients[i]+"?processor="+processorName+"&instance="+instance;
+            CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH);
+            cf.whenComplete((result, exception) -> {
+                if(exception!=null) {
+                    yamcsMonitor.log("Exception connecting client to processor: "+exception.getMessage());
+                }
+            });
         }
+       
        // yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, Constants.YPR_connectToProcessor, crb.build(), null);
     }
 

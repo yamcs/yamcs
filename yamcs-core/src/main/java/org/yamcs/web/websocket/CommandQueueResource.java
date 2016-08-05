@@ -26,18 +26,21 @@ import org.yamcs.security.AuthenticationToken;
  */
 public class CommandQueueResource extends AbstractWebSocketResource implements CommandQueueListener {
     private static final Logger log = LoggerFactory.getLogger(CommandQueueResource.class);
-
+    public static final String RESOURCE_NAME = "cqueues";
+    public static final String OP_subscribe = "subscribe";
+    public static final String OP_unsubscribe = "unsubscribe";
+    
     public CommandQueueResource(YProcessor processor, WebSocketFrameHandler wsHandler) {
         super(processor, wsHandler);
-        wsHandler.addResource("cqueues", this);
+        wsHandler.addResource(RESOURCE_NAME, this);
     }
 
     @Override
     public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder, AuthenticationToken authenticationToken) throws WebSocketException {
         switch (ctx.getOperation()) {
-        case "subscribe":
+        case OP_subscribe:
             return subscribe(ctx.getRequestId());
-        case "unsubscribe":
+        case OP_unsubscribe:
             return unsubscribe(ctx.getRequestId());
         default:
             throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '"+ctx.getOperation()+"'");
@@ -72,7 +75,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
         if (cqueueManager != null) {
             cqueueManager.registerListener(this);
             for (CommandQueue q : cqueueManager.getQueues()) {
-                updateQueue(q);
+                sendInitialUpdateQueue(q);
             }
         }
     }
@@ -92,9 +95,24 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
         doSubscribe();
     }
 
+    /**
+     * right after subcription send the full queeue content (commands included).
+     * Afterwards the clinets get notified by command added/command removed when the queue gets modified.
+     * 
+     * @param q
+     */
+    private void sendInitialUpdateQueue(CommandQueue q) {
+        CommandQueueInfo info = ManagementGpbHelper.toCommandQueueInfo(q, true);
+        try {
+            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info, SchemaCommanding.CommandQueueInfo.WRITE);
+        } catch (Exception e) {
+            log.warn("got error when sending command queue info, quitting", e);
+            quit();
+        }
+    }
     @Override
     public void updateQueue(CommandQueue q) {
-        CommandQueueInfo info = ManagementGpbHelper.toCommandQueueInfo(q);
+        CommandQueueInfo info = ManagementGpbHelper.toCommandQueueInfo(q, false);
         try {
             wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info, SchemaCommanding.CommandQueueInfo.WRITE);
         } catch (Exception e) {

@@ -96,8 +96,7 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
         
         processorControl = new ProcessorControlClient(yconnector);
         processorControl.setYProcessorListener(this);
-        linkControl = new LinkControlClient(yconnector);
-        linkControl.setLinkListener(this);
+        linkControl = new LinkControlClient(yconnector, this);
 
         indexReceiver = new YamcsArchiveIndexReceiver(yconnector);
         archiveBrowserSelector = new ArchiveBrowserSelector(frame, yconnector, indexReceiver, processorControl, hasAdminRights);
@@ -583,14 +582,21 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
 
 
     private void changeSelectedInstance(String newInstance) {
+        yconnector.disconnect();
         selectedInstance=newInstance;
-        commandQueueDisplay.setSelectedInstance(newInstance);
+        connectionParams.setInstance(newInstance);
+        yconnector.connect(connectionParams);
+        
+        /* commandQueueDisplay.setSelectedInstance(newInstance);
 
         linkTableModel.clear();
         processorTableModel.clear();
         processorControl.receiveInitialConfig();
+        linkControl.receiveInitialConfig();
         commandQueueDisplay.update();
-        setTitle("connected to "+yconnector.getUrl().replaceFirst("[^/]+$", selectedInstance));
+        */
+        setTitle("connected to "+yconnector.getUrl() + " "+selectedInstance);
+        
         updateBorders();
     }
 
@@ -659,6 +665,7 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
     }
 
     public void connect(YamcsConnectionProperties ycp) {
+        connectionParams = ycp;
         yconnector.connect(ycp);
     }
     
@@ -722,7 +729,9 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
             log( "Failed to get instances from "+url );
             return;
         }
-        selectedInstance=instances.get(0);
+        if(selectedInstance==null) {
+           selectedInstance = instances.get(0);
+        }
         commandQueueDisplay.setSelectedInstance(selectedInstance);
 
         SwingUtilities.invokeLater(new Runnable() {
@@ -854,7 +863,7 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
                 }
                 try {
                     String[] in=instanceDotName.split("\\.",2);
-                    processorControl.connectToYProcessor(in[0], in[1], clients);
+                    processorControl.connectToProcessor(in[0], in[1], clients);
                 } catch (Exception e) {
                     showMessage(e.toString());
                 }

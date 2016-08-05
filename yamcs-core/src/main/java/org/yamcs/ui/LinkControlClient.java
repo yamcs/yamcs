@@ -24,23 +24,21 @@ import org.yamcs.web.websocket.LinkResource;
  *
  */
 public class LinkControlClient implements ConnectionListener, WebSocketResponseHandler, WebSocketClientCallback {
-    LinkListener linkListener;
+    final LinkListener linkListener;
     YamcsConnector yconnector;
   
     
-    public LinkControlClient(YamcsConnector yconnector) {
+    public LinkControlClient(YamcsConnector yconnector, LinkListener linkListener) {
         this.yconnector = yconnector;
         yconnector.addConnectionListener(this);
+        this.linkListener = linkListener;
     }
 
-    public void setLinkListener(LinkListener linkListener) {
-        this.linkListener=linkListener;
-    }
     
     public void enable(LinkInfo li) throws YamcsApiException, YamcsException {
         RestClient restClient = yconnector.getRestClient();
         // PATCH /api/links/:instance/:name
-        String resource = "/links/"+li.getInstance()+"/link/"+li.getName()+"?state=enabled";
+        String resource = "/links/"+li.getInstance()+"/"+li.getName()+"?state=enabled";
         CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH);
         cf.whenComplete((result, exception) -> {
             if(exception!=null) {
@@ -52,7 +50,7 @@ public class LinkControlClient implements ConnectionListener, WebSocketResponseH
     public void disable(LinkInfo li) throws YamcsApiException, YamcsException {
         RestClient restClient = yconnector.getRestClient();
         // PATCH /api/links/:instance/:name
-        String resource = "/links/"+li.getInstance()+"/link/"+li.getName()+"?state=disabled";
+        String resource = "/links/"+li.getInstance()+"/"+li.getName()+"?state=disabled";
         CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH);
         cf.whenComplete((result, exception) -> {
             if(exception!=null) {
@@ -63,10 +61,19 @@ public class LinkControlClient implements ConnectionListener, WebSocketResponseH
 
     @Override
     public void connected(String url) {
-        WebSocketRequest wsr = new WebSocketRequest(LinkResource.RESOURCE_NAME, LinkResource.OP_subscribe);
-        yconnector.performSubscription(wsr, this);
+        receiveInitialConfig();
     }
 
+    /**
+     * this is called at the initial connection and when the instance is changed in the Yamcs Monitor.
+     * 
+     * The server is nice enough to send us the full configuration each time we subscribe even when we are already subscribed.
+     */
+    public void receiveInitialConfig() {
+        WebSocketRequest wsr = new WebSocketRequest(LinkResource.RESOURCE_NAME, LinkResource.OP_subscribe);
+        yconnector.performSubscription(wsr, this);
+        
+    }
     /** do nothing - we are only interested in connected in order to subscribe to link info information*/
     @Override
     public void connectionFailed(String url, YamcsException exception) {}
@@ -96,4 +103,7 @@ public class LinkControlClient implements ConnectionListener, WebSocketResponseH
             linkListener.updateLink(linkEv.getLinkInfo());
         }
     }
+
+
+   
 }

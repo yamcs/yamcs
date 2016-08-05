@@ -98,7 +98,7 @@ public class ProcessorsTest {
         ccc.createProcessor("yproctest1", "yproc2", "dummy", rr, false, new int[]{1});
         
         Thread.sleep(3000); //to make sure that this event will not overwrite the previous yproctest1,yproc1 one 
-        ccc.connectToYProcessor("yproctest1", "yproc1", new int[]{1}); //this one should trigger the closing of non permanent yproc2 because no more client connected
+        ccc.connectToProcessor("yproctest1", "yproc1", new int[]{1}); //this one should trigger the closing of non permanent yproc2 because no more client connected
         yp.disconnect(client);
         ManagementService.getInstance().unregisterClient(1);
         yp.quit();

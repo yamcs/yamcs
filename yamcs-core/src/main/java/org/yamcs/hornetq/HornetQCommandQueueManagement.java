@@ -155,7 +155,7 @@ public class HornetQCommandQueueManagement implements CommandQueueListener {
     @Override
     public void updateQueue(CommandQueue queue) {
         YProcessor c=queue.getChannel();
-        CommandQueueInfo cqi=ManagementGpbHelper.toCommandQueueInfo(queue);
+        CommandQueueInfo cqi = ManagementGpbHelper.toCommandQueueInfo(queue, false);
 
         String lvn=c.getInstance()+"."+c.getName()+"."+queue.getName();
         ClientMessage msg=ysession.session.createMessage(false);

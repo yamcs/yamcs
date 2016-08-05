@@ -559,7 +559,7 @@ public class ManagementService implements YProcessorListener {
         // see if any link has changed
         for(LinkControlImpl lci:links) {
             if(lci.hasChanged()) {
-                LinkInfo li=lci.getLinkInfo();
+                LinkInfo li = lci.getLinkInfo();
                 linkListeners.forEach(l -> l.linkChanged(li));
             }
         }

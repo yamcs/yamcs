@@ -108,17 +108,18 @@ public class YamcsConnector implements WebSocketClientCallback {
                         try {
                             log.debug("Connecting to {} attempt {}", connectingTo, i);
                             instances = restClient.blockingGetYamcsInstances();
-                            if(connectionParams.getInstance()==null) { //find first the default instance
-                                connectionParams.setInstance(instances.get(0).getName());
+                            String defaultInstanceName = instances.get(0).getName();
+                            String instanceName = defaultInstanceName;
+                            if(connectionParams.getInstance()!=null){ //check if the instance saved in properties exists, otherwise use the default one
+                                instanceName  = instances.stream().map(yi->yi.getName()).filter(s -> s.equals(connectionParams.getInstance())).findFirst().orElse(defaultInstanceName);
                             }
+                            connectionParams.setInstance(instanceName);
                             
                             ChannelFuture future = wsClient.connect();
                             future.get(5000, TimeUnit.MILLISECONDS);
-                            connected=true;
-                            
-                            for(ConnectionListener cl:connectionListeners) {
-                                cl.connected(connectingTo);
-                            }
+                            //now the TCP connection is established but we have to wait for the websocket to be setup
+                            // the connected callback will handle that
+                          
                             return;
                         } catch (Exception e) {
                             // For anything other than a security exception, re-try
@@ -189,6 +190,16 @@ public class YamcsConnector implements WebSocketClientCallback {
         }
     
     }
+    //called when the websocket has been setup
+    @Override
+    public void connected() {
+        connected=true;
+        String connectingTo = connectionParams.getHost()+":"+connectionParams.getPort();
+        for(ConnectionListener cl:connectionListeners) {
+            cl.connected(connectingTo);
+        }
+    }
+
     public WebSocketClient getWebSocketClient() {
         return wsClient;
     }
@@ -206,14 +217,20 @@ public class YamcsConnector implements WebSocketClientCallback {
      * @param client
      */
     public void performSubscription(WebSocketRequest wsr, WebSocketClientCallback client) {
+        if(!subscribers.contains(client)){
+            subscribers.add(client);
+        }
+        
         wsClient.sendRequest(wsr, new WebSocketResponseHandler() {
-            
             @Override
             public void onException(WebSocketExceptionData e) {
                 System.out.println("received exception: " + e);
                 
             }
         });
-        subscribers.add(client);
+        
     }
+    
+    
+    
 }

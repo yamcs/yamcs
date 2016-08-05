@@ -44,7 +44,7 @@ public class WebSocketClient {
 
     private final WebSocketClientCallback callback;
     
-    private EventLoopGroup group = new NioEventLoopGroup();
+    private EventLoopGroup group = new NioEventLoopGroup(1);
     private Channel nettyChannel;
     private String userAgent;
     private Integer timeoutMs=null;
@@ -53,15 +53,15 @@ public class WebSocketClient {
     private String username;
     private String password;
     YamcsConnectionProperties yprops;
-    final boolean useProtobuf;
+    final boolean useProtobuf = true;
     
     // Keeps track of sent subscriptions, so that we can do a resend when we get
     // an InvalidException on some of them :-(
     private Map<Integer, RequestResponsePair> requestResponsePairBySeqId = new ConcurrentHashMap<>();
 
+    
     public WebSocketClient(WebSocketClientCallback callback) {
-        this.callback = callback;
-        this.useProtobuf = true;
+        this(null, callback);
     }
     public WebSocketClient(YamcsConnectionProperties yprops, WebSocketClientCallback callback) {
         this(yprops, callback, null, null);
@@ -72,8 +72,8 @@ public class WebSocketClient {
         this.callback = callback;
         this.username = username;
         this.password = password;
-        this.useProtobuf = true;
     }
+    
     public void setConnectionProperties(YamcsConnectionProperties yprops) {
         this.yprops=yprops;
     }
@@ -155,7 +155,9 @@ public class WebSocketClient {
                 }
             }
         });
+        
         return future;
+        
     }
 
     /**
@@ -254,7 +256,6 @@ public class WebSocketClient {
         client.shutdown();
     }
     public boolean isConnected() {
-        // TODO Auto-generated method stub
-        return false;
+        return nettyChannel.isOpen();
     }
 }
