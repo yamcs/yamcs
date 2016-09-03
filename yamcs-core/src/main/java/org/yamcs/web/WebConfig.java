@@ -8,6 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
 
+import io.netty.handler.codec.http.HttpHeaders.Names;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.cors.CorsConfig;
+
 /**
  * Data holder for webConfig section of yamcs.yamnl
  */
@@ -19,6 +23,11 @@ public class WebConfig {
     private int port;
     private List<String> webRoots = new ArrayList<>(2);
     private boolean zeroCopyEnabled = true;
+    
+    // Refer to W3C spec for understanding these properties
+    // Cross-origin Resource Sharing (CORS) enables ajaxified use of the REST api by
+    // remote web applications.
+    private CorsConfig corsConfig;
 
     private WebConfig() {
         YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
@@ -44,6 +53,7 @@ public class WebConfig {
             zeroCopyEnabled = yconf.getBoolean("zeroCopyEnabled");
         }
         
+        CorsConfig.Builder corsb = null;
         if (yconf.containsKey("webConfig")) {
             Map<String, Object> webConfig = yconf.getMap("webConfig");
             
@@ -53,13 +63,34 @@ public class WebConfig {
             if (webConfig.containsKey("webRoot")) {
                 if (YConfiguration.isList(webConfig, "webRoot")) {
                     List<String> rootConf = YConfiguration.getList(webConfig, "webRoot");
-                    for (String root : rootConf) {
-                        webRoots.add(root);
-                    }
+                    webRoots.addAll(rootConf);
                 } else {
-                    webRoots.add(yconf.getString("webRoot"));
+                    webRoots.add(YConfiguration.getString(webConfig, "webRoot"));
                 }
             }
+            
+            Map<String, Object> ycors = YConfiguration.getMap(webConfig, "cors");
+            if (YConfiguration.getBoolean(ycors, "enabled")) {
+                if (YConfiguration.isList(ycors, "allowOrigin")) {
+                    List<String> originConf = YConfiguration.getList(ycors, "allowOrigin");
+                    corsb = CorsConfig.withOrigins(originConf.toArray(new String[originConf.size()]));
+                } else {
+                    corsb = CorsConfig.withOrigin(YConfiguration.getString(ycors, "allowOrigin"));
+                }
+                if (YConfiguration.getBoolean(ycors, "allowCredentials")) {
+                    corsb.allowCredentials();
+                }
+            }
+        } else {
+            // Allow CORS requests for unprotected Yamcs instances
+            // (Browsers would anyway strip Authorization header)
+            corsb = CorsConfig.withAnyOrigin();
+        }
+        
+        if (corsb != null) {
+            corsb.allowedRequestMethods(HttpMethod.GET, HttpMethod.POST, HttpMethod.PATCH, HttpMethod.PUT, HttpMethod.DELETE);
+            corsb.allowedRequestHeaders(Names.CONTENT_TYPE, Names.ACCEPT, Names.AUTHORIZATION, Names.ORIGIN);
+            corsConfig = corsb.build();
         }
     }
     
@@ -79,5 +110,9 @@ public class WebConfig {
     
     public List<String> getWebRoots() {
         return webRoots;
+    }
+    
+    public CorsConfig getCorsConfig() {
+        return corsConfig;
     }
 }
