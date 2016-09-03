@@ -3,12 +3,6 @@
 instances:
    - testinst
 
-#where to find the web directory with ccs, js etc
-# the displays are also loaded from <webRoot>/displays/<instance> directory
-webRoot: /opt/yamcs/web
-# port used by the webserver
-webPort: 8090
-
 #the location of the data and the incoming files
 # inside there should be a different directory for each instance and for each data type (e.g. /storage/yamcs-data/testinst/tm)
 dataDir: /tmp/yamcs-data
@@ -32,3 +26,17 @@ rdbConfig:
               maxWriteBufferNumber: 2
           tableFormatConfig:
               blockSize: 512 #KB
+
+webConfig:
+   #where to find the web directory with ccs, js etc
+   # the displays are also loaded from <webRoot>/displays/<instance> directory
+   # This may be a list to indicate multiple webroot locations
+   webRoot:
+      - /opt/yamcs/web
+
+   # port used by the webserver
+   webPort: 8090
+
+   # Indicates whether zero-copy can be used to optimize non-ssl static file serving
+   # Leave this true unless you encounter a specific deployment issue (e.g. some docker hosts)
+   zeroCopyEnabled: true

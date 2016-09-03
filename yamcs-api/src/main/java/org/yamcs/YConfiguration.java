@@ -480,7 +480,7 @@ public class YConfiguration {
         return isList(root, key);
     }
 
-    public boolean isList(Map m, String key) {
+    public static boolean isList(Map m, String key) {
         checkKey(m, key);
         Object o = m.get(key);
         return (o instanceof List);
