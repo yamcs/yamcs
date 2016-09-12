@@ -171,7 +171,7 @@ public class ArchiveProcWidget extends ProcessorWidget {
     }
 
     @Override
-    public Yamcs.ReplayRequest getSpec() {
+    public Yamcs.ReplayRequest getReplayRequest() {
         if ( start < 0 ) {
             YamcsMonitor.theApp.showMessage("Please specify a start date and a stop date first.");
             return null;

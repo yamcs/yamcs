@@ -583,7 +583,7 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
 
     private void changeSelectedInstance(String newInstance) {
         yconnector.disconnect();
-        selectedInstance=newInstance;
+        selectedInstance = newInstance;
         connectionParams.setInstance(newInstance);
         yconnector.connect(connectionParams);
         
@@ -643,21 +643,21 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
             showMessage("Please select at least one client to create the processor for.");
             return;
         }
-        String name=newYProcName.getText();
+        String name = newYProcName.getText();
         ProcessorWidget type = (ProcessorWidget)processorChooser.getSelectedItem();
-        Yamcs.ReplayRequest spec = type.getSpec();
+        Yamcs.ReplayRequest replayRequest = type.getReplayRequest();
         if(hasAdminRights) {
             persistent=persistentCheckBox.isSelected();
         }
 
-        if ( spec == null ) return;
+        if ( replayRequest == null ) return;
         int[] clients=new int[selectedRows.length];
         for(int i=0;i<selectedRows.length;i++) {
             clients[i]=(Integer) clientTableModel.getValueAt(clientsTable.convertRowIndexToModel(selectedRows[i]), 0);
         }
         try {
             //	archiveWindow.setBusyPointer();
-            processorControl.createProcessor(selectedInstance, name, type.toString(), spec, persistent, clients);
+            processorControl.createProcessor(selectedInstance, name, type.toString(), replayRequest, persistent, clients);
         } catch (Exception e) {
             showMessage(e.getMessage());
         }
@@ -676,7 +676,7 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
             YamcsConnectDialogResult ycdr = YamcsConnectDialog.showDialog(frame, false, authenticationEnabled); 
             if ( ycdr.isOk() ) {
                 logTextArea.removeAll();
-                yconnector.connect(ycdr.getConnectionProperties());
+                connect(ycdr.getConnectionProperties());
             }
         } else if ( cmd.equals("exit") ) {
             System.exit(0);
@@ -923,7 +923,7 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
     }
 
     /**
-     * Called by the server when a new client has disconnected
+     * Called by the server when a client has disconnected
      */
     @Override
     public void clientDisconnected(final ClientInfo ci) {
@@ -936,7 +936,7 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
     }
 
     /**
-     * Called by the server when a client has changed processor
+     * Called by the server when a client has changed processor or a new client has connected
      */
     @Override
     public void clientUpdated(final ClientInfo ci) {

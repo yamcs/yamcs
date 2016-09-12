@@ -30,9 +30,9 @@ public abstract class ProcessorWidget {
     public abstract void activate();
     
     /**
-     * Returns the spec string forwarded to createChannel()
+     * Returns the replay request forwarded to createProcessor()
      */
-    public abstract Yamcs.ReplayRequest getSpec();
+    public abstract Yamcs.ReplayRequest getReplayRequest();
     
     /**
      * Whether this channel type needs an archive browser
