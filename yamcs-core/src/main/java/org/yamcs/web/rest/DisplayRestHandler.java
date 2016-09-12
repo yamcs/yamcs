@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
-import org.yamcs.web.StaticFileHandler;
+import org.yamcs.web.WebConfig;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -41,7 +41,7 @@ public class DisplayRestHandler extends RestHandler {
             json.writeStartArray();
             
             File displayDir = null;
-            for (String webRoot : StaticFileHandler.WEB_Roots) {
+            for (String webRoot : WebConfig.getInstance().getWebRoots()) {
                 File dir = new File(webRoot + File.separator + instance + File.separator + "displays");
                 if (dir.exists()) {
                     displayDir = dir;

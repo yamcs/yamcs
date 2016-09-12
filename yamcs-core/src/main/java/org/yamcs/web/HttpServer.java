@@ -8,7 +8,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YConfiguration;
 import org.yamcs.web.rest.Router;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -48,7 +47,7 @@ public class HttpServer {
     }
 
     public static void setup() throws InterruptedException {
-        int port = YConfiguration.getConfiguration("yamcs").getInt("webPort");
+        int port = WebConfig.getInstance().getPort();
         instance = new HttpServer(port);
         instance.run();
     }
@@ -85,8 +84,6 @@ public class HttpServer {
     }
 
     public void run() throws InterruptedException {
-        // Configure the server.
-
         bossGroup = new NioEventLoopGroup(1);
         //Note that while the thread pools created with this method are unbounded, netty will limit the number
         //of workers to 2*number of CPU
