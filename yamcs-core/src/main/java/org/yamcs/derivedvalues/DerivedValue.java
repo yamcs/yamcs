@@ -1,5 +1,8 @@
 package org.yamcs.derivedvalues;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
@@ -15,6 +18,10 @@ public abstract class DerivedValue extends ParameterValue {
     final protected Parameter[] argIds;
     protected ParameterValue[] args;
     protected boolean updated=true;
+    
+    // keep track here of all parameters that we generate in order to reuse them.
+    // The reuse is necessary when switching clients from one processor to another (replay) processor - this second one has to have the same parameters
+    static Map<String,Parameter> dvParameters = new HashMap<>(); 
 
     /**
      * constructs a derived value with the given names and aliases
@@ -35,9 +42,14 @@ public abstract class DerivedValue extends ParameterValue {
 	this.args=new ParameterValue[argIds.length];
     }
 
-    static Parameter getParameter(String name, String spaceSystemName) {
-        Parameter p = new Parameter(name);
-        p.setQualifiedName(spaceSystemName+NameDescription.PATH_SEPARATOR+name);
+    static synchronized Parameter getParameter(String name, String spaceSystemName) {
+        String fqn = spaceSystemName+NameDescription.PATH_SEPARATOR+name;
+        Parameter p = dvParameters.get(fqn);
+        if(p==null) {
+            p = new Parameter(name);
+            p.setQualifiedName(fqn);
+            dvParameters.put(fqn, p);
+        }
         return p;
     }
     

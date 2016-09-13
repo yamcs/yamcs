@@ -49,9 +49,9 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
     ParameterRequestManagerImpl parameterRequestManager;
 
     public DerivedValuesManager(String yamcsInstance) {
-	//do nothing here, all the work is done in init
+        //do nothing here, all the work is done in init
     }
-    
+
     /**
      * this is called when the DerivedValuesManager is defined as parameter provider in the Archive(replay) processors
      * We don't do anything with the replayRequest so we ignore it. 
@@ -59,69 +59,69 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
     public DerivedValuesManager(String yamcsInstance, ReplayRequest replayRequest) {
         //do nothing here, all the work is done in init
     }
-    
+
     YProcessor yproc;
 
     @Override
     public void init(YProcessor yproc) throws ConfigurationException {
-	this.parameterRequestManager = yproc.getParameterRequestManager();
-	this.yproc = yproc;
-	try {
-	    subscriptionId=parameterRequestManager.addRequest(new ArrayList<Parameter>(0), this);
-	} catch (InvalidIdentification e) {
-	    log.error("InvalidIdentification while subscribing to the parameterRequestManager with an empty subscription list", e);
-	}
-	XtceDb xtcedb = yproc.getXtceDb();
-	addAll(new DerivedValues_XTCE(xtcedb).getDerivedValues());
-	YConfiguration yconf=YConfiguration.getConfiguration("yamcs."+yproc.getInstance());
-	String mdbconfig=yconf.getString("mdb");
-	YConfiguration conf=YConfiguration.getConfiguration("mdb");
-	if(conf.containsKey(mdbconfig+"_derivedValuesProviders")) {
-	    List<String> providers=conf.getList(mdbconfig+"_derivedValuesProviders");
-	    for(String p:providers) {
-		try {
-		    YObjectLoader<DerivedValuesProvider> loader = new YObjectLoader<>();
-		    DerivedValuesProvider provider = loader.loadObject(p, xtcedb);
-		    addAll(provider.getDerivedValues());
-		} catch (Exception e) {
-		    throw new ConfigurationException("Cannot load derived value provider from class "+p, e);
-		}
-	    }
-	} else {
-	    log.info("No derived value provider defined in MDB.yaml");
-	}
+        this.parameterRequestManager = yproc.getParameterRequestManager();
+        this.yproc = yproc;
+        try {
+            subscriptionId=parameterRequestManager.addRequest(new ArrayList<Parameter>(0), this);
+        } catch (InvalidIdentification e) {
+            log.error("InvalidIdentification while subscribing to the parameterRequestManager with an empty subscription list", e);
+        }
+        XtceDb xtcedb = yproc.getXtceDb();
+        addAll(new DerivedValues_XTCE(xtcedb).getDerivedValues());
+        YConfiguration yconf=YConfiguration.getConfiguration("yamcs."+yproc.getInstance());
+        String mdbconfig=yconf.getString("mdb");
+        YConfiguration conf=YConfiguration.getConfiguration("mdb");
+        if(conf.containsKey(mdbconfig+"_derivedValuesProviders")) {
+            List<String> providers=conf.getList(mdbconfig+"_derivedValuesProviders");
+            for(String p:providers) {
+                try {
+                    YObjectLoader<DerivedValuesProvider> loader = new YObjectLoader<>();
+                    DerivedValuesProvider provider = loader.loadObject(p, xtcedb);
+                    addAll(provider.getDerivedValues());
+                } catch (Exception e) {
+                    throw new ConfigurationException("Cannot load derived value provider from class "+p, e);
+                }
+            }
+        } else {
+            log.info("No derived value provider defined in MDB.yaml");
+        }
 
     }
 
     public void addAll(Collection<DerivedValue> dvalues) {
-	derivedValues.addAll(dvalues);
-	for(DerivedValue dv:dvalues) {
-        // quick hack to remove qualified name to remain compatible with previous displays
-        dv.getParameter().setQualifiedName(null);
+        derivedValues.addAll(dvalues);
+        for(DerivedValue dv:dvalues) {
+            // quick hack to remove qualified name to remain compatible with previous displays
+            dv.getParameter().setQualifiedName(null);
 
-	    dvIndex.add(dv.getParameter());
-	}
+            dvIndex.add(dv.getParameter());
+        }
     }
 
     public int getSubscriptionId() {
-	return subscriptionId;
+        return subscriptionId;
     }
 
     @Override
     public void startProviding(Parameter paramDef) {
-	for (DerivedValue dv:derivedValues){
-	    if(dv.getParameter()==paramDef) {
-		requestedValues.add(dv);
-		try {
-		    parameterRequestManager.addItemsToRequest(subscriptionId, Arrays.asList(dv.getArgumentIds()));
-		} catch (InvalidIdentification e) {
-		    log.error("InvalidIdentification caught when subscribing to the items required for the derived value "+dv.getParameter()+"\n\t The invalid items are:"+e.invalidParameters, e);
-		} catch (InvalidRequestIdentification e) {
-		    log.error("InvalidRequestIdentification caught when subscribing to the items required for the derived value "+dv.getParameter(), e);
-		}
-		return;
-	    }
-	}
+        for (DerivedValue dv:derivedValues){
+            if(dv.getParameter()==paramDef) {
+                requestedValues.add(dv);
+                try {
+                    parameterRequestManager.addItemsToRequest(subscriptionId, Arrays.asList(dv.getArgumentIds()));
+                } catch (InvalidIdentification e) {
+                    log.error("InvalidIdentification caught when subscribing to the items required for the derived value "+dv.getParameter()+"\n\t The invalid items are:"+e.invalidParameters, e);
+                } catch (InvalidRequestIdentification e) {
+                    log.error("InvalidRequestIdentification caught when subscribing to the items required for the derived value "+dv.getParameter(), e);
+                }
+                return;
+            }
+        }
     }
 
     @Override
@@ -144,90 +144,90 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
     //TODO 2.0 unsubscribe from the requested values
     @Override
     public void stopProviding(Parameter paramDef) {
-	for (Iterator<DerivedValue> it=requestedValues.iterator();it.hasNext(); ){
-	    DerivedValue dv=it.next();
-	    if(dv.getParameter()==paramDef) {
-		it.remove();
-		return;
-	    }
-	}
+        for (Iterator<DerivedValue> it=requestedValues.iterator();it.hasNext(); ){
+            DerivedValue dv=it.next();
+            if(dv.getParameter()==paramDef) {
+                it.remove();
+                return;
+            }
+        }
     }
 
     @Override
     public boolean canProvide(NamedObjectId itemId) {
-	try {
-	    getParameter(itemId) ;
-	} catch (InvalidIdentification e) {
-	    return false;
-	}
-	return true;
+        try {
+            getParameter(itemId) ;
+        } catch (InvalidIdentification e) {
+            return false;
+        }
+        return true;
     }
-    
+
     @Override
     public boolean canProvide(Parameter param) {
         if(param.getQualifiedName() == null)
             return dvIndex.get(param.getOpsName()) != null;
         else
-	        return dvIndex.get(param.getQualifiedName())!=null;
+            return dvIndex.get(param.getQualifiedName())!=null;
     }
 
 
-    
+
     @Override
     public Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification {
-	Parameter p=dvIndex.get(paraId.getName());
-	if(p!=null) {
-	    return p;
-	} else {
-	    throw new InvalidIdentification();
-	}
+        Parameter p=dvIndex.get(paraId.getName());
+        if(p!=null) {
+            return p;
+        } else {
+            throw new InvalidIdentification();
+        }
     }
 
     @Override
     public ArrayList<ParameterValue> updateParameters(int subcriptionid, ArrayList<ParameterValue> items) {
-	HashSet<DerivedValue> needUpdate=new HashSet<DerivedValue>();
-	for(Iterator<ParameterValue> it=items.iterator();it.hasNext();) {
-	    ParameterValue pvwi=it.next();
-	    for(Iterator<DerivedValue> it1=requestedValues.iterator();it1.hasNext();) {
-		DerivedValue dv=it1.next();
-		for(int i=0;i<dv.getArgumentIds().length;i++) {
-		    if(dv.getArgumentIds()[i]==pvwi.getParameter()) {
-			dv.args[i]=pvwi;
-			needUpdate.add(dv);
-		    }
-		}
-	    }
-	}
-	long acqTime = yproc.getCurrentTime();
+        HashSet<DerivedValue> needUpdate=new HashSet<DerivedValue>();
+        for(Iterator<ParameterValue> it=items.iterator();it.hasNext();) {
+            ParameterValue pvwi=it.next();
+            for(Iterator<DerivedValue> it1=requestedValues.iterator();it1.hasNext();) {
+                DerivedValue dv=it1.next();
+                for(int i=0;i<dv.getArgumentIds().length;i++) {
+                    if(dv.getArgumentIds()[i]==pvwi.getParameter()) {
+                        dv.args[i]=pvwi;
+                        needUpdate.add(dv);
+                    }
+                }
+            }
+        }
+        long acqTime = yproc.getCurrentTime();
 
-	ArrayList<ParameterValue> r=new ArrayList<ParameterValue>();
-	for(DerivedValue dv:needUpdate) {
-	    try{
-		dv.setAcquisitionTime(acqTime);
-		dv.updateValue();
-		if(dv.isUpdated()) {
-		    r.add(dv);
-		    dv.setGenerationTime(items.get(0).getGenerationTime());
-		}
-	    } catch (Exception e) {
-		log.warn("got exception when updating derived value "+dv.getParameter()+": "+Arrays.toString(e.getStackTrace()));
-	    }
-	}
-	return r;
+        ArrayList<ParameterValue> r=new ArrayList<ParameterValue>();
+        for(DerivedValue dv:needUpdate) {
+            try{
+                dv.setAcquisitionTime(acqTime);
+                dv.updateValue();
+                if(dv.isUpdated()) {
+                    r.add(dv);
+                    dv.setGenerationTime(items.get(0).getGenerationTime());
+                }
+            } catch (Exception e) {
+                log.warn("got exception when updating derived value "+dv.getParameter()+": "+Arrays.toString(e.getStackTrace()));
+            }
+        }
+        return r;
     }
 
     @Override
     public void setParameterListener(ParameterRequestManager parameterRequestManager) {
-	// do nothing,  everything is done in the updateDerivedValues method
+        // do nothing,  everything is done in the updateDerivedValues method
     }
 
     @Override
     protected void doStart() {
-	notifyStarted();
+        notifyStarted();
     }
 
     @Override
     protected void doStop() {
-	notifyStopped();
+        notifyStopped();
     }
 }
