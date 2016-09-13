@@ -23,11 +23,9 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
-import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
-import org.yamcs.protobuf.YamcsManagement.ProcessorRequest;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ManagementResource;
 
@@ -112,7 +110,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         RestClient restClient = yconnector.getRestClient();
         //POST "/api/processors/:instance"
         String resource = "/processors/"+instance;
-        CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH, cprb.build().toByteArray());
+        CompletableFuture<byte[]> cf = restClient.doProtoBufRequest(resource, HttpMethod.POST, cprb.build().toByteArray());
         cf.whenComplete((result, exception) -> {
             if(exception!=null) {
                 yamcsMonitor.log("Exception creating processor: "+exception.getMessage());
@@ -136,22 +134,40 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
     }
 
     public void pauseArchiveReplay(String instance, String name) throws YamcsException, YamcsApiException {
-        ProcessorRequest.Builder crb = ProcessorRequest.newBuilder()
-                .setInstance(instance).setName(name);
-        //   yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, Constants.YPR_pauseReplay, crb.build(), null);
+        RestClient restClient = yconnector.getRestClient();
+        //  PATCH /api/processors/:instance/:name
+        String resource = "/processors/"+instance+"/"+name+"?state=PAUSED";
+        CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH);
+        cf.whenComplete((result, exception) -> {
+            if(exception!=null) {
+                yamcsMonitor.log("Exception pauysing the processor: "+exception.getMessage());
+            }
+        });
     }
 
     public void resumeArchiveReplay(String instance, String name) throws YamcsApiException, YamcsException {
-        ProcessorRequest.Builder crb = ProcessorRequest.newBuilder()
-                .setInstance(instance).setName(name);
-        //   yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, Constants.YPR_resumeReplay, crb.build(), null);
+        RestClient restClient = yconnector.getRestClient();
+        //  PATCH /api/processors/:instance/:name
+        String resource = "/processors/"+instance+"/"+name+"?state=RUNNING";
+        CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH);
+        cf.whenComplete((result, exception) -> {
+            if(exception!=null) {
+                yamcsMonitor.log("Exception resuming the processor: "+exception.getMessage());
+            }
+        });
     }
 
 
     public void seekArchiveReplay(String instance, String name, long newPosition) throws YamcsApiException, YamcsException  {
-        ProcessorRequest.Builder crb = ProcessorRequest.newBuilder()
-                .setInstance(instance).setName(name).setSeekTime(newPosition);
-        //  yclient.executeRpc(YPROCESSOR_CONTROL_ADDRESS, "seekReplay", crb.build(), null);
+        RestClient restClient = yconnector.getRestClient();
+        //  PATCH /api/processors/:instance/:name
+        String resource = "/processors/"+instance+"/"+name+"?seek="+TimeEncoding.toString(newPosition);
+        CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH);
+        cf.whenComplete((result, exception) -> {
+            if(exception!=null) {
+                yamcsMonitor.log("Exception seeking the processor: "+exception.getMessage());
+            }
+        });
     }
 
 
