@@ -24,7 +24,7 @@ import org.yamcs.ProcessorFactory;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
 import org.yamcs.YProcessor;
-import org.yamcs.YProcessorException;
+import org.yamcs.ProcessorException;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterConsumer;
@@ -54,7 +54,7 @@ public class AlgorithmManagerTest {
     private Queue<Event> q;
     
     @Before
-    public void beforeEachTest() throws ConfigurationException, YProcessorException {
+    public void beforeEachTest() throws ConfigurationException, ProcessorException {
         EventProducerFactory.setMockup(true);
         q=EventProducerFactory.getMockupQueue();
         

@@ -37,7 +37,7 @@ public class StreamAdapterTest extends YarchTestCase {
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-	YamcsServer.stopHornet();
+	YamcsServer.stopArtemis();
     }
 
     

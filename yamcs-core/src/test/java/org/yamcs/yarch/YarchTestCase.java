@@ -9,7 +9,7 @@ import java.util.concurrent.Semaphore;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.management.ManagementService;
+import org.yamcs.yarch.management.JMXService;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
@@ -37,7 +37,7 @@ public abstract class YarchTestCase {
 	} else {
 	    littleEndian=false;
 	}
-	ManagementService.setup(false);
+	JMXService.setup(false);
     }
 
     @Before

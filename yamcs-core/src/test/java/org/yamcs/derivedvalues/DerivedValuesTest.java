@@ -11,7 +11,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.YProcessor;
-import org.yamcs.YProcessorException;
+import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.parameter.ParameterValue;
@@ -46,7 +46,7 @@ public class DerivedValuesTest {
 	xtceDb = XtceDbFactory.getInstance(instance);
     }
 
-    YProcessor createChannel(String channelName) throws YProcessorException, ConfigurationException {
+    YProcessor createChannel(String channelName) throws ProcessorException, ConfigurationException {
 	tmGenerator=new RefMdbPacketGenerator();
 	DerivedValuesManager dvm = new DerivedValuesManager("dvtest");
 	List<ParameterProvider> provList = new ArrayList<ParameterProvider>();

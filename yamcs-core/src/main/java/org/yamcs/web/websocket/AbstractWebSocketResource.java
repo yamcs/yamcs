@@ -1,7 +1,7 @@
 package org.yamcs.web.websocket;
 
 import org.yamcs.YProcessor;
-import org.yamcs.YProcessorException;
+import org.yamcs.ProcessorException;
 import org.yamcs.api.ws.WSConstants;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.security.AuthenticationToken;
@@ -41,7 +41,7 @@ public abstract class AbstractWebSocketResource {
                 .build();
     }
 
-    public void switchYProcessor(YProcessor processor, AuthenticationToken authToken)  throws YProcessorException {
+    public void switchYProcessor(YProcessor processor, AuthenticationToken authToken)  throws ProcessorException {
         this.processor = processor;
     }
 }

@@ -95,7 +95,7 @@ public class YamcsServer {
         YConfiguration conf=YConfiguration.getConfiguration("yamcs."+instance);
         loadTimeService();
                 
-        ManagementService managementService=ManagementService.getInstance();
+        ManagementService managementService = ManagementService.getInstance();
         StreamInitializer.createStreams(instance);
         YProcessor.addProcessorListener(managementService);
         
@@ -159,85 +159,15 @@ public class YamcsServer {
 
         artemisServer = new EmbeddedActiveMQ();
         artemisServer.setSecurityManager( new HornetQAuthManager() );
-        if(artemisConfigFile != null)
+        if(artemisConfigFile != null) {
             artemisServer.setConfigResourcePath(artemisConfigFile);
+        }
         artemisServer.start();
         //create already the queue here to reduce (but not eliminate :( ) the chance that somebody connects to it before yamcs is started fully
         yamcsSession = YamcsSession.newBuilder().build();
         ctrlAddressClient = yamcsSession.newClientBuilder().setRpcAddress(Protocol.YAMCS_SERVER_CONTROL_ADDRESS).setDataProducer(true).build();
-        return artemisServer;
-    }
-
-    public static void stopHornet() throws Exception {
-        yamcsSession.close();
-        Protocol.closeKiller();
-        artemisServer.stop();
-    }
-
-    public static void shutDown() throws Exception {
-        for(YamcsServer ys: instances.values()) {
-            ys.stop();
-        }
-    }
-    
-    /**
-     * Return a logger decorated with the applicable yamcs instance 
-     * <p>Convenience method
-     */
-    public static Logger getLogger(Class<?> clazz, String instance) {
-        return LoggerFactory.getLogger(clazz.getName() + "["+instance+"]");
-    }
-    
-    /**
-     * Return a logger decorated with the applicable yamcs instance and processor 
-     * <p>Convenience method
-     */
-    public static Logger getLogger(Class<?> clazz, YProcessor processor) {
-        return LoggerFactory.getLogger(clazz.getName() + "["+processor.getInstance()+"/" +processor.getName()+ "]");
-    }
-
-    public void stop() {
-        for(int i = serviceList.size()-1; i>=0; i--) {
-            Service s = serviceList.get(i);
-            s.stopAsync();
-            try {
-                s.awaitTerminated(SERVICE_STOP_GRACE_TIME, TimeUnit.SECONDS);
-            } catch (TimeoutException e) {
-                log.error("Service "+s+" did not stop in "+SERVICE_STOP_GRACE_TIME + " seconds");
-            }
-        }
-    }
-
-    public static boolean hasInstance(String instance) {
-        return instances.containsKey(instance);
-    }
-    
-    public static String getServerId() {
-        return serverId;
-    }
-
-    public static void setupYamcsServer() throws Exception  {
-        YConfiguration c=YConfiguration.getConfiguration("yamcs");
-        final List<String>instArray=c.getList("instances");
         
-        if (instArray.isEmpty()) {
-            staticlog.warn("No instances");
-        } else if (instArray.size() == 1) {
-            staticlog.info("1 instance: " + instArray.get(0));
-        } else {
-            staticlog.info(instArray.size() + " instances: " + String.join(", ", instArray));
-        }
         
-        for(String inst:instArray) {
-            instances.put(inst, new YamcsServer(inst));
-        }
-        
-        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread t, Throwable thrown) {
-                staticlog.error("Uncaught exception '"+thrown+"' in thread "+t+": "+Arrays.toString(thrown.getStackTrace()));
-            }
-        });
 
         ctrlAddressClient.rpcConsumer.setMessageHandler(new MessageHandler() {
             @Override
@@ -277,6 +207,83 @@ public class YamcsServer {
                 }
             }
         });
+        
+        return artemisServer;
+    }
+
+    public static void stopArtemis() throws Exception {
+        yamcsSession.close();
+        Protocol.closeKiller();
+        artemisServer.stop();
+    }
+
+    public static void shutDown() throws Exception {
+        for(YamcsServer ys: instances.values()) {
+            ys.stop();
+        }
+    }
+    
+    /**
+     * Return a logger decorated with the applicable yamcs instance 
+     * <p>Convenience method
+     */
+    public static Logger getLogger(Class<?> clazz, String instance) {
+        return LoggerFactory.getLogger(clazz.getName() + "["+instance+"]");
+    }
+    
+    /**
+     * Return a logger decorated with the applicable yamcs instance and processor 
+     * <p>Convenience method
+     */
+    public static Logger getLogger(Class<?> clazz, YProcessor processor) {
+        return LoggerFactory.getLogger(clazz.getName() + "["+processor.getInstance()+"/" +processor.getName()+ "]");
+    }
+
+    public void stop() {
+        for(int i = serviceList.size()-1; i>=0; i--) {
+            Service s = serviceList.get(i);
+            s.stopAsync();
+            try {
+                s.awaitTerminated(SERVICE_STOP_GRACE_TIME, TimeUnit.SECONDS);
+            } catch (TimeoutException e) {
+                log.error("Service "+s+" did not stop in "+SERVICE_STOP_GRACE_TIME + " seconds");
+            } catch (IllegalStateException e) {
+                log.error("Service "+s.getClass().getName()+" was in a bad state: {}", e.getMessage());
+            }
+        }
+    }
+
+    public static boolean hasInstance(String instance) {
+        return instances.containsKey(instance);
+    }
+    
+    public static String getServerId() {
+        return serverId;
+    }
+
+    public static void setupYamcsServer() throws Exception  {
+        YConfiguration c=YConfiguration.getConfiguration("yamcs");
+        final List<String>instArray=c.getList("instances");
+        
+        if (instArray.isEmpty()) {
+            staticlog.warn("No instances");
+        } else if (instArray.size() == 1) {
+            staticlog.info("1 instance: " + instArray.get(0));
+        } else {
+            staticlog.info(instArray.size() + " instances: " + String.join(", ", instArray));
+        }
+        
+        for(String inst:instArray) {
+            instances.put(inst, new YamcsServer(inst));
+        }
+        
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable thrown) {
+                staticlog.error("Uncaught exception '"+thrown+"' in thread "+t+": "+Arrays.toString(thrown.getStackTrace()));
+            }
+        });
+
         if(System.getenv("YAMCS_DAEMON")==null) {
             staticlog.info("Server running... press ctrl-c to stop");
         } else {//the init.d/yamcs-server depends on this line on the standard output, do not change it (without changing the script also)!
@@ -404,7 +411,7 @@ public class YamcsServer {
             setupSecurity();
             setupHttpServer();
             setupArtemis();
-            org.yamcs.yarch.management.ManagementService.setup(true);
+            org.yamcs.yarch.management.JMXService.setup(true);
             ManagementService.setup(true,true);
             
             setupYamcsServer();

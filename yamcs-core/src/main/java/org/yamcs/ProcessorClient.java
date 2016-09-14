@@ -3,19 +3,18 @@ package org.yamcs;
 import org.yamcs.security.AuthenticationToken;
 
 /**
- * A client of a processor - receives processed TM, sends TC
+ * A client of a processor
  * @author nm
  *
  */
-public interface YProcessorClient {
+public interface ProcessorClient {
     /**
      * change the connection to another processor
      * @param p - processor 
      */
-    
-    public void switchYProcessor(YProcessor p, AuthenticationToken authToken) throws YProcessorException;
+    public void switchProcessor(YProcessor p, AuthenticationToken authToken) throws ProcessorException;
     /**
-     * called when the channel is closing down
+     * called when the processor is closing down
      */
     void yProcessorQuit();
 

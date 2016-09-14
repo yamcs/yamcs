@@ -54,7 +54,7 @@ public class EventRecordingTest extends YarchTestCase {
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-	YamcsServer.stopHornet();
+	YamcsServer.stopArtemis();
     }
     
     private void checkEvent(int i, Event ev) {

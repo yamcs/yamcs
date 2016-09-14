@@ -2,7 +2,10 @@ package org.yamcs;
 
 import java.util.Map;
 
-import org.yamcs.parameter.RealtimeParameterService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yamcs.parameter.RealtimeArtemisParameterService;
+import org.yamcs.web.rest.RestHandler;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
@@ -14,50 +17,60 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class YProcessorCreatorService extends AbstractService {
-    String channelName;
-    String channelType;
+    String processorName;
+    String processorType;
     String channelSpec;
 
     YProcessor yproc;
     String yamcsInstance;
 
-    RealtimeParameterService realtimeParameterService;
+    final boolean startArtemisService;
+    RealtimeArtemisParameterService realtimeParameterService;
+    private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
     
-    
-    public YProcessorCreatorService(String yamcsInstance, Map<String, String> config) throws ConfigurationException, StreamSqlException, YProcessorException, ParseException {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public YProcessorCreatorService(String yamcsInstance, Map<String, String> config) throws ConfigurationException, StreamSqlException, ProcessorException, ParseException {
 	this.yamcsInstance = yamcsInstance;
 
 	if(!config.containsKey("type")) {
 	    throw new ConfigurationException("Did not specify the yproc type");
 	}
-	this.channelType = config.get("type");
+	this.processorType = config.get("type");
 	if(!config.containsKey("name")) {
 	    throw new ConfigurationException("Did not specify the yproc name");
 	}
-	this.channelName = config.get("name");
+	this.processorName = config.get("name");
 
 	if(config.containsKey("spec")) {
 	    channelSpec = config.get("spec");
 	}
+	
+	startArtemisService = YConfiguration.getBoolean((Map)config, "startArtemisService", false);
 
     }
     @Override
     protected void doStart() {
+        log.debug("Creating a new processor instance:{}, procName: {}, procType: {}", yamcsInstance, processorName, processorType);
 	try {
-	    yproc =  ProcessorFactory.create(yamcsInstance, channelName, channelType, "system", channelSpec);
+	    yproc =  ProcessorFactory.create(yamcsInstance, processorName, processorType, "system", channelSpec);
 	    yproc.setPersistent(true);
-	    realtimeParameterService = new RealtimeParameterService(yproc);
+	    if(startArtemisService) {
+	        realtimeParameterService = new RealtimeArtemisParameterService(yproc);
+	    }
 	    yproc.start();
 	    notifyStarted();
 	} catch (Exception e) {
+	    log.error("Starting a new processor {}.{} failed: {}", yamcsInstance, processorName, e.getMessage());
 	    notifyFailed(e);
 	}
     }
 
     @Override
     protected void doStop() {
-	yproc.quit();
-	realtimeParameterService.quit();
+        yproc.quit();
+        if(realtimeParameterService!=null) {
+            realtimeParameterService.quit();
+       }
 	notifyStopped();
     }
 }

@@ -217,7 +217,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
     }
     
     
-    static class ActiveMQReplayListener implements YProcessorListener, ParameterWithIdConsumer, ContainerWithIdConsumer, CommandHistoryConsumer, MessageHandler {        
+    static class ActiveMQReplayListener implements ProcessorListener, ParameterWithIdConsumer, ContainerWithIdConsumer, CommandHistoryConsumer, MessageHandler {        
         YamcsSession ysession;
         YamcsClient yclient;
         SimpleString dataAddress;
@@ -306,7 +306,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
 
 
         @Override
-        public void yProcessorClosed(YProcessor processor) {            
+        public void processorClosed(YProcessor processor) {            
             if(processor!=yproc) return;
             log.debug("processor closed");
             

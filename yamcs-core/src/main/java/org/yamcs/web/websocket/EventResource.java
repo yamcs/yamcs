@@ -3,7 +3,7 @@ package org.yamcs.web.websocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
-import org.yamcs.YProcessorException;
+import org.yamcs.ProcessorException;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
@@ -52,7 +52,7 @@ public class EventResource extends AbstractWebSocketResource {
     }
 
     @Override
-    public void switchYProcessor(YProcessor newProcessor, AuthenticationToken authToken) throws YProcessorException {
+    public void switchYProcessor(YProcessor newProcessor, AuthenticationToken authToken) throws ProcessorException {
         doUnsubscribe();
         processor = newProcessor;
         YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());

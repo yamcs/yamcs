@@ -126,7 +126,7 @@ public abstract class AbstractIntegrationTest {
         EventProducerFactory.setMockup(true);
         YConfiguration.setup("IntegrationTest");
         ManagementService.setup(false, false);
-        org.yamcs.yarch.management.ManagementService.setup(false);
+        org.yamcs.yarch.management.JMXService.setup(false);
         YamcsServer.setupHttpServer();
         YamcsServer.setupArtemis();
         YamcsServer.setupYamcsServer();
@@ -161,7 +161,7 @@ public abstract class AbstractIntegrationTest {
     @AfterClass
     public static void shutDownYamcs()  throws Exception {
         YamcsServer.shutDown();
-        YamcsServer.stopHornet();
+        YamcsServer.stopArtemis();
     }
 
     

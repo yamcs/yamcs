@@ -14,7 +14,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.YProcessor;
-import org.yamcs.YProcessorException;
+import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
@@ -49,7 +49,7 @@ public class AlgorithmManagerPyTest {
     private ParameterRequestManagerImpl prm;
     
     @Before
-    public void beforeEachTest() throws ConfigurationException, YProcessorException {
+    public void beforeEachTest() throws ConfigurationException, ProcessorException {
         EventProducerFactory.setMockup(true);
         
         db=XtceDbFactory.getInstance(instance);

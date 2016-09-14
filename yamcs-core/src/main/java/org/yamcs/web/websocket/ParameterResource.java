@@ -14,7 +14,7 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.YProcessor;
-import org.yamcs.YProcessorException;
+import org.yamcs.ProcessorException;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
@@ -366,14 +366,14 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
     }
 
     @Override
-    public void switchYProcessor(YProcessor c, AuthenticationToken authToken) throws YProcessorException {
+    public void switchYProcessor(YProcessor c, AuthenticationToken authToken) throws ProcessorException {
         try {
             pidrm.switchPrm(c.getParameterRequestManager(), authToken);
             processor = c;
         } catch (InvalidIdentification e) {
             log.warn("got InvalidIdentification when resubscribing", e);
         } catch (NoPermissionException e) {
-            throw new YProcessorException("No permission", e);
+            throw new ProcessorException("No permission", e);
         }
     }
 }

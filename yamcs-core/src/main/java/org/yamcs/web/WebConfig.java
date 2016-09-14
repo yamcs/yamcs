@@ -16,14 +16,14 @@ import io.netty.handler.codec.http.cors.CorsConfig;
  * Data holder for webConfig section of yamcs.yamnl
  */
 public class WebConfig {
-    
+
     private static final Logger log = LoggerFactory.getLogger(WebConfig.class);
     private static WebConfig INSTANCE;
-    
+
     private int port;
     private List<String> webRoots = new ArrayList<>(2);
     private boolean zeroCopyEnabled = true;
-    
+
     // Refer to W3C spec for understanding these properties
     // Cross-origin Resource Sharing (CORS) enables ajaxified use of the REST api by
     // remote web applications.
@@ -31,7 +31,7 @@ public class WebConfig {
 
     private WebConfig() {
         YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
-        
+
         if (yconf.containsKey("webPort")) {
             log.warn("Property 'webPort' in yamcs.yaml is deprecated. Instead nest new property 'port' under 'webConfig'.");
             port = yconf.getInt("webPort");
@@ -52,14 +52,14 @@ public class WebConfig {
             log.warn("Property 'zeroCopyEnabled' in yamcs.yaml is deprecated. Instead nest 'zeroCopyEnabled' under 'webConfig'.");
             zeroCopyEnabled = yconf.getBoolean("zeroCopyEnabled");
         }
-        
+
         CorsConfig.Builder corsb = null;
         if (yconf.containsKey("webConfig")) {
             Map<String, Object> webConfig = yconf.getMap("webConfig");
-            
-            port = YConfiguration.getInt(webConfig, "webPort");
+
+            port = YConfiguration.getInt(webConfig, "webPort", 8090);
             zeroCopyEnabled = YConfiguration.getBoolean(webConfig, "zeroCopyEnabled", zeroCopyEnabled);
-            
+
             if (webConfig.containsKey("webRoot")) {
                 if (YConfiguration.isList(webConfig, "webRoot")) {
                     List<String> rootConf = YConfiguration.getList(webConfig, "webRoot");
@@ -68,17 +68,18 @@ public class WebConfig {
                     webRoots.add(YConfiguration.getString(webConfig, "webRoot"));
                 }
             }
-            
-            Map<String, Object> ycors = YConfiguration.getMap(webConfig, "cors");
-            if (YConfiguration.getBoolean(ycors, "enabled")) {
-                if (YConfiguration.isList(ycors, "allowOrigin")) {
-                    List<String> originConf = YConfiguration.getList(ycors, "allowOrigin");
-                    corsb = CorsConfig.withOrigins(originConf.toArray(new String[originConf.size()]));
-                } else {
-                    corsb = CorsConfig.withOrigin(YConfiguration.getString(ycors, "allowOrigin"));
-                }
-                if (YConfiguration.getBoolean(ycors, "allowCredentials")) {
-                    corsb.allowCredentials();
+            if(webConfig.containsKey("cors")) {
+                Map<String, Object> ycors = YConfiguration.getMap(webConfig, "cors");
+                if (YConfiguration.getBoolean(ycors, "enabled")) {
+                    if (YConfiguration.isList(ycors, "allowOrigin")) {
+                        List<String> originConf = YConfiguration.getList(ycors, "allowOrigin");
+                        corsb = CorsConfig.withOrigins(originConf.toArray(new String[originConf.size()]));
+                    } else {
+                        corsb = CorsConfig.withOrigin(YConfiguration.getString(ycors, "allowOrigin"));
+                    }
+                    if (YConfiguration.getBoolean(ycors, "allowCredentials")) {
+                        corsb.allowCredentials();
+                    }
                 }
             }
         } else {
@@ -86,32 +87,32 @@ public class WebConfig {
             // (Browsers would anyway strip Authorization header)
             corsb = CorsConfig.withAnyOrigin();
         }
-        
+
         if (corsb != null) {
             corsb.allowedRequestMethods(HttpMethod.GET, HttpMethod.POST, HttpMethod.PATCH, HttpMethod.PUT, HttpMethod.DELETE);
             corsb.allowedRequestHeaders(Names.CONTENT_TYPE, Names.ACCEPT, Names.AUTHORIZATION, Names.ORIGIN);
             corsConfig = corsb.build();
         }
     }
-    
+
     public static synchronized WebConfig getInstance() {
         if (INSTANCE != null) return INSTANCE;
         INSTANCE = new WebConfig();
         return INSTANCE;
     }
-    
+
     public int getPort() {
         return port;
     }
-    
+
     public boolean isZeroCopyEnabled() {
         return zeroCopyEnabled;
     }
-    
+
     public List<String> getWebRoots() {
         return webRoots;
     }
-    
+
     public CorsConfig getCorsConfig() {
         return corsConfig;
     }

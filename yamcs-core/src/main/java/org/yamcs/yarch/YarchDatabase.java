@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.YObjectLoader;
-import org.yamcs.yarch.management.ManagementService;
+import org.yamcs.yarch.management.JMXService;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.ParseException;
@@ -59,26 +59,21 @@ public class YarchDatabase {
     private final String defaultStorageEngineName;
     
     static {
-        try {
-            config=YConfiguration.getConfiguration("yamcs");
-            home=config.getString("dataDir");
-        
-        } catch (ConfigurationException e) {
-            throw new RuntimeException(e);
-        }
+        config = YConfiguration.getConfiguration("yamcs");
+        home = config.getString("dataDir");
     } 
 
-    final ManagementService managementService;
+    final JMXService jmxService;
 
 
     static Map<String,YarchDatabase> databases=new HashMap<String,YarchDatabase>();
     private String dbname;
 
     private YarchDatabase(String dbname) throws YarchException {
-        this.dbname=dbname;
-        managementService=ManagementService.getInstance();
-        tables=new HashMap<String,TableDefinition>();
-        streams=new HashMap<String,AbstractStream>();
+        this.dbname = dbname;
+        jmxService = JMXService.getInstance();
+        tables = new HashMap<String,TableDefinition>();
+        streams = new HashMap<String,AbstractStream>();
         
         
         List<String> se;
@@ -173,8 +168,8 @@ public class YarchDatabase {
                         }
 
                         getStorageEngine(tblDef).loadTable(tblDef);
-                        if(managementService!=null) {
-                            managementService.registerTable(dbname, tblDef);
+                        if(jmxService!=null) {
+                            jmxService.registerTable(dbname, tblDef);
                         }
                         tables.put(tblDef.getName(), tblDef);
                         log.debug("loaded table definition "+tblDef.getName()+" from "+f);
@@ -254,7 +249,9 @@ public class YarchDatabase {
         tables.put(def.getName(),def);
         def.setDb(this);
         serializeTableDefinition(def);
-        managementService.registerTable(dbname, def);		
+        if(jmxService!=null) {
+            jmxService.registerTable(dbname, def);
+        }
     }
 
 
@@ -268,7 +265,9 @@ public class YarchDatabase {
         if(tables.containsKey(stream.getName())) throw new YarchException("A table named '"+stream.getName()+"' already exists");
         if(streams.containsKey(stream.getName())) throw new YarchException("A stream named '"+stream.getName()+"' already exists");
         streams.put(stream.getName(), stream);
-        managementService.registerStream(dbname, stream);
+        if(jmxService!=null) {
+            jmxService.registerStream(dbname, stream);
+        }
     }
 
     public TableDefinition getTable(String name) {
@@ -293,7 +292,9 @@ public class YarchDatabase {
         if(tbl==null) {
             throw new YarchException("There is no table named '"+tblName+"'");
         }
-        managementService.unregisterTable(dbname, tblName);
+        if(jmxService!=null) {
+            jmxService.unregisterTable(dbname, tblName);
+        }
         getStorageEngine(tbl).dropTable(tbl);
         File f=new File(getRoot()+"/"+tblName+".def");
         if(!f.delete()) {
@@ -304,7 +305,9 @@ public class YarchDatabase {
 
     public synchronized void removeStream(String name) {
         Stream s=streams.remove(name);
-        if(s!=null) managementService.unregisterStream(dbname, name);
+        if((s!=null) &&  (jmxService!=null)) {
+            jmxService.unregisterStream(dbname, name);
+        }
     }
 
     public StorageEngine getStorageEngine(TableDefinition tbldef) {

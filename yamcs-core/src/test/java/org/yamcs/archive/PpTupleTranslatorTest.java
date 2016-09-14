@@ -55,7 +55,7 @@ public class PpTupleTranslatorTest extends YarchTestCase {
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-        YamcsServer.stopHornet();
+        YamcsServer.stopArtemis();
     }
 
     /**

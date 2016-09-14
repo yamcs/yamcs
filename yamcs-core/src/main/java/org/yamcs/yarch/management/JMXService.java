@@ -1,6 +1,7 @@
 package org.yamcs.yarch.management;
 
 import java.lang.management.ManagementFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.yarch.Stream;
@@ -14,22 +15,22 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
 
-public class ManagementService {
+public class JMXService {
     final MBeanServer mbeanServer;
     final boolean enabled;
-    static Logger log=LoggerFactory.getLogger(ManagementService.class.getName());
+    static Logger log = LoggerFactory.getLogger(JMXService.class.getName());
     final String tld="yarch";
-    static ManagementService managementService;
+    static private JMXService jmxService;
     
     static public void setup(boolean enabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
-        managementService=new ManagementService(enabled);
+        jmxService = new JMXService(enabled);
     }
     
-    static public ManagementService getInstance() {
-        return managementService;
+    static public JMXService getInstance() {
+        return jmxService;
     }
     
-    private ManagementService(boolean enabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
+    private JMXService(boolean enabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
         this.enabled=enabled;
         if(enabled)
             mbeanServer=ManagementFactory.getPlatformMBeanServer();

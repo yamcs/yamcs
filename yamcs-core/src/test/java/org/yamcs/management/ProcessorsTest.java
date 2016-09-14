@@ -4,8 +4,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
@@ -14,8 +18,8 @@ import org.junit.Test;
 import org.yamcs.TmPacketProvider;
 import org.yamcs.TmProcessor;
 import org.yamcs.YProcessor;
-import org.yamcs.YProcessorClient;
-import org.yamcs.YProcessorException;
+import org.yamcs.ProcessorClient;
+import org.yamcs.ProcessorException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementService;
@@ -24,8 +28,10 @@ import org.yamcs.security.AuthenticationToken;
 import org.yamcs.ui.ProcessorControlClient;
 import org.yamcs.ui.ProcessorListener;
 import org.yamcs.ui.YamcsConnector;
-import org.yamcs.YamcsException;
 import org.yamcs.api.ws.YamcsConnectionProperties;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
+import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
@@ -37,18 +43,19 @@ import static org.junit.Assert.*;
 
 
 public class ProcessorsTest {
-   static EmbeddedActiveMQ hornetServer;
+   static EmbeddedActiveMQ artemisServer;
     @BeforeClass
     public static void setupHornetAndManagement() throws Exception {
-        YConfiguration.setup("YProcessorsTest");
-        hornetServer = YamcsServer.setupArtemis();
-        ManagementService.setup(true,true);
+        ManagementService.setup(false, true);
+        YConfiguration.setup("ProcessorsTest");
+        YamcsServer.setupYamcsServer();
+        Logger.getLogger("org.yamcs").setLevel(Level.ALL);
     }
     
     @AfterClass
     public static void afterClass() throws Exception {
         ManagementService.getInstance().shutdown();
-	YamcsServer.stopHornet();
+	YamcsServer.shutDown();
     }
     
     @Test
@@ -57,109 +64,113 @@ public class ProcessorsTest {
     }
     
     @Test
-    public void createYProcessorWithoutClient() throws Exception {
+    public void createProcessorWithoutClient() throws Exception {
         YamcsConnector yconnector = new YamcsConnector("ProcessorTest");
         ProcessorControlClient ccc = new ProcessorControlClient(yconnector);
         ccc.setYProcessorListener(new MyListener("YProcessorsTest"));
-        yconnector.connect(YamcsConnectionProperties.parse("http://localhost:20888/")).get(5,TimeUnit.SECONDS);
+        yconnector.connect(YamcsConnectionProperties.parse("http://localhost:28090/")).get(5,TimeUnit.SECONDS);
 
         try {
 
-            Yamcs.ReplayRequest rr = Yamcs.ReplayRequest.newBuilder().build();
-            ccc.createProcessor("yproctest0", "test1", "dummy", rr, false, new int[]{10,14});
+            Yamcs.ReplayRequest rr = Yamcs.ReplayRequest.newBuilder().setStart(1000).build();
+            ccc.createProcessor("yproctest0", "test1", "dummy", rr, false, new int[]{10,14}).get();
             assertTrue("YamcsException was expected", false);
-        } catch(YamcsException e) {
-            assertEquals("createYProcessor invoked with a list full of invalid client ids", e.getMessage());
+        } catch(ExecutionException e) {
+            Throwable cause = e.getCause();
+            System.out.println("-----------e: "+cause);
+            assertEquals("BadRequestException : createProcessor invoked with a list full of invalid client ids", cause.getMessage());
         }
         yconnector.disconnect();
     }
 
     @Test
-    public void createAndSwitchYProc() throws Exception {
-        YamcsConnector yconnector = new YamcsConnector("ProcessorTest");
-        ProcessorControlClient ccc = new ProcessorControlClient(yconnector);
+    public void createAndSwitchProcessor() throws Exception {
+        YamcsConnector yconnector = new YamcsConnector("ProcessorTest-randname1");
+        ProcessorControlClient client1 = new ProcessorControlClient(yconnector);
         MyListener ml=new MyListener("yproctest1");
-        ccc.setYProcessorListener(ml);
-        Future<YamcsConnectionProperties> f=yconnector.connect(YamcsConnectionProperties.parse("http://localhost:20888/"));
+        client1.setYProcessorListener(ml);
+        Future<YamcsConnectionProperties> f = yconnector.connect(YamcsConnectionProperties.parse("http://localhost:28090/yproctest1"));
         f.get(5, TimeUnit.SECONDS);
 
-        Yamcs.ReplayRequest rr = Yamcs.ReplayRequest.newBuilder().build();
-        ccc.createProcessor("yproctest1", "yproc1", "dummy", rr, true, new int[0]);
+        Thread.sleep(3000);
+        Yamcs.ReplayRequest rr = Yamcs.ReplayRequest.newBuilder()
+                .setPacketRequest(PacketReplayRequest.newBuilder().addNameFilter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/PKT1").build()).build())
+                .setStart(1000).build();
+        client1.createProcessor("yproctest1", "yproc1", "dummy", rr, true, new int[]{}).get();
         
-        MyYProcClient client=new MyYProcClient();
-        YProcessor yp=YProcessor.getInstance("yproctest1", "yproc1");
-        assertNotNull(yp);
+        MyYProcClient client = new MyYProcClient();
+        YProcessor yproc1 = YProcessor.getInstance("yproctest1", "yproc1");
+        assertNotNull(yproc1);
         
-        yp.connect(client);
-        client.yproc=yp;
-        
-        ManagementService.getInstance().registerClient("yproctest1", "yproc1", client);
-        
-        ccc.createProcessor("yproctest1", "yproc2", "dummy", rr, false, new int[]{1});
-        
-        Thread.sleep(3000); //to make sure that this event will not overwrite the previous yproctest1,yproc1 one 
-        ccc.connectToProcessor("yproctest1", "yproc1", new int[]{1}); //this one should trigger the closing of non permanent yproc2 because no more client connected
-        yp.disconnect(client);
-        ManagementService.getInstance().unregisterClient(1);
-        yp.quit();
-        
-        Thread.sleep(3000);//to allow for events to come
-        yconnector.disconnect();
-        
-        assertEquals(2, ml.yprocUpdated.size());
-        ProcessorInfo ci=ml.yprocUpdated.get("yproc1");
-        assertEquals("yproctest1",ci.getInstance());
-        assertEquals("yproc1",ci.getName());
-        assertEquals("dummy",ci.getType());
-        assertEquals(ServiceState.RUNNING, ci.getState());
-        
-        ci=ml.yprocUpdated.get("yproc2");
-        assertEquals("yproctest1",ci.getInstance());
-        assertEquals("yproc2",ci.getName());
-        assertEquals("dummy",ci.getType());
-        assertEquals("",ci.getSpec());
-        assertEquals(ServiceState.RUNNING, ci.getState());
+        yproc1.connect(client);
+        client.yproc = yproc1;
         
         
-        assertEquals(2, ml.yprocClosedList.size());
-        ci=ml.yprocClosedList.get(0);
-        assertEquals("yproctest1",ci.getInstance());
-        assertEquals("yproc2",ci.getName());
+        int myClientId = ManagementService.getInstance().registerClient("yproctest1", "yproc1", client);
         
-        ci=ml.yprocClosedList.get(1);
-        assertEquals("yproctest1",ci.getInstance());
-        assertEquals("yproc1",ci.getName());
+        assertNotNull(ManagementService.getInstance().getClientInfo(myClientId));
+        
+        client1.createProcessor("yproctest1", "yproc2", "dummy", rr, false, new int[]{myClientId}).get();
         
         
-        assertEquals(3, ml.clientUpdatedList.size());
+        assertNotNull(ManagementService.getInstance().getClientInfo(myClientId));
         
-        ClientInfo cli=ml.clientUpdatedList.get(0);
-        assertEquals("yproctest1",cli.getInstance());
-        assertEquals("yproc1",cli.getProcessorName());
-        assertEquals(1,cli.getId());
-        assertEquals("random-test-user",cli.getUsername());
-        assertEquals("random-app-name",cli.getApplicationName());
         
-        cli=ml.clientUpdatedList.get(1);
-        assertEquals("yproctest1",cli.getInstance());
-        assertEquals("yproc2",cli.getProcessorName());
-        assertEquals(1,cli.getId());
+        //this one should trigger the closing of non permanent yproc2 because no more client connected
+        CompletableFuture<Void> f1= client1.connectToProcessor("yproctest1", "yproc1", new int[]{myClientId}); 
+        f1.get();
         
-        cli=ml.clientUpdatedList.get(2);
-        assertEquals("yproctest1",cli.getInstance());
-        assertEquals("yproc1",cli.getProcessorName());
-        assertEquals(1,cli.getId());
-        
-        assertEquals(1,ml.clientDisconnectedList.size());
-        cli=ml.clientDisconnectedList.get(0);
-        assertEquals("yproctest1",cli.getInstance());
-        assertEquals("yproc1",cli.getProcessorName());
-        assertEquals(1,cli.getId());
+        yproc1.disconnect(client);
+        ManagementService.getInstance().unregisterClient(myClientId);
+        yproc1.quit();
+        assertNull(ManagementService.getInstance().getClientInfo(myClientId));
        
+        yconnector.disconnect();
+      
+        Thread.sleep(3000);//to allow for events to come
+        
+      /*  for(ProcessorInfo pi: ml.yprocUpdated) {
+            System.out.println("\t"+pi.getInstance()+"/"+pi.getName()+" state: "+pi.getState()+" replayState: "+pi.getReplayState());
+        }*/
+        
+        assertEquals(9, ml.yprocUpdated.size());
+       
+        assertPEquals("realtime", ServiceState.RUNNING, ReplayState.INITIALIZATION, ml.yprocUpdated.get(0));        
+        assertPEquals("yproc1", ServiceState.NEW, ReplayState.INITIALIZATION, ml.yprocUpdated.get(1));
+        assertPEquals("yproc1", ServiceState.RUNNING, ReplayState.RUNNING, ml.yprocUpdated.get(2));
+        assertPEquals("yproc1", ServiceState.RUNNING, ReplayState.STOPPED, ml.yprocUpdated.get(3));
+        assertPEquals("yproc2", ServiceState.NEW, ReplayState.INITIALIZATION, ml.yprocUpdated.get(4));
+        assertPEquals("yproc2", ServiceState.RUNNING, ReplayState.RUNNING, ml.yprocUpdated.get(5));
+        assertPEquals("yproc2", ServiceState.RUNNING, ReplayState.STOPPED, ml.yprocUpdated.get(6));
+        assertPEquals("yproc2", ServiceState.STOPPING, ReplayState.STOPPED, ml.yprocUpdated.get(7));
+        assertPEquals("yproc1", ServiceState.STOPPING, ReplayState.STOPPED, ml.yprocUpdated.get(8));
+        
+        
+        assertEquals(4, ml.clientUpdatedList.size());
+        //first one is from the ProcessorControlClient    
+        assertCEquals("yproctest1", "realtime",myClientId-1, "admin", "ProcessorTest-randname1", ml.clientUpdatedList.get(0));
+        
+        assertCEquals("yproctest1", "yproc1",myClientId, "random-test-user", "random-app-name", ml.clientUpdatedList.get(1));
+        assertCEquals("yproctest1", "yproc2",myClientId, "random-test-user", "random-app-name", ml.clientUpdatedList.get(2));
+        assertCEquals("yproctest1", "yproc1",myClientId, "random-test-user", "random-app-name", ml.clientUpdatedList.get(3));
     }
     
+    private void assertCEquals(String instance, String procName, int clientId, String username, String appname, ClientInfo clientInfo) {
+        assertEquals(instance, clientInfo.getInstance());
+        assertEquals(procName, clientInfo.getProcessorName());
+        assertEquals(clientId, clientInfo.getId());
+        assertEquals(username, clientInfo.getUsername());
+        assertEquals(appname, clientInfo.getApplicationName());
+    }
+
+    private void assertPEquals(String procName, ServiceState state, ReplayState replayState, ProcessorInfo processorInfo) {
+        assertEquals(procName, processorInfo.getName());        
+        assertEquals(state, processorInfo.getState());
+        assertEquals(replayState, processorInfo.getReplayState());
+    }
+
     static class MyListener implements ProcessorListener {
-        Map<String, ProcessorInfo> yprocUpdated=Collections.synchronizedMap(new HashMap<String, ProcessorInfo>());
+        List<ProcessorInfo> yprocUpdated = new ArrayList<ProcessorInfo>();
         List<ProcessorInfo> yprocClosedList=Collections.synchronizedList(new ArrayList<ProcessorInfo>());
         List<ClientInfo> clientUpdatedList=Collections.synchronizedList(new ArrayList<ClientInfo>());
         List<ClientInfo> clientDisconnectedList=Collections.synchronizedList(new ArrayList<ClientInfo>());
@@ -183,9 +194,9 @@ public class ProcessorsTest {
         }
 
         @Override
-        public void processorUpdated(ProcessorInfo ci) {
-            if(instance.equals(ci.getInstance())) {
-                yprocUpdated.put(ci.getName(), ci);
+        public void processorUpdated(ProcessorInfo pi) {
+            if(instance.equals(pi.getInstance())) {
+                yprocUpdated.add(pi);
             }
         }
 
@@ -216,11 +227,11 @@ public class ProcessorsTest {
         }
     }
 
-    static class MyYProcClient implements YProcessorClient {
+    static class MyYProcClient implements ProcessorClient {
         YProcessor yproc;
 
         @Override
-        public void switchYProcessor(YProcessor c, AuthenticationToken authToken) throws YProcessorException {
+        public void switchProcessor(YProcessor c, AuthenticationToken authToken) throws ProcessorException {
             yproc.disconnect(this);
             c.connect(this);
             yproc=c;
@@ -246,7 +257,9 @@ public class ProcessorsTest {
     public static class DummyTmProvider extends AbstractService implements TmPacketProvider {
         private TmProcessor tmProcessor;
 
-
+        public DummyTmProvider(String instance) {
+        }
+        
         public DummyTmProvider(String instance, Yamcs.ReplayRequest spec) {
         }
 

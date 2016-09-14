@@ -55,8 +55,10 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
 
     }
 
-    public void createProcessor(String instance, String name, String type, Yamcs.ReplayRequest spec, boolean persistent, int[] clients) throws YamcsException, YamcsApiException{
+    public CompletableFuture<byte[]> createProcessor(String instance, String name, String type, Yamcs.ReplayRequest spec, boolean persistent, int[] clients) throws YamcsException, YamcsApiException{
         CreateProcessorRequest.Builder cprb =  CreateProcessorRequest.newBuilder().setName(name);
+        cprb.setPersistent(persistent);
+
         for(int cid:clients) cprb.addClientId(cid);
         if(spec.hasStart()) {
             cprb.setStart(TimeEncoding.toString(spec.getStart()));
@@ -116,21 +118,25 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
                 yamcsMonitor.log("Exception creating processor: "+exception.getMessage());
             }
         });
+        return cf;
     }
 
-    public void connectToProcessor(String instance, String processorName, int[] clients) throws YamcsException, YamcsApiException {
+    public CompletableFuture<Void> connectToProcessor(String instance, String processorName, int[] clients) throws YamcsException, YamcsApiException {
         RestClient restClient = yconnector.getRestClient();
+        CompletableFuture<byte[]>[] cfs = new CompletableFuture[clients.length];
 
-        for(int i=0;i<clients.length;i++) {
+        for(int i=0; i<clients.length;i++) {
             //PATCH /api/clients/:id
             String resource = "/clients/"+clients[i]+"?processor="+processorName+"&instance="+instance;
-            CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH);
-            cf.whenComplete((result, exception) -> {
+            cfs[i] = restClient.doRequest(resource, HttpMethod.PATCH);
+            cfs[i].whenComplete((result, exception) -> {
                 if(exception!=null) {
                     yamcsMonitor.log("Exception connecting client to processor: "+exception.getMessage());
                 }
             });
         }       
+
+        return CompletableFuture.allOf(cfs);
     }
 
     public void pauseArchiveReplay(String instance, String name) throws YamcsException, YamcsApiException {

@@ -41,7 +41,7 @@ public class AlarmTest {
     private AlarmReporter alarmReporter;
     
     @Before
-    public void beforeEachTest() throws ConfigurationException, YProcessorException {
+    public void beforeEachTest() throws ConfigurationException, ProcessorException {
         String yamcsInstance="refmdb";
         EventProducerFactory.setMockup(true);
         q=EventProducerFactory.getMockupQueue();

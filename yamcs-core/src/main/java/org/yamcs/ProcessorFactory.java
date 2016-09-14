@@ -35,10 +35,10 @@ public class ProcessorFactory {
      * @param creator
      * @param spec
      * @return
-     * @throws YProcessorException
+     * @throws ProcessorException
      * @throws ConfigurationException
      */
-    static public YProcessor create(String yamcsInstance, String name, String type, String creator, Object spec) throws YProcessorException,  ConfigurationException {
+    static public YProcessor create(String yamcsInstance, String name, String type, String creator, Object spec) throws ProcessorException,  ConfigurationException {
         boolean initialized = false;
         TcTmService tctms=null;
         Map<String,Object> channelConfig = null;
@@ -112,14 +112,14 @@ public class ProcessorFactory {
         return new YObjectLoader<T>().loadObject(className, newargs.toArray());
     }
 
-    static public YProcessor create(String instance, String name, String type, TcTmService tctms, String creator) throws YProcessorException, ConfigurationException {
+    static public YProcessor create(String instance, String name, String type, TcTmService tctms, String creator) throws ProcessorException, ConfigurationException {
         return create(instance, name, type, tctms, creator, null);
     }
     /**
      *  Create a Processor by specifying the service.
      *  The type is not used in this case, except for showing it in the yamcs monitor.
      **/
-    static public YProcessor create(String instance, String name, String type, TcTmService tctms, String creator, Map<String, Object> config) throws YProcessorException, ConfigurationException {
+    static public YProcessor create(String instance, String name, String type, TcTmService tctms, String creator, Map<String, Object> config) throws ProcessorException, ConfigurationException {
         YProcessor yproc = new YProcessor(instance, name, type, creator);
 
         yproc.init(tctms, config);

@@ -1,0 +1,14 @@
+mdb: refmdb
+services:  
+    - org.yamcs.web.YamcsWebService
+    - org.yamcs.archive.XtceTmRecorder 
+    - org.yamcs.archive.ReplayServer   
+    - class: org.yamcs.YProcessorCreatorService
+      args:
+          name: "realtime"
+          type: "dummy"
+    
+    
+streamConfig:
+  tm:
+    - name: "tm_realtime"

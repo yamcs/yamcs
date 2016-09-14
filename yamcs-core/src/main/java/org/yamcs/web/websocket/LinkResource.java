@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
-import org.yamcs.YProcessorException;
+import org.yamcs.ProcessorException;
 import org.yamcs.management.LinkListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.SchemaYamcsManagement;
@@ -73,7 +73,7 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
     }
 
     @Override
-    public void switchYProcessor(YProcessor newProcessor, AuthenticationToken authToken) throws YProcessorException {
+    public void switchYProcessor(YProcessor newProcessor, AuthenticationToken authToken) throws ProcessorException {
     }
 
     @Override

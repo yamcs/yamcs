@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
-import org.yamcs.YProcessorException;
+import org.yamcs.ProcessorException;
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmListener;
 import org.yamcs.alarms.AlarmServer;
@@ -75,7 +75,7 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
     }
 
     @Override
-    public void switchYProcessor(YProcessor newProcessor, AuthenticationToken authToken) throws YProcessorException {
+    public void switchYProcessor(YProcessor newProcessor, AuthenticationToken authToken) throws ProcessorException {
         doUnsubscribe();
         processor = newProcessor;
         doSubscribe();

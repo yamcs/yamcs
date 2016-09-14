@@ -15,7 +15,7 @@ import org.yamcs.NoPermissionException;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.TmProcessor;
 import org.yamcs.YProcessor;
-import org.yamcs.YProcessorException;
+import org.yamcs.ProcessorException;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.archive.PacketWithTime;
@@ -90,7 +90,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     CommandHistoryRequestManager commandHistoryRequestManager;
 
     
-    public ReplayService(String instance, ReplayRequest spec) throws YProcessorException, ConfigurationException {
+    public ReplayService(String instance, ReplayRequest spec) throws ProcessorException, ConfigurationException {
         this.yamcsInstance = instance;
         this.originalReplayRequest = spec;
         xtceDb = XtceDbFactory.getInstance(instance);
@@ -240,16 +240,16 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         
     }
 
-    private void createReplay() throws YProcessorException {
+    private void createReplay() throws ProcessorException {
         ReplayServer replayServer = YamcsServer.getService(yamcsInstance, ReplayServer.class);
         if(replayServer==null) {
-            throw new YProcessorException("ReplayServer not configured for this instance");
+            throw new ProcessorException("ReplayServer not configured for this instance");
         }
         try {
             yarchReplay = replayServer.createReplay(rawDataRequest.build(), this, new SystemToken());
         } catch (YamcsException e) {
             log.error("Exception creating the replay", e);
-            throw new YProcessorException("Exception creating the replay",e);
+            throw new ProcessorException("Exception creating the replay: "+e.getMessage(), e);
         }
     }
     @Override
@@ -257,7 +257,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         try {
             createRawSubscription();
             createReplay();
-        } catch (YamcsException | YProcessorException e){
+        } catch (YamcsException | ProcessorException e){
             notifyFailed(e);
             return;
         }
@@ -366,10 +366,13 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
 
     @Override
     public ReplayState getReplayState() {
-        if(!isRunning()) {
-            return ReplayState.CLOSED;
+        if(state() == State.NEW) {
+            return ReplayState.INITIALIZATION;
+        } else if(state() == State.FAILED) {
+            return ReplayState.ERROR;
+        } else {
+            return yarchReplay.getState();
         }
-        return yarchReplay.getState();
     }
 
     @Override

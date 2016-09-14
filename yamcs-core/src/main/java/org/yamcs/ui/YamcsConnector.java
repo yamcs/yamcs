@@ -108,6 +108,10 @@ public class YamcsConnector implements WebSocketClientCallback {
                         try {
                             log.debug("Connecting to {} attempt {}", connectingTo, i);
                             instances = restClient.blockingGetYamcsInstances();
+                            if(instances==null || instances.isEmpty()) {
+                                log.warn("No configured yamcs instance");
+                                return;
+                            }
                             String defaultInstanceName = instances.get(0).getName();
                             String instanceName = defaultInstanceName;
                             if(connectionParams.getInstance()!=null){ //check if the instance saved in properties exists, otherwise use the default one
@@ -157,7 +161,7 @@ public class YamcsConnector implements WebSocketClientCallback {
     }
     
     public void disconnect() {
-        log.warn("Disconnection requested");
+        log.info("Disconnection requested");
         if(!connected)
             return;
         wsClient.disconnect();

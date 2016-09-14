@@ -36,7 +36,7 @@ import org.yamcs.security.HqClientMessageToken;
  * @author nm
  *
  */
-public class RealtimeParameterService implements ParameterWithIdConsumer {
+public class RealtimeArtemisParameterService implements ParameterWithIdConsumer {
     YProcessor channel;
     YamcsClient yclient;
     Logger log;
@@ -45,11 +45,11 @@ public class RealtimeParameterService implements ParameterWithIdConsumer {
     ParameterWithIdRequestHelper prh;
     YamcsSession yamcsSession;
     
-    public RealtimeParameterService(YProcessor channel) throws ActiveMQException, YamcsApiException {
+    public RealtimeArtemisParameterService(YProcessor channel) throws ActiveMQException, YamcsApiException {
 	this.channel=channel;
 	prh = new ParameterWithIdRequestHelper(channel.getParameterRequestManager(), this);
 
-	log=LoggerFactory.getLogger(RealtimeParameterService.class.getName()+"["+channel.getInstance()+"]");
+	log=LoggerFactory.getLogger(RealtimeArtemisParameterService.class.getName()+"["+channel.getInstance()+"]");
 	yamcsSession = YamcsSession.newBuilder().build();
 	SimpleString rpcAddress=Protocol.getParameterRealtimeAddress(channel.getInstance());
 	yclient=yamcsSession .newClientBuilder().setRpcAddress(rpcAddress).setDataProducer(true).build();

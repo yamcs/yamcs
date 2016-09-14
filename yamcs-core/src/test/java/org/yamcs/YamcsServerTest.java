@@ -26,14 +26,14 @@ public class YamcsServerTest {
     public static void setupYamcs() throws Exception {
         YConfiguration.setup("YamcsServer");
         ManagementService.setup(false, false);
-        org.yamcs.yarch.management.ManagementService.setup(false);
+        org.yamcs.yarch.management.JMXService.setup(false);
         hornetServer=YamcsServer.setupArtemis();
         YamcsServer.setupYamcsServer();
     }
     
     @AfterClass
     public static void shutDownYamcs()  throws Exception {
-	YamcsServer.stopHornet();
+	YamcsServer.stopArtemis();
     }
     
     @Test

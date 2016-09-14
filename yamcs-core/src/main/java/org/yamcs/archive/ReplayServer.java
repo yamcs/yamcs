@@ -21,7 +21,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- * Yarch replay server based on hornetq
+ * Yarch replay server
  *
  * A note about terminology: we call this replay because it provides capability to speed control/pause/resume.
  * However, it is not replay in terms of reprocessing the data - the data is sent as recorded in the streams.
@@ -34,16 +34,21 @@ public class ReplayServer extends AbstractService {
 
     final int MAX_REPLAYS=200;
     final String instance;
+    final boolean startArtemisService = false;
 
     AtomicInteger replayCount=new AtomicInteger();
-    HornetQRetrievalServer hqRetrievalServer;
-    
+    HornetQRetrievalServer artemisRetrievalServer;
+
     public ReplayServer(String instance) {
         this.instance = instance;
     }
 
     /**
      * create a new packet replay object
+     * @param replayRequest 
+     * @param replayListener 
+     * @param authToken 
+     * @return a replay object 
      * @throws YamcsException 
      */
     public YarchReplay createReplay(ReplayRequest replayRequest, ReplayListener replayListener, AuthenticationToken authToken) throws YamcsException {
@@ -74,25 +79,25 @@ public class ReplayServer extends AbstractService {
                 Collection<String> allowedPackets = priv.getTmPacketNames(instance, authToken, MdbMappings.MDB_OPSNAME);
 
                 List<NamedObjectId> invalidPackets = new ArrayList<NamedObjectId>();
-    
+
                 for (NamedObjectId noi : replayRequest.getPacketRequest().getNameFilterList()) {
                     // TODO: fix and not comment
-//                    if (! allowedPackets.contains(noi.getName())) {
-//                        invalidPackets.add(noi);
-//                    }
+                    //                    if (! allowedPackets.contains(noi.getName())) {
+                    //                        invalidPackets.add(noi);
+                    //                    }
                 }
                 if( ! invalidPackets.isEmpty() ) {
                     NamedObjectList nol=NamedObjectList.newBuilder().addAllList( invalidPackets ).build();
                     log.warn( "Cannot create replay - InvalidIdentification for packets: {}", invalidPackets );
                     throw new YamcsException("InvalidIdentification", "Invalid identification", nol);
                 }
-    
+
                 // Even when no filter is specified, limit request to authorized packets only
                 if (replayRequest.getPacketRequest().getNameFilterList().isEmpty()) {
                     PacketReplayRequest.Builder prr = PacketReplayRequest.newBuilder(replayRequest.getPacketRequest());
                     for (String allowedPacket : allowedPackets) {
                         prr.addNameFilter(NamedObjectId.newBuilder().setName(allowedPacket)
-                                        .setNamespace(MdbMappings.MDB_OPSNAME));
+                                .setNamespace(MdbMappings.MDB_OPSNAME));
                     }
                     replayRequest = ReplayRequest.newBuilder(replayRequest).setPacketRequest(prr).build();
                 }
@@ -103,7 +108,10 @@ public class ReplayServer extends AbstractService {
             YarchReplay yr=new YarchReplay(this, replayRequest, replayListener, XtceDbFactory.getInstance(instance), authToken);
             replayCount.incrementAndGet();
             return yr;
-        } catch (final Exception e) {
+        } catch (final YamcsException e) {
+            log.warn("Got YamcsException when creating a replay object: ", e);
+            throw e;
+        } catch (Exception e) {
             log.warn("Got exception when creating a replay object: ", e);
             throw new YamcsException("Got exception when creating a replay. " + e.getMessage(), e);
         }
@@ -115,9 +123,11 @@ public class ReplayServer extends AbstractService {
     @Override
     protected void doStart() {
         try {
-            hqRetrievalServer = new HornetQRetrievalServer(this);
-            hqRetrievalServer.startAsync();
-            hqRetrievalServer.awaitRunning();
+            if(startArtemisService) {
+                artemisRetrievalServer = new HornetQRetrievalServer(this);
+                artemisRetrievalServer.startAsync();
+                artemisRetrievalServer.awaitRunning();
+            }
             notifyStarted();
         } catch (Exception e) {
             notifyFailed(e);
@@ -126,8 +136,10 @@ public class ReplayServer extends AbstractService {
 
     @Override
     public void doStop() {
-        hqRetrievalServer.stopAsync();
-        hqRetrievalServer.awaitTerminated();
+        if(artemisRetrievalServer!=null) {
+            artemisRetrievalServer.stopAsync();
+            artemisRetrievalServer.awaitTerminated();
+        }
         notifyStopped();
     }
 

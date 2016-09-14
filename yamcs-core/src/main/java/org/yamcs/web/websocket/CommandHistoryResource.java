@@ -3,7 +3,7 @@ package org.yamcs.web.websocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
-import org.yamcs.YProcessorException;
+import org.yamcs.ProcessorException;
 import org.yamcs.cmdhistory.CommandHistoryConsumer;
 import org.yamcs.cmdhistory.CommandHistoryFilter;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
@@ -61,7 +61,7 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
         }
     }
 
-    public void switchYProcessor(YProcessor c) throws YProcessorException {
+    public void switchYProcessor(YProcessor c) throws ProcessorException {
         if(subscriptionId == -1) return;
 
         CommandHistoryRequestManager chrm = processor.getCommandHistoryManager();
