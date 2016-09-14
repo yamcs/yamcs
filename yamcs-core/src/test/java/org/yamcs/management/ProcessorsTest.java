@@ -8,8 +8,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
@@ -49,7 +47,7 @@ public class ProcessorsTest {
         ManagementService.setup(false, true);
         YConfiguration.setup("ProcessorsTest");
         YamcsServer.setupYamcsServer();
-        Logger.getLogger("org.yamcs").setLevel(Level.ALL);
+        //Logger.getLogger("org.yamcs").setLevel(Level.ALL);
     }
     
     @AfterClass
@@ -77,7 +75,6 @@ public class ProcessorsTest {
             assertTrue("YamcsException was expected", false);
         } catch(ExecutionException e) {
             Throwable cause = e.getCause();
-            System.out.println("-----------e: "+cause);
             assertEquals("BadRequestException : createProcessor invoked with a list full of invalid client ids", cause.getMessage());
         }
         yconnector.disconnect();
@@ -122,6 +119,7 @@ public class ProcessorsTest {
         
         yproc1.disconnect(client);
         ManagementService.getInstance().unregisterClient(myClientId);
+        
         yproc1.quit();
         assertNull(ManagementService.getInstance().getClientInfo(myClientId));
        
@@ -133,17 +131,24 @@ public class ProcessorsTest {
             System.out.println("\t"+pi.getInstance()+"/"+pi.getName()+" state: "+pi.getState()+" replayState: "+pi.getReplayState());
         }*/
         
-        assertEquals(9, ml.yprocUpdated.size());
-       
-        assertPEquals("realtime", ServiceState.RUNNING, ReplayState.INITIALIZATION, ml.yprocUpdated.get(0));        
-        assertPEquals("yproc1", ServiceState.NEW, ReplayState.INITIALIZATION, ml.yprocUpdated.get(1));
-        assertPEquals("yproc1", ServiceState.RUNNING, ReplayState.RUNNING, ml.yprocUpdated.get(2));
-        assertPEquals("yproc1", ServiceState.RUNNING, ReplayState.STOPPED, ml.yprocUpdated.get(3));
-        assertPEquals("yproc2", ServiceState.NEW, ReplayState.INITIALIZATION, ml.yprocUpdated.get(4));
-        assertPEquals("yproc2", ServiceState.RUNNING, ReplayState.RUNNING, ml.yprocUpdated.get(5));
-        assertPEquals("yproc2", ServiceState.RUNNING, ReplayState.STOPPED, ml.yprocUpdated.get(6));
-        assertPEquals("yproc2", ServiceState.STOPPING, ReplayState.STOPPED, ml.yprocUpdated.get(7));
-        assertPEquals("yproc1", ServiceState.STOPPING, ReplayState.STOPPED, ml.yprocUpdated.get(8));
+        List<ProcessorInfo> l = ml.yprocUpdated.get("realtime");
+        assertEquals(1, l.size());
+        assertPEquals("realtime", ServiceState.RUNNING, ReplayState.INITIALIZATION, l.get(0));
+        
+        l = ml.yprocUpdated.get("yproc1");
+        assertEquals(4, l.size());
+        assertPEquals("yproc1", ServiceState.NEW, ReplayState.INITIALIZATION, l.get(0));        
+        assertPEquals("yproc1", ServiceState.RUNNING, ReplayState.RUNNING, l.get(1));
+        assertPEquals("yproc1", ServiceState.RUNNING, ReplayState.STOPPED, l.get(2));
+        assertPEquals("yproc1", ServiceState.STOPPING, ReplayState.STOPPED, l.get(3));
+        
+        l = ml.yprocUpdated.get("yproc2");
+        assertEquals(4, l.size());
+        assertPEquals("yproc2", ServiceState.NEW, ReplayState.INITIALIZATION, l.get(0));
+        assertPEquals("yproc2", ServiceState.RUNNING, ReplayState.RUNNING, l.get(1));
+        assertPEquals("yproc2", ServiceState.RUNNING, ReplayState.STOPPED, l.get(2));
+        assertPEquals("yproc2", ServiceState.STOPPING, ReplayState.STOPPED, l.get(3));
+        
         
         
         assertEquals(4, ml.clientUpdatedList.size());
@@ -170,7 +175,7 @@ public class ProcessorsTest {
     }
 
     static class MyListener implements ProcessorListener {
-        List<ProcessorInfo> yprocUpdated = new ArrayList<ProcessorInfo>();
+        Map<String, List<ProcessorInfo>> yprocUpdated = new HashMap<>();
         List<ProcessorInfo> yprocClosedList=Collections.synchronizedList(new ArrayList<ProcessorInfo>());
         List<ClientInfo> clientUpdatedList=Collections.synchronizedList(new ArrayList<ClientInfo>());
         List<ClientInfo> clientDisconnectedList=Collections.synchronizedList(new ArrayList<ClientInfo>());
@@ -196,7 +201,12 @@ public class ProcessorsTest {
         @Override
         public void processorUpdated(ProcessorInfo pi) {
             if(instance.equals(pi.getInstance())) {
-                yprocUpdated.add(pi);
+                List<ProcessorInfo> l = yprocUpdated.get(pi.getName());
+                if(l==null) {
+                    l = new ArrayList<ProcessorInfo>();
+                    yprocUpdated.put(pi.getName(), l);
+                }
+                l.add(pi);
             }
         }
 
