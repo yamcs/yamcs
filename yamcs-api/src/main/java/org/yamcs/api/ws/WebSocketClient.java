@@ -97,19 +97,21 @@ public class WebSocketClient {
         }
 
         AuthenticationToken authToken = yprops.getAuthenticationToken();
-        if(authToken instanceof UsernamePasswordToken) {
-            String username = ((UsernamePasswordToken)authToken).getUsername();
-            String password = ((UsernamePasswordToken)authToken).getPasswordS();
-            if (username != null) {
-                String credentialsClear = username;
-                if (password != null)
-                    credentialsClear += ":" + password;
-                String credentialsB64 = new String(Base64.getEncoder().encode(credentialsClear.getBytes()));
-                String authorization = "Basic " + credentialsB64;
-                header.add(HttpHeaders.Names.AUTHORIZATION, authorization);
+        if(authToken!=null) {
+            if(authToken instanceof UsernamePasswordToken) {
+                String username = ((UsernamePasswordToken)authToken).getUsername();
+                String password = ((UsernamePasswordToken)authToken).getPasswordS();
+                if (username != null) {
+                    String credentialsClear = username;
+                    if (password != null)
+                        credentialsClear += ":" + password;
+                    String credentialsB64 = new String(Base64.getEncoder().encode(credentialsClear.getBytes()));
+                    String authorization = "Basic " + credentialsB64;
+                    header.add(HttpHeaders.Names.AUTHORIZATION, authorization);
+                }
+            } else {
+                throw new RuntimeException("authentication token of type "+authToken.getClass()+" not supported");
             }
-        } else {
-            throw new RuntimeException("authentication token of type "+authToken.getClass()+" not supported");
         }
         if(useProtobuf) {
             header.add(HttpHeaders.Names.ACCEPT, MediaType.PROTOBUF);
