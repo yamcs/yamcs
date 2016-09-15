@@ -1,6 +1,6 @@
 package org.yamcs.parameter;
 
-import static org.yamcs.api.Protocol.*;
+import static org.yamcs.api.atermis.Protocol.*;
 
 import java.util.List;
 
@@ -16,10 +16,10 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
 
 import org.yamcs.*;
-import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
+import org.yamcs.api.atermis.Protocol;
+import org.yamcs.api.atermis.YamcsClient;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;

@@ -5,8 +5,7 @@ import static org.junit.Assert.*;
 import java.net.URISyntaxException;
 
 import org.junit.Test;
-
-import org.yamcs.api.YamcsConnectData;
+import org.yamcs.api.atermis.YamcsConnectData;
 
 
 

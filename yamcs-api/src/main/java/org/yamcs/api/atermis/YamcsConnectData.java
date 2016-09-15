@@ -1,4 +1,4 @@
-package org.yamcs.api;
+package org.yamcs.api.atermis;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
+
+import org.yamcs.api.ConnectionParameters;
 
 
 public class YamcsConnectData extends ConnectionParameters implements Cloneable {

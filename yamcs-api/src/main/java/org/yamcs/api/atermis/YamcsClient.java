@@ -1,4 +1,4 @@
-package org.yamcs.api;
+package org.yamcs.api.atermis;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -10,12 +10,14 @@ import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.ClientProducer;
 import org.apache.activemq.artemis.api.core.client.ClientSession;
 import org.yamcs.YamcsException;
+import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.YamcsSession;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 
 import com.google.protobuf.MessageLite;
 
-import static org.yamcs.api.Protocol.*;
+import static org.yamcs.api.atermis.Protocol.*;
 
 /**
  * Collect here scenarios and corresponding methods for sending/receiving data:

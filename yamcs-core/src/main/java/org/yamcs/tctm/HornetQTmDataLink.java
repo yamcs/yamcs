@@ -8,10 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
+import org.yamcs.api.atermis.Protocol;
+import org.yamcs.api.atermis.YamcsClient;
 import org.yamcs.archive.PacketWithTime;
 
 import com.google.common.util.concurrent.AbstractService;

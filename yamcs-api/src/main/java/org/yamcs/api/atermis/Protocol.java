@@ -1,4 +1,4 @@
-package org.yamcs.api;
+package org.yamcs.api.atermis;
 
 
 import java.io.IOException;
@@ -20,6 +20,8 @@ import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.apache.activemq.artemis.utils.ActiveMQBufferInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.YamcsSession;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.utils.ActiveMQBufferOutputStream;
 

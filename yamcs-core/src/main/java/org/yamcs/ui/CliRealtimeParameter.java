@@ -1,7 +1,7 @@
 package org.yamcs.ui;
 
-import static org.yamcs.api.Protocol.DATA_TYPE_HEADER_NAME;
-import static org.yamcs.api.Protocol.decode;
+import static org.yamcs.api.atermis.Protocol.DATA_TYPE_HEADER_NAME;
+import static org.yamcs.api.atermis.Protocol.decode;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -17,11 +17,11 @@ import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.yamcs.YamcsException;
-import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
-import org.yamcs.api.YamcsConnectData;
 import org.yamcs.api.YamcsSession;
+import org.yamcs.api.atermis.Protocol;
+import org.yamcs.api.atermis.YamcsClient;
+import org.yamcs.api.atermis.YamcsConnectData;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;

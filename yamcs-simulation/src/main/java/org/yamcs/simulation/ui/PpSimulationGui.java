@@ -16,7 +16,7 @@ import java.awt.event.*;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsVersion;
-import org.yamcs.api.YamcsConnectData;
+import org.yamcs.api.atermis.YamcsConnectData;
 import org.yamcs.ui.yamcsmonitor.YamcsMonitor;
 
 public class PpSimulationGui implements ActionListener {

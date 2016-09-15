@@ -25,7 +25,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 import com.google.common.util.concurrent.AbstractService;
 
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
+import org.yamcs.api.atermis.YamcsClient;
 
 /**
  * Sends commands from the yarch stream to a {@link org.yamcs.tctm.TcUplinker }

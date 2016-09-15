@@ -11,7 +11,7 @@ import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
+import org.yamcs.api.atermis.YamcsClient;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.management.ManagementService;
 import org.yamcs.utils.YObjectLoader;

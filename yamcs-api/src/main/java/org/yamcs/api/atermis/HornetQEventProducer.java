@@ -1,4 +1,4 @@
-package org.yamcs.api;
+package org.yamcs.api.atermis;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -7,10 +7,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.api.atermis.YamcsClient;
-import org.yamcs.api.ws.WebSocketClient;
-import org.yamcs.api.ws.WebSocketClientCallback;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
+import org.yamcs.YamcsException;
+import org.yamcs.api.AbstractEventProducer;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.utils.TimeEncoding;
@@ -18,26 +16,28 @@ import org.yaml.snakeyaml.Yaml;
 
 
 /**
- * An EventProducer that publishes events over WebSocket
+ * An EventProducer that publishes events over HornetQ
  * <p>
  * By default, repeated message are detected and reduced, resulting in pseudo
  * events with a message like 'last event repeated X times'. This behaviour can
  * be turned off.
  */
-public class WebSocketEventProducer extends AbstractEventProducer implements WebSocketClientCallback {
+public class HornetQEventProducer extends AbstractEventProducer implements ConnectionListener {
     static final String CONF_REPEATED_EVENT_REDUCTION = "repeatedEventReduction";
     
-    WebSocketClient wsClient;
     YamcsClient yclient;
-    static Logger logger=LoggerFactory.getLogger(WebSocketEventProducer.class);
+    static Logger logger=LoggerFactory.getLogger(HornetQEventProducer.class);
     
     static final int MAX_QUEUE_SIZE=1000;
     ArrayBlockingQueue<Event> queue=new ArrayBlockingQueue<Event>(MAX_QUEUE_SIZE);
     
-    WebSocketEventProducer(YamcsConnectionProperties connProp) {
-        wsClient = new WebSocketClient(connProp, this);
+    HornetQEventProducer(YamcsConnectData ycd) {
+        yconnector = new YamcsConnector();
+        yconnector.addConnectionListener(this);
+        yconnector.connect(ycd);
+        address=Protocol.getEventRealtimeAddress(ycd.instance);
         
-        InputStream is=WebSocketEventProducer.class.getResourceAsStream("/event-producer.yaml");
+        InputStream is=HornetQEventProducer.class.getResourceAsStream("/event-producer.yaml");
         boolean repeatedEventReduction = true;
         if(is!=null) {
             Object o = new Yaml().load(is);
@@ -51,18 +51,43 @@ public class WebSocketEventProducer extends AbstractEventProducer implements Web
             }
         }
         if (repeatedEventReduction) setRepeatedEventReduction(true);
-        wsClient.connect();
     }
     
     
+    @Override
+    public void connecting(String url) { }
+
+    @Override
+    public void connected(String url) {
+        try {
+            yclient=yconnector.getSession().newClientBuilder().setDataProducer(true).build();
+            while(!queue.isEmpty()) {
+                yclient.sendData(address, ProtoDataType.EVENT, queue.poll());
+            }
+        } catch (HornetQException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void connectionFailed(String url, YamcsException exception) {
+    }
 
     @Override
     public void disconnected() {
     }
 
     @Override
+    public void log(String message) {
+    }
+
+    @Override
     public void close() {
-        wsClient.disconnect();
+        try {
+            yconnector.close();
+        } catch (HornetQException e) {
+            e.printStackTrace();
+        }
     }
     /* (non-Javadoc)
      * @see org.yamcs.api.EventProducer#sendEvent(org.yamcs.protobuf.Yamcs.Event)
@@ -70,10 +95,10 @@ public class WebSocketEventProducer extends AbstractEventProducer implements Web
     @Override
     public synchronized void sendEvent(Event event) {
         logger.debug("Sending Event: {}", event.getMessage());
-        if(wsClient.isConnected()) {
+        if(yconnector.isConnected()) {
             try {
                 yclient.sendData(address, ProtoDataType.EVENT, event);
-            } catch (ActiveMQException e) {
+            } catch (HornetQException e) {
                 logger.error("Failed to send event ",e);
             }
         } else {
@@ -83,17 +108,11 @@ public class WebSocketEventProducer extends AbstractEventProducer implements Web
     
     @Override
     public String toString() {
-        return WebSocketEventProducer.class.getName()+" connected to "+wsClient;
+        return HornetQEventProducer.class.getName()+" connected to "+yconnector.getUrl();
     }
     @Override
     public long getMissionTime() {       
         return TimeEncoding.currentInstant();
     }
-
-
-    @Override
-    public void onMessage(WebSocketSubscriptionData data) {
-        // TODO Auto-generated method stub
-        
-    }
+ 
 }

@@ -1,9 +1,9 @@
 package org.yamcs.hornetq;
 
-import static org.yamcs.api.Protocol.DATA_TO_HEADER_NAME;
-import static org.yamcs.api.Protocol.REPLYTO_HEADER_NAME;
-import static org.yamcs.api.Protocol.REQUEST_TYPE_HEADER_NAME;
-import static org.yamcs.api.Protocol.decode;
+import static org.yamcs.api.atermis.Protocol.DATA_TO_HEADER_NAME;
+import static org.yamcs.api.atermis.Protocol.REPLYTO_HEADER_NAME;
+import static org.yamcs.api.atermis.Protocol.REQUEST_TYPE_HEADER_NAME;
+import static org.yamcs.api.atermis.Protocol.decode;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,10 +16,10 @@ import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
-import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
+import org.yamcs.api.atermis.Protocol;
+import org.yamcs.api.atermis.YamcsClient;
 import org.yamcs.archive.ReplayListener;
 import org.yamcs.archive.ReplayServer;
 import org.yamcs.archive.YarchReplay;

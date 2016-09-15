@@ -2,7 +2,7 @@ package org.yamcs.archive;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.yamcs.api.Protocol.decode;
+import static org.yamcs.api.atermis.Protocol.decode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,9 +18,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.tctm.TcUplinkerAdapter;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.Protocol;
-import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
+import org.yamcs.api.atermis.Protocol;
+import org.yamcs.api.atermis.YamcsClient;
 import org.yamcs.cmdhistory.CommandHistoryRecorder;
 import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
 import org.yamcs.commanding.PreparedCommand;

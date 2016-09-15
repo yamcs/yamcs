@@ -5,8 +5,8 @@ import java.util.ArrayList;
 
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.yamcs.tctm.PpProviderAdapter;
-import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.atermis.Protocol;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterData.Builder;
 import org.yamcs.protobuf.Pvalue.ParameterValue;

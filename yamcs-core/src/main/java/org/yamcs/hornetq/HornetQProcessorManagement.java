@@ -1,11 +1,11 @@
 package org.yamcs.hornetq;
 
-import static org.yamcs.api.Protocol.HDR_EVENT_NAME;
-import static org.yamcs.api.Protocol.REPLYTO_HEADER_NAME;
-import static org.yamcs.api.Protocol.REQUEST_TYPE_HEADER_NAME;
-import static org.yamcs.api.Protocol.YPROCESSOR_CONTROL_ADDRESS;
-import static org.yamcs.api.Protocol.YPROCESSOR_INFO_ADDRESS;
-import static org.yamcs.api.Protocol.YPROCESSOR_STATISTICS_ADDRESS;
+import static org.yamcs.api.atermis.Protocol.HDR_EVENT_NAME;
+import static org.yamcs.api.atermis.Protocol.REPLYTO_HEADER_NAME;
+import static org.yamcs.api.atermis.Protocol.REQUEST_TYPE_HEADER_NAME;
+import static org.yamcs.api.atermis.Protocol.YPROCESSOR_CONTROL_ADDRESS;
+import static org.yamcs.api.atermis.Protocol.YPROCESSOR_INFO_ADDRESS;
+import static org.yamcs.api.atermis.Protocol.YPROCESSOR_STATISTICS_ADDRESS;
 
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.Message;
@@ -17,10 +17,10 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
 import org.yamcs.api.Constants;
-import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsSession;
+import org.yamcs.api.atermis.Protocol;
+import org.yamcs.api.atermis.YamcsClient;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
