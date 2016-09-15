@@ -38,7 +38,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 public class Privilege {
 
     public enum SystemPrivilege {
-        MayControlYProcessor,
+        MayControlProcessor,
         MayModifyCommandHistory,
         MayControlCommandQueue,
         MayCommandPayload,
@@ -201,6 +201,17 @@ public class Privilege {
         User user = getUser(authenticationToken);
         if(user == null) return false;
         return user.hasPrivilege(type, privilege);
+    }
+
+    public boolean hasPrivilege(final AuthenticationToken authenticationToken, Type type, SystemPrivilege privilege) {
+        if (!usePrivileges)     return true;
+        if(authenticationToken == null || authenticationToken.getPrincipal() == null) return false;
+        
+        if (isSystemToken(authenticationToken)) return true;
+
+        User user = getUser(authenticationToken);
+        if(user == null) return false;
+        return user.hasPrivilege(type, privilege.toString());
     }
 
     public static String getRealmName() {

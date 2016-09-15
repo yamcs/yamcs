@@ -21,6 +21,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
@@ -42,10 +43,10 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.UsernamePasswordToken;
+import org.yamcs.tctm.TmPacketDataLink;
 import org.yamcs.tctm.TmPacketSource;
 import org.yamcs.tctm.TmSink;
 import org.yamcs.utils.FileUtils;
-import org.yamcs.utils.HttpClient;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ManagementResource;
 import org.yamcs.xtce.SequenceContainer;
@@ -66,7 +67,7 @@ public abstract class AbstractIntegrationTest {
     YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190, "IntegrationTest");
     MyWsListener wsListener;
     WebSocketClient wsClient;
-    HttpClient httpClient;
+    RestClient restClient;
     UsernamePasswordToken admin = new UsernamePasswordToken("admin", "rootpassword");
     UsernamePasswordToken currentUser = null;
     RefMdbPacketGenerator packetGenerator;
@@ -74,19 +75,20 @@ public abstract class AbstractIntegrationTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-       // enableDebugging();
+        // enableDebugging();
         setupYamcs();
     }
 
     static void enableDebugging() {
         Logger.getLogger("org.yamcs").setLevel(Level.ALL);
     }
-    
+
     @Before
     public void before() throws InterruptedException {
 
         if(Privilege.getInstance().isEnabled())  {
             currentUser = admin;
+            ycp.setAuthenticationToke(currentUser);
         }
 
         packetProvider = PacketProvider.instance;
@@ -99,7 +101,7 @@ public abstract class AbstractIntegrationTest {
         wsClient.setUserAgent("it-junit");
         wsClient.connect();
         assertTrue(wsListener.onConnect.tryAcquire(5, TimeUnit.SECONDS));
-        httpClient = new HttpClient();
+        restClient = new RestClient(ycp, false);
         packetGenerator = packetProvider.mdbPacketGenerator;
         packetGenerator.setGenerationTime(TimeEncoding.INVALID_INSTANT);
 
@@ -115,7 +117,7 @@ public abstract class AbstractIntegrationTest {
         assertNotNull(cinfo);
         return cinfo;
     }
-    
+
 
 
     private static void setupYamcs() throws Exception {
@@ -143,7 +145,7 @@ public abstract class AbstractIntegrationTest {
 
         return b.build();
     }
-    
+
     protected NamedObjectList getSubscription(String... pfqname) {
         NamedObjectList.Builder b = NamedObjectList.newBuilder();
         for(String p: pfqname) {
@@ -164,7 +166,7 @@ public abstract class AbstractIntegrationTest {
         YamcsServer.stopArtemis();
     }
 
-    
+
     <T extends MessageLite> String toJson(T msg, Schema<T> schema) throws IOException {
         StringWriter writer = new StringWriter();
         JsonIOUtil.writeTo(writer, msg, schema, false);
@@ -177,14 +179,14 @@ public abstract class AbstractIntegrationTest {
         JsonIOUtil.mergeFrom(reader, msg, schema, false);
         return msg;
     }
-    
+
     //parses a series of messages (not really a list because they are not separated by "," and do not have start and end of list ([ ])
     <T extends MessageLite> List<T> allFromJson(String jsonstr, Schema schema) throws IOException {
-        
+
         StringReader reader = new StringReader(jsonstr);
         JsonParser parser = JsonIOUtil.DEFAULT_JSON_FACTORY.createParser(reader);
         JsonInput input = new JsonInput(parser);
-        
+
         List<T> r = new ArrayList<>();
         while(true) {
             JsonToken t = parser.nextToken();
@@ -224,7 +226,7 @@ public abstract class AbstractIntegrationTest {
         public void disconnected() {
             onDisconnect.release();
         }
-        
+
         @Override
         public void onInvalidIdentification(NamedObjectId id) {
             invalidIdentificationList.add(id);
@@ -274,7 +276,7 @@ public abstract class AbstractIntegrationTest {
             }
         }
     }
-    public static class PacketProvider extends AbstractService implements TmPacketSource, TmProcessor {
+    public static class PacketProvider extends AbstractService implements TmPacketDataLink, TmProcessor {
         static volatile PacketProvider instance;
         RefMdbPacketGenerator mdbPacketGenerator = new RefMdbPacketGenerator();
         TmSink tmSink;

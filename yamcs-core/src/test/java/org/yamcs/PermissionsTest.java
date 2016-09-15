@@ -31,7 +31,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
     public void testAuthenticationWebServices() throws Exception {
         UsernamePasswordToken wrongUser = new UsernamePasswordToken("baduser", "wrongpassword");
         currentUser = wrongUser;
-        String response = httpClient.doGetRequest("http://localhost:9190/api/user", null, currentUser);
+        String response = restClient.doRequest("http://localhost:9190/api/user", HttpMethod.GET, "").get();
         assertTrue(response.contains("Unauthorized"));
     }
 
@@ -48,7 +48,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
         url += "/REFMDB/SUBSYS1/IntegerPara1_1_6";
         url += "?start=2015-03-02T10:10:00&stop=2015-03-02T10:10:02&order=asc";
         
-        String response = httpClient.doGetRequest(url, null, currentUser);
+        String response = restClient.doRequest(url, HttpMethod.GET, "").get();
         ParameterData pdata = (fromJson(response, SchemaPvalue.ParameterData.MERGE)).build();
         assertNotNull(pdata);
         assertEquals(2, pdata.getParameterCount());
@@ -62,7 +62,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
             url = "http://localhost:9190/api/archive/IntegrationTest";
             url += stringId;
             url += "?start=2015-03-02T10:10:00&stop=2015-03-02T10:10:02&order=asc";
-            response = httpClient.doGetRequest(url, null, currentUser);
+            response = restClient.doRequest(url, HttpMethod.GET, "").get();
             pdata = (fromJson(response, SchemaPvalue.ParameterData.MERGE)).build();
             if(pdata.getParameterCount() == 0) {
                 throw new Exception("should get parameters");
@@ -84,14 +84,14 @@ public class PermissionsTest extends AbstractIntegrationTest {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
         IssueCommandRequest cmdreq = getCommand(5, "uint32_arg", "1000");
-        String resp = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/INT_ARG_TC",
-                HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE), currentUser);
+        String resp = restClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/INT_ARG_TC",
+                HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE)).get();
         assertTrue(resp.contains("binary"));
 
         // Command FLOAT_ARG_TC is denied
         cmdreq = getCommand(5, "float_arg", "-15", "double_arg", "0");
-        resp = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/FLOAT_ARG_TC",
-                HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE), currentUser);
+        resp = restClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/FLOAT_ARG_TC",
+                HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE)).get();
         assertTrue("Should get 404 when no permission (shouldn't be able to derive existence)", resp.contains("No such command"));
     }
 
@@ -103,13 +103,13 @@ public class PermissionsTest extends AbstractIntegrationTest {
         // Allowed to subscribe to Integer parameter from cache
         NamedObjectList validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6", "/REFMDB/SUBSYS1/IntegerPara1_1_7");
         BulkGetParameterValueRequest req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getListList()).build();
-        String response = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE), currentUser);
+        String response = restClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE)).get();
         assertTrue("{}", !response.contains("ForbiddenException"));
 
         // Denied to subscribe to Float parameter from cache
         validSubscrList = getSubscription("/REFMDB/SUBSYS1/FloatPara1_1_3", "/REFMDB/SUBSYS1/FloatPara1_1_2");
         req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getListList()).build();
-        response = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE), currentUser);
+        response = restClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE)).get();
         assertTrue("Permission should be denied", response.contains("ForbiddenException"));
     }
 
@@ -122,8 +122,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
         bulkPvals.addRequest(SetParameterValueRequest.newBuilder()
                 .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalPara1"))
                 .setValue(ValueHelper.newValue(5)));
-        HttpClient httpClient = new HttpClient();
-        String response = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/parameters/mset", HttpMethod.POST, toJson(bulkPvals.build(), SchemaRest.BulkSetParameterValueRequest.WRITE), currentUser);
+        String response = restClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/parameters/mset", HttpMethod.POST, toJson(bulkPvals.build(), SchemaRest.BulkSetParameterValueRequest.WRITE)).get();
         assertTrue("Permission should be denied", response.contains("ForbiddenException"));
     }
 
@@ -151,7 +150,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
         Commanding.CommandId commandId = Commanding.CommandId.newBuilder().setSequenceNumber(0).setOrigin("").setGenerationTime(0).build();
         Rest.UpdateCommandHistoryRequest.Builder updateHistoryRequest = Rest.UpdateCommandHistoryRequest.newBuilder().setCmdId(commandId);
         updateHistoryRequest.addHistoryEntry(Rest.UpdateCommandHistoryRequest.KeyValue.newBuilder().setKey("testKey1").setValue("testValue1"));
-        return httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/commandhistory/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST, toJson(updateHistoryRequest.build(), SchemaRest.UpdateCommandHistoryRequest.WRITE), currentUser);
+        return restClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/commandhistory/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST, toJson(updateHistoryRequest.build(), SchemaRest.UpdateCommandHistoryRequest.WRITE)).get();
     }
 
 

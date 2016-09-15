@@ -443,7 +443,6 @@ public class YProcessor extends AbstractService {
      * @return the first registered processor for the given instance 
      */
     public static YProcessor getFirstProcessor(String yamcsInstance) {
-        System.out.println("processors: "+instances);
         for(String k: instances.keySet()) {
             if(k.startsWith(yamcsInstance+".")) {
                 return instances.get(k);

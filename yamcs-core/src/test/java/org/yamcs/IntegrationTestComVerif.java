@@ -27,8 +27,8 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
         wsClient.sendRequest(wsr);
         
         IssueCommandRequest cmdreq = getCommand(7);
-        String resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/commands/REFMDB/SUBSYS1/CONT_VERIF_TC",
-                HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE), currentUser);
+        String resp = restClient.doRequest("http://localhost:9190/api/IntegrationTest/commands/REFMDB/SUBSYS1/CONT_VERIF_TC",
+                HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE)).get();
         assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
@@ -83,8 +83,8 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
         wsClient.sendRequest(wsr);
 
         IssueCommandRequest cmdreq = getCommand(4, "p1", "10", "p2", "20");
-        String resp = httpClient.doRequest("http://localhost:9190/api/IntegrationTest/commands/REFMDB/SUBSYS1/ALG_VERIF_TC",
-                HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE), currentUser);
+        String resp = restClient.doRequest("http://localhost:9190/api/IntegrationTest/commands/REFMDB/SUBSYS1/ALG_VERIF_TC",
+                HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE)).get();
         assertEquals("", resp);
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);

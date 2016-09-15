@@ -300,7 +300,7 @@ public class ManagementService implements ProcessorListener {
         } else {
             username = Privilege.getDefaultUser();
         }
-        if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.SYSTEM, "MayControlProcessor")) {
+        if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.SYSTEM, Privilege.SystemPrivilege.MayControlProcessor)) {
             if(cr.getPersistent()) {
                 log.warn("User "+username+" is not allowed to create persistent processors");
                 throw new YamcsException("Permission denied");

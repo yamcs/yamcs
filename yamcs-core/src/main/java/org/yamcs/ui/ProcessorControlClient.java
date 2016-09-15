@@ -112,7 +112,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         RestClient restClient = yconnector.getRestClient();
         //POST "/api/processors/:instance"
         String resource = "/processors/"+instance;
-        CompletableFuture<byte[]> cf = restClient.doProtoBufRequest(resource, HttpMethod.POST, cprb.build().toByteArray());
+        CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.POST, cprb.build().toByteArray());
         cf.whenComplete((result, exception) -> {
             if(exception!=null) {
                 yamcsMonitor.log("Exception creating processor: "+exception.getMessage());

@@ -1,6 +1,7 @@
 package org.yamcs;
 
 import static org.junit.Assert.*;
+import io.netty.handler.codec.http.HttpMethod;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +53,7 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
                 .addPacketname("*")
                 .build();
 
-        httpClient.doPostRequest("http://localhost:9190/api/processors/IntegrationTest", toJson(prequest, SchemaRest.CreateProcessorRequest.WRITE), currentUser);
+        restClient.doRequest("http://localhost:9190/api/processors/IntegrationTest", HttpMethod.POST, toJson(prequest, SchemaRest.CreateProcessorRequest.WRITE));
 
         cinfo = getClientInfo();
         assertEquals("testReplay", cinfo.getProcessorName());
@@ -77,7 +78,7 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
 
         //go back to realtime
         EditClientRequest pcrequest = EditClientRequest.newBuilder().setProcessor("realtime").build();
-        httpClient.doPostRequest("http://localhost:9190/api/clients/" + cinfo.getId(), toJson(pcrequest, SchemaRest.EditClientRequest.WRITE), currentUser);
+        restClient.doRequest("http://localhost:9190/api/clients/" + cinfo.getId(), HttpMethod.GET, toJson(pcrequest, SchemaRest.EditClientRequest.WRITE)).get();
 
         cinfo = getClientInfo();
         assertEquals("realtime", cinfo.getProcessorName());
@@ -89,11 +90,11 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
        
         String response ;
         
-        response = httpClient.doGetRequest("http://localhost:9190/api/archive/IntegrationTest/indexes/packets?start=2015-01-01T00:00:00", null, currentUser);
+        response = restClient.doRequest("http://localhost:9190/api/archive/IntegrationTest/indexes/packets?start=2015-01-01T00:00:00", HttpMethod.GET, "").get();
         List<ArchiveRecord> arlist = allFromJson(response, org.yamcs.protobuf.SchemaYamcs.ArchiveRecord.MERGE);
         assertEquals(4, arlist.size());
         
-        response = httpClient.doGetRequest("http://localhost:9190/api/archive/IntegrationTest/indexes/packets?start=2035-01-01T00:00:00", null, currentUser);
+        response = restClient.doRequest("http://localhost:9190/api/archive/IntegrationTest/indexes/packets?start=2035-01-01T00:00:00", HttpMethod.GET, "").get();
         assertTrue(response.isEmpty());
     }
 

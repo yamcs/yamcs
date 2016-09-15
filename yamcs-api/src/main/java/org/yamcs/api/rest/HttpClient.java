@@ -44,22 +44,24 @@ class HttpClient {
    
     final private long timeout;
     private long maxResponseLength=1024*1024;//max length of the expected response 
-    final boolean acceptProtobuf;
+    final boolean receiveProtobuf;
+    final boolean sendProtobuf;
     /**
      * 
      * @param timeout timeout in milliseconds for the synchronous requests
-     * @param useProtobuf - accept protobuf encoded message instead of json - this is done by passing an HTTP header "Accept: application/protobuf"
+     * @param useProtobuf - use protobuf for communication (both request and response). If false, use json messages.
      */
     public HttpClient(long timeout, boolean useProtobuf) {
         this.timeout = timeout;
-        this.acceptProtobuf = useProtobuf;
+        this.receiveProtobuf = useProtobuf;
+        this.sendProtobuf = useProtobuf;
     }
 
-    public CompletableFuture<byte[]> doAsyncRequest(String url, HttpMethod httpMethod, byte[] body, boolean bodyIsProtobuf, AuthenticationToken authToken) throws URISyntaxException {
+    public CompletableFuture<byte[]> doAsyncRequest(String url, HttpMethod httpMethod, byte[] body, AuthenticationToken authToken) throws URISyntaxException {
         AccumulatingChannelHandler channelHandler = new AccumulatingChannelHandler();
         
         ChannelFuture chf = setupChannel(url ,channelHandler);
-        HttpRequest request = setupRequest(url, httpMethod, body, bodyIsProtobuf, authToken);
+        HttpRequest request = setupRequest(url, httpMethod, body, authToken);
         CompletableFuture<byte[]> cf = new CompletableFuture<byte[]>();
         chf.addListener(f->{
             if(!f.isSuccess()) {
@@ -79,8 +81,14 @@ class HttpClient {
                     cf.completeExceptionally(new IOException("connection closed without providing an http response"));
                 } else {
                     if(channelHandler.responseStatus.code()!=HttpResponseStatus.OK.code()) {
-                        RestExceptionMessage msg= RestExceptionMessage.parseFrom(getByteArray(channelHandler.result));
-                        Exception exception = new YamcsApiException(msg.getType()+" : "+msg.getMsg());
+                        byte[] b =getByteArray(channelHandler.result);
+                        Exception exception;
+                        if(receiveProtobuf) {
+                            RestExceptionMessage msg= RestExceptionMessage.parseFrom(getByteArray(channelHandler.result));
+                            exception = new YamcsApiException(msg.getType()+" : "+msg.getMsg());
+                        } else {
+                            exception = new YamcsApiException(new String(b));
+                        }
                         cf.completeExceptionally(exception);
                     } else {
                         cf.complete(getByteArray(channelHandler.result));
@@ -115,7 +123,7 @@ class HttpClient {
         BulkChannelHandler channelHandler = new BulkChannelHandler(receiver);
         
         ChannelFuture chf = setupChannel(url ,channelHandler);
-        HttpRequest request = setupRequest(url, httpMethod, body.getBytes(), false, authToken);
+        HttpRequest request = setupRequest(url, httpMethod, body.getBytes(), authToken);
         CompletableFuture<Void> cf = new CompletableFuture<Void>();
         
         chf.addListener(f->{
@@ -165,7 +173,7 @@ class HttpClient {
     }
     
     
-    private HttpRequest setupRequest(String url, HttpMethod httpMethod, byte[] body, boolean bodyIsProtobuf, AuthenticationToken authToken) throws URISyntaxException {
+    private HttpRequest setupRequest(String url, HttpMethod httpMethod, byte[] body, AuthenticationToken authToken) throws URISyntaxException {
         uri = new URI(url);
         String host = uri.getHost() == null? "127.0.0.1" : uri.getHost();
         String fullUri = uri.getRawPath();
@@ -183,8 +191,8 @@ class HttpClient {
         request.headers().set(HttpHeaders.Names.HOST, host);
         request.headers().set(HttpHeaders.Names.CONTENT_LENGTH, content.readableBytes());
         request.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
-        if(acceptProtobuf)   request.headers().set(HttpHeaders.Names.ACCEPT, MediaType.PROTOBUF);
-        if(bodyIsProtobuf) request.headers().set(HttpHeaders.Names.CONTENT_TYPE, MediaType.PROTOBUF);
+        if(sendProtobuf) request.headers().set(HttpHeaders.Names.CONTENT_TYPE, MediaType.PROTOBUF);
+        if(receiveProtobuf)  request.headers().set(HttpHeaders.Names.ACCEPT, MediaType.PROTOBUF);
         
         if(authToken != null) {
             if(authToken instanceof UsernamePasswordToken) {

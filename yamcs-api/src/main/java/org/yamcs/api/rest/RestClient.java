@@ -27,7 +27,7 @@ public class RestClient {
     long timeout = 5000; //timeout in milliseconds
 
     final HttpClient httpClient;
-
+    final boolean useProtobuf;
  
     /** maximum size of the responses - this is not applicable to bulk requests */
     final static long MAX_RESPONSE_LENGTH = 1024*1024;
@@ -35,12 +35,28 @@ public class RestClient {
     /**max message length of an individual ProtoBuf message part of a bulk retrieval*/ 
     final static int MAX_MESSAGE_LENGTH = 1024*1024;
 
-
-    public RestClient(YamcsConnectionProperties connectionProperties) {
+    /**
+     * Creates a rest client that communicates either with protobuf or json
+     * 
+     * @param connectionProperties
+     * @param useProtobuf - set to true to use protobuf or false to use json
+     */
+    public RestClient(YamcsConnectionProperties connectionProperties, boolean useProtobuf) {
         this.connectionProperties = connectionProperties;
-        httpClient = new HttpClient(timeout, true);
+        httpClient = new HttpClient(timeout, useProtobuf);
         httpClient.setMaxResponseLength(MAX_RESPONSE_LENGTH);
+        this.useProtobuf = useProtobuf;
     }
+
+
+    /**
+     * Creates a rest client that communications using protobuf
+     * @param connectionProperties
+     */
+    public RestClient(YamcsConnectionProperties connectionProperties) {
+        this(connectionProperties, true);
+    }
+    
     /**
      * Retrieve the list of yamcs instances from the server. The operation will block until the list is received.
      * 
@@ -63,14 +79,13 @@ public class RestClient {
     }
     
     /**
-     * Performs a request with an empty body.
-     * See {@link #doRequest(String, HttpMethod, String) getComponentAt} 
+     * Performs a request with an empty body. Works using protobuf
      * @param resource
      * @param method
      * @return a the response body
      */
     public CompletableFuture<byte[]> doRequest(String resource, HttpMethod method) {
-        return doRequest(resource, method, "");
+        return doRequest(resource, method, new byte[0]);
     }
 
     /**
@@ -81,35 +96,43 @@ public class RestClient {
      * 
      * @param resource - the url and query parameters after the "/api" part.
      * @param method - http method to use
-     * @param body - the body of the request. Can be used even for the GET requests although stricly not allowed by the HTTP standard.
+     * @param body - the body of the request. Can be used even for the GET requests although strictly not allowed by the HTTP standard.
      * @return - the response body
      * @throws RuntimeException(URISyntaxException) thrown in case the resource specification is invalid
      */
-    public CompletableFuture<byte[]> doRequest(String resource, HttpMethod method, String body) {
+    public CompletableFuture<String> doRequest(String resource, HttpMethod method, String body) {
+        if(useProtobuf) {
+            throw new IllegalStateException("this method only works when usePotobuf is false");
+        }
         CompletableFuture<byte[]> cf;
         try {
-            cf = httpClient.doAsyncRequest(connectionProperties.getRestApiUrl()+resource, method, body.getBytes(), false, connectionProperties.getAuthenticationToken());
+            cf = httpClient.doAsyncRequest(connectionProperties.getRestApiUrl()+resource, method, body.getBytes(), connectionProperties.getAuthenticationToken());
         } catch (URISyntaxException e) { //throw a RuntimeException instead since if the code is not buggy it's unlikely to have this exception thrown
             throw new RuntimeException(e);
         }
-        return cf;
+        return cf.thenApply(b -> {
+                return new String(b);
+        });
+        
     }
 
     /**
      * Perform asynchronously the request indicated by the HTTP method and return the result as a future providing byte array.
      * 
-     * The "Content-Type" http header is set to "application/protobuf" so the body has to be protobuf encoded data
-     * The "Accept" HTTP header is also set to "application/protobuf" so to return expected is also protobuf data.
+     * To be used when performing protobuf requests.
      * 
      * @param resource
      * @param method
      * @param body protobuf encoded data.
      * @return future containing protobuf encoded data
      */
-    public CompletableFuture<byte[]> doProtoBufRequest(String resource, HttpMethod method, byte[] body) {
+    public CompletableFuture<byte[]> doRequest(String resource, HttpMethod method, byte[] body) {
+        if(!useProtobuf) {
+            throw new IllegalStateException("this method only works when usePotobuf is true");
+        }
         CompletableFuture<byte[]> cf;
         try {
-            cf = httpClient.doAsyncRequest(connectionProperties.getRestApiUrl()+resource, method, body, true, connectionProperties.getAuthenticationToken());
+            cf = httpClient.doAsyncRequest(connectionProperties.getRestApiUrl()+resource, method, body, connectionProperties.getAuthenticationToken());
         } catch (URISyntaxException e) { //throw a RuntimeException instead since if the code is not buggy it's unlikely to have this exception thrown
             throw new RuntimeException(e);
         }
@@ -151,7 +174,6 @@ public class RestClient {
             if(data.length>MAX_MESSAGE_LENGTH) {
                 throw new YamcsApiException("Message too long: received "+data.length+" max length: "+MAX_MESSAGE_LENGTH);
             }
-            System.out.println("--------receiving message readOffset: "+readOffset+" writeOffset: "+writeOffset+" data.length: "+data.length);
             
             int length = (data.length < buffer.length-writeOffset) ? data.length:buffer.length-writeOffset; 
             System.arraycopy(data, 0, buffer, writeOffset, length);
