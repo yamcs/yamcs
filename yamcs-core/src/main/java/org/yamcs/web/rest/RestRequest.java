@@ -367,6 +367,11 @@ public class RestRequest {
      * the (derived) source content type.
      */
     public MediaType deriveTargetContentType() {
+        return deriveTargetContentType(httpRequest);
+    }
+    
+    
+    public static MediaType deriveTargetContentType(HttpRequest httpRequest) {
         if (httpRequest.headers().contains(Names.ACCEPT)) {
             String acceptedContentType = httpRequest.headers().get(Names.ACCEPT);
             if (MediaType.JSON.is(acceptedContentType)) {
@@ -374,10 +379,16 @@ public class RestRequest {
             } else if (MediaType.PROTOBUF.is(acceptedContentType)) {
                 return MediaType.PROTOBUF;
             }
+        } else if (httpRequest.headers().contains(Names.CONTENT_TYPE)) {
+            String declaredContentType = httpRequest.headers().get(Names.CONTENT_TYPE);
+            if (MediaType.JSON.is(declaredContentType)) {
+                return MediaType.JSON;
+            } else if (MediaType.PROTOBUF.is(declaredContentType)) {
+                return MediaType.PROTOBUF;
+            }
         }
-
-        // Unsupported content type or wildcard, like */*, just use default
-        return deriveSourceContentType();
+        //if none of accept or content_type specified, just assume JSON
+        return MediaType.JSON;
     }
     
     public String getBaseURL() {

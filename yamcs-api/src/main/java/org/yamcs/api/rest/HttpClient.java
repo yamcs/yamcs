@@ -82,9 +82,10 @@ class HttpClient {
                 } else {
                     if(channelHandler.responseStatus.code()!=HttpResponseStatus.OK.code()) {
                         byte[] b =getByteArray(channelHandler.result);
+                        
                         Exception exception;
                         if(receiveProtobuf) {
-                            RestExceptionMessage msg= RestExceptionMessage.parseFrom(getByteArray(channelHandler.result));
+                            RestExceptionMessage msg= RestExceptionMessage.parseFrom(b);
                             exception = new YamcsApiException(msg.getType()+" : "+msg.getMsg());
                         } else {
                             exception = new YamcsApiException(new String(b));

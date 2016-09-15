@@ -102,7 +102,6 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
     @Test
     public void testIndexWithRestClient() throws Exception {
         generateData("2015-02-01T10:00:00", 3600);
-        RestClient restClient = new RestClient(new YamcsConnectionProperties("localhost", 9190, currentUser));
         List<ArchiveRecord> arlist = new ArrayList<ArchiveRecord>();
         
         CompletableFuture<Void> f = restClient.doBulkGetRequest("/archive/IntegrationTest/indexes/packets?start=2015-02-01T00:00:00", new BulkRestDataReceiver() {

@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.util.List;
 
 import org.junit.Test;
+import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
@@ -16,10 +17,10 @@ public class RestClientTest  extends AbstractIntegrationTest {
         YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190);
         
         RestClient restClient = new RestClient(ycp);
-        Exception e = null;
+        Throwable e = null;
         try {
             restClient.blockingGetYamcsInstances();
-        } catch (Exception e1) {
+        } catch (YamcsApiException e1) {
             e=e1;
         }
         assertNotNull(e);

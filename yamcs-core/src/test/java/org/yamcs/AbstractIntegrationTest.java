@@ -69,7 +69,6 @@ public abstract class AbstractIntegrationTest {
     WebSocketClient wsClient;
     RestClient restClient;
     UsernamePasswordToken admin = new UsernamePasswordToken("admin", "rootpassword");
-    UsernamePasswordToken currentUser = null;
     RefMdbPacketGenerator packetGenerator;
 
 
@@ -87,17 +86,14 @@ public abstract class AbstractIntegrationTest {
     public void before() throws InterruptedException {
 
         if(Privilege.getInstance().isEnabled())  {
-            currentUser = admin;
-            ycp.setAuthenticationToke(currentUser);
+            ycp.setAuthenticationToke(admin);
         }
 
         packetProvider = PacketProvider.instance;
         assertNotNull(packetProvider);
         wsListener = new MyWsListener();
-        if(currentUser != null)
-            wsClient = new WebSocketClient(ycp, wsListener, currentUser.getUsername(), currentUser.getPasswordS());
-        else
-            wsClient = new WebSocketClient(ycp, wsListener);
+        
+        wsClient = new WebSocketClient(ycp, wsListener);
         wsClient.setUserAgent("it-junit");
         wsClient.connect();
         assertTrue(wsListener.onConnect.tryAcquire(5, TimeUnit.SECONDS));

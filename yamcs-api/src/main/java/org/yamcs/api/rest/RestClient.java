@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.api.YamcsApiException;
@@ -64,7 +65,13 @@ public class RestClient {
      * @throws Exception 
      */
     public List<YamcsInstance> blockingGetYamcsInstances() throws Exception {
-        return getYamcsInstances().get(timeout, TimeUnit.MILLISECONDS);
+        try {
+            return getYamcsInstances().get(timeout, TimeUnit.MILLISECONDS);
+        } catch (ExecutionException e) {
+            Throwable t = e.getCause();
+            if(t instanceof Exception) throw (Exception)t;
+            else throw new RuntimeException(t);//should never happen
+        }
     }
 
     public CompletableFuture<List<YamcsInstance>> getYamcsInstances() {

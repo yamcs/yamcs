@@ -13,9 +13,11 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
+import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.UsernamePasswordToken;
+import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Router;
 import org.yamcs.web.websocket.WebSocketFrameHandler;
 
@@ -184,8 +186,14 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
     }
 
     private ChannelFuture sendUnauthorized(ChannelHandlerContext ctx, HttpRequest request) {
-        ByteBuf buf = Unpooled.copiedBuffer(HttpResponseStatus.UNAUTHORIZED.toString() + "\r\n", CharsetUtil.UTF_8);
-
+        ByteBuf buf;
+        MediaType mt = RestRequest.deriveTargetContentType(request);
+        if(mt==MediaType.PROTOBUF) {
+            RestExceptionMessage rem = RestExceptionMessage.newBuilder().setMsg(HttpResponseStatus.UNAUTHORIZED.toString()).build();
+            buf = Unpooled.copiedBuffer(rem.toByteArray());
+        } else {
+            buf = Unpooled.copiedBuffer(HttpResponseStatus.UNAUTHORIZED.toString() + "\r\n", CharsetUtil.UTF_8);
+        }
         HttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.UNAUTHORIZED, buf);
         setHeader(res, HttpHeaders.Names.WWW_AUTHENTICATE, "Basic realm=\"" + Privilege.getRealmName() + "\"");
 

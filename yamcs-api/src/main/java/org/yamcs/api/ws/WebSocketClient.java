@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
+import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.UsernamePasswordToken;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -44,48 +46,41 @@ public class WebSocketClient {
     private static final Logger log = LoggerFactory.getLogger(WebSocketClient.class);
 
     private final WebSocketClientCallback callback;
-    
+
     private EventLoopGroup group = new NioEventLoopGroup(1);
     private Channel nettyChannel;
     private String userAgent;
     private Integer timeoutMs=null;
     private AtomicBoolean enableReconnection = new AtomicBoolean(true);
     private AtomicInteger seqId = new AtomicInteger(1);
-    private String username;
-    private String password;
     YamcsConnectionProperties yprops;
     final boolean useProtobuf = true;
-    
+
     // Keeps track of sent subscriptions, so that we can do a resend when we get
     // an InvalidException on some of them :-(
     private Map<Integer, RequestResponsePair> requestResponsePairBySeqId = new ConcurrentHashMap<>();
 
-    
+
     public WebSocketClient(WebSocketClientCallback callback) {
         this(null, callback);
     }
-    public WebSocketClient(YamcsConnectionProperties yprops, WebSocketClientCallback callback) {
-        this(yprops, callback, null, null);
-    }
 
-    public WebSocketClient(YamcsConnectionProperties yprops, WebSocketClientCallback callback, String username, String password) {
+    public WebSocketClient(YamcsConnectionProperties yprops, WebSocketClientCallback callback) {
         this.yprops = yprops;
         this.callback = callback;
-        this.username = username;
-        this.password = password;
     }
-    
+
     public void setConnectionProperties(YamcsConnectionProperties yprops) {
         this.yprops=yprops;
     }
     public void setUserAgent(String userAgent) {
         this.userAgent = userAgent;
     }
-    
+
     public void setConnectionTimeoutMs(int timeoutMs) {
         this.timeoutMs = timeoutMs;
     }
-    
+
     public ChannelFuture connect() {
         return connect(false);
     }
@@ -101,13 +96,20 @@ public class WebSocketClient {
             header.add(HttpHeaders.Names.USER_AGENT, userAgent);
         }
 
-        if (username != null) {
-            String credentialsClear = username;
-            if (password != null)
-                credentialsClear += ":" + password;
-            String credentialsB64 = new String(Base64.getEncoder().encode(credentialsClear.getBytes()));
-            String authorization = "Basic " + credentialsB64;
-            header.add(HttpHeaders.Names.AUTHORIZATION, authorization);
+        AuthenticationToken authToken = yprops.getAuthenticationToken();
+        if(authToken instanceof UsernamePasswordToken) {
+            String username = ((UsernamePasswordToken)authToken).getUsername();
+            String password = ((UsernamePasswordToken)authToken).getPasswordS();
+            if (username != null) {
+                String credentialsClear = username;
+                if (password != null)
+                    credentialsClear += ":" + password;
+                String credentialsB64 = new String(Base64.getEncoder().encode(credentialsClear.getBytes()));
+                String authorization = "Basic " + credentialsB64;
+                header.add(HttpHeaders.Names.AUTHORIZATION, authorization);
+            }
+        } else {
+            throw new RuntimeException("authentication token of type "+authToken.getClass()+" not supported");
         }
         if(useProtobuf) {
             header.add(HttpHeaders.Names.ACCEPT, MediaType.PROTOBUF);
@@ -119,9 +121,9 @@ public class WebSocketClient {
         WebSocketClientHandler webSocketHandler = new WebSocketClientHandler(handshaker, this, callback);
 
         Bootstrap bootstrap = new Bootstrap()
-                .group(group)
-                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .channel(NioSocketChannel.class);
+        .group(group)
+        .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+        .channel(NioSocketChannel.class);
 
         if(timeoutMs!=null) {
             bootstrap = bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeoutMs);
@@ -156,9 +158,9 @@ public class WebSocketClient {
                 }
             }
         });
-        
+
         return future;
-        
+
     }
 
     /**
@@ -169,7 +171,7 @@ public class WebSocketClient {
     public void sendRequest(WebSocketRequest request) {
         group.execute(() -> doSendRequest(request, null));
     }
-    
+
     public void sendRequest(WebSocketRequest request, WebSocketResponseHandler responseHandler) {
         group.execute(() -> doSendRequest(request, responseHandler));
     }
@@ -187,7 +189,7 @@ public class WebSocketClient {
     RequestResponsePair getRequestResponsePair(int seqId) {
         return requestResponsePairBySeqId.get(seqId);
     }
-    
+
     void forgetUpstreamRequest(int seqId) {
         requestResponsePairBySeqId.remove(seqId);
     }
@@ -199,7 +201,7 @@ public class WebSocketClient {
     public boolean isUseProtobuf() {
         return useProtobuf;
     }
-   
+
     public void disconnect() {
         enableReconnection.set(false);
         log.info("WebSocket Client sending close");
@@ -217,7 +219,7 @@ public class WebSocketClient {
     public Future<?> shutdown() {
         return group.shutdownGracefully();
     }
-    
+
     static class RequestResponsePair {
         WebSocketRequest request;
         WebSocketResponseHandler responseHandler;
@@ -236,23 +238,23 @@ public class WebSocketClient {
                 System.out.println("Connected..........");
                 latch.countDown();
             }
-            
+
             @Override
             public void connectionFailed(Throwable t) {
                 System.out.println("failed.........."+t.getMessage());
             }
-            
+
             @Override
             public void onMessage(WebSocketSubscriptionData data) {
                 System.out.println("Got data " + data);
             }
         });
-        
+
         client.connect();
         latch.await();
-        
+
         client.sendRequest(new WebSocketRequest("time", "subscribe"));
-        
+
         Thread.sleep(5000);
         client.shutdown();
     }

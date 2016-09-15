@@ -17,8 +17,8 @@ public class YamcsConnectionProperties {
     private String host = "localhost";
     private int port = 8090;
     private String instance;
-    AuthenticationToken authToken;
-    String protocol;
+    private AuthenticationToken authToken;
+    private String protocol;
     
     boolean ssl;
     
@@ -120,13 +120,15 @@ public class YamcsConnectionProperties {
     public void setSsl(boolean ssl) {
         this.ssl = ssl;
     }
+    
     @Override
-    public YamcsConnectionProperties clone() {
-        try {
-            return (YamcsConnectionProperties)super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);//this can't happen
-        }
+    public YamcsConnectionProperties clone() {        
+        YamcsConnectionProperties ycp1 = new YamcsConnectionProperties( this.host, this.port, this.instance);
+        ycp1.ssl = this.ssl;
+        ycp1.protocol = this.protocol;
+        ycp1.authToken = this.authToken;
+
+        return ycp1;
     }
 
     public void setHost(String host) {
