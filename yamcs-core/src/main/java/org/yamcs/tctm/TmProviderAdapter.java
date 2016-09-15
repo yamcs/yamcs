@@ -13,7 +13,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  * Loads multiple TmPacketSource and inject all the packets into a defined stream
  * @author nm
  *
- *@deprecated please use {@link DataLinkInitialiser} instead
+ *@deprecated please use {@link TmDataLinkInitialiser} instead
  */
 @Deprecated
 public class TmProviderAdapter extends TmDataLinkInitialiser {

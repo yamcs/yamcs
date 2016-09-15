@@ -25,10 +25,11 @@ public class EventProducerTest extends YarchTestCase {
     
     @Test
     public void testEventProducer() throws Exception {
-        String url = "yamcs:///"+ydb.getName();
-        YamcsSession ys=YamcsSession.newBuilder().setConnectionParams(url).build();
-        WebSocketEventProducer ep= new WebSocketEventProducer(YamcsConnectData.parse(url));
+        String url = "http://localhost:8080/"+ydb.getName();
+        YamcsConnectionProperties connProp = YamcsConnectionProperties.parse(url);
+        WebSocketEventProducer ep= new WebSocketEventProducer(connProp);
         ep.setSource("testing");
+        
         
         YamcsClient yc=ys.newClientBuilder().setDataConsumer(Protocol.getEventRealtimeAddress(ydb.getName()),null).build();
         

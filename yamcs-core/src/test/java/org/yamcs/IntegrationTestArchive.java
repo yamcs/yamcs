@@ -9,10 +9,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.BulkRestDataReceiver;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.WebSocketRequest;
-import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;

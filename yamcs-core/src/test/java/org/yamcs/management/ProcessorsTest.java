@@ -26,7 +26,7 @@ import org.yamcs.security.AuthenticationToken;
 import org.yamcs.ui.ProcessorControlClient;
 import org.yamcs.ui.ProcessorListener;
 import org.yamcs.ui.YamcsConnector;
-import org.yamcs.api.ws.YamcsConnectionProperties;
+import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;

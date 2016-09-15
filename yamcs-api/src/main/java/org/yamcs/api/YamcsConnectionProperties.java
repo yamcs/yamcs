@@ -1,4 +1,4 @@
-package org.yamcs.api.ws;
+package org.yamcs.api;
 
 
 import java.io.File;

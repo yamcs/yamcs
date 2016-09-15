@@ -8,9 +8,10 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.TimeUnit;
 
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.ws.YamcsConnectionProperties;
+import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.protobuf.Rest.ListInstancesResponse;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 
@@ -47,7 +48,7 @@ public class RestClient {
      * @throws Exception 
      */
     public List<YamcsInstance> blockingGetYamcsInstances() throws Exception {
-        return getYamcsInstances().get();
+        return getYamcsInstances().get(timeout, TimeUnit.MILLISECONDS);
     }
 
     public CompletableFuture<List<YamcsInstance>> getYamcsInstances() {

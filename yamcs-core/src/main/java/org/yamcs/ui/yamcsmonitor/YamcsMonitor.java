@@ -8,7 +8,6 @@ import org.yamcs.api.*;
 import org.yamcs.api.YamcsConnectDialog.YamcsConnectDialogResult;
 import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.api.ws.WebSocketClientCallback;
-import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.YamcsManagement.*;

@@ -7,8 +7,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YamcsException;
-import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
@@ -19,7 +17,7 @@ import org.yaml.snakeyaml.Yaml;
 
 
 /**
- * An EventProducer that publishes events over ActiveMQ
+ * An EventProducer that publishes events over WebSocket
  * <p>
  * By default, repeated message are detected and reduced, resulting in pseudo
  * events with a message like 'last event repeated X times'. This behaviour can
@@ -35,9 +33,8 @@ public class WebSocketEventProducer extends AbstractEventProducer implements Web
     static final int MAX_QUEUE_SIZE=1000;
     ArrayBlockingQueue<Event> queue=new ArrayBlockingQueue<Event>(MAX_QUEUE_SIZE);
     
-    WebSocketEventProducer(YamcsConnectData ycd) {
-        wsClient=new WebSocketClient(this);
-        address=Protocol.getEventRealtimeAddress(ycd.instance);
+    WebSocketEventProducer(YamcsConnectionProperties connProp) {
+        wsClient = new WebSocketClient(connProp, this);
         
         InputStream is=WebSocketEventProducer.class.getResourceAsStream("/event-producer.yaml");
         boolean repeatedEventReduction = true;
@@ -53,6 +50,7 @@ public class WebSocketEventProducer extends AbstractEventProducer implements Web
             }
         }
         if (repeatedEventReduction) setRepeatedEventReduction(true);
+        wsClient.connect();
     }
     
     
@@ -97,5 +95,4 @@ public class WebSocketEventProducer extends AbstractEventProducer implements Web
         // TODO Auto-generated method stub
         
     }
- 
 }

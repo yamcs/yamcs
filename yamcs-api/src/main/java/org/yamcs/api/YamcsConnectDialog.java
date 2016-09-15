@@ -27,7 +27,6 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
 import org.yamcs.api.rest.RestClient;
-import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 import org.yamcs.security.AuthenticationToken;

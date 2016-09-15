@@ -3,10 +3,12 @@ package org.yamcs.archive;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.hornetq.HornetQRetrievalServer;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -34,16 +36,23 @@ public class ReplayServer extends AbstractService {
 
     final int MAX_REPLAYS=200;
     final String instance;
-    final boolean startArtemisService = false;
+    boolean startArtemisService = false;
 
-    AtomicInteger replayCount=new AtomicInteger();
+    AtomicInteger replayCount = new AtomicInteger();
     HornetQRetrievalServer artemisRetrievalServer;
-
-    public ReplayServer(String instance) {
+    static String CONFIG_KEY_startArtemisService = "startArtemisService";
+    
+    public ReplayServer(String instance ) {
         this.instance = instance;
     }
-
-    /**
+    
+    
+    public ReplayServer(String instance , Map<String, Object> config) {
+        this.instance = instance;
+        startArtemisService = YConfiguration.getBoolean(config, CONFIG_KEY_startArtemisService, false);
+    }
+        
+        /**
      * create a new packet replay object
      * @param replayRequest 
      * @param replayListener 

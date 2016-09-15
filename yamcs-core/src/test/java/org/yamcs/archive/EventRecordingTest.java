@@ -5,6 +5,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.yamcs.api.Protocol.decode;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -132,9 +134,12 @@ public class EventRecordingTest extends YarchTestCase {
         msgClient.close();
         
         
-        //and now try remotely using replay
-        ReplayServer replay=new ReplayServer(ydb.getName());
+        //and now try remotely using replay via artemis
+        Map<String, Object> config = new HashMap<>();
+        config.put(ReplayServer.CONFIG_KEY_startArtemisService, true);
+        ReplayServer replay = new ReplayServer(ydb.getName(), config);
         replay.startAsync();
+        
         msgClient=ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
         
         EventReplayRequest err=EventReplayRequest.newBuilder().build();
@@ -142,7 +147,7 @@ public class EventRecordingTest extends YarchTestCase {
                 .setEventRequest(err)
                 .setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build())
                 .build();
-        SimpleString replayServer=Protocol.getYarchRetrievalControlAddress(context.getDbName());
+        SimpleString replayServer = Protocol.getYarchRetrievalControlAddress(context.getDbName());
         StringMessage answer=(StringMessage) msgClient.executeRpc(replayServer, "createReplay", rr, StringMessage.newBuilder());
         
         SimpleString replayAddress=new SimpleString(answer.getMessage());

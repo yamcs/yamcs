@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.yamcs.api.Protocol.decode;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -101,7 +103,9 @@ public class CmdHistoryRecordingTest extends YarchTestCase {
        
         
         //and now try remotely using replay
-        ReplayServer replay=new ReplayServer(ydb.getName());
+        Map<String, Object> config = new HashMap<>();
+        config.put(ReplayServer.CONFIG_KEY_startArtemisService, true);
+        ReplayServer replay=new ReplayServer(ydb.getName(), config);
         replay.startAsync();
         
         YamcsSession ysession=YamcsSession.newBuilder().build();

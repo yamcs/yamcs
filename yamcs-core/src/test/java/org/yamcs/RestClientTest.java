@@ -5,8 +5,8 @@ import static org.junit.Assert.*;
 import java.util.List;
 
 import org.junit.Test;
+import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.RestClient;
-import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 
 public class RestClientTest  extends AbstractIntegrationTest {

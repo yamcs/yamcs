@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
+import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 
 import io.netty.bootstrap.Bootstrap;
