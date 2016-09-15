@@ -1,10 +1,10 @@
 package org.yamcs.hornetq;
 
-import static org.yamcs.api.atermis.Protocol.CMDQUEUE_CONTROL_ADDRESS;
-import static org.yamcs.api.atermis.Protocol.CMDQUEUE_INFO_ADDRESS;
-import static org.yamcs.api.atermis.Protocol.HDR_EVENT_NAME;
-import static org.yamcs.api.atermis.Protocol.REPLYTO_HEADER_NAME;
-import static org.yamcs.api.atermis.Protocol.REQUEST_TYPE_HEADER_NAME;
+import static org.yamcs.api.artemis.Protocol.CMDQUEUE_CONTROL_ADDRESS;
+import static org.yamcs.api.artemis.Protocol.CMDQUEUE_INFO_ADDRESS;
+import static org.yamcs.api.artemis.Protocol.HDR_EVENT_NAME;
+import static org.yamcs.api.artemis.Protocol.REPLYTO_HEADER_NAME;
+import static org.yamcs.api.artemis.Protocol.REQUEST_TYPE_HEADER_NAME;
 
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.Message;
@@ -17,8 +17,8 @@ import org.yamcs.YProcessor;
 import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.api.atermis.Protocol;
-import org.yamcs.api.atermis.YamcsClient;
+import org.yamcs.api.artemis.Protocol;
+import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;

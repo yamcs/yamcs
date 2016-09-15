@@ -13,8 +13,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.security.HornetQAuthManager;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.api.atermis.Protocol;
-import org.yamcs.api.atermis.YamcsClient;
+import org.yamcs.api.artemis.Protocol;
+import org.yamcs.api.artemis.YamcsClient;
 
 
 public class ProducerKillerTest {

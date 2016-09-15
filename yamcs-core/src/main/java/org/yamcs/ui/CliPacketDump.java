@@ -1,7 +1,7 @@
 package org.yamcs.ui;
 
-import static org.yamcs.api.atermis.Protocol.DATA_TYPE_HEADER_NAME;
-import static org.yamcs.api.atermis.Protocol.decode;
+import static org.yamcs.api.artemis.Protocol.DATA_TYPE_HEADER_NAME;
+import static org.yamcs.api.artemis.Protocol.decode;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -13,10 +13,10 @@ import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.api.atermis.Protocol;
-import org.yamcs.api.atermis.YamcsClient;
-import org.yamcs.api.atermis.YamcsConnectData;
+import org.yamcs.api.artemis.Protocol;
+import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
@@ -79,7 +79,7 @@ public class CliPacketDump {
         }
         if((args.length-argcnt)<3) printUsageAndExit("too few arguments");
 
-        YamcsConnectData ycd=YamcsConnectData.parse(args[argcnt++]);
+        YamcsConnectionProperties ycd=YamcsConnectionProperties.parse(args[argcnt++]);
         if(ycd.getInstance()==null) printUsageAndExit("The Yamcs URL does not contain the archive instance. Use something like yamcs://hostname/archiveInstance");
 
         TimeEncoding.setUp();

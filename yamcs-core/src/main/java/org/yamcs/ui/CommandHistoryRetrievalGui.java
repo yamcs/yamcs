@@ -1,7 +1,7 @@
 package org.yamcs.ui;
 
-import static org.yamcs.api.atermis.Protocol.DATA_TYPE_HEADER_NAME;
-import static org.yamcs.api.atermis.Protocol.decode;
+import static org.yamcs.api.artemis.Protocol.DATA_TYPE_HEADER_NAME;
+import static org.yamcs.api.artemis.Protocol.decode;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -29,12 +29,11 @@ import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.MessageHandler;
-import org.yamcs.api.ConnectionParameters;
 import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.api.atermis.Protocol;
-import org.yamcs.api.atermis.YamcsClient;
-import org.yamcs.api.atermis.YamcsConnectData;
+import org.yamcs.api.artemis.Protocol;
+import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
 import org.yamcs.protobuf.Yamcs.EndAction;
@@ -59,7 +58,7 @@ public class CommandHistoryRetrievalGui extends JFrame implements MessageHandler
 	ProgressMonitor progressMonitor;
 	private File outputFile;
 	private BufferedWriter writer;
-	ConnectionParameters connectionParams;
+	YamcsConnectionProperties connectionParams;
 	CommandHistoryFormatter cmdhistFormatter;
 	YamcsSession ysession;
 	YamcsClient yclient;
@@ -69,7 +68,7 @@ public class CommandHistoryRetrievalGui extends JFrame implements MessageHandler
 	 * @param parent
 	 * 
 	 */
-	public CommandHistoryRetrievalGui(ConnectionParameters connectionParams, Component parent) {
+	public CommandHistoryRetrievalGui(YamcsConnectionProperties connectionParams, Component parent) {
 		super("Save Command History");
 		this.connectionParams=connectionParams;
 		this.parent=parent;
@@ -135,15 +134,15 @@ public class CommandHistoryRetrievalGui extends JFrame implements MessageHandler
 			    writer=new BufferedWriter(new FileWriter(outputFile));
 			    cmdhistFormatter=new CommandHistoryFormatter(writer);
 
-			    YamcsConnectData ycd=(YamcsConnectData)connectionParams;
-			    ycd.instance=archiveInstance;
+			    YamcsConnectionProperties ycd = connectionParams;
+			    ycd.setInstance(archiveInstance);
 			    ysession=YamcsSession.newBuilder().setConnectionParams(ycd).build();
 			    yclient=ysession.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
 			    CommandHistoryReplayRequest chr = CommandHistoryReplayRequest.newBuilder().build();
 			    ReplayRequest.Builder rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT)
                     .setStart(startInstant).setStop(stopInstant).setCommandHistoryRequest(chr);
                
-			    StringMessage answer=(StringMessage) yclient.executeRpc(Protocol.getYarchRetrievalControlAddress(ycd.instance), "createReplay", rr.build(), StringMessage.newBuilder());
+			    StringMessage answer=(StringMessage) yclient.executeRpc(Protocol.getYarchRetrievalControlAddress(ycd.getInstance()), "createReplay", rr.build(), StringMessage.newBuilder());
 			    SimpleString replayAddress=new SimpleString(answer.getMessage());
                 
 			    yclient.dataConsumer.setMessageHandler(this);

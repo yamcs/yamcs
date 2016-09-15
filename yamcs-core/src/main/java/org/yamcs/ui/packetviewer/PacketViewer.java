@@ -1,6 +1,6 @@
 package org.yamcs.ui.packetviewer;
 
-import static org.yamcs.api.atermis.Protocol.decode;
+import static org.yamcs.api.artemis.Protocol.decode;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
@@ -76,9 +76,9 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.api.ConnectionParameters;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.atermis.Protocol;
-import org.yamcs.api.atermis.YamcsClient;
-import org.yamcs.api.atermis.YamcsConnectData;
+import org.yamcs.api.artemis.Protocol;
+import org.yamcs.api.artemis.YamcsClient;
+import org.yamcs.api.artemis.YamcsConnectData;
 import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterRequestManager;

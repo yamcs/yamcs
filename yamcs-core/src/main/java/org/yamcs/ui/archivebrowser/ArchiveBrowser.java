@@ -5,7 +5,7 @@ import org.yamcs.TimeInterval;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsConnectDialog;
-import org.yamcs.api.atermis.YamcsConnectData;
+import org.yamcs.api.artemis.YamcsConnectData;
 import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.IndexResult;

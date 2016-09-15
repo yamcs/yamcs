@@ -7,7 +7,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.api.atermis.YamcsClient;
+import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;

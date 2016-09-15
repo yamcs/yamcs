@@ -1,14 +1,19 @@
-package org.yamcs.api.atermis;
+package org.yamcs.api.artemis;
 
 import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
 import org.yamcs.api.AbstractEventProducer;
+import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.api.artemis.Protocol;
+import org.yamcs.api.artemis.YamcsClient;
+import org.yamcs.api.artemis.YamcsConnectData;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.utils.TimeEncoding;
@@ -22,22 +27,24 @@ import org.yaml.snakeyaml.Yaml;
  * events with a message like 'last event repeated X times'. This behaviour can
  * be turned off.
  */
-public class HornetQEventProducer extends AbstractEventProducer implements ConnectionListener {
+public class ArtemisEventProducer extends AbstractEventProducer implements ConnectionListener {
     static final String CONF_REPEATED_EVENT_REDUCTION = "repeatedEventReduction";
     
+    YamcsConnector yconnector;
+    SimpleString address;
     YamcsClient yclient;
-    static Logger logger=LoggerFactory.getLogger(HornetQEventProducer.class);
+    static Logger logger=LoggerFactory.getLogger(ArtemisEventProducer.class);
     
     static final int MAX_QUEUE_SIZE=1000;
     ArrayBlockingQueue<Event> queue=new ArrayBlockingQueue<Event>(MAX_QUEUE_SIZE);
     
-    HornetQEventProducer(YamcsConnectData ycd) {
+    ArtemisEventProducer(YamcsConnectionProperties ycd) {
         yconnector = new YamcsConnector();
         yconnector.addConnectionListener(this);
         yconnector.connect(ycd);
-        address=Protocol.getEventRealtimeAddress(ycd.instance);
+        address = Protocol.getEventRealtimeAddress(ycd.getInstance());
         
-        InputStream is=HornetQEventProducer.class.getResourceAsStream("/event-producer.yaml");
+        InputStream is=ArtemisEventProducer.class.getResourceAsStream("/event-producer.yaml");
         boolean repeatedEventReduction = true;
         if(is!=null) {
             Object o = new Yaml().load(is);
@@ -64,7 +71,7 @@ public class HornetQEventProducer extends AbstractEventProducer implements Conne
             while(!queue.isEmpty()) {
                 yclient.sendData(address, ProtoDataType.EVENT, queue.poll());
             }
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             e.printStackTrace();
         }
     }
@@ -85,7 +92,7 @@ public class HornetQEventProducer extends AbstractEventProducer implements Conne
     public void close() {
         try {
             yconnector.close();
-        } catch (HornetQException e) {
+        } catch (ActiveMQException e) {
             e.printStackTrace();
         }
     }
@@ -98,7 +105,7 @@ public class HornetQEventProducer extends AbstractEventProducer implements Conne
         if(yconnector.isConnected()) {
             try {
                 yclient.sendData(address, ProtoDataType.EVENT, event);
-            } catch (HornetQException e) {
+            } catch (ActiveMQException e) {
                 logger.error("Failed to send event ",e);
             }
         } else {
@@ -108,7 +115,7 @@ public class HornetQEventProducer extends AbstractEventProducer implements Conne
     
     @Override
     public String toString() {
-        return HornetQEventProducer.class.getName()+" connected to "+yconnector.getUrl();
+        return ArtemisEventProducer.class.getName()+" connected to "+yconnector.getUrl();
     }
     @Override
     public long getMissionTime() {       

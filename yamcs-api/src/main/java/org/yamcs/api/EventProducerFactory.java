@@ -9,7 +9,7 @@ import java.util.Queue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.api.atermis.YamcsConnectData;
+import org.yamcs.api.artemis.YamcsConnectData;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yaml.snakeyaml.Yaml;
 
@@ -80,23 +80,23 @@ public class EventProducerFactory {
             throw new RuntimeException("event-producer.yaml does not contain a property yamcsURL");
         } 
         String url=m.get("yamcsURL");
-        YamcsConnectData ycd;
+        YamcsConnectionProperties ycd;
         try {
             log.debug("Parsing a URL for an YamcsEventProducer: '{}'", url);
-            ycd = YamcsConnectData.parse(url);
+            ycd = YamcsConnectionProperties.parse(url);
         } catch (URISyntaxException e) {
             throw new RuntimeException("cannot parse yamcsURL", e);
         }
 
         if(instance==null) {
-            if (ycd.instance==null) throw new RuntimeException("yamcs instance has to be part of the URL");
+            if (ycd.getInstance()==null) throw new RuntimeException("yamcs instance has to be part of the URL");
         } else {
-            ycd.instance=instance;
+            ycd.setInstance(instance);
         }
         EventProducer producer = null;
-        if(ycd.host==null) {
+        if(ycd.getHost()==null) {
             try {
-                //try to load the stream event producer from yamcs core becasue probably we are running inside the yamcs server
+                //try to load the stream event producer from yamcs core because probably we are running inside the yamcs server
                 @SuppressWarnings("unchecked")
                 Class<EventProducer> ic=(Class<EventProducer>) Class.forName("org.yamcs.StreamEventProducer");
                 Constructor<EventProducer> constructor = ic.getConstructor(String.class);

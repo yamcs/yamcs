@@ -1,8 +1,8 @@
 package org.yamcs.archive;
 
 import static org.junit.Assert.*;
-import static org.yamcs.api.atermis.Protocol.DATA_TYPE_HEADER_NAME;
-import static org.yamcs.api.atermis.Protocol.decode;
+import static org.yamcs.api.artemis.Protocol.DATA_TYPE_HEADER_NAME;
+import static org.yamcs.api.artemis.Protocol.decode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,9 +22,9 @@ import org.yamcs.StreamInitializer;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.api.atermis.Protocol;
-import org.yamcs.api.atermis.YamcsClient;
-import org.yamcs.api.atermis.YamcsClient.ClientBuilder;
+import org.yamcs.api.artemis.Protocol;
+import org.yamcs.api.artemis.YamcsClient;
+import org.yamcs.api.artemis.YamcsClient.ClientBuilder;
 import org.yamcs.hornetq.PpTupleTranslator;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;

@@ -16,7 +16,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.api.atermis.YamcsClient;
+import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.usoctools.PayloadModel;

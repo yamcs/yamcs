@@ -1,4 +1,4 @@
-package org.yamcs.api.atermis;
+package org.yamcs.api.artemis;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -17,7 +17,7 @@ import org.yamcs.protobuf.Yamcs.StringMessage;
 
 import com.google.protobuf.MessageLite;
 
-import static org.yamcs.api.atermis.Protocol.*;
+import static org.yamcs.api.artemis.Protocol.*;
 
 /**
  * Collect here scenarios and corresponding methods for sending/receiving data:

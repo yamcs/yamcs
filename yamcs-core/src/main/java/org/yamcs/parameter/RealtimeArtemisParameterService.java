@@ -1,6 +1,6 @@
 package org.yamcs.parameter;
 
-import static org.yamcs.api.atermis.Protocol.*;
+import static org.yamcs.api.artemis.Protocol.*;
 
 import java.util.List;
 
@@ -18,8 +18,8 @@ import com.google.common.collect.Maps;
 import org.yamcs.*;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.api.atermis.Protocol;
-import org.yamcs.api.atermis.YamcsClient;
+import org.yamcs.api.artemis.Protocol;
+import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;

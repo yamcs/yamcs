@@ -1,4 +1,4 @@
-package org.yamcs.api.atermis;
+package org.yamcs.api.artemis;
 
 import java.io.File;
 import java.io.FileInputStream;

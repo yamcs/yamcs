@@ -21,7 +21,7 @@ import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.hornetq.StreamAdapter;
 import org.yamcs.hornetq.TupleTranslator;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.api.atermis.YamcsClient;
+import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.yarch.YarchTestCase;
 
 public class StreamAdapterTest extends YarchTestCase {

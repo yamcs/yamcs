@@ -18,6 +18,7 @@ public class YamcsConnectionProperties {
     private int port = 8090;
     private String instance;
     AuthenticationToken authToken;
+    String protocol;
     
     boolean ssl;
     
@@ -159,13 +160,16 @@ public class YamcsConnectionProperties {
      * @throws URISyntaxException
      */
     public static YamcsConnectionProperties parse(String uri) throws  URISyntaxException {
-        YamcsConnectionProperties ycd=new YamcsConnectionProperties();
+        YamcsConnectionProperties ycd = new YamcsConnectionProperties();
         URI u = new URI(uri);
-        if(!"http".equals(u.getScheme()) && !"https".equals(u.getScheme())) {
-            throw new URISyntaxException(uri, "only http or https scheme allowed");
+        
+        if(!"yamcs".equals(u.getScheme()) && !"yamcss".equals(u.getScheme()) && !"http".equals(u.getScheme()) && !"https".equals(u.getScheme())) {
+            throw new URISyntaxException(uri, "only http, https yamcs or yamcss scheme allowed");
         }
-        if("https".equals(u.getScheme())) {
-            ycd.ssl=true;
+        ycd.protocol = u.getScheme();
+        
+        if("https".equals(u.getScheme()) || "yamcsss".equals(u.getScheme())) {
+            ycd.ssl = true;
         }
         if(u.getPort()!=-1) ycd.port=u.getPort();
         ycd.host=u.getHost();
@@ -185,6 +189,22 @@ public class YamcsConnectionProperties {
         if(pc.length>1) ycd.instance=pc[1];
 
         return ycd;
+    }
+
+    public String getUrl() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("protocol://");
+        if(host!=null) {
+            sb.append(host);
+            if(port!=-1) {
+                sb.append(":"+port);
+            }
+        }
+        sb.append("/");
+        if(instance!=null) {
+            sb.append(instance);
+        }
+        return sb.toString();
     }
 
 }

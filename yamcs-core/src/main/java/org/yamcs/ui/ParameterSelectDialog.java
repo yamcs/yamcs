@@ -33,11 +33,9 @@ import org.apache.activemq.artemis.utils.ActiveMQBufferInputStream;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsConnectDialog;
-import org.yamcs.api.YamcsConnectDialog.YamcsConnectDialogResult;
-import org.yamcs.api.atermis.Protocol;
-import org.yamcs.api.atermis.YamcsClient;
-import org.yamcs.api.atermis.YamcsConnectData;
+import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.api.artemis.Protocol;
+import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest;
 import org.yamcs.xtce.Parameter;
@@ -59,7 +57,7 @@ import org.yamcs.xtce.XtceDb;
  */
 public class ParameterSelectDialog extends JDialog implements ActionListener, KeyListener, TreeSelectionListener {
     private static final long serialVersionUID = 201212121400L;
-    private YamcsConnectData connectData;
+    private YamcsConnectionProperties connectData;
     private XtceDb xtcedb;
     private final JTree treeView;
     private JLabel errorLabel;
@@ -68,11 +66,11 @@ public class ParameterSelectDialog extends JDialog implements ActionListener, Ke
     private List<ParameterSelectDialogListener> listeners;
     ListIndexBar bar;
 
-    public ParameterSelectDialog(JFrame parent, YamcsConnectData ycd) {
+    public ParameterSelectDialog(JFrame parent, YamcsConnectionProperties ycd) {
 	this( parent, ycd, null );
     }
 
-    public ParameterSelectDialog(JFrame parent, YamcsConnectData ycd, XtceDb db) {
+    public ParameterSelectDialog(JFrame parent, YamcsConnectionProperties ycd, XtceDb db) {
 	super(parent, "Parameter Selection", true);
 	xtcedb = db;
 	connectData = ycd;

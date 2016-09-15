@@ -1,7 +1,7 @@
 package org.yamcs.ui;
 
-import static org.yamcs.api.atermis.Protocol.DATA_TYPE_HEADER_NAME;
-import static org.yamcs.api.atermis.Protocol.decode;
+import static org.yamcs.api.artemis.Protocol.DATA_TYPE_HEADER_NAME;
+import static org.yamcs.api.artemis.Protocol.decode;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -47,12 +47,11 @@ import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.yamcs.YamcsException;
-import org.yamcs.api.ConnectionParameters;
 import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.api.atermis.Protocol;
-import org.yamcs.api.atermis.YamcsClient;
-import org.yamcs.api.atermis.YamcsConnectData;
+import org.yamcs.api.artemis.Protocol;
+import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
@@ -94,7 +93,7 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
     ArrayList<String> recentFiles;
     JPopupMenu recentPopup;
     JButton recentButton;
-    ConnectionParameters connectionParams;
+    YamcsConnectionProperties connectionParams;
     private ParameterFormatter parameterFormatter;
     ParameterSelectDialog selectDialog;
 
@@ -105,7 +104,7 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
      * Creates a new window that requests parameter deliveries
      * @param parent
      */
-    public ParameterRetrievalGui(ConnectionParameters connectionParameters, Component parent) {
+    public ParameterRetrievalGui(YamcsConnectionProperties connectionParameters, Component parent) {
         super("Parameter Retrieval");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
@@ -120,7 +119,7 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
             }
         }
 
-        this.connectionParams=connectionParameters;
+        this.connectionParams = connectionParameters;
         this.parent=parent;
 
         final String home = System.getProperties().getProperty("user.home");
@@ -280,10 +279,10 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
      * Uses blocking method to get list of parameters using a hierarchical display.
      */
     private void selectParameters() {
-        YamcsConnectData ycd=(YamcsConnectData)connectionParams;
-        ycd.instance=archiveInstance;
+        YamcsConnectionProperties ycd = connectionParams.clone();
+        ycd.setInstance(archiveInstance);
         if( selectDialog == null ) {
-            selectDialog = new ParameterSelectDialog(this,ycd);
+            selectDialog = new ParameterSelectDialog(this, ycd);
             selectDialog.addListener( this );
         }
         List<String> params = selectDialog.showDialog();
@@ -500,7 +499,7 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
             return;
         }
         setVisible(false);
-        progressMonitor=new ProgressMonitor(parent,"Saving parameters","0 lines saved",0,(int)((stop-start)/1000));
+        progressMonitor = new ProgressMonitor(parent,"Saving parameters","0 lines saved",0,(int)((stop-start)/1000));
         try {
             writer=new BufferedWriter(new FileWriter(fileNameTextField.getText()));
             parameterFormatter=new ParameterFormatter(writer, paramList);
@@ -520,8 +519,8 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
             parameterFormatter.setAllParametersPresent(printFullLines.isSelected());
             parameterFormatter.setKeepValues(keepValues.isSelected());
 
-            YamcsConnectData ycd = (YamcsConnectData)connectionParams;
-            ycd.instance = archiveInstance;
+            YamcsConnectionProperties ycd = connectionParams.clone();
+            ycd.setInstance(archiveInstance);
 
             ysession = YamcsSession.newBuilder().setConnectionParams(ycd).build();
             yclient = ysession.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
@@ -529,7 +528,7 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
             ReplayRequest rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT)
                     .setParameterRequest(prr).setStart(start).setStop(stop).setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build()).build();
 
-            StringMessage answer=(StringMessage) yclient.executeRpc(Protocol.getReplayControlAddress(ycd.instance), "createReplay", rr, StringMessage.newBuilder());
+            StringMessage answer=(StringMessage) yclient.executeRpc(Protocol.getReplayControlAddress(ycd.getInstance()), "createReplay", rr, StringMessage.newBuilder());
             SimpleString replayAddress=new SimpleString(answer.getMessage());
 
             yclient.dataConsumer.setMessageHandler(this);

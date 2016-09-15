@@ -10,8 +10,8 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsSession;
-import org.yamcs.api.atermis.Protocol;
-import org.yamcs.api.atermis.YamcsClient;
+import org.yamcs.api.artemis.Protocol;
+import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.archive.PacketWithTime;
 
 import com.google.common.util.concurrent.AbstractService;

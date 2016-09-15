@@ -1,4 +1,4 @@
-package org.yamcs.api;
+package org.yamcs.api.artemis;
 
 import static org.junit.Assert.assertEquals;
 
@@ -7,17 +7,19 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.atermis.Protocol;
-import org.yamcs.api.atermis.YamcsClient;
+import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.api.YamcsSession;
+import org.yamcs.api.artemis.Protocol;
+import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.yarch.YarchTestCase;
 
-public class EventProducerTest extends YarchTestCase {
+public class ArtemisEventProducerTest extends YarchTestCase {
     static EmbeddedActiveMQ hornetServer;
     
     @BeforeClass
     public static void setUpBeforeClass1() throws Exception {
-        hornetServer=YamcsServer.setupArtemis();
+        hornetServer = YamcsServer.setupArtemis();
     }
 
     @AfterClass
@@ -27,13 +29,13 @@ public class EventProducerTest extends YarchTestCase {
     
     @Test
     public void testEventProducer() throws Exception {
-        String url = "http://localhost:8080/"+ydb.getName();
+        String url = "yamcs:///"+ydb.getName();
         YamcsConnectionProperties connProp = YamcsConnectionProperties.parse(url);
-        WebSocketEventProducer ep= new WebSocketEventProducer(connProp);
+        ArtemisEventProducer ep= new ArtemisEventProducer(connProp);
         ep.setSource("testing");
+        YamcsSession ys = YamcsSession.newBuilder().setConnectionParams(connProp).build();
         
-        
-        YamcsClient yc=ys.newClientBuilder().setDataConsumer(Protocol.getEventRealtimeAddress(ydb.getName()),null).build();
+        YamcsClient yc = ys.newClientBuilder().setDataConsumer(Protocol.getEventRealtimeAddress(ydb.getName()),null).build();
         
         ep.sendError("type1", "msgError");
         ep.sendWarning("type1", "msgWarning");
@@ -58,7 +60,7 @@ public class EventProducerTest extends YarchTestCase {
         assertEquals("msgInfo", ev.getMessage());
         assertEquals(2, ev.getSeqNumber());
         
-        ((WebSocketEventProducer) ep).close();
+        ep.close();
         
         ys.close();
     }

@@ -7,7 +7,7 @@ import org.yamcs.yarch.TupleDefinition;
 import com.google.protobuf.ByteString;
 
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.atermis.Protocol;
+import org.yamcs.api.artemis.Protocol;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.tctm.TmProviderAdapter;
 

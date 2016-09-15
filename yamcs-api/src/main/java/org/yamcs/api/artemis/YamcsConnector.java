@@ -1,10 +1,9 @@
-package org.yamcs.api.atermis;
+package org.yamcs.api.artemis;
 
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -17,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
@@ -32,7 +32,7 @@ public class YamcsConnector implements SessionFailureListener {
     CopyOnWriteArrayList<ConnectionListener> connectionListeners=new CopyOnWriteArrayList<ConnectionListener>();
     volatile boolean connected, connecting;
     protected YamcsSession yamcsSession;
-    protected YamcsConnectData connectionParams;
+    protected YamcsConnectionProperties connectionParams;
     static Logger log= LoggerFactory.getLogger(YamcsConnector.class);
     private boolean retry = true;
     private boolean reconnecting = false;
@@ -62,7 +62,7 @@ public class YamcsConnector implements SessionFailureListener {
             return instances;
         } catch ( ActiveMQException hqe ) {
             // If we don't have permissions, treat as a failed connection
-            if( hqe.getType() == HornetQExceptionType.SECURITY_EXCEPTION || hqe.getType() == HornetQExceptionType.SESSION_CREATION_REJECTED ) {
+            if( hqe.getType() == ActiveMQExceptionType.SECURITY_EXCEPTION || hqe.getType() == ActiveMQExceptionType.SESSION_CREATION_REJECTED ) {
                 String message = "Connection failed with security exception: " + hqe.getMessage();
                 log.warn( message );
                 if( connected ) {
@@ -82,7 +82,7 @@ public class YamcsConnector implements SessionFailureListener {
         return null;
     }
 
-    public Future<String> connect(YamcsConnectData cp) {
+    public Future<String> connect(YamcsConnectionProperties cp) {
         this.connectionParams=cp;
         return doConnect();
     }
@@ -123,7 +123,7 @@ public class YamcsConnector implements SessionFailureListener {
                         } catch (YamcsApiException e) {
                             // If we don't have permissions, treat as a failed connection and don't re-try
                             Throwable cause = e.getCause();
-                            if( cause != null && cause instanceof HornetQException && ((HornetQException)cause).getType() == HornetQExceptionType.SECURITY_EXCEPTION ) {
+                            if( cause != null && cause instanceof ActiveMQException && ((ActiveMQException)cause).getType() == ActiveMQExceptionType.SECURITY_EXCEPTION ) {
                                 String message = "Connection failed with security exception: " + e.getMessage();
                                 log.warn( message );
                                 if( connected ) {
@@ -186,17 +186,22 @@ public class YamcsConnector implements SessionFailureListener {
     }
 
     @Override
-    public void connectionFailed(HornetQException e, boolean failedOver) {
+    public void connectionFailed(ActiveMQException e, boolean failedOver, String scaleDownTargetNodeID) {
+        connectionFailed(e, failedOver);
+    }
+    
+    @Override
+    public void connectionFailed(ActiveMQException e, boolean failedOver) {
         connected=false;
         for(ConnectionListener cl:connectionListeners) {
             cl.disconnected();
         }
         log.warn("Connection to Yamcs lost: ", e);
         doConnect();
+        
     }
-
     @Override
-    public void beforeReconnect(HornetQException e) {
+    public void beforeReconnect(ActiveMQException e) {
         //should not be called because reconnection is not configured in the factory
         //log.warn("Before reconnect: ", creatorContext);
         log.warn("Before reconnect: ", e);
@@ -207,15 +212,16 @@ public class YamcsConnector implements SessionFailureListener {
         return yamcsSession;
     }
 
-    public YamcsConnectData getConnectionParams() {
+    public YamcsConnectionProperties getConnectionParams() {
         return connectionParams;
     }
 
-    public void close() throws HornetQException {
+    public void close() throws ActiveMQException {
         yamcsSession.close();
     }
 
     public ExecutorService getExecutor() {
         return executor;
     }
+  
 }
