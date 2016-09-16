@@ -85,8 +85,9 @@ public class HttpServer {
 
     public void run() throws InterruptedException {
         bossGroup = new NioEventLoopGroup(1);
+        
         //Note that while the thread pools created with this method are unbounded, netty will limit the number
-        //of workers to 2*number of CPU
+        //of workers to 2*number of CPU cores
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
         ServerBootstrap bootstrap = new ServerBootstrap();

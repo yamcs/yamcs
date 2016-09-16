@@ -103,7 +103,7 @@ public abstract class RestHandler extends RouteHandler {
         }
     }
 
-    static void sendRestError(RestRequest req, HttpResponseStatus status, Throwable t) {
+    protected static void sendRestError(RestRequest req, HttpResponseStatus status, Throwable t) {
         MediaType contentType = req.deriveTargetContentType();
         ChannelHandlerContext ctx = req.getChannelHandlerContext();
         if (MediaType.JSON.equals(contentType)) {
@@ -203,14 +203,14 @@ public abstract class RestHandler extends RouteHandler {
     }
     
     protected static NamedObjectId verifyParameterId(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
-        return verifyParameterWithId(req, mdb, pathName).requestedId;
+        return verifyParameterWithId(req, mdb, pathName).getRequestedId();
     }
     
     protected static Parameter verifyParameter(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
-        return verifyParameterWithId(req, mdb, pathName).item;
+        return verifyParameterWithId(req, mdb, pathName).getItem();
     }
 
-    private static NameDescriptionWithId<Parameter> verifyParameterWithId(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
+    protected static NameDescriptionWithId<Parameter> verifyParameterWithId(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
             throw new NotFoundException(req, "No such parameter (missing namespace?)");
@@ -360,13 +360,21 @@ public abstract class RestHandler extends RouteHandler {
         return Privilege.getInstance().hasPrivilege(req.getAuthToken(), type, privilege);
     }
     
-    private static class NameDescriptionWithId<T extends NameDescription> {
-        T item;
-        NamedObjectId requestedId;
+    protected static class NameDescriptionWithId<T extends NameDescription> {
+        final private T item;
+        private final NamedObjectId requestedId;
         
         NameDescriptionWithId(T item, NamedObjectId requestedId) {
             this.item = item;
             this.requestedId = requestedId;
+        }
+
+        public T getItem() {
+            return item;
+        }
+
+        public NamedObjectId getRequestedId() {
+            return requestedId;
         }
     }
 }

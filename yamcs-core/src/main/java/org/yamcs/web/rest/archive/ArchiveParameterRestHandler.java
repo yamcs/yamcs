@@ -6,6 +6,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +45,6 @@ import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
 
 public class ArchiveParameterRestHandler extends RestHandler {
-    
     private static final Logger log = LoggerFactory.getLogger(ArchiveParameterRestHandler.class);
 
     /**
@@ -52,9 +52,13 @@ public class ArchiveParameterRestHandler extends RestHandler {
      * Final API unstable.
      * <p>
      * If no query parameters are defined, the series covers *all* data.
+     * @param req
+     *        rest request
+     * @return 
+     * @throws HttpException 
      */
     @Route(path = "/api/archive/:instance/parameters/:name*/samples")
-    public ChannelFuture getParameterSamples(RestRequest req) throws HttpException {
+    public CompletableFuture<ChannelFuture> getParameterSamples(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         
         XtceDb mdb = XtceDbFactory.getInstance(instance);
@@ -77,48 +81,58 @@ public class ArchiveParameterRestHandler extends RestHandler {
         
         RestDownsampler sampler = new RestDownsampler(rr.getStop());
         
-        RestReplays.replayAndWait(instance, req.getAuthToken(), rr.build(), new RestReplayListener() {
-
+        CompletableFuture<ChannelFuture> completableFuture = new CompletableFuture<ChannelFuture>();
+        
+        RestReplays.replay(instance, req.getAuthToken(), rr.build(), new RestReplayListener() {
             @Override
             public void onParameterData(List<ParameterValueWithId> params) {
                 for (ParameterValueWithId pvalid : params) {
                     sampler.process(pvalid.getParameterValue());
                 }
             }
+            
+            @Override
+            public void replayFinished() {
+                TimeSeries.Builder series = TimeSeries.newBuilder();
+                for (Sample s : sampler.collect()) {
+                    series.addSample(ArchiveHelper.toGPBSample(s));
+                }
+                try {
+                    ChannelFuture cf = sendOK(req, series.build(), SchemaPvalue.TimeSeries.WRITE);
+                    completableFuture.complete(cf);                    
+                } catch (HttpException e) { //error encoding data 
+                    completableFuture.completeExceptionally(e);
+                }
+            }
         });
-        
-        TimeSeries.Builder series = TimeSeries.newBuilder();
-        for (Sample s : sampler.collect()) {
-            series.addSample(ArchiveHelper.toGPBSample(s));
-        }
-        
-        return sendOK(req, series.build(), SchemaPvalue.TimeSeries.WRITE);
+        return completableFuture;
     }
     
     
     @Route(path = "/api/archive/:instance/parameters/:name*")
-    public ChannelFuture listParameterHistory(RestRequest req) throws HttpException {
+    public CompletableFuture<ChannelFuture> listParameterHistory(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        NamedObjectId requestedId = verifyParameterId(req, mdb, req.getRouteParam("name"));
-        Parameter p = mdb.getParameter(requestedId);
+        String pathName = req.getRouteParam("name");
+        
+        NameDescriptionWithId<Parameter> p = verifyParameterWithId(req, mdb, pathName);
         
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
         
         
-        ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, p, true);
-
+        ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, p.getItem(), true);
+        CompletableFuture<ChannelFuture> completableFuture = new CompletableFuture<ChannelFuture>();
+        
         if (req.asksFor(MediaType.CSV)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
             try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new ByteBufOutputStream(buf)))) {
-                List<NamedObjectId> idList = Arrays.asList(requestedId);
+                List<NamedObjectId> idList = Arrays.asList(p.getRequestedId());
                 ParameterFormatter csvFormatter = new ParameterFormatter(bw, idList);
                 limit++; // Allow one extra line for the CSV header
                 RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit) {
-
                     @Override
                     public void onParameterData(List<ParameterValueWithId> params) {
                         try {
@@ -129,16 +143,20 @@ public class ArchiveParameterRestHandler extends RestHandler {
                             csvFormatter.writeParameters(pvlist);
                         } catch (IOException e) {
                             log.error("Error while writing parameter line", e);
+                            completableFuture.completeExceptionally(e);
                         }
                     }
-
+                    public void replayFinished() {
+                        completableFuture.complete(sendOK(req, MediaType.CSV, buf));
+                    }
                 };
-                replayListener.setNoRepeat(noRepeat);
-                RestReplays.replayAndWait(instance, req.getAuthToken(), rr, replayListener);
+                replayListener.setNoRepeat(noRepeat);                
+                RestReplays.replay(instance, req.getAuthToken(), rr, replayListener);
+                
             } catch (IOException e) {
                 throw new InternalServerErrorException(e);
             }
-            return sendOK(req, MediaType.CSV, buf);
+           
         } else {
             ParameterData.Builder resultb = ParameterData.newBuilder();
             RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit) {
@@ -148,11 +166,18 @@ public class ArchiveParameterRestHandler extends RestHandler {
                         resultb.addParameter(pvalid.toGbpParameterValue());
                     }
                 }
-
+                public void replayFinished() {
+                    try {
+                        ChannelFuture cf =  sendOK(req, resultb.build(), SchemaPvalue.ParameterData.WRITE);
+                        completableFuture.complete(cf);
+                    } catch (HttpException e) { //error encoding data
+                        completableFuture.completeExceptionally(e);
+                    }
+                }
             };
             replayListener.setNoRepeat(noRepeat);
-            RestReplays.replayAndWait(instance, req.getAuthToken(), rr, replayListener);
-            return sendOK(req, resultb.build(), SchemaPvalue.ParameterData.WRITE);
+            RestReplays.replay(instance, req.getAuthToken(), rr, replayListener);
         }
+        return completableFuture;
     }
 }

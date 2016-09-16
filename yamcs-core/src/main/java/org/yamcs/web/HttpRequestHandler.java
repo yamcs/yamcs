@@ -293,8 +293,11 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
     private static ChannelFuture writeEmptyLastContent(ChannelHandlerContext ctx) {
         // TODO is this correct? can we store this in channel ctx? No clean-up either?
         ChunkedTransferStats stats = ctx.attr(CTX_CHUNK_STATS).get();
-        int totalBytes = (stats!=null) ?stats.totalBytes:0;
-        log.info("{} {} --- Finished chunked transfer ({} B)", stats.originalMethod, stats.originalUri, totalBytes);
+        if(stats!=null) {
+            log.info("{} {} --- Finished chunked transfer ({} B)", stats.originalMethod, stats.originalUri, stats.totalBytes);
+        } else {
+            log.info("--- Finished chunked transfer; no bytes trarnsferred");
+        }
         ChannelFuture chunkWriteFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         return chunkWriteFuture.addListener(ChannelFutureListener.CLOSE);
     }
