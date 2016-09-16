@@ -98,9 +98,6 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     }
 
 
-
-
-
     @Override
     public void init(YProcessor proc) throws ConfigurationException {
         this.yprocessor = proc;
@@ -207,7 +204,6 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         Subscription subscription = tmproc.getSubscription();
         Collection<SequenceContainer> containers = subscription.getContainers();
 
-        
         if((containers==null)|| (containers.isEmpty())) {
             log.debug("No container required for the parameter subscription");
         } else {
@@ -235,9 +231,15 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
             PpReplayRequest.Builder pprr = originalReplayRequest.getPpRequest().toBuilder();
             pprr.addAllGroupNameFilter(pprecordings);
             rawDataRequest.setPpRequest(pprr.build());
-            
         }
         
+        if(!rawDataRequest.hasPacketRequest() && !rawDataRequest.hasParameterRequest()) {
+            if(originalReplayRequest.hasParameterRequest()) {
+                throw new YamcsException("Cannot find a replay source for any parmeters from request: "+originalReplayRequest.getParameterRequest().toString());
+            } else {
+                throw new YamcsException("Refusing to create an empty replay request");
+            }
+        }
     }
 
     private void createReplay() throws ProcessorException {
