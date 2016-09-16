@@ -420,12 +420,12 @@ public class YConfiguration {
      * If the key is present but the value is not an integer, a ConfigurationException is thrown.
      * @param m
      * @param key
-     * @param v
+     * @param defaultValue
      * @return the value from the map or the passed value if the map does not contain the key
      * @throws ConfigurationException if the key is present but it's not an int
      */
-    static public int getInt(Map<String, Object> m, String key, int v) throws ConfigurationException {
-        if(!m.containsKey(key)) return v;
+    static public int getInt(Map<String, Object> m, String key, int defaultValue) throws ConfigurationException {
+        if(!m.containsKey(key)) return defaultValue;
         Object o=m.get(key);
         if(o instanceof Integer) {
             return (Integer)o;
@@ -474,6 +474,13 @@ public class YConfiguration {
     public int getInt(String key, String key1) throws ConfigurationException {
         Map<String, Object> m=getMap(key);
         return getInt(m, key1);
+    }
+    
+    public int getInt(String key, String key1, int defaultValue) throws ConfigurationException {
+        Map<String, Object> m = getMap(key);
+        if(m==null) return defaultValue;
+        
+        return getInt(m, key1, defaultValue);
     }
 
     public boolean isList(String key) {
