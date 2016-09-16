@@ -16,7 +16,7 @@ public class YObjectLoader<T> {
      * Loads classes defined in the yamcs server or client configuration properties
      * @param className
      * @param args
-     * @return
+     * @return an object of the given class instantiated with the given parameters
      * @throws ConfigurationException
      * @throws IOException
      */
@@ -74,27 +74,32 @@ public class YObjectLoader<T> {
         }
     }
     
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"rawtypes" })
     private void checkDeprecated(Class objclass) {
-        Annotation a  = objclass.getAnnotation(Deprecated.class);
-        if(a!=null) {
-            log.warn("The class {} is deprecated. Please check the javadoc for alternatives.", objclass.getName());
-        }
+        checkAndPrintDeprecatedWarning("The class "+objclass.getName()+" is deprecated", objclass);
+        
         Class c = objclass.getSuperclass();
         while(c!=null) {
-            a  = c.getAnnotation(Deprecated.class);
-            if(a!=null) {
-                log.warn("The class {} extended by {} is deprecated. Please check the javadoc for alternatives.", c.getName(), objclass.getName());
-            }
-            
+            checkAndPrintDeprecatedWarning("The class "+c.getName()+" extended by "+objclass.getName()+" is deprecated", c);
             c = c.getSuperclass();
         }
         for(Class i: objclass.getInterfaces()) {
-            a  = i.getAnnotation(Deprecated.class);
+            checkAndPrintDeprecatedWarning("The class "+objclass.getName()+" implements interface "+i.getName()+" which is deprecated", i);
+        }
+    }
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    void checkAndPrintDeprecatedWarning(String prefix, Class objclass) {
+        DeprecationInfo di = (DeprecationInfo) objclass.getAnnotation(DeprecationInfo.class);
+        if(di!=null) {
+            log.warn(prefix+": "+ di.info());
+        } else {
+            Annotation a  = objclass.getAnnotation(Deprecated.class);
             if(a!=null) {
-                log.warn("The class {} implements interface {} which is deprecated. Please check the javadoc for alternatives.", objclass.getName(),  i.getName());
+                log.warn(prefix+". Please check the javadoc for alternatives.");
             }
         }
         
     }
+    
 }
