@@ -477,8 +477,9 @@ public class YConfiguration {
     }
     
     public int getInt(String key, String key1, int defaultValue) throws ConfigurationException {
+        if(!root.containsKey(key)) return defaultValue;
+
         Map<String, Object> m = getMap(key);
-        if(m==null) return defaultValue;
         
         return getInt(m, key1, defaultValue);
     }
