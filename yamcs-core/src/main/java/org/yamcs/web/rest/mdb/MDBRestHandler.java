@@ -39,10 +39,10 @@ public class MDBRestHandler extends RestHandler {
             } catch (IOException e) {
                 throw new InternalServerErrorException("Could not serialize MDB", e);
             }
-            sendOK(req, MediaType.JAVA_SERIALIZED_OBJECT, buf);
+            completeOK(req, MediaType.JAVA_SERIALIZED_OBJECT, buf);
         } else {
             MissionDatabase converted = YamcsToGpbAssembler.toMissionDatabase(req, instance, mdb);
-            sendOK(req, converted, SchemaYamcsManagement.MissionDatabase.WRITE);
+            completeOK(req, converted, SchemaYamcsManagement.MissionDatabase.WRITE);
         }
     }
 }

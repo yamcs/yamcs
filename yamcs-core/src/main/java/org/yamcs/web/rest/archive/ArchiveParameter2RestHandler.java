@@ -128,7 +128,7 @@ public class ArchiveParameter2RestHandler extends RestHandler {
             series.addSample(ArchiveHelper.toGPBSample(s));
         }
 
-        sendOK(req, series.build(), SchemaPvalue.TimeSeries.WRITE);
+        completeOK(req, series.build(), SchemaPvalue.TimeSeries.WRITE);
     }
 
     private void sampleDataFromCache(ParameterCache pcache, Parameter p, long start, long stop, RestDownsampler sampler) {
@@ -298,7 +298,7 @@ public class ArchiveParameter2RestHandler extends RestHandler {
             } catch (IOException|DecodingException|RocksDBException e) {
                 throw new InternalServerErrorException(e);
             }
-            sendOK(req, MediaType.CSV, buf);
+            completeOK(req, MediaType.CSV, buf);
         } else {
             ParameterData.Builder resultb = ParameterData.newBuilder();
             try {
@@ -320,7 +320,7 @@ public class ArchiveParameter2RestHandler extends RestHandler {
             } catch (DecodingException|RocksDBException e) {
                 throw new InternalServerErrorException(e);
             }
-            sendOK(req, resultb.build(), SchemaPvalue.ParameterData.WRITE);
+            completeOK(req, resultb.build(), SchemaPvalue.ParameterData.WRITE);
         }
     }
 

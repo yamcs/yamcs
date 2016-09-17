@@ -31,6 +31,7 @@ import org.yamcs.yarch.Tuple;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 public class ArchivePacketRestHandler extends RestHandler {
     
@@ -65,8 +66,8 @@ public class ArchivePacketRestHandler extends RestHandler {
         
         if (req.asksFor(MediaType.OCTET_STREAM)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
-            try (ByteBufOutputStream bufOut = new ByteBufOutputStream(buf)) {
-                RestStreams.streamAndWait(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
+            ByteBufOutputStream bufOut = new ByteBufOutputStream(buf);
+                RestStreams.stream(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
                     
                     @Override
                     public void processTuple(Stream stream, Tuple tuple) {
@@ -78,23 +79,33 @@ public class ArchivePacketRestHandler extends RestHandler {
                             // should improve to somehow throw upwards
                         }
                     }
+
+                    @Override
+                    public void streamClosed(Stream stream) {
+                        try {
+                            bufOut.close();
+                            completeOK(req, MediaType.OCTET_STREAM, buf);
+                        } catch (IOException e) {
+                            completeWithError(req, new InternalServerErrorException(e));
+                        }            
+                    }
                 });
-                bufOut.close();
-                sendOK(req, MediaType.OCTET_STREAM, buf);
-            } catch (IOException e) {
-                throw new InternalServerErrorException(e);
-            }
         } else {
             ListPacketsResponse.Builder responseb = ListPacketsResponse.newBuilder();
-            RestStreams.streamAndWait(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
+            RestStreams.stream(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
     
                 @Override
                 public void processTuple(Stream stream, Tuple tuple) {
                     TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
                     responseb.addPacket(pdata);
                 }
+
+                @Override
+                public void streamClosed(Stream stream) {
+                    completeOK(req, responseb.build(), SchemaRest.ListPacketsResponse.WRITE);
+                }
             });
-            sendOK(req, responseb.build(), SchemaRest.ListPacketsResponse.WRITE);
+           
         }
     }
     
@@ -108,21 +119,24 @@ public class ArchivePacketRestHandler extends RestHandler {
                 .where("gentime = " + gentime, "seqNum = " + seqNum);
         
         List<TmPacketData> packets = new ArrayList<>();
-        RestStreams.streamAndWait(instance, sqlb.toString(), new RestStreamSubscriber(0, 2) {
-
+        RestStreams.stream(instance, sqlb.toString(), new RestStreamSubscriber(0, 2) {
             @Override
             public void processTuple(Stream stream, Tuple tuple) {
                 TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
                 packets.add(pdata);
             }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                if (packets.isEmpty()) {
+                    sendRestError(req, HttpResponseStatus.NOT_FOUND, new NotFoundException(req, "No packet for id (" + gentime + ", " + seqNum + ")"));
+                } else if (packets.size() > 1) {
+                    sendRestError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR, new InternalServerErrorException("Too many results"));
+                } else {
+                    completeOK(req, packets.get(0), SchemaYamcs.TmPacketData.WRITE);
+                }
+                
+            }
         });
-        
-        if (packets.isEmpty()) {
-            throw new NotFoundException(req, "No packet for id (" + gentime + ", " + seqNum + ")");
-        } else if (packets.size() > 1) {
-            throw new InternalServerErrorException("Too many results");
-        } else {
-            sendOK(req, packets.get(0), SchemaYamcs.TmPacketData.WRITE);
-        }
     }
 }

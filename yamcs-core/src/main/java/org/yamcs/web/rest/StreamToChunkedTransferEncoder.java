@@ -14,6 +14,8 @@ import org.yamcs.yarch.Tuple;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.LastHttpContent;
 
 /**
  * Reads a yamcs stream and maps it directly to an output buffer. If that buffer grows larger
@@ -67,9 +69,10 @@ public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscribe
                 resetBuffer();
             }
         } catch (IOException e) {
-            log.error("Closing stream due to IO error", e);
+            log.error("R{}: Closing stream due to IO error", req.getRequestId(), e);
             failed = true;
             stream.close();
+            req.getCompletableFuture().completeExceptionally(e);
         }
     }
 
@@ -78,18 +81,23 @@ public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscribe
     @Override
     public void streamClosed(Stream stream) {
         if (failed) {
-            log.warn("Closing channel because transfer failed");
+            log.warn("R{}: Closing channel because transfer failed", req.getRequestId());
             req.getChannelHandlerContext().channel().close();
             return;
         }
         try {
+            ChannelHandlerContext ctx = req.getChannelHandlerContext();
             closeBufferOutputStream();
             if (buf.readableBytes() > 0) {
                 writeChunk();
             }
-            HttpRequestHandler.stopChunkedTransfer(req.getChannelHandlerContext(), lastChannelFuture);
+            ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+            .addListener(l->{
+               req.getCompletableFuture().complete(null);
+            });
         } catch (IOException e) {
-            log.error("Could not write final chunk of data", e);
+            log.error("R{}: Could not write final chunk of data", req.getRequestId(), e);
+            req.getCompletableFuture().completeExceptionally(e);
         }
     }
 

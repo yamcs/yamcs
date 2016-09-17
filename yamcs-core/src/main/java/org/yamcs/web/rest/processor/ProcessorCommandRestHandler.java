@@ -147,7 +147,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
         response.setSource(preparedCommand.getSource());
         response.setBinary(ByteString.copyFrom(preparedCommand.getBinary()));
         response.setHex(StringConverter.arrayToHexString(preparedCommand.getBinary()));
-        sendOK(req, response.build(), SchemaRest.IssueCommandResponse.WRITE);
+        completeOK(req, response.build(), SchemaRest.IssueCommandResponse.WRITE);
     }
 
     @Route(path = "/api/processors/:instance/:processor/commandhistory/:name*", method = "POST")

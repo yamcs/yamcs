@@ -40,7 +40,7 @@ public class MDBCommandRestHandler extends RestHandler {
         
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
         CommandInfo cinfo = XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.FULL, req.getOptions());
-        sendOK(req, cinfo, SchemaMdb.CommandInfo.WRITE);
+        completeOK(req, cinfo, SchemaMdb.CommandInfo.WRITE);
     }
     
     private void listCommands(RestRequest req) throws HttpException {
@@ -79,6 +79,6 @@ public class MDBCommandRestHandler extends RestHandler {
             }
         }
         
-        sendOK(req, responseb.build(), SchemaRest.ListCommandInfoResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.ListCommandInfoResponse.WRITE);
     }
 }

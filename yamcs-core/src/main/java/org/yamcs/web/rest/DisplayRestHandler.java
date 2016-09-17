@@ -52,7 +52,7 @@ public class DisplayRestHandler extends RestHandler {
                 writeFilesFromDir(json, new Path(), displayDir);
             }
             json.close();
-            sendOK(req, MediaType.JSON, cb);
+            completeOK(req, MediaType.JSON, cb);
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }

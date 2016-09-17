@@ -33,14 +33,14 @@ public class LinkRestHandler extends RestHandler {
                 responseb.addLink(link);
             }
         }
-        sendOK(req, responseb.build(), SchemaRest.ListLinkInfoResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.ListLinkInfoResponse.WRITE);
     }
     
     @Route(path="/api/links/:instance/:name", method="GET")
     @Route(path="/api/links/:instance/link/:name", method="GET")
     public void getLink(RestRequest req) throws HttpException {
         LinkInfo linkInfo = verifyLink(req, req.getRouteParam("instance"), req.getRouteParam("name"));
-        sendOK(req, linkInfo, SchemaYamcsManagement.LinkInfo.WRITE);
+        completeOK(req, linkInfo, SchemaYamcsManagement.LinkInfo.WRITE);
     }
     
     @Route(path="/api/links/:instance/:name", method={"PATCH", "PUT", "POST"})

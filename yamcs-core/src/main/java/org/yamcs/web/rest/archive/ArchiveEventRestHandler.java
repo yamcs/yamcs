@@ -75,8 +75,7 @@ public class ArchiveEventRestHandler extends RestHandler {
                 throw new InternalServerErrorException(e);
             }
                 
-            RestStreams.streamAndWait(instance, sql, new RestStreamSubscriber(pos, limit) {
-
+            RestStreams.stream(instance, sql, new RestStreamSubscriber(pos, limit) {
                 @Override
                 public void processTuple(Stream stream, Tuple tuple) {
                     try {
@@ -86,12 +85,17 @@ public class ArchiveEventRestHandler extends RestHandler {
                         log.error("Could not write csv record ", e);
                     }
                 }
+
+                @Override
+                public void streamClosed(Stream stream) {
+                    w.close();
+                    completeOK(req, MediaType.CSV, buf);
+                }
             });
-            w.close();
-            sendOK(req, MediaType.CSV, buf);
+         
         } else {
             ListEventsResponse.Builder responseb = ListEventsResponse.newBuilder();
-            RestStreams.streamAndWait(instance, sql, new RestStreamSubscriber(pos, limit) {
+            RestStreams.stream(instance, sql, new RestStreamSubscriber(pos, limit) {
 
                 @Override
                 public void processTuple(Stream stream, Tuple tuple) {
@@ -100,9 +104,12 @@ public class ArchiveEventRestHandler extends RestHandler {
                     event.setReceptionTimeUTC(TimeEncoding.toString(event.getReceptionTime()));
                     responseb.addEvent(event);    
                 }
+
+                @Override
+                public void streamClosed(Stream stream) {
+                    completeOK(req, responseb.build(), SchemaRest.ListEventsResponse.WRITE);
+                }
             });
-            
-            sendOK(req, responseb.build(), SchemaRest.ListEventsResponse.WRITE);
         }
     }
 

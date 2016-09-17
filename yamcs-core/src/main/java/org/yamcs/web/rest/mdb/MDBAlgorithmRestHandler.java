@@ -37,7 +37,7 @@ public class MDBAlgorithmRestHandler extends RestHandler {
         
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
         AlgorithmInfo cinfo = XtceToGpbAssembler.toAlgorithmInfo(algo, instanceURL, DetailLevel.FULL, req.getOptions());
-        sendOK(req, cinfo, SchemaMdb.AlgorithmInfo.WRITE);
+        completeOK(req, cinfo, SchemaMdb.AlgorithmInfo.WRITE);
     }
     
     private void listAlgorithms(RestRequest req) throws HttpException {
@@ -73,6 +73,6 @@ public class MDBAlgorithmRestHandler extends RestHandler {
             }
         }
         
-        sendOK(req, responseb.build(), SchemaRest.ListAlgorithmInfoResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.ListAlgorithmInfoResponse.WRITE);
     }
 }

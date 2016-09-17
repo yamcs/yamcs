@@ -36,7 +36,7 @@ public class MDBContainerRestHandler extends RestHandler {
         
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
         ContainerInfo cinfo = XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.FULL, req.getOptions());
-        sendOK(req, cinfo, SchemaMdb.ContainerInfo.WRITE);
+        completeOK(req, cinfo, SchemaMdb.ContainerInfo.WRITE);
     }
     
     private void listContainers(RestRequest req) throws HttpException {
@@ -72,6 +72,6 @@ public class MDBContainerRestHandler extends RestHandler {
             }
         }
         
-        sendOK(req, responseb.build(), SchemaRest.ListContainerInfoResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.ListContainerInfoResponse.WRITE);
     }
 }

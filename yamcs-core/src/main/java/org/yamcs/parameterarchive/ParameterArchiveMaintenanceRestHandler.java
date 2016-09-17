@@ -81,7 +81,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
             }
             StringMessage sm = StringMessage.newBuilder().setMessage(sb.toString()).build();
             
-            sendOK(req, sm, org.yamcs.protobuf.SchemaYamcs.StringMessage.WRITE);
+            completeOK(req, sm, org.yamcs.protobuf.SchemaYamcs.StringMessage.WRITE);
             
         } catch (RocksDBException e){
             throw new InternalServerErrorException(e.getMessage());
@@ -100,7 +100,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
         ParameterIdDb pdb = parchive.getParameterIdDb();
         ParameterId[] pids = pdb.get(fqn);
         StringMessage sm = StringMessage.newBuilder().setMessage(Arrays.toString(pids)).build();
-        sendOK(req, sm, org.yamcs.protobuf.SchemaYamcs.StringMessage.WRITE);
+        completeOK(req, sm, org.yamcs.protobuf.SchemaYamcs.StringMessage.WRITE);
     }
    
     

@@ -165,7 +165,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
             pval = pvals.get(0);
         }
             
-        sendOK(req, pval, SchemaPvalue.ParameterValue.WRITE);
+        completeOK(req, pval, SchemaPvalue.ParameterValue.WRITE);
     }
     
     @Route(path = "/api/processors/:instance/:processor/parameters/mget", method = {"GET", "POST"}, priority=true)
@@ -193,7 +193,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
 
         BulkGetParameterValueResponse.Builder responseb = BulkGetParameterValueResponse.newBuilder();
         responseb.addAllValue(pvals);
-        sendOK(req, responseb.build(), SchemaRest.BulkGetParameterValueResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.BulkGetParameterValueResponse.WRITE);
     }
     
     private List<ParameterValue> doGetParameterValues(YProcessor processor, AuthenticationToken authToken, List<NamedObjectId> ids, boolean fromCache, long timeout) throws HttpException {

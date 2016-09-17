@@ -29,7 +29,7 @@ public class InstanceRestHandler extends RestHandler {
             instancesb.addInstance(enriched);
         }
         
-        sendOK(req, instancesb.build(), SchemaRest.ListInstancesResponse.WRITE);
+        completeOK(req, instancesb.build(), SchemaRest.ListInstancesResponse.WRITE);
     }
     
     @Route(path="/api/instances/:instance", method="GET")
@@ -37,7 +37,7 @@ public class InstanceRestHandler extends RestHandler {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YamcsInstance yamcsInstance = YamcsServer.getYamcsInstance(instance);
         YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(req, yamcsInstance);
-        sendOK(req, enriched, SchemaYamcsManagement.YamcsInstance.WRITE);
+        completeOK(req, enriched, SchemaYamcsManagement.YamcsInstance.WRITE);
     }
     
     @Route(path="/api/instances/:instance/clients", method="GET")
@@ -50,6 +50,6 @@ public class InstanceRestHandler extends RestHandler {
                 responseb.addClient(ClientInfo.newBuilder(client).setState(ClientState.CONNECTED));
             }
         }
-        sendOK(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
     }
 }

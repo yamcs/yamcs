@@ -38,7 +38,7 @@ public class ClientRestHandler extends RestHandler {
         for (ClientInfo client : clients) {
             responseb.addClient(ClientInfo.newBuilder(client).setState(ClientState.CONNECTED));
         }
-        sendOK(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
     }
     
     @Route(path="/api/clients/:id", method={ "PATCH", "PUT", "POST" })

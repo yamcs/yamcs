@@ -23,7 +23,7 @@ public class ArchiveStreamRestHandler extends RestHandler {
         for (AbstractStream stream : ydb.getStreams()) {
             responseb.addStream(ArchiveHelper.toStreamInfo(stream));
         }
-        sendOK(req, responseb.build(), SchemaRest.ListStreamsResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.ListStreamsResponse.WRITE);
     }
     
     @Route(path = "/api/archive/:instance/streams/:name", method = "GET")
@@ -33,6 +33,6 @@ public class ArchiveStreamRestHandler extends RestHandler {
         Stream stream = verifyStream(req, ydb, req.getRouteParam("name"));
         
         StreamInfo response = ArchiveHelper.toStreamInfo(stream);
-        sendOK(req, response, SchemaArchive.StreamInfo.WRITE);
+        completeOK(req, response, SchemaArchive.StreamInfo.WRITE);
     }    
 }

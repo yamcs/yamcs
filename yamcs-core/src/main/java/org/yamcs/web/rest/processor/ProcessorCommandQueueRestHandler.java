@@ -35,7 +35,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         ManagementService managementService = ManagementService.getInstance();
         CommandQueueManager mgr = managementService.getCommandQueueManager(processor);
         mgr.getQueues().forEach(q -> response.addQueue(toCommandQueueInfo(req, q, true)));
-        sendOK(req, response.build(), SchemaRest.ListCommandQueuesResponse.WRITE);
+        completeOK(req, response.build(), SchemaRest.ListCommandQueuesResponse.WRITE);
     }
     
     @Route(path = "/api/processors/:instance/:processor/cqueues/:name", method = "GET")
@@ -45,7 +45,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         CommandQueue queue = verifyCommandQueue(req, mgr, req.getRouteParam("name"));
         
         CommandQueueInfo info = toCommandQueueInfo(req, queue, true);
-        sendOK(req, info, SchemaCommanding.CommandQueueInfo.WRITE);
+        completeOK(req, info, SchemaCommanding.CommandQueueInfo.WRITE);
     }
     
     @Route(path = "/api/processors/:instance/:processor/cqueues/:name", method = { "PATCH", "PUT", "POST" })
@@ -76,7 +76,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
             }
         }
         CommandQueueInfo qinfo = toCommandQueueInfo(req, updatedQueue, true);
-        sendOK(req, qinfo, SchemaCommanding.CommandQueueInfo.WRITE);
+        completeOK(req, qinfo, SchemaCommanding.CommandQueueInfo.WRITE);
     }
     
     @Route(path = "/api/processors/:instance/:processor/cqueues/:name/entries", method = "GET")
@@ -90,7 +90,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
             CommandQueueEntry qEntry = ManagementGpbHelper.toCommandQueueEntry(queue, pc);
             responseb.addEntry(qEntry);
         }
-        sendOK(req, responseb.build(), SchemaRest.ListCommandQueueEntries.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.ListCommandQueueEntries.WRITE);
     }
     
     @Route(path = "/api/processors/:instance/:processor/cqueues/:cqueue/entries/:uuid", method = { "PATCH", "PUT", "POST" })

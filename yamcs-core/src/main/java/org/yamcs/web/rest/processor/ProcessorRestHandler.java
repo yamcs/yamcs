@@ -58,7 +58,7 @@ public class ProcessorRestHandler extends RestHandler {
                 responseb.addClient(ClientInfo.newBuilder(client).setState(ClientState.CONNECTED));
             }
         }
-        sendOK(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
     }
 
     @Route(path = "/api/processors", method = "GET")
@@ -67,7 +67,7 @@ public class ProcessorRestHandler extends RestHandler {
         for (YProcessor processor : YProcessor.getProcessors()) {
             response.addProcessor(toProcessorInfo(processor, req, true));
         }
-        sendOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
+        completeOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
     }
 
     @Route(path = "/api/processors/:instance", method = "GET")
@@ -78,7 +78,7 @@ public class ProcessorRestHandler extends RestHandler {
         for (YProcessor processor : YProcessor.getProcessors(instance)) {
             response.addProcessor(toProcessorInfo(processor, req, true));
         }
-        sendOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
+        completeOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
     }
     
     @Route(path = "/api/processors/:instance/:processor", method = "GET")
@@ -86,7 +86,7 @@ public class ProcessorRestHandler extends RestHandler {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         
         ProcessorInfo pinfo = toProcessorInfo(processor, req, true);
-        sendOK(req, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
+        completeOK(req, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
     }
 
     @Route(path = "/api/processors/:instance/:processor", method = { "PATCH", "PUT", "POST" })

@@ -49,7 +49,7 @@ public class ArchiveTagRestHandler extends RestHandler {
         } catch (IOException e) {
             throw new InternalServerErrorException("Could not load tags", e);
         }
-        sendOK(req, responseb.build(), SchemaRest.ListTagsResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.ListTagsResponse.WRITE);
     }
     
     @Route(path = "/api/archive/:instance/tags/:tagTime/:tagId", method = "GET")
@@ -61,7 +61,7 @@ public class ArchiveTagRestHandler extends RestHandler {
         int tagId = req.getIntegerRouteParam("tagId");
 
         ArchiveTag tag = verifyTag(req, tagDb, tagTime, tagId); 
-        sendOK(req, tag, SchemaYamcs.ArchiveTag.WRITE);
+        completeOK(req, tag, SchemaYamcs.ArchiveTag.WRITE);
     }
     
     /**
@@ -93,7 +93,7 @@ public class ArchiveTagRestHandler extends RestHandler {
         }
 
         // Echo back the tag, with its assigned ID
-        sendOK(req, newTag, SchemaYamcs.ArchiveTag.WRITE);
+        completeOK(req, newTag, SchemaYamcs.ArchiveTag.WRITE);
     }
     
     /**
@@ -133,7 +133,7 @@ public class ArchiveTagRestHandler extends RestHandler {
             throw new InternalServerErrorException(e);
         }
         
-        sendOK(req, updatedTag, SchemaYamcs.ArchiveTag.WRITE);
+        completeOK(req, updatedTag, SchemaYamcs.ArchiveTag.WRITE);
     }
     
     /**
@@ -150,7 +150,7 @@ public class ArchiveTagRestHandler extends RestHandler {
             throw new InternalServerErrorException(e);
         }
         
-        sendOK(req, deletedTag, SchemaYamcs.ArchiveTag.WRITE);
+        completeOK(req, deletedTag, SchemaYamcs.ArchiveTag.WRITE);
     }
     
     private static TagDb getTagDb(String yamcsInstance) throws HttpException {

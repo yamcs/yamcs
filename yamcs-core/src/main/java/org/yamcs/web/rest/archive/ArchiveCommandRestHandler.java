@@ -41,14 +41,18 @@ public class ArchiveCommandRestHandler extends RestHandler {
         sqlb.descend(req.asksDescending(true));
         
         ListCommandsResponse.Builder responseb = ListCommandsResponse.newBuilder();
-        RestStreams.streamAndWait(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
+        RestStreams.stream(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
 
             @Override
             public void processTuple(Stream stream, Tuple tuple) {
                 CommandHistoryEntry che = GPBHelper.tupleToCommandHistoryEntry(tuple);
                 responseb.addEntry(che);
             }
+            @Override
+            public void streamClosed(Stream stream) {
+                completeOK(req, responseb.build(), SchemaRest.ListCommandsResponse.WRITE);
+            }
         });
-        sendOK(req, responseb.build(), SchemaRest.ListCommandsResponse.WRITE);
+        
     }
 }

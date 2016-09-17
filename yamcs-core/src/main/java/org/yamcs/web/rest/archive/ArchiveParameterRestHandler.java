@@ -96,11 +96,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
                 for (Sample s : sampler.collect()) {
                     series.addSample(ArchiveHelper.toGPBSample(s));
                 }
-                try {
-                    sendOK(req, series.build(), SchemaPvalue.TimeSeries.WRITE);
-                } catch (HttpException e) { //error encoding data 
-                    completableFuture.completeExceptionally(e);
-                }
+                completeOK(req, series.build(), SchemaPvalue.TimeSeries.WRITE);
             }
             
             @Override
@@ -149,7 +145,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
                         }
                     }
                     public void replayFinished() {
-                        sendOK(req, MediaType.CSV, buf);
+                        completeOK(req, MediaType.CSV, buf);
                     }
                 };
                 replayListener.setNoRepeat(noRepeat);                
@@ -170,11 +166,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
                 }
                 @Override
                 public void replayFinished() {
-                    try {
-                        sendOK(req, resultb.build(), SchemaPvalue.ParameterData.WRITE);
-                    } catch (HttpException e) { //error encoding data
-                        completableFuture.completeExceptionally(e);
-                    }
+                    completeOK(req, resultb.build(), SchemaPvalue.ParameterData.WRITE);
                 }
             };
             replayListener.setNoRepeat(noRepeat);

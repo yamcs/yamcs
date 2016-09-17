@@ -41,7 +41,7 @@ public class UserRestHandler extends RestHandler {
         }
 
         UserInfo info = userInfob.build();
-        sendOK(req, info, SchemaYamcsManagement.UserInfo.WRITE);
+        completeOK(req, info, SchemaYamcsManagement.UserInfo.WRITE);
     }
 
     private UserInfo.Builder buildFullyPrivilegedUser() {

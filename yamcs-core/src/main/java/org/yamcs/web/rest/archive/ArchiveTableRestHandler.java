@@ -33,7 +33,7 @@ public class ArchiveTableRestHandler extends RestHandler {
         for (TableDefinition def : ydb.getTableDefinitions()) {
             responseb.addTable(ArchiveHelper.toTableInfo(def));
         }
-        sendOK(req, responseb.build(), SchemaRest.ListTablesResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.ListTablesResponse.WRITE);
     }
     
     @Route(path = "/api/archive/:instance/tables/:name", method = "GET")
@@ -43,7 +43,7 @@ public class ArchiveTableRestHandler extends RestHandler {
         TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
         
         TableInfo response = ArchiveHelper.toTableInfo(table);
-        sendOK(req, response, SchemaArchive.TableInfo.WRITE);
+        completeOK(req, response, SchemaArchive.TableInfo.WRITE);
     }
     
     @Route(path = "/api/archive/:instance/tables/:name/data", method = "GET")
@@ -76,7 +76,7 @@ public class ArchiveTableRestHandler extends RestHandler {
         
         String sql = sqlb.toString();
         TableData.Builder responseb = TableData.newBuilder();
-        RestStreams.streamAndWait(instance, sql, new RestStreamSubscriber(pos, limit) {
+        RestStreams.stream(instance, sql, new RestStreamSubscriber(pos, limit) {
             
             @Override
             public void processTuple(Stream stream, Tuple tuple) {
@@ -84,8 +84,13 @@ public class ArchiveTableRestHandler extends RestHandler {
                 rec.addAllColumn(ArchiveHelper.toColumnDataList(tuple));
                 responseb.addRecord(rec); // TODO estimate byte size
             }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                completeOK(req, responseb.build(), SchemaArchive.TableData.WRITE);
+            }
         });
         
-        sendOK(req, responseb.build(), SchemaArchive.TableData.WRITE);
+       
     }
 }

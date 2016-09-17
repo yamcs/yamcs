@@ -45,16 +45,21 @@ public class ArchiveAlarmRestHandler extends RestHandler {
         sqlb.descend(req.asksDescending(true));
         
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
-        RestStreams.streamAndWait(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
+        RestStreams.stream(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
 
             @Override
             public void processTuple(Stream stream, Tuple tuple) {
                 AlarmData alarm = ArchiveHelper.tupleToAlarmData(tuple);
                 responseb.addAlarm(alarm);
             }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                completeOK(req, responseb.build(), SchemaRest.ListAlarmsResponse.WRITE);
+            }
         });
         
-        sendOK(req, responseb.build(), SchemaRest.ListAlarmsResponse.WRITE);
+        
     }
     
     /*

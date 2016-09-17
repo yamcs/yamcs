@@ -224,12 +224,13 @@ public class Router {
     }
 
     protected void dispatch(RestRequest req, RouteMatch match) {
+        //the handlers will send themselves the response unless they throw an exception, case which is handled in the catch below.
         try {
             RouteHandler target = match.routeConfig.routeHandler;
             match.routeConfig.handle.invoke(target, req);
             req.getCompletableFuture().whenComplete((channelFuture, e) -> {
                 if(e!=null) {
-                    handleException(req, e);
+                    log.debug("R{}: REST request execution finished with error: {}", req.getRequestId(), e.getMessage());
                 } else {
                     log.debug("R{}: REST request execution finished successfully", req.getRequestId());
                 }
@@ -353,7 +354,7 @@ public class Router {
 
             urls.forEach(url -> responseb.addUrl(url));
 
-            sendOK(req, responseb.build(), SchemaRest.GetApiOverviewResponse.WRITE);
+            completeOK(req, responseb.build(), SchemaRest.GetApiOverviewResponse.WRITE);
         }
     }
 }

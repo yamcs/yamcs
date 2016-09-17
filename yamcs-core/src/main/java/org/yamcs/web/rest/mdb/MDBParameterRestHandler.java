@@ -55,7 +55,7 @@ public class MDBParameterRestHandler extends RestHandler {
             responseb.addResponse(response);
         }
         
-        sendOK(req, responseb.build(), SchemaRest.BulkGetParameterInfoResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.BulkGetParameterInfoResponse.WRITE);
     }
     
     @Route(path = "/api/mdb/:instance/parameters", method = "GET")
@@ -76,7 +76,7 @@ public class MDBParameterRestHandler extends RestHandler {
         
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
         ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.FULL, req.getOptions());
-        sendOK(req, pinfo, SchemaMdb.ParameterInfo.WRITE);
+        completeOK(req, pinfo, SchemaMdb.ParameterInfo.WRITE);
     }
     
     private void listParameters(RestRequest req) throws HttpException {
@@ -144,7 +144,7 @@ public class MDBParameterRestHandler extends RestHandler {
             }
         }
         
-        sendOK(req, responseb.build(), SchemaRest.ListParameterInfoResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.ListParameterInfoResponse.WRITE);
     }
     
     private boolean parameterTypeMatches(Parameter p, Set<String> types) {
