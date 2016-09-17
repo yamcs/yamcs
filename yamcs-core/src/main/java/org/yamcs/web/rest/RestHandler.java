@@ -23,7 +23,6 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpRequestHandler;
-import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.RouteHandler;
 import org.yamcs.xtce.Algorithm;
@@ -44,6 +43,7 @@ import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.protostuff.JsonIOUtil;
@@ -104,7 +104,9 @@ public abstract class RestHandler extends RouteHandler {
     
     private static void completeRequest(RestRequest restRequest, HttpResponse httpResponse) {
         ChannelFuture cf = HttpRequestHandler.sendOK(restRequest.getChannelHandlerContext(), restRequest.getHttpRequest(), httpResponse);
+        long txsize = HttpHeaders.getContentLength(httpResponse);
         cf.addListener(l -> {
+            restRequest.addTransferredSize(txsize);
             restRequest.getCompletableFuture().complete(null);
         });
     }

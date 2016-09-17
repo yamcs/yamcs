@@ -230,9 +230,9 @@ public class Router {
             match.routeConfig.handle.invoke(target, req);
             req.getCompletableFuture().whenComplete((channelFuture, e) -> {
                 if(e!=null) {
-                    log.debug("R{}: REST request execution finished with error: {}", req.getRequestId(), e.getMessage());
+                    log.debug("R{}: REST request execution finished with error: {}, transferred bytes: {}", req.getRequestId(), e.getMessage(), req.getTransferredSize());
                 } else {
-                    log.debug("R{}: REST request execution finished successfully", req.getRequestId());
+                    log.debug("R{}: REST request execution finished successfully, transferred bytes: {}", req.getRequestId(), req.getTransferredSize());
                 }
             });
         } catch(Throwable t) {

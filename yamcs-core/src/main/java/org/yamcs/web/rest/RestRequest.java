@@ -40,7 +40,6 @@ import io.protostuff.Schema;
  * Encapsulates everything to do with one Rest Request. Object is gc-ed, when request ends.
  */
 public class RestRequest {
-    
     public enum Option {
         NO_LINK;
     }
@@ -54,6 +53,7 @@ public class RestRequest {
     CompletableFuture<Void> cf = new CompletableFuture<>();
     static AtomicInteger counter = new AtomicInteger(); 
     final int requestId;
+    long txSize = 0;
     
     public RestRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest, QueryStringDecoder qsDecoder, AuthenticationToken token) {
         this.channelHandlerContext = channelHandlerContext;
@@ -423,6 +423,26 @@ public class RestRequest {
         return cf;
     }
     
+    
+    /**
+     * Get the number of bytes transferred as the result of the REST call.
+     * It should not include the http headers.
+     * Note that the number might be increased before the data is sent so it will be wrong if there was an error sending data.
+     * 
+     * 
+     * @return number of bytes transferred as part of the request
+     */
+    public long getTransferredSize() {
+        return txSize;
+    }
+    /**
+     * add numBytes to the transferred size
+     * 
+     * @param bumBytes
+     */
+    public void addTransferredSize(long numBytes) {
+        txSize+=numBytes;
+    }
     /**
      * Returns true if the request specifies descending by use of the query string paramter 'order=desc'
      */

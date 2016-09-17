@@ -42,7 +42,6 @@ import org.yamcs.xtceproc.XtceDbFactory;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
-import io.netty.channel.ChannelFuture;
 
 public class ArchiveParameterRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(ArchiveParameterRestHandler.class);
@@ -141,7 +140,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
                             csvFormatter.writeParameters(pvlist);
                         } catch (IOException e) {
                             log.error("Error while writing parameter line", e);
-                            completableFuture.completeExceptionally(e);
+                            completeWithError(req, new InternalServerErrorException(e));
                         }
                     }
                     public void replayFinished() {

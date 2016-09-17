@@ -96,7 +96,9 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
     }
 
     private void writeChunk() throws IOException {
-        stats.totalBytes += buf.readableBytes();
+        int txSize = buf.readableBytes();
+        req.addTransferredSize(txSize);
+        stats.totalBytes += txSize;
         stats.chunkCount++;
         lastChannelFuture = HttpRequestHandler.writeChunk(req.getChannelHandlerContext(), buf);
     }
