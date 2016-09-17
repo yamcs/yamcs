@@ -33,7 +33,6 @@ import com.csvreader.CsvWriter;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
-import io.netty.channel.ChannelFuture;
 
 public class ArchiveEventRestHandler extends RestHandler {
     
@@ -42,7 +41,7 @@ public class ArchiveEventRestHandler extends RestHandler {
     Map<String, EventProducer> eventProducerMap = new HashMap<>();
 
     @Route(path = "/api/archive/:instance/events", method = "GET")
-    public ChannelFuture listEvents(RestRequest req) throws HttpException {
+    public void listEvents(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         
         long pos = req.getQueryParameterAsLong("pos", 0);
@@ -89,7 +88,7 @@ public class ArchiveEventRestHandler extends RestHandler {
                 }
             });
             w.close();
-            return sendOK(req, MediaType.CSV, buf);
+            sendOK(req, MediaType.CSV, buf);
         } else {
             ListEventsResponse.Builder responseb = ListEventsResponse.newBuilder();
             RestStreams.streamAndWait(instance, sql, new RestStreamSubscriber(pos, limit) {
@@ -103,13 +102,13 @@ public class ArchiveEventRestHandler extends RestHandler {
                 }
             });
             
-            return sendOK(req, responseb.build(), SchemaRest.ListEventsResponse.WRITE);
+            sendOK(req, responseb.build(), SchemaRest.ListEventsResponse.WRITE);
         }
     }
 
 
     @Route(path = "/api/archive/:instance/events", method = "POST")
-    public ChannelFuture issueCommand(RestRequest req) throws HttpException {
+    public void issueCommand(RestRequest req) throws HttpException {
 
         // get event from request
         String instance = verifyInstance(req, req.getRouteParam("instance"));
@@ -130,6 +129,6 @@ public class ArchiveEventRestHandler extends RestHandler {
         // send event
         log.debug("Adding event from REST API: " + event.toString());
         eventProducer.sendEvent(event);
-        return sendOK(req);
+        sendOK(req);
     }
 }

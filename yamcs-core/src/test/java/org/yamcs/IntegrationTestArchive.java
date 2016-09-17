@@ -12,12 +12,10 @@ import org.junit.Test;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.rest.BulkRestDataReceiver;
 import org.yamcs.api.ws.WebSocketRequest;
-import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
 import org.yamcs.protobuf.Rest.EditClientRequest;
-import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
@@ -126,7 +124,7 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testParameterHistory() throws Exception {
+    public void testParameterHistory() throws Exception {        
         generateData("2015-02-02T10:00:00", 3600);
         String respDl = restClient.doRequest("/archive/IntegrationTest/parameters/REFMDB/ccsds-apid?start=2015-02-02T10:10:00&norepeat=true&limit=3", HttpMethod.GET, "").get();
         
@@ -138,6 +136,5 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
         respDl = restClient.doRequest("/archive/IntegrationTest/parameters/REFMDB/ccsds-apid?start=2015-02-02T10:10:00&norepeat=false&limit=3", HttpMethod.GET, "").get();        
         pdata = fromJson(respDl, org.yamcs.protobuf.SchemaPvalue.ParameterData.MERGE).build();
         assertEquals(3, pdata.getParameterCount());
-        
     }
 }

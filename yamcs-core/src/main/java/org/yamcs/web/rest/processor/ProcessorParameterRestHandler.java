@@ -50,7 +50,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
     private final static Logger log = LoggerFactory.getLogger(ProcessorParameterRestHandler.class);
     
     @Route(path = "/api/processors/:instance/:processor/parameters/:name*/alarms/:seqnum", method = { "PATCH", "PUT", "POST" })
-    public ChannelFuture patchParameterAlarm(RestRequest req) throws HttpException {
+    public void patchParameterAlarm(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         AlarmServer alarmServer = verifyAlarmServer(processor);
         
@@ -73,7 +73,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
             try {
                 // TODO permissions on AlarmServer
                 alarmServer.acknowledge(p, seqNum, req.getUsername(), processor.getCurrentTime(), comment);
-                return sendOK(req);
+                sendOK(req);
             } catch (CouldNotAcknowledgeAlarmException e) {
                 log.debug("Did not acknowledge alarm " + seqNum + ". " + e.getMessage());
                 throw new BadRequestException(e.getMessage());
@@ -84,7 +84,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
     }
     
     @Route(path = "/api/processors/:instance/:processor/parameters/:name*", method = { "PUT", "POST" })
-    public ChannelFuture setSingleParameterValue(RestRequest req) throws HttpException {
+    public void setSingleParameterValue(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         SoftwareParameterManager mgr = verifySoftwareParameterManager(processor);
         
@@ -97,11 +97,11 @@ public class ProcessorParameterRestHandler extends RestHandler {
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
         }
-        return sendOK(req);
+        sendOK(req);
     }
     
     @Route(path = "/api/processors/:instance/:processor/parameters/mset", method = { "POST", "PUT" }, priority=true)
-    public ChannelFuture setParameterValues(RestRequest req) throws HttpException {
+    public void setParameterValues(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         SoftwareParameterManager mgr = verifySoftwareParameterManager(processor);
         
@@ -135,11 +135,11 @@ public class ProcessorParameterRestHandler extends RestHandler {
             throw new BadRequestException(e.getMessage());
         }
 
-        return sendOK(req);
+        sendOK(req);
     }
     
     @Route(path = "/api/processors/:instance/:processor/parameters/:name*", method = "GET")
-    public ChannelFuture getParameterValue(RestRequest req) throws HttpException {
+    public void getParameterValue(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
@@ -165,11 +165,11 @@ public class ProcessorParameterRestHandler extends RestHandler {
             pval = pvals.get(0);
         }
             
-        return sendOK(req, pval, SchemaPvalue.ParameterValue.WRITE);
+        sendOK(req, pval, SchemaPvalue.ParameterValue.WRITE);
     }
     
     @Route(path = "/api/processors/:instance/:processor/parameters/mget", method = {"GET", "POST"}, priority=true)
-    public ChannelFuture getParameterValues(RestRequest req) throws HttpException {
+    public void getParameterValues(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         
         BulkGetParameterValueRequest request = req.bodyAsMessage(SchemaRest.BulkGetParameterValueRequest.MERGE).build();
@@ -193,7 +193,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
 
         BulkGetParameterValueResponse.Builder responseb = BulkGetParameterValueResponse.newBuilder();
         responseb.addAllValue(pvals);
-        return sendOK(req, responseb.build(), SchemaRest.BulkGetParameterValueResponse.WRITE);
+        sendOK(req, responseb.build(), SchemaRest.BulkGetParameterValueResponse.WRITE);
     }
     
     private List<ParameterValue> doGetParameterValues(YProcessor processor, AuthenticationToken authToken, List<NamedObjectId> ids, boolean fromCache, long timeout) throws HttpException {

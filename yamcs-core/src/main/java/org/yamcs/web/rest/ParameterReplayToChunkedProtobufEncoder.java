@@ -2,6 +2,7 @@ package org.yamcs.web.rest;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.api.MediaType;
 import org.yamcs.parameter.ParameterValueWithId;
@@ -12,6 +13,7 @@ import org.yamcs.web.HttpException;
 import com.fasterxml.jackson.core.JsonGenerator;
 
 import io.netty.buffer.ByteBufOutputStream;
+import io.netty.channel.ChannelFuture;
 import io.protostuff.JsonIOUtil;
 
 /**

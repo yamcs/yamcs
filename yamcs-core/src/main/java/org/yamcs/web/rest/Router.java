@@ -14,12 +14,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YamcsException;
 import org.yamcs.YamcsVersion;
 import org.yamcs.parameterarchive.ParameterArchiveMaintenanceRestHandler;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse;
@@ -51,8 +51,6 @@ import org.yamcs.web.rest.processor.ProcessorCommandRestHandler;
 import org.yamcs.web.rest.processor.ProcessorParameterRestHandler;
 import org.yamcs.web.rest.processor.ProcessorRestHandler;
 
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
@@ -168,19 +166,20 @@ public class Router {
         try {
             // Decode first the path/qs difference, then url-decode the path
             String uri = new URI(qsDecoder.path()).getPath();
-
+            log.debug("R{}: Handling REST Request {} {}", restReq.getRequestId(), req.getMethod(), uri);
+            
             RouteMatch match = matchURI(req.getMethod(), uri);
             restReq.setRouteMatch(match);
             if (match != null) {
                 dispatch(restReq, match);
             } else {
-                log.info("No route matching URI: '{}'", req.getUri());
+                log.info("R{}: No route matching URI: '{}'", restReq.getRequestId(), req.getUri());
                 HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.NOT_FOUND);
             }
         } catch (URISyntaxException e) {
             RestHandler.sendRestError(restReq, HttpResponseStatus.INTERNAL_SERVER_ERROR, e);
         } catch (MethodNotAllowedException e) {
-            log.info("Method {} not allowed for URI: '{}'", req.getMethod(), req.getUri());
+            log.info("R{}: Method {} not allowed for URI: '{}'", restReq.getRequestId(), req.getMethod(), req.getUri());
             RestHandler.sendRestError(restReq, e.getStatus(), e);
         }
     }
@@ -227,61 +226,38 @@ public class Router {
     protected void dispatch(RestRequest req, RouteMatch match) {
         try {
             RouteHandler target = match.routeConfig.routeHandler;
-
-            // FIXME handleRequest must never return null! Futures are used to follow up on handling
-            Object o = match.routeConfig.handle.invoke(target, req);
-            if (o == null) {
-                log.error("handler {} does not return a CompletableFuture", match.routeConfig.handle);
-                return; 
-            }
-            if(o instanceof ChannelFuture) {
-                handleCompletion((ChannelFuture) o);
-            } else if(o instanceof CompletableFuture<?>) {
-                CompletableFuture<ChannelFuture> cf =  (CompletableFuture<ChannelFuture>)o;
-                cf.whenComplete((channelFuture, e) -> {
-                    if(e!=null) {
-                        handleException(req, e);
-                    } else {
-                        handleCompletion((ChannelFuture) o);
-                    }
-                });
-            }
+            match.routeConfig.handle.invoke(target, req);
+            req.getCompletableFuture().whenComplete((channelFuture, e) -> {
+                if(e!=null) {
+                    handleException(req, e);
+                } else {
+                    log.debug("R{}: REST request execution finished successfully", req.getRequestId());
+                }
+            });
         } catch(Throwable t) {
             handleException(req, t);
         }
     }
 
-    private void handleCompletion(ChannelFuture responseFuture) {
-        /**
-         * Follow-up on the successful write, to provide some hints when a future was not actually
-         * successfully delivered.
-         */
-        responseFuture.addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                if (!future.isSuccess()) {
-                    log.error("Error writing out response to client", future.cause());
-                    future.channel().close();
-                }
-            }
-        });
-    }
     private void handleException(RestRequest req, Throwable t) {
         if(t instanceof InternalServerErrorException) {
             InternalServerErrorException e = (InternalServerErrorException)t;
-            log.error("Reporting internal server error to client", e);
+            log.error("R{}: Reporting internal server error to client", req.getRequestId(), e);
             RestHandler.sendRestError(req, e.getStatus(), e);
         } else if (t instanceof HttpException) {
             HttpException e = (HttpException)t;
-            log.warn("Sending nominal exception back to client: {}", e.getMessage());
-            RestHandler.sendRestError(req, e.getStatus(), e);
+            log.warn("R{}: Sending nominal exception back to client: {}", req.getRequestId(), e.getMessage());
+            RestHandler.sendRestError(req, e.getStatus(), e);        
+        } else if (t instanceof YamcsException) {
+            log.warn("R{}: Reporting internal server error to client: {}", req.getRequestId(), t.getMessage());
+            RestHandler.sendRestError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
         } else {
-            log.error("Unexpected error " + t, t);
+            log.error("R{}: Unexpected error " + t, req.getRequestId(), t);
             RestHandler.sendRestError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
         }
-        
+
     }
-    
+
     /*
      * Pattern matching loosely inspired from angular and express.js
      */
@@ -365,7 +341,7 @@ public class Router {
     private final class OverviewRouteHandler extends RestHandler {
 
         @Route(path="/api", method="GET")
-        public ChannelFuture getApiOverview(RestRequest req) throws HttpException {
+        public void getApiOverview(RestRequest req) throws HttpException {
             GetApiOverviewResponse.Builder responseb = GetApiOverviewResponse.newBuilder();
             responseb.setYamcsVersion(YamcsVersion.version);
 
@@ -377,7 +353,7 @@ public class Router {
 
             urls.forEach(url -> responseb.addUrl(url));
 
-            return sendOK(req, responseb.build(), SchemaRest.GetApiOverviewResponse.WRITE);
+            sendOK(req, responseb.build(), SchemaRest.GetApiOverviewResponse.WRITE);
         }
     }
 }

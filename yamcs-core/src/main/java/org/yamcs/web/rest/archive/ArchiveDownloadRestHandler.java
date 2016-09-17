@@ -129,7 +129,6 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         
         ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, p, false);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
-        
         if (req.asksFor(MediaType.CSV)) {
             List<NamedObjectId> idList = Arrays.asList(requestedId);
             RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, idList);

@@ -19,7 +19,6 @@ import org.yamcs.xtceproc.XtceDbFactory;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
-import io.netty.channel.ChannelFuture;
 
 /**
  * Handles incoming requests related to parameters
@@ -29,7 +28,7 @@ public class MDBRestHandler extends RestHandler {
     final static Logger log = LoggerFactory.getLogger(MDBRestHandler.class);
     
     @Route(path = "/api/mdb/:instance", method = "GET")
-    public ChannelFuture getMissionDatabase(RestRequest req) throws HttpException {
+    public void getMissionDatabase(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         
@@ -40,10 +39,10 @@ public class MDBRestHandler extends RestHandler {
             } catch (IOException e) {
                 throw new InternalServerErrorException("Could not serialize MDB", e);
             }
-            return sendOK(req, MediaType.JAVA_SERIALIZED_OBJECT, buf);
+            sendOK(req, MediaType.JAVA_SERIALIZED_OBJECT, buf);
         } else {
             MissionDatabase converted = YamcsToGpbAssembler.toMissionDatabase(req, instance, mdb);
-            return sendOK(req, converted, SchemaYamcsManagement.MissionDatabase.WRITE);
+            sendOK(req, converted, SchemaYamcsManagement.MissionDatabase.WRITE);
         }
     }
 }

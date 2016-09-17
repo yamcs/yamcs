@@ -13,7 +13,6 @@ import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
-import io.netty.channel.ChannelFuture;
 
 /**
  * Handles incoming requests related to algorithm info from the MDB
@@ -22,15 +21,15 @@ public class MDBAlgorithmRestHandler extends RestHandler {
     
     @Route(path = "/api/mdb/:instance/algorithms", method = "GET")
     @Route(path = "/api/mdb/:instance/algorithms/:name*", method = "GET")
-    public ChannelFuture getAlgorithm(RestRequest req) throws HttpException {
+    public void getAlgorithm(RestRequest req) throws HttpException {
         if (req.hasRouteParam("name")) {
-            return getAlgorithmInfo(req);
+            getAlgorithmInfo(req);
         } else {
-            return listAlgorithms(req);
+            listAlgorithms(req);
         }
     }
     
-    private ChannelFuture getAlgorithmInfo(RestRequest req) throws HttpException {
+    private void getAlgorithmInfo(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
@@ -38,10 +37,10 @@ public class MDBAlgorithmRestHandler extends RestHandler {
         
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
         AlgorithmInfo cinfo = XtceToGpbAssembler.toAlgorithmInfo(algo, instanceURL, DetailLevel.FULL, req.getOptions());
-        return sendOK(req, cinfo, SchemaMdb.AlgorithmInfo.WRITE);
+        sendOK(req, cinfo, SchemaMdb.AlgorithmInfo.WRITE);
     }
     
-    private ChannelFuture listAlgorithms(RestRequest req) throws HttpException {
+    private void listAlgorithms(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         
@@ -74,6 +73,6 @@ public class MDBAlgorithmRestHandler extends RestHandler {
             }
         }
         
-        return sendOK(req, responseb.build(), SchemaRest.ListAlgorithmInfoResponse.WRITE);
+        sendOK(req, responseb.build(), SchemaRest.ListAlgorithmInfoResponse.WRITE);
     }
 }

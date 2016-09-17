@@ -19,8 +19,6 @@ import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Route;
 
-import io.netty.channel.ChannelFuture;
-
 /**
  * Provides some maintenance operations on the parameter archive
  * @author nm
@@ -32,7 +30,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
      * 
      */
     @Route(path = "/api/archive/:instance/parameterArchive/rebuild")
-    public ChannelFuture reprocess(RestRequest req) throws HttpException {
+    public void reprocess(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         checkPrivileges(req);
             
@@ -53,11 +51,11 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
             throw new BadRequestException(e.getMessage());
         }
         
-        return sendOK(req);
+        sendOK(req);
     }
     
     @Route(path = "/api/archive/:instance/parameterArchive/deletePartitions")
-    public ChannelFuture deletePartition(RestRequest req) throws HttpException {
+    public void deletePartition(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         checkPrivileges(req);
             
@@ -83,7 +81,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
             }
             StringMessage sm = StringMessage.newBuilder().setMessage(sb.toString()).build();
             
-            return sendOK(req, sm, org.yamcs.protobuf.SchemaYamcs.StringMessage.WRITE);
+            sendOK(req, sm, org.yamcs.protobuf.SchemaYamcs.StringMessage.WRITE);
             
         } catch (RocksDBException e){
             throw new InternalServerErrorException(e.getMessage());
@@ -93,7 +91,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
     }
     
     @Route(path = "/api/archive/:instance/parameterArchive/info/parameter/:name*")
-    public ChannelFuture archiveInfo(RestRequest req) throws HttpException {
+    public void archiveInfo(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         checkPrivileges(req);
         
@@ -102,7 +100,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
         ParameterIdDb pdb = parchive.getParameterIdDb();
         ParameterId[] pids = pdb.get(fqn);
         StringMessage sm = StringMessage.newBuilder().setMessage(Arrays.toString(pids)).build();
-        return sendOK(req, sm, org.yamcs.protobuf.SchemaYamcs.StringMessage.WRITE);
+        sendOK(req, sm, org.yamcs.protobuf.SchemaYamcs.StringMessage.WRITE);
     }
    
     

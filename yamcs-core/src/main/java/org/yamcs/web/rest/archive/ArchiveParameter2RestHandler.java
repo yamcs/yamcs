@@ -6,6 +6,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import org.rocksdb.RocksDBException;
@@ -66,7 +67,7 @@ public class ArchiveParameter2RestHandler extends RestHandler {
      * If no query parameters are defined, the series covers *all* data.
      */
     @Route(path = "/api/archive/:instance/parameters2/:name*/samples")
-    public ChannelFuture getParameterSamples(RestRequest req) throws HttpException {
+    public void getParameterSamples(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
@@ -127,7 +128,7 @@ public class ArchiveParameter2RestHandler extends RestHandler {
             series.addSample(ArchiveHelper.toGPBSample(s));
         }
 
-        return sendOK(req, series.build(), SchemaPvalue.TimeSeries.WRITE);
+        sendOK(req, series.build(), SchemaPvalue.TimeSeries.WRITE);
     }
 
     private void sampleDataFromCache(ParameterCache pcache, Parameter p, long start, long stop, RestDownsampler sampler) {
@@ -216,7 +217,7 @@ public class ArchiveParameter2RestHandler extends RestHandler {
         return d;
     }
     @Route(path = "/api/archive/:instance/parameters2/:name*")
-    public ChannelFuture listParameterHistory(RestRequest req) throws HttpException {
+    public void listParameterHistory(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
@@ -270,14 +271,14 @@ public class ArchiveParameter2RestHandler extends RestHandler {
         if(realtimeProcessor!=null) {
             pcache = realtimeProcessor.getParameterCache();
         }
-
+        CompletableFuture<Void> cf = req.getCompletableFuture();
         if (req.asksFor(MediaType.CSV)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
             try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new ByteBufOutputStream(buf)))) {
                 List<NamedObjectId> idList = Arrays.asList(requestedId);
                 ParameterFormatter csvFormatter = new ParameterFormatter(bw, idList);
                 limit++; // Allow one extra line for the CSV header
-                RestParameterReplayListener replayListener = new RestParameterReplayListener(0, limit) {
+                RestParameterReplayListener replayListener = new RestParameterReplayListener(0, limit, cf) {
                     @Override
                     public void onParameterData(ParameterValueWithId pvwid) {
                         try {
@@ -291,16 +292,17 @@ public class ArchiveParameter2RestHandler extends RestHandler {
                 };
 
                 replayListener.setNoRepeat(noRepeat);
+                //FIXME - make async
                 retrieveParameterData(parchive, pcache, p, requestedId, mpvr, replayListener);
 
             } catch (IOException|DecodingException|RocksDBException e) {
                 throw new InternalServerErrorException(e);
             }
-            return sendOK(req, MediaType.CSV, buf);
+            sendOK(req, MediaType.CSV, buf);
         } else {
             ParameterData.Builder resultb = ParameterData.newBuilder();
             try {
-                RestParameterReplayListener replayListener = new RestParameterReplayListener(0, limit) {
+                RestParameterReplayListener replayListener = new RestParameterReplayListener(0, limit, cf) {
                     @Override
                     public void onParameterData(ParameterValueWithId  pvwid) {
                         resultb.addParameter(pvwid.toGbpParameterValue());
@@ -313,11 +315,12 @@ public class ArchiveParameter2RestHandler extends RestHandler {
                 };
 
                 replayListener.setNoRepeat(noRepeat);
+              //FIXME - make async
                 retrieveParameterData(parchive, pcache, p, requestedId, mpvr, replayListener);
             } catch (DecodingException|RocksDBException e) {
                 throw new InternalServerErrorException(e);
             }
-            return sendOK(req, resultb.build(), SchemaPvalue.ParameterData.WRITE);
+            sendOK(req, resultb.build(), SchemaPvalue.ParameterData.WRITE);
         }
     }
 

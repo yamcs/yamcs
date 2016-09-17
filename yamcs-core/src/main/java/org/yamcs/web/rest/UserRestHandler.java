@@ -11,8 +11,6 @@ import org.yamcs.security.Privilege;
 import org.yamcs.security.User;
 import org.yamcs.web.HttpException;
 
-import io.netty.channel.ChannelFuture;
-
 /**
  * Handles incoming requests related to the user
  */
@@ -20,7 +18,7 @@ public class UserRestHandler extends RestHandler {
     
 
     @Route(path = "/api/user", method = "GET")
-    public ChannelFuture getUser(RestRequest req) throws HttpException {
+    public void getUser(RestRequest req) throws HttpException {
         User user = Privilege.getInstance().getUser(req.getAuthToken());
         
         UserInfo.Builder userInfob;
@@ -43,7 +41,7 @@ public class UserRestHandler extends RestHandler {
         }
 
         UserInfo info = userInfob.build();
-        return sendOK(req, info, SchemaYamcsManagement.UserInfo.WRITE);
+        sendOK(req, info, SchemaYamcsManagement.UserInfo.WRITE);
     }
 
     private UserInfo.Builder buildFullyPrivilegedUser() {

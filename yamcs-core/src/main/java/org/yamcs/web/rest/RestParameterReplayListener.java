@@ -2,6 +2,7 @@ package org.yamcs.web.rest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
@@ -14,17 +15,27 @@ import org.yamcs.utils.ValueUtility;
  * used in multiple places
  */
 public abstract class RestParameterReplayListener extends RestReplayListener {
-    
     private boolean noRepeat;
-    
     private Value lastValue;
+    final CompletableFuture<Void> cf;
     
-    public RestParameterReplayListener() {
+    /**
+     * 
+     * @param cf is the completable future of the rest request - used to end exceptionally in case of error
+     */
+    public RestParameterReplayListener(CompletableFuture<Void> cf) {
         super();
+        this.cf = cf;
     }
-    
-    public RestParameterReplayListener(long pos, int limit) {
+    /**
+     * 
+     * @param pos
+     * @param limit
+     * @param cf is the completable future of the rest request - used to end exceptionally in case of error
+     */
+    public RestParameterReplayListener(long pos, int limit, CompletableFuture<Void> cf) {
         super(pos, limit);
+        this.cf = cf;
     }
     
     public void setNoRepeat(boolean noRepeat) {
@@ -63,4 +74,8 @@ public abstract class RestParameterReplayListener extends RestReplayListener {
             return pvwid;
         }
     }  
+
+    public void replayFailed(Throwable t){
+        cf.completeExceptionally(t);
+    }
 }

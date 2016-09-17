@@ -30,7 +30,6 @@ import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.protobuf.ByteString;
 
-import io.netty.channel.ChannelFuture;
 import org.yaml.snakeyaml.util.UriEncoder;
 
 /**
@@ -39,7 +38,7 @@ import org.yaml.snakeyaml.util.UriEncoder;
 public class ProcessorCommandRestHandler extends RestHandler {
     
     @Route(path = "/api/processors/:instance/:processor/commands/:name*", method = "POST")
-    public ChannelFuture issueCommand(RestRequest req) throws HttpException {
+    public void issueCommand(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this processor");
@@ -148,11 +147,11 @@ public class ProcessorCommandRestHandler extends RestHandler {
         response.setSource(preparedCommand.getSource());
         response.setBinary(ByteString.copyFrom(preparedCommand.getBinary()));
         response.setHex(StringConverter.arrayToHexString(preparedCommand.getBinary()));
-        return sendOK(req, response.build(), SchemaRest.IssueCommandResponse.WRITE);
+        sendOK(req, response.build(), SchemaRest.IssueCommandResponse.WRITE);
     }
 
     @Route(path = "/api/processors/:instance/:processor/commandhistory/:name*", method = "POST")
-    public ChannelFuture updateCommandHistory(RestRequest req) throws HttpException {
+    public void updateCommandHistory(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this processor");
@@ -167,13 +166,10 @@ public class ProcessorCommandRestHandler extends RestHandler {
                     processor.getCommandingManager().addToCommandHistory(cmdId, historyEntry.getKey(), historyEntry.getValue(), req.getAuthToken());
                 }
             }
-        }
-        catch (NoPermissionException e) {
+        } catch (NoPermissionException e) {
             throw new ForbiddenException(e);
-        } catch (YamcsException e) { // could be anything, consider as internal server error
-            throw new InternalServerErrorException(e);
-        }
+        } 
 
-        return sendOK(req);
+        sendOK(req);
     }
 }

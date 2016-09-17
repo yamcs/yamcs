@@ -13,8 +13,6 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
-import io.netty.channel.ChannelFuture;
-
 /**
  * Handles incoming requests related to container info from the MDB
  */
@@ -22,15 +20,15 @@ public class MDBContainerRestHandler extends RestHandler {
     
     @Route(path = "/api/mdb/:instance/containers", method = "GET")
     @Route(path = "/api/mdb/:instance/containers/:name*", method = "GET")
-    public ChannelFuture getContainer(RestRequest req) throws HttpException {
+    public void getContainer(RestRequest req) throws HttpException {
         if (req.hasRouteParam("name")) {
-            return getContainerInfo(req);
+            getContainerInfo(req);
         } else {
-            return listContainers(req);
+            listContainers(req);
         }
     }
     
-    private ChannelFuture getContainerInfo(RestRequest req) throws HttpException {
+    private void getContainerInfo(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
@@ -38,10 +36,10 @@ public class MDBContainerRestHandler extends RestHandler {
         
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
         ContainerInfo cinfo = XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.FULL, req.getOptions());
-        return sendOK(req, cinfo, SchemaMdb.ContainerInfo.WRITE);
+        sendOK(req, cinfo, SchemaMdb.ContainerInfo.WRITE);
     }
     
-    private ChannelFuture listContainers(RestRequest req) throws HttpException {
+    private void listContainers(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         
@@ -74,6 +72,6 @@ public class MDBContainerRestHandler extends RestHandler {
             }
         }
         
-        return sendOK(req, responseb.build(), SchemaRest.ListContainerInfoResponse.WRITE);
+        sendOK(req, responseb.build(), SchemaRest.ListContainerInfoResponse.WRITE);
     }
 }

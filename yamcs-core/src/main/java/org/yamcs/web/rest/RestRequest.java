@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.TimeInterval;
 import org.yamcs.api.MediaType;
@@ -49,12 +51,16 @@ public class RestRequest {
     private AuthenticationToken token;
     private RouteMatch routeMatch;
     private static JsonFactory jsonFactory = new JsonFactory();
+    CompletableFuture<Void> cf = new CompletableFuture<>();
+    static AtomicInteger counter = new AtomicInteger(); 
+    final int requestId;
     
     public RestRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest, QueryStringDecoder qsDecoder, AuthenticationToken token) {
         this.channelHandlerContext = channelHandlerContext;
         this.httpRequest = httpRequest;
         this.token = token;
         this.qsDecoder = qsDecoder;
+        this.requestId = counter.incrementAndGet();
     }
     
     void setRouteMatch(RouteMatch routeMatch) {
@@ -76,6 +82,14 @@ public class RestRequest {
         return routeMatch.regexMatch.group(name);
     }
     
+    /**
+     * 
+     * @return unique across running yamcs server rest request id used to aid in tracking the request executin in the log file
+     * 
+     */
+    public int getRequestId() {
+        return requestId;
+    }
     public long getLongRouteParam(String name) throws BadRequestException {
         String routeParam = routeMatch.regexMatch.group(name);
         try {
@@ -397,6 +411,17 @@ public class RestRequest {
         return (host != null) ? scheme + host : "";
     }
     
+    /**
+     * 
+     * When the request is finished, the CompleteableFuture has to be used to signal the end.
+     * 
+     * 
+     * @return future to be used to signal the end of processing the request
+     * 
+     */
+    public CompletableFuture<Void> getCompletableFuture() {
+        return cf;
+    }
     
     /**
      * Returns true if the request specifies descending by use of the query string paramter 'order=desc'

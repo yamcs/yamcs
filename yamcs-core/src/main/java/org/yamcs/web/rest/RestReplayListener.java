@@ -46,7 +46,7 @@ public abstract class RestReplayListener extends Service.Listener implements Par
     
     @Override
     public void failed(State from, Throwable failure) {
-        replayFinished();
+        replayFailed(failure);
     }
     
     @Override
@@ -111,4 +111,5 @@ public abstract class RestReplayListener extends Service.Listener implements Par
     protected void onParameterData(ParameterValueWithId pvwid){};
     
     public void replayFinished(){};
+    public void replayFailed(Throwable t){};
 }

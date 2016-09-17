@@ -31,14 +31,13 @@ import org.yamcs.yarch.Tuple;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
-import io.netty.channel.ChannelFuture;
 
 public class ArchivePacketRestHandler extends RestHandler {
     
     private static final Logger log = LoggerFactory.getLogger(ArchivePacketRestHandler.class);
     
     @Route(path = "/api/archive/:instance/packets/:gentime?", method = "GET")
-    public ChannelFuture listPackets(RestRequest req) throws HttpException {
+    public void listPackets(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         
         long pos = req.getQueryParameterAsLong("pos", 0);
@@ -81,7 +80,7 @@ public class ArchivePacketRestHandler extends RestHandler {
                     }
                 });
                 bufOut.close();
-                return sendOK(req, MediaType.OCTET_STREAM, buf);
+                sendOK(req, MediaType.OCTET_STREAM, buf);
             } catch (IOException e) {
                 throw new InternalServerErrorException(e);
             }
@@ -95,12 +94,12 @@ public class ArchivePacketRestHandler extends RestHandler {
                     responseb.addPacket(pdata);
                 }
             });
-            return sendOK(req, responseb.build(), SchemaRest.ListPacketsResponse.WRITE);
+            sendOK(req, responseb.build(), SchemaRest.ListPacketsResponse.WRITE);
         }
     }
     
     @Route(path = "/api/archive/:instance/packets/:gentime/:seqnum", method = "GET")
-    public ChannelFuture getPacket(RestRequest req) throws HttpException {
+    public void getPacket(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         long gentime = req.getDateRouteParam("gentime");
         int seqNum = req.getIntegerRouteParam("seqnum");
@@ -123,7 +122,7 @@ public class ArchivePacketRestHandler extends RestHandler {
         } else if (packets.size() > 1) {
             throw new InternalServerErrorException("Too many results");
         } else {
-            return sendOK(req, packets.get(0), SchemaYamcs.TmPacketData.WRITE);
+            sendOK(req, packets.get(0), SchemaYamcs.TmPacketData.WRITE);
         }
     }
 }

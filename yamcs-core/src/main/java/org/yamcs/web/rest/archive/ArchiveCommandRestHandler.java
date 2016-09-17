@@ -19,12 +19,10 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 
-import io.netty.channel.ChannelFuture;
-
 public class ArchiveCommandRestHandler extends RestHandler {
     
     @Route(path = "/api/archive/:instance/commands/:name*")
-    public ChannelFuture listCommands(RestRequest req) throws HttpException {
+    public void listCommands(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         
         long pos = req.getQueryParameterAsLong("pos", 0);
@@ -51,6 +49,6 @@ public class ArchiveCommandRestHandler extends RestHandler {
                 responseb.addEntry(che);
             }
         });
-        return sendOK(req, responseb.build(), SchemaRest.ListCommandsResponse.WRITE);
+        sendOK(req, responseb.build(), SchemaRest.ListCommandsResponse.WRITE);
     }
 }

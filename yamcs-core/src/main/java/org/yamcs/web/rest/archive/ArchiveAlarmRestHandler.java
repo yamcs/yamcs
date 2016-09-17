@@ -18,14 +18,12 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 
-import io.netty.channel.ChannelFuture;
-
 public class ArchiveAlarmRestHandler extends RestHandler {
 
     @Route(path="/api/archive/:instance/alarms", method="GET")
     @Route(path="/api/archive/:instance/alarms/:parameter*", method="GET")
     //@Route(path="/api/archive/:instance/alarms/:parameter*/:triggerTime?", method="GET") // same comment as below
-    public ChannelFuture listAlarms(RestRequest req) throws HttpException {
+    public void listAlarms(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
                 
         long pos = req.getQueryParameterAsLong("pos", 0);
@@ -56,7 +54,7 @@ public class ArchiveAlarmRestHandler extends RestHandler {
             }
         });
         
-        return sendOK(req, responseb.build(), SchemaRest.ListAlarmsResponse.WRITE);
+        sendOK(req, responseb.build(), SchemaRest.ListAlarmsResponse.WRITE);
     }
     
     /*

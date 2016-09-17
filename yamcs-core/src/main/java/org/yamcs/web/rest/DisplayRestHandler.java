@@ -32,7 +32,7 @@ public class DisplayRestHandler extends RestHandler {
     private final static Logger log=LoggerFactory.getLogger(DisplayRestHandler.class);
 
     @Route(path="/api/displays/:instance", method="GET")
-    public ChannelFuture listDisplays(RestRequest req) throws HttpException {
+    public void listDisplays(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         ByteBuf cb=req.getChannelHandlerContext().alloc().buffer(1024);
         ByteBufOutputStream cbos=new ByteBufOutputStream(cb);
@@ -52,7 +52,7 @@ public class DisplayRestHandler extends RestHandler {
                 writeFilesFromDir(json, new Path(), displayDir);
             }
             json.close();
-            return sendOK(req, MediaType.JSON, cb);
+            sendOK(req, MediaType.JSON, cb);
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }

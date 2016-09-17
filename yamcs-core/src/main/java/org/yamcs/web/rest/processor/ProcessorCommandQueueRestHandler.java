@@ -25,34 +25,31 @@ import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.web.rest.Route;
 
-import io.netty.channel.ChannelFuture;
-
-
 public class ProcessorCommandQueueRestHandler extends RestHandler {
     
     @Route(path = "/api/processors/:instance/:processor/cqueues", method = "GET")
-    public ChannelFuture listQueues(RestRequest req) throws HttpException {
+    public void listQueues(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         
         ListCommandQueuesResponse.Builder response = ListCommandQueuesResponse.newBuilder();
         ManagementService managementService = ManagementService.getInstance();
         CommandQueueManager mgr = managementService.getCommandQueueManager(processor);
         mgr.getQueues().forEach(q -> response.addQueue(toCommandQueueInfo(req, q, true)));
-        return sendOK(req, response.build(), SchemaRest.ListCommandQueuesResponse.WRITE);
+        sendOK(req, response.build(), SchemaRest.ListCommandQueuesResponse.WRITE);
     }
     
     @Route(path = "/api/processors/:instance/:processor/cqueues/:name", method = "GET")
-    public ChannelFuture getQueue(RestRequest req) throws HttpException {
+    public void getQueue(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         CommandQueue queue = verifyCommandQueue(req, mgr, req.getRouteParam("name"));
         
         CommandQueueInfo info = toCommandQueueInfo(req, queue, true);
-        return sendOK(req, info, SchemaCommanding.CommandQueueInfo.WRITE);
+        sendOK(req, info, SchemaCommanding.CommandQueueInfo.WRITE);
     }
     
     @Route(path = "/api/processors/:instance/:processor/cqueues/:name", method = { "PATCH", "PUT", "POST" })
-    public ChannelFuture editQueue(RestRequest req) throws HttpException {
+    public void editQueue(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         CommandQueue queue = verifyCommandQueue(req, mgr, req.getRouteParam("name"));
@@ -79,11 +76,11 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
             }
         }
         CommandQueueInfo qinfo = toCommandQueueInfo(req, updatedQueue, true);
-        return sendOK(req, qinfo, SchemaCommanding.CommandQueueInfo.WRITE);
+        sendOK(req, qinfo, SchemaCommanding.CommandQueueInfo.WRITE);
     }
     
     @Route(path = "/api/processors/:instance/:processor/cqueues/:name/entries", method = "GET")
-    public ChannelFuture listQueueEntries(RestRequest req) throws HttpException {
+    public void listQueueEntries(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         CommandQueue queue = verifyCommandQueue(req, mgr, req.getRouteParam("name"));
@@ -93,11 +90,11 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
             CommandQueueEntry qEntry = ManagementGpbHelper.toCommandQueueEntry(queue, pc);
             responseb.addEntry(qEntry);
         }
-        return sendOK(req, responseb.build(), SchemaRest.ListCommandQueueEntries.WRITE);
+        sendOK(req, responseb.build(), SchemaRest.ListCommandQueueEntries.WRITE);
     }
     
     @Route(path = "/api/processors/:instance/:processor/cqueues/:cqueue/entries/:uuid", method = { "PATCH", "PUT", "POST" })
-    public ChannelFuture editQueueEntry(RestRequest req) throws HttpException {
+    public void editQueueEntry(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         // CommandQueue queue = verifyCommandQueue(req, mgr, req.getRouteParam("cqueue"));
@@ -124,7 +121,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
             }
         }
         
-        return sendOK(req);
+        sendOK(req);
     }
 
     private CommandQueueInfo toCommandQueueInfo(RestRequest req, CommandQueue queue, boolean detail) {

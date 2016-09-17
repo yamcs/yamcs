@@ -57,14 +57,13 @@ public abstract class RestHandler extends RouteHandler {
     private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
     private static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
 
-    protected static ChannelFuture sendOK(RestRequest restRequest) {
-        ChannelHandlerContext ctx = restRequest.getChannelHandlerContext();
+    protected static void sendOK(RestRequest restRequest) {
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
         setContentLength(httpResponse, 0);
-        return HttpRequestHandler.sendOK(ctx, restRequest.getHttpRequest(), httpResponse);
+       completeRequest(restRequest, httpResponse);
     }
 
-    protected static <T extends MessageLite> ChannelFuture sendOK(RestRequest restRequest, T responseMsg, Schema<T> responseSchema) throws HttpException {
+    protected static <T extends MessageLite> void sendOK(RestRequest restRequest, T responseMsg, Schema<T> responseSchema) throws HttpException {
         ByteBuf body = restRequest.getChannelHandlerContext().alloc().buffer();
         ByteBufOutputStream channelOut = new ByteBufOutputStream(body);
         try {
@@ -86,21 +85,28 @@ public abstract class RestHandler extends RouteHandler {
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
         setContentTypeHeader(httpResponse, restRequest.deriveTargetContentType().toString());
         setContentLength(httpResponse, body.readableBytes());
-        return HttpRequestHandler.sendOK(restRequest.getChannelHandlerContext(), restRequest.getHttpRequest(), httpResponse);
+        
+        completeRequest(restRequest, httpResponse);
     }
 
-    protected static ChannelFuture sendOK(RestRequest restRequest, MediaType contentType, ByteBuf body) {
-        ChannelHandlerContext ctx = restRequest.getChannelHandlerContext();
+    protected static void sendOK(RestRequest restRequest, MediaType contentType, ByteBuf body) {
         if (body == null) {
             HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
             setContentLength(httpResponse, 0);
-            return HttpRequestHandler.sendOK(ctx, restRequest.getHttpRequest(), httpResponse);
+            completeRequest(restRequest, httpResponse);
         } else {
             HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
             setContentTypeHeader(httpResponse, contentType.toString());
             setContentLength(httpResponse, body.readableBytes());
-            return HttpRequestHandler.sendOK(ctx, restRequest.getHttpRequest(), httpResponse);
+            completeRequest(restRequest, httpResponse);
         }
+    }
+    
+    private static void completeRequest(RestRequest restRequest, HttpResponse httpResponse) {
+        ChannelFuture cf = HttpRequestHandler.sendOK(restRequest.getChannelHandlerContext(), restRequest.getHttpRequest(), httpResponse);
+        cf.addListener(l -> {
+            restRequest.getCompletableFuture().complete(null);
+        });
     }
 
     protected static void sendRestError(RestRequest req, HttpResponseStatus status, Throwable t) {

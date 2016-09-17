@@ -12,12 +12,10 @@ import org.yamcs.yarch.AbstractStream;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
 
-import io.netty.channel.ChannelFuture;
-
 public class ArchiveStreamRestHandler extends RestHandler {
 
     @Route(path = "/api/archive/:instance/streams", method = "GET")
-    public ChannelFuture listStreams(RestRequest req) throws HttpException {
+    public void listStreams(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
         
@@ -25,16 +23,16 @@ public class ArchiveStreamRestHandler extends RestHandler {
         for (AbstractStream stream : ydb.getStreams()) {
             responseb.addStream(ArchiveHelper.toStreamInfo(stream));
         }
-        return sendOK(req, responseb.build(), SchemaRest.ListStreamsResponse.WRITE);
+        sendOK(req, responseb.build(), SchemaRest.ListStreamsResponse.WRITE);
     }
     
     @Route(path = "/api/archive/:instance/streams/:name", method = "GET")
-    public ChannelFuture getStream(RestRequest req) throws HttpException {
+    public void getStream(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
         Stream stream = verifyStream(req, ydb, req.getRouteParam("name"));
         
         StreamInfo response = ArchiveHelper.toStreamInfo(stream);
-        return sendOK(req, response, SchemaArchive.StreamInfo.WRITE);
+        sendOK(req, response, SchemaArchive.StreamInfo.WRITE);
     }    
 }

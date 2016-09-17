@@ -47,7 +47,7 @@ import io.netty.channel.ChannelFuture;
 public class ProcessorRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/:instance/:processor/clients", method = "GET")
-    public ChannelFuture listClientsForProcessor(RestRequest req) throws HttpException {
+    public void listClientsForProcessor(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         
         Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
@@ -58,39 +58,39 @@ public class ProcessorRestHandler extends RestHandler {
                 responseb.addClient(ClientInfo.newBuilder(client).setState(ClientState.CONNECTED));
             }
         }
-        return sendOK(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
+        sendOK(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
     }
 
     @Route(path = "/api/processors", method = "GET")
-    public ChannelFuture listProcessors(RestRequest req) throws HttpException {
+    public void listProcessors(RestRequest req) throws HttpException {
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
         for (YProcessor processor : YProcessor.getProcessors()) {
             response.addProcessor(toProcessorInfo(processor, req, true));
         }
-        return sendOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
+        sendOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
     }
 
     @Route(path = "/api/processors/:instance", method = "GET")
-    public ChannelFuture listProcessorsForInstance(RestRequest req) throws HttpException {
+    public void listProcessorsForInstance(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
         for (YProcessor processor : YProcessor.getProcessors(instance)) {
             response.addProcessor(toProcessorInfo(processor, req, true));
         }
-        return sendOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
+        sendOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
     }
     
     @Route(path = "/api/processors/:instance/:processor", method = "GET")
-    public ChannelFuture getProcessor(RestRequest req) throws HttpException {
+    public void getProcessor(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         
         ProcessorInfo pinfo = toProcessorInfo(processor, req, true);
-        return sendOK(req, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
+        sendOK(req, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
     }
 
     @Route(path = "/api/processors/:instance/:processor", method = { "PATCH", "PUT", "POST" })
-    public ChannelFuture editProcessor(RestRequest req) throws HttpException {
+    public void editProcessor(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.isReplay()) {
             throw new BadRequestException("Cannot update a non-replay processor");
@@ -149,11 +149,11 @@ public class ProcessorRestHandler extends RestHandler {
             processor.changeSpeed(replaySpeed);
         }
 
-        return sendOK(req);
+        sendOK(req);
     }
 
     @Route(path = "/api/processors/:instance", method = "POST")
-    public ChannelFuture createProcessorForInstance(RestRequest req) throws HttpException {
+    public void createProcessorForInstance(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         
@@ -308,7 +308,7 @@ public class ProcessorRestHandler extends RestHandler {
         ManagementService mservice = ManagementService.getInstance();
         try {
             mservice.createProcessor(reqb.build(), req.getAuthToken());
-            return sendOK(req);
+            sendOK(req);
         } catch (YamcsException e) {
             throw new BadRequestException(e.getMessage());
         }

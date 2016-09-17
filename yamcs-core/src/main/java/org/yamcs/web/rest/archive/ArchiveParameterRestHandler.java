@@ -54,11 +54,10 @@ public class ArchiveParameterRestHandler extends RestHandler {
      * If no query parameters are defined, the series covers *all* data.
      * @param req
      *        rest request
-     * @return 
      * @throws HttpException 
      */
     @Route(path = "/api/archive/:instance/parameters/:name*/samples")
-    public CompletableFuture<ChannelFuture> getParameterSamples(RestRequest req) throws HttpException {
+    public void getParameterSamples(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         
         XtceDb mdb = XtceDbFactory.getInstance(instance);
@@ -81,7 +80,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         
         RestDownsampler sampler = new RestDownsampler(rr.getStop());
         
-        CompletableFuture<ChannelFuture> completableFuture = new CompletableFuture<ChannelFuture>();
+        CompletableFuture<Void> completableFuture = req.getCompletableFuture();
         
         RestReplays.replay(instance, req.getAuthToken(), rr.build(), new RestReplayListener() {
             @Override
@@ -98,19 +97,22 @@ public class ArchiveParameterRestHandler extends RestHandler {
                     series.addSample(ArchiveHelper.toGPBSample(s));
                 }
                 try {
-                    ChannelFuture cf = sendOK(req, series.build(), SchemaPvalue.TimeSeries.WRITE);
-                    completableFuture.complete(cf);                    
+                    sendOK(req, series.build(), SchemaPvalue.TimeSeries.WRITE);
                 } catch (HttpException e) { //error encoding data 
                     completableFuture.completeExceptionally(e);
                 }
             }
+            
+            @Override
+            public void replayFailed(Throwable t) {
+                completableFuture.completeExceptionally(t);
+            }
         });
-        return completableFuture;
     }
     
     
     @Route(path = "/api/archive/:instance/parameters/:name*")
-    public CompletableFuture<ChannelFuture> listParameterHistory(RestRequest req) throws HttpException {
+    public void listParameterHistory(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         
         XtceDb mdb = XtceDbFactory.getInstance(instance);
@@ -124,7 +126,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         
         
         ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, p.getItem(), true);
-        CompletableFuture<ChannelFuture> completableFuture = new CompletableFuture<ChannelFuture>();
+        CompletableFuture<Void> completableFuture = req.getCompletableFuture();
         
         if (req.asksFor(MediaType.CSV)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
@@ -132,7 +134,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
                 List<NamedObjectId> idList = Arrays.asList(p.getRequestedId());
                 ParameterFormatter csvFormatter = new ParameterFormatter(bw, idList);
                 limit++; // Allow one extra line for the CSV header
-                RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit) {
+                RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit, completableFuture) {
                     @Override
                     public void onParameterData(List<ParameterValueWithId> params) {
                         try {
@@ -147,7 +149,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
                         }
                     }
                     public void replayFinished() {
-                        completableFuture.complete(sendOK(req, MediaType.CSV, buf));
+                        sendOK(req, MediaType.CSV, buf);
                     }
                 };
                 replayListener.setNoRepeat(noRepeat);                
@@ -159,17 +161,17 @@ public class ArchiveParameterRestHandler extends RestHandler {
            
         } else {
             ParameterData.Builder resultb = ParameterData.newBuilder();
-            RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit) {
+            RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit, completableFuture) {
                 @Override
                 public void onParameterData(List<ParameterValueWithId> params) {
                     for(ParameterValueWithId pvalid: params) {
                         resultb.addParameter(pvalid.toGbpParameterValue());
                     }
                 }
+                @Override
                 public void replayFinished() {
                     try {
-                        ChannelFuture cf =  sendOK(req, resultb.build(), SchemaPvalue.ParameterData.WRITE);
-                        completableFuture.complete(cf);
+                        sendOK(req, resultb.build(), SchemaPvalue.ParameterData.WRITE);
                     } catch (HttpException e) { //error encoding data
                         completableFuture.completeExceptionally(e);
                     }
@@ -178,6 +180,5 @@ public class ArchiveParameterRestHandler extends RestHandler {
             replayListener.setNoRepeat(noRepeat);
             RestReplays.replay(instance, req.getAuthToken(), rr, replayListener);
         }
-        return completableFuture;
     }
 }

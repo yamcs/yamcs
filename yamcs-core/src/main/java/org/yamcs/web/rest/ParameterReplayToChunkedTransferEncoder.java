@@ -37,7 +37,7 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
     private ChunkedTransferStats stats;
 
     public ParameterReplayToChunkedTransferEncoder(RestRequest req, MediaType contentType, List<NamedObjectId> idList) throws HttpException {
-        super();
+        super(req.getCompletableFuture());
         this.req = req;
         this.contentType = contentType;
         this.idList = idList;

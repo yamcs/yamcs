@@ -22,12 +22,10 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 
-import io.netty.channel.ChannelFuture;
-
 public class ArchiveTableRestHandler extends RestHandler {
     
     @Route(path = "/api/archive/:instance/tables", method = "GET")
-    public ChannelFuture listTables(RestRequest req) throws HttpException {
+    public void listTables(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
         
@@ -35,21 +33,21 @@ public class ArchiveTableRestHandler extends RestHandler {
         for (TableDefinition def : ydb.getTableDefinitions()) {
             responseb.addTable(ArchiveHelper.toTableInfo(def));
         }
-        return sendOK(req, responseb.build(), SchemaRest.ListTablesResponse.WRITE);
+        sendOK(req, responseb.build(), SchemaRest.ListTablesResponse.WRITE);
     }
     
     @Route(path = "/api/archive/:instance/tables/:name", method = "GET")
-    public ChannelFuture getTable(RestRequest req) throws HttpException {
+    public void getTable(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
         TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
         
         TableInfo response = ArchiveHelper.toTableInfo(table);
-        return sendOK(req, response, SchemaArchive.TableInfo.WRITE);
+        sendOK(req, response, SchemaArchive.TableInfo.WRITE);
     }
     
     @Route(path = "/api/archive/:instance/tables/:name/data", method = "GET")
-    public ChannelFuture getTableData(RestRequest req) throws HttpException {
+    public void getTableData(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
         TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
@@ -88,6 +86,6 @@ public class ArchiveTableRestHandler extends RestHandler {
             }
         });
         
-        return sendOK(req, responseb.build(), SchemaArchive.TableData.WRITE);
+        sendOK(req, responseb.build(), SchemaArchive.TableData.WRITE);
     }
 }

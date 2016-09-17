@@ -68,7 +68,7 @@ public class SimulationTimeService implements TimeService {
     public static class SimTimeRestHandler extends RestHandler {
         
         @Route(path = "/api/time/:instance", method = { "PUT", "POST"})
-        public ChannelFuture setSimTime(RestRequest req) throws HttpException {
+        public void setSimTime(RestRequest req) throws HttpException {
             String instance = verifyInstance(req, req.getRouteParam("instance"));
             TimeService ts = YamcsServer.getInstance(instance).getTimeService();
             if(!(ts instanceof SimulationTimeService)) {
@@ -93,7 +93,7 @@ public class SimulationTimeService implements TimeService {
                 sts.setSimElapsedTime(request.getSimElapsedTime());
             }
             
-            return sendOK(req);
+            sendOK(req);
         }
     }
 }
