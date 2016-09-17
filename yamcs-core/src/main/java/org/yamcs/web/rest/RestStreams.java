@@ -1,6 +1,5 @@
 package org.yamcs.web.rest;
 
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -8,8 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.StreamSubscriber;
-import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;

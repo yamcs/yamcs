@@ -41,11 +41,13 @@ import com.google.protobuf.MessageLite;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.LastHttpContent;
 import io.protostuff.JsonIOUtil;
 import io.protostuff.Schema;
 
@@ -394,5 +396,11 @@ public abstract class RestHandler extends RouteHandler {
         public NamedObjectId getRequestedId() {
             return requestedId;
         }
+    }
+
+    public static void completeChunkedTransfer(RestRequest req) {
+        req.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+        .addListener(ChannelFutureListener.CLOSE)
+        .addListener(l-> req.getCompletableFuture().complete(null));
     }
 }

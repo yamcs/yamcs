@@ -14,7 +14,6 @@ import org.yamcs.web.HttpRequestHandler.ChunkedTransferStats;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
-import io.netty.channel.ChannelFuture;
 
 /**
  * Reads a yamcs replay and maps it directly to an output buffer. If that buffer grows larger
@@ -28,7 +27,6 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
 
     private ByteBuf buf;
     protected ByteBufOutputStream bufOut;
-    private ChannelFuture lastChannelFuture;
 
     protected RestRequest req;
     protected MediaType contentType;
@@ -42,7 +40,7 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
         this.contentType = contentType;
         this.idList = idList;
         resetBuffer();
-        lastChannelFuture = HttpRequestHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType, null);
+        HttpRequestHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType, null);
         stats = req.getChannelHandlerContext().attr(HttpRequestHandler.CTX_CHUNK_STATS).get();
     }
 
@@ -89,7 +87,7 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
             if (buf.readableBytes() > 0) {
                 writeChunk();
             }
-            HttpRequestHandler.stopChunkedTransfer(req.getChannelHandlerContext(), lastChannelFuture);
+            RestHandler.completeChunkedTransfer(req);
         } catch (IOException e) {
             log.error("Could not write final chunk of data", e);
         }
@@ -100,6 +98,6 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
         req.addTransferredSize(txSize);
         stats.totalBytes += txSize;
         stats.chunkCount++;
-        lastChannelFuture = HttpRequestHandler.writeChunk(req.getChannelHandlerContext(), buf);
+        HttpRequestHandler.writeChunk(req.getChannelHandlerContext(), buf);
     }
 }
