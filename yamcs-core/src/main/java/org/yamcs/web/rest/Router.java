@@ -234,6 +234,16 @@ public class Router {
     }
 
     protected void dispatch(RestRequest req, RouteMatch match) {
+        CompletableFuture<Void> cf = req.getCompletableFuture();
+        if(logSlowRequests) {
+            timer.schedule(() ->{
+                if(!cf.isDone()) {
+                    log.error("R{} executing for more than 20 seconds. uri: {}", req.getRequestId(), req.getHttpRequest().getUri());
+                }
+            }
+            , 20, TimeUnit.SECONDS);
+        }
+        
         //the handlers will send themselves the response unless they throw an exception, case which is handled in the catch below.
         try {
             RouteHandler target = match.routeConfig.routeHandler;
@@ -248,15 +258,7 @@ public class Router {
         } catch(Throwable t) {
             handleException(req, t);
         }
-        CompletableFuture<Void> cf = req.getCompletableFuture();
-        if(logSlowRequests && !cf.isDone()) {
-            timer.schedule(() ->{
-                if(!cf.isDone()) {
-                    log.error("R{} executing for more than 20 seconds. uri: {}", req.getRequestId(), req.getHttpRequest().getUri());
-                }
-            }
-            , 20, TimeUnit.SECONDS);
-        }
+       
     }
 
     private void handleException(RestRequest req, Throwable t) {
