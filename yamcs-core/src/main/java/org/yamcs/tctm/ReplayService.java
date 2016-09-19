@@ -226,14 +226,13 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
             pprecordings.add(p.getRecordingGroup());
         }
         if(pprecordings.isEmpty()) {
-            log.debug("No addition pp group added to the subscription");
+            log.debug("No aadditional pp group added to the subscription");
         } else {
             PpReplayRequest.Builder pprr = originalReplayRequest.getPpRequest().toBuilder();
             pprr.addAllGroupNameFilter(pprecordings);
             rawDataRequest.setPpRequest(pprr.build());
         }
-        
-        if(!rawDataRequest.hasPacketRequest() && !rawDataRequest.hasParameterRequest()) {
+        if(!rawDataRequest.hasPacketRequest() && !rawDataRequest.hasPpRequest()) {
             if(originalReplayRequest.hasParameterRequest()) {
                 throw new YamcsException("Cannot find a replay source for any parmeters from request: "+originalReplayRequest.getParameterRequest().toString());
             } else {
