@@ -66,7 +66,7 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
 
         PartitioningSpec pspec = td1.getPartitioningSpec();
         assertNotNull(pspec);		
-        assertEquals(TimePartitionSchema.YYYY.class , pspec.timePartitioningSchema.getClass() );
+        assertEquals(TimePartitionSchema.YYYY.class , pspec.getTimePartitioningSchema().getClass() );
 
         TupleDefinition tplDef=td1.getTupleDefinition().copy();
         tplDef.addColumn("bbv1", DataType.DOUBLE);
@@ -98,7 +98,7 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
         PartitioningSpec ps=td2.getPartitioningSpec();
         assertEquals(PartitioningSpec._type.TIME, ps.type);
         assertEquals("aak1", ps.timeColumn);
-        assertEquals(TimePartitionSchema.YYYY.class , ps.timePartitioningSchema.getClass() );
+        assertEquals(TimePartitionSchema.YYYY.class , ps.getTimePartitioningSchema().getClass() );
 
 
 
@@ -145,7 +145,7 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
 
         PartitioningSpec pspec = td1.getPartitioningSpec();
         assertNotNull(pspec);           
-        assertEquals(TimePartitionSchema.YYYY.class , pspec.timePartitioningSchema.getClass() );
+        assertEquals(TimePartitionSchema.YYYY.class , pspec.getTimePartitioningSchema().getClass() );
 
         TupleDefinition tplDef=td1.getTupleDefinition().copy();
         tplDef.addColumn("bbv1", DataType.DOUBLE);

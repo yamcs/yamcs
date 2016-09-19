@@ -51,10 +51,10 @@ public class XtceTmRecorder extends AbstractService {
     String yamcsInstance;
     final Tuple END_MARK=new Tuple(TmDataLinkInitialiser.TM_TUPLE_DEFINITION, new Object[] {null,  null, null, null});
     XtceTmExtractor tmExtractor;
-    static public String REALTIME_TM_STREAM_NAME="tm_realtime";
-    static public String DUMP_TM_STREAM_NAME="tm_dump";
-    static public final String TABLE_NAME="tm";
-    static public final String PNAME_COLUMN="pname";
+    static public String REALTIME_TM_STREAM_NAME = "tm_realtime";
+    static public String DUMP_TM_STREAM_NAME = "tm_dump";
+    static public final String TABLE_NAME = "tm";
+    static public final String PNAME_COLUMN = "pname";
     XtceDb xtceDb;
     
     private final List<StreamRecorder> recorders = new ArrayList<StreamRecorder>();
@@ -89,10 +89,10 @@ public class XtceTmRecorder extends AbstractService {
         log=LoggerFactory.getLogger(this.getClass().getName()+"["+yamcsInstance+"]");
 
         YarchDatabase ydb=YarchDatabase.getInstance(yamcsInstance);
-
-
+       
         if(ydb.getTable(TABLE_NAME)==null) {
-            String query="create table "+TABLE_NAME+"("+RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()+", primary key(gentime, seqNum)) histogram(pname) partition by time_and_value(gentime, pname) table_format=compressed";
+            String query="create table "+TABLE_NAME+"("+RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()+", primary key(gentime, seqNum)) histogram(pname) partition by time_and_value(gentime"+getTimePartitioningSchemaSql()+", pname) table_format=compressed";
+            
             ydb.execute(query);
         }
         ydb.execute("create stream tm_is"+RECORDED_TM_TUPLE_DEFINITION.getStringDefinition());
@@ -120,7 +120,14 @@ public class XtceTmRecorder extends AbstractService {
         timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
-
+    static String getTimePartitioningSchemaSql() {
+        YConfiguration yconfig = YConfiguration.getConfiguration("yamcs");
+        String partSchema = "";
+        if(yconfig.containsKey("archiveConfig", "timePartitioningSchema")) {
+            partSchema = "('"+yconfig.getString("archiveConfig", "timePartitioningSchema")+"')";
+        }
+        return partSchema;
+    }
     private void createRecorder(StreamConfigEntry streamConf) {       
         YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
         SequenceContainer rootsc = streamConf.getRootContainer() ;

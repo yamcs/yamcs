@@ -15,8 +15,8 @@ public class PartitioningSpec {
     //this thing is not final because it is determined the TableDefinition when attaching the pspec. Could be  changed into a builder pattern.
     private DataType valueColumnType;
     
-    
-    public TimePartitionSchema timePartitioningSchema = TimePartitionSchema.getInstance("YYYY/MM"); 
+    //by default partition by year only (best for RocksDB to avoid having too many SST files)
+    private TimePartitionSchema timePartitioningSchema = TimePartitionSchema.getInstance("YYYY"); 
     
     private PartitioningSpec (_type type, String timeColumn, String valueColumn) {
     	this.type=type;
@@ -60,5 +60,9 @@ public class PartitioningSpec {
 
     public void setValueColumnType(DataType valueColumnType) {
         this.valueColumnType = valueColumnType;
+    }
+
+    public TimePartitionSchema getTimePartitioningSchema() {
+        return timePartitioningSchema;
     }
 }

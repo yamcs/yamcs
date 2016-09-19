@@ -87,7 +87,7 @@ public class TableDefinitionRepresenter extends Representer {
             m.put("type", p.type.toString());
             if((p.type==_type.TIME) || (p.type==_type.TIME_AND_VALUE)) {
             	m.put("timeColumn", p.timeColumn);
-            	m.put(K_timePartitioningSchema, p.timePartitioningSchema.getName());
+            	m.put(K_timePartitioningSchema, p.getTimePartitioningSchema().getName());
             }
             if((p.type==_type.VALUE) || (p.type==_type.TIME_AND_VALUE)) {
             	m.put(K_valueColumn, p.valueColumn);

@@ -52,7 +52,7 @@ public class RdbPartitionManager extends PartitionManager {
             if(s.equals(tblName)) {
                 File currentf = new File(dataDir+"/"+dir+"/"+s+"/CURRENT");
                 if(currentf.exists()) {
-                    PartitionInfo pinfo = partitioningSpec.timePartitioningSchema.parseDir(dir);
+                    PartitionInfo pinfo = partitioningSpec.getTimePartitioningSchema().parseDir(dir);
                     try {
                         readDb(partitioningSpec, pinfo, dir);
                     } catch (Exception e) {

@@ -32,7 +32,8 @@ public class EventRecorder extends AbstractService {
     public EventRecorder(String instance) throws StreamSqlException, ParseException, ActiveMQException, YamcsApiException {
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
         if(ydb.getTable(TABLE_NAME)==null) {
-            ydb.execute("create table "+TABLE_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'), primary key(gentime, source, seqNum)) histogram(source) partition by time(gentime) table_format=compressed");
+            ydb.execute("create table "+TABLE_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'), primary key(gentime, source, seqNum)) histogram(source)"
+                    + " partition by time(gentime"+XtceTmRecorder.getTimePartitioningSchemaSql()+") table_format=compressed");
         }
         eventTpdef=ydb.getTable("events").getTupleDefinition();
         

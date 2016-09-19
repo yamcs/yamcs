@@ -41,7 +41,7 @@ public class PpRecorder extends AbstractService {
         try {
             String cols=PP_TUPLE_DEFINITION.getStringDefinition1();
             if(ydb.getTable(TABLE_NAME)==null) {
-                String query="create table "+TABLE_NAME+"("+cols+", primary key(gentime, seqNum)) histogram(ppgroup) partition by time_and_value(gentime,ppgroup) table_format=compressed";
+                String query="create table "+TABLE_NAME+"("+cols+", primary key(gentime, seqNum)) histogram(ppgroup) partition by time_and_value(gentime"+XtceTmRecorder.getTimePartitioningSchemaSql()+",ppgroup) table_format=compressed";
                 ydb.execute(query);
             }
             

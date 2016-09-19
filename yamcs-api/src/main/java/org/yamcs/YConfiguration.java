@@ -196,7 +196,9 @@ public class YConfiguration {
     }
 
     public boolean containsKey(String key, String key1) throws ConfigurationException {
-        Map<String, Object> m=getMap(key);
+        if(!root.containsKey(key)) return false;
+        
+        Map<String, Object> m = getMap(key);
         return m.containsKey(key1);
     }
 

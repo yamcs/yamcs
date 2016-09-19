@@ -105,7 +105,7 @@ public abstract class PartitionManager {
                 if((entry!=null) && (instant<entry.getValue().getEnd())) {
                     pcache=entry.getValue();		               
                 } else {//no partition in this interval.
-                    PartitionInfo pinfo = partitioningSpec.timePartitioningSchema.getPartitionInfo(instant);
+                    PartitionInfo pinfo = partitioningSpec.getTimePartitioningSchema().getPartitionInfo(instant);
                     pcache=new Interval(pinfo.partitionStart, pinfo.partitionEnd);		                
                     intervals.put(pcache.start, pcache);
                 }
@@ -114,7 +114,7 @@ public abstract class PartitionManager {
         partition = pcache.get(value);
         if(partition == null) {
             if(partitioningSpec.timeColumn!=null) {
-                PartitionInfo pinfo = partitioningSpec.timePartitioningSchema.getPartitionInfo(instant);
+                PartitionInfo pinfo = partitioningSpec.getTimePartitioningSchema().getPartitionInfo(instant);
                 partition = createPartition(pinfo, value);
             } else {
                 partition = createPartition(value);
