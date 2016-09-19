@@ -36,10 +36,9 @@ public abstract class DerivedValue extends ParameterValue {
 	if(aliasSet!=null) {
 	    p.setAliasSet(aliasSet);
 	}
-	
 
-	this.argIds=argIds;
-	this.args=new ParameterValue[argIds.length];
+	this.argIds = argIds;
+	this.args = new ParameterValue[argIds.length];
     }
 
     static synchronized Parameter getParameter(String name, String spaceSystemName) {

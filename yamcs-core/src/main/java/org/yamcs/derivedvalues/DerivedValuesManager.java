@@ -42,8 +42,8 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
 
     //the id used for suscribing to the parameterManager
     int subscriptionId;
-    List<DerivedValue> derivedValues=new ArrayList<DerivedValue>();
-    NamedDescriptionIndex<Parameter> dvIndex=new NamedDescriptionIndex<Parameter>();
+    List<DerivedValue> derivedValues = new ArrayList<DerivedValue>();
+    NamedDescriptionIndex<Parameter> dvIndex = new NamedDescriptionIndex<Parameter>();
 
     ArrayList<DerivedValue> requestedValues=new ArrayList<DerivedValue>();
     ParameterRequestManagerImpl parameterRequestManager;
@@ -93,12 +93,13 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
 
     }
 
+    /**
+     * used by the implementors of derived values to add the values they provide to the manager (such that they are found by the ParameterRequestManager)
+     * @param dvalues
+     */
     public void addAll(Collection<DerivedValue> dvalues) {
         derivedValues.addAll(dvalues);
         for(DerivedValue dv:dvalues) {
-            // quick hack to remove qualified name to remain compatible with previous displays
-            dv.getParameter().setQualifiedName(null);
-
             dvIndex.add(dv.getParameter());
         }
     }
@@ -166,7 +167,7 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
     @Override
     public boolean canProvide(Parameter param) {
         if(param.getQualifiedName() == null)
-            return dvIndex.get(param.getOpsName()) != null;
+            return dvIndex.get(param.getName()) != null;
         else
             return dvIndex.get(param.getQualifiedName())!=null;
     }
@@ -175,7 +176,12 @@ public class DerivedValuesManager extends AbstractService implements ParameterPr
 
     @Override
     public Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification {
-        Parameter p=dvIndex.get(paraId.getName());
+        Parameter p = null;
+        if(paraId.hasNamespace()) {
+            p = dvIndex.get(paraId.getNamespace(), paraId.getName());
+        } else {
+            p = dvIndex.get(paraId.getName());
+        }
         if(p!=null) {
             return p;
         } else {
