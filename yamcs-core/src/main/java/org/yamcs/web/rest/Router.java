@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,6 +59,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.util.concurrent.CompleteFuture;
 
 /**
  * Matches a request uri to a registered route handler. Stops on the first
@@ -76,7 +80,13 @@ public class Router {
     // Order, because patterns are matched top-down in insertion order
     private LinkedHashMap<Pattern, Map<HttpMethod, RouteConfig>> defaultRoutes = new LinkedHashMap<>();
     private LinkedHashMap<Pattern, Map<HttpMethod, RouteConfig>> dynamicRoutes = new LinkedHashMap<>();
-
+    
+    private boolean logSlowRequests = true;
+    int SLOW_REQUEST_TIME = 20;//seconds; requests that execute more than this are logged
+    ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
+    
+   
+    
     public Router() {
         registerRouteHandler(null, new ClientRestHandler());
         registerRouteHandler(null, new DisplayRestHandler());
@@ -237,6 +247,15 @@ public class Router {
             });
         } catch(Throwable t) {
             handleException(req, t);
+        }
+        CompletableFuture<Void> cf = req.getCompletableFuture();
+        if(logSlowRequests && !cf.isDone()) {
+            timer.schedule(() ->{
+                if(!cf.isDone()) {
+                    log.error("R{} executing for more than 20 seconds. uri: {}", req.getRequestId(), req.getHttpRequest().getUri());
+                }
+            }
+            , 20, TimeUnit.SECONDS);
         }
     }
 
