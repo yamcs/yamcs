@@ -266,42 +266,6 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         return writeFuture;
     }
 
-    /**
-     * Send empty chunk downstream to signal succesful end of response.
-     * <p>
-     * If lastChunkFuture is not null, the 'successful stop' of the chunked transfer will only be
-     * written out when that future returns succes.
-     */
-    public static void stopChunkedTransfer(ChannelHandlerContext ctx, ChannelFuture lastChunkFuture) {
-        if (lastChunkFuture != null) {
-            lastChunkFuture.addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture future) throws Exception {
-                    if (future.isSuccess()) {
-                        writeEmptyLastContent(ctx);
-                    } else {
-                        log.error("Last chunk was not written successfully. Closing channel without sending empty final chunk", future.cause());
-                        ctx.channel().close();
-                    }
-                }
-            });
-        } else {
-            writeEmptyLastContent(ctx);
-        }
-    }
-
-    private static ChannelFuture writeEmptyLastContent(ChannelHandlerContext ctx) {
-        // TODO is this correct? can we store this in channel ctx? No clean-up either?
-        ChunkedTransferStats stats = ctx.attr(CTX_CHUNK_STATS).get();
-        if(stats!=null) {
-            log.info("{} {} --- Finished chunked transfer ({} B)", stats.originalMethod, stats.originalUri, stats.totalBytes);
-        } else {
-            log.info("--- Finished chunked transfer; no bytes trarnsferred");
-        }
-        ChannelFuture chunkWriteFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
-        return chunkWriteFuture.addListener(ChannelFutureListener.CLOSE);
-    }
-
     public static class ChunkedTransferStats {
         public int totalBytes = 0;
         public int chunkCount = 0;

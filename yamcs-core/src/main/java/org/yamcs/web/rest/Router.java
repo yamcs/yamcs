@@ -60,7 +60,6 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.util.concurrent.CompleteFuture;
 
 /**
  * Matches a request uri to a registered route handler. Stops on the first
