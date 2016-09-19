@@ -86,8 +86,10 @@ public abstract class RestHandler extends RouteHandler {
         body.resetReaderIndex();
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
         setContentTypeHeader(httpResponse, restRequest.deriveTargetContentType().toString());
-        setContentLength(httpResponse, body.readableBytes());
         
+        int txSize =  body.readableBytes();
+        setContentLength(httpResponse, txSize);
+        restRequest.addTransferredSize(txSize);
         completeRequest(restRequest, httpResponse);
     }
 
@@ -99,16 +101,17 @@ public abstract class RestHandler extends RouteHandler {
         } else {
             HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
             setContentTypeHeader(httpResponse, contentType.toString());
-            setContentLength(httpResponse, body.readableBytes());
+            int txSize =  body.readableBytes();
+            setContentLength(httpResponse, txSize);
+            restRequest.addTransferredSize(txSize);
             completeRequest(restRequest, httpResponse);
         }
     }
     
     private static void completeRequest(RestRequest restRequest, HttpResponse httpResponse) {
         ChannelFuture cf = HttpRequestHandler.sendOK(restRequest.getChannelHandlerContext(), restRequest.getHttpRequest(), httpResponse);
-        long txsize = HttpHeaders.getContentLength(httpResponse);
+       
         cf.addListener(l -> {
-            restRequest.addTransferredSize(txsize);
             restRequest.getCompletableFuture().complete(null);
         });
     }
