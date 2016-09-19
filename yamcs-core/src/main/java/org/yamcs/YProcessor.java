@@ -520,11 +520,21 @@ public class YProcessor extends AbstractService {
         if(quitting)return;
         log.info("Processor "+name+" quitting");
         quitting=true;
+        
         instances.remove(key(yamcsInstance,name));
+        
         for(ParameterProvider p:parameterProviders) {
             p.stopAsync();
         }
         if(commandReleaser!=null) commandReleaser.stopAsync();
+        if(tmProcessor!=null) {
+            tmProcessor.stopAsync();
+        }
+        if(tmPacketProvider!=null) {
+            tmPacketProvider.stopAsync();
+        }
+        
+        
         log.info("Processor "+name+" is out of business");
         listeners.forEach(l -> l.processorClosed(this));
         synchronized(this) {
