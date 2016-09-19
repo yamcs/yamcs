@@ -18,7 +18,7 @@ import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.tctm.TmProviderAdapter;
+import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.time.TimeService;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -49,7 +49,7 @@ public class XtceTmRecorder extends AbstractService {
     protected Logger log;
 
     String yamcsInstance;
-    final Tuple END_MARK=new Tuple(TmProviderAdapter.TM_TUPLE_DEFINITION, new Object[] {null,  null, null, null});
+    final Tuple END_MARK=new Tuple(TmDataLinkInitialiser.TM_TUPLE_DEFINITION, new Object[] {null,  null, null, null});
     XtceTmExtractor tmExtractor;
     static public String REALTIME_TM_STREAM_NAME="tm_realtime";
     static public String DUMP_TM_STREAM_NAME="tm_dump";
@@ -61,10 +61,10 @@ public class XtceTmRecorder extends AbstractService {
 
     static public final TupleDefinition RECORDED_TM_TUPLE_DEFINITION=new TupleDefinition();
     static {
-        RECORDED_TM_TUPLE_DEFINITION.addColumn(TmProviderAdapter.GENTIME_COLUMN, DataType.TIMESTAMP);
-        RECORDED_TM_TUPLE_DEFINITION.addColumn(TmProviderAdapter.SEQNUM_COLUMN, DataType.INT);
-        RECORDED_TM_TUPLE_DEFINITION.addColumn(TmProviderAdapter.RECTIME_COLUMN, DataType.TIMESTAMP);
-        RECORDED_TM_TUPLE_DEFINITION.addColumn(TmProviderAdapter.PACKET_COLUMN, DataType.BINARY);
+        RECORDED_TM_TUPLE_DEFINITION.addColumn(TmDataLinkInitialiser.GENTIME_COLUMN, DataType.TIMESTAMP);
+        RECORDED_TM_TUPLE_DEFINITION.addColumn(TmDataLinkInitialiser.SEQNUM_COLUMN, DataType.INT);
+        RECORDED_TM_TUPLE_DEFINITION.addColumn(TmDataLinkInitialiser.RECTIME_COLUMN, DataType.TIMESTAMP);
+        RECORDED_TM_TUPLE_DEFINITION.addColumn(TmDataLinkInitialiser.PACKET_COLUMN, DataType.BINARY);
         RECORDED_TM_TUPLE_DEFINITION.addColumn(PNAME_COLUMN, DataType.ENUM); //container name (XTCE qualified name) 
     }
 
