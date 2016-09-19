@@ -289,7 +289,6 @@ public class ArchiveIndexRestHandler extends RestHandler {
 
         private void bufferIndexResult(IndexResult msg) throws IOException {
             if (MediaType.PROTOBUF.equals(contentType)) {
-                System.out.println("------------- sending mesasge of size: "+msg.getSerializedSize());
                 msg.writeDelimitedTo(bufOut);
             } else {
                 JsonGenerator generator = req.createJsonGenerator(bufOut);
