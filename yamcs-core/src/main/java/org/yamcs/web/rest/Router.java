@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -234,15 +235,11 @@ public class Router {
     }
 
     protected void dispatch(RestRequest req, RouteMatch match) {
-        CompletableFuture<Void> cf = req.getCompletableFuture();
-        if(logSlowRequests) {
-            timer.schedule(() ->{
-                if(!cf.isDone()) {
-                    log.error("R{} executing for more than 20 seconds. uri: {}", req.getRequestId(), req.getHttpRequest().getUri());
-                }
-            }
-            , 20, TimeUnit.SECONDS);
+      
+        ScheduledFuture<?> x = timer.schedule(() ->{
+            log.error("R{} blocking the netty thread for 2 seconds. uri: {}", req.getRequestId(), req.getHttpRequest().getUri());
         }
+        , 2, TimeUnit.SECONDS);
         
         //the handlers will send themselves the response unless they throw an exception, case which is handled in the catch below.
         try {
@@ -258,7 +255,17 @@ public class Router {
         } catch(Throwable t) {
             handleException(req, t);
         }
-       
+        x.cancel(true);
+        
+        CompletableFuture<Void> cf = req.getCompletableFuture();
+        if(logSlowRequests) {
+            timer.schedule(() ->{
+                if(!cf.isDone()) {
+                    log.error("R{} executing for more than 20 seconds. uri: {}", req.getRequestId(), req.getHttpRequest().getUri());
+                }
+            }
+            , 20, TimeUnit.SECONDS);
+        }
     }
 
     private void handleException(RestRequest req, Throwable t) {

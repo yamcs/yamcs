@@ -271,14 +271,13 @@ public class ArchiveParameter2RestHandler extends RestHandler {
         if(realtimeProcessor!=null) {
             pcache = realtimeProcessor.getParameterCache();
         }
-        CompletableFuture<Void> cf = req.getCompletableFuture();
         if (req.asksFor(MediaType.CSV)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
             try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new ByteBufOutputStream(buf)))) {
                 List<NamedObjectId> idList = Arrays.asList(requestedId);
                 ParameterFormatter csvFormatter = new ParameterFormatter(bw, idList);
                 limit++; // Allow one extra line for the CSV header
-                RestParameterReplayListener replayListener = new RestParameterReplayListener(0, limit, cf) {
+                RestParameterReplayListener replayListener = new RestParameterReplayListener(0, limit, req) {
                     @Override
                     public void onParameterData(ParameterValueWithId pvwid) {
                         try {
@@ -302,7 +301,7 @@ public class ArchiveParameter2RestHandler extends RestHandler {
         } else {
             ParameterData.Builder resultb = ParameterData.newBuilder();
             try {
-                RestParameterReplayListener replayListener = new RestParameterReplayListener(0, limit, cf) {
+                RestParameterReplayListener replayListener = new RestParameterReplayListener(0, limit, req) {
                     @Override
                     public void onParameterData(ParameterValueWithId  pvwid) {
                         resultb.addParameter(pvwid.toGbpParameterValue());

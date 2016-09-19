@@ -100,7 +100,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
             
             @Override
             public void replayFailed(Throwable t) {
-                completableFuture.completeExceptionally(t);
+                completeWithError(req, new InternalServerErrorException(t));
             }
         });
     }
@@ -121,7 +121,6 @@ public class ArchiveParameterRestHandler extends RestHandler {
         
         
         ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, p.getItem(), true);
-        CompletableFuture<Void> completableFuture = req.getCompletableFuture();
         
         if (req.asksFor(MediaType.CSV)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
@@ -129,7 +128,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
                 List<NamedObjectId> idList = Arrays.asList(p.getRequestedId());
                 ParameterFormatter csvFormatter = new ParameterFormatter(bw, idList);
                 limit++; // Allow one extra line for the CSV header
-                RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit, completableFuture) {
+                RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit, req) {
                     @Override
                     public void onParameterData(List<ParameterValueWithId> params) {
                         try {
@@ -156,7 +155,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
            
         } else {
             ParameterData.Builder resultb = ParameterData.newBuilder();
-            RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit, completableFuture) {
+            RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit, req) {
                 @Override
                 public void onParameterData(List<ParameterValueWithId> params) {
                     for(ParameterValueWithId pvalid: params) {

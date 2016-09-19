@@ -28,15 +28,14 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
     private ByteBuf buf;
     protected ByteBufOutputStream bufOut;
 
-    protected RestRequest req;
+
     protected MediaType contentType;
     protected List<NamedObjectId> idList;
     protected boolean failed = false;
     private ChunkedTransferStats stats;
 
     public ParameterReplayToChunkedTransferEncoder(RestRequest req, MediaType contentType, List<NamedObjectId> idList) throws HttpException {
-        super(req.getCompletableFuture());
-        this.req = req;
+        super(req);
         this.contentType = contentType;
         this.idList = idList;
         resetBuffer();

@@ -8,6 +8,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.ValueUtility;
+import org.yamcs.web.InternalServerErrorException;
 
 
 /**
@@ -17,15 +18,14 @@ import org.yamcs.utils.ValueUtility;
 public abstract class RestParameterReplayListener extends RestReplayListener {
     private boolean noRepeat;
     private Value lastValue;
-    final CompletableFuture<Void> cf;
-    
+    final protected RestRequest req;
     /**
      * 
      * @param cf is the completable future of the rest request - used to end exceptionally in case of error
      */
-    public RestParameterReplayListener(CompletableFuture<Void> cf) {
+    public RestParameterReplayListener(RestRequest req) {
         super();
-        this.cf = cf;
+        this.req = req;
     }
     /**
      * 
@@ -33,9 +33,9 @@ public abstract class RestParameterReplayListener extends RestReplayListener {
      * @param limit
      * @param cf is the completable future of the rest request - used to end exceptionally in case of error
      */
-    public RestParameterReplayListener(long pos, int limit, CompletableFuture<Void> cf) {
+    public RestParameterReplayListener(long pos, int limit, RestRequest req) {
         super(pos, limit);
-        this.cf = cf;
+        this.req = req;
     }
     
     public void setNoRepeat(boolean noRepeat) {
@@ -76,6 +76,6 @@ public abstract class RestParameterReplayListener extends RestReplayListener {
     }  
 
     public void replayFailed(Throwable t){
-        cf.completeExceptionally(t);
+        RestHandler.completeWithError(req, new InternalServerErrorException(t));
     }
 }
