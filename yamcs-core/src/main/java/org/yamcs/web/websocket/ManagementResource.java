@@ -60,7 +60,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
             wsHandler.sendReply(toAckReply(requestId));
             wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
         } catch (IOException e) {
-            log.error("Exception when sending data", e);
+            log.warn("Exception when sending data", e);
             return null;
         }
         return null;
