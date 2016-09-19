@@ -17,6 +17,7 @@ public class DoubleValueSegment extends BaseSegment implements ValueSegment {
     
     DoubleValueSegment() {
         super(FORMAT_ID_DoubleValueSegment);
+        values = new DoubleArray();
     }
    
             
