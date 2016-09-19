@@ -18,6 +18,8 @@ import org.yamcs.web.ServiceUnavailableException;
 import org.yamcs.web.rest.RestReplayListener;
 
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.Service.Listener;
+import com.google.common.util.concurrent.Service.State;
 
 
 /**
@@ -50,6 +52,10 @@ public class RestReplays {
             ParameterWithIdRequestHelper pidrm = new ParameterWithIdRequestHelper(yproc.getParameterRequestManager(), wrapper);
             pidrm.addRequest(replayRequest.getParameterRequest().getNameFilterList(), token);
             yproc.startAsync();
+            yproc.addListener(new Listener() {
+                public void terminated(State from){concurrentCount.decrementAndGet();}
+                public void failed(State from, Throwable failure) {concurrentCount.decrementAndGet();}                    
+            }, MoreExecutors.directExecutor());
             
             return wrapper;
             
