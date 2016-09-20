@@ -102,7 +102,7 @@ public class XtceDbFactoryTest {
     @Test
     public void testNamespaces() throws Exception {
         YConfiguration.setup("refmdb");
-        ManagementService.setup(false, false);
+        ManagementService.setup(false);
         XtceDbFactory.reset();
         
         XtceDb db = XtceDbFactory.getInstance("refmdb");
@@ -133,7 +133,7 @@ public class XtceDbFactoryTest {
     @Test
     public void testParameterAliases() throws Exception {
         YConfiguration.setup("refmdb");
-        ManagementService.setup(false, false);
+        ManagementService.setup(false);
         XtceDbFactory.reset();
 
         XtceDb db = XtceDbFactory.getInstance("refmdb");
@@ -151,7 +151,7 @@ public class XtceDbFactoryTest {
     @Test
     public void testCommandAliases() throws Exception {
         YConfiguration.setup("refmdb");
-        ManagementService.setup(false, false);
+        ManagementService.setup(false);
         XtceDbFactory.reset();
 
         XtceDb db = XtceDbFactory.getInstance("refmdb");

@@ -27,7 +27,7 @@ public class XtceToGpbAssemblerTest {
         Set<RestRequest.Option> optionSet=new HashSet<>();
 
         YConfiguration.setup("refmdb");
-        ManagementService.setup(false, false);
+        ManagementService.setup(false);
         XtceDbFactory.reset();
         XtceDb db = XtceDbFactory.getInstance("refmdb");
         MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
@@ -51,7 +51,7 @@ public class XtceToGpbAssemblerTest {
         Set<RestRequest.Option> optionSet=new HashSet<>();
 
         YConfiguration.setup("refmdb");
-        ManagementService.setup(false, false);
+        ManagementService.setup(false);
         XtceDbFactory.reset();
         XtceDb db = XtceDbFactory.getInstance("refmdb");
         MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
@@ -75,7 +75,7 @@ public class XtceToGpbAssemblerTest {
         Set<RestRequest.Option> optionSet=new HashSet<>();
 
         YConfiguration.setup("refmdb");
-        ManagementService.setup(false, false);
+        ManagementService.setup(false);
         XtceDbFactory.reset();
         XtceDb db = XtceDbFactory.getInstance("refmdb");
         MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/CALIB_TC");

@@ -41,7 +41,7 @@ public class AlgorithmWithContextTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setup("refmdb");
-        ManagementService.setup(false,false);
+        ManagementService.setup(false);
         XtceDbFactory.reset();
         EventProducerFactory.setMockup(true);
     }

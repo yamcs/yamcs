@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -26,6 +27,7 @@ import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.archive.PacketWithTime;
+import org.yamcs.hornetq.ArtemisManagement;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Archive.StreamData;
@@ -44,7 +46,6 @@ import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.tctm.TmPacketDataLink;
-import org.yamcs.tctm.TmPacketSource;
 import org.yamcs.tctm.TmSink;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.TimeEncoding;
@@ -62,6 +63,7 @@ import io.protostuff.JsonInput;
 import io.protostuff.Schema;
 
 public abstract class AbstractIntegrationTest {
+    private static EmbeddedActiveMQ artemisServer;
     final String yamcsInstance = "IntegrationTest";
     PacketProvider packetProvider;
     YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190, "IntegrationTest");
@@ -123,10 +125,10 @@ public abstract class AbstractIntegrationTest {
 
         EventProducerFactory.setMockup(true);
         YConfiguration.setup("IntegrationTest");
-        ManagementService.setup(false, false);
+        ManagementService.setup(false);
         org.yamcs.yarch.management.JMXService.setup(false);
         YamcsServer.setupHttpServer();
-        YamcsServer.setupArtemis();
+        artemisServer = ArtemisManagement.setupArtemis();
         YamcsServer.setupYamcsServer();
     }
 
@@ -159,7 +161,7 @@ public abstract class AbstractIntegrationTest {
     @AfterClass
     public static void shutDownYamcs()  throws Exception {
         YamcsServer.shutDown();
-        YamcsServer.stopArtemis();
+        artemisServer.stop();
     }
 
 

@@ -13,11 +13,11 @@ import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.YamcsServer;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
+import org.yamcs.hornetq.ArtemisManagement;
 import org.yamcs.hornetq.StreamAdapter;
 import org.yamcs.hornetq.TupleTranslator;
 import org.yamcs.api.YamcsSession;
@@ -31,12 +31,12 @@ public class StreamAdapterTest extends YarchTestCase {
     
     @BeforeClass
     public static void setUpBeforeClass1() throws Exception {
-        hornetServer=YamcsServer.setupArtemis();
+        hornetServer = ArtemisManagement.setupArtemis();
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-	YamcsServer.stopArtemis();
+        hornetServer.stop();
     }
 
     

@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
+import org.yamcs.hornetq.ArtemisManagement;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest;
 import org.yamcs.xtce.XtceDb;
@@ -25,15 +26,15 @@ public class YamcsServerTest {
     @BeforeClass
     public static void setupYamcs() throws Exception {
         YConfiguration.setup("YamcsServer");
-        ManagementService.setup(false, false);
+        ManagementService.setup(false);
         org.yamcs.yarch.management.JMXService.setup(false);
-        hornetServer=YamcsServer.setupArtemis();
+        hornetServer = ArtemisManagement.setupArtemis();
         YamcsServer.setupYamcsServer();
     }
     
     @AfterClass
     public static void shutDownYamcs()  throws Exception {
-	YamcsServer.stopArtemis();
+        hornetServer.stop();
     }
     
     @Test

@@ -35,14 +35,10 @@ import org.yamcs.YamcsException;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;
-import org.yamcs.hornetq.HornetQCommandQueueManagement;
-import org.yamcs.hornetq.HornetQManagement;
-import org.yamcs.hornetq.HornetQProcessorManagement;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
-import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
@@ -61,12 +57,9 @@ import com.google.common.util.concurrent.Service;
 public class ManagementService implements ProcessorListener {
     
     final MBeanServer mbeanServer;
-    HornetQManagement hornetMgr;
-    HornetQProcessorManagement hornetProcessorMgr;
-    HornetQCommandQueueManagement hornetCmdQueueMgr;
 
-    final boolean jmxEnabled, hornetEnabled;
-    static Logger log=LoggerFactory.getLogger(ManagementService.class.getName());
+    final boolean jmxEnabled;
+    static Logger log = LoggerFactory.getLogger(ManagementService.class.getName());
     final String tld="yamcs";
     static ManagementService managementService;
 
@@ -89,16 +82,15 @@ public class ManagementService implements ProcessorListener {
     Map<YProcessor, Statistics> yprocs=new ConcurrentHashMap<YProcessor, Statistics>();
     static final Statistics STATS_NULL=Statistics.newBuilder().setInstance("null").setYProcessorName("null").build();//we use this one because ConcurrentHashMap does not support null values
 
-    static public void setup(boolean hornetEnabled, boolean jmxEnabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
-        managementService = new ManagementService(hornetEnabled, jmxEnabled);
+    static public void setup(boolean jmxEnabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
+        managementService = new ManagementService(jmxEnabled);
     }
 
     static public ManagementService getInstance() {
         return managementService;
     }
 
-    private ManagementService(boolean hornetEnabled, boolean jmxEnabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
-        this.hornetEnabled=hornetEnabled;
+    private ManagementService(boolean jmxEnabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
         this.jmxEnabled=jmxEnabled;
 
         if(jmxEnabled)
@@ -106,20 +98,6 @@ public class ManagementService implements ProcessorListener {
         else
             mbeanServer=null;
 
-        if(hornetEnabled) {
-            try {
-                hornetMgr = new HornetQManagement(this);
-                hornetCmdQueueMgr=new HornetQCommandQueueManagement(this);
-                hornetProcessorMgr=new HornetQProcessorManagement(this);
-                addLinkListener(hornetMgr);
-                addCommandQueueListener(hornetCmdQueueMgr);
-                addManagementListener(hornetProcessorMgr);
-            } catch (Exception e) {
-                log.error("failed to start hornet management service", e);
-                hornetEnabled=false;
-            }
-        }
-        
         YProcessor.addProcessorListener(this);
         timer.scheduleAtFixedRate(() -> updateStatistics(), 1, 1, TimeUnit.SECONDS);
         timer.scheduleAtFixedRate(() -> checkLinkUpdate(), 1, 1, TimeUnit.SECONDS);
@@ -127,11 +105,6 @@ public class ManagementService implements ProcessorListener {
 
     public void shutdown() {
         managementListeners.clear();
-        if(hornetEnabled) {
-            hornetMgr.stop();
-            hornetCmdQueueMgr.stop();
-            hornetProcessorMgr.close();
-        }
     }
 
     public void registerService(String instance, String serviceName, Service service) {

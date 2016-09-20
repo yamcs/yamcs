@@ -19,12 +19,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.tctm.PpProviderAdapter;
 import org.yamcs.StreamInitializer;
-import org.yamcs.YamcsServer;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsClient.ClientBuilder;
+import org.yamcs.hornetq.ArtemisManagement;
 import org.yamcs.hornetq.PpTupleTranslator;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
@@ -43,19 +43,19 @@ import org.yamcs.yarch.YarchTestCase;
 import org.yamcs.hornetq.StreamAdapter;
 
 public class PpTupleTranslatorTest extends YarchTestCase {
-    static EmbeddedActiveMQ hornetServer;
+    static EmbeddedActiveMQ artemisServer;
     public static int sequenceCount = 0;
     public static final String COL_BYTE = "/pp/byte";
     public static final String COL_STR = "/pp/string";
     public static final String COL_DOUBLE = "/pp/double";
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        hornetServer=YamcsServer.setupArtemis();
+        artemisServer = ArtemisManagement.setupArtemis();
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-        YamcsServer.stopArtemis();
+        artemisServer.stop();
     }
 
     /**

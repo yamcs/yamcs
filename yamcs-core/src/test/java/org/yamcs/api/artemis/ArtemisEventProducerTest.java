@@ -6,25 +6,25 @@ import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.YamcsServer;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
+import org.yamcs.hornetq.ArtemisManagement;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.yarch.YarchTestCase;
 
 public class ArtemisEventProducerTest extends YarchTestCase {
-    static EmbeddedActiveMQ hornetServer;
+    static EmbeddedActiveMQ artemisServer;
     
     @BeforeClass
     public static void setUpBeforeClass1() throws Exception {
-        hornetServer = YamcsServer.setupArtemis();
+        artemisServer = ArtemisManagement.setupArtemis();
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-	YamcsServer.stopArtemis();
+        artemisServer.stop();
     }
     
     @Test

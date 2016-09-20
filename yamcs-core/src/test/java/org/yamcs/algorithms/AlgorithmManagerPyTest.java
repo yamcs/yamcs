@@ -39,7 +39,7 @@ public class AlgorithmManagerPyTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setup(instance);
-        ManagementService.setup(false,false);
+        ManagementService.setup(false);
         XtceDbFactory.reset();
     }
     static String instance = "refmdb-py";
