@@ -7,8 +7,9 @@ public interface StorageEngine {
     /**
      *  Create a new table based on definition.
      * @param def
+     * @throws YarchException 
      */
-    public void createTable(TableDefinition def);
+    public void createTable(TableDefinition def) throws YarchException;
 
     /**
      * Drop the table (removing all files)

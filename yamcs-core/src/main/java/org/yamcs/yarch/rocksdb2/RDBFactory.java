@@ -1,4 +1,4 @@
-package org.yamcs.yarch.rocksdb;
+package org.yamcs.yarch.rocksdb2;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -23,16 +23,16 @@ import org.slf4j.LoggerFactory;
 public class RDBFactory implements Runnable {
     HashMap<String, DbAndAccessTime> databases=new HashMap<String, DbAndAccessTime>();
 
-    static Logger log=LoggerFactory.getLogger(RDBFactory.class.getName());
-    static HashMap<String, RDBFactory> instances=new HashMap<String, RDBFactory>(); 
-    static int maxOpenDbs = 200;
+    static Logger log = LoggerFactory.getLogger(RDBFactory.class.getName());
+    static HashMap<String, RDBFactory> instances = new HashMap<String, RDBFactory>(); 
+    static int maxOpenDbs=200;
     ScheduledThreadPoolExecutor scheduler;
     final String instance;
     public static FlushOptions flushOptions = new FlushOptions();
 
 
     public static synchronized RDBFactory getInstance(String instance) {
-        RDBFactory rdbFactory = instances.get(instance); 
+        RDBFactory rdbFactory=instances.get(instance); 
         if(rdbFactory==null) {
             rdbFactory=new RDBFactory(instance);
             instances.put(instance, rdbFactory);
@@ -49,8 +49,8 @@ public class RDBFactory implements Runnable {
      * @return
      * @throws IOException
      */
-    public YRDB getRdb(String absolutePath, ColumnFamilySerializer cfSerializer, boolean readonly) throws IOException{
-        return rdb(absolutePath, cfSerializer, readonly);
+    public YRDB getRdb(String absolutePath,  boolean readonly) throws IOException{
+        return rdb(absolutePath, readonly);
     }
 
     /**
@@ -72,17 +72,17 @@ public class RDBFactory implements Runnable {
         Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook()));
     }
 
-    private synchronized YRDB rdb(String absolutePath, ColumnFamilySerializer cfSerializer, boolean readonly) throws IOException {
-        DbAndAccessTime daat=databases.get(absolutePath);
+    private synchronized YRDB rdb(String absolutePath, boolean readonly) throws IOException {
+        DbAndAccessTime daat = databases.get(absolutePath);
         if(daat==null) {
             if(databases.size()>=maxOpenDbs) { //close the db with the oldest timestamp
                 long min=Long.MAX_VALUE;
                 String minFile=null;
                 for(Entry<String, DbAndAccessTime> entry:databases.entrySet()) {
-                    DbAndAccessTime daat1 = entry.getValue();
+                    DbAndAccessTime daat1=entry.getValue();
                     if((daat1.refcount==0)&&(daat1.lastAccess<min)) {
                         min=daat1.lastAccess;
-                        minFile = entry.getKey();
+                        minFile=entry.getKey();
                     }
                 }
                 if(minFile!=null) {
@@ -94,7 +94,7 @@ public class RDBFactory implements Runnable {
             log.debug("Creating or opening RDB "+absolutePath+" total rdb open: "+databases.size());
             YRDB db;
             try {
-                db = new YRDB(absolutePath, cfSerializer);
+                db = new YRDB(absolutePath);
             } catch (RocksDBException e) {
                 throw new IOException(e);
             }

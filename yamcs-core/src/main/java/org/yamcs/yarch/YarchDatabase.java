@@ -54,6 +54,7 @@ public class YarchDatabase {
     private Map<String, StorageEngine> storageEngines=new HashMap<String, StorageEngine>();
     public static String TC_ENGINE_NAME="tokyocabinet";	
     public static String RDB_ENGINE_NAME="rocksdb";
+    public static String RDB2_ENGINE_NAME="rocksdb2";
 
     private static String DEFAULT_STORAGE_ENGINE=RDB_ENGINE_NAME;
     private final String defaultStorageEngineName;
@@ -66,7 +67,7 @@ public class YarchDatabase {
     final JMXService jmxService;
 
 
-    static Map<String,YarchDatabase> databases=new HashMap<String,YarchDatabase>();
+    static Map<String,YarchDatabase> databases = new HashMap<String,YarchDatabase>();
     private String dbname;
 
     private YarchDatabase(String dbname) throws YarchException {
@@ -80,9 +81,8 @@ public class YarchDatabase {
         if(config.containsKey("storageEngines")) {
             se = config.getList("storageEngines");
         } else {
-            se = Arrays.asList(RDB_ENGINE_NAME);
+            se = Arrays.asList(RDB_ENGINE_NAME, RDB2_ENGINE_NAME);
         }
-        
         if(config.containsKey("defaultStorageEngine")) {
             defaultStorageEngineName = config.getString("defaultStorageEngine");
             if(!TC_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngineName) && !RDB_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngineName)) {
@@ -106,6 +106,8 @@ public class YarchDatabase {
                     storageEngines.put(TC_ENGINE_NAME, tcStorageEngine);
                 } else if(RDB_ENGINE_NAME.equalsIgnoreCase(s)) {
                     storageEngines.put(RDB_ENGINE_NAME, new RdbStorageEngine(this));
+                } else if(RDB2_ENGINE_NAME.equalsIgnoreCase(s)) {
+                    storageEngines.put(RDB2_ENGINE_NAME, new org.yamcs.yarch.rocksdb2.RdbStorageEngine(this));
                 }
             }
         }
@@ -346,8 +348,8 @@ public class YarchDatabase {
     }
 
     public StreamSqlResult execute(String query) throws StreamSqlException, ParseException {
-        ExecutionContext context=new ExecutionContext(dbname);
-        StreamSqlParser parser=new StreamSqlParser(new java.io.StringReader(query));
+        ExecutionContext context = new ExecutionContext(dbname);
+        StreamSqlParser parser = new StreamSqlParser(new java.io.StringReader(query));
         try {
             StreamSqlStatement s =  parser.OneStatement();
             return s.execute(context);

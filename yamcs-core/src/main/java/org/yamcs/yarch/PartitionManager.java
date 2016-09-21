@@ -36,8 +36,8 @@ public abstract class PartitionManager {
 
 
     public PartitionManager(TableDefinition tableDefinition) {
-        this.tableDefinition=tableDefinition;
-        this.partitioningSpec=tableDefinition.getPartitioningSpec();
+        this.tableDefinition = tableDefinition;
+        this.partitioningSpec = tableDefinition.getPartitioningSpec();
         if(partitioningSpec.type==_type.NONE || partitioningSpec.type==_type.VALUE) {//pcache never changes in this case
             pcache = new Interval(TimeEncoding.MIN_INSTANT, TimeEncoding.MAX_INSTANT);
             intervals.put(TimeEncoding.MIN_INSTANT, pcache);
@@ -91,7 +91,9 @@ public abstract class PartitionManager {
      * value can be null (in case of no value partitioning)
      * 
      * @param instant - time for which the partition has to be created - can be TimeEncoding.INVALID in case value only or no partitioning 
-     * @param value - value for which the partition has to be created - can be null in case of time only or no partitioning
+     * @param value - value for which the partition has to be created - can be null in case of time only or no partitioning.
+     * 
+     * For the enum partitions, the value is the index (type Short) rather than the string.
      *  
      * @return a Partition
      * @throws IOException 
