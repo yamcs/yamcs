@@ -93,6 +93,7 @@ public class Router {
         registerRouteHandler(null, new InstanceRestHandler());
         registerRouteHandler(null, new LinkRestHandler());
         registerRouteHandler(null, new UserRestHandler());
+        registerRouteHandler(null, new ServiceRestHandler());
 
         registerRouteHandler(null, new ArchiveAlarmRestHandler());
         registerRouteHandler(null, new ArchiveCommandRestHandler());

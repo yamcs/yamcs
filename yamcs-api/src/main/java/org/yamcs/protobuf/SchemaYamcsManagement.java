@@ -2312,4 +2312,129 @@ public final class SchemaYamcsManagement
         }
     }
 
+    public static final class ServiceInfo
+    {
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.ServiceInfo.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.ServiceInfo.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaYamcsManagement.ServiceInfo.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaYamcsManagement.ServiceInfo.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.ServiceInfo>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.ServiceInfo message) throws java.io.IOException
+            {
+                if(message.hasInstance())
+                    output.writeString(1, message.getInstance(), false);
+                if(message.hasName())
+                    output.writeString(2, message.getName(), false);
+                if(message.hasState())
+                    output.writeString(3, message.getState().name(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.ServiceInfo message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.ServiceInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.ServiceInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.ServiceInfo> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.ServiceInfo.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.ServiceInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.ServiceInfo.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.ServiceInfo message) throws java.io.IOException {}
+            public org.yamcs.protobuf.YamcsManagement.ServiceInfo newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.YamcsManagement.ServiceInfo.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.YamcsManagement.ServiceInfo.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setInstance(input.readString());
+                            break;
+                        case 2:
+                            builder.setName(input.readString());
+                            break;
+                        case 3:
+                            builder.setState(org.yamcs.protobuf.YamcsManagement.ServiceState.valueOf(input.readString()));
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.ServiceInfo.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.YamcsManagement.ServiceInfo.Builder newMessage()
+            {
+                return org.yamcs.protobuf.YamcsManagement.ServiceInfo.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.ServiceInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaYamcsManagement.ServiceInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.YamcsManagement.ServiceInfo.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.YamcsManagement.ServiceInfo.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.ServiceInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.YamcsManagement.ServiceInfo.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.YamcsManagement.ServiceInfo.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "instance";
+                case 2: return "name";
+                case 3: return "state";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("instance", 1);
+            fieldMap.put("name", 2);
+            fieldMap.put("state", 3);
+        }
+    }
+
 }

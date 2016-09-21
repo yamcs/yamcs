@@ -216,3 +216,11 @@ message ListEventsResponse {
 message ListPacketsResponse {
   repeated yamcs.TmPacketData packet = 1;
 }
+
+message ListServiceInfoResponse {
+  repeated yamcsManagement.ServiceInfo service = 1;
+}
+
+message EditServiceRequest {
+  optional string state = 1;
+}

@@ -18,6 +18,8 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.archive.ReplayServer;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
+import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
+import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 import org.yamcs.time.RealtimeTimeService;
@@ -358,8 +360,23 @@ public class YamcsServer {
         }
         return null;
     }
-
-
+    public List<ServiceInfo> getServices() {
+        List<ServiceInfo> r = new ArrayList<ServiceInfo>(serviceList.size());
+        for(Service s: serviceList) {
+            ServiceInfo si = ServiceInfo.newBuilder().setName(s.getClass().getName()).setInstance(instance).setState(ServiceState.valueOf(s.state().name())).build();
+            r.add(si);
+        }
+        return r;
+    }
+    
+    public static  List<ServiceInfo> getGlobalServices() {
+        List<ServiceInfo> r = new ArrayList<ServiceInfo>(serverWideserviceList.size());
+        for(Service s: serverWideserviceList) {
+            ServiceInfo si = ServiceInfo.newBuilder().setName(s.getClass().getName()).setState(ServiceState.valueOf(s.state().name())).build();
+            r.add(si);
+        }
+        return r;
+    }
     public static <T extends Service> T getService(String yamcsInstance, Class<T> serviceClass) {
         YamcsServer ys = YamcsServer.getInstance(yamcsInstance);
         if(ys==null) return null;
@@ -368,5 +385,21 @@ public class YamcsServer {
     
     public static void setMockupTimeService(TimeService timeService) {
         mockupTimeService = timeService;
+    }
+    public Service getService(String serviceName) {
+        for(Service s: serviceList) {
+            if(s.getClass().getName().equals(serviceName)) {
+                return s;
+            }
+        }
+        return null;
+    }
+    public static Service getGlobalService(String serviceName) {
+        for(Service s: serverWideserviceList) {
+            if(s.getClass().getName().equals(serviceName)) {
+                return s;
+            }
+        }
+        return null;
     }
 }

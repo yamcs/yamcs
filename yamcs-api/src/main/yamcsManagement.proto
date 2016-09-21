@@ -182,3 +182,9 @@ message LinkEvent {
   optional Type type = 1;
   optional LinkInfo linkInfo = 2;
 }
+
+message ServiceInfo {
+  optional string instance = 1;
+  optional string name = 2;
+  optional ServiceState state = 3;
+}
