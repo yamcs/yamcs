@@ -117,7 +117,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
                     }
                 }
                 if(!found) {
-                    it.dispose();                                        
+                    it.close();                                        
                 } else {
                     numRecordsRead++;
                     orderedQueue.add(new RdbRawTuple(it.key(), it.value(), it, i++));
@@ -139,7 +139,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
                     orderedQueue.add(rt);
                 } else {
                     log.debug(rt.iterator+" finished");
-                    rt.iterator.dispose();                    
+                    rt.iterator.close();                    
                 }
             }
 
@@ -150,7 +150,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
             return false;
         } finally {
             for(RdbRawTuple rt:orderedQueue) {
-                rt.iterator.dispose();                
+                rt.iterator.close();                
             }
         }
     }
@@ -217,7 +217,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
                     }
                 }
                 if(!found) {
-                    it.dispose();                                        
+                    it.close();                                        
                 } else {
                     orderedQueue.add(new RdbRawTuple(it.key(), it.value(), it, i++));
                 }
@@ -238,7 +238,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
                     orderedQueue.add(rt);
                 } else {
                     log.debug(rt.iterator+" finished");
-                    rt.iterator.dispose();                    
+                    rt.iterator.close();                    
                 }
             }
 
@@ -249,7 +249,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
             return false;
         } finally {
             for(RdbRawTuple rt:orderedQueue) {
-                rt.iterator.dispose();                
+                rt.iterator.close();                
             }
         }
     }

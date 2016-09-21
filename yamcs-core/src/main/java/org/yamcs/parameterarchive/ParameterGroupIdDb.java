@@ -31,19 +31,19 @@ public class ParameterGroupIdDb {
     final ColumnFamilyHandle pgid2pg_cfh;
     int highestPgId=0;
     Map<SortedIntArray, Integer> pg2pgidCache = new HashMap<>();
-    
-    
+
+
     ParameterGroupIdDb(RocksDB db, ColumnFamilyHandle pgid2pg_cfh) {
         this.db = db;
         this.pgid2pg_cfh = pgid2pg_cfh;
         readDb();
     }
-    
+
     /**
      * Creates (if not already there) a new ParameterGroupId for the given parameter id array
      * 
      * @param s
-     * @return
+     * @return the parameterGroupId for the given parameter id array
      * @throws RocksDBException
      */
     public synchronized int createAndGet(SortedIntArray s) throws RocksDBException {
@@ -54,42 +54,43 @@ public class ParameterGroupIdDb {
             db.put(pgid2pg_cfh, encodeInt(x), s.encodeToVarIntArray());
             pg2pgidCache.put(s, pgid);
         }
-        
+
         return pgid;
     }
-    
+
     /**
      * Creates (if not already there) a new ParameterGroupId for the given parameter id array
      * 
      * The parameter id array is sorted before
      * @param parameterIdArray
-     * @return
+     * @return he parameterGroupId for the given parameter id array
      * @throws RocksDBException
      */
     public int createAndGet(int[] parameterIdArray) throws RocksDBException {
         return createAndGet(new SortedIntArray(parameterIdArray));
     }
-    
+
     private byte[] encodeInt(int x) {
         return ByteBuffer.allocate(4).putInt(x).array();
     }
-    
+
     private void readDb() {
-        RocksIterator it = db.newIterator(pgid2pg_cfh);
-        it.seekToFirst();
-        while(it.isValid()) {
-            
-            int pgid = ByteBuffer.wrap(it.key()).getInt();
-            
-            if(highestPgId < pgid) highestPgId = pgid;
-            
-            SortedIntArray svil = SortedIntArray.decodeFromVarIntArray(it.value());
-            pg2pgidCache.put(svil, pgid);
-            it.next();
+        try(RocksIterator it = db.newIterator(pgid2pg_cfh)) {
+            it.seekToFirst();
+            while(it.isValid()) {
+
+                int pgid = ByteBuffer.wrap(it.key()).getInt();
+
+                if(highestPgId < pgid) highestPgId = pgid;
+
+                SortedIntArray svil = SortedIntArray.decodeFromVarIntArray(it.value());
+                pg2pgidCache.put(svil, pgid);
+                it.next();
+            }
         }
     }
-    
-    
+
+
     public String toString() {
         return pg2pgidCache.toString();
     }
@@ -103,7 +104,7 @@ public class ParameterGroupIdDb {
     /**
      * get all parameter group ids for the parameters from which this parameter id is part of
      * @param pid
-     * @return
+     * @return the parameter group ids for the parameters groups that contain the pid
      */
     public synchronized int[] getAllGroups(int pid) {
         IntArray r = new IntArray();

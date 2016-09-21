@@ -53,7 +53,7 @@ public class ParameterIdDb {
      * @param engType
      * @param rawType
      * 
-     * @return
+     * @return a parameter id for the given parameter name and type
      * @throws ParameterArchiveException if there was an error creating and storing a new parameter_id
      */
     public synchronized int createAndGet(String paramFqn, Value.Type engType, Value.Type rawType) throws ParameterArchiveException {
@@ -77,7 +77,7 @@ public class ParameterIdDb {
      * get a parameter id for a parameter that only has engineering value
      * @param paramFqn
      * @param engType
-     * @return
+     * @return a parameter id for the given parameter name and type
      */
     public int createAndGet(String paramFqn, Type engType) {
         return createAndGet(paramFqn, engType, null);
@@ -108,26 +108,27 @@ public class ParameterIdDb {
 
 
     private void readDb() {
-        RocksIterator it = db.newIterator(p2pid_cfh);
-        it.seekToFirst();
-        while(it.isValid()) {
-            byte[] pfqn = it.key();
-            byte[] pIdTypeList = it.value();
+        try(RocksIterator it = db.newIterator(p2pid_cfh)) {
+            it.seekToFirst();
+            while(it.isValid()) {
+                byte[] pfqn = it.key();
+                byte[] pIdTypeList = it.value();
 
-            String paraName = new String(pfqn, StandardCharsets.UTF_8);
-            Map<Integer, Integer> m = new HashMap<Integer, Integer>();
+                String paraName = new String(pfqn, StandardCharsets.UTF_8);
+                Map<Integer, Integer> m = new HashMap<Integer, Integer>();
 
-            p2pidCache.put(paraName, m);
-            ByteBuffer bb = ByteBuffer.wrap(pIdTypeList);
-            while(bb.hasRemaining()) {
-                int type = bb.getInt();
-                int pid = bb.getInt();            
-                m.put(type, pid);
-                if(pid > highestParaId) {
-                    highestParaId = pid;
+                p2pidCache.put(paraName, m);
+                ByteBuffer bb = ByteBuffer.wrap(pIdTypeList);
+                while(bb.hasRemaining()) {
+                    int type = bb.getInt();
+                    int pid = bb.getInt();            
+                    m.put(type, pid);
+                    if(pid > highestParaId) {
+                        highestParaId = pid;
+                    }
                 }
+                it.next();
             }
-            it.next();
         }
     }
 
@@ -195,8 +196,8 @@ public class ParameterIdDb {
         }
         return null;
     }
-    
-    
+
+
     public static class ParameterId {
         public final int pid;
         public final Type engType;

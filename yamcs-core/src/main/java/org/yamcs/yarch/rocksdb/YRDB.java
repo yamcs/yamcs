@@ -82,7 +82,7 @@ public class YRDB {
         } else {
             //new DB
             db = RocksDB.open(opt, dir);
-        }		
+        }
     }
 
     /**

@@ -234,8 +234,6 @@ public class ParameterArchive  extends AbstractService {
                 writeToBatch(writeBatch, pgs);
             }
             rdb.write(wo, writeBatch);
-            wo.close();
-            writeBatch.close();
         }
     }
 
@@ -405,7 +403,8 @@ public class ParameterArchive  extends AbstractService {
 
     @Override
     protected void doStop() {
-        rdb.close();
+        log.debug("Stopping ParameterArchive service for instance {}", yamcsInstance);
+        
         if(backFiller!=null) {
             backFiller.stop();
         }
@@ -413,7 +412,7 @@ public class ParameterArchive  extends AbstractService {
         if(realtimeFiller!=null) {
             realtimeFiller.stop();
         }
-
+        rdb.close();
         notifyStopped();
     }
 
