@@ -24,6 +24,7 @@ import org.yamcs.cmdhistory.CommandHistoryRecorder;
 import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.hornetq.ArtemisManagement;
+import org.yamcs.hornetq.ArtemisServer;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
@@ -48,7 +49,8 @@ public class CmdHistoryRecordingTest extends YarchTestCase {
     static EmbeddedActiveMQ artemisServer;
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        artemisServer = ArtemisManagement.setupArtemis();
+        artemisServer = ArtemisServer.setupArtemis();
+        ArtemisManagement.setupYamcsServerControl();
     }
 
     @AfterClass

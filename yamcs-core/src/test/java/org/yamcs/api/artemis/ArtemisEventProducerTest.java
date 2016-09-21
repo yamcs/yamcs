@@ -11,6 +11,7 @@ import org.yamcs.api.YamcsSession;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.hornetq.ArtemisManagement;
+import org.yamcs.hornetq.ArtemisServer;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.yarch.YarchTestCase;
 
@@ -19,7 +20,8 @@ public class ArtemisEventProducerTest extends YarchTestCase {
     
     @BeforeClass
     public static void setUpBeforeClass1() throws Exception {
-        artemisServer = ArtemisManagement.setupArtemis();
+        artemisServer = ArtemisServer.setupArtemis();
+        ArtemisManagement.setupYamcsServerControl();
     }
 
     @AfterClass

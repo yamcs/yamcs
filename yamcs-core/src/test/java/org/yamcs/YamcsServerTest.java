@@ -16,25 +16,27 @@ import org.yamcs.api.YamcsSession;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.hornetq.ArtemisManagement;
+import org.yamcs.hornetq.ArtemisServer;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest;
 import org.yamcs.xtce.XtceDb;
 
 public class YamcsServerTest {
-    static EmbeddedActiveMQ hornetServer;
+    static EmbeddedActiveMQ artemisServer;
     
     @BeforeClass
     public static void setupYamcs() throws Exception {
         YConfiguration.setup("YamcsServer");
         ManagementService.setup(false);
         org.yamcs.yarch.management.JMXService.setup(false);
-        hornetServer = ArtemisManagement.setupArtemis();
+        artemisServer = ArtemisServer.setupArtemis();
+        ArtemisManagement.setupYamcsServerControl();
         YamcsServer.setupYamcsServer();
     }
     
     @AfterClass
     public static void shutDownYamcs()  throws Exception {
-        hornetServer.stop();
+        artemisServer.stop();
     }
     
     @Test

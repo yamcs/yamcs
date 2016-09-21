@@ -24,6 +24,7 @@ import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsClient.ClientBuilder;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.hornetq.ArtemisManagement;
+import org.yamcs.hornetq.ArtemisServer;
 import org.yamcs.hornetq.EventTupleTranslator;
 import org.yamcs.hornetq.StreamAdapter;
 import org.yamcs.protobuf.Yamcs.EndAction;
@@ -51,7 +52,8 @@ public class EventRecordingTest extends YarchTestCase {
     static EmbeddedActiveMQ artemisServer;
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        artemisServer = ArtemisManagement.setupArtemis();
+        artemisServer = ArtemisServer.setupArtemis();
+        ArtemisManagement.setupYamcsServerControl();
     }
 
     @AfterClass

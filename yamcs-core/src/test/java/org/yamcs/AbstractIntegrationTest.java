@@ -28,6 +28,7 @@ import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.hornetq.ArtemisManagement;
+import org.yamcs.hornetq.ArtemisServer;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Archive.StreamData;
@@ -128,7 +129,8 @@ public abstract class AbstractIntegrationTest {
         ManagementService.setup(false);
         org.yamcs.yarch.management.JMXService.setup(false);
         YamcsServer.setupHttpServer();
-        artemisServer = ArtemisManagement.setupArtemis();
+        artemisServer = ArtemisServer.setupArtemis();
+        ArtemisManagement.setupYamcsServerControl();
         YamcsServer.setupYamcsServer();
     }
 

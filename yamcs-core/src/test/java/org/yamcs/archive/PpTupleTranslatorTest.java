@@ -25,6 +25,7 @@ import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsClient.ClientBuilder;
 import org.yamcs.hornetq.ArtemisManagement;
+import org.yamcs.hornetq.ArtemisServer;
 import org.yamcs.hornetq.PpTupleTranslator;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
@@ -50,7 +51,8 @@ public class PpTupleTranslatorTest extends YarchTestCase {
     public static final String COL_DOUBLE = "/pp/double";
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        artemisServer = ArtemisManagement.setupArtemis();
+        artemisServer = ArtemisServer.setupArtemis();
+        ArtemisManagement.setupYamcsServerControl();
     }
 
     @AfterClass

@@ -13,6 +13,7 @@ import org.yamcs.api.YamcsSession;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.hornetq.ArtemisManagement;
+import org.yamcs.hornetq.ArtemisServer;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
@@ -95,8 +96,8 @@ public class EventSim {
         }
         if(instance==null) printUsageAndExit();
         YConfiguration.setup();
-        ArtemisManagement.setupArtemis();
-        
+        ArtemisServer.setupArtemis();
+        ArtemisManagement.setupYamcsServerControl();
         TimeEncoding.setUp();
       //  Configuration.setup();
         new EventSim(instance, host, port).sendEvents();

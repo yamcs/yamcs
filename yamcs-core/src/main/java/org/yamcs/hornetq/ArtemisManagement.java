@@ -39,7 +39,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- * provides management services via hornetq
+ * provides management services via hornetq/artemis
  * @author nm
  *
  */
@@ -52,34 +52,16 @@ public class ArtemisManagement extends AbstractService implements LinkListener {
     ManagementService mservice;
     HornetQCommandQueueManagement hornetCmdQueueMgr;
     HornetQProcessorManagement hornetProcessorMgr;
-    EmbeddedActiveMQ artemisServer;
     
     public ArtemisManagement() throws ConfigurationException {
-        if(artemisServer!=null) {
+        if(yamcsSession!=null) {
             throw new ConfigurationException("This service cannot be instantiated more than once");
         }
     }
     static YamcsSession yamcsSession;
     static YamcsClient ctrlAddressClient;
 
-    public static EmbeddedActiveMQ setupArtemis() throws Exception {
-        //divert artemis logging
-        System.setProperty("org.jboss.logging.provider", "slf4j");
-
-        // load optional configuration file name for ActiveMQ Artemis,
-        // otherwise default will be artemis.xml
-        String artemisConfigFile = "artemis.xml";
-        YConfiguration c = YConfiguration.getConfiguration("yamcs");
-        if(c.containsKey("artemisConfigFile")) {
-            artemisConfigFile = c.getString("artemisConfigFile");    
-        }
-
-        EmbeddedActiveMQ artemisServer = new EmbeddedActiveMQ();
-        artemisServer.setSecurityManager( new HornetQAuthManager() );
-        if(artemisConfigFile != null) {
-            artemisServer.setConfigResourcePath(artemisConfigFile);
-        }
-        artemisServer.start();
+    public static void setupYamcsServerControl() throws Exception {
         //create already the queue here to reduce (but not eliminate :( ) the chance that somebody connects to it before yamcs is started fully
         yamcsSession = YamcsSession.newBuilder().build();
         ctrlAddressClient = yamcsSession.newClientBuilder().setRpcAddress(Protocol.YAMCS_SERVER_CONTROL_ADDRESS).setDataProducer(true).build();
@@ -124,8 +106,6 @@ public class ArtemisManagement extends AbstractService implements LinkListener {
                 }
             }
         });
-        
-        return artemisServer;
     }
 
     private static void sendMissionDatabase(MissionDatabaseRequest mdr, SimpleString replyTo, SimpleString dataAddress) throws ActiveMQException {
@@ -212,16 +192,17 @@ public class ArtemisManagement extends AbstractService implements LinkListener {
 
     @Override
     protected void doStart() {
+       
         this.mservice = ManagementService.getInstance();    
 
         try {
             ysession=YamcsSession.newBuilder().build();
 
             //trick to make sure that the link and channel info queues exists
-            yclient=ysession.newClientBuilder().setDataConsumer(LINK_INFO_ADDRESS, LINK_INFO_ADDRESS).build();
+            yclient = ysession.newClientBuilder().setDataConsumer(LINK_INFO_ADDRESS, LINK_INFO_ADDRESS).build();
             yclient.close();
 
-            yclient=ysession.newClientBuilder().setDataProducer(true).build();
+            yclient = ysession.newClientBuilder().setDataProducer(true).build();
 
             linkControlServer=ysession.newClientBuilder().setRpcAddress(LINK_CONTROL_ADDRESS).build();
             linkControlServer.rpcConsumer.setMessageHandler(new MessageHandler() {
@@ -257,7 +238,6 @@ public class ArtemisManagement extends AbstractService implements LinkListener {
             hornetCmdQueueMgr.stop();
             hornetProcessorMgr.close();
             Protocol.closeKiller();
-            artemisServer.stop();
             
             notifyStopped();
         } catch (Exception e) {
