@@ -184,13 +184,13 @@ public class RdbConfig {
                     Map<String, Object> tfc = YConfiguration.getMap(m, KEY_tfConfig);
                     BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
                     if(tfc.containsKey("blockSize")) {
-                        tableFormatConfig.setBlockSize(1024L*YConfiguration.getLong(cm, "blockSize"));
+                        tableFormatConfig.setBlockSize(1024L*YConfiguration.getLong(tfc, "blockSize"));
                     }
                     if(tfc.containsKey("blockCacheSize")) {
-                        tableFormatConfig.setBlockCacheSize(1024L*YConfiguration.getLong(cm, "blockCacheSize"));
+                        tableFormatConfig.setBlockCacheSize(1024L*YConfiguration.getLong(tfc, "blockCacheSize"));
                     }
                     if(tfc.containsKey("noBlockCache")) {
-                        tableFormatConfig.setNoBlockCache(YConfiguration.getBoolean(cm, "noBlockCache"));
+                        tableFormatConfig.setNoBlockCache(YConfiguration.getBoolean(tfc, "noBlockCache"));
                     }
                     options.setTableFormatConfig(tableFormatConfig);
                     cfOptions.setTableFormatConfig(tableFormatConfig);
