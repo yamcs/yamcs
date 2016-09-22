@@ -180,7 +180,7 @@ public class RdbConfig {
                     options.setMinWriteBufferNumberToMerge(YConfiguration.getInt(cm, "minWriteBufferNumberToMerge"));
                 }
                 
-                if(cm.containsKey(KEY_tfConfig)) {
+                if(m.containsKey(KEY_tfConfig)) {
                     Map<String, Object> tfc = YConfiguration.getMap(m, KEY_tfConfig);
                     BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
                     if(tfc.containsKey("blockSize")) {
