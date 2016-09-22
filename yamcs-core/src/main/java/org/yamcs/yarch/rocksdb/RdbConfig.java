@@ -186,6 +186,12 @@ public class RdbConfig {
                     if(tfc.containsKey("blockSize")) {
                         tableFormatConfig.setBlockSize(1024L*YConfiguration.getLong(cm, "blockSize"));
                     }
+                    if(tfc.containsKey("blockCacheSize")) {
+                        tableFormatConfig.setBlockCacheSize(1024L*YConfiguration.getLong(cm, "blockCacheSize"));
+                    }
+                    if(tfc.containsKey("noBlockCache")) {
+                        tableFormatConfig.setNoBlockCache(YConfiguration.getBoolean(cm, "noBlockCache"));
+                    }
                     options.setTableFormatConfig(tableFormatConfig);
                     cfOptions.setTableFormatConfig(tableFormatConfig);
                 }

@@ -34,6 +34,8 @@ public class YRDB {
     private final String path;
     private final ColumnFamilySerializer cfSerializer;
     private final ColumnFamilyOptions cfoptions;
+    
+    private final DBOptions dbOptions;
     /**
      * Create or open a new RocksDb.
      * 
@@ -53,7 +55,7 @@ public class YRDB {
         
         cfoptions = (tc==null)? rdbConfig.getDefaultColumnFamilyOptions():tc.getColumnFamilyOptions();
         Options opt = (tc==null)? rdbConfig.getDefaultOptions():tc.getOptions();
-        DBOptions dbopt = (tc==null)? rdbConfig.getDefaultDBOptions():tc.getDBOptions();
+        dbOptions = (tc==null)? rdbConfig.getDefaultDBOptions():tc.getDBOptions();
         
         this.path = dir;
         File current = new File(dir+File.separatorChar+"CURRENT");
@@ -67,7 +69,7 @@ public class YRDB {
                     cfdList.add(new ColumnFamilyDescriptor(b, cfoptions));					
                 }
                 List<ColumnFamilyHandle> cfhList = new ArrayList<ColumnFamilyHandle>(cfl.size());
-                db = RocksDB.open(dbopt, dir, cfdList, cfhList);
+                db = RocksDB.open(dbOptions, dir, cfdList, cfhList);
                 for(int i=0;i<cfl.size();i++) {
                     byte[] b = cfl.get(i);
                     if(!Arrays.equals(b, RocksDB.DEFAULT_COLUMN_FAMILY)) {
@@ -149,5 +151,4 @@ public class YRDB {
     public String getPath() { 
         return path;
     }
-
 }
