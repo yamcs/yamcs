@@ -8,11 +8,12 @@ import java.util.Random;
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
+import org.yamcs.hornetq.ArtemisManagement;
+import org.yamcs.hornetq.ArtemisServer;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
@@ -95,8 +96,8 @@ public class EventSim {
         }
         if(instance==null) printUsageAndExit();
         YConfiguration.setup();
-        YamcsServer.setupArtemis();
-        
+        ArtemisServer.setupArtemis();
+        ArtemisManagement.setupYamcsServerControl();
         TimeEncoding.setUp();
       //  Configuration.setup();
         new EventSim(instance, host, port).sendEvents();

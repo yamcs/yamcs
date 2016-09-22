@@ -5030,4 +5030,228 @@ public final class SchemaRest
         }
     }
 
+    public static final class ListServiceInfoResponse
+    {
+        public static final org.yamcs.protobuf.SchemaRest.ListServiceInfoResponse.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.ListServiceInfoResponse.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.ListServiceInfoResponse.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.ListServiceInfoResponse.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.ListServiceInfoResponse>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.ListServiceInfoResponse message) throws java.io.IOException
+            {
+                for(org.yamcs.protobuf.YamcsManagement.ServiceInfo service : message.getServiceList())
+                    output.writeObject(1, service, org.yamcs.protobuf.SchemaYamcsManagement.ServiceInfo.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.ListServiceInfoResponse message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListServiceInfoResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListServiceInfoResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.ListServiceInfoResponse> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.ListServiceInfoResponse.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.ListServiceInfoResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.ListServiceInfoResponse.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.ListServiceInfoResponse message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.ListServiceInfoResponse newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.ListServiceInfoResponse.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.ListServiceInfoResponse.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.addService(input.mergeObject(org.yamcs.protobuf.YamcsManagement.ServiceInfo.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.ServiceInfo.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.ListServiceInfoResponse.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.ListServiceInfoResponse.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.ListServiceInfoResponse.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListServiceInfoResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListServiceInfoResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.ListServiceInfoResponse.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.ListServiceInfoResponse.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.ListServiceInfoResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.ListServiceInfoResponse.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.ListServiceInfoResponse.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "service";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("service", 1);
+        }
+    }
+
+    public static final class EditServiceRequest
+    {
+        public static final org.yamcs.protobuf.SchemaRest.EditServiceRequest.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.EditServiceRequest.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.EditServiceRequest.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.EditServiceRequest.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.EditServiceRequest>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.EditServiceRequest message) throws java.io.IOException
+            {
+                if(message.hasState())
+                    output.writeString(1, message.getState(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.EditServiceRequest message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.EditServiceRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.EditServiceRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.EditServiceRequest> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.EditServiceRequest.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.EditServiceRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.EditServiceRequest.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.EditServiceRequest message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.EditServiceRequest newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.EditServiceRequest.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.EditServiceRequest.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setState(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.EditServiceRequest.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.EditServiceRequest.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.EditServiceRequest.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.EditServiceRequest.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.EditServiceRequest.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.EditServiceRequest.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.EditServiceRequest.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.EditServiceRequest.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.EditServiceRequest.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.EditServiceRequest.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "state";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("state", 1);
+        }
+    }
+
 }

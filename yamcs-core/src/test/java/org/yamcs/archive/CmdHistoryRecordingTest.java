@@ -17,13 +17,14 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.tctm.TcUplinkerAdapter;
-import org.yamcs.YamcsServer;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.cmdhistory.CommandHistoryRecorder;
 import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.hornetq.ArtemisManagement;
+import org.yamcs.hornetq.ArtemisServer;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
@@ -45,15 +46,16 @@ import org.yamcs.yarch.YarchTestCase;
  *
  */
 public class CmdHistoryRecordingTest extends YarchTestCase {
-    static EmbeddedActiveMQ hornetServer;
+    static EmbeddedActiveMQ artemisServer;
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        hornetServer = YamcsServer.setupArtemis();
+        artemisServer = ArtemisServer.setupArtemis();
+        ArtemisManagement.setupYamcsServerControl();
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-	YamcsServer.stopArtemis();
+        artemisServer.stop();
     }
  
     

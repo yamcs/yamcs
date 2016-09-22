@@ -18,12 +18,13 @@ import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.YamcsServer;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsClient.ClientBuilder;
 import org.yamcs.api.YamcsSession;
+import org.yamcs.hornetq.ArtemisManagement;
+import org.yamcs.hornetq.ArtemisServer;
 import org.yamcs.hornetq.EventTupleTranslator;
 import org.yamcs.hornetq.StreamAdapter;
 import org.yamcs.protobuf.Yamcs.EndAction;
@@ -48,15 +49,16 @@ import org.yamcs.yarch.YarchTestCase;
  *
  */
 public class EventRecordingTest extends YarchTestCase {
-    static EmbeddedActiveMQ hornetServer;
+    static EmbeddedActiveMQ artemisServer;
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        hornetServer=YamcsServer.setupArtemis();
+        artemisServer = ArtemisServer.setupArtemis();
+        ArtemisManagement.setupYamcsServerControl();
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-	YamcsServer.stopArtemis();
+        artemisServer.stop();
     }
     
     private void checkEvent(int i, Event ev) {
@@ -69,9 +71,9 @@ public class EventRecordingTest extends YarchTestCase {
     
     @Test
     public void testRecording() throws Exception {
-	ydb.execute("create stream "+EventRecorder.REALTIME_EVENT_STREAM_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'))");
-	ydb.execute("create stream "+EventRecorder.DUMP_EVENT_STREAM_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'))");
-	EventRecorder eventRecorder = new EventRecorder(context.getDbName());
+        ydb.execute("create stream "+EventRecorder.REALTIME_EVENT_STREAM_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'))");
+        ydb.execute("create stream "+EventRecorder.DUMP_EVENT_STREAM_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'))");
+        EventRecorder eventRecorder = new EventRecorder(context.getDbName());
         final int n=100;
         eventRecorder.startAsync();
         YamcsSession ys=YamcsSession.newBuilder().build();

@@ -2,7 +2,6 @@ package org.yamcs.parameterarchive;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
@@ -32,7 +31,6 @@ public class PGSegment {
     private List<BaseSegment> consolidatedRawValueSegments;
     private List<ParameterStatusSegment> consolidatedParameterStatusSegments;
     
-    private boolean consolidated = false;
     private final boolean storeRawValues = ParameterArchive.STORE_RAW_VALUES;
     private long segmentStart;
     
@@ -131,7 +129,6 @@ public class PGSegment {
 
     
     public void consolidate() {
-        consolidated = true;
         consolidatedValueSegments  = new ArrayList<BaseSegment>(engValueSegments.size());
         for(ValueSegment gvs: engValueSegments) {
             BaseSegment bs = gvs.consolidate();

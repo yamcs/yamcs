@@ -45,7 +45,7 @@ public class XtceTmExtractorTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setup("refmdb");
-        ManagementService.setup(false,false);
+        ManagementService.setup(false);
         XtceDbFactory.reset();
         xtcedb=XtceDbFactory.createInstance("refmdb");
         //xtcedb.print(System.out);

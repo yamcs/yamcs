@@ -44,7 +44,7 @@ public class ProcessorsTest {
    static EmbeddedActiveMQ artemisServer;
     @BeforeClass
     public static void setupHornetAndManagement() throws Exception {
-        ManagementService.setup(false, true);
+        ManagementService.setup(false);
         YConfiguration.setup("ProcessorsTest");
         YamcsServer.setupYamcsServer();
         //Logger.getLogger("org.yamcs").setLevel(Level.ALL);

@@ -15,7 +15,7 @@ storageEngines: [rocksdb, rocksdb2]
 
 rdbConfig:
      tableConfig:
-        - tableNamePattern: NonePartition
+        - tableNamePattern: .*
           maxOpenFiles: 100
           columnFamilyOptions: 
               targetFileSizeBase: 10240 #in KB

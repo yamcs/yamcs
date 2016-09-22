@@ -34,7 +34,7 @@ public class RDBFactory implements Runnable {
     public static synchronized RDBFactory getInstance(String instance) {
         RDBFactory rdbFactory = instances.get(instance); 
         if(rdbFactory==null) {
-            rdbFactory=new RDBFactory(instance);
+            rdbFactory = new RDBFactory(instance);
             instances.put(instance, rdbFactory);
         }
         return rdbFactory;
@@ -100,11 +100,11 @@ public class RDBFactory implements Runnable {
             }
 
 
-            daat=new DbAndAccessTime(db, absolutePath, readonly);
+            daat = new DbAndAccessTime(db, absolutePath, readonly);
             databases.put(absolutePath, daat);
         }
 
-        daat.lastAccess=System.currentTimeMillis();
+        daat.lastAccess = System.currentTimeMillis();
         daat.refcount++;
         return daat.db;
     }
@@ -143,11 +143,12 @@ public class RDBFactory implements Runnable {
             }
         }
     }
+    
     synchronized void shutdown() {
         log.debug("shutting down, closing all the databases "+databases.keySet());
-        Iterator<Map.Entry<String, DbAndAccessTime>>it=databases.entrySet().iterator();
+        Iterator<Map.Entry<String, DbAndAccessTime>>it = databases.entrySet().iterator();
         while(it.hasNext()) {
-            Map.Entry<String, DbAndAccessTime> entry=it.next();
+            Map.Entry<String, DbAndAccessTime> entry = it.next();
             entry.getValue().db.close();
             it.remove();
         }
@@ -161,8 +162,8 @@ public class RDBFactory implements Runnable {
     }
 
     public synchronized void dispose(YRDB rdb) {		
-        DbAndAccessTime daat=databases.get(rdb.getPath());
-        daat.lastAccess=System.currentTimeMillis();
+        DbAndAccessTime daat = databases.get(rdb.getPath());
+        daat.lastAccess = System.currentTimeMillis();
         daat.refcount--;
     }
 

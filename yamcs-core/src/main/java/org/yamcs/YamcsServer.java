@@ -1,11 +1,7 @@
 package org.yamcs;
 
-import static org.yamcs.api.artemis.Protocol.DATA_TO_HEADER_NAME;
-import static org.yamcs.api.artemis.Protocol.REPLYTO_HEADER_NAME;
-import static org.yamcs.api.artemis.Protocol.REQUEST_TYPE_HEADER_NAME;
 
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -16,29 +12,18 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.activemq.artemis.api.core.ActiveMQException;
-import org.apache.activemq.artemis.api.core.SimpleString;
-import org.apache.activemq.artemis.api.core.client.ClientMessage;
-import org.apache.activemq.artemis.api.core.client.MessageHandler;
-import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsSession;
-import org.yamcs.api.artemis.Protocol;
-import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.archive.ReplayServer;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
-import org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest;
+import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
+import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
-import org.yamcs.security.HornetQAuthManager;
-import org.yamcs.security.HqClientMessageToken;
-import org.yamcs.security.Privilege;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
-import org.yamcs.utils.ActiveMQBufferOutputStream;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.web.HttpServer;
 import org.yamcs.web.StaticFileHandler;
@@ -61,14 +46,13 @@ import com.google.common.util.concurrent.Service.State;
  *
  */
 public class YamcsServer {
-    static EmbeddedActiveMQ artemisServer;
     static Map<String, YamcsServer> instances=new LinkedHashMap<String, YamcsServer>();
     final static private String SERVER_ID_KEY="serverId";
 
     String instance;
     ReplayServer replay;
-    List<Service> serviceList=new ArrayList<Service>();
-
+    List<Service> serviceList;
+    static List<Service> serverWideserviceList;
     Logger log;
     static Logger staticlog=LoggerFactory.getLogger(YamcsServer.class);
 
@@ -83,8 +67,7 @@ public class YamcsServer {
     
     static private String serverId;
     
-    @SuppressWarnings("unchecked")
-    YamcsServer(String instance) throws ActiveMQException, IOException, StreamSqlException, ParseException, YamcsApiException {
+    YamcsServer(String instance) throws IOException, StreamSqlException, ParseException, YamcsApiException {
         this.instance=instance;
         
         //TODO - fix bootstrap issue 
@@ -99,7 +82,21 @@ public class YamcsServer {
         StreamInitializer.createStreams(instance);
         YProcessor.addProcessorListener(managementService);
         
-        List<Object> services=conf.getList("services");
+        List<Object> services = conf.getList("services");
+        serviceList = startServices(instance, services);
+    }
+    /**
+     * Starts services either server wide (if instance is null) or instance specific
+     * 
+     * @param services - list of service configuration; each of them is a string (=classname) or a map
+     * @param instance - if null, then start a server wide service, otherwise an instance specific service
+     * @throws IOException 
+     * @throws ConfigurationException 
+     */
+    @SuppressWarnings("unchecked")
+    public static List<Service> startServices(String instance, List<Object>services) throws ConfigurationException, IOException {
+        ManagementService managementService = ManagementService.getInstance();
+        List<Service> serviceList=new ArrayList<Service>();
         for(Object servobj:services) {
             String servclass;
             Object args = null;
@@ -112,13 +109,15 @@ public class YamcsServer {
             } else {
                 throw new ConfigurationException("Services can either be specified by classname, or by {class: classname, args: ....} map. Cannot load a service from "+servobj);
             }
-            log.info("Loading service "+servclass);
+            staticlog.info("Loading {} service {}", (instance==null)?"server wide":instance, servclass);
             YObjectLoader<Service> objLoader = new YObjectLoader<Service>();
             Service serv;
-            if(args == null) {
-                serv = objLoader.loadObject(servclass, instance);
+            if(instance!=null) {
+                if(args == null) serv = objLoader.loadObject(servclass, instance);
+                else serv = objLoader.loadObject(servclass, instance, args);
             } else {
-                serv = objLoader.loadObject(servclass, instance, args);
+                if(args == null) serv = objLoader.loadObject(servclass);
+                else serv = objLoader.loadObject(servclass, args);
             }
             serviceList.add(serv);
             managementService.registerService(instance, servclass, serv);
@@ -135,87 +134,14 @@ public class YamcsServer {
                 throw new ConfigurationException("Failed to start service "+serv, serv.failureCause());
             }
         }
+        
+        return serviceList;
     }
-    
     public static void setupHttpServer() throws ConfigurationException, InterruptedException {
         StaticFileHandler.init();
         HttpServer.setup();
     }
 
-    static YamcsSession yamcsSession;
-    static YamcsClient ctrlAddressClient;
-
-    public static EmbeddedActiveMQ setupArtemis() throws Exception {
-        //divert artemis logging
-        System.setProperty("org.jboss.logging.provider", "slf4j");
-
-        // load optional configuration file name for ActiveMQ Artemis,
-        // otherwise default will be artemis.xml
-        String artemisConfigFile = "artemis.xml";
-        YConfiguration c = YConfiguration.getConfiguration("yamcs");
-        if(c.containsKey("artemisConfigFile")) {
-            artemisConfigFile = c.getString("artemisConfigFile");    
-        }
-
-        artemisServer = new EmbeddedActiveMQ();
-        artemisServer.setSecurityManager( new HornetQAuthManager() );
-        if(artemisConfigFile != null) {
-            artemisServer.setConfigResourcePath(artemisConfigFile);
-        }
-        artemisServer.start();
-        //create already the queue here to reduce (but not eliminate :( ) the chance that somebody connects to it before yamcs is started fully
-        yamcsSession = YamcsSession.newBuilder().build();
-        ctrlAddressClient = yamcsSession.newClientBuilder().setRpcAddress(Protocol.YAMCS_SERVER_CONTROL_ADDRESS).setDataProducer(true).build();
-        
-        
-
-        ctrlAddressClient.rpcConsumer.setMessageHandler(new MessageHandler() {
-            @Override
-            public void onMessage(ClientMessage msg) {
-                SimpleString replyto=msg.getSimpleStringProperty(REPLYTO_HEADER_NAME);
-                if(replyto==null) {
-                    staticlog.warn("did not receive a replyto header. Ignoring the request");
-                    return;
-                }
-                try {
-                    String req=msg.getStringProperty(REQUEST_TYPE_HEADER_NAME);
-                    staticlog.debug("received request "+req);
-                    if("getYamcsInstances".equalsIgnoreCase(req)) {
-                        ctrlAddressClient.sendReply(replyto, "OK", getYamcsInstances());
-                    } else  if("getMissionDatabase".equalsIgnoreCase(req)) {
-
-                        Privilege priv = Privilege.getInstance();
-                        HqClientMessageToken authToken = new HqClientMessageToken(msg, null);
-                        if( ! priv.hasPrivilege(authToken, Privilege.Type.SYSTEM, "MayGetMissionDatabase" ) ) {
-                            staticlog.warn("User '{}' does not have 'MayGetMissionDatabase' privilege.");
-                            ctrlAddressClient.sendErrorReply(replyto, "Privilege required but missing: MayGetMissionDatabase");
-                            return;
-                        }
-                        SimpleString dataAddress=msg.getSimpleStringProperty(DATA_TO_HEADER_NAME);
-                        if(dataAddress == null) {
-                            staticlog.warn("Received a getMissionDatabase without a "+DATA_TO_HEADER_NAME +" header");
-                            ctrlAddressClient.sendErrorReply(replyto, "no data address specified");
-                            return;
-                        }
-                        MissionDatabaseRequest mdr = (MissionDatabaseRequest)Protocol.decode(msg, MissionDatabaseRequest.newBuilder());
-                        sendMissionDatabase(mdr, replyto, dataAddress);
-                    } else {
-                        staticlog.warn("Received invalid request: "+req);
-                    }
-                } catch (Exception e) {
-                    staticlog.warn("exception received when sending the reply: ", e);
-                }
-            }
-        });
-        
-        return artemisServer;
-    }
-
-    public static void stopArtemis() throws Exception {
-        yamcsSession.close();
-        Protocol.closeKiller();
-        artemisServer.stop();
-    }
 
     public static void shutDown() throws Exception {
         for(YamcsServer ys: instances.values()) {
@@ -262,8 +188,14 @@ public class YamcsServer {
     }
 
     public static void setupYamcsServer() throws Exception  {
-        YConfiguration c=YConfiguration.getConfiguration("yamcs");
-        final List<String>instArray=c.getList("instances");
+        YConfiguration c = YConfiguration.getConfiguration("yamcs");
+        
+        if(c.containsKey("services")) {
+            List<Object> services=c.getList("services");
+            serverWideserviceList = startServices(null, services);
+        }
+        
+        final List<String>instArray = c.getList("instances");
         
         if (instArray.isEmpty()) {
             staticlog.warn("No instances");
@@ -321,32 +253,6 @@ public class YamcsServer {
         return aib.build();
     }
 
-    private static void sendMissionDatabase(MissionDatabaseRequest mdr, SimpleString replyTo, SimpleString dataAddress) throws ActiveMQException {
-        final XtceDb xtcedb;
-        try {
-            if(mdr.hasInstance()) {
-                xtcedb=XtceDbFactory.getInstance(mdr.getInstance());
-            } else if(mdr.hasDbConfigName()){
-                xtcedb=XtceDbFactory.createInstance(mdr.getDbConfigName());
-            } else {
-                staticlog.warn("getMissionDatabase request received with none of the instance or dbConfigName specified");
-                ctrlAddressClient.sendErrorReply(replyTo, "Please specify either instance or dbConfigName");
-                return;
-            }
-        
-            ClientMessage msg=yamcsSession.session.createMessage(false);
-            ObjectOutputStream oos=new ObjectOutputStream(new ActiveMQBufferOutputStream(msg.getBodyBuffer()));
-            oos.writeObject(xtcedb);
-            oos.close();
-            ctrlAddressClient.sendReply(replyTo, "OK", null);
-            ctrlAddressClient.sendData(dataAddress, msg);
-        } catch (ConfigurationException e) {
-            YamcsException ye=new YamcsException(e.toString());
-            ctrlAddressClient.sendErrorReply(replyTo, ye);
-        } catch (IOException e) { //this should not happen since all the ObjectOutputStream happens in memory
-            throw new RuntimeException(e);
-        }
-    }
     
     private static String deriveServerId() {
         try {
@@ -394,11 +300,6 @@ public class YamcsServer {
         return timeService;
     }
     
-    public static void configureNonBlocking(SimpleString dataAddress) {
-	//TODO
-	//Object o=hornetServer.getActiveMQServer().getManagementService().getResource(dataAddress.toString());
-    }
-
     /**
      * @param args
      */
@@ -410,9 +311,8 @@ public class YamcsServer {
             serverId = deriveServerId();
             setupSecurity();
             setupHttpServer();
-            setupArtemis();
             org.yamcs.yarch.management.JMXService.setup(true);
-            ManagementService.setup(true,true);
+            ManagementService.setup(true);
             
             setupYamcsServer();
 
@@ -460,8 +360,23 @@ public class YamcsServer {
         }
         return null;
     }
-
-
+    public List<ServiceInfo> getServices() {
+        List<ServiceInfo> r = new ArrayList<ServiceInfo>(serviceList.size());
+        for(Service s: serviceList) {
+            ServiceInfo si = ServiceInfo.newBuilder().setName(s.getClass().getName()).setInstance(instance).setState(ServiceState.valueOf(s.state().name())).build();
+            r.add(si);
+        }
+        return r;
+    }
+    
+    public static  List<ServiceInfo> getGlobalServices() {
+        List<ServiceInfo> r = new ArrayList<ServiceInfo>(serverWideserviceList.size());
+        for(Service s: serverWideserviceList) {
+            ServiceInfo si = ServiceInfo.newBuilder().setName(s.getClass().getName()).setState(ServiceState.valueOf(s.state().name())).build();
+            r.add(si);
+        }
+        return r;
+    }
     public static <T extends Service> T getService(String yamcsInstance, Class<T> serviceClass) {
         YamcsServer ys = YamcsServer.getInstance(yamcsInstance);
         if(ys==null) return null;
@@ -470,5 +385,21 @@ public class YamcsServer {
     
     public static void setMockupTimeService(TimeService timeService) {
         mockupTimeService = timeService;
+    }
+    public Service getService(String serviceName) {
+        for(Service s: serviceList) {
+            if(s.getClass().getName().equals(serviceName)) {
+                return s;
+            }
+        }
+        return null;
+    }
+    public static Service getGlobalService(String serviceName) {
+        for(Service s: serverWideserviceList) {
+            if(s.getClass().getName().equals(serviceName)) {
+                return s;
+            }
+        }
+        return null;
     }
 }

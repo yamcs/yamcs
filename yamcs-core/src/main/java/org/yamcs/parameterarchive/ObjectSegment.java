@@ -33,10 +33,6 @@ import org.yamcs.utils.VarIntUtil;
  *
  */
 public class ObjectSegment<E> extends BaseSegment {
-    
-
- 
-
     final static byte SUBFORMAT_ID_RAW = 0;
     final static byte SUBFORMAT_ID_ENUM_RLE = 1;  
     final static byte SUBFORMAT_ID_ENUM_VB = 2;

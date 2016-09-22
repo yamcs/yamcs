@@ -6,7 +6,6 @@ import org.yamcs.utils.DecodingException;
 /**
  * Iterates over the segments of one partition for a parameter_id, ParameterGroup_id, between a start and stop
  * 
- * 
  * @author nm
  *
  */
@@ -44,8 +43,6 @@ public class PartitionIterator {
         }
 
     }
-
-
 
     private void goToFirstDescending() {
         iterator.seek(new SegmentKey(parameterId, parameterGroupId, SortedTimeSegment.getSegmentStart(stop), Byte.MAX_VALUE).encode());
@@ -164,8 +161,6 @@ public class PartitionIterator {
     public int getParameterGroupId() {
         return parameterGroupId;
     }
-
-
 
     public int getParameterId() {
         return parameterId;
