@@ -136,6 +136,7 @@ public class ParameterArchive  extends AbstractService {
             List<ColumnFamilyDescriptor> cfdList = new ArrayList<ColumnFamilyDescriptor>(cfList.size());
             for(byte[] cf:cfList) {
                 ColumnFamilyDescriptor cfd = new ColumnFamilyDescriptor(cf);
+                cfd.columnFamilyOptions().setWriteBufferSize(1024*1024);
                 cfdList.add(cfd);
             }
 
@@ -303,6 +304,7 @@ public class ParameterArchive  extends AbstractService {
                 p = new Partition(partitionId);
                 byte[] cfname = encodePartitionId(CF_NAME_data_prefix, partitionId);
                 ColumnFamilyDescriptor cfd = new ColumnFamilyDescriptor(cfname);
+                cfd.columnFamilyOptions().setWriteBufferSize(1024*1024);
                 p.dataCfh = rdb.createColumnFamily(cfd);
 
                 partitions.put(partitionId, p);
