@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 public class RDBFactory implements Runnable {
     HashMap<String, DbAndAccessTime> databases=new HashMap<String, DbAndAccessTime>();
 
-    static Logger log=LoggerFactory.getLogger(RDBFactory.class.getName());
+    static Logger log = LoggerFactory.getLogger(RDBFactory.class.getName());
     static HashMap<String, RDBFactory> instances=new HashMap<String, RDBFactory>(); 
     static int maxOpenDbs=200;
     ScheduledThreadPoolExecutor scheduler;
@@ -59,7 +59,7 @@ public class RDBFactory implements Runnable {
     RDBFactory(String instance) {
         this.instance = instance;
         flushOptions.setWaitForFlush(false);
-        scheduler=new ScheduledThreadPoolExecutor(1,new ThreadFactory() {//the default thread factory creates non daemon threads 
+        scheduler = new ScheduledThreadPoolExecutor(1,new ThreadFactory() {//the default thread factory creates non daemon threads 
             @Override
             public Thread newThread(Runnable r) {
                 Thread t=new Thread(r);
@@ -81,8 +81,8 @@ public class RDBFactory implements Runnable {
                 for(Entry<String, DbAndAccessTime> entry:databases.entrySet()) {
                     DbAndAccessTime daat1=entry.getValue();
                     if((daat1.refcount==0)&&(daat1.lastAccess<min)) {
-                        min=daat1.lastAccess;
-                        minFile=entry.getKey();
+                        min = daat1.lastAccess;
+                        minFile = entry.getKey();
                     }
                 }
                 if(minFile!=null) {
@@ -103,7 +103,6 @@ public class RDBFactory implements Runnable {
             daat = new DbAndAccessTime(db, absolutePath, readonly);
             databases.put(absolutePath, daat);
         }
-
         daat.lastAccess = System.currentTimeMillis();
         daat.refcount++;
         return daat.db;
@@ -124,7 +123,7 @@ public class RDBFactory implements Runnable {
     public synchronized void run() {
         //remove all the databases not accessed in the last 5 min and sync the others
         long time=System.currentTimeMillis();
-        Iterator<Map.Entry<String, DbAndAccessTime>>it=databases.entrySet().iterator();
+        Iterator<Map.Entry<String, DbAndAccessTime>>it = databases.entrySet().iterator();
         while(it.hasNext()) {
             Map.Entry<String, DbAndAccessTime> entry=it.next();
             DbAndAccessTime daat=entry.getValue();
@@ -161,7 +160,7 @@ public class RDBFactory implements Runnable {
         }
     }
 
-    public synchronized void dispose(YRDB rdb) {		
+    public synchronized void dispose(YRDB rdb) {
         DbAndAccessTime daat = databases.get(rdb.getPath());
         daat.lastAccess = System.currentTimeMillis();
         daat.refcount--;
