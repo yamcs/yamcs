@@ -102,9 +102,16 @@ public class IndexServer extends AbstractService {
     
     @Override
     protected void doStop() {
+        try {
         hqIndexServer.stopAsync();
         hqIndexServer.awaitTerminated();
+        tmIndexer.close();
+        tagDb.close();
         notifyStopped();
+        } catch (IOException e) {
+            log.error("failed to stop the indexer", e);
+            notifyFailed(e);
+        }
     }
     
     public String getInstance() {

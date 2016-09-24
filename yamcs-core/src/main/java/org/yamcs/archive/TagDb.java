@@ -42,4 +42,6 @@ public interface TagDb {
      * @throws YamcsException if the id was invalid, or if the tag could not be found
      */
     public ArchiveTag deleteTag(long tagTime, int tagId) throws IOException, YamcsException;
+
+    public void close();
 }
