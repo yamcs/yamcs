@@ -353,6 +353,8 @@ public class YamcsServer {
     
     @SuppressWarnings("unchecked")
     public <T extends Service> T getService(Class<T> serviceClass) {
+        if(serviceList==null) return null;
+        
         for(Service s: serviceList) {
             if(serviceClass == s.getClass()) {
                 return (T) s;
