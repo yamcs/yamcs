@@ -1,7 +1,6 @@
 package org.yamcs.archive;
 
 import org.yamcs.YamcsException;
-import org.yamcs.cmdhistory.CommandHistoryRecorder;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;

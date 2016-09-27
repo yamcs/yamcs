@@ -148,6 +148,10 @@ public class StreamConfig {
             return type;
         }
 
+        /**
+         * 
+         * @return stream name
+         */
         public String getName() {
             return name;
         }

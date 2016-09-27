@@ -20,7 +20,6 @@ import org.yamcs.tctm.TcUplinkerAdapter;
 import org.yamcs.api.YamcsSession;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
-import org.yamcs.cmdhistory.CommandHistoryRecorder;
 import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.hornetq.ArtemisManagement;

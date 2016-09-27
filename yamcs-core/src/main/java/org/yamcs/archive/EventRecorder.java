@@ -2,6 +2,9 @@ package org.yamcs.archive;
 
 
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.yamcs.api.YamcsApiException;
@@ -24,13 +27,15 @@ import com.google.common.util.concurrent.AbstractService;
 public class EventRecorder extends AbstractService {
     static TupleDefinition eventTpdef; 
     static final public String TABLE_NAME="events";
-    static final public String REALTIME_EVENT_STREAM_NAME="events_realtime";
-    static final public String DUMP_EVENT_STREAM_NAME="events_dump";
-
+    static final public String REALTIME_EVENT_STREAM_NAME = "events_realtime";
+    static final public String DUMP_EVENT_STREAM_NAME = "events_dump";
+    final String yamcsInstance;
+    
     StreamAdapter rtStreamAdapter, dumpStreamAdapter;
 
     public EventRecorder(String instance) throws StreamSqlException, ParseException, ActiveMQException, YamcsApiException {
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
+        this.yamcsInstance = instance;
         if(ydb.getTable(TABLE_NAME)==null) {
             ydb.execute("create table "+TABLE_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'), primary key(gentime, source, seqNum)) histogram(source)"
                     + " partition by time(gentime"+XtceTmRecorder.getTimePartitioningSchemaSql()+") table_format=compressed");
@@ -54,6 +59,9 @@ public class EventRecorder extends AbstractService {
 
     @Override
     protected void doStop() {
+        YarchDatabase ydb=YarchDatabase.getInstance(yamcsInstance);
+        Utils.closeTableWriters(ydb,  Arrays.asList(REALTIME_EVENT_STREAM_NAME, DUMP_EVENT_STREAM_NAME));
+        
         rtStreamAdapter.quit();
         dumpStreamAdapter.quit();
         notifyStopped();

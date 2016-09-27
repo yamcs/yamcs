@@ -60,9 +60,9 @@ public class IndexServer extends AbstractService {
         
         if(c.containsKey("tmIndexer")) {
             String icn=c.getString("tmIndexer");
-            tmIndexer=loadIndexerFromClass(icn, yamcsInstance, readonly);
+            tmIndexer = loadIndexerFromClass(icn, yamcsInstance, readonly);
         } else {
-            tmIndexer=new CccsdsTmIndex(yamcsInstance, readonly);
+            tmIndexer = new CccsdsTmIndex(yamcsInstance, readonly);
         }
         
         if(!readonly) {
@@ -103,11 +103,10 @@ public class IndexServer extends AbstractService {
     @Override
     protected void doStop() {
         try {
-        hqIndexServer.stopAsync();
-        hqIndexServer.awaitTerminated();
-        tmIndexer.close();
-        tagDb.close();
-        notifyStopped();
+           hqIndexServer.stopAsync();
+           hqIndexServer.awaitTerminated();
+           tmIndexer.close();
+           tagDb.close();
         } catch (IOException e) {
             log.error("failed to stop the indexer", e);
             notifyFailed(e);

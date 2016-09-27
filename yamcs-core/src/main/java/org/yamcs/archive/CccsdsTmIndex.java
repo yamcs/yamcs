@@ -55,7 +55,7 @@ public class CccsdsTmIndex implements TmIndex {
     public CccsdsTmIndex(String instance, boolean readonly) throws IOException {
         log=YamcsServer.getLogger(this.getClass(), instance);
 
-        YarchDatabase ydb=YarchDatabase.getInstance(instance);
+        YarchDatabase ydb = YarchDatabase.getInstance(instance);
 
         String filename=ydb.getRoot()+"/tmindex";
         try {
@@ -156,7 +156,7 @@ public class CccsdsTmIndex implements TmIndex {
                 db.put(r.key(), r.val());
             } 
         } finally {
-            it.dispose();
+            it.close();
         }
     }
     /**compare the packet with the record. 
@@ -213,6 +213,7 @@ public class CccsdsTmIndex implements TmIndex {
     @Override
     public synchronized void close() throws IOException {
         if(closed)return;
+        
         log.info("Closing the tmindexdb");
         db.close();
         closed=true;
@@ -445,7 +446,7 @@ public class CccsdsTmIndex implements TmIndex {
          * @see org.yamcs.yarch.usoc.IndexIterator#close()
          */
         public void close() {
-            cur.dispose();
+            cur.close();
         }
     }
 

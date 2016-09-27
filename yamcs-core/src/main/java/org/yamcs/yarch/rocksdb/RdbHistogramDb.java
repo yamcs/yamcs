@@ -32,26 +32,31 @@ public class RdbHistogramDb extends HistogramDb {
 
     static Map<TableDefinition, RdbHistogramDb> instances=new HashMap<TableDefinition, RdbHistogramDb>();
     final YarchDatabase ydb;
+    TableDefinition tblDef;
     
     static final byte[] zerobytes=new byte[0];
     /**
      * Open the  histogram db
      * readonly is true when called as a standalone program to inspect the index
 
-     * @param filename
+     * @param tblDef
      * @throws IOException
      */
-    public RdbHistogramDb(YarchDatabase ydb, String filename, boolean readonly) throws IOException {
-        this.ydb = ydb;
-        RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
-        histoDb = rdbFactory.getRdb(filename, new ColumnValueSerializer(DataType.STRING), readonly);
-
-        lastSync=System.currentTimeMillis();
+    public RdbHistogramDb(YarchDatabase ydb, TableDefinition tblDef, boolean readonly) throws IOException {
+        this(ydb, tblDef.getDataDir()+"/"+tblDef.getName()+"-histo", readonly);
+        this.tblDef = tblDef;
     }
 
     //    private void initDb() throws IOException {
 
     //  }
+
+    public RdbHistogramDb(YarchDatabase ydb, String dbpath, boolean readonly) throws IOException {
+        this.ydb = ydb;
+        RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
+        histoDb = rdbFactory.getRdb(dbpath, new ColumnValueSerializer(DataType.STRING), readonly);
+        lastSync = System.currentTimeMillis();
+    }
 
     @Override
     public HistogramIterator getIterator(String colName, TimeInterval interval, long mergeTime) throws IOException {
@@ -63,17 +68,19 @@ public class RdbHistogramDb extends HistogramDb {
     }
 
     @Override
-    public void close() throws IOException{
-        histoDb.close();
+    public void close() {
+        synchronized(RdbHistogramDb.class) {
+            instances.remove(tblDef);
+        }
+        RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
+        rdbFactory.dispose(histoDb);
     }
 
 
-
-
     public static synchronized RdbHistogramDb getInstance(YarchDatabase ydb, TableDefinition tblDef) throws IOException {
-        RdbHistogramDb db=instances.get(tblDef);
+        RdbHistogramDb db = instances.get(tblDef);
         if(db==null) {
-            db=new RdbHistogramDb(ydb, tblDef.getDataDir()+"/"+tblDef.getName()+"-histo", false);
+            db = new RdbHistogramDb(ydb, tblDef, false);
             instances.put(tblDef, db);
         }
         assert(db.ydb==ydb);
@@ -84,7 +91,7 @@ public class RdbHistogramDb extends HistogramDb {
 
     protected byte[] segmentGet(String colName, byte[] segkey) throws IOException {
         try {
-            ColumnFamilyHandle cfh= histoDb.getColumnFamilyHandle(colName);
+            ColumnFamilyHandle cfh = histoDb.getColumnFamilyHandle(colName);
             if(cfh==null) return null;
 
             return histoDb.get(cfh, segkey);

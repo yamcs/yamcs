@@ -43,5 +43,9 @@ public interface TagDb {
      */
     public ArchiveTag deleteTag(long tagTime, int tagId) throws IOException, YamcsException;
 
+    /**
+     * close the database and release resources
+     * the object is unusable after this call.
+     */
     public void close();
 }

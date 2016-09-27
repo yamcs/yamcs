@@ -25,4 +25,8 @@ public abstract class TableWriter implements StreamSubscriber {
         return tableDefinition;
     }
 
+    /**
+     * close histogram db and any open resources
+     */
+    public abstract void close();
 }

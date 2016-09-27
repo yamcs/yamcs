@@ -35,7 +35,8 @@ rdbConfig:
               writeBufferSize: 50240        #KB
               maxWriteBufferNumber: 2
           tableFormatConfig:
-              blockSize: 512 #KB
+              blockSize: 32 #KB
+              noBlockCache: true
 
 webConfig:
    #where to find the web directory with ccs, js etc

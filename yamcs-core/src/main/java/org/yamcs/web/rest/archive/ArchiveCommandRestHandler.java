@@ -1,7 +1,7 @@
 package org.yamcs.web.rest.archive;
 
+import org.yamcs.archive.CommandHistoryRecorder;
 import org.yamcs.archive.GPBHelper;
-import org.yamcs.cmdhistory.CommandHistoryRecorder;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Rest.ListCommandsResponse;
 import org.yamcs.protobuf.SchemaRest;

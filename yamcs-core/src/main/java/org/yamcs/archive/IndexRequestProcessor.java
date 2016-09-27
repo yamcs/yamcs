@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.cmdhistory.CommandHistoryRecorder;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.protobuf.Yamcs.IndexResult;
