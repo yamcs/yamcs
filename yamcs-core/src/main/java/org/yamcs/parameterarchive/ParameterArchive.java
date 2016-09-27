@@ -30,6 +30,7 @@ import org.yamcs.time.TimeService;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.rocksdb.YRDB;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -469,5 +470,10 @@ public class ParameterArchive  extends AbstractService {
         }
 
         return parts;
+    }
+    
+    
+    public String getProperites() throws RocksDBException {
+        return YRDB.getProperites(rdb);
     }
 }

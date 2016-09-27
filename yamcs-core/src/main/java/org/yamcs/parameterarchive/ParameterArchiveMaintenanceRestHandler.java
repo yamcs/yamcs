@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.NavigableMap;
 
 import org.rocksdb.RocksDBException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
 import org.yamcs.parameterarchive.ParameterArchive;
 import org.yamcs.parameterarchive.ParameterArchive.Partition;
@@ -25,11 +27,13 @@ import org.yamcs.web.rest.Route;
  *
  */
 public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
+    
+    private static final Logger log = LoggerFactory.getLogger(ParameterArchiveMaintenanceRestHandler.class);
     /**
      * Request to (re)build the parameterArchive between start and stop
      * 
      */
-    @Route(path = "/api/archive/:instance/parameterArchive/rebuild")
+    @Route(path = "/api/archive/:instance/parameterArchive/rebuild", method = "POST")
     public void reprocess(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         checkPrivileges(req);
@@ -54,7 +58,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
         sendOK(req);
     }
     
-    @Route(path = "/api/archive/:instance/parameterArchive/deletePartitions")
+    @Route(path = "/api/archive/:instance/parameterArchive/deletePartitions" , method = "POST")
     public void deletePartition(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         checkPrivileges(req);
@@ -90,7 +94,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
        
     }
     
-    @Route(path = "/api/archive/:instance/parameterArchive/info/parameter/:name*")
+    @Route(path = "/api/archive/:instance/parameterArchive/info/parameter/:name*", method = "GET")
     public void archiveInfo(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         checkPrivileges(req);
@@ -101,6 +105,23 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
         ParameterId[] pids = pdb.get(fqn);
         StringMessage sm = StringMessage.newBuilder().setMessage(Arrays.toString(pids)).build();
         completeOK(req, sm, org.yamcs.protobuf.SchemaYamcs.StringMessage.WRITE);
+    }
+   
+    @Route(path = "/api/archive/:instance/parameterArchive/properties", method = "GET")
+    public void getProperty(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        checkPrivileges(req);
+        
+        ParameterArchive parchive = getParameterArchive(instance);
+       
+        try {
+            String props = parchive.getProperites();
+            StringMessage sm = StringMessage.newBuilder().setMessage(props).build();
+            completeOK(req, sm, org.yamcs.protobuf.SchemaYamcs.StringMessage.WRITE);
+        } catch (RocksDBException e) {
+            log.error("Error when getting ParameterArchive properties",e);
+            completeWithError(req, new InternalServerErrorException(e));
+        }
     }
    
     
