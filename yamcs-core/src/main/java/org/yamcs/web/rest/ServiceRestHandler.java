@@ -7,7 +7,9 @@ import org.yamcs.protobuf.Rest.EditServiceRequest;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
+import org.yamcs.security.Privilege;
 import org.yamcs.web.BadRequestException;
+import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;
 
@@ -18,8 +20,11 @@ import com.google.common.util.concurrent.Service;
  */
 public class ServiceRestHandler extends RestHandler {
     static String GLOBAL_INSTANCE = "_global";
+    
+    
     @Route(path="/api/services/:instance?", method="GET")
-    public void listLinks(RestRequest req) throws HttpException {        
+    public void listServices(RestRequest req) throws HttpException {        
+        checkPrivileges(req);
         String instance = req.getRouteParam("instance");
         if(instance==null) throw new BadRequestException("No instance specified");
         boolean global = false;
@@ -48,8 +53,8 @@ public class ServiceRestHandler extends RestHandler {
 
     @Route(path="/api/services/:instance/:name", method={"PATCH", "PUT", "POST"})
     @Route(path="/api/services/:instance/service/:name", method={"PATCH", "PUT", "POST"})
-    public void editLink(RestRequest req) throws HttpException {
-        
+    public void editService(RestRequest req) throws HttpException {
+        checkPrivileges(req);
         String instance = req.getRouteParam("instance");
         if(instance==null) throw new BadRequestException("No instance specified");
         boolean global = false;
@@ -86,6 +91,12 @@ public class ServiceRestHandler extends RestHandler {
             }
         } else {
             sendOK(req);
+        }
+    }
+    
+    private void checkPrivileges(RestRequest req) throws HttpException {
+        if(!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.SYSTEM, Privilege.SystemPrivilege.MayControlServices.name()))  {
+            throw new ForbiddenException("No privilege for this operation");
         }
     }
 }
