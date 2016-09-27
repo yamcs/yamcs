@@ -1,6 +1,8 @@
 package org.yamcs.parameterarchive;
 
 
+import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.NavigableMap;
 
@@ -8,6 +10,7 @@ import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
+import org.yamcs.api.MediaType;
 import org.yamcs.parameterarchive.ParameterArchive;
 import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.parameterarchive.ParameterIdDb.ParameterId;
@@ -20,6 +23,10 @@ import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Route;
+
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 
 /**
  * Provides some maintenance operations on the parameter archive
@@ -115,9 +122,9 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
         ParameterArchive parchive = getParameterArchive(instance);
        
         try {
-            String props = parchive.getProperites();
-            StringMessage sm = StringMessage.newBuilder().setMessage(props).build();
-            completeOK(req, sm, org.yamcs.protobuf.SchemaYamcs.StringMessage.WRITE);
+            CharBuffer props = CharBuffer.wrap(parchive.getProperites());
+            ByteBuf buf = ByteBufUtil.encodeString(req.getChannelHandlerContext().alloc(), props, StandardCharsets.UTF_8);
+            completeOK(req, MediaType.PLAIN_TEXT, buf);
         } catch (RocksDBException e) {
             log.error("Error when getting ParameterArchive properties",e);
             completeWithError(req, new InternalServerErrorException(e));

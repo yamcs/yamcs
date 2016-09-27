@@ -154,15 +154,25 @@ public class YRDB {
     
     
     public static String getProperites(RocksDB db) throws RocksDBException {
-        final List<String> props = Arrays.asList("rocksdb.stats", "rocksdb.sstables", "rocksdb.cfstats", "rocksdb.dbstats", "rocksdb.levelstats" ,"rocksdb.num-immutable-mem-table",  "rocksdb.num-immutable-mem-table-flushed"
+        final List<String> mlprops = Arrays.asList("rocksdb.stats", "rocksdb.sstables", "rocksdb.cfstats", "rocksdb.dbstats", "rocksdb.levelstats"
+                , "rocksdb.aggregated-table-properties");
+        
+        final List<String> slprops = Arrays.asList("rocksdb.num-immutable-mem-table",  "rocksdb.num-immutable-mem-table-flushed"
                 , "rocksdb.mem-table-flush-pending",  "rocksdb.num-running-flushes" , "rocksdb.compaction-pending", "rocksdb.num-running-compactions", "rocksdb.background-errors",  "rocksdb.cur-size-active-mem-table"
-                , "rocksdb.cur-size-all-mem-tables", "rocksdb.size-all-mem-tables", "rocksdb.num-entries-active-mem-table",  "rocksdb.num-entries-imm-mem-tables",  "rocksdb.num-deletes-active-mem-table",  "rocksdb.num-deletes-imm-mem-tables",
-                "rocksdb.estimate-num-keys", "rocksdb.estimate-table-readers-mem", "rocksdb.is-file-deletions-enabled" ,  "rocksdb.num-snapshots","rocksdb.oldest-snapshot-time" ,  "rocksdb.num-live-versions", "rocksdb.current-super-version-number"
-                , "rocksdb.estimate-live-data-size", "rocksdb.base-level", "rocksdb.aggregated-table-properties");
+                , "rocksdb.cur-size-all-mem-tables", "rocksdb.size-all-mem-tables", "rocksdb.num-entries-active-mem-table",  "rocksdb.num-entries-imm-mem-tables"
+                , "rocksdb.num-deletes-active-mem-table",  "rocksdb.num-deletes-imm-mem-tables", "rocksdb.estimate-num-keys", "rocksdb.estimate-table-readers-mem"
+                , "rocksdb.is-file-deletions-enabled" ,  "rocksdb.num-snapshots","rocksdb.oldest-snapshot-time" ,  "rocksdb.num-live-versions"
+                , "rocksdb.current-super-version-number", "rocksdb.estimate-live-data-size", "rocksdb.base-level");
         StringBuilder sb = new StringBuilder();
-        for(String p:props) {
-            sb.append("------------------- "+p+" ----------------");
+        for(String p:slprops) {
+            sb.append(p).append(": ");
             sb.append(db.getProperty(p));
+            sb.append("\n");
+        }
+        for(String p:mlprops) {
+            sb.append("--------------------- "+p+"---------------------\n");
+            sb.append(db.getProperty(p));
+            sb.append("\n");
         }
         return sb.toString();
     }
