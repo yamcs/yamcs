@@ -43,7 +43,8 @@ public class Privilege {
         MayControlCommandQueue,
         MayCommandPayload,
         MayGetMissionDatabase,
-        MayControlArchiving
+        MayControlArchiving,
+        MayControlServices
     }
 
     public static boolean usePrivileges = true;
