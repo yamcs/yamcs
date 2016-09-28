@@ -1,16 +1,11 @@
 package org.yamcs.parameterarchive;
 
 
-import java.nio.CharBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.NavigableMap;
 
 import org.rocksdb.RocksDBException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.MediaType;
 import org.yamcs.parameterarchive.ParameterArchive;
 import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.parameterarchive.ParameterIdDb.ParameterId;
@@ -25,9 +20,6 @@ import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Route;
 
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
-
 /**
  * Provides some maintenance operations on the parameter archive
  * @author nm
@@ -35,7 +27,7 @@ import io.netty.buffer.ByteBufUtil;
  */
 public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
     
-    private static final Logger log = LoggerFactory.getLogger(ParameterArchiveMaintenanceRestHandler.class);
+  
     /**
      * Request to (re)build the parameterArchive between start and stop
      * 
@@ -112,23 +104,6 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
         ParameterId[] pids = pdb.get(fqn);
         StringMessage sm = StringMessage.newBuilder().setMessage(Arrays.toString(pids)).build();
         completeOK(req, sm, org.yamcs.protobuf.SchemaYamcs.StringMessage.WRITE);
-    }
-   
-    @Route(path = "/api/archive/:instance/parameterArchive/properties", method = "GET")
-    public void getProperty(RestRequest req) throws HttpException {
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
-        checkPrivileges(req);
-        
-        ParameterArchive parchive = getParameterArchive(instance);
-       
-        try {
-            CharBuffer props = CharBuffer.wrap(parchive.getProperites());
-            ByteBuf buf = ByteBufUtil.encodeString(req.getChannelHandlerContext().alloc(), props, StandardCharsets.UTF_8);
-            completeOK(req, MediaType.PLAIN_TEXT, buf);
-        } catch (RocksDBException e) {
-            log.error("Error when getting ParameterArchive properties",e);
-            completeWithError(req, new InternalServerErrorException(e));
-        }
     }
    
     

@@ -1,8 +1,10 @@
 package org.yamcs.yarch.rocksdb;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -45,8 +47,9 @@ public class RDBFactory implements Runnable {
      * 
      * 
      * @param absolutePath - absolute path - should be a directory
-     * @param readonly
-     * @return
+     * @param cfSerializer - the class that converts between column families and byte arrays
+     * @param readonly - open in readonly mode; if the database is open in readwrite mode, it will be returned like that
+     * @return the database created or opened
      * @throws IOException
      */
     public YRDB getRdb(String absolutePath, ColumnFamilySerializer cfSerializer, boolean readonly) throws IOException{
@@ -73,7 +76,7 @@ public class RDBFactory implements Runnable {
     }
 
     private synchronized YRDB rdb(String absolutePath, ColumnFamilySerializer cfSerializer, boolean readonly) throws IOException {
-        DbAndAccessTime daat=databases.get(absolutePath);
+        DbAndAccessTime daat = databases.get(absolutePath);
         if(daat==null) {
             if(databases.size()>=maxOpenDbs) { //close the db with the oldest timestamp
                 long min=Long.MAX_VALUE;
@@ -176,6 +179,34 @@ public class RDBFactory implements Runnable {
         if(daat!=null) {
             daat.db.close();
         }		
+    }
+
+    /**
+     * Get the database which is already open or null if it is not open
+     * @param absolutePath the absoulte path of the database to be returned
+     * @return the database object
+     */
+    public synchronized YRDB getOpenRdb(String absolutePath) {
+        DbAndAccessTime daat = databases.get(absolutePath);
+        if(daat==null) return null;
+        daat.lastAccess = System.currentTimeMillis();
+        daat.refcount++;
+        return daat.db;
+    }
+
+    public synchronized List<String> getOpenDbPaths() {
+        List<String> l = new ArrayList<String>(databases.keySet());
+        return l;
+    }
+
+    /**
+     * immediately closes the database
+     * 
+     * @param yrdb
+     */
+    public synchronized void close(YRDB yrdb) {
+        databases.remove(yrdb.getPath());
+        yrdb.getDb().close();
     }	
 }
 

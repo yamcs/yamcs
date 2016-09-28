@@ -39,6 +39,7 @@ import org.yamcs.web.rest.archive.ArchiveCommandRestHandler;
 import org.yamcs.web.rest.archive.ArchiveDownloadRestHandler;
 import org.yamcs.web.rest.archive.ArchiveEventRestHandler;
 import org.yamcs.web.rest.archive.ArchiveIndexRestHandler;
+import org.yamcs.web.rest.archive.RocksDbMaintenanceRestHandler;
 import org.yamcs.web.rest.archive.ArchivePacketRestHandler;
 import org.yamcs.web.rest.archive.ArchiveParameter2RestHandler;
 import org.yamcs.web.rest.archive.ArchiveParameterRestHandler;
@@ -107,6 +108,7 @@ public class Router {
         registerRouteHandler(null, new ArchiveStreamRestHandler());
         registerRouteHandler(null, new ArchiveTableRestHandler());
         registerRouteHandler(null, new ArchiveTagRestHandler());
+        registerRouteHandler(null, new RocksDbMaintenanceRestHandler());
 
         registerRouteHandler(null, new ProcessorRestHandler());
         registerRouteHandler(null, new ProcessorParameterRestHandler());
@@ -120,6 +122,7 @@ public class Router {
         registerRouteHandler(null, new MDBAlgorithmRestHandler());
 
         registerRouteHandler(null, new OverviewRouteHandler());
+        
     }
 
     // Using method handles for better invoke performance

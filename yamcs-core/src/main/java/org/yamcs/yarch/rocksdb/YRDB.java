@@ -28,13 +28,13 @@ import org.yamcs.yarch.rocksdb.RdbConfig.TableConfig;
  */
 public class YRDB {
     Map<Object, ColumnFamilyHandle> columnFamilies=new HashMap<Object, ColumnFamilyHandle>();
-    
-    RocksDB db;
+
+    private final RocksDB db;
     private boolean isClosed = false;
     private final String path;
     private final ColumnFamilySerializer cfSerializer;
     private final ColumnFamilyOptions cfoptions;
-    
+
     private final DBOptions dbOptions;
     /**
      * Create or open a new RocksDb.
@@ -52,19 +52,19 @@ public class YRDB {
         }
         RdbConfig rdbConfig = RdbConfig.getInstance();
         TableConfig tc = rdbConfig.getTableConfig(f.getName());
-        
+
         cfoptions = (tc==null)? rdbConfig.getDefaultColumnFamilyOptions():tc.getColumnFamilyOptions();
         Options opt = (tc==null)? rdbConfig.getDefaultOptions():tc.getOptions();
         dbOptions = (tc==null)? rdbConfig.getDefaultDBOptions():tc.getDBOptions();
-        
+
         this.path = dir;
         File current = new File(dir+File.separatorChar+"CURRENT");
         if(current.exists()) {
             List<byte[]> cfl = RocksDB.listColumnFamilies(opt, dir);
-            
+
             if(cfl!=null) {
                 List<ColumnFamilyDescriptor> cfdList = new ArrayList<ColumnFamilyDescriptor>(cfl.size());
-                
+
                 for(byte[] b: cfl) {
                     cfdList.add(new ColumnFamilyDescriptor(b, cfoptions));					
                 }
@@ -77,7 +77,7 @@ public class YRDB {
                         columnFamilies.put(value, cfhList.get(i));
                     } 
                 }
-                
+
             } else { //no existing column families
                 db = RocksDB.open(opt, dir);
             }
@@ -119,6 +119,7 @@ public class YRDB {
 
     public synchronized ColumnFamilyHandle getColumnFamilyHandle(Object value) {
         ColumnFamilyHandle cfh = columnFamilies.get(value);
+        
         //in yamcs 0.29.3 and older we used to create a column family for null values (i.e. when not partitioning on a value)
         //starting with yamcs 0.29.4 we use the default column family for this
         // the old tables are still supported because at startup the columnFamilies map will be populated with the null key
@@ -151,29 +152,53 @@ public class YRDB {
     public String getPath() { 
         return path;
     }
-    
-    
-    public static String getProperites(RocksDB db) throws RocksDBException {
+
+
+    public String getProperites() throws RocksDBException {
+        if(isClosed) throw new RuntimeException("Database is closed");
+        
         final List<String> mlprops = Arrays.asList("rocksdb.stats", "rocksdb.sstables", "rocksdb.cfstats", "rocksdb.dbstats", "rocksdb.levelstats"
                 , "rocksdb.aggregated-table-properties");
-        
+
         final List<String> slprops = Arrays.asList("rocksdb.num-immutable-mem-table",  "rocksdb.num-immutable-mem-table-flushed"
                 , "rocksdb.mem-table-flush-pending",  "rocksdb.num-running-flushes" , "rocksdb.compaction-pending", "rocksdb.num-running-compactions", "rocksdb.background-errors",  "rocksdb.cur-size-active-mem-table"
                 , "rocksdb.cur-size-all-mem-tables", "rocksdb.size-all-mem-tables", "rocksdb.num-entries-active-mem-table",  "rocksdb.num-entries-imm-mem-tables"
                 , "rocksdb.num-deletes-active-mem-table",  "rocksdb.num-deletes-imm-mem-tables", "rocksdb.estimate-num-keys", "rocksdb.estimate-table-readers-mem"
                 , "rocksdb.is-file-deletions-enabled" ,  "rocksdb.num-snapshots","rocksdb.oldest-snapshot-time" ,  "rocksdb.num-live-versions"
                 , "rocksdb.current-super-version-number", "rocksdb.estimate-live-data-size", "rocksdb.base-level");
+        
+        
         StringBuilder sb = new StringBuilder();
-        for(String p:slprops) {
-            sb.append(p).append(": ");
-            sb.append(db.getProperty(p));
-            sb.append("\n");
-        }
-        for(String p:mlprops) {
-            sb.append("--------------------- "+p+"---------------------\n");
-            sb.append(db.getProperty(p));
-            sb.append("\n");
+        for(Map.Entry<Object, ColumnFamilyHandle> e: columnFamilies.entrySet()) {
+            Object o = e.getKey();
+            ColumnFamilyHandle chf = e.getValue();
+            sb.append("============== Column Family: "+o+"========\n");
+            for(String p:slprops) {
+                sb.append(p).append(": ");
+                sb.append(db.getProperty(chf, p));
+                sb.append("\n");
+            }
+            for(String p:mlprops) {
+                sb.append("---------- "+p+"----------------\n");
+                sb.append(db.getProperty(chf, p));
+                sb.append("\n");
+           
+            }
         }
         return sb.toString();
+    }
+
+    public RocksDB getDb() {
+        return db;
+    }
+
+    public synchronized void dropColumnFamily(ColumnFamilyHandle cfh) throws RocksDBException {
+        for(Map.Entry<Object, ColumnFamilyHandle> e: columnFamilies.entrySet()) {
+            if(e.getValue()==cfh) {
+                db.dropColumnFamily(cfh);
+                columnFamilies.remove(e.getKey());
+                break;
+            }
+        }
     }
 }
