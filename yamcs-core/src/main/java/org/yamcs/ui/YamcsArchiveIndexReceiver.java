@@ -3,15 +3,12 @@ package org.yamcs.ui;
 import java.util.concurrent.Future;
 
 import org.yamcs.TimeInterval;
-import org.yamcs.YamcsException;
 import org.yamcs.ui.archivebrowser.ArchiveIndexListener;
 import org.yamcs.ui.archivebrowser.ArchiveIndexReceiver;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.MdbMappings;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.rest.BulkRestDataReceiver;
 import org.yamcs.api.rest.RestClient;
-import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.DeleteTagRequest;
 import org.yamcs.protobuf.Yamcs.IndexResult;
@@ -20,7 +17,7 @@ import org.yamcs.protobuf.Yamcs.UpsertTagRequest;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
-public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveIndexReceiver {
+public class YamcsArchiveIndexReceiver implements ArchiveIndexReceiver {
     ArchiveIndexListener indexListener;
 
     volatile private boolean receiving = false;
@@ -30,7 +27,6 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
 
     public YamcsArchiveIndexReceiver(YamcsConnector yconnector) {
         this.yconnector = yconnector;
-        yconnector.addConnectionListener(this);
     }
 
     @Override
@@ -172,37 +168,4 @@ public class YamcsArchiveIndexReceiver implements ConnectionListener, ArchiveInd
         return true;
     }
 
-
-    @Override
-    public void connecting(String url) {
-        indexListener.connecting(url);
-    }
-
-    @Override
-    public void connected(String url) {
-        /*ARTEMIS
-        try {
-            yamcsClient=yconnector.getSession().newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
-            indexListener.log("connected to "+yconnector.getUrl());
-        } catch (ActiveMQException e) {
-            e.printStackTrace();
-            indexListener.log("Failed to build yamcs client: "+e.getMessage());
-        }
-         */
-    }
-
-    @Override
-    public void connectionFailed(String url, YamcsException exception) {
-        indexListener.connectionFailed(url, exception);
-    }
-
-    @Override
-    public void disconnected() {
-        indexListener.disconnected();
-    }
-
-    @Override
-    public void log(String message) {
-        indexListener.log(message);
-    }
 }
