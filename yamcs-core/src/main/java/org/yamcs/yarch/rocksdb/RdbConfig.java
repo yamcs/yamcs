@@ -74,6 +74,10 @@ public class RdbConfig {
         }
         env = Env.getDefault();
         defaultColumnFamilyOptions = new ColumnFamilyOptions().setWriteBufferSize(2*1024*1024);//2MB
+        BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
+        tableFormatConfig.setBlockSize(32*1024);//32KB
+        tableFormatConfig.setNoBlockCache(true);
+        defaultColumnFamilyOptions.setTableFormatConfig(tableFormatConfig);
         
         defaultOptions = new Options();
         defaultOptions.setEnv(env);
