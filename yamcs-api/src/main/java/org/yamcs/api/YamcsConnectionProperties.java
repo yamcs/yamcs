@@ -18,8 +18,12 @@ public class YamcsConnectionProperties {
     private int port = 8090;
     private String instance;
     private AuthenticationToken authToken;
-    private String protocol;
     
+    
+    enum Protocol {
+        HTTP, ARTEMIS; 
+    }
+    private Protocol protocol;
     boolean ssl;
     
     final private String PREF_FILENAME = "YamcsConnectionProperties"; //relative to the <home>/.yamcs directory
@@ -164,11 +168,14 @@ public class YamcsConnectionProperties {
     public static YamcsConnectionProperties parse(String uri) throws  URISyntaxException {
         YamcsConnectionProperties ycd = new YamcsConnectionProperties();
         URI u = new URI(uri);
-        
-        if(!"yamcs".equals(u.getScheme()) && !"yamcss".equals(u.getScheme()) && !"http".equals(u.getScheme()) && !"https".equals(u.getScheme())) {
-            throw new URISyntaxException(uri, "only http, https yamcs or yamcss scheme allowed");
+        if("yamcs".equalsIgnoreCase(u.getScheme())  || "artemis".equalsIgnoreCase(u.getScheme())) {
+            ycd.protocol = Protocol.ARTEMIS;
+        } else if(!"http".equalsIgnoreCase(u.getScheme()) && !"https".equalsIgnoreCase(u.getScheme())) {
+            ycd.protocol = Protocol.HTTP;
+        } else {
+            throw new URISyntaxException(uri, "only http, https or yamcs/artemis  scheme allowed");
         }
-        ycd.protocol = u.getScheme();
+        
         
         if("https".equals(u.getScheme()) || "yamcsss".equals(u.getScheme())) {
             ycd.ssl = true;
@@ -188,11 +195,13 @@ public class YamcsConnectionProperties {
 
         String[] pc=u.getPath().split("/");
         if(pc.length>3) throw new URISyntaxException(uri, "Can only support instance/address paths");
-        if(pc.length>1) ycd.instance=pc[1];
+        if(pc.length>1) ycd.instance = pc[1];
 
         return ycd;
     }
-
+    public Protocol getProtocol() {
+        return protocol;
+    }
     public String getUrl() {
         StringBuilder sb = new StringBuilder();
         sb.append("protocol://");
@@ -208,5 +217,4 @@ public class YamcsConnectionProperties {
         }
         return sb.toString();
     }
-
 }
