@@ -14,16 +14,16 @@ import org.yamcs.utils.TimeEncoding;
  * Histogram database.
  * Keeps records of the shape (column, start, stop, numTuples) for all columns that are selected at table creation time
  * 
- * Note that currently it is not synchronized perfectly with the table content. If a crash happens after an insert, the histogram database would have not been updated.
+ * Note that currently it is not synchronised perfectly with the table content. If a crash happens after an insert, the histogram database would have not been updated.
  * 
  * @author nm
  *
  */
 public abstract class HistogramDb {
-    private static long lossTime=1000; //time in milliseconds above which we consider a packet loss
-    static int maxInterval=120000; //make two records if the time between packets is more than 2 minutes (because the packets are not very related)
-    protected static long groupingFactor=3600*1000; //has to be less than 2^16 *1000
-    static final int REC_SIZE=10; //4 bytes for start and stop, 2 bytes for num
+    private static long lossTime = 1000; //time in milliseconds above which we consider a packet loss
+    static int maxInterval = 120000; //make two records if the time between packets is more than 2 minutes (because the packets are not very related)
+    protected static long groupingFactor = 3600*1000; //has to be less than 2^16 *1000
+    static final int REC_SIZE = 10; //4 bytes for start and stop, 2 bytes for num
 
 
     public abstract HistogramIterator getIterator(String columnName, TimeInterval interval, long mergeTime) throws IOException;

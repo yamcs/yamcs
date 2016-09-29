@@ -135,7 +135,7 @@ public class YRDB {
 
     public synchronized ColumnFamilyHandle createColumnFamily(Object value) throws RocksDBException {
         byte[] b = cfSerializer.objectToByteArray(value);
-        ColumnFamilyDescriptor cfd= new ColumnFamilyDescriptor(b, cfoptions);
+        ColumnFamilyDescriptor cfd = new ColumnFamilyDescriptor(b, cfoptions);
         ColumnFamilyHandle cfh = db.createColumnFamily(cfd);			
         columnFamilies.put(value, cfh);
         return cfh;
