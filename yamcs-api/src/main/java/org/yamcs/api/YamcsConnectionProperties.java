@@ -170,7 +170,7 @@ public class YamcsConnectionProperties {
         URI u = new URI(uri);
         if("yamcs".equalsIgnoreCase(u.getScheme())  || "artemis".equalsIgnoreCase(u.getScheme())) {
             ycd.protocol = Protocol.ARTEMIS;
-        } else if(!"http".equalsIgnoreCase(u.getScheme()) && !"https".equalsIgnoreCase(u.getScheme())) {
+        } else if("http".equalsIgnoreCase(u.getScheme()) || "https".equalsIgnoreCase(u.getScheme())) {
             ycd.protocol = Protocol.HTTP;
         } else {
             throw new URISyntaxException(uri, "only http, https or yamcs/artemis  scheme allowed");

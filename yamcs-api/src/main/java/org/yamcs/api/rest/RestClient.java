@@ -29,7 +29,7 @@ public class RestClient {
 
     final HttpClient httpClient;
     final boolean useProtobuf;
- 
+
     /** maximum size of the responses - this is not applicable to bulk requests */
     final static long MAX_RESPONSE_LENGTH = 1024*1024;
 
@@ -57,7 +57,7 @@ public class RestClient {
     public RestClient(YamcsConnectionProperties connectionProperties) {
         this(connectionProperties, true);
     }
-    
+
     /**
      * Retrieve the list of yamcs instances from the server. The operation will block until the list is received.
      * 
@@ -84,7 +84,7 @@ public class RestClient {
             }
         });
     }
-    
+
     /**
      * Performs a request with an empty body. Works using protobuf
      * @param resource
@@ -118,9 +118,9 @@ public class RestClient {
             throw new RuntimeException(e);
         }
         return cf.thenApply(b -> {
-                return new String(b);
+            return new String(b);
         });
-        
+
     }
 
     /**
@@ -181,26 +181,25 @@ public class RestClient {
             if(data.length>MAX_MESSAGE_LENGTH) {
                 throw new YamcsApiException("Message too long: received "+data.length+" max length: "+MAX_MESSAGE_LENGTH);
             }
-            
+
             int length = (data.length < buffer.length-writeOffset) ? data.length:buffer.length-writeOffset; 
             System.arraycopy(data, 0, buffer, writeOffset, length);
             writeOffset+=length;
             ByteBuffer bb = ByteBuffer.wrap(buffer);
 
-            while(readOffset<writeOffset) {
+            while(readOffset < writeOffset) {
                 bb.position(readOffset);
                 int msgLength = readVarInt32(bb);
                 if(msgLength>MAX_MESSAGE_LENGTH) throw new YamcsApiException("Message too long: decodedMessagLength: "+msgLength+" max length: "+MAX_MESSAGE_LENGTH);
-                if(msgLength > writeOffset-readOffset) break; 
-     
-                System.out.println("receiving message of length "+msgLength +" readOffset: "+readOffset+" writeOffset: "+writeOffset+" data.length: "+data.length);
+                if(msgLength > writeOffset-bb.position()) break; 
+
                 readOffset = bb.position();
                 byte[] b = new byte[msgLength];
                 System.arraycopy(buffer, readOffset, b, 0, msgLength);
                 readOffset+=msgLength;
-                System.out.println("sent data to receiver "+b.length);
                 finalReceiver.receiveData(b);
             }
+
             System.arraycopy(buffer, readOffset, buffer, 0, writeOffset-readOffset);
             writeOffset-=readOffset;
             readOffset=0;
@@ -222,7 +221,7 @@ public class RestClient {
         int v = b &0x7F;
         for (int shift = 7; (b & 0x80) != 0; shift += 7) {
             if(shift>28) throw new YamcsApiException("Invalid VarInt32: more than 5 bytes!");
-            
+
             if(!bb.hasRemaining()) return Integer.MAX_VALUE;//we miss some bytes from the size itself
             b = bb.get();
             v |= (b & 0x7F) << shift;
@@ -230,5 +229,5 @@ public class RestClient {
         }
         return v;
     }
-    
+
 }
