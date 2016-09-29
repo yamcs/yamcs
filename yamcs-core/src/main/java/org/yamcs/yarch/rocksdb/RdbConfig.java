@@ -82,6 +82,7 @@ public class RdbConfig {
         defaultOptions = new Options();
         defaultOptions.setEnv(env);
         defaultOptions.setCreateIfMissing(true);
+        defaultOptions.setTableFormatConfig(tableFormatConfig);
         
         defaultDBOptions = new DBOptions().setCreateIfMissing(true);
     }
