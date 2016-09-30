@@ -84,7 +84,7 @@ public class YamcsConnectionProperties {
 
     public void load() {
         try {
-            Properties p=new Properties();
+            Properties p = new Properties();
             String home = System.getProperty("user.home")+"/.yamcs";
             p.load(new FileInputStream(home+"/"+PREF_FILENAME));
             host=p.getProperty("host");
@@ -155,7 +155,7 @@ public class YamcsConnectionProperties {
     public AuthenticationToken getAuthenticationToken() {
         return authToken;
     }
-    public void setAuthenticationToke(AuthenticationToken authToken) {
+    public void setAuthenticationToken(AuthenticationToken authToken) {
         this.authToken = authToken;
     }
     

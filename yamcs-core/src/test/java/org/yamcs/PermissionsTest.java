@@ -176,7 +176,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
     private RestClient getRestClient(String username, String password) {
         YamcsConnectionProperties ycp1 = ycp.clone();
 
-        ycp1.setAuthenticationToke(new UsernamePasswordToken(username, password));
+        ycp1.setAuthenticationToken(new UsernamePasswordToken(username, password));
         RestClient restClient1 = new RestClient(ycp1, false);
         return restClient1;
 

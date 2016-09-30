@@ -89,7 +89,7 @@ public abstract class AbstractIntegrationTest {
     public void before() throws InterruptedException {
 
         if(Privilege.getInstance().isEnabled())  {
-            ycp.setAuthenticationToke(admin);
+            ycp.setAuthenticationToken(admin);
         }
 
         packetProvider = PacketProvider.instance;

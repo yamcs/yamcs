@@ -16,7 +16,6 @@ import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactor
 import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
-import org.yamcs.api.artemis.YamcsConnectData;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.UsernamePasswordToken;
 
@@ -150,7 +149,7 @@ public class YamcsSession {
             result.ycd = new YamcsConnectionProperties();
             result.ycd.setHost(host);
             result.ycd.setPort(port);
-            result.ycd.setAuthenticationToke(new UsernamePasswordToken(username, password));
+            result.ycd.setAuthenticationToken(new UsernamePasswordToken(username, password));
             return this;
         }
 

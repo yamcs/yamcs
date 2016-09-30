@@ -1,6 +1,5 @@
 package org.yamcs.ui.packetviewer;
 
-import static org.yamcs.api.artemis.Protocol.decode;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
@@ -15,7 +14,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
@@ -64,29 +62,20 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.apache.activemq.artemis.api.core.ActiveMQException;
-import org.apache.activemq.artemis.api.core.SimpleString;
-import org.apache.activemq.artemis.api.core.client.ClientMessage;
-import org.apache.activemq.artemis.api.core.client.MessageHandler;
-import org.apache.activemq.artemis.utils.ActiveMQBufferInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.api.ConnectionParameters;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.artemis.Protocol;
+import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.artemis.YamcsClient;
-import org.yamcs.api.artemis.YamcsConnectData;
 import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 import org.yamcs.ui.PrefsObject;
 import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.CcsdsPacket;
@@ -141,7 +130,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
     GoToPacketDialog goToPacketDialog;
     Preferences uiPrefs;
 
-    ConnectionParameters connectionParams;
+    YamcsConnectionProperties connectionParams;
     //used for decoding full packets
     XtceTmProcessor tmProcessor;
 
@@ -459,7 +448,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
             }
         } else if (cmd.equals("connect-yamcs")) {
             if(connectDialog==null) {
-                connectDialog=new ConnectDialog(this, authenticationEnabled, true, true, true);
+                connectDialog = new ConnectDialog(this, authenticationEnabled, true, true, true);
             }
             int ret = connectDialog.showDialog();
             if(ret==ConnectDialog.APPROVE_OPTION) {
@@ -745,7 +734,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
     }
 
 
-    void connectYamcs(YamcsConnectData ycd) {
+    void connectYamcs(YamcsConnectionProperties ycd) {
         disconnect();
         connectionParams = ycd;
         yconnector = new YamcsConnector("PacketViewer");
@@ -1122,8 +1111,8 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         YConfiguration.setup();
         theApp = new PacketViewer();
         if (fileOrUrl != null) {
-            if (fileOrUrl.startsWith("yamcs://")) {
-                YamcsConnectData ycd = YamcsConnectData.parse(fileOrUrl);
+            if (fileOrUrl.startsWith("http://")) {
+                YamcsConnectionProperties ycd = YamcsConnectionProperties.parse(fileOrUrl);
                 theApp.setStreamName(options.get("-s"));
                 theApp.connectYamcs(ycd);
             } else {

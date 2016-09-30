@@ -62,16 +62,7 @@ public class RdbConfig {
                 }
             }
         }
-        if(getTableConfig("tm")==null) {
-            //make more sensible defaults for the tm table
-            Map<String, Object> m = new HashMap<String, Object>();
-            m.put(KEY_tableNamePattern, "tm");
-            Map<String, Object> cfm = new HashMap<String, Object>();
-            m.put(KEY_cfOptions, cfm);
-            cfm.put("writeBufferSize", 10*1024);//10MB
-            TableConfig tm = new TableConfig(m);
-            tblConfigList.add(tm);
-        }
+        
         env = Env.getDefault();
         defaultColumnFamilyOptions = new ColumnFamilyOptions().setWriteBufferSize(2*1024*1024);//2MB
         BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
