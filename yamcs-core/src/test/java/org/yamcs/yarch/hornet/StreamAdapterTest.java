@@ -21,8 +21,8 @@ import org.yamcs.hornetq.ArtemisManagement;
 import org.yamcs.hornetq.ArtemisServer;
 import org.yamcs.hornetq.StreamAdapter;
 import org.yamcs.hornetq.TupleTranslator;
-import org.yamcs.api.YamcsSession;
 import org.yamcs.api.artemis.YamcsClient;
+import org.yamcs.api.artemis.YamcsSession;
 import org.yamcs.yarch.YarchTestCase;
 
 public class StreamAdapterTest extends YarchTestCase {

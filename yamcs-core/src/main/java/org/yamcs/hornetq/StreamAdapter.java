@@ -12,8 +12,8 @@ import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsSession;
 import org.yamcs.api.artemis.YamcsClient;
+import org.yamcs.api.artemis.YamcsSession;
 
 /**
  * converts between hornet addresses and yamcs streams

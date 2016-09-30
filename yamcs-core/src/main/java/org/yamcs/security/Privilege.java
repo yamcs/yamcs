@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.YamcsSession;
+import org.yamcs.api.artemis.YamcsSession;
 import org.yamcs.usoctools.XtceUtil;
 import org.yamcs.xtce.MdbMappings;
 import org.yamcs.xtce.XtceDb;

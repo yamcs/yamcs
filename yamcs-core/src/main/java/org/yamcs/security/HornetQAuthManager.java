@@ -10,7 +10,7 @@ import org.apache.activemq.artemis.core.security.Role;
 import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.api.YamcsSession;
+import org.yamcs.api.artemis.YamcsSession;
 
 /**
  * Authenticates and authorises ActiveMQ sessions from configured realm.

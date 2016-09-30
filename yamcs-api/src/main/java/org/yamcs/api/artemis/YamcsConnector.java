@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.api.YamcsSession;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 

@@ -36,7 +36,7 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
-import org.yamcs.api.YamcsSession;
+import org.yamcs.api.artemis.YamcsSession;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;

@@ -1,4 +1,4 @@
-package org.yamcs.api;
+package org.yamcs.api.artemis;
 
 
 import java.net.URISyntaxException;
@@ -14,8 +14,8 @@ import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory;
 import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
-import org.yamcs.api.artemis.Protocol;
-import org.yamcs.api.artemis.YamcsClient;
+import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.UsernamePasswordToken;
 
