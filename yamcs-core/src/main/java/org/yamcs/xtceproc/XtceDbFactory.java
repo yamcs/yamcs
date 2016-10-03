@@ -10,7 +10,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -427,7 +426,7 @@ public class XtceDbFactory {
      * @throws DatabaseLoadException 
      */
     public static synchronized XtceDb getInstance(String yamcsInstance) throws ConfigurationException {
-        XtceDb db=instance2Db.get(yamcsInstance);
+        XtceDb db = instance2Db.get(yamcsInstance);
         if(db==null) {
             YConfiguration c=YConfiguration.getConfiguration("yamcs."+yamcsInstance);
             db=getInstanceByConfig(yamcsInstance, c.getString("mdb"));
@@ -443,9 +442,9 @@ public class XtceDbFactory {
             instance2DbConfigs.put(yamcsInstance, dbConfigs);
         }
 
-        XtceDb db=dbConfigs.get(config);
+        XtceDb db = dbConfigs.get(config);
         if(db==null) {
-            db=createInstance(config);
+            db = createInstance(config);
             dbConfigs.put(config, db);
         }
         return db;

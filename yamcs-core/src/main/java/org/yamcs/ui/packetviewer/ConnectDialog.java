@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
@@ -28,17 +29,11 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
-import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsException;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.api.artemis.Protocol;
-import org.yamcs.api.artemis.YamcsClient;
-import org.yamcs.api.artemis.YamcsSession;
+import org.yamcs.api.rest.RestClient;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.UsernamePasswordToken;
 
@@ -57,7 +52,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
     JTextField usernameTextField;
     private JPasswordField passwordTextField;
     //JCheckBox sslCheckBox;
-    private JComboBox instanceCombo, serverMdbConfigCombo, localMdbConfigCombo;
+    private JComboBox<String> instanceCombo, serverMdbConfigCombo, localMdbConfigCombo;
     boolean getInstance=false;
     boolean getMdbConfig=false;
     boolean getStreamName=false;
@@ -84,9 +79,9 @@ public class ConnectDialog extends JDialog implements ActionListener {
     ConnectDialog(JFrame parent, boolean authenticationEnabled, boolean getInstance, boolean getStreamName, boolean getDbConfig) {
         super(parent, "Connect to Yamcs", true);
         this.authenticationEnabled = authenticationEnabled;
-        this.getInstance=getInstance;
-        this.getMdbConfig=getDbConfig;
-        this.getStreamName=getStreamName;
+        this.getInstance = getInstance;
+        this.getMdbConfig = getDbConfig;
+        this.getStreamName = getStreamName;
         installActions();
 
         connectionProps = new YamcsConnectionProperties();
@@ -161,7 +156,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
             cwest.gridy++;
 
             inputPanel.add(lab, ceast);
-            instanceCombo = new JComboBox(new String[]{connectionProps.getInstance()});
+            instanceCombo = new JComboBox<String>(new String[]{connectionProps.getInstance()});
             instanceCombo.setPreferredSize(hostTextField.getPreferredSize());
             instanceCombo.setEditable(true);
 
@@ -193,10 +188,9 @@ public class ConnectDialog extends JDialog implements ActionListener {
             cwest.gridy++;
 
             useServerMdb=prefs.getBoolean("useServerMdb", true);
-            System.out.println("prefs useServerMdb: "+useServerMdb);
 
-            ButtonGroup bgroup=new ButtonGroup();
-            JRadioButton jrb=new JRadioButton("Server MDB: ");
+            ButtonGroup bgroup = new ButtonGroup();
+            JRadioButton jrb = new JRadioButton("Server MDB: ");
             if(useServerMdb) jrb.setSelected(true);
             jrb.setActionCommand("use-server-mdb");
             jrb.addActionListener(this);
@@ -208,11 +202,14 @@ public class ConnectDialog extends JDialog implements ActionListener {
             inputPanel.add(jrb, c);
 
             String selectedServerMdbConfig=prefs.get("selectedServerMdbConfig", null);
-            serverMdbConfigCombo = new JComboBox(new String[]{selectedServerMdbConfig});
+            serverMdbConfigCombo = new JComboBox<String>(new String[]{selectedServerMdbConfig});
             serverMdbConfigCombo.setPreferredSize(hostTextField.getPreferredSize());
             serverMdbConfigCombo.setEditable(true);
             inputPanel.add(serverMdbConfigCombo, cwest);
-            if(!useServerMdb) serverMdbConfigCombo.setEnabled(false);
+            //if(!useServerMdb)
+            //CHANGE in 0.30 with migration to REST -> it is not possible to load the MDB by name and this feature is not really used,
+            // so we allow only loading the MDB from the same instance where the data comes. 
+            serverMdbConfigCombo.setEnabled(false);
 
             button = new JButton("Update");
             button.setActionCommand("getInstances");
@@ -243,7 +240,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
             c.gridy=ceast.gridy; inputPanel.add(jrb, c);
             try {
                 String[] dbconfigs=getLocalDbConfigs();
-                localMdbConfigCombo = new JComboBox(dbconfigs);
+                localMdbConfigCombo = new JComboBox<String>(dbconfigs);
                 localMdbConfigCombo.setPreferredSize(hostTextField.getPreferredSize());
                 localMdbConfigCombo.setEditable(false);
 
@@ -254,7 +251,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
             } catch (ConfigurationException e) {
                 JOptionPane.showMessageDialog(this, "Cannot load local MDB configurations: "+e.getMessage(), "Cannot load local MDB configs", JOptionPane.ERROR_MESSAGE);
                 String[] dbconfigs=new String[]{"unavailable"};
-                localMdbConfigCombo = new JComboBox(dbconfigs);
+                localMdbConfigCombo = new JComboBox<String>(dbconfigs);
                 localMdbConfigCombo.setPreferredSize(hostTextField.getPreferredSize());
                 localMdbConfigCombo.setEnabled(false);
                 localMdbConfigCombo.setSelectedItem("unavailable");
@@ -356,23 +353,17 @@ public class ConnectDialog extends JDialog implements ActionListener {
             try {
                 String host=hostTextField.getText();
                 int port=Integer.parseInt(portTextField.getText());
-
-                String username = null;
-                String password = null;
+                YamcsConnectionProperties ycp = new YamcsConnectionProperties(host, port);
                 if(authenticationEnabled) {
-                    username = usernameTextField.getText();
-                    password = new String(passwordTextField.getPassword());
-                    // Treat empty strings as null
-                    if( "".equals( username ) ) username = null;
-                    if( "".equals( password ) ) password = null;
+                    UsernamePasswordToken upt = new UsernamePasswordToken(usernameTextField.getText(), passwordTextField.getPassword());
+                    ycp.setAuthenticationToken(upt);
                 }
-
-                YamcsSession ys=YamcsSession.newBuilder().setConnectionParams(host, port, username, password).build();
-                YamcsClient msgClient=ys.newClientBuilder().setRpc(true).build();
-                YamcsInstances ainst=(YamcsInstances)msgClient.executeRpc(Protocol.YAMCS_SERVER_CONTROL_ADDRESS, "getYamcsInstances", null, YamcsInstances.newBuilder());
+                
+                RestClient restClient = new RestClient(ycp);
+                List<YamcsInstance> list = restClient.blockingGetYamcsInstances();
                 instanceCombo.removeAllItems();
                 serverMdbConfigCombo.removeAllItems();
-                for(YamcsInstance ai:ainst.getInstanceList()) {
+                for(YamcsInstance ai:list) {
                     if(getInstance) {
                         instanceCombo.addItem(ai.getName());
                     }
@@ -380,11 +371,9 @@ public class ConnectDialog extends JDialog implements ActionListener {
                         serverMdbConfigCombo.addItem(ai.getMissionDatabase().getConfigName());
                     }
                 }
-                msgClient.close();
-                ys.close();
             } catch (NumberFormatException x) {
                 JOptionPane.showMessageDialog(this, "please enter a valid port number", x.getMessage(), JOptionPane.WARNING_MESSAGE);
-            } catch (ActiveMQException|YamcsException|YamcsApiException e1 ) {
+            } catch (Exception e1) {
                 JOptionPane.showMessageDialog(this, "Cannot retrieve the archive instances: "+e1.getMessage(), e1.getMessage(), JOptionPane.WARNING_MESSAGE);
             }
         } else if("use-server-mdb".equals(cmd)) {

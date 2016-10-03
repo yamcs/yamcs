@@ -54,6 +54,7 @@ message WebSocketServerMessage {
     optional yamcsManagement.LinkEvent linkEvent = 12;
     optional commanding.CommandQueueInfo commandQueueInfo = 13;
     optional commanding.CommandQueueEvent commandQueueEvent = 14;
+    optional yamcs.TmPacketData tmPacket = 15;
   }
 
   optional MessageType type = 1;

@@ -8,10 +8,8 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.BorderFactory;
@@ -31,9 +29,10 @@ import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
+import org.yamcs.api.ws.WebSocketResponseHandler;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
-import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.CommandQueueResource;
@@ -41,7 +40,7 @@ import org.yamcs.web.websocket.EventResource;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
-public class YamcsEventReceiver implements ConnectionListener, EventReceiver, WebSocketClientCallback {
+public class YamcsEventReceiver implements ConnectionListener, EventReceiver, WebSocketClientCallback, WebSocketResponseHandler {
     EventViewer eventViewer;
     YamcsConnector yconnector;
     YamcsClient yamcsClient;
@@ -73,7 +72,7 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
     @Override
     public void connected(String url) {
         WebSocketRequest wsr = new WebSocketRequest(EventResource.RESOURCE_NAME, CommandQueueResource.OP_subscribe);
-        yconnector.performSubscription(wsr, this);
+        yconnector.performSubscription(wsr, this, this);
     }
 
     @Override
@@ -218,77 +217,28 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
         }
     }
 
-    class EventDumpReceiver implements Runnable {
-
-        PastEventParams params;
-        EventDumpReceiver(PastEventParams params) {
-            this.params=params;
-        }
-        @Override
-        public void run() {
-            /*
-            try {
-                YamcsClient msgClient=yconnector.getSession().newClientBuilder().setRpc(true).setDataConsumer(null, null).
-                    build();
-
-                EventReplayRequest err=EventReplayRequest.newBuilder().build();
-                ReplayRequest crr=ReplayRequest.newBuilder().setStart(params.start).setStop(params.stop)
-                        .setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build())
-                        .setEndAction(EndAction.QUIT).setEventRequest(err).build();
-
-                SimpleString replayServer=Protocol.getYarchRetrievalControlAddress(yconnector.getConnectionParams().getInstance());
-                StringMessage answer=(StringMessage) msgClient.executeRpc(replayServer, "createReplay", crr, StringMessage.newBuilder());
-                SimpleString replayAddress=new SimpleString(answer.getMessage());
-                eventViewer.log("Retrieving archived events from "+TimeEncoding.toString(params.start)+" to "+TimeEncoding.toString(params.stop));
-                msgClient.executeRpc(replayAddress, "START", null, null);
-                int count=0;
-                //send events to the event viewer in batches, otherwise the swing will choke
-                List<Event> events=new ArrayList<Event>();
-                while(true) {
-                    ClientMessage msg=msgClient.dataConsumer.receive(1000);
-                    if(msg==null) {
-                        if(!events.isEmpty()) {
-                            eventViewer.addEvents(events);
-                            events=new ArrayList<Event>();
-                        }
-                        continue;
-                    }
-                    if(Protocol.endOfStream(msg)) {
-                        if(!events.isEmpty()) {
-                            eventViewer.addEvents(events);
-                        }
-                        break;
-                    }
-                    count++;
-                    events.add((Event)decode(msg, Event.newBuilder()));
-                    if(events.size()>=1000) {
-                        eventViewer.addEvents(events);
-                        events=new ArrayList<Event>();
-                    }
-                }
-                msgClient.close();
-                eventViewer.log("Archive retrieval finished, retrieved "+count+" events");
-            } catch (Exception e) {
-                e.printStackTrace();
-                eventViewer.log(e.toString());
-            }
-             */
-        }
-    }
-
+    
     @Override
     public void connecting(String url) {
     }
 
     @Override
     public void connectionFailed(String url, YamcsException exception) {
+        eventViewer.log("Connection to "+url+" failed: "+exception.getMessage());
     }
 
     @Override
     public void disconnected() {
+        eventViewer.log("Disconnected ");
     }
 
     @Override
     public void log(String message) {
+        
+    }
+
+    @Override
+    public void onException(WebSocketExceptionData e) {
+        eventViewer.log("Received error on subscription: "+e.getMessage());
     }
 }

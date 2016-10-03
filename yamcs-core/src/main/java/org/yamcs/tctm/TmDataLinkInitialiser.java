@@ -36,10 +36,10 @@ public class TmDataLinkInitialiser extends AbstractService {
     
     private Collection<TmPacketDataLink> tmproviders=new ArrayList<TmPacketDataLink>();
     final String yamcsInstance;
-    final static public String GENTIME_COLUMN="gentime";
-    final static public String SEQNUM_COLUMN="seqNum";
-    final static public String RECTIME_COLUMN="rectime";
-    final static public String PACKET_COLUMN="packet";
+    final static public String GENTIME_COLUMN = "gentime";
+    final static public String SEQNUM_COLUMN = "seqNum";
+    final static public String RECTIME_COLUMN = "rectime";
+    final static public String PACKET_COLUMN = "packet";
 
     static public final TupleDefinition TM_TUPLE_DEFINITION=new TupleDefinition();
     static {

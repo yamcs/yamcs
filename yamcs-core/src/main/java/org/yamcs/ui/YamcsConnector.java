@@ -73,6 +73,7 @@ public class YamcsConnector implements WebSocketClientCallback {
     }
 
     public Future<YamcsConnectionProperties> connect(YamcsConnectionProperties cp) {
+        System.out.println("connecting to yamcs");
         this.connectionParams = cp;
         return doConnect();
     }
@@ -219,22 +220,12 @@ public class YamcsConnector implements WebSocketClientCallback {
      * 
      * @param wsr
      * @param client
+     * @param wsrh - any error related to the request will be sent here
      */
-    public void performSubscription(WebSocketRequest wsr, WebSocketClientCallback client) {
+    public void performSubscription(WebSocketRequest wsr, WebSocketClientCallback client, WebSocketResponseHandler wsrh) {
         if(!subscribers.contains(client)){
             subscribers.add(client);
         }
-        
-        wsClient.sendRequest(wsr, new WebSocketResponseHandler() {
-            @Override
-            public void onException(WebSocketExceptionData e) {
-                System.out.println("received exception: " + e);
-                
-            }
-        });
-        
+        wsClient.sendRequest(wsr,  wsrh);
     }
-    
-    
-    
 }

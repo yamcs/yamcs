@@ -11,6 +11,7 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.protobuf.Rest.ListInstancesResponse;
@@ -28,7 +29,6 @@ public class RestClient {
     long timeout = 5000; //timeout in milliseconds
 
     final HttpClient httpClient;
-    final boolean useProtobuf;
 
     /** maximum size of the responses - this is not applicable to bulk requests */
     final static long MAX_RESPONSE_LENGTH = 1024*1024;
@@ -37,26 +37,19 @@ public class RestClient {
     final static int MAX_MESSAGE_LENGTH = 1024*1024;
 
     /**
-     * Creates a rest client that communicates either with protobuf or json
-     * 
-     * @param connectionProperties
-     * @param useProtobuf - set to true to use protobuf or false to use json
-     */
-    public RestClient(YamcsConnectionProperties connectionProperties, boolean useProtobuf) {
-        this.connectionProperties = connectionProperties;
-        httpClient = new HttpClient(timeout, useProtobuf);
-        httpClient.setMaxResponseLength(MAX_RESPONSE_LENGTH);
-        this.useProtobuf = useProtobuf;
-    }
-
-
-    /**
      * Creates a rest client that communications using protobuf
      * @param connectionProperties
      */
     public RestClient(YamcsConnectionProperties connectionProperties) {
-        this(connectionProperties, true);
+        this.connectionProperties = connectionProperties;
+        httpClient = new HttpClient();
+        httpClient.setMaxResponseLength(MAX_RESPONSE_LENGTH);
+        httpClient.setAcceptMediaType(MediaType.PROTOBUF);
+        httpClient.setSendMediaType(MediaType.PROTOBUF);
     }
+
+
+    
 
     /**
      * Retrieve the list of yamcs instances from the server. The operation will block until the list is received.
@@ -108,9 +101,6 @@ public class RestClient {
      * @throws RuntimeException(URISyntaxException) thrown in case the resource specification is invalid
      */
     public CompletableFuture<String> doRequest(String resource, HttpMethod method, String body) {
-        if(useProtobuf) {
-            throw new IllegalStateException("this method only works when usePotobuf is false");
-        }
         CompletableFuture<byte[]> cf;
         try {
             cf = httpClient.doAsyncRequest(connectionProperties.getRestApiUrl()+resource, method, body.getBytes(), connectionProperties.getAuthenticationToken());
@@ -134,9 +124,6 @@ public class RestClient {
      * @return future containing protobuf encoded data
      */
     public CompletableFuture<byte[]> doRequest(String resource, HttpMethod method, byte[] body) {
-        if(!useProtobuf) {
-            throw new IllegalStateException("this method only works when usePotobuf is true");
-        }
         CompletableFuture<byte[]> cf;
         try {
             cf = httpClient.doAsyncRequest(connectionProperties.getRestApiUrl()+resource, method, body, connectionProperties.getAuthenticationToken());
@@ -228,6 +215,24 @@ public class RestClient {
 
         }
         return v;
+    }
+
+    
+    
+
+    public void setSendMediaType(MediaType sendMediaType) {
+        httpClient.setSendMediaType(sendMediaType);
+    }
+
+    public void setAcceptMediaType(MediaType acceptMediaType) {
+        httpClient.setAcceptMediaType(acceptMediaType);
+    }
+
+
+
+
+    public void setMaxResponseLength(long size) {
+        httpClient.setMaxResponseLength(size);
     }
 
 }

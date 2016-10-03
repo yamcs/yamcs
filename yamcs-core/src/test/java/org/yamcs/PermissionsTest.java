@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
+import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.WebSocketRequest;
@@ -177,7 +178,9 @@ public class PermissionsTest extends AbstractIntegrationTest {
         YamcsConnectionProperties ycp1 = ycp.clone();
 
         ycp1.setAuthenticationToken(new UsernamePasswordToken(username, password));
-        RestClient restClient1 = new RestClient(ycp1, false);
+        RestClient restClient1 = new RestClient(ycp1);
+        restClient1.setAcceptMediaType(MediaType.JSON);
+        restClient1.setSendMediaType(MediaType.JSON);
         return restClient1;
 
     }
