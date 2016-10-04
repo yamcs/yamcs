@@ -327,7 +327,7 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
         } else if (cmd.equals("start-parameter-retrieval")) {
             Selection sel = dataView.getSelection();
             if(parameterGui==null) {
-           //ARTEMIS     parameterGui=new ParameterRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
+                parameterGui = new ParameterRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
             }
             parameterGui.setValues(archivePanel.archiveBrowser.getInstance(), sel.getStartInstant(), sel.getStopInstant());
             parameterGui.setVisible(true);

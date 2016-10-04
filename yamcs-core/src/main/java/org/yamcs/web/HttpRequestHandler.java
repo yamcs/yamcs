@@ -7,6 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
+import java.nio.channels.ClosedChannelException;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
@@ -248,7 +249,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
     public static ChannelFuture writeChunk(ChannelHandlerContext ctx, ByteBuf buf) throws IOException {
         Channel ch = ctx.channel();
         if (!ch.isOpen()) {
-            throw new IOException("Channel not or no longer open");
+            throw new ClosedChannelException();
         }
         ChannelFuture writeFuture = ctx.writeAndFlush(new DefaultHttpContent(buf));
         try {
