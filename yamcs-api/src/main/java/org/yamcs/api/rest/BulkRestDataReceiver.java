@@ -11,5 +11,9 @@ public interface BulkRestDataReceiver {
      * @throws YamcsApiException if exception is thrown the request will be aborted (connection to the server closed)
      */
     public void receiveData(byte[] data) throws YamcsApiException;
-    public void receiveException(Throwable t);
+    /**
+     * Called when receiving an exception. Note that the CompleteableFuture returned from RestClient can also be used to intercept the exception;
+     * @param t
+     */
+    default void receiveException(Throwable t) {};
 }
