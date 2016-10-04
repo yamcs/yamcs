@@ -5,6 +5,7 @@ import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Base64;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -31,6 +32,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpContent;
@@ -79,26 +81,10 @@ class HttpClient {
                 } else if(channelHandler.httpResponse==null) {
                     cf.completeExceptionally(new IOException("connection closed without providing an http response"));
                 } else {
-                    HttpResponse resp=channelHandler.httpResponse;
+                    HttpResponse resp = channelHandler.httpResponse;
                     if(resp.getStatus().code() != HttpResponseStatus.OK.code()) {
-                        Exception exception;
-                        if(resp instanceof DefaultHttpResponse) {
-                            byte[] b = getByteArray(channelHandler.result);
-
-                            DefaultHttpResponse fullResp = (DefaultHttpResponse)resp;
-                            String contentType = fullResp.headers().get(HttpHeaders.Names.CONTENT_TYPE);
-                            if(MediaType.JSON.is(contentType)) {
-                                RestExceptionMessage msg =  fromJson(new String(b), SchemaWeb.RestExceptionMessage.MERGE).build();
-                                exception = new YamcsApiException(msg.getType()+" : "+msg.getMsg());
-                            } else if (MediaType.PROTOBUF.is(contentType)) {
-                                RestExceptionMessage msg = RestExceptionMessage.parseFrom(b);
-                                exception = new YamcsApiException(msg.getType()+" : "+msg.getMsg());
-                            } else {
-                                exception = new YamcsApiException(new String(b));    
-                            }
-                            cf.completeExceptionally(exception);
-                        }
-
+                        Exception exception = decodeException(resp);
+                        cf.completeExceptionally(exception);
                     } else {
                         cf.complete(getByteArray(channelHandler.result));
                     }
@@ -109,6 +95,32 @@ class HttpClient {
         return cf;
     }
 
+    
+   private static YamcsApiException decodeException( HttpObject httpObj) throws IOException {
+       
+       YamcsApiException exception;
+       if(httpObj instanceof DefaultFullHttpResponse) {
+           DefaultFullHttpResponse fullResp = (DefaultFullHttpResponse)httpObj;
+           String contentType = fullResp.headers().get(HttpHeaders.Names.CONTENT_TYPE);
+           byte[] data = getByteArray(fullResp.content());
+           if(MediaType.JSON.is(contentType)) {
+               RestExceptionMessage msg =  fromJson(new String(data), SchemaWeb.RestExceptionMessage.MERGE).build();
+               exception = new YamcsApiException(msg.getType()+" : "+msg.getMsg());
+           } else if (MediaType.PROTOBUF.is(contentType)) {
+               RestExceptionMessage msg = RestExceptionMessage.parseFrom(data);
+               exception = new YamcsApiException(msg.getType()+" : "+msg.getMsg());
+           } else {
+               exception = new YamcsApiException(new String(data));    
+           }
+       } else if(httpObj instanceof DefaultHttpResponse) {
+           DefaultHttpResponse resp = (DefaultHttpResponse)httpObj;
+           exception = new YamcsApiException("Received http response: "+resp.getStatus());
+       } else {
+           exception = new YamcsApiException("Received http response: "+httpObj);
+       }
+       return exception;
+
+   }
     /**
      * Sets the maximum size of the responses - this is not applicable to bulk requests whose response is practically unlimited and delivered piece by piece
      * @param length
@@ -128,11 +140,11 @@ class HttpClient {
      * @throws URISyntaxException
      * @throws InterruptedException
      */
-    public CompletableFuture<Void> doBulkRequest(String url, HttpMethod httpMethod, String body, AuthenticationToken authToken, BulkRestDataReceiver receiver) throws URISyntaxException {
+    public CompletableFuture<Void> doBulkRequest(String url, HttpMethod httpMethod, byte[] body, AuthenticationToken authToken, BulkRestDataReceiver receiver) throws URISyntaxException {
         BulkChannelHandler channelHandler = new BulkChannelHandler(receiver);
 
         ChannelFuture chf = setupChannel(url ,channelHandler);
-        HttpRequest request = setupRequest(url, httpMethod, body.getBytes(), authToken);
+        HttpRequest request = setupRequest(url, httpMethod, body, authToken);
         CompletableFuture<Void> cf = new CompletableFuture<Void>();
 
         chf.addListener(f->{
@@ -148,7 +160,16 @@ class HttpClient {
             });
 
         });
+        cf.whenComplete((v, t) -> {
+           if(t instanceof CancellationException) {
+               chf.channel().close();
+           }
+        });
         return cf;
+    }
+
+    public CompletableFuture<Void> doBulkRequest(String url, HttpMethod httpMethod, String body, AuthenticationToken authToken, BulkRestDataReceiver receiver) throws URISyntaxException {
+        return doBulkRequest(url, httpMethod, body.getBytes(), authToken, receiver);
     }
 
     private ChannelFuture setupChannel(String url, SimpleChannelInboundHandler<HttpObject> channelHandler) throws URISyntaxException {
@@ -239,7 +260,7 @@ class HttpClient {
 
 
 
-    <T extends MessageLite.Builder> T fromJson(String jsonstr, Schema<T> schema) throws IOException {
+    static <T extends MessageLite.Builder> T fromJson(String jsonstr, Schema<T> schema) throws IOException {
         StringReader reader = new StringReader(jsonstr);
         T msg = schema.newMessage();
         JsonIOUtil.mergeFrom(reader, msg, schema, false);
@@ -290,11 +311,12 @@ class HttpClient {
             this.receiver = receiver;
         }
         @Override
-        public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
+        public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws IOException {
             if (msg instanceof HttpResponse) {
                 HttpResponse resp = (HttpResponse) msg;
                 if(resp.getStatus().code()!=HttpResponseStatus.OK.code()) {
-                    receiver.receiveException(new YamcsApiException("The HTTP request failed: "+resp.getStatus()));
+                    exception = decodeException(msg);
+                    receiver.receiveException(exception);
                     ctx.close();
                 }
             }

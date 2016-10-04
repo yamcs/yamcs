@@ -145,9 +145,13 @@ public class RestClient {
      * @throws RuntimeException(URISyntaxException) - thrown if the uri + resource does not form a correct URL
      */
     public CompletableFuture<Void> doBulkGetRequest(String resource, BulkRestDataReceiver receiver) {
+        return doBulkGetRequest(resource, new byte[0], receiver);
+    }
+    
+    public CompletableFuture<Void> doBulkGetRequest(String resource, byte[] body, BulkRestDataReceiver receiver) {
         MessageSplitter splitter = new MessageSplitter(receiver);
         try {
-            return httpClient.doBulkRequest(connectionProperties.getRestApiUrl()+resource, HttpMethod.GET, "", connectionProperties.getAuthenticationToken(), splitter);
+            return httpClient.doBulkRequest(connectionProperties.getRestApiUrl()+resource, HttpMethod.GET, body, connectionProperties.getAuthenticationToken(), splitter);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
