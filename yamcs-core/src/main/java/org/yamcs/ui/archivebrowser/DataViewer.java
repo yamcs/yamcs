@@ -335,7 +335,7 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
 
             Selection sel = dataView.getSelection();
             if (cmdHistGui == null) {
-                //ARTEMIS        cmdHistGui = new CommandHistoryRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
+                    cmdHistGui = new CommandHistoryRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
             }
             cmdHistGui.setValues(archivePanel.archiveBrowser.getInstance(), null, sel.getStartInstant(), sel.getStopInstant());
             cmdHistGui.setVisible(true);
