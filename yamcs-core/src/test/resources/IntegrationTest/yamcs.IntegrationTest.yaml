@@ -14,7 +14,7 @@ services:
          type: "realtime"
    
     #this one sets up the command history table
-    - org.yamcs.cmdhistory.CommandHistoryRecorder
+    - org.yamcs.archive.CommandHistoryRecorder
     - org.yamcs.web.YamcsWebService
     
     # send TM packets to hornetq address (required for external hornetq clients like packet viewer)
