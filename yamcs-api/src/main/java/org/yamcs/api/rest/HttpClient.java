@@ -52,11 +52,11 @@ class HttpClient {
     MediaType sendMediaType = MediaType.PROTOBUF;
     MediaType acceptMediaType = MediaType.PROTOBUF;
     URI uri;
-    
-  
-  
+
+
+
     private long maxResponseLength=1024*1024;//max length of the expected response 
-   
+
 
     public CompletableFuture<byte[]> doAsyncRequest(String url, HttpMethod httpMethod, byte[] body, AuthenticationToken authToken) throws URISyntaxException {
         AccumulatingChannelHandler channelHandler = new AccumulatingChannelHandler();
@@ -83,7 +83,7 @@ class HttpClient {
                 } else {
                     HttpResponse resp = channelHandler.httpResponse;
                     if(resp.getStatus().code() != HttpResponseStatus.OK.code()) {
-                        Exception exception = decodeException(resp);
+                        Exception exception = decodeException(resp, getByteArray(channelHandler.result));
                         cf.completeExceptionally(exception);
                     } else {
                         cf.complete(getByteArray(channelHandler.result));
@@ -91,36 +91,39 @@ class HttpClient {
                 }
             });
         });
-        
+
         return cf;
     }
 
-    
-   private static YamcsApiException decodeException( HttpObject httpObj) throws IOException {
-       
-       YamcsApiException exception;
-       if(httpObj instanceof DefaultFullHttpResponse) {
-           DefaultFullHttpResponse fullResp = (DefaultFullHttpResponse)httpObj;
-           String contentType = fullResp.headers().get(HttpHeaders.Names.CONTENT_TYPE);
-           byte[] data = getByteArray(fullResp.content());
-           if(MediaType.JSON.is(contentType)) {
-               RestExceptionMessage msg =  fromJson(new String(data), SchemaWeb.RestExceptionMessage.MERGE).build();
-               exception = new YamcsApiException(msg.getType()+" : "+msg.getMsg());
-           } else if (MediaType.PROTOBUF.is(contentType)) {
-               RestExceptionMessage msg = RestExceptionMessage.parseFrom(data);
-               exception = new YamcsApiException(msg.getType()+" : "+msg.getMsg());
-           } else {
-               exception = new YamcsApiException(new String(data));    
-           }
-       } else if(httpObj instanceof DefaultHttpResponse) {
-           DefaultHttpResponse resp = (DefaultHttpResponse)httpObj;
-           exception = new YamcsApiException("Received http response: "+resp.getStatus());
-       } else {
-           exception = new YamcsApiException("Received http response: "+httpObj);
-       }
-       return exception;
 
-   }
+    private static YamcsApiException decodeException( HttpObject httpObj, byte[] data) throws IOException {
+        YamcsApiException exception;
+        if(httpObj instanceof DefaultHttpResponse) {
+            if(httpObj instanceof DefaultFullHttpResponse) {
+                DefaultFullHttpResponse fullResp = (DefaultFullHttpResponse)httpObj;
+                data = getByteArray(fullResp.content());
+            }
+            DefaultHttpResponse resp = (DefaultHttpResponse) httpObj;
+            if(data!=null) {
+                String contentType = resp.headers().get(HttpHeaders.Names.CONTENT_TYPE);
+                if(MediaType.JSON.is(contentType)) {
+                    RestExceptionMessage msg =  fromJson(new String(data), SchemaWeb.RestExceptionMessage.MERGE).build();
+                    exception = new YamcsApiException(msg.getType()+" : "+msg.getMsg());
+                } else if (MediaType.PROTOBUF.is(contentType)) {
+                    RestExceptionMessage msg = RestExceptionMessage.parseFrom(data);
+                    exception = new YamcsApiException(msg.getType()+" : "+msg.getMsg());
+                } else {
+                    exception = new YamcsApiException(new String(data));    
+                }
+            } else {
+                exception = new YamcsApiException("Received http response: "+resp.getStatus());
+            }
+        } else {
+            exception = new YamcsApiException("Received http response: "+httpObj);
+        }
+        return exception;
+
+    }
     /**
      * Sets the maximum size of the responses - this is not applicable to bulk requests whose response is practically unlimited and delivered piece by piece
      * @param length
@@ -161,9 +164,9 @@ class HttpClient {
 
         });
         cf.whenComplete((v, t) -> {
-           if(t instanceof CancellationException) {
-               chf.channel().close();
-           }
+            if(t instanceof CancellationException) {
+                chf.channel().close();
+            }
         });
         return cf;
     }
@@ -239,8 +242,8 @@ class HttpClient {
         }
         return request;
     }
-    
-    
+
+
     public MediaType getSendMediaType() {
         return sendMediaType;
     }
@@ -266,7 +269,7 @@ class HttpClient {
         JsonIOUtil.mergeFrom(reader, msg, schema, false);
         return msg;
     }
-    
+
     static byte[] getByteArray(ByteBuf buf) {
         byte[] b = new byte[buf.readableBytes()];
         buf.readBytes(b);
@@ -315,7 +318,7 @@ class HttpClient {
             if (msg instanceof HttpResponse) {
                 HttpResponse resp = (HttpResponse) msg;
                 if(resp.getStatus().code()!=HttpResponseStatus.OK.code()) {
-                    exception = decodeException(msg);
+                    exception = decodeException(msg, null);
                     receiver.receiveException(exception);
                     ctx.close();
                 }
