@@ -1,7 +1,5 @@
 package org.yamcs.archive;
 
-
-
 import java.util.Arrays;
 
 import org.apache.activemq.artemis.api.core.ActiveMQException;

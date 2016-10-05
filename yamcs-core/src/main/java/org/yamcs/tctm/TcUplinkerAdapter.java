@@ -24,7 +24,6 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 import com.google.common.util.concurrent.AbstractService;
 
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.artemis.YamcsClient;
 
 /**
  * Sends commands from the yarch stream to a {@link org.yamcs.tctm.TcUplinker }
@@ -46,9 +45,6 @@ public class TcUplinkerAdapter extends AbstractService {
 	TC_TUPLE_DEFINITION.addColumn("cmdName", DataType.STRING);
     }
     static public final String REALTIME_TC_STREAM_NAME="tc_realtime";
-
-
-    YamcsClient yclient;
 
     @SuppressWarnings({ "rawtypes", "static-access", "unchecked" })
     public TcUplinkerAdapter(String yamcsInstance) throws ConfigurationException, StreamSqlException, ParseException, YamcsApiException, IOException {
