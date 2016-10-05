@@ -23,7 +23,6 @@ import javax.swing.SwingConstants;
 
 import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.rest.BulkRestDataReceiver;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.ConnectionListener;
@@ -35,7 +34,6 @@ import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.websocket.CommandQueueResource;
 import org.yamcs.web.websocket.EventResource;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -43,12 +41,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 public class YamcsEventReceiver implements ConnectionListener, EventReceiver, WebSocketClientCallback, WebSocketResponseHandler {
     EventViewer eventViewer;
     YamcsConnector yconnector;
-    YamcsClient yamcsClient;
-    /*  volatile String url;
-    volatile boolean connected, connecting;
-    Protocol.ClientBuilder protocolBuilder;
-    Thread connectingThread;
-    YarchConnectData values;*/
 
     public YamcsEventReceiver(YamcsConnector yconnector) {
         this.yconnector = yconnector;
@@ -71,7 +63,7 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
 
     @Override
     public void connected(String url) {
-        WebSocketRequest wsr = new WebSocketRequest(EventResource.RESOURCE_NAME, CommandQueueResource.OP_subscribe);
+        WebSocketRequest wsr = new WebSocketRequest(EventResource.RESOURCE_NAME, EventResource.OP_subscribe);
         yconnector.performSubscription(wsr, this, this);
     }
 
