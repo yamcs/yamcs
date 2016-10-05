@@ -166,7 +166,6 @@ public class PacketRetrievalGui extends JFrame implements ActionListener {
                     }
                     sb.append(pn);
                 }
-                System.out.println("request: "+sb.toString());
                 completableFuture = restClient.doBulkGetRequest(sb.toString(), (data) -> {
                     TmPacketData tmpacket;
                     try {
