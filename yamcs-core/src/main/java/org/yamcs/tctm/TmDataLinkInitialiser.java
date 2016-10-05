@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.YamcsApiException;
@@ -52,7 +51,7 @@ public class TmDataLinkInitialiser extends AbstractService {
     YamcsClient yclient;
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public TmDataLinkInitialiser(String yamcsInstance) throws ConfigurationException, StreamSqlException, ParseException, ActiveMQException, YamcsApiException, IOException {
+    public TmDataLinkInitialiser(String yamcsInstance) throws ConfigurationException, StreamSqlException, ParseException, YamcsApiException, IOException {
         this.yamcsInstance = yamcsInstance;
         YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
         
