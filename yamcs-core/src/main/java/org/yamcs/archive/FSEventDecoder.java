@@ -13,7 +13,6 @@ import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.EventProducer;
-import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.usoctools.PayloadModel;
 import org.yamcs.usoctools.XtceUtil;
@@ -39,7 +38,6 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
     String instance;
     Map<String,PayloadModel> opsnameToPayloadModel =new HashMap<String,PayloadModel>();
     private final Logger log;
-    public YamcsClient msgClient;
     
     final Stream realtimeTmStream, dumpTmStream; //TM packets come from here
     XtceUtil xtceutil;
@@ -135,7 +133,7 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
             log.info("Cannot find an opsname for packetId " +packetId);
             return;
         }
-        PayloadModel payloadModel=opsnameToPayloadModel.get(opsName);
+        PayloadModel payloadModel = opsnameToPayloadModel.get(opsName);
         
         if(payloadModel==null) {
             return;

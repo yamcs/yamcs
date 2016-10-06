@@ -510,10 +510,6 @@ public class ParameterRetrievalGui extends JFrame implements  ParameterSelectDia
             BulkDownloadParameterValueRequest prr = BulkDownloadParameterValueRequest.newBuilder().addAllId(paramList).setStart(TimeEncoding.toString(start)).setStop(TimeEncoding.toString(stop)).build();
             completableFuture = restClient.doBulkGetRequest("/archive/"+archiveInstance+"/downloads/parameters", prr.toByteArray(), new BulkRestDataReceiver() {
                 @Override
-                public void receiveException(Throwable t) {    //do nothing as we get the exception in whenComplete below
-                }
-
-                @Override
                 public void receiveData(byte[] data) throws YamcsApiException {                   
                     ParameterData pd;
                     
