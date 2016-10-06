@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 import java.util.Base64;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.api.MediaType;
@@ -52,7 +53,7 @@ class HttpClient {
     MediaType sendMediaType = MediaType.PROTOBUF;
     MediaType acceptMediaType = MediaType.PROTOBUF;
     URI uri;
-
+    EventLoopGroup group;
 
 
     private long maxResponseLength=1024*1024;//max length of the expected response 
@@ -189,7 +190,10 @@ class HttpClient {
         }
 
 
-        EventLoopGroup group = new NioEventLoopGroup();
+        if(group==null) {
+            group = new NioEventLoopGroup();
+        }
+        
         Bootstrap b = new Bootstrap();
         b.group(group).channel(NioSocketChannel.class)
         .handler(new ChannelInitializer<SocketChannel>() {
@@ -201,8 +205,7 @@ class HttpClient {
                 p.addLast(channelHandler);
             }
         });
-
-        return  b.connect(host, port);
+        return b.connect(host, port);
     }
 
 
@@ -259,7 +262,10 @@ class HttpClient {
     public void setAcceptMediaType(MediaType acceptMediaType) {
         this.acceptMediaType = acceptMediaType;
     }
-
+    
+    public void close() {
+            group.shutdownGracefully();
+    }
 
 
 

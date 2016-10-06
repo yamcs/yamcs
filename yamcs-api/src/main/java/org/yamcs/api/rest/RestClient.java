@@ -24,7 +24,7 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
  * @author nm
  *
  */
-public class RestClient {
+public class RestClient implements AutoCloseable {
     final YamcsConnectionProperties connectionProperties;
     long timeout = 5000; //timeout in milliseconds
 
@@ -239,4 +239,7 @@ public class RestClient {
         httpClient.setMaxResponseLength(size);
     }
 
+    public void close() {
+        httpClient.close();
+    }
 }
