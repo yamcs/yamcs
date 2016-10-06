@@ -24,7 +24,7 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
  * @author nm
  *
  */
-public class RestClient implements AutoCloseable {
+public class RestClient {
     final YamcsConnectionProperties connectionProperties;
     long timeout = 5000; //timeout in milliseconds
 
@@ -36,6 +36,8 @@ public class RestClient implements AutoCloseable {
     /**max message length of an individual ProtoBuf message part of a bulk retrieval*/ 
     final static int MAX_MESSAGE_LENGTH = 1024*1024;
 
+    private boolean autoclose = true;
+    
     /**
      * Creates a rest client that communications using protobuf
      * @param connectionProperties
@@ -85,7 +87,7 @@ public class RestClient implements AutoCloseable {
      * @return a the response body
      */
     public CompletableFuture<byte[]> doRequest(String resource, HttpMethod method) {
-        return doRequest(resource, method, new byte[0]);
+        return  doRequest(resource, method, new byte[0]);
     }
 
     /**
@@ -106,6 +108,11 @@ public class RestClient implements AutoCloseable {
             cf = httpClient.doAsyncRequest(connectionProperties.getRestApiUrl()+resource, method, body.getBytes(), connectionProperties.getAuthenticationToken());
         } catch (URISyntaxException e) { //throw a RuntimeException instead since if the code is not buggy it's unlikely to have this exception thrown
             throw new RuntimeException(e);
+        }
+        if(autoclose) {
+            cf.whenComplete((v, t)->{
+               close(); 
+            });
         }
         return cf.thenApply(b -> {
             return new String(b);
@@ -130,6 +137,12 @@ public class RestClient implements AutoCloseable {
         } catch (URISyntaxException e) { //throw a RuntimeException instead since if the code is not buggy it's unlikely to have this exception thrown
             throw new RuntimeException(e);
         }
+        if(autoclose) {
+            cf.whenComplete((v, t)->{
+               close(); 
+            });
+        }
+        
         return cf;
     }
     /**
@@ -149,12 +162,19 @@ public class RestClient implements AutoCloseable {
     }
     
     public CompletableFuture<Void> doBulkGetRequest(String resource, byte[] body, BulkRestDataReceiver receiver) {
+        CompletableFuture<Void> cf;
         MessageSplitter splitter = new MessageSplitter(receiver);
         try {
-            return httpClient.doBulkRequest(connectionProperties.getRestApiUrl()+resource, HttpMethod.GET, body, connectionProperties.getAuthenticationToken(), splitter);
+            cf= httpClient.doBulkRequest(connectionProperties.getRestApiUrl()+resource, HttpMethod.GET, body, connectionProperties.getAuthenticationToken(), splitter);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+        if(autoclose) {
+            cf.whenComplete((v, t)->{
+               close(); 
+            });
+        }
+        return cf;
     }
 
     static class MessageSplitter implements BulkRestDataReceiver {
@@ -241,5 +261,21 @@ public class RestClient implements AutoCloseable {
 
     public void close() {
         httpClient.close();
+    }
+
+
+
+
+    public boolean isAutoclose() {
+        return autoclose;
+    }
+
+    /**
+     * if autoclose is set, the httpClient will be automatically closed at the end of the request, so the netty eventgroup is shutdown.
+     * Otherwise it has to be done manually - but then the same object can be used to perform multiple requests.
+     * @param autoclose
+     */
+    public void setAutoclose(boolean autoclose) {
+        this.autoclose = autoclose;
     }
 }
