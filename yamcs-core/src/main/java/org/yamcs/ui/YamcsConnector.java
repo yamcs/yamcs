@@ -22,7 +22,6 @@ import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.api.ws.WebSocketResponseHandler;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 
@@ -84,6 +83,7 @@ public class YamcsConnector implements WebSocketClientCallback {
         if(connected) disconnect();
         
         restClient = new RestClient(connectionParams);
+        restClient.setAutoclose(false);
         wsClient = new WebSocketClient(connectionParams, this);
         wsClient.setUserAgent(aplicationName);
         
