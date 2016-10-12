@@ -55,9 +55,6 @@ Archive:
 ArchiveRetrieval:
     telemetryProvider:
         class: org.yamcs.tctm.ReplayService
-    parameterProviders:
-       # manages legacy derived values
-       - class: org.yamcs.derivedvalues.DerivedValuesManager
     config:
         parameterCache:
             enabled: false
