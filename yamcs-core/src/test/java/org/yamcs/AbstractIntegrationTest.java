@@ -104,6 +104,7 @@ public abstract class AbstractIntegrationTest {
         restClient = new RestClient(ycp);
         restClient.setAcceptMediaType(MediaType.JSON);
         restClient.setSendMediaType(MediaType.JSON);
+        restClient.setAutoclose(false);
         packetGenerator = packetProvider.mdbPacketGenerator;
         packetGenerator.setGenerationTime(TimeEncoding.INVALID_INSTANT);
 
