@@ -37,7 +37,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
             assertTrue(e.getCause().getMessage().contains("Unauthorized"));
         }
 
-
+        restClient1.close();
     }
 
     @Test
@@ -74,6 +74,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
             gotException = true;
         }
         assertTrue("Permission should be denied for String parameter", gotException);
+        restClient1.close();
     }
 
 
@@ -119,6 +120,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
         } catch (ExecutionException e) {
             assertTrue(e.getCause().getMessage().contains("ForbiddenException"));
         }
+        restClient1.close();
     }
 
     @Test
@@ -135,12 +137,14 @@ public class PermissionsTest extends AbstractIntegrationTest {
         } catch (ExecutionException e) {
             assertTrue(e.getCause().getMessage().contains("ForbiddenException"));
         }
+        restClient1.close();
     }
 
     @Test
     public void testPermissionUpdateCommandHistory() throws Exception {
         // testUser does not have the permission to update the command history
         // operator has the permission
+        
         try {
             updateCommandHistory(getRestClient("testuser", "password"));
         } catch (ExecutionException e) {
@@ -181,6 +185,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
         RestClient restClient1 = new RestClient(ycp1);
         restClient1.setAcceptMediaType(MediaType.JSON);
         restClient1.setSendMediaType(MediaType.JSON);
+        restClient1.setAutoclose(false);
         return restClient1;
 
     }
