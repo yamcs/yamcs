@@ -354,28 +354,23 @@ public class XtceDbFactory {
             ss.addAlias(parentqname, ss.getName());
         }
         for(Parameter p: ss.getParameters()) {
-            p.setQualifiedName(ss.getQualifiedName()+NameDescription.PATH_SEPARATOR+p.getName());
-            p.addAlias(ss.getQualifiedName(), p.getName());
+            p.setQualifiedName(ss.getQualifiedName()+NameDescription.PATH_SEPARATOR + p.getName());
         }
         for(ParameterType pt: ss.getParameterTypes()) {
             NameDescription nd=(NameDescription)pt;
-            nd.setQualifiedName(ss.getQualifiedName()+NameDescription.PATH_SEPARATOR+nd.getName());
-            nd.addAlias(ss.getQualifiedName(), nd.getName());
+            nd.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + nd.getName());
         }
 
         for(SequenceContainer c: ss.getSequenceContainers()) {
-            c.setQualifiedName(ss.getQualifiedName()+NameDescription.PATH_SEPARATOR+c.getName());
-            c.addAlias(ss.getQualifiedName(), c.getName());
+            c.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + c.getName());
         }
 
         for(MetaCommand c: ss.getMetaCommands()) {
-            c.setQualifiedName(ss.getQualifiedName()+NameDescription.PATH_SEPARATOR+c.getName());
-            c.addAlias(ss.getQualifiedName(), c.getName());
+            c.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + c.getName());
         }
 
         for(Algorithm a: ss.getAlgorithms()) {
-            a.setQualifiedName(ss.getQualifiedName()+NameDescription.PATH_SEPARATOR+a.getName());
-            a.addAlias(ss.getQualifiedName(), a.getName());
+            a.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + a.getName());
         }
 
         for(NonStandardData<?> nonStandardData: ss.getNonStandardData()) {

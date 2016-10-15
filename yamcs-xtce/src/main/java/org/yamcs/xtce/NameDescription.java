@@ -1,6 +1,7 @@
 package org.yamcs.xtce;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import org.yamcs.xtce.xml.XtceAliasSet;
 
@@ -52,14 +53,17 @@ public class NameDescription implements Serializable {
     }
 
     public String getAlias(String namespace) {
-        if(xtceAliasSet==null)return null;
+        if(xtceAliasSet==null) return null;
         return xtceAliasSet.getAlias(namespace);
     }
     
     
 
     public void setQualifiedName(String qname) {
-        this.qualifiedName=qname;
+        if(!qname.endsWith(name)) throw new IllegalArgumentException("qualified name '"+qname+"' +must end with '"+name+"'");
+        this.qualifiedName = qname;
+        String ssName = getSubsystemName(qname);
+        addAlias(ssName, name);
     }
     
     /**
@@ -87,7 +91,7 @@ public class NameDescription implements Serializable {
     }
 
     /**
-     * Assign set of aliases with the object
+     * Assign set of aliases with the object. The previous aliases if any are replaced by the new ones.
      * 
      * @param aliasSet
      *            Set of aliases
@@ -99,10 +103,24 @@ public class NameDescription implements Serializable {
     public XtceAliasSet getAliasSet() {
         return xtceAliasSet;
     }
+    /**
+     * Adds all aliases to the existing aliases.
+     * The new aliases may overwrite already existing aliases - in this case the old ones will be replaced with the new ones.
+     * 
+     * @param aliasSet
+     */
+    public void addAliases(XtceAliasSet newAliases) {
+        if(xtceAliasSet==null) {
+            xtceAliasSet = new XtceAliasSet();
+        }
+        for(Map.Entry<String, String> e: newAliases.getAliases().entrySet()) {
+            xtceAliasSet.addAlias(e.getKey(), e.getValue());
+        }
+    }
     
     public void addAlias(String namespace, String alias) {
         if(xtceAliasSet==null) {
-            xtceAliasSet=new XtceAliasSet();
+            xtceAliasSet = new XtceAliasSet();
         }
         xtceAliasSet.addAlias(namespace, alias);
     }
@@ -146,11 +164,14 @@ public class NameDescription implements Serializable {
      * returns the subsystem fully qualified name where this name is valid (i.e. the full path of the directory name if it were a filesystem)
      * 
      * @param fqname
-     * @return
+     * @return the fully qualified name
      */
     public static String getSubsystemName(String fqname) {
         int index = fqname.lastIndexOf(PATH_SEPARATOR);
-        if (index < 0) return fqname;
+        
+        if(index==0) return String.valueOf(PATH_SEPARATOR);
+        
+        if (index < 0) throw new RuntimeException("Illegal qualified name '"+fqname+"'");
         return fqname.substring(0, index);
     }
 }

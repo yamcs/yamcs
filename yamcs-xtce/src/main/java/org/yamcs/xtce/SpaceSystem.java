@@ -61,7 +61,7 @@ public class SpaceSystem extends NameDescription {
     
     public void addParameter(Parameter parameter) throws IllegalArgumentException{
         if(parameters.containsKey(parameter.getName())) 
-            throw new IllegalArgumentException("there is already a parameter with name "+parameter.getName());
+            throw new IllegalArgumentException("there is already a parameter with name "+parameter.getName()+" in space system "+qualifiedName );
         parameters.put(parameter.getName(), parameter);
     }
 
