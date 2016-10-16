@@ -22,18 +22,18 @@ import org.yaml.snakeyaml.error.YAMLException;
 /**
  * This class loads yamcs configurations. There are a number of "subsystems",
  *  each using a corresponding subsystem.yaml file
- *  
+ *
  *  There are three places where a configuration file is looked up in order:
  *  - in the prefix/file.yaml via the classpath if the prefix is set in the setup method (used in the unittests)
  *  - in the userConfigDirectory .yamcs/etc/file.yaml
  *  - in the file.yaml via the classpath.
- *  
+ *
  * @author nm
  */
 @SuppressWarnings("rawtypes")
 public class YConfiguration {
     Map<String, Object> root;
-    static String userConfigDirectory; //This is used by the users to overwrite 
+    static String userConfigDirectory; //This is used by the users to overwrite
     private final String filename;
 
 
@@ -46,7 +46,7 @@ public class YConfiguration {
     static private IdentityHashMap<Object, String> confPath=new IdentityHashMap<Object, String>();
 
 
-    @SuppressWarnings("unchecked")	
+    @SuppressWarnings("unchecked")
     private YConfiguration(String subsystem) throws IOException, ConfigurationException {
         Yaml yaml=new Yaml();
         filename=subsystem+".yaml";
@@ -66,9 +66,9 @@ public class YConfiguration {
 
     /**
      * If configPrefix is not null, sets up the configuration to search the classpath for files like "configPrefix/xyz.properties"
-     * 
+     *
      * Also sets up the TimeEncoding configuration
-     * 
+     *
      * @param configPrefix
      * @throws ConfigurationException
      */
@@ -103,7 +103,7 @@ public class YConfiguration {
     }
     /**
      * calls setup(null)
-     * 
+     *
      * @throws ConfigurationException
      */
     public synchronized static void setup() throws ConfigurationException {
@@ -115,7 +115,7 @@ public class YConfiguration {
      * Loads (if not already loaded) and returns a configuration corresponding to a file <subsystem>.yaml
      *
      * This method does not reload the configuration file if it has changed.
-     * 
+     *
      * @param subsystem
      * @return the loaded configuration
      * @throws ConfigurationException if the configuration file could not be found or not loaded (e.g. error in yaml formatting)
@@ -134,12 +134,11 @@ public class YConfiguration {
         return c;
     }
 
-
     /**
      * Loads and returns a configuration corresponding to a file <subsystem>.yaml
-     * 
+     *
      * This method reloads the configuration file always.
-     * 
+     *
      * @param subsystem
      * @param reload
      * @return the loaded configuration
@@ -153,6 +152,15 @@ public class YConfiguration {
             }
         }
         return getConfiguration(subsystem);
+    }
+
+    public static boolean isDefined(String subsystem) throws ConfigurationException {
+        try {
+            getConfiguration(subsystem);
+            return true;
+        } catch (ConfigurationNotFoundException e) {
+            return false;
+        }
     }
 
     private static InputStream getConfigurationStream(String name) throws ConfigurationException {
@@ -176,7 +184,7 @@ public class YConfiguration {
             }
         }
         if((is=YConfiguration.class.getResourceAsStream(name))==null) {
-            throw(new ConfigurationException("Cannot find resource "+name));
+            throw(new ConfigurationNotFoundException("Cannot find resource "+name));
         }
         log.debug("Reading "+new File(YConfiguration.class.getResource(name).getFile()).getAbsolutePath());
         return is;
@@ -197,7 +205,7 @@ public class YConfiguration {
 
     public boolean containsKey(String key, String key1) throws ConfigurationException {
         if(!root.containsKey(key)) return false;
-        
+
         Map<String, Object> m = getMap(key);
         return m.containsKey(key1);
     }
@@ -356,7 +364,7 @@ public class YConfiguration {
     /**
      * Returns m.get(key) if it exists and is of type boolean,
      * if m.get(key) exists and is not boolean, throw an exception.
-     * if m.get(key) does not exist, return the default value. 
+     * if m.get(key) does not exist, return the default value.
      * @param m
      * @param key
      * @param defaultValue - the default value to return if m.get(key) does not exist.
@@ -367,7 +375,7 @@ public class YConfiguration {
         Object o=m.get(key);
         if(o!=null){
             if (o instanceof Boolean) {
-                return (Boolean)o;    
+                return (Boolean)o;
             } else {
                 throw new ConfigurationException(confPath.get(m), "mapping for key '"+key+"' is of type "+getUnqualfiedClassName(o)+" and not Boolean (use true or false without quotes)");
             }
@@ -418,7 +426,7 @@ public class YConfiguration {
     }
     /**
      * return the m.get(key) as an int if it's present or v if it is not.
-     * 
+     *
      * If the key is present but the value is not an integer, a ConfigurationException is thrown.
      * @param m
      * @param key
@@ -450,7 +458,7 @@ public class YConfiguration {
 
     /**
      * return the m.get(key) as an long if it's present or v if it is not.
-     * 
+     *
      * @param m
      * @param key
      * @param v
@@ -477,12 +485,12 @@ public class YConfiguration {
         Map<String, Object> m=getMap(key);
         return getInt(m, key1);
     }
-    
+
     public int getInt(String key, String key1, int defaultValue) throws ConfigurationException {
         if(!root.containsKey(key)) return defaultValue;
 
         Map<String, Object> m = getMap(key);
-        
+
         return getInt(m, key1, defaultValue);
     }
 
@@ -496,4 +504,18 @@ public class YConfiguration {
         return (o instanceof List);
     }
 
+    /**
+     * Introduced to be able to detect when a configuration file was not
+     * specified (as opposed to when there's a validation error inside). The
+     * current default behaviour of Yamcs is to throw an error when
+     * getConfiguration(String subystem) is called and the resource does not
+     * exist.
+     */
+    private static class ConfigurationNotFoundException extends ConfigurationException {
+        private static final long serialVersionUID = 1L;
+
+        public ConfigurationNotFoundException(String message) {
+            super(message);
+        }
+    }
 }
