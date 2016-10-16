@@ -71,25 +71,33 @@ public class Privilege {
      * Load configuration once only.
      */
     static {
-        try {
-            YConfiguration conf=YConfiguration.getConfiguration("privileges");
-            maxNoSessions=conf.getInt("maxNoSessions");
-            usePrivileges=conf.getBoolean("enabled");
+        defaultUser = "admin";
+        maxNoSessions = 10;
+        usePrivileges = false;
+        if (YConfiguration.isDefined("privileges")) {
+            try {
+                YConfiguration conf=YConfiguration.getConfiguration("privileges");
+                maxNoSessions=conf.getInt("maxNoSessions");
+                usePrivileges=conf.getBoolean("enabled");
 
-            if(usePrivileges) {
-                String realmClass = conf.getString("realm");
-                realm = loadRealm(realmClass);
-            } else {
-                String defaultUserString = (conf.containsKey("defaultUser") ? conf.getString("defaultUser") : "admin");
-                if (defaultUserString.isEmpty() || defaultUserString.contains(":")) {
-                    throw new ConfigurationException("Invalid name '" + defaultUserString + "' for default user");
+                if(usePrivileges) {
+                    String realmClass = conf.getString("realm");
+                    realm = loadRealm(realmClass);
+                } else {
+                    if (conf.containsKey("defaultUser")) {
+                        String defaultUserString = conf.getString("defaultUser");
+                        if (defaultUserString.isEmpty() || defaultUserString.contains(":")) {
+                            throw new ConfigurationException("Invalid name '" + defaultUserString + "' for default user");
+                        }
+                        defaultUser = defaultUserString;
+                    }
                 }
-                defaultUser = defaultUserString;
+            } catch (ConfigurationException e) {
+                throw new ConfigurationException("Failed to load 'privileges' configuration", e);
             }
-        } catch (ConfigurationException e) {
-            throw new ConfigurationException("Failed to load 'privileges' configuration", e);
         }
-        if(Privilege.usePrivileges) {
+
+        if(usePrivileges) {
             log.info("Privileges enabled, authenticating and authorising from "+realmName);
         } else {
             log.warn("Privileges disabled, all connections are allowed and have full permissions");
