@@ -80,12 +80,7 @@ public class Privilege {
                 String realmClass = conf.getString("realm");
                 realm = loadRealm(realmClass);
             } else {
-                // Intended migration path is that this could replace 'privileges=false', but the interaction with
-                // ActiveMQAuthManager is still unclear to me. Looks like a dupe. (fdi)
-                if (!conf.containsKey("defaultUser")) {
-                    throw new ConfigurationException("'defaultUser' must be specified when privileges are not enabled. For example 'admin', 'anonymous' or 'guest'");
-                }
-                String defaultUserString = conf.getString("defaultUser");
+                String defaultUserString = (conf.containsKey("defaultUser") ? conf.getString("defaultUser") : "admin");
                 if (defaultUserString.isEmpty() || defaultUserString.contains(":")) {
                     throw new ConfigurationException("Invalid name '" + defaultUserString + "' for default user");
                 }
@@ -118,7 +113,7 @@ public class Privilege {
      * loads the configuration of the privilege. If privileges.enabled is not
      * set to false in the privileges.properties, then load the privileges from
      * the LDAP.
-     * 
+     *
      * @throws ConfigurationException
      *             when the privileges.enabled is not set to false and the ldap
      *             parammeters are not present
@@ -129,12 +124,12 @@ public class Privilege {
     public static synchronized Privilege getInstance() {
         if (instance == null)
             instance = new Privilege() {};
-            
+
         return instance;
     }
 
     /**
-     * 
+     *
      * @return true if privileges are enabled
      */
     public boolean isEnabled() {
@@ -167,7 +162,7 @@ public class Privilege {
 
     /**
      * Convenience method, check if user has specific role.
-     * 
+     *
      * @param role Title or full dn.
      * @return True if usePrivileges enabled and user has role, false otherwise.
      */
@@ -183,7 +178,7 @@ public class Privilege {
     }
 
     private boolean isSystemToken(final AuthenticationToken authenticationToken) {
-        return authenticationToken.getPrincipal().equals(YamcsSession.hornetqInvmUser) || (authenticationToken instanceof SystemToken); 
+        return authenticationToken.getPrincipal().equals(YamcsSession.hornetqInvmUser) || (authenticationToken instanceof SystemToken);
     }
 
     /**
@@ -196,7 +191,7 @@ public class Privilege {
     public boolean hasPrivilege(final AuthenticationToken authenticationToken, Type type, String privilege) {
         if (!usePrivileges)	return true;
         if(authenticationToken == null || authenticationToken.getPrincipal() == null) return false;
-        
+
         if (isSystemToken(authenticationToken)) return true;
 
         User user = getUser(authenticationToken);
@@ -207,7 +202,7 @@ public class Privilege {
     public boolean hasPrivilege(final AuthenticationToken authenticationToken, Type type, SystemPrivilege privilege) {
         if (!usePrivileges)     return true;
         if(authenticationToken == null || authenticationToken.getPrincipal() == null) return false;
-        
+
         if (isSystemToken(authenticationToken)) return true;
 
         User user = getUser(authenticationToken);
@@ -218,7 +213,7 @@ public class Privilege {
     public static String getRealmName() {
         return realmName;
     }
-    
+
     /**
      * Returns the default user if this server is unsecured. Returns null in all other cases.
      */
