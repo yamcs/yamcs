@@ -120,7 +120,6 @@ public class XtceDb implements Serializable {
     public Parameter getParameter(NamedObjectId id) {
         rwLock.readLock().lock();
         try {
-
             if (id.hasNamespace()) {
                 return parameterAliases.get(id.getNamespace(), id.getName());
             } else {
