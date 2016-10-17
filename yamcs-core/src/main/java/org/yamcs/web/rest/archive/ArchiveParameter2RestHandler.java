@@ -223,7 +223,11 @@ public class ArchiveParameter2RestHandler extends RestHandler {
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         NamedObjectId requestedId = verifyParameterId(req, mdb, req.getRouteParam("name"));
         Parameter p = mdb.getParameter(requestedId);
-
+        if(p==null) {
+            p = mdb.getSystemParameterDb().getSystemParameter(requestedId, false);
+        }
+        if(p==null) throw new InternalServerErrorException("Cannot find parameter with id: "+requestedId);
+        
         if(req.hasQueryParameter("pos")) throw new BadRequestException("pos not supported");
         int limit = req.getQueryParameterAsInt("limit", 100);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
