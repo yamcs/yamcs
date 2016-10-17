@@ -148,9 +148,12 @@
                 if (now.isSame(ts, 'd')) {
                     prefix = (printPrefix) ? 'at ' : '';
                     return prefix + ts.format('HH:mm:ss');
-                } else {
+                } else  if (now.isSame(ts, 'Y')) {
                     prefix = (printPrefix) ? ' at ' : ' ';
                     return ts.format('MMM Do') + prefix + ts.format('HH:mm:ss');
+                } else {
+                    prefix = (printPrefix) ? ' at ' : ' ';
+                    return prefix + ts.format('YYYY-MM-DDTHH:mm:ss');
                 }
             } else {
                 prefix = (printPrefix) ? 'on ' : '';
