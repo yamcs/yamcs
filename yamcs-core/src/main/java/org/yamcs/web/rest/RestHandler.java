@@ -258,6 +258,7 @@ public abstract class RestHandler extends RouteHandler {
         if (p == null) {
             String rootedName = pathName.startsWith("/") ? pathName : "/" + pathName;
             p = mdb.getSystemParameterDb().getSystemParameter(rootedName, false);
+            id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
         }
 
         if (p != null && !authorised(req, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {

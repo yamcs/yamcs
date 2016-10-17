@@ -6,7 +6,6 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import org.rocksdb.RocksDBException;
@@ -54,7 +53,6 @@ import org.yamcs.xtceproc.XtceDbFactory;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
-import io.netty.channel.ChannelFuture;
 
 public class ArchiveParameter2RestHandler extends RestHandler {
     private static final String DEFAULT_PROCESSOR = "realtime";
@@ -221,12 +219,10 @@ public class ArchiveParameter2RestHandler extends RestHandler {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        NamedObjectId requestedId = verifyParameterId(req, mdb, req.getRouteParam("name"));
-        Parameter p = mdb.getParameter(requestedId);
-        if(p==null) {
-            p = mdb.getSystemParameterDb().getSystemParameter(requestedId, false);
-        }
-        if(p==null) throw new InternalServerErrorException("Cannot find parameter with id: "+requestedId);
+        NameDescriptionWithId<Parameter> requestedParamWithId = verifyParameterWithId(req, mdb, req.getRouteParam("name"));
+        
+        Parameter p = requestedParamWithId.getItem();
+        NamedObjectId requestedId = requestedParamWithId.getRequestedId();
         
         if(req.hasQueryParameter("pos")) throw new BadRequestException("pos not supported");
         int limit = req.getQueryParameterAsInt("limit", 100);
