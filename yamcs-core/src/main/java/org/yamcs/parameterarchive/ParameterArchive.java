@@ -33,6 +33,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.rocksdb.ColumnFamilySerializer;
 import org.yamcs.yarch.rocksdb.RDBFactory;
+import org.yamcs.yarch.rocksdb.StringColumnFamilySerializer;
 import org.yamcs.yarch.rocksdb.YRDB;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -420,22 +421,5 @@ public class ParameterArchive  extends AbstractService {
         }
 
         return parts;
-    }
-    
-    
-    static class StringColumnFamilySerializer implements ColumnFamilySerializer {
-
-        @Override
-        public byte[] objectToByteArray(Object value) {
-            if(value instanceof String) {
-                return ((String)value).getBytes(StandardCharsets.US_ASCII);
-            }
-            throw new RuntimeException("Cannot encode objects of type "+value.getClass());
-        }
-
-        @Override
-        public Object byteArrayToObject(byte[] b) {
-            return new String(b, StandardCharsets.US_ASCII);
-        }
     }
 }
