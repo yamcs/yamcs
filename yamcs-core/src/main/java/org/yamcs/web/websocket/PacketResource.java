@@ -6,12 +6,10 @@ import org.yamcs.YProcessor;
 import org.yamcs.ProcessorException;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
-import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.tctm.TmDataLinkInitialiser;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -45,6 +43,10 @@ public class PacketResource extends AbstractWebSocketResource {
         }
         
         if(op.startsWith(OP_subscribe)) {
+            if(streamSubscriber!=null) {
+                throw new WebSocketException(ctx.getRequestId(), "Already subscribed to a stream");
+            }
+            
            String[] a = op.split("\\s+");
            if(a.length!=2) {
                throw new WebSocketException(ctx.getRequestId(), "Invalid request. Use 'subscribe <stream_name>'");

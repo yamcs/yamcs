@@ -170,6 +170,6 @@ public class ProcessorCommandRestHandler extends RestHandler {
             throw new ForbiddenException(e);
         } 
 
-        sendOK(req);
+        completeOK(req);
     }
 }

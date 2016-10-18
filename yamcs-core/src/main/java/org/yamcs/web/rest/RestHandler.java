@@ -58,7 +58,7 @@ public abstract class RestHandler extends RouteHandler {
     private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
     private static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
 
-    protected static void sendOK(RestRequest restRequest) {
+    protected static void completeOK(RestRequest restRequest) {
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
         setContentLength(httpResponse, 0);
        completeRequest(restRequest, httpResponse);

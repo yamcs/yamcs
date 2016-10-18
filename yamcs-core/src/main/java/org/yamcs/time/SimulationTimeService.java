@@ -93,7 +93,7 @@ public class SimulationTimeService implements TimeService {
                 sts.setSimElapsedTime(request.getSimElapsedTime());
             }
             
-            sendOK(req);
+            completeOK(req);
         }
     }
 }

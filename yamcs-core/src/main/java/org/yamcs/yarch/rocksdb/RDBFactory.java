@@ -7,11 +7,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import org.rocksdb.BackupEngine;
+import org.rocksdb.BackupableDBOptions;
+import org.rocksdb.Env;
 import org.rocksdb.FlushOptions;
+import org.rocksdb.RestoreOptions;
+import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +38,8 @@ public class RDBFactory implements Runnable {
     final String instance;
     public static FlushOptions flushOptions = new FlushOptions();
 
+    //use this when the db is open for the backup; if the same db is open with another serializer, then this one will be dropped 
+    DummyColumnFamilySerializer dummyCfSerializer = new DummyColumnFamilySerializer();
 
     public static synchronized RDBFactory getInstance(String instance) {
         RDBFactory rdbFactory=instances.get(instance); 
@@ -108,6 +116,9 @@ public class RDBFactory implements Runnable {
         }
         daat.lastAccess = System.currentTimeMillis();
         daat.refcount++;
+        if((daat.db.getColumnFamilySerializer() == dummyCfSerializer) && (cfSerializer!= dummyCfSerializer)) {
+            daat.db.setColumnFamilySerializer(cfSerializer);
+        }
         return daat.db;
     }
 
@@ -145,7 +156,7 @@ public class RDBFactory implements Runnable {
             }
         }
     }
-    
+
     synchronized void shutdown() {
         log.debug("shutting down, closing all the databases "+databases.keySet());
         Iterator<Map.Entry<String, DbAndAccessTime>>it = databases.entrySet().iterator();
@@ -207,9 +218,88 @@ public class RDBFactory implements Runnable {
     public synchronized void close(YRDB yrdb) {
         databases.remove(yrdb.getPath());
         yrdb.getDb().close();
+    }
+
+    /**
+     * Performs a backup of the database to the given directory
+     * 
+     * @param dbpath
+     * @param backupDir
+     * @return a future that can be used to know when the backup has finished and if there was any error
+     */
+    public CompletableFuture<Void> doBackup(String dbpath, String backupDir) {
+        CompletableFuture<Void> cf = new CompletableFuture<Void>();
+        scheduler.execute(()->{
+            System.out.println("starting backup");
+            YRDB db = null;
+            try {
+                BackupableDBOptions opt = new BackupableDBOptions(backupDir);
+                BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
+                db = getRdb(dbpath, dummyCfSerializer, false);
+                backupEngine.createNewBackup(db.getDb());
+
+                backupEngine.close();
+                opt.close();
+                cf.complete(null);
+            } catch (Exception e) {
+                cf.completeExceptionally(e);
+            } finally { 
+                if(db!=null) {
+                    dispose(db);
+                }
+            }
+        });
+
+        return cf;
+    }
+
+
+    public CompletableFuture<Void> restoreBackup(String backupDir, String dbPath) {
+        CompletableFuture<Void> cf = new CompletableFuture<Void>();
+        scheduler.execute(()->{
+            System.out.println("starting backup");
+            try {
+                BackupableDBOptions opt = new BackupableDBOptions(backupDir);
+                BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
+                RestoreOptions restoreOpt = new RestoreOptions(false);
+                backupEngine.restoreDbFromLatestBackup(dbPath, dbPath, restoreOpt);
+
+                backupEngine.close();
+                opt.close();
+                restoreOpt.close();
+                cf.complete(null);
+            } catch (Exception e) {
+                cf.completeExceptionally(e);
+            } finally { 
+            }
+        });
+
+        return cf;
     }	
+
+    private RocksDB openReadOnly(String dbpath) throws RocksDBException {
+        return RocksDB.openReadOnly(dbpath);
+    }
+
+
 }
 
+/**
+ * use this as a default column family serializer in case we don't have a better one (e.g. when performing backups)
+ *
+ */
+class DummyColumnFamilySerializer implements ColumnFamilySerializer {
+    @Override
+    public byte[] objectToByteArray(Object value) {
+        return (byte[]) value;
+    }
+
+    @Override
+    public Object byteArrayToObject(byte[] b) {
+        return b;
+    }
+
+}
 
 class DbAndAccessTime {
     YRDB db;

@@ -54,7 +54,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
             throw new BadRequestException(e.getMessage());
         }
         
-        sendOK(req);
+        completeOK(req);
     }
     
     @Route(path = "/api/archive/:instance/parameterArchive/deletePartitions" , method = "POST")

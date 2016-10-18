@@ -19,6 +19,7 @@ import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
+import org.yamcs.utils.ByteArrayWrapper;
 import org.yamcs.yarch.rocksdb.RdbConfig.TableConfig;
 /**
  * wrapper around RocksDB that keeps track of column families
@@ -27,12 +28,12 @@ import org.yamcs.yarch.rocksdb.RdbConfig.TableConfig;
  *
  */
 public class YRDB {
-    Map<Object, ColumnFamilyHandle> columnFamilies=new HashMap<Object, ColumnFamilyHandle>();
+    Map<ByteArrayWrapper, ColumnFamilyHandle> columnFamilies=new HashMap<ByteArrayWrapper, ColumnFamilyHandle>();
 
     private final RocksDB db;
     private boolean isClosed = false;
     private final String path;
-    private final ColumnFamilySerializer cfSerializer;
+    private ColumnFamilySerializer cfSerializer;
     private final ColumnFamilyOptions cfoptions;
 
     private final DBOptions dbOptions;
@@ -73,8 +74,7 @@ public class YRDB {
                 for(int i=0;i<cfl.size();i++) {
                     byte[] b = cfl.get(i);
                     if(!Arrays.equals(b, RocksDB.DEFAULT_COLUMN_FAMILY)) {
-                        Object value = cfSerializer.byteArrayToObject(b);	
-                        columnFamilies.put(value, cfhList.get(i));
+                        columnFamilies.put(new ByteArrayWrapper(b), cfhList.get(i));
                     } 
                 }
 
@@ -118,7 +118,7 @@ public class YRDB {
     }
 
     public synchronized ColumnFamilyHandle getColumnFamilyHandle(Object value) {
-        ColumnFamilyHandle cfh = columnFamilies.get(value);
+        ColumnFamilyHandle cfh = columnFamilies.get(new ByteArrayWrapper(cfSerializer.objectToByteArray(value)));
         
         //in yamcs 0.29.3 and older we used to create a column family for null values (i.e. when not partitioning on a value)
         //starting with yamcs 0.29.4 we use the default column family for this
@@ -137,7 +137,7 @@ public class YRDB {
         byte[] b = cfSerializer.objectToByteArray(value);
         ColumnFamilyDescriptor cfd = new ColumnFamilyDescriptor(b, cfoptions);
         ColumnFamilyHandle cfh = db.createColumnFamily(cfd);			
-        columnFamilies.put(value, cfh);
+        columnFamilies.put(new ByteArrayWrapper(b), cfh);
         return cfh;
     }
 
@@ -146,7 +146,11 @@ public class YRDB {
     }
 
     public Collection<Object> getColumnFamilies() {
-        return columnFamilies.keySet();
+        List<Object> l = new ArrayList<>();
+        for(ByteArrayWrapper baw: columnFamilies.keySet()) {
+            l.add(cfSerializer.byteArrayToObject(baw.getData()));
+        }
+        return l;
     }
 
     public String getPath() { 
@@ -169,8 +173,8 @@ public class YRDB {
         
         
         StringBuilder sb = new StringBuilder();
-        for(Map.Entry<Object, ColumnFamilyHandle> e: columnFamilies.entrySet()) {
-            Object o = e.getKey();
+        for(Map.Entry<ByteArrayWrapper, ColumnFamilyHandle> e: columnFamilies.entrySet()) {
+            Object o = cfSerializer.byteArrayToObject(e.getKey().getData());
             ColumnFamilyHandle chf = e.getValue();
             sb.append("============== Column Family: "+o+"========\n");
             for(String p:slprops) {
@@ -193,7 +197,7 @@ public class YRDB {
     }
 
     public synchronized void dropColumnFamily(ColumnFamilyHandle cfh) throws RocksDBException {
-        for(Map.Entry<Object, ColumnFamilyHandle> e: columnFamilies.entrySet()) {
+        for(Map.Entry<ByteArrayWrapper, ColumnFamilyHandle> e: columnFamilies.entrySet()) {
             if(e.getValue()==cfh) {
                 db.dropColumnFamily(cfh);
                 columnFamilies.remove(e.getKey());
@@ -201,4 +205,13 @@ public class YRDB {
             }
         }
     }
+
+    public ColumnFamilySerializer getColumnFamilySerializer() {
+        return cfSerializer;
+    }
+    
+    public void setColumnFamilySerializer(ColumnFamilySerializer cfs) {
+        this.cfSerializer = cfs;
+    }
+    
 }

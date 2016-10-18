@@ -136,6 +136,6 @@ public class ArchiveEventRestHandler extends RestHandler {
         // send event
         log.debug("Adding event from REST API: " + event.toString());
         eventProducer.sendEvent(event);
-        sendOK(req);
+        completeOK(req);
     }
 }

@@ -43,9 +43,9 @@ public abstract class YarchTestCase {
     @Before
     public void setUp() throws Exception {
 	YConfiguration config=YConfiguration.getConfiguration("yamcs");
-	String dir=config.getString("dataDir");
+	String dir = config.getString("dataDir");
 	instance = "yarchtest_"+this.getClass().getSimpleName();
-	context=new ExecutionContext(instance);
+	context = new ExecutionContext(instance);
 
 	File ytdir=new File(dir+"/"+instance);               
 	

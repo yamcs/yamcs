@@ -73,7 +73,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
             try {
                 // TODO permissions on AlarmServer
                 alarmServer.acknowledge(p, seqNum, req.getUsername(), processor.getCurrentTime(), comment);
-                sendOK(req);
+                completeOK(req);
             } catch (CouldNotAcknowledgeAlarmException e) {
                 log.debug("Did not acknowledge alarm " + seqNum + ". " + e.getMessage());
                 throw new BadRequestException(e.getMessage());
@@ -97,7 +97,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
         }
-        sendOK(req);
+        completeOK(req);
     }
     
     @Route(path = "/api/processors/:instance/:processor/parameters/mset", method = { "POST", "PUT" }, priority=true)
@@ -135,7 +135,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
             throw new BadRequestException(e.getMessage());
         }
 
-        sendOK(req);
+        completeOK(req);
     }
     
     @Route(path = "/api/processors/:instance/:processor/parameters/:name*", method = "GET")

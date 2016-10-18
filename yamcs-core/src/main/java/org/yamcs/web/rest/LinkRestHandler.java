@@ -59,7 +59,7 @@ public class LinkRestHandler extends RestHandler {
             case "enabled":
                 try {
                     mservice.enableLink(linkInfo.getInstance(), linkInfo.getName());
-                    sendOK(req);
+                    completeOK(req);
                     return;
                 } catch (YamcsException e) {
                     throw new InternalServerErrorException(e);
@@ -67,7 +67,7 @@ public class LinkRestHandler extends RestHandler {
             case "disabled":
                 try {
                     mservice.disableLink(linkInfo.getInstance(), linkInfo.getName());
-                    sendOK(req);                    
+                    completeOK(req);                    
                     return;
                 } catch (YamcsException e) {
                     throw new InternalServerErrorException(e);
@@ -76,7 +76,7 @@ public class LinkRestHandler extends RestHandler {
                 throw new BadRequestException("Unsupported link state '" + state + "'");
             }
         } else {
-            sendOK(req);
+            completeOK(req);
         }
     }
 }

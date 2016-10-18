@@ -84,13 +84,13 @@ public class ServiceRestHandler extends RestHandler {
                 if(s==null) throw new NotFoundException(req, "No service by name '"+serviceName+"'");
                 
                 s.stopAsync();
-                sendOK(req);
+                completeOK(req);
                 return;
             default:
                 throw new BadRequestException("Unsupported service state '" + state + "'");
             }
         } else {
-            sendOK(req);
+            completeOK(req);
         }
     }
     

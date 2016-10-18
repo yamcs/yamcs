@@ -6,6 +6,7 @@ import io.netty.buffer.ByteBufUtil;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
@@ -75,6 +76,32 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
         CharBuffer props = CharBuffer.wrap(sb.toString());
         ByteBuf buf = ByteBufUtil.encodeString(req.getChannelHandlerContext().alloc(), props, StandardCharsets.UTF_8);
         completeOK(req, MediaType.PLAIN_TEXT, buf);
+    }
+    
+    
+    @Route(path = "/api/archive/:instance/rocksdb/backup/:dbpath*", method = "POST")
+    public void doBackup(RestRequest req) throws HttpException {
+        checkPrivileges(req);
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        String dbpath = req.getRouteParam("dbpath");
+        String backupDir = req.getQueryParameter("backupDir");
+        if(backupDir==null) throw new BadRequestException("No backup directory specified");
+        
+        RDBFactory rdbFactory = RDBFactory.getInstance(instance);
+        if(rdbFactory==null) {
+            throw new BadRequestException("No Rocksdb for instance "+instance);
+        }
+
+        CompletableFuture<Void> cf = rdbFactory.doBackup(dbpath, backupDir);
+        cf.whenComplete((r, e) -> {
+            if(e!=null) {
+                completeWithError(req, new InternalServerErrorException(e));
+            } else {
+                completeOK(req);
+            }
+        });
+        
+       
     }
     
     private void checkPrivileges(RestRequest req) throws HttpException {

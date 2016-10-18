@@ -7,6 +7,7 @@ import java.util.Arrays;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDB;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.yarch.ColumnDefinition;
@@ -69,5 +70,42 @@ public class RDBFactoryTest {
 	    File d=new File("/tmp/rdbfactorytest"+i);     
 	    FileUtils.deleteRecursively(d.toPath());
 	}
-    }	
+    }
+    
+    @Test
+    public void testBackup() throws Exception {
+        String dir = "/tmp/rdb_backup_test/";
+        FileUtils.deleteRecursively(dir);
+        RDBFactory rdbf=new RDBFactory("testBackup");
+        new File(dir).mkdirs();
+        
+        YRDB db1 = rdbf.getRdb(dir+"/db1", new StringColumnFamilySerializer(), false);
+        ColumnFamilyHandle cfh = db1.createColumnFamily("c1");
+        db1.put(cfh, "aaa".getBytes(), "bbb".getBytes());
+        
+        new File(dir+"/db1_back").mkdirs();
+        db1.createColumnFamily("c2");
+        
+        rdbf.doBackup(dir+"/db1", dir+"/db1_back").get();
+        db1.createColumnFamily("c3");
+        
+        
+        db1.put(cfh, "aaa1".getBytes(), "bbb1".getBytes());
+        byte[] b = db1.get(cfh, "aaa1".getBytes());
+        assertNotNull(b);
+        
+        rdbf.restoreBackup(dir+"/db1_back", dir+"/db2").get();
+        YRDB db2 = rdbf.getRdb(dir+"/db2", new StringColumnFamilySerializer(), false);
+        
+        assertNotNull(db2.getColumnFamilyHandle("c2"));
+        assertNull(db2.getColumnFamilyHandle("c3"));
+        
+        cfh= db2.getColumnFamilyHandle("c1");
+        assertNotNull(cfh);
+        
+        b = db1.get(cfh, "aaa".getBytes());
+        assertNotNull(b);
+        b = db1.get(cfh, "aaa1".getBytes());
+        assertNull(b);
+    }
 }
