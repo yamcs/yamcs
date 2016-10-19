@@ -57,7 +57,7 @@ public class WebConfig {
         if (yconf.containsKey("webConfig")) {
             Map<String, Object> webConfig = yconf.getMap("webConfig");
 
-            port = YConfiguration.getInt(webConfig, "webPort", 8090);
+            port = YConfiguration.getInt(webConfig, "port", 8090);
             zeroCopyEnabled = YConfiguration.getBoolean(webConfig, "zeroCopyEnabled", zeroCopyEnabled);
 
             if (webConfig.containsKey("webRoot")) {

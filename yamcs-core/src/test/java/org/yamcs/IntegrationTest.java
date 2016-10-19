@@ -500,7 +500,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         servInfo = r.getServiceList().stream().filter(si -> service.equals(si.getName())).findFirst().orElse(null);
         assertEquals(ServiceState.TERMINATED, servInfo.getState());
         
-        resp = restClient.doRequest("/services/IntegrationTest/"+service+"?state=RUNNING", HttpMethod.PATCH, "").get();
+        resp = restClient.doRequest("/services/IntegrationTest/"+service+"?state=running", HttpMethod.PATCH, "").get();
         assertEquals("", resp);
         
         resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET, "").get();
