@@ -19,6 +19,8 @@ public class RealtimeArchiveFiller extends ArchiveFillerTask {
     final Logger log;
     String processorName = "realtime";
     final String yamcsInstance;
+    YProcessor realtimeProcessor; 
+    int subscriptionId;
     
     public RealtimeArchiveFiller(ParameterArchive parameterArchive, Map<String, Object> config) {
         super(parameterArchive);
@@ -65,16 +67,17 @@ public class RealtimeArchiveFiller extends ArchiveFillerTask {
     
     void start() {
         //subscribe to the realtime processor
-        YProcessor yprocessor = YProcessor.getInstance(yamcsInstance, processorName);
-        if(yprocessor == null) {
+        realtimeProcessor = YProcessor.getInstance(yamcsInstance, processorName);
+        if(realtimeProcessor == null) {
             throw new ConfigurationException("No processor named '"+processorName+"' in instance "+yamcsInstance);
         }
-        yprocessor.getParameterRequestManager().subscribeAll(this);
+        subscriptionId = realtimeProcessor.getParameterRequestManager().subscribeAll(this);
         executor.scheduleAtFixedRate(this::flush, flushInterval, flushInterval, TimeUnit.SECONDS);
         
     }
     
     void stop() {
+        realtimeProcessor.getParameterRequestManager().unsubscribeAll(subscriptionId);
         executor.shutdown();
         flush();
     }

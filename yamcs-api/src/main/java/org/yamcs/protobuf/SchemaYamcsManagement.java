@@ -2329,6 +2329,8 @@ public final class SchemaYamcsManagement
                     output.writeString(2, message.getName(), false);
                 if(message.hasState())
                     output.writeString(3, message.getState().name(), false);
+                if(message.hasClassName())
+                    output.writeString(4, message.getClassName(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.ServiceInfo message)
             {
@@ -2377,6 +2379,9 @@ public final class SchemaYamcsManagement
                         case 3:
                             builder.setState(org.yamcs.protobuf.YamcsManagement.ServiceState.valueOf(input.readString()));
                             break;
+                        case 4:
+                            builder.setClassName(input.readString());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -2420,6 +2425,7 @@ public final class SchemaYamcsManagement
                 case 1: return "instance";
                 case 2: return "name";
                 case 3: return "state";
+                case 4: return "className";
                 default: return null;
             }
         }
@@ -2434,6 +2440,7 @@ public final class SchemaYamcsManagement
             fieldMap.put("instance", 1);
             fieldMap.put("name", 2);
             fieldMap.put("state", 3);
+            fieldMap.put("className", 4);
         }
     }
 

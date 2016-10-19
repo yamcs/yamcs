@@ -22575,6 +22575,21 @@ public final class YamcsManagement {
      * <code>optional .yamcsManagement.ServiceState state = 3;</code>
      */
     org.yamcs.protobuf.YamcsManagement.ServiceState getState();
+
+    // optional string className = 4;
+    /**
+     * <code>optional string className = 4;</code>
+     */
+    boolean hasClassName();
+    /**
+     * <code>optional string className = 4;</code>
+     */
+    java.lang.String getClassName();
+    /**
+     * <code>optional string className = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getClassNameBytes();
   }
   /**
    * Protobuf type {@code yamcsManagement.ServiceInfo}
@@ -22646,6 +22661,11 @@ public final class YamcsManagement {
                 bitField0_ |= 0x00000004;
                 state_ = value;
               }
+              break;
+            }
+            case 34: {
+              bitField0_ |= 0x00000008;
+              className_ = input.readBytes();
               break;
             }
           }
@@ -22790,10 +22810,54 @@ public final class YamcsManagement {
       return state_;
     }
 
+    // optional string className = 4;
+    public static final int CLASSNAME_FIELD_NUMBER = 4;
+    private java.lang.Object className_;
+    /**
+     * <code>optional string className = 4;</code>
+     */
+    public boolean hasClassName() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional string className = 4;</code>
+     */
+    public java.lang.String getClassName() {
+      java.lang.Object ref = className_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          className_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string className = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getClassNameBytes() {
+      java.lang.Object ref = className_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        className_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       instance_ = "";
       name_ = "";
       state_ = org.yamcs.protobuf.YamcsManagement.ServiceState.NEW;
+      className_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -22816,6 +22880,9 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeEnum(3, state_.getNumber());
       }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(4, getClassNameBytes());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -22836,6 +22903,10 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(3, state_.getNumber());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(4, getClassNameBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -22959,6 +23030,8 @@ public final class YamcsManagement {
         bitField0_ = (bitField0_ & ~0x00000002);
         state_ = org.yamcs.protobuf.YamcsManagement.ServiceState.NEW;
         bitField0_ = (bitField0_ & ~0x00000004);
+        className_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -22999,6 +23072,10 @@ public final class YamcsManagement {
           to_bitField0_ |= 0x00000004;
         }
         result.state_ = state_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.className_ = className_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -23027,6 +23104,11 @@ public final class YamcsManagement {
         }
         if (other.hasState()) {
           setState(other.getState());
+        }
+        if (other.hasClassName()) {
+          bitField0_ |= 0x00000008;
+          className_ = other.className_;
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -23239,6 +23321,80 @@ public final class YamcsManagement {
         return this;
       }
 
+      // optional string className = 4;
+      private java.lang.Object className_ = "";
+      /**
+       * <code>optional string className = 4;</code>
+       */
+      public boolean hasClassName() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional string className = 4;</code>
+       */
+      public java.lang.String getClassName() {
+        java.lang.Object ref = className_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          className_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string className = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getClassNameBytes() {
+        java.lang.Object ref = className_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          className_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string className = 4;</code>
+       */
+      public Builder setClassName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        className_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string className = 4;</code>
+       */
+      public Builder clearClassName() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        className_ = getDefaultInstance().getClassName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string className = 4;</code>
+       */
+      public Builder setClassNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        className_ = value;
+        onChanged();
+        return this;
+      }
+
       // @@protoc_insertion_point(builder_scope:yamcsManagement.ServiceInfo)
     }
 
@@ -23418,12 +23574,12 @@ public final class YamcsManagement {
       "mcsManagement.LinkEvent.Type\022+\n\010linkInfo" +
       "\030\002 \001(\0132\031.yamcsManagement.LinkInfo\"5\n\004Typ" +
       "e\022\016\n\nREGISTERED\020\001\022\020\n\014UNREGISTERED\020\002\022\013\n\007U" +
-      "PDATED\020\003\"[\n\013ServiceInfo\022\020\n\010instance\030\001 \001(",
+      "PDATED\020\003\"n\n\013ServiceInfo\022\020\n\010instance\030\001 \001(",
       "\t\022\014\n\004name\030\002 \001(\t\022,\n\005state\030\003 \001(\0162\035.yamcsMa" +
-      "nagement.ServiceState*\\\n\014ServiceState\022\007\n" +
-      "\003NEW\020\000\022\014\n\010STARTING\020\001\022\013\n\007RUNNING\020\002\022\014\n\010STO" +
-      "PPING\020\003\022\016\n\nTERMINATED\020\004\022\n\n\006FAILED\020\005B\024\n\022o" +
-      "rg.yamcs.protobuf"
+      "nagement.ServiceState\022\021\n\tclassName\030\004 \001(\t" +
+      "*\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022" +
+      "\013\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED" +
+      "\020\004\022\n\n\006FAILED\020\005B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -23525,7 +23681,7 @@ public final class YamcsManagement {
           internal_static_yamcsManagement_ServiceInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcsManagement_ServiceInfo_descriptor,
-              new java.lang.String[] { "Instance", "Name", "State", });
+              new java.lang.String[] { "Instance", "Name", "State", "ClassName", });
           return null;
         }
       };
