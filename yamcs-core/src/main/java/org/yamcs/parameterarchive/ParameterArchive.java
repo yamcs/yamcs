@@ -141,7 +141,7 @@ public class ParameterArchive  extends AbstractService {
                     partitions.put(partitionId, p);
                 }
                 p.dataCfh = yrdb.getColumnFamilyHandle(o);
-            } else if(!"default".equals(cn) && !"default".equals(CF_NAME_meta_p2pid) && !"default".equals(CF_NAME_meta_pgid2pg)){
+            } else if(!"default".equals(cn) && !CF_NAME_meta_p2pid.equals(cn) && !CF_NAME_meta_pgid2pg.equals(cn)){
                 log.warn("Unknown column family '"+cn+"'");
             }
         }
