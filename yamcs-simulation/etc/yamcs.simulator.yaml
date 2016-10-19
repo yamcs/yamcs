@@ -11,16 +11,13 @@ services:
     - org.yamcs.archive.IndexServer
     - org.yamcs.parameter.SystemParametersCollector
     # create a realtime channel
-    - class: org.yamcs.YProcessorCreatorService
+    - class: org.yamcs.ProcessorCreatorService
       args: 
          name: "realtime"
          type: "realtime"
 
     #this one sets up the recording of the command history 
-    - org.yamcs.cmdhistory.CommandHistoryRecorder
-    - class: org.yamcs.hornetq.HornetQTmService
-      args: [tm_realtime, tm_dump]
-
+    - org.yamcs.archive.CommandHistoryRecorder
     - org.yamcs.web.YamcsWebService
     - org.yamcs.AlarmReporter
     - class: org.yamcs.parameterarchive.ParameterArchive
@@ -54,7 +51,7 @@ ppDataLinks:
 
 # config the tc uplinkers
 tcDataLinks: 
-    - class: org.yamcs.tctm.TcpTcUplinker
+    - class: org.yamcs.tctm.TcpTcDataLink
       spec: local
       stream: tc_realtime
 
