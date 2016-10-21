@@ -61,4 +61,8 @@ public class PartitioningSpec {
     public void setValueColumnType(DataType valueColumnType) {
         this.valueColumnType = valueColumnType;
     }
+
+    public TimePartitionSchema getTimePartitioningSchema() {
+        return timePartitioningSchema;
+    }
 }
