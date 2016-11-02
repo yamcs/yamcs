@@ -1109,7 +1109,11 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         if (fileOrUrl != null) {
             if (fileOrUrl.startsWith("http://")) {
                 YamcsConnectionProperties ycd = YamcsConnectionProperties.parse(fileOrUrl);
-                theApp.setStreamName(options.get("-s"));
+                String streamName =options.get("-s");
+                if(streamName==null) {
+                    streamName = "tm_realtime";
+                }
+                theApp.setStreamName(streamName);
                 theApp.connectYamcs(ycd);
             } else {
                 File file = new File(fileOrUrl);
