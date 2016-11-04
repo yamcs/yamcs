@@ -272,7 +272,34 @@ public class RDBFactory implements Runnable {
         });
 
         return cf;
-    }	
+    }
+    
+    public CompletableFuture<Void> restoreBackup(int backupId, String backupDir, String dbPath) {
+        CompletableFuture<Void> cf = new CompletableFuture<Void>();
+        scheduler.execute(()->{
+            
+            try {
+                BackupableDBOptions opt = new BackupableDBOptions(backupDir);
+                BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
+                RestoreOptions restoreOpt = new RestoreOptions(false);
+                if(backupId==-1) {
+                    backupEngine.restoreDbFromLatestBackup(dbPath, dbPath, restoreOpt);
+                } else {
+                    backupEngine.restoreDbFromBackup(backupId, dbPath, dbPath, restoreOpt);
+                }
+
+                backupEngine.close();
+                opt.close();
+                restoreOpt.close();
+                cf.complete(null);
+            } catch (Exception e) {
+                cf.completeExceptionally(e);
+            } finally { 
+            }
+        });
+
+        return cf;
+    } 
 }
 
 class DbAndAccessTime {
