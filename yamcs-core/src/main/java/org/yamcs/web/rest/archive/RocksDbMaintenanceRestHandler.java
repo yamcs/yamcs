@@ -5,6 +5,9 @@ import io.netty.buffer.ByteBufUtil;
 
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -12,6 +15,7 @@ import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
+import org.yamcs.cli.Backup;
 import org.yamcs.security.Privilege;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
@@ -83,16 +87,23 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
     public void doBackup(RestRequest req) throws HttpException {
         checkPrivileges(req);
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        String dbpath = req.getRouteParam("dbpath");
+        String dbdir = "/"+req.getRouteParam("dbpath");
         String backupDir = req.getQueryParameter("backupDir");
         if(backupDir==null) throw new BadRequestException("No backup directory specified");
+        try {
+            Backup.verifyBackupDirectory(backupDir, false);
+        } catch (Exception e1) {
+            throw new BadRequestException(e1.getMessage());
+        }
+        Path dbpath = FileSystems.getDefault().getPath(dbdir);
+        if(!Files.exists(dbpath)) throw new BadRequestException("Database '"+dbpath+"' does not exist");
         
         RDBFactory rdbFactory = RDBFactory.getInstance(instance);
         if(rdbFactory==null) {
             throw new BadRequestException("No Rocksdb for instance "+instance);
         }
 
-        CompletableFuture<Void> cf = rdbFactory.doBackup(dbpath, backupDir);
+        CompletableFuture<Void> cf = rdbFactory.doBackup(dbdir, backupDir);
         cf.whenComplete((r, e) -> {
             if(e!=null) {
                 completeWithError(req, new InternalServerErrorException(e));

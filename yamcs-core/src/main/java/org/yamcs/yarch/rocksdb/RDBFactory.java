@@ -17,7 +17,6 @@ import org.rocksdb.BackupableDBOptions;
 import org.rocksdb.Env;
 import org.rocksdb.FlushOptions;
 import org.rocksdb.RestoreOptions;
-import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -230,7 +229,6 @@ public class RDBFactory implements Runnable {
     public CompletableFuture<Void> doBackup(String dbpath, String backupDir) {
         CompletableFuture<Void> cf = new CompletableFuture<Void>();
         scheduler.execute(()->{
-            System.out.println("starting backup");
             YRDB db = null;
             try {
                 BackupableDBOptions opt = new BackupableDBOptions(backupDir);
@@ -257,7 +255,6 @@ public class RDBFactory implements Runnable {
     public CompletableFuture<Void> restoreBackup(String backupDir, String dbPath) {
         CompletableFuture<Void> cf = new CompletableFuture<Void>();
         scheduler.execute(()->{
-            System.out.println("starting backup");
             try {
                 BackupableDBOptions opt = new BackupableDBOptions(backupDir);
                 BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
@@ -276,29 +273,6 @@ public class RDBFactory implements Runnable {
 
         return cf;
     }	
-
-    private RocksDB openReadOnly(String dbpath) throws RocksDBException {
-        return RocksDB.openReadOnly(dbpath);
-    }
-
-
-}
-
-/**
- * use this as a default column family serializer in case we don't have a better one (e.g. when performing backups)
- *
- */
-class DummyColumnFamilySerializer implements ColumnFamilySerializer {
-    @Override
-    public byte[] objectToByteArray(Object value) {
-        return (byte[]) value;
-    }
-
-    @Override
-    public Object byteArrayToObject(byte[] b) {
-        return b;
-    }
-
 }
 
 class DbAndAccessTime {
