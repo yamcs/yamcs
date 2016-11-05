@@ -327,7 +327,7 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
         } else if (cmd.equals("start-parameter-retrieval")) {
             Selection sel = dataView.getSelection();
             if(parameterGui==null) {
-           //ARTEMIS     parameterGui=new ParameterRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
+                parameterGui = new ParameterRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
             }
             parameterGui.setValues(archivePanel.archiveBrowser.getInstance(), sel.getStartInstant(), sel.getStopInstant());
             parameterGui.setVisible(true);
@@ -335,7 +335,7 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
 
             Selection sel = dataView.getSelection();
             if (cmdHistGui == null) {
-                //ARTEMIS        cmdHistGui = new CommandHistoryRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
+                    cmdHistGui = new CommandHistoryRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
             }
             cmdHistGui.setValues(archivePanel.archiveBrowser.getInstance(), null, sel.getStartInstant(), sel.getStopInstant());
             cmdHistGui.setVisible(true);

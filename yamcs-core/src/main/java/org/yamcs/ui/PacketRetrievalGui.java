@@ -1,7 +1,5 @@
 package org.yamcs.ui;
 
-import static org.yamcs.api.artemis.Protocol.DATA_TYPE_HEADER_NAME;
-import static org.yamcs.api.artemis.Protocol.decode;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -17,6 +15,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -30,42 +30,18 @@ import javax.swing.JPanel;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 
-import org.apache.activemq.artemis.api.core.ActiveMQException;
-import org.apache.activemq.artemis.api.core.SimpleString;
-import org.apache.activemq.artemis.api.core.client.ClientMessage;
-import org.apache.activemq.artemis.api.core.client.MessageHandler;
-import org.yamcs.YamcsException;
-import org.yamcs.api.ConnectionParameters;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.api.YamcsSession;
-import org.yamcs.api.artemis.Protocol;
-import org.yamcs.api.artemis.YamcsClient;
-import org.yamcs.api.artemis.YamcsConnectData;
-import org.yamcs.protobuf.Yamcs.EndAction;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.NamedObjectList;
-import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
-import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplayStatus;
-import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
-import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
-import org.yamcs.protobuf.Yamcs.StringMessage;
+import org.yamcs.api.rest.RestClient;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.PacketFormatter;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.MdbMappings;
-
-import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * @author nm
  * GUI for requesting packet dumps
  */
-public class PacketRetrievalGui extends JFrame implements MessageHandler, ActionListener {
+public class PacketRetrievalGui extends JFrame implements ActionListener {
     JCheckBox withoutCcsds;
     JCheckBox pactsFakeHeaders;
     JCheckBox printHex;
@@ -80,8 +56,7 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
     private OutputStream outputStream;
     YamcsConnectionProperties connectionParams;
     PacketFormatter packetFormatter;
-    YamcsSession ysession;
-    YamcsClient yclient;
+    private CompletableFuture<Void> completableFuture;
 
     /**
      * Creates a new window that requests parameter deliveries
@@ -150,7 +125,7 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
 
     @Override
     public void actionPerformed(ActionEvent ae) {
-        /*ARTEMIS
+
         String cmd = ae.getActionCommand();
         if(cmd.equals("CancelSelection")) {
             setVisible(false);
@@ -168,91 +143,59 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
             downloadStartTime=System.currentTimeMillis();
             progressMonitor=new ProgressMonitor(parent,"Saving packets","0 packets saved",0,(int)((stopInstant-startInstant)/1000));
             try {
-                outputStream=new BufferedOutputStream(new FileOutputStream(outputFile));
+                outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
                 packetFormatter=new PacketFormatter(outputStream);
                 packetFormatter.setHex(printHex.isSelected());
                 packetFormatter.setWithoutCcsds(withoutCcsds.isSelected());
                 packetFormatter.setWithPacts(pactsFakeHeaders.isSelected());
 
-                YamcsConnectionProperties ycd=(YamcsConnectionProperties)connectionParams;
-               ycd.instance=archiveInstance;
-                ysession=YamcsSession.newBuilder().setConnectionParams(ycd).build();
-                yclient=ysession.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
-                ReplayRequest.Builder rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT)
-                        .setStart(startInstant).setStop(stopInstant).setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build());
-
-                PacketReplayRequest.Builder prr=PacketReplayRequest.newBuilder();
+                YamcsConnectionProperties ycd = (YamcsConnectionProperties)connectionParams;
+                ycd.setInstance(archiveInstance);
+                RestClient restClient = new RestClient(ycd);
+                StringBuilder sb = new StringBuilder();
+                sb.append("/archive/").append(archiveInstance).append("/downloads/packets")
+                  .append("?start=").append(TimeEncoding.toString(startInstant))
+                  .append("&stop=").append(TimeEncoding.toString(stopInstant))
+                  .append("&name=");
+                boolean first = true;
                 for(String pn:packetNames) {
-                    prr.addNameFilter(NamedObjectId.newBuilder().setNamespace(MdbMappings.MDB_OPSNAME).setName(pn));
+                    if(first) {
+                        first = false;
+                    } else {
+                        sb.append(",");
+                    }
+                    sb.append(pn);
                 }
-                rr.setPacketRequest(prr);
-                StringMessage answer=(StringMessage) yclient.executeRpc(Protocol.getYarchRetrievalControlAddress(ycd.instance), "createReplay", rr.build(), StringMessage.newBuilder());
-                SimpleString replayAddress=new SimpleString(answer.getMessage());
-
-                yclient.dataConsumer.setMessageHandler(this);
-                yclient.executeRpc(replayAddress, "start", null, null);
+                completableFuture = restClient.doBulkGetRequest(sb.toString(), (data) -> {
+                    TmPacketData tmpacket;
+                    try {
+                        tmpacket = TmPacketData.parseFrom(data);
+                        packetReceived(new CcsdsPacket(tmpacket.getPacket().asReadOnlyByteBuffer()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                 });
+                
+                completableFuture.whenComplete((v, t) ->{
+                    if((t==null) || (t instanceof CancellationException)) {
+                        replayFinished();
+                    } else {
+                        exception(t);
+                    }
+                });
                 
             } catch (FileNotFoundException e1) {
                 JOptionPane.showMessageDialog(parent, "Cannot open file: "+e1.getMessage(),"Cannot open file",JOptionPane.ERROR_MESSAGE);
             } catch (Exception e) {
-                if("InvalidIdentification".equals(e.getType())) {
-                    StringBuffer errorMessage = new StringBuffer( "Some packet names are invalid:\n" );
-                    try {
-                        NamedObjectList nol = (NamedObjectList) e.decodeExtra(NamedObjectList.newBuilder());
-                        // Prevent error message causing dialog bigger than the screen
-                        int itemNum = 0;
-                        for( NamedObjectId noi : nol.getListList() ) {
-                            errorMessage.append( noi.getName()+", " );
-                            if( itemNum > 4 ) { itemNum = 0; errorMessage.append( '\n' ); }
-                            itemNum ++;
-                        }
-                    } catch (InvalidProtocolBufferException e1) {
-                        e1.printStackTrace();
-                        errorMessage.append( "Sorry, unable to give more details." );
-                    }
-                    JOptionPane.showMessageDialog(parent, errorMessage.toString(),"Exception when retrieving data",JOptionPane.ERROR_MESSAGE);
-                } else {
                     JOptionPane.showMessageDialog(parent, "Exception when retrieving data: "+e.getMessage(),"Exception when retrieving data",JOptionPane.ERROR_MESSAGE);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(parent, "Exception when retrieving data: "+e,"Exception when retrieving data",JOptionPane.ERROR_MESSAGE);
             }
         }
-        */
     }
 
     int count;
     long downloadSize;
     long downloadStartTime;
 
-    @Override
-    public void onMessage(ClientMessage msg) {
-        int t=msg.getIntProperty(DATA_TYPE_HEADER_NAME);
-        ProtoDataType pdt=ProtoDataType.valueOf(t);
-        try {
-            if(pdt==ProtoDataType.STATE_CHANGE) {
-                ReplayStatus status = (ReplayStatus) decode(msg, ReplayStatus.newBuilder());
-                if(status.getState()==ReplayState.CLOSED) {
-                    replayFinished();
-                } else if(status.getState()==ReplayState.ERROR) {
-                    exception(new Exception("Got error during retrieval: "+status.getErrorMessage()));
-                }
-                return;
-            } else if(pdt!=ProtoDataType.TM_PACKET) {
-                exception(new Exception("Unexpected data type "+t));
-                return;
-            }
-            TmPacketData data;
-
-            data = (TmPacketData)decode(msg, TmPacketData.newBuilder());
-            packetReceived(new CcsdsPacket(data.getPacket().asReadOnlyByteBuffer()));
-        } catch (YamcsApiException e) {
-            exception(e);
-            e.printStackTrace();
-            return;
-        }
-    }
 
     public void packetReceived(CcsdsPacket c) {
         int progr=(int)((c.getInstant()-startInstant)/1000);
@@ -260,6 +203,8 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
         downloadSize+=c.getLength();
         if(count%100==0) progressMonitor.setNote(count+" packets received");
         progressMonitor.setProgress(progr);
+        if(progressMonitor.isCanceled()) completableFuture.cancel(true);
+        
         try {
             packetFormatter.writePacket(c);
         } catch (IOException e) {
@@ -268,12 +213,6 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
     }
 
     private void replayFinished() {
-        try {
-            yclient.close();
-            ysession.close();
-        } catch (ActiveMQException e1) {
-            e1.printStackTrace();
-        }
         SwingUtilities.invokeLater(
                 new Runnable() {
                     @Override
@@ -294,7 +233,7 @@ public class PacketRetrievalGui extends JFrame implements MessageHandler, Action
                 });
     }
 
-    public void exception(final Exception e) {
+    public void exception(final Throwable e) {
         final String message;
         message=e.toString();
         SwingUtilities.invokeLater(

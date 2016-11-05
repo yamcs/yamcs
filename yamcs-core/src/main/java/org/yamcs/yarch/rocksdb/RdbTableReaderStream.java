@@ -28,8 +28,8 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
     
     protected RdbTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, RdbPartitionManager partitionManager, boolean ascending, boolean follow) {
         super(ydb, tblDef, partitionManager, ascending, follow);
-        this.tableDefinition=tblDef;
-        partitioningSpec=tblDef.getPartitioningSpec();
+        this.tableDefinition = tblDef;
+        partitioningSpec = tblDef.getPartitioningSpec();
         this.partitionManager = partitionManager;
     }
 
@@ -77,12 +77,13 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
     
     private boolean readAscending(List<Partition> partitions, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
         PriorityQueue<RdbRawTuple> orderedQueue=new PriorityQueue<RdbRawTuple>();
+        RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
+        YRDB rdb = null;
         try {
-            RDBFactory rdbf=RDBFactory.getInstance(ydb.getName());
             RdbPartition p1 = (RdbPartition) partitions.iterator().next();
             String dbDir = p1.dir;
             log.debug("opening database "+ dbDir);
-            YRDB rdb = rdbf.getRdb(tableDefinition.getDataDir()+"/"+p1.dir, new ColumnValueSerializer(tableDefinition.getPartitioningSpec().getValueColumnType()), false);
+            rdb = rdbFactory.getRdb(tableDefinition.getDataDir()+"/"+p1.dir, new ColumnValueSerializer(tableDefinition.getPartitioningSpec().getValueColumnType()), false);
             List<ColumnFamilyHandle> cfhList = new ArrayList<ColumnFamilyHandle>();
             for(Partition p: partitions) {
                 ColumnFamilyHandle cfh = rdb.getColumnFamilyHandle(p.getValue());
@@ -113,7 +114,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
                     it.seekToFirst();
                     if(!it.isValid()) {
                         log.debug("tcb contains no record");
-                        found=false;
+                        found = false;
                     }
                 }
                 if(!found) {
@@ -134,16 +135,15 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
                 rt.iterator.next();
                 if(rt.iterator.isValid()) {
                     numRecordsRead++;
-                    rt.key=rt.iterator.key();
-                    rt.value=rt.iterator.value();
+                    rt.key = rt.iterator.key();
+                    rt.value = rt.iterator.value();
                     orderedQueue.add(rt);
                 } else {
                     log.debug(rt.iterator+" finished");
                     rt.iterator.close();                    
                 }
             }
-
-            rdbf.dispose(rdb);
+           
             return false;
         } catch (Exception e){
             e.printStackTrace();
@@ -152,17 +152,20 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
             for(RdbRawTuple rt:orderedQueue) {
                 rt.iterator.close();                
             }
+            if(rdb!=null) rdbFactory.dispose(rdb);
         }
     }
     
     private boolean readDescending(List<Partition> partitions, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
         PriorityQueue<RdbRawTuple> orderedQueue=new PriorityQueue<RdbRawTuple>(RawTuple.reverseComparator);
+        RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
+        YRDB rdb = null;
         try {
-            RDBFactory rdbf=RDBFactory.getInstance(ydb.getName());
+           
             RdbPartition p1 = (RdbPartition) partitions.iterator().next();
             String dbDir = p1.dir;
             log.debug("opening database "+ dbDir);
-            YRDB rdb = rdbf.getRdb(tableDefinition.getDataDir()+"/"+p1.dir, new ColumnValueSerializer(tableDefinition.getPartitioningSpec().getValueColumnType()), false);
+            rdb = rdbFactory.getRdb(tableDefinition.getDataDir()+"/"+p1.dir, new ColumnValueSerializer(tableDefinition.getPartitioningSpec().getValueColumnType()), false);
             List<ColumnFamilyHandle> cfhList = new ArrayList<ColumnFamilyHandle>();
 
             for(Partition p: partitions) {
@@ -242,7 +245,6 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
                 }
             }
 
-            rdbf.dispose(rdb);
             return false;
         } catch (Exception e){
             e.printStackTrace();
@@ -251,6 +253,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
             for(RdbRawTuple rt:orderedQueue) {
                 rt.iterator.close();                
             }
+            if(rdb!=null) rdbFactory.dispose(rdb);
         }
     }
 

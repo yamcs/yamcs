@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
@@ -25,7 +24,6 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 import com.google.common.util.concurrent.AbstractService;
 
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.artemis.YamcsClient;
 
 /**
  * Sends commands from the yarch stream to a {@link org.yamcs.tctm.TcUplinker }
@@ -48,11 +46,8 @@ public class TcUplinkerAdapter extends AbstractService {
     }
     static public final String REALTIME_TC_STREAM_NAME="tc_realtime";
 
-
-    YamcsClient yclient;
-
     @SuppressWarnings({ "rawtypes", "static-access", "unchecked" })
-    public TcUplinkerAdapter(String yamcsInstance) throws ConfigurationException, StreamSqlException, ParseException, ActiveMQException, YamcsApiException, IOException {
+    public TcUplinkerAdapter(String yamcsInstance) throws ConfigurationException, StreamSqlException, ParseException, YamcsApiException, IOException {
 	this.yamcsInstance=yamcsInstance;
 	YarchDatabase ydb=YarchDatabase.getInstance(yamcsInstance);
 

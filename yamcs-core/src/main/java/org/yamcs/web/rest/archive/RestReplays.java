@@ -62,9 +62,6 @@ public class RestReplays {
         } catch (Exception e) {
             throw new InternalServerErrorException("Exception creating the replay", e);
         }
-       
-        
-      
     }
     
     

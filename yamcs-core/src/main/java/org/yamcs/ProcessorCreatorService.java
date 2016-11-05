@@ -44,9 +44,7 @@ public class ProcessorCreatorService extends AbstractService {
 	if(config.containsKey("spec")) {
 	    channelSpec = config.get("spec");
 	}
-	
 	startArtemisService = YConfiguration.getBoolean((Map)config, "startArtemisService", false);
-
     }
     @Override
     protected void doStart() {

@@ -22,7 +22,6 @@ import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.api.ws.WebSocketResponseHandler;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 
@@ -73,6 +72,7 @@ public class YamcsConnector implements WebSocketClientCallback {
     }
 
     public Future<YamcsConnectionProperties> connect(YamcsConnectionProperties cp) {
+        System.out.println("connecting to yamcs");
         this.connectionParams = cp;
         return doConnect();
     }
@@ -83,6 +83,7 @@ public class YamcsConnector implements WebSocketClientCallback {
         if(connected) disconnect();
         
         restClient = new RestClient(connectionParams);
+        restClient.setAutoclose(false);
         wsClient = new WebSocketClient(connectionParams, this);
         wsClient.setUserAgent(aplicationName);
         
@@ -219,22 +220,12 @@ public class YamcsConnector implements WebSocketClientCallback {
      * 
      * @param wsr
      * @param client
+     * @param wsrh - any error related to the request will be sent here
      */
-    public void performSubscription(WebSocketRequest wsr, WebSocketClientCallback client) {
+    public void performSubscription(WebSocketRequest wsr, WebSocketClientCallback client, WebSocketResponseHandler wsrh) {
         if(!subscribers.contains(client)){
             subscribers.add(client);
         }
-        
-        wsClient.sendRequest(wsr, new WebSocketResponseHandler() {
-            @Override
-            public void onException(WebSocketExceptionData e) {
-                System.out.println("received exception: " + e);
-                
-            }
-        });
-        
+        wsClient.sendRequest(wsr,  wsrh);
     }
-    
-    
-    
 }

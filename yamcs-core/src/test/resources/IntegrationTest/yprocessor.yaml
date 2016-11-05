@@ -59,10 +59,7 @@ Archive:
 #used for performing archive retrievals (e.g. parameter-extractor.sh)
 ArchiveRetrieval:
     telemetryProvider:
-        class: org.yamcs.tctm.ReplayService
-    parameterProviders:
-       # manages legacy derived values
-       - class: org.yamcs.derivedvalues.DerivedValuesManager
+        class: org.yamcs.tctm.ReplayService           
     config:
         parameterCache:
             enabled: false
@@ -72,9 +69,6 @@ ArchiveRetrieval:
 ParameterArchive:
     telemetryProvider:
         class: org.yamcs.tctm.ReplayService
-    parameterProviders:
-       # manages legacy derived values
-       - class: org.yamcs.derivedvalues.DerivedValuesManager
     config:
         parameterCache:
             enabled: false

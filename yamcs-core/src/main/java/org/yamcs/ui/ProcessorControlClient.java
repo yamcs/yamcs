@@ -11,7 +11,9 @@ import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
+import org.yamcs.api.ws.WebSocketResponseHandler;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.EndAction;
@@ -36,7 +38,7 @@ import org.yamcs.web.websocket.ManagementResource;
  * @author nm
  *
  */
-public class ProcessorControlClient implements ConnectionListener, WebSocketClientCallback {
+public class ProcessorControlClient implements ConnectionListener, WebSocketClientCallback, WebSocketResponseHandler {
     YamcsConnector yconnector;
     ProcessorListener yamcsMonitor;
 
@@ -182,7 +184,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
 
     public void receiveInitialConfig() {
         WebSocketRequest wsr = new WebSocketRequest(ManagementResource.RESOURCE_NAME, ManagementResource.OP_subscribe);
-        yconnector.performSubscription(wsr, this);
+        yconnector.performSubscription(wsr, this, this);
     }
 
     @Override
@@ -225,5 +227,10 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
 
     @Override
     public void log(String message) {}
+
+    @Override
+    public void onException(WebSocketExceptionData e) {
+        yamcsMonitor.log("Exception when performing subscription:" +e.getMessage());
+    }
 
 }

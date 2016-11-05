@@ -7,18 +7,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.activemq.artemis.api.core.ActiveMQException;
-import org.apache.activemq.artemis.api.core.SimpleString;
 import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsSession;
-import org.yamcs.api.artemis.YamcsClient;
+import org.yamcs.api.EventProducer;
 import org.yamcs.protobuf.Yamcs.Event;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.usoctools.PayloadModel;
 import org.yamcs.usoctools.XtceUtil;
 import org.yamcs.utils.CcsdsPacket;
@@ -28,6 +23,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -42,13 +38,13 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
     String instance;
     Map<String,PayloadModel> opsnameToPayloadModel =new HashMap<String,PayloadModel>();
     private final Logger log;
-    public YamcsClient msgClient;
-    final SimpleString realtimeAddress, dumpAddress; //addresses where to send realtime and dump events
     
     final Stream realtimeTmStream, dumpTmStream; //TM packets come from here
     XtceUtil xtceutil;
-    YamcsSession yamcsSession;
-    
+    EventProducer eventProducer;
+    final Stream realtimeEventStream;
+    final Stream dumpEventStream;
+    final TupleDefinition tdef;
     
     public FSEventDecoder(String instance) throws ConfigurationException {
         log=YamcsServer.getLogger(this.getClass(), instance);
@@ -76,27 +72,27 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
                 log.debug("Added payload model "+d+" for payload"+payloadModel.getPayloadName());
             }
 
-            YarchDatabase dict=YarchDatabase.getInstance(instance);
-            realtimeTmStream=dict.getStream(XtceTmRecorder.REALTIME_TM_STREAM_NAME);
+            YarchDatabase ydb = YarchDatabase.getInstance(instance);
+            
+            realtimeTmStream = ydb.getStream(XtceTmRecorder.REALTIME_TM_STREAM_NAME);
             if(realtimeTmStream==null) throw new ConfigurationException("There is no stream named "+XtceTmRecorder.REALTIME_TM_STREAM_NAME);
-            dumpTmStream=dict.getStream(XtceTmRecorder.DUMP_TM_STREAM_NAME);
+            
+            dumpTmStream = ydb.getStream(XtceTmRecorder.DUMP_TM_STREAM_NAME);
             if(dumpTmStream==null) throw new ConfigurationException("There is no stream named "+XtceTmRecorder.DUMP_TM_STREAM_NAME);
             
-            realtimeAddress=new SimpleString(instance+".events_realtime");
-            dumpAddress=new SimpleString(instance+".events_dump");
-            yamcsSession = YamcsSession.newBuilder().build();
-            msgClient = yamcsSession.newClientBuilder().setDataProducer(true).build();
-        } catch (ActiveMQException e) {
-            throw new ConfigurationException(e.toString());
-        } catch (YamcsApiException e) {
-            throw new ConfigurationException(e.getMessage(),e);
+            realtimeEventStream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
+            if(realtimeEventStream==null) throw new ConfigurationException("There is no stream named "+EventRecorder.REALTIME_EVENT_STREAM_NAME);
+            tdef = realtimeEventStream.getDefinition();
+            
+            
+            dumpEventStream = ydb.getStream(EventRecorder.DUMP_EVENT_STREAM_NAME);
+            if(dumpEventStream==null) throw new ConfigurationException("There is no stream named "+EventRecorder.DUMP_EVENT_STREAM_NAME);
+
         } catch (IOException e) {
             throw new ConfigurationException(e.toString());
         }
         xtceutil=XtceUtil.getInstance(XtceDbFactory.getInstance(instance));
-        
-        realtimeTmStream.addSubscriber(this);
-        dumpTmStream.addSubscriber(this);
+    
     }
 
     /**
@@ -104,6 +100,8 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
      */
     @Override
     protected void doStart() {
+        realtimeTmStream.addSubscriber(this);
+        dumpTmStream.addSubscriber(this);
         notifyStarted();
     }
 
@@ -113,9 +111,9 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
         long rectime=(Long)t.getColumn("rectime");
         
         if(stream==realtimeTmStream) {
-            processPacket(rectime, packet,realtimeAddress);
+            processPacket(rectime, packet, realtimeEventStream);
         } else {
-            processPacket(rectime, packet, dumpAddress);
+            processPacket(rectime, packet, dumpEventStream);
         }
         
     }
@@ -124,30 +122,28 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
     public void streamClosed(Stream stream) {//shouldn't happen
     }
 
-   public void processPacket(long rectime, byte[] packet, SimpleString address) {
+   public void processPacket(long rectime, byte[] packet, Stream eventStream) {
         CcsdsPacket ccsdsPacket = new CcsdsPacket(packet);
         ByteBuffer bb=ByteBuffer.wrap(packet);
         int packetId=ccsdsPacket.getPacketID();
         int apid=CcsdsPacket.getAPID(bb);
-        String opsName=xtceutil.getPacketNameByApidPacketid(apid, packetId, MdbMappings.MDB_OPSNAME);
+        String opsName = xtceutil.getPacketNameByApidPacketid(apid, packetId, MdbMappings.MDB_OPSNAME);
         if(opsName==null) opsName=xtceutil.getPacketNameByPacketId(packetId, MdbMappings.MDB_OPSNAME);
         if(opsName==null) {
             log.info("Cannot find an opsname for packetId " +packetId);
             return;
         }
-        PayloadModel payloadModel=opsnameToPayloadModel.get(opsName);
+        PayloadModel payloadModel = opsnameToPayloadModel.get(opsName);
         
         if(payloadModel==null) {
             return;
         }
         Collection<Event> events=payloadModel.decode(rectime, packet);
         if(events!=null) {
-            try {
-                for(Event ev:events) {
-                    msgClient.sendData(address, ProtoDataType.EVENT, ev);
-                }
-            } catch (ActiveMQException e) {
-                log.warn("Exception when sending event: ", e);
+            for(Event ev:events) {
+                Tuple t=new Tuple(tdef, new Object[]{ev.getGenerationTime(), 
+                        ev.getSource(), ev.getSeqNumber(), ev});
+                eventStream.emitTuple(t);
             }
         }
     }
@@ -156,11 +152,8 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
 
     @Override
     protected void doStop() {
-	try {
-	    yamcsSession.close();
-	} catch (ActiveMQException e) {
-	    log.error("Error when closing the yamcsSession", e);
-	}
+        realtimeTmStream.removeSubscriber(this);
+        dumpTmStream.removeSubscriber(this);
         notifyStopped();        
     }
 }

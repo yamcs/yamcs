@@ -5,4 +5,4 @@ instances:
 incomingDir: /tmp/yamcs-incoming
 dataDir: /tmp/yamcs-data
 webConfig:
-   webPort: 28090
+   port: 28090

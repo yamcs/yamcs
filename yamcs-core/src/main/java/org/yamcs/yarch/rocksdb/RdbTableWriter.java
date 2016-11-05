@@ -33,8 +33,7 @@ public class RdbTableWriter extends TableWriter {
         this.partitionManager = pm;
         rdbFactory = RDBFactory.getInstance(ydb.getName());
         if(tableDefinition.hasHistogram()) {			 
-            String filename=tableDefinition.getDataDir()+"/"+tableDefinition.getName()+"-histo";
-            histodb=new RdbHistogramDb(ydb, filename, false);
+            histodb = new RdbHistogramDb(ydb, tableDefinition, false);
         }
     }
 
@@ -92,11 +91,12 @@ public class RdbTableWriter extends TableWriter {
     }
 
     @Override
-    public void streamClosed(Stream stream) {
-        // TODO Auto-generated method stub
-
+    public void streamClosed(Stream stream) {                
     }
 
+    public void close() {
+        histodb.close();
+    }
 
     private boolean insert(YRDB db, RdbPartition partition, Tuple t) throws RocksDBException {
         byte[] k=tableDefinition.serializeKey(t);
@@ -135,7 +135,7 @@ public class RdbTableWriter extends TableWriter {
      * @throws RocksDBException 
      */
     private boolean insertAppend(YRDB db, RdbPartition partition, Tuple t) throws RocksDBException {
-        byte[] k=tableDefinition.serializeKey(t);
+        byte[] k = tableDefinition.serializeKey(t);
         ColumnFamilyHandle cfh = db.getColumnFamilyHandle(partition.getValue());
         if(cfh==null) {
             cfh = db.createColumnFamily(partition.getValue());

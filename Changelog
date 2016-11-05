@@ -1,4 +1,4 @@
-Version 0.30.0
+Version 3.0.0
 - do now allow FixedString command arguments defined in the Spreadsheet to have a non multiple of 8 bitSize
 - fixed the encoding of command binary arguments
 - allow to specifiy the bitSize for LeadingString and TerminatedString command arguments and treat it as the minimum size of the encoded value (if the passed argument is shorter, the remaining will not be filled in) 
@@ -10,6 +10,9 @@ Version 0.30.0
 - fix recording and replay of system parameters; all of them are using /yamcs/<instance-id> as recording group.
 - updated to rocksdb 4.8.0 (to solve some weird bug on 32bits column family options being ignored)
 - updated from HornetQ to ActiveMQ Artemis
+- changed all SWING Yamcs clients to use the REST and WebSocket API instead of HornetQ
+- allow to retrieve via REST internals of open RocksDB databases
+- implement backup support for RocksDB databases
 
 
 Version 0.29.4 Released 26-June-2016

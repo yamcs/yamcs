@@ -22,7 +22,7 @@
         }];
 
         var loadingHistory = false;
-        var apparentlyNumericSystemParameter = false;
+        var apparentlyNumericParameter = false;
         var lastSamplePromiseCanceler;
 
         $scope.alarms = [];
@@ -80,13 +80,15 @@
                     $scope.values = historyData['parameter'];
                     
                     // additional checks for system parameters which don't have a type :(
-                    if ($scope.values && qname.indexOf('/yamcs') === 0 && $scope.values.length > 0) {
+                    if ($scope.values && $scope.values.length > 0) {
                         var valType = $scope.values[0]['engValue']['type'];
                         if (valType === 'SINT64'
                                 || valType === 'UINT64'
                                 || valType === 'SINT32'
-                                || valType === 'UINT32') {
-                            apparentlyNumericSystemParameter = true;
+                                || valType === 'UINT32'
+                                || valType === 'FLOAT'
+                                || valType === 'DOUBLE') {
+                            apparentlyNumericParameter = true;
                         }
                     }
                 });
@@ -185,7 +187,7 @@
         $scope.isNumeric = function() {
             if ($scope.hasOwnProperty('info') && $scope.info.hasOwnProperty('type') && $scope.info.type.hasOwnProperty('engType')) {
                 return $scope.info.type.engType === 'float' || $scope.info.type.engType === 'integer';
-            } else if (apparentlyNumericSystemParameter) {
+            } else if (apparentlyNumericParameter) {
                 return true;
             }
             return false;

@@ -11,7 +11,6 @@ import org.apache.activemq.artemis.api.core.client.ClientProducer;
 import org.apache.activemq.artemis.api.core.client.ClientSession;
 import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsSession;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 

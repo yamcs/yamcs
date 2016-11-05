@@ -12,6 +12,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,11 +28,14 @@ import org.yamcs.xtce.xml.XtceAliasSet;
  * @author mache
  */
 public class XtceDb implements Serializable {
-    private static final long  serialVersionUID   = 52L;
+    private static final long  serialVersionUID   = 54L;
     SpaceSystem rootSystem;
-    
+
+    //rwLock is used to guard the read/write of parameters and spaceSystems which are the only ones that can change dynamically as of now
+    ReadWriteLock rwLock = new ReentrantReadWriteLock();
+
     SystemParameterDb sysParamDb;
-    
+
     public XtceDb(SpaceSystem spaceSystem) {
         this.rootSystem=spaceSystem;
     }
@@ -43,7 +48,7 @@ public class XtceDb implements Serializable {
     private Map<String, Parameter> parameters = new LinkedHashMap<String, Parameter>();
     private HashMap<String, Algorithm> algorithms = new HashMap<String, Algorithm>();
     private HashMap<String, MetaCommand> commands = new HashMap<String, MetaCommand>();
-    
+
     @SuppressWarnings("rawtypes")
     private HashMap<Class<?>, NonStandardData> nonStandardDatas = new HashMap<Class<?>, NonStandardData>();
 
@@ -53,10 +58,10 @@ public class XtceDb implements Serializable {
     private NamedDescriptionIndex<SequenceContainer> sequenceContainerAliases =new NamedDescriptionIndex<SequenceContainer>();
     private NamedDescriptionIndex<Algorithm> algorithmAliases = new NamedDescriptionIndex<Algorithm>();
     private NamedDescriptionIndex<MetaCommand> commandAliases = new NamedDescriptionIndex<MetaCommand>();
-    
+
     private Set<String> namespaces = new HashSet<>();
-    
-    
+
+
     //this is the sequence container where the xtce processors start processing
     //we should perhaps have possibility to specify different ones for different streams
     SequenceContainer rootSequenceContainer;
@@ -65,7 +70,7 @@ public class XtceDb implements Serializable {
      * which container we can extract this parameter
      */
     private HashMap<Parameter, ArrayList<ParameterEntry>> parameter2ParameterEntryMap;
-    
+
     /**
      * maps the SequenceContainer to a list of other EntryContainers in case of
      * aggregation
@@ -85,7 +90,7 @@ public class XtceDb implements Serializable {
     public SequenceContainer getSequenceContainer(String namespace, String name) {
         return sequenceContainerAliases.get(namespace, name);
     }
-    
+
     public SequenceContainer getSequenceContainer(NamedObjectId id) {
         if(id.hasNamespace()) {
             return sequenceContainerAliases.get(id.getNamespace(), id.getName());
@@ -93,27 +98,42 @@ public class XtceDb implements Serializable {
             return sequenceContainerAliases.get(id.getName());
         }
     }
-    
+
     public Parameter getParameter(String qualifiedName) {
-        return parameters.get(qualifiedName);
+        rwLock.readLock().lock();
+        try {
+            return parameters.get(qualifiedName);
+        } finally {
+            rwLock.readLock().unlock();
+        }
     }
 
     public Parameter getParameter(String namespace, String name) {
-        return parameterAliases.get(namespace,name);
+        rwLock.readLock().lock();
+        try {
+            return parameterAliases.get(namespace,name);
+        } finally {
+            rwLock.readLock().unlock();
+        }
     }
-    
+
     public Parameter getParameter(NamedObjectId id) {
-        if (id.hasNamespace()) {
-            return parameterAliases.get(id.getNamespace(), id.getName());
-        } else {
-            return parameterAliases.get(id.getName());
+        rwLock.readLock().lock();
+        try {
+            if (id.hasNamespace()) {
+                return parameterAliases.get(id.getNamespace(), id.getName());
+            } else {
+                return parameterAliases.get(id.getName());
+            }
+        } finally {
+            rwLock.readLock().unlock();
         }
     }
 
     public SequenceContainer getRootSequenceContainer() {
         return rootSequenceContainer;
     }
-    
+
     public void setRootSequenceContainer(SequenceContainer sc) {
         this.rootSequenceContainer=sc;
     }
@@ -121,11 +141,11 @@ public class XtceDb implements Serializable {
     public Algorithm getAlgorithm(String qualifiedName) {
         return algorithmAliases.get(qualifiedName);
     }
-    
+
     public Algorithm getAlgorithm(String namespace, String name) {
         return algorithmAliases.get(namespace, name);
     }
-    
+
     public Algorithm getAlgorithm(NamedObjectId id) {
         if (id.hasNamespace()) {
             return algorithmAliases.get(id.getNamespace(), id.getName());
@@ -133,31 +153,32 @@ public class XtceDb implements Serializable {
             return algorithmAliases.get(id.getName());
         }
     }
-    
+
     public Collection<Algorithm> getAlgorithms() {
         return algorithms.values();
     }
-    
+
     public Collection<Parameter> getParameters() {
-        return parameters.values();
+        rwLock.readLock().lock();
+        try {
+            return parameters.values();
+        } finally {
+            rwLock.readLock().unlock();
+        }
     }
-    
+
     public boolean containsNamespace(String namespace) {
         return namespaces.contains(namespace);
     }
-    
+
     public Set<String> getNamespaces() {
         return namespaces;
     }
 
-    public NamedDescriptionIndex<Parameter> getParameterAliases() {
-        return parameterAliases;
-    }
-    
     public MetaCommand getMetaCommand(String qualifiedName) {
         return commandAliases.get(qualifiedName);
     }
-    
+
     /**
      * Returns a command based on a name in a namespace
      * @param namespace
@@ -167,7 +188,7 @@ public class XtceDb implements Serializable {
     public MetaCommand getMetaCommand(String namespace, String name) {
         return commandAliases.get(namespace, name);
     }
-    
+
     public MetaCommand getMetaCommand(NamedObjectId id) {
         if (id.hasNamespace()) {
             return commandAliases.get(id.getNamespace(), id.getName());
@@ -175,7 +196,7 @@ public class XtceDb implements Serializable {
             return commandAliases.get(id.getName());
         }
     }
-    
+
     /**
      * Returns the list of MetaCommmands in the XTCE database
      * @return
@@ -183,31 +204,42 @@ public class XtceDb implements Serializable {
     public Collection<MetaCommand> getMetaCommands() {
         return commands.values();
     }
-    
+
     public SpaceSystem getRootSpaceSystem() {
         return rootSystem;
     }
-    
+
     public SpaceSystem getSpaceSystem(String qualifiedName) {
-        return spaceSystemAliases.get(qualifiedName);
-    }
-    
-    public SpaceSystem getSpaceSystem(String namespace, String name) {
-        return spaceSystemAliases.get(namespace, name);
-    }
-    
-    public SpaceSystem getSpaceSystem(NamedObjectId id) {
-        if (id.hasNamespace()) {
-            return spaceSystemAliases.get(id.getNamespace(), id.getName());
-        } else {
-            return spaceSystemAliases.get(id.getName());
+        rwLock.readLock().lock();
+        try {
+            return spaceSystemAliases.get(qualifiedName);
+        } finally {
+            rwLock.readLock().unlock();
         }
     }
-    
-    public Collection<SpaceSystem> getSpaceSystems() {
-        return spaceSystems.values();
+
+    public SpaceSystem getSpaceSystem(String namespace, String name) {
+        rwLock.readLock().lock();
+        try {
+            return spaceSystemAliases.get(namespace, name);
+        } finally {
+            rwLock.readLock().unlock();
+        }
     }
-    
+
+    public SpaceSystem getSpaceSystem(NamedObjectId id) {
+        rwLock.readLock().lock();
+        try {
+            if (id.hasNamespace()) {
+                return spaceSystemAliases.get(id.getNamespace(), id.getName());
+            } else {
+                return spaceSystemAliases.get(id.getName());
+            }
+        } finally {
+            rwLock.readLock().unlock();
+        }
+    }
+
     public Collection<SequenceContainer> getSequenceContainers() {
         return sequenceContainers.values();
     }
@@ -239,7 +271,7 @@ public class XtceDb implements Serializable {
         else
             return null;
     }
-    
+
     @SuppressWarnings("rawtypes")
     public Collection<NonStandardData> getNonStandardData() {
         return nonStandardDatas.values();
@@ -257,7 +289,7 @@ public class XtceDb implements Serializable {
         buildAlgorithmMap(rootSystem);
         buildMetaCommandMap(rootSystem);
         buildNonStandardDataMap(rootSystem);
-        
+
         parameter2ParameterEntryMap = new HashMap<Parameter, ArrayList<ParameterEntry>>();
         sequenceContainer2ContainerEntryMap = new HashMap<SequenceContainer, ArrayList<ContainerEntry>>();
         sequenceContainer2InheritingContainerMap = new HashMap<SequenceContainer, ArrayList<SequenceContainer>>();
@@ -294,7 +326,7 @@ public class XtceDb implements Serializable {
             }
         }
 
-        
+
         //build aliases maps
         for (SpaceSystem ss : spaceSystems.values()) {
             spaceSystemAliases.add(ss);
@@ -303,7 +335,7 @@ public class XtceDb implements Serializable {
                 aliases.getNamespaces().forEach(ns -> namespaces.add(ns));
             }
         }
-        
+
         for (SequenceContainer sc : sequenceContainers.values()) {
             sequenceContainerAliases.add(sc);
             XtceAliasSet aliases=sc.getAliasSet();
@@ -327,7 +359,7 @@ public class XtceDb implements Serializable {
                 aliases.getNamespaces().forEach(ns -> namespaces.add(ns));
             }
         }
-        
+
         for(MetaCommand mc:commands.values()) {
             commandAliases.add(mc);
             XtceAliasSet aliases=mc.getAliasSet();
@@ -336,14 +368,14 @@ public class XtceDb implements Serializable {
             }
         }
     }
-    
+
     private void buildSpaceSystemsMap(SpaceSystem ss) {
         spaceSystems.put(ss.getQualifiedName(), ss);
         for(SpaceSystem ss1:ss.getSubSystems()) {
             buildSpaceSystemsMap(ss1);
         }
     }
-    
+
     private void buildParameterMap(SpaceSystem ss) {
         for(Parameter p:ss.getParameters()) {
             parameters.put(p.getQualifiedName(), p);
@@ -352,7 +384,7 @@ public class XtceDb implements Serializable {
             buildParameterMap(ss1);
         }
     }
-    
+
     private void buildSequenceContainerMap(SpaceSystem ss) {
         for(SequenceContainer sc:ss.getSequenceContainers()) {
             sequenceContainers.put(sc.getQualifiedName(), sc);
@@ -361,7 +393,7 @@ public class XtceDb implements Serializable {
             buildSequenceContainerMap(ss1);
         }
     }
-    
+
     private void buildAlgorithmMap(SpaceSystem ss) {
         for(Algorithm a:ss.getAlgorithms()) {
             algorithms.put(a.getQualifiedName(), a);
@@ -370,7 +402,7 @@ public class XtceDb implements Serializable {
             buildAlgorithmMap(ss1);
         }
     }
-    
+
     private void buildMetaCommandMap(SpaceSystem ss) {
         for(MetaCommand mc:ss.getMetaCommands()) {
             commands.put(mc.getQualifiedName(), mc);
@@ -379,7 +411,7 @@ public class XtceDb implements Serializable {
             buildMetaCommandMap(ss1);
         }
     }
-    
+
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void buildNonStandardDataMap(SpaceSystem ss) {
         for(NonStandardData data:ss.getNonStandardData()) {
@@ -394,18 +426,94 @@ public class XtceDb implements Serializable {
             buildNonStandardDataMap(ss1);
         }
     }
-    
+
     public List<SequenceContainer> getInheritingContainers(SequenceContainer container) {
         return sequenceContainer2InheritingContainerMap.get(container);
     }
 
+    /**
+     * Adds  a new parameter to the XTCE db.
+     *
+     * 
+     * If the SpaceSystem where this parameter belongs does not exist, throws an IllegalArgumentException
+     * If the SpaceSystem where this parameter belongs already contains an parameter by this name, throws and IllegalArgumentException
+     * 
+     * Note that this method is used to create parameters on the fly. 
+     * The parameers are not saved anywhere and they will not be available when this object is created by the XtceDbFactory.
+     * 
+     * @param p
+     */
+    public void addParameter(Parameter p) {
+        rwLock.writeLock().lock();
+        try {
+            String ssname = p.getSubsystemName();
+            SpaceSystem ss = spaceSystems.get(ssname);
+            if(ss==null) {
+                throw new IllegalArgumentException("No SpaceSystem by name '"+ssname+"'");
+            }
+            ss.addParameter(p);
+            parameters.put(p.getQualifiedName(), p);
+
+            parameterAliases.add(p);
+            XtceAliasSet aliases=p.getAliasSet();
+            if(aliases!=null) {
+                aliases.getNamespaces().forEach(ns -> namespaces.add(ns));
+            }
+        } finally {
+            rwLock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * Adds a new spacesystem to the XTCE db.
+     * 
+     * It throws an IllegalArgumentException in the following circumstances:
+     *  - if a SpaceSystem with this name already exists
+     *  - if system.getParent() does not return null 
+     *  - if the parent SpaceSystem does not exist
+     *  - if the space system is not empty
+     *  
+     * This method also sets the parent of the passed spacesystem to its parent object.
+     * 
+     * Note that this method is used to create SpaceSystems on the fly. 
+     * The SpaceSystems are not saved anywhere and they will not be available when this object is created by the XtceDbFactory. 
+     * @param system
+     * 
+     */
+    public void addSpaceSystem(SpaceSystem system) {
+        rwLock.writeLock().lock();
+        try {
+            if(system.getParent()!=null) throw new IllegalArgumentException("The parent of the space system has to be null (it will be set by this method");
+            if(!system.getParameters().isEmpty() || !system.getSequenceContainers().isEmpty()|| !system.getAlgorithms().isEmpty()
+                    || !system.getMetaCommands().isEmpty()) throw new IllegalArgumentException("The space system must be empty (no parameters, containers, commands, algorithms)");
+
+
+            String parentName = system.getSubsystemName();
+            SpaceSystem parent = spaceSystems.get(parentName);
+            if(parent==null) throw new IllegalArgumentException("The parent subsystem '"+parentName+"' does not exist");
+
+
+            parent.addSpaceSystem(system);
+            system.setParent(parent);
+
+            spaceSystems.put(system.getQualifiedName(), system);
+            spaceSystemAliases.add(system);
+            XtceAliasSet aliases = system.getAliasSet();
+            if(aliases!=null) {
+                aliases.getNamespaces().forEach(ns -> namespaces.add(ns));
+            }
+        } finally {
+            rwLock.writeLock().unlock();
+        }
+    }
+
     private void print(SpaceSystem ss, PrintStream out) {
-    	if( ss.getHeader() != null ) {
-    		out.println("=========SpaceSystem "+ss.getQualifiedName()+" version: "+ss.getHeader().getVersion()+" date: "+ss.getHeader().getDate()+"=========");
-    	} else {
-    		out.println("=========SpaceSystem "+ss.getQualifiedName()+" (no header information)=========");
-    	}
-    	
+        if( ss.getHeader() != null ) {
+            out.println("=========SpaceSystem "+ss.getQualifiedName()+" version: "+ss.getHeader().getVersion()+" date: "+ss.getHeader().getDate()+"=========");
+        } else {
+            out.println("=========SpaceSystem "+ss.getQualifiedName()+" (no header information)=========");
+        }
+
         Comparator<NameDescription> comparator=new Comparator<NameDescription>() {
             @Override
             public int compare(NameDescription o1, NameDescription o2) {
@@ -418,13 +526,13 @@ public class XtceDb implements Serializable {
         for (SequenceContainer sc : sca) {
             sc.print(out);
         }
-        
+
         Algorithm[] aa=ss.getAlgorithms().toArray(new Algorithm[0]);
         Arrays.sort(aa, comparator);
         for (Algorithm a : aa) {
             a.print(out);
         }
-        
+
         MetaCommand[] mca=ss.getMetaCommands().toArray(new MetaCommand[0]);
         Arrays.sort(mca, comparator);
         for (MetaCommand mc : mca) {
@@ -446,17 +554,17 @@ public class XtceDb implements Serializable {
                 out.println("\t"+sv.getName());
             }
         }
-        
+
         SpaceSystem[] ssa=ss.getSubSystems().toArray(new SpaceSystem[0]);
         Arrays.sort(ssa, comparator);
         for(SpaceSystem ss1:ssa) {
             print(ss1, out);
         }
     }
-    
+
     public void print(PrintStream out) {
         print(rootSystem, out);
-        
+
         Set<Parameter> orphanedParameters = new HashSet<Parameter>();
         orphanedParameters.addAll(parameters.values());
         removeNonOrphaned(rootSystem, orphanedParameters);
@@ -472,7 +580,7 @@ public class XtceDb implements Serializable {
             }
         }
     }
-    
+
     private void removeNonOrphaned(SpaceSystem ss, Set<Parameter> orphanedParameters) {
         for(Algorithm a:ss.getAlgorithms()) {
             for(InputParameter p:a.getInputSet()) {
@@ -490,8 +598,10 @@ public class XtceDb implements Serializable {
     public void setSystemParameterDb(SystemParameterDb sysParamDb) {
         this.sysParamDb = sysParamDb;
     }
-    
+
     public SystemParameterDb getSystemParameterDb() {
         return sysParamDb;
     }
+
+
 }

@@ -121,7 +121,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
             }
         }
         
-        sendOK(req);
+        completeOK(req);
     }
 
     private CommandQueueInfo toCommandQueueInfo(RestRequest req, CommandQueue queue, boolean detail) {

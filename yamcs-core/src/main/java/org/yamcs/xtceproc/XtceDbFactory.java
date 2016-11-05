@@ -10,7 +10,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -355,28 +354,23 @@ public class XtceDbFactory {
             ss.addAlias(parentqname, ss.getName());
         }
         for(Parameter p: ss.getParameters()) {
-            p.setQualifiedName(ss.getQualifiedName()+NameDescription.PATH_SEPARATOR+p.getName());
-            p.addAlias(ss.getQualifiedName(), p.getName());
+            p.setQualifiedName(ss.getQualifiedName()+NameDescription.PATH_SEPARATOR + p.getName());
         }
         for(ParameterType pt: ss.getParameterTypes()) {
             NameDescription nd=(NameDescription)pt;
-            nd.setQualifiedName(ss.getQualifiedName()+NameDescription.PATH_SEPARATOR+nd.getName());
-            nd.addAlias(ss.getQualifiedName(), nd.getName());
+            nd.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + nd.getName());
         }
 
         for(SequenceContainer c: ss.getSequenceContainers()) {
-            c.setQualifiedName(ss.getQualifiedName()+NameDescription.PATH_SEPARATOR+c.getName());
-            c.addAlias(ss.getQualifiedName(), c.getName());
+            c.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + c.getName());
         }
 
         for(MetaCommand c: ss.getMetaCommands()) {
-            c.setQualifiedName(ss.getQualifiedName()+NameDescription.PATH_SEPARATOR+c.getName());
-            c.addAlias(ss.getQualifiedName(), c.getName());
+            c.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + c.getName());
         }
 
         for(Algorithm a: ss.getAlgorithms()) {
-            a.setQualifiedName(ss.getQualifiedName()+NameDescription.PATH_SEPARATOR+a.getName());
-            a.addAlias(ss.getQualifiedName(), a.getName());
+            a.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + a.getName());
         }
 
         for(NonStandardData<?> nonStandardData: ss.getNonStandardData()) {
@@ -427,7 +421,7 @@ public class XtceDbFactory {
      * @throws DatabaseLoadException 
      */
     public static synchronized XtceDb getInstance(String yamcsInstance) throws ConfigurationException {
-        XtceDb db=instance2Db.get(yamcsInstance);
+        XtceDb db = instance2Db.get(yamcsInstance);
         if(db==null) {
             YConfiguration c=YConfiguration.getConfiguration("yamcs."+yamcsInstance);
             db=getInstanceByConfig(yamcsInstance, c.getString("mdb"));
@@ -443,9 +437,9 @@ public class XtceDbFactory {
             instance2DbConfigs.put(yamcsInstance, dbConfigs);
         }
 
-        XtceDb db=dbConfigs.get(config);
+        XtceDb db = dbConfigs.get(config);
         if(db==null) {
-            db=createInstance(config);
+            db = createInstance(config);
             dbConfigs.put(config, db);
         }
         return db;

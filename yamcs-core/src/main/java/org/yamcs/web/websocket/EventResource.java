@@ -21,14 +21,17 @@ import org.yamcs.yarch.YarchDatabase;
  */
 public class EventResource extends AbstractWebSocketResource {
     private static final Logger log = LoggerFactory.getLogger(EventResource.class);
-
+    public static final String RESOURCE_NAME = "events";
+    public static final String OP_subscribe = "subscribe";
+    public static final String OP_unsubscribe = "unsubscribe";
+    
     private Stream stream;
     private StreamSubscriber streamSubscriber;
 
 
     public EventResource(YProcessor channel, WebSocketFrameHandler wsHandler) {
         super(channel, wsHandler);
-        wsHandler.addResource("events", this);
+        wsHandler.addResource(RESOURCE_NAME, this);
         YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
         stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
     }
@@ -36,9 +39,9 @@ public class EventResource extends AbstractWebSocketResource {
     @Override
     public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder, AuthenticationToken authenticationToken) throws WebSocketException {
         switch (ctx.getOperation()) {
-        case "subscribe":
+        case OP_subscribe:
             return subscribe(ctx.getRequestId());
-        case "unsubscribe":
+        case OP_unsubscribe:
             return unsubscribe(ctx.getRequestId());
         default:
             throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '"+ctx.getOperation()+"'");

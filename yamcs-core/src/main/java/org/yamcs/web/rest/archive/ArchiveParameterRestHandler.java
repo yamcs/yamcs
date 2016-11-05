@@ -79,8 +79,6 @@ public class ArchiveParameterRestHandler extends RestHandler {
         
         RestDownsampler sampler = new RestDownsampler(rr.getStop());
         
-        CompletableFuture<Void> completableFuture = req.getCompletableFuture();
-        
         RestReplays.replay(instance, req.getAuthToken(), rr.build(), new RestReplayListener() {
             @Override
             public void onParameterData(List<ParameterValueWithId> params) {

@@ -58,13 +58,13 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 
     //if all parameter shall be subscribed/processed
     private boolean cacheAll = false;
-    
-    
+
+
     AlarmServer alarmServer;
     SoftwareParameterManager spm;
     ParameterCache parameterCache;
     ParameterCacheConfig cacheConfig;
-    
+
     /**
      * Creates a new ParameterRequestManager, configured to listen to the
      * specified XtceTmProcessor.
@@ -74,8 +74,8 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
         log = LoggerFactory.getLogger(this.getClass().getName()+"["+yproc.getName()+"]");
         cacheConfig = yproc.getPameterCacheConfig();
         cacheAll = cacheConfig.cacheAll;
-	
-	
+
+
         tmProcessor.setParameterListener(this);
         addParameterProvider(tmProcessor);
         if(yproc.hasAlarmChecker()) {
@@ -117,7 +117,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
             }
         }
     }
-    
+
     /** Added by AMI on request of NM during a remote email session. */
     public int generateDummyRequestId() {
         return lastSubscriptionId.incrementAndGet();
@@ -149,7 +149,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     public boolean unsubscribeAll(int subscriptionId) {
         return subscribeAll.remove(subscriptionId);
     }
-    
+
 
     public int addRequest(final List<Parameter> paraList, final ParameterConsumer tpc) throws InvalidIdentification {
         List<ParameterProvider> providers = getProviders(paraList);
@@ -237,7 +237,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
         ParameterProvider provider=getProvider(para);
         addItemToRequest(subscriptionId, para, provider);
     }
-    
+
     /**
      * Add items to a subscription. 
      * @param subscriptionId
@@ -256,7 +256,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
             addItemToRequest(subscriptionId, paraList.get(i), providers.get(i));
         }
     }
-    
+
     /**
      * Removes a parameter from a rquest. If it is not part of the request, the operation will have no effect.
      * @param subscriptionID
@@ -267,7 +267,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
         ParameterProvider provider = getProvider(param);
         removeItemFromRequest(subscriptionID, param, provider);
     }
-    
+
     /**
      * Removes a list of parameters from a request.
      * Any parameter specified that is not in the subscription will be ignored.
@@ -281,7 +281,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
             removeItemFromRequest(subscriptionID, paraList.get(i), providers.get(i));
         }
     }
-    
+
     /**
      * Adds a new item to an existing request. There is no check if the item is already there, 
      *  so there can be duplicates (observed in the CGS CIS).
@@ -404,28 +404,28 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     @Override
     public void update(Collection<ParameterValue> params) {
         log.trace("ParamRequestManager.updateItems with {} parameters", params.size());
-    //maps subscription id to a list of (value,id) to be delivered for that subscription
-    HashMap<Integer, ArrayList<ParameterValue>> delivery= new HashMap<Integer, ArrayList<ParameterValue>>();
-    
-    //so first we add to the delivery the parameters just received
-    updateDelivery(delivery, params);
-    
-    
-    //then if the delivery updates some of the parameters required by the derived values
-    //  compute the derived values
-    for(Map.Entry<Integer, DVParameterConsumer> entry: request2DVParameterConsumerMap.entrySet()) {
-        Integer subscriptionId = entry.getKey();
-        if(delivery.containsKey(subscriptionId)) {
-            updateDelivery(delivery, entry.getValue().updateParameters(subscriptionId, delivery.get(subscriptionId))); 
+        //maps subscription id to a list of (value,id) to be delivered for that subscription
+        HashMap<Integer, ArrayList<ParameterValue>> delivery= new HashMap<Integer, ArrayList<ParameterValue>>();
+
+        //so first we add to the delivery the parameters just received
+        updateDelivery(delivery, params);
+
+
+        //then if the delivery updates some of the parameters required by the derived values
+        //  compute the derived values
+        for(Map.Entry<Integer, DVParameterConsumer> entry: request2DVParameterConsumerMap.entrySet()) {
+            Integer subscriptionId = entry.getKey();
+            if(delivery.containsKey(subscriptionId)) {
+                updateDelivery(delivery, entry.getValue().updateParameters(subscriptionId, delivery.get(subscriptionId))); 
+            }
         }
-    }
-    
-    //and finally deliver the delivery :)
-    for(Map.Entry<Integer, ArrayList<ParameterValue>> entry: delivery.entrySet()){
-        Integer subscriptionId=entry.getKey();
-        if(request2DVParameterConsumerMap.containsKey(subscriptionId)) continue;
+
+        //and finally deliver the delivery :)
+        for(Map.Entry<Integer, ArrayList<ParameterValue>> entry: delivery.entrySet()){
+            Integer subscriptionId=entry.getKey();
+            if(request2DVParameterConsumerMap.containsKey(subscriptionId)) continue;
             if(alarmChecker!=null && alarmChecker.getSubscriptionId()==subscriptionId) continue;
-    
+
             ArrayList<ParameterValue> al=entry.getValue();
             ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
             if(consumer==null) {
@@ -443,14 +443,14 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
      */
     private void updateDelivery(HashMap<Integer, ArrayList<ParameterValue>> delivery, Collection<ParameterValue> params) {
         if(params==null) return;
-        
+
         for(Iterator<ParameterValue> it=params.iterator();it.hasNext();) {
             ParameterValue pv = it.next();
             Parameter pDef = pv.getParameter();
             SubscriptionArray cowal = param2RequestMap.get(pDef); 
             //now walk through the requests and add this item to their delivery list
             if(cowal==null) continue;
-        
+
             for(int s:cowal.getArray()) {
                 ArrayList<ParameterValue> al = delivery.get(s);
                 if(al==null) {
@@ -469,7 +469,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
                 al = new ArrayList<ParameterValue>();
                 delivery.put(id, al);
             }
-        
+
             for(ParameterValue pv: params) {
                 al.add(pv);
             }
@@ -486,7 +486,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
                 log.error("Error when performing alarm checking ",e);
             }
         }
-        
+
         if(parameterCache!=null) {
             parameterCache.update(params);
         }
@@ -531,7 +531,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     public boolean hasParameterCache() {
         return parameterCache!=null;
     }
-    
+
     public List<ParameterValue> getValuesFromCache(List<Parameter> plist) {
         return parameterCache.getValues(plist);
     }
@@ -544,7 +544,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     public ParameterValue getLastValueFromCache(Parameter param) {
         return parameterCache.getLastValue(param);
     }
-    
+
     /**
      * Get all the values from cache for a specific parameters
      * 
@@ -555,7 +555,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     public List<ParameterValue> getValuesFromCache(Parameter param) {
         return parameterCache.getAllValues(param);
     }
-    
+
     public void start() {
         if(alarmServer!=null) {
             alarmServer.startAsync();

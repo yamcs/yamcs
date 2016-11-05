@@ -149,7 +149,7 @@ public class ProcessorRestHandler extends RestHandler {
             processor.changeSpeed(replaySpeed);
         }
 
-        sendOK(req);
+        completeOK(req);
     }
 
     @Route(path = "/api/processors/:instance", method = "POST")
@@ -308,7 +308,7 @@ public class ProcessorRestHandler extends RestHandler {
         ManagementService mservice = ManagementService.getInstance();
         try {
             mservice.createProcessor(reqb.build(), req.getAuthToken());
-            sendOK(req);
+            completeOK(req);
         } catch (YamcsException e) {
             throw new BadRequestException(e.getMessage());
         }

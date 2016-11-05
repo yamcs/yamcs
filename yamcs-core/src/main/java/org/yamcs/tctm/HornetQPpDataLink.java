@@ -8,10 +8,10 @@ import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.api.YamcsSession;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
-import org.yamcs.hornetq.StreamAdapter;
+import org.yamcs.api.artemis.YamcsSession;
+import org.yamcs.hornetq.AbstractHornetQTranslatorService;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -42,7 +42,7 @@ public class HornetQPpDataLink extends  AbstractService implements PpDataLink, M
         try {
             yamcsSession=YamcsSession.newBuilder().build();
             msgClient=yamcsSession.newClientBuilder().setDataProducer(false).setDataConsumer(new SimpleString(hornetAddress), queue).
-                    setFilter(new SimpleString(StreamAdapter.UNIQUEID_HDR_NAME+"<>"+StreamAdapter.UNIQUEID)).
+                    setFilter(new SimpleString(AbstractHornetQTranslatorService.UNIQUEID_HDR_NAME+"<>"+AbstractHornetQTranslatorService.UNIQUEID)).
                     build();
 
         } catch (Exception e) {

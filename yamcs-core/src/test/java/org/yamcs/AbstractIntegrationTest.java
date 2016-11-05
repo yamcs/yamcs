@@ -21,6 +21,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.yamcs.api.EventProducerFactory;
+import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.WebSocketClient;
@@ -89,7 +90,7 @@ public abstract class AbstractIntegrationTest {
     public void before() throws InterruptedException {
 
         if(Privilege.getInstance().isEnabled())  {
-            ycp.setAuthenticationToke(admin);
+            ycp.setAuthenticationToken(admin);
         }
 
         packetProvider = PacketProvider.instance;
@@ -100,7 +101,10 @@ public abstract class AbstractIntegrationTest {
         wsClient.setUserAgent("it-junit");
         wsClient.connect();
         assertTrue(wsListener.onConnect.tryAcquire(5, TimeUnit.SECONDS));
-        restClient = new RestClient(ycp, false);
+        restClient = new RestClient(ycp);
+        restClient.setAcceptMediaType(MediaType.JSON);
+        restClient.setSendMediaType(MediaType.JSON);
+        restClient.setAutoclose(false);
         packetGenerator = packetProvider.mdbPacketGenerator;
         packetGenerator.setGenerationTime(TimeEncoding.INVALID_INSTANT);
 

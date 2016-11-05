@@ -2827,6 +2827,20 @@ public final class Web {
        * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
        */
       org.yamcs.protobuf.Commanding.CommandQueueEventOrBuilder getCommandQueueEventOrBuilder();
+
+      // optional .yamcs.TmPacketData tmPacket = 15;
+      /**
+       * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
+       */
+      boolean hasTmPacket();
+      /**
+       * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
+       */
+      org.yamcs.protobuf.Yamcs.TmPacketData getTmPacket();
+      /**
+       * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
+       */
+      org.yamcs.protobuf.Yamcs.TmPacketDataOrBuilder getTmPacketOrBuilder();
     }
     /**
      * Protobuf type {@code web.WebSocketServerMessage.WebSocketSubscriptionData}
@@ -3055,6 +3069,19 @@ public final class Web {
                   commandQueueEvent_ = subBuilder.buildPartial();
                 }
                 bitField0_ |= 0x00002000;
+                break;
+              }
+              case 122: {
+                org.yamcs.protobuf.Yamcs.TmPacketData.Builder subBuilder = null;
+                if (((bitField0_ & 0x00004000) == 0x00004000)) {
+                  subBuilder = tmPacket_.toBuilder();
+                }
+                tmPacket_ = input.readMessage(org.yamcs.protobuf.Yamcs.TmPacketData.PARSER, extensionRegistry);
+                if (subBuilder != null) {
+                  subBuilder.mergeFrom(tmPacket_);
+                  tmPacket_ = subBuilder.buildPartial();
+                }
+                bitField0_ |= 0x00004000;
                 break;
               }
             }
@@ -3393,6 +3420,28 @@ public final class Web {
         return commandQueueEvent_;
       }
 
+      // optional .yamcs.TmPacketData tmPacket = 15;
+      public static final int TMPACKET_FIELD_NUMBER = 15;
+      private org.yamcs.protobuf.Yamcs.TmPacketData tmPacket_;
+      /**
+       * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
+       */
+      public boolean hasTmPacket() {
+        return ((bitField0_ & 0x00004000) == 0x00004000);
+      }
+      /**
+       * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.TmPacketData getTmPacket() {
+        return tmPacket_;
+      }
+      /**
+       * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.TmPacketDataOrBuilder getTmPacketOrBuilder() {
+        return tmPacket_;
+      }
+
       private void initFields() {
         sequenceNumber_ = 0;
         type_ = org.yamcs.protobuf.Yamcs.ProtoDataType.DT_ERROR;
@@ -3408,6 +3457,7 @@ public final class Web {
         linkEvent_ = org.yamcs.protobuf.YamcsManagement.LinkEvent.getDefaultInstance();
         commandQueueInfo_ = org.yamcs.protobuf.Commanding.CommandQueueInfo.getDefaultInstance();
         commandQueueEvent_ = org.yamcs.protobuf.Commanding.CommandQueueEvent.getDefaultInstance();
+        tmPacket_ = org.yamcs.protobuf.Yamcs.TmPacketData.getDefaultInstance();
       }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
@@ -3480,6 +3530,12 @@ public final class Web {
             return false;
           }
         }
+        if (hasTmPacket()) {
+          if (!getTmPacket().isInitialized()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+        }
         memoizedIsInitialized = 1;
         return true;
       }
@@ -3528,6 +3584,9 @@ public final class Web {
         }
         if (((bitField0_ & 0x00002000) == 0x00002000)) {
           output.writeMessage(14, commandQueueEvent_);
+        }
+        if (((bitField0_ & 0x00004000) == 0x00004000)) {
+          output.writeMessage(15, tmPacket_);
         }
         getUnknownFields().writeTo(output);
       }
@@ -3593,6 +3652,10 @@ public final class Web {
         if (((bitField0_ & 0x00002000) == 0x00002000)) {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(14, commandQueueEvent_);
+        }
+        if (((bitField0_ & 0x00004000) == 0x00004000)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(15, tmPacket_);
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -3720,6 +3783,7 @@ public final class Web {
             getLinkEventFieldBuilder();
             getCommandQueueInfoFieldBuilder();
             getCommandQueueEventFieldBuilder();
+            getTmPacketFieldBuilder();
           }
         }
         private static Builder create() {
@@ -3804,6 +3868,12 @@ public final class Web {
             commandQueueEventBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00002000);
+          if (tmPacketBuilder_ == null) {
+            tmPacket_ = org.yamcs.protobuf.Yamcs.TmPacketData.getDefaultInstance();
+          } else {
+            tmPacketBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00004000);
           return this;
         }
 
@@ -3936,6 +4006,14 @@ public final class Web {
           } else {
             result.commandQueueEvent_ = commandQueueEventBuilder_.build();
           }
+          if (((from_bitField0_ & 0x00004000) == 0x00004000)) {
+            to_bitField0_ |= 0x00004000;
+          }
+          if (tmPacketBuilder_ == null) {
+            result.tmPacket_ = tmPacket_;
+          } else {
+            result.tmPacket_ = tmPacketBuilder_.build();
+          }
           result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
@@ -3993,6 +4071,9 @@ public final class Web {
           }
           if (other.hasCommandQueueEvent()) {
             mergeCommandQueueEvent(other.getCommandQueueEvent());
+          }
+          if (other.hasTmPacket()) {
+            mergeTmPacket(other.getTmPacket());
           }
           this.mergeUnknownFields(other.getUnknownFields());
           return this;
@@ -4061,6 +4142,12 @@ public final class Web {
           }
           if (hasCommandQueueEvent()) {
             if (!getCommandQueueEvent().isInitialized()) {
+              
+              return false;
+            }
+          }
+          if (hasTmPacket()) {
+            if (!getTmPacket().isInitialized()) {
               
               return false;
             }
@@ -5558,6 +5645,123 @@ public final class Web {
             commandQueueEvent_ = null;
           }
           return commandQueueEventBuilder_;
+        }
+
+        // optional .yamcs.TmPacketData tmPacket = 15;
+        private org.yamcs.protobuf.Yamcs.TmPacketData tmPacket_ = org.yamcs.protobuf.Yamcs.TmPacketData.getDefaultInstance();
+        private com.google.protobuf.SingleFieldBuilder<
+            org.yamcs.protobuf.Yamcs.TmPacketData, org.yamcs.protobuf.Yamcs.TmPacketData.Builder, org.yamcs.protobuf.Yamcs.TmPacketDataOrBuilder> tmPacketBuilder_;
+        /**
+         * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
+         */
+        public boolean hasTmPacket() {
+          return ((bitField0_ & 0x00004000) == 0x00004000);
+        }
+        /**
+         * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
+         */
+        public org.yamcs.protobuf.Yamcs.TmPacketData getTmPacket() {
+          if (tmPacketBuilder_ == null) {
+            return tmPacket_;
+          } else {
+            return tmPacketBuilder_.getMessage();
+          }
+        }
+        /**
+         * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
+         */
+        public Builder setTmPacket(org.yamcs.protobuf.Yamcs.TmPacketData value) {
+          if (tmPacketBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            tmPacket_ = value;
+            onChanged();
+          } else {
+            tmPacketBuilder_.setMessage(value);
+          }
+          bitField0_ |= 0x00004000;
+          return this;
+        }
+        /**
+         * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
+         */
+        public Builder setTmPacket(
+            org.yamcs.protobuf.Yamcs.TmPacketData.Builder builderForValue) {
+          if (tmPacketBuilder_ == null) {
+            tmPacket_ = builderForValue.build();
+            onChanged();
+          } else {
+            tmPacketBuilder_.setMessage(builderForValue.build());
+          }
+          bitField0_ |= 0x00004000;
+          return this;
+        }
+        /**
+         * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
+         */
+        public Builder mergeTmPacket(org.yamcs.protobuf.Yamcs.TmPacketData value) {
+          if (tmPacketBuilder_ == null) {
+            if (((bitField0_ & 0x00004000) == 0x00004000) &&
+                tmPacket_ != org.yamcs.protobuf.Yamcs.TmPacketData.getDefaultInstance()) {
+              tmPacket_ =
+                org.yamcs.protobuf.Yamcs.TmPacketData.newBuilder(tmPacket_).mergeFrom(value).buildPartial();
+            } else {
+              tmPacket_ = value;
+            }
+            onChanged();
+          } else {
+            tmPacketBuilder_.mergeFrom(value);
+          }
+          bitField0_ |= 0x00004000;
+          return this;
+        }
+        /**
+         * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
+         */
+        public Builder clearTmPacket() {
+          if (tmPacketBuilder_ == null) {
+            tmPacket_ = org.yamcs.protobuf.Yamcs.TmPacketData.getDefaultInstance();
+            onChanged();
+          } else {
+            tmPacketBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00004000);
+          return this;
+        }
+        /**
+         * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
+         */
+        public org.yamcs.protobuf.Yamcs.TmPacketData.Builder getTmPacketBuilder() {
+          bitField0_ |= 0x00004000;
+          onChanged();
+          return getTmPacketFieldBuilder().getBuilder();
+        }
+        /**
+         * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
+         */
+        public org.yamcs.protobuf.Yamcs.TmPacketDataOrBuilder getTmPacketOrBuilder() {
+          if (tmPacketBuilder_ != null) {
+            return tmPacketBuilder_.getMessageOrBuilder();
+          } else {
+            return tmPacket_;
+          }
+        }
+        /**
+         * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
+         */
+        private com.google.protobuf.SingleFieldBuilder<
+            org.yamcs.protobuf.Yamcs.TmPacketData, org.yamcs.protobuf.Yamcs.TmPacketData.Builder, org.yamcs.protobuf.Yamcs.TmPacketDataOrBuilder> 
+            getTmPacketFieldBuilder() {
+          if (tmPacketBuilder_ == null) {
+            tmPacketBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+                org.yamcs.protobuf.Yamcs.TmPacketData, org.yamcs.protobuf.Yamcs.TmPacketData.Builder, org.yamcs.protobuf.Yamcs.TmPacketDataOrBuilder>(
+                    tmPacket_,
+                    getParentForChildren(),
+                    isClean());
+            tmPacket_ = null;
+          }
+          return tmPacketBuilder_;
         }
 
         // @@protoc_insertion_point(builder_scope:web.WebSocketServerMessage.WebSocketSubscriptionData)
@@ -8889,7 +9093,7 @@ public final class Web {
       "SocketClientMessage\022\027\n\017protocolVersion\030\001" +
       " \001(\r\022\026\n\016sequenceNumber\030\002 \001(\r\022\020\n\010resource" +
       "\030\003 \001(\t\022\021\n\toperation\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\"" +
-      "\217\t\n\026WebSocketServerMessage\0225\n\004type\030\001 \001(\016" +
+      "\266\t\n\026WebSocketServerMessage\0225\n\004type\030\001 \001(\016" +
       "2\'.web.WebSocketServerMessage.MessageTyp" +
       "e\022=\n\005reply\030\002 \001(\0132..web.WebSocketServerMe" +
       "ssage.WebSocketReplyData\022E\n\texception\030\003 ",
@@ -8900,7 +9104,7 @@ public final class Web {
       "rsion\030\001 \001(\r\022\026\n\016sequenceNumber\030\002 \001(\005\032v\n\026W" +
       "ebSocketExceptionData\022\027\n\017protocolVersion" +
       "\030\001 \001(\r\022\026\n\016sequenceNumber\030\002 \001(\005\022\014\n\004type\030\003" +
-      " \001(\t\022\017\n\007message\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\032\200\005\n\031" +
+      " \001(\t\022\017\n\007message\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\032\247\005\n\031" +
       "WebSocketSubscriptionData\022\026\n\016sequenceNum" +
       "ber\030\001 \001(\r\022\"\n\004type\030\002 \001(\0162\024.yamcs.ProtoDat",
       "aType\022,\n\rparameterData\030\003 \001(\0132\025.pvalue.Pa" +
@@ -8916,16 +9120,16 @@ public final class Web {
       "\tlinkEvent\030\014 \001(\0132\032.yamcsManagement.LinkE" +
       "vent\0226\n\020commandQueueInfo\030\r \001(\0132\034.command" +
       "ing.CommandQueueInfo\0228\n\021commandQueueEven" +
-      "t\030\016 \001(\0132\035.commanding.CommandQueueEvent\"1" +
-      "\n\013MessageType\022\t\n\005REPLY\020\002\022\r\n\tEXCEPTION\020\003\022" +
-      "\010\n\004DATA\020\004\"1\n\024RestExceptionMessage\022\014\n\004typ" +
-      "e\030\001 \001(\t\022\013\n\003msg\030\002 \001(\t\"X\n\034ParameterSubscri" +
-      "ptionRequest\022 \n\002id\030\001 \003(\0132\024.yamcs.NamedOb" +
-      "jectId\022\026\n\016abortOnInvalid\030\002 \001(\010\"k\n\035Parame" +
-      "terSubscriptionResponse\022#\n\005valid\030\001 \003(\0132\024",
-      ".yamcs.NamedObjectId\022%\n\007invalid\030\002 \003(\0132\024." +
-      "yamcs.NamedObjectIdB\024\n\022org.yamcs.protobu" +
-      "f"
+      "t\030\016 \001(\0132\035.commanding.CommandQueueEvent\022%" +
+      "\n\010tmPacket\030\017 \001(\0132\023.yamcs.TmPacketData\"1\n" +
+      "\013MessageType\022\t\n\005REPLY\020\002\022\r\n\tEXCEPTION\020\003\022\010" +
+      "\n\004DATA\020\004\"1\n\024RestExceptionMessage\022\014\n\004type" +
+      "\030\001 \001(\t\022\013\n\003msg\030\002 \001(\t\"X\n\034ParameterSubscrip" +
+      "tionRequest\022 \n\002id\030\001 \003(\0132\024.yamcs.NamedObj" +
+      "ectId\022\026\n\016abortOnInvalid\030\002 \001(\010\"k\n\035Paramet",
+      "erSubscriptionResponse\022#\n\005valid\030\001 \003(\0132\024." +
+      "yamcs.NamedObjectId\022%\n\007invalid\030\002 \003(\0132\024.y" +
+      "amcs.NamedObjectIdB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -8961,7 +9165,7 @@ public final class Web {
           internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_descriptor,
-              new java.lang.String[] { "SequenceNumber", "Type", "ParameterData", "Command", "ProcessorInfo", "ClientInfo", "Statistics", "Event", "StreamData", "AlarmData", "TimeInfo", "LinkEvent", "CommandQueueInfo", "CommandQueueEvent", });
+              new java.lang.String[] { "SequenceNumber", "Type", "ParameterData", "Command", "ProcessorInfo", "ClientInfo", "Statistics", "Event", "StreamData", "AlarmData", "TimeInfo", "LinkEvent", "CommandQueueInfo", "CommandQueueEvent", "TmPacket", });
           internal_static_web_RestExceptionMessage_descriptor =
             getDescriptor().getMessageTypes().get(2);
           internal_static_web_RestExceptionMessage_fieldAccessorTable = new

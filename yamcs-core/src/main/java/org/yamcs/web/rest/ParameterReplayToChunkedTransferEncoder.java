@@ -1,6 +1,7 @@
 package org.yamcs.web.rest;
 
 import java.io.IOException;
+import java.nio.channels.ClosedChannelException;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import org.yamcs.web.HttpRequestHandler.ChunkedTransferStats;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
+import io.netty.channel.Channel;
 
 /**
  * Reads a yamcs replay and maps it directly to an output buffer. If that buffer grows larger
@@ -65,6 +67,10 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
                 writeChunk();
                 resetBuffer();
             }
+        } catch (ClosedChannelException e) {
+            log.info("Closing replay due to channel being closed");
+            failed = true;
+            requestReplayAbortion();
         } catch (IOException e) {
             log.error("Closing replay due to IO error", e);
             failed = true;
@@ -77,8 +83,11 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
     @Override
     public void replayFinished() {
         if (failed) {
-            log.warn("Closing channel because transfer failed");
-            req.getChannelHandlerContext().channel().close();
+            Channel ch = req.getChannelHandlerContext().channel();
+            if(ch.isOpen()) {
+                log.warn("Closing channel because transfer failed");
+                req.getChannelHandlerContext().channel().close();
+            }
             return;
         }
         try {

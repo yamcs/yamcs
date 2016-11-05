@@ -3,11 +3,11 @@ package org.yamcs.archive;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
@@ -27,6 +27,7 @@ import org.yamcs.xtceproc.XtceTmExtractor;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
+import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
@@ -68,7 +69,7 @@ public class XtceTmRecorder extends AbstractService {
         RECORDED_TM_TUPLE_DEFINITION.addColumn(PNAME_COLUMN, DataType.ENUM); //container name (XTCE qualified name) 
     }
 
-    public XtceTmRecorder(String yamcsInstance) throws IOException, ConfigurationException, StreamSqlException, ParseException, ActiveMQException, YamcsApiException {
+    public XtceTmRecorder(String yamcsInstance) throws IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {
         this(yamcsInstance, null);
     }
     final TimeService timeService;
@@ -83,12 +84,12 @@ public class XtceTmRecorder extends AbstractService {
      * @throws ActiveMQException
      * @throws YamcsApiException
      */
-    public XtceTmRecorder(String yamcsInstance, Map<String, Object> config) throws IOException, ConfigurationException, StreamSqlException, ParseException, ActiveMQException, YamcsApiException {
+    public XtceTmRecorder(String yamcsInstance, Map<String, Object> config) throws IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {
 
         this.yamcsInstance = yamcsInstance;
         log=LoggerFactory.getLogger(this.getClass().getName()+"["+yamcsInstance+"]");
 
-        YarchDatabase ydb=YarchDatabase.getInstance(yamcsInstance);
+        YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
        
         if(ydb.getTable(TABLE_NAME)==null) {
             String query="create table "+TABLE_NAME+"("+RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()+", primary key(gentime, seqNum)) histogram(pname) partition by time_and_value(gentime"+getTimePartitioningSchemaSql()+", pname) table_format=compressed";
@@ -183,6 +184,15 @@ public class XtceTmRecorder extends AbstractService {
     protected void doStop() {
         for(StreamRecorder sr: recorders) {
             sr.quit();
+        }
+        YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+        Stream s = ydb.getStream("tm_is");
+        Collection<StreamSubscriber> subscribers = s.getSubscribers();
+        s.close();
+        for(StreamSubscriber ss:subscribers) {
+            if(ss instanceof TableWriter) {
+                ((TableWriter)ss).close();
+            }
         }
         notifyStopped();
     }

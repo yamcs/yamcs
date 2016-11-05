@@ -58,7 +58,7 @@ public abstract class RestHandler extends RouteHandler {
     private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
     private static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
 
-    protected static void sendOK(RestRequest restRequest) {
+    protected static void completeOK(RestRequest restRequest) {
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
         setContentLength(httpResponse, 0);
        completeRequest(restRequest, httpResponse);
@@ -66,8 +66,8 @@ public abstract class RestHandler extends RouteHandler {
 
     protected static <T extends MessageLite> void completeOK(RestRequest restRequest, T responseMsg, Schema<T> responseSchema) {
         ByteBuf body = restRequest.getChannelHandlerContext().alloc().buffer();
-        ByteBufOutputStream channelOut = new ByteBufOutputStream(body);
-        try {
+       
+        try (ByteBufOutputStream channelOut = new ByteBufOutputStream(body)){
             if (MediaType.PROTOBUF.equals(restRequest.deriveTargetContentType())) {
                 responseMsg.writeTo(channelOut);
             } else {
@@ -119,9 +119,8 @@ public abstract class RestHandler extends RouteHandler {
         MediaType contentType = req.deriveTargetContentType();
         ChannelHandlerContext ctx = req.getChannelHandlerContext();
         if (MediaType.JSON.equals(contentType)) {
-            try {
-                ByteBuf buf = ctx.alloc().buffer();
-                ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
+            ByteBuf buf = ctx.alloc().buffer();
+            try (ByteBufOutputStream channelOut = new ByteBufOutputStream(buf)) {
                 JsonGenerator generator = req.createJsonGenerator(channelOut);
                 JsonIOUtil.writeTo(generator, toException(t).build(), SchemaWeb.RestExceptionMessage.WRITE, false);
                 generator.close();
@@ -137,9 +136,10 @@ public abstract class RestHandler extends RouteHandler {
             }
         } else if (MediaType.PROTOBUF.equals(contentType)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
-            ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
-            try {
+            
+            try (ByteBufOutputStream channelOut = new ByteBufOutputStream(buf)) {
                 toException(t).build().writeTo(channelOut);
+                channelOut.close();
                 HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
                 setContentTypeHeader(response, MediaType.PROTOBUF.toString());
                 setContentLength(response, buf.readableBytes());
@@ -148,7 +148,8 @@ public abstract class RestHandler extends RouteHandler {
                 log.error("Could not write to channel buffer", e2);
                 log.debug("Original exception not sent to client", t);
                 return HttpRequestHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
-            }
+            }     
+            
         } else {
            return HttpRequestHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
         }
@@ -163,6 +164,9 @@ public abstract class RestHandler extends RouteHandler {
         cf.addListener(l-> {
            req.getCompletableFuture().completeExceptionally(e); 
         });
+    }
+    protected static void abortRequest(RestRequest req) {
+        req.getCompletableFuture().complete(null); 
     }
     /**
      * Just a little shortcut because builders are dead ugly
@@ -254,6 +258,9 @@ public abstract class RestHandler extends RouteHandler {
         if (p == null) {
             String rootedName = pathName.startsWith("/") ? pathName : "/" + pathName;
             p = mdb.getSystemParameterDb().getSystemParameter(rootedName, false);
+            if(p!=null) {
+                id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
+            }
         }
 
         if (p != null && !authorised(req, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {

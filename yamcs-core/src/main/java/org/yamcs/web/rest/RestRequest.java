@@ -211,7 +211,8 @@ public class RestRequest {
     
     public String getQueryParameter(String name) {
         List<String> param = qsDecoder.parameters().get(name);
-        if (param.isEmpty()) return null;
+
+        if (param==null || param.isEmpty()) return null;
         return param.get(0);
     }
     

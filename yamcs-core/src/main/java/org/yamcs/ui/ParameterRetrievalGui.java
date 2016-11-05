@@ -1,7 +1,5 @@
 package org.yamcs.ui;
 
-import static org.yamcs.api.artemis.Protocol.DATA_TYPE_HEADER_NAME;
-import static org.yamcs.api.artemis.Protocol.decode;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -20,6 +18,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,29 +43,14 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.apache.activemq.artemis.api.core.SimpleString;
-import org.apache.activemq.artemis.api.core.client.ClientMessage;
-import org.apache.activemq.artemis.api.core.client.MessageHandler;
-import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.api.YamcsSession;
-import org.yamcs.api.artemis.Protocol;
-import org.yamcs.api.artemis.YamcsClient;
-import org.yamcs.api.ws.ConnectionListener;
+import org.yamcs.api.rest.BulkRestDataReceiver;
+import org.yamcs.api.rest.RestClient;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Yamcs.EndAction;
+import org.yamcs.protobuf.Rest.BulkDownloadParameterValueRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.NamedObjectList;
-import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
-import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplayStatus;
-import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
-import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
-import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.MdbMappings;
@@ -76,7 +61,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
  * @author nm
  * GUI for requesting parameter dumps
  */
-public class ParameterRetrievalGui extends JFrame implements MessageHandler, ConnectionListener, ParameterListener, ParameterSelectDialogListener {
+public class ParameterRetrievalGui extends JFrame implements  ParameterSelectDialogListener {
     JCheckBox printTime, printRaw, printUnique, keepValues, ignoreInvalidParameters, printFullLines, timeWindow;
     JTextField timeWindowSize;
     JButton startButton;
@@ -96,9 +81,8 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
     YamcsConnectionProperties connectionParams;
     private ParameterFormatter parameterFormatter;
     ParameterSelectDialog selectDialog;
+    private CompletableFuture<Void> completableFuture;
 
-    YamcsSession ysession;
-    YamcsClient yclient;
 
     /**
      * Creates a new window that requests parameter deliveries
@@ -499,7 +483,7 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
             return;
         }
         setVisible(false);
-        progressMonitor = new ProgressMonitor(parent,"Saving parameters","0 lines saved",0,(int)((stop-start)/1000));
+        progressMonitor = new ProgressMonitor(parent, "Saving parameters","0 lines saved", 0, (int)((stop-start)/1000));
         try {
             writer=new BufferedWriter(new FileWriter(fileNameTextField.getText()));
             parameterFormatter=new ParameterFormatter(writer, paramList);
@@ -521,91 +505,56 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
 
             YamcsConnectionProperties ycd = connectionParams.clone();
             ycd.setInstance(archiveInstance);
-
-            ysession = YamcsSession.newBuilder().setConnectionParams(ycd).build();
-            yclient = ysession.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
-            ParameterReplayRequest prr=ParameterReplayRequest.newBuilder().addAllNameFilter(paramList).build();
-            ReplayRequest rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT)
-                    .setParameterRequest(prr).setStart(start).setStop(stop).setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build()).build();
-
-            StringMessage answer=(StringMessage) yclient.executeRpc(Protocol.getReplayControlAddress(ycd.getInstance()), "createReplay", rr, StringMessage.newBuilder());
-            SimpleString replayAddress=new SimpleString(answer.getMessage());
-
-            yclient.dataConsumer.setMessageHandler(this);
-            yclient.executeRpc(replayAddress, "start", null, null);
-
-        } catch(YamcsException e) {
-            if("InvalidIdentification".equals(e.getType())) {
-                try {
-                    NamedObjectList nol=(NamedObjectList) e.decodeExtra(NamedObjectList.newBuilder());
-                    // Prevent error message causing dialog bigger than the screen
-                    StringBuffer errorMessage = new StringBuffer( "The following parameters are invalid:\n" );
-                    int count = 0;
-                    for( NamedObjectId noi : nol.getListList() ) {
-                        errorMessage.append( noi.getName()+", " );
-                        if( count > 4 ) { count = 0; errorMessage.append( '\n' ); }
-                        count ++;
-                    }
-                    showErrorMessage( errorMessage.toString() );
-                } catch (InvalidProtocolBufferException e1) {
-                    gotException(e1);
+            RestClient restClient = new RestClient(ycd);
+            
+            BulkDownloadParameterValueRequest prr = BulkDownloadParameterValueRequest.newBuilder().addAllId(paramList).setStart(TimeEncoding.toString(start)).setStop(TimeEncoding.toString(stop)).build();
+            completableFuture = restClient.doBulkGetRequest("/archive/"+archiveInstance+"/downloads/parameters", prr.toByteArray(), new BulkRestDataReceiver() {
+                @Override
+                public void receiveData(byte[] data) throws YamcsApiException {                   
+                    ParameterData pd;
+                    
+                    try {
+                        pd = ParameterData.parseFrom(data);
+                        updateParameters(pd.getParameterList());
+                    } catch (InvalidProtocolBufferException e) {
+                        gotException(new Exception("Exception decoding data: "+e.getMessage()));
+                    }     
                 }
-            } else {
-                gotException( e );
-            }
+            });
+
+            completableFuture.whenComplete((v, t) ->{
+                if((t==null) || (t instanceof CancellationException)) {
+                    replayFinished();
+                } else {
+                    gotException(t);
+                }
+            });
+            
         } catch (Exception e) {
             gotException(e);
         } 
     }
 
-    @Override
-    public void onMessage(ClientMessage msg) {
-        try {
-            int t=msg.getIntProperty(DATA_TYPE_HEADER_NAME);
-            ProtoDataType pdt=ProtoDataType.valueOf(t);
-            if(pdt==ProtoDataType.STATE_CHANGE) {
-                ReplayStatus status = (ReplayStatus) decode(msg, ReplayStatus.newBuilder());
-                if(status.getState()==ReplayState.CLOSED) {
-                    replayFinished();
-                } else if(status.getState()==ReplayState.ERROR) {
-                    exception(new Exception("Got error during retrieval: "+status.getErrorMessage()));
-                }
-                return;
-            } else  if(pdt!=ProtoDataType.PARAMETER) {
-                exception(new Exception("Unexpected data type "+t));
-                return;
-            }
 
-            ParameterData data=(ParameterData)decode(msg, ParameterData.newBuilder());
-            updateParameters(data.getParameterList());
-        } catch (YamcsApiException e) {
-            exception(e);
-            e.printStackTrace();
-            return;
-        }
-    }
-
-
-    @Override
-    public void updateParameters(List<ParameterValue> paramList) {
+    private void updateParameters(List<ParameterValue> paramList) {
+        
+        if(completableFuture.isCancelled()) return;
         try {
             parameterFormatter.writeParameters(paramList);
-            int linesReceived=parameterFormatter.getLinesReceived();
+            int linesReceived = parameterFormatter.getLinesReceived();
             long time=paramList.get(0).getGenerationTime();
             int progr=(int)((time-start)/1000);
             if(linesReceived%100==0) progressMonitor.setNote(getNote());
             progressMonitor.setProgress(progr);
-
+            
+            if(progressMonitor.isCanceled()) completableFuture.cancel(true);
         } catch (IOException e) {
             gotException(e);
         }
     }
 
-    @Override
-    public void replayFinished() {
+    private void replayFinished() {
         try {
-            yclient.close();
-            ysession.close();
             parameterFormatter.close();
         } catch (Exception e) {
             gotException(e);
@@ -635,54 +584,13 @@ public class ParameterRetrievalGui extends JFrame implements MessageHandler, Con
         }
     }
 
-    public void gotException(final Exception e) {
+    public void gotException(final Throwable e) {
         final String message;
         e.printStackTrace();
         message="Error when retrieving parameters: "+e;
         showErrorMessage(message);
     }
 
-    @Override
-    public boolean isCanceled() {
-        return progressMonitor.isCanceled();
-    }
-
-
-
-    @Override
-    public void connecting(String url) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void connected(String url) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void connectionFailed(String url, YamcsException exception) {
-        showErrorMessage("Connection to "+url+" failed: "+exception);
-
-    }
-
-    @Override
-    public void disconnected() {
-        showErrorMessage("Disconnected");
-
-    }
-
-    @Override
-    public void log(String message) {
-        System.err.println(message);
-    }
-
-    @Override
-    public void exception(Exception e) {
-        gotException(e);
-
-    }
     public static void main(String[] args) {
         SwingUtilities.invokeLater(
                 new Runnable() {

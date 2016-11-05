@@ -26,7 +26,7 @@ rdbConfig:
           # The actual number of open files may be temporarely exceeded in case there are many concurrent iterators open at the same time
           #  - this can happen for example when doing many replays in parallel.
           # It is threfore recommended to set the maximum number of open files at the OS level (ulimit -n on Linux) to at least 10k.
-          maxOpenFiles: 300
+          maxOpenFiles: 100
           columnFamilyOptions:
               targetFileSizeBase: 10240     #KB
               targetFileSizeMultiplier: 10
@@ -35,7 +35,8 @@ rdbConfig:
               writeBufferSize: 50240        #KB
               maxWriteBufferNumber: 2
           tableFormatConfig:
-              blockSize: 512 #KB
+              blockSize: 64 #KB
+              noBlockCache: true
 
 webConfig:
    #where to find the web directory with ccs, js etc
@@ -45,7 +46,7 @@ webConfig:
       - web/base
 
    # port used by the webserver
-   webPort: 8090
+   port: 8090
 
    # Indicates whether zero-copy can be used to optimize non-ssl static file serving
    # Leave this true unless you encounter a specific deployment issue (e.g. some docker hosts)

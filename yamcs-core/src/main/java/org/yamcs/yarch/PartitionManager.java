@@ -100,20 +100,23 @@ public abstract class PartitionManager {
      */
     public synchronized Partition createAndGetPartition(long instant, Object value) throws IOException {
         Partition partition;
-        if(partitioningSpec.timeColumn!=null) {
-            if((pcache==null) || (pcache.start>instant) || (pcache.getEnd()<=instant)) {
+        Interval tmpInterval = pcache;
+        boolean newlyCreated = false;
         
-                Entry<Long, Interval>entry=intervals.floorEntry(instant);
+        if(partitioningSpec.timeColumn!=null) {
+            if((tmpInterval==null) || (tmpInterval.start>instant) || (tmpInterval.getEnd()<=instant)) {
+        
+                Entry<Long, Interval>entry = intervals.floorEntry(instant);
                 if((entry!=null) && (instant<entry.getValue().getEnd())) {
-                    pcache=entry.getValue();		               
+                    tmpInterval = entry.getValue();		               
                 } else {//no partition in this interval.
                     PartitionInfo pinfo = partitioningSpec.getTimePartitioningSchema().getPartitionInfo(instant);
-                    pcache=new Interval(pinfo.partitionStart, pinfo.partitionEnd);		                
-                    intervals.put(pcache.start, pcache);
+                    tmpInterval = new Interval(pinfo.partitionStart, pinfo.partitionEnd);
+                    newlyCreated = true;                    
                 }
             }
         } 
-        partition = pcache.get(value);
+        partition = tmpInterval.get(value);
         if(partition == null) {
             if(partitioningSpec.timeColumn!=null) {
                 PartitionInfo pinfo = partitioningSpec.getTimePartitioningSchema().getPartitionInfo(instant);
@@ -121,8 +124,13 @@ public abstract class PartitionManager {
             } else {
                 partition = createPartition(value);
             }
-            pcache.add(value, partition);
+            tmpInterval.add(value, partition);
         }
+        if(newlyCreated) {
+            intervals.put(tmpInterval.start, tmpInterval);
+        }
+        pcache = tmpInterval;
+        
         return partition;
     }
 

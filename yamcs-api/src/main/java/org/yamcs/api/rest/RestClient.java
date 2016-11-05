@@ -11,6 +11,7 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.protobuf.Rest.ListInstancesResponse;
@@ -28,36 +29,30 @@ public class RestClient {
     long timeout = 5000; //timeout in milliseconds
 
     final HttpClient httpClient;
-    final boolean useProtobuf;
- 
+
     /** maximum size of the responses - this is not applicable to bulk requests */
     final static long MAX_RESPONSE_LENGTH = 1024*1024;
 
     /**max message length of an individual ProtoBuf message part of a bulk retrieval*/ 
     final static int MAX_MESSAGE_LENGTH = 1024*1024;
 
-    /**
-     * Creates a rest client that communicates either with protobuf or json
-     * 
-     * @param connectionProperties
-     * @param useProtobuf - set to true to use protobuf or false to use json
-     */
-    public RestClient(YamcsConnectionProperties connectionProperties, boolean useProtobuf) {
-        this.connectionProperties = connectionProperties;
-        httpClient = new HttpClient(timeout, useProtobuf);
-        httpClient.setMaxResponseLength(MAX_RESPONSE_LENGTH);
-        this.useProtobuf = useProtobuf;
-    }
-
-
+    private boolean autoclose = true;
+    
     /**
      * Creates a rest client that communications using protobuf
      * @param connectionProperties
      */
     public RestClient(YamcsConnectionProperties connectionProperties) {
-        this(connectionProperties, true);
+        this.connectionProperties = connectionProperties;
+        httpClient = new HttpClient();
+        httpClient.setMaxResponseLength(MAX_RESPONSE_LENGTH);
+        httpClient.setAcceptMediaType(MediaType.PROTOBUF);
+        httpClient.setSendMediaType(MediaType.PROTOBUF);
     }
+
+
     
+
     /**
      * Retrieve the list of yamcs instances from the server. The operation will block until the list is received.
      * 
@@ -84,7 +79,7 @@ public class RestClient {
             }
         });
     }
-    
+
     /**
      * Performs a request with an empty body. Works using protobuf
      * @param resource
@@ -92,7 +87,7 @@ public class RestClient {
      * @return a the response body
      */
     public CompletableFuture<byte[]> doRequest(String resource, HttpMethod method) {
-        return doRequest(resource, method, new byte[0]);
+        return  doRequest(resource, method, new byte[0]);
     }
 
     /**
@@ -108,19 +103,21 @@ public class RestClient {
      * @throws RuntimeException(URISyntaxException) thrown in case the resource specification is invalid
      */
     public CompletableFuture<String> doRequest(String resource, HttpMethod method, String body) {
-        if(useProtobuf) {
-            throw new IllegalStateException("this method only works when usePotobuf is false");
-        }
         CompletableFuture<byte[]> cf;
         try {
             cf = httpClient.doAsyncRequest(connectionProperties.getRestApiUrl()+resource, method, body.getBytes(), connectionProperties.getAuthenticationToken());
         } catch (URISyntaxException e) { //throw a RuntimeException instead since if the code is not buggy it's unlikely to have this exception thrown
             throw new RuntimeException(e);
         }
+        if(autoclose) {
+            cf.whenComplete((v, t)->{
+               close(); 
+            });
+        }
         return cf.thenApply(b -> {
-                return new String(b);
+            return new String(b);
         });
-        
+
     }
 
     /**
@@ -134,15 +131,18 @@ public class RestClient {
      * @return future containing protobuf encoded data
      */
     public CompletableFuture<byte[]> doRequest(String resource, HttpMethod method, byte[] body) {
-        if(!useProtobuf) {
-            throw new IllegalStateException("this method only works when usePotobuf is true");
-        }
         CompletableFuture<byte[]> cf;
         try {
             cf = httpClient.doAsyncRequest(connectionProperties.getRestApiUrl()+resource, method, body, connectionProperties.getAuthenticationToken());
         } catch (URISyntaxException e) { //throw a RuntimeException instead since if the code is not buggy it's unlikely to have this exception thrown
             throw new RuntimeException(e);
         }
+        if(autoclose) {
+            cf.whenComplete((v, t)->{
+               close(); 
+            });
+        }
+        
         return cf;
     }
     /**
@@ -158,12 +158,23 @@ public class RestClient {
      * @throws RuntimeException(URISyntaxException) - thrown if the uri + resource does not form a correct URL
      */
     public CompletableFuture<Void> doBulkGetRequest(String resource, BulkRestDataReceiver receiver) {
+        return doBulkGetRequest(resource, new byte[0], receiver);
+    }
+    
+    public CompletableFuture<Void> doBulkGetRequest(String resource, byte[] body, BulkRestDataReceiver receiver) {
+        CompletableFuture<Void> cf;
         MessageSplitter splitter = new MessageSplitter(receiver);
         try {
-            return httpClient.doBulkRequest(connectionProperties.getRestApiUrl()+resource, HttpMethod.GET, "", connectionProperties.getAuthenticationToken(), splitter);
+            cf= httpClient.doBulkRequest(connectionProperties.getRestApiUrl()+resource, HttpMethod.GET, body, connectionProperties.getAuthenticationToken(), splitter);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+        if(autoclose) {
+            cf.whenComplete((v, t)->{
+               close(); 
+            });
+        }
+        return cf;
     }
 
     static class MessageSplitter implements BulkRestDataReceiver {
@@ -181,26 +192,25 @@ public class RestClient {
             if(data.length>MAX_MESSAGE_LENGTH) {
                 throw new YamcsApiException("Message too long: received "+data.length+" max length: "+MAX_MESSAGE_LENGTH);
             }
-            
+
             int length = (data.length < buffer.length-writeOffset) ? data.length:buffer.length-writeOffset; 
             System.arraycopy(data, 0, buffer, writeOffset, length);
             writeOffset+=length;
             ByteBuffer bb = ByteBuffer.wrap(buffer);
 
-            while(readOffset<writeOffset) {
+            while(readOffset < writeOffset) {
                 bb.position(readOffset);
                 int msgLength = readVarInt32(bb);
                 if(msgLength>MAX_MESSAGE_LENGTH) throw new YamcsApiException("Message too long: decodedMessagLength: "+msgLength+" max length: "+MAX_MESSAGE_LENGTH);
-                if(msgLength > writeOffset-readOffset) break; 
-     
-                System.out.println("receiving message of length "+msgLength +" readOffset: "+readOffset+" writeOffset: "+writeOffset+" data.length: "+data.length);
+                if(msgLength > writeOffset-bb.position()) break; 
+
                 readOffset = bb.position();
                 byte[] b = new byte[msgLength];
                 System.arraycopy(buffer, readOffset, b, 0, msgLength);
                 readOffset+=msgLength;
-                System.out.println("sent data to receiver "+b.length);
                 finalReceiver.receiveData(b);
             }
+
             System.arraycopy(buffer, readOffset, buffer, 0, writeOffset-readOffset);
             writeOffset-=readOffset;
             readOffset=0;
@@ -222,7 +232,7 @@ public class RestClient {
         int v = b &0x7F;
         for (int shift = 7; (b & 0x80) != 0; shift += 7) {
             if(shift>28) throw new YamcsApiException("Invalid VarInt32: more than 5 bytes!");
-            
+
             if(!bb.hasRemaining()) return Integer.MAX_VALUE;//we miss some bytes from the size itself
             b = bb.get();
             v |= (b & 0x7F) << shift;
@@ -230,5 +240,42 @@ public class RestClient {
         }
         return v;
     }
+
     
+    
+
+    public void setSendMediaType(MediaType sendMediaType) {
+        httpClient.setSendMediaType(sendMediaType);
+    }
+
+    public void setAcceptMediaType(MediaType acceptMediaType) {
+        httpClient.setAcceptMediaType(acceptMediaType);
+    }
+
+
+
+
+    public void setMaxResponseLength(long size) {
+        httpClient.setMaxResponseLength(size);
+    }
+
+    public void close() {
+        httpClient.close();
+    }
+
+
+
+
+    public boolean isAutoclose() {
+        return autoclose;
+    }
+
+    /**
+     * if autoclose is set, the httpClient will be automatically closed at the end of the request, so the netty eventgroup is shutdown.
+     * Otherwise it has to be done manually - but then the same object can be used to perform multiple requests.
+     * @param autoclose
+     */
+    public void setAutoclose(boolean autoclose) {
+        this.autoclose = autoclose;
+    }
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,8 +16,8 @@ import org.yamcs.yarch.YarchDatabase;
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
-import org.yamcs.api.YamcsSession;
 import org.yamcs.api.artemis.YamcsClient;
+import org.yamcs.api.artemis.YamcsSession;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -31,7 +32,9 @@ public class AbstractHornetQTranslatorService extends AbstractService {
 
     List<Stream> streams = new ArrayList<Stream>();
     Map<Stream, StreamSubscriber> streamSubscribers = new HashMap<Stream, StreamSubscriber>();
-
+    static final public String UNIQUEID_HDR_NAME="_y_uniqueid";
+    static final public int UNIQUEID = new Random().nextInt();
+    
 
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
     String instance;
@@ -87,7 +90,7 @@ public class AbstractHornetQTranslatorService extends AbstractService {
                     try {
                         
                         ClientMessage msg=translator.buildMessage(yamcsClient.get().getYamcsSession().createMessage(false), tuple);
-                        msg.putIntProperty(StreamAdapter.UNIQUEID_HDR_NAME, StreamAdapter.UNIQUEID);
+                        msg.putIntProperty(UNIQUEID_HDR_NAME, UNIQUEID);
                         yamcsClient.get().sendData(hornetAddress, msg);
                     } catch (IllegalArgumentException e) {
                         log.warn(e.getMessage());

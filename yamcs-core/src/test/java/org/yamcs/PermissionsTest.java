@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
+import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.WebSocketRequest;
@@ -36,7 +37,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
             assertTrue(e.getCause().getMessage().contains("Unauthorized"));
         }
 
-
+        restClient1.close();
     }
 
     @Test
@@ -73,6 +74,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
             gotException = true;
         }
         assertTrue("Permission should be denied for String parameter", gotException);
+        restClient1.close();
     }
 
 
@@ -118,6 +120,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
         } catch (ExecutionException e) {
             assertTrue(e.getCause().getMessage().contains("ForbiddenException"));
         }
+        restClient1.close();
     }
 
     @Test
@@ -134,12 +137,14 @@ public class PermissionsTest extends AbstractIntegrationTest {
         } catch (ExecutionException e) {
             assertTrue(e.getCause().getMessage().contains("ForbiddenException"));
         }
+        restClient1.close();
     }
 
     @Test
     public void testPermissionUpdateCommandHistory() throws Exception {
         // testUser does not have the permission to update the command history
         // operator has the permission
+        
         try {
             updateCommandHistory(getRestClient("testuser", "password"));
         } catch (ExecutionException e) {
@@ -176,8 +181,11 @@ public class PermissionsTest extends AbstractIntegrationTest {
     private RestClient getRestClient(String username, String password) {
         YamcsConnectionProperties ycp1 = ycp.clone();
 
-        ycp1.setAuthenticationToke(new UsernamePasswordToken(username, password));
-        RestClient restClient1 = new RestClient(ycp1, false);
+        ycp1.setAuthenticationToken(new UsernamePasswordToken(username, password));
+        RestClient restClient1 = new RestClient(ycp1);
+        restClient1.setAcceptMediaType(MediaType.JSON);
+        restClient1.setSendMediaType(MediaType.JSON);
+        restClient1.setAutoclose(false);
         return restClient1;
 
     }

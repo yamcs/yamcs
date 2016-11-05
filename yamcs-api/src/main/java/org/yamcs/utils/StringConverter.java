@@ -3,7 +3,6 @@ package org.yamcs.utils;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -12,8 +11,6 @@ import org.yamcs.protobuf.Yamcs.Value;
 
 
 public class StringConverter {
-
-    static SimpleDateFormat sdf=new SimpleDateFormat("yyyy/DDD HH:mm:ss.SSS");
     static final BigInteger B64 = BigInteger.ZERO.setBit(64);
 
 

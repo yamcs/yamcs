@@ -35,7 +35,7 @@ webConfig:
       - /opt/yamcs/web
 
    # port used by the webserver
-   webPort: 8090
+   port: 8090
 
    # Indicates whether zero-copy can be used to optimize non-ssl static file serving
    # Leave this true unless you encounter a specific deployment issue (e.g. some docker hosts)

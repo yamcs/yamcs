@@ -9,7 +9,8 @@ import java.util.Queue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.api.artemis.YamcsConnectData;
+import org.yamcs.api.YamcsConnectionProperties.Protocol;
+import org.yamcs.api.artemis.ArtemisEventProducer;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yaml.snakeyaml.Yaml;
 
@@ -21,8 +22,10 @@ public class EventProducerFactory {
     static private Queue<Event>mockupQueue;
 
     static Logger log = LoggerFactory.getLogger(EventProducerFactory.class);
+    
     /**
      * Configure the factory to produce mockup objects, optionally queuing the events in a queue
+     * @param queue - if trye then queue all messages in the mockupQueue queue.
      */
     static public void setMockup(boolean queue) {
         mockup=true;
@@ -39,7 +42,7 @@ public class EventProducerFactory {
      * The yamcsURL in the file has to contain the yamcs instance.
      * If the event-producer.yaml is not found, then a console event producer is created that just
      * prints the messages on console.
-     * @return
+     * @return the created event producer
      * @throws RuntimeException in case the config files is found but contains errors
      */
     static public EventProducer getEventProducer() throws RuntimeException {
@@ -62,7 +65,7 @@ public class EventProducerFactory {
 
         }
         String configFile = "/event-producer.yaml";
-        InputStream is=EventProducerFactory.class.getResourceAsStream(configFile);
+        InputStream is = EventProducerFactory.class.getResourceAsStream(configFile);
         if(is==null) {
             log.debug("Could not find {} in the classpath, returning a ConsoleEventProducer", configFile);
             return new ConsoleEventProducer();
@@ -107,8 +110,13 @@ public class EventProducerFactory {
         }
 
         if(producer==null) {
-            log.debug("Creating a YamcsEventProducer connected to {}", ycd.getUrl());
-            producer = new WebSocketEventProducer(ycd);
+            if(ycd.getProtocol()==Protocol.ARTEMIS) { 
+                log.debug("Creating an Artemis  Yamcs event producer connected to {}", ycd.getUrl());
+                producer = new  ArtemisEventProducer(ycd);
+            } else {
+                log.debug("Creating a WebSocket Yamcs event producer connected to {}", ycd.getUrl());
+                producer = new WebSocketEventProducer(ycd);
+            }
         }
         
         return producer;

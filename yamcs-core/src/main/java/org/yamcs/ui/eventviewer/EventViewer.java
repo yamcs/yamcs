@@ -66,7 +66,8 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsConnectDialog;
-import org.yamcs.api.artemis.YamcsConnectData;
+import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.api.YamcsConnectDialog.YamcsConnectDialogResult;
 import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
@@ -547,10 +548,10 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     public void actionPerformed(ActionEvent e) {
         String cmd = e.getActionCommand();
         if (cmd.equals("connect")) {
-            /*ARTEMISYamcsConnectData ycd=YamcsConnectDialog.showDialog(this, true, authenticationEnabled);
-            if( ycd.isOk ) {
-            	yconnector.connect(ycd);
-            }*/
+            YamcsConnectDialogResult r = YamcsConnectDialog.showDialog(this, true, authenticationEnabled);
+            if( r.isOk() ) {
+            	yconnector.connect(r.getConnectionProperties());
+            }
         } else if (cmd.equals("retrieve_past")) {
             eventReceiver.retrievePastEvents();
         } else if (cmd.equals("switch_rule_status")) {
@@ -853,7 +854,6 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
      * Play the sound
      */
     private void playAlertSound() {
-        System.out.println("playing alert sound!!!!");
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -908,7 +908,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             clip.start();
 
             // sleep while the sound is playing
-            Thread.currentThread().sleep(clip.getMicrosecondLength());
+            Thread.sleep(clip.getMicrosecondLength());
 
         } catch (InterruptedException ie) {
             // ok
@@ -918,13 +918,14 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             if (clip != null) {
                 clip.stop();
                 clip.setFramePosition(0);
+                
             }
         }
     }
 
     private static void printUsageAndExit() {
         System.err.println("Usage event-viewer.sh yamcsurl");
-        System.err.println("Example:\n\tevent-viewer.sh yamcs://localhost:5445/yops");
+        System.err.println("Example:\n\tevent-viewer.sh http://localhost:8090/yops");
         System.exit(-1);
     }
 
@@ -1004,18 +1005,18 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     public static void main(String[] args) throws IOException, ConfigurationException, URISyntaxException, ClassNotFoundException, InstantiationException, IllegalAccessException  {
         if (args.length > 1)  printUsageAndExit();
         YConfiguration.setup();
-        YamcsConnectData ycd=null;
+        YamcsConnectionProperties ycd = null;
         if(args.length==1) {
-            if (args[0].startsWith("yamcs://")) {
-                ycd=YamcsConnectData.parse(args[0]);
+            if (args[0].startsWith("http")) {
+                ycd = YamcsConnectionProperties.parse(args[0]);
             } else {
                 printUsageAndExit();
             }        
         } 
         YamcsConnector yconnector=new YamcsConnector("EventViewer");
         YamcsEventReceiver eventReceiver = new YamcsEventReceiver(yconnector);
-        EventViewer ev=new EventViewer(yconnector, eventReceiver);
-     //ARTEMIS   if(ycd!=null) yconnector.connect(ycd);
+        EventViewer ev = new EventViewer(yconnector, eventReceiver);
+        if(ycd!=null) yconnector.connect(ycd);
     }
 
     @Override

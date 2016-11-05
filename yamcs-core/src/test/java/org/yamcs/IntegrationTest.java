@@ -25,6 +25,7 @@ import org.yamcs.protobuf.Rest.BulkGetParameterValueResponse;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
+import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
@@ -32,6 +33,8 @@ import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
+import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
+import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ManagementResource;
 
@@ -477,5 +480,34 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
     }
   
+    @Test
+    public void testServicesStopStart() throws Exception {
+        String service = "org.yamcs.archive.FSEventDecoder";
+        
+        String resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET, "").get();
+        ListServiceInfoResponse r = fromJson(resp, SchemaRest.ListServiceInfoResponse.MERGE).build();
+        assertEquals(11, r.getServiceList().size());
+        
+        ServiceInfo servInfo = r.getServiceList().stream().filter(si -> service.equals(si.getName())).findFirst().orElse(null);
+        assertEquals(ServiceState.RUNNING, servInfo.getState());
+        
+        
+        resp = restClient.doRequest("/services/IntegrationTest/"+service+"?state=STOPPED", HttpMethod.PATCH, "").get();
+        assertEquals("", resp);
+        
+        resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET, "").get();
+        r = fromJson(resp, SchemaRest.ListServiceInfoResponse.MERGE).build();
+        servInfo = r.getServiceList().stream().filter(si -> service.equals(si.getName())).findFirst().orElse(null);
+        assertEquals(ServiceState.TERMINATED, servInfo.getState());
+        
+        resp = restClient.doRequest("/services/IntegrationTest/"+service+"?state=running", HttpMethod.PATCH, "").get();
+        assertEquals("", resp);
+        
+        resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET, "").get();
+        r = fromJson(resp, SchemaRest.ListServiceInfoResponse.MERGE).build();
+        servInfo = r.getServiceList().stream().filter(si -> service.equals(si.getName())).findFirst().orElse(null);
+        assertEquals(ServiceState.RUNNING, servInfo.getState());
+        
+    }
    
 }

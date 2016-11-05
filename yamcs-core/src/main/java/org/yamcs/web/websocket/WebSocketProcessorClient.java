@@ -45,6 +45,7 @@ public class WebSocketProcessorClient implements ProcessorClient {
         resources.add(new TimeResource(processor, wsHandler));
         resources.add(new LinkResource(processor, wsHandler));
         resources.add(new CommandQueueResource(processor, wsHandler));
+        resources.add(new PacketResource(processor, wsHandler));
     }
 
     @Override

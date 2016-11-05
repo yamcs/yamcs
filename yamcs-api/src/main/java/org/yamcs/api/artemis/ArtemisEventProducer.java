@@ -13,7 +13,6 @@ import org.yamcs.api.AbstractEventProducer;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
-import org.yamcs.api.artemis.YamcsConnectData;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.utils.TimeEncoding;
@@ -38,7 +37,7 @@ public class ArtemisEventProducer extends AbstractEventProducer implements Conne
     static final int MAX_QUEUE_SIZE=1000;
     ArrayBlockingQueue<Event> queue=new ArrayBlockingQueue<Event>(MAX_QUEUE_SIZE);
     
-    ArtemisEventProducer(YamcsConnectionProperties ycd) {
+    public ArtemisEventProducer(YamcsConnectionProperties ycd) {
         yconnector = new YamcsConnector();
         yconnector.addConnectionListener(this);
         yconnector.connect(ycd);

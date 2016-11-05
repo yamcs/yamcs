@@ -19,17 +19,20 @@ import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Route;
 
+
 /**
  * Provides some maintenance operations on the parameter archive
  * @author nm
  *
  */
 public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
+    
+  
     /**
      * Request to (re)build the parameterArchive between start and stop
      * 
      */
-    @Route(path = "/api/archive/:instance/parameterArchive/rebuild")
+    @Route(path = "/api/archive/:instance/parameterArchive/rebuild", method = "POST")
     public void reprocess(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         checkPrivileges(req);
@@ -51,10 +54,10 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
             throw new BadRequestException(e.getMessage());
         }
         
-        sendOK(req);
+        completeOK(req);
     }
     
-    @Route(path = "/api/archive/:instance/parameterArchive/deletePartitions")
+    @Route(path = "/api/archive/:instance/parameterArchive/deletePartitions" , method = "POST")
     public void deletePartition(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         checkPrivileges(req);
@@ -90,7 +93,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
        
     }
     
-    @Route(path = "/api/archive/:instance/parameterArchive/info/parameter/:name*")
+    @Route(path = "/api/archive/:instance/parameterArchive/info/parameter/:name*", method = "GET")
     public void archiveInfo(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         checkPrivileges(req);

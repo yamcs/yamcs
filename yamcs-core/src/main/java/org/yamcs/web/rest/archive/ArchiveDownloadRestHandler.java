@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.yamcs.api.MediaType;
+import org.yamcs.archive.CommandHistoryRecorder;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.archive.GPBHelper;
 import org.yamcs.archive.XtceTmRecorder;
-import org.yamcs.cmdhistory.CommandHistoryRecorder;
 import org.yamcs.protobuf.Archive.TableData.TableRecord;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Rest.BulkDownloadParameterValueRequest;

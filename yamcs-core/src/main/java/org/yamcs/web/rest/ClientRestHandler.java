@@ -74,7 +74,7 @@ public class ClientRestHandler extends RestHandler {
                 yprocReq.addClientId(ci.getId());
                 try {
                     mservice.connectToProcessor(yprocReq.build(), req.getAuthToken());
-                    sendOK(req);
+                    completeOK(req);
                     return;
                 } catch (YamcsException e) {
                     throw new BadRequestException(e.getMessage());
@@ -82,6 +82,6 @@ public class ClientRestHandler extends RestHandler {
             }
         }
         
-        sendOK(req);
+        completeOK(req);
     }
 }

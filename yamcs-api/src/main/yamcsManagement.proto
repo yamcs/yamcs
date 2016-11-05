@@ -187,4 +187,5 @@ message ServiceInfo {
   optional string instance = 1;
   optional string name = 2;
   optional ServiceState state = 3;
+  optional string className = 4;
 }

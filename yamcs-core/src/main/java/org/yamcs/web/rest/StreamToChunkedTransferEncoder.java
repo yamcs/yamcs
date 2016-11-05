@@ -1,8 +1,7 @@
 package org.yamcs.web.rest;
 
 import java.io.IOException;
-
-import javax.xml.ws.spi.http.HttpHandler;
+import java.nio.channels.ClosedChannelException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +15,7 @@ import org.yamcs.yarch.Tuple;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
+import io.netty.channel.Channel;
 
 /**
  * Reads a yamcs stream and maps it directly to an output buffer. If that buffer grows larger
@@ -67,12 +67,17 @@ public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscribe
                 writeChunk();
                 resetBuffer();
             }
+        } catch (ClosedChannelException e) {
+            log.info("R{}: Closing stream due to client closing connection", req.getRequestId());
+            failed = true;
+            stream.close();
+            RestHandler.abortRequest(req);
         } catch (IOException e) {
             log.error("R{}: Closing stream due to IO error", req.getRequestId(), e);
             failed = true;
             stream.close();
             RestHandler.completeWithError(req, new InternalServerErrorException(e));
-        }
+        } 
     }
 
     public abstract void processTuple(Tuple tuple, ByteBufOutputStream bufOut) throws IOException;
@@ -80,8 +85,11 @@ public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscribe
     @Override
     public void streamClosed(Stream stream) {
         if (failed) {
-            log.warn("R{}: Closing channel because transfer failed", req.getRequestId());
-            req.getChannelHandlerContext().channel().close();
+            Channel chan = req.getChannelHandlerContext().channel();
+            if(chan.isOpen()) {
+                log.warn("R{}: Closing channel because transfer failed", req.getRequestId());
+                req.getChannelHandlerContext().channel().close();
+            }
             return;
         }
         try {

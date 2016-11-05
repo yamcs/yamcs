@@ -41,7 +41,7 @@ public class ProcessorFactory {
     static public YProcessor create(String yamcsInstance, String name, String type, String creator, Object spec) throws ProcessorException,  ConfigurationException {
         boolean initialized = false;
         TcTmService tctms=null;
-        Map<String,Object> channelConfig = null;
+        Map<String,Object> processorConfig = null;
 
         YConfiguration conf=YConfiguration.getConfiguration("yprocessor");
         try {
@@ -83,7 +83,7 @@ public class ProcessorFactory {
                     initialized = true;
                 }
                 if(conf.containsKey(type, "config")) {
-                    channelConfig = (Map<String, Object>) conf.getMap(type, "config");
+                    processorConfig = (Map<String, Object>) conf.getMap(type, "config");
                 }
                 tctms=new SimpleTcTmService(tm, pps, tc);
                 if(!initialized) {
@@ -94,7 +94,7 @@ public class ProcessorFactory {
             throw new ConfigurationException("Cannot load service",e);
         }
 
-        return create(yamcsInstance, name, type, tctms, creator, channelConfig);
+        return create(yamcsInstance, name, type, tctms, creator, processorConfig);
     }
     /**
      * loads objects but passes only non null parameters

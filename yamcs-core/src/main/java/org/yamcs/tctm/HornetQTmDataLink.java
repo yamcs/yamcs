@@ -9,20 +9,20 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsSession;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
+import org.yamcs.api.artemis.YamcsSession;
 import org.yamcs.archive.PacketWithTime;
 
 import com.google.common.util.concurrent.AbstractService;
 
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.time.TimeService;
-import org.yamcs.hornetq.StreamAdapter;
+import org.yamcs.hornetq.AbstractHornetQTranslatorService;
 
 
 /**
- * receives data from ActiveMQ and publishes it into a yamcs stream
+ * receives data from Artemis ActiveMQ and publishes it into a yamcs stream
  * 
  * @author nm
  *
@@ -30,7 +30,7 @@ import org.yamcs.hornetq.StreamAdapter;
 public class HornetQTmDataLink extends  AbstractService implements TmPacketDataLink, MessageHandler {
     protected volatile long packetcount = 0;
     protected volatile boolean disabled=false;
-
+   
     protected Logger log=LoggerFactory.getLogger(this.getClass().getName());
     private TmSink tmSink;
     YamcsSession yamcsSession; 
@@ -43,7 +43,7 @@ public class HornetQTmDataLink extends  AbstractService implements TmPacketDataL
         try {
             yamcsSession=YamcsSession.newBuilder().build();
             msgClient=yamcsSession.newClientBuilder().setDataProducer(false).setDataConsumer(new SimpleString(hornetAddress), queue).
-                    setFilter(new SimpleString(StreamAdapter.UNIQUEID_HDR_NAME+"<>"+StreamAdapter.UNIQUEID)).
+                    setFilter(new SimpleString(AbstractHornetQTranslatorService.UNIQUEID_HDR_NAME+"<>"+AbstractHornetQTranslatorService.UNIQUEID)).
                     build();
 
         } catch (Exception e) {

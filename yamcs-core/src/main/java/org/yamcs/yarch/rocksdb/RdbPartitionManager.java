@@ -47,7 +47,7 @@ public class RdbPartitionManager extends PartitionManager {
         String[] files=new File(dataDir+"/"+dir).list();
         for(String s:files) {
             File f = new File(dataDir +"/"+dir+"/"+s);
-            
+
             if(!f.isDirectory()) continue;
             if(s.equals(tblName)) {
                 File currentf = new File(dataDir+"/"+dir+"/"+s+"/CURRENT");
@@ -80,19 +80,22 @@ public class RdbPartitionManager extends PartitionManager {
         String dataDir = tableDefinition.getDataDir();
         String absolutePath = dir.isEmpty()?dataDir+"/"+tblName:dataDir+"/"+dir+"/"+tblName;
         YRDB rdb = rdbFactory.getRdb(absolutePath, new ColumnValueSerializer(tableDefinition), false);
-        
-        if((partitioningSpec.type==PartitioningSpec._type.TIME_AND_VALUE) ||  (partitioningSpec.type==PartitioningSpec._type.VALUE)) {
-            for(Object o: rdb.getColumnFamilies()) {
-                if(pinfo!=null) {
-                    addPartitionByTimeAndValue(pinfo, o);
-                } else {
-                    addPartitionByValue(o);
+        try {
+            if((partitioningSpec.type==PartitioningSpec._type.TIME_AND_VALUE) ||  (partitioningSpec.type==PartitioningSpec._type.VALUE)) {
+                for(Object o: rdb.getColumnFamilies()) {
+                    if(pinfo!=null) {
+                        addPartitionByTimeAndValue(pinfo, o);
+                    } else {
+                        addPartitionByValue(o);
+                    }
                 }
+            } else if(partitioningSpec.type==PartitioningSpec._type.TIME) {
+                addPartitionByTime(pinfo);
+            } else {
+                addPartitionByNone();
             }
-        } else if(partitioningSpec.type==PartitioningSpec._type.TIME) {
-            addPartitionByTime(pinfo);
-        } else {
-            addPartitionByNone();
+        } finally {
+            rdbFactory.dispose(rdb);
         }
     }
 
@@ -110,7 +113,7 @@ public class RdbPartitionManager extends PartitionManager {
         Partition p = new RdbPartition(pinfo.partitionStart, pinfo.partitionEnd, null, pinfo.dir+"/"+tableDefinition.getName());
         intv.addTimePartition(p);
     }   
-    
+
     /** 
      * Called at startup when reading existing partitions from disk
      */
@@ -140,7 +143,7 @@ public class RdbPartitionManager extends PartitionManager {
         Partition p = new RdbPartition(Long.MIN_VALUE, Long.MAX_VALUE, null, tableDefinition.getName());             
         pcache.add(null, p);
     }   
-    
+
     @Override
     protected Partition createPartition(PartitionInfo pinfo, Object value) throws IOException {
         try {

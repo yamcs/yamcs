@@ -30,7 +30,7 @@ public class RestClientTest  extends AbstractIntegrationTest {
     @Test
     public void testGetYamcsInstances() throws Exception {
         YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190);
-        ycp.setAuthenticationToke(admin);
+        ycp.setAuthenticationToken(admin);
         RestClient restClient = new RestClient(ycp);
         List<YamcsInstance> instances = restClient.blockingGetYamcsInstances();
         
@@ -42,7 +42,7 @@ public class RestClientTest  extends AbstractIntegrationTest {
     @Test
     public void testGetBulk() throws Exception {
         YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190);
-        ycp.setAuthenticationToke(admin);
+        ycp.setAuthenticationToken(admin);
         RestClient restClient = new RestClient(ycp);
         List<YamcsInstance> instances = restClient.blockingGetYamcsInstances();
         
