@@ -1,7 +1,9 @@
 package org.yamcs.cli;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystemException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,7 +25,6 @@ import org.rocksdb.Env;
 import org.rocksdb.Options;
 import org.rocksdb.RestoreOptions;
 import org.rocksdb.RocksDB;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.cli.YamcsCli.Command;
 
@@ -146,11 +147,11 @@ public class Backup extends Command {
         }
 
     }
-    public static void verifyBackupDirectory(String backupDir, boolean mustExist) throws Exception {
+    public static void verifyBackupDirectory(String backupDir, boolean mustExist) throws IOException {
         Path path = FileSystems.getDefault().getPath(backupDir);
         if(Files.exists(path)) {
             if(!Files.isDirectory(path)) {
-                throw new Exception("File '"+backupDir+"' exists and is not a directory");
+                throw new FileSystemException(backupDir, null, "File '"+backupDir+"' exists and is not a directory");
             }
 
             boolean isEmpty = true;
@@ -166,14 +167,14 @@ public class Backup extends Command {
             }    
 
             if(!isEmpty && !isBackupDir) {
-                throw new Exception("Directory '"+backupDir+"' is not a backup directory");
+                throw new FileSystemException(backupDir, null, "Directory '"+backupDir+"' is not a backup directory");
             }
             if(!Files.isWritable(path)) {
-                throw new Exception("Directory '"+backupDir+"' is not writable");
+                throw new FileSystemException(backupDir, null, "Directory '"+backupDir+"' is not writable");
             }
         } else {
             if(mustExist) {
-                throw new Exception("Directory '"+backupDir+"' does not exist");
+                throw new FileSystemException(backupDir, null, "Directory '"+backupDir+"' does not exist");
             } else {
                 Files.createDirectories(path);
             }

@@ -20,6 +20,7 @@ import org.rocksdb.RestoreOptions;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.cli.Backup;
 
 /**
  * manufacturer of RDB databases. It runs a thread that synchronises them from time to time and closes 
@@ -231,6 +232,7 @@ public class RDBFactory implements Runnable {
         scheduler.execute(()->{
             YRDB db = null;
             try {
+                Backup.verifyBackupDirectory(backupDir, false);
                 BackupableDBOptions opt = new BackupableDBOptions(backupDir);
                 BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
                 db = getRdb(dbpath, dummyCfSerializer, false);
