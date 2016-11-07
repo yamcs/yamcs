@@ -34,8 +34,8 @@ import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Collects each second system processed parameters from whomever registers and sends them on the sys_var stream
- * 
- *   
+ *
+ *
  * @author nm
  *
  */
@@ -43,14 +43,14 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     static Map<String,SystemParametersCollector> instances=new HashMap<String,SystemParametersCollector>();
     static long frequencyMillisec=1000;
     List<SystemParametersProducer> providers = new CopyOnWriteArrayList<SystemParametersProducer>();
-    
+
     final static String STREAM_NAME="sys_param";
     private NamedObjectId sp_jvmTotalMemory_id;
     private NamedObjectId sp_jvmMemoryUsed_id;
     private NamedObjectId sp_jvmTheadCount_id;
     final static public int JVM_COLLECTION_INTERVAL = 10;
     private boolean provideJvmVariables = false;
-    private int jvmCollectionCountdown = 0; 
+    private int jvmCollectionCountdown = 0;
 
     ScheduledThreadPoolExecutor timer;
     final Stream stream;
@@ -79,7 +79,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         this.instance = instance;
         log=LoggerFactory.getLogger(this.getClass().getName()+"["+instance+"]");
         processArgs(args);
-        
+
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
         Stream s=ydb.getStream(STREAM_NAME);
         if(s==null) {
@@ -102,7 +102,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
             log.debug("publishing jvmThreadCount with parameter id {}", sp_jvmTheadCount_id);
         }
         synchronized(instances) {
-            instances.put(instance, this);    
+            instances.put(instance, this);
         }
     }
 
@@ -112,8 +112,8 @@ public class SystemParametersCollector extends AbstractService implements Runnab
             provideJvmVariables = YConfiguration.getBoolean(args, "provideJvmVariables");
         }
     }
-    
-    
+
+
     @Override
     public void doStart() {
         timer = new ScheduledThreadPoolExecutor(1);
@@ -139,7 +139,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
                 collectJvmParameters(params);
                 jvmCollectionCountdown = JVM_COLLECTION_INTERVAL;
             }
-        } 
+        }
         for(SystemParametersProducer p: providers) {
             try {
                 Collection<ParameterValue> pvc =p.getSystemParameters();
@@ -193,7 +193,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
 
     /**
      * this is the namespace all system parameters should be in
-     * 
+     *
      * @return the namespace to be used by the system parameters
      */
     public String getNamespace() {
@@ -211,7 +211,25 @@ public class SystemParametersCollector extends AbstractService implements Runnab
                 .build();
     }
 
+    public static ParameterValue getPV(NamedObjectId id, long time, double v) {
+        return ParameterValue.newBuilder()
+                .setId(id)
+                .setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
+                .setAcquisitionTime(time)
+                .setGenerationTime(time)
+                .setEngValue(Value.newBuilder().setType(Type.DOUBLE).setDoubleValue(v).build())
+                .build();
+    }
 
+    public static ParameterValue getPV(NamedObjectId id, long time, boolean v) {
+        return ParameterValue.newBuilder()
+                .setId(id)
+                .setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
+                .setAcquisitionTime(time)
+                .setGenerationTime(time)
+                .setEngValue(Value.newBuilder().setType(Type.BOOLEAN).setBooleanValue(v).build())
+                .build();
+    }
 
     public static ParameterValue getPV(NamedObjectId id, long time, long v) {
         return ParameterValue.newBuilder()
