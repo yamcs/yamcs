@@ -151,7 +151,7 @@ public class RdbStorageEngine implements StorageEngine {
      */
     public void shutdown() {
         if(rdbTagDb!=null) {
-            rdbTagDb.shutdown();
+            rdbTagDb.close();
         }
     }
 

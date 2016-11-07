@@ -164,7 +164,7 @@ public class RdbTableWriter extends TableWriter {
     private boolean upsertAppend(YRDB db, RdbPartition partition, Tuple t) throws RocksDBException {
         byte[] k = getPartitionKey(partition, tableDefinition.serializeKey(t));
        
-        byte[] v=db.get(k);
+        byte[] v = db.get(k);
         boolean inserted=false;
         if(v!=null) {//append to an existing row
             Tuple oldt=tableDefinition.deserialize(k, v);
@@ -227,4 +227,9 @@ public class RdbTableWriter extends TableWriter {
         }
         return (RdbPartition)partitionManager.createAndGetPartition(time, value);
     }
+    
+    public void close() {
+        histodb.close();
+    }
+
 }

@@ -51,7 +51,7 @@ public class RdbSelectTest extends YarchTestCase {
         pspec.setValueColumnType(DataType.INT);
         tblDef.setPartitioningSpec(pspec);
         
-        tblDef.setStorageEngineName(YarchDatabase.RDB_ENGINE_NAME);
+        tblDef.setStorageEngineName(YarchDatabase.RDB2_ENGINE_NAME);
         
         ydb.createTable(tblDef);
         
