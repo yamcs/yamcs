@@ -103,6 +103,35 @@ public class RdbSelectTest extends YarchTestCase {
         assertEquals(1000L, tuples.get(0).getColumn("gentime"));
         assertEquals(2000L, tuples.get(1).getColumn("gentime"));
         assertEquals(3000L, tuples.get(2).getColumn("gentime"));
+        
+        // Filter with a strict range start
+        ydb.execute("create stream s3 as select * from RdbSelectTest where gentime>2000 order asc");        
+        tuples = fetchTuples(ydb.getStream("s3"));
+        assertEquals(1, tuples.size());      
+        assertEquals(3000L, tuples.get(0).getColumn("gentime"));
+        
+        // Filter with a non-strict range start
+        ydb.execute("create stream s4 as select * from RdbSelectTest where gentime>=3000 order asc");        
+        tuples = fetchTuples(ydb.getStream("s4"));
+        assertEquals(1, tuples.size());        
+        assertEquals(3000L, tuples.get(0).getColumn("gentime"));
+        
+        // Filter with a strict range end
+        ydb.execute("create stream s5 as select * from RdbSelectTest where gentime<3000 order asc");        
+        tuples = fetchTuples(ydb.getStream("s5"));
+        assertEquals(2, tuples.size());
+        assertEquals(1000L, tuples.get(0).getColumn("gentime"));
+        assertEquals(2000L, tuples.get(1).getColumn("gentime"));
+        
+        
+        
+        // Filter with a non-strict range end
+        ydb.execute("create stream s6 as select * from RdbSelectTest where gentime<=2000 order asc");        
+        Stream s4 = ydb.getStream("s6");
+        tuples = fetchTuples(s4);
+        assertEquals(2, tuples.size());
+        assertEquals(1000L, tuples.get(0).getColumn("gentime"));
+        assertEquals(2000L, tuples.get(1).getColumn("gentime"));
     }
     
     @Test

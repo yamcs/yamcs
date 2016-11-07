@@ -2,7 +2,6 @@ package org.yamcs.yarch.rocksdb2;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 
@@ -13,11 +12,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
@@ -44,6 +41,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 
 import com.google.common.io.Files;
 
+@Ignore
 public class RdbPerformanceTest extends YarchTestCase {
     private TupleDefinition tdef;
     private TableWriter tw;
@@ -156,7 +154,7 @@ public class RdbPerformanceTest extends YarchTestCase {
         pspec.setValueColumnType(DataType.ENUM);
         tblDef.setPartitioningSpec(pspec);
 
-        tblDef.setStorageEngineName(YarchDatabase.RDB_ENGINE_NAME);
+        tblDef.setStorageEngineName(YarchDatabase.RDB2_ENGINE_NAME);
 
         ydb.createTable(tblDef);
         populateAndRead(tblDef, true);
@@ -178,7 +176,7 @@ public class RdbPerformanceTest extends YarchTestCase {
         pspec.setTimePartitioningSchema("YYYY");
         tblDef.setPartitioningSpec(pspec);
 
-        tblDef.setStorageEngineName(YarchDatabase.RDB_ENGINE_NAME);
+        tblDef.setStorageEngineName(YarchDatabase.RDB2_ENGINE_NAME);
 
         ydb.createTable(tblDef);
 
@@ -201,7 +199,7 @@ public class RdbPerformanceTest extends YarchTestCase {
         PartitioningSpec pspec = PartitioningSpec.noneSpec();
         tblDef.setPartitioningSpec(pspec);
 
-        tblDef.setStorageEngineName(YarchDatabase.RDB_ENGINE_NAME);
+        tblDef.setStorageEngineName(YarchDatabase.RDB2_ENGINE_NAME);
 
         ydb.createTable(tblDef);
         
@@ -267,6 +265,4 @@ public class RdbPerformanceTest extends YarchTestCase {
             System.out.println("after closing the db, number of open fd: " + ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount());
         }
     }
-
-
 }

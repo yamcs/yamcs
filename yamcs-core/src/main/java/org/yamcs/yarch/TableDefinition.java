@@ -371,7 +371,7 @@ public class TableDefinition {
             //deserialize the value
             badi=ByteStreams.newDataInput(v);
             while(true) {
-                int cidx=badi.readInt(); //column index
+                int cidx = badi.readInt(); //column index
                 if(cidx==-1) break;
                 if(cidx>=valueDef.size())throw new RuntimeException("Reference to index "+cidx+" found but the table definition does not have this column"); 
 

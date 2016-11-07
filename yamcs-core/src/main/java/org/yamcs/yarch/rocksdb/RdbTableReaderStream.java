@@ -236,8 +236,8 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
                 }
                 rt.iterator.prev();
                 if(rt.iterator.isValid()) {
-                    rt.key=rt.iterator.key();
-                    rt.value=rt.iterator.value();
+                    rt.key = rt.iterator.key();
+                    rt.value = rt.iterator.value();
                     orderedQueue.add(rt);
                 } else {
                     log.debug(rt.iterator+" finished");
@@ -256,6 +256,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
             if(rdb!=null) rdbFactory.dispose(rdb);
         }
     }
+    
 
     public long getNumRecordsRead() {
         return numRecordsRead;
@@ -264,11 +265,24 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
     class RdbRawTuple extends RawTuple {       
         int index;//used for sorting tuples with equals keys
         RocksIterator iterator;
+        byte[] key;
+        byte[] value;
 
         public RdbRawTuple(byte[] key, byte[] value, RocksIterator iterator, int index) {
-            super(key,value, index);
+            super(index);
             this.iterator = iterator;
-            this.index=index;
+            this.key = key;
+            this.value = value;
+        }
+        
+        @Override
+        protected byte[] getKey() {
+            return key;
+        }
+        
+        @Override
+        protected byte[] getValue() {
+            return value;
         }
     }    
 }

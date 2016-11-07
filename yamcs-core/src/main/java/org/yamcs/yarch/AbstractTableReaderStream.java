@@ -103,16 +103,15 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
      */
     protected abstract boolean runPartitions(List<Partition> partitions, IndexFilter range) throws IOException;
 
-
     protected boolean emitIfNotPastStop (RawTuple rt,  byte[] rangeEnd, boolean strictEnd) {
         boolean emit=true;
         if(rangeEnd!=null) { //check if we have reached the end
-            int c=compare(rt.key, rangeEnd);
+            int c=compare(rt.getKey(), rangeEnd);
             if(c<0) emit=true;
             else if((c==0) && (!strictEnd)) emit=true;
             else emit=false;
         }
-        lastEmitted=dataToTuple(rt.key, rt.value);
+        lastEmitted = dataToTuple(rt.getKey(), rt.getValue());
         if(emit) emitTuple(lastEmitted);
         return emit;
     }
@@ -120,21 +119,18 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
     protected boolean emitIfNotPastStart (RawTuple rt,  byte[] rangeStart, boolean strictStart) {
         boolean emit=true;
         if(rangeStart!=null) { //check if we have reached the start
-            int c=compare(rt.key, rangeStart);
+            int c = compare(rt.getKey(), rangeStart);
             if(c>0) emit=true;
             else if((c==0) && (!strictStart)) emit=true;
             else emit=false;
         }
-        lastEmitted=dataToTuple(rt.key, rt.value);
+        lastEmitted = dataToTuple(rt.getKey(), rt.getValue());
         if(emit) emitTuple(lastEmitted);
         return emit;
     }
-
-    private Tuple dataToTuple(byte[] k, byte[] v) {
-        return tableDefinition.deserialize(k,v); //TODO adapt to the stream schema
-
-    }
-
+    
+    
+    
     @SuppressWarnings("unchecked")
     @Override
     public boolean addRelOpFilter(ColumnExpression cexpr, RelOp relOp, Object value) throws StreamSqlException {
@@ -217,7 +213,9 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
         }
         return values;
     }
-
+    protected Tuple dataToTuple(byte[] k, byte[] v) {
+        return tableDefinition.deserialize(k, v); //TODO adapt to the stream schema
+    }
     /**
      * currently adds only filters on value based partitions
      */
