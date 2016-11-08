@@ -119,8 +119,25 @@ public class SpaceSystem extends NameDescription {
         return containers.values();
     }
 
+    /**
+     * Returns the direct sub parameters of this space system
+     */
     public Collection<Parameter> getParameters() {
         return parameters.values();
+    }
+
+    /**
+     * Returns the parameters defined in this space system, or under any
+     * of its sub space systems
+     */
+    public Collection<Parameter> getParameters(boolean recurse) {
+        if (!recurse) return getParameters();
+        List<Parameter> res = new ArrayList<>();
+        res.addAll(parameters.values());
+        for (SpaceSystem sub : getSubSystems()) {
+            res.addAll(sub.getParameters(recurse));
+        }
+        return res;
     }
 
     public Collection<ParameterType> getParameterTypes() {
