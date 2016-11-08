@@ -330,11 +330,11 @@ public class YamcsServer {
             setupYamcsServer();
 
         } catch (ConfigurationException e) {
-            staticlog.error("Could not start Yamcs Server: ", e);
+            staticlog.error("Could not start Yamcs Server", e);
             System.err.println(e.toString());
             System.exit(-1);
         } catch (Throwable e) {
-            staticlog.error("Could not start Yamcs Server: ", e);
+            staticlog.error("Could not start Yamcs Server", e);
             e.printStackTrace();
             System.exit(-1);
         }
