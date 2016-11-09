@@ -26,7 +26,7 @@
         var lastSamplePromiseCanceler;
 
         $scope.alarms = [];
-        var urlname = '/' + $routeParams['ss'] + '/' + encodeURIComponent($routeParams.name);
+        var urlname = '/' + $routeParams['ss'] + '/' + $routeParams.name;
         mdbService.getParameterInfo(urlname).then(function (data) {
 
             $scope.info = mapAlarmRanges(data);
