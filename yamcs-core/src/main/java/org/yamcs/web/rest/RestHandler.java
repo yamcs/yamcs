@@ -66,7 +66,7 @@ public abstract class RestHandler extends RouteHandler {
 
     protected static <T extends MessageLite> void completeOK(RestRequest restRequest, T responseMsg, Schema<T> responseSchema) {
         ByteBuf body = restRequest.getChannelHandlerContext().alloc().buffer();
-       
+
         try (ByteBufOutputStream channelOut = new ByteBufOutputStream(body)){
             if (MediaType.PROTOBUF.equals(restRequest.deriveTargetContentType())) {
                 responseMsg.writeTo(channelOut);
@@ -85,7 +85,7 @@ public abstract class RestHandler extends RouteHandler {
         body.resetReaderIndex();
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
         setContentTypeHeader(httpResponse, restRequest.deriveTargetContentType().toString());
-        
+
         int txSize =  body.readableBytes();
         setContentLength(httpResponse, txSize);
         restRequest.addTransferredSize(txSize);
@@ -106,10 +106,10 @@ public abstract class RestHandler extends RouteHandler {
             completeRequest(restRequest, httpResponse);
         }
     }
-    
+
     private static void completeRequest(RestRequest restRequest, HttpResponse httpResponse) {
         ChannelFuture cf = HttpRequestHandler.sendOK(restRequest.getChannelHandlerContext(), restRequest.getHttpRequest(), httpResponse);
-       
+
         cf.addListener(l -> {
             restRequest.getCompletableFuture().complete(null);
         });
@@ -136,7 +136,7 @@ public abstract class RestHandler extends RouteHandler {
             }
         } else if (MediaType.PROTOBUF.equals(contentType)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
-            
+
             try (ByteBufOutputStream channelOut = new ByteBufOutputStream(buf)) {
                 toException(t).build().writeTo(channelOut);
                 channelOut.close();
@@ -148,8 +148,7 @@ public abstract class RestHandler extends RouteHandler {
                 log.error("Could not write to channel buffer", e2);
                 log.debug("Original exception not sent to client", t);
                 return HttpRequestHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
-            }     
-            
+            }
         } else {
            return HttpRequestHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
         }
@@ -162,11 +161,11 @@ public abstract class RestHandler extends RouteHandler {
     protected static void completeWithError(RestRequest req, HttpException e) {
         ChannelFuture cf = sendRestError(req, e.getStatus(), e);
         cf.addListener(l-> {
-           req.getCompletableFuture().completeExceptionally(e); 
+           req.getCompletableFuture().completeExceptionally(e);
         });
     }
     protected static void abortRequest(RestRequest req) {
-        req.getCompletableFuture().complete(null); 
+        req.getCompletableFuture().complete(null);
     }
     /**
      * Just a little shortcut because builders are dead ugly
@@ -227,11 +226,11 @@ public abstract class RestHandler extends RouteHandler {
 
         throw new NotFoundException(req, "No such namespace");
     }
-    
+
     protected static NamedObjectId verifyParameterId(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
         return verifyParameterWithId(req, mdb, pathName).getRequestedId();
     }
-    
+
     protected static Parameter verifyParameter(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
         return verifyParameterWithId(req, mdb, pathName).getItem();
     }
@@ -388,11 +387,11 @@ public abstract class RestHandler extends RouteHandler {
     protected static boolean authorised(RestRequest req, Privilege.Type type, String privilege) {
         return Privilege.getInstance().hasPrivilege(req.getAuthToken(), type, privilege);
     }
-    
+
     protected static class NameDescriptionWithId<T extends NameDescription> {
         final private T item;
         private final NamedObjectId requestedId;
-        
+
         NameDescriptionWithId(T item, NamedObjectId requestedId) {
             this.item = item;
             this.requestedId = requestedId;

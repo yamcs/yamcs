@@ -3,8 +3,6 @@ package org.yamcs.web.rest;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -23,7 +21,6 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YamcsException;
 import org.yamcs.YamcsVersion;
 import org.yamcs.parameterarchive.ParameterArchiveMaintenanceRestHandler;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse;
@@ -39,13 +36,13 @@ import org.yamcs.web.rest.archive.ArchiveCommandRestHandler;
 import org.yamcs.web.rest.archive.ArchiveDownloadRestHandler;
 import org.yamcs.web.rest.archive.ArchiveEventRestHandler;
 import org.yamcs.web.rest.archive.ArchiveIndexRestHandler;
-import org.yamcs.web.rest.archive.RocksDbMaintenanceRestHandler;
 import org.yamcs.web.rest.archive.ArchivePacketRestHandler;
 import org.yamcs.web.rest.archive.ArchiveParameter2RestHandler;
 import org.yamcs.web.rest.archive.ArchiveParameterRestHandler;
 import org.yamcs.web.rest.archive.ArchiveStreamRestHandler;
 import org.yamcs.web.rest.archive.ArchiveTableRestHandler;
 import org.yamcs.web.rest.archive.ArchiveTagRestHandler;
+import org.yamcs.web.rest.archive.RocksDbMaintenanceRestHandler;
 import org.yamcs.web.rest.mdb.MDBAlgorithmRestHandler;
 import org.yamcs.web.rest.mdb.MDBCommandRestHandler;
 import org.yamcs.web.rest.mdb.MDBContainerRestHandler;
@@ -81,13 +78,13 @@ public class Router {
     // Order, because patterns are matched top-down in insertion order
     private LinkedHashMap<Pattern, Map<HttpMethod, RouteConfig>> defaultRoutes = new LinkedHashMap<>();
     private LinkedHashMap<Pattern, Map<HttpMethod, RouteConfig>> dynamicRoutes = new LinkedHashMap<>();
-    
+
     private boolean logSlowRequests = true;
     int SLOW_REQUEST_TIME = 20;//seconds; requests that execute more than this are logged
     ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
-    
-   
-    
+
+
+
     public Router() {
         registerRouteHandler(null, new ClientRestHandler());
         registerRouteHandler(null, new DisplayRestHandler());
@@ -116,13 +113,13 @@ public class Router {
         registerRouteHandler(null, new ProcessorCommandQueueRestHandler());
 
         registerRouteHandler(null, new MDBRestHandler());
-        registerRouteHandler(null, new MDBParameterRestHandler());    
+        registerRouteHandler(null, new MDBParameterRestHandler());
         registerRouteHandler(null, new MDBContainerRestHandler());
         registerRouteHandler(null, new MDBCommandRestHandler());
         registerRouteHandler(null, new MDBAlgorithmRestHandler());
 
         registerRouteHandler(null, new OverviewRouteHandler());
-        
+
     }
 
     // Using method handles for better invoke performance
@@ -173,7 +170,6 @@ public class Router {
     }
 
     public void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req, AuthenticationToken token) {
-
         QueryStringDecoder qsDecoder = new QueryStringDecoder(req.getUri());
         RestRequest restReq = new RestRequest(ctx, req, qsDecoder, token);
 
@@ -236,12 +232,12 @@ public class Router {
     }
 
     protected void dispatch(RestRequest req, RouteMatch match) {
-      
+
         ScheduledFuture<?> x = timer.schedule(() ->{
             log.error("R{} blocking the netty thread for 2 seconds. uri: {}", req.getRequestId(), req.getHttpRequest().getUri());
         }
         , 2, TimeUnit.SECONDS);
-        
+
         //the handlers will send themselves the response unless they throw an exception, case which is handled in the catch below.
         try {
             RouteHandler target = match.routeConfig.routeHandler;
@@ -258,7 +254,7 @@ public class Router {
             handleException(req, t);
         }
         x.cancel(true);
-        
+
         CompletableFuture<Void> cf = req.getCompletableFuture();
         if(logSlowRequests) {
             timer.schedule(() ->{
@@ -271,22 +267,18 @@ public class Router {
     }
 
     private void handleException(RestRequest req, Throwable t) {
-        if(t instanceof InternalServerErrorException) {
-            InternalServerErrorException e = (InternalServerErrorException)t;
-            log.error("R{}: Reporting internal server error to client", req.getRequestId(), e);
+        if (t instanceof InternalServerErrorException) {
+            InternalServerErrorException e = (InternalServerErrorException) t;
+            log.error(String.format("R%d: Reporting internal server error to client", req.getRequestId()), e);
             RestHandler.sendRestError(req, e.getStatus(), e);
         } else if (t instanceof HttpException) {
             HttpException e = (HttpException)t;
             log.warn("R{}: Sending nominal exception back to client: {}", req.getRequestId(), e.getMessage());
-            RestHandler.sendRestError(req, e.getStatus(), e);        
-        } else if (t instanceof YamcsException) {
-            log.warn("R{}: Reporting internal server error to client: {}", req.getRequestId(), t.getMessage());
-            RestHandler.sendRestError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
+            RestHandler.sendRestError(req, e.getStatus(), e);
         } else {
-            log.error("R{}: Unexpected error " + t, req.getRequestId(), t);
+            log.error(String.format("R%d: Reporting internal server error to client", req.getRequestId()), t);
             RestHandler.sendRestError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
         }
-
     }
 
     /*
@@ -311,7 +303,7 @@ public class Router {
                 replacement.append("(?<").append(matcher.group(2)).append(">");
                 replacement.append(star ? ".+?" : "[^/]+");
                 replacement.append(")");
-            }            
+            }
 
             matcher.appendReplacement(buf, replacement.toString());
         }
@@ -347,7 +339,7 @@ public class Router {
                 if (pathLengthCompare != 0) {
                     return -pathLengthCompare;
                 } else {
-                    return originalPath.compareTo(o.originalPath);                    
+                    return originalPath.compareTo(o.originalPath);
                 }
             }
         }
