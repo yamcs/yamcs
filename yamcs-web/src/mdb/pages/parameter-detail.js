@@ -26,7 +26,8 @@
         var lastSamplePromiseCanceler;
 
         $scope.alarms = [];
-        mdbService.getParameterInfo('/' + $routeParams['ss'] + '/' + $routeParams.name).then(function (data) {
+        var urlname = '/' + $routeParams['ss'] + '/' + encodeURIComponent($routeParams.name);
+        mdbService.getParameterInfo(urlname).then(function (data) {
 
             $scope.info = mapAlarmRanges(data);
             var qname = $scope.info['qualifiedName'];
@@ -61,7 +62,7 @@
                 }
             });
 
-            alarmsService.listAlarmsForParameter(qname).then(function (alarms) {
+            alarmsService.listAlarmsForParameter(urlname).then(function (alarms) {
                 $scope.alarms = alarms;
 
                 // Both dependencies are now fetched (could improve towards parallel requests though)
@@ -73,7 +74,7 @@
                     // TODO tmService.unsubscribeParameter(subscriptionId);
                 });
 
-                tmService.getParameterHistory(qname, {
+                tmService.getParameterHistory(urlname, {
                     norepeat: true,
                     limit: 10
                 }).then(function (historyData) {
