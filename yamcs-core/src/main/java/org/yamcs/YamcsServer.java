@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -25,11 +26,10 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.YObjectLoader;
-import org.yamcs.web.HttpServer;
-import org.yamcs.web.StaticFileHandler;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
+import org.yamcs.yarch.management.JMXService;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
@@ -46,7 +46,7 @@ import com.google.common.util.concurrent.Service.State;
  *
  */
 public class YamcsServer {
-    static Map<String, YamcsServer> instances=new LinkedHashMap<String, YamcsServer>();
+    static Map<String, YamcsServer> instances=new LinkedHashMap<>();
     final static private String SERVER_ID_KEY="serverId";
 
     String instance;
@@ -132,7 +132,6 @@ public class YamcsServer {
      * @param serviceList list of service configurations
      * @throws ConfigurationException
      */
-    @SuppressWarnings("unchecked")
     public static void startServices(List<ServiceWithConfig> serviceList) throws ConfigurationException {
         for(ServiceWithConfig swc:serviceList) {
             swc.service.startAsync();
@@ -147,12 +146,6 @@ public class YamcsServer {
             }
         }
     }
-
-    public static void setupHttpServer() throws ConfigurationException, InterruptedException {
-        StaticFileHandler.init();
-        HttpServer.setup();
-    }
-
 
     public static void shutDown() throws Exception {
         for(YamcsServer ys: instances.values()) {
@@ -219,7 +212,7 @@ public class YamcsServer {
         }
 
         for(String inst:instArray) {
-            instances.put(inst, new YamcsServer(inst));
+            createYamcsInstance(inst);
         }
 
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
@@ -234,6 +227,17 @@ public class YamcsServer {
         } else {//the init.d/yamcs-server depends on this line on the standard output, do not change it (without changing the script also)!
             System.out.println("yamcsstartup success");
         }
+    }
+
+    public static void createYamcsInstance(String name) throws IOException, StreamSqlException, ParseException, YamcsApiException {
+        if (instances.containsKey(name)) {
+            throw new ConfigurationException(String.format("There already exists an instance named '%s'", name));
+        }
+        instances.put(name, new YamcsServer(name));
+    }
+
+    public static Set<String> getYamcsInstanceNames() {
+        return instances.keySet();
     }
 
     public static YamcsInstances getYamcsInstances() {
@@ -323,8 +327,7 @@ public class YamcsServer {
             YConfiguration.setup();
             serverId = deriveServerId();
             setupSecurity();
-            setupHttpServer();
-            org.yamcs.yarch.management.JMXService.setup(true);
+            JMXService.setup(true);
             ManagementService.setup(true);
 
             setupYamcsServer();
@@ -402,6 +405,7 @@ public class YamcsServer {
     public static void setMockupTimeService(TimeService timeService) {
         mockupTimeService = timeService;
     }
+
     public Service getService(String serviceName) {
         for(ServiceWithConfig swc: serviceList) {
             Service s = swc.service;

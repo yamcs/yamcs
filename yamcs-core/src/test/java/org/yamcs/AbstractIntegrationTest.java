@@ -51,8 +51,10 @@ import org.yamcs.tctm.TmPacketDataLink;
 import org.yamcs.tctm.TmSink;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.web.HttpServer;
 import org.yamcs.web.websocket.ManagementResource;
 import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.yarch.management.JMXService;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -96,7 +98,7 @@ public abstract class AbstractIntegrationTest {
         packetProvider = PacketProvider.instance;
         assertNotNull(packetProvider);
         wsListener = new MyWsListener();
-        
+
         wsClient = new WebSocketClient(ycp, wsListener);
         wsClient.setUserAgent("it-junit");
         wsClient.connect();
@@ -131,8 +133,8 @@ public abstract class AbstractIntegrationTest {
         EventProducerFactory.setMockup(true);
         YConfiguration.setup("IntegrationTest");
         ManagementService.setup(false);
-        org.yamcs.yarch.management.JMXService.setup(false);
-        YamcsServer.setupHttpServer();
+        JMXService.setup(false);
+        new HttpServer().startServer();
         artemisServer = ArtemisServer.setupArtemis();
         ArtemisManagement.setupYamcsServerControl();
         YamcsServer.setupYamcsServer();
@@ -315,7 +317,7 @@ public abstract class AbstractIntegrationTest {
 
         @Override
         public void setTmSink(TmSink tmSink) {
-            this.tmSink = tmSink;                   
+            this.tmSink = tmSink;
         }
 
         @Override

@@ -3,7 +3,6 @@ package org.yamcs.web;
 import static io.netty.handler.codec.http.HttpHeaders.setHeader;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
@@ -101,12 +100,6 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
             return;
         default:
             String yamcsInstance = path[1];
-            if (!HttpServer.getInstance().isInstanceRegistered(yamcsInstance)) {
-                log.info("Invalid instance requested: '{}'", yamcsInstance);
-                sendPlainTextError(ctx, req, NOT_FOUND);
-                return;
-            }
-
             if (path.length > 2) {
                 String[] rpath = path[2].split("/", 2);
                 String handler = rpath[0];

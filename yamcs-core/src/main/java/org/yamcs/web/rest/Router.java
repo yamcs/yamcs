@@ -119,7 +119,6 @@ public class Router {
         registerRouteHandler(null, new MDBAlgorithmRestHandler());
 
         registerRouteHandler(null, new OverviewRouteHandler());
-
     }
 
     // Using method handles for better invoke performance

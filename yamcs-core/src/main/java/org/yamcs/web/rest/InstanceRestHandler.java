@@ -22,16 +22,16 @@ public class InstanceRestHandler extends RestHandler {
     @Route(path="/api/instances", method="GET")
     public void listInstances(RestRequest req) throws HttpException {
         YamcsInstances instances = YamcsServer.getYamcsInstances();
-        
+
         ListInstancesResponse.Builder instancesb = ListInstancesResponse.newBuilder();
         for (YamcsInstance yamcsInstance : instances.getInstanceList()) {
             YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(req, yamcsInstance);
             instancesb.addInstance(enriched);
         }
-        
+
         completeOK(req, instancesb.build(), SchemaRest.ListInstancesResponse.WRITE);
     }
-    
+
     @Route(path="/api/instances/:instance", method="GET")
     public void getInstance(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
@@ -39,7 +39,7 @@ public class InstanceRestHandler extends RestHandler {
         YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(req, yamcsInstance);
         completeOK(req, enriched, SchemaYamcsManagement.YamcsInstance.WRITE);
     }
-    
+
     @Route(path="/api/instances/:instance/clients", method="GET")
     public void listClientsForInstance(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
