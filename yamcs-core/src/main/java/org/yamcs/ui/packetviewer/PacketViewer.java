@@ -509,7 +509,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         if(tmProcessor!=null) tmProcessor.stopAsync();
         log("Loading local XTCE db "+configName);
         try {
-            xtcedb=XtceDbFactory.createInstance(configName);
+            xtcedb=XtceDbFactory.createInstanceByConfig(configName);
         } catch (ConfigurationException e) {
             log.error(e.toString(), e);
             showError(e.getMessage());

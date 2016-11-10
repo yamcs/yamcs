@@ -190,7 +190,7 @@ public class YConfiguration {
         return is;
     }
 
-    public String getGlobalProperty(String key) {
+    public static String getGlobalProperty(String key) {
         return System.getProperty(key);
     }
 

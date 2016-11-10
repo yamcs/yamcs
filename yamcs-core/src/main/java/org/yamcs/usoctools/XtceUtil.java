@@ -203,7 +203,7 @@ public class XtceUtil {
     }
     public static void main(String[] args) throws ConfigurationException {
         YConfiguration.setup();
-        XtceDb db=XtceDbFactory.createInstance("erasmus-busoc");
+        XtceDb db=XtceDbFactory.createInstanceByConfig("erasmus-busoc");
         XtceUtil xtceutil=XtceUtil.getInstance(db);
         xtceutil.print(System.out);
     }

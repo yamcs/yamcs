@@ -1,1 +1,6 @@
-mdb: refmdb
+mdb:
+  - type: "sheet"
+    spec: "mdb/refmdb-ccsds.xls"
+    subLoaders:
+      - type: "sheet"
+        spec: "mdb/refmdb-subsys1.xls"
