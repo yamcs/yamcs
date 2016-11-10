@@ -48,7 +48,6 @@ public class XtceDbFactory {
      */
     static transient Map<String, XtceDb> instance2Db = new HashMap<>();
     static transient Map<String, Map<String, XtceDb>> instance2DbConfigs = new HashMap<>();
-    static LoaderTree loaderTree;
 
 
     /**
@@ -70,7 +69,7 @@ public class XtceDbFactory {
         // create MDB/spreadsheet/XTCE loaders according to configuration
         // settings
         //
-        loaderTree= new LoaderTree(new RootSpaceSystemLoader());
+        LoaderTree loaderTree = new LoaderTree(new RootSpaceSystemLoader());
 
         List<Object> list=c.getList(configSection);
         for(Object o: list) {
@@ -88,7 +87,7 @@ public class XtceDbFactory {
         if (new File(getFullName(filename) + ".serialized").exists()) {
             try {
                 RandomAccessFile raf = new RandomAccessFile(getFullName(filename) + ".consistency_date", "r");
-                if(loaderTree.neesUpdate(raf)) {
+                if(loaderTree.needsUpdate(raf)) {
                     loadSerialized = false;
                 }
             } catch (IOException e) {
@@ -143,7 +142,7 @@ public class XtceDbFactory {
 
         if ((!serializedLoaded)) {
             try {
-                saveSerializedInstance(db, filename.toString());
+                saveSerializedInstance(loaderTree, db, filename.toString());
                 log.info("Serialized database saved locally");
             } catch (Exception e) {
                 log.warn("Cannot save serialized MDB", e);
@@ -499,14 +498,14 @@ public class XtceDbFactory {
         /**checks the date in the file and returns true if any of the root or children needs to be updated
          * @throws ConfigurationException 
          * @throws IOException */
-        public boolean neesUpdate(RandomAccessFile raf) throws IOException, ConfigurationException {
+        public boolean needsUpdate(RandomAccessFile raf) throws IOException, ConfigurationException {
             raf.seek(0);
             if(root.needsUpdate(raf)) {
                 return true;
             }
             if(children!=null) {
                 for(LoaderTree lt:children) {
-                    if(lt.neesUpdate(raf)) {
+                    if(lt.needsUpdate(raf)) {
                         return true;
                     }
                 }
