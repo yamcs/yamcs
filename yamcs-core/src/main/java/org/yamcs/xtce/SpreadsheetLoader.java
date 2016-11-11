@@ -295,7 +295,6 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             opsnamePrefix=cells[3].getContents();
         } else {
             opsnamePrefix="";
-            log.info( "No opsnamePrefix specified for {}", ctx.file );
         }
     }
 
