@@ -72,7 +72,7 @@ public class YamcsServer {
     static YObjectLoader<Service> objLoader = new YObjectLoader<Service>();
 
     YamcsServer(String instance) throws IOException, StreamSqlException, ParseException, YamcsApiException {
-        this.instance=instance;
+        this.instance = instance;
 
         //TODO - fix bootstrap issue
         instances.put(instance, this);
@@ -201,18 +201,12 @@ public class YamcsServer {
             startServices(globalServiceList);
         }
 
-        final List<String>instArray = c.getList("instances");
 
-        if (instArray.isEmpty()) {
-            staticlog.warn("No instances");
-        } else if (instArray.size() == 1) {
-            staticlog.info("1 instance: " + instArray.get(0));
-        } else {
-            staticlog.info(instArray.size() + " instances: " + String.join(", ", instArray));
-        }
-
-        for(String inst:instArray) {
-            createYamcsInstance(inst);
+        if (c.containsKey("instances")) {
+            List<String> instArray = c.getList("instances");
+            for(String inst:instArray) {
+                createYamcsInstance(inst);
+            }
         }
 
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
@@ -230,6 +224,7 @@ public class YamcsServer {
     }
 
     public static void createYamcsInstance(String name) throws IOException, StreamSqlException, ParseException, YamcsApiException {
+        staticlog.info("Loading instance '" + name + "'");
         if (instances.containsKey(name)) {
             throw new ConfigurationException(String.format("There already exists an instance named '%s'", name));
         }
