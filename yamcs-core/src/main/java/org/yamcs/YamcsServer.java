@@ -410,6 +410,7 @@ public class YamcsServer {
         }
         return null;
     }
+
     public static Service getGlobalService(String serviceName) {
         synchronized(globalServiceList) {
             for(ServiceWithConfig swc: globalServiceList) {
@@ -420,6 +421,11 @@ public class YamcsServer {
             }
         }
         return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends Service> T getGlobalService(Class<T> serviceClass) {
+        return (T) getGlobalService(serviceClass.getName());
     }
 
     static private ServiceWithConfig createService(String instance, String serviceClass, String serviceName, Object args) throws ConfigurationException, IOException {
