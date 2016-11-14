@@ -80,10 +80,12 @@ public class RdbPartitionManager extends PartitionManager {
         String tblName = tableDefinition.getName();
         String dataDir = tableDefinition.getDataDir();
         String absolutePath = dir.isEmpty()?dataDir+"/"+tblName:dataDir+"/"+dir+"/"+tblName;
-        YRDB rdb = rdbFactory.getRdb(absolutePath, false);
+        
 
         if((partitioningSpec.type==PartitioningSpec._type.TIME_AND_VALUE) ||  (partitioningSpec.type==PartitioningSpec._type.VALUE)) {
             int size = ColumnValueSerializer.getSerializedSize(partitioningSpec.getValueColumnType());
+            YRDB rdb = rdbFactory.getRdb(absolutePath, size, false);
+
             ColumnValueSerializer cvs = new ColumnValueSerializer(partitioningSpec.getValueColumnType());
             List<byte[]> l = rdb.scanPartitions(size); 
             
@@ -95,6 +97,7 @@ public class RdbPartitionManager extends PartitionManager {
                     addPartitionByValue(value);
                 }
             }
+            rdbFactory.dispose(rdb);
         } else if(partitioningSpec.type==PartitioningSpec._type.TIME) {
             addPartitionByTime(pinfo);
         } else {
@@ -127,8 +130,8 @@ public class RdbPartitionManager extends PartitionManager {
             intv = new Interval(pinfo.partitionStart, pinfo.partitionEnd);
             intervals.put(pinfo.partitionStart, intv);
         }
-        ColumnValueSerializer cvs=   new ColumnValueSerializer(tableDefinition);
-        Partition p=new RdbPartition(pinfo.partitionStart, pinfo.partitionEnd, v, cvs.objectToByteArray(v), pinfo.dir+"/"+tableDefinition.getName());
+        ColumnValueSerializer cvs = new ColumnValueSerializer(tableDefinition);
+        RdbPartition p = new RdbPartition(pinfo.partitionStart, pinfo.partitionEnd, v, cvs.objectToByteArray(v), pinfo.dir+"/"+tableDefinition.getName());
         intv.add(v, p);
     }	
 
@@ -159,8 +162,8 @@ public class RdbPartitionManager extends PartitionManager {
         if(!f.exists()) {
             f.mkdirs();
         }
-        ColumnValueSerializer cvs=   new ColumnValueSerializer(tableDefinition);
-        byte[] bvalue = cvs.objectToByteArray(value);
+        ColumnValueSerializer cvs = new ColumnValueSerializer(tableDefinition);
+        byte[] bvalue = (value==null)?null:cvs.objectToByteArray(value);
 
         YRDB rdb = rdbFactory.getRdb(f.getAbsolutePath(), true);
 

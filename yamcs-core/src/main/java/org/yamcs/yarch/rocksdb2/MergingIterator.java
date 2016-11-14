@@ -4,8 +4,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import org.yamcs.utils.ByteArrayUtils;
-
 /**
  * Merges data from multiple iterators sorting the output
  * 
@@ -16,9 +14,10 @@ import org.yamcs.utils.ByteArrayUtils;
 class MergingIterator implements DbIterator {
     final Comparator<byte[]> keyComparator;
     PriorityQueue <DbIterator> priorityQueue;
-    
+    final List<DbIterator> itList;
     public MergingIterator(List<DbIterator> itList, Comparator<byte[]> keyComparator) {
         this.keyComparator = keyComparator;
+        this.itList = itList;
         priorityQueue = new PriorityQueue<>(new IteratorComparator(keyComparator));
         init(itList);
         
@@ -87,7 +86,8 @@ class MergingIterator implements DbIterator {
         return it.value();
     }
     
-    static class IteratorComparator implements Comparator<DbIterator> {
+    
+    class IteratorComparator implements Comparator<DbIterator> {
         final Comparator<byte[]> keyComparator;
         public IteratorComparator(Comparator<byte[]> keyComparator) {
             this.keyComparator = keyComparator;

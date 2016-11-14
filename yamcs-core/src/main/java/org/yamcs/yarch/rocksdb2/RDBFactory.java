@@ -45,14 +45,18 @@ public class RDBFactory implements Runnable {
      * 
      * 
      * @param absolutePath - absolute path - should be a directory
+     * @param partitionLength - if specified and >0, it will use RocksDB prefixExtractor feature
      * @param readonly
-     * @return
+     * @return a rocksdb database
      * @throws IOException
      */
-    public YRDB getRdb(String absolutePath,  boolean readonly) throws IOException{
-        return rdb(absolutePath, readonly);
+    public YRDB getRdb(String absolutePath,  int partitionLength, boolean readonly) throws IOException{
+        return rdb(absolutePath,partitionLength, readonly);
     }
 
+    public YRDB getRdb(String absolutePath, boolean readonly) throws IOException{
+        return rdb(absolutePath, 0, readonly);
+    }
     /**
      * use default visibility to be able to create a separate one from the unit test
      */
@@ -72,7 +76,7 @@ public class RDBFactory implements Runnable {
         Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook()));
     }
 
-    private synchronized YRDB rdb(String absolutePath, boolean readonly) throws IOException {
+    private synchronized YRDB rdb(String absolutePath, int partitionLength, boolean readonly) throws IOException {
         DbAndAccessTime daat = databases.get(absolutePath);
         if(daat==null) {
             if(databases.size()>=maxOpenDbs) { //close the db with the oldest timestamp
@@ -94,7 +98,7 @@ public class RDBFactory implements Runnable {
             log.debug("Creating or opening RDB "+absolutePath+" total rdb open: "+databases.size());
             YRDB db;
             try {
-                db = new YRDB(absolutePath);
+                db = new YRDB(absolutePath, partitionLength);
             } catch (RocksDBException e) {
                 throw new IOException(e);
             }

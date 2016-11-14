@@ -154,7 +154,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
         log.debug("opening database "+ dbDir);
         YRDB rdb;
         try {
-            rdb = rdbf.getRdb(tableDefinition.getDataDir()+"/"+p1.dir, false);
+            rdb = rdbf.getRdb(tableDefinition.getDataDir()+"/"+p1.dir, p1.binaryValue.length, false);
         } catch (IOException e) {
             log.error("Failed to open database", e);
             return false;
@@ -303,6 +303,10 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
                 int d=(b1[i]&0xFF)-(b2[i]&0xFF);
                 if(d!=0)return d;
             }
+            for (int i = 0; i < prefixSize; i++) {
+                int d=(b1[i]&0xFF)-(b2[i]&0xFF);
+                if(d!=0)return d;
+            }
             return b1.length - b2.length;
         }
     }
@@ -318,6 +322,10 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
         public int compare(byte[] b1, byte[] b2) {
             int minLength = Math.min(b1.length, b2.length);
             for (int i = prefixSize; i < minLength; i++) {
+                int d=(b2[i]&0xFF)-(b1[i]&0xFF);
+                if(d!=0)return d;
+            }
+            for (int i = 0; i < prefixSize; i++) {
                 int d=(b2[i]&0xFF)-(b1[i]&0xFF);
                 if(d!=0)return d;
             }

@@ -107,7 +107,6 @@ public abstract class PartitionManager {
         Partition partition;
         Interval tmpInterval = pcache;
         boolean newlyCreated = false;
-        
         if(partitioningSpec.timeColumn!=null) {
             if((tmpInterval==null) || (tmpInterval.start>instant) || (tmpInterval.getEnd()<=instant)) {
         

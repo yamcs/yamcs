@@ -59,6 +59,9 @@ public class PartitioningSpec {
     }
 
     public void setValueColumnType(DataType valueColumnType) {
+        if(type!=_type.VALUE && type != _type.TIME_AND_VALUE ) {
+            throw new IllegalArgumentException("value column type not allowed for type "+type);
+        }
         this.valueColumnType = valueColumnType;
     }
 

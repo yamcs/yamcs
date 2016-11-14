@@ -56,7 +56,7 @@ public class YarchDatabase {
     public static String RDB_ENGINE_NAME="rocksdb";
     public static String RDB2_ENGINE_NAME="rocksdb2";
 
-    private static String DEFAULT_STORAGE_ENGINE = RDB_ENGINE_NAME;
+    private static String DEFAULT_STORAGE_ENGINE = RDB2_ENGINE_NAME;
     private final String defaultStorageEngineName;
 
     static {
@@ -85,7 +85,9 @@ public class YarchDatabase {
         }
         if(config.containsKey("defaultStorageEngine")) {
             defaultStorageEngineName = config.getString("defaultStorageEngine");
-            if(!TC_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngineName) && !RDB_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngineName)) {
+            if(!TC_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngineName) 
+                    && !RDB_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngineName)
+                    && !RDB2_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngineName))  {
                 throw new ConfigurationException("Unknown storage engine: "+defaultStorageEngineName);
             }
         } else {

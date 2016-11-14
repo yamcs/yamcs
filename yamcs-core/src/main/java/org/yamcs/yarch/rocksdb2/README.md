@@ -11,4 +11,4 @@ The only option to create bigger files is to set the write buffer size to a larg
 However, in rocksdb2 when we put the partitioning key in front of the normal table key (i.e generation time), then the data is not anymore sorted (assuming that we have at least two partitions), so the data is nicely distributed across the sst files with the merging taking place when the files grow large, etc.
  
 
-Note: there is no re-implementation of the HistogramDB, same one as for the rocksdb is used. 
+In addition, the rocksdb2 uses the same rocksdb database for storing the histogram data

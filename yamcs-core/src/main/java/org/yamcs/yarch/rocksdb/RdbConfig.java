@@ -1,7 +1,6 @@
 package org.yamcs.yarch.rocksdb;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -83,7 +82,7 @@ public class RdbConfig {
      *  
      * @return default column family options
      */
-    ColumnFamilyOptions getDefaultColumnFamilyOptions() {
+    public ColumnFamilyOptions getDefaultColumnFamilyOptions() {
         return defaultColumnFamilyOptions;
     }
     /**
@@ -94,7 +93,7 @@ public class RdbConfig {
      *  
      * @return default options
      */
-    Options getDefaultOptions() {
+    public Options getDefaultOptions() {
         return defaultOptions;
     }
     /**
@@ -103,7 +102,7 @@ public class RdbConfig {
      * no specific option set
      * @return default options
      */
-    DBOptions getDefaultDBOptions() {
+    public DBOptions getDefaultDBOptions() {
         return defaultDBOptions;
     }
     /**

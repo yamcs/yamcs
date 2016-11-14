@@ -39,7 +39,8 @@ public class RdbTableWriter extends TableWriter {
     public void onTuple(Stream stream, Tuple t) {
         try {
             RdbPartition partition = getDbPartition(t);
-            YRDB db = rdbFactory.getRdb(tableDefinition.getDataDir()+"/"+partition.dir, false);
+            YRDB db = rdbFactory.getRdb(tableDefinition.getDataDir()+"/"+partition.dir, 
+                    (partition.binaryValue==null)?0:partition.binaryValue.length, false);
             
 
             boolean inserted=false;
@@ -228,6 +229,8 @@ public class RdbTableWriter extends TableWriter {
 
     //prepends the partition binary value to the key 
     private byte[] getPartitionKey(RdbPartition partition, byte[] k) {
+        if(partition.binaryValue==null) return k;
+        
         byte[] p = partition.binaryValue;
         byte[] pk = new byte[p.length+k.length];
         System.arraycopy(p, 0, pk, 0, p.length);
