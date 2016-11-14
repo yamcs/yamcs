@@ -4,16 +4,14 @@ import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.yamcs.yarch.HistogramDb.Segment;
-import org.yamcs.yarch.HistogramDb.Segment.SegRecord;
 import org.yamcs.utils.TimeEncoding;
 
 
-public class HistogramDbTest {
+public class HistogramSegmentTest {
     byte[] grp1="aaaaaaa".getBytes();
     byte[] grp2="b".getBytes();
     
-    private void assertSegEquals(int dstart, int dstop, short num, SegRecord p) {
+    private void assertSegEquals(int dstart, int dstop, short num, HistogramSegment.SegRecord p) {
         assertEquals(dstart, p.dstart);
         assertEquals(dstop, p.dstop);
         assertEquals(num, p.num);
@@ -26,7 +24,7 @@ public class HistogramDbTest {
 
     @Test
     public void testDuplicate1() {
-        Segment segment=new Segment("g1".getBytes(), 0);
+        HistogramSegment segment=new HistogramSegment("g1".getBytes(), 0);
         segment.add((short)1, (short)10, (short)10);
 
         segment.merge((short)10);
@@ -42,7 +40,7 @@ public class HistogramDbTest {
 
     @Test
     public void testDuplicate2() {
-        Segment segment=new Segment("g2".getBytes(), 0);
+        HistogramSegment segment=new HistogramSegment("g2".getBytes(), 0);
         segment.add((short)1, (short)10, (short)10);
         segment.merge((short)1);
 
@@ -57,7 +55,7 @@ public class HistogramDbTest {
 
     @Test
     public void testInsideLeft() {
-        Segment segment=new Segment("g3".getBytes(), 0);
+        HistogramSegment segment = new HistogramSegment("g3".getBytes(), 0);
         segment.add((short)1, (short)10, (short)2);
 
         segment.merge((short)9);
@@ -72,7 +70,7 @@ public class HistogramDbTest {
 
     @Test
     public void testMergeLeft1() {
-        Segment segment=new Segment("g4".getBytes(), 0);
+        HistogramSegment segment = new HistogramSegment("g4".getBytes(), 0);
         segment.add((short)1, (short)1, (short)1);
 
         segment.merge((short)2);
@@ -90,7 +88,7 @@ public class HistogramDbTest {
 
     @Test
     public void testMergeLeft2() {
-        Segment segment=new Segment("g5".getBytes(), 0);
+        HistogramSegment segment = new HistogramSegment("g5".getBytes(), 0);
         segment.add((short)1, (short)10, (short)10);
         segment.merge((short)11);
         assertFalse(segment.duplicate);
@@ -105,7 +103,7 @@ public class HistogramDbTest {
 
     @Test
     public void testMergeRight() {
-        Segment segment=new Segment("g6".getBytes(), 0);
+        HistogramSegment segment = new HistogramSegment("g6".getBytes(), 0);
         segment.add((short)7, (short)8, (short)2);
 
         segment.merge((short)6);
@@ -125,7 +123,7 @@ public class HistogramDbTest {
 
     @Test
     public void testMergeBoth() {
-        Segment segment=new Segment("g7".getBytes(), 0);
+        HistogramSegment segment = new HistogramSegment("g7".getBytes(), 0);
         segment.add((short)1, (short)5, (short)2);
         segment.add((short)7, (short)8, (short)2);
 
@@ -143,7 +141,7 @@ public class HistogramDbTest {
 
     @Test
     public void testCheckStandalone1() {
-        Segment segment=new Segment("g8".getBytes(), 0);
+        HistogramSegment segment = new HistogramSegment("g8".getBytes(), 0);
         segment.merge((short)11);
 
         assertFalse(segment.duplicate);
@@ -160,7 +158,7 @@ public class HistogramDbTest {
 
     @Test
     public void testCheckStandalone2() {
-        Segment segment=new Segment("g9".getBytes(), 0);
+        HistogramSegment segment = new HistogramSegment("g9".getBytes(), 0);
 
         segment.add(1000,  5000, (short)2);
         segment.add(17000, 18000,(short)2);
@@ -182,7 +180,7 @@ public class HistogramDbTest {
 
     @Test
     public void testSelectBestMerge() {
-        Segment segment=new Segment("g10".getBytes(), 0);
+        HistogramSegment segment = new HistogramSegment("g10".getBytes(), 0);
 
         segment.add(1000, 4000, (short)4);
         segment.add(7000, 8000,(short)2);

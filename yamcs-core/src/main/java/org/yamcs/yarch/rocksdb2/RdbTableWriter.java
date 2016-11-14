@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +12,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.HistogramSegment;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
@@ -18,24 +20,19 @@ import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.rocksdb.RdbHistogramDb;
 
 public class RdbTableWriter extends TableWriter {
     private final RdbPartitionManager partitionManager;
     private final PartitioningSpec partitioningSpec;
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
     RDBFactory rdbFactory; 
-    RdbHistogramDb histodb;
-
+    static final byte[] zerobytes = new byte[0];
+    
     public RdbTableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode, RdbPartitionManager pm) throws IOException {
         super(ydb, tableDefinition, mode);
         this.partitioningSpec = tableDefinition.getPartitioningSpec();
         this.partitionManager = pm;
         rdbFactory = RDBFactory.getInstance(ydb.getName());
-        if(tableDefinition.hasHistogram()) {			 
-            String filename=tableDefinition.getDataDir()+"/"+tableDefinition.getName()+"-histo";
-            histodb = new RdbHistogramDb(ydb, filename, false);
-        }
     }
 
     @Override
@@ -43,6 +40,7 @@ public class RdbTableWriter extends TableWriter {
         try {
             RdbPartition partition = getDbPartition(t);
             YRDB db = rdbFactory.getRdb(tableDefinition.getDataDir()+"/"+partition.dir, false);
+            
 
             boolean inserted=false;
             boolean updated=false;
@@ -63,13 +61,14 @@ public class RdbTableWriter extends TableWriter {
                 updated=!inserted;
                 break;
             }
-            rdbFactory.dispose(db);
+           
             if(inserted && tableDefinition.hasHistogram()) {
-                addHistogram(t);
+                addHistogram(db, t);
             }
             if(updated && tableDefinition.hasHistogram()) {
                 // TODO updateHistogram(t);
             }
+            rdbFactory.dispose(db);
         } catch (IOException e) {
             log.error("failed to insert a record: ", e);
             e.printStackTrace();
@@ -80,14 +79,14 @@ public class RdbTableWriter extends TableWriter {
 
     }
 
-    private void addHistogram(Tuple t) throws IOException {
-        List<String> histoColumns=tableDefinition.getHistogramColumns();
+    private void addHistogram(YRDB db, Tuple t) throws RocksDBException {
+        List<String> histoColumns = tableDefinition.getHistogramColumns();
         for(String c: histoColumns) {
             if(!t.hasColumn(c)) continue;
             long time=(Long)t.getColumn(0);
-            ColumnSerializer cs=tableDefinition.getColumnSerializer(c);
-            byte[] v=cs.getByteArray(t.getColumn(c));
-            histodb.addValue(c, v, time);
+            ColumnSerializer cs = tableDefinition.getColumnSerializer(c);
+            byte[] v = cs.getByteArray(t.getColumn(c));
+            addHistogramForColumn(db, c, v, time);
         }
     }
 
@@ -98,9 +97,38 @@ public class RdbTableWriter extends TableWriter {
     }
 
 
+    private synchronized void addHistogramForColumn(YRDB db, String columnName, byte[] columnv, long time) throws RocksDBException {
+        int sstart = (int)(time/HistogramSegment.GROUPING_FACTOR);
+        int dtime = (int)(time%HistogramSegment.GROUPING_FACTOR);
+
+        HistogramSegment segment;
+        String cfHistoName = getHistogramColumnFamilyName(columnName);
+        ColumnFamilyHandle cfh = db.getColumnFamilyHandle(cfHistoName);
+        
+        if(cfh==null) {
+            cfh = db.createColumnFamily(cfHistoName);
+            //add a record at the end to make sure the cursor doesn't run out
+            db.put(cfh, HistogramSegment.key(Integer.MAX_VALUE, zerobytes), new byte[0]);
+        }  
+        
+        byte[] val = db.get(cfh, HistogramSegment.key(sstart, columnv));
+        if(val==null) {
+            segment = new HistogramSegment(columnv, sstart);
+        } else {
+            segment = new HistogramSegment(columnv, sstart, val);
+        }
+
+        segment.merge(dtime);
+        db.put(cfh, segment.key(), segment.val());
+    }
+
+    static public String getHistogramColumnFamilyName(String tableColumnName) {
+        return ("histo-"+tableColumnName).intern();
+    }
+    
     private boolean insert(YRDB db, RdbPartition partition, Tuple t) throws RocksDBException {
         byte[] k = getPartitionKey(partition, tableDefinition.serializeKey(t));
-        byte[] v=tableDefinition.serializeValue(t);
+        byte[] v = tableDefinition.serializeValue(t);
 
         if(db.get(k)==null) {
             db.put(k, v);
@@ -229,7 +257,6 @@ public class RdbTableWriter extends TableWriter {
     }
     
     public void close() {
-        histodb.close();
     }
 
 }

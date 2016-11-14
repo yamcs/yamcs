@@ -3,11 +3,13 @@ package org.yamcs.yarch.rocksdb2;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
-import java.util.PriorityQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksIterator;
+import org.rocksdb.Snapshot;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.yarch.AbstractTableReaderStream;
 import org.yamcs.yarch.ColumnDefinition;
@@ -20,7 +22,6 @@ import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.RawTuple;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.rocksdb2.YRDB.IteratorWithSnapshot;
 
 public class RdbTableReaderStream extends AbstractTableReaderStream implements Runnable, DbReaderStream {
     static AtomicInteger count = new AtomicInteger(0);
@@ -31,8 +32,10 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
     
     // size in bytes of value if partitioned by value
     private final int partitionSize;
+    
     protected RdbTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, RdbPartitionManager partitionManager, boolean ascending, boolean follow) {
         super(ydb, tblDef, partitionManager, ascending, follow);
+        
         this.tableDefinition = tblDef;
         partitioningSpec = tblDef.getPartitioningSpec();
         this.partitionManager = partitionManager;
@@ -77,158 +80,185 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
                 rangeEnd=cs.getByteArray(range.keyEnd);
             }
         }
-        
-        if (ascending) {
-            return readAscending(partitions, rangeStart, strictStart, rangeEnd, strictEnd);
+        if(partitionSize>0) {
+            return runValuePartitions(partitions, rangeStart, strictStart, rangeEnd, strictEnd);
         } else {
-            return readDescending(partitions, rangeStart, strictStart, rangeEnd, strictEnd);
+            assert(partitions.size()==1);
+            return runSimplePartition((RdbPartition)partitions.get(0), rangeStart, strictStart, rangeEnd, strictEnd);
         }
-     
     }
     
-    private boolean readAscending(List<Partition> partitions, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
-        PriorityQueue<RdbRawTuple> orderedQueue = new PriorityQueue<RdbRawTuple>();
-        IteratorWithSnapshot iws = null;
+    /*
+     * simple case when there is no value partitioning 
+     */
+    private boolean runSimplePartition(RdbPartition partition, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
+        DbIterator iterator = null;
+      
+        RDBFactory rdbf = RDBFactory.getInstance(ydb.getName());
+        String dbDir = partition.dir;
+        log.debug("opening database "+ dbDir);
+        YRDB rdb;
         try {
-            RDBFactory rdbf=RDBFactory.getInstance(ydb.getName());
-            RdbPartition p1 = (RdbPartition) partitions.iterator().next();
-            String dbDir = p1.dir;
-            log.debug("opening database "+ dbDir);
-            YRDB rdb = rdbf.getRdb(tableDefinition.getDataDir()+"/"+p1.dir, false);
-            List<byte[]> partValues = new ArrayList<byte[]>();
-            
+            rdb = rdbf.getRdb(tableDefinition.getDataDir()+"/"+partition.dir, false);
+        } catch (IOException e) {
+            log.error("Failed to open database", e);
+            return false;
+        }
+        ReadOptions readOptions = new ReadOptions();
+        readOptions.setTailing(follow);
+        Snapshot snapshot = null;
+        if(!follow) {
+            snapshot = rdb.db.getSnapshot();
+            readOptions.setSnapshot(snapshot);
+        }
+        
+        try {
+            RocksIterator it = rdb.db.newIterator(readOptions);
+            if(ascending) {
+                iterator = new AscendingRangeIterator(it, rangeStart, strictStart, rangeEnd, strictEnd);
+                while(!quit && iterator.isValid()){
+                    if(!emitIfNotPastStop(iterator.key(), iterator.value(), rangeEnd, strictEnd)) {
+                        return true;
+                    }
+                    iterator.next();
+                }
+                return false;
+                
+            } else {
+                iterator = new DescendingRangeIterator(it, rangeStart, strictStart, rangeEnd, strictEnd);
+                while(!quit && iterator.isValid()){
+                    if(!emitIfNotPastStart(iterator.key(), iterator.value(), rangeStart, strictStart)) {
+                        return true;
+                    }
+                    iterator.prev();
+                }
+                return false;
+            }   
+        } finally {
+            if(iterator!=null) iterator.close();
+            if(snapshot!=null) snapshot.close();
+            readOptions.close();
+            rdbf.dispose(rdb);
+        }
+    }
+    
+    /*
+     * runs value based partitions: the partition value is encoded as the first bytes of the key, so we have to make multiple parallel iterators
+     */
+    private boolean runValuePartitions(List<Partition> partitions, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
+        DbIterator iterator = null;
+      
+        RDBFactory rdbf = RDBFactory.getInstance(ydb.getName());
+        RdbPartition p1 = (RdbPartition) partitions.get(0);
+        String dbDir = p1.dir;
+        log.debug("opening database "+ dbDir);
+        YRDB rdb;
+        try {
+            rdb = rdbf.getRdb(tableDefinition.getDataDir()+"/"+p1.dir, false);
+        } catch (IOException e) {
+            log.error("Failed to open database", e);
+            return false;
+        }
+        ReadOptions readOptions = new ReadOptions();
+        readOptions.setTailing(follow);
+        Snapshot snapshot = null;
+        if(!follow) {
+            snapshot = rdb.db.getSnapshot();
+            readOptions.setSnapshot(snapshot);
+        }
+        
+        try {
+            List<DbIterator> itList = new ArrayList<>(partitions.size());
+            //create an iterator for each partitions
             for(Partition p: partitions) {
                 p1 = (RdbPartition) p;
-                partValues.add(p1.binaryValue);
-            }
-            
-            //create a cursor for all partitions
-            iws = rdb.newAscendingIterators(partValues, rangeStart, !strictStart, follow);
-            int index = 0;
-            for(RocksIterator it:iws.itList) {
-                numRecordsRead++;
-                orderedQueue.add(getRawTuple(it, index++));
-            }
-            log.debug("got one tuple from each partition, starting the business");
-
-            //publish the first element from the priority queue till it becomes empty
-            while((!quit) && orderedQueue.size()>0){
-                RdbRawTuple rt = orderedQueue.poll();
-                if(!emitIfNotPastStop(rt, rangeEnd, strictEnd)) {
-                    return true;
-                }
-                rt.iterator.next();
-                boolean finished = true;
+                RocksIterator rocksIt = rdb.db.newIterator(readOptions);
                 
-                if(rt.iterator.isValid()) {
-                    byte[] key = rt.iterator.key();
-                    if(ByteArrayUtils.startsWith(key, rt.partition)) {
-                        finished = false;
-                        numRecordsRead++;
-                        rt.key = Arrays.copyOfRange(key, partitionSize, key.length);
-                        rt.value = rt.iterator.value();
-                        orderedQueue.add(rt);
-                    }
-                }
+                DbIterator it = getPartitionIterator(rocksIt, p1.binaryValue,  ascending, rangeStart, strictStart, rangeEnd, strictEnd);
                 
-                if(finished) {
-                    log.debug(rt.iterator+" finished");
-                    rt.iterator.close();                    
+                if(it.isValid()) {
+                    itList.add(it);
+                } else {
+                    it.close();
                 }
             }
-
-            rdbf.dispose(rdb);
-            return false;
-        } catch (Exception e){
-            e.printStackTrace();
-            return false;
+            if(itList.size()==0) {
+                return false;
+            } else if(itList.size()==1) {
+                iterator = itList.get(0);
+            } else {
+                iterator = new MergingIterator(itList, ascending?new SuffixAscendingComparator(partitionSize):new SuffixDescendingComparator(partitionSize) );
+            }
+            if(ascending) {
+                return runAscending(iterator, rangeEnd, strictEnd);
+            } else {
+                return runDescending(iterator, rangeStart, strictStart);
+            }
         } finally {
-            for(RdbRawTuple rt:orderedQueue) {
-                rt.iterator.close();                
-            }
-            if(iws!=null && iws.snapshot!=null) {
-                iws.snapshot.close();
-            }
+            if(iterator!=null) iterator.close();
+            if(snapshot!=null) snapshot.close();
+            readOptions.close();
+            rdbf.dispose(rdb);
         }
     }
     
-    private RdbRawTuple getRawTuple(RocksIterator it, int index ) {
-        byte[] rdbKey = it.key();
-        
-        byte[] p = Arrays.copyOf(rdbKey, partitionSize);
-        byte[] key = Arrays.copyOfRange(rdbKey, partitionSize, rdbKey.length);
-        
-        return new RdbRawTuple(p, key, it.value(), it, index);
-    }
-    
-  
-    
-    private boolean readDescending(List<Partition> partitions, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
-        PriorityQueue<RdbRawTuple> orderedQueue=new PriorityQueue<RdbRawTuple>(RawTuple.reverseComparator);
-        IteratorWithSnapshot iws = null;
-        try {
-            RDBFactory rdbf=RDBFactory.getInstance(ydb.getName());
-            RdbPartition p1 = (RdbPartition) partitions.iterator().next();
-            String dbDir = p1.dir;
-            log.debug("opening database "+ dbDir);
-            YRDB rdb = rdbf.getRdb(tableDefinition.getDataDir()+"/"+p1.dir, false);
-            List<byte[]> partValues = new ArrayList<byte[]>();
-
-            for(Partition p: partitions) {
-                p1 = (RdbPartition) p;
-                partValues.add(p1.binaryValue);
+    boolean runAscending(DbIterator iterator, byte[] rangeEnd, boolean strictEnd) {
+        while(!quit && iterator.isValid()){
+            byte[] dbKey = iterator.key();
+            byte[] key = Arrays.copyOfRange(dbKey, partitionSize, dbKey.length);
+            if(!emitIfNotPastStop(key, iterator.value(), rangeEnd, strictEnd)) {
+                return true;
             }
-            
-            //create a cursor for all partitions
-            iws = rdb.newDescendingIterators(partValues, rangeEnd, !strictEnd);
-            
-            int index = 0;
-            for(RocksIterator it:iws.itList) {
-                numRecordsRead++;
-                orderedQueue.add(getRawTuple(it, index++));
-            }
-            
-            log.debug("got one tuple from each partition, starting the business");
-    
-            //publish the first element from the priority queue till it becomes empty
-            while((!quit) && orderedQueue.size()>0){
-                RdbRawTuple rt = orderedQueue.poll();
-                if(!emitIfNotPastStart(rt, rangeStart, strictStart)) {
-                    return true;
-                }
-                rt.iterator.prev();
-                boolean finished = true;
-                if(rt.iterator.isValid()) {
-                    byte[] key = rt.iterator.key();
-                    if(ByteArrayUtils.startsWith(key,  rt.partition)) {
-                        rt.key = Arrays.copyOfRange(key, partitionSize, key.length);
-                        rt.value = rt.iterator.value();
-                        orderedQueue.add(rt);
-                        finished = false;
-                    }
-                } 
-                
-                if(!finished) {
-                    log.debug(rt.iterator+" finished");
-                    rt.iterator.close();                    
-                }
-            }
-
-            rdbf.dispose(rdb);
-            return false;
-        } catch (Exception e){
-            e.printStackTrace();
-            return false;
-        } finally {
-            for(RdbRawTuple rt:orderedQueue) {
-                rt.iterator.close();           
-            }
-            if(iws!=null && iws.snapshot!=null) {
-                iws.snapshot.close();
-            }
+            iterator.next();
         }
+        return false;
     }
     
+    boolean runDescending(DbIterator iterator, byte[] rangeStart, boolean strictStart) {
+        while(!quit && iterator.isValid()){
+            byte[] dbKey = iterator.key();
+            byte[] key = Arrays.copyOfRange(dbKey, partitionSize, dbKey.length);
+            if(!emitIfNotPastStart(key, iterator.value(), rangeStart, strictStart)) {
+                return true;
+            }
+            iterator.prev();
+        }
+        return false;
+    }
+   /*
+    * create a ranging iterator for the given partition
+    * TODO: check usage of RocksDB prefix iterators
+    *  
+    */
+   private DbIterator getPartitionIterator(RocksIterator it, byte[] part, boolean ascending, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
+       byte[] dbKeyStart;
+       byte[] dbKeyEnd;
+       boolean dbStrictStart, dbStrictEnd;
+       
+       if(rangeStart!=null) {
+           dbKeyStart = Arrays.copyOf(part, part.length+rangeStart.length);
+           System.arraycopy(rangeStart, 0, dbKeyStart, part.length, rangeStart.length);
+           dbStrictStart = strictStart;
+       } else {
+           dbKeyStart = part;
+           dbStrictStart = false;
+       }
+       
+       if(rangeEnd!=null) {
+           dbKeyEnd = Arrays.copyOf(part, part.length+rangeEnd.length);
+           System.arraycopy(rangeEnd, 0, dbKeyEnd, part.length, rangeEnd.length);
+           dbStrictEnd = strictEnd;
+       } else {
+           dbKeyEnd = ByteArrayUtils.plusOne(part);
+           dbStrictEnd = true;
+       }
+       if(ascending) {
+           return new AscendingRangeIterator(it, dbKeyStart, dbStrictStart, dbKeyEnd, dbStrictEnd);
+       } else {
+           return new DescendingRangeIterator(it, dbKeyStart, dbStrictStart, dbKeyEnd, dbStrictEnd);
+       }
+   }
+ 
     public long getNumRecordsRead() {
         return numRecordsRead;
     }
@@ -258,5 +288,40 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
         protected byte[] getValue() {
             return value;
         }
-    }    
+    }  
+    
+    static class SuffixAscendingComparator implements Comparator<byte[]> {
+        int prefixSize;
+        public SuffixAscendingComparator(int prefixSize) {
+            this.prefixSize = prefixSize;
+        }
+
+        @Override
+        public int compare(byte[] b1, byte[] b2) {
+            int minLength = Math.min(b1.length, b2.length);
+            for (int i = prefixSize; i < minLength; i++) {
+                int d=(b1[i]&0xFF)-(b2[i]&0xFF);
+                if(d!=0)return d;
+            }
+            return b1.length - b2.length;
+        }
+    }
+    
+    
+    static class SuffixDescendingComparator implements Comparator<byte[]> {
+        int prefixSize;
+        public SuffixDescendingComparator(int prefixSize) {
+            this.prefixSize = prefixSize;
+        }
+
+        @Override
+        public int compare(byte[] b1, byte[] b2) {
+            int minLength = Math.min(b1.length, b2.length);
+            for (int i = prefixSize; i < minLength; i++) {
+                int d=(b2[i]&0xFF)-(b1[i]&0xFF);
+                if(d!=0)return d;
+            }
+            return b2.length - b1.length;
+        }
+    }
 }

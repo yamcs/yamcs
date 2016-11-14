@@ -20,6 +20,7 @@ import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 import org.yamcs.utils.ByteArrayWrapper;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.rocksdb.RdbConfig.TableConfig;
 /**
  * wrapper around RocksDB that keeps track of column families

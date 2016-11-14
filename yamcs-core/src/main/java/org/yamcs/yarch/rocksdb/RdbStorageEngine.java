@@ -3,16 +3,18 @@ package org.yamcs.yarch.rocksdb;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.TimeInterval;
 import org.yamcs.archive.TagDb;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.yarch.AbstractStream;
-import org.yamcs.yarch.HistogramDb;
+import org.yamcs.yarch.HistogramRecord;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.StorageEngine;
 import org.yamcs.yarch.TableDefinition;
@@ -110,14 +112,6 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
 
-    @Override
-    public HistogramDb getHistogramDb(TableDefinition tbl) throws YarchException {
-        try {
-            return RdbHistogramDb.getInstance(ydb, tbl);
-        } catch (IOException e) {
-            throw new YarchException(e);
-        }
-    }
 
 
     @Override
@@ -149,6 +143,16 @@ public class RdbStorageEngine implements StorageEngine {
         RdbStorageEngine rse = instances.remove(ydb);
         if(rse!=null) {
             rse.shutdown();
+        }
+    }
+
+
+    @Override
+    public Iterator<HistogramRecord> getIterator(TableDefinition tblDef, String columnName, TimeInterval interval, long mergeTime) throws YarchException {
+        try {
+            return RdbHistogramDb.getInstance(ydb, tblDef).getIterator(columnName, interval, mergeTime);
+        } catch (IOException e) {
+            throw new YarchException(e);
         }
     }
 }

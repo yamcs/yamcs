@@ -8,7 +8,6 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 
 
 public interface DbReaderStream {
-	public boolean addRelOpFilter(ColumnExpression cexpr, RelOp relOp, Object value) throws StreamSqlException;
-	public boolean addInFilter(ColumnExpression cexpr, Set<Object> values) throws StreamSqlException;
-
+    public boolean addRelOpFilter(ColumnExpression cexpr, RelOp relOp, Object value) throws StreamSqlException;
+    public boolean addInFilter(ColumnExpression cexpr, Set<Object> values) throws StreamSqlException;
 }

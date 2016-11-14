@@ -13,11 +13,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
@@ -37,13 +35,10 @@ import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.YarchTestCase;
 import org.yamcs.yarch.TableWriter.InsertMode;
-import org.yamcs.yarch.streamsql.StreamSqlException;
 
-import com.google.common.io.Files;
-
+@Ignore //note that this one does not cleanup the test directory resulting in error if run multiple times
 public class RdbPerformanceTest extends YarchTestCase {
     private TupleDefinition tdef;
     private TableWriter tw;

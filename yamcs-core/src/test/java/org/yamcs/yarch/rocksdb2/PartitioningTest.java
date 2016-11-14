@@ -103,7 +103,7 @@ public class PartitioningTest extends YarchTestCase {
 
         ydb.execute("create stream test1_out as select * from test1");
      
-        List<Tuple> tuples=suckAll("test1_out");
+        List<Tuple> tuples = fetchAll("test1_out");
         assertEquals(5, tuples.size());
         Iterator<Tuple> iter=tuples.iterator();
         

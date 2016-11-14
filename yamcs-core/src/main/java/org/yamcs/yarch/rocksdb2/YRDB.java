@@ -2,6 +2,7 @@ package org.yamcs.yarch.rocksdb2;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -266,4 +267,27 @@ public class YRDB {
         Snapshot snapshot;
     }
 
+    public ColumnFamilyHandle getColumnFamilyHandle(String colName) {
+        return columnFamilies.get(colName);
+    }
+
+    public byte[] get(ColumnFamilyHandle cfh, byte[] segkey) throws RocksDBException {
+        return db.get(cfh, segkey);
+    }
+
+    public ColumnFamilyHandle createColumnFamily(String colName) throws RocksDBException {
+        ColumnFamilyDescriptor cfd = new ColumnFamilyDescriptor(colName.getBytes(StandardCharsets.ISO_8859_1));
+        ColumnFamilyHandle cfh = db.createColumnFamily(cfd);
+        
+        columnFamilies.put(colName, cfh);
+        return cfh;
+    }
+
+    public void put(ColumnFamilyHandle cfh, byte[] key, byte[] value) throws RocksDBException {
+       db.put(cfh, key, value);
+    }
+
+    public RocksIterator newIterator(ColumnFamilyHandle cfh) {
+        return db.newIterator(cfh);
+    }
 }

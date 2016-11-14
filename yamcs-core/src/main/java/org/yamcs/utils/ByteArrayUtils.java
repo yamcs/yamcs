@@ -63,4 +63,20 @@ public class ByteArrayUtils {
         }
         return b;
     }
+    
+    /**
+     * lexicographic comparison which returns 0 if one of the array is a subarray of the other one
+
+     * @param a1
+     * @param a2
+     * @return
+     */
+    static public int compare(byte[] a1, byte[] a2) {
+        for(int i=0;i<a1.length && i<a2.length;i++) {
+            int d=(a1[i]&0xFF)-(a2[i]&0xFF);
+            if(d!=0)return d;
+        }
+        return 0;
+    }
+
 }

@@ -56,9 +56,9 @@ public class YarchDatabase {
     public static String RDB_ENGINE_NAME="rocksdb";
     public static String RDB2_ENGINE_NAME="rocksdb2";
 
-    private static String DEFAULT_STORAGE_ENGINE = RDB2_ENGINE_NAME;
+    private static String DEFAULT_STORAGE_ENGINE = RDB_ENGINE_NAME;
     private final String defaultStorageEngineName;
-    
+
     static {
         config = YConfiguration.getConfiguration("yamcs");
         home = config.getString("dataDir");
@@ -75,8 +75,8 @@ public class YarchDatabase {
         jmxService = JMXService.getInstance();
         tables = new HashMap<String,TableDefinition>();
         streams = new HashMap<String,AbstractStream>();
-        
-        
+
+
         List<String> se;
         if(config.containsKey("storageEngines")) {
             se = config.getList("storageEngines");
@@ -91,7 +91,7 @@ public class YarchDatabase {
         } else {
             defaultStorageEngineName = DEFAULT_STORAGE_ENGINE;
         }
-        
+
         if(se!=null) {
             for(String s:se) {
                 if(TC_ENGINE_NAME.equalsIgnoreCase(s)) {
@@ -130,7 +130,7 @@ public class YarchDatabase {
     static public boolean hasInstance(String dbname) {
         return databases.containsKey(dbname);
     }
-    
+
     /**
      * 
      * @return the instance name
@@ -138,7 +138,7 @@ public class YarchDatabase {
     public String getName() {
         return dbname;
     }
-    
+
     public String getDefaultStorageEngineName() {
         return defaultStorageEngineName;
     }
@@ -146,8 +146,8 @@ public class YarchDatabase {
     public StorageEngine getDefaultStorageEngine() {
         return storageEngines.get(defaultStorageEngineName);
     }
-    
-    
+
+
     /**
      * loads all the .def files from the disk. The ascii def file is structed as follows
      * col1 type1, col2 type2, col3 type3     <- definition of the columns
@@ -193,16 +193,17 @@ public class YarchDatabase {
     }
 
     TableDefinition deserializeTableDefinition(File f) throws FileNotFoundException, IOException, ClassNotFoundException {
-    	if(f.length()==0) {
-    		throw new IOException("Cannot load table definition from empty file "+f);
-    	}
+        if(f.length()==0) {
+            throw new IOException("Cannot load table definition from empty file "+f);
+        }
         String fn=f.getName();
         String tblName=fn.substring(0,fn.length()-4);
         Yaml yaml = new Yaml(new TableDefinitionConstructor());
         FileInputStream fis=new FileInputStream(f);
         Object o = yaml.load(fis);
         if(!(o instanceof TableDefinition)) {
-        	throw new IOException("Cannot load table definition from "+f+": object is "+o.getClass().getName()+"; should be "+TableDefinition.class.getName());
+            fis.close();
+            throw new IOException("Cannot load table definition from "+f+": object is "+o.getClass().getName()+"; should be "+TableDefinition.class.getName());
         }
         TableDefinition tblDef=(TableDefinition) o;
         fis.close();
@@ -210,7 +211,7 @@ public class YarchDatabase {
         tblDef.setName(tblName);
         tblDef.setDb(this);
         if(!tblDef.hasCustomDataDir()) tblDef.setDataDir(getRoot());
-        
+
         log.debug("loaded table definition "+tblName+" from "+fn);
         return tblDef;
     }
@@ -239,15 +240,18 @@ public class YarchDatabase {
      *  add a table to the dictionary
      *  throws exception if a table or a stream with the same name already exist
      *  
+     * @param def - table definition
+     * @throws YarchException - thrown in case a table or a stream with the same name already exists or if there was an error in creating the table 
+     *  
      */
     public void createTable(TableDefinition def) throws YarchException {
         if(tables.containsKey(def.getName())) throw new YarchException("A table named '"+def.getName()+"' already exists");
         if(streams.containsKey(def.getName())) throw new YarchException("A stream named '"+def.getName()+"' already exists");
-        
+
         StorageEngine se = storageEngines.get(def.getStorageEngineName());
         if(se==null) throw new YarchException("Invalid storage engine '"+def.getStorageEngineName()+"' specified. Valid names are: "+storageEngines.keySet());
         se.createTable(def);
-        
+
         tables.put(def.getName(),def);
         def.setDb(this);
         serializeTableDefinition(def);
@@ -328,7 +332,7 @@ public class YarchDatabase {
     /**
      * Returns the root directory for this database instance.
      *  It is usually home/instance_name.
-     * @return
+     * @return the roor directory for this database instance
      */
     public String getRoot() {
         return getHome()+"/"+dbname;
@@ -342,7 +346,9 @@ public class YarchDatabase {
         return home;
     }
 
-    /**to be used for testing**/
+    /**to be used for testing
+     * @param dbName database name to be removed 
+     **/
     public static void removeInstance(String dbName) {
         databases.remove(dbName);
     }

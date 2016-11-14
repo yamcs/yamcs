@@ -99,7 +99,7 @@ public class TupleSourceExpression {
             stream=streamExpression.execute(c);
         } else if (objectName!=null) {
             YarchDatabase ydb=YarchDatabase.getInstance(c.getDbName());
-
+            if(!ascending) follow = false;
             TableDefinition tbl=ydb.getTable(objectName);
             if(tbl!=null) {
                 if(histoColumn==null) {

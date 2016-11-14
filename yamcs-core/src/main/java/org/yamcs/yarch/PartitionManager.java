@@ -51,22 +51,27 @@ public abstract class PartitionManager {
      * @param partitionValueFilter - return only partitions whose value are in the filter. If null, return all partitions;
      * @return
      */	
-    Iterator<List<Partition>> iterator(Set<Object> partitionValueFilter) {
+    public Iterator<List<Partition>> iterator(Set<Object> partitionValueFilter) {
         Iterator<Entry<Long, Interval>> it=intervals.entrySet().iterator();
         PartitionIterator pi=new PartitionIterator(partitioningSpec, it, partitionValueFilter, false);
         return pi;
     }
     
-    Iterator<List<Partition>> reverseIterator(Set<Object> partitionValueFilter) {
+    /**
+     * same as above, only in reverse direction
+     * @param partitionValueFilter
+     * @return
+     */
+    public Iterator<List<Partition>> reverseIterator(Set<Object> partitionValueFilter) {
         Iterator<Entry<Long, Interval>> it=intervals.descendingMap().entrySet().iterator();
         PartitionIterator pi=new PartitionIterator(partitioningSpec, it, partitionValueFilter, true);
         return pi;
     }
 
     /**
-     * Same as above only start from a specific start time
+     * See {@link #iterator(Set)}
      * @param start
-     * @param partitionValueFilter values
+     * @param partitionValueFilter values - return only partitions whose value are in the filter. If null, return all partitions;
      * 
      * @return an iterator over the partitions starting at the specified start time
      * 

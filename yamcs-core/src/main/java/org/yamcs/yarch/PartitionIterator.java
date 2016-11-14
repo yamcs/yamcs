@@ -21,7 +21,7 @@ public class PartitionIterator implements Iterator<List<Partition>> {
     PartitionIterator(PartitioningSpec partitioningSpec, Iterator<Entry<Long,Interval>> it, Set<Object> partitionFilter, boolean reverse){
         this.partitioningSpec=partitioningSpec;
         this.it=it;
-        this.partitionValueFilter=partitionFilter;
+        this.partitionValueFilter = partitionFilter;
         this.reverse=reverse;
     }
     

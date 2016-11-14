@@ -129,7 +129,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
             //now continue publishing the first element from the priority queue till it becomes empty
             while((!quit) && orderedQueue.size()>0){
                 RdbRawTuple rt=orderedQueue.poll();
-                if(!emitIfNotPastStop(rt, rangeEnd, strictEnd)) {
+                if(!emitIfNotPastStop(rt.key, rt.value, rangeEnd, strictEnd)) {
                     return true;
                 }
                 rt.iterator.next();
@@ -231,7 +231,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
             //now continue publishing the first element from the priority queue till it becomes empty
             while((!quit) && orderedQueue.size()>0){
                 RdbRawTuple rt=orderedQueue.poll();
-                if(!emitIfNotPastStart(rt, rangeStart, strictStart)) {
+                if(!emitIfNotPastStart(rt.key, rt.value, rangeStart, strictStart)) {
                     return true;
                 }
                 rt.iterator.prev();

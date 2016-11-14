@@ -135,6 +135,10 @@ public class TupleDefinition implements Serializable, Cloneable {
     }
 
 
+    /**
+     * 
+     * @return number of columns part of the tuple
+     */
     public int size() {
         return columnDefinitions.size();
     }

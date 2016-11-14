@@ -162,7 +162,6 @@ public class RdbPartitionManager extends PartitionManager {
             rdbFactory.dispose(rdb);
             return new RdbPartition(pinfo.partitionStart, pinfo.partitionEnd, value, pinfo.dir+"/"+tableDefinition.getName());			
         } catch (RocksDBException e) {
-
             log.error("Error when creating partition "+pinfo+" for value "+value+": ", e);
             throw new IOException(e);
 

@@ -70,7 +70,7 @@ public abstract class YarchTestCase {
 	return ydb.execute(cmd);
     }
 
-    protected List<Tuple> suckAll(String streamName) throws InterruptedException{
+    protected List<Tuple> fetchAll(String streamName) throws InterruptedException{
 	final List<Tuple> tuples=new ArrayList<Tuple>();
 	final Semaphore semaphore=new Semaphore(0);
 	Stream s=ydb.getStream(streamName);

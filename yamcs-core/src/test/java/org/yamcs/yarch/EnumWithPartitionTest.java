@@ -37,7 +37,7 @@ public class EnumWithPartitionTest extends YarchTestCase {
     public void test1() throws Exception {
         populate("testenum");
         ydb.execute("create stream testenum_out as select * from testenum");
-        final List<Tuple> tuples= suckAll("testenum_out");
+        final List<Tuple> tuples= fetchAll("testenum_out");
     
         for(int i=0;i<n;i++) {
             Tuple t=tuples.get(i);
@@ -51,7 +51,7 @@ public class EnumWithPartitionTest extends YarchTestCase {
     public void test2() throws Exception {
         populate("testenum2");
         ydb.execute("create stream testenum2_out as select * from testenum2 where packetName in ('pn1', 'invalid')");
-        List<Tuple> tuples= suckAll("testenum2_out");
+        List<Tuple> tuples= fetchAll("testenum2_out");
         int i = 1;
         for(Tuple t:tuples) {
             assertEquals(i*1000l, (long)(Long)t.getColumn(0));
@@ -61,7 +61,7 @@ public class EnumWithPartitionTest extends YarchTestCase {
         assertEquals(n+1, i);
         
         ydb.execute("create stream testenum2_out2 as select * from testenum2 where packetName = 'pn1'");
-        tuples = suckAll("testenum2_out2");
+        tuples = fetchAll("testenum2_out2");
         i = 1;
         for(Tuple t:tuples) {
             assertEquals(i*1000l, (long)(Long)t.getColumn(0));
@@ -75,11 +75,11 @@ public class EnumWithPartitionTest extends YarchTestCase {
     public void test3() throws Exception {
         populate("testenum3");
         ydb.execute("create stream testenum3_out as select * from testenum3 where packetName in ('invalid')");
-        List<Tuple> tuples= suckAll("testenum3_out");
+        List<Tuple> tuples= fetchAll("testenum3_out");
         assertTrue(tuples.isEmpty());
         
         ydb.execute("create stream testenum3_out2 as select * from testenum3 where packetName = 'invalid'");
-        tuples= suckAll("testenum3_out2");
+        tuples= fetchAll("testenum3_out2");
         assertTrue(tuples.isEmpty());
     }
     
@@ -87,11 +87,11 @@ public class EnumWithPartitionTest extends YarchTestCase {
     public void test4() throws Exception {
         ydb.execute("create table testenum4(gentime timestamp, packetName enum, packet binary, primary key(gentime,packetName)) partition by time_and_value(gentime, packetName)");
         ydb.execute("create stream testenum4_out as select * from testenum4 where packetName in ('invalid')");
-        List<Tuple> tuples= suckAll("testenum4_out");
+        List<Tuple> tuples= fetchAll("testenum4_out");
         assertTrue(tuples.isEmpty());
         
         ydb.execute("create stream testenum4_out2 as select * from testenum4 where packetName = 'invalid'");
-        tuples= suckAll("testenum4_out2");
+        tuples= fetchAll("testenum4_out2");
         assertTrue(tuples.isEmpty());
     }
 }

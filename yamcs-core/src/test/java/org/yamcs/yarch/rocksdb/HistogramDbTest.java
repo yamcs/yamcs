@@ -4,11 +4,11 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.yamcs.TimeInterval;
-import org.yamcs.yarch.HistogramDb.HistogramIterator;
 import org.yamcs.yarch.HistogramRecord;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.utils.FileUtils;
@@ -46,8 +46,8 @@ public class HistogramDbTest {
 	(new File(path)).delete();
 	YarchDatabase ydb=YarchDatabase.getInstance(this.getClass().toString());
 	RdbHistogramDb db=new RdbHistogramDb(ydb, path, false);
-	HistogramIterator it=db.getIterator(colName, new TimeInterval(), -1);
-	assertNull(it.getNextRecord());
+	Iterator<HistogramRecord> it=db.getIterator(colName, new TimeInterval(), -1);
+	assertFalse(it.hasNext());
 
 	db.addValue(colName, grp1, 1000);
 
@@ -71,22 +71,22 @@ public class HistogramDbTest {
 
 	//db.printDb(colName, new TimeInterval(), -1);
 	it=db.getIterator(colName, new TimeInterval(), -1);
-	assertRecEquals(grp1, 1000, 1000, 1, it.getNextRecord());
-	assertRecEquals(grp2, 1000, 1000, 1, it.getNextRecord());
-	assertRecEquals(grp1, g+1000, g+4000, 4, it.getNextRecord());
-	assertRecEquals(grp2, g+1000, g+2000, 2, it.getNextRecord());
-	assertRecEquals(grp2, g+5000, g+5000, 1, it.getNextRecord());
-	assertRecEquals(grp2, g+130000, g+130000, 1, it.getNextRecord());
-	assertRecEquals(grp1, now, now, 1, it.getNextRecord());
-	assertNull(it.getNextRecord());
+	assertRecEquals(grp1, 1000, 1000, 1, it.next());
+	assertRecEquals(grp2, 1000, 1000, 1, it.next());
+	assertRecEquals(grp1, g+1000, g+4000, 4, it.next());
+	assertRecEquals(grp2, g+1000, g+2000, 2, it.next());
+	assertRecEquals(grp2, g+5000, g+5000, 1, it.next());
+	assertRecEquals(grp2, g+130000, g+130000, 1, it.next());
+	assertRecEquals(grp1, now, now, 1, it.next());
+	assertFalse(it.hasNext());
 
 	it=db.getIterator(colName, new TimeInterval(), 5000);
-	assertRecEquals(grp1, 1000, 1000, 1, it.getNextRecord());
-	assertRecEquals(grp2, 1000, 1000, 1, it.getNextRecord());
-	assertRecEquals(grp1, g+1000, g+4000, 4, it.getNextRecord());
-	assertRecEquals(grp2, g+1000, g+5000, 3, it.getNextRecord());
-	assertRecEquals(grp2, g+130000, g+130000, 1, it.getNextRecord());
-	assertRecEquals(grp1, now, now, 1, it.getNextRecord());
-	assertNull(it.getNextRecord());
+	assertRecEquals(grp1, 1000, 1000, 1, it.next());
+	assertRecEquals(grp2, 1000, 1000, 1, it.next());
+	assertRecEquals(grp1, g+1000, g+4000, 4, it.next());
+	assertRecEquals(grp2, g+1000, g+5000, 3, it.next());
+	assertRecEquals(grp2, g+130000, g+130000, 1, it.next());
+	assertRecEquals(grp1, now, now, 1, it.next());
+	assertFalse(it.hasNext());
     }	
 }
