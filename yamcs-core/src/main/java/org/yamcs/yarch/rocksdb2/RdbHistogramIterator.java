@@ -170,7 +170,6 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
         if(records.isEmpty()) {
             readNextSegments();
         }
-        System.out.println("r: "+r);
         return r;
     }
 }
