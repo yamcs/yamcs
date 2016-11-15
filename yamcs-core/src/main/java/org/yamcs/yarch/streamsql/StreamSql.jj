@@ -264,10 +264,10 @@ CreateTableStatement CreateTableStatement() throws StreamSqlException: {
     TupleDefinition tupleDefinition=new TupleDefinition();
     ArrayList<String> primaryKey=new ArrayList<String>();
     ArrayList<String> partitions=new ArrayList<String>();
-    String tableName, columnName, pk, partitionColumn, datadir;
+    String tableName, columnName, pk, partitionColumn ;
     boolean ifNotExists=false;
-    String engine;
-    PartitioningSpec pspec;
+    
+    
     DataType columnType;
     String dataDir=null;
     CreateTableStatement cts;
@@ -277,15 +277,29 @@ CreateTableStatement CreateTableStatement() throws StreamSqlException: {
      <K_PRIMARY> <K_KEY> "(" pk=ObjectName() {primaryKey.add(pk);} ("," pk=ObjectName(){primaryKey.add(pk);})* ")" 
      ")"
      {cts=new CreateTableStatement(ifNotExists, tableName, tupleDefinition, primaryKey);}
-	[<K_HISTOGRAM> "(" columnName=ObjectName() {cts.addHistogramColumn(columnName);} ("," columnName=ObjectName(){cts.addHistogramColumn(columnName);})* ")"]
-	[<K_ENGINE>  engine=ObjectName() {cts.setEngine(engine);} ]
-	[<K_PARTITION> <K_BY>  pspec=PartitioningSpec() {cts.setPartitioning(pspec);} ]
-	[<K_DATADIR> datadir=ObjectName() {cts.setDataDir(datadir);}]
-	[<K_TABLE_FORMAT> "=" "COMPRESSED" {cts.setCompressed(true);}]
+     (TableOption(cts))*	
+	
     {
 	return cts;
     }
 }
+
+void TableOption(CreateTableStatement cts): {
+   String columnName, datadir, engine;
+   PartitioningSpec pspec;
+} {
+   <K_HISTOGRAM> "(" columnName=ObjectName() {cts.addHistogramColumn(columnName);} ("," columnName=ObjectName(){cts.addHistogramColumn(columnName);})* ")"
+   |
+   <K_ENGINE>  engine=ObjectName() {cts.setEngine(engine);}
+   |
+   <K_PARTITION> <K_BY>  pspec=PartitioningSpec() {cts.setPartitioning(pspec);} 
+   |
+   <K_DATADIR> datadir=ObjectName() {cts.setDataDir(datadir);}
+   |
+   <K_TABLE_FORMAT> "=" "COMPRESSED" {cts.setCompressed(true);}
+}
+
+
 
 PartitioningSpec PartitioningSpec(): {
     PartitioningSpec pspec;
