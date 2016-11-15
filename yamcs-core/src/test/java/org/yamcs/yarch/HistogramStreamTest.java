@@ -1,6 +1,7 @@
 package org.yamcs.yarch;
 
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -8,21 +9,33 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
 
 
 
 import static org.junit.Assert.*;
+
+@RunWith(Parameterized.class)
 public class HistogramStreamTest extends YarchTestCase {
     StreamSqlStatement statement;
     StreamSqlResult res;
     String cmd;
     int n = 1200;
     int m = 3;
-
+    @Parameter
+    public String engine; 
+    @Parameters
+    public static Iterable<String> data() {
+        return Arrays.asList("rocksdb", "rocksdb2");
+    }
+    
     private void populate(String tblName) throws Exception {
-        String query="create table "+tblName+"(gentime timestamp, seqNum int, name string, primary key(gentime, seqNum)) histogram(name) partition by time(gentime) table_format=compressed";
+        String query="create table "+tblName+"(gentime timestamp, seqNum int, name string, primary key(gentime, seqNum)) histogram(name) partition by time(gentime) table_format=compressed engine "+engine;
         ydb.execute(query);
         
         execute("create stream "+tblName+"_in(gentime timestamp, seqNum int, name string)");

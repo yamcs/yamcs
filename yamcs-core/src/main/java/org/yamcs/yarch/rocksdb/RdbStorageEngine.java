@@ -130,9 +130,8 @@ public class RdbStorageEngine implements StorageEngine {
      * Called from Unit tests to cleanup before the next test
      */
     public void shutdown() {
-        if(rdbTagDb!=null) {
-            rdbTagDb.close();
-        }
+        RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
+        rdbFactory.shutdown();
     }
 
     /**

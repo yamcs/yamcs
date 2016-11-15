@@ -50,12 +50,13 @@ public abstract class YarchTestCase {
 	File ytdir=new File(dir+"/"+instance);               
 	
 	FileUtils.deleteRecursively(ytdir.toPath());
-
+	
 	if(!ytdir.mkdirs()) throw new IOException("Cannot create directory "+ytdir);
 	
 	if(YarchDatabase.hasInstance(instance)) {	
 	    YarchDatabase ydb = YarchDatabase.getInstance(instance);
-	    RdbStorageEngine.removeInstance(ydb);	
+	    RdbStorageEngine.removeInstance(ydb);
+	    org.yamcs.yarch.rocksdb2.RdbStorageEngine.removeInstance(ydb);
 	    YarchDatabase.removeInstance(instance);		
 	}
 	

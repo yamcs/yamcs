@@ -4,17 +4,30 @@ package org.yamcs.yarch;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.Semaphore;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * test for insert modes in a table with a dynamic schema
  * @author nm
  *
  */
+@RunWith(Parameterized.class)
 public class DynamicSchemaTableTest extends YarchTestCase {
-	static final String engine="rocksdb"; 
+    
+    @Parameter
+    public String engine; 
+    @Parameters
+    public static Iterable<String> data() {
+        return Arrays.asList("rocksdb", "rocksdb2");
+    }
+    
 	
     private void emit(Stream s, long key, String colName, int colValue) {
         TupleDefinition tdef=new TupleDefinition();
