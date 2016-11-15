@@ -33,7 +33,7 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
     static Logger log=LoggerFactory.getLogger(FileTmPacketProvider.class.getName());
     TimeService timeService;
     
-    public FileTmPacketProvider(String instance, String name, String fileName) throws FileNotFoundException {
+    public FileTmPacketProvider(String instance, String name, String fileName) throws IOException {
         this(fileName, "STOP",1000);
         timeService = YamcsServer.getTimeService(instance);
     }
@@ -43,9 +43,9 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
      * If the parameter loop is set to true, then jump back at the beginning of the file once the end has been reached.
      * @param fileName
      * @param delayBetweenPackets
-     * @throws FileNotFoundException
+     * @throws IOException 
      */
-    public FileTmPacketProvider(String fileName, String endActionStr, long delayBetweenPackets) throws FileNotFoundException {
+    public FileTmPacketProvider(String fileName, String endActionStr, long delayBetweenPackets) throws IOException {
         this.fileName = fileName;
         this.delayBetweenPackets=delayBetweenPackets;
         if (endActionStr.equalsIgnoreCase("LOOP")) endAction=EndAction.LOOP;
