@@ -1,6 +1,5 @@
 package org.yamcs.tctm;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.slf4j.Logger;
