@@ -68,7 +68,7 @@ public abstract class BaseSegment {
         case FORMAT_ID_StringValueSegment:
             return  StringValueSegment.parseFrom(bb);
         case FORMAT_ID_BooleanValueSegment:
-            return OldBooleanValueSegment.parseFrom(bb);
+            return BooleanValueSegment.parseFrom(bb);
         case FORMAT_ID_FloatValueSegment:
             return FloatValueSegment.parseFrom(bb);
         case FORMAT_ID_DoubleValueSegment:

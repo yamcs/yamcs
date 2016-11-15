@@ -84,9 +84,7 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
                 if(gpv.hasAcquisitionStatus()) {
                     pv.setAcquisitionStatus(AcquisitionStatus.ACQUIRED);
                 }
-                if(!gpv.hasProcessingStatus()) {
-                    pv.setProcessingStatus(true);
-                }
+                
                 if(!gpv.hasGenerationTime()) {
                     pv.setGenerationTime(t);
                 }
@@ -140,7 +138,6 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
             long t = yproc.getCurrentTime();
             pv.setAcquisitionTime(t);
             pv.setGenerationTime(t);
-            pv.setProcessingStatus(true);
             prm.update(Arrays.asList(pv));
         }
     });
