@@ -11,10 +11,15 @@ import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.Parameterized.Parameter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.PartitioningSpec;
+import org.yamcs.yarch.PartitioningSpec._type;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableDefinition;
@@ -30,11 +35,20 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 
 import com.google.common.io.Files;
 
-
+@RunWith(Parameterized.class)
 public class RdbSelectTest extends YarchTestCase {
     
     private TupleDefinition tdef;
     private TableWriter tw;
+    
+    @Parameter
+    public PartitioningSpec._type partitionType;
+    
+    @Parameters
+    public static Iterable<PartitioningSpec._type> data() {
+        return Arrays.asList(PartitioningSpec._type.NONE, PartitioningSpec._type.VALUE, PartitioningSpec._type.TIME, PartitioningSpec._type.TIME_AND_VALUE);
+    }
+    
     
     @Before
     public void before() throws StreamSqlException, YarchException {
@@ -47,8 +61,21 @@ public class RdbSelectTest extends YarchTestCase {
         String tmpdir=Files.createTempDir().getAbsolutePath();
         tblDef.setDataDir(tmpdir);
 
-        PartitioningSpec pspec=PartitioningSpec.timeAndValueSpec("gentime", "packetid");
-        pspec.setValueColumnType(DataType.INT);
+        PartitioningSpec pspec;
+        if(partitionType==_type.NONE) {
+            pspec = PartitioningSpec.noneSpec();
+        } else if(partitionType==_type.VALUE) {
+            pspec = PartitioningSpec.valueSpec("packetid");
+            pspec.setValueColumnType(DataType.INT);
+        } else if(partitionType==_type.TIME) {
+            pspec = PartitioningSpec.timeSpec("gentime");
+        } else if(partitionType==_type.TIME_AND_VALUE) {
+            pspec = PartitioningSpec.timeAndValueSpec("gentime", "packetid");
+            pspec.setValueColumnType(DataType.INT);
+        } else {
+            throw new RuntimeException("unknown partition type "+partitionType);
+        }
+        
         tblDef.setPartitioningSpec(pspec);
         
         tblDef.setStorageEngineName(YarchDatabase.RDB2_ENGINE_NAME);
