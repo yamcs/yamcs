@@ -13,6 +13,8 @@ Version 3.0.0
 - changed all SWING Yamcs clients to use the REST and WebSocket API instead of HornetQ
 - allow to retrieve via REST internals of open RocksDB databases
 - implement backup support for RocksDB databases
+- introduced rocksdb2 storage engine that use a different way of partitioning the data
+- allow TM file injector to inject gzipped files
 
 
 Version 0.29.4 Released 26-June-2016
