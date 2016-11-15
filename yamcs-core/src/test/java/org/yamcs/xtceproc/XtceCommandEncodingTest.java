@@ -82,6 +82,7 @@ public class XtceCommandEncodingTest {
         };
         assertEquals(StringConverter.arrayToHexString(expectedResult), StringConverter.arrayToHexString(b));
     }
+
     @Test
     public void cgsLikeStringCommand() throws ErrorInCommand {
         XtceDb xtcedb = XtceDbFactory.createInstance("refmdb");
@@ -200,6 +201,27 @@ public class XtceCommandEncodingTest {
         List<ArgumentAssignment> arguments = getArgAssignment("p1", "0X0102030405060708", "p2", "0xF102030405060708", "p3", "-0X0102030405060708");
         byte[] b = MetaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
         assertEquals("0102030405060708F102030405060708FEFDFCFBFAF9F8F8", StringConverter.arrayToHexString(b));
+    }
+
+    @Test
+    public void testStringEncodedTc() throws Exception {
+        MetaCommand mc = XtceDbFactory.createInstance("refmdb").getMetaCommand("/REFMDB/SUBSYS1/STRING_ENCODED_ARG_TC");
+        assertNotNull(mc);
+        List<ArgumentAssignment> aaList = Arrays.asList(
+                new ArgumentAssignment("uint_arg", "1"),
+                new ArgumentAssignment("int_arg", "-2"), // with calibration applied
+                new ArgumentAssignment("float_arg", "-3.01"),
+                new ArgumentAssignment("string_arg", "string with \n special chars \""),
+                new ArgumentAssignment("binary_arg", "010A"),
+                new ArgumentAssignment("enumerated_arg", "value1"),
+                new ArgumentAssignment("boolean_arg", "false"));
+        ErrorInCommand e = null;
+
+        byte[] b = MetaCommandProcessor.buildCommand(mc, aaList).getCmdPacket();
+        String result = new String(b);
+        String expected = "1,-3,-3.01,string with \n special chars \",010A,1,false,";
+
+        assertEquals(expected, result);
     }
 
     private List<ArgumentAssignment> getArgAssignment(String ...v) {

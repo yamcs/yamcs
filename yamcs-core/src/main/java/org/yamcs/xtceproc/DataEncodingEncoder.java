@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.FloatDataEncoding;
@@ -129,10 +130,43 @@ public class DataEncodingEncoder {
     }
 
     private void encodeRawString(StringDataEncoding sde, Value rawValue) {
-        if(rawValue.getType()!=Type.STRING) {
-            throw new IllegalStateException("String encoding requires data of type String not "+rawValue.getType());
+
+        String v = "";
+        switch(rawValue.getType()) {
+            case DOUBLE:
+                v = rawValue.getDoubleValue() + "";
+                break;
+            case FLOAT:
+                v = rawValue.getFloatValue() + "";
+                break;
+            case UINT32:
+                v = rawValue.getUint32Value() + "";
+                break;
+            case SINT32:
+                v = rawValue.getSint32Value() + "";
+                break;
+            case UINT64:
+                v = rawValue.getUint64Value() + "";
+                break;
+            case SINT64:
+                v = rawValue.getSint64Value() + "";
+                break;
+            case STRING:
+                v = rawValue.getStringValue();
+                break;
+            case BOOLEAN:
+                v = rawValue.getBooleanValue() + "";
+                break;
+            case TIMESTAMP:
+                v = rawValue.getTimestampValue() + "";
+                break;
+            case BINARY:
+                v = StringConverter.arrayToHexString(rawValue.getBinaryValue());
+                break;
+            default:
+                throw new IllegalArgumentException("String encoding for data of type "+rawValue.getType()+" not supported");
         }
-        String v = rawValue.getStringValue();
+
         if(pcontext.bitPosition%8!=0) {
             throw new IllegalStateException("String Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition);        	
         }
