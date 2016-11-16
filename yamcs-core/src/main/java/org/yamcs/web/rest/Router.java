@@ -256,6 +256,7 @@ public class Router {
                 }
             });
         } catch(Throwable t) {
+            req.getCompletableFuture().completeExceptionally(t);
             handleException(req, t);
         }
         x.cancel(true);
@@ -264,7 +265,7 @@ public class Router {
         if(logSlowRequests) {
             timer.schedule(() ->{
                 if(!cf.isDone()) {
-                    log.error("R{} executing for more than 20 seconds. uri: {}", req.getRequestId(), req.getHttpRequest().getUri());
+                    log.warn("R{} executing for more than 20 seconds. uri: {}", req.getRequestId(), req.getHttpRequest().getUri());
                 }
             }
             , 20, TimeUnit.SECONDS);
