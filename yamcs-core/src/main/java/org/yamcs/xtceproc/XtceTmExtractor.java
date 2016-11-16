@@ -19,7 +19,7 @@ import org.yamcs.xtce.XtceDb;
  * 
  */
 public class XtceTmExtractor {
-    private static final Logger log=LoggerFactory.getLogger(XtceTmExtractor.class);
+    private static final Logger log = LoggerFactory.getLogger(XtceTmExtractor.class);
     protected final Subscription subscription;
     private ProcessingStatistics stats=new ProcessingStatistics();
 
