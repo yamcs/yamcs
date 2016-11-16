@@ -27,7 +27,7 @@ public class XtceTmExtractor {
     final SequenceContainer rootContainer;
     ParameterValueList paramResult=new ParameterValueList();
 
-    ArrayList<ContainerExtractionResult> containerResult=new ArrayList<ContainerExtractionResult>();
+    ArrayList<ContainerExtractionResult> containerResult = new ArrayList<ContainerExtractionResult>();
     boolean ignoreOutOfContainerEntries = false;
     
     /**
