@@ -83,7 +83,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
         Stream s=ydb.getStream(STREAM_NAME);
         if(s==null) {
-            throw new ConfigurationException("Stream ' "+STREAM_NAME+"' does not exist");
+            throw new ConfigurationException("Stream '"+STREAM_NAME+"' does not exist");
         }
         stream=s;
         timeService = YamcsServer.getInstance(instance).getTimeService();

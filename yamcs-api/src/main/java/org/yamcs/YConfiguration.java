@@ -34,8 +34,6 @@ import org.yaml.snakeyaml.error.YAMLException;
 public class YConfiguration {
     Map<String, Object> root;
     static String userConfigDirectory; //This is used by the users to overwrite
-    private final String filename;
-
 
     private static Map<String, YConfiguration> configurations=new HashMap<String,YConfiguration>();
     static Logger log=LoggerFactory.getLogger(YConfiguration.class.getName());
@@ -49,7 +47,7 @@ public class YConfiguration {
     @SuppressWarnings("unchecked")
     private YConfiguration(String subsystem) throws IOException, ConfigurationException {
         Yaml yaml=new Yaml();
-        filename=subsystem+".yaml";
+        String filename=subsystem+".yaml";
         try {
             Object o=yaml.load(getConfigurationStream("/"+filename));
             if(o==null) {

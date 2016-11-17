@@ -92,7 +92,7 @@ public class YamcsServer {
     }
 
     /**
-     * Creates services either server wide (if instance is null) or instance specific.
+     * Creates services either server-wide (if instance is null) or instance-specific.
      * The services are not yet started. This must be done in a second step, so
      * that components can ask YamcsServer for other service instantiations.
      *
@@ -117,7 +117,7 @@ public class YamcsServer {
             } else {
                 throw new ConfigurationException("Services can either be specified by classname, or by {class: classname, args: ....} map. Cannot load a service from "+servobj);
             }
-            staticlog.info("Loading {} service {}", (instance==null)?"server wide":instance, servclass);
+            staticlog.info("Loading {} service {}", (instance==null)?"server-wide":instance, servclass);
             ServiceWithConfig swc = createService(instance, servclass, servclass, args);
             serviceList.add(swc);
             managementService.registerService(instance, servclass, swc.service);
