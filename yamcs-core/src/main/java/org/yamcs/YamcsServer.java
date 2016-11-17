@@ -264,9 +264,11 @@ public class YamcsServer {
         try {
             MissionDatabase.Builder mdb = MissionDatabase.newBuilder();
             YConfiguration c = YConfiguration.getConfiguration("yamcs."+name);
-            String configName = c.getString("mdb");
-            XtceDb xtcedb=XtceDbFactory.getInstanceByConfig(name, configName);
-            mdb.setConfigName(configName);
+            if (!c.isList("mdb")) {
+                String configName = c.getString("mdb");
+                mdb.setConfigName(configName);
+            }
+            XtceDb xtcedb=XtceDbFactory.getInstance(name);
             mdb.setName(xtcedb.getRootSpaceSystem().getName());
             Header h =xtcedb.getRootSpaceSystem().getHeader();
             if((h!=null) && (h.getVersion()!=null)) {
