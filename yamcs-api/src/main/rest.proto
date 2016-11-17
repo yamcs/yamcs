@@ -88,7 +88,8 @@ message ListClientsResponse {
 }
 
 message EditClientRequest {
-  optional string processor = 1;
+  optional string instance = 1;
+  optional string processor = 2;
 }
 
 message ListProcessorsResponse {

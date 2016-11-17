@@ -2108,8 +2108,10 @@ public final class SchemaRest
         {
             public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.EditClientRequest message) throws java.io.IOException
             {
+                if(message.hasInstance())
+                    output.writeString(1, message.getInstance(), false);
                 if(message.hasProcessor())
-                    output.writeString(1, message.getProcessor(), false);
+                    output.writeString(2, message.getProcessor(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Rest.EditClientRequest message)
             {
@@ -2150,6 +2152,9 @@ public final class SchemaRest
                         case 0:
                             return;
                         case 1:
+                            builder.setInstance(input.readString());
+                            break;
+                        case 2:
                             builder.setProcessor(input.readString());
                             break;
                         default:
@@ -2192,7 +2197,8 @@ public final class SchemaRest
         {
             switch(number)
             {
-                case 1: return "processor";
+                case 1: return "instance";
+                case 2: return "processor";
                 default: return null;
             }
         }
@@ -2204,7 +2210,8 @@ public final class SchemaRest
         private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
         static
         {
-            fieldMap.put("processor", 1);
+            fieldMap.put("instance", 1);
+            fieldMap.put("processor", 2);
         }
     }
 

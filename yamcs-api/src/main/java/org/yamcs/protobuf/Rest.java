@@ -12689,17 +12689,32 @@ public final class Rest {
   public interface EditClientRequestOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // optional string processor = 1;
+    // optional string instance = 1;
     /**
-     * <code>optional string processor = 1;</code>
+     * <code>optional string instance = 1;</code>
+     */
+    boolean hasInstance();
+    /**
+     * <code>optional string instance = 1;</code>
+     */
+    java.lang.String getInstance();
+    /**
+     * <code>optional string instance = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getInstanceBytes();
+
+    // optional string processor = 2;
+    /**
+     * <code>optional string processor = 2;</code>
      */
     boolean hasProcessor();
     /**
-     * <code>optional string processor = 1;</code>
+     * <code>optional string processor = 2;</code>
      */
     java.lang.String getProcessor();
     /**
-     * <code>optional string processor = 1;</code>
+     * <code>optional string processor = 2;</code>
      */
     com.google.protobuf.ByteString
         getProcessorBytes();
@@ -12757,6 +12772,11 @@ public final class Rest {
             }
             case 10: {
               bitField0_ |= 0x00000001;
+              instance_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
               processor_ = input.readBytes();
               break;
             }
@@ -12800,17 +12820,60 @@ public final class Rest {
     }
 
     private int bitField0_;
-    // optional string processor = 1;
-    public static final int PROCESSOR_FIELD_NUMBER = 1;
-    private java.lang.Object processor_;
+    // optional string instance = 1;
+    public static final int INSTANCE_FIELD_NUMBER = 1;
+    private java.lang.Object instance_;
     /**
-     * <code>optional string processor = 1;</code>
+     * <code>optional string instance = 1;</code>
      */
-    public boolean hasProcessor() {
+    public boolean hasInstance() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>optional string processor = 1;</code>
+     * <code>optional string instance = 1;</code>
+     */
+    public java.lang.String getInstance() {
+      java.lang.Object ref = instance_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          instance_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string instance = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getInstanceBytes() {
+      java.lang.Object ref = instance_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        instance_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string processor = 2;
+    public static final int PROCESSOR_FIELD_NUMBER = 2;
+    private java.lang.Object processor_;
+    /**
+     * <code>optional string processor = 2;</code>
+     */
+    public boolean hasProcessor() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string processor = 2;</code>
      */
     public java.lang.String getProcessor() {
       java.lang.Object ref = processor_;
@@ -12827,7 +12890,7 @@ public final class Rest {
       }
     }
     /**
-     * <code>optional string processor = 1;</code>
+     * <code>optional string processor = 2;</code>
      */
     public com.google.protobuf.ByteString
         getProcessorBytes() {
@@ -12844,6 +12907,7 @@ public final class Rest {
     }
 
     private void initFields() {
+      instance_ = "";
       processor_ = "";
     }
     private byte memoizedIsInitialized = -1;
@@ -12859,7 +12923,10 @@ public final class Rest {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(1, getProcessorBytes());
+        output.writeBytes(1, getInstanceBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getProcessorBytes());
       }
       getUnknownFields().writeTo(output);
     }
@@ -12872,7 +12939,11 @@ public final class Rest {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, getProcessorBytes());
+          .computeBytesSize(1, getInstanceBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getProcessorBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -12990,8 +13061,10 @@ public final class Rest {
 
       public Builder clear() {
         super.clear();
-        processor_ = "";
+        instance_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
+        processor_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -13023,6 +13096,10 @@ public final class Rest {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
+        result.instance_ = instance_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
         result.processor_ = processor_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -13040,8 +13117,13 @@ public final class Rest {
 
       public Builder mergeFrom(org.yamcs.protobuf.Rest.EditClientRequest other) {
         if (other == org.yamcs.protobuf.Rest.EditClientRequest.getDefaultInstance()) return this;
-        if (other.hasProcessor()) {
+        if (other.hasInstance()) {
           bitField0_ |= 0x00000001;
+          instance_ = other.instance_;
+          onChanged();
+        }
+        if (other.hasProcessor()) {
+          bitField0_ |= 0x00000002;
           processor_ = other.processor_;
           onChanged();
         }
@@ -13072,16 +13154,90 @@ public final class Rest {
       }
       private int bitField0_;
 
-      // optional string processor = 1;
-      private java.lang.Object processor_ = "";
+      // optional string instance = 1;
+      private java.lang.Object instance_ = "";
       /**
-       * <code>optional string processor = 1;</code>
+       * <code>optional string instance = 1;</code>
        */
-      public boolean hasProcessor() {
+      public boolean hasInstance() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>optional string processor = 1;</code>
+       * <code>optional string instance = 1;</code>
+       */
+      public java.lang.String getInstance() {
+        java.lang.Object ref = instance_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          instance_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string instance = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getInstanceBytes() {
+        java.lang.Object ref = instance_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          instance_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string instance = 1;</code>
+       */
+      public Builder setInstance(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        instance_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string instance = 1;</code>
+       */
+      public Builder clearInstance() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        instance_ = getDefaultInstance().getInstance();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string instance = 1;</code>
+       */
+      public Builder setInstanceBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        instance_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string processor = 2;
+      private java.lang.Object processor_ = "";
+      /**
+       * <code>optional string processor = 2;</code>
+       */
+      public boolean hasProcessor() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string processor = 2;</code>
        */
       public java.lang.String getProcessor() {
         java.lang.Object ref = processor_;
@@ -13095,7 +13251,7 @@ public final class Rest {
         }
       }
       /**
-       * <code>optional string processor = 1;</code>
+       * <code>optional string processor = 2;</code>
        */
       public com.google.protobuf.ByteString
           getProcessorBytes() {
@@ -13111,36 +13267,36 @@ public final class Rest {
         }
       }
       /**
-       * <code>optional string processor = 1;</code>
+       * <code>optional string processor = 2;</code>
        */
       public Builder setProcessor(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000001;
+  bitField0_ |= 0x00000002;
         processor_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string processor = 1;</code>
+       * <code>optional string processor = 2;</code>
        */
       public Builder clearProcessor() {
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         processor_ = getDefaultInstance().getProcessor();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string processor = 1;</code>
+       * <code>optional string processor = 2;</code>
        */
       public Builder setProcessorBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000001;
+  bitField0_ |= 0x00000002;
         processor_ = value;
         onChanged();
         return this;
@@ -32868,58 +33024,58 @@ public final class Rest {
       "\022\r\n\005state\030\001 \001(\t\"(\n\027EditCommandQueueReque" +
       "st\022\r\n\005state\030\001 \001(\t\"B\n\023ListClientsResponse" +
       "\022+\n\006client\030\001 \003(\0132\033.yamcsManagement.Clien" +
-      "tInfo\"&\n\021EditClientRequest\022\021\n\tprocessor\030" +
-      "\001 \001(\t\"K\n\026ListProcessorsResponse\0221\n\tproce",
-      "ssor\030\001 \003(\0132\036.yamcsManagement.ProcessorIn" +
-      "fo\"H\n\031ListCommandQueuesResponse\022+\n\005queue" +
-      "\030\001 \003(\0132\034.commanding.CommandQueueInfo\"G\n\027" +
-      "ListCommandQueueEntries\022,\n\005entry\030\001 \003(\0132\035" +
-      ".commanding.CommandQueueEntry\"-\n\034EditCom" +
-      "mandQueueEntryRequest\022\r\n\005state\030\001 \001(\t\"\311\001\n" +
-      "\023IssueCommandRequest\022>\n\nassignment\030\001 \003(\013" +
-      "2*.parameters.IssueCommandRequest.Assign" +
-      "ment\022\016\n\006origin\030\002 \001(\t\022\026\n\016sequenceNumber\030\003" +
-      " \001(\005\022\016\n\006dryRun\030\004 \001(\010\022\017\n\007comment\030\005 \001(\t\032)\n",
-      "\nAssignment\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t" +
-      "\"}\n\024IssueCommandResponse\0228\n\021commandQueue" +
-      "Entry\030\001 \001(\0132\035.commanding.CommandQueueEnt" +
-      "ry\022\016\n\006source\030\002 \001(\t\022\013\n\003hex\030\003 \001(\t\022\016\n\006binar" +
-      "y\030\004 \001(\014\"\263\001\n\033UpdateCommandHistoryRequest\022" +
-      "$\n\005cmdId\030\001 \002(\0132\025.commanding.CommandId\022F\n" +
-      "\014historyEntry\030\002 \003(\01320.parameters.UpdateC" +
-      "ommandHistoryRequest.KeyValue\032&\n\010KeyValu" +
-      "e\022\013\n\003key\030\001 \002(\t\022\r\n\005value\030\002 \002(\t\"\316\001\n\026Create" +
-      "ProcessorRequest\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030",
-      "\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\014\n\004loop\030\004 \001(\010\022\r\n\005spe" +
-      "ed\030\005 \001(\t\022\020\n\010clientId\030\006 \003(\005\022\020\n\010paraname\030\007" +
-      " \003(\t\022\017\n\007ppgroup\030\010 \003(\t\022\022\n\npacketname\030\t \003(" +
-      "\t\022\017\n\007cmdhist\030\n \001(\010\022\022\n\npersistent\030\013 \001(\010\"B" +
-      "\n\024EditProcessorRequest\022\r\n\005state\030\001 \001(\t\022\014\n" +
-      "\004seek\030\002 \001(\t\022\r\n\005speed\030\003 \001(\t\"(\n\026StreamSubs" +
-      "cribeRequest\022\016\n\006stream\030\001 \001(\t\"e\n\030SetSimul" +
-      "ationTimeRequest\022\r\n\005time0\030\001 \001(\003\022\020\n\010time0" +
-      "UTC\030\002 \001(\t\022\026\n\016simElapsedTime\030\003 \001(\003\022\020\n\010sim" +
-      "Speed\030\004 \001(\001\"I\n\025ListInstancesResponse\0220\n\010",
-      "instance\030\001 \003(\0132\036.yamcsManagement.YamcsIn" +
-      "stance\"2\n\020ListTagsResponse\022\036\n\003tag\030\001 \003(\0132" +
-      "\021.yamcs.ArchiveTag\"a\n\020CreateTagRequest\022\014" +
-      "\n\004name\030\001 \001(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004stop\030\003 \001(" +
-      "\t\022\023\n\013description\030\004 \001(\t\022\r\n\005color\030\005 \001(\t\"_\n" +
-      "\016EditTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030\002" +
-      " \001(\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013description\030\004 \001(\t\022" +
-      "\r\n\005color\030\005 \001(\t\"6\n\022ListAlarmsResponse\022 \n\005" +
-      "alarm\030\001 \003(\0132\021.alarms.AlarmData\"2\n\020EditAl" +
-      "armRequest\022\r\n\005state\030\001 \001(\t\022\017\n\007comment\030\002 \001",
-      "(\t\"7\n\022ListTablesResponse\022!\n\005table\030\001 \003(\0132" +
-      "\022.archive.TableInfo\":\n\023ListStreamsRespon" +
-      "se\022#\n\006stream\030\001 \003(\0132\023.archive.StreamInfo\"" +
-      "1\n\022ListEventsResponse\022\033\n\005event\030\001 \003(\0132\014.y" +
-      "amcs.Event\":\n\023ListPacketsResponse\022#\n\006pac" +
-      "ket\030\001 \003(\0132\023.yamcs.TmPacketData\"H\n\027ListSe" +
-      "rviceInfoResponse\022-\n\007service\030\001 \003(\0132\034.yam" +
-      "csManagement.ServiceInfo\"#\n\022EditServiceR" +
-      "equest\022\r\n\005state\030\001 \001(\tB\024\n\022org.yamcs.proto" +
-      "buf"
+      "tInfo\"8\n\021EditClientRequest\022\020\n\010instance\030\001" +
+      " \001(\t\022\021\n\tprocessor\030\002 \001(\t\"K\n\026ListProcessor",
+      "sResponse\0221\n\tprocessor\030\001 \003(\0132\036.yamcsMana" +
+      "gement.ProcessorInfo\"H\n\031ListCommandQueue" +
+      "sResponse\022+\n\005queue\030\001 \003(\0132\034.commanding.Co" +
+      "mmandQueueInfo\"G\n\027ListCommandQueueEntrie" +
+      "s\022,\n\005entry\030\001 \003(\0132\035.commanding.CommandQue" +
+      "ueEntry\"-\n\034EditCommandQueueEntryRequest\022" +
+      "\r\n\005state\030\001 \001(\t\"\311\001\n\023IssueCommandRequest\022>" +
+      "\n\nassignment\030\001 \003(\0132*.parameters.IssueCom" +
+      "mandRequest.Assignment\022\016\n\006origin\030\002 \001(\t\022\026" +
+      "\n\016sequenceNumber\030\003 \001(\005\022\016\n\006dryRun\030\004 \001(\010\022\017",
+      "\n\007comment\030\005 \001(\t\032)\n\nAssignment\022\014\n\004name\030\001 " +
+      "\001(\t\022\r\n\005value\030\002 \001(\t\"}\n\024IssueCommandRespon" +
+      "se\0228\n\021commandQueueEntry\030\001 \001(\0132\035.commandi" +
+      "ng.CommandQueueEntry\022\016\n\006source\030\002 \001(\t\022\013\n\003" +
+      "hex\030\003 \001(\t\022\016\n\006binary\030\004 \001(\014\"\263\001\n\033UpdateComm" +
+      "andHistoryRequest\022$\n\005cmdId\030\001 \002(\0132\025.comma" +
+      "nding.CommandId\022F\n\014historyEntry\030\002 \003(\01320." +
+      "parameters.UpdateCommandHistoryRequest.K" +
+      "eyValue\032&\n\010KeyValue\022\013\n\003key\030\001 \002(\t\022\r\n\005valu" +
+      "e\030\002 \002(\t\"\316\001\n\026CreateProcessorRequest\022\014\n\004na",
+      "me\030\001 \001(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\014\n" +
+      "\004loop\030\004 \001(\010\022\r\n\005speed\030\005 \001(\t\022\020\n\010clientId\030\006" +
+      " \003(\005\022\020\n\010paraname\030\007 \003(\t\022\017\n\007ppgroup\030\010 \003(\t\022" +
+      "\022\n\npacketname\030\t \003(\t\022\017\n\007cmdhist\030\n \001(\010\022\022\n\n" +
+      "persistent\030\013 \001(\010\"B\n\024EditProcessorRequest" +
+      "\022\r\n\005state\030\001 \001(\t\022\014\n\004seek\030\002 \001(\t\022\r\n\005speed\030\003" +
+      " \001(\t\"(\n\026StreamSubscribeRequest\022\016\n\006stream" +
+      "\030\001 \001(\t\"e\n\030SetSimulationTimeRequest\022\r\n\005ti" +
+      "me0\030\001 \001(\003\022\020\n\010time0UTC\030\002 \001(\t\022\026\n\016simElapse" +
+      "dTime\030\003 \001(\003\022\020\n\010simSpeed\030\004 \001(\001\"I\n\025ListIns",
+      "tancesResponse\0220\n\010instance\030\001 \003(\0132\036.yamcs" +
+      "Management.YamcsInstance\"2\n\020ListTagsResp" +
+      "onse\022\036\n\003tag\030\001 \003(\0132\021.yamcs.ArchiveTag\"a\n\020" +
+      "CreateTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030" +
+      "\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013description\030\004 \001(\t" +
+      "\022\r\n\005color\030\005 \001(\t\"_\n\016EditTagRequest\022\014\n\004nam" +
+      "e\030\001 \001(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013" +
+      "description\030\004 \001(\t\022\r\n\005color\030\005 \001(\t\"6\n\022List" +
+      "AlarmsResponse\022 \n\005alarm\030\001 \003(\0132\021.alarms.A" +
+      "larmData\"2\n\020EditAlarmRequest\022\r\n\005state\030\001 ",
+      "\001(\t\022\017\n\007comment\030\002 \001(\t\"7\n\022ListTablesRespon" +
+      "se\022!\n\005table\030\001 \003(\0132\022.archive.TableInfo\":\n" +
+      "\023ListStreamsResponse\022#\n\006stream\030\001 \003(\0132\023.a" +
+      "rchive.StreamInfo\"1\n\022ListEventsResponse\022" +
+      "\033\n\005event\030\001 \003(\0132\014.yamcs.Event\":\n\023ListPack" +
+      "etsResponse\022#\n\006packet\030\001 \003(\0132\023.yamcs.TmPa" +
+      "cketData\"H\n\027ListServiceInfoResponse\022-\n\007s" +
+      "ervice\030\001 \003(\0132\034.yamcsManagement.ServiceIn" +
+      "fo\"#\n\022EditServiceRequest\022\r\n\005state\030\001 \001(\tB" +
+      "\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -33039,7 +33195,7 @@ public final class Rest {
           internal_static_parameters_EditClientRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_parameters_EditClientRequest_descriptor,
-              new java.lang.String[] { "Processor", });
+              new java.lang.String[] { "Instance", "Processor", });
           internal_static_parameters_ListProcessorsResponse_descriptor =
             getDescriptor().getMessageTypes().get(17);
           internal_static_parameters_ListProcessorsResponse_fieldAccessorTable = new

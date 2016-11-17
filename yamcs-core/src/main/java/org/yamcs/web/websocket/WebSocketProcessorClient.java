@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
-import org.yamcs.YProcessor;
 import org.yamcs.ProcessorClient;
 import org.yamcs.ProcessorException;
+import org.yamcs.YProcessor;
 import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementService;
 import org.yamcs.security.AuthenticationToken;
@@ -15,7 +15,6 @@ import org.yamcs.security.Privilege;
 /**
  * Runs on the server side and oversees the life cycle of a client web socket connection to a Processor. Combines multiple types of subscriptions
  * to keep them bundled as one client session.
- * 
  */
 public class WebSocketProcessorClient implements ProcessorClient {
 
@@ -50,7 +49,7 @@ public class WebSocketProcessorClient implements ProcessorClient {
 
     @Override
     public void switchProcessor(YProcessor newProcessor, AuthenticationToken authToken) throws ProcessorException {
-        log.info("Switching processor to {}", newProcessor);
+        log.info("Switching processor to {}/{}", newProcessor.getInstance(), newProcessor.getName());
         for (AbstractWebSocketResource resource : resources) {
             resource.switchYProcessor(newProcessor, authToken);
         }
