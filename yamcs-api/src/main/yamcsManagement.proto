@@ -51,8 +51,8 @@ message SpaceSystemInfo {
 }
 
 message MissionDatabase {
-  required string configName = 1; //this is the config section in mdb.yaml
-  required string name = 2; //XTCE root SpaceSystem name
+  optional string configName = 1; //this is the config section in mdb.yaml
+  optional string name = 2; //XTCE root SpaceSystem name
   optional string version = 3; //XTCE root SpaceSystem header version
   repeated SpaceSystemInfo spaceSystem = 4;
   optional string url = 5;

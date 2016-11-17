@@ -1300,12 +1300,6 @@ public final class YamcsManagement {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (hasMissionDatabase()) {
-        if (!getMissionDatabase().isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
       for (int i = 0; i < getProcessorCount(); i++) {
         if (!getProcessor(i).isInitialized()) {
           memoizedIsInitialized = 0;
@@ -1642,12 +1636,6 @@ public final class YamcsManagement {
         if (!hasName()) {
           
           return false;
-        }
-        if (hasMissionDatabase()) {
-          if (!getMissionDatabase().isInitialized()) {
-            
-            return false;
-          }
         }
         for (int i = 0; i < getProcessorCount(); i++) {
           if (!getProcessor(i).isInitialized()) {
@@ -5894,9 +5882,9 @@ public final class YamcsManagement {
   public interface MissionDatabaseOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // required string configName = 1;
+    // optional string configName = 1;
     /**
-     * <code>required string configName = 1;</code>
+     * <code>optional string configName = 1;</code>
      *
      * <pre>
      *this is the config section in mdb.yaml
@@ -5904,7 +5892,7 @@ public final class YamcsManagement {
      */
     boolean hasConfigName();
     /**
-     * <code>required string configName = 1;</code>
+     * <code>optional string configName = 1;</code>
      *
      * <pre>
      *this is the config section in mdb.yaml
@@ -5912,7 +5900,7 @@ public final class YamcsManagement {
      */
     java.lang.String getConfigName();
     /**
-     * <code>required string configName = 1;</code>
+     * <code>optional string configName = 1;</code>
      *
      * <pre>
      *this is the config section in mdb.yaml
@@ -5921,9 +5909,9 @@ public final class YamcsManagement {
     com.google.protobuf.ByteString
         getConfigNameBytes();
 
-    // required string name = 2;
+    // optional string name = 2;
     /**
-     * <code>required string name = 2;</code>
+     * <code>optional string name = 2;</code>
      *
      * <pre>
      *XTCE root SpaceSystem name
@@ -5931,7 +5919,7 @@ public final class YamcsManagement {
      */
     boolean hasName();
     /**
-     * <code>required string name = 2;</code>
+     * <code>optional string name = 2;</code>
      *
      * <pre>
      *XTCE root SpaceSystem name
@@ -5939,7 +5927,7 @@ public final class YamcsManagement {
      */
     java.lang.String getName();
     /**
-     * <code>required string name = 2;</code>
+     * <code>optional string name = 2;</code>
      *
      * <pre>
      *XTCE root SpaceSystem name
@@ -6217,11 +6205,11 @@ public final class YamcsManagement {
     }
 
     private int bitField0_;
-    // required string configName = 1;
+    // optional string configName = 1;
     public static final int CONFIGNAME_FIELD_NUMBER = 1;
     private java.lang.Object configName_;
     /**
-     * <code>required string configName = 1;</code>
+     * <code>optional string configName = 1;</code>
      *
      * <pre>
      *this is the config section in mdb.yaml
@@ -6231,7 +6219,7 @@ public final class YamcsManagement {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required string configName = 1;</code>
+     * <code>optional string configName = 1;</code>
      *
      * <pre>
      *this is the config section in mdb.yaml
@@ -6252,7 +6240,7 @@ public final class YamcsManagement {
       }
     }
     /**
-     * <code>required string configName = 1;</code>
+     * <code>optional string configName = 1;</code>
      *
      * <pre>
      *this is the config section in mdb.yaml
@@ -6272,11 +6260,11 @@ public final class YamcsManagement {
       }
     }
 
-    // required string name = 2;
+    // optional string name = 2;
     public static final int NAME_FIELD_NUMBER = 2;
     private java.lang.Object name_;
     /**
-     * <code>required string name = 2;</code>
+     * <code>optional string name = 2;</code>
      *
      * <pre>
      *XTCE root SpaceSystem name
@@ -6286,7 +6274,7 @@ public final class YamcsManagement {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required string name = 2;</code>
+     * <code>optional string name = 2;</code>
      *
      * <pre>
      *XTCE root SpaceSystem name
@@ -6307,7 +6295,7 @@ public final class YamcsManagement {
       }
     }
     /**
-     * <code>required string name = 2;</code>
+     * <code>optional string name = 2;</code>
      *
      * <pre>
      *XTCE root SpaceSystem name
@@ -6649,14 +6637,6 @@ public final class YamcsManagement {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      if (!hasConfigName()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasName()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -7031,14 +7011,6 @@ public final class YamcsManagement {
       }
 
       public final boolean isInitialized() {
-        if (!hasConfigName()) {
-          
-          return false;
-        }
-        if (!hasName()) {
-          
-          return false;
-        }
         return true;
       }
 
@@ -7061,10 +7033,10 @@ public final class YamcsManagement {
       }
       private int bitField0_;
 
-      // required string configName = 1;
+      // optional string configName = 1;
       private java.lang.Object configName_ = "";
       /**
-       * <code>required string configName = 1;</code>
+       * <code>optional string configName = 1;</code>
        *
        * <pre>
        *this is the config section in mdb.yaml
@@ -7074,7 +7046,7 @@ public final class YamcsManagement {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required string configName = 1;</code>
+       * <code>optional string configName = 1;</code>
        *
        * <pre>
        *this is the config section in mdb.yaml
@@ -7092,7 +7064,7 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>required string configName = 1;</code>
+       * <code>optional string configName = 1;</code>
        *
        * <pre>
        *this is the config section in mdb.yaml
@@ -7112,7 +7084,7 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>required string configName = 1;</code>
+       * <code>optional string configName = 1;</code>
        *
        * <pre>
        *this is the config section in mdb.yaml
@@ -7129,7 +7101,7 @@ public final class YamcsManagement {
         return this;
       }
       /**
-       * <code>required string configName = 1;</code>
+       * <code>optional string configName = 1;</code>
        *
        * <pre>
        *this is the config section in mdb.yaml
@@ -7142,7 +7114,7 @@ public final class YamcsManagement {
         return this;
       }
       /**
-       * <code>required string configName = 1;</code>
+       * <code>optional string configName = 1;</code>
        *
        * <pre>
        *this is the config section in mdb.yaml
@@ -7159,10 +7131,10 @@ public final class YamcsManagement {
         return this;
       }
 
-      // required string name = 2;
+      // optional string name = 2;
       private java.lang.Object name_ = "";
       /**
-       * <code>required string name = 2;</code>
+       * <code>optional string name = 2;</code>
        *
        * <pre>
        *XTCE root SpaceSystem name
@@ -7172,7 +7144,7 @@ public final class YamcsManagement {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required string name = 2;</code>
+       * <code>optional string name = 2;</code>
        *
        * <pre>
        *XTCE root SpaceSystem name
@@ -7190,7 +7162,7 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>required string name = 2;</code>
+       * <code>optional string name = 2;</code>
        *
        * <pre>
        *XTCE root SpaceSystem name
@@ -7210,7 +7182,7 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>required string name = 2;</code>
+       * <code>optional string name = 2;</code>
        *
        * <pre>
        *XTCE root SpaceSystem name
@@ -7227,7 +7199,7 @@ public final class YamcsManagement {
         return this;
       }
       /**
-       * <code>required string name = 2;</code>
+       * <code>optional string name = 2;</code>
        *
        * <pre>
        *XTCE root SpaceSystem name
@@ -7240,7 +7212,7 @@ public final class YamcsManagement {
         return this;
       }
       /**
-       * <code>required string name = 2;</code>
+       * <code>optional string name = 2;</code>
        *
        * <pre>
        *XTCE root SpaceSystem name
@@ -23515,7 +23487,7 @@ public final class YamcsManagement {
       "l\030\r \001(\t\022-\n\007history\030\016 \003(\0132\034.yamcsManageme" +
       "nt.HistoryInfo\022-\n\003sub\030\017 \003(\0132 .yamcsManag" +
       "ement.SpaceSystemInfo\"\342\001\n\017MissionDatabas",
-      "e\022\022\n\nconfigName\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\017\n\007v" +
+      "e\022\022\n\nconfigName\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\017\n\007v" +
       "ersion\030\003 \001(\t\0225\n\013spaceSystem\030\004 \003(\0132 .yamc" +
       "sManagement.SpaceSystemInfo\022\013\n\003url\030\005 \001(\t" +
       "\022\025\n\rparametersUrl\030\006 \001(\t\022\025\n\rcontainersUrl" +
