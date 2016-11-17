@@ -6,10 +6,12 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -59,7 +61,7 @@ public class YamcsServer {
     Logger log;
     static Logger staticlog=LoggerFactory.getLogger(YamcsServer.class);
 
-    /**in the shutdown, allow servies this number of seconds for stopping*/
+    /**in the shutdown, allow services this number of seconds for stopping*/
     public static int SERVICE_STOP_GRACE_TIME = 10;
     TimeService timeService;
 
@@ -69,7 +71,7 @@ public class YamcsServer {
     static TimeService mockupTimeService;
 
     static private String serverId;
-    static YObjectLoader<Service> objLoader = new YObjectLoader<Service>();
+    static YObjectLoader<Service> objLoader = new YObjectLoader<>();
 
     YamcsServer(String instance) throws IOException, StreamSqlException, ParseException, YamcsApiException {
         this.instance = instance;
@@ -97,15 +99,15 @@ public class YamcsServer {
      * that components can ask YamcsServer for other service instantiations.
      *
      * @param services - list of service configuration; each of them is a string (=classname) or a map
-     * @param instance - if null, then start a server wide service, otherwise an instance specific service
+     * @param instance - if null, then start a server-wide service, otherwise an instance-specific service
      * @throws IOException
      * @throws ConfigurationException
      */
     @SuppressWarnings("unchecked")
-    public static List<ServiceWithConfig> createServices(String instance, List<Object> services) throws ConfigurationException, IOException {
+    private static List<ServiceWithConfig> createServices(String instance, List<Object> servicesConfig) throws ConfigurationException, IOException {
         ManagementService managementService = ManagementService.getInstance();
-        List<ServiceWithConfig> serviceList=new ArrayList<ServiceWithConfig>();
-        for(Object servobj:services) {
+        List<ServiceWithConfig> serviceList=new CopyOnWriteArrayList<>();
+        for(Object servobj:servicesConfig) {
             String servclass;
             Object args = null;
             if(servobj instanceof String) {
@@ -124,6 +126,18 @@ public class YamcsServer {
         }
 
         return serviceList;
+    }
+
+    /**
+     * Registers an instance-specific service and starts it up
+     */
+    public void createAndStartService(String serviceClass, Map<String, Object> args) throws ConfigurationException, IOException {
+        Map<String, Object> serviceConf = new HashMap<>(2);
+        serviceConf.put("class", serviceClass);
+        serviceConf.put("args", args);
+        List<ServiceWithConfig> newServices = createServices(instance, Arrays.asList(serviceConf));
+        serviceList.addAll(newServices);
+        startServices(newServices);
     }
 
     /**
@@ -293,7 +307,7 @@ public class YamcsServer {
             Map<String, Object> m = conf.getMap("timeService");
             String servclass = YConfiguration.getString(m, "class");
             Object args = m.get("args");
-            YObjectLoader<TimeService> objLoader = new YObjectLoader<TimeService>();
+            YObjectLoader<TimeService> objLoader = new YObjectLoader<>();
             if(args == null) {
                 timeService = objLoader.loadObject(servclass, instance);
             } else {
@@ -382,7 +396,7 @@ public class YamcsServer {
     }
 
     private static List<ServiceInfo> getServiceInfo(String instance, List<ServiceWithConfig> serviceList) {
-        List<ServiceInfo> r = new ArrayList<ServiceInfo>(serviceList.size());
+        List<ServiceInfo> r = new ArrayList<>(serviceList.size());
         for(ServiceWithConfig swc: serviceList) {
             ServiceInfo.Builder sib = ServiceInfo.newBuilder().setName(swc.name).setClassName(swc.serviceClass).setState(ServiceState.valueOf(swc.service.state().name()));
             if(instance!=null) sib.setInstance(instance);
