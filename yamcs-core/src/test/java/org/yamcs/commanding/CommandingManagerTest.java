@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -79,6 +80,28 @@ public class CommandingManagerTest {
         assertEquals(25.4d, bb.getDouble(), 1e-20);
     }
 
+    @Test
+    public void testLittleEndianFloatArg() throws Exception {
+
+        MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/LE_FLOAT_INT_ARG_TC");
+        assertNotNull(mc);
+
+        List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("float_arg", "1.0"),
+                new ArgumentAssignment("uint_arg1", "2"),
+                new ArgumentAssignment("uint_arg2", "3")
+                );
+
+
+        byte[] b= MetaCommandProcessor.buildCommand(mc, aaList).getCmdPacket();
+        assertEquals(12, b.length);
+        ByteBuffer bb = ByteBuffer.wrap(b);
+        bb.order(ByteOrder.LITTLE_ENDIAN);
+
+        assertEquals(1.0, bb.getFloat(), 1e-5);
+        assertEquals(2, bb.getInt());
+        assertEquals(3, bb.getInt());
+    }
+    
     @Test
     public void testCcsdsTc() throws Exception {
         MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");

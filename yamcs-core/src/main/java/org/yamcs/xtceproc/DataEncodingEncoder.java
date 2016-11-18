@@ -80,7 +80,6 @@ public class DataEncodingEncoder {
             throw new IllegalArgumentException("Cannot encode values of types " + rawValue.getType() + " to string");        	
         }
 
-
         //STEP 1 extract 8 bytes from the buffer into the long x.
         // The first extracted byte is where the first bit of v should fit in
         //NOTE: in order to do this for the last arguments, the byte buffer has to be longer than the packet
@@ -115,6 +114,7 @@ public class DataEncodingEncoder {
         x |= (v<<bitsToShift);
         
         //STEP 3 put back the extracted bytes into the buffer
+        pcontext.bb.order(ByteOrder.BIG_ENDIAN);
         pcontext.bb.putLong(byteOffset, x);
     }
 
@@ -197,7 +197,7 @@ public class DataEncodingEncoder {
 
     private void encodeRawFloat(FloatDataEncoding de, Value rawValue) {
         if(pcontext.bitPosition%8!=0) log.warn("Float Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition); 
-        pcontext.bb.order(de.getByteOrder());
+
         switch(de.getEncoding()) {
         case IEEE754_1985:
             encodeRawIEEE754_1985(de, rawValue);
@@ -245,6 +245,7 @@ public class DataEncodingEncoder {
         } else {
             pcontext.bb.putDouble(byteOffset, v);
         }
+        pcontext.bb.order(ByteOrder.BIG_ENDIAN);
         pcontext.bitPosition+=de.getSizeInBits();
     }
 
