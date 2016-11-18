@@ -1,4 +1,4 @@
-package org.yamcs.yarch.rocksdb2;
+package org.yamcs.yarch.rocksdb;
 
 /**
  * Iterator that does not support seek. 

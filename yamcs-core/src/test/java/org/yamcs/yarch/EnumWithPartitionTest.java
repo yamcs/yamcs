@@ -14,16 +14,16 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class EnumWithPartitionTest extends YarchTestCase {
     int n=10;
-    @Parameter
-    public String engine; 
     
+    @Parameter
+    public String partitionStorage; 
     @Parameters
     public static Iterable<String> data() {
-        return Arrays.asList("rocksdb", "rocksdb2");
+        return Arrays.asList("IN_KEY", "COLUMN_FAMILY");
     }
     
     private void populate(String tblname) throws Exception {
-        ydb.execute("create table "+tblname+"(gentime timestamp, packetName enum, packet binary, primary key(gentime,packetName)) partition by time_and_value(gentime, packetName) engine "+engine);
+        ydb.execute("create table "+tblname+"(gentime timestamp, packetName enum, packet binary, primary key(gentime,packetName)) partition by time_and_value(gentime, packetName)  partition_storage="+partitionStorage);
         ydb.execute("create stream "+tblname+"_in(gentime timestamp, packetName enum, packet binary)");
         ydb.execute("insert into "+tblname+" select * from "+tblname+"_in");
 
@@ -96,7 +96,7 @@ public class EnumWithPartitionTest extends YarchTestCase {
     
     @Test
     public void test4() throws Exception {
-        ydb.execute("create table testenum4(gentime timestamp, packetName enum, packet binary, primary key(gentime,packetName)) partition by time_and_value(gentime, packetName) engine "+engine);
+        ydb.execute("create table testenum4(gentime timestamp, packetName enum, packet binary, primary key(gentime,packetName)) partition by time_and_value(gentime, packetName)  partition_storage="+partitionStorage);
         ydb.execute("create stream testenum4_out as select * from testenum4 where packetName in ('invalid')");
         List<Tuple> tuples= fetchAll("testenum4_out");
         assertTrue(tuples.isEmpty());

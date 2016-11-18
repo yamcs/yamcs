@@ -22,10 +22,10 @@ import org.junit.runners.Parameterized.Parameters;
 public class DynamicSchemaTableTest extends YarchTestCase {
     
     @Parameter
-    public String engine; 
+    public String partitionStorage; 
     @Parameters
     public static Iterable<String> data() {
-        return Arrays.asList("rocksdb", "rocksdb2");
+        return Arrays.asList("IN_KEY", "COLUMN_FAMILY");
     }
     
 	
@@ -40,7 +40,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
     @Test
     public void testInsert() throws Exception {
     	
-        ydb.execute("create table test_insert (t timestamp, v1 int, v2 int, primary key(t)) engine "+engine);
+        ydb.execute("create table test_insert (t timestamp, v1 int, v2 int, primary key(t))   partition_storage="+partitionStorage);
        
         
         ydb.execute("create stream test_insert_in (t timestamp)");
@@ -101,7 +101,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
 
     @Test
     public void testInsertAppend() throws Exception {
-        ydb.execute("create table test_inserta (t timestamp, v1 int, v2 int, primary key(t)) engine "+engine);
+        ydb.execute("create table test_inserta (t timestamp, v1 int, v2 int, primary key(t))  partition_storage="+partitionStorage);
         ydb.execute("create stream test_inserta_in (t timestamp)");
         ydb.execute("insert_append into test_inserta select * from test_inserta_in");
         
@@ -161,7 +161,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
     @Test
     public void testUpsert() throws Exception {
         
-        ydb.execute("create table test_upsert (t timestamp, v1 int, v2 int, primary key(t)) engine "+engine);
+        ydb.execute("create table test_upsert (t timestamp, v1 int, v2 int, primary key(t))   partition_storage="+partitionStorage);
        
         
         ydb.execute("create stream test_upsert_in (t timestamp)");
@@ -223,7 +223,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
     @Test
     public void testUpsertAppend() throws Exception {
         
-        ydb.execute("create table test_upserta (t timestamp, v1 int, v2 int, primary key(t)) engine "+engine);
+        ydb.execute("create table test_upserta (t timestamp, v1 int, v2 int, primary key(t))   partition_storage="+partitionStorage);
        
         
         ydb.execute("create stream test_upserta_in (t timestamp)");

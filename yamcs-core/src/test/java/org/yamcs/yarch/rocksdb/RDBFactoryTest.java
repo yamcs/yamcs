@@ -47,10 +47,9 @@ public class RDBFactoryTest {
 	TableDefinition tblDef= getTableDef();
 	YRDB[] dbs=new YRDB[RDBFactory.maxOpenDbs*2];
 	RDBFactory rdbf=new RDBFactory("testDispose");
-	ColumnValueSerializer cvs= new ColumnValueSerializer(tblDef);
 
 	for(int i=0;i<RDBFactory.maxOpenDbs;i++) {
-	    dbs[i]=rdbf.getRdb("/tmp/rdbfactorytest"+i, cvs, false);
+	    dbs[i]=rdbf.getRdb("/tmp/rdbfactorytest"+i, false);
 	}
 	for(int i=0;i<RDBFactory.maxOpenDbs/2;i++) {
 	    rdbf.dispose(dbs[i]);
@@ -59,7 +58,7 @@ public class RDBFactoryTest {
 	    assertTrue(isOpen(dbs[i]));
 	}
 	for(int i=RDBFactory.maxOpenDbs;i<2*RDBFactory.maxOpenDbs;i++) {
-	    dbs[i]=rdbf.getRdb("/tmp/rdbfactorytest"+i, cvs, false);
+	    dbs[i]=rdbf.getRdb("/tmp/rdbfactorytest"+i, false);
 	}
 	for(int i=0;i<RDBFactory.maxOpenDbs/2;i++) {
 	    assertFalse(isOpen(dbs[i]));
@@ -82,7 +81,7 @@ public class RDBFactoryTest {
         RDBFactory rdbf = new RDBFactory("testBackup");
         new File(dir).mkdirs();
         
-        YRDB db1 = rdbf.getRdb(dir+"/db1", new StringColumnFamilySerializer(), false);
+        YRDB db1 = rdbf.getRdb(dir+"/db1", false);
         ColumnFamilyHandle cfh = db1.createColumnFamily("c1");
         db1.put(cfh, "aaa".getBytes(), "bbb".getBytes());
         
@@ -110,7 +109,7 @@ public class RDBFactoryTest {
         rdbf.close(db1);
         
         rdbf.restoreBackup(1, dir+"/db1_back", dir+"/db2").get();
-        YRDB db2 = rdbf.getRdb(dir+"/db2", new StringColumnFamilySerializer(), false);
+        YRDB db2 = rdbf.getRdb(dir+"/db2", false);
         
         assertNotNull(db2.getColumnFamilyHandle("c2"));
         assertNull(db2.getColumnFamilyHandle("c3"));
@@ -125,7 +124,7 @@ public class RDBFactoryTest {
         
         
         rdbf.restoreBackup(-1, dir+"/db1_back", dir+"/db3").get();
-        YRDB db3 = rdbf.getRdb(dir+"/db3", new StringColumnFamilySerializer(), false);
+        YRDB db3 = rdbf.getRdb(dir+"/db3", false);
         
         assertNotNull(db3.getColumnFamilyHandle("c2"));
         assertNotNull(db3.getColumnFamilyHandle("c3"));

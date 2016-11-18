@@ -3,6 +3,7 @@ package org.yamcs.yarch.rocksdb;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -15,6 +16,7 @@ import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TimePartitionSchema.PartitionInfo;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.TableDefinition.PartitionStorage;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -79,14 +81,26 @@ public class RdbPartitionManager extends PartitionManager {
         String tblName = tableDefinition.getName();
         String dataDir = tableDefinition.getDataDir();
         String absolutePath = dir.isEmpty()?dataDir+"/"+tblName:dataDir+"/"+dir+"/"+tblName;
-        YRDB rdb = rdbFactory.getRdb(absolutePath, new ColumnValueSerializer(tableDefinition), false);
+        YRDB rdb = rdbFactory.getRdb(absolutePath, false);
+        ColumnValueSerializer cvs = new ColumnValueSerializer(tableDefinition);
+
         try {
             if((partitioningSpec.type==PartitioningSpec._type.TIME_AND_VALUE) ||  (partitioningSpec.type==PartitioningSpec._type.VALUE)) {
-                for(Object o: rdb.getColumnFamilies()) {
+                List<byte[]> partitionList;
+
+                if(tableDefinition.getPartitionStorage()==PartitionStorage.COLUMN_FAMILY) {
+                    partitionList = rdb.getColumnFamilies();
+                } else {
+                    int size = ColumnValueSerializer.getSerializedSize(partitioningSpec.getValueColumnType());
+                    partitionList = rdb.scanPartitions(size);
+                }
+
+                for(byte[] b: partitionList) {
+                    Object value = cvs.byteArrayToObject(b);
                     if(pinfo!=null) {
-                        addPartitionByTimeAndValue(pinfo, o);
+                        addPartitionByTimeAndValue(pinfo, value, b);
                     } else {
-                        addPartitionByValue(o);
+                        addPartitionByValue(value, b);
                     }
                 }
             } else if(partitioningSpec.type==PartitioningSpec._type.TIME) {
@@ -110,42 +124,42 @@ public class RdbPartitionManager extends PartitionManager {
             intv=new Interval(pinfo.partitionStart, pinfo.partitionEnd);
             intervals.put(pinfo.partitionStart, intv);
         }
-        Partition p = new RdbPartition(pinfo.partitionStart, pinfo.partitionEnd, null, pinfo.dir+"/"+tableDefinition.getName());
+        Partition p = new RdbPartition(pinfo.partitionStart, pinfo.partitionEnd, null, null, pinfo.dir+"/"+tableDefinition.getName());
         intv.addTimePartition(p);
     }   
 
     /** 
      * Called at startup when reading existing partitions from disk
      */
-    private void addPartitionByTimeAndValue(PartitionInfo pinfo, Object v) {	   	   
+    private void addPartitionByTimeAndValue(PartitionInfo pinfo, Object value, byte[] binaryValue) {	   	   
         Interval intv = intervals.get(pinfo.partitionStart);	  
 
         if(intv==null) {	    
             intv = new Interval(pinfo.partitionStart, pinfo.partitionEnd);
             intervals.put(pinfo.partitionStart, intv);
         }
-        Partition p=new RdbPartition(pinfo.partitionStart, pinfo.partitionEnd, v, pinfo.dir+"/"+tableDefinition.getName());
-        intv.add(v, p);
+        Partition p=new RdbPartition(pinfo.partitionStart, pinfo.partitionEnd, value, binaryValue, pinfo.dir+"/"+tableDefinition.getName());
+        intv.add(value, p);
     }	
 
     /** 
      * Called at startup when reading existing partitions from disk
      */
-    private void addPartitionByValue(Object v) {             
-        Partition p = new RdbPartition(Long.MIN_VALUE, Long.MAX_VALUE, v, tableDefinition.getName());             
-        pcache.add(v, p);
+    private void addPartitionByValue(Object value, byte[] binaryValue) {
+        Partition p = new RdbPartition(Long.MIN_VALUE, Long.MAX_VALUE, value,  binaryValue,tableDefinition.getName());             
+        pcache.add(value, p);
     }   
 
     /** 
      * Called at startup when reading existing partitions from disk
      */
-    private void addPartitionByNone() {             
-        Partition p = new RdbPartition(Long.MIN_VALUE, Long.MAX_VALUE, null, tableDefinition.getName());             
+    private void addPartitionByNone() {
+        Partition p = new RdbPartition(Long.MIN_VALUE, Long.MAX_VALUE, null, null, tableDefinition.getName());             
         pcache.add(null, p);
     }   
 
     @Override
-    protected Partition createPartition(PartitionInfo pinfo, Object value) throws IOException {
+    protected Partition createPartitionByTime(PartitionInfo pinfo, Object value) throws IOException {
         try {
             String tblName = tableDefinition.getName();
             String dataDir = tableDefinition.getDataDir();
@@ -156,11 +170,18 @@ public class RdbPartitionManager extends PartitionManager {
                 f.mkdirs();
             }
 
-            YRDB rdb = rdbFactory.getRdb(f.getAbsolutePath(), new ColumnValueSerializer(tableDefinition), true);
-            if(value!=null) rdb.createColumnFamily(value);
+            YRDB rdb = rdbFactory.getRdb(f.getAbsolutePath(), true);
+            byte[] bvalue = null;
+            if(value!=null) {
+                ColumnValueSerializer cvs = new ColumnValueSerializer(tableDefinition);
+                bvalue = cvs.objectToByteArray(value);
+                if(tableDefinition.getPartitionStorage()==PartitionStorage.COLUMN_FAMILY) {
+                    rdb.createColumnFamily(bvalue);
+                }
+            }
 
             rdbFactory.dispose(rdb);
-            return new RdbPartition(pinfo.partitionStart, pinfo.partitionEnd, value, pinfo.dir+"/"+tableDefinition.getName());			
+            return new RdbPartition(pinfo.partitionStart, pinfo.partitionEnd, value, bvalue, pinfo.dir+"/"+tableDefinition.getName());			
         } catch (RocksDBException e) {
             log.error("Error when creating partition "+pinfo+" for value "+value+": ", e);
             throw new IOException(e);
@@ -180,11 +201,17 @@ public class RdbPartitionManager extends PartitionManager {
             if(!f.exists()) {
                 f.mkdirs();
             }
-            YRDB rdb = rdbFactory.getRdb(f.getAbsolutePath(), new ColumnValueSerializer(tableDefinition), true);
-            if(value!=null) rdb.createColumnFamily(value);
-
+            YRDB rdb = rdbFactory.getRdb(f.getAbsolutePath(), true);
+            byte[] bvalue = null;
+            if(value!=null) {
+                ColumnValueSerializer cvs = new ColumnValueSerializer(tableDefinition);
+                bvalue = cvs.objectToByteArray(value);
+                if(tableDefinition.getPartitionStorage()==PartitionStorage.COLUMN_FAMILY) {
+                    rdb.createColumnFamily(bvalue);
+                }
+            }
             rdbFactory.dispose(rdb);
-            return new RdbPartition(Long.MIN_VALUE, Long.MAX_VALUE, value, tableDefinition.getName());			
+            return new RdbPartition(Long.MIN_VALUE, Long.MAX_VALUE, value, bvalue, tableDefinition.getName());			
         } catch (RocksDBException e) {
             log.error("failed to create partition for table "+tableDefinition.getName()+" and value '"+value+"': ", e);
             throw new IOException(e);

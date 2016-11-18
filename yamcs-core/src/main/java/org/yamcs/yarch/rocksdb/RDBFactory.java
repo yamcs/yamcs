@@ -37,7 +37,8 @@ public class RDBFactory implements Runnable {
     ScheduledThreadPoolExecutor scheduler;
     final String instance;
     public static FlushOptions flushOptions = new FlushOptions();
-
+    StringColumnFamilySerializer stringCfSerializer = new StringColumnFamilySerializer();
+    
     //use this when the db is open for the backup; if the same db is open with another serializer, then this one will be dropped 
     DummyColumnFamilySerializer dummyCfSerializer = new DummyColumnFamilySerializer();
 
@@ -60,10 +61,13 @@ public class RDBFactory implements Runnable {
      * @return the database created or opened
      * @throws IOException
      */
-    public YRDB getRdb(String absolutePath, ColumnFamilySerializer cfSerializer, boolean readonly) throws IOException{
-        return rdb(absolutePath, cfSerializer, readonly);
+    public YRDB getRdb(String absolutePath, boolean readonly) throws IOException{
+        return rdb(absolutePath, 0, readonly);
     }
 
+    public YRDB getRdb(String absolutePath, int prefixSize, boolean readonly) throws IOException  {      
+        return rdb(absolutePath, prefixSize, readonly);
+    }
     /**
      * use default visibility to be able to create a separate one from the unit test
      */
@@ -83,7 +87,7 @@ public class RDBFactory implements Runnable {
         Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook()));
     }
 
-    private synchronized YRDB rdb(String absolutePath, ColumnFamilySerializer cfSerializer, boolean readonly) throws IOException {
+    private synchronized YRDB rdb(String absolutePath, int prefixSize, boolean readonly) throws IOException {
         DbAndAccessTime daat = databases.get(absolutePath);
         if(daat==null) {
             if(databases.size()>=maxOpenDbs) { //close the db with the oldest timestamp
@@ -105,7 +109,7 @@ public class RDBFactory implements Runnable {
             log.debug("Creating or opening RDB "+absolutePath+" total rdb open: "+databases.size());
             YRDB db;
             try {
-                db = new YRDB(absolutePath, cfSerializer);
+                db = new YRDB(absolutePath);
             } catch (RocksDBException e) {
                 throw new IOException(e);
             }
@@ -116,11 +120,10 @@ public class RDBFactory implements Runnable {
         }
         daat.lastAccess = System.currentTimeMillis();
         daat.refcount++;
-        if((daat.db.getColumnFamilySerializer() == dummyCfSerializer) && (cfSerializer!= dummyCfSerializer)) {
-            daat.db.setColumnFamilySerializer(cfSerializer);
-        }
         return daat.db;
     }
+    
+   
 
     public void delete(String file) {
         del(file);
@@ -235,7 +238,7 @@ public class RDBFactory implements Runnable {
                 Backup.verifyBackupDirectory(backupDir, false);
                 BackupableDBOptions opt = new BackupableDBOptions(backupDir);
                 BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
-                db = getRdb(dbpath, dummyCfSerializer, false);
+                db = getRdb(dbpath, false);
                 backupEngine.createNewBackup(db.getDb());
 
                 backupEngine.close();
@@ -301,7 +304,11 @@ public class RDBFactory implements Runnable {
         });
 
         return cf;
-    } 
+    }
+
+   
+
+    
 }
 
 class DbAndAccessTime {

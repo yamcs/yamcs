@@ -1,4 +1,4 @@
-package org.yamcs.yarch.rocksdb2;
+package org.yamcs.yarch.rocksdb;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,7 +23,12 @@ import org.yamcs.yarch.RawTuple;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchDatabase;
 
-public class RdbTableReaderStream extends AbstractTableReaderStream implements Runnable, DbReaderStream {
+/**
+ * reader for tables with PartitionStorage.IN_KEY (the partition is prepended in front of the key)
+ * @author nm
+ *
+ */
+public class InkeyTableReaderStream extends AbstractTableReaderStream implements Runnable, DbReaderStream {
     static AtomicInteger count = new AtomicInteger(0);
     final PartitioningSpec partitioningSpec;
     final RdbPartitionManager partitionManager;
@@ -33,7 +38,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
     // size in bytes of value if partitioned by value
     private final int partitionSize;
     
-    protected RdbTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, RdbPartitionManager partitionManager, boolean ascending, boolean follow) {
+    protected InkeyTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, RdbPartitionManager partitionManager, boolean ascending, boolean follow) {
         super(ydb, tblDef, partitionManager, ascending, follow);
         
         this.tableDefinition = tblDef;
@@ -108,12 +113,12 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
         readOptions.setTailing(follow);
         Snapshot snapshot = null;
         if(!follow) {
-            snapshot = rdb.db.getSnapshot();
+            snapshot = rdb.getDb().getSnapshot();
             readOptions.setSnapshot(snapshot);
         }
         
         try {
-            RocksIterator it = rdb.db.newIterator(readOptions);
+            RocksIterator it = rdb.getDb().newIterator(readOptions);
             if(ascending) {
                 iterator = new AscendingRangeIterator(it, rangeStart, strictStart, rangeEnd, strictEnd);
                 while(!quit && iterator.isValid()){
@@ -163,7 +168,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
         readOptions.setTailing(follow);
         Snapshot snapshot = null;
         if(!follow) {
-            snapshot = rdb.db.getSnapshot();
+            snapshot = rdb.getDb().getSnapshot();
             readOptions.setSnapshot(snapshot);
         }
         
@@ -172,7 +177,7 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
             //create an iterator for each partitions
             for(Partition p: partitions) {
                 p1 = (RdbPartition) p;
-                RocksIterator rocksIt = rdb.db.newIterator(readOptions);
+                RocksIterator rocksIt = rdb.getDb().newIterator(readOptions);
                 
                 DbIterator it = getPartitionIterator(rocksIt, p1.binaryValue,  ascending, rangeStart, strictStart, rangeEnd, strictEnd);
                 

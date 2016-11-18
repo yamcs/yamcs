@@ -110,20 +110,20 @@ public class ParameterArchive  extends AbstractService {
 
     private void createDb(String dbpath) throws RocksDBException, IOException {
         log.info("Creating new ParameterArchive RocksDb at {}", dbpath);
-        yrdb = RDBFactory.getInstance(yamcsInstance).getRdb(dbpath, cfSerializer, false);
+        yrdb = RDBFactory.getInstance(yamcsInstance).getRdb(dbpath, false);
         p2pid_cfh = yrdb.createColumnFamily(CF_NAME_meta_p2pid);
         pgid2pg_cfh = yrdb.createColumnFamily(CF_NAME_meta_pgid2pg);
     }
 
     private void openExistingDb(String dbpath) throws IOException {
         log.info("Opening existing ParameterArchive RocksDb at {}", dbpath);
-        yrdb = RDBFactory.getInstance(yamcsInstance).getRdb(dbpath, cfSerializer, false);
+        yrdb = RDBFactory.getInstance(yamcsInstance).getRdb(dbpath, false);
         
         p2pid_cfh = yrdb.getColumnFamilyHandle(CF_NAME_meta_p2pid);
         pgid2pg_cfh = yrdb.getColumnFamilyHandle(CF_NAME_meta_pgid2pg);
         
-        Collection<Object> l = yrdb.getColumnFamilies();
-        for(Object o: l) {
+        Collection<String> l = yrdb.getColumnFamiliesAsStrings();
+        for(String o: l) {
             String cn = (String)o;
             if(cn.startsWith(CF_NAME_data_prefix)) {
                 long partitionId = decodePartitionId(CF_NAME_data_prefix, cn);

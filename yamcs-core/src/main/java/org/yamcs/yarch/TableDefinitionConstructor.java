@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.yamcs.yarch.PartitioningSpec._type;
+import org.yamcs.yarch.TableDefinition.PartitionStorage;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yaml.snakeyaml.constructor.AbstractConstruct;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -85,6 +86,12 @@ public class TableDefinitionConstructor  extends Constructor {
                 tdef.setStorageEngineName((String)m.get(K_storageEngine));
             } else {//before the storageEngine has been invented, we only had TokyoCabinet, so assume that if it's not set then TokyoCabine is used
                 tdef.setStorageEngineName(YarchDatabase.TC_ENGINE_NAME);
+            }
+            
+            if(m.containsKey(K_partitionStorage)) {
+                tdef.setPartitionStorage((PartitionStorage)m.get(K_partitionStorage));
+            } else {//before the partitionStorage has been invented, we only had column_family
+                tdef.setPartitionStorage(PartitionStorage.COLUMN_FAMILY);
             }
 
             return tdef;

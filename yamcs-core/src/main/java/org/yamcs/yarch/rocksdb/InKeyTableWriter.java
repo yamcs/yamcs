@@ -1,34 +1,36 @@
-package org.yamcs.yarch.rocksdb2;
+package org.yamcs.yarch.rocksdb;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
-import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.ColumnDefinition;
-import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.DataType;
-import org.yamcs.yarch.HistogramSegment;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 
-public class RdbTableWriter extends TableWriter {
+
+/**
+ * table writer that prepends the partition binary value in front of the key
+ * 
+ * @author nm
+ *
+ */
+public class InKeyTableWriter extends AbstractTableWriter {
     private final RdbPartitionManager partitionManager;
     private final PartitioningSpec partitioningSpec;
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
     RDBFactory rdbFactory; 
-    static final byte[] zerobytes = new byte[0];
+   
     
-    public RdbTableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode, RdbPartitionManager pm) throws IOException {
+    public InKeyTableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode, RdbPartitionManager pm) throws IOException {
         super(ydb, tableDefinition, mode);
         this.partitioningSpec = tableDefinition.getPartitioningSpec();
         this.partitionManager = pm;
@@ -80,53 +82,9 @@ public class RdbTableWriter extends TableWriter {
 
     }
 
-    private void addHistogram(YRDB db, Tuple t) throws RocksDBException {
-        List<String> histoColumns = tableDefinition.getHistogramColumns();
-        for(String c: histoColumns) {
-            if(!t.hasColumn(c)) continue;
-            long time=(Long)t.getColumn(0);
-            ColumnSerializer cs = tableDefinition.getColumnSerializer(c);
-            byte[] v = cs.getByteArray(t.getColumn(c));
-            addHistogramForColumn(db, c, v, time);
-        }
-    }
+   
 
-    @Override
-    public void streamClosed(Stream stream) {
-        // TODO Auto-generated method stub
-
-    }
-
-
-    private synchronized void addHistogramForColumn(YRDB db, String columnName, byte[] columnv, long time) throws RocksDBException {
-        int sstart = (int)(time/HistogramSegment.GROUPING_FACTOR);
-        int dtime = (int)(time%HistogramSegment.GROUPING_FACTOR);
-
-        HistogramSegment segment;
-        String cfHistoName = getHistogramColumnFamilyName(columnName);
-        ColumnFamilyHandle cfh = db.getColumnFamilyHandle(cfHistoName);
-        
-        if(cfh==null) {
-            cfh = db.createColumnFamily(cfHistoName);
-            //add a record at the end to make sure the cursor doesn't run out
-            db.put(cfh, HistogramSegment.key(Integer.MAX_VALUE, zerobytes), new byte[0]);
-        }  
-        
-        byte[] val = db.get(cfh, HistogramSegment.key(sstart, columnv));
-        if(val==null) {
-            segment = new HistogramSegment(columnv, sstart);
-        } else {
-            segment = new HistogramSegment(columnv, sstart, val);
-        }
-
-        segment.merge(dtime);
-        db.put(cfh, segment.key(), segment.val());
-    }
-
-    static public String getHistogramColumnFamilyName(String tableColumnName) {
-        return ("histo-"+tableColumnName).intern();
-    }
-    
+  
     private boolean insert(YRDB db, RdbPartition partition, Tuple t) throws RocksDBException {
         byte[] k = getPartitionKey(partition, tableDefinition.serializeKey(t));
         byte[] v = tableDefinition.serializeValue(t);
@@ -228,9 +186,7 @@ public class RdbTableWriter extends TableWriter {
     }
 
     //prepends the partition binary value to the key 
-    private byte[] getPartitionKey(RdbPartition partition, byte[] k) {
-        if(partition.binaryValue==null) return k;
-        
+    private byte[] getPartitionKey(RdbPartition partition, byte[] k) {     
         byte[] p = partition.binaryValue;
         byte[] pk = new byte[p.length+k.length];
         System.arraycopy(p, 0, pk, 0, p.length);
@@ -261,5 +217,9 @@ public class RdbTableWriter extends TableWriter {
     
     public void close() {
     }
+    
+    @Override
+    public void streamClosed(Stream stream) {
 
+    }
 }

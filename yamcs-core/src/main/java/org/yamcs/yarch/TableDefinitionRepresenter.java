@@ -28,6 +28,7 @@ public class TableDefinitionRepresenter extends Representer {
 	public final static String K_valueColumn = "valueColumn";
 	public final static String K_timePartitioningSchema = "timePartitioningSchema";
 	public final static String K_storageEngine = "storageEngine";
+	public final static String K_partitionStorage = "partitionStorage";
 	
 	
     public TableDefinitionRepresenter() {
@@ -45,6 +46,7 @@ public class TableDefinitionRepresenter extends Representer {
             m.put(K_keyDef, td.getKeyDefinition());
             m.put(K_valueDef, td.serializedValueDef);
             m.put(K_storageEngine, td.getStorageEngineName());
+            m.put(K_partitionStorage, td.getPartitionStorage());
             
             if(td.hasHistogram()) {
                 m.put(K_histogram, td.getHistogramColumns());

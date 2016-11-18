@@ -125,7 +125,7 @@ public abstract class PartitionManager {
         if(partition == null) {
             if(partitioningSpec.timeColumn!=null) {
                 PartitionInfo pinfo = partitioningSpec.getTimePartitioningSchema().getPartitionInfo(instant);
-                partition = createPartition(pinfo, value);
+                partition = createPartitionByTime(pinfo, value);
             } else {
                 partition = createPartition(value);
             }
@@ -171,7 +171,7 @@ public abstract class PartitionManager {
      * @return
      * @throws IOException 
      */
-    protected abstract Partition createPartition(PartitionInfo pinfo, Object value) throws IOException;
+    protected abstract Partition createPartitionByTime(PartitionInfo pinfo, Object value) throws IOException;
 
     /**
      * Create a partition for value based partitioning

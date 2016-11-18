@@ -39,13 +39,20 @@ import com.google.common.io.ByteStreams;
 public class TableDefinition {
     static Logger log=LoggerFactory.getLogger(TableDefinition.class.getName());
 
+    
+   
+    //used for rocksdb - IN_KEY means storing the partition in front of the key
+    //                 - COLUMN_FAMILY : store data for each partition in a different column family
+    public enum PartitionStorage {IN_KEY, COLUMN_FAMILY};
+    private PartitionStorage partitionStorage = PartitionStorage.IN_KEY;
+    
     private final TupleDefinition keyDef;
     
     //the definition of all the value columns that the table can have. A particular row can have less columns
     //We have two references, one that is written to disk as part of the serialization and the other one that is actually used
     //we do this in order to prevent that a column is used before the serialization has been flushed to disk
-    TupleDefinition serializedValueDef=new TupleDefinition();
-    private volatile TupleDefinition valueDef=serializedValueDef;
+    TupleDefinition serializedValueDef = new TupleDefinition();
+    private volatile TupleDefinition valueDef = serializedValueDef;
     
     //   keyDef+valueDef
     private volatile TupleDefinition tupleDef; 
@@ -60,7 +67,7 @@ public class TableDefinition {
     private boolean compressed;
     private PartitioningSpec partitioningSpec;
     
-    private String storageEngineName=YarchDatabase.TC_ENGINE_NAME;
+    private String storageEngineName = YarchDatabase.RDB_ENGINE_NAME;
     
     transient private String name; //we make this transient such that tables names can be changed by changing the filename
     private List<String> histoColumns;
@@ -482,5 +489,13 @@ public class TableDefinition {
 
     public void setStorageEngineName(String storageEngineName) {
         this.storageEngineName = storageEngineName;
+    }
+
+    public PartitionStorage getPartitionStorage() {
+        return partitionStorage;
+    }
+
+    public void setPartitionStorage(PartitionStorage partitionStorage) {
+        this.partitionStorage = partitionStorage;
     }
 }

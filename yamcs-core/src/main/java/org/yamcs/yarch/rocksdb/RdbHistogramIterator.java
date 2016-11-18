@@ -1,4 +1,4 @@
-package org.yamcs.yarch.rocksdb2;
+package org.yamcs.yarch.rocksdb;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -20,7 +20,7 @@ import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchDatabase;
 
-import static org.yamcs.yarch.rocksdb2.RdbTableWriter.zerobytes;
+import static org.yamcs.yarch.rocksdb.CfTableWriter.zerobytes;
 
 /**
  * 
@@ -59,7 +59,7 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
         readNextPartition();
     }
 
-    private void readNextPartition() {
+    private void readNextPartition() throws RocksDBException {
         try {
             while(partitionIterator.hasNext()) {
                 RdbPartition part  = (RdbPartition) partitionIterator.next().get(0);
@@ -74,7 +74,7 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
                     rdbf.dispose(rdb);
                 }
                 rdb = rdbf.getRdb(tblDef.getDataDir()+"/"+dbDir, false);
-                String histoCfName = RdbTableWriter.getHistogramColumnFamilyName(colName);
+                String histoCfName = InKeyTableWriter.getHistogramColumnFamilyName(colName);
                 ColumnFamilyHandle cfh = rdb.getColumnFamilyHandle(histoCfName);
                 if(cfh!=null) {
                     segmentIterator = rdb.newIterator(cfh);
@@ -98,7 +98,7 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
     }
 
     //reads all the segments with the same sstart time
-    private void readNextSegments() {
+    private void readNextSegments() throws RocksDBException {
         ByteBuffer bb = ByteBuffer.wrap(segmentIterator.key());
         int sstart = bb.getInt();
         if(sstart==Integer.MAX_VALUE) {
@@ -168,7 +168,11 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
         HistogramRecord r = records.poll();
 
         if(records.isEmpty()) {
-            readNextSegments();
+            try {
+                readNextSegments();
+            } catch (RocksDBException e) {
+               throw new RuntimeException(e);
+            }
         }
         return r;
     }

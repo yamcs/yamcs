@@ -56,7 +56,6 @@ public abstract class YarchTestCase {
 	if(YarchDatabase.hasInstance(instance)) {	
 	    YarchDatabase ydb = YarchDatabase.getInstance(instance);
 	    RdbStorageEngine.removeInstance(ydb);
-	    org.yamcs.yarch.rocksdb2.RdbStorageEngine.removeInstance(ydb);
 	    YarchDatabase.removeInstance(instance);		
 	}
 	

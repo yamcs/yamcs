@@ -1,4 +1,4 @@
-package org.yamcs.yarch.rocksdb2;
+package org.yamcs.yarch.rocksdb;
 
 import java.util.Comparator;
 import java.util.List;

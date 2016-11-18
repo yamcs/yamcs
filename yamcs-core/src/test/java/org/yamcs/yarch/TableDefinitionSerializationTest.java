@@ -9,6 +9,7 @@ import java.util.List;
 import org.junit.Test;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.yarch.TableDefinition.PartitionStorage;
 import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.BiMap;
@@ -61,7 +62,7 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
 
     @Test
     public void testTableDefinitionSerialization() throws Exception {
-        ydb.execute("create table abcde1(aak1 timestamp, aak2 int, aav1 string, aav2 binary, aav3 enum, primary key(aak1, aak2)) histogram(aak2, aav1) partition by time(aak1('YYYY')) table_format=compressed");
+        ydb.execute("create table abcde1(aak1 timestamp, aak2 int, aav1 string, aav2 binary, aav3 enum, primary key(aak1, aak2)) histogram(aak2, aav1) partition by time(aak1('YYYY')) table_format=compressed partition_storage=COLUMN_FAMILY");
         TableDefinition td1=ydb.getTable("abcde1");
 
         PartitioningSpec pspec = td1.getPartitioningSpec();
@@ -100,6 +101,7 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
         assertEquals("aak1", ps.timeColumn);
         assertEquals(TimePartitionSchema.YYYY.class , ps.getTimePartitioningSchema().getClass() );
 
+        assertEquals(PartitionStorage.COLUMN_FAMILY, td2.getPartitionStorage());
 
 
         BiMap<String, Short>ev =td2.getEnumValues("aav3");
@@ -212,7 +214,7 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
 
     @Test
     public void testTableDefinitionSerializationB() throws Exception {
-        ydb.execute("create table testb(aaa1 timestamp, aaa2 protobuf('org.yamcs.protobuf.Yamcs$Event'), primary key(aaa1))");
+        ydb.execute("create table testb(aaa1 timestamp, aaa2 protobuf('org.yamcs.protobuf.Yamcs$Event'), primary key(aaa1)) partition_storage=IN_KEY");
         TableDefinition td=ydb.getTable("testb");
 
         TupleDefinition tplDef=new TupleDefinition();
@@ -242,5 +244,7 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
         cd=td1.getColumnDefinition("bbb1");
         assertEquals(cd.getType().val, DataType._type.PROTOBUF);
         assertEquals(id.getClass().getName(), cd.getType().getClassName());
+        
+        assertEquals(PartitionStorage.IN_KEY, td1.getPartitionStorage());
     }
 }

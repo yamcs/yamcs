@@ -29,7 +29,6 @@ public class PartitioningTest extends YarchTestCase {
 
     @Test
     public void testIndexPartitioning() throws ParseException, StreamSqlException, IOException, InterruptedException {
-    	
         ydb.execute("create table test1(gentime timestamp, apidSeqCount int, primary key(gentime,apidSeqCount)) engine rocksdb partition by time(gentime('YYYY/DOY'))");
         ydb.execute("create stream tm_in(gentime timestamp, apidSeqCount int)");
         ydb.execute("insert into test1 select * from tm_in");
@@ -126,7 +125,6 @@ public class PartitioningTest extends YarchTestCase {
     }
 
     private void doublePartitioningSelect(String whereCnd, final long[] expectedInstant) throws InterruptedException, StreamSqlException, ParseException{
-
         String query="create stream testdp_out as select * from testdp"+(whereCnd==null?"":" where "+whereCnd);
         ydb.execute(query);
         Stream test1_out=ydb.getStream("testdp_out");

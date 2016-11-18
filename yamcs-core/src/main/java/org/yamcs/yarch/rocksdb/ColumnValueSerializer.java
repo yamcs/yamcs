@@ -51,7 +51,7 @@ public class ColumnValueSerializer implements ColumnFamilySerializer {
      */
     public Object byteArrayToObject(byte[] b) {
         if(Arrays.equals(b, NULL_COLUMN_FAMILY)) return null;
-        
+
         DataType dt = valuePartitionDataType;
         switch(dt.val) {
         case INT:
@@ -71,6 +71,29 @@ public class ColumnValueSerializer implements ColumnFamilySerializer {
             return new String(b);
         default:
             throw new IllegalArgumentException("partition on values of type "+dt+" not supported");
+        }
+    }
+
+    /**
+     * return the size in bytes of the encoded data type if it can be encoded on fixed size, or -1 if not.
+     * @param dt
+     * @return
+     */
+    public static int getSerializedSize(DataType dt) {
+        switch(dt.val) {
+        case INT:
+            return 4;
+        case SHORT:
+        case ENUM: //intentional fall-through
+            return 2;             
+        case BYTE:
+        case BOOLEAN: //intentional fall-through
+            return 1;
+        case DOUBLE:
+        case TIMESTAMP: //intentional fall-through
+            return 8;
+        default:
+            return -1;
         }
     }
 }

@@ -19,14 +19,22 @@ import org.yamcs.yarch.RawTuple;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchDatabase;
 
-public class RdbTableReaderStream extends AbstractTableReaderStream implements Runnable, DbReaderStream {
+/**
+ * reader for tables where each partition is a different column family
+ * 
+ * Also works for the case when there is no partitioning by value
+ * 
+ * @author nm
+ *
+ */
+public class CfTableReaderStream extends AbstractTableReaderStream implements Runnable, DbReaderStream {
     static AtomicInteger count = new AtomicInteger(0);
     final PartitioningSpec partitioningSpec;
     final RdbPartitionManager partitionManager;
     final TableDefinition tableDefinition;
     private long numRecordsRead = 0;
     
-    protected RdbTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, RdbPartitionManager partitionManager, boolean ascending, boolean follow) {
+    protected CfTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, RdbPartitionManager partitionManager, boolean ascending, boolean follow) {
         super(ydb, tblDef, partitionManager, ascending, follow);
         this.tableDefinition = tblDef;
         partitioningSpec = tblDef.getPartitioningSpec();
@@ -83,10 +91,10 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
             RdbPartition p1 = (RdbPartition) partitions.iterator().next();
             String dbDir = p1.dir;
             log.debug("opening database "+ dbDir);
-            rdb = rdbFactory.getRdb(tableDefinition.getDataDir()+"/"+p1.dir, new ColumnValueSerializer(tableDefinition.getPartitioningSpec().getValueColumnType()), false);
+            rdb = rdbFactory.getRdb(tableDefinition.getDataDir()+"/"+p1.dir, false);
             List<ColumnFamilyHandle> cfhList = new ArrayList<ColumnFamilyHandle>();
             for(Partition p: partitions) {
-                ColumnFamilyHandle cfh = rdb.getColumnFamilyHandle(p.getValue());
+                ColumnFamilyHandle cfh = rdb.getColumnFamilyHandle(((RdbPartition)p).binaryValue);
                 if(cfh!=null) {
                     cfhList.add(cfh);
                 }
@@ -162,14 +170,14 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
         YRDB rdb = null;
         try {
            
-            RdbPartition p1 = (RdbPartition) partitions.iterator().next();
+            RdbPartition p1 = (RdbPartition) partitions.get(0);
             String dbDir = p1.dir;
             log.debug("opening database "+ dbDir);
-            rdb = rdbFactory.getRdb(tableDefinition.getDataDir()+"/"+p1.dir, new ColumnValueSerializer(tableDefinition.getPartitioningSpec().getValueColumnType()), false);
+            rdb = rdbFactory.getRdb(tableDefinition.getDataDir()+"/"+p1.dir, false);
             List<ColumnFamilyHandle> cfhList = new ArrayList<ColumnFamilyHandle>();
 
             for(Partition p: partitions) {
-                ColumnFamilyHandle cfh = rdb.getColumnFamilyHandle(p.getValue());
+                ColumnFamilyHandle cfh = rdb.getColumnFamilyHandle(((RdbPartition)p).binaryValue);
                 if(cfh!=null) {
                     cfhList.add(cfh);
                 }

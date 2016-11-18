@@ -83,7 +83,7 @@ public class RdbStorageEngine implements StorageEngine {
             throw new IllegalArgumentException("Do not have a partition manager for this table");
         }
         try {
-            return new RdbTableWriter(ydb, tbl, insertMode, partitionManagers.get(tbl));
+            return new CfTableWriter(ydb, tbl, insertMode, partitionManagers.get(tbl));
         } catch (IOException e) {
             throw new YarchException("Failed to create writer", e);
         } 
@@ -94,7 +94,7 @@ public class RdbStorageEngine implements StorageEngine {
         if(!partitionManagers.containsKey(tbl)) {
             throw new IllegalArgumentException("Do not have a partition manager for this table");
         }
-        return new RdbTableReaderStream(ydb, tbl, partitionManagers.get(tbl), ascending, follow);
+        return new CfTableReaderStream(ydb, tbl, partitionManagers.get(tbl), ascending, follow);
     }
 
     @Override
@@ -149,8 +149,8 @@ public class RdbStorageEngine implements StorageEngine {
     @Override
     public Iterator<HistogramRecord> getIterator(TableDefinition tblDef, String columnName, TimeInterval interval, long mergeTime) throws YarchException {
         try {
-            return RdbHistogramDb.getInstance(ydb, tblDef).getIterator(columnName, interval, mergeTime);
-        } catch (IOException e) {
+            return new RdbHistogramIterator(ydb, tblDef, columnName, interval, mergeTime);
+        } catch (RocksDBException e) {
             throw new YarchException(e);
         }
     }

@@ -1,10 +1,13 @@
-package org.yamcs.yarch.rocksdb2;
+package org.yamcs.yarch.rocksdb;
+
+import java.util.Arrays;
 
 import org.rocksdb.RocksIterator;
 import org.yamcs.utils.ByteArrayUtils;
 
+
 /**
- * wrapper around a rocksdb iterator that only supports next() and is restricted to a range.
+ * wrapper around a rocksdb iterator that only supports prev() and is restricted to a range.
  * 
  * if strictStart=true 
  *   -> the first rangeStart.length bytes of the key are compared with the rangeStart, if they are equal the record is skipped.
@@ -24,7 +27,7 @@ import org.yamcs.utils.ByteArrayUtils;
  * @author nm
  *
  */
-public class AscendingRangeIterator implements DbIterator {
+public class DescendingRangeIterator implements DbIterator {
     final RocksIterator iterator;
     final byte[] rangeStart;
     final boolean strictStart;
@@ -34,7 +37,7 @@ public class AscendingRangeIterator implements DbIterator {
     private byte[] curKey;
 
 
-    public AscendingRangeIterator(RocksIterator it, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
+    public DescendingRangeIterator(RocksIterator it, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
         this.iterator = it;
         this.rangeStart = rangeStart;
         this.rangeEnd = rangeEnd;
@@ -44,37 +47,41 @@ public class AscendingRangeIterator implements DbIterator {
     }
 
     private void init() {
-        boolean startFound = false;
-        valid = false;
-
-        if(rangeStart==null) {
-            iterator.seekToFirst();
+        boolean endFound = false;
+        
+        if(rangeEnd == null) {
+            iterator.seekToLast();
             if(iterator.isValid()) {
                 curKey = iterator.key();
-                startFound = true;
-
+                endFound = true;
             }
         } else {
-            iterator.seek(rangeStart);
+            iterator.seek(rangeEnd);    //seek moves cursor beyond the match
+
             if(iterator.isValid()) {
                 curKey = iterator.key();
-                if(strictStart && ByteArrayUtils.startsWith(curKey, rangeStart)) {
-                    iterator.next();
+                if(!strictEnd  && Arrays.equals(curKey, rangeEnd)) {
+                    endFound = true;
+                } else {
+                    iterator.prev();
                     if(iterator.isValid()) {
                         curKey = iterator.key();
-                        startFound = true;
-                    }
-                } else {
-                    startFound = true;
+                        endFound = true;
+                    } 
+                }
+            } else { //reached the end of the table -> check the last entry
+                iterator.seekToLast();
+                if(iterator.isValid()) {
+                    curKey = iterator.key();
+                    endFound = true;
                 }
             }
         }
-
-        if(startFound) {
-            //check that it is not beyond the end
-            if(rangeEnd!=null) {
-                int c = ByteArrayUtils.compare(curKey, rangeEnd);
-                if((strictEnd && c<0) || (c<=0)) {
+        if(endFound) {
+            //check that it is not earlier than start
+            if(rangeStart!=null) {
+                int c = ByteArrayUtils.compare(rangeStart, curKey);
+                if((strictStart && c<0) || (c<=0)) {
                     valid = true;
                 }
             } else {
@@ -89,20 +96,27 @@ public class AscendingRangeIterator implements DbIterator {
     }
 
     @Override
-    public void next() {
+    public void prev() {
         if(!valid) throw new IllegalStateException("iterator is not valid");
-        iterator.next();
+
+        iterator.prev();
         if(iterator.isValid()) {
             curKey = iterator.key();
-            if(rangeEnd!=null) {
-                int c = ByteArrayUtils.compare(curKey, rangeEnd);
-                if((strictEnd && c>=0) || (c>0)) {
-                    valid = false;
+            if(rangeStart!=null) {
+                valid = false;
+                int c = ByteArrayUtils.compare(rangeStart, curKey);
+                if((strictStart && c<0) || (c<=0)) {
+                    valid = true;
                 }
             }
         } else {
             valid = false;
         }
+    }
+    @Override
+    public void next() {
+        throw new UnsupportedOperationException("this is an desceinding iterator, next() not supported");
+       
     }
 
     public byte[] key() {
@@ -121,9 +135,6 @@ public class AscendingRangeIterator implements DbIterator {
         iterator.close();
     }
 
-    @Override
-    public void prev() {
-        throw new UnsupportedOperationException("this is an ascending iterator");
-    }
+    
 
 }

@@ -16,16 +16,17 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class EnumTest extends YarchTestCase {
     int n=10;
+    
     @Parameter
-    public String engine; 
+    public String partitionStorage; 
     @Parameters
     public static Iterable<String> data() {
-        return Arrays.asList("rocksdb", "rocksdb2");
+        return Arrays.asList("IN_KEY", "COLUMN_FAMILY");
     }
 
     
     private void populate(String tblname) throws Exception {
-        ydb.execute("create table "+tblname+"(gentime timestamp, packetName enum, packet binary, primary key(gentime,packetName)) engine "+engine);
+        ydb.execute("create table "+tblname+"(gentime timestamp, packetName enum, packet binary, primary key(gentime,packetName))   partition_storage="+partitionStorage);
         ydb.execute("create stream "+tblname+"_in(gentime timestamp, packetName enum, packet binary)");
         ydb.execute("insert into "+tblname+" select * from "+tblname+"_in");
 

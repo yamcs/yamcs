@@ -28,14 +28,14 @@ public class HistogramStreamTest extends YarchTestCase {
     int n = 1200;
     int m = 3;
     @Parameter
-    public String engine; 
+    public String partitionStorage; 
     @Parameters
     public static Iterable<String> data() {
-        return Arrays.asList("rocksdb", "rocksdb2");
+        return Arrays.asList("IN_KEY", "COLUMN_FAMILY");
     }
     
     private void populate(String tblName) throws Exception {
-        String query="create table "+tblName+"(gentime timestamp, seqNum int, name string, primary key(gentime, seqNum)) histogram(name) partition by time(gentime) table_format=compressed engine "+engine;
+        String query="create table "+tblName+"(gentime timestamp, seqNum int, name string, primary key(gentime, seqNum)) histogram(name) partition by time(gentime) table_format=compressed partition_storage="+partitionStorage;
         ydb.execute(query);
         
         execute("create stream "+tblName+"_in(gentime timestamp, seqNum int, name string)");
@@ -70,7 +70,7 @@ public class HistogramStreamTest extends YarchTestCase {
         ydb.execute(query);
         final List<Tuple> tuples = fetchAll("test1_out");
         assertEquals(m, tuples.size());
-        Tuple t=tuples.get(0);
+        Tuple t =tuples.get(0);
         //tuples should contain (name String, start TIMESTAMP, stop TIMESTAMP,  num int)
         assertEquals(4, t.size());
         assertEquals("histotest0", (String)t.getColumn(0));
