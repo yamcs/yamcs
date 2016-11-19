@@ -3,6 +3,7 @@ package org.yamcs.web;
 import static io.netty.handler.codec.http.HttpHeaders.setHeader;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
@@ -12,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.security.AuthenticationToken;
@@ -103,6 +105,10 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
             return;
         default:
             String yamcsInstance = path[1];
+            if (!YamcsServer.hasInstance(yamcsInstance)) {
+                sendPlainTextError(ctx, req, NOT_FOUND);
+                return;
+            }
             if (path.length > 2) {
                 String[] rpath = path[2].split("/", 2);
                 String handler = rpath[0];
