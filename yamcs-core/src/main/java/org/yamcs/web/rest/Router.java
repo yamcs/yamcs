@@ -377,6 +377,11 @@ public class Router {
             YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
             if (yconf.containsKey("defaultInstance")) {
                 responseb.setDefaultYamcsInstance(yconf.getString("defaultInstance"));
+            } else {
+                Set<String> instances = YamcsServer.getYamcsInstanceNames();
+                if (!instances.isEmpty()) {
+                    responseb.setDefaultYamcsInstance(instances.iterator().next());
+                }
             }
 
             // Aggregate to unique urls, and keep insertion order
