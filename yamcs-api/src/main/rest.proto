@@ -10,9 +10,15 @@ import "commanding.proto";
 import "yamcsManagement.proto";
 
 message GetApiOverviewResponse {
+  message RouteInfo {
+    optional string url = 1;
+    repeated string method = 2;
+  }
+  
   optional string yamcsVersion = 1;
-  optional string defaultYamcsInstance = 2;
-  repeated string url = 3;
+  optional string serverId = 2;
+  optional string defaultYamcsInstance = 3;
+  repeated RouteInfo route = 4;
 }
 
 message ListParameterInfoResponse {

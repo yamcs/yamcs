@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -22,9 +21,11 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.YamcsVersion;
 import org.yamcs.parameterarchive.ParameterArchiveMaintenanceRestHandler;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse;
+import org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfo;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.web.HttpException;
@@ -174,7 +175,6 @@ public class Router {
         RestRequest restReq = new RestRequest(ctx, req, qsDecoder, token);
 
         try {
-            // Decode first the path/qs difference, then url-decode the path
             String  uri = qsDecoder.path();
             log.debug("R{}: Handling REST Request {} {}", restReq.getRequestId(), req.getMethod(), uri);
 
@@ -368,6 +368,7 @@ public class Router {
         public void getApiOverview(RestRequest req) throws HttpException {
             GetApiOverviewResponse.Builder responseb = GetApiOverviewResponse.newBuilder();
             responseb.setYamcsVersion(YamcsVersion.version);
+            responseb.setServerId(YamcsServer.getServerId());
 
             // Property to be interpreted at client's leisure.
             // Concept of defaultInstance could be moved into YamcsServer
@@ -379,14 +380,19 @@ public class Router {
                 responseb.setDefaultYamcsInstance(yconf.getString("defaultInstance"));
             }
 
-            // Unique accross http methods, and according to insertion order
-            Set<String> urls = new LinkedHashSet<>();
+            // Aggregate to unique urls, and keep insertion order
+            Map<String, RouteInfo.Builder> builders = new LinkedHashMap<>();
             for (Map<HttpMethod, RouteConfig> map : defaultRoutes.values()) {
-                map.values().forEach(v -> urls.add(v.originalPath));
+                map.values().forEach(v -> {
+                    RouteInfo.Builder builder = builders.get(v.originalPath);
+                    if (builder == null) {
+                        builder = RouteInfo.newBuilder();
+                        builders.put(v.originalPath, builder);
+                    }
+                    builder.setUrl(v.originalPath).addMethod(v.httpMethod.toString());
+                });
             }
-
-            urls.forEach(url -> responseb.addUrl(url));
-
+            builders.values().forEach(b -> responseb.addRoute(b));
             completeOK(req, responseb.build(), SchemaRest.GetApiOverviewResponse.WRITE);
         }
     }
