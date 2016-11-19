@@ -24,9 +24,9 @@ public class YamcsConnectionProperties {
         http, artemis;
     }
     private Protocol protocol;
-    boolean ssl;
+    private boolean ssl;
 
-    final private String PREF_FILENAME = "YamcsConnectionProperties"; //relative to the <home>/.yamcs directory
+    static final private String PREF_FILENAME = "YamcsConnectionProperties"; //relative to the <home>/.yamcs directory
     public YamcsConnectionProperties() {
 
     }
@@ -78,10 +78,6 @@ public class YamcsConnectionProperties {
         }
     }
 
-    public String getYamcsConnectionString() {
-        return "yamcs://" + host + ":" + port + "/" + instance;
-    }
-
     public void load() {
         try {
             Properties p = new Properties();
@@ -123,6 +119,10 @@ public class YamcsConnectionProperties {
 
     public void setSsl(boolean ssl) {
         this.ssl = ssl;
+    }
+
+    public void setProtocol(Protocol protocol) {
+        this.protocol = protocol;
     }
 
     @Override
@@ -212,12 +212,12 @@ public class YamcsConnectionProperties {
         sb.append(protocol+"://");
         if(host!=null) {
             sb.append(host);
-            if(port!=-1) {
+            if (port != -1) {
                 sb.append(":"+port);
             }
         }
         sb.append("/");
-        if(instance!=null) {
+        if (instance != null) {
             sb.append(instance);
         }
         return sb.toString();
