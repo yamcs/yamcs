@@ -11,7 +11,8 @@ import "yamcsManagement.proto";
 
 message GetApiOverviewResponse {
   optional string yamcsVersion = 1;
-  repeated string url = 2;
+  optional string defaultYamcsInstance = 2;
+  repeated string url = 3;
 }
 
 message ListParameterInfoResponse {

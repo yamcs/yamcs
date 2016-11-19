@@ -20,8 +20,10 @@ public final class SchemaRest
             {
                 if(message.hasYamcsVersion())
                     output.writeString(1, message.getYamcsVersion(), false);
+                if(message.hasDefaultYamcsInstance())
+                    output.writeString(2, message.getDefaultYamcsInstance(), false);
                 for(String url : message.getUrlList())
-                    output.writeString(2, url, true);
+                    output.writeString(3, url, true);
             }
             public boolean isInitialized(org.yamcs.protobuf.Rest.GetApiOverviewResponse message)
             {
@@ -65,6 +67,9 @@ public final class SchemaRest
                             builder.setYamcsVersion(input.readString());
                             break;
                         case 2:
+                            builder.setDefaultYamcsInstance(input.readString());
+                            break;
+                        case 3:
                             builder.addUrl(input.readString());
                             break;
                         default:
@@ -108,7 +113,8 @@ public final class SchemaRest
             switch(number)
             {
                 case 1: return "yamcsVersion";
-                case 2: return "url";
+                case 2: return "defaultYamcsInstance";
+                case 3: return "url";
                 default: return null;
             }
         }
@@ -121,7 +127,8 @@ public final class SchemaRest
         static
         {
             fieldMap.put("yamcsVersion", 1);
-            fieldMap.put("url", 2);
+            fieldMap.put("defaultYamcsInstance", 2);
+            fieldMap.put("url", 3);
         }
     }
 

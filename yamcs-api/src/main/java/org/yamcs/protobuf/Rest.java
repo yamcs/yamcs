@@ -26,22 +26,37 @@ public final class Rest {
     com.google.protobuf.ByteString
         getYamcsVersionBytes();
 
-    // repeated string url = 2;
+    // optional string defaultYamcsInstance = 2;
     /**
-     * <code>repeated string url = 2;</code>
+     * <code>optional string defaultYamcsInstance = 2;</code>
+     */
+    boolean hasDefaultYamcsInstance();
+    /**
+     * <code>optional string defaultYamcsInstance = 2;</code>
+     */
+    java.lang.String getDefaultYamcsInstance();
+    /**
+     * <code>optional string defaultYamcsInstance = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getDefaultYamcsInstanceBytes();
+
+    // repeated string url = 3;
+    /**
+     * <code>repeated string url = 3;</code>
      */
     java.util.List<java.lang.String>
     getUrlList();
     /**
-     * <code>repeated string url = 2;</code>
+     * <code>repeated string url = 3;</code>
      */
     int getUrlCount();
     /**
-     * <code>repeated string url = 2;</code>
+     * <code>repeated string url = 3;</code>
      */
     java.lang.String getUrl(int index);
     /**
-     * <code>repeated string url = 2;</code>
+     * <code>repeated string url = 3;</code>
      */
     com.google.protobuf.ByteString
         getUrlBytes(int index);
@@ -103,9 +118,14 @@ public final class Rest {
               break;
             }
             case 18: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+              bitField0_ |= 0x00000002;
+              defaultYamcsInstance_ = input.readBytes();
+              break;
+            }
+            case 26: {
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
                 url_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000002;
+                mutable_bitField0_ |= 0x00000004;
               }
               url_.add(input.readBytes());
               break;
@@ -118,7 +138,7 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
           url_ = new com.google.protobuf.UnmodifiableLazyStringList(url_);
         }
         this.unknownFields = unknownFields.build();
@@ -196,30 +216,73 @@ public final class Rest {
       }
     }
 
-    // repeated string url = 2;
-    public static final int URL_FIELD_NUMBER = 2;
+    // optional string defaultYamcsInstance = 2;
+    public static final int DEFAULTYAMCSINSTANCE_FIELD_NUMBER = 2;
+    private java.lang.Object defaultYamcsInstance_;
+    /**
+     * <code>optional string defaultYamcsInstance = 2;</code>
+     */
+    public boolean hasDefaultYamcsInstance() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string defaultYamcsInstance = 2;</code>
+     */
+    public java.lang.String getDefaultYamcsInstance() {
+      java.lang.Object ref = defaultYamcsInstance_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          defaultYamcsInstance_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string defaultYamcsInstance = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getDefaultYamcsInstanceBytes() {
+      java.lang.Object ref = defaultYamcsInstance_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        defaultYamcsInstance_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // repeated string url = 3;
+    public static final int URL_FIELD_NUMBER = 3;
     private com.google.protobuf.LazyStringList url_;
     /**
-     * <code>repeated string url = 2;</code>
+     * <code>repeated string url = 3;</code>
      */
     public java.util.List<java.lang.String>
         getUrlList() {
       return url_;
     }
     /**
-     * <code>repeated string url = 2;</code>
+     * <code>repeated string url = 3;</code>
      */
     public int getUrlCount() {
       return url_.size();
     }
     /**
-     * <code>repeated string url = 2;</code>
+     * <code>repeated string url = 3;</code>
      */
     public java.lang.String getUrl(int index) {
       return url_.get(index);
     }
     /**
-     * <code>repeated string url = 2;</code>
+     * <code>repeated string url = 3;</code>
      */
     public com.google.protobuf.ByteString
         getUrlBytes(int index) {
@@ -228,6 +291,7 @@ public final class Rest {
 
     private void initFields() {
       yamcsVersion_ = "";
+      defaultYamcsInstance_ = "";
       url_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     }
     private byte memoizedIsInitialized = -1;
@@ -245,8 +309,11 @@ public final class Rest {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBytes(1, getYamcsVersionBytes());
       }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getDefaultYamcsInstanceBytes());
+      }
       for (int i = 0; i < url_.size(); i++) {
-        output.writeBytes(2, url_.getByteString(i));
+        output.writeBytes(3, url_.getByteString(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -260,6 +327,10 @@ public final class Rest {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(1, getYamcsVersionBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getDefaultYamcsInstanceBytes());
       }
       {
         int dataSize = 0;
@@ -388,8 +459,10 @@ public final class Rest {
         super.clear();
         yamcsVersion_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        url_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        defaultYamcsInstance_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
+        url_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -422,10 +495,14 @@ public final class Rest {
           to_bitField0_ |= 0x00000001;
         }
         result.yamcsVersion_ = yamcsVersion_;
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.defaultYamcsInstance_ = defaultYamcsInstance_;
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
           url_ = new com.google.protobuf.UnmodifiableLazyStringList(
               url_);
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000004);
         }
         result.url_ = url_;
         result.bitField0_ = to_bitField0_;
@@ -449,10 +526,15 @@ public final class Rest {
           yamcsVersion_ = other.yamcsVersion_;
           onChanged();
         }
+        if (other.hasDefaultYamcsInstance()) {
+          bitField0_ |= 0x00000002;
+          defaultYamcsInstance_ = other.defaultYamcsInstance_;
+          onChanged();
+        }
         if (!other.url_.isEmpty()) {
           if (url_.isEmpty()) {
             url_ = other.url_;
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000004);
           } else {
             ensureUrlIsMutable();
             url_.addAll(other.url_);
@@ -560,42 +642,116 @@ public final class Rest {
         return this;
       }
 
-      // repeated string url = 2;
+      // optional string defaultYamcsInstance = 2;
+      private java.lang.Object defaultYamcsInstance_ = "";
+      /**
+       * <code>optional string defaultYamcsInstance = 2;</code>
+       */
+      public boolean hasDefaultYamcsInstance() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string defaultYamcsInstance = 2;</code>
+       */
+      public java.lang.String getDefaultYamcsInstance() {
+        java.lang.Object ref = defaultYamcsInstance_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          defaultYamcsInstance_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string defaultYamcsInstance = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getDefaultYamcsInstanceBytes() {
+        java.lang.Object ref = defaultYamcsInstance_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          defaultYamcsInstance_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string defaultYamcsInstance = 2;</code>
+       */
+      public Builder setDefaultYamcsInstance(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        defaultYamcsInstance_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string defaultYamcsInstance = 2;</code>
+       */
+      public Builder clearDefaultYamcsInstance() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        defaultYamcsInstance_ = getDefaultInstance().getDefaultYamcsInstance();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string defaultYamcsInstance = 2;</code>
+       */
+      public Builder setDefaultYamcsInstanceBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        defaultYamcsInstance_ = value;
+        onChanged();
+        return this;
+      }
+
+      // repeated string url = 3;
       private com.google.protobuf.LazyStringList url_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       private void ensureUrlIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
           url_ = new com.google.protobuf.LazyStringArrayList(url_);
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000004;
          }
       }
       /**
-       * <code>repeated string url = 2;</code>
+       * <code>repeated string url = 3;</code>
        */
       public java.util.List<java.lang.String>
           getUrlList() {
         return java.util.Collections.unmodifiableList(url_);
       }
       /**
-       * <code>repeated string url = 2;</code>
+       * <code>repeated string url = 3;</code>
        */
       public int getUrlCount() {
         return url_.size();
       }
       /**
-       * <code>repeated string url = 2;</code>
+       * <code>repeated string url = 3;</code>
        */
       public java.lang.String getUrl(int index) {
         return url_.get(index);
       }
       /**
-       * <code>repeated string url = 2;</code>
+       * <code>repeated string url = 3;</code>
        */
       public com.google.protobuf.ByteString
           getUrlBytes(int index) {
         return url_.getByteString(index);
       }
       /**
-       * <code>repeated string url = 2;</code>
+       * <code>repeated string url = 3;</code>
        */
       public Builder setUrl(
           int index, java.lang.String value) {
@@ -608,7 +764,7 @@ public final class Rest {
         return this;
       }
       /**
-       * <code>repeated string url = 2;</code>
+       * <code>repeated string url = 3;</code>
        */
       public Builder addUrl(
           java.lang.String value) {
@@ -621,7 +777,7 @@ public final class Rest {
         return this;
       }
       /**
-       * <code>repeated string url = 2;</code>
+       * <code>repeated string url = 3;</code>
        */
       public Builder addAllUrl(
           java.lang.Iterable<java.lang.String> values) {
@@ -631,16 +787,16 @@ public final class Rest {
         return this;
       }
       /**
-       * <code>repeated string url = 2;</code>
+       * <code>repeated string url = 3;</code>
        */
       public Builder clearUrl() {
         url_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated string url = 2;</code>
+       * <code>repeated string url = 3;</code>
        */
       public Builder addUrlBytes(
           com.google.protobuf.ByteString value) {
@@ -32989,93 +33145,94 @@ public final class Rest {
       "\n\nrest.proto\022\nparameters\032\013yamcs.proto\032\ra" +
       "rchive.proto\032\014pvalue.proto\032\tmdb.proto\032\014a" +
       "larms.proto\032\020commanding.proto\032\025yamcsMana" +
-      "gement.proto\";\n\026GetApiOverviewResponse\022\024" +
-      "\n\014yamcsVersion\030\001 \001(\t\022\013\n\003url\030\002 \003(\t\"B\n\031Lis" +
-      "tParameterInfoResponse\022%\n\tparameter\030\001 \003(" +
-      "\0132\022.mdb.ParameterInfo\"?\n\033BulkGetParamete" +
-      "rInfoRequest\022 \n\002id\030\001 \003(\0132\024.yamcs.NamedOb" +
-      "jectId\"\330\001\n\034BulkGetParameterInfoResponse\022" +
-      "S\n\010response\030\001 \003(\0132A.parameters.BulkGetPa",
-      "rameterInfoResponse.GetParameterInfoResp" +
-      "onse\032c\n\030GetParameterInfoResponse\022 \n\002id\030\001" +
-      " \001(\0132\024.yamcs.NamedObjectId\022%\n\tparameter\030" +
-      "\002 \001(\0132\022.mdb.ParameterInfo\"d\n\034BulkGetPara" +
-      "meterValueRequest\022 \n\002id\030\001 \003(\0132\024.yamcs.Na" +
-      "medObjectId\022\021\n\tfromCache\030\002 \001(\010\022\017\n\007timeou" +
-      "t\030\003 \001(\004\"F\n\035BulkGetParameterValueResponse" +
-      "\022%\n\005value\030\001 \003(\0132\026.pvalue.ParameterValue\"" +
-      "\315\001\n\034BulkSetParameterValueRequest\022R\n\007requ" +
-      "est\030\001 \003(\0132A.parameters.BulkSetParameterV",
-      "alueRequest.SetParameterValueRequest\032Y\n\030" +
-      "SetParameterValueRequest\022 \n\002id\030\001 \001(\0132\024.y" +
-      "amcs.NamedObjectId\022\033\n\005value\030\002 \001(\0132\014.yamc" +
-      "s.Value\"u\n!BulkDownloadParameterValueReq" +
-      "uest\022\r\n\005start\030\001 \001(\t\022\014\n\004stop\030\002 \001(\t\022 \n\002id\030" +
-      "\003 \003(\0132\024.yamcs.NamedObjectId\022\021\n\tnamespace" +
-      "\030\004 \001(\t\"B\n\031ListContainerInfoResponse\022%\n\tc" +
-      "ontainer\030\001 \003(\0132\022.mdb.ContainerInfo\"<\n\027Li" +
-      "stCommandInfoResponse\022!\n\007command\030\001 \003(\0132\020" +
-      ".mdb.CommandInfo\"B\n\031ListAlgorithmInfoRes",
-      "ponse\022%\n\talgorithm\030\001 \003(\0132\022.mdb.Algorithm" +
-      "Info\"?\n\024ListLinkInfoResponse\022\'\n\004link\030\001 \003" +
-      "(\0132\031.yamcsManagement.LinkInfo\"F\n\024ListCom" +
-      "mandsResponse\022.\n\005entry\030\001 \003(\0132\037.commandin" +
-      "g.CommandHistoryEntry\" \n\017EditLinkRequest" +
-      "\022\r\n\005state\030\001 \001(\t\"(\n\027EditCommandQueueReque" +
-      "st\022\r\n\005state\030\001 \001(\t\"B\n\023ListClientsResponse" +
-      "\022+\n\006client\030\001 \003(\0132\033.yamcsManagement.Clien" +
-      "tInfo\"8\n\021EditClientRequest\022\020\n\010instance\030\001" +
-      " \001(\t\022\021\n\tprocessor\030\002 \001(\t\"K\n\026ListProcessor",
-      "sResponse\0221\n\tprocessor\030\001 \003(\0132\036.yamcsMana" +
-      "gement.ProcessorInfo\"H\n\031ListCommandQueue" +
-      "sResponse\022+\n\005queue\030\001 \003(\0132\034.commanding.Co" +
-      "mmandQueueInfo\"G\n\027ListCommandQueueEntrie" +
-      "s\022,\n\005entry\030\001 \003(\0132\035.commanding.CommandQue" +
-      "ueEntry\"-\n\034EditCommandQueueEntryRequest\022" +
-      "\r\n\005state\030\001 \001(\t\"\311\001\n\023IssueCommandRequest\022>" +
-      "\n\nassignment\030\001 \003(\0132*.parameters.IssueCom" +
-      "mandRequest.Assignment\022\016\n\006origin\030\002 \001(\t\022\026" +
-      "\n\016sequenceNumber\030\003 \001(\005\022\016\n\006dryRun\030\004 \001(\010\022\017",
-      "\n\007comment\030\005 \001(\t\032)\n\nAssignment\022\014\n\004name\030\001 " +
-      "\001(\t\022\r\n\005value\030\002 \001(\t\"}\n\024IssueCommandRespon" +
-      "se\0228\n\021commandQueueEntry\030\001 \001(\0132\035.commandi" +
-      "ng.CommandQueueEntry\022\016\n\006source\030\002 \001(\t\022\013\n\003" +
-      "hex\030\003 \001(\t\022\016\n\006binary\030\004 \001(\014\"\263\001\n\033UpdateComm" +
-      "andHistoryRequest\022$\n\005cmdId\030\001 \002(\0132\025.comma" +
-      "nding.CommandId\022F\n\014historyEntry\030\002 \003(\01320." +
-      "parameters.UpdateCommandHistoryRequest.K" +
-      "eyValue\032&\n\010KeyValue\022\013\n\003key\030\001 \002(\t\022\r\n\005valu" +
-      "e\030\002 \002(\t\"\316\001\n\026CreateProcessorRequest\022\014\n\004na",
-      "me\030\001 \001(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\014\n" +
-      "\004loop\030\004 \001(\010\022\r\n\005speed\030\005 \001(\t\022\020\n\010clientId\030\006" +
-      " \003(\005\022\020\n\010paraname\030\007 \003(\t\022\017\n\007ppgroup\030\010 \003(\t\022" +
-      "\022\n\npacketname\030\t \003(\t\022\017\n\007cmdhist\030\n \001(\010\022\022\n\n" +
-      "persistent\030\013 \001(\010\"B\n\024EditProcessorRequest" +
-      "\022\r\n\005state\030\001 \001(\t\022\014\n\004seek\030\002 \001(\t\022\r\n\005speed\030\003" +
-      " \001(\t\"(\n\026StreamSubscribeRequest\022\016\n\006stream" +
-      "\030\001 \001(\t\"e\n\030SetSimulationTimeRequest\022\r\n\005ti" +
-      "me0\030\001 \001(\003\022\020\n\010time0UTC\030\002 \001(\t\022\026\n\016simElapse" +
-      "dTime\030\003 \001(\003\022\020\n\010simSpeed\030\004 \001(\001\"I\n\025ListIns",
-      "tancesResponse\0220\n\010instance\030\001 \003(\0132\036.yamcs" +
-      "Management.YamcsInstance\"2\n\020ListTagsResp" +
-      "onse\022\036\n\003tag\030\001 \003(\0132\021.yamcs.ArchiveTag\"a\n\020" +
-      "CreateTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030" +
-      "\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013description\030\004 \001(\t" +
-      "\022\r\n\005color\030\005 \001(\t\"_\n\016EditTagRequest\022\014\n\004nam" +
-      "e\030\001 \001(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013" +
-      "description\030\004 \001(\t\022\r\n\005color\030\005 \001(\t\"6\n\022List" +
-      "AlarmsResponse\022 \n\005alarm\030\001 \003(\0132\021.alarms.A" +
-      "larmData\"2\n\020EditAlarmRequest\022\r\n\005state\030\001 ",
-      "\001(\t\022\017\n\007comment\030\002 \001(\t\"7\n\022ListTablesRespon" +
-      "se\022!\n\005table\030\001 \003(\0132\022.archive.TableInfo\":\n" +
-      "\023ListStreamsResponse\022#\n\006stream\030\001 \003(\0132\023.a" +
-      "rchive.StreamInfo\"1\n\022ListEventsResponse\022" +
-      "\033\n\005event\030\001 \003(\0132\014.yamcs.Event\":\n\023ListPack" +
-      "etsResponse\022#\n\006packet\030\001 \003(\0132\023.yamcs.TmPa" +
-      "cketData\"H\n\027ListServiceInfoResponse\022-\n\007s" +
-      "ervice\030\001 \003(\0132\034.yamcsManagement.ServiceIn" +
-      "fo\"#\n\022EditServiceRequest\022\r\n\005state\030\001 \001(\tB" +
-      "\024\n\022org.yamcs.protobuf"
+      "gement.proto\"Y\n\026GetApiOverviewResponse\022\024" +
+      "\n\014yamcsVersion\030\001 \001(\t\022\034\n\024defaultYamcsInst" +
+      "ance\030\002 \001(\t\022\013\n\003url\030\003 \003(\t\"B\n\031ListParameter" +
+      "InfoResponse\022%\n\tparameter\030\001 \003(\0132\022.mdb.Pa" +
+      "rameterInfo\"?\n\033BulkGetParameterInfoReque" +
+      "st\022 \n\002id\030\001 \003(\0132\024.yamcs.NamedObjectId\"\330\001\n" +
+      "\034BulkGetParameterInfoResponse\022S\n\010respons",
+      "e\030\001 \003(\0132A.parameters.BulkGetParameterInf" +
+      "oResponse.GetParameterInfoResponse\032c\n\030Ge" +
+      "tParameterInfoResponse\022 \n\002id\030\001 \001(\0132\024.yam" +
+      "cs.NamedObjectId\022%\n\tparameter\030\002 \001(\0132\022.md" +
+      "b.ParameterInfo\"d\n\034BulkGetParameterValue" +
+      "Request\022 \n\002id\030\001 \003(\0132\024.yamcs.NamedObjectI" +
+      "d\022\021\n\tfromCache\030\002 \001(\010\022\017\n\007timeout\030\003 \001(\004\"F\n" +
+      "\035BulkGetParameterValueResponse\022%\n\005value\030" +
+      "\001 \003(\0132\026.pvalue.ParameterValue\"\315\001\n\034BulkSe" +
+      "tParameterValueRequest\022R\n\007request\030\001 \003(\0132",
+      "A.parameters.BulkSetParameterValueReques" +
+      "t.SetParameterValueRequest\032Y\n\030SetParamet" +
+      "erValueRequest\022 \n\002id\030\001 \001(\0132\024.yamcs.Named" +
+      "ObjectId\022\033\n\005value\030\002 \001(\0132\014.yamcs.Value\"u\n" +
+      "!BulkDownloadParameterValueRequest\022\r\n\005st" +
+      "art\030\001 \001(\t\022\014\n\004stop\030\002 \001(\t\022 \n\002id\030\003 \003(\0132\024.ya" +
+      "mcs.NamedObjectId\022\021\n\tnamespace\030\004 \001(\t\"B\n\031" +
+      "ListContainerInfoResponse\022%\n\tcontainer\030\001" +
+      " \003(\0132\022.mdb.ContainerInfo\"<\n\027ListCommandI" +
+      "nfoResponse\022!\n\007command\030\001 \003(\0132\020.mdb.Comma",
+      "ndInfo\"B\n\031ListAlgorithmInfoResponse\022%\n\ta" +
+      "lgorithm\030\001 \003(\0132\022.mdb.AlgorithmInfo\"?\n\024Li" +
+      "stLinkInfoResponse\022\'\n\004link\030\001 \003(\0132\031.yamcs" +
+      "Management.LinkInfo\"F\n\024ListCommandsRespo" +
+      "nse\022.\n\005entry\030\001 \003(\0132\037.commanding.CommandH" +
+      "istoryEntry\" \n\017EditLinkRequest\022\r\n\005state\030" +
+      "\001 \001(\t\"(\n\027EditCommandQueueRequest\022\r\n\005stat" +
+      "e\030\001 \001(\t\"B\n\023ListClientsResponse\022+\n\006client" +
+      "\030\001 \003(\0132\033.yamcsManagement.ClientInfo\"8\n\021E" +
+      "ditClientRequest\022\020\n\010instance\030\001 \001(\t\022\021\n\tpr",
+      "ocessor\030\002 \001(\t\"K\n\026ListProcessorsResponse\022" +
+      "1\n\tprocessor\030\001 \003(\0132\036.yamcsManagement.Pro" +
+      "cessorInfo\"H\n\031ListCommandQueuesResponse\022" +
+      "+\n\005queue\030\001 \003(\0132\034.commanding.CommandQueue" +
+      "Info\"G\n\027ListCommandQueueEntries\022,\n\005entry" +
+      "\030\001 \003(\0132\035.commanding.CommandQueueEntry\"-\n" +
+      "\034EditCommandQueueEntryRequest\022\r\n\005state\030\001" +
+      " \001(\t\"\311\001\n\023IssueCommandRequest\022>\n\nassignme" +
+      "nt\030\001 \003(\0132*.parameters.IssueCommandReques" +
+      "t.Assignment\022\016\n\006origin\030\002 \001(\t\022\026\n\016sequence",
+      "Number\030\003 \001(\005\022\016\n\006dryRun\030\004 \001(\010\022\017\n\007comment\030" +
+      "\005 \001(\t\032)\n\nAssignment\022\014\n\004name\030\001 \001(\t\022\r\n\005val" +
+      "ue\030\002 \001(\t\"}\n\024IssueCommandResponse\0228\n\021comm" +
+      "andQueueEntry\030\001 \001(\0132\035.commanding.Command" +
+      "QueueEntry\022\016\n\006source\030\002 \001(\t\022\013\n\003hex\030\003 \001(\t\022" +
+      "\016\n\006binary\030\004 \001(\014\"\263\001\n\033UpdateCommandHistory" +
+      "Request\022$\n\005cmdId\030\001 \002(\0132\025.commanding.Comm" +
+      "andId\022F\n\014historyEntry\030\002 \003(\01320.parameters" +
+      ".UpdateCommandHistoryRequest.KeyValue\032&\n" +
+      "\010KeyValue\022\013\n\003key\030\001 \002(\t\022\r\n\005value\030\002 \002(\t\"\316\001",
+      "\n\026CreateProcessorRequest\022\014\n\004name\030\001 \001(\t\022\r" +
+      "\n\005start\030\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\014\n\004loop\030\004 \001(" +
+      "\010\022\r\n\005speed\030\005 \001(\t\022\020\n\010clientId\030\006 \003(\005\022\020\n\010pa" +
+      "raname\030\007 \003(\t\022\017\n\007ppgroup\030\010 \003(\t\022\022\n\npacketn" +
+      "ame\030\t \003(\t\022\017\n\007cmdhist\030\n \001(\010\022\022\n\npersistent" +
+      "\030\013 \001(\010\"B\n\024EditProcessorRequest\022\r\n\005state\030" +
+      "\001 \001(\t\022\014\n\004seek\030\002 \001(\t\022\r\n\005speed\030\003 \001(\t\"(\n\026St" +
+      "reamSubscribeRequest\022\016\n\006stream\030\001 \001(\t\"e\n\030" +
+      "SetSimulationTimeRequest\022\r\n\005time0\030\001 \001(\003\022" +
+      "\020\n\010time0UTC\030\002 \001(\t\022\026\n\016simElapsedTime\030\003 \001(",
+      "\003\022\020\n\010simSpeed\030\004 \001(\001\"I\n\025ListInstancesResp" +
+      "onse\0220\n\010instance\030\001 \003(\0132\036.yamcsManagement" +
+      ".YamcsInstance\"2\n\020ListTagsResponse\022\036\n\003ta" +
+      "g\030\001 \003(\0132\021.yamcs.ArchiveTag\"a\n\020CreateTagR" +
+      "equest\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004s" +
+      "top\030\003 \001(\t\022\023\n\013description\030\004 \001(\t\022\r\n\005color\030" +
+      "\005 \001(\t\"_\n\016EditTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n" +
+      "\005start\030\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013descriptio" +
+      "n\030\004 \001(\t\022\r\n\005color\030\005 \001(\t\"6\n\022ListAlarmsResp" +
+      "onse\022 \n\005alarm\030\001 \003(\0132\021.alarms.AlarmData\"2",
+      "\n\020EditAlarmRequest\022\r\n\005state\030\001 \001(\t\022\017\n\007com" +
+      "ment\030\002 \001(\t\"7\n\022ListTablesResponse\022!\n\005tabl" +
+      "e\030\001 \003(\0132\022.archive.TableInfo\":\n\023ListStrea" +
+      "msResponse\022#\n\006stream\030\001 \003(\0132\023.archive.Str" +
+      "eamInfo\"1\n\022ListEventsResponse\022\033\n\005event\030\001" +
+      " \003(\0132\014.yamcs.Event\":\n\023ListPacketsRespons" +
+      "e\022#\n\006packet\030\001 \003(\0132\023.yamcs.TmPacketData\"H" +
+      "\n\027ListServiceInfoResponse\022-\n\007service\030\001 \003" +
+      "(\0132\034.yamcsManagement.ServiceInfo\"#\n\022Edit" +
+      "ServiceRequest\022\r\n\005state\030\001 \001(\tB\024\n\022org.yam",
+      "cs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -33087,7 +33244,7 @@ public final class Rest {
           internal_static_parameters_GetApiOverviewResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_parameters_GetApiOverviewResponse_descriptor,
-              new java.lang.String[] { "YamcsVersion", "Url", });
+              new java.lang.String[] { "YamcsVersion", "DefaultYamcsInstance", "Url", });
           internal_static_parameters_ListParameterInfoResponse_descriptor =
             getDescriptor().getMessageTypes().get(1);
           internal_static_parameters_ListParameterInfoResponse_fieldAccessorTable = new

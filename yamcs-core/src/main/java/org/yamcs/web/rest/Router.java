@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YConfiguration;
 import org.yamcs.YamcsVersion;
 import org.yamcs.parameterarchive.ParameterArchiveMaintenanceRestHandler;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse;
@@ -67,7 +68,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
  * <p>
  * When matching a route, priority is first given to built-in routes, only if
  * none match the first matching instance-specific dynamic route is matched.
- * These latter routes usually mention ':instance' in their url, which will be
+ * Dynamic routes often mention ':instance' in their url, which will be
  * expanded upon registration into the actual yamcs instance.
  */
 public class Router {
@@ -358,7 +359,8 @@ public class Router {
     }
 
     /**
-     * 'Documents' all registered resources
+     * 'Documents' all registered resources, and provides some
+     * general server information.
      */
     private final class OverviewRouteHandler extends RestHandler {
 
@@ -366,6 +368,16 @@ public class Router {
         public void getApiOverview(RestRequest req) throws HttpException {
             GetApiOverviewResponse.Builder responseb = GetApiOverviewResponse.newBuilder();
             responseb.setYamcsVersion(YamcsVersion.version);
+
+            // Property to be interpreted at client's leisure.
+            // Concept of defaultInstance could be moved into YamcsServer
+            // at some point, but there's for now unsufficient support.
+            // (would need websocket adjmustments, which are now
+            // instance-specific).
+            YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
+            if (yconf.containsKey("defaultInstance")) {
+                responseb.setDefaultYamcsInstance(yconf.getString("defaultInstance"));
+            }
 
             // Unique accross http methods, and according to insertion order
             Set<String> urls = new LinkedHashSet<>();
