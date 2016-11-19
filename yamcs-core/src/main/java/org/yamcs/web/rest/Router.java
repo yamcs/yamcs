@@ -170,8 +170,7 @@ public class Router {
         }
     }
 
-    public void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req, AuthenticationToken token) {
-        QueryStringDecoder qsDecoder = new QueryStringDecoder(req.getUri());
+    public void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req, AuthenticationToken token, QueryStringDecoder qsDecoder) {
         RestRequest restReq = new RestRequest(ctx, req, qsDecoder, token);
 
         try {

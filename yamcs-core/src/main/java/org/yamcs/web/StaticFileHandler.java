@@ -210,12 +210,6 @@ public class StaticFileHandler extends RouteHandler {
 
     private String sanitizePath(String path) {
         path = path.replace('/', File.separatorChar);
-
-        int qsIndex = path.indexOf('?');
-        if (qsIndex != -1) {
-            path = path.substring(0, qsIndex);
-        }
-
         if (path.contains(File.separator + ".") ||
                 path.contains("." + File.separator) ||
                 path.startsWith(".") || path.endsWith(".")) {

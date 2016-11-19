@@ -39,6 +39,7 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
@@ -82,7 +83,9 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
             }
         }
 
-        String[] path = req.getUri().split("/", 3); //uri starts with / so path[0] is always empty
+        // Decode URI, to correctly ignore query strings in path handling
+        QueryStringDecoder qsDecoder = new QueryStringDecoder(req.getUri());
+        String[] path = qsDecoder.path().split("/", 3); // path starts with / so path[0] is always empty
         switch (path[1]) {
         case STATIC_PATH:
             if (path.length == 2) { //do not accept "/_static/" (i.e. directory listing) requests
@@ -92,7 +95,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
             fileRequestHandler.handleStaticFileRequest(ctx, req, path[2]);
             return;
         case API_PATH:
-            apiRouter.handleHttpRequest(ctx, req, authToken);
+            apiRouter.handleHttpRequest(ctx, req, authToken, qsDecoder);
             return;
         case "":
             // overview of all instances
