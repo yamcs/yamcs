@@ -115,8 +115,18 @@ public class SpaceSystem extends NameDescription {
     public void addUnresolvedReference(NameReference nr) {
         unresolvedReferences.add(nr);
     }
+
     public Collection<SequenceContainer> getSequenceContainers() {
         return containers.values();
+    }
+
+    public int getSequenceContainerCount(boolean recurse) {
+        if (!recurse) return containers.size();
+        int total = containers.size();
+        for (SpaceSystem sub : getSubSystems()) {
+            total += sub.getSequenceContainerCount(recurse);
+        }
+        return total;
     }
 
     /**
@@ -140,6 +150,15 @@ public class SpaceSystem extends NameDescription {
         return res;
     }
 
+    public int getParameterCount(boolean recurse) {
+        if (!recurse) return parameters.size();
+        int total = parameters.size();
+        for (SpaceSystem sub : getSubSystems()) {
+            total += sub.getParameterCount(recurse);
+        }
+        return total;
+    }
+
     public Collection<ParameterType> getParameterTypes() {
         return parameterTypes.values();
     }
@@ -152,8 +171,26 @@ public class SpaceSystem extends NameDescription {
         return algorithms.values();
     }
 
+    public int getAlgorithmCount(boolean recurse) {
+        if (!recurse) return algorithms.size();
+        int total = algorithms.size();
+        for (SpaceSystem sub : getSubSystems()) {
+            total += sub.getAlgorithmCount(recurse);
+        }
+        return total;
+    }
+
     public Collection<MetaCommand> getMetaCommands() {
         return commands.values();
+    }
+
+    public int getMetaCommandCount(boolean recurse) {
+        if (!recurse) return commands.size();
+        int total = commands.size();
+        for (SpaceSystem sub : getSubSystems()) {
+            total += sub.getMetaCommandCount(recurse);
+        }
+        return total;
     }
 
     public List<NameReference> getUnresolvedReferences() {
