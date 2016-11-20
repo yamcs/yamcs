@@ -4,8 +4,8 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
 import org.yamcs.ProcessorException;
+import org.yamcs.YProcessor;
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmListener;
 import org.yamcs.alarms.AlarmServer;
@@ -44,18 +44,9 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
     }
 
     private WebSocketReplyData subscribe(int requestId) throws WebSocketException {
-        if (!processor.hasAlarmServer()) {
-            throw new WebSocketException(requestId, "Alarms are not enabled for processor " + processor.getName());
-        }
-
         try {
             WebSocketReplyData reply = toAckReply(requestId);
             wsHandler.sendReply(reply);
-
-            AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
-            for (ActiveAlarm activeAlarm : alarmServer.getActiveAlarms().values()) {
-                sendAlarm(AlarmData.Type.ACTIVE, activeAlarm);
-            }
             doSubscribe();
             return null;
         } catch (IOException e) {
@@ -84,6 +75,9 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
     private void doSubscribe() {
         if (processor.hasAlarmServer()) {
             AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
+            for (ActiveAlarm activeAlarm : alarmServer.getActiveAlarms().values()) {
+                sendAlarm(AlarmData.Type.ACTIVE, activeAlarm);
+            }
             alarmServer.subscribe(this);
         }
     }
