@@ -8673,29 +8673,39 @@ public final class YamcsManagement {
     com.google.protobuf.ByteString
         getCreatorBytes();
 
-    // optional bool hasCommanding = 6;
+    // optional bool hasAlarms = 6;
     /**
-     * <code>optional bool hasCommanding = 6;</code>
+     * <code>optional bool hasAlarms = 6;</code>
+     */
+    boolean hasHasAlarms();
+    /**
+     * <code>optional bool hasAlarms = 6;</code>
+     */
+    boolean getHasAlarms();
+
+    // optional bool hasCommanding = 7;
+    /**
+     * <code>optional bool hasCommanding = 7;</code>
      */
     boolean hasHasCommanding();
     /**
-     * <code>optional bool hasCommanding = 6;</code>
+     * <code>optional bool hasCommanding = 7;</code>
      */
     boolean getHasCommanding();
 
-    // optional .yamcsManagement.ServiceState state = 7;
+    // optional .yamcsManagement.ServiceState state = 8;
     /**
-     * <code>optional .yamcsManagement.ServiceState state = 7;</code>
+     * <code>optional .yamcsManagement.ServiceState state = 8;</code>
      */
     boolean hasState();
     /**
-     * <code>optional .yamcsManagement.ServiceState state = 7;</code>
+     * <code>optional .yamcsManagement.ServiceState state = 8;</code>
      */
     org.yamcs.protobuf.YamcsManagement.ServiceState getState();
 
-    // optional .yamcs.ReplayRequest replayRequest = 8;
+    // optional .yamcs.ReplayRequest replayRequest = 9;
     /**
-     * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
+     * <code>optional .yamcs.ReplayRequest replayRequest = 9;</code>
      *
      * <pre>
      *in case of replay
@@ -8703,7 +8713,7 @@ public final class YamcsManagement {
      */
     boolean hasReplayRequest();
     /**
-     * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
+     * <code>optional .yamcs.ReplayRequest replayRequest = 9;</code>
      *
      * <pre>
      *in case of replay
@@ -8711,7 +8721,7 @@ public final class YamcsManagement {
      */
     org.yamcs.protobuf.Yamcs.ReplayRequest getReplayRequest();
     /**
-     * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
+     * <code>optional .yamcs.ReplayRequest replayRequest = 9;</code>
      *
      * <pre>
      *in case of replay
@@ -8719,9 +8729,9 @@ public final class YamcsManagement {
      */
     org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder getReplayRequestOrBuilder();
 
-    // optional .yamcs.ReplayStatus.ReplayState replayState = 9;
+    // optional .yamcs.ReplayStatus.ReplayState replayState = 10;
     /**
-     * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 9;</code>
+     * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 10;</code>
      *
      * <pre>
      *in case of replay
@@ -8729,7 +8739,7 @@ public final class YamcsManagement {
      */
     boolean hasReplayState();
     /**
-     * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 9;</code>
+     * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 10;</code>
      *
      * <pre>
      *in case of replay
@@ -8737,77 +8747,77 @@ public final class YamcsManagement {
      */
     org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState getReplayState();
 
-    // optional string url = 10;
+    // optional string url = 11;
     /**
-     * <code>optional string url = 10;</code>
+     * <code>optional string url = 11;</code>
      */
     boolean hasUrl();
     /**
-     * <code>optional string url = 10;</code>
+     * <code>optional string url = 11;</code>
      */
     java.lang.String getUrl();
     /**
-     * <code>optional string url = 10;</code>
+     * <code>optional string url = 11;</code>
      */
     com.google.protobuf.ByteString
         getUrlBytes();
 
-    // optional string clientsUrl = 11;
+    // optional string clientsUrl = 12;
     /**
-     * <code>optional string clientsUrl = 11;</code>
+     * <code>optional string clientsUrl = 12;</code>
      */
     boolean hasClientsUrl();
     /**
-     * <code>optional string clientsUrl = 11;</code>
+     * <code>optional string clientsUrl = 12;</code>
      */
     java.lang.String getClientsUrl();
     /**
-     * <code>optional string clientsUrl = 11;</code>
+     * <code>optional string clientsUrl = 12;</code>
      */
     com.google.protobuf.ByteString
         getClientsUrlBytes();
 
-    // optional string parametersUrl = 12;
+    // optional string parametersUrl = 13;
     /**
-     * <code>optional string parametersUrl = 12;</code>
+     * <code>optional string parametersUrl = 13;</code>
      */
     boolean hasParametersUrl();
     /**
-     * <code>optional string parametersUrl = 12;</code>
+     * <code>optional string parametersUrl = 13;</code>
      */
     java.lang.String getParametersUrl();
     /**
-     * <code>optional string parametersUrl = 12;</code>
+     * <code>optional string parametersUrl = 13;</code>
      */
     com.google.protobuf.ByteString
         getParametersUrlBytes();
 
-    // optional string commandsUrl = 13;
+    // optional string commandsUrl = 14;
     /**
-     * <code>optional string commandsUrl = 13;</code>
+     * <code>optional string commandsUrl = 14;</code>
      */
     boolean hasCommandsUrl();
     /**
-     * <code>optional string commandsUrl = 13;</code>
+     * <code>optional string commandsUrl = 14;</code>
      */
     java.lang.String getCommandsUrl();
     /**
-     * <code>optional string commandsUrl = 13;</code>
+     * <code>optional string commandsUrl = 14;</code>
      */
     com.google.protobuf.ByteString
         getCommandsUrlBytes();
 
-    // optional string commandQueuesUrl = 14;
+    // optional string commandQueuesUrl = 15;
     /**
-     * <code>optional string commandQueuesUrl = 14;</code>
+     * <code>optional string commandQueuesUrl = 15;</code>
      */
     boolean hasCommandQueuesUrl();
     /**
-     * <code>optional string commandQueuesUrl = 14;</code>
+     * <code>optional string commandQueuesUrl = 15;</code>
      */
     java.lang.String getCommandQueuesUrl();
     /**
-     * <code>optional string commandQueuesUrl = 14;</code>
+     * <code>optional string commandQueuesUrl = 15;</code>
      */
     com.google.protobuf.ByteString
         getCommandQueuesUrlBytes();
@@ -8894,23 +8904,28 @@ public final class YamcsManagement {
             }
             case 48: {
               bitField0_ |= 0x00000020;
-              hasCommanding_ = input.readBool();
+              hasAlarms_ = input.readBool();
               break;
             }
             case 56: {
+              bitField0_ |= 0x00000040;
+              hasCommanding_ = input.readBool();
+              break;
+            }
+            case 64: {
               int rawValue = input.readEnum();
               org.yamcs.protobuf.YamcsManagement.ServiceState value = org.yamcs.protobuf.YamcsManagement.ServiceState.valueOf(rawValue);
               if (value == null) {
-                unknownFields.mergeVarintField(7, rawValue);
+                unknownFields.mergeVarintField(8, rawValue);
               } else {
-                bitField0_ |= 0x00000040;
+                bitField0_ |= 0x00000080;
                 state_ = value;
               }
               break;
             }
-            case 66: {
+            case 74: {
               org.yamcs.protobuf.Yamcs.ReplayRequest.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000080) == 0x00000080)) {
+              if (((bitField0_ & 0x00000100) == 0x00000100)) {
                 subBuilder = replayRequest_.toBuilder();
               }
               replayRequest_ = input.readMessage(org.yamcs.protobuf.Yamcs.ReplayRequest.PARSER, extensionRegistry);
@@ -8918,42 +8933,42 @@ public final class YamcsManagement {
                 subBuilder.mergeFrom(replayRequest_);
                 replayRequest_ = subBuilder.buildPartial();
               }
-              bitField0_ |= 0x00000080;
+              bitField0_ |= 0x00000100;
               break;
             }
-            case 72: {
+            case 80: {
               int rawValue = input.readEnum();
               org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState value = org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState.valueOf(rawValue);
               if (value == null) {
-                unknownFields.mergeVarintField(9, rawValue);
+                unknownFields.mergeVarintField(10, rawValue);
               } else {
-                bitField0_ |= 0x00000100;
+                bitField0_ |= 0x00000200;
                 replayState_ = value;
               }
               break;
             }
-            case 82: {
-              bitField0_ |= 0x00000200;
-              url_ = input.readBytes();
-              break;
-            }
             case 90: {
               bitField0_ |= 0x00000400;
-              clientsUrl_ = input.readBytes();
+              url_ = input.readBytes();
               break;
             }
             case 98: {
               bitField0_ |= 0x00000800;
-              parametersUrl_ = input.readBytes();
+              clientsUrl_ = input.readBytes();
               break;
             }
             case 106: {
               bitField0_ |= 0x00001000;
-              commandsUrl_ = input.readBytes();
+              parametersUrl_ = input.readBytes();
               break;
             }
             case 114: {
               bitField0_ |= 0x00002000;
+              commandsUrl_ = input.readBytes();
+              break;
+            }
+            case 122: {
+              bitField0_ |= 0x00004000;
               commandQueuesUrl_ = input.readBytes();
               break;
             }
@@ -9224,53 +9239,69 @@ public final class YamcsManagement {
       }
     }
 
-    // optional bool hasCommanding = 6;
-    public static final int HASCOMMANDING_FIELD_NUMBER = 6;
-    private boolean hasCommanding_;
+    // optional bool hasAlarms = 6;
+    public static final int HASALARMS_FIELD_NUMBER = 6;
+    private boolean hasAlarms_;
     /**
-     * <code>optional bool hasCommanding = 6;</code>
+     * <code>optional bool hasAlarms = 6;</code>
      */
-    public boolean hasHasCommanding() {
+    public boolean hasHasAlarms() {
       return ((bitField0_ & 0x00000020) == 0x00000020);
     }
     /**
-     * <code>optional bool hasCommanding = 6;</code>
+     * <code>optional bool hasAlarms = 6;</code>
+     */
+    public boolean getHasAlarms() {
+      return hasAlarms_;
+    }
+
+    // optional bool hasCommanding = 7;
+    public static final int HASCOMMANDING_FIELD_NUMBER = 7;
+    private boolean hasCommanding_;
+    /**
+     * <code>optional bool hasCommanding = 7;</code>
+     */
+    public boolean hasHasCommanding() {
+      return ((bitField0_ & 0x00000040) == 0x00000040);
+    }
+    /**
+     * <code>optional bool hasCommanding = 7;</code>
      */
     public boolean getHasCommanding() {
       return hasCommanding_;
     }
 
-    // optional .yamcsManagement.ServiceState state = 7;
-    public static final int STATE_FIELD_NUMBER = 7;
+    // optional .yamcsManagement.ServiceState state = 8;
+    public static final int STATE_FIELD_NUMBER = 8;
     private org.yamcs.protobuf.YamcsManagement.ServiceState state_;
     /**
-     * <code>optional .yamcsManagement.ServiceState state = 7;</code>
+     * <code>optional .yamcsManagement.ServiceState state = 8;</code>
      */
     public boolean hasState() {
-      return ((bitField0_ & 0x00000040) == 0x00000040);
+      return ((bitField0_ & 0x00000080) == 0x00000080);
     }
     /**
-     * <code>optional .yamcsManagement.ServiceState state = 7;</code>
+     * <code>optional .yamcsManagement.ServiceState state = 8;</code>
      */
     public org.yamcs.protobuf.YamcsManagement.ServiceState getState() {
       return state_;
     }
 
-    // optional .yamcs.ReplayRequest replayRequest = 8;
-    public static final int REPLAYREQUEST_FIELD_NUMBER = 8;
+    // optional .yamcs.ReplayRequest replayRequest = 9;
+    public static final int REPLAYREQUEST_FIELD_NUMBER = 9;
     private org.yamcs.protobuf.Yamcs.ReplayRequest replayRequest_;
     /**
-     * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
+     * <code>optional .yamcs.ReplayRequest replayRequest = 9;</code>
      *
      * <pre>
      *in case of replay
      * </pre>
      */
     public boolean hasReplayRequest() {
-      return ((bitField0_ & 0x00000080) == 0x00000080);
+      return ((bitField0_ & 0x00000100) == 0x00000100);
     }
     /**
-     * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
+     * <code>optional .yamcs.ReplayRequest replayRequest = 9;</code>
      *
      * <pre>
      *in case of replay
@@ -9280,7 +9311,7 @@ public final class YamcsManagement {
       return replayRequest_;
     }
     /**
-     * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
+     * <code>optional .yamcs.ReplayRequest replayRequest = 9;</code>
      *
      * <pre>
      *in case of replay
@@ -9290,21 +9321,21 @@ public final class YamcsManagement {
       return replayRequest_;
     }
 
-    // optional .yamcs.ReplayStatus.ReplayState replayState = 9;
-    public static final int REPLAYSTATE_FIELD_NUMBER = 9;
+    // optional .yamcs.ReplayStatus.ReplayState replayState = 10;
+    public static final int REPLAYSTATE_FIELD_NUMBER = 10;
     private org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState replayState_;
     /**
-     * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 9;</code>
+     * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 10;</code>
      *
      * <pre>
      *in case of replay
      * </pre>
      */
     public boolean hasReplayState() {
-      return ((bitField0_ & 0x00000100) == 0x00000100);
+      return ((bitField0_ & 0x00000200) == 0x00000200);
     }
     /**
-     * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 9;</code>
+     * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 10;</code>
      *
      * <pre>
      *in case of replay
@@ -9314,17 +9345,17 @@ public final class YamcsManagement {
       return replayState_;
     }
 
-    // optional string url = 10;
-    public static final int URL_FIELD_NUMBER = 10;
+    // optional string url = 11;
+    public static final int URL_FIELD_NUMBER = 11;
     private java.lang.Object url_;
     /**
-     * <code>optional string url = 10;</code>
+     * <code>optional string url = 11;</code>
      */
     public boolean hasUrl() {
-      return ((bitField0_ & 0x00000200) == 0x00000200);
+      return ((bitField0_ & 0x00000400) == 0x00000400);
     }
     /**
-     * <code>optional string url = 10;</code>
+     * <code>optional string url = 11;</code>
      */
     public java.lang.String getUrl() {
       java.lang.Object ref = url_;
@@ -9341,7 +9372,7 @@ public final class YamcsManagement {
       }
     }
     /**
-     * <code>optional string url = 10;</code>
+     * <code>optional string url = 11;</code>
      */
     public com.google.protobuf.ByteString
         getUrlBytes() {
@@ -9357,17 +9388,17 @@ public final class YamcsManagement {
       }
     }
 
-    // optional string clientsUrl = 11;
-    public static final int CLIENTSURL_FIELD_NUMBER = 11;
+    // optional string clientsUrl = 12;
+    public static final int CLIENTSURL_FIELD_NUMBER = 12;
     private java.lang.Object clientsUrl_;
     /**
-     * <code>optional string clientsUrl = 11;</code>
+     * <code>optional string clientsUrl = 12;</code>
      */
     public boolean hasClientsUrl() {
-      return ((bitField0_ & 0x00000400) == 0x00000400);
+      return ((bitField0_ & 0x00000800) == 0x00000800);
     }
     /**
-     * <code>optional string clientsUrl = 11;</code>
+     * <code>optional string clientsUrl = 12;</code>
      */
     public java.lang.String getClientsUrl() {
       java.lang.Object ref = clientsUrl_;
@@ -9384,7 +9415,7 @@ public final class YamcsManagement {
       }
     }
     /**
-     * <code>optional string clientsUrl = 11;</code>
+     * <code>optional string clientsUrl = 12;</code>
      */
     public com.google.protobuf.ByteString
         getClientsUrlBytes() {
@@ -9400,17 +9431,17 @@ public final class YamcsManagement {
       }
     }
 
-    // optional string parametersUrl = 12;
-    public static final int PARAMETERSURL_FIELD_NUMBER = 12;
+    // optional string parametersUrl = 13;
+    public static final int PARAMETERSURL_FIELD_NUMBER = 13;
     private java.lang.Object parametersUrl_;
     /**
-     * <code>optional string parametersUrl = 12;</code>
+     * <code>optional string parametersUrl = 13;</code>
      */
     public boolean hasParametersUrl() {
-      return ((bitField0_ & 0x00000800) == 0x00000800);
+      return ((bitField0_ & 0x00001000) == 0x00001000);
     }
     /**
-     * <code>optional string parametersUrl = 12;</code>
+     * <code>optional string parametersUrl = 13;</code>
      */
     public java.lang.String getParametersUrl() {
       java.lang.Object ref = parametersUrl_;
@@ -9427,7 +9458,7 @@ public final class YamcsManagement {
       }
     }
     /**
-     * <code>optional string parametersUrl = 12;</code>
+     * <code>optional string parametersUrl = 13;</code>
      */
     public com.google.protobuf.ByteString
         getParametersUrlBytes() {
@@ -9443,17 +9474,17 @@ public final class YamcsManagement {
       }
     }
 
-    // optional string commandsUrl = 13;
-    public static final int COMMANDSURL_FIELD_NUMBER = 13;
+    // optional string commandsUrl = 14;
+    public static final int COMMANDSURL_FIELD_NUMBER = 14;
     private java.lang.Object commandsUrl_;
     /**
-     * <code>optional string commandsUrl = 13;</code>
+     * <code>optional string commandsUrl = 14;</code>
      */
     public boolean hasCommandsUrl() {
-      return ((bitField0_ & 0x00001000) == 0x00001000);
+      return ((bitField0_ & 0x00002000) == 0x00002000);
     }
     /**
-     * <code>optional string commandsUrl = 13;</code>
+     * <code>optional string commandsUrl = 14;</code>
      */
     public java.lang.String getCommandsUrl() {
       java.lang.Object ref = commandsUrl_;
@@ -9470,7 +9501,7 @@ public final class YamcsManagement {
       }
     }
     /**
-     * <code>optional string commandsUrl = 13;</code>
+     * <code>optional string commandsUrl = 14;</code>
      */
     public com.google.protobuf.ByteString
         getCommandsUrlBytes() {
@@ -9486,17 +9517,17 @@ public final class YamcsManagement {
       }
     }
 
-    // optional string commandQueuesUrl = 14;
-    public static final int COMMANDQUEUESURL_FIELD_NUMBER = 14;
+    // optional string commandQueuesUrl = 15;
+    public static final int COMMANDQUEUESURL_FIELD_NUMBER = 15;
     private java.lang.Object commandQueuesUrl_;
     /**
-     * <code>optional string commandQueuesUrl = 14;</code>
+     * <code>optional string commandQueuesUrl = 15;</code>
      */
     public boolean hasCommandQueuesUrl() {
-      return ((bitField0_ & 0x00002000) == 0x00002000);
+      return ((bitField0_ & 0x00004000) == 0x00004000);
     }
     /**
-     * <code>optional string commandQueuesUrl = 14;</code>
+     * <code>optional string commandQueuesUrl = 15;</code>
      */
     public java.lang.String getCommandQueuesUrl() {
       java.lang.Object ref = commandQueuesUrl_;
@@ -9513,7 +9544,7 @@ public final class YamcsManagement {
       }
     }
     /**
-     * <code>optional string commandQueuesUrl = 14;</code>
+     * <code>optional string commandQueuesUrl = 15;</code>
      */
     public com.google.protobuf.ByteString
         getCommandQueuesUrlBytes() {
@@ -9535,6 +9566,7 @@ public final class YamcsManagement {
       type_ = "";
       spec_ = "";
       creator_ = "";
+      hasAlarms_ = false;
       hasCommanding_ = false;
       state_ = org.yamcs.protobuf.YamcsManagement.ServiceState.NEW;
       replayRequest_ = org.yamcs.protobuf.Yamcs.ReplayRequest.getDefaultInstance();
@@ -9579,31 +9611,34 @@ public final class YamcsManagement {
         output.writeBytes(5, getCreatorBytes());
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        output.writeBool(6, hasCommanding_);
+        output.writeBool(6, hasAlarms_);
       }
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
-        output.writeEnum(7, state_.getNumber());
+        output.writeBool(7, hasCommanding_);
       }
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
-        output.writeMessage(8, replayRequest_);
+        output.writeEnum(8, state_.getNumber());
       }
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
-        output.writeEnum(9, replayState_.getNumber());
+        output.writeMessage(9, replayRequest_);
       }
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
-        output.writeBytes(10, getUrlBytes());
+        output.writeEnum(10, replayState_.getNumber());
       }
       if (((bitField0_ & 0x00000400) == 0x00000400)) {
-        output.writeBytes(11, getClientsUrlBytes());
+        output.writeBytes(11, getUrlBytes());
       }
       if (((bitField0_ & 0x00000800) == 0x00000800)) {
-        output.writeBytes(12, getParametersUrlBytes());
+        output.writeBytes(12, getClientsUrlBytes());
       }
       if (((bitField0_ & 0x00001000) == 0x00001000)) {
-        output.writeBytes(13, getCommandsUrlBytes());
+        output.writeBytes(13, getParametersUrlBytes());
       }
       if (((bitField0_ & 0x00002000) == 0x00002000)) {
-        output.writeBytes(14, getCommandQueuesUrlBytes());
+        output.writeBytes(14, getCommandsUrlBytes());
+      }
+      if (((bitField0_ & 0x00004000) == 0x00004000)) {
+        output.writeBytes(15, getCommandQueuesUrlBytes());
       }
       getUnknownFields().writeTo(output);
     }
@@ -9636,39 +9671,43 @@ public final class YamcsManagement {
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(6, hasCommanding_);
+          .computeBoolSize(6, hasAlarms_);
       }
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(7, state_.getNumber());
+          .computeBoolSize(7, hasCommanding_);
       }
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(8, replayRequest_);
+          .computeEnumSize(8, state_.getNumber());
       }
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(9, replayState_.getNumber());
+          .computeMessageSize(9, replayRequest_);
       }
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(10, getUrlBytes());
+          .computeEnumSize(10, replayState_.getNumber());
       }
       if (((bitField0_ & 0x00000400) == 0x00000400)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(11, getClientsUrlBytes());
+          .computeBytesSize(11, getUrlBytes());
       }
       if (((bitField0_ & 0x00000800) == 0x00000800)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(12, getParametersUrlBytes());
+          .computeBytesSize(12, getClientsUrlBytes());
       }
       if (((bitField0_ & 0x00001000) == 0x00001000)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(13, getCommandsUrlBytes());
+          .computeBytesSize(13, getParametersUrlBytes());
       }
       if (((bitField0_ & 0x00002000) == 0x00002000)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(14, getCommandQueuesUrlBytes());
+          .computeBytesSize(14, getCommandsUrlBytes());
+      }
+      if (((bitField0_ & 0x00004000) == 0x00004000)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(15, getCommandQueuesUrlBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -9801,28 +9840,30 @@ public final class YamcsManagement {
         bitField0_ = (bitField0_ & ~0x00000008);
         creator_ = "";
         bitField0_ = (bitField0_ & ~0x00000010);
-        hasCommanding_ = false;
+        hasAlarms_ = false;
         bitField0_ = (bitField0_ & ~0x00000020);
-        state_ = org.yamcs.protobuf.YamcsManagement.ServiceState.NEW;
+        hasCommanding_ = false;
         bitField0_ = (bitField0_ & ~0x00000040);
+        state_ = org.yamcs.protobuf.YamcsManagement.ServiceState.NEW;
+        bitField0_ = (bitField0_ & ~0x00000080);
         if (replayRequestBuilder_ == null) {
           replayRequest_ = org.yamcs.protobuf.Yamcs.ReplayRequest.getDefaultInstance();
         } else {
           replayRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000080);
-        replayState_ = org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState.INITIALIZATION;
         bitField0_ = (bitField0_ & ~0x00000100);
-        url_ = "";
+        replayState_ = org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState.INITIALIZATION;
         bitField0_ = (bitField0_ & ~0x00000200);
-        clientsUrl_ = "";
+        url_ = "";
         bitField0_ = (bitField0_ & ~0x00000400);
-        parametersUrl_ = "";
+        clientsUrl_ = "";
         bitField0_ = (bitField0_ & ~0x00000800);
-        commandsUrl_ = "";
+        parametersUrl_ = "";
         bitField0_ = (bitField0_ & ~0x00001000);
-        commandQueuesUrl_ = "";
+        commandsUrl_ = "";
         bitField0_ = (bitField0_ & ~0x00002000);
+        commandQueuesUrl_ = "";
+        bitField0_ = (bitField0_ & ~0x00004000);
         return this;
       }
 
@@ -9874,41 +9915,45 @@ public final class YamcsManagement {
         if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
           to_bitField0_ |= 0x00000020;
         }
-        result.hasCommanding_ = hasCommanding_;
+        result.hasAlarms_ = hasAlarms_;
         if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
           to_bitField0_ |= 0x00000040;
         }
-        result.state_ = state_;
+        result.hasCommanding_ = hasCommanding_;
         if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
           to_bitField0_ |= 0x00000080;
+        }
+        result.state_ = state_;
+        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+          to_bitField0_ |= 0x00000100;
         }
         if (replayRequestBuilder_ == null) {
           result.replayRequest_ = replayRequest_;
         } else {
           result.replayRequest_ = replayRequestBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
-          to_bitField0_ |= 0x00000100;
-        }
-        result.replayState_ = replayState_;
         if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
           to_bitField0_ |= 0x00000200;
         }
-        result.url_ = url_;
+        result.replayState_ = replayState_;
         if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
           to_bitField0_ |= 0x00000400;
         }
-        result.clientsUrl_ = clientsUrl_;
+        result.url_ = url_;
         if (((from_bitField0_ & 0x00000800) == 0x00000800)) {
           to_bitField0_ |= 0x00000800;
         }
-        result.parametersUrl_ = parametersUrl_;
+        result.clientsUrl_ = clientsUrl_;
         if (((from_bitField0_ & 0x00001000) == 0x00001000)) {
           to_bitField0_ |= 0x00001000;
         }
-        result.commandsUrl_ = commandsUrl_;
+        result.parametersUrl_ = parametersUrl_;
         if (((from_bitField0_ & 0x00002000) == 0x00002000)) {
           to_bitField0_ |= 0x00002000;
+        }
+        result.commandsUrl_ = commandsUrl_;
+        if (((from_bitField0_ & 0x00004000) == 0x00004000)) {
+          to_bitField0_ |= 0x00004000;
         }
         result.commandQueuesUrl_ = commandQueuesUrl_;
         result.bitField0_ = to_bitField0_;
@@ -9952,6 +9997,9 @@ public final class YamcsManagement {
           creator_ = other.creator_;
           onChanged();
         }
+        if (other.hasHasAlarms()) {
+          setHasAlarms(other.getHasAlarms());
+        }
         if (other.hasHasCommanding()) {
           setHasCommanding(other.getHasCommanding());
         }
@@ -9965,27 +10013,27 @@ public final class YamcsManagement {
           setReplayState(other.getReplayState());
         }
         if (other.hasUrl()) {
-          bitField0_ |= 0x00000200;
+          bitField0_ |= 0x00000400;
           url_ = other.url_;
           onChanged();
         }
         if (other.hasClientsUrl()) {
-          bitField0_ |= 0x00000400;
+          bitField0_ |= 0x00000800;
           clientsUrl_ = other.clientsUrl_;
           onChanged();
         }
         if (other.hasParametersUrl()) {
-          bitField0_ |= 0x00000800;
+          bitField0_ |= 0x00001000;
           parametersUrl_ = other.parametersUrl_;
           onChanged();
         }
         if (other.hasCommandsUrl()) {
-          bitField0_ |= 0x00001000;
+          bitField0_ |= 0x00002000;
           commandsUrl_ = other.commandsUrl_;
           onChanged();
         }
         if (other.hasCommandQueuesUrl()) {
-          bitField0_ |= 0x00002000;
+          bitField0_ |= 0x00004000;
           commandQueuesUrl_ = other.commandQueuesUrl_;
           onChanged();
         }
@@ -10416,91 +10464,124 @@ public final class YamcsManagement {
         return this;
       }
 
-      // optional bool hasCommanding = 6;
-      private boolean hasCommanding_ ;
+      // optional bool hasAlarms = 6;
+      private boolean hasAlarms_ ;
       /**
-       * <code>optional bool hasCommanding = 6;</code>
+       * <code>optional bool hasAlarms = 6;</code>
        */
-      public boolean hasHasCommanding() {
+      public boolean hasHasAlarms() {
         return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       /**
-       * <code>optional bool hasCommanding = 6;</code>
+       * <code>optional bool hasAlarms = 6;</code>
+       */
+      public boolean getHasAlarms() {
+        return hasAlarms_;
+      }
+      /**
+       * <code>optional bool hasAlarms = 6;</code>
+       */
+      public Builder setHasAlarms(boolean value) {
+        bitField0_ |= 0x00000020;
+        hasAlarms_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool hasAlarms = 6;</code>
+       */
+      public Builder clearHasAlarms() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        hasAlarms_ = false;
+        onChanged();
+        return this;
+      }
+
+      // optional bool hasCommanding = 7;
+      private boolean hasCommanding_ ;
+      /**
+       * <code>optional bool hasCommanding = 7;</code>
+       */
+      public boolean hasHasCommanding() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      /**
+       * <code>optional bool hasCommanding = 7;</code>
        */
       public boolean getHasCommanding() {
         return hasCommanding_;
       }
       /**
-       * <code>optional bool hasCommanding = 6;</code>
+       * <code>optional bool hasCommanding = 7;</code>
        */
       public Builder setHasCommanding(boolean value) {
-        bitField0_ |= 0x00000020;
+        bitField0_ |= 0x00000040;
         hasCommanding_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional bool hasCommanding = 6;</code>
+       * <code>optional bool hasCommanding = 7;</code>
        */
       public Builder clearHasCommanding() {
-        bitField0_ = (bitField0_ & ~0x00000020);
+        bitField0_ = (bitField0_ & ~0x00000040);
         hasCommanding_ = false;
         onChanged();
         return this;
       }
 
-      // optional .yamcsManagement.ServiceState state = 7;
+      // optional .yamcsManagement.ServiceState state = 8;
       private org.yamcs.protobuf.YamcsManagement.ServiceState state_ = org.yamcs.protobuf.YamcsManagement.ServiceState.NEW;
       /**
-       * <code>optional .yamcsManagement.ServiceState state = 7;</code>
+       * <code>optional .yamcsManagement.ServiceState state = 8;</code>
        */
       public boolean hasState() {
-        return ((bitField0_ & 0x00000040) == 0x00000040);
+        return ((bitField0_ & 0x00000080) == 0x00000080);
       }
       /**
-       * <code>optional .yamcsManagement.ServiceState state = 7;</code>
+       * <code>optional .yamcsManagement.ServiceState state = 8;</code>
        */
       public org.yamcs.protobuf.YamcsManagement.ServiceState getState() {
         return state_;
       }
       /**
-       * <code>optional .yamcsManagement.ServiceState state = 7;</code>
+       * <code>optional .yamcsManagement.ServiceState state = 8;</code>
        */
       public Builder setState(org.yamcs.protobuf.YamcsManagement.ServiceState value) {
         if (value == null) {
           throw new NullPointerException();
         }
-        bitField0_ |= 0x00000040;
+        bitField0_ |= 0x00000080;
         state_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional .yamcsManagement.ServiceState state = 7;</code>
+       * <code>optional .yamcsManagement.ServiceState state = 8;</code>
        */
       public Builder clearState() {
-        bitField0_ = (bitField0_ & ~0x00000040);
+        bitField0_ = (bitField0_ & ~0x00000080);
         state_ = org.yamcs.protobuf.YamcsManagement.ServiceState.NEW;
         onChanged();
         return this;
       }
 
-      // optional .yamcs.ReplayRequest replayRequest = 8;
+      // optional .yamcs.ReplayRequest replayRequest = 9;
       private org.yamcs.protobuf.Yamcs.ReplayRequest replayRequest_ = org.yamcs.protobuf.Yamcs.ReplayRequest.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Yamcs.ReplayRequest, org.yamcs.protobuf.Yamcs.ReplayRequest.Builder, org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder> replayRequestBuilder_;
       /**
-       * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
+       * <code>optional .yamcs.ReplayRequest replayRequest = 9;</code>
        *
        * <pre>
        *in case of replay
        * </pre>
        */
       public boolean hasReplayRequest() {
-        return ((bitField0_ & 0x00000080) == 0x00000080);
+        return ((bitField0_ & 0x00000100) == 0x00000100);
       }
       /**
-       * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
+       * <code>optional .yamcs.ReplayRequest replayRequest = 9;</code>
        *
        * <pre>
        *in case of replay
@@ -10514,7 +10595,7 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
+       * <code>optional .yamcs.ReplayRequest replayRequest = 9;</code>
        *
        * <pre>
        *in case of replay
@@ -10530,11 +10611,11 @@ public final class YamcsManagement {
         } else {
           replayRequestBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000080;
+        bitField0_ |= 0x00000100;
         return this;
       }
       /**
-       * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
+       * <code>optional .yamcs.ReplayRequest replayRequest = 9;</code>
        *
        * <pre>
        *in case of replay
@@ -10548,11 +10629,11 @@ public final class YamcsManagement {
         } else {
           replayRequestBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000080;
+        bitField0_ |= 0x00000100;
         return this;
       }
       /**
-       * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
+       * <code>optional .yamcs.ReplayRequest replayRequest = 9;</code>
        *
        * <pre>
        *in case of replay
@@ -10560,7 +10641,7 @@ public final class YamcsManagement {
        */
       public Builder mergeReplayRequest(org.yamcs.protobuf.Yamcs.ReplayRequest value) {
         if (replayRequestBuilder_ == null) {
-          if (((bitField0_ & 0x00000080) == 0x00000080) &&
+          if (((bitField0_ & 0x00000100) == 0x00000100) &&
               replayRequest_ != org.yamcs.protobuf.Yamcs.ReplayRequest.getDefaultInstance()) {
             replayRequest_ =
               org.yamcs.protobuf.Yamcs.ReplayRequest.newBuilder(replayRequest_).mergeFrom(value).buildPartial();
@@ -10571,11 +10652,11 @@ public final class YamcsManagement {
         } else {
           replayRequestBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000080;
+        bitField0_ |= 0x00000100;
         return this;
       }
       /**
-       * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
+       * <code>optional .yamcs.ReplayRequest replayRequest = 9;</code>
        *
        * <pre>
        *in case of replay
@@ -10588,23 +10669,23 @@ public final class YamcsManagement {
         } else {
           replayRequestBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000080);
+        bitField0_ = (bitField0_ & ~0x00000100);
         return this;
       }
       /**
-       * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
+       * <code>optional .yamcs.ReplayRequest replayRequest = 9;</code>
        *
        * <pre>
        *in case of replay
        * </pre>
        */
       public org.yamcs.protobuf.Yamcs.ReplayRequest.Builder getReplayRequestBuilder() {
-        bitField0_ |= 0x00000080;
+        bitField0_ |= 0x00000100;
         onChanged();
         return getReplayRequestFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
+       * <code>optional .yamcs.ReplayRequest replayRequest = 9;</code>
        *
        * <pre>
        *in case of replay
@@ -10618,7 +10699,7 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>optional .yamcs.ReplayRequest replayRequest = 8;</code>
+       * <code>optional .yamcs.ReplayRequest replayRequest = 9;</code>
        *
        * <pre>
        *in case of replay
@@ -10638,20 +10719,20 @@ public final class YamcsManagement {
         return replayRequestBuilder_;
       }
 
-      // optional .yamcs.ReplayStatus.ReplayState replayState = 9;
+      // optional .yamcs.ReplayStatus.ReplayState replayState = 10;
       private org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState replayState_ = org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState.INITIALIZATION;
       /**
-       * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 9;</code>
+       * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 10;</code>
        *
        * <pre>
        *in case of replay
        * </pre>
        */
       public boolean hasReplayState() {
-        return ((bitField0_ & 0x00000100) == 0x00000100);
+        return ((bitField0_ & 0x00000200) == 0x00000200);
       }
       /**
-       * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 9;</code>
+       * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 10;</code>
        *
        * <pre>
        *in case of replay
@@ -10661,7 +10742,7 @@ public final class YamcsManagement {
         return replayState_;
       }
       /**
-       * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 9;</code>
+       * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 10;</code>
        *
        * <pre>
        *in case of replay
@@ -10671,35 +10752,35 @@ public final class YamcsManagement {
         if (value == null) {
           throw new NullPointerException();
         }
-        bitField0_ |= 0x00000100;
+        bitField0_ |= 0x00000200;
         replayState_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 9;</code>
+       * <code>optional .yamcs.ReplayStatus.ReplayState replayState = 10;</code>
        *
        * <pre>
        *in case of replay
        * </pre>
        */
       public Builder clearReplayState() {
-        bitField0_ = (bitField0_ & ~0x00000100);
+        bitField0_ = (bitField0_ & ~0x00000200);
         replayState_ = org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState.INITIALIZATION;
         onChanged();
         return this;
       }
 
-      // optional string url = 10;
+      // optional string url = 11;
       private java.lang.Object url_ = "";
       /**
-       * <code>optional string url = 10;</code>
+       * <code>optional string url = 11;</code>
        */
       public boolean hasUrl() {
-        return ((bitField0_ & 0x00000200) == 0x00000200);
+        return ((bitField0_ & 0x00000400) == 0x00000400);
       }
       /**
-       * <code>optional string url = 10;</code>
+       * <code>optional string url = 11;</code>
        */
       public java.lang.String getUrl() {
         java.lang.Object ref = url_;
@@ -10713,7 +10794,7 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>optional string url = 10;</code>
+       * <code>optional string url = 11;</code>
        */
       public com.google.protobuf.ByteString
           getUrlBytes() {
@@ -10729,51 +10810,51 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>optional string url = 10;</code>
+       * <code>optional string url = 11;</code>
        */
       public Builder setUrl(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000200;
+  bitField0_ |= 0x00000400;
         url_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string url = 10;</code>
+       * <code>optional string url = 11;</code>
        */
       public Builder clearUrl() {
-        bitField0_ = (bitField0_ & ~0x00000200);
+        bitField0_ = (bitField0_ & ~0x00000400);
         url_ = getDefaultInstance().getUrl();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string url = 10;</code>
+       * <code>optional string url = 11;</code>
        */
       public Builder setUrlBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000200;
+  bitField0_ |= 0x00000400;
         url_ = value;
         onChanged();
         return this;
       }
 
-      // optional string clientsUrl = 11;
+      // optional string clientsUrl = 12;
       private java.lang.Object clientsUrl_ = "";
       /**
-       * <code>optional string clientsUrl = 11;</code>
+       * <code>optional string clientsUrl = 12;</code>
        */
       public boolean hasClientsUrl() {
-        return ((bitField0_ & 0x00000400) == 0x00000400);
+        return ((bitField0_ & 0x00000800) == 0x00000800);
       }
       /**
-       * <code>optional string clientsUrl = 11;</code>
+       * <code>optional string clientsUrl = 12;</code>
        */
       public java.lang.String getClientsUrl() {
         java.lang.Object ref = clientsUrl_;
@@ -10787,7 +10868,7 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>optional string clientsUrl = 11;</code>
+       * <code>optional string clientsUrl = 12;</code>
        */
       public com.google.protobuf.ByteString
           getClientsUrlBytes() {
@@ -10803,51 +10884,51 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>optional string clientsUrl = 11;</code>
+       * <code>optional string clientsUrl = 12;</code>
        */
       public Builder setClientsUrl(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000400;
+  bitField0_ |= 0x00000800;
         clientsUrl_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string clientsUrl = 11;</code>
+       * <code>optional string clientsUrl = 12;</code>
        */
       public Builder clearClientsUrl() {
-        bitField0_ = (bitField0_ & ~0x00000400);
+        bitField0_ = (bitField0_ & ~0x00000800);
         clientsUrl_ = getDefaultInstance().getClientsUrl();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string clientsUrl = 11;</code>
+       * <code>optional string clientsUrl = 12;</code>
        */
       public Builder setClientsUrlBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000400;
+  bitField0_ |= 0x00000800;
         clientsUrl_ = value;
         onChanged();
         return this;
       }
 
-      // optional string parametersUrl = 12;
+      // optional string parametersUrl = 13;
       private java.lang.Object parametersUrl_ = "";
       /**
-       * <code>optional string parametersUrl = 12;</code>
+       * <code>optional string parametersUrl = 13;</code>
        */
       public boolean hasParametersUrl() {
-        return ((bitField0_ & 0x00000800) == 0x00000800);
+        return ((bitField0_ & 0x00001000) == 0x00001000);
       }
       /**
-       * <code>optional string parametersUrl = 12;</code>
+       * <code>optional string parametersUrl = 13;</code>
        */
       public java.lang.String getParametersUrl() {
         java.lang.Object ref = parametersUrl_;
@@ -10861,7 +10942,7 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>optional string parametersUrl = 12;</code>
+       * <code>optional string parametersUrl = 13;</code>
        */
       public com.google.protobuf.ByteString
           getParametersUrlBytes() {
@@ -10877,51 +10958,51 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>optional string parametersUrl = 12;</code>
+       * <code>optional string parametersUrl = 13;</code>
        */
       public Builder setParametersUrl(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000800;
+  bitField0_ |= 0x00001000;
         parametersUrl_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string parametersUrl = 12;</code>
+       * <code>optional string parametersUrl = 13;</code>
        */
       public Builder clearParametersUrl() {
-        bitField0_ = (bitField0_ & ~0x00000800);
+        bitField0_ = (bitField0_ & ~0x00001000);
         parametersUrl_ = getDefaultInstance().getParametersUrl();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string parametersUrl = 12;</code>
+       * <code>optional string parametersUrl = 13;</code>
        */
       public Builder setParametersUrlBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000800;
+  bitField0_ |= 0x00001000;
         parametersUrl_ = value;
         onChanged();
         return this;
       }
 
-      // optional string commandsUrl = 13;
+      // optional string commandsUrl = 14;
       private java.lang.Object commandsUrl_ = "";
       /**
-       * <code>optional string commandsUrl = 13;</code>
+       * <code>optional string commandsUrl = 14;</code>
        */
       public boolean hasCommandsUrl() {
-        return ((bitField0_ & 0x00001000) == 0x00001000);
+        return ((bitField0_ & 0x00002000) == 0x00002000);
       }
       /**
-       * <code>optional string commandsUrl = 13;</code>
+       * <code>optional string commandsUrl = 14;</code>
        */
       public java.lang.String getCommandsUrl() {
         java.lang.Object ref = commandsUrl_;
@@ -10935,7 +11016,7 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>optional string commandsUrl = 13;</code>
+       * <code>optional string commandsUrl = 14;</code>
        */
       public com.google.protobuf.ByteString
           getCommandsUrlBytes() {
@@ -10951,51 +11032,51 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>optional string commandsUrl = 13;</code>
+       * <code>optional string commandsUrl = 14;</code>
        */
       public Builder setCommandsUrl(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00001000;
+  bitField0_ |= 0x00002000;
         commandsUrl_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string commandsUrl = 13;</code>
+       * <code>optional string commandsUrl = 14;</code>
        */
       public Builder clearCommandsUrl() {
-        bitField0_ = (bitField0_ & ~0x00001000);
+        bitField0_ = (bitField0_ & ~0x00002000);
         commandsUrl_ = getDefaultInstance().getCommandsUrl();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string commandsUrl = 13;</code>
+       * <code>optional string commandsUrl = 14;</code>
        */
       public Builder setCommandsUrlBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00001000;
+  bitField0_ |= 0x00002000;
         commandsUrl_ = value;
         onChanged();
         return this;
       }
 
-      // optional string commandQueuesUrl = 14;
+      // optional string commandQueuesUrl = 15;
       private java.lang.Object commandQueuesUrl_ = "";
       /**
-       * <code>optional string commandQueuesUrl = 14;</code>
+       * <code>optional string commandQueuesUrl = 15;</code>
        */
       public boolean hasCommandQueuesUrl() {
-        return ((bitField0_ & 0x00002000) == 0x00002000);
+        return ((bitField0_ & 0x00004000) == 0x00004000);
       }
       /**
-       * <code>optional string commandQueuesUrl = 14;</code>
+       * <code>optional string commandQueuesUrl = 15;</code>
        */
       public java.lang.String getCommandQueuesUrl() {
         java.lang.Object ref = commandQueuesUrl_;
@@ -11009,7 +11090,7 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>optional string commandQueuesUrl = 14;</code>
+       * <code>optional string commandQueuesUrl = 15;</code>
        */
       public com.google.protobuf.ByteString
           getCommandQueuesUrlBytes() {
@@ -11025,36 +11106,36 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>optional string commandQueuesUrl = 14;</code>
+       * <code>optional string commandQueuesUrl = 15;</code>
        */
       public Builder setCommandQueuesUrl(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00002000;
+  bitField0_ |= 0x00004000;
         commandQueuesUrl_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string commandQueuesUrl = 14;</code>
+       * <code>optional string commandQueuesUrl = 15;</code>
        */
       public Builder clearCommandQueuesUrl() {
-        bitField0_ = (bitField0_ & ~0x00002000);
+        bitField0_ = (bitField0_ & ~0x00004000);
         commandQueuesUrl_ = getDefaultInstance().getCommandQueuesUrl();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string commandQueuesUrl = 14;</code>
+       * <code>optional string commandQueuesUrl = 15;</code>
        */
       public Builder setCommandQueuesUrlBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00002000;
+  bitField0_ |= 0x00004000;
         commandQueuesUrl_ = value;
         onChanged();
         return this;
@@ -23493,65 +23574,66 @@ public final class YamcsManagement {
       "\022\025\n\rparametersUrl\030\006 \001(\t\022\025\n\rcontainersUrl" +
       "\030\007 \001(\t\022\023\n\013commandsUrl\030\010 \001(\t\022\025\n\ralgorithm" +
       "sUrl\030\t \001(\t\"@\n\026MissionDatabaseRequest\022\024\n\014" +
-      "dbConfigName\030\001 \001(\t\022\020\n\010instance\030\002 \001(\t\"\353\002\n" +
+      "dbConfigName\030\001 \001(\t\022\020\n\010instance\030\002 \001(\t\"\376\002\n" +
       "\rProcessorInfo\022\020\n\010instance\030\001 \001(\t\022\014\n\004name" +
       "\030\002 \001(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\017\n\007cr" +
-      "eator\030\005 \001(\t\022\025\n\rhasCommanding\030\006 \001(\010\022,\n\005st",
-      "ate\030\007 \001(\0162\035.yamcsManagement.ServiceState" +
-      "\022+\n\rreplayRequest\030\010 \001(\0132\024.yamcs.ReplayRe" +
-      "quest\0224\n\013replayState\030\t \001(\0162\037.yamcs.Repla" +
-      "yStatus.ReplayState\022\013\n\003url\030\n \001(\t\022\022\n\nclie" +
-      "ntsUrl\030\013 \001(\t\022\025\n\rparametersUrl\030\014 \001(\t\022\023\n\013c" +
-      "ommandsUrl\030\r \001(\t\022\030\n\020commandQueuesUrl\030\016 \001" +
-      "(\t\"\224\002\n\nClientInfo\022\020\n\010instance\030\001 \002(\t\022\n\n\002i" +
-      "d\030\002 \002(\005\022\020\n\010username\030\003 \001(\t\022\027\n\017application" +
-      "Name\030\004 \001(\t\022\025\n\rprocessorName\030\005 \001(\t\0226\n\005sta" +
-      "te\030\006 \001(\0162\'.yamcsManagement.ClientInfo.Cl",
-      "ientState\022\025\n\rcurrentClient\030\007 \001(\010\022\021\n\tlogi" +
-      "nTime\030\010 \001(\003\022\024\n\014loginTimeUTC\030\t \001(\t\".\n\013Cli" +
-      "entState\022\r\n\tCONNECTED\020\000\022\020\n\014DISCONNECTED\020" +
-      "\001\"\334\001\n\010UserInfo\022\r\n\005login\030\001 \001(\t\022/\n\nclientI" +
-      "nfo\030\002 \003(\0132\033.yamcsManagement.ClientInfo\022\r" +
-      "\n\005roles\030\003 \003(\t\022\030\n\020tmParaPrivileges\030\004 \003(\t\022" +
-      "\033\n\023tmParaSetPrivileges\030\005 \003(\t\022\032\n\022tmPacket" +
-      "Privileges\030\006 \003(\t\022\024\n\014tcPrivileges\030\007 \003(\t\022\030" +
-      "\n\020systemPrivileges\030\010 \003(\t\"\277\001\n\014TmStatistic" +
-      "s\022\022\n\npacketName\030\001 \002(\t\022\027\n\017receivedPackets",
-      "\030\002 \001(\003\022\024\n\014lastReceived\030\003 \001(\003\022\027\n\017lastRece" +
-      "ivedUTC\030\010 \001(\t\022\026\n\016lastPacketTime\030\004 \001(\003\022\031\n" +
-      "\021lastPacketTimeUTC\030\007 \001(\t\022 \n\030subscribedPa" +
-      "rameterCount\030\006 \001(\005\"\223\001\n\nStatistics\022\020\n\010ins" +
-      "tance\030\001 \002(\t\022\026\n\016yProcessorName\030\002 \002(\t\022.\n\007t" +
-      "mstats\030\003 \003(\0132\035.yamcsManagement.TmStatist" +
-      "ics\022\023\n\013lastUpdated\030\004 \001(\003\022\026\n\016lastUpdatedU" +
-      "TC\030\005 \001(\t\"\266\002\n\032ProcessorManagementRequest\022" +
-      "H\n\toperation\030\001 \001(\01625.yamcsManagement.Pro" +
-      "cessorManagementRequest.Operation\022\020\n\010ins",
-      "tance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\014\n\004type\030\004 \001(\t\022" +
-      "\014\n\004spec\030\005 \001(\t\022\020\n\010clientId\030\006 \003(\005\022\031\n\npersi" +
-      "stent\030\007 \001(\010:\005false\022(\n\nreplaySpec\030\010 \001(\0132\024" +
-      ".yamcs.ReplayRequest\";\n\tOperation\022\024\n\020CRE" +
-      "ATE_PROCESSOR\020\000\022\030\n\024CONNECT_TO_PROCESSOR\020" +
-      "\001\"\355\001\n\020ProcessorRequest\022>\n\toperation\030\001 \001(" +
-      "\0162+.yamcsManagement.ProcessorRequest.Ope" +
-      "ration\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\020" +
-      "\n\010seekTime\030\004 \001(\003\022\'\n\013replaySpeed\030\005 \001(\0132\022." +
-      "yamcs.ReplaySpeed\">\n\tOperation\022\t\n\005PAUSE\020",
-      "\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\022\020\n\014CHANGE_SPEED\020" +
-      "\005\"\243\001\n\010LinkInfo\022\020\n\010instance\030\001 \002(\t\022\014\n\004name" +
-      "\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006st" +
-      "ream\030\005 \001(\t\022\020\n\010disabled\030\006 \001(\010\022\016\n\006status\030\007" +
-      " \001(\t\022\021\n\tdataCount\030\010 \001(\003\022\026\n\016detailedStatu" +
-      "s\030\t \001(\t\"\236\001\n\tLinkEvent\022-\n\004type\030\001 \001(\0162\037.ya" +
-      "mcsManagement.LinkEvent.Type\022+\n\010linkInfo" +
-      "\030\002 \001(\0132\031.yamcsManagement.LinkInfo\"5\n\004Typ" +
-      "e\022\016\n\nREGISTERED\020\001\022\020\n\014UNREGISTERED\020\002\022\013\n\007U" +
-      "PDATED\020\003\"n\n\013ServiceInfo\022\020\n\010instance\030\001 \001(",
-      "\t\022\014\n\004name\030\002 \001(\t\022,\n\005state\030\003 \001(\0162\035.yamcsMa" +
-      "nagement.ServiceState\022\021\n\tclassName\030\004 \001(\t" +
-      "*\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022" +
-      "\013\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED" +
-      "\020\004\022\n\n\006FAILED\020\005B\024\n\022org.yamcs.protobuf"
+      "eator\030\005 \001(\t\022\021\n\thasAlarms\030\006 \001(\010\022\025\n\rhasCom",
+      "manding\030\007 \001(\010\022,\n\005state\030\010 \001(\0162\035.yamcsMana" +
+      "gement.ServiceState\022+\n\rreplayRequest\030\t \001" +
+      "(\0132\024.yamcs.ReplayRequest\0224\n\013replayState\030" +
+      "\n \001(\0162\037.yamcs.ReplayStatus.ReplayState\022\013" +
+      "\n\003url\030\013 \001(\t\022\022\n\nclientsUrl\030\014 \001(\t\022\025\n\rparam" +
+      "etersUrl\030\r \001(\t\022\023\n\013commandsUrl\030\016 \001(\t\022\030\n\020c" +
+      "ommandQueuesUrl\030\017 \001(\t\"\224\002\n\nClientInfo\022\020\n\010" +
+      "instance\030\001 \002(\t\022\n\n\002id\030\002 \002(\005\022\020\n\010username\030\003" +
+      " \001(\t\022\027\n\017applicationName\030\004 \001(\t\022\025\n\rprocess" +
+      "orName\030\005 \001(\t\0226\n\005state\030\006 \001(\0162\'.yamcsManag",
+      "ement.ClientInfo.ClientState\022\025\n\rcurrentC" +
+      "lient\030\007 \001(\010\022\021\n\tloginTime\030\010 \001(\003\022\024\n\014loginT" +
+      "imeUTC\030\t \001(\t\".\n\013ClientState\022\r\n\tCONNECTED" +
+      "\020\000\022\020\n\014DISCONNECTED\020\001\"\334\001\n\010UserInfo\022\r\n\005log" +
+      "in\030\001 \001(\t\022/\n\nclientInfo\030\002 \003(\0132\033.yamcsMana" +
+      "gement.ClientInfo\022\r\n\005roles\030\003 \003(\t\022\030\n\020tmPa" +
+      "raPrivileges\030\004 \003(\t\022\033\n\023tmParaSetPrivilege" +
+      "s\030\005 \003(\t\022\032\n\022tmPacketPrivileges\030\006 \003(\t\022\024\n\014t" +
+      "cPrivileges\030\007 \003(\t\022\030\n\020systemPrivileges\030\010 " +
+      "\003(\t\"\277\001\n\014TmStatistics\022\022\n\npacketName\030\001 \002(\t",
+      "\022\027\n\017receivedPackets\030\002 \001(\003\022\024\n\014lastReceive" +
+      "d\030\003 \001(\003\022\027\n\017lastReceivedUTC\030\010 \001(\t\022\026\n\016last" +
+      "PacketTime\030\004 \001(\003\022\031\n\021lastPacketTimeUTC\030\007 " +
+      "\001(\t\022 \n\030subscribedParameterCount\030\006 \001(\005\"\223\001" +
+      "\n\nStatistics\022\020\n\010instance\030\001 \002(\t\022\026\n\016yProce" +
+      "ssorName\030\002 \002(\t\022.\n\007tmstats\030\003 \003(\0132\035.yamcsM" +
+      "anagement.TmStatistics\022\023\n\013lastUpdated\030\004 " +
+      "\001(\003\022\026\n\016lastUpdatedUTC\030\005 \001(\t\"\266\002\n\032Processo" +
+      "rManagementRequest\022H\n\toperation\030\001 \001(\01625." +
+      "yamcsManagement.ProcessorManagementReque",
+      "st.Operation\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003" +
+      " \001(\t\022\014\n\004type\030\004 \001(\t\022\014\n\004spec\030\005 \001(\t\022\020\n\010clie" +
+      "ntId\030\006 \003(\005\022\031\n\npersistent\030\007 \001(\010:\005false\022(\n" +
+      "\nreplaySpec\030\010 \001(\0132\024.yamcs.ReplayRequest\"" +
+      ";\n\tOperation\022\024\n\020CREATE_PROCESSOR\020\000\022\030\n\024CO" +
+      "NNECT_TO_PROCESSOR\020\001\"\355\001\n\020ProcessorReques" +
+      "t\022>\n\toperation\030\001 \001(\0162+.yamcsManagement.P" +
+      "rocessorRequest.Operation\022\020\n\010instance\030\002 " +
+      "\001(\t\022\014\n\004name\030\003 \001(\t\022\020\n\010seekTime\030\004 \001(\003\022\'\n\013r" +
+      "eplaySpeed\030\005 \001(\0132\022.yamcs.ReplaySpeed\">\n\t",
+      "Operation\022\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK" +
+      "\020\004\022\020\n\014CHANGE_SPEED\020\005\"\243\001\n\010LinkInfo\022\020\n\010ins" +
+      "tance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022" +
+      "\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005 \001(\t\022\020\n\010disable" +
+      "d\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021\n\tdataCount\030\010 \001" +
+      "(\003\022\026\n\016detailedStatus\030\t \001(\t\"\236\001\n\tLinkEvent" +
+      "\022-\n\004type\030\001 \001(\0162\037.yamcsManagement.LinkEve" +
+      "nt.Type\022+\n\010linkInfo\030\002 \001(\0132\031.yamcsManagem" +
+      "ent.LinkInfo\"5\n\004Type\022\016\n\nREGISTERED\020\001\022\020\n\014" +
+      "UNREGISTERED\020\002\022\013\n\007UPDATED\020\003\"n\n\013ServiceIn",
+      "fo\022\020\n\010instance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022,\n\005st" +
+      "ate\030\003 \001(\0162\035.yamcsManagement.ServiceState" +
+      "\022\021\n\tclassName\030\004 \001(\t*\\\n\014ServiceState\022\007\n\003N" +
+      "EW\020\000\022\014\n\010STARTING\020\001\022\013\n\007RUNNING\020\002\022\014\n\010STOPP" +
+      "ING\020\003\022\016\n\nTERMINATED\020\004\022\n\n\006FAILED\020\005B\024\n\022org" +
+      ".yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -23599,7 +23681,7 @@ public final class YamcsManagement {
           internal_static_yamcsManagement_ProcessorInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcsManagement_ProcessorInfo_descriptor,
-              new java.lang.String[] { "Instance", "Name", "Type", "Spec", "Creator", "HasCommanding", "State", "ReplayRequest", "ReplayState", "Url", "ClientsUrl", "ParametersUrl", "CommandsUrl", "CommandQueuesUrl", });
+              new java.lang.String[] { "Instance", "Name", "Type", "Spec", "Creator", "HasAlarms", "HasCommanding", "State", "ReplayRequest", "ReplayState", "Url", "ClientsUrl", "ParametersUrl", "CommandsUrl", "CommandQueuesUrl", });
           internal_static_yamcsManagement_ClientInfo_descriptor =
             getDescriptor().getMessageTypes().get(7);
           internal_static_yamcsManagement_ClientInfo_fieldAccessorTable = new

@@ -75,15 +75,16 @@ message ProcessorInfo {
   optional string type = 3;
   optional string spec = 4;
   optional string creator = 5;
-  optional bool hasCommanding = 6;
-  optional ServiceState state = 7;
-  optional yamcs.ReplayRequest replayRequest = 8; //in case of replay
-  optional yamcs.ReplayStatus.ReplayState replayState = 9; //in case of replay
-  optional string url = 10;
-  optional string clientsUrl = 11;
-  optional string parametersUrl = 12;
-  optional string commandsUrl = 13;
-  optional string commandQueuesUrl = 14;
+  optional bool hasAlarms = 6;
+  optional bool hasCommanding = 7;
+  optional ServiceState state = 8;
+  optional yamcs.ReplayRequest replayRequest = 9; //in case of replay
+  optional yamcs.ReplayStatus.ReplayState replayState = 10; //in case of replay
+  optional string url = 11;
+  optional string clientsUrl = 12;
+  optional string parametersUrl = 13;
+  optional string commandsUrl = 14;
+  optional string commandQueuesUrl = 15;
 }
 
 message ClientInfo {
