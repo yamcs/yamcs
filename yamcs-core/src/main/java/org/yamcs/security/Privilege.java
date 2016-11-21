@@ -77,7 +77,9 @@ public class Privilege {
         if (YConfiguration.isDefined("privileges")) {
             try {
                 YConfiguration conf=YConfiguration.getConfiguration("privileges");
-                maxNoSessions=conf.getInt("maxNoSessions");
+                if (conf.containsKey("maxNoSessions")) {
+                    maxNoSessions=conf.getInt("maxNoSessions");
+                }
                 usePrivileges=conf.getBoolean("enabled");
 
                 if(usePrivileges) {
