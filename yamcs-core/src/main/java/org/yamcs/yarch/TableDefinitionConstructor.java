@@ -13,6 +13,7 @@ import org.yaml.snakeyaml.constructor.AbstractConstruct;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
+import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.nodes.SequenceNode;
 import org.yaml.snakeyaml.nodes.Tag;
 
@@ -36,6 +37,7 @@ public class TableDefinitionConstructor  extends Constructor {
         this.yamlConstructors.put(new Tag("TableDefinition"), new ConstructTableDefinition());
         this.yamlConstructors.put(new Tag("TupleDefinition"), new ConstructTupleDefinition());
         this.yamlConstructors.put(new Tag("PartitioningSpec"), new ConstructPartitioningSpec());
+        this.yamlConstructors.put(new Tag("PartitionStorage"), new ConstructPartitionStorage());
     }
 
     private class ConstructTableDefinition extends AbstractConstruct {
@@ -162,6 +164,14 @@ public class TableDefinitionConstructor  extends Constructor {
                 pspec.setTimePartitioningSchema("YYYY/DOY");
             }
             return pspec;
+        }
+    }
+    
+    private class ConstructPartitionStorage extends AbstractConstruct {
+        @Override
+        public Object construct(Node node) {
+            String ps = (String) constructScalar((ScalarNode)node);
+            return PartitionStorage.valueOf(ps.toUpperCase());
         }
     }
 }

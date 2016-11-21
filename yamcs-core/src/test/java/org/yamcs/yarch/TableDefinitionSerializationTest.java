@@ -63,7 +63,7 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
     @Test
     public void testTableDefinitionSerialization() throws Exception {
         ydb.execute("create table abcde1(aak1 timestamp, aak2 int, aav1 string, aav2 binary, aav3 enum, primary key(aak1, aak2)) histogram(aak2, aav1) partition by time(aak1('YYYY')) table_format=compressed partition_storage=COLUMN_FAMILY");
-        TableDefinition td1=ydb.getTable("abcde1");
+        TableDefinition td1 = ydb.getTable("abcde1");
 
         PartitioningSpec pspec = td1.getPartitioningSpec();
         assertNotNull(pspec);		
