@@ -2,11 +2,15 @@ package org.yamcs.yarch.rocksdb;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +18,9 @@ import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TimePartitionSchema.PartitionInfo;
+
+import com.google.common.base.Charsets;
+
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableDefinition.PartitionStorage;
@@ -87,11 +94,23 @@ public class RdbPartitionManager extends PartitionManager {
         try {
             if((partitioningSpec.type==PartitioningSpec._type.TIME_AND_VALUE) ||  (partitioningSpec.type==PartitioningSpec._type.VALUE)) {
                 List<byte[]> partitionList;
-
+                int size = ColumnValueSerializer.getSerializedSize(partitioningSpec.getValueColumnType());
+                
                 if(tableDefinition.getPartitionStorage()==PartitionStorage.COLUMN_FAMILY) {
                     partitionList = rdb.getColumnFamilies();
+                    Iterator<byte[]> it = partitionList.iterator(); 
+                    while(it.hasNext()) { //filter out the partitions that are not the correct size or histograms or default rocksdb CF
+                                          //perhaps we should have a better mechanism for this - like some metadata stored in its own CF
+                        byte[] b = it.next();
+                        if((b.length==size) && !Arrays.equals(b,  RocksDB.DEFAULT_COLUMN_FAMILY)) {
+                            String s = new String(b, StandardCharsets.UTF_8);
+                            if(s.startsWith("histo")) it.remove();
+                        } else {
+                            it.remove();
+                        }
+                    }
                 } else {
-                    int size = ColumnValueSerializer.getSerializedSize(partitioningSpec.getValueColumnType());
+                    
                     partitionList = rdb.scanPartitions(size);
                 }
 
