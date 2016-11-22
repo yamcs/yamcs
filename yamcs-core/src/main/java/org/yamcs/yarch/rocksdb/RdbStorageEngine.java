@@ -18,6 +18,7 @@ import org.yamcs.yarch.HistogramRecord;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.StorageEngine;
 import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.TableDefinition.PartitionStorage;
 import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.YarchDatabase;
@@ -83,7 +84,13 @@ public class RdbStorageEngine implements StorageEngine {
             throw new IllegalArgumentException("Do not have a partition manager for this table");
         }
         try {
-            return new CfTableWriter(ydb, tbl, insertMode, partitionManagers.get(tbl));
+            if(tbl.getPartitionStorage()==PartitionStorage.COLUMN_FAMILY) {
+                return new CfTableWriter(ydb, tbl, insertMode, partitionManagers.get(tbl));
+            } else if(tbl.getPartitionStorage()==PartitionStorage.IN_KEY) {
+                return new CfTableWriter(ydb, tbl, insertMode, partitionManagers.get(tbl));
+            } else {
+                throw new RuntimeException("Unknwon partition storage: "+tbl.getPartitionStorage());
+            }
         } catch (IOException e) {
             throw new YarchException("Failed to create writer", e);
         } 
