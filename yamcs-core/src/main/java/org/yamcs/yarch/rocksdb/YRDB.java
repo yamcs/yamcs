@@ -76,10 +76,7 @@ public class YRDB {
                 db = RocksDB.open(dbOptions, dir, cfdList, cfhList);
                 for(int i=0;i<cfl.size();i++) {
                     byte[] b = cfl.get(i);
-                    if(!Arrays.equals(b, RocksDB.DEFAULT_COLUMN_FAMILY)) {
-                        columnFamilies.put(new ByteArrayWrapper(b), cfhList.get(i));
-                        
-                    } 
+                    columnFamilies.put(new ByteArrayWrapper(b), cfhList.get(i));
                 }
 
             } else { //no existing column families
