@@ -56,31 +56,31 @@ import com.csvreader.CsvWriter;
 
 import io.netty.buffer.ByteBufOutputStream;
 
-/** 
+/**
  * Serves archived data through a web api.
  *
  * <p>Archive requests use chunked encoding with an unspecified content length, which enables
  * us to send large dumps without needing to determine a content length on the server.
  */
 public class ArchiveDownloadRestHandler extends RestHandler {
-    
+
     @Route(path = "/api/archive/:instance/downloads/parameters", method = {"GET", "POST"})
     public void downloadParameters(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        
+
         ReplayRequest.Builder rr = ReplayRequest.newBuilder().setEndAction(EndAction.QUIT);
         rr.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
-        
+
         // First try from body
         BulkDownloadParameterValueRequest request = req.bodyAsMessage(SchemaRest.BulkDownloadParameterValueRequest.MERGE).build();
         if (request.hasStart()) rr.setStart(RestRequest.parseTime(request.getStart()));
-        if (request.hasStop()) rr.setStop(RestRequest.parseTime(request.getStop()));        
-        
+        if (request.hasStop()) rr.setStop(RestRequest.parseTime(request.getStop()));
+
         // Next, try query param (potentially overriding previous)
         IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) rr.setStart(req.getQueryParameterAsDate("start"));
         if (ir.hasStop()) rr.setStop(req.getQueryParameterAsDate("stop"));
-        
+
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         List<NamedObjectId> ids = new ArrayList<>();
         for (NamedObjectId id : request.getIdList()) {
@@ -109,7 +109,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             }
         }
         rr.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids));
-        
+
         if (req.asksFor(MediaType.CSV)) {
             RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, ids);
             RestReplays.replay(instance, req.getAuthToken(), rr.build(), l);
@@ -118,15 +118,15 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             RestReplays.replay(instance, req.getAuthToken(), rr.build(), l);
         }
     }
-    
+
     @Route(path = "/api/archive/:instance/downloads/parameters/:name*", method = "GET")
     public void downloadParameter(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        
+
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         NamedObjectId requestedId = verifyParameterId(req, mdb, req.getRouteParam("name"));
         Parameter p = mdb.getParameter(requestedId);
-        
+
         ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, p, false);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
         if (req.asksFor(MediaType.CSV)) {
@@ -140,18 +140,18 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             RestReplays.replay(instance, req.getAuthToken(), rr, l);
         }
     }
-    
+
     @Route(path = "/api/archive/:instance/downloads/packets", method = "GET")
     public void downloadPackets(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        
+
         Set<String> nameSet = new HashSet<>();
         for (String names : req.getQueryParameterList("name", Collections.emptyList())) {
             for (String name : names.split(",")) {
                 nameSet.add(name.trim());
             }
         }
-        
+
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
         if (ir.hasInterval()) {
@@ -162,7 +162,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         }
         sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
-        
+
         if (req.asksFor(MediaType.OCTET_STREAM)) {
             RestStreams.stream(instance, sql, new StreamToChunkedTransferEncoder(req, MediaType.OCTET_STREAM) {
                 @Override
@@ -180,18 +180,18 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             });
         }
     }
-    
+
     @Route(path = "/api/archive/:instance/downloads/commands", method = "GET")
     public void downloadCommands(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        
+
         Set<String> nameSet = new HashSet<>();
         for (String names : req.getQueryParameterList("name", Collections.emptyList())) {
             for (String name : names.split(",")) {
                 nameSet.add(name.trim());
             }
         }
-        
+
         SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
         if (ir.hasInterval()) {
@@ -202,7 +202,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         }
         sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
-        
+
         RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<CommandHistoryEntry>(req, SchemaCommanding.CommandHistoryEntry.WRITE) {
             @Override
             public CommandHistoryEntry mapTuple(Tuple tuple) {
@@ -210,14 +210,14 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             }
         });
     }
-    
+
     @Route(path = "/api/archive/:instance/downloads/tables/:name", method = "GET")
     public void downloadTableData(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
-        
+
         TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
-        
+
         List<String> cols = null;
         if (req.hasQueryParameter("cols")) {
             cols = new ArrayList<>(); // Order, and non-unique
@@ -227,7 +227,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
                 }
             }
         }
-        
+
         SqlBuilder sqlb = new SqlBuilder(table.getName());
         if (cols != null) {
             if (cols.isEmpty()) {
@@ -238,9 +238,9 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         }
         sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
-        
+
         RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<TableRecord>(req, SchemaArchive.TableData.TableRecord.WRITE) {
-            
+
             @Override
             public TableRecord mapTuple(Tuple tuple) {
                 TableRecord.Builder rec = TableRecord.newBuilder();
@@ -253,7 +253,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
     @Route(path = "/api/archive/:instance/downloads/events", method = "GET")
     public void downloadEvents(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        
+        ArchiveEventRestHandler.verifyEventArchiveSupport(instance);
+
         Set<String> sourceSet = new HashSet<>();
         for (String names : req.getQueryParameterList("source", Collections.emptyList())) {
             for (String name : names.split(",")) {
@@ -271,22 +272,22 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         }
         sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
-        
+
         if (req.asksFor(MediaType.CSV)) {
             transferChunkedCSVEvents(req, instance, sql);
         } else {
             transferChunkedProtobufEvents(req, instance, sql);
         }
     }
-    
+
     private void transferChunkedCSVEvents(RestRequest req, String instance, String sql) throws HttpException {
         RestStreams.stream(instance, sql, new StreamToChunkedCSVEncoder(req) {
-            
+
             @Override
             public String[] getCSVHeader() {
                 return ArchiveHelper.EVENT_CSV_HEADER;
             }
-            
+
             @Override
             public void processTuple(Tuple tuple, CsvWriter csvWriter) throws IOException {
                 String[] record = ArchiveHelper.tupleToCSVEvent(tuple);
@@ -294,10 +295,10 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             }
         });
     }
-    
+
     private void transferChunkedProtobufEvents(RestRequest req, String instance, String sql) throws HttpException {
         RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<Event>(req, SchemaYamcs.Event.WRITE) {
-            
+
             @Override
             public Event mapTuple(Tuple tuple) {
                 return ArchiveHelper.tupleToEvent(tuple);
