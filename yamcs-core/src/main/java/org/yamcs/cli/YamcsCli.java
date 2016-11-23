@@ -7,6 +7,7 @@ import java.util.Map;
 import org.yamcs.api.YamcsConnectionProperties;
 
 import com.beust.jcommander.JCommander;
+import com.beust.jcommander.MissingCommandException;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.internal.Console;
@@ -28,13 +29,18 @@ public class YamcsCli {
     @Parameter(names="-y", description="yamcs url")
     private String yamcsUrl;
     
+    @Parameter(names="-h", description="help")
+    private boolean helpOp;
+    static Console console = JCommander.getConsole();
+    
     public static void printUsage() {
-        System.out.println( "Usage: " );
-        System.out.println( "\tyamcs -y <url> [command] [params] " );
-        System.out.println( "url is the URL where yamcs can be reached (but not all commands require a connection to live server)." );
-        System.out.println( "Commands: " );
-        System.out.println( "\tbackup\tprovides functionality for backing up and restoring databases");
-        System.out.println( "" );
+        console.println( "Usage: " );
+        console.println( "\tyamcs [-y <url>] command [params] " );
+        console.println( "\turl is the URL where yamcs can be reached (but not all commands require a connection to a live server)." );
+        console.println( "Commands: " );
+        console.println( "\tbackup\tprovides functionality for backing up and restoring databases");
+        console.println( "\trocksdb\tprovides utitlities for manipulating rocksdb databases");
+        console.println( "" );
 
     }
 
@@ -44,7 +50,19 @@ public class YamcsCli {
         Backup backup = new Backup();
         commands.put("backup", backup);
         jc.addCommand("backup", backup);
-        jc.parse(args);
+        
+        RocksDbCli rocksdb = new RocksDbCli();
+        commands.put("rocksdb", rocksdb);
+        jc.addCommand("rocksdb", rocksdb);
+        
+      
+        try {
+            jc.parse(args);
+        } catch (MissingCommandException e) {
+            console.println(e.getMessage());
+            printUsage();
+            System.exit(1);
+        } 
         
         if(jc.getParsedCommand()==null) {
             printUsage();
@@ -56,7 +74,7 @@ public class YamcsCli {
             if(yamcsCli.yamcsUrl!=null) {
                 cmd.yamcsConn = YamcsConnectionProperties.parse(yamcsCli.yamcsUrl);
             }
-            cmd.console = jc.getConsole();
+            cmd.console = console;
         } catch (URISyntaxException e1) {
             System.err.println("cannot parse yamcs URL: '"+yamcsCli.yamcsUrl+"'");
         }

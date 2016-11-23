@@ -59,7 +59,9 @@ public class Backup extends Command {
 
     @Parameter(names="-d", description="delete backup")
     private boolean deleteOp;
-
+    
+    @Parameter(names="-h", description="help")
+    private boolean helpOp;
 
     @Parameter(names="--backupDir", description="backup directory")
     String backupDir;

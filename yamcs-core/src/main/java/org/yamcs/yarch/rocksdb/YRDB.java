@@ -205,7 +205,7 @@ public class YRDB {
         
         StringBuilder sb = new StringBuilder();
         for(Map.Entry<ByteArrayWrapper, ColumnFamilyHandle> e: columnFamilies.entrySet()) {
-            Object o = toString(e.getKey().getData());
+            Object o = cfNameToString(e.getKey().getData());
             ColumnFamilyHandle chf = e.getValue();
             sb.append("============== Column Family: "+o+"========\n");
             for(String p:slprops) {
@@ -223,10 +223,10 @@ public class YRDB {
         return sb.toString();
     }
     
-    String toString(byte[] cfname) {
+    static public String cfNameToString(byte[] cfname) {
        for(byte b: cfname) {
            if(b==0) {
-               return StringConverter.arrayToHexString(cfname);
+               return "HEX["+StringConverter.arrayToHexString(cfname)+"]";
            }
        }
        return new String(cfname, StandardCharsets.UTF_8);
