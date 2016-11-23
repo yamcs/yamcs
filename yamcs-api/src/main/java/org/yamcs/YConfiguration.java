@@ -34,14 +34,16 @@ import org.yaml.snakeyaml.error.YAMLException;
 public class YConfiguration {
     Map<String, Object> root;
     static String userConfigDirectory; //This is used by the users to overwrite
+    static YConfigurationResolver resolver = new YConfigurationResolver();
 
-    private static Map<String, YConfiguration> configurations=new HashMap<String,YConfiguration>();
+    private static Map<String, YConfiguration> configurations=new HashMap<>();
     static Logger log=LoggerFactory.getLogger(YConfiguration.class.getName());
     static String prefix=null;
 
+
     //keeps track of the configuration path so meaningful error messages can be printed
     //the path is someting like filename->key1->subkey2[3]->...
-    static private IdentityHashMap<Object, String> confPath=new IdentityHashMap<Object, String>();
+    static private IdentityHashMap<Object, String> confPath=new IdentityHashMap<>();
 
 
     @SuppressWarnings("unchecked")
@@ -49,7 +51,7 @@ public class YConfiguration {
         Yaml yaml=new Yaml();
         String filename=subsystem+".yaml";
         try {
-            Object o=yaml.load(getConfigurationStream("/"+filename));
+            Object o=yaml.load(resolver.getConfigurationStream("/"+filename));
             if(o==null) {
                 o=new HashMap<String, Object>(); //config file is empty, not an error
             } else if(!(o instanceof Map<?, ?>)) {
@@ -92,7 +94,7 @@ public class YConfiguration {
 
         if(System.getProperty("java.util.logging.config.file")==null) {
             try {
-                LogManager.getLogManager().readConfiguration(getConfigurationStream("/logging.properties"));
+                LogManager.getLogManager().readConfiguration(resolver.getConfigurationStream("/logging.properties"));
             } catch (Exception e) {
                 //do nothing, the default java builtin logging is used
             }
@@ -159,33 +161,6 @@ public class YConfiguration {
         } catch (ConfigurationNotFoundException e) {
             return false;
         }
-    }
-
-    private static InputStream getConfigurationStream(String name) throws ConfigurationException {
-        InputStream is;
-        if(prefix!=null) {
-            if((is=YConfiguration.class.getResourceAsStream("/"+prefix+name))!=null) {
-                log.debug("Reading "+new File(YConfiguration.class.getResource("/"+prefix+name).getFile()).getAbsolutePath());
-                return is;
-            }
-        }
-
-        //see if the users has an own version of the file
-        File f=new File(userConfigDirectory+name);
-        if(f.exists()) {
-            try {
-                is=new FileInputStream(f);
-                log.debug("Reading "+f.getAbsolutePath());
-                return is;
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-        if((is=YConfiguration.class.getResourceAsStream(name))==null) {
-            throw(new ConfigurationNotFoundException("Cannot find resource "+name));
-        }
-        log.debug("Reading "+new File(YConfiguration.class.getResource(name).getFile()).getAbsolutePath());
-        return is;
     }
 
     public static String getGlobalProperty(String key) {
@@ -502,6 +477,43 @@ public class YConfiguration {
         return (o instanceof List);
     }
 
+    public static void setResolver(YConfigurationResolver resolver) {
+        YConfiguration.resolver = resolver;
+    }
+
+    /**
+     * Default config file resolver
+     */
+    public static class YConfigurationResolver {
+
+        public InputStream getConfigurationStream(String name) throws ConfigurationException {
+            InputStream is;
+            if(prefix!=null) {
+                if((is=YConfiguration.class.getResourceAsStream("/"+prefix+name))!=null) {
+                    log.debug("Reading "+new File(YConfiguration.class.getResource("/"+prefix+name).getFile()).getAbsolutePath());
+                    return is;
+                }
+            }
+
+            //see if the users has an own version of the file
+            File f=new File(userConfigDirectory+name);
+            if(f.exists()) {
+                try {
+                    is=new FileInputStream(f);
+                    log.debug("Reading "+f.getAbsolutePath());
+                    return is;
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+            if((is=YConfiguration.class.getResourceAsStream(name))==null) {
+                throw(new ConfigurationNotFoundException("Cannot find resource "+name));
+            }
+            log.debug("Reading "+new File(YConfiguration.class.getResource(name).getFile()).getAbsolutePath());
+            return is;
+        }
+    }
+
     /**
      * Introduced to be able to detect when a configuration file was not
      * specified (as opposed to when there's a validation error inside). The
@@ -509,7 +521,7 @@ public class YConfiguration {
      * getConfiguration(String subystem) is called and the resource does not
      * exist.
      */
-    private static class ConfigurationNotFoundException extends ConfigurationException {
+    public static class ConfigurationNotFoundException extends ConfigurationException {
         private static final long serialVersionUID = 1L;
 
         public ConfigurationNotFoundException(String message) {
