@@ -58,7 +58,7 @@ public class YamcsCli {
       
         try {
             jc.parse(args);
-        } catch (MissingCommandException e) {
+        } catch (ParameterException e) {
             console.println(e.getMessage());
             printUsage();
             System.exit(1);
