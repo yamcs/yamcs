@@ -79,7 +79,7 @@ public class RDBFactory implements Runnable {
             public Thread newThread(Runnable r) {
                 Thread t=new Thread(r);
                 t.setDaemon(true);
-                t.setName("TcbFactory-sync");
+                t.setName("RDBFactory-sync");
                 return t;
             }
         });
@@ -148,15 +148,7 @@ public class RDBFactory implements Runnable {
                 log.debug("Closing the database: "+entry.getKey());
                 daat.db.close();
                 it.remove();
-            } else {
-                if(!daat.readonly) {
-                    try {
-                        daat.db.flush(flushOptions);
-                    } catch (RocksDBException e) {
-                        log.error("Got exception while closing the database "+entry.getKey()+": ", e);
-                    }
-                }
-            }
+            } 
         }
     }
 

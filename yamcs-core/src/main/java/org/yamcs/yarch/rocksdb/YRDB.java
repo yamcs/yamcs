@@ -103,9 +103,6 @@ public class YRDB {
         return !isClosed;
     }
 
-    public void flush(FlushOptions flushOptions) throws RocksDBException {
-        db.flush(flushOptions);		
-    }
 
     public List<RocksIterator> newIterators(List<ColumnFamilyHandle> cfhList, boolean tailing) throws RocksDBException {
         ReadOptions ro = new ReadOptions();
