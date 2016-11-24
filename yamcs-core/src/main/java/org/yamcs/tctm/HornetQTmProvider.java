@@ -11,7 +11,7 @@ import org.yamcs.ConfigurationException;
  * @deprecated please use {@link HornetqTmDataLink} instead
  */
 @Deprecated
-public class HornetQTmProvider extends  HornetQTmDataLink {
+public class HornetQTmProvider extends  ArtemisTmDataLink {
     public HornetQTmProvider(String instance, String name, String hornetAddress) throws ConfigurationException  {
         super(instance, name, hornetAddress);
     }

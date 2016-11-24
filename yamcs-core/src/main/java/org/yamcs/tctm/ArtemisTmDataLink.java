@@ -1,6 +1,5 @@
 package org.yamcs.tctm;
 
-
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
@@ -8,54 +7,61 @@ import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.YamcsServer;
+import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsSession;
-import org.yamcs.artemis.AbstractHornetQTranslatorService;
-import org.yamcs.protobuf.Pvalue.ParameterData;
-import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
+import org.yamcs.archive.PacketWithTime;
+import org.yamcs.artemis.AbstractArtemisTranslatorService;
 
 import com.google.common.util.concurrent.AbstractService;
 
+import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.time.TimeService;
+
 
 /**
- * receives data from ActiveMQ and publishes it into a yamcs stream
+ * receives data from Artemis ActiveMQ and publishes it into a yamcs stream
  * 
  * @author nm
  *
  */
-public class HornetQPpDataLink extends  AbstractService implements PpDataLink, MessageHandler {
-    protected volatile long totalPpCount = 0;
+public class ArtemisTmDataLink extends  AbstractService implements TmPacketDataLink, MessageHandler {
+    protected volatile long packetcount = 0;
     protected volatile boolean disabled=false;
-
+   
     protected Logger log=LoggerFactory.getLogger(this.getClass().getName());
-    private PpListener ppListener;
+    private TmSink tmSink;
     YamcsSession yamcsSession; 
     final private YamcsClient msgClient;
-    final XtceDb ppdb;
+    final TimeService timeService;
 
-    public HornetQPpDataLink(String instance, String name, String hornetAddress) throws ConfigurationException  {
-        SimpleString queue=new SimpleString(hornetAddress+"-ActiveMQPpProvider");
-        ppdb=XtceDbFactory.getInstance(instance);
+    public ArtemisTmDataLink(String instance, String name, String hornetAddress) throws ConfigurationException  {
+        SimpleString queue = new SimpleString(hornetAddress+"-ActiveMQTmProvider");
 
         try {
             yamcsSession=YamcsSession.newBuilder().build();
             msgClient=yamcsSession.newClientBuilder().setDataProducer(false).setDataConsumer(new SimpleString(hornetAddress), queue).
-                    setFilter(new SimpleString(AbstractHornetQTranslatorService.UNIQUEID_HDR_NAME+"<>"+AbstractHornetQTranslatorService.UNIQUEID)).
+                    setFilter(new SimpleString(AbstractArtemisTranslatorService.UNIQUEID_HDR_NAME+"<>"+AbstractArtemisTranslatorService.UNIQUEID)).
                     build();
 
         } catch (Exception e) {
             throw new ConfigurationException(e.getMessage(),e);
         }
+        timeService = YamcsServer.getTimeService(instance);
     }
 
 
     @Override
-    public void setPpListener(PpListener ppListener) {
-        this.ppListener=ppListener;
+    public void setTmSink(TmSink tmProcessor) {
+        this.tmSink=tmProcessor;
     }
 
+    @Override
+    public boolean isArchiveReplay() {
+        return false;
+    }
 
     @Override
     public String getLinkStatus() {
@@ -92,7 +98,7 @@ public class HornetQPpDataLink extends  AbstractService implements PpDataLink, M
 
     @Override
     public long getDataCount() {
-        return totalPpCount;
+        return packetcount;
     }
 
 
@@ -100,32 +106,12 @@ public class HornetQPpDataLink extends  AbstractService implements PpDataLink, M
     public void onMessage(ClientMessage msg) {
         if(disabled) return;
         try {
-            ParameterData pd = (ParameterData)Protocol.decode(msg, ParameterData.newBuilder());
-            long genTime;
-            if(pd.hasGenerationTime()) {
-                genTime = pd.getGenerationTime();
-            } else {
-                Long l = msg.getLongProperty(PpProviderAdapter.PP_TUPLE_COL_GENTIME);
-                if(l!=null) {
-                    genTime = l;
-                } else {
-                    log.warn("Cannot find generation time either in the body or in the header of the message");
-                    return;
-                }
-            }
-            String ppGroup;
-            if(pd.hasGroup()) {
-                ppGroup = pd.getGroup();
-            } else {
-                ppGroup = msg.getStringProperty(PpProviderAdapter.PP_TUPLE_COL_PPGROUP);
-                if(ppGroup == null) {
-                    log.warn("Cannot find PP group either in the body or in the header of the message");
-                    return;
-                }
-            }
-            totalPpCount += pd.getParameterCount();
-            ppListener.updateParams(genTime, ppGroup, pd.getSeqNum(), pd.getParameterList());
-        } catch(Exception e){
+            TmPacketData tm=(TmPacketData)Protocol.decode(msg, TmPacketData.newBuilder());
+            packetcount++;
+            //System.out.println("mark 1: message received: "+msg);
+            PacketWithTime pwt =  new PacketWithTime(timeService.getMissionTime(), tm.getGenerationTime(), tm.getPacket().toByteArray());
+            tmSink.processPacket(pwt);
+        } catch(YamcsApiException e){
             log.warn( "{} for message: {}", e.getMessage(), msg);
         }
     }

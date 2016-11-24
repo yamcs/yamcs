@@ -11,15 +11,15 @@ import org.yamcs.archive.IndexRequestListener;
 import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 
-public class HornetQIndexRequestListener implements IndexRequestListener {
+public class ArtemisIndexRequestListener implements IndexRequestListener {
     
-    static Logger log=LoggerFactory.getLogger(HornetQIndexRequestListener.class);
+    static Logger log=LoggerFactory.getLogger(ArtemisIndexRequestListener.class);
     SimpleString dataAddress;
     YamcsSession yamcsSession;
     YamcsClient yamcsClient;
     private boolean first;
     
-    public HornetQIndexRequestListener(SimpleString replyto) {
+    public ArtemisIndexRequestListener(SimpleString replyto) {
         this.dataAddress = replyto;
         first = true;
     }

@@ -29,7 +29,7 @@ import org.yamcs.management.LinkListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest;
-import org.yamcs.security.HornetQAuthManager;
+import org.yamcs.security.ArtemisAuthManager;
 import org.yamcs.security.HqClientMessageToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.utils.ActiveMQBufferOutputStream;
@@ -50,8 +50,8 @@ public class ArtemisManagement extends AbstractService implements LinkListener {
     static Logger staticlog=LoggerFactory.getLogger(ArtemisManagement.class);
     
     ManagementService mservice;
-    HornetQCommandQueueManagement hornetCmdQueueMgr;
-    HornetQProcessorManagement hornetProcessorMgr;
+    ArtemisCommandQueueManagement hornetCmdQueueMgr;
+    ArtemisProcessorManagement hornetProcessorMgr;
     
     public ArtemisManagement() throws ConfigurationException {
         if(yamcsSession!=null) {
@@ -216,8 +216,8 @@ public class ArtemisManagement extends AbstractService implements LinkListener {
                 }
             });
             
-            hornetCmdQueueMgr = new HornetQCommandQueueManagement(mservice);
-            hornetProcessorMgr = new HornetQProcessorManagement(mservice);
+            hornetCmdQueueMgr = new ArtemisCommandQueueManagement(mservice);
+            hornetProcessorMgr = new ArtemisProcessorManagement(mservice);
             mservice.addLinkListener(this);
             mservice.addCommandQueueListener(hornetCmdQueueMgr);
             mservice.addManagementListener(hornetProcessorMgr);

@@ -11,7 +11,7 @@ import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.security.HornetQAuthManager;
+import org.yamcs.security.ArtemisAuthManager;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsSession;
@@ -24,7 +24,7 @@ public class ProducerKillerTest {
     public static void setUpBeforeClass() throws Exception {
         artemisServer = new EmbeddedActiveMQ();
         artemisServer.setConfigResourcePath("artemis-tpk.xml");
-        artemisServer.setSecurityManager( new HornetQAuthManager() );
+        artemisServer.setSecurityManager( new ArtemisAuthManager() );
         artemisServer.start();
     }
     @AfterClass

@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.security.HornetQAuthManager;
+import org.yamcs.security.ArtemisAuthManager;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -42,7 +42,7 @@ public class ArtemisServer extends AbstractService{
         }
 
         EmbeddedActiveMQ artemisServer = new EmbeddedActiveMQ();
-        artemisServer.setSecurityManager( new HornetQAuthManager() );
+        artemisServer.setSecurityManager( new ArtemisAuthManager() );
         if(artemisConfigFile != null) {
             artemisServer.setConfigResourcePath(artemisConfigFile);
         }

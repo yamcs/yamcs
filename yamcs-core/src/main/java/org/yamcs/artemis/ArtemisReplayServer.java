@@ -59,8 +59,8 @@ import com.google.protobuf.ByteString;
  * @author nm
  *
  */
-public class HornetQReplayServer extends AbstractExecutionThreadService {
-    static Logger log=LoggerFactory.getLogger(HornetQReplayServer.class);
+public class ArtemisReplayServer extends AbstractExecutionThreadService {
+    static Logger log=LoggerFactory.getLogger(ArtemisReplayServer.class);
 
     final String instance;
 
@@ -68,7 +68,7 @@ public class HornetQReplayServer extends AbstractExecutionThreadService {
     final YamcsSession yamcsSession;
     static AtomicInteger count = new AtomicInteger();
     
-    public HornetQReplayServer(String instance) throws ActiveMQException, YamcsApiException {
+    public ArtemisReplayServer(String instance) throws ActiveMQException, YamcsApiException {
         this.instance = instance;
         yamcsSession = YamcsSession.newBuilder().build();
         msgClient = yamcsSession.newClientBuilder().setRpcAddress(Protocol.getReplayControlAddress(instance)).build();

@@ -8,8 +8,8 @@ import org.yamcs.ConfigurationException;
  * Please remove the lines from the EventRecorder when enabling this in the config
  *
  */
-public class HornetQEventService extends AbstractHornetQTranslatorService {
-    public HornetQEventService(String instance, List<String> streamNames) throws ConfigurationException {
+public class ArtemisEventService extends AbstractArtemisTranslatorService {
+    public ArtemisEventService(String instance, List<String> streamNames) throws ConfigurationException {
         super(instance, streamNames, new EventTupleTranslator());
     }
 }

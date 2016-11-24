@@ -11,7 +11,7 @@ import org.yamcs.ConfigurationException;
  * @deprecated please use {@link ActiveMQPpDataLink} instead
  */
 @Deprecated
-public class HornetQPpProvider extends  HornetQPpDataLink {
+public class HornetQPpProvider extends  ArtemisPpDataLink {
     public HornetQPpProvider(String instance, String name, String hornetAddress) throws ConfigurationException  {
         super(instance, name, hornetAddress);
     }

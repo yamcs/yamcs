@@ -12,9 +12,9 @@ import org.yamcs.ConfigurationException;
  *  - it remembers a thread local version of the tuple in transition on yarch side
  *
  */
-public class HornetQPpService extends AbstractHornetQTranslatorService {
+public class ArtemisPpService extends AbstractArtemisTranslatorService {
     
-    public HornetQPpService(String instance, List<String> streamNames) throws ConfigurationException {
+    public ArtemisPpService(String instance, List<String> streamNames) throws ConfigurationException {
         super(instance, streamNames, new PpTupleTranslator());
     }
 }

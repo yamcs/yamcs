@@ -35,15 +35,15 @@ import org.yamcs.security.HqClientMessageToken;
  * @author nm
  *
  */
-public class HornetQProcessorManagement implements ManagementListener {
+public class ArtemisProcessorManagement implements ManagementListener {
     YamcsSession ysession;
     YamcsClient yclient, yprocControlServer, linkControlServer;
-    static Logger log=LoggerFactory.getLogger(HornetQProcessorManagement.class.getName());
+    static Logger log=LoggerFactory.getLogger(ArtemisProcessorManagement.class.getName());
     ManagementService mservice;
 
     static public final String YPR_createProcessor = "createProcessor";
 
-    public HornetQProcessorManagement(ManagementService mservice) throws YamcsApiException, ActiveMQException {
+    public ArtemisProcessorManagement(ManagementService mservice) throws YamcsApiException, ActiveMQException {
         this.mservice=mservice;
 
         if(ysession!=null) return;

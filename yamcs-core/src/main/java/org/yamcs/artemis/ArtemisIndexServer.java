@@ -29,8 +29,8 @@ import org.yamcs.protobuf.Yamcs.UpsertTagRequest;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
-public class HornetQIndexServer extends AbstractExecutionThreadService {
-    static Logger log=LoggerFactory.getLogger(HornetQIndexServer.class);
+public class ArtemisIndexServer extends AbstractExecutionThreadService {
+    static Logger log=LoggerFactory.getLogger(ArtemisIndexServer.class);
 
     final String instance;
 
@@ -41,7 +41,7 @@ public class HornetQIndexServer extends AbstractExecutionThreadService {
     
     volatile boolean quitting=false;
 
-    public HornetQIndexServer(IndexServer indexServer, TagDb tagDb) throws ActiveMQException, YamcsApiException {
+    public ArtemisIndexServer(IndexServer indexServer, TagDb tagDb) throws ActiveMQException, YamcsApiException {
         this.indexServer = indexServer;
         this.tagDb = tagDb;
         this.instance = indexServer.getInstance();
@@ -156,7 +156,7 @@ public class HornetQIndexServer extends AbstractExecutionThreadService {
             log.warn("failed to decode the message", e);
             return;
         }
-        HornetQIndexRequestListener l = new HornetQIndexRequestListener(dataAddress);
+        ArtemisIndexRequestListener l = new ArtemisIndexRequestListener(dataAddress);
         indexServer.submitIndexRequest(req, l);
     }
 

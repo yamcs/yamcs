@@ -11,5 +11,4 @@ java.util.logging.ConsoleHandler.formatter = org.yamcs.ConsoleFormatter
 
 
 org.yamcs.level=FINE
-org.hornetq.level=WARNING
 io.netty.level=WARNING

@@ -48,8 +48,8 @@ import com.google.protobuf.MessageLite;
  * @author nm
  *
  */
-public class HornetQRetrievalServer extends AbstractExecutionThreadService {
-    static Logger log=LoggerFactory.getLogger(HornetQRetrievalServer.class);
+public class ArtemisRetrievalServer extends AbstractExecutionThreadService {
+    static Logger log=LoggerFactory.getLogger(ArtemisRetrievalServer.class);
 
     final String instance;
 
@@ -57,7 +57,7 @@ public class HornetQRetrievalServer extends AbstractExecutionThreadService {
     final YamcsSession yamcsSession;
     final ReplayServer replayServer;
 
-    public HornetQRetrievalServer(ReplayServer replayServer) throws ActiveMQException, YamcsApiException {
+    public ArtemisRetrievalServer(ReplayServer replayServer) throws ActiveMQException, YamcsApiException {
         this.replayServer = replayServer;
         this.instance = replayServer.getInstance();
         yamcsSession = YamcsSession.newBuilder().build();

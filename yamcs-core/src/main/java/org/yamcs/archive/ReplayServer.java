@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
-import org.yamcs.artemis.HornetQRetrievalServer;
+import org.yamcs.artemis.ArtemisRetrievalServer;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
@@ -39,7 +39,7 @@ public class ReplayServer extends AbstractService {
     boolean startArtemisService = false;
 
     AtomicInteger replayCount = new AtomicInteger();
-    HornetQRetrievalServer artemisRetrievalServer;
+    ArtemisRetrievalServer artemisRetrievalServer;
     static String CONFIG_KEY_startArtemisService = "startArtemisService";
     
     public ReplayServer(String instance ) {
@@ -133,7 +133,7 @@ public class ReplayServer extends AbstractService {
     protected void doStart() {
         try {
             if(startArtemisService) {
-                artemisRetrievalServer = new HornetQRetrievalServer(this);
+                artemisRetrievalServer = new ArtemisRetrievalServer(this);
                 artemisRetrievalServer.startAsync();
                 artemisRetrievalServer.awaitRunning();
             }

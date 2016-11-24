@@ -26,7 +26,7 @@ import com.google.common.util.concurrent.AbstractService;
  * 
  *
  */
-public class AbstractHornetQTranslatorService extends AbstractService {
+public class AbstractArtemisTranslatorService extends AbstractService {
     final private TupleTranslator translator;
     YamcsSession yamcsSession;
 
@@ -54,7 +54,7 @@ public class AbstractHornetQTranslatorService extends AbstractService {
         }
     };
 
-    public AbstractHornetQTranslatorService(String instance, List<String> streamNames, TupleTranslator translator) throws ConfigurationException {
+    public AbstractArtemisTranslatorService(String instance, List<String> streamNames, TupleTranslator translator) throws ConfigurationException {
         this.instance = instance;
         YarchDatabase db = YarchDatabase.getInstance(instance);
 

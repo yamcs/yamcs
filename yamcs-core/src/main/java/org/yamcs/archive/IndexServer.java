@@ -16,7 +16,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
-import org.yamcs.artemis.HornetQIndexServer;
+import org.yamcs.artemis.ArtemisIndexServer;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
@@ -42,7 +42,7 @@ public class IndexServer extends AbstractService {
 
     final TagDb tagDb;
 
-    HornetQIndexServer hqIndexServer;
+    ArtemisIndexServer hqIndexServer;
     boolean startArtemisServer;
 
     /**
@@ -94,7 +94,7 @@ public class IndexServer extends AbstractService {
     protected void doStart() {
         try {
             if(startArtemisServer) {
-                hqIndexServer = new HornetQIndexServer(this, tagDb);
+                hqIndexServer = new ArtemisIndexServer(this, tagDb);
                 hqIndexServer.startAsync();
                 hqIndexServer.awaitRunning();
             }

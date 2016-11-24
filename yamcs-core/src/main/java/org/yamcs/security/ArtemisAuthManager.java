@@ -24,8 +24,8 @@ import org.yamcs.api.artemis.YamcsSession;
  * @author atu
  *
  */
-public class HornetQAuthManager implements ActiveMQSecurityManager {
-    static Logger log = LoggerFactory.getLogger(HornetQAuthManager.class);
+public class ArtemisAuthManager implements ActiveMQSecurityManager {
+    static Logger log = LoggerFactory.getLogger(ArtemisAuthManager.class);
     private Map<String, ArrayList<String>> configuredUserCache = new HashMap<>();
     /** If null (default), anonymous connections will be rejected. */
     private String defaultUser = null;

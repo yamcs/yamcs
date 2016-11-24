@@ -34,16 +34,16 @@ import org.yamcs.protobuf.Commanding.CommandQueueRequest;
  * @author nm
  *
  */
-public class HornetQCommandQueueManagement implements CommandQueueListener {
+public class ArtemisCommandQueueManagement implements CommandQueueListener {
     ManagementService managementService;
     YamcsSession ysession;
     YamcsClient yclient;
     YamcsClient queueControlServer;
 
 
-    static Logger log=LoggerFactory.getLogger(HornetQCommandQueueManagement.class.getName());
+    static Logger log=LoggerFactory.getLogger(ArtemisCommandQueueManagement.class.getName());
 
-    public HornetQCommandQueueManagement(ManagementService managementService) throws YamcsApiException, ActiveMQException {
+    public ArtemisCommandQueueManagement(ManagementService managementService) throws YamcsApiException, ActiveMQException {
         this.managementService = managementService;
 
         if(ysession!=null) return;
