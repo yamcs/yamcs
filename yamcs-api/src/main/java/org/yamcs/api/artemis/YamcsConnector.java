@@ -28,6 +28,13 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
  *
  */
 public class YamcsConnector implements SessionFailureListener {
+    public int getMaxAttempts() {
+        return maxAttempts;
+    }
+    public void setMaxAttempts(int maxAttempts) {
+        this.maxAttempts = maxAttempts;
+    }
+
     CopyOnWriteArrayList<ConnectionListener> connectionListeners=new CopyOnWriteArrayList<ConnectionListener>();
     volatile boolean connected, connecting;
     protected YamcsSession yamcsSession;
@@ -36,7 +43,8 @@ public class YamcsConnector implements SessionFailureListener {
     private boolean retry = true;
     private boolean reconnecting = false;
     final private ExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-
+    int maxAttempts = 10;
+    
     public YamcsConnector() {}
     public YamcsConnector(boolean retry) {
         this.retry = retry;
@@ -95,7 +103,6 @@ public class YamcsConnector implements SessionFailureListener {
             public void run() {
 
                 //connect to yamcs
-                int maxAttempts=10;
                 try {
                     if(reconnecting && !retry)
                     {
@@ -191,7 +198,7 @@ public class YamcsConnector implements SessionFailureListener {
     
     @Override
     public void connectionFailed(ActiveMQException e, boolean failedOver) {
-        connected=false;
+        connected = false;
         for(ConnectionListener cl:connectionListeners) {
             cl.disconnected();
         }

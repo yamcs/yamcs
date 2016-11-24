@@ -39,6 +39,7 @@ public class ArtemisEventProducer extends AbstractEventProducer implements Conne
     
     public ArtemisEventProducer(YamcsConnectionProperties ycd) {
         yconnector = new YamcsConnector();
+        yconnector.setMaxAttempts(Integer.MAX_VALUE);
         yconnector.addConnectionListener(this);
         yconnector.connect(ycd);
         address = Protocol.getEventRealtimeAddress(ycd.getInstance());
