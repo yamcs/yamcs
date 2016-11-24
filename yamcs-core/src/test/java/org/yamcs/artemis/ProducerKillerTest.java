@@ -1,4 +1,4 @@
-package org.yamcs.yarch.hornet;
+package org.yamcs.artemis;
 
 import static org.junit.Assert.*;
 

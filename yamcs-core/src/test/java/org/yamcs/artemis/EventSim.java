@@ -1,4 +1,4 @@
-package org.yamcs.yarch.hornet;
+package org.yamcs.artemis;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,8 +12,8 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsSession;
-import org.yamcs.hornetq.ArtemisManagement;
-import org.yamcs.hornetq.ArtemisServer;
+import org.yamcs.artemis.ArtemisManagement;
+import org.yamcs.artemis.ArtemisServer;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;

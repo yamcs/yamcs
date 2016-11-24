@@ -1,4 +1,4 @@
-package org.yamcs.hornetq;
+package org.yamcs.artemis;
 
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.SimpleString;

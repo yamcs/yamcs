@@ -9,8 +9,8 @@ import org.junit.Test;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
-import org.yamcs.hornetq.ArtemisManagement;
-import org.yamcs.hornetq.ArtemisServer;
+import org.yamcs.artemis.ArtemisManagement;
+import org.yamcs.artemis.ArtemisServer;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.yarch.YarchTestCase;
 

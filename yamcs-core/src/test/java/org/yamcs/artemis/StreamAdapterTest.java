@@ -1,4 +1,4 @@
-package org.yamcs.yarch.hornet;
+package org.yamcs.artemis;
 
 import static org.junit.Assert.*;
 
@@ -17,12 +17,12 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.hornetq.ArtemisManagement;
-import org.yamcs.hornetq.ArtemisServer;
-import org.yamcs.hornetq.StreamAdapter;
-import org.yamcs.hornetq.TupleTranslator;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsSession;
+import org.yamcs.artemis.ArtemisManagement;
+import org.yamcs.artemis.ArtemisServer;
+import org.yamcs.artemis.StreamAdapter;
+import org.yamcs.artemis.TupleTranslator;
 import org.yamcs.yarch.YarchTestCase;
 
 public class StreamAdapterTest extends YarchTestCase {

@@ -1,4 +1,4 @@
-package org.yamcs.hornetq;
+package org.yamcs.artemis;
 
 import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.slf4j.Logger;

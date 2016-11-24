@@ -110,7 +110,7 @@ public class EventProducerFactory {
         }
 
         if(producer==null) {
-            if(ycd.getProtocol()==Protocol.ARTEMIS) { 
+            if(ycd.getProtocol()==Protocol.artemis) { 
                 log.debug("Creating an Artemis  Yamcs event producer connected to {}", ycd.getUrl());
                 producer = new  ArtemisEventProducer(ycd);
             } else {

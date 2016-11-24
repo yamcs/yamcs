@@ -34,7 +34,7 @@ public class ArtemisEventProducer extends AbstractEventProducer implements Conne
     YamcsClient yclient;
     static Logger logger=LoggerFactory.getLogger(ArtemisEventProducer.class);
     
-    static final int MAX_QUEUE_SIZE=1000;
+    static final int MAX_QUEUE_SIZE = 1000;
     ArrayBlockingQueue<Event> queue=new ArrayBlockingQueue<Event>(MAX_QUEUE_SIZE);
     
     public ArtemisEventProducer(YamcsConnectionProperties ycd) {
@@ -43,7 +43,7 @@ public class ArtemisEventProducer extends AbstractEventProducer implements Conne
         yconnector.connect(ycd);
         address = Protocol.getEventRealtimeAddress(ycd.getInstance());
         
-        InputStream is=ArtemisEventProducer.class.getResourceAsStream("/event-producer.yaml");
+        InputStream is = ArtemisEventProducer.class.getResourceAsStream("/event-producer.yaml");
         boolean repeatedEventReduction = true;
         if(is!=null) {
             Object o = new Yaml().load(is);
@@ -66,7 +66,7 @@ public class ArtemisEventProducer extends AbstractEventProducer implements Conne
     @Override
     public void connected(String url) {
         try {
-            yclient=yconnector.getSession().newClientBuilder().setDataProducer(true).build();
+            yclient = yconnector.getSession().newClientBuilder().setDataProducer(true).build();
             while(!queue.isEmpty()) {
                 yclient.sendData(address, ProtoDataType.EVENT, queue.poll());
             }
@@ -77,6 +77,7 @@ public class ArtemisEventProducer extends AbstractEventProducer implements Conne
 
     @Override
     public void connectionFailed(String url, YamcsException exception) {
+        logger.warn("Failed to connect to "+url+": "+exception.getMessage());
     }
 
     @Override

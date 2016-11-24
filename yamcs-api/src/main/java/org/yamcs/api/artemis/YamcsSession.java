@@ -101,12 +101,14 @@ public class YamcsSession {
                     sessionFactory =  locator.createSessionFactory();
                 }
                 AuthenticationToken authToken = ycd.getAuthenticationToken();
-                if(authToken instanceof UsernamePasswordToken) {
-                    UsernamePasswordToken upt = (UsernamePasswordToken)authToken;
-                    username = upt.getUsername();
-                    password = upt.getPasswordS();
-                } else {
-                    throw new RuntimeException("Authentication token of type "+authToken.getClass()+" not supported for the Aremis connections");
+                if(authToken!=null) {
+                    if(authToken instanceof UsernamePasswordToken) {
+                        UsernamePasswordToken upt = (UsernamePasswordToken)authToken;
+                        username = upt.getUsername();
+                        password = upt.getPasswordS();
+                    } else {
+                        throw new RuntimeException("Authentication token of type "+authToken.getClass()+" not supported for the Aremis connections");
+                    }
                 }
 
             }
@@ -123,7 +125,7 @@ public class YamcsSession {
             throw new YamcsApiException( e.getMessage(), e );
         } catch(Exception e) {
             // Pass Exception's cause as our cause.
-            System.out.println( e );
+            e.printStackTrace();
             // close everything
             try {
                 close();

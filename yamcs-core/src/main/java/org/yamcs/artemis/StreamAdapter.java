@@ -1,4 +1,4 @@
-package org.yamcs.hornetq;
+package org.yamcs.artemis;
 
 import java.util.Random;
 

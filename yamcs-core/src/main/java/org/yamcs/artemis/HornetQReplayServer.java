@@ -1,4 +1,4 @@
-package org.yamcs.hornetq;
+package org.yamcs.artemis;
 
 import static org.yamcs.api.artemis.Protocol.DATA_TO_HEADER_NAME;
 import static org.yamcs.api.artemis.Protocol.REPLYTO_HEADER_NAME;

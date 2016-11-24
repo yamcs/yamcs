@@ -2,12 +2,6 @@ package org.yamcs.archive;
 
 import java.util.Arrays;
 
-import org.apache.activemq.artemis.api.core.ActiveMQException;
-import org.apache.activemq.artemis.api.core.SimpleString;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.hornetq.EventTupleTranslator;
-import org.yamcs.hornetq.StreamAdapter;
-import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.streamsql.ParseException;
@@ -28,7 +22,7 @@ public class EventRecorder extends AbstractService {
     static final public String DUMP_EVENT_STREAM_NAME = "events_dump";
     final String yamcsInstance;
 
-    public EventRecorder(String instance) throws StreamSqlException, ParseException, ActiveMQException, YamcsApiException {
+    public EventRecorder(String instance) throws StreamSqlException, ParseException {
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
         this.yamcsInstance = instance;
         if(ydb.getTable(TABLE_NAME)==null) {

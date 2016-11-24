@@ -11,7 +11,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsSession;
-import org.yamcs.hornetq.AbstractHornetQTranslatorService;
+import org.yamcs.artemis.AbstractHornetQTranslatorService;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;

@@ -24,9 +24,10 @@ import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsSession;
 import org.yamcs.api.artemis.YamcsClient.ClientBuilder;
-import org.yamcs.hornetq.ArtemisManagement;
-import org.yamcs.hornetq.ArtemisServer;
-import org.yamcs.hornetq.PpTupleTranslator;
+import org.yamcs.artemis.ArtemisManagement;
+import org.yamcs.artemis.ArtemisServer;
+import org.yamcs.artemis.PpTupleTranslator;
+import org.yamcs.artemis.StreamAdapter;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.ParameterData.Builder;
@@ -41,7 +42,6 @@ import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchTestCase;
-import org.yamcs.hornetq.StreamAdapter;
 
 public class PpTupleTranslatorTest extends YarchTestCase {
     static EmbeddedActiveMQ artemisServer;

@@ -15,13 +15,13 @@ import org.yamcs.security.UsernamePasswordToken;
 
 public class YamcsConnectionProperties {
     private String host = "localhost";
-    private int port = 8090;
+    private int port;
     private String instance;
     private AuthenticationToken authToken;
     
     
     enum Protocol {
-        HTTP, ARTEMIS; 
+        http, artemis; 
     }
     private Protocol protocol;
     boolean ssl;
@@ -169,9 +169,11 @@ public class YamcsConnectionProperties {
         YamcsConnectionProperties ycd = new YamcsConnectionProperties();
         URI u = new URI(uri);
         if("yamcs".equalsIgnoreCase(u.getScheme())  || "artemis".equalsIgnoreCase(u.getScheme())) {
-            ycd.protocol = Protocol.ARTEMIS;
+            ycd.protocol = Protocol.artemis;
+            ycd.port = 5445; //default port, might be overwritten below if the port is part of the URI
         } else if("http".equalsIgnoreCase(u.getScheme()) || "https".equalsIgnoreCase(u.getScheme())) {
-            ycd.protocol = Protocol.HTTP;
+            ycd.protocol = Protocol.http;
+            ycd.port = 8090; //default port, might be overwritten below if the port is part of the URI
         } else {
             throw new URISyntaxException(uri, "only http, https or yamcs/artemis  scheme allowed");
         }
@@ -180,7 +182,7 @@ public class YamcsConnectionProperties {
         if("https".equals(u.getScheme()) || "yamcsss".equals(u.getScheme())) {
             ycd.ssl = true;
         }
-        if(u.getPort()!=-1) ycd.port=u.getPort();
+        if(u.getPort()!=-1) ycd.port = u.getPort();
         ycd.host=u.getHost();
 
         if( u.getUserInfo() != null ) {
@@ -204,7 +206,7 @@ public class YamcsConnectionProperties {
     }
     public String getUrl() {
         StringBuilder sb = new StringBuilder();
-        sb.append("protocol://");
+        sb.append(protocol+"://");
         if(host!=null) {
             sb.append(host);
             if(port!=-1) {

@@ -1,4 +1,4 @@
-package org.yamcs.yarch.hornet;
+package org.yamcs.artemis;
 
 
 import java.text.SimpleDateFormat;

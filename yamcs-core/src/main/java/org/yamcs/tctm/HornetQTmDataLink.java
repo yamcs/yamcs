@@ -13,12 +13,12 @@ import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsSession;
 import org.yamcs.archive.PacketWithTime;
+import org.yamcs.artemis.AbstractHornetQTranslatorService;
 
 import com.google.common.util.concurrent.AbstractService;
 
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.time.TimeService;
-import org.yamcs.hornetq.AbstractHornetQTranslatorService;
 
 
 /**

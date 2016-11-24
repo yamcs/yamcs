@@ -1,4 +1,4 @@
-package org.yamcs.hornetq;
+package org.yamcs.artemis;
 
 import static org.yamcs.api.artemis.Protocol.CMDQUEUE_CONTROL_ADDRESS;
 import static org.yamcs.api.artemis.Protocol.CMDQUEUE_INFO_ADDRESS;
