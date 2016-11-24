@@ -44,7 +44,7 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
     private NamedObjectId sv_linkStatus_id, sp_dataCount_id;
     final String yamcsInstance;
     final String name;
-    final TimeService timeService;
+    final protected TimeService timeService;
     
     protected TcpTmDataLink(String instance, String name) {// dummy constructor needed by subclass constructors
         this.yamcsInstance = instance;

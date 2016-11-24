@@ -46,7 +46,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     protected ScheduledThreadPoolExecutor timer;
     protected volatile boolean disabled=false;
     protected int minimumTcPacketLength = -1; //the minimum size of the CCSDS packets uplinked
-    volatile long tcCount;
+    protected volatile long tcCount;
     private NamedObjectId sv_linkStatus_id, sp_dataCount_id;
 
     private SystemParametersCollector sysParamCollector;
@@ -318,8 +318,8 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         }       
     }
 
-    class TcAckStatus extends TcAck {
-        TcAckStatus(CommandId cmdId, String name, String value) {
+    public class TcAckStatus extends TcAck {
+        public TcAckStatus(CommandId cmdId, String name, String value) {
             super(cmdId, name, value);
         }
         @Override
