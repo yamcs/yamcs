@@ -21,6 +21,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.concurrent.Future;
 
 /**
  * Server wide HTTP server based on Netty that provides a number of
@@ -39,6 +40,15 @@ public class HttpServer extends AbstractService {
     private EventLoopGroup bossGroup;
     private Router apiRouter = new Router();
     private List<WebSocketResourceProvider> webSocketResourceProviders = new CopyOnWriteArrayList<>();
+    private WebConfig config;
+
+    public HttpServer() {
+        this(WebConfig.getInstance());
+    }
+
+    public HttpServer(WebConfig config) {
+        this.config = config;
+    }
 
     @Override
     protected void doStart() {
@@ -52,7 +62,7 @@ public class HttpServer extends AbstractService {
 
     public void startServer() throws InterruptedException {
         StaticFileHandler.init();
-        int port = WebConfig.getInstance().getPort();
+        int port = config.getPort();
         bossGroup = new NioEventLoopGroup(1);
 
         //Note that while the thread pools created with this method are unbounded, netty will limit the number
@@ -67,13 +77,23 @@ public class HttpServer extends AbstractService {
         .childHandler(new HttpServerChannelInitializer(apiRouter));
 
         // Bind and start to accept incoming connections.
+        System.out.println("starting server at " + port);
         bootstrap.bind(new InetSocketAddress(port)).sync();
+        System.out.println("started ");
 
         try {
             log.info("Web address: http://{}:{}/", InetAddress.getLocalHost().getHostName(), port);
         } catch (UnknownHostException e) {
             log.info("Web address: http://localhost:{}/", port);
         }
+    }
+
+    public Future<?> stopServer() {
+        return bossGroup.shutdownGracefully();
+    }
+
+    public WebConfig getConfig() {
+        return config;
     }
 
     public void registerRouteHandler(String yamcsInstance, RouteHandler routeHandler) {
@@ -90,7 +110,7 @@ public class HttpServer extends AbstractService {
 
     @Override
     protected void doStop() {
-        bossGroup.shutdownGracefully();
+        stopServer();
         notifyStopped();
     }
 }
