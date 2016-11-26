@@ -81,9 +81,11 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         AuthenticationToken authToken = originalRequestInfo.getAuthenticationToken();
         processorClient = new WebSocketProcessorClient(yamcsInstance, this, applicationName, authToken);
         HttpServer httpServer = YamcsServer.getGlobalService(HttpServer.class);
-        for (WebSocketResourceProvider provider : httpServer.getWebSocketResourceProviders()) {
-            AbstractWebSocketResource resource = provider.createForClient(processorClient);
-            processorClient.registerResource(provider.getRoute(), resource);
+        if (httpServer != null) { // Can happen in junit when not using  yamcs.yaml
+            for (WebSocketResourceProvider provider : httpServer.getWebSocketResourceProviders()) {
+                AbstractWebSocketResource resource = provider.createForClient(processorClient);
+                processorClient.registerResource(provider.getRoute(), resource);
+            }
         }
     }
 

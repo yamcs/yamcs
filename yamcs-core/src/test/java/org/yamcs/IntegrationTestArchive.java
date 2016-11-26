@@ -1,7 +1,9 @@
 package org.yamcs;
 
-import static org.junit.Assert.*;
-import io.netty.handler.codec.http.HttpMethod;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,9 +27,11 @@ import org.yamcs.web.websocket.ParameterResource;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import io.netty.handler.codec.http.HttpMethod;
+
 
 public class IntegrationTestArchive extends AbstractIntegrationTest {
-    
+
 
     private void generateData(String utcStart, int numPackets) {
         long t0 = TimeEncoding.parse(utcStart);
@@ -51,7 +55,7 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
                 .addPacketname("*")
                 .build();
 
-        restClient.doRequest("http://localhost:9190/api/processors/IntegrationTest", HttpMethod.POST, toJson(prequest, SchemaRest.CreateProcessorRequest.WRITE));
+        restClient.doRequest("/processors/IntegrationTest", HttpMethod.POST, toJson(prequest, SchemaRest.CreateProcessorRequest.WRITE));
 
         cinfo = getClientInfo();
         assertEquals("testReplay", cinfo.getProcessorName());
@@ -76,39 +80,39 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
 
         //go back to realtime
         EditClientRequest pcrequest = EditClientRequest.newBuilder().setProcessor("realtime").build();
-        restClient.doRequest("http://localhost:9190/api/clients/" + cinfo.getId(), HttpMethod.GET, toJson(pcrequest, SchemaRest.EditClientRequest.WRITE)).get();
+        restClient.doRequest("/clients/" + cinfo.getId(), HttpMethod.GET, toJson(pcrequest, SchemaRest.EditClientRequest.WRITE)).get();
 
         cinfo = getClientInfo();
         assertEquals("realtime", cinfo.getProcessorName());
     }
-    
+
     @Test
     public void testIndex() throws Exception {
         generateData("2015-01-01T10:00:00", 3600);
-       
+
         String response ;
-        
-        response = restClient.doRequest("http://localhost:9190/api/archive/IntegrationTest/indexes/packets?start=2015-01-01T00:00:00", HttpMethod.GET, "").get();
+
+        response = restClient.doRequest("/archive/IntegrationTest/indexes/packets?start=2015-01-01T00:00:00", HttpMethod.GET, "").get();
         List<ArchiveRecord> arlist = allFromJson(response, org.yamcs.protobuf.SchemaYamcs.ArchiveRecord.MERGE);
         assertEquals(4, arlist.size());
-        
-        response = restClient.doRequest("http://localhost:9190/api/archive/IntegrationTest/indexes/packets?start=2035-01-01T00:00:00", HttpMethod.GET, "").get();
+
+        response = restClient.doRequest("/archive/IntegrationTest/indexes/packets?start=2035-01-01T00:00:00", HttpMethod.GET, "").get();
         assertTrue(response.isEmpty());
     }
 
-    
+
     @Test
     public void testIndexWithRestClient() throws Exception {
         generateData("2015-02-01T10:00:00", 3600);
-        List<ArchiveRecord> arlist = new ArrayList<ArchiveRecord>();
-        
+        List<ArchiveRecord> arlist = new ArrayList<>();
+
         CompletableFuture<Void> f = restClient.doBulkGetRequest("/archive/IntegrationTest/indexes/packets?start=2015-02-01T00:00:00", new BulkRestDataReceiver() {
-            
+
             @Override
             public void receiveException(Throwable t) {
                 fail(t.getMessage());
             }
-            
+
             @Override
             public void receiveData(byte[] data) throws YamcsApiException {
                 try {
@@ -118,22 +122,22 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
                 }
             }
         });
-        
+
         f.get();
         assertEquals(4, arlist.size());
     }
 
     @Test
-    public void testParameterHistory() throws Exception {        
+    public void testParameterHistory() throws Exception {
         generateData("2015-02-02T10:00:00", 3600);
         String respDl = restClient.doRequest("/archive/IntegrationTest/parameters/REFMDB/ccsds-apid?start=2015-02-02T10:10:00&norepeat=true&limit=3", HttpMethod.GET, "").get();
-        
+
         ParameterData pdata = fromJson(respDl, org.yamcs.protobuf.SchemaPvalue.ParameterData.MERGE).build();
         assertEquals(1, pdata.getParameterCount());
         ParameterValue pv = pdata.getParameter(0);
         assertEquals(995, pv.getEngValue().getUint32Value());
-       
-        respDl = restClient.doRequest("/archive/IntegrationTest/parameters/REFMDB/ccsds-apid?start=2015-02-02T10:10:00&norepeat=false&limit=3", HttpMethod.GET, "").get();        
+
+        respDl = restClient.doRequest("/archive/IntegrationTest/parameters/REFMDB/ccsds-apid?start=2015-02-02T10:10:00&norepeat=false&limit=3", HttpMethod.GET, "").get();
         pdata = fromJson(respDl, org.yamcs.protobuf.SchemaPvalue.ParameterData.MERGE).build();
         assertEquals(3, pdata.getParameterCount());
     }

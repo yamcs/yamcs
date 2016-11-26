@@ -13,6 +13,7 @@ import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
+import org.yamcs.protobuf.Rest.IssueCommandResponse;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.tctm.TcDataLink;
 
@@ -25,11 +26,12 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
     public void testCommandVerificationContainter() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
-        
+
         IssueCommandRequest cmdreq = getCommand(7);
-        String resp = restClient.doRequest("http://localhost:9190/api/IntegrationTest/commands/REFMDB/SUBSYS1/CONT_VERIF_TC",
+        String resp = restClient.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/CONT_VERIF_TC",
                 HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE)).get();
-        assertEquals("", resp);
+        IssueCommandResponse response = (fromJson(resp, SchemaRest.IssueCommandResponse.MERGE)).build();
+        assertEquals("REFMDB/SUBSYS1/CONT_VERIF_TC()", response.getSource());
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
 
@@ -83,9 +85,10 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
         wsClient.sendRequest(wsr);
 
         IssueCommandRequest cmdreq = getCommand(4, "p1", "10", "p2", "20");
-        String resp = restClient.doRequest("http://localhost:9190/api/IntegrationTest/commands/REFMDB/SUBSYS1/ALG_VERIF_TC",
+        String resp = restClient.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/ALG_VERIF_TC",
                 HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE)).get();
-        assertEquals("", resp);
+        IssueCommandResponse response = (fromJson(resp, SchemaRest.IssueCommandResponse.MERGE)).build();
+        assertEquals("REFMDB/SUBSYS1/ALG_VERIF_TC()", response.getSource());
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
 
@@ -99,7 +102,7 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
 
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
-        
+
         assertEquals(1, cmdhist.getAttrCount());
 
         CommandHistoryAttribute cha = cmdhist.getAttr(0);
@@ -130,7 +133,7 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
         assertEquals(1, cmdhist.getAttrCount());
         cha = cmdhist.getAttr(0);
         assertEquals("Verifier_Complete", cha.getName());
-        
+
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
         assertEquals(1, cmdhist.getAttrCount());
@@ -144,7 +147,7 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
     public static class MyTcDataLink extends AbstractService implements TcDataLink {
         static short seqNum = 5000;
         CommandHistoryPublisher commandHistoryPublisher;
-        
+
         public MyTcDataLink(String yamcsInstance, String name) {
         }
 
@@ -187,7 +190,7 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
 
         @Override
         public void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryPublisher) {
-           this.commandHistoryPublisher = commandHistoryPublisher;
+            this.commandHistoryPublisher = commandHistoryPublisher;
 
         }
 
