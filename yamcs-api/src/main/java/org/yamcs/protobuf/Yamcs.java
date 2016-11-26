@@ -193,6 +193,10 @@ public final class Yamcs {
      * <code>COMMAND_QUEUE_EVENT = 18;</code>
      */
     COMMAND_QUEUE_EVENT(17, 18),
+    /**
+     * <code>EXTENSION_DATA = 100;</code>
+     */
+    EXTENSION_DATA(18, 100),
     ;
 
     /**
@@ -275,6 +279,10 @@ public final class Yamcs {
      * <code>COMMAND_QUEUE_EVENT = 18;</code>
      */
     public static final int COMMAND_QUEUE_EVENT_VALUE = 18;
+    /**
+     * <code>EXTENSION_DATA = 100;</code>
+     */
+    public static final int EXTENSION_DATA_VALUE = 100;
 
 
     public final int getNumber() { return value; }
@@ -299,6 +307,7 @@ public final class Yamcs {
         case 16: return LINK_EVENT;
         case 17: return COMMAND_QUEUE_INFO;
         case 18: return COMMAND_QUEUE_EVENT;
+        case 100: return EXTENSION_DATA;
         default: return null;
       }
     }
@@ -24478,7 +24487,7 @@ public final class Yamcs {
       "\t\022\030\n\020receptionTimeUTC\030\t \001(\t\"1\n\rEventSeve",
       "rity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020\002*\005" +
       "\010d\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022\010" +
-      "\n\004STOP\020\003*\306\002\n\rProtoDataType\022\014\n\010DT_ERROR\020\001" +
+      "\n\004STOP\020\003*\332\002\n\rProtoDataType\022\014\n\010DT_ERROR\020\001" +
       "\022\020\n\014STATE_CHANGE\020\002\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020" +
       "\004\022\t\n\005EVENT\020\005\022\021\n\rARCHIVE_INDEX\020\006\022\017\n\013ARCHI" +
       "VE_TAG\020\007\022\r\n\tPARAMETER\020\010\022\017\n\013CMD_HISTORY\020\t" +
@@ -24486,7 +24495,8 @@ public final class Yamcs {
       "\025PROCESSING_STATISTICS\020\014\022\017\n\013STREAM_DATA\020" +
       "\r\022\016\n\nALARM_DATA\020\016\022\r\n\tTIME_INFO\020\017\022\016\n\nLINK" +
       "_EVENT\020\020\022\026\n\022COMMAND_QUEUE_INFO\020\021\022\027\n\023COMM",
-      "AND_QUEUE_EVENT\020\022B\024\n\022org.yamcs.protobuf"
+      "AND_QUEUE_EVENT\020\022\022\022\n\016EXTENSION_DATA\020dB\024\n" +
+      "\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
