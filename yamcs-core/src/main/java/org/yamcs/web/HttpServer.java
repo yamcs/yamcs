@@ -3,10 +3,13 @@ package org.yamcs.web;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.web.rest.Router;
+import org.yamcs.web.websocket.WebSocketResourceProvider;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -35,6 +38,7 @@ public class HttpServer extends AbstractService {
 
     private EventLoopGroup bossGroup;
     private Router apiRouter = new Router();
+    private List<WebSocketResourceProvider> webSocketResourceProviders = new CopyOnWriteArrayList<>();
 
     @Override
     protected void doStart() {
@@ -74,6 +78,14 @@ public class HttpServer extends AbstractService {
 
     public void registerRouteHandler(String yamcsInstance, RouteHandler routeHandler) {
         apiRouter.registerRouteHandler(yamcsInstance, routeHandler);
+    }
+
+    public void registerWebSocketRouteHandler(WebSocketResourceProvider provider) {
+        webSocketResourceProviders.add(provider);
+    }
+
+    public List<WebSocketResourceProvider> getWebSocketResourceProviders() {
+        return webSocketResourceProviders;
     }
 
     @Override

@@ -77,7 +77,7 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
 
         resource.append("start="+TimeEncoding.toString(params.start));
         resource.append("&stop="+TimeEncoding.toString(params.stop));
-        
+
         int batchSize = 1000; //we do this to limit the number of swing calls
         List<Event> evList = new ArrayList<>(batchSize);
         AtomicInteger count = new AtomicInteger();
@@ -209,7 +209,7 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
         }
     }
 
-    
+
     @Override
     public void connecting(String url) {
     }
@@ -226,7 +226,7 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
 
     @Override
     public void log(String message) {
-        
+
     }
 
     @Override

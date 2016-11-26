@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
 import org.yamcs.protobuf.Archive.ColumnData;
 import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Rest.StreamSubscribeRequest;
@@ -16,7 +15,6 @@ import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.security.AuthenticationToken;
 import org.yamcs.web.rest.archive.ArchiveHelper;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
@@ -32,19 +30,19 @@ import org.yamcs.yarch.YarchDatabase;
 public class StreamResource extends AbstractWebSocketResource {
 
     private static final Logger log = LoggerFactory.getLogger(StreamResource.class);
+    public static final String RESOURCE_NAME = "stream";
 
     public static final String OP_subscribe = "subscribe";
     public static final String OP_publish = "publish";
 
     private List<Subscription> subscriptions = new ArrayList<>();
 
-    public StreamResource(YProcessor yproc, WebSocketFrameHandler wsHandler) {
-        super(yproc, wsHandler);
-        wsHandler.addResource("stream", this);
+    public StreamResource(WebSocketProcessorClient client) {
+        super(client);
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder, AuthenticationToken authenticationToken) throws WebSocketException {
+    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         switch (ctx.getOperation()) {
         case OP_subscribe:
             return processSubscribeRequest(ctx, decoder);

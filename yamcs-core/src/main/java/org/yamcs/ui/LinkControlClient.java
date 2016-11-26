@@ -2,8 +2,6 @@ package org.yamcs.ui;
 
 import java.util.concurrent.CompletableFuture;
 
-import io.netty.handler.codec.http.HttpMethod;
-
 import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.rest.RestClient;
@@ -17,6 +15,8 @@ import org.yamcs.protobuf.YamcsManagement.LinkEvent;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.web.websocket.LinkResource;
 
+import io.netty.handler.codec.http.HttpMethod;
+
 
 /**
  * enables/disables TM/TC/Parameter links
@@ -26,15 +26,15 @@ import org.yamcs.web.websocket.LinkResource;
 public class LinkControlClient implements ConnectionListener, WebSocketResponseHandler, WebSocketClientCallback {
     final LinkListener linkListener;
     YamcsConnector yconnector;
-  
-    
+
+
     public LinkControlClient(YamcsConnector yconnector, LinkListener linkListener) {
         this.yconnector = yconnector;
         yconnector.addConnectionListener(this);
         this.linkListener = linkListener;
     }
 
-    
+
     public void enable(LinkInfo li) throws YamcsApiException, YamcsException {
         RestClient restClient = yconnector.getRestClient();
         // PATCH /api/links/:instance/:name
@@ -66,13 +66,12 @@ public class LinkControlClient implements ConnectionListener, WebSocketResponseH
 
     /**
      * this is called at the initial connection and when the instance is changed in the Yamcs Monitor.
-     * 
+     *
      * The server is nice enough to send us the full configuration each time we subscribe even when we are already subscribed.
      */
     public void receiveInitialConfig() {
         WebSocketRequest wsr = new WebSocketRequest(LinkResource.RESOURCE_NAME, LinkResource.OP_subscribe);
         yconnector.performSubscription(wsr, this, this);
-        
     }
     /** do nothing - we are only interested in connected in order to subscribe to link info information*/
     @Override
@@ -81,7 +80,7 @@ public class LinkControlClient implements ConnectionListener, WebSocketResponseH
     /** do nothing - we are only interested in connected in order to subscribe to link info information*/
     @Override
     public void disconnected() {   }
-    
+
     /** do nothing - we are only interested in connected in order to subscribe to link info information*/
     @Override
     public void connecting(String url) {    }
@@ -89,8 +88,8 @@ public class LinkControlClient implements ConnectionListener, WebSocketResponseH
     /** do nothing - we are only interested in connected in order to subscribe to link info information*/
     @Override
     public void log(String message) {}
-    
-    
+
+
     @Override
     public void onException(WebSocketExceptionData e) {
         System.out.println("LinkControlClient.onException "+e);
@@ -105,5 +104,5 @@ public class LinkControlClient implements ConnectionListener, WebSocketResponseH
     }
 
 
-   
+
 }

@@ -1,7 +1,5 @@
 package org.yamcs.ui;
 
-import io.netty.handler.codec.http.HttpMethod;
-
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -21,10 +19,12 @@ import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.web.websocket.CommandQueueResource;
 
+import io.netty.handler.codec.http.HttpMethod;
+
 /**
  * Controls yamcs command queues via Web
  * Allows to register one CommandQueueListener per (instance, yprocessor)
- * 
+ *
  * @author nm
  *
  */
@@ -49,7 +49,7 @@ public class CommandQueueControlClient implements ConnectionListener,  WebSocket
         yconnector.performSubscription(wsr, this, this);
     }
 
-    
+
     private void sendLog(String message) {
         for(int i=0;i<listeners.size();i++) {
             listeners.get(i).log(message);
@@ -59,7 +59,7 @@ public class CommandQueueControlClient implements ConnectionListener,  WebSocket
     /**
      * Send a message to the server to change the queue state.
      * If newState=ENABLED, then changing the queue state may result in some commands being sent.
-     *  
+     *
      * @param cqi command queue info
      * @param rebuild The rebuild flag indicates that the command shall be rebuild (new timestamp, new pvt checks, etc) if the queue enabling results in commands being sent TODO
      */
@@ -79,12 +79,12 @@ public class CommandQueueControlClient implements ConnectionListener,  WebSocket
      * Send a message to the server to release the command
      * @param cqe - reference to the command to be released
      * @param rebuild - indicate that the binary shall be rebuilt (new timestamp, new pvt checks, etc)
-     * @throws YamcsException 
+     * @throws YamcsException
      */
     public void releaseCommand(CommandQueueEntry cqe, boolean rebuild) throws YamcsApiException, YamcsException {
         //PATCH /api/processors/:instance/:processor/cqueues/:cqueue/entries/:uuid
         RestClient restClient = yconnector.getRestClient();
-        
+
         String resource = "/processors/"+cqe.getInstance()+"/"+cqe.getProcessorName()+"/cqueues/"+cqe.getQueueName()+"/entries/"+cqe.getUuid()+"?state=released";
         CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH);
         cf.whenComplete((result, exception) -> {
@@ -101,7 +101,7 @@ public class CommandQueueControlClient implements ConnectionListener,  WebSocket
     public void rejectCommand(CommandQueueEntry cqe) {
         //PATCH /api/processors/:instance/:processor/cqueues/:cqueue/entries/:uuid
         RestClient restClient = yconnector.getRestClient();
-        
+
         String resource = "/processors/"+cqe.getInstance()+"/"+cqe.getProcessorName()+"/cqueues/"+cqe.getQueueName()+"/entries/"+cqe.getUuid()+"?state=rejected";
         CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH);
         cf.whenComplete((result, exception) -> {

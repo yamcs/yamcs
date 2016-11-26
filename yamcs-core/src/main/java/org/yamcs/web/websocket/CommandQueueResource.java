@@ -4,8 +4,8 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
 import org.yamcs.ProcessorException;
+import org.yamcs.YProcessor;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;
@@ -19,24 +19,24 @@ import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.security.AuthenticationToken;
 
 /**
  * Provides realtime command queue subscription via web.
  */
 public class CommandQueueResource extends AbstractWebSocketResource implements CommandQueueListener {
+
     private static final Logger log = LoggerFactory.getLogger(CommandQueueResource.class);
     public static final String RESOURCE_NAME = "cqueues";
+
     public static final String OP_subscribe = "subscribe";
     public static final String OP_unsubscribe = "unsubscribe";
-    
-    public CommandQueueResource(YProcessor processor, WebSocketFrameHandler wsHandler) {
-        super(processor, wsHandler);
-        wsHandler.addResource(RESOURCE_NAME, this);
+
+    public CommandQueueResource(WebSocketProcessorClient client) {
+        super(client);
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder, AuthenticationToken authenticationToken) throws WebSocketException {
+    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         switch (ctx.getOperation()) {
         case OP_subscribe:
             return subscribe(ctx.getRequestId());
@@ -89,16 +89,16 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
     }
 
     @Override
-    public void switchYProcessor(YProcessor newProcessor, AuthenticationToken authToken) throws ProcessorException {
+    public void switchYProcessor(YProcessor oldProcessor, YProcessor newProcessor) throws ProcessorException {
         doUnsubscribe();
-        processor = newProcessor;
+        super.switchYProcessor(oldProcessor, newProcessor);
         doSubscribe();
     }
 
     /**
      * right after subcription send the full queeue content (commands included).
      * Afterwards the clinets get notified by command added/command removed when the queue gets modified.
-     * 
+     *
      * @param q
      */
     private void sendInitialUpdateQueue(CommandQueue q) {
