@@ -2,13 +2,12 @@ package org.yamcs.web.websocket;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
 import org.yamcs.ProcessorException;
+import org.yamcs.YProcessor;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.security.AuthenticationToken;
 import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -21,8 +20,10 @@ import com.google.protobuf.ByteString;
  * Provides realtime event subscription via web.
  */
 public class PacketResource extends AbstractWebSocketResource {
+
     private static final Logger log = LoggerFactory.getLogger(PacketResource.class);
     public static final String RESOURCE_NAME = "packets";
+
     public static final String OP_subscribe = "subscribe";
     public static final String OP_unsubscribe = "unsubscribe";
     private String streamName;
@@ -30,23 +31,22 @@ public class PacketResource extends AbstractWebSocketResource {
     private StreamSubscriber streamSubscriber;
 
 
-    public PacketResource(YProcessor channel, WebSocketFrameHandler wsHandler) {
-        super(channel, wsHandler);
-        wsHandler.addResource(RESOURCE_NAME, this);
+    public PacketResource(WebSocketProcessorClient client) {
+        super(client);
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder, AuthenticationToken authenticationToken) throws WebSocketException {
+    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         String op = ctx.getOperation();
         if(OP_unsubscribe.equals(op)) {
             return unsubscribe(ctx.getRequestId());
         }
-        
+
         if(op.startsWith(OP_subscribe)) {
             if(streamSubscriber!=null) {
                 throw new WebSocketException(ctx.getRequestId(), "Already subscribed to a stream");
             }
-            
+
            String[] a = op.split("\\s+");
            if(a.length!=2) {
                throw new WebSocketException(ctx.getRequestId(), "Invalid request. Use 'subscribe <stream_name>'");
@@ -58,9 +58,9 @@ public class PacketResource extends AbstractWebSocketResource {
                throw new WebSocketException(ctx.getRequestId(), "Invalid request. No stream named '"+streamName+"'");
            }
            return subscribe(ctx.getRequestId());
-        } 
-        
-        
+        }
+
+
         throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '"+ctx.getOperation()+"'");
     }
 
@@ -71,9 +71,9 @@ public class PacketResource extends AbstractWebSocketResource {
     }
 
     @Override
-    public void switchYProcessor(YProcessor newProcessor, AuthenticationToken authToken) throws ProcessorException {
+    public void switchYProcessor(YProcessor oldProcessor, YProcessor newProcessor) throws ProcessorException {
         doUnsubscribe();
-        processor = newProcessor;
+        super.switchYProcessor(oldProcessor, newProcessor);
         YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
         stream = ydb.getStream(streamName);
         doSubscribe();

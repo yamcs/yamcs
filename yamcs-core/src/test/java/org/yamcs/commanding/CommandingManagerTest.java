@@ -31,7 +31,7 @@ public class CommandingManagerTest {
     public static void beforeClass() throws ConfigurationException {        
         TimeEncoding.setUp();
         YConfiguration.setup();
-        xtceDb = XtceDbFactory.createInstance("refmdb");
+        xtceDb = XtceDbFactory.createInstanceByConfig("refmdb");
     }
             
     @Test

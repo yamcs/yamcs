@@ -1,3 +1,6 @@
+services:
+ - org.yamcs.web.HttpServer
+
 instances:
  - yproctest0
  - yproctest1

@@ -19,7 +19,7 @@ import com.google.protobuf.ByteString;
  * Provides common functionality to assemble and disassemble GPB messages
  */
 public final class ManagementGpbHelper {
-    
+
     public static Statistics buildStats(YProcessor processor) {
         ProcessingStatistics ps=processor.getTmProcessor().getStatistics();
         Statistics.Builder statsb=Statistics.newBuilder();
@@ -42,11 +42,13 @@ public final class ManagementGpbHelper {
         }
         return statsb.build();
     }
-    
+
     public static ProcessorInfo toProcessorInfo(YProcessor yproc) {
         ProcessorInfo.Builder cib=ProcessorInfo.newBuilder().setInstance(yproc.getInstance())
                 .setName(yproc.getName()).setType(yproc.getType())
-                .setCreator(yproc.getCreator()).setHasCommanding(yproc.hasCommanding())
+                .setCreator(yproc.getCreator())
+                .setHasCommanding(yproc.hasCommanding())
+                .setHasAlarms(yproc.hasAlarmServer())
                 .setState(yproc.getState());
 
         if(yproc.isReplay()) {
@@ -55,7 +57,7 @@ public final class ManagementGpbHelper {
         }
         return cib.build();
     }
-    
+
     public static CommandQueueEntry toCommandQueueEntry(CommandQueue q, PreparedCommand pc) {
         YProcessor c=q.getChannel();
         return CommandQueueEntry.newBuilder()
@@ -72,7 +74,7 @@ public final class ManagementGpbHelper {
                 .setName(queue.getName()).setState(queue.getState())
                 .setNbRejectedCommands(queue.getNbRejectedCommands())
                 .setNbSentCommands(queue.getNbSentCommands());
-        
+
         if (queue.getStateExpirationRemainingS() != -1) {
             b.setStateExpirationTimeS(queue.getStateExpirationRemainingS());
         }

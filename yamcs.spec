@@ -72,7 +72,6 @@ fi
 %defattr(644,root,root,755)
 %config %{prefix}/mdb
 %config %{prefix}/etc
-%config %{prefix}/bin
 %{prefix}/lib
 %{prefix}/web
 %exclude %{prefix}/lib/ext
@@ -85,7 +84,7 @@ fi
 
 %defattr(755,root,root,755) 
 %config /etc/init.d/* 
-%{prefix}/bin/*
+%config %{prefix}/bin/*
 
 %post
 

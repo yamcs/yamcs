@@ -36,7 +36,7 @@
 
         vm.events = [];
         eventsService.listEvents().then(function (data) {
-            vm.events = data;
+            vm.events = data || [];
             return vm.events;
         });
 
@@ -49,7 +49,7 @@
             eventsService.listEvents({
                 limit: 200
             }).then(function (data) {
-                vm.events = data;
+                vm.events = data || [];
                 return vm.events;
             });
         };

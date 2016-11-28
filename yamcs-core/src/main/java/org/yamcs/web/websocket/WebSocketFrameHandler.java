@@ -8,12 +8,14 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.YamcsServer;
 import org.yamcs.api.ws.WSConstants;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.web.HttpRequestHandler;
 import org.yamcs.web.HttpRequestInfo;
+import org.yamcs.web.HttpServer;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
@@ -78,6 +80,13 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         String yamcsInstance = originalRequestInfo.getYamcsInstance();
         AuthenticationToken authToken = originalRequestInfo.getAuthenticationToken();
         processorClient = new WebSocketProcessorClient(yamcsInstance, this, applicationName, authToken);
+        HttpServer httpServer = YamcsServer.getGlobalService(HttpServer.class);
+        if (httpServer != null) { // Can happen in junit when not using  yamcs.yaml
+            for (WebSocketResourceProvider provider : httpServer.getWebSocketResourceProviders()) {
+                AbstractWebSocketResource resource = provider.createForClient(processorClient);
+                processorClient.registerResource(provider.getRoute(), resource);
+            }
+        }
     }
 
     @Override
@@ -119,7 +128,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
                     WebSocketDecodeContext msg = decoder.decodeMessage(in);
                     AbstractWebSocketResource resource = resourcesByName.get(msg.getResource());
                     if (resource != null) {
-                        WebSocketReplyData reply = resource.processRequest(msg, decoder, processorClient.getAuthToken());
+                        WebSocketReplyData reply = resource.processRequest(msg, decoder);
                         if(reply != null) {
                             sendReply(reply);
                         }

@@ -47,7 +47,7 @@ public class XtceTmExtractorTest {
         YConfiguration.setup("refmdb");
         ManagementService.setup(false);
         XtceDbFactory.reset();
-        xtcedb=XtceDbFactory.createInstance("refmdb");
+        xtcedb=XtceDbFactory.createInstanceByConfig("refmdb");
         //xtcedb.print(System.out);
     }
 

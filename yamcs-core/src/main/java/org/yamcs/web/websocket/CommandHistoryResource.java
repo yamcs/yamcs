@@ -2,8 +2,8 @@ package org.yamcs.web.websocket;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
 import org.yamcs.ProcessorException;
+import org.yamcs.YProcessor;
 import org.yamcs.cmdhistory.CommandHistoryConsumer;
 import org.yamcs.cmdhistory.CommandHistoryFilter;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
@@ -15,24 +15,24 @@ import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.security.AuthenticationToken;
 import org.yamcs.utils.ValueUtility;
 
 /**
  * Provides realtime command history subscription via web.
  */
 public class CommandHistoryResource extends AbstractWebSocketResource implements CommandHistoryConsumer {
+
     private static final Logger log = LoggerFactory.getLogger(CommandHistoryResource.class);
+    public static final String RESOURCE_NAME = "cmdhistory";
 
-    private int subscriptionId=-1;
+    private int subscriptionId = -1;
 
-    public CommandHistoryResource(YProcessor channel, WebSocketFrameHandler wsHandler) {
-        super(channel, wsHandler);
-        wsHandler.addResource("cmdhistory", this);
+    public CommandHistoryResource(WebSocketProcessorClient client) {
+        super(client);
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder, AuthenticationToken authenticationToken) throws WebSocketException {
+    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         switch (ctx.getOperation()) {
         case "subscribe":
             return subscribe(ctx.getRequestId());
@@ -61,7 +61,8 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
         }
     }
 
-    public void switchYProcessor(YProcessor c) throws ProcessorException {
+    @Override
+    public void switchYProcessor(YProcessor oldProcessor, YProcessor newProcessor) throws ProcessorException {
         if(subscriptionId == -1) return;
 
         CommandHistoryRequestManager chrm = processor.getCommandHistoryManager();
@@ -70,7 +71,7 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
             filter = chrm.unsubscribeCommandHistory(subscriptionId);
         }
 
-        this.processor = c;
+        super.switchYProcessor(oldProcessor, newProcessor);
 
         if (processor.hasCommanding()) {
             chrm = processor.getCommandHistoryManager();

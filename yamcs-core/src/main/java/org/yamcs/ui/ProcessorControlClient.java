@@ -1,8 +1,6 @@
 package org.yamcs.ui;
 
 
-import io.netty.handler.codec.http.HttpMethod;
-
 import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.YamcsException;
@@ -25,16 +23,18 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
+import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
-import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ManagementResource;
+
+import io.netty.handler.codec.http.HttpMethod;
 
 
 /**
  * controls processors in yamcs server via websocket
- * 
+ *
  * @author nm
  *
  */
@@ -71,7 +71,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         if(spec.hasStop()) {
             cprb.setStop(TimeEncoding.toString(spec.getStop()));
         } else if (spec.hasUtcStop()) {
-            cprb.setStop(spec.getUtcStop());            
+            cprb.setStop(spec.getUtcStop());
         }
         if(spec.hasPacketRequest()) {
             PacketReplayRequest prr = spec.getPacketRequest();
@@ -98,7 +98,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         if(spec.hasSpeed()) {
             ReplaySpeed speed = spec.getSpeed();
             if(speed.getType()==ReplaySpeedType.AFAP) {
-                cprb.setSpeed("afap");    
+                cprb.setSpeed("afap");
             } else if(speed.getType()==ReplaySpeedType.FIXED_DELAY) {
                 cprb.setSpeed(Integer.toString(Math.round(speed.getParam())));
             } else if(speed.getType()==ReplaySpeedType.REALTIME) {
@@ -136,7 +136,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
                     yamcsMonitor.log("Exception connecting client to processor: "+exception.getMessage());
                 }
             });
-        }       
+        }
 
         return CompletableFuture.allOf(cfs);
     }

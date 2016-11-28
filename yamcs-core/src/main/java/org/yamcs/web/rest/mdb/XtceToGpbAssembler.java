@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.xml.bind.DatatypeConverter;
+
 import org.yamcs.protobuf.Mdb;
 import org.yamcs.protobuf.Mdb.AlarmInfo;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
@@ -14,6 +16,7 @@ import org.yamcs.protobuf.Mdb.AlgorithmInfo;
 import org.yamcs.protobuf.Mdb.AlgorithmInfo.Scope;
 import org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo;
 import org.yamcs.protobuf.Mdb.ArgumentInfo;
+import org.yamcs.protobuf.Mdb.ArgumentTypeInfo;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ComparisonInfo;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
@@ -24,7 +27,6 @@ import org.yamcs.protobuf.Mdb.InputParameterInfo;
 import org.yamcs.protobuf.Mdb.OutputParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
-import org.yamcs.protobuf.Mdb.ArgumentTypeInfo;
 import org.yamcs.protobuf.Mdb.RepeatInfo;
 import org.yamcs.protobuf.Mdb.SequenceEntryInfo;
 import org.yamcs.protobuf.Mdb.SignificanceInfo;
@@ -36,28 +38,76 @@ import org.yamcs.protobuf.YamcsManagement.HistoryInfo;
 import org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
-import org.yamcs.xtce.*;
+import org.yamcs.xtce.AlarmRanges;
+import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.Argument;
+import org.yamcs.xtce.ArgumentAssignment;
+import org.yamcs.xtce.ArgumentType;
+import org.yamcs.xtce.BaseDataType;
+import org.yamcs.xtce.BinaryArgumentType;
+import org.yamcs.xtce.BinaryDataEncoding;
+import org.yamcs.xtce.BooleanArgumentType;
+import org.yamcs.xtce.BooleanDataEncoding;
+import org.yamcs.xtce.Calibrator;
+import org.yamcs.xtce.Comparison;
+import org.yamcs.xtce.ComparisonList;
+import org.yamcs.xtce.ContainerEntry;
+import org.yamcs.xtce.DataEncoding;
+import org.yamcs.xtce.DataSource;
+import org.yamcs.xtce.DynamicIntegerValue;
+import org.yamcs.xtce.EnumeratedArgumentType;
+import org.yamcs.xtce.EnumeratedParameterType;
+import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
-
-import javax.xml.bind.DatatypeConverter;
+import org.yamcs.xtce.FixedIntegerValue;
+import org.yamcs.xtce.FloatArgumentType;
+import org.yamcs.xtce.FloatDataEncoding;
+import org.yamcs.xtce.FloatParameterType;
+import org.yamcs.xtce.FloatRange;
+import org.yamcs.xtce.Header;
+import org.yamcs.xtce.History;
+import org.yamcs.xtce.InputParameter;
+import org.yamcs.xtce.IntegerArgumentType;
+import org.yamcs.xtce.IntegerDataEncoding;
+import org.yamcs.xtce.IntegerParameterType;
+import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.NumericAlarm;
+import org.yamcs.xtce.OnParameterUpdateTrigger;
+import org.yamcs.xtce.OnPeriodicRateTrigger;
+import org.yamcs.xtce.OperatorType;
+import org.yamcs.xtce.OutputParameter;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterEntry;
+import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.Repeat;
+import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.xtce.SequenceEntry;
+import org.yamcs.xtce.Significance;
+import org.yamcs.xtce.SpaceSystem;
+import org.yamcs.xtce.StringArgumentType;
+import org.yamcs.xtce.StringDataEncoding;
+import org.yamcs.xtce.TransmissionConstraint;
+import org.yamcs.xtce.TriggerSetType;
+import org.yamcs.xtce.UnitType;
+import org.yamcs.xtce.ValueEnumeration;
 
 public class XtceToGpbAssembler {
-    
+
     public enum DetailLevel {
         LINK,
         SUMMARY,
         FULL
     }
-    
+
     public static ContainerInfo toContainerInfo(SequenceContainer c, String instanceURL, DetailLevel detail, Set<Option> options) {
         ContainerInfo.Builder cb = ContainerInfo.newBuilder();
-        
+
         cb.setName(c.getName());
         cb.setQualifiedName(c.getQualifiedName());
         if (!options.contains(Option.NO_LINK)) {
             cb.setUrl(instanceURL + "/containers" + c.getQualifiedName());
         }
-        
+
         if (detail == DetailLevel.SUMMARY || detail == DetailLevel.FULL) {
             if (c.getShortDescription() != null) {
                 cb.setShortDescription(c.getShortDescription());
@@ -102,14 +152,14 @@ public class XtceToGpbAssembler {
                 }
             }
         }
-        
+
         return cb.build();
     }
-    
+
     public static SequenceEntryInfo toSequenceEntryInfo(SequenceEntry e, String instanceURL, DetailLevel detail, Set<Option> options) {
         SequenceEntryInfo.Builder b = SequenceEntryInfo.newBuilder();
         b.setLocationInBits(e.getLocationInContainerInBits());
-        
+
         switch (e.getReferenceLocation()) {
         case containerStart:
             b.setReferenceLocation(SequenceEntryInfo.ReferenceLocationType.CONTAINER_START);
@@ -120,7 +170,7 @@ public class XtceToGpbAssembler {
         default:
             throw new IllegalStateException("Unexpected reference location " + e);
         }
-        
+
         if (e instanceof ContainerEntry) {
             ContainerEntry ce = (ContainerEntry) e;
             if (detail == DetailLevel.LINK || detail == DetailLevel.SUMMARY) {
@@ -138,10 +188,10 @@ public class XtceToGpbAssembler {
         } else {
             throw new IllegalStateException("Unexpected entry " + e);
         }
-        
+
         return b.build();
     }
-    
+
     public static RepeatInfo toRepeatInfo(Repeat xtceRepeat, String instanceURL, DetailLevel detail, Set<Option> options) {
         RepeatInfo.Builder b = RepeatInfo.newBuilder();
         b.setBitsBetween(xtceRepeat.getOffsetSizeInBits());
@@ -158,22 +208,22 @@ public class XtceToGpbAssembler {
         } else {
             throw new IllegalStateException("Unexpected repeat count " + xtceRepeat.getCount());
         }
-        
+
         return b.build();
     }
-    
+
     /**
      * @param detail whether base commands should be expanded
      */
     public static CommandInfo toCommandInfo(MetaCommand cmd, String instanceURL, DetailLevel detail, Set<Option> options) {
         CommandInfo.Builder cb = CommandInfo.newBuilder();
-        
+
         cb.setName(cmd.getName());
         cb.setQualifiedName(cmd.getQualifiedName());
         if (!options.contains(Option.NO_LINK)) {
             cb.setUrl(instanceURL + "/commands" + cmd.getQualifiedName());
         }
-        
+
         if (detail == DetailLevel.SUMMARY || detail == DetailLevel.FULL) {
             if (cmd.getShortDescription() != null) {
                 cb.setShortDescription(cmd.getShortDescription());
@@ -187,7 +237,7 @@ public class XtceToGpbAssembler {
                     cb.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
                 }
             }
-            
+
             if (cmd.getDefaultSignificance() != null) {
                 cb.setSignificance(toSignificanceInfo(cmd.getDefaultSignificance()));
             }
@@ -207,7 +257,7 @@ public class XtceToGpbAssembler {
                     cb.addConstraint(toTransmissionConstraintInfo(xtceConstraint, instanceURL, options));
                 }
             }
-            
+
             if (detail == DetailLevel.SUMMARY) {
                 if (cmd.getBaseMetaCommand() != null) {
                     cb.setBaseCommand(toCommandInfo(cmd.getBaseMetaCommand(), instanceURL, DetailLevel.LINK, options));
@@ -218,10 +268,10 @@ public class XtceToGpbAssembler {
                 }
             }
         }
-    
+
         return cb.build();
     }
-    
+
     public static ArgumentInfo toArgumentInfo(Argument xtceArgument) {
         ArgumentInfo.Builder b = ArgumentInfo.newBuilder();
         b.setName(xtceArgument.getName());
@@ -252,7 +302,7 @@ public class XtceToGpbAssembler {
         b.setValue(xtceArgument.getArgumentValue());
         return b.build();
     }
-    
+
     public static TransmissionConstraintInfo toTransmissionConstraintInfo(TransmissionConstraint xtceConstraint, String instanceURL, Set<Option> options) {
         TransmissionConstraintInfo.Builder b = TransmissionConstraintInfo.newBuilder();
         if (xtceConstraint.getMatchCriteria() instanceof Comparison) {
@@ -268,7 +318,7 @@ public class XtceToGpbAssembler {
         b.setTimeout(xtceConstraint.getTimeout());
         return b.build();
     }
-    
+
     public static ComparisonInfo toComparisonInfo(Comparison xtceComparison, String instanceURL, Set<Option> options) {
         ComparisonInfo.Builder b = ComparisonInfo.newBuilder();
         b.setParameter(toParameterInfo(xtceComparison.getParameter(), instanceURL, DetailLevel.LINK, options));
@@ -276,7 +326,7 @@ public class XtceToGpbAssembler {
         b.setValue(xtceComparison.getStringValue());
         return b.build();
     }
-    
+
     public static ComparisonInfo.OperatorType toOperatorType(OperatorType xtceOperator) {
         switch (xtceOperator) {
         case EQUALITY:
@@ -295,7 +345,7 @@ public class XtceToGpbAssembler {
             throw new IllegalStateException("Unexpected operator " + xtceOperator);
         }
     }
-    
+
     public static SignificanceInfo toSignificanceInfo(Significance xtceSignificance) {
         SignificanceInfo.Builder b = SignificanceInfo.newBuilder();
         switch (xtceSignificance.getConsequenceLevel()) {
@@ -323,19 +373,19 @@ public class XtceToGpbAssembler {
         if (xtceSignificance.getReasonForWarning() != null) {
             b.setReasonForWarning(xtceSignificance.getReasonForWarning());
         }
-        
+
         return b.build();
     }
-    
+
     public static ParameterInfo toParameterInfo(Parameter p, String mdbURL, DetailLevel detail, Set<Option> options) {
         ParameterInfo.Builder b = ParameterInfo.newBuilder();
-        
+
         b.setName(p.getName());
         b.setQualifiedName(p.getQualifiedName());
         if (!options.contains(Option.NO_LINK)) {
             b.setUrl(mdbURL + "/parameters" + p.getQualifiedName());
         }
-        
+
         if (detail == DetailLevel.SUMMARY || detail == DetailLevel.FULL) {
             if (p.getShortDescription() != null) {
                 b.setShortDescription(p.getShortDescription());
@@ -371,7 +421,7 @@ public class XtceToGpbAssembler {
             if(p.getParameterType() != null)
                 b.setType(toParameterTypeInfo(p.getParameterType(), detail));
         }
-        
+
         if (detail == DetailLevel.FULL) {
             if (p.getLongDescription() != null) {
                 b.setLongDescription(p.getLongDescription());
@@ -383,7 +433,7 @@ public class XtceToGpbAssembler {
                 }
             }
         }
-        
+
         return b.build();
     }
 
@@ -397,7 +447,7 @@ public class XtceToGpbAssembler {
             if (parameterType.getEncoding() != null) {
                 infob.setDataEncoding(toDataEncodingInfo(parameterType.getEncoding()));
             }
-            
+
             if (parameterType instanceof IntegerParameterType) {
                 IntegerParameterType ipt = (IntegerParameterType) parameterType;
                 if (ipt.getDefaultAlarm() != null) {
@@ -485,7 +535,7 @@ public class XtceToGpbAssembler {
         }
         return infob.build();
     }
-    
+
     // Simplifies the XTCE structure a bit for outside use.
     // String-encoded numeric types see some sort of two-step conversion from raw to eng
     // with the first to interpret the string (stored in a nested StringDataEncoding)
@@ -534,7 +584,7 @@ public class XtceToGpbAssembler {
         }
         return infob.build();
     }
-    
+
     public static String toTextualEncoding(StringDataEncoding sde) {
         String result = sde.getSizeType() + "(";
         switch (sde.getSizeType()) {
@@ -554,7 +604,7 @@ public class XtceToGpbAssembler {
         }
         return result + ")";
     }
-    
+
     public static Mdb.EnumValue toEnumValue(ValueEnumeration xtceValue) {
         Mdb.EnumValue.Builder b = Mdb.EnumValue.newBuilder();
         b.setValue(xtceValue.getValue());
@@ -590,10 +640,10 @@ public class XtceToGpbAssembler {
             AlarmRange severeRange = toAlarmRange(AlarmLevelType.SEVERE, staticRanges.getSevereRange());
             alarmInfob.addStaticAlarmRange(severeRange);
         }
-            
+
         return alarmInfob.build();
     }
-    
+
     public static AlarmInfo toAlarmInfo(EnumerationAlarm enumerationAlarm) {
         AlarmInfo.Builder alarmInfob = AlarmInfo.newBuilder();
         alarmInfob.setMinViolations(enumerationAlarm.getMinViolations());
@@ -602,7 +652,7 @@ public class XtceToGpbAssembler {
         }
         return alarmInfob.build();
     }
-    
+
     public static AlarmRange toAlarmRange(AlarmLevelType level, FloatRange alarmRange) {
         AlarmRange.Builder resultb = AlarmRange.newBuilder();
         resultb.setLevel(level);
@@ -641,16 +691,16 @@ public class XtceToGpbAssembler {
         }
         return resultb.build();
     }
-    
+
     public static AlgorithmInfo toAlgorithmInfo(Algorithm a, String mdbURL, DetailLevel detail, Set<Option> options) {
         AlgorithmInfo.Builder b = AlgorithmInfo.newBuilder();
-        
+
         b.setName(a.getName());
         b.setQualifiedName(a.getQualifiedName());
         if (!options.contains(Option.NO_LINK)) {
             b.setUrl(mdbURL + "/algorithms" + a.getQualifiedName());
         }
-        
+
         if (detail == DetailLevel.SUMMARY || detail == DetailLevel.FULL) {
             if (a.getShortDescription() != null) {
                 b.setShortDescription(a.getShortDescription());
@@ -675,7 +725,7 @@ public class XtceToGpbAssembler {
                 throw new IllegalStateException("Unexpected scope " + a.getScope());
             }
         }
-        
+
         if (detail == DetailLevel.FULL) {
             if (a.getLanguage() != null) {
                 b.setLanguage(a.getLanguage());
@@ -699,10 +749,10 @@ public class XtceToGpbAssembler {
                 }
             }
         }
-        
+
         return b.build();
     }
-    
+
     public static InputParameterInfo toInputParameterInfo(InputParameter xtceInput, String mdbURL, Set<Option> options) {
         InputParameterInfo.Builder resultb = InputParameterInfo.newBuilder();
         resultb.setParameter(toParameterInfo(xtceInput.getParameterInstance().getParameter(), mdbURL, DetailLevel.SUMMARY, options));
@@ -713,7 +763,7 @@ public class XtceToGpbAssembler {
         resultb.setMandatory(xtceInput.isMandatory());
         return resultb.build();
     }
-    
+
     public static OutputParameterInfo toOutputParameterInfo(OutputParameter xtceOutput, String mdbUrl, Set<Option> options) {
         OutputParameterInfo.Builder resultb = OutputParameterInfo.newBuilder();
         resultb.setParameter(toParameterInfo(xtceOutput.getParameter(), mdbUrl, DetailLevel.SUMMARY, options));
@@ -722,7 +772,7 @@ public class XtceToGpbAssembler {
         }
         return resultb.build();
     }
-    
+
     public static SpaceSystemInfo toSpaceSystemInfo(RestRequest req, String instance, SpaceSystem ss) {
         SpaceSystemInfo.Builder b = SpaceSystemInfo.newBuilder();
         b.setName(ss.getName());
@@ -738,7 +788,7 @@ public class XtceToGpbAssembler {
             if (h.getVersion() != null) {
                 b.setVersion(h.getVersion());
             }
-            
+
             History[] sortedHistory = h.getHistoryList().toArray(new History[] {});
             Arrays.sort(sortedHistory);
             for (History history : sortedHistory) {
@@ -749,10 +799,12 @@ public class XtceToGpbAssembler {
                 b.addHistory(historyb);
             }
         }
-        b.setParameterCount(ss.getParameters().size());
-        b.setContainerCount(ss.getSequenceContainers().size());
-        b.setCommandCount(ss.getMetaCommands().size());
-        b.setAlgorithmCount(ss.getAlgorithms().size());
+        boolean aggregate = req.getQueryParameterAsBoolean("aggregate", false);
+        b.setParameterCount(ss.getParameterCount(aggregate));
+        b.setContainerCount(ss.getSequenceContainerCount(aggregate));
+        b.setCommandCount(ss.getMetaCommandCount(aggregate));
+        b.setAlgorithmCount(ss.getAlgorithmCount(aggregate));
+
         for (SpaceSystem sub : ss.getSubSystems()) {
             b.addSub(toSpaceSystemInfo(req, instance, sub));
         }

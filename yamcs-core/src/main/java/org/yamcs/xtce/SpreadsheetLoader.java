@@ -5,8 +5,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,20 +37,20 @@ import jxl.WorkbookSettings;
 import jxl.read.biff.BiffException;
 
 /**
- * This class loads database from excel spreadsheets. Used for the Solar instruments for which the TM 
+ * This class loads database from excel spreadsheets. Used for the Solar instruments for which the TM
  * database is too complicated to store in the MDB.
- * 
+ *
  * @author nm, ddw
  *
  */
 public class SpreadsheetLoader extends AbstractFileLoader {
-    protected HashMap<String,Calibrator> calibrators = new HashMap<String, Calibrator>();
-    protected HashMap<String,EnumerationDefinition> enumerations = new HashMap<String, EnumerationDefinition>();
-    protected HashMap<String,Parameter> parameters = new HashMap<String, Parameter>();
-    protected HashSet<Parameter> outputParameters = new HashSet<Parameter>(); // Outputs to algorithms
-    protected HashSet<PotentialExtractionError> potentialErrors = new HashSet<PotentialExtractionError>();
+    protected HashMap<String,Calibrator> calibrators = new HashMap<>();
+    protected HashMap<String,EnumerationDefinition> enumerations = new HashMap<>();
+    protected HashMap<String,Parameter> parameters = new HashMap<>();
+    protected HashSet<Parameter> outputParameters = new HashSet<>(); // Outputs to algorithms
+    protected HashSet<PotentialExtractionError> potentialErrors = new HashSet<>();
 
-    protected SpreadsheetLoadContext ctx=new SpreadsheetLoadContext();
+    protected SpreadsheetLoadContext ctx = new SpreadsheetLoadContext();
 
     //sheet names
     protected final static String SHEET_GENERAL="General";
@@ -145,7 +152,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     protected final static int IDX_CMDOPT_SIGNIFICANCE = 3;
     protected final static int IDX_CMDOPT_SIGNIFICANCE_REASON = 4;
 
-    //columns in the command verification sheet    
+    //columns in the command verification sheet
     protected final static int IDX_CMDVERIF_NAME = 0;
     protected final static int IDX_CMDVERIF_STAGE = 1;
     protected final static int IDX_CMDVERIF_TYPE = 2;
@@ -288,7 +295,6 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             opsnamePrefix=cells[3].getContents();
         } else {
             opsnamePrefix="";
-            log.info( "No opsnamePrefix specified for {}", ctx.file );
         }
     }
 
@@ -366,7 +372,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             start = end;
         }
         //System.out.println("enumerations: " + enumerations + "\n");
-        //System.out.println("calibrators: " + calibrators + "\n"); 
+        //System.out.println("calibrators: " + calibrators + "\n");
     }
 
     private double getNumber(Cell cell) {
@@ -379,7 +385,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
 
     private boolean isRowEmpty(Cell[] cells) {
-        for(int i=0;i<cells.length;i++) 
+        for(int i=0;i<cells.length;i++)
             if(cells[i].getContents().length()>0) return false;
         return true;
     }
@@ -507,7 +513,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                                 } else if ("si".equals(intRepresentation)) {
                                     ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.signMagnitude;
                                 } else {
-                                    throw new SpreadsheetLoadException(ctx, "Unsupported signed integer representation: "+intRepresentation);	
+                                    throw new SpreadsheetLoadException(ctx, "Unsupported signed integer representation: "+intRepresentation);
                                 }
                             }
                         }
@@ -672,7 +678,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
     /**
      * Searches firstRow for all cells that start with "namespace:" and adds corresponding aliases
-     * 
+     *
      * @param firstRow
      * @param cells
      * @param xas
@@ -702,7 +708,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
 
         for (int i = 1; i < sheet.getRows(); i++) {
-            // search for a new packet definition, starting from row i 
+            // search for a new packet definition, starting from row i
             //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
             Cell[] cells = jumpToRow(sheet, i);
             if (cells == null || cells.length<1) {
@@ -802,8 +808,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     relpos = Integer.decode(cells[IDX_CONT_RELPOS].getContents());
                 }
 
-                // we add the relative position to the absoluteOffset, to specify the location of the new parameter. 
-                // We only do this if the absoluteOffset is not equal to -1, 
+                // we add the relative position to the absoluteOffset, to specify the location of the new parameter.
+                // We only do this if the absoluteOffset is not equal to -1,
                 //  because that would mean that we cannot and should not use absolute positions anymore
                 if (absoluteoffset != -1) {
                     absoluteoffset += relpos;
@@ -823,8 +829,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 // note that one of the next 2 lines will return null, but this does not pose a problem, it makes programming easier along the way
                 Parameter param = parameters.get(paraname);
                 SequenceContainer sc = containers.get(paraname);
-                // if the sequenceentry is repeated a fixed number of times, this number is recorded in the 'repeated' variable and used to calculate the next absoluteoffset (done below) 
-                int repeated = -1; 
+                // if the sequenceentry is repeated a fixed number of times, this number is recorded in the 'repeated' variable and used to calculate the next absoluteoffset (done below)
+                int repeated = -1;
                 if (param != null) {
                     SequenceEntry se;
                     if(flags.contains("L") || flags.contains("l")) {
@@ -898,10 +904,10 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 } else {
                     final SequenceContainer c=container;
                     NameReference nr=new NameReference(parent, Type.SEQUENCE_CONTAINTER,
-                            new ResolvedAction() { 
+                            new ResolvedAction() {
                         @Override
                         public boolean resolved(NameDescription nd) {
-                            SequenceContainer sc =(SequenceContainer) nd; 
+                            SequenceContainer sc =(SequenceContainer) nd;
                             c.setBaseContainer(sc);
                             if("5.2".compareTo(fileFormatVersion) > 0) {
                                 if(sc.getBaseContainer()==null) {
@@ -942,7 +948,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         HashMap<String, MetaCommand> commands = new HashMap<String, MetaCommand>();
 
         for (int i = 1; i < sheet.getRows(); i++) {
-            // search for a new command definition, starting from row i 
+            // search for a new command definition, starting from row i
             //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
             Cell[] cells = jumpToRow(sheet, i);
             if (cells == null || cells.length<1) {
@@ -993,7 +999,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             addAdditionalAliases(firstRow, cells, xas);
             cmd.setAliasSet(xas);
 
-            if(hasColumn(cells, IDX_CMD_FLAGS)) {			
+            if(hasColumn(cells, IDX_CMD_FLAGS)) {
                 String flags = cells[IDX_CMD_FLAGS].getContents();
                 if(flags.contains("A")){
                     cmd.setAbstract(true);
@@ -1032,7 +1038,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     throw new SpreadsheetLoadException(ctx, "engtype is not specified for "+argname+" on line "+(i+1));
                 }
                 String engType = cells[IDX_CMD_ENGTYPE].getContents();
-                // we add the relative position to the absoluteOffset, to specify the location of the new parameter. 
+                // we add the relative position to the absoluteOffset, to specify the location of the new parameter.
                 // We only do this if the absoluteOffset is not equal to -1, because that would mean that we cannot and should not use absolute positions anymore
                 if (absoluteOffset != -1) {
                     absoluteOffset += relpos;
@@ -1042,7 +1048,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 if(engType.equalsIgnoreCase("FixedValue")) {
                     if(!hasColumn(cells, IDX_CMD_DEFVALUE)) {
                         throw new SpreadsheetLoadException(ctx, "default value is not specified for "+argname+" which is a FixedValue on line "+(i+1));
-                    }					
+                    }
                     String hexValue = cells[IDX_CMD_DEFVALUE].getContents();
                     byte[] binaryValue = StringConverter.hexStringToArray(hexValue);
 
@@ -1082,7 +1088,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 } else {
                     final MetaCommand mc = cmd;
                     final MetaCommandContainer mcc = container;
-                    NameReference nr=new NameReference(parent, Type.META_COMMAND,	new ResolvedAction() { 
+                    NameReference nr=new NameReference(parent, Type.META_COMMAND,	new ResolvedAction() {
                         @Override
                         public boolean resolved(NameDescription nd) {
                             mc.setBaseMetaCommand((MetaCommand) nd);
@@ -1097,7 +1103,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 if(argAssignment!=null) {
                     cmd.argumentAssignmentList=toArgumentAssignmentList(argAssignment);
                 }
-            } 
+            }
 
 
             spaceSystem.addMetaCommand(cmd);
@@ -1111,7 +1117,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         if(sheet==null) return;
         int i = 1;
         while(i<sheet.getRows()) {
-            // search for a new command definition, starting from row i 
+            // search for a new command definition, starting from row i
             //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
             Cell[] cells = jumpToRow(sheet, i);
             if (cells == null || cells.length<1) {
@@ -1163,7 +1169,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     String significance = cells[IDX_CMDOPT_SIGNIFICANCE].getContents();
                     Significance.Levels slevel;
                     try {
-                        slevel = Significance.Levels.valueOf(significance); 
+                        slevel = Significance.Levels.valueOf(significance);
                     } catch (IllegalArgumentException e) {
                         throw new SpreadsheetLoadException(ctx, "Invalid significance '"+significance+"' specified. Available values are: "+Arrays.toString(Significance.Levels.values()));
                     }
@@ -1184,7 +1190,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         if(sheet==null) return;
         int i = 1;
         while(i<sheet.getRows()) {
-            // search for a new command definition, starting from row i 
+            // search for a new command definition, starting from row i
             //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
             Cell[] cells = jumpToRow(sheet, i);
             if (cells == null || cells.length<1) {
@@ -1239,7 +1245,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                         } catch (IllegalArgumentException  e) {
                             throw new  SpreadsheetLoadException(ctx, "Invalid value '"+s+"' specified for CheckWindow relative to parameter. Use one of "+TimeWindowIsRelativeToType.values());
                         }
-                    } 
+                    }
                     CheckWindow cw = new CheckWindow(start, stop, cwr);
                     if(!hasColumn(cells, IDX_CMDVERIF_TYPE)) {
                         throw new  SpreadsheetLoadException(ctx, "No type specified for the command verifier ");
@@ -1294,7 +1300,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     } catch (IllegalArgumentException e) {
                         throw new  SpreadsheetLoadException(ctx, "Invalid termination action '"+tas+"' specified for the command verifier. Supported actions are: "+TerminationAction.values());
                     }
-                }                    
+                }
                 i++;
             }
         }
@@ -1329,7 +1335,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             calib = cells[IDX_CMD_CALIBRATION].getContents();
         }
         String flags = null;
-        if(hasColumn(cells, IDX_CMD_FLAGS)) {			
+        if(hasColumn(cells, IDX_CMD_FLAGS)) {
             flags = cells[IDX_CMD_FLAGS].getContents();
         }
         int sizeInBits = -1;
@@ -1386,7 +1392,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             throw new SpreadsheetLoadException(ctx, "Unknown argument type " + engType);
         }
         if(cmd.getArgument(name)!=null) throw new SpreadsheetLoadException(ctx, "Duplicate argument with name '"+name+"'");
-        Argument arg = new Argument(name);	
+        Argument arg = new Argument(name);
         cmd.addArgument(arg);
 
 
@@ -1435,7 +1441,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     }
                     IntegerValidRange range = new IntegerValidRange(minInclusive, maxInclusive);
                     ((IntegerArgumentType)atype).setValidRange(range);
-                    
+
                 }
             } else if(atype instanceof FloatArgumentType) {
                 double minInclusive = Double.NEGATIVE_INFINITY;
@@ -1470,7 +1476,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             byteOrder = ByteOrder.LITTLE_ENDIAN;
         }
 
-        // after adding this argument, we need to update the absoluteOffset for the next one. 
+        // after adding this argument, we need to update the absoluteOffset for the next one.
         // For this, we add the size of the current ArgumentEntry to the absoluteOffset
 
         if ((sizeInBits != -1) && (absoluteOffset != -1)) {
@@ -1511,7 +1517,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                             } else if ("si".equals(intRepresentation)) {
                                 ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.signMagnitude;
                             } else {
-                                throw new SpreadsheetLoadException(ctx, "Unsupported signed integer representation: "+intRepresentation);	
+                                throw new SpreadsheetLoadException(ctx, "Unsupported signed integer representation: "+intRepresentation);
                             }
                         }
                     }
@@ -1660,7 +1666,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             ((StringArgumentType)atype).setEncoding(encoding);
         } else if (atype instanceof BooleanArgumentType) {
             ((BooleanArgumentType)atype).setEncoding(encoding);
-        } else {        
+        } else {
             throw new RuntimeException("Don't know what to do with "+atype);
         }
         arg.setArgumentType(atype);
@@ -1839,7 +1845,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                         NameReference nr=new NameReference(paraRef, Type.PARAMETER, new ResolvedAction() {
                             @Override
                             public boolean resolved(NameDescription nd) {
-                                parameterInstance.setParameter((Parameter) nd); 
+                                parameterInstance.setParameter((Parameter) nd);
                                 return true;
                             }
                         });
@@ -1944,7 +1950,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 }
             } else if(triggerText.isEmpty() || triggerText.startsWith("none")) {
                 //do nothing, we run with an empty trigger set
-            } else {        
+            } else {
                 throw new SpreadsheetLoadException(ctx, "Trigger '"+triggerText+"' not supported.");
             }
             algorithm.setTriggerSet(triggerSet);
@@ -2119,8 +2125,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
 
     /**
-     * FIXME: replace the following toMatchCriteria by parseBooleanExpression when the latter is stable 
-     * 
+     * FIXME: replace the following toMatchCriteria by parseBooleanExpression when the latter is stable
+     *
      * @param criteriaString
      * @return
      */
@@ -2138,37 +2144,37 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             return cl;
         } else {
             return toComparison(criteriaString);
-        }    	
-    }    
+        }
+    }
 
 
     /**
-     * Boolean expression has the following pattern: op(epx1;exp2;...;expn) 
-     * 
+     * Boolean expression has the following pattern: op(epx1;exp2;...;expn)
+     *
      * op is & (AND) or | (OR)
      * expi are boolean expression or condition
-     * 
+     *
      * A condition is defined as: parametername op value
-     * 
+     *
      * value can be
-     * 		- plain value 
+     * 		- plain value
      * 		- quoted with " or ”. The two quote characters can be used interchangeably . Backslash can be use to escape those double quote.
      * 		- $other_parametername
-     * 
+     *
      * parametername can be suffixed with .raw
-     * 
+     *
      * Top level expression can be in the form epx1;exp2;...;expn which will be transformed into &(epx1;exp2;...;expn) for
-     * compatibility with the previously implemented Comparison  
-     *  
+     * compatibility with the previously implemented Comparison
+     *
      * @param rawExpression
      * @return
      */
-    private BooleanExpression parseBooleanExpression(String rawExpression) {    	
+    private BooleanExpression parseBooleanExpression(String rawExpression) {
         String regex = "([\"”])([^\"”\\\\]*(?:\\\\.[^\"”\\\\]*)*)([\"”])";
 
         rawExpression = rawExpression.trim();
 
-        // Correct top-level expression 
+        // Correct top-level expression
         if (!rawExpression.startsWith("&") && !rawExpression.startsWith("|")) {
             rawExpression = "&(" + rawExpression + ")";
         }
@@ -2177,7 +2183,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         Matcher m = p.matcher(rawExpression);
         ArrayList<String> quotes = new ArrayList<>();
         while (m.find()) {
-            quotes.add(rawExpression.substring(m.start(2), m.end(2)));    		
+            quotes.add(rawExpression.substring(m.start(2), m.end(2)));
         }
 
         String spec = p.matcher(rawExpression).replaceAll("\\$\\$");
@@ -2195,16 +2201,16 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 balance++;
             } else if (spec.charAt(i) == ')') {
                 balance--;
-            } else if ((spec.charAt(i) == ';') && (balance == 0)) {    			    			
+            } else if ((spec.charAt(i) == ';') && (balance == 0)) {
                 if (!exp.isEmpty()) {
                     expressions.add(exp);
                 }
 
-                exp = "";    			
-                continue;    			
-            } 
+                exp = "";
+                continue;
+            }
 
-            exp += spec.charAt(i);    		
+            exp += spec.charAt(i);
         }
 
         if (!exp.isEmpty()) {
@@ -2219,7 +2225,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
     private BooleanExpression toBooleanExpression(String spec, ArrayList<String> quotes) {
         spec = spec.trim();
-        BooleanExpression condition = null;    	
+        BooleanExpression condition = null;
 
         if (spec.startsWith("&(") && (spec.endsWith(")"))) {
             condition = new ANDedConditions();
@@ -2236,7 +2242,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
     private Condition toCondition(String comparisonString, ArrayList<String> quotes) {
         Matcher m = Pattern.compile("(.*?)(=|!=|<=|>=|<|>)(.*)").matcher(comparisonString);
-        if (!m.matches()) { 
+        if (!m.matches()) {
             throw new SpreadsheetLoadException(ctx, "Cannot parse condition '"+comparisonString+"'");
         }
 
@@ -2256,9 +2262,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         }
 
         String rValue = m.group(3).trim();
-        String rParamName = null;        
+        String rParamName = null;
         Parameter rParam = null;
-        final ParameterInstanceRef rParamRef;        
+        final ParameterInstanceRef rParamRef;
         final Condition cond;
 
         if (rValue.startsWith("$$")) { // Quoted values
@@ -2271,7 +2277,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             if (rParamName.endsWith(".raw")) {
                 rParamName = rParamName.substring(0, rParamName.length() - 4);
                 rParamCalibrated = false;
-            }        	
+            }
 
             rParam = spaceSystem.getParameter(rParamName);
             rParamRef = new ParameterInstanceRef(rParam, rParamCalibrated);
@@ -2292,7 +2298,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     rParamRef.setParameter((Parameter) nd);
                     return true;
                 }
-            }));        	
+            }));
         }
 
         if (lParam == null) {
@@ -2303,13 +2309,13 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     cond.resolveValueType();
                     return true;
                 }
-            }));        	        	
+            }));
         } else {
             cond.resolveValueType();
         }
 
         return cond;
-    }    
+    }
 
     private Comparison toComparison(String comparisonString) {
         Matcher m = Pattern.compile("(.*?)(=|!=|<=|>=|<|>)(.*)").matcher(comparisonString);
@@ -2392,7 +2398,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     }
 
     /** If repeat != "", decodes it to either an integer or a parameter and adds it to the SequenceEntry
-     * If repeat is an integer, this integer is returned 
+     * If repeat is an integer, this integer is returned
      */
     private int addRepeat(SequenceEntry se, String repeat) {
         if (!repeat.equals("")) {
@@ -2407,7 +2413,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 if(repeatparam==null) {
                     throw new SpreadsheetLoadException(ctx, "Cannot find the parameter for repeat "+repeat);
                 }
-                ((DynamicIntegerValue)se.repeatEntry.count).setParameterInstanceRef(new ParameterInstanceRef(repeatparam, true));	
+                ((DynamicIntegerValue)se.repeatEntry.count).setParameterInstanceRef(new ParameterInstanceRef(repeatparam, true));
                 return -1;
             }
         } else {
@@ -2451,7 +2457,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     }
 
     /**
-     * Anomaly that maybe turns out to be fine, when more sheets of the spreadsheet have been read. 
+     * Anomaly that maybe turns out to be fine, when more sheets of the spreadsheet have been read.
      */
     private abstract class PotentialExtractionError {
         private SpreadsheetLoadException exc;

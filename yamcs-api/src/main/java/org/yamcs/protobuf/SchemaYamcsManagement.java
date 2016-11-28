@@ -916,25 +916,27 @@ public final class SchemaYamcsManagement
                     output.writeString(4, message.getSpec(), false);
                 if(message.hasCreator())
                     output.writeString(5, message.getCreator(), false);
+                if(message.hasHasAlarms())
+                    output.writeBool(6, message.getHasAlarms(), false);
                 if(message.hasHasCommanding())
-                    output.writeBool(6, message.getHasCommanding(), false);
+                    output.writeBool(7, message.getHasCommanding(), false);
                 if(message.hasState())
-                    output.writeString(7, message.getState().name(), false);
+                    output.writeString(8, message.getState().name(), false);
                 if(message.hasReplayRequest())
-                    output.writeObject(8, message.getReplayRequest(), org.yamcs.protobuf.SchemaYamcs.ReplayRequest.WRITE, false);
+                    output.writeObject(9, message.getReplayRequest(), org.yamcs.protobuf.SchemaYamcs.ReplayRequest.WRITE, false);
 
                 if(message.hasReplayState())
-                    output.writeString(9, message.getReplayState().name(), false);
+                    output.writeString(10, message.getReplayState().name(), false);
                 if(message.hasUrl())
-                    output.writeString(10, message.getUrl(), false);
+                    output.writeString(11, message.getUrl(), false);
                 if(message.hasClientsUrl())
-                    output.writeString(11, message.getClientsUrl(), false);
+                    output.writeString(12, message.getClientsUrl(), false);
                 if(message.hasParametersUrl())
-                    output.writeString(12, message.getParametersUrl(), false);
+                    output.writeString(13, message.getParametersUrl(), false);
                 if(message.hasCommandsUrl())
-                    output.writeString(13, message.getCommandsUrl(), false);
+                    output.writeString(14, message.getCommandsUrl(), false);
                 if(message.hasCommandQueuesUrl())
-                    output.writeString(14, message.getCommandQueuesUrl(), false);
+                    output.writeString(15, message.getCommandQueuesUrl(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.ProcessorInfo message)
             {
@@ -990,31 +992,34 @@ public final class SchemaYamcsManagement
                             builder.setCreator(input.readString());
                             break;
                         case 6:
-                            builder.setHasCommanding(input.readBool());
+                            builder.setHasAlarms(input.readBool());
                             break;
                         case 7:
-                            builder.setState(org.yamcs.protobuf.YamcsManagement.ServiceState.valueOf(input.readString()));
+                            builder.setHasCommanding(input.readBool());
                             break;
                         case 8:
+                            builder.setState(org.yamcs.protobuf.YamcsManagement.ServiceState.valueOf(input.readString()));
+                            break;
+                        case 9:
                             builder.setReplayRequest(input.mergeObject(org.yamcs.protobuf.Yamcs.ReplayRequest.newBuilder(), org.yamcs.protobuf.SchemaYamcs.ReplayRequest.MERGE));
 
                             break;
-                        case 9:
+                        case 10:
                             builder.setReplayState(org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState.valueOf(input.readString()));
                             break;
-                        case 10:
+                        case 11:
                             builder.setUrl(input.readString());
                             break;
-                        case 11:
+                        case 12:
                             builder.setClientsUrl(input.readString());
                             break;
-                        case 12:
+                        case 13:
                             builder.setParametersUrl(input.readString());
                             break;
-                        case 13:
+                        case 14:
                             builder.setCommandsUrl(input.readString());
                             break;
-                        case 14:
+                        case 15:
                             builder.setCommandQueuesUrl(input.readString());
                             break;
                         default:
@@ -1062,15 +1067,16 @@ public final class SchemaYamcsManagement
                 case 3: return "type";
                 case 4: return "spec";
                 case 5: return "creator";
-                case 6: return "hasCommanding";
-                case 7: return "state";
-                case 8: return "replayRequest";
-                case 9: return "replayState";
-                case 10: return "url";
-                case 11: return "clientsUrl";
-                case 12: return "parametersUrl";
-                case 13: return "commandsUrl";
-                case 14: return "commandQueuesUrl";
+                case 6: return "hasAlarms";
+                case 7: return "hasCommanding";
+                case 8: return "state";
+                case 9: return "replayRequest";
+                case 10: return "replayState";
+                case 11: return "url";
+                case 12: return "clientsUrl";
+                case 13: return "parametersUrl";
+                case 14: return "commandsUrl";
+                case 15: return "commandQueuesUrl";
                 default: return null;
             }
         }
@@ -1087,15 +1093,16 @@ public final class SchemaYamcsManagement
             fieldMap.put("type", 3);
             fieldMap.put("spec", 4);
             fieldMap.put("creator", 5);
-            fieldMap.put("hasCommanding", 6);
-            fieldMap.put("state", 7);
-            fieldMap.put("replayRequest", 8);
-            fieldMap.put("replayState", 9);
-            fieldMap.put("url", 10);
-            fieldMap.put("clientsUrl", 11);
-            fieldMap.put("parametersUrl", 12);
-            fieldMap.put("commandsUrl", 13);
-            fieldMap.put("commandQueuesUrl", 14);
+            fieldMap.put("hasAlarms", 6);
+            fieldMap.put("hasCommanding", 7);
+            fieldMap.put("state", 8);
+            fieldMap.put("replayRequest", 9);
+            fieldMap.put("replayState", 10);
+            fieldMap.put("url", 11);
+            fieldMap.put("clientsUrl", 12);
+            fieldMap.put("parametersUrl", 13);
+            fieldMap.put("commandsUrl", 14);
+            fieldMap.put("commandQueuesUrl", 15);
         }
     }
 

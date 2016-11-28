@@ -10,7 +10,7 @@
         var vm = this;
         $rootScope.pageTitle = $routeParams.name + ' | Yamcs';
 
-        var urlname = '/' + $routeParams['ss'] + '/' + $routeParams.name;
+        var urlname = '/' + $routeParams['ss'] + '/' + encodeURIComponent($routeParams.name);
         vm.urlname = urlname;
 
         mdbService.getAlgorithmInfo(urlname).then(function (data) {

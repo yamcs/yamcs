@@ -2,14 +2,13 @@ package org.yamcs.web.websocket;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
 import org.yamcs.ProcessorException;
+import org.yamcs.YProcessor;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.security.AuthenticationToken;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -20,24 +19,25 @@ import org.yamcs.yarch.YarchDatabase;
  * Provides realtime event subscription via web.
  */
 public class EventResource extends AbstractWebSocketResource {
+
     private static final Logger log = LoggerFactory.getLogger(EventResource.class);
     public static final String RESOURCE_NAME = "events";
+
     public static final String OP_subscribe = "subscribe";
     public static final String OP_unsubscribe = "unsubscribe";
-    
+
     private Stream stream;
     private StreamSubscriber streamSubscriber;
 
 
-    public EventResource(YProcessor channel, WebSocketFrameHandler wsHandler) {
-        super(channel, wsHandler);
-        wsHandler.addResource(RESOURCE_NAME, this);
+    public EventResource(WebSocketProcessorClient client) {
+        super(client);
         YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
         stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder, AuthenticationToken authenticationToken) throws WebSocketException {
+    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         switch (ctx.getOperation()) {
         case OP_subscribe:
             return subscribe(ctx.getRequestId());
@@ -55,9 +55,9 @@ public class EventResource extends AbstractWebSocketResource {
     }
 
     @Override
-    public void switchYProcessor(YProcessor newProcessor, AuthenticationToken authToken) throws ProcessorException {
+    public void switchYProcessor(YProcessor oldProcessor, YProcessor newProcessor) throws ProcessorException {
         doUnsubscribe();
-        processor = newProcessor;
+        super.switchYProcessor(oldProcessor, newProcessor);
         YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
         stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
         doSubscribe();

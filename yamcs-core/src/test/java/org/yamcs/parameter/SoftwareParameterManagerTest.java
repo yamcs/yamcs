@@ -36,7 +36,7 @@ public class SoftwareParameterManagerTest {
     @Test
     public void test() throws Exception {
 	SoftwareParameterManager spm = new SoftwareParameterManager("test");
-	XtceDb xtceDb = XtceDbFactory.createInstance("refmdb");
+	XtceDb xtceDb = XtceDbFactory.createInstanceByConfig("refmdb");
 	MyParamConsumer consumer = new MyParamConsumer();
 	
 	spm.init(xtceDb);

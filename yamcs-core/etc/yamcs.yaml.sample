@@ -1,6 +1,6 @@
 #instances (or domains). One yarch database will be created for each of them 
 # instance specific properties go into the file yamcs.{instance}.yaml
-instances: []
+#instances:
 #  - simulator
 
 #the location of the data and the incoming files

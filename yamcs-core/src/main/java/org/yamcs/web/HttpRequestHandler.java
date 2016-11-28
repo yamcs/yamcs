@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.security.AuthenticationToken;
@@ -40,6 +41,7 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
@@ -83,7 +85,9 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
             }
         }
 
-        String[] path = req.getUri().split("/", 3); //uri starts with / so path[0] is always empty
+        // Decode URI, to correctly ignore query strings in path handling
+        QueryStringDecoder qsDecoder = new QueryStringDecoder(req.getUri());
+        String[] path = qsDecoder.path().split("/", 3); // path starts with / so path[0] is always empty
         switch (path[1]) {
         case STATIC_PATH:
             if (path.length == 2) { //do not accept "/_static/" (i.e. directory listing) requests
@@ -93,7 +97,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
             fileRequestHandler.handleStaticFileRequest(ctx, req, path[2]);
             return;
         case API_PATH:
-            apiRouter.handleHttpRequest(ctx, req, authToken);
+            apiRouter.handleHttpRequest(ctx, req, authToken, qsDecoder);
             return;
         case "":
             // overview of all instances
@@ -101,12 +105,10 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
             return;
         default:
             String yamcsInstance = path[1];
-            if (!HttpServer.getInstance().isInstanceRegistered(yamcsInstance)) {
-                log.info("Invalid instance requested: '{}'", yamcsInstance);
+            if (!YamcsServer.hasInstance(yamcsInstance)) {
                 sendPlainTextError(ctx, req, NOT_FOUND);
                 return;
             }
-
             if (path.length > 2) {
                 String[] rpath = path[2].split("/", 2);
                 String handler = rpath[0];

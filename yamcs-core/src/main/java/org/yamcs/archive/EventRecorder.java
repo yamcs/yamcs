@@ -16,7 +16,7 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class EventRecorder extends AbstractService {
-    static TupleDefinition eventTpdef; 
+    static TupleDefinition eventTpdef;
     static final public String TABLE_NAME="events";
     static final public String REALTIME_EVENT_STREAM_NAME = "events_realtime";
     static final public String DUMP_EVENT_STREAM_NAME = "events_dump";
@@ -30,11 +30,9 @@ public class EventRecorder extends AbstractService {
                     + " partition by time(gentime"+XtceTmRecorder.getTimePartitioningSchemaSql()+") table_format=compressed");
         }
         eventTpdef = ydb.getTable("events").getTupleDefinition();
-        
+
         ydb.execute("insert into "+TABLE_NAME+" select * from "+REALTIME_EVENT_STREAM_NAME);
         ydb.execute("insert into "+TABLE_NAME+" select * from "+DUMP_EVENT_STREAM_NAME);
-        
-      
     }
 
     @Override
@@ -46,7 +44,7 @@ public class EventRecorder extends AbstractService {
     protected void doStop() {
         YarchDatabase ydb=YarchDatabase.getInstance(yamcsInstance);
         Utils.closeTableWriters(ydb,  Arrays.asList(REALTIME_EVENT_STREAM_NAME, DUMP_EVENT_STREAM_NAME));
-      
+
         notifyStopped();
     }
 

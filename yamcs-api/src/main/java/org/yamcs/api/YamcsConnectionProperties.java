@@ -18,15 +18,15 @@ public class YamcsConnectionProperties {
     private int port;
     private String instance;
     private AuthenticationToken authToken;
-    
-    
+
+
     enum Protocol {
-        http, artemis; 
+        http, artemis;
     }
     private Protocol protocol;
-    boolean ssl;
-    
-    final private String PREF_FILENAME = "YamcsConnectionProperties"; //relative to the <home>/.yamcs directory
+    private boolean ssl;
+
+    static final private String PREF_FILENAME = "YamcsConnectionProperties"; //relative to the <home>/.yamcs directory
     public YamcsConnectionProperties() {
 
     }
@@ -78,10 +78,6 @@ public class YamcsConnectionProperties {
         }
     }
 
-    public String getYamcsConnectionString() {
-        return "yamcs://" + host + ":" + port + "/" + instance;
-    }
-
     public void load() {
         try {
             Properties p = new Properties();
@@ -124,9 +120,13 @@ public class YamcsConnectionProperties {
     public void setSsl(boolean ssl) {
         this.ssl = ssl;
     }
-    
+
+    public void setProtocol(Protocol protocol) {
+        this.protocol = protocol;
+    }
+
     @Override
-    public YamcsConnectionProperties clone() {        
+    public YamcsConnectionProperties clone() {
         YamcsConnectionProperties ycp1 = new YamcsConnectionProperties( this.host, this.port, this.instance);
         ycp1.ssl = this.ssl;
         ycp1.protocol = this.protocol;
@@ -155,10 +155,11 @@ public class YamcsConnectionProperties {
     public AuthenticationToken getAuthenticationToken() {
         return authToken;
     }
+
     public void setAuthenticationToken(AuthenticationToken authToken) {
         this.authToken = authToken;
     }
-    
+
     /**
      * uri is protocol://[[username]:[password]@][host[:port]]/[instance]
      * @param uri
@@ -177,9 +178,9 @@ public class YamcsConnectionProperties {
         } else {
             throw new URISyntaxException(uri, "only http, https or yamcs/artemis  scheme allowed");
         }
-        
-        
-        if("https".equals(u.getScheme()) || "yamcsss".equals(u.getScheme())) {
+
+
+        if("https".equals(u.getScheme()) || "yamcss".equals(u.getScheme())) {
             ycd.ssl = true;
         }
         if(u.getPort()!=-1) ycd.port = u.getPort();
@@ -201,20 +202,22 @@ public class YamcsConnectionProperties {
 
         return ycd;
     }
+
     public Protocol getProtocol() {
         return protocol;
     }
+
     public String getUrl() {
         StringBuilder sb = new StringBuilder();
         sb.append(protocol+"://");
         if(host!=null) {
             sb.append(host);
-            if(port!=-1) {
+            if (port != -1) {
                 sb.append(":"+port);
             }
         }
         sb.append("/");
-        if(instance!=null) {
+        if (instance != null) {
             sb.append(instance);
         }
         return sb.toString();

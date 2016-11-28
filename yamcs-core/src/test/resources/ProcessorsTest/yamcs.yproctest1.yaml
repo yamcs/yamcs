@@ -1,6 +1,5 @@
 mdb: refmdb
 services:  
-    - org.yamcs.web.YamcsWebService
     - org.yamcs.archive.XtceTmRecorder 
     - org.yamcs.archive.ReplayServer   
     - class: org.yamcs.YProcessorCreatorService

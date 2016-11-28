@@ -6,9 +6,12 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -25,11 +28,10 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.YObjectLoader;
-import org.yamcs.web.HttpServer;
-import org.yamcs.web.StaticFileHandler;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
+import org.yamcs.yarch.management.JMXService;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
@@ -39,14 +41,14 @@ import com.google.common.util.concurrent.Service.State;
 /**
  *
  * Main yamcs server, starts a Yarch instance for each defined instance
- * Handles basic requests for retrieving the configured instances, database versions 
+ * Handles basic requests for retrieving the configured instances, database versions
  * and retrieve databases in serialized form
  *
  * @author nm
  *
  */
 public class YamcsServer {
-    static Map<String, YamcsServer> instances=new LinkedHashMap<String, YamcsServer>();
+    static Map<String, YamcsServer> instances=new LinkedHashMap<>();
     final static private String SERVER_ID_KEY="serverId";
 
     String instance;
@@ -59,7 +61,7 @@ public class YamcsServer {
     Logger log;
     static Logger staticlog=LoggerFactory.getLogger(YamcsServer.class);
 
-    /**in the shutdown, allow servies this number of seconds for stopping*/
+    /**in the shutdown, allow services this number of seconds for stopping*/
     public static int SERVICE_STOP_GRACE_TIME = 10;
     TimeService timeService;
 
@@ -69,12 +71,12 @@ public class YamcsServer {
     static TimeService mockupTimeService;
 
     static private String serverId;
-    static YObjectLoader<Service> objLoader = new YObjectLoader<Service>();
-    
-    YamcsServer(String instance) throws IOException, StreamSqlException, ParseException, YamcsApiException {
-        this.instance=instance;
+    static YObjectLoader<Service> objLoader = new YObjectLoader<>();
 
-        //TODO - fix bootstrap issue 
+    YamcsServer(String instance) throws IOException, StreamSqlException, ParseException, YamcsApiException {
+        this.instance = instance;
+
+        //TODO - fix bootstrap issue
         instances.put(instance, this);
 
         log=getLogger(YamcsServer.class, instance);
@@ -87,21 +89,25 @@ public class YamcsServer {
         YProcessor.addProcessorListener(managementService);
 
         List<Object> services = conf.getList("services");
-        serviceList = startServices(instance, services);
+        serviceList = createServices(instance, services);
+        startServices(serviceList);
     }
+
     /**
-     * Starts services either server wide (if instance is null) or instance specific
-     * 
+     * Creates services either server-wide (if instance is null) or instance-specific.
+     * The services are not yet started. This must be done in a second step, so
+     * that components can ask YamcsServer for other service instantiations.
+     *
      * @param services - list of service configuration; each of them is a string (=classname) or a map
-     * @param instance - if null, then start a server wide service, otherwise an instance specific service
-     * @throws IOException 
-     * @throws ConfigurationException 
+     * @param instance - if null, then start a server-wide service, otherwise an instance-specific service
+     * @throws IOException
+     * @throws ConfigurationException
      */
     @SuppressWarnings("unchecked")
-    public static List<ServiceWithConfig> startServices(String instance, List<Object>services) throws ConfigurationException, IOException {
+    private static List<ServiceWithConfig> createServices(String instance, List<Object> servicesConfig) throws ConfigurationException, IOException {
         ManagementService managementService = ManagementService.getInstance();
-        List<ServiceWithConfig> serviceList=new ArrayList<ServiceWithConfig>();
-        for(Object servobj:services) {
+        List<ServiceWithConfig> serviceList=new CopyOnWriteArrayList<>();
+        for(Object servobj:servicesConfig) {
             String servclass;
             Object args = null;
             if(servobj instanceof String) {
@@ -113,11 +119,34 @@ public class YamcsServer {
             } else {
                 throw new ConfigurationException("Services can either be specified by classname, or by {class: classname, args: ....} map. Cannot load a service from "+servobj);
             }
-            staticlog.info("Loading {} service {}", (instance==null)?"server wide":instance, servclass);
-            ServiceWithConfig swc = createService(instance, servclass, servclass, args); 
+            staticlog.info("Loading {} service {}", (instance==null)?"server-wide":instance, servclass);
+            ServiceWithConfig swc = createService(instance, servclass, servclass, args);
             serviceList.add(swc);
             managementService.registerService(instance, servclass, swc.service);
         }
+
+        return serviceList;
+    }
+
+    /**
+     * Registers an instance-specific service and starts it up
+     */
+    public void createAndStartService(String serviceClass, Map<String, Object> args) throws ConfigurationException, IOException {
+        Map<String, Object> serviceConf = new HashMap<>(2);
+        serviceConf.put("class", serviceClass);
+        serviceConf.put("args", args);
+        List<ServiceWithConfig> newServices = createServices(instance, Arrays.asList(serviceConf));
+        serviceList.addAll(newServices);
+        startServices(newServices);
+    }
+
+    /**
+     * Starts the specified list of services.
+     *
+     * @param serviceList list of service configurations
+     * @throws ConfigurationException
+     */
+    public static void startServices(List<ServiceWithConfig> serviceList) throws ConfigurationException {
         for(ServiceWithConfig swc:serviceList) {
             swc.service.startAsync();
             try {
@@ -130,14 +159,7 @@ public class YamcsServer {
                 throw new ConfigurationException("Failed to start service "+swc.service, swc.service.failureCause());
             }
         }
-
-        return serviceList;
     }
-    public static void setupHttpServer() throws ConfigurationException, InterruptedException {
-        StaticFileHandler.init();
-        HttpServer.setup();
-    }
-
 
     public static void shutDown() throws Exception {
         for(YamcsServer ys: instances.values()) {
@@ -146,7 +168,7 @@ public class YamcsServer {
     }
 
     /**
-     * Return a logger decorated with the applicable yamcs instance 
+     * Return a logger decorated with the applicable yamcs instance
      * <p>Convenience method
      */
     public static Logger getLogger(Class<?> clazz, String instance) {
@@ -154,7 +176,7 @@ public class YamcsServer {
     }
 
     /**
-     * Return a logger decorated with the applicable yamcs instance and processor 
+     * Return a logger decorated with the applicable yamcs instance and processor
      * <p>Convenience method
      */
     public static Logger getLogger(Class<?> clazz, YProcessor processor) {
@@ -189,21 +211,16 @@ public class YamcsServer {
 
         if(c.containsKey("services")) {
             List<Object> services=c.getList("services");
-            globalServiceList = startServices(null, services);
+            globalServiceList = createServices(null, services);
+            startServices(globalServiceList);
         }
 
-        final List<String>instArray = c.getList("instances");
 
-        if (instArray.isEmpty()) {
-            staticlog.warn("No instances");
-        } else if (instArray.size() == 1) {
-            staticlog.info("1 instance: " + instArray.get(0));
-        } else {
-            staticlog.info(instArray.size() + " instances: " + String.join(", ", instArray));
-        }
-
-        for(String inst:instArray) {
-            instances.put(inst, new YamcsServer(inst));
+        if (c.containsKey("instances")) {
+            List<String> instArray = c.getList("instances");
+            for(String inst:instArray) {
+                createYamcsInstance(inst);
+            }
         }
 
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
@@ -218,6 +235,18 @@ public class YamcsServer {
         } else {//the init.d/yamcs-server depends on this line on the standard output, do not change it (without changing the script also)!
             System.out.println("yamcsstartup success");
         }
+    }
+
+    public static void createYamcsInstance(String name) throws IOException, StreamSqlException, ParseException, YamcsApiException {
+        staticlog.info("Loading instance '" + name + "'");
+        if (instances.containsKey(name)) {
+            throw new ConfigurationException(String.format("There already exists an instance named '%s'", name));
+        }
+        instances.put(name, new YamcsServer(name));
+    }
+
+    public static Set<String> getYamcsInstanceNames() {
+        return instances.keySet();
     }
 
     public static YamcsInstances getYamcsInstances() {
@@ -235,9 +264,11 @@ public class YamcsServer {
         try {
             MissionDatabase.Builder mdb = MissionDatabase.newBuilder();
             YConfiguration c = YConfiguration.getConfiguration("yamcs."+name);
-            String configName = c.getString("mdb");
-            XtceDb xtcedb=XtceDbFactory.getInstanceByConfig(name, configName);
-            mdb.setConfigName(configName);
+            if (!c.isList("mdb")) {
+                String configName = c.getString("mdb");
+                mdb.setConfigName(configName);
+            }
+            XtceDb xtcedb=XtceDbFactory.getInstance(name);
             mdb.setName(xtcedb.getRootSpaceSystem().getName());
             Header h =xtcedb.getRootSpaceSystem().getHeader();
             if((h!=null) && (h.getVersion()!=null)) {
@@ -276,9 +307,9 @@ public class YamcsServer {
         YConfiguration conf=YConfiguration.getConfiguration("yamcs."+instance);
         if(conf.containsKey("timeService")) {
             Map<String, Object> m = conf.getMap("timeService");
-            String servclass = YConfiguration.getString(m, "class");            
+            String servclass = YConfiguration.getString(m, "class");
             Object args = m.get("args");
-            YObjectLoader<TimeService> objLoader = new YObjectLoader<TimeService>();
+            YObjectLoader<TimeService> objLoader = new YObjectLoader<>();
             if(args == null) {
                 timeService = objLoader.loadObject(servclass, instance);
             } else {
@@ -289,7 +320,7 @@ public class YamcsServer {
         }
     }
 
-    public static YamcsServer getInstance(String yamcsInstance) {     
+    public static YamcsServer getInstance(String yamcsInstance) {
         return instances.get(yamcsInstance);
     }
 
@@ -307,18 +338,17 @@ public class YamcsServer {
             YConfiguration.setup();
             serverId = deriveServerId();
             setupSecurity();
-            setupHttpServer();
-            org.yamcs.yarch.management.JMXService.setup(true);
+            JMXService.setup(true);
             ManagementService.setup(true);
 
             setupYamcsServer();
 
         } catch (ConfigurationException e) {
-            staticlog.error("Could not start Yamcs Server: ", e);
+            staticlog.error("Could not start Yamcs Server", e);
             System.err.println(e.toString());
             System.exit(-1);
         } catch (Throwable e) {
-            staticlog.error("Could not start Yamcs Server: ", e);
+            staticlog.error("Could not start Yamcs Server", e);
             e.printStackTrace();
             System.exit(-1);
         }
@@ -341,24 +371,13 @@ public class YamcsServer {
         } else {
             if(mockupTimeService!=null) {
                 return mockupTimeService;
-            } else {            
+            } else {
                 return realtimeTimeService; //happens from unit tests
             }
         }
 
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends Service> T getService(Class<T> serviceClass) {
-        if(serviceList==null) return null;
-
-        for(ServiceWithConfig swc: serviceList) {
-            if(serviceClass == swc.service.getClass()) {
-                return (T) swc.service;
-            }
-        }
-        return null;
-    }
     public List<ServiceInfo> getServices() {
         return getServiceInfo(instance, serviceList);
     }
@@ -366,9 +385,9 @@ public class YamcsServer {
     public static  List<ServiceInfo> getGlobalServices() {
         return getServiceInfo(null, globalServiceList);
     }
-    
+
     private static List<ServiceInfo> getServiceInfo(String instance, List<ServiceWithConfig> serviceList) {
-        List<ServiceInfo> r = new ArrayList<ServiceInfo>(serviceList.size());
+        List<ServiceInfo> r = new ArrayList<>(serviceList.size());
         for(ServiceWithConfig swc: serviceList) {
             ServiceInfo.Builder sib = ServiceInfo.newBuilder().setName(swc.name).setClassName(swc.serviceClass).setState(ServiceState.valueOf(swc.service.state().name()));
             if(instance!=null) sib.setInstance(instance);
@@ -376,7 +395,7 @@ public class YamcsServer {
         }
         return r;
     }
-    
+
     public static <T extends Service> T getService(String yamcsInstance, Class<T> serviceClass) {
         YamcsServer ys = YamcsServer.getInstance(yamcsInstance);
         if(ys==null) return null;
@@ -386,7 +405,10 @@ public class YamcsServer {
     public static void setMockupTimeService(TimeService timeService) {
         mockupTimeService = timeService;
     }
+
     public Service getService(String serviceName) {
+        if(serviceList==null) return null;
+
         for(ServiceWithConfig swc: serviceList) {
             Service s = swc.service;
             if(s.getClass().getName().equals(serviceName)) {
@@ -395,7 +417,16 @@ public class YamcsServer {
         }
         return null;
     }
+
+
+    @SuppressWarnings("unchecked")
+    public <T extends Service> T getService(Class<T> serviceClass) {
+        return (T) getService(serviceClass.getName());
+    }
+
     public static Service getGlobalService(String serviceName) {
+        if(globalServiceList==null) return null;
+
         synchronized(globalServiceList) {
             for(ServiceWithConfig swc: globalServiceList) {
                 Service s = swc.service;
@@ -405,6 +436,11 @@ public class YamcsServer {
             }
         }
         return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends Service> T getGlobalService(Class<T> serviceClass) {
+        return (T) getGlobalService(serviceClass.getName());
     }
 
     static private ServiceWithConfig createService(String instance, String serviceClass, String serviceName, Object args) throws ConfigurationException, IOException {
@@ -418,9 +454,9 @@ public class YamcsServer {
         }
         return new ServiceWithConfig(serv, serviceClass, serviceName, args);
     }
-    
-    
-    
+
+
+
     //starts a service that has stopped or not yet started
     private static Service startService(String instance, String serviceName, List<ServiceWithConfig> serviceList) throws ConfigurationException, IOException {
         for(int i=0; i<serviceList.size(); i++) {
@@ -434,8 +470,8 @@ public class YamcsServer {
                 case NEW: //not yet started, start it now
                     swc.service.startAsync();
                     break;
-                case FAILED:                    
-                case STOPPING:                        
+                case FAILED:
+                case STOPPING:
                 case TERMINATED:
                     //start a new one
                     swc = createService(instance, swc.serviceClass, serviceName, swc.args);
@@ -451,7 +487,7 @@ public class YamcsServer {
     public static void startGlobalService(String serviceName) throws ConfigurationException, IOException {
         startService(null, serviceName, globalServiceList);
     }
-    
+
     public void startService(String serviceName) throws ConfigurationException, IOException {
         startService(instance, serviceName, serviceList);
     }
@@ -462,7 +498,7 @@ public class YamcsServer {
         final String serviceClass;
         final String name;
         final Object args;
-        
+
         public ServiceWithConfig(Service service, String serviceClass, String name,  Object args) {
             super();
             this.service = service;

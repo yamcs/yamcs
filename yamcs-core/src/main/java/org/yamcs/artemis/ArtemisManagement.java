@@ -114,7 +114,7 @@ public class ArtemisManagement extends AbstractService implements LinkListener {
             if(mdr.hasInstance()) {
                 xtcedb=XtceDbFactory.getInstance(mdr.getInstance());
             } else if(mdr.hasDbConfigName()){
-                xtcedb=XtceDbFactory.createInstance(mdr.getDbConfigName());
+                xtcedb=XtceDbFactory.createInstanceByConfig(mdr.getDbConfigName());
             } else {
                 staticlog.warn("getMissionDatabase request received with none of the instance or dbConfigName specified");
                 ctrlAddressClient.sendErrorReply(replyTo, "Please specify either instance or dbConfigName");

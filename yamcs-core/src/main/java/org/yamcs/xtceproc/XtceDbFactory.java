@@ -40,42 +40,39 @@ import org.yamcs.xtce.XtceLoader;
 
 
 public class XtceDbFactory {
-    static Logger log = LoggerFactory.getLogger(XtceDbFactory.class);
 
+    static Logger log = LoggerFactory.getLogger(XtceDbFactory.class);
 
     /**
      * map instance names and config names to databases
      */
     static transient Map<String, XtceDb> instance2Db = new HashMap<>();
     static transient Map<String, Map<String, XtceDb>> instance2DbConfigs = new HashMap<>();
-    static LoaderTree loaderTree;
-
 
     /**
-     * Creates a new instance of the database in memory.
-     * configSection is the top heading under which this appears in the mdb.yaml
-     * @throws ConfigurationException 
+     * Creates a new instance of the database in memory. configSection is the
+     * top heading under which this appears in the mdb.yaml
+     *
+     * @throws ConfigurationException
      */
-    @SuppressWarnings("unchecked")
-    public static synchronized XtceDb createInstance(String configSection) throws ConfigurationException {
-        YConfiguration c = null;
-        c = YConfiguration.getConfiguration("mdb");
+    public static synchronized XtceDb createInstanceByConfig(String configSection) throws ConfigurationException {
+        YConfiguration c = YConfiguration.getConfiguration("mdb");
 
-        if(configSection==null) {
-            configSection=c.getFirstEntry();
+        if(configSection == null) {
+            configSection = c.getFirstEntry();
         }
 
-        XtceDb db=null;
-        //
-        // create MDB/spreadsheet/XTCE loaders according to configuration
-        // settings
-        //
-        loaderTree= new LoaderTree(new RootSpaceSystemLoader());
+        List<Object> list = c.getList(configSection);
+        return createInstance(list);
+    }
 
-        List<Object> list=c.getList(configSection);
-        for(Object o: list) {
+    @SuppressWarnings("unchecked")
+    private static synchronized XtceDb createInstance(List<Object> treeConfig) throws ConfigurationException {
+        LoaderTree loaderTree = new LoaderTree(new RootSpaceSystemLoader());
+
+        for(Object o: treeConfig) {
             if(o instanceof Map) {
-                loaderTree.addChild(getLoaderTree(c, (Map<String, Object>) o));
+                loaderTree.addChild(getLoaderTree((Map<String, Object>) o));
             } else {
                 throw new ConfigurationException("Expected type Map instead of "+o.getClass());
             }
@@ -88,7 +85,7 @@ public class XtceDbFactory {
         if (new File(getFullName(filename) + ".serialized").exists()) {
             try {
                 RandomAccessFile raf = new RandomAccessFile(getFullName(filename) + ".consistency_date", "r");
-                if(loaderTree.neesUpdate(raf)) {
+                if(loaderTree.needsUpdate(raf)) {
                     loadSerialized = false;
                 }
             } catch (IOException e) {
@@ -101,6 +98,7 @@ public class XtceDbFactory {
             loadSerialized = false;
         }
 
+        XtceDb db = null;
         if (loadSerialized) {
             try {
                 db = loadSerializedInstance(getFullName(filename.toString()) + ".serialized");
@@ -129,7 +127,7 @@ public class XtceDbFactory {
 
             db.setSystemParameterDb(sysDb);
 
-            //set the root sequence container as the first root sequence container found in the sub-systems. 
+            //set the root sequence container as the first root sequence container found in the sub-systems.
             for(SpaceSystem ss: rootSs.getSubSystems()) {
                 SequenceContainer seqc = ss.getRootSequenceContainer();
                 if(seqc!=null){
@@ -143,12 +141,13 @@ public class XtceDbFactory {
 
         if ((!serializedLoaded)) {
             try {
-                saveSerializedInstance(db, filename.toString());
+                saveSerializedInstance(loaderTree, db, filename.toString());
                 log.info("Serialized database saved locally");
             } catch (Exception e) {
                 log.warn("Cannot save serialized MDB", e);
             }
         }
+
         return db;
     }
 
@@ -167,9 +166,9 @@ public class XtceDbFactory {
 
     /**
      * resolves references in ss by going recursively to all sub-space systems (in the first call ss=rootSs)
-     * 
+     *
      * @param ss
-     * @param sysDb 
+     * @param sysDb
      * @return the number of references resolved or -1 if there was no reference to be resolved
      */
     private static int resolveReferences(SpaceSystem rootSs, SpaceSystem ss, SystemParameterDb sysDb) throws ConfigurationException {
@@ -213,7 +212,7 @@ public class XtceDbFactory {
 
     /**
      * find the reference nr mentioned in the space system ss by looking either in root (if absolute reference) or in the parent hierarchy if relative reference
-     * 
+     *
      * @param rootSs
      * @param nr
      * @param ss
@@ -243,8 +242,8 @@ public class XtceDbFactory {
                 if(nd!=null) break;
                 if(startSs==rootSs) break;
                 startSs=startSs.getParent();
-            } 
-            return nd;   
+            }
+            return nd;
         }
 
     }
@@ -265,7 +264,7 @@ public class XtceDbFactory {
                 ss=ss.getParent();
                 if(ss==null) break; //this can only happen if the root has no parent (normally it's its own parent)
                 continue;
-            } 
+            }
 
             if(i==path.length-1) break;
 
@@ -291,8 +290,8 @@ public class XtceDbFactory {
     }
 
 
-    @SuppressWarnings({ "unchecked", "static-access" })
-    private static LoaderTree getLoaderTree(YConfiguration c, Map<String,Object> m) throws ConfigurationException {
+    @SuppressWarnings({ "unchecked" })
+    private static LoaderTree getLoaderTree(Map<String,Object> m) throws ConfigurationException {
         String type=YConfiguration.getString(m, "type");
         Object args=null;
         if(m.containsKey("args")) {
@@ -323,10 +322,10 @@ public class XtceDbFactory {
         ltree=new LoaderTree(l);
 
         if(m.containsKey("subLoaders")) {
-            List<Object> list=c.getList(m, "subLoaders");
+            List<Object> list=YConfiguration.getList(m, "subLoaders");
             for(Object o: list) {
                 if(o instanceof Map) {
-                    ltree.addChild(getLoaderTree(c, (Map<String, Object>) o));
+                    ltree.addChild(getLoaderTree((Map<String, Object>) o));
                 } else {
                     throw new ConfigurationException("Expected type Map instead of "+o.getClass());
                 }
@@ -394,11 +393,10 @@ public class XtceDbFactory {
     }
 
     private static String getFullName(String filename) throws ConfigurationException {
-        YConfiguration c = YConfiguration.getConfiguration("mdb");
-        return new File(c.getGlobalProperty("cacheDirectory"), filename).getAbsolutePath();
+        return new File(YConfiguration.getGlobalProperty("cacheDirectory"), filename).getAbsolutePath();
     }
 
-    private static void saveSerializedInstance(XtceDb db, String filename) throws IOException, ConfigurationException {
+    private static void saveSerializedInstance(LoaderTree loaderTree, XtceDb db, String filename) throws IOException, ConfigurationException {
         OutputStream os = null;
         ObjectOutputStream out = null;
 
@@ -418,14 +416,19 @@ public class XtceDbFactory {
      * @param yamcsInstance
      * @return
      * @throws ConfigurationException
-     * @throws DatabaseLoadException 
+     * @throws DatabaseLoadException
      */
     public static synchronized XtceDb getInstance(String yamcsInstance) throws ConfigurationException {
         XtceDb db = instance2Db.get(yamcsInstance);
-        if(db==null) {
-            YConfiguration c=YConfiguration.getConfiguration("yamcs."+yamcsInstance);
-            db=getInstanceByConfig(yamcsInstance, c.getString("mdb"));
-            instance2Db.put(yamcsInstance, db);
+        if (db == null) {
+            YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
+            if (c.isList("mdb")) {
+                db = createInstance(c.getList("mdb"));
+                instance2Db.put(yamcsInstance, db);
+            } else {
+                db = getInstanceByConfig(yamcsInstance, c.getString("mdb"));
+                instance2Db.put(yamcsInstance, db);
+            }
         }
         return db;
     }
@@ -439,7 +442,7 @@ public class XtceDbFactory {
 
         XtceDb db = dbConfigs.get(config);
         if(db==null) {
-            db = createInstance(config);
+            db = createInstanceByConfig(config);
             dbConfigs.put(config, db);
         }
         return db;
@@ -459,14 +462,14 @@ public class XtceDbFactory {
             System.exit(1);
         }
         YConfiguration.setup();
-        XtceDb xtcedb = createInstance(argv[0]);
+        XtceDb xtcedb = createInstanceByConfig(argv[0]);
         xtcedb.print(System.out);
     }
 
 
     static class LoaderTree {
         SpaceSystemLoader root;
-        List<LoaderTree> children;  
+        List<LoaderTree> children;
 
         LoaderTree(SpaceSystemLoader root) {
             this.root=root;
@@ -479,9 +482,9 @@ public class XtceDbFactory {
         }
 
         /**
-         * 
+         *
          * @return a concatenation of all configs
-         * @throws ConfigurationException 
+         * @throws ConfigurationException
          */
         String getConfigName() throws ConfigurationException {
             if(children==null) {
@@ -497,16 +500,16 @@ public class XtceDbFactory {
         }
 
         /**checks the date in the file and returns true if any of the root or children needs to be updated
-         * @throws ConfigurationException 
+         * @throws ConfigurationException
          * @throws IOException */
-        public boolean neesUpdate(RandomAccessFile raf) throws IOException, ConfigurationException {
+        public boolean needsUpdate(RandomAccessFile raf) throws IOException, ConfigurationException {
             raf.seek(0);
             if(root.needsUpdate(raf)) {
                 return true;
             }
             if(children!=null) {
                 for(LoaderTree lt:children) {
-                    if(lt.neesUpdate(raf)) {
+                    if(lt.needsUpdate(raf)) {
                         return true;
                     }
                 }
@@ -564,5 +567,5 @@ public class XtceDbFactory {
             return rootSs;
         }
 
-    }    
+    }
 }

@@ -7,32 +7,28 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
-import org.yamcs.security.AuthenticationToken;
 import org.yamcs.utils.TimeEncoding;
 
 
 public class TimeResource extends AbstractWebSocketResource {
 
     private static final Logger log = LoggerFactory.getLogger(TimeResource.class);
-
+    public static final String RESOURCE_NAME = "time";
     public static final String OP_subscribe = "subscribe";
-    private static ScheduledThreadPoolExecutor timer =  new ScheduledThreadPoolExecutor(1);
+    private static ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
 
     private ScheduledFuture<?> future = null;
 
-    public TimeResource(YProcessor yproc, WebSocketFrameHandler wsHandler) {
-        super(yproc, wsHandler);
-        wsHandler.addResource("time", this);
+    public TimeResource(WebSocketProcessorClient client) {
+        super(client);
     }
 
-
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx,    WebSocketDecoder decoder, AuthenticationToken authToken)   throws WebSocketException {
+    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         switch (ctx.getOperation()) {
         case OP_subscribe:
             return processSubscribeRequest(ctx, decoder);

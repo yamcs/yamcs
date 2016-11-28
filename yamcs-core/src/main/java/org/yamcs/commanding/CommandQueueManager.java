@@ -99,7 +99,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         YConfiguration config=YConfiguration.getConfiguration("command-queue");
         List<String> queueList;
         if(!config.containsKey("queueNames")) {
-            log.warn("queueNames configuration variable is not set. Using just the default queue");
+            log.debug("queueNames configuration variable is not set. Using just the default queue");
             return;
         }
         queueList=config.getList("queueNames");

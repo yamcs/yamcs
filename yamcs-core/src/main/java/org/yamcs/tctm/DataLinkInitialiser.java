@@ -16,7 +16,7 @@ import com.google.common.util.concurrent.ServiceManager;
 
 /**
  * Service that initialises all the data links
- * 
+ *
  * @author nm
  *
  */
@@ -25,7 +25,7 @@ public class DataLinkInitialiser extends AbstractService {
     TcUplinkerAdapter tcDataLinkInitialiser;
     PpProviderAdapter ppDataLinkInitialiser;
     ServiceManager  serviceManager;
-    
+
     public DataLinkInitialiser(String yamcsInstance) throws ConfigurationException, StreamSqlException, ParseException, YamcsApiException, IOException {
         YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
         List<Service> services = new ArrayList<Service>();
@@ -41,23 +41,26 @@ public class DataLinkInitialiser extends AbstractService {
             ppDataLinkInitialiser = new PpProviderAdapter(yamcsInstance);
             services.add(ppDataLinkInitialiser);
         }
-        if(services.isEmpty()) {
-            throw new ConfigurationException("None of the "+TmDataLinkInitialiser.KEY_tmDataLinks+", "+TcUplinkerAdapter.KEY_tcDataLinks+" or "+PpProviderAdapter.KEY_ppDataLinks+" configured");
+        if (!services.isEmpty()) {
+            serviceManager = new ServiceManager(services);
         }
-        serviceManager = new ServiceManager(services);
     }
 
     @Override
     protected void doStart() {
-        serviceManager.startAsync();
-        serviceManager.awaitHealthy();
+        if (serviceManager != null) {
+            serviceManager.startAsync();
+            serviceManager.awaitHealthy();
+        }
         notifyStarted();
     }
 
     @Override
     protected void doStop() {
-        serviceManager.stopAsync();
-        serviceManager.awaitStopped();
+        if (serviceManager != null) {
+            serviceManager.stopAsync();
+            serviceManager.awaitStopped();
+        }
         notifyStopped();
     }
 }

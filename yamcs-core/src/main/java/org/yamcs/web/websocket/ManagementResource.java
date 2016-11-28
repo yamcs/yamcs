@@ -16,7 +16,6 @@ import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
-import org.yamcs.security.AuthenticationToken;
 
 /**
  * Provides access to any Processor/Client info over web socket
@@ -24,23 +23,21 @@ import org.yamcs.security.AuthenticationToken;
 public class ManagementResource extends AbstractWebSocketResource implements ManagementListener {
 
     private static final Logger log = LoggerFactory.getLogger(ManagementResource.class);
-
     public static final String RESOURCE_NAME = "management";
-    
+
     public static final String OP_getProcessorInfo = "getProcessorInfo";
     public static final String OP_getClientInfo = "getClientInfo";
     public static final String OP_subscribe = "subscribe";
 
     private int clientId;
 
-    public ManagementResource(YProcessor yproc, WebSocketFrameHandler wsHandler, int clientId) {
-        super(yproc, wsHandler);
-        wsHandler.addResource(RESOURCE_NAME, this);
-        this.clientId = clientId;
+    public ManagementResource(WebSocketProcessorClient client) {
+        super(client);
+        clientId = client.getClientId();
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder, AuthenticationToken authenticationToken) throws WebSocketException {
+    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         switch (ctx.getOperation()) {
         case OP_getProcessorInfo:
             return processGetProcessorInfoRequest(ctx, decoder);

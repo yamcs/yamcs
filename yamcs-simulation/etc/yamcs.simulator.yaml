@@ -1,4 +1,3 @@
-############################################ testinst configuration  ############################################################################
 services:
     #loads all the tm providers specified in the tmproviders section below. Creates all the necessary streams
     - org.yamcs.tctm.DataLinkInitialiser
@@ -18,7 +17,6 @@ services:
 
     #this one sets up the recording of the command history 
     - org.yamcs.archive.CommandHistoryRecorder
-    - org.yamcs.web.YamcsWebService
     - org.yamcs.AlarmReporter
     - class: org.yamcs.parameterarchive.ParameterArchive
       args:

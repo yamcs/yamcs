@@ -13,19 +13,19 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.YProcessor;
-import org.yamcs.ProcessorException;
-import org.yamcs.ProcessorFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.parameter.ParameterValue;
+import org.yamcs.ProcessorException;
+import org.yamcs.ProcessorFactory;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
+import org.yamcs.YProcessor;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.tctm.SimpleTcTmService;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
@@ -42,43 +42,43 @@ public class AlgorithmManagerPyTest {
         ManagementService.setup(false);
         XtceDbFactory.reset();
     }
-    static String instance = "refmdb-py";
+    static String instance = "refmdb";
     private XtceDb db;
     private YProcessor c;
     private RefMdbPacketGenerator tmGenerator;
     private ParameterRequestManagerImpl prm;
-    
+
     @Before
     public void beforeEachTest() throws ConfigurationException, ProcessorException {
         EventProducerFactory.setMockup(true);
-        
+
         db=XtceDbFactory.getInstance(instance);
         assertNotNull(db.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
 
         tmGenerator=new RefMdbPacketGenerator();
         List<ParameterProvider> paramProviderList = new ArrayList<ParameterProvider>();
-        
+
         Map<String, Object> jslib = new HashMap<String, Object>();
         Map<String, Object> config = new HashMap<String, Object>();
         jslib.put("python", Arrays.asList("mdb/algolib.py"));
         jslib.put("JavaScript", Arrays.asList("mdb/algolib.js"));
-        
+
         config.put("libraries", jslib);
         AlgorithmManager am = new AlgorithmManager(instance, config);
         paramProviderList.add(am);
-        
-        
+
+
         SimpleTcTmService tmtcs = new SimpleTcTmService(tmGenerator, paramProviderList, null);
-        c=ProcessorFactory.create(instance, "AlgorithmManagerPyTest", "refmdb-py", tmtcs, "junit");
+        c=ProcessorFactory.create(instance, "AlgorithmManagerPyTest", "refmdb", tmtcs, "junit");
         prm=c.getParameterRequestManager();
     }
-    
+
 
     @After
     public void afterEachTest() { // Prevents us from wrapping our code in try-finally
         c.quit();
     }
-    
+
     @Test
     public void testFloats() throws InvalidIdentification {
         final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();
@@ -95,7 +95,7 @@ public class AlgorithmManagerPyTest {
         assertEquals(1, params.size());
         assertEquals(2.1672918, params.get(0).getEngValue().getFloatValue(), 0.001);
     }
-    
+
     @Test
     public void testSignedIntegers() throws InvalidIdentification {
         final ArrayList<ParameterValue> params=new ArrayList<ParameterValue>();

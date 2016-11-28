@@ -3,13 +3,10 @@ package org.yamcs.web.rest;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -23,10 +20,12 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YamcsException;
+import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.YamcsVersion;
 import org.yamcs.parameterarchive.ParameterArchiveMaintenanceRestHandler;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse;
+import org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfo;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.web.HttpException;
@@ -39,13 +38,13 @@ import org.yamcs.web.rest.archive.ArchiveCommandRestHandler;
 import org.yamcs.web.rest.archive.ArchiveDownloadRestHandler;
 import org.yamcs.web.rest.archive.ArchiveEventRestHandler;
 import org.yamcs.web.rest.archive.ArchiveIndexRestHandler;
-import org.yamcs.web.rest.archive.RocksDbMaintenanceRestHandler;
 import org.yamcs.web.rest.archive.ArchivePacketRestHandler;
 import org.yamcs.web.rest.archive.ArchiveParameter2RestHandler;
 import org.yamcs.web.rest.archive.ArchiveParameterRestHandler;
 import org.yamcs.web.rest.archive.ArchiveStreamRestHandler;
 import org.yamcs.web.rest.archive.ArchiveTableRestHandler;
 import org.yamcs.web.rest.archive.ArchiveTagRestHandler;
+import org.yamcs.web.rest.archive.RocksDbMaintenanceRestHandler;
 import org.yamcs.web.rest.mdb.MDBAlgorithmRestHandler;
 import org.yamcs.web.rest.mdb.MDBCommandRestHandler;
 import org.yamcs.web.rest.mdb.MDBContainerRestHandler;
@@ -70,7 +69,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
  * <p>
  * When matching a route, priority is first given to built-in routes, only if
  * none match the first matching instance-specific dynamic route is matched.
- * These latter routes usually mention ':instance' in their url, which will be
+ * Dynamic routes often mention ':instance' in their url, which will be
  * expanded upon registration into the actual yamcs instance.
  */
 public class Router {
@@ -81,13 +80,13 @@ public class Router {
     // Order, because patterns are matched top-down in insertion order
     private LinkedHashMap<Pattern, Map<HttpMethod, RouteConfig>> defaultRoutes = new LinkedHashMap<>();
     private LinkedHashMap<Pattern, Map<HttpMethod, RouteConfig>> dynamicRoutes = new LinkedHashMap<>();
-    
+
     private boolean logSlowRequests = true;
     int SLOW_REQUEST_TIME = 20;//seconds; requests that execute more than this are logged
     ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
-    
-   
-    
+
+
+
     public Router() {
         registerRouteHandler(null, new ClientRestHandler());
         registerRouteHandler(null, new DisplayRestHandler());
@@ -116,13 +115,12 @@ public class Router {
         registerRouteHandler(null, new ProcessorCommandQueueRestHandler());
 
         registerRouteHandler(null, new MDBRestHandler());
-        registerRouteHandler(null, new MDBParameterRestHandler());    
+        registerRouteHandler(null, new MDBParameterRestHandler());
         registerRouteHandler(null, new MDBContainerRestHandler());
         registerRouteHandler(null, new MDBCommandRestHandler());
         registerRouteHandler(null, new MDBAlgorithmRestHandler());
 
         registerRouteHandler(null, new OverviewRouteHandler());
-        
     }
 
     // Using method handles for better invoke performance
@@ -172,16 +170,13 @@ public class Router {
         }
     }
 
-    public void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req, AuthenticationToken token) {
-
-        QueryStringDecoder qsDecoder = new QueryStringDecoder(req.getUri());
+    public void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req, AuthenticationToken token, QueryStringDecoder qsDecoder) {
         RestRequest restReq = new RestRequest(ctx, req, qsDecoder, token);
 
         try {
-            // Decode first the path/qs difference, then url-decode the path
-            String uri = new URI(qsDecoder.path()).getPath();
+            String  uri = qsDecoder.path();
             log.debug("R{}: Handling REST Request {} {}", restReq.getRequestId(), req.getMethod(), uri);
-            
+
             RouteMatch match = matchURI(req.getMethod(), uri);
             restReq.setRouteMatch(match);
             if (match != null) {
@@ -190,8 +185,6 @@ public class Router {
                 log.info("R{}: No route matching URI: '{}'", restReq.getRequestId(), req.getUri());
                 HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.NOT_FOUND);
             }
-        } catch (URISyntaxException e) {
-            RestHandler.sendRestError(restReq, HttpResponseStatus.INTERNAL_SERVER_ERROR, e);
         } catch (MethodNotAllowedException e) {
             log.info("R{}: Method {} not allowed for URI: '{}'", restReq.getRequestId(), req.getMethod(), req.getUri());
             RestHandler.sendRestError(restReq, e.getStatus(), e);
@@ -238,12 +231,12 @@ public class Router {
     }
 
     protected void dispatch(RestRequest req, RouteMatch match) {
-      
+
         ScheduledFuture<?> x = timer.schedule(() ->{
             log.error("R{} blocking the netty thread for 2 seconds. uri: {}", req.getRequestId(), req.getHttpRequest().getUri());
         }
         , 2, TimeUnit.SECONDS);
-        
+
         //the handlers will send themselves the response unless they throw an exception, case which is handled in the catch below.
         try {
             RouteHandler target = match.routeConfig.routeHandler;
@@ -260,7 +253,7 @@ public class Router {
             handleException(req, t);
         }
         x.cancel(true);
-        
+
         CompletableFuture<Void> cf = req.getCompletableFuture();
         if(logSlowRequests) {
             timer.schedule(() ->{
@@ -273,22 +266,18 @@ public class Router {
     }
 
     private void handleException(RestRequest req, Throwable t) {
-        if(t instanceof InternalServerErrorException) {
-            InternalServerErrorException e = (InternalServerErrorException)t;
-            log.error("R{}: Reporting internal server error to client", req.getRequestId(), e);
+        if (t instanceof InternalServerErrorException) {
+            InternalServerErrorException e = (InternalServerErrorException) t;
+            log.error(String.format("R%d: Reporting internal server error to client", req.getRequestId()), e);
             RestHandler.sendRestError(req, e.getStatus(), e);
         } else if (t instanceof HttpException) {
             HttpException e = (HttpException)t;
             log.warn("R{}: Sending nominal exception back to client: {}", req.getRequestId(), e.getMessage());
-            RestHandler.sendRestError(req, e.getStatus(), e);        
-        } else if (t instanceof YamcsException) {
-            log.warn("R{}: Reporting internal server error to client: {}", req.getRequestId(), t.getMessage());
-            RestHandler.sendRestError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
+            RestHandler.sendRestError(req, e.getStatus(), e);
         } else {
-            log.error("R{}: Unexpected error " + t, req.getRequestId(), t);
+            log.error(String.format("R%d: Reporting internal server error to client", req.getRequestId()), t);
             RestHandler.sendRestError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
         }
-
     }
 
     /*
@@ -313,7 +302,7 @@ public class Router {
                 replacement.append("(?<").append(matcher.group(2)).append(">");
                 replacement.append(star ? ".+?" : "[^/]+");
                 replacement.append(")");
-            }            
+            }
 
             matcher.appendReplacement(buf, replacement.toString());
         }
@@ -349,7 +338,7 @@ public class Router {
                 if (pathLengthCompare != 0) {
                     return -pathLengthCompare;
                 } else {
-                    return originalPath.compareTo(o.originalPath);                    
+                    return originalPath.compareTo(o.originalPath);
                 }
             }
         }
@@ -369,7 +358,8 @@ public class Router {
     }
 
     /**
-     * 'Documents' all registered resources
+     * 'Documents' all registered resources, and provides some
+     * general server information.
      */
     private final class OverviewRouteHandler extends RestHandler {
 
@@ -377,15 +367,36 @@ public class Router {
         public void getApiOverview(RestRequest req) throws HttpException {
             GetApiOverviewResponse.Builder responseb = GetApiOverviewResponse.newBuilder();
             responseb.setYamcsVersion(YamcsVersion.version);
+            responseb.setServerId(YamcsServer.getServerId());
 
-            // Unique accross http methods, and according to insertion order
-            Set<String> urls = new LinkedHashSet<>();
-            for (Map<HttpMethod, RouteConfig> map : defaultRoutes.values()) {
-                map.values().forEach(v -> urls.add(v.originalPath));
+            // Property to be interpreted at client's leisure.
+            // Concept of defaultInstance could be moved into YamcsServer
+            // at some point, but there's for now unsufficient support.
+            // (would need websocket adjmustments, which are now
+            // instance-specific).
+            YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
+            if (yconf.containsKey("defaultInstance")) {
+                responseb.setDefaultYamcsInstance(yconf.getString("defaultInstance"));
+            } else {
+                Set<String> instances = YamcsServer.getYamcsInstanceNames();
+                if (!instances.isEmpty()) {
+                    responseb.setDefaultYamcsInstance(instances.iterator().next());
+                }
             }
 
-            urls.forEach(url -> responseb.addUrl(url));
-
+            // Aggregate to unique urls, and keep insertion order
+            Map<String, RouteInfo.Builder> builders = new LinkedHashMap<>();
+            for (Map<HttpMethod, RouteConfig> map : defaultRoutes.values()) {
+                map.values().forEach(v -> {
+                    RouteInfo.Builder builder = builders.get(v.originalPath);
+                    if (builder == null) {
+                        builder = RouteInfo.newBuilder();
+                        builders.put(v.originalPath, builder);
+                    }
+                    builder.setUrl(v.originalPath).addMethod(v.httpMethod.toString());
+                });
+            }
+            builders.values().forEach(b -> responseb.addRoute(b));
             completeOK(req, responseb.build(), SchemaRest.GetApiOverviewResponse.WRITE);
         }
     }
