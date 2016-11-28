@@ -90,10 +90,6 @@ public class FilePollingTmDataLink extends AbstractExecutionThreadService implem
     public void enable() {
         disabled=false;
     }
-    @Override
-    public boolean isArchiveReplay() {
-        return false;
-    }
 
     @Override
     public boolean isDisabled() {

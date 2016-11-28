@@ -99,10 +99,6 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
         return delayBetweenPackets;
     }
 
-    @Override
-    public boolean isArchiveReplay() {
-        return true;
-    }
     /**
      * @param delayBetweenPackets the delayBetweenPakets to set
      */

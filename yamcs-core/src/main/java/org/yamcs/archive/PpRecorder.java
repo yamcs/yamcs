@@ -1,6 +1,6 @@
 package org.yamcs.archive;
 
-import static org.yamcs.tctm.PpProviderAdapter.PP_TUPLE_DEFINITION;
+import static org.yamcs.tctm.PpDataLinkInitialiser.PP_TUPLE_DEFINITION;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ import org.yamcs.StreamConfig;
 import org.yamcs.YConfiguration;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
-import org.yamcs.tctm.PpProviderAdapter;
+import org.yamcs.tctm.PpDataLinkInitialiser;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableWriter;
@@ -23,7 +23,7 @@ import com.google.common.util.concurrent.AbstractService;
  * PpRecorder
  * Records (processed) Parameters 
  * 
- * The base table definition is {@link PpProviderAdapter}
+ * The base table definition is {@link PpDataLinkInitialiser}
  * @author nm
  *
  */

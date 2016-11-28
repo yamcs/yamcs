@@ -129,11 +129,6 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
         return null;
     }
     
-    @Override
-    public boolean isArchiveReplay() {
-        return false;
-    }
-    
     /**
      * Read n bytes from the tmSocket, blocking if necessary till all bytes are available.
      * Returns true if all the bytes have been read and false if the stream has closed before all the bytes have been read.

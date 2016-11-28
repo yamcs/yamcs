@@ -71,10 +71,6 @@ public class MulticastTmDataLink extends AbstractExecutionThreadService implemen
         openSocket();
     }
 
-    @Override
-    public boolean isArchiveReplay() {
-        return false;
-    }
 
     private void openSocket() throws IOException {
         tmSocket=new MulticastSocket(port);

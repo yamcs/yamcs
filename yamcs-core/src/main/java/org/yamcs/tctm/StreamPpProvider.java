@@ -29,23 +29,22 @@ import com.google.common.util.concurrent.AbstractService;
  */
 public class StreamPpProvider extends AbstractService implements StreamSubscriber, ParameterProvider {
     Stream stream;
-    PpListener ppListener;
     ParameterRequestManager paraListener;
     final XtceDb xtceDb;
-    
+
     public StreamPpProvider(String archiveInstance, Map<String, String> config) throws ConfigurationException {
         YarchDatabase ydb=YarchDatabase.getInstance(archiveInstance);
-        
+
         if(!config.containsKey("stream")) {
-        	throw new ConfigurationException("the config(args) for YarchPpProvider has to contain a parameter 'stream' - stream name for retrieving parameters from");
+            throw new ConfigurationException("the config(args) for StreamPpProvider has to contain a parameter 'stream' - stream name for retrieving parameters from");
         }
         String streamName = config.get("stream");
-        
+
         stream=ydb.getStream(streamName);
         if(stream==null) throw new ConfigurationException("Cannot find a stream named "+streamName);
         xtceDb=XtceDbFactory.getInstance(archiveInstance);
     }
-    
+
 
     @Override
     protected void doStart() {
@@ -75,7 +74,7 @@ public class StreamPpProvider extends AbstractService implements StreamSubscribe
 
     @Override
     public void streamClosed(Stream s) {
-       notifyStopped();
+        notifyStopped();
     }
 
 
@@ -86,20 +85,20 @@ public class StreamPpProvider extends AbstractService implements StreamSubscribe
 
     @Override
     public void stopProviding(Parameter paramDef) {
-     
+
     }
-    
+
     @Override
     public boolean canProvide(NamedObjectId id) {
         if(xtceDb.getParameter(id)!=null) return true;
         else return false;
     }
-    
+
     @Override
     public boolean canProvide(Parameter p) {
         return xtceDb.getParameter(p.getQualifiedName())!=null;
     }
-    
+
     @Override
     public Parameter getParameter(NamedObjectId id) throws InvalidIdentification {
         Parameter p=xtceDb.getParameter(id);
@@ -120,9 +119,8 @@ public class StreamPpProvider extends AbstractService implements StreamSubscribe
     }
 
 
-
-	@Override
-	public void init(YProcessor channel) {
-		//nothing to be done here
-	}
+    @Override
+    public void init(YProcessor processor) {
+        //nothing to be done here
+    }
 }

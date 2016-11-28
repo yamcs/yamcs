@@ -30,7 +30,7 @@ public class ArtemisPpDataLink extends  AbstractService implements PpDataLink, M
     protected volatile boolean disabled=false;
 
     protected Logger log=LoggerFactory.getLogger(this.getClass().getName());
-    private PpListener ppListener;
+    private PpSink ppListener;
     YamcsSession yamcsSession; 
     final private YamcsClient msgClient;
     final XtceDb ppdb;
@@ -52,7 +52,7 @@ public class ArtemisPpDataLink extends  AbstractService implements PpDataLink, M
 
 
     @Override
-    public void setPpListener(PpListener ppListener) {
+    public void setPpSink(PpSink ppListener) {
         this.ppListener=ppListener;
     }
 
@@ -105,7 +105,7 @@ public class ArtemisPpDataLink extends  AbstractService implements PpDataLink, M
             if(pd.hasGenerationTime()) {
                 genTime = pd.getGenerationTime();
             } else {
-                Long l = msg.getLongProperty(PpProviderAdapter.PP_TUPLE_COL_GENTIME);
+                Long l = msg.getLongProperty(PpDataLinkInitialiser.PP_TUPLE_COL_GENTIME);
                 if(l!=null) {
                     genTime = l;
                 } else {
@@ -117,7 +117,7 @@ public class ArtemisPpDataLink extends  AbstractService implements PpDataLink, M
             if(pd.hasGroup()) {
                 ppGroup = pd.getGroup();
             } else {
-                ppGroup = msg.getStringProperty(PpProviderAdapter.PP_TUPLE_COL_PPGROUP);
+                ppGroup = msg.getStringProperty(PpDataLinkInitialiser.PP_TUPLE_COL_PPGROUP);
                 if(ppGroup == null) {
                     log.warn("Cannot find PP group either in the body or in the header of the message");
                     return;

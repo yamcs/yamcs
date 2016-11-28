@@ -321,10 +321,6 @@ public abstract class AbstractIntegrationTest {
         }
 
         @Override
-        public boolean isArchiveReplay() {
-            return false;
-        }
-        @Override
         protected void doStart() {
             mdbPacketGenerator.init(null, this);
             notifyStarted();

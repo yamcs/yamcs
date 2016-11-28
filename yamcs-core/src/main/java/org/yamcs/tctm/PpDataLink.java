@@ -8,5 +8,5 @@ import com.google.common.util.concurrent.Service;
  *
  */
 public interface PpDataLink extends Service, Link {
-	public void setPpListener(PpListener ppListener);
+    public void setPpSink(PpSink ppListener);
 }

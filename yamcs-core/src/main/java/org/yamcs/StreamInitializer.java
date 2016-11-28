@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.alarms.AlarmServer;
-import org.yamcs.tctm.PpProviderAdapter;
+import org.yamcs.tctm.PpDataLinkInitialiser;
 import org.yamcs.tctm.TcUplinkerAdapter;
 import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.yarch.YarchDatabase;
@@ -85,7 +85,7 @@ public class StreamInitializer {
     }
 
     private void createParamStream(String streamName) throws StreamSqlException, ParseException {
-        ydb.execute("create stream "+streamName+PpProviderAdapter.PP_TUPLE_DEFINITION.getStringDefinition());
+        ydb.execute("create stream "+streamName+PpDataLinkInitialiser.PP_TUPLE_DEFINITION.getStringDefinition());
     }
 
     private void createCmdHistoryStream(String streamName) throws StreamSqlException, ParseException {

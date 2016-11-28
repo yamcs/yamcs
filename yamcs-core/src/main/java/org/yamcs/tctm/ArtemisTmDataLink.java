@@ -59,11 +59,6 @@ public class ArtemisTmDataLink extends  AbstractService implements TmPacketDataL
     }
 
     @Override
-    public boolean isArchiveReplay() {
-        return false;
-    }
-
-    @Override
     public String getLinkStatus() {
         if (disabled) {
             return "DISABLED";

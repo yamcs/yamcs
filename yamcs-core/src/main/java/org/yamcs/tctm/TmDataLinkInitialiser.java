@@ -48,7 +48,7 @@ public class TmDataLinkInitialiser extends AbstractService {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public TmDataLinkInitialiser(String yamcsInstance) throws ConfigurationException, StreamSqlException, ParseException, YamcsApiException, IOException {
+    public TmDataLinkInitialiser(String yamcsInstance) throws ConfigurationException, IOException {
         this.yamcsInstance = yamcsInstance;
         YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
         

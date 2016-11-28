@@ -17,7 +17,7 @@ import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.tctm.PpProviderAdapter;
+import org.yamcs.tctm.PpDataLinkInitialiser;
 import org.yamcs.StreamInitializer;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.Protocol;
@@ -92,16 +92,16 @@ public class PpTupleTranslatorTest extends YarchTestCase {
         msg.putIntProperty( DATA_TYPE_HEADER_NAME, ProtoDataType.PP.getNumber() );
 
         long curTime = TimeEncoding.getWallclockTime();
-        msg.putLongProperty( PpProviderAdapter.PP_TUPLE_COL_GENTIME, curTime - 10 );
-        msg.putStringProperty( PpProviderAdapter.PP_TUPLE_COL_PPGROUP, "no-group" );
-        msg.putIntProperty( PpProviderAdapter.PP_TUPLE_COL_SEQ_NUM, PpTupleTranslatorTest.sequenceCount ++ );
-        msg.putLongProperty( PpProviderAdapter.PP_TUPLE_COL_RECTIME, curTime );
+        msg.putLongProperty( PpDataLinkInitialiser.PP_TUPLE_COL_GENTIME, curTime - 10 );
+        msg.putStringProperty( PpDataLinkInitialiser.PP_TUPLE_COL_PPGROUP, "no-group" );
+        msg.putIntProperty( PpDataLinkInitialiser.PP_TUPLE_COL_SEQ_NUM, PpTupleTranslatorTest.sequenceCount ++ );
+        msg.putLongProperty( PpDataLinkInitialiser.PP_TUPLE_COL_RECTIME, curTime );
 
         return msg;
     }
 
     public static Tuple getTuple() {
-        TupleDefinition tupleDef = PpProviderAdapter.PP_TUPLE_DEFINITION.copy();
+        TupleDefinition tupleDef = PpDataLinkInitialiser.PP_TUPLE_DEFINITION.copy();
         tupleDef.addColumn( COL_BYTE, DataType.BYTE );
         tupleDef.addColumn( COL_STR, DataType.STRING );
         tupleDef.addColumn( COL_DOUBLE, DataType.DOUBLE );
@@ -184,13 +184,13 @@ public class PpTupleTranslatorTest extends YarchTestCase {
                 pv = (ParameterValue)tuple.getColumn( COL_BYTE );
                 assertEquals( 1, pv.getEngValue().getSint32Value() );
 
-                assertTrue( "no-group".equals( tuple.getColumn( PpProviderAdapter.PP_TUPLE_COL_PPGROUP ) ) );
+                assertTrue( "no-group".equals( tuple.getColumn( PpDataLinkInitialiser.PP_TUPLE_COL_PPGROUP ) ) );
 
-                assertEquals( tableReceivedCounter.get(), tuple.getColumn( PpProviderAdapter.PP_TUPLE_COL_SEQ_NUM ) );
+                assertEquals( tableReceivedCounter.get(), tuple.getColumn( PpDataLinkInitialiser.PP_TUPLE_COL_SEQ_NUM ) );
                 tableReceivedCounter.incrementAndGet();
 
-                long gentime = ((Long)tuple.getColumn( PpProviderAdapter.PP_TUPLE_COL_GENTIME )).longValue();
-                long rectime = ((Long)tuple.getColumn( PpProviderAdapter.PP_TUPLE_COL_RECTIME )).longValue();
+                long gentime = ((Long)tuple.getColumn( PpDataLinkInitialiser.PP_TUPLE_COL_GENTIME )).longValue();
+                long rectime = ((Long)tuple.getColumn( PpDataLinkInitialiser.PP_TUPLE_COL_RECTIME )).longValue();
                 assertEquals( gentime, rectime - 10, 0.0001 );
 
                 if(tableReceivedCounter.get()==numMessages)finished.release();

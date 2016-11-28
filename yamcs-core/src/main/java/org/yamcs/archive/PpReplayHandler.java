@@ -10,7 +10,7 @@ import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
-import org.yamcs.tctm.PpProviderAdapter;
+import org.yamcs.tctm.PpDataLinkInitialiser;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Tuple;
 
@@ -63,7 +63,7 @@ public class PpReplayHandler implements ReplayHandler {
         ParameterData.Builder pdb=ParameterData.newBuilder();
         //loop through all the columns containing values
         // the first column is the ProtoDataType.PP (from the select above), then are the fixed ones from PP_TUPLE_DEFINITION
-        for(int i=PpProviderAdapter.PP_TUPLE_DEFINITION.size()+1; i<t.size(); i++) {
+        for(int i=PpDataLinkInitialiser.PP_TUPLE_DEFINITION.size()+1; i<t.size(); i++) {
             String colName=t.getColumnDefinition(i).getName();
             Object o=t.getColumn(i);
             if(o instanceof ParameterValue) {

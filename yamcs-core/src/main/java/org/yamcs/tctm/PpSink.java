@@ -4,8 +4,14 @@ import java.util.Collection;
 
 import org.yamcs.parameter.ParameterValue;
 
-
-public interface PpListener {
+/**
+ * Used by the PpDataLinks to propagate processed parameters inside Yamcs.
+ * 
+ *  
+ * @author nm
+ *
+ */
+public interface PpSink {
     /**
      *Update a collection of PPs
      *

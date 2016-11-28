@@ -19,7 +19,7 @@ import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.tctm.PpProviderAdapter;
+import org.yamcs.tctm.PpDataLinkInitialiser;
 import org.yamcs.time.TimeService;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
@@ -153,7 +153,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
 
         if(params.isEmpty()) return;
 
-        TupleDefinition tdef=PpProviderAdapter.PP_TUPLE_DEFINITION.copy();
+        TupleDefinition tdef=PpDataLinkInitialiser.PP_TUPLE_DEFINITION.copy();
         List<Object> cols=new ArrayList<Object>(4+params.size());
         cols.add(gentime);
         cols.add(namespace);
@@ -166,7 +166,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
                 log.warn("duplicate value for "+pv.getId()+"\nfirst: "+cols.get(idx)+"\n second: "+pv);
                 continue;
             }
-            tdef.addColumn(name, PpProviderAdapter.PP_DATA_TYPE);
+            tdef.addColumn(name, PpDataLinkInitialiser.PP_DATA_TYPE);
             cols.add(pv);
         }
         Tuple t=new Tuple(tdef, cols);
