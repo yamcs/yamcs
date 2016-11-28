@@ -317,7 +317,7 @@ public class Router {
             matcher.appendReplacement(buf, replacement.toString());
         }
         matcher.appendTail(buf);
-        return Pattern.compile(buf.append("$").toString());
+        return Pattern.compile(buf.append("/?$").toString());
     }
 
     /**
