@@ -15,13 +15,13 @@ import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.GuardedBy;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.parameter.ParameterValue;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
 import org.yamcs.YProcessor;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
@@ -51,9 +51,9 @@ import com.google.common.util.concurrent.AbstractService;
  *  - when the command is immediately sent or rejected, the command queue monitor is not notified
  *  - if the command has transmissionConstraints with timeout &gt; 0, the command can sit in the queue even if the queue is not blocked
  *
- * Note: the update of the command monitors is done in the same thread. That means that if the connection to one 
+ * Note: the update of the command monitors is done in the same thread. That means that if the connection to one
  *  of the monitors is lost, there may be a delay of a few seconds. As the monitoring clients will be priviledged users
- *  most likely connected in the same LAN, I don't consider this to be an issue. 
+ *  most likely connected in the same LAN, I don't consider this to be an issue.
  */
 @ThreadSafe
 public class CommandQueueManager extends AbstractService implements ParameterConsumer, SystemParametersProducer {
@@ -65,7 +65,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     ConcurrentLinkedQueue<CommandQueueListener> monitoringClients = new ConcurrentLinkedQueue<CommandQueueListener>();
     private final Logger log;
 
-    private Set<TransmissionConstraintChecker> pendingTcCheckers = new HashSet<TransmissionConstraintChecker>();
+    private Set<TransmissionConstraintChecker> pendingTcCheckers = new HashSet<>();
 
     private final String instance,yprocName;
 
@@ -75,13 +75,13 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     int paramSubscriptionRequestId = -1;
 
     private final ScheduledThreadPoolExecutor timer;
-    
+
 
     /**
      * Constructs a Command Queue Manager.
      * @param commandingManager 
      *
-     * @throws ConfigurationException in case there is an error in the configuration file. 
+     * @throws ConfigurationException in case there is an error in the configuration file.
      *         Note: if the configuration file doesn't exist, this exception is not thrown.
      */
     public CommandQueueManager(CommandingManager commandingManager) throws ConfigurationException {
@@ -98,30 +98,28 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         CommandQueue cq=new CommandQueue(yproc, "default");
         queues.put("default", cq);
 
-        YConfiguration config=YConfiguration.getConfiguration("command-queue");
-        List<String> queueList;
-        if(!config.containsKey("queueNames")) {
-            log.debug("queueNames configuration variable is not set. Using just the default queue");
-            return;
-        }
-        queueList=config.getList("queueNames");
-        for(String qn:queueList) {
-            if(!queues.containsKey(qn)) {
-                queues.put(qn,new CommandQueue(yproc, qn));
-            }
-            CommandQueue q=queues.get(qn);
-            String state=config.getString(qn, "state");
-            q.state=CommandQueueManager.stringToQueueState(state);
-            q.defaultState = q.state;
-            if(config.containsKey(qn, "stateExpirationTimeS"))
-            {
-                q.stateExpirationTimeS = config.getInt(qn, "stateExpirationTimeS");
-            }
-            q.roles=config.getList(qn, "roles");
-            if(config.containsKey(qn, "significances")) {
-                q.significances = config.getList(qn, "significances");
+        if (YConfiguration.isDefined("command-queue")) {
+            YConfiguration config=YConfiguration.getConfiguration("command-queue");
+            List<String> queueList=config.getList("queueNames");
+            for(String qn:queueList) {
+                if(!queues.containsKey(qn)) {
+                    queues.put(qn,new CommandQueue(yproc, qn));
+                }
+                CommandQueue q=queues.get(qn);
+                String state=config.getString(qn, "state");
+                q.state=CommandQueueManager.stringToQueueState(state);
+                q.defaultState = q.state;
+                if(config.containsKey(qn, "stateExpirationTimeS"))
+                {
+                    q.stateExpirationTimeS = config.getInt(qn, "stateExpirationTimeS");
+                }
+                q.roles=config.getList(qn, "roles");
+                if(config.containsKey(qn, "significances")) {
+                    q.significances = config.getList(qn, "significances");
+                }
             }
         }
+
         // schedule timer update to client
         timer.scheduleAtFixedRate(()->{
             for(CommandQueue q : queues.values())
@@ -147,7 +145,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     @Override
     public void doStart() {
         XtceDb xtcedb = yproc.getXtceDb();
-        Set<Parameter> paramsToSubscribe = new HashSet<Parameter>();
+        Set<Parameter> paramsToSubscribe = new HashSet<>();
         for(MetaCommand mc: xtcedb.getMetaCommands()) {
             if(mc.hasTransmissionConstraints()) {
                 List<TransmissionConstraint> tcList = mc.getTransmissionConstraintList();
@@ -159,7 +157,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         if(!paramsToSubscribe.isEmpty()) {
             ParameterRequestManagerImpl prm = yproc.getParameterRequestManager();
             try {
-                paramSubscriptionRequestId = prm.addRequest(new ArrayList<Parameter>(paramsToSubscribe), this);
+                paramSubscriptionRequestId = prm.addRequest(new ArrayList<>(paramsToSubscribe), this);
             } catch (InvalidIdentification e) {
                 log.warn("Got Invalid identification when subscribing to parameters for command constraint check",e);
                 notifyFailed(e);
@@ -168,7 +166,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         } else {
             log.debug("No parameter required for post transmission contraint check");
         }
-        
+
         SystemParametersCollector  sysParamCollector = SystemParametersCollector.getInstance(yproc.getInstance());
         if(sysParamCollector!=null) {
             for(CommandQueue cq:queues.values()) {
@@ -204,7 +202,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     public Collection<CommandQueue> getQueues() {
         return queues.values();
     }
-    
+
     public CommandQueue getQueue(String name) {
         return queues.get(name);
     }
@@ -212,7 +210,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     /**
      * Called from the CommandingImpl to add a command to the queue
      * First the command is added to the command history
-     * Depending on the status of the queue, the command is rejected by setting the CommandFailed in the command history 
+     * Depending on the status of the queue, the command is rejected by setting the CommandFailed in the command history
      *  added to the queue or directly sent using the uplinker
      *  
      * @param authToken      
@@ -232,7 +230,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             failedCommand(q, pc, "Commanding Queue disabled", true);
             notifyUpdateQueue(q);
         } else if(q.state==QueueState.BLOCKED) {
-          //  notifyAdded(q, pc);
+            //  notifyAdded(q, pc);
         } else if(q.state==QueueState.ENABLED) {
             if(pc.getMetaCommand().hasTransmissionConstraints()) {
                 startTransmissionConstraintChecker(q, pc);
@@ -242,7 +240,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 releaseCommand(q, pc, true, false);
             }
         }
-        
+
         return q;
     }
 
@@ -251,14 +249,14 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     private void startTransmissionConstraintChecker(CommandQueue q, PreparedCommand pc) {
         TransmissionConstraintChecker constraintChecker = new TransmissionConstraintChecker(q, pc);
         pendingTcCheckers.add(constraintChecker);
-        
+
         scheduleImmediateCheck(constraintChecker);
     }
 
     private void onTransmissionContraintCheckPending(TransmissionConstraintChecker tcChecker) {
         addToCommandHistory(tcChecker.pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY, "PENDING");
     }
-    
+
     private void onTransmissionContraintCheckFinished(TransmissionConstraintChecker tcChecker) {
         PreparedCommand pc = tcChecker.pc;
         CommandQueue q = tcChecker.queue;
@@ -366,7 +364,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             CommandVerificationHandler cvh = new CommandVerificationHandler(yproc, pc);
             cvh.start();
         }
-        
+
         commandReleaser.releaseCommand(pc);
         //Notify the monitoring clients
         if(notify) {
@@ -434,7 +432,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
         return pc;
     }
-    
+
     // Used by REST API as a simpler identifier
     public synchronized PreparedCommand rejectCommand(UUID uuid, String username) {
         for(CommandQueue q:queues.values()) {
@@ -472,7 +470,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
         return command;
     }
-    
+
     // Used by REST API as a simpler identifier
     public synchronized PreparedCommand sendCommand(UUID uuid, boolean rebuild) {
         for(CommandQueue q:queues.values()) {
@@ -562,14 +560,14 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     /**
-     * Called from a queue monitor to register itself in order to be notified when 
+     * Called from a queue monitor to register itself in order to be notified when
      *   new commands are added/removed from the queue.
      * @param cqm the callback which will be called with updates
      */
     public void registerListener(CommandQueueListener cqm) {
         monitoringClients.add(cqm);
     }
-    
+
     public boolean removeListener(CommandQueueListener cqm) {
         return monitoringClients.remove(cqm);
     }
@@ -628,7 +626,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     static enum TCStatus {INIT, PENDING, OK, TIMED_OUT};
 
     class TransmissionConstraintChecker {
-        List<TransmissionConstraintStatus> tcsList = new ArrayList<TransmissionConstraintStatus>();
+        List<TransmissionConstraintStatus> tcsList = new ArrayList<>();
         final PreparedCommand pc;
         final CommandQueue queue;
         TCStatus aggregateStatus=TCStatus.INIT;
@@ -654,9 +652,9 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
 
             if(aggregateStatus!=TCStatus.PENDING) return;
-            
+
             CriteriaEvaluator condEvaluator = new CriteriaEvaluatorImpl(pvList);
-            
+
             aggregateStatus = TCStatus.OK;
             long scheduleNextCheck = Long.MAX_VALUE;
 
@@ -712,7 +710,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
     @Override
     public Collection<Pvalue.ParameterValue> getSystemParameters() {
-        List<Pvalue.ParameterValue> pvlist = new ArrayList<Pvalue.ParameterValue>();
+        List<Pvalue.ParameterValue> pvlist = new ArrayList<>();
         long time = yproc.getCurrentTime();
         for(CommandQueue cq: queues.values()) {
             cq.fillInSystemParameters(pvlist, time);
