@@ -2,11 +2,15 @@ package org.yamcs.yarch.rocksdb;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.CrashHandler;
+import org.yamcs.api.EventProducer;
+import org.yamcs.api.EventProducerFactory;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
@@ -29,13 +33,16 @@ public class CfTableWriter extends AbstractTableWriter {
     private final RdbPartitionManager partitionManager;
     private final PartitioningSpec partitioningSpec;
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
-    RDBFactory rdbFactory; 
+    RDBFactory rdbFactory;
+    CrashHandler crashHandler;
 
     public CfTableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode, RdbPartitionManager pm) throws IOException {
         super(ydb, tableDefinition, mode);
         this.partitioningSpec = tableDefinition.getPartitioningSpec();
         this.partitionManager = pm;
         rdbFactory = RDBFactory.getInstance(ydb.getName());
+        crashHandler = new CrashHandler(ydb.getName(), "Archive");
+
     }
 
     @Override
@@ -73,11 +80,12 @@ public class CfTableWriter extends AbstractTableWriter {
         } catch (IOException e) {
             log.error("failed to insert a record: ", e);
             e.printStackTrace();
+            crashHandler.sendErrorEvent("IO", "failed to insert a record: " + e.getMessage());
         } catch (RocksDBException e) {
             log.error("failed to insert a record: ", e);
             e.printStackTrace();
+            crashHandler.sendErrorEvent("RocksDb", "failed to insert a record: " + e.getMessage());
         }
-
     }
 
 
