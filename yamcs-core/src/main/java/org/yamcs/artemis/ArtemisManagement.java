@@ -29,7 +29,7 @@ import org.yamcs.management.LinkListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest;
-import org.yamcs.security.ArtemisAuthManager;
+import org.yamcs.security.BasicArtemisAuthModule;
 import org.yamcs.security.HqClientMessageToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.utils.ActiveMQBufferOutputStream;

@@ -116,7 +116,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
     }
     
     private void checkPrivileges(RestRequest req) throws HttpException {
-        if(!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.SYSTEM, Privilege.SystemPrivilege.MayControlArchiving.name()))  {
+        if(!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.SystemPrivilege.MayControlArchiving))  {
             throw new ForbiddenException("No privilege for this operation");
         }
     }

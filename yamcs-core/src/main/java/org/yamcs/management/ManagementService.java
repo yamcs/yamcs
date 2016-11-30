@@ -273,7 +273,7 @@ public class ManagementService implements ProcessorListener {
         } else {
             username = Privilege.getDefaultUser();
         }
-        if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.SYSTEM, Privilege.SystemPrivilege.MayControlProcessor)) {
+        if(!Privilege.getInstance().hasPrivilege1(authToken, Privilege.SystemPrivilege.MayControlProcessor)) {
             if(cr.getPersistent()) {
                 log.warn("User "+username+" is not allowed to create persistent processors");
                 throw new YamcsException("Permission denied");
@@ -347,12 +347,12 @@ public class ManagementService implements ProcessorListener {
         log.debug("User "+ username+" wants to connect clients "+cr.getClientIdList()+" to processor "+cr.getName());
 
 
-        if(!Privilege.getInstance().hasPrivilege(usertoken, Privilege.Type.SYSTEM, "MayControlProcessor") &&
+        if(!Privilege.getInstance().hasPrivilege1(usertoken, Privilege.SystemPrivilege.MayControlProcessor) &&
                 !((chan.isPersistent() || chan.getCreator().equals(username)))) {
             log.warn("User "+username+" is not allowed to connect users to processor "+cr.getName() );
             throw new YamcsException("permission denied");
         }
-        if(!Privilege.getInstance().hasPrivilege(usertoken, Privilege.Type.SYSTEM, "MayControlProcessor")) {
+        if(!Privilege.getInstance().hasPrivilege1(usertoken, Privilege.SystemPrivilege.MayControlProcessor)) {
             for(int i=0; i<cr.getClientIdCount(); i++) {
                 ClientInfo si=clients.get(cr.getClientId(i)).getClientInfo();
                 if(!username.equals(si.getUsername())) {

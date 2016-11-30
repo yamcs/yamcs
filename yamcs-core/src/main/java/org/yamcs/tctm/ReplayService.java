@@ -44,6 +44,7 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.security.InvalidAuthenticationToken;
 import org.yamcs.security.SystemToken;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
@@ -251,6 +252,8 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         } catch (YamcsException e) {
             log.error("Exception creating the replay", e);
             throw new ProcessorException("Exception creating the replay: "+e.getMessage(), e);
+        } catch (InvalidAuthenticationToken e) { //should never come here
+            throw new RuntimeException(e);
         }
     }
     @Override

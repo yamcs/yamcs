@@ -10,6 +10,7 @@ import org.apache.activemq.artemis.core.security.Role;
 import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
 import org.yamcs.api.artemis.YamcsSession;
 
 /**
@@ -24,12 +25,20 @@ import org.yamcs.api.artemis.YamcsSession;
  * @author atu
  *
  */
-public class ArtemisAuthManager implements ActiveMQSecurityManager {
-    static Logger log = LoggerFactory.getLogger(ArtemisAuthManager.class);
+public class BasicArtemisAuthModule implements ActiveMQSecurityManager {
+    static Logger log = LoggerFactory.getLogger(BasicArtemisAuthModule.class);
     private Map<String, ArrayList<String>> configuredUserCache = new HashMap<>();
     /** If null (default), anonymous connections will be rejected. */
     private String defaultUser = null;
-
+    final BasicAuthModule basicAuthModule;
+    
+    public BasicArtemisAuthModule() {
+        AuthModule authModule = Privilege.getInstance().getAuthModule();
+        if(!(authModule instanceof BasicAuthModule)) {
+            throw new ConfigurationException("This Artemis auth manager only works with the BasicAuthModule configured in the priviles.yaml");
+        }
+        this.basicAuthModule = (BasicAuthModule)authModule;
+    }
     /**
      * Determines if no restrictions should be applied to the specified user,
      * which can mean either that privileges are disabled (everyone has all
@@ -93,13 +102,11 @@ public class ArtemisAuthManager implements ActiveMQSecurityManager {
             // If no default user, anonymous connections are not allowed.
             return ( defaultUser != null );
         }
-
-        if( ! Privilege.getInstance().authenticates(new UsernamePasswordToken(username, password))){
-
-            //if( ! ActiveMQAuthPrivilege.authenticated(username, password) ) {
+        User user = basicAuthModule.getUser(new UsernamePasswordToken(username, password));
+        if( user==null || !user.isAuthenticated()){
             return false;
         }
-        log.info("User '{}' authenticated with {}", username, Privilege.getRealmName());
+        log.info("User '{}' authenticated with {}", username, Privilege.getAuthModuleName());
         return true;
     }
 
@@ -143,7 +150,7 @@ public class ArtemisAuthManager implements ActiveMQSecurityManager {
         Privilege p = Privilege.getInstance();
         UsernamePasswordToken userToken = new UsernamePasswordToken(username, password);
         for( Role configuredRole : configuredRoles ) {
-            if( p.hasRole(userToken, configuredRole.getName() ) && checkType.hasRole( configuredRole ) ) {
+            if(basicAuthModule.hasRole(userToken, configuredRole.getName() ) && checkType.hasRole( configuredRole ) ) {
                 return true;
             }
         }

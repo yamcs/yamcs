@@ -135,8 +135,8 @@ public abstract class AbstractIntegrationTest {
         ManagementService.setup(false);
         JMXService.setup(false);
         new HttpServer().startServer();
-        artemisServer = ArtemisServer.setupArtemis();
-        ArtemisManagement.setupYamcsServerControl();
+   //     artemisServer = ArtemisServer.setupArtemis();
+     //   ArtemisManagement.setupYamcsServerControl();
         YamcsServer.setupYamcsServer();
     }
 
@@ -169,7 +169,7 @@ public abstract class AbstractIntegrationTest {
     @AfterClass
     public static void shutDownYamcs()  throws Exception {
         YamcsServer.shutDown();
-        artemisServer.stop();
+        //artemisServer.stop();
     }
 
 

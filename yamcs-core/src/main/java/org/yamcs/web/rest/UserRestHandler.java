@@ -15,7 +15,6 @@ import org.yamcs.web.HttpException;
  * Handles incoming requests related to the user
  */
 public class UserRestHandler extends RestHandler {
-    
 
     @Route(path = "/api/user", method = "GET")
     public void getUser(RestRequest req) throws HttpException {

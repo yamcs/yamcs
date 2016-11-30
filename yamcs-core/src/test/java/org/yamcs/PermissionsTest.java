@@ -75,6 +75,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
         }
         assertTrue("Permission should be denied for String parameter", gotException);
         restClient1.close();
+        
     }
 
 

@@ -7,14 +7,11 @@ import org.yamcs.api.EventProducerFactory;
  * Created by msc on 28/11/16.
  */
 public class CrashHandler {
-
-
     private EventProducer eventProducer;
     private boolean sendingError;
 
 
-    public CrashHandler(String instanceName, String source)
-    {
+    public CrashHandler(String instanceName, String source) {
         eventProducer= EventProducerFactory.getEventProducer(instanceName);
         eventProducer.setSource(source);
     }
@@ -31,6 +28,4 @@ public class CrashHandler {
         }
         sendingError = false;
     }
-
-
 }

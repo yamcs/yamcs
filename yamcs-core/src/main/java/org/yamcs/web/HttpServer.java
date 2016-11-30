@@ -77,9 +77,7 @@ public class HttpServer extends AbstractService {
         .childHandler(new HttpServerChannelInitializer(apiRouter));
 
         // Bind and start to accept incoming connections.
-        System.out.println("starting server at " + port);
         bootstrap.bind(new InetSocketAddress(port)).sync();
-        System.out.println("started ");
 
         try {
             log.info("Web address: http://{}:{}/", InetAddress.getLocalHost().getHostName(), port);

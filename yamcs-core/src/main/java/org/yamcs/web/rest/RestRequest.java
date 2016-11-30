@@ -169,20 +169,13 @@ public class RestRequest {
         }
     }
     
-    /**
-     * Returns the authenticated user. Or <tt>null</tt> if the user is not authenticated.
-     */
-    public User getUser() {
-        return Privilege.getInstance().getUser(token);
-    }
-    
+   
     /**
      * Returns the username of the authenticated user. Or {@link Privilege#getDefaultUser()} if the user
      * is not authenticated.
      */
     public String getUsername() {
-        User user = getUser();
-        return (user != null) ? user.getPrincipalName() : Privilege.getDefaultUser();
+        return Privilege.getInstance().getUsername(token);
     }
     
     public AuthenticationToken getAuthToken() {

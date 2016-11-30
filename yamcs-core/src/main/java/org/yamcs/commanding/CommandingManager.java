@@ -1,11 +1,9 @@
 package org.yamcs.commanding;
 
-import java.security.Permission;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.NoPermissionException;
 import org.yamcs.YProcessor;
@@ -13,6 +11,7 @@ import org.yamcs.YamcsException;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.InvalidAuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
@@ -35,7 +34,7 @@ public class CommandingManager extends AbstractService {
      * Keeps a reference to the channel and creates the queue manager
      * @param proc
      */
-    public CommandingManager(YProcessor proc) throws ConfigurationException{
+    public CommandingManager(YProcessor proc) {
         this.processor=proc;
         this.commandQueueManager=new CommandQueueManager(this);
         ManagementService.getInstance().registerCommandQueueManager(proc.getInstance(), proc.getName(), commandQueueManager);
@@ -53,8 +52,7 @@ public class CommandingManager extends AbstractService {
     public PreparedCommand buildCommand(MetaCommand mc, List<ArgumentAssignment> argAssignmentList, String origin, int seq, AuthenticationToken authToken) throws ErrorInCommand, NoPermissionException, YamcsException {
         log.debug("building command {} with arguments {}", mc.getName(), argAssignmentList);
 
-        if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.TC, mc.getName()))
-        {
+        if(!Privilege.getInstance().hasPrivilege1(authToken, Privilege.Type.TC, mc.getName())) {
             throw new NoPermissionException("User has no privilege on command " + mc.getName());
         }
         if(origin == null)
@@ -83,15 +81,15 @@ public class CommandingManager extends AbstractService {
 
     /**
      * @return the queue that the command was sent to
+     * @throws InvalidAuthenticationToken 
      */
-    public CommandQueue sendCommand(AuthenticationToken authToken, PreparedCommand pc) {
+    public CommandQueue sendCommand(AuthenticationToken authToken, PreparedCommand pc) throws InvalidAuthenticationToken {
         log.debug("sendCommand commandSource="+pc.getSource());
         return commandQueueManager.addCommand(authToken, pc);
     }
 
     public void addToCommandHistory(CommandId commandId, String key, String value, AuthenticationToken authToken) throws NoPermissionException {
-        if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.SYSTEM, Privilege.SystemPrivilege.MayModifyCommandHistory.name()))
-        {
+        if(!Privilege.getInstance().hasPrivilege1(authToken, Privilege.Type.SYSTEM, Privilege.SystemPrivilege.MayModifyCommandHistory.name())) {
             log.warn("Throwing InsufficientPrivileges for lack of COMMANDING privilege for user "+authToken);
             throw new NoPermissionException("User has no privilege to update command history ");
         }

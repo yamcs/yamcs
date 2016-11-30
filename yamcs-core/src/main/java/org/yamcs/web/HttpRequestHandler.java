@@ -1,25 +1,25 @@
 package org.yamcs.web;
 
-import static io.netty.handler.codec.http.HttpHeaders.setHeader;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
-import java.util.Base64;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
-import org.yamcs.protobuf.Web.RestExceptionMessage;
+import org.yamcs.security.AuthModule;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.AuthorizationPendingException;
+import org.yamcs.security.HttpAuthenticator;
 import org.yamcs.security.Privilege;
-import org.yamcs.security.UsernamePasswordToken;
-import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Router;
 import org.yamcs.web.websocket.WebSocketFrameHandler;
 
@@ -73,14 +73,22 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         log.debug("{} {}", req.getMethod(), req.getUri());
 
         AuthenticationToken authToken = null;
-        if (Privilege.getInstance().isEnabled()) {
+        Privilege priv = Privilege.getInstance();
+        
+        if (priv.isEnabled()) {
+            AuthModule authenticator = priv.getAuthModule();
             try {
-                authToken = authenticate(ctx, req);
+                //TODO: process the result in a completion handler
+                authToken = authenticator.authenticateHttp(ctx, req).get();
+            } catch (AuthorizationPendingException e) {
+                //means that the authenticator has sent an answer to the client and it should come back with a new request with the proper authentication 
+                return;
             } catch (BadRequestException e) {
                 sendPlainTextError(ctx, req, BAD_REQUEST);
                 return;
-            } catch (UnauthorizedException e) {
-                sendUnauthorized(ctx, req);
+            } catch (ExecutionException e) {
+                log.warn("Exception in the authenticator", e.getCause());
+                sendPlainTextError(ctx, req, UNAUTHORIZED);
                 return;
             }
         }
@@ -150,35 +158,6 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         ctx.close();
     }
 
-    private AuthenticationToken authenticate(ChannelHandlerContext ctx, HttpRequest req) throws BadRequestException, UnauthorizedException {
-        if (!req.headers().contains(HttpHeaders.Names.AUTHORIZATION)) {
-            throw new UnauthorizedException("Authorization required, but nothing provided");
-        }
-
-        String authorizationHeader = req.headers().get(HttpHeaders.Names.AUTHORIZATION);
-        if (!authorizationHeader.startsWith("Basic ")) { // Exact case only
-            throw new BadRequestException("Unsupported Authorization header '" + authorizationHeader + "'");
-        }
-        // Get encoded user and password, comes after "Basic "
-        String userpassEncoded = authorizationHeader.substring(6);
-        String userpassDecoded;
-        try {
-            userpassDecoded = new String(Base64.getDecoder().decode(userpassEncoded));
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Could not decode Base64-encoded credentials");
-        }
-
-        // Username is not allowed to contain ':', but passwords are
-        String[] parts = userpassDecoded.split(":", 2);
-        if (parts.length < 2) {
-            throw new BadRequestException("Malformed username/password (Not separated by colon?)");
-        }
-        AuthenticationToken token = new UsernamePasswordToken(parts[0], parts[1]);
-        if (!Privilege.getInstance().authenticates(token)) {
-            throw new UnauthorizedException();
-        }
-        return token;
-    }
 
     public ChannelFuture sendRedirect(ChannelHandlerContext ctx, HttpRequest req, String newUri) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.FOUND);
@@ -187,21 +166,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         return ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
-    private ChannelFuture sendUnauthorized(ChannelHandlerContext ctx, HttpRequest request) {
-        ByteBuf buf;
-        MediaType mt = RestRequest.deriveTargetContentType(request);
-        if(mt==MediaType.PROTOBUF) {
-            RestExceptionMessage rem = RestExceptionMessage.newBuilder().setMsg(HttpResponseStatus.UNAUTHORIZED.toString()).build();
-            buf = Unpooled.copiedBuffer(rem.toByteArray());
-        } else {
-            buf = Unpooled.copiedBuffer(HttpResponseStatus.UNAUTHORIZED.toString() + "\r\n", CharsetUtil.UTF_8);
-        }
-        HttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.UNAUTHORIZED, buf);
-        setHeader(res, HttpHeaders.Names.WWW_AUTHENTICATE, "Basic realm=\"" + Privilege.getRealmName() + "\"");
-
-        log.warn("{} {} {} [realm=\"{}\"]", request.getMethod(), request.getUri(), res.getStatus().code(), Privilege.getRealmName());
-        return ctx.writeAndFlush(res).addListener(ChannelFutureListener.CLOSE);
-    }
+   
 
     public static ChannelFuture sendPlainTextError(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status) {
         FullHttpResponse response = new DefaultFullHttpResponse(

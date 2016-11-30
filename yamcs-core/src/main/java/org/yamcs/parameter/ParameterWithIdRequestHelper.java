@@ -222,7 +222,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
      * @throws NoPermissionException
      */
     private void checkParameterPrivilege(AuthenticationToken authToken, String parameterName) throws NoPermissionException  {
-        if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.TM_PARAMETER, parameterName)) {
+        if(!Privilege.getInstance().hasPrivilege1(authToken, Privilege.Type.TM_PARAMETER, parameterName)) {
             throw  new NoPermissionException("User " + authToken + " has no permission for parameter "  + parameterName);
         }
     }

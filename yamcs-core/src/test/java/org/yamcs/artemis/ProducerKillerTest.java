@@ -11,7 +11,6 @@ import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.security.ArtemisAuthManager;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsSession;
@@ -24,7 +23,6 @@ public class ProducerKillerTest {
     public static void setUpBeforeClass() throws Exception {
         artemisServer = new EmbeddedActiveMQ();
         artemisServer.setConfigResourcePath("artemis-tpk.xml");
-        artemisServer.setSecurityManager( new ArtemisAuthManager() );
         artemisServer.start();
     }
     @AfterClass
@@ -39,7 +37,6 @@ public class ProducerKillerTest {
         dataClient.dataConsumer.setMessageHandler(new MessageHandler() {
             @Override
             public void onMessage(ClientMessage msg) {
-                System.out.println(Thread.currentThread()+" received the first message: "+msg+", closing connection");
                 NettyConnection nc=(NettyConnection)((ClientSessionImpl)ys.session).getConnection().getTransportConnection();
                 nc.close();
             }
@@ -56,7 +53,6 @@ public class ProducerKillerTest {
                 try {
                     int i = 0;
                     while(true) {
-                     //   System.out.println("sending message "+i+" to "+dataClient.dataAddress);
                         ClientMessage msg = ys.session.createMessage(false);
                         msg.getBodyBuffer().writeBytes(new byte[1500]);
                         yclient1.sendData(dataClient.dataAddress, msg);

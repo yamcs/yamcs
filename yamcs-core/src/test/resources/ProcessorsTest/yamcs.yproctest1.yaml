@@ -2,7 +2,7 @@ mdb: refmdb
 services:  
     - org.yamcs.archive.XtceTmRecorder 
     - org.yamcs.archive.ReplayServer   
-    - class: org.yamcs.YProcessorCreatorService
+    - class: org.yamcs.ProcessorCreatorService
       args:
           name: "realtime"
           type: "dummy"

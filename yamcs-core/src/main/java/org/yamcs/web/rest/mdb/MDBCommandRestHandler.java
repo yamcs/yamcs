@@ -62,7 +62,7 @@ public class MDBCommandRestHandler extends RestHandler {
             
             Privilege privilege = Privilege.getInstance();
             for (MetaCommand cmd : mdb.getMetaCommands()) {
-                if (!privilege.hasPrivilege(req.getAuthToken(), Type.TC, cmd.getQualifiedName()))
+                if (!privilege.hasPrivilege1(req.getAuthToken(), Type.TC, cmd.getQualifiedName()))
                     continue;
                 if (matcher != null && !matcher.matches(cmd))
                     continue;

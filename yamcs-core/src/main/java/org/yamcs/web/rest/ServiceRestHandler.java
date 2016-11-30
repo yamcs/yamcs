@@ -109,7 +109,7 @@ public class ServiceRestHandler extends RestHandler {
     }
 
     private void checkPrivileges(RestRequest req) throws HttpException {
-        if(!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.SYSTEM, Privilege.SystemPrivilege.MayControlServices.name()))  {
+        if(!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.SystemPrivilege.MayControlServices))  {
             throw new ForbiddenException("No privilege for this operation");
         }
     }

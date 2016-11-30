@@ -1,11 +1,13 @@
 package org.yamcs.artemis;
 
 import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
+import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.security.ArtemisAuthManager;
+import org.yamcs.security.BasicArtemisAuthModule;
+import org.yamcs.security.Privilege;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -16,7 +18,7 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class ArtemisServer extends AbstractService{
+public class ArtemisServer extends AbstractService {
     static Logger log = LoggerFactory.getLogger(ArtemisServer.class.getName());
     static Logger staticlog = LoggerFactory.getLogger(ArtemisServer.class);
     
@@ -42,7 +44,13 @@ public class ArtemisServer extends AbstractService{
         }
 
         EmbeddedActiveMQ artemisServer = new EmbeddedActiveMQ();
-        artemisServer.setSecurityManager( new ArtemisAuthManager() );
+        Privilege priv = Privilege.getInstance();
+        if (priv.isEnabled()) {
+            ActiveMQSecurityManager secmgr = priv.getArtemisAuthModule();
+            
+            if(secmgr==null) throw new ConfigurationException("Privileges are enabled but there is no artemisAuthManager configured in privileges.yaml");
+            artemisServer.setSecurityManager( secmgr);
+        }
         if(artemisConfigFile != null) {
             artemisServer.setConfigResourcePath(artemisConfigFile);
         }

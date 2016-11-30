@@ -43,7 +43,7 @@ public class MDBParameterRestHandler extends RestHandler {
             if(p==null) {
                 throw new BadRequestException("Invalid parameter name specified "+id);
             }
-            if(!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
+            if(!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
                 log.warn("Not providing information about parameter {} because no privileges exists", p.getQualifiedName());
                 continue;
             }
@@ -110,7 +110,7 @@ public class MDBParameterRestHandler extends RestHandler {
             
             Privilege privilege = Privilege.getInstance();
             for (Parameter p : mdb.getParameters()) {
-                if (!privilege.hasPrivilege(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName()))
+                if (!privilege.hasPrivilege1(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName()))
                     continue;
                 if (matcher != null && !matcher.matches(p))
                     continue;
@@ -123,7 +123,7 @@ public class MDBParameterRestHandler extends RestHandler {
                 }
             }
             for (SystemParameter p : mdb.getSystemParameterDb().getSystemParameters()) {
-                if (!privilege.hasPrivilege(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName()))
+                if (!privilege.hasPrivilege1(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName()))
                     continue;
                 if (matcher != null && !matcher.matches(p))
                     continue;

@@ -41,7 +41,7 @@ import static org.junit.Assert.*;
 
 
 public class ProcessorsTest {
-   static EmbeddedActiveMQ artemisServer;
+  // static EmbeddedActiveMQ artemisServer;
     @BeforeClass
     public static void setupHornetAndManagement() throws Exception {
         ManagementService.setup(false);

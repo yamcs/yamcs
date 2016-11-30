@@ -112,7 +112,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         for(SetParameterValueRequest r : request.getRequestList()) {
             try {
                 String parameterName = prm.getParameter(r.getId()).getQualifiedName();
-                if(!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.TM_PARAMETER_SET, parameterName)) {
+                if(!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.Type.TM_PARAMETER_SET, parameterName)) {
                     throw new ForbiddenException("User " + req.getAuthToken() + " has no 'set' permission for parameter "
                             + parameterName);
                 }
@@ -145,7 +145,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
         
-        if (!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
+        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
             log.warn("Parameter Info for {} not authorized for token {}", p.getQualifiedName(), req.getAuthToken());
             throw new BadRequestException("Invalid parameter name specified");
         }

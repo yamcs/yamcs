@@ -16,6 +16,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.InvalidAuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.xtce.MdbMappings;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -59,8 +60,9 @@ public class ReplayServer extends AbstractService {
      * @param authToken 
      * @return a replay object 
      * @throws YamcsException 
+         * @throws InvalidAuthenticationToken 
      */
-    public YarchReplay createReplay(ReplayRequest replayRequest, ReplayListener replayListener, AuthenticationToken authToken) throws YamcsException {
+    public YarchReplay createReplay(ReplayRequest replayRequest, ReplayListener replayListener, AuthenticationToken authToken) throws YamcsException, InvalidAuthenticationToken {
         if(replayCount.get()>=MAX_REPLAYS) {
             throw new YamcsException("maximum number of replays reached");
         }

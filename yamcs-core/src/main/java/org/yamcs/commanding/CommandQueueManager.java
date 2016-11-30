@@ -30,6 +30,7 @@ import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.QueueState;
 import org.yamcs.protobuf.Pvalue;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.InvalidAuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.MatchCriteria;
@@ -78,12 +79,13 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
     /**
      * Constructs a Command Queue Manager.
+     * @param commandingManager 
      *
      * @throws ConfigurationException in case there is an error in the configuration file. 
      *         Note: if the configuration file doesn't exist, this exception is not thrown.
      */
     public CommandQueueManager(CommandingManager commandingManager) throws ConfigurationException {
-        this.commandingManager=commandingManager;
+        this.commandingManager = commandingManager;
 
         yproc=commandingManager.getChannel();
         log=LoggerFactory.getLogger(this.getClass().getName()+"["+yproc.getName()+"]");
@@ -212,14 +214,16 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      * First the command is added to the command history
      * Depending on the status of the queue, the command is rejected by setting the CommandFailed in the command history 
      *  added to the queue or directly sent using the uplinker
-     *
+     *  
+     * @param authToken      
      * @param pc
      * @return the queue the command was added to
+     * @throws InvalidAuthenticationToken 
      */
-    public synchronized CommandQueue addCommand(AuthenticationToken authToken, PreparedCommand pc) {
+    public synchronized CommandQueue addCommand(AuthenticationToken authToken, PreparedCommand pc) throws InvalidAuthenticationToken {
         commandHistoryListener.addCommand(pc);
 
-        CommandQueue q=getQueue(authToken, pc);
+        CommandQueue q = getQueue(authToken, pc);
         q.add(pc);
         notifyAdded(q, pc);
 
@@ -371,14 +375,16 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     /**
+     * @param authToken 
      * @param pc
      * @return the queue where the command should be placed.
+     * @throws InvalidAuthenticationToken 
      */
-    public CommandQueue getQueue(AuthenticationToken authToken, PreparedCommand pc) {
-        Privilege priv=Privilege.getInstance();
+    public CommandQueue getQueue(AuthenticationToken authToken, PreparedCommand pc) throws InvalidAuthenticationToken {
+        Privilege priv = Privilege.getInstance();
         if(authToken == null || !priv.isEnabled()) return queues.get("default");
 
-        String[] roles=priv.getRoles(authToken);
+        String[] roles = priv.getRoles(authToken);
         if(roles==null) return queues.get("default");
         for(String role:roles) {
             for(CommandQueue cq:queues.values()) {
@@ -401,8 +407,10 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     /**
-     * Called via CORBA to remove a command from the queue
+     * Called by external clients to remove a command from the queue
      * @param commandId
+     * @param username - the username rejecting the command
+     * @return the command removed from the queeu
      */
     public synchronized PreparedCommand rejectCommand(CommandId commandId, String username) {
         log.info("called to remove command: "+commandId);
@@ -411,8 +419,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         for(CommandQueue q:queues.values()) {
             for(PreparedCommand c:q.getCommands()) {
                 if(c.getCommandId().equals(commandId)) {
-                    pc=c;
-                    queue=q;
+                    pc = c;
+                    queue = q;
                     break;
                 }
             }
@@ -443,15 +451,17 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     /**
      * Called from external client to release a command from the queue
      * @param commandId
+     * @param rebuild - if to rebuild the command binary from the source
+     * @return the prepared command sent
      */
     public synchronized PreparedCommand sendCommand(CommandId commandId, boolean rebuild) {
         PreparedCommand command=null;
-        CommandQueue queue=null;
+        CommandQueue queue = null;
         for(CommandQueue q:queues.values()) {
             for(PreparedCommand pc:q.getCommands()) {
                 if(pc.getCommandId().equals(commandId)) {
-                    command=pc;
-                    queue=q;
+                    command = pc;
+                    queue = q;
                     break;
                 }
             }
@@ -480,6 +490,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      * Called from external clients to change the state of the queue
      * @param queueName the queue whose state has to be set
      * @param newState the new state of the queue
+     * @return the queue whose state has been changed or null if no queue by the name exists
      */
     public synchronized CommandQueue setQueueState(String queueName, QueueState newState/*, boolean rebuild*/) {
         CommandQueue queue =null;
@@ -489,7 +500,6 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 break;
             }
         }
-        final CommandQueue cq = queue;
         if(queue==null) return null;
 
         if(queue.state == newState) {
@@ -504,8 +514,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             return queue;
         }
 
-        QueueState previousState = queue.state;
-        queue.state=newState;
+        queue.state = newState;
         if(queue.state==QueueState.ENABLED) {
             for(PreparedCommand pc:queue.getCommands()) {
                 if(pc.getMetaCommand().hasTransmissionConstraints()) {

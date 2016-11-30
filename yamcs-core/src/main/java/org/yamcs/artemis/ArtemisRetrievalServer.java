@@ -34,6 +34,7 @@ import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.HqClientMessageToken;
+import org.yamcs.security.InvalidAuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.xtce.MdbMappings;
 
@@ -111,8 +112,9 @@ public class ArtemisRetrievalServer extends AbstractExecutionThreadService {
      * @throws YamcsException 
      * @throws ActiveMQException 
      * @throws IOException 
+     * @throws InvalidAuthenticationToken 
      */
-    public void createReplay(ClientMessage requestMsg, SimpleString replyto, SimpleString dataAddress) throws YamcsException, YamcsApiException, IOException, ActiveMQException {
+    public void createReplay(ClientMessage requestMsg, SimpleString replyto, SimpleString dataAddress) throws YamcsException, YamcsApiException, IOException, ActiveMQException, InvalidAuthenticationToken {
         ReplayRequest replayRequest = (ReplayRequest) decode(requestMsg, ReplayRequest.newBuilder());
         HqClientMessageToken authToken = null;
 
@@ -171,9 +173,6 @@ public class ArtemisRetrievalServer extends AbstractExecutionThreadService {
 
         StringMessage addr=StringMessage.newBuilder().setMessage(listener.yclient.rpcAddress.toString()).build();
         msgClient.sendReply(replyto,"PACKET_REPLAY_CREATED", addr);
-
-
-    
     }
 
     @Override

@@ -385,7 +385,7 @@ public abstract class RestHandler extends RouteHandler {
     }
 
     protected static boolean authorised(RestRequest req, Privilege.Type type, String privilege) {
-        return Privilege.getInstance().hasPrivilege(req.getAuthToken(), type, privilege);
+        return Privilege.getInstance().hasPrivilege1(req.getAuthToken(), type, privilege);
     }
 
     protected static class NameDescriptionWithId<T extends NameDescription> {

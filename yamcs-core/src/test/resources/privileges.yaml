@@ -7,11 +7,3 @@ defaultUser: admin
 
 #maximum number of CIS sessions clients are allowed
 maxNoSessions: 10
-
-ldaphost:        cdmcs-s
-userPath:        "ou=People,o=usoc"
-rolePath:        "ou=Roles, ou=Operation, ou=Columbus,ou=Projects,o=usoc"
-systemPath:      "ou=System, ou=yamcs, ou=Applications, ou=Operation, ou=Columbus,ou=Projects,o=usoc"
-tmParameterPath: "ou=TM_PARAMETER, ou=yamcs, ou=Applications, ou=Operation, ou=Columbus,ou=Projects,o=usoc"
-tmPacketPath:    "ou=TM_PACKET, ou=yamcs, ou=Applications, ou=Operation, ou=Columbus,ou=Projects,o=usoc"
-tcPath:          "ou=TC, ou=yamcs, ou=Applications, ou=Operation, ou=Columbus,ou=Projects,o=usoc"

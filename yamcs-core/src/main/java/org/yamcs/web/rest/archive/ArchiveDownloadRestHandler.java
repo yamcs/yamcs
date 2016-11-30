@@ -88,14 +88,14 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             if (p == null) {
                 throw new BadRequestException("Invalid parameter name specified "+id);
             }
-            if (!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName())) {
+            if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName())) {
                 throw new BadRequestException("Insufficient privileges for parameter " + p.getQualifiedName());
             }
             ids.add(id);
         }
         if (ids.isEmpty()) {
             for (Parameter p : mdb.getParameters()) {
-                if (!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName())) {
+                if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName())) {
                     continue;
                 }
                 if (request.hasNamespace()) {
