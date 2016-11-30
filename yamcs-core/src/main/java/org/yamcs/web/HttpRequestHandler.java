@@ -18,7 +18,6 @@ import org.yamcs.api.MediaType;
 import org.yamcs.security.AuthModule;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.AuthorizationPendingException;
-import org.yamcs.security.HttpAuthenticator;
 import org.yamcs.security.Privilege;
 import org.yamcs.web.rest.Router;
 import org.yamcs.web.websocket.WebSocketFrameHandler;
