@@ -21,7 +21,7 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest;
 import org.yamcs.xtce.XtceDb;
 
-public class YamcsServerTest {
+public class YamcsServerArtemisTest {
     static EmbeddedActiveMQ artemisServer;
     
     @BeforeClass
@@ -41,8 +41,8 @@ public class YamcsServerTest {
     
     @Test
     public void testRetrieveMdb() throws Exception {
-        YamcsSession ys=YamcsSession.newBuilder().build();
-        YamcsClient yc=ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
+        YamcsSession ys = YamcsSession.newBuilder().build();
+        YamcsClient yc = ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
         MissionDatabaseRequest mdr = MissionDatabaseRequest.newBuilder().setDbConfigName("refmdb").build();
         yc.executeRpc(Protocol.YAMCS_SERVER_CONTROL_ADDRESS, "getMissionDatabase", mdr, null);
         ClientMessage msg=yc.dataConsumer.receive(5000);

@@ -3,7 +3,6 @@ package org.yamcs;
 import org.junit.Test;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.protobuf.Yamcs;
-import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
 
 import java.util.Queue;
@@ -11,7 +10,7 @@ import java.util.Queue;
 /**
  * Created by msc on 28/11/16.
  */
-public class CrashHandlerTest {
+public class EventCrashHandlerTest {
     @Test
     public void sendErrorEventOk() {
 
@@ -19,11 +18,11 @@ public class CrashHandlerTest {
         TimeEncoding.setUp();
         EventProducerFactory.setMockup(true);
         Queue<Yamcs.Event> eventQueue = EventProducerFactory.getMockupQueue();
-        CrashHandler target = new CrashHandler("unitTestInstance", "test1");
+        EventCrashHandler target = new EventCrashHandler("unitTestInstance");
 
         // Act
-        target.sendErrorEvent("m1", "err1");
-        target.sendErrorEvent("m1", "err2");
+        target.handleCrash("m1", "err1");
+        target.handleCrash("m1", "err2");
 
         // Assert
         assert (eventQueue.size() == 2);

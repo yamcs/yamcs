@@ -59,7 +59,7 @@ public class YamcsServer {
     //global services
     static List<ServiceWithConfig> globalServiceList;
     Logger log;
-    static Logger staticlog=LoggerFactory.getLogger(YamcsServer.class);
+    static Logger staticlog = LoggerFactory.getLogger(YamcsServer.class);
 
     /**in the shutdown, allow services this number of seconds for stopping*/
     public static int SERVICE_STOP_GRACE_TIME = 10;
@@ -73,26 +73,42 @@ public class YamcsServer {
     static private String serverId;
     static YObjectLoader<Service> objLoader = new YObjectLoader<>();
 
+    static CrashHandler globalCrashHandler;
+    private CrashHandler crashHandler;
+
     YamcsServer(String instance) throws IOException, StreamSqlException, ParseException, YamcsApiException {
         this.instance = instance;
 
         //TODO - fix bootstrap issue
         instances.put(instance, this);
 
-        log=getLogger(YamcsServer.class, instance);
+        log = getLogger(YamcsServer.class, instance);
 
-        YConfiguration conf=YConfiguration.getConfiguration("yamcs."+instance);
+        YConfiguration conf = YConfiguration.getConfiguration("yamcs."+instance);
         loadTimeService();
 
         ManagementService managementService = ManagementService.getInstance();
         StreamInitializer.createStreams(instance);
         YProcessor.addProcessorListener(managementService);
-
+        if(conf.containsKey("crashHandler")) {
+            crashHandler = loadCrashHandler(conf);
+        } else {
+            crashHandler = globalCrashHandler;
+        }
         List<Object> services = conf.getList("services");
         serviceList = createServices(instance, services);
         startServices(serviceList);
+
     }
 
+    private static CrashHandler loadCrashHandler( YConfiguration conf) throws ConfigurationException, IOException {
+        YObjectLoader<CrashHandler> loader = new YObjectLoader<>();
+        if(conf.containsKey("crashHandler", "args")) {
+            return loader.loadObject(conf.getString("crashHandler", "class"), conf.getMap("crashHandler", "args"));
+        } else {
+            return loader.loadObject(conf.getString("crashHandler", "class"));
+        }
+    }
     /**
      * Creates services either server-wide (if instance is null) or instance-specific.
      * The services are not yet started. This must be done in a second step, so
@@ -106,7 +122,7 @@ public class YamcsServer {
     @SuppressWarnings("unchecked")
     private static List<ServiceWithConfig> createServices(String instance, List<Object> servicesConfig) throws ConfigurationException, IOException {
         ManagementService managementService = ManagementService.getInstance();
-        List<ServiceWithConfig> serviceList=new CopyOnWriteArrayList<>();
+        List<ServiceWithConfig> serviceList = new CopyOnWriteArrayList<>();
         for(Object servobj:servicesConfig) {
             String servclass;
             Object args = null;
@@ -208,6 +224,12 @@ public class YamcsServer {
 
     public static void setupYamcsServer() throws Exception  {
         YConfiguration c = YConfiguration.getConfiguration("yamcs");
+        if(c.containsKey("crashHandler")) {
+            globalCrashHandler = loadCrashHandler(c);
+        } else {
+            globalCrashHandler = new LogCrashHandler();
+        }
+
 
         if(c.containsKey("services")) {
             List<Object> services=c.getList("services");
@@ -226,7 +248,9 @@ public class YamcsServer {
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread t, Throwable thrown) {
-                staticlog.error("Uncaught exception '"+thrown+"' in thread "+t+": "+Arrays.toString(thrown.getStackTrace()));
+                String msg = "Uncaught exception '"+thrown+"' in thread "+t+": "+Arrays.toString(thrown.getStackTrace());
+                staticlog.error(msg);
+                globalCrashHandler.handleCrash("UncaughtException", msg);
             }
         });
 
@@ -507,5 +531,18 @@ public class YamcsServer {
             this.args = args;
         }
 
+    }
+
+    public static CrashHandler getCrashHandler(String yamcsInstance) {
+        YamcsServer ys = getInstance(yamcsInstance);
+        if(ys!=null) {
+            return ys.getCrashHandler();
+        } else {
+            return globalCrashHandler; //may happen if the instance name is not valid (in unit tests)
+        }
+    }
+
+    private CrashHandler getCrashHandler() {
+        return crashHandler;
     }
 }

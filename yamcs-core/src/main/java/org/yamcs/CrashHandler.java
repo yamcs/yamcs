@@ -1,31 +1,13 @@
 package org.yamcs;
 
-import org.yamcs.api.EventProducer;
-import org.yamcs.api.EventProducerFactory;
-
 /**
- * Created by msc on 28/11/16.
+ * 
+ * CrashHandler is used to handle extreme problems that need to reach operator (or sysadmin) attention.
+ * 
+ * 
+ * @author nm
+ *
  */
-public class CrashHandler {
-    private EventProducer eventProducer;
-    private boolean sendingError;
-
-
-    public CrashHandler(String instanceName, String source) {
-        eventProducer= EventProducerFactory.getEventProducer(instanceName);
-        eventProducer.setSource(source);
-    }
-
-    public synchronized void sendErrorEvent(String type, String msg) {
-        if (sendingError) {
-            return;
-        }
-        try {
-            sendingError = true;
-            eventProducer.sendError(type, msg);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        sendingError = false;
-    }
+public interface CrashHandler {
+    public void handleCrash(String type, String msg);
 }

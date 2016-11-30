@@ -26,7 +26,8 @@ rdbConfig:
               maxWriteBufferNumber: 2
           tableFormatConfig:
               blockSize: 512 #KB
-
+              
+     
 webConfig:
    #where to find the web directory with ccs, js etc
    # the displays are also loaded from <webRoot>/displays/<instance> directory

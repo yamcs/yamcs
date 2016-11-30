@@ -194,7 +194,6 @@ public class Protocol {
         }
         @Override
         public void onMessage(ClientMessage msg) {
-            System.out.println("msg: "+msg);
             String amq_notifType = msg.getStringProperty("_AMQ_NotifType");
 
             if("CONSUMER_CLOSED".equals(amq_notifType)){
