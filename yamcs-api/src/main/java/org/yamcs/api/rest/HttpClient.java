@@ -7,7 +7,6 @@ import java.net.URISyntaxException;
 import java.util.Base64;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.api.MediaType;
@@ -49,7 +48,7 @@ import io.netty.handler.codec.http.LastHttpContent;
 import io.protostuff.JsonIOUtil;
 import io.protostuff.Schema;
 
-class HttpClient {
+public class HttpClient {
     MediaType sendMediaType = MediaType.PROTOBUF;
     MediaType acceptMediaType = MediaType.PROTOBUF;
     URI uri;
