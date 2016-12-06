@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.security.BasicArtemisAuthModule;
 import org.yamcs.security.Privilege;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -48,7 +47,7 @@ public class ArtemisServer extends AbstractService {
         if (priv.isEnabled()) {
             ActiveMQSecurityManager secmgr = priv.getArtemisAuthModule();
             
-            if(secmgr==null) throw new ConfigurationException("Privileges are enabled but there is no artemisAuthManager configured in privileges.yaml");
+            if(secmgr==null) throw new ConfigurationException("Privileges are enabled but there is no artemisAuthModule configured in privileges.yaml");
             artemisServer.setSecurityManager( secmgr);
         }
         if(artemisConfigFile != null) {

@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
 import org.slf4j.Logger;
@@ -13,9 +15,13 @@ import org.yamcs.YConfiguration;
 import org.yamcs.api.artemis.YamcsSession;
 import org.yamcs.usoctools.XtceUtil;
 import org.yamcs.utils.YObjectLoader;
+import org.yamcs.web.BadRequestException;
 import org.yamcs.xtce.MdbMappings;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
+
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.FullHttpRequest;
 
 
 /**
@@ -76,11 +82,11 @@ public class Privilege {
                 usePrivileges=conf.getBoolean("enabled");
 
                 if(usePrivileges) {
-                    authModule = loadObject(conf, "authModule");
+                    authModule = YObjectLoader.loadObject(conf.getMap("authModule"));
                     authModuleName = authModule.getClass().getName();
                     
                     if(conf.containsKey("artemisAuthModule")) {
-                        artemisAuthModule = loadObject(conf, "artemisAuthModule");
+                        artemisAuthModule = YObjectLoader.loadObject(conf.getMap("artemisAuthModule"));
                     }
                     
                 } else {
@@ -92,7 +98,7 @@ public class Privilege {
                         defaultUser = defaultUserString;
                     }
                 }
-            } catch (ConfigurationException e) {
+            } catch (IOException|ConfigurationException e) {
                 throw new ConfigurationException("Failed to load 'privileges' configuration", e);
             }
         }
@@ -109,19 +115,6 @@ public class Privilege {
         return authModule.getRoles(authenticationToken);
     }
  
-    private static <T> T loadObject(YConfiguration conf, String key) throws ConfigurationException {
-        
-        YObjectLoader<T> obj = new YObjectLoader<>();
-        try {
-            if(conf.containsKey(key, "config")) {
-                return obj.loadObject(conf.getString(key, "class"), conf.getMap(key, "config"));
-            } else {
-                return obj.loadObject(conf.getString(key, "class"));
-            }
-        } catch (IOException e) {
-           throw new ConfigurationException("Cannot load object from class '"+conf+"': "+e.getMessage());
-        }
-    }
 
     /**
      * loads the configuration of the privilege. If privileges.enabled is not
@@ -334,6 +327,11 @@ public class Privilege {
 
     public ActiveMQSecurityManager getArtemisAuthModule() {
         return artemisAuthModule;
+    }
+
+
+    public CompletableFuture<AuthenticationToken> authenticateHttp(ChannelHandlerContext ctx, FullHttpRequest req) {       
+        return authModule.authenticateHttp(ctx, req);
     }
 }
 

@@ -26,7 +26,7 @@ public abstract class AbstractStream implements Stream {
         this.name=name;
         this.outputDefinition=definition;
         this.ydb=ydb;
-        log=LoggerFactory.getLogger(this.getClass().getName()+"["+name+"]");
+        log = LoggerFactory.getLogger(this.getClass().getName()+"["+name+"]");
     }
 
     /* (non-Javadoc)

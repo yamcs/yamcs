@@ -14,7 +14,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.tctm.PpSink;
+import org.yamcs.tctm.ParameterSink;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.yarch.DataType;
@@ -22,8 +22,6 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.streamsql.ParseException;
-import org.yamcs.yarch.streamsql.StreamSqlException;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -36,33 +34,32 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class PpDataLinkInitialiser extends AbstractService {
-    public static final String KEY_ppDataLinks = "ppDataLinks";
-    public static final String KEY_ppProviders = "ppProviders";
+public class ParameterDataLinkInitialiser extends AbstractService {
+    public static final String KEY_parameterDataLinks = "parameterDataLinks";
     
-    public static final String PP_TUPLE_COL_RECTIME = "rectime";
-    public static final String PP_TUPLE_COL_SEQ_NUM = "seqNum";
-    public static final String PP_TUPLE_COL_PPGROUP = "ppgroup";
-    public static final String PP_TUPLE_COL_GENTIME = "gentime";
+    public static final String PARAMETER_TUPLE_COL_RECTIME = "rectime";
+    public static final String PARAMETER_TUPLE_COL_SEQ_NUM = "seqNum";
+    public static final String PARAMETER_TUPLE_COL_GROUP = "group";
+    public static final String PARAMETER_TUPLE_COL_GENTIME = "gentime";
     String yamcsInstance;
-    private Collection<PpDataLink> ppproviders=new ArrayList<PpDataLink>();
+    private Collection<ParameterDataLink> parameterDataLinks = new ArrayList<ParameterDataLink>();
     final private Logger log;
 
-    static public final TupleDefinition PP_TUPLE_DEFINITION = new TupleDefinition();
+    static public final TupleDefinition PARAMETER_TUPLE_DEFINITION = new TupleDefinition();
     //first columns from the PP tuples
     //the actual values are encoded as separated columns (umi_0x010203040506, value) value is ParameterValue
     static {
-        PP_TUPLE_DEFINITION.addColumn(PP_TUPLE_COL_GENTIME, DataType.TIMESTAMP); //generation time
-        PP_TUPLE_DEFINITION.addColumn(PP_TUPLE_COL_PPGROUP, DataType.ENUM); //pp group - used for partitioning (i.e. splitting the archive in multiple files)
-        PP_TUPLE_DEFINITION.addColumn(PP_TUPLE_COL_SEQ_NUM, DataType.INT); //sequence number
-        PP_TUPLE_DEFINITION.addColumn(PP_TUPLE_COL_RECTIME, DataType.TIMESTAMP); //recording time
+        PARAMETER_TUPLE_DEFINITION.addColumn(PARAMETER_TUPLE_COL_GENTIME, DataType.TIMESTAMP); //generation time
+        PARAMETER_TUPLE_DEFINITION.addColumn(PARAMETER_TUPLE_COL_GROUP, DataType.ENUM); //pp group - used for partitioning (i.e. splitting the archive in multiple files)
+        PARAMETER_TUPLE_DEFINITION.addColumn(PARAMETER_TUPLE_COL_SEQ_NUM, DataType.INT); //sequence number
+        PARAMETER_TUPLE_DEFINITION.addColumn(PARAMETER_TUPLE_COL_RECTIME, DataType.TIMESTAMP); //recording time
 
     } 
     
     static public final DataType PP_DATA_TYPE=DataType.protobuf(org.yamcs.protobuf.Pvalue.ParameterValue.class.getName());
     final TimeService timeService;
     
-    public PpDataLinkInitialiser(String yamcsInstance) throws IOException, ConfigurationException {
+    public ParameterDataLinkInitialiser(String yamcsInstance) throws IOException, ConfigurationException {
         this.yamcsInstance=yamcsInstance;
         YarchDatabase ydb=YarchDatabase.getInstance(yamcsInstance);
         log=LoggerFactory.getLogger(this.getClass().getName()+"["+yamcsInstance+"]");
@@ -70,14 +67,14 @@ public class PpDataLinkInitialiser extends AbstractService {
         YConfiguration c=YConfiguration.getConfiguration("yamcs."+yamcsInstance);
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
         @SuppressWarnings("rawtypes")
-        List providers = c.containsKey(KEY_ppDataLinks)?c.getList(KEY_ppDataLinks):c.getList(KEY_ppProviders);
+        List providers = c.getList(KEY_parameterDataLinks);
         
         int count=1;
         for(Object o:providers) {
             if(!(o instanceof Map)) throw new ConfigurationException("ppProvider has to be a Map and not a "+o.getClass());
             @SuppressWarnings({ "rawtypes", "unchecked" })
             Map<String, Object> m = (Map)o;
-            String className=YConfiguration.getString(m, "class");
+            
             Object args=null;
             if(m.containsKey("args")) {
                 args=m.get("args");
@@ -86,7 +83,7 @@ public class PpDataLinkInitialiser extends AbstractService {
             } else if(m.containsKey("spec")) {
                 args=m.get("spec");
             }
-            String streamName=YConfiguration.getString(m, "stream");
+            String streamName = YConfiguration.getString(m, "stream");
             String providerName="pp"+count;
             boolean enabledAtStartup=true;
             if(m.containsKey("enabledAtStartup")) {
@@ -98,41 +95,35 @@ public class PpDataLinkInitialiser extends AbstractService {
                 throw new ConfigurationException("Cannot find stream '"+streamName+"'");
             }
 
-            YObjectLoader<PpDataLink> objloader=new YObjectLoader<PpDataLink>();
 
-            PpDataLink prov= null;
-            if(args!=null) {
-                prov = objloader.loadObject(className, yamcsInstance, providerName, args);
-            } else {
-                prov = objloader.loadObject(className, yamcsInstance, providerName);
-            }
+            ParameterDataLink prov = YObjectLoader.loadObject(m, yamcsInstance, providerName);
 
             if(!enabledAtStartup) prov.disable();
 
-            prov.setPpSink(new MyPpListener(stream));
+            prov.setParameterSink(new MyPpListener(stream));
 
             ManagementService.getInstance().registerLink(yamcsInstance, providerName, streamName, args!=null?args.toString():"", prov);
-            ppproviders.add(prov);
+            parameterDataLinks .add(prov);
             count++;
         }
     }
 
     @Override
     protected void doStart() {
-        for(PpDataLink prov:ppproviders) {
+        for(ParameterDataLink prov:parameterDataLinks ) {
             prov.startAsync();
         }
         notifyStarted();
     }	
 
     static public void main(String[] args) throws Exception {
-        new PpDataLinkInitialiser("test").startAsync();
+        new ParameterDataLinkInitialiser("test").startAsync();
     }
 
 
     @Override
     protected void doStop() {
-        for(PpDataLink prov:ppproviders) {
+        for(ParameterDataLink prov:parameterDataLinks ) {
             prov.stopAsync();
         }
         notifyStopped();
@@ -140,9 +131,9 @@ public class PpDataLinkInitialiser extends AbstractService {
     }
 
 
-    class MyPpListener implements PpSink {
+    class MyPpListener implements ParameterSink {
         final Stream stream;
-        final DataType paraDataType=DataType.protobuf(org.yamcs.protobuf.Pvalue.ParameterValue.class.getName());
+        final DataType paraDataType = DataType.protobuf(org.yamcs.protobuf.Pvalue.ParameterValue.class.getName());
         public MyPpListener(Stream stream) {
             this.stream = stream;
         }
@@ -150,7 +141,7 @@ public class PpDataLinkInitialiser extends AbstractService {
 
         @Override
         public void updatePps(long gentime, String group, int seqNum, Collection<ParameterValue> params) {
-            TupleDefinition tdef=PP_TUPLE_DEFINITION.copy();
+            TupleDefinition tdef = PARAMETER_TUPLE_DEFINITION.copy();
             List<Object> cols=new ArrayList<Object>(4+params.size());
             cols.add(gentime);
             cols.add(group);
@@ -162,7 +153,7 @@ public class PpDataLinkInitialiser extends AbstractService {
                     qualifiedName = pv.getParameter().getName();
                     log.trace( "Using namespaced name for PP "+qualifiedName+" because fully qualified name not available." );
                 }
-                int idx=tdef.getColumnIndex(qualifiedName);
+                int idx = tdef.getColumnIndex(qualifiedName);
                 if(idx!=-1) {
                     log.warn("duplicate value for "+pv.getParameter()+"\nfirst: "+cols.get(idx)+"\n second: "+pv.toGpb(null));
                     continue;
@@ -177,7 +168,7 @@ public class PpDataLinkInitialiser extends AbstractService {
         
         @Override
         public void updateParams(long gentime, String group, int seqNum, Collection<org.yamcs.protobuf.Pvalue.ParameterValue> params) {
-            TupleDefinition tdef = PP_TUPLE_DEFINITION.copy();
+            TupleDefinition tdef = PARAMETER_TUPLE_DEFINITION.copy();
             List<Object> cols = new ArrayList<Object>(4+params.size());
             cols.add(gentime);
             cols.add(group);

@@ -7,6 +7,6 @@ package org.yamcs.security;
  * @author nm
  *
  */
-public class AuthorizationPendingException extends Exception {
+public class AuthorizationPendingException extends RuntimeException {
 
 }

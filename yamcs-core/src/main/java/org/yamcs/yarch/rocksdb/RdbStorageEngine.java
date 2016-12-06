@@ -101,7 +101,14 @@ public class RdbStorageEngine implements StorageEngine {
         if(!partitionManagers.containsKey(tbl)) {
             throw new IllegalArgumentException("Do not have a partition manager for this table");
         }
-        return new CfTableReaderStream(ydb, tbl, partitionManagers.get(tbl), ascending, follow);
+        
+        if(tbl.getPartitionStorage()==PartitionStorage.COLUMN_FAMILY) {
+            return new CfTableReaderStream(ydb, tbl, partitionManagers.get(tbl), ascending, follow);
+        } else if(tbl.getPartitionStorage()==PartitionStorage.IN_KEY) {
+            return new InkeyTableReaderStream(ydb, tbl, partitionManagers.get(tbl), ascending, follow);
+        } else {
+            throw new RuntimeException("Unknwon partition storage: "+tbl.getPartitionStorage());
+        }
     }
 
     @Override

@@ -4,7 +4,7 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
-import org.yamcs.tctm.PpDataLinkInitialiser;
+import org.yamcs.tctm.ParameterDataLinkInitialiser;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.protobuf.Pvalue.ParameterData;
@@ -22,15 +22,15 @@ public class PpTupleTranslator implements TupleTranslator {
 
     @Override
     public ClientMessage buildMessage( ClientMessage msg, Tuple tuple ) {
-        long genTime = (Long)tuple.getColumn(PpDataLinkInitialiser.PP_TUPLE_COL_GENTIME);
-        msg.putLongProperty( PpDataLinkInitialiser.PP_TUPLE_COL_GENTIME, genTime);
+        long genTime = (Long)tuple.getColumn(ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GENTIME);
+        msg.putLongProperty( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GENTIME, genTime);
 
-        String ppGroup =(String)tuple.getColumn(PpDataLinkInitialiser.PP_TUPLE_COL_PPGROUP); 
-        msg.putStringProperty( PpDataLinkInitialiser.PP_TUPLE_COL_PPGROUP,  ppGroup);
+        String ppGroup =(String)tuple.getColumn(ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GROUP); 
+        msg.putStringProperty( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GROUP,  ppGroup);
 
 
-        msg.putIntProperty( PpDataLinkInitialiser.PP_TUPLE_COL_SEQ_NUM, (Integer)tuple.getColumn(PpDataLinkInitialiser.PP_TUPLE_COL_SEQ_NUM) );
-        msg.putLongProperty( PpDataLinkInitialiser.PP_TUPLE_COL_RECTIME, (Long)tuple.getColumn(PpDataLinkInitialiser.PP_TUPLE_COL_RECTIME) );
+        msg.putIntProperty( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_SEQ_NUM, (Integer)tuple.getColumn(ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_SEQ_NUM) );
+        msg.putLongProperty( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_RECTIME, (Long)tuple.getColumn(ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_RECTIME) );
 
         Builder b = ParameterData.newBuilder();
         b.setGenerationTime(genTime);
@@ -54,10 +54,10 @@ public class PpTupleTranslator implements TupleTranslator {
             TupleDefinition tupleDef = tdef.copy();
 
             ArrayList<Object> columns = new ArrayList<Object>( 4 + pd.getParameterCount() );
-            columns.add(message.getLongProperty( PpDataLinkInitialiser.PP_TUPLE_COL_GENTIME ));
-            columns.add(message.getStringProperty( PpDataLinkInitialiser.PP_TUPLE_COL_PPGROUP ));
-            columns.add(message.getIntProperty( PpDataLinkInitialiser.PP_TUPLE_COL_SEQ_NUM ));
-            columns.add(message.getLongProperty( PpDataLinkInitialiser.PP_TUPLE_COL_RECTIME ));
+            columns.add(message.getLongProperty( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GENTIME ));
+            columns.add(message.getStringProperty( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GROUP ));
+            columns.add(message.getIntProperty( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_SEQ_NUM ));
+            columns.add(message.getLongProperty( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_RECTIME ));
 
             for( ParameterValue pv : pd.getParameterList() ) {
                 String processedParameterName = pv.getId().getName();

@@ -95,7 +95,7 @@ class IndexRequestProcessor implements Runnable {
         boolean ok=true;
         try {
             if(tmpackets.size()>0) ok=sendHistogramData(XtceTmRecorder.TABLE_NAME, "pname", 2000, tmpackets);
-            if(ok && sendParams) ok=sendHistogramData(PpRecorder.TABLE_NAME, "ppgroup", 20000, null); //use 20 sec for the PP to avoid millions of records
+            if(ok && sendParams) ok=sendHistogramData(ParameterRecorder.TABLE_NAME, "ppgroup", 20000, null); //use 20 sec for the PP to avoid millions of records
             
             if(req.getSendAllCmd()) ok=sendHistogramData(CommandHistoryRecorder.TABLE_NAME, "cmdName", 2000, null);
             if(req.getSendAllEvent()) ok=sendHistogramData(EventRecorder.TABLE_NAME, "source", 2000, null);

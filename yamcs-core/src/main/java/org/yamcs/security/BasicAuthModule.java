@@ -43,7 +43,7 @@ public class BasicAuthModule implements AuthModule {
   // time to cache a user entry
   static final int PRIV_CACHE_TIME = 30*1000;
   // time to cache a certificate to username mapping
-  static private final ConcurrentHashMap<AuthenticationToken, Future<User>> cache = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<AuthenticationToken, Future<User>> cache = new ConcurrentHashMap<>();
  
   
     
@@ -79,15 +79,15 @@ public class BasicAuthModule implements AuthModule {
    
    
     @Override
-    public CompletableFuture<AuthenticationToken> authenticateHttp(ChannelHandlerContext ctx, HttpRequest req)  throws BadRequestException, AuthorizationPendingException{
+    public CompletableFuture<AuthenticationToken> authenticateHttp(ChannelHandlerContext ctx, HttpRequest req) {
         if (!req.headers().contains(HttpHeaders.Names.AUTHORIZATION)) {
             sendUnauthorized(ctx, req);
-            throw new AuthorizationPendingException();
+            return completedExceptionally(new AuthorizationPendingException());
         }
 
         String authorizationHeader = req.headers().get(HttpHeaders.Names.AUTHORIZATION);
         if (!authorizationHeader.startsWith("Basic ")) { // Exact case only
-            throw new BadRequestException("Unsupported Authorization header '" + authorizationHeader + "'");
+            return completedExceptionally(new BadRequestException("Unsupported Authorization header '" + authorizationHeader + "'"));
         }
         // Get encoded user and password, comes after "Basic "
         String userpassEncoded = authorizationHeader.substring(6);
@@ -95,24 +95,28 @@ public class BasicAuthModule implements AuthModule {
         try {
             userpassDecoded = new String(Base64.getDecoder().decode(userpassEncoded));
         } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Could not decode Base64-encoded credentials");
+            return completedExceptionally( new BadRequestException("Could not decode Base64-encoded credentials"));
         }
 
         // Username is not allowed to contain ':', but passwords are
         String[] parts = userpassDecoded.split(":", 2);
         if (parts.length < 2) {
-            throw new BadRequestException("Malformed username/password (Not separated by colon?)");
+            return completedExceptionally( new BadRequestException("Malformed username/password (Not separated by colon?)"));
         }
         AuthenticationToken token = new UsernamePasswordToken(parts[0], parts[1]);
         if (!realm.authenticates(token)) {
             sendUnauthorized(ctx, req);
-            throw new AuthorizationPendingException();
+            return completedExceptionally( new AuthorizationPendingException());
         }
         
         return CompletableFuture.completedFuture(token);
     }
     
-   
+    static private CompletableFuture<AuthenticationToken> completedExceptionally(Exception e) {
+        CompletableFuture<AuthenticationToken> cf = new CompletableFuture<AuthenticationToken>();
+        cf.completeExceptionally(e);
+        return cf;
+    }
     
     public User getUser(final AuthenticationToken authenticationToken)  {
         while (true) {

@@ -92,7 +92,6 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_FIXED_DELAY:"FIXED_DELAY">
 |   <K_FLOAT:"FLOAT">
 |   <K_FROM:"FROM">
-|   <K_GROUP:"GROUP">
 |   <K_HAVING:"HAVING">
 |   <K_HISTOGRAM:"HISTOGRAM">
 |   <K_IF:"IF">

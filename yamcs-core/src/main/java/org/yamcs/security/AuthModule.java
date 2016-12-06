@@ -39,11 +39,9 @@ public interface AuthModule {
      * @param ctx
      * @param req
      * @return an AuthenticationToken that will be passed later in the checkPrivileges methods
-     * @throws BadRequestException 
-     * @throws AuthorizationPendingException - when a request was sent to the user to authenticate
      * 
      */
-    CompletableFuture<AuthenticationToken> authenticateHttp(ChannelHandlerContext ctx, HttpRequest req) throws BadRequestException, AuthorizationPendingException;
+    CompletableFuture<AuthenticationToken> authenticateHttp(ChannelHandlerContext ctx, HttpRequest req);
     
 
     /**

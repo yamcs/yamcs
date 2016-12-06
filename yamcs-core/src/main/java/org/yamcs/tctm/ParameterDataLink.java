@@ -7,6 +7,6 @@ import com.google.common.util.concurrent.Service;
  * @author nm
  *
  */
-public interface PpDataLink extends Service, Link {
-    public void setPpSink(PpSink ppListener);
+public interface ParameterDataLink extends Service, Link {
+    public void setParameterSink(ParameterSink ppListener);
 }

@@ -23,7 +23,7 @@ import com.google.common.util.concurrent.ServiceManager;
 public class DataLinkInitialiser extends AbstractService {
     TmDataLinkInitialiser tmDataLinkInitialiser;
     TcUplinkerAdapter tcDataLinkInitialiser;
-    PpDataLinkInitialiser ppDataLinkInitialiser;
+    ParameterDataLinkInitialiser ppDataLinkInitialiser;
     ServiceManager  serviceManager;
 
     public DataLinkInitialiser(String yamcsInstance) throws ConfigurationException, StreamSqlException, ParseException, YamcsApiException, IOException {
@@ -37,8 +37,8 @@ public class DataLinkInitialiser extends AbstractService {
             tcDataLinkInitialiser = new TcUplinkerAdapter(yamcsInstance);
             services.add(tcDataLinkInitialiser);
         }
-        if(c.containsKey(PpDataLinkInitialiser.KEY_ppDataLinks)) {
-            ppDataLinkInitialiser = new PpDataLinkInitialiser(yamcsInstance);
+        if(c.containsKey(ParameterDataLinkInitialiser.KEY_parameterDataLinks)) {
+            ppDataLinkInitialiser = new ParameterDataLinkInitialiser(yamcsInstance);
             services.add(ppDataLinkInitialiser);
         }
         if (!services.isEmpty()) {

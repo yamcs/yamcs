@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.Privilege;
-import org.yamcs.tctm.PpDataLinkInitialiser;
+import org.yamcs.tctm.ParameterDataLinkInitialiser;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
@@ -42,7 +42,7 @@ public class AlarmStreamer implements AlarmListener {
         TupleDefinition tdef = AlarmServer.ALARM_TUPLE_DEFINITION.copy();
         ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.TRIGGERED);
         
-        tdef.addColumn("triggerPV", PpDataLinkInitialiser.PP_DATA_TYPE);
+        tdef.addColumn("triggerPV", ParameterDataLinkInitialiser.PP_DATA_TYPE);
         NamedObjectId id = NamedObjectId.newBuilder().setName(activeAlarm.triggerValue.getParameter().getQualifiedName()).build();
         al.add(activeAlarm.triggerValue.toGpb(id));
         
@@ -55,7 +55,7 @@ public class AlarmStreamer implements AlarmListener {
         TupleDefinition tdef = AlarmServer.ALARM_TUPLE_DEFINITION.copy();
         ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.SEVERITY_INCREASED);
         
-        tdef.addColumn("severityIncreasedPV", PpDataLinkInitialiser.PP_DATA_TYPE);
+        tdef.addColumn("severityIncreasedPV", ParameterDataLinkInitialiser.PP_DATA_TYPE);
         NamedObjectId id = NamedObjectId.newBuilder().setName(activeAlarm.mostSevereValue.getParameter().getQualifiedName()).build();
         al.add(activeAlarm.mostSevereValue.toGpb(id));
     
@@ -68,7 +68,7 @@ public class AlarmStreamer implements AlarmListener {
         TupleDefinition tdef = AlarmServer.ALARM_TUPLE_DEFINITION.copy();
         ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.UPDATED);
         
-        tdef.addColumn("updatedPV", PpDataLinkInitialiser.PP_DATA_TYPE);
+        tdef.addColumn("updatedPV", ParameterDataLinkInitialiser.PP_DATA_TYPE);
         NamedObjectId id = NamedObjectId.newBuilder().setName(activeAlarm.currentValue.getParameter().getQualifiedName()).build();
         al.add(activeAlarm.currentValue.toGpb(id));
     
@@ -105,7 +105,7 @@ public class AlarmStreamer implements AlarmListener {
         TupleDefinition tdef = AlarmServer.ALARM_TUPLE_DEFINITION.copy();
         ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.CLEARED);
         
-        tdef.addColumn("clearedPV", PpDataLinkInitialiser.PP_DATA_TYPE);
+        tdef.addColumn("clearedPV", ParameterDataLinkInitialiser.PP_DATA_TYPE);
         NamedObjectId id = NamedObjectId.newBuilder().setName(activeAlarm.currentValue.getParameter().getQualifiedName()).build();
         al.add(activeAlarm.currentValue.toGpb(id));        
         

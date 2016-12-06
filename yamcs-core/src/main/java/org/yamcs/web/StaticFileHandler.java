@@ -7,8 +7,10 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -49,15 +51,18 @@ public class StaticFileHandler extends RouteHandler {
     public static void init() throws ConfigurationException {
         if(mimeTypesMap!=null) return;
 
-        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("mime.types");
-        if(is==null) {
-            throw new ConfigurationException("Cannot find the mime.types file in the classpath");
+        try(InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("mime.types")) {
+            if(is==null) {
+                throw new ConfigurationException("Cannot find the mime.types file in the classpath");
+            }
+            mimeTypesMap = new MimetypesFileTypeMap(is);
+            webConfig = WebConfig.getInstance();
+        } catch (IOException e) {
+            log.error("Error when closing the stream", e);
         }
-        mimeTypesMap = new MimetypesFileTypeMap(is);
-        webConfig = WebConfig.getInstance();
     }
 
-    void handleStaticFileRequest(ChannelHandlerContext ctx, HttpRequest req, String rawPath) throws Exception {
+    void handleStaticFileRequest(ChannelHandlerContext ctx, HttpRequest req, String rawPath) throws IOException  {
         log.debug("Handling static file request for {}", rawPath);
         String path = sanitizePath(rawPath);
         if (path == null) {
@@ -89,14 +94,18 @@ public class StaticFileHandler extends RouteHandler {
         String ifModifiedSince = req.headers().get(HttpHeaders.Names.IF_MODIFIED_SINCE);
         if (ifModifiedSince != null && !ifModifiedSince.equals("")) {
             SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
-            Date ifModifiedSinceDate = dateFormatter.parse(ifModifiedSince);
-
-            // Only compare up to the second because the datetime format we send to the client does not have milliseconds
-            long ifModifiedSinceDateSeconds = ifModifiedSinceDate.getTime() / 1000;
-            long fileLastModifiedSeconds = file.lastModified() / 1000;
-            if (ifModifiedSinceDateSeconds == fileLastModifiedSeconds) {
-                sendNotModified(ctx, req);
-                return;
+            Date ifModifiedSinceDate;
+            try {
+                ifModifiedSinceDate = dateFormatter.parse(ifModifiedSince);
+                // Only compare up to the second because the datetime format we send to the client does not have milliseconds
+                long ifModifiedSinceDateSeconds = ifModifiedSinceDate.getTime() / 1000;
+                long fileLastModifiedSeconds = file.lastModified() / 1000;
+                if (ifModifiedSinceDateSeconds == fileLastModifiedSeconds) {
+                    sendNotModified(ctx, req);
+                    return;
+                }
+            } catch (ParseException e) {
+                log.debug("Cannot parse {} header'{}'", HttpHeaders.Names.IF_MODIFIED_SINCE, ifModifiedSince);
             }
         }
 

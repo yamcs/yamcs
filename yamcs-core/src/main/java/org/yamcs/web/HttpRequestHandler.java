@@ -1,13 +1,12 @@
 package org.yamcs.web;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -15,12 +14,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
-import org.yamcs.security.AuthModule;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.AuthorizationPendingException;
 import org.yamcs.security.Privilege;
 import org.yamcs.web.rest.Router;
 import org.yamcs.web.websocket.WebSocketFrameHandler;
+
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -66,69 +66,85 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
     }
 
     @Override
-    public void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
+    public void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) {
         // We have this also on info level coupled with the HTTP response status code,
         // but this is on debug for an earlier reporting while debugging issues
         log.debug("{} {}", req.getMethod(), req.getUri());
 
-        AuthenticationToken authToken = null;
         Privilege priv = Privilege.getInstance();
-        
-        if (priv.isEnabled()) {
-            AuthModule authenticator = priv.getAuthModule();
-            try {
-                //TODO: process the result in a completion handler
-                authToken = authenticator.authenticateHttp(ctx, req).get();
-            } catch (AuthorizationPendingException e) {
-                //means that the authenticator has sent an answer to the client and it should come back with a new request with the proper authentication 
-                return;
-            } catch (BadRequestException e) {
-                sendPlainTextError(ctx, req, BAD_REQUEST);
-                return;
-            } catch (ExecutionException e) {
-                log.warn("Exception in the authenticator", e.getCause());
-                sendPlainTextError(ctx, req, UNAUTHORIZED);
-                return;
-            }
-        }
 
-        // Decode URI, to correctly ignore query strings in path handling
-        QueryStringDecoder qsDecoder = new QueryStringDecoder(req.getUri());
-        String[] path = qsDecoder.path().split("/", 3); // path starts with / so path[0] is always empty
-        switch (path[1]) {
-        case STATIC_PATH:
-            if (path.length == 2) { //do not accept "/_static/" (i.e. directory listing) requests
-                sendPlainTextError(ctx, req, FORBIDDEN);
-                return;
-            }
-            fileRequestHandler.handleStaticFileRequest(ctx, req, path[2]);
-            return;
-        case API_PATH:
-            apiRouter.handleHttpRequest(ctx, req, authToken, qsDecoder);
-            return;
-        case "":
-            // overview of all instances
-            fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/index.html");
-            return;
-        default:
-            String yamcsInstance = path[1];
-            if (!YamcsServer.hasInstance(yamcsInstance)) {
-                sendPlainTextError(ctx, req, NOT_FOUND);
-                return;
-            }
-            if (path.length > 2) {
-                String[] rpath = path[2].split("/", 2);
-                String handler = rpath[0];
-                if (WebSocketFrameHandler.WEBSOCKET_PATH.equals(handler)) {
-                    prepareChannelForWebSocketUpgrade(ctx, req, yamcsInstance, authToken);
-                    return;
+        if (priv.isEnabled()) {
+            priv.authenticateHttp(ctx, req)
+            .whenComplete((authToken, t) -> {
+                if(t!=null) {
+                    t = unwindThrowable(t);
+                    if(t instanceof AuthorizationPendingException) {
+                        return;
+                    } else {
+                        sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
+                    }
                 } else {
-                    // Everything else is handled by angular's router (enables deep linking in html5 mode)
+                    handleRequest(authToken, ctx, req);    
+                }
+                
+            });
+            
+           
+        } else {
+            handleRequest(null, ctx, req);
+        }
+    }
+    
+    private Throwable unwindThrowable(Throwable t) {
+        while(((t instanceof ExecutionException)||(t instanceof CompletionException)||(t instanceof UncheckedExecutionException))
+                && t.getCause()!=null) {
+            t = t.getCause();
+        }
+        return t;
+    }
+    private void handleRequest(AuthenticationToken authToken, ChannelHandlerContext ctx, FullHttpRequest req) {
+        try {
+            // Decode URI, to correctly ignore query strings in path handling
+            QueryStringDecoder qsDecoder = new QueryStringDecoder(req.getUri());
+            String[] path = qsDecoder.path().split("/", 3); // path starts with / so path[0] is always empty
+            switch (path[1]) {
+            case STATIC_PATH:
+                if (path.length == 2) { //do not accept "/_static/" (i.e. directory listing) requests
+                    sendPlainTextError(ctx, req, FORBIDDEN);
+                    return;
+                }
+                fileRequestHandler.handleStaticFileRequest(ctx, req, path[2]);
+                return;
+            case API_PATH:
+                apiRouter.handleHttpRequest(ctx, req, authToken, qsDecoder);
+                return;
+            case "":
+                // overview of all instances
+                fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/index.html");
+                return;
+            default:
+                String yamcsInstance = path[1];
+                if (!YamcsServer.hasInstance(yamcsInstance)) {
+                    sendPlainTextError(ctx, req, NOT_FOUND);
+                    return;
+                }
+                if (path.length > 2) {
+                    String[] rpath = path[2].split("/", 2);
+                    String handler = rpath[0];
+                    if (WebSocketFrameHandler.WEBSOCKET_PATH.equals(handler)) {
+                        prepareChannelForWebSocketUpgrade(ctx, req, yamcsInstance, authToken);
+                        return;
+                    } else {
+                        // Everything else is handled by angular's router (enables deep linking in html5 mode)
+                        fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/instance.html");
+                    }
+                } else {
                     fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/instance.html");
                 }
-            } else {
-                fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/instance.html");
             }
+        } catch (IOException e) {
+            log.warn("Exception while handling http request", e);
+            sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -165,7 +181,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         return ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
-   
+
 
     public static ChannelFuture sendPlainTextError(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status) {
         FullHttpResponse response = new DefaultFullHttpResponse(

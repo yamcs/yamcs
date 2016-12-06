@@ -21,8 +21,8 @@ import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
 import org.yamcs.simulation.generated.PpSimulation;
 import org.yamcs.simulation.generated.PpSimulation.ParameterSequence;
-import org.yamcs.tctm.PpDataLink;
-import org.yamcs.tctm.PpSink;
+import org.yamcs.tctm.ParameterDataLink;
+import org.yamcs.tctm.ParameterSink;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.Parameter;
@@ -34,9 +34,9 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
 // Command line to generate xml classes:
 //[...]/yamcs/yamcs-simulation/src/main/resources/org/yamcs/xsd$ xjc simulation_data.xsd -p org.yamcs.simulation.generated -d [...]/yamcs/yamcs-simulation/src/main/java/
-public class SimulationPpProvider extends AbstractExecutionThreadService implements PpDataLink, Runnable {
+public class SimulationPpProvider extends AbstractExecutionThreadService implements ParameterDataLink, Runnable {
     protected volatile long datacount = 0;
-    private PpSink ppListener;
+    private ParameterSink ppListener;
     protected volatile boolean disabled = false;
     PpSimulation simulationData = null;
     // static String SIMULATION_DATA =
@@ -106,7 +106,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
     }
 
     @Override
-    public void setPpSink(PpSink ppListener) {
+    public void setParameterSink(ParameterSink ppListener) {
         this.ppListener = ppListener;
 
     }

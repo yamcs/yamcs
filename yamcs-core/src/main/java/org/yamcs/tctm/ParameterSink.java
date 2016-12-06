@@ -5,15 +5,15 @@ import java.util.Collection;
 import org.yamcs.parameter.ParameterValue;
 
 /**
- * Used by the PpDataLinks to propagate processed parameters inside Yamcs.
+ * Used by the ParameterDataLink to propagate processed parameters inside Yamcs.
  * 
  *  
  * @author nm
  *
  */
-public interface PpSink {
+public interface ParameterSink {
     /**
-     *Update a collection of PPs
+     * Update a collection of Parameters
      *
      */
     @Deprecated

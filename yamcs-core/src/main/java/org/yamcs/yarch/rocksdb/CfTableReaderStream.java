@@ -84,7 +84,7 @@ public class CfTableReaderStream extends AbstractTableReaderStream implements Ru
     }
     
     private boolean readAscending(List<Partition> partitions, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
-        PriorityQueue<RdbRawTuple> orderedQueue=new PriorityQueue<RdbRawTuple>();
+        PriorityQueue<RdbRawTuple> orderedQueue = new PriorityQueue<RdbRawTuple>();
         RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
         YRDB rdb = null;
         try {
@@ -136,7 +136,7 @@ public class CfTableReaderStream extends AbstractTableReaderStream implements Ru
 
             //now continue publishing the first element from the priority queue till it becomes empty
             while((!quit) && orderedQueue.size()>0){
-                RdbRawTuple rt=orderedQueue.poll();
+                RdbRawTuple rt = orderedQueue.poll();
                 if(!emitIfNotPastStop(rt.key, rt.value, rangeEnd, strictEnd)) {
                     return true;
                 }

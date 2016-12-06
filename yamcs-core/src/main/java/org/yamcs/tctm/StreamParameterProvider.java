@@ -22,17 +22,17 @@ import org.yamcs.yarch.YarchDatabase;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- * Provides PPs from yarch streams (pp_realtime) to ParameterRequestManager.
+ * Provides parameters from yarch streams (pp_realtime) to ParameterRequestManager.
  * 
  * @author nm
  *
  */
-public class StreamPpProvider extends AbstractService implements StreamSubscriber, ParameterProvider {
+public class StreamParameterProvider extends AbstractService implements StreamSubscriber, ParameterProvider {
     Stream stream;
     ParameterRequestManager paraListener;
     final XtceDb xtceDb;
 
-    public StreamPpProvider(String archiveInstance, Map<String, String> config) throws ConfigurationException {
+    public StreamParameterProvider(String archiveInstance, Map<String, String> config) throws ConfigurationException {
         YarchDatabase ydb=YarchDatabase.getInstance(archiveInstance);
 
         if(!config.containsKey("stream")) {

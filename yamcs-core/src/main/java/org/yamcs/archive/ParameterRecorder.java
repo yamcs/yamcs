@@ -1,6 +1,6 @@
 package org.yamcs.archive;
 
-import static org.yamcs.tctm.PpDataLinkInitialiser.PP_TUPLE_DEFINITION;
+import static org.yamcs.tctm.ParameterDataLinkInitialiser.PARAMETER_TUPLE_DEFINITION;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,10 +11,8 @@ import org.yamcs.StreamConfig;
 import org.yamcs.YConfiguration;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
-import org.yamcs.tctm.PpDataLinkInitialiser;
+import org.yamcs.tctm.ParameterDataLinkInitialiser;
 import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.StreamSubscriber;
-import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.YarchDatabase;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -23,11 +21,11 @@ import com.google.common.util.concurrent.AbstractService;
  * PpRecorder
  * Records (processed) Parameters 
  * 
- * The base table definition is {@link PpDataLinkInitialiser}
+ * The base table definition is {@link ParameterDataLinkInitialiser}
  * @author nm
  *
  */
-public class PpRecorder extends AbstractService {
+public class ParameterRecorder extends AbstractService {
 
     String yamcsInstance;
     Stream realtimeStream, dumpStream;
@@ -35,15 +33,15 @@ public class PpRecorder extends AbstractService {
     static public final String TABLE_NAME="pp";
     List<String> streams = new ArrayList<String>();
     
-    public PpRecorder(String yamcsInstance) {
+    public ParameterRecorder(String yamcsInstance) {
         this(yamcsInstance, null);
     }
     
-    public PpRecorder(String yamcsInstance, Map<String, Object> config) {
+    public ParameterRecorder(String yamcsInstance, Map<String, Object> config) {
         this.yamcsInstance=yamcsInstance;
         YarchDatabase ydb=YarchDatabase.getInstance(yamcsInstance);
         try {
-            String cols=PP_TUPLE_DEFINITION.getStringDefinition1();
+            String cols = PARAMETER_TUPLE_DEFINITION.getStringDefinition1();
             if(ydb.getTable(TABLE_NAME)==null) {
                 String query="create table "+TABLE_NAME+"("+cols+", primary key(gentime, seqNum)) histogram(ppgroup) partition by time_and_value(gentime"+XtceTmRecorder.getTimePartitioningSchemaSql()+",ppgroup) table_format=compressed";
                 ydb.execute(query);
