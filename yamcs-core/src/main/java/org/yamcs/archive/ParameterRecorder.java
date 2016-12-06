@@ -30,7 +30,7 @@ public class ParameterRecorder extends AbstractService {
     String yamcsInstance;
     Stream realtimeStream, dumpStream;
 
-    static public final String TABLE_NAME="pp";
+    static public final String TABLE_NAME = "pp";
     List<String> streams = new ArrayList<String>();
     
     public ParameterRecorder(String yamcsInstance) {
@@ -43,7 +43,7 @@ public class ParameterRecorder extends AbstractService {
         try {
             String cols = PARAMETER_TUPLE_DEFINITION.getStringDefinition1();
             if(ydb.getTable(TABLE_NAME)==null) {
-                String query="create table "+TABLE_NAME+"("+cols+", primary key(gentime, seqNum)) histogram(ppgroup) partition by time_and_value(gentime"+XtceTmRecorder.getTimePartitioningSchemaSql()+",ppgroup) table_format=compressed";
+                String query="create table "+TABLE_NAME+"("+cols+", primary key(gentime, seqNum)) histogram(group) partition by time_and_value(gentime"+XtceTmRecorder.getTimePartitioningSchemaSql()+",group) table_format=compressed";
                 ydb.execute(query);
             }
             
