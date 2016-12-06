@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -28,8 +27,6 @@ import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.archive.PacketWithTime;
-import org.yamcs.artemis.ArtemisManagement;
-import org.yamcs.artemis.ArtemisServer;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Archive.StreamData;
@@ -67,14 +64,13 @@ import io.protostuff.JsonInput;
 import io.protostuff.Schema;
 
 public abstract class AbstractIntegrationTest {
-    private static EmbeddedActiveMQ artemisServer;
     final String yamcsInstance = "IntegrationTest";
     PacketProvider packetProvider;
     YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190, "IntegrationTest");
     MyWsListener wsListener;
     WebSocketClient wsClient;
     RestClient restClient;
-    UsernamePasswordToken admin = new UsernamePasswordToken("admin", "rootpassword");
+    protected UsernamePasswordToken admin = new UsernamePasswordToken("admin", "rootpassword");
     RefMdbPacketGenerator packetGenerator;
 
 
@@ -169,7 +165,6 @@ public abstract class AbstractIntegrationTest {
     @AfterClass
     public static void shutDownYamcs()  throws Exception {
         YamcsServer.shutDown();
-        //artemisServer.stop();
     }
 
 
