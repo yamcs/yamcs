@@ -113,6 +113,7 @@ public class IndexServer extends AbstractService {
             }
             tmIndexer.close();
             tagDb.close();
+            notifyStopped();
         } catch (IOException e) {
             log.error("failed to stop the indexer", e);
             notifyFailed(e);
