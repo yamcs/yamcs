@@ -84,12 +84,16 @@ public class RdbStorageEngine implements StorageEngine {
             throw new IllegalArgumentException("Do not have a partition manager for this table");
         }
         try {
-            if(tbl.getPartitionStorage()==PartitionStorage.COLUMN_FAMILY) {
-                return new CfTableWriter(ydb, tbl, insertMode, partitionManagers.get(tbl));
-            } else if(tbl.getPartitionStorage()==PartitionStorage.IN_KEY) {
-                return new CfTableWriter(ydb, tbl, insertMode, partitionManagers.get(tbl));
+            if(tbl.isPartitionedByValue()) {
+                if(tbl.getPartitionStorage()==PartitionStorage.COLUMN_FAMILY) {
+                    return new CfTableWriter(ydb, tbl, insertMode, partitionManagers.get(tbl));
+                } else if(tbl.getPartitionStorage()==PartitionStorage.IN_KEY) {
+                    return new InKeyTableWriter(ydb, tbl, insertMode, partitionManagers.get(tbl));
+                } else {
+                    throw new RuntimeException("Unknwon partition storage: "+tbl.getPartitionStorage());
+                }
             } else {
-                throw new RuntimeException("Unknwon partition storage: "+tbl.getPartitionStorage());
+                return new CfTableWriter(ydb, tbl, insertMode, partitionManagers.get(tbl));
             }
         } catch (IOException e) {
             throw new YarchException("Failed to create writer", e);
@@ -101,13 +105,16 @@ public class RdbStorageEngine implements StorageEngine {
         if(!partitionManagers.containsKey(tbl)) {
             throw new IllegalArgumentException("Do not have a partition manager for this table");
         }
-        
-        if(tbl.getPartitionStorage()==PartitionStorage.COLUMN_FAMILY) {
-            return new CfTableReaderStream(ydb, tbl, partitionManagers.get(tbl), ascending, follow);
-        } else if(tbl.getPartitionStorage()==PartitionStorage.IN_KEY) {
-            return new InkeyTableReaderStream(ydb, tbl, partitionManagers.get(tbl), ascending, follow);
+        if(tbl.isPartitionedByValue()) {
+            if(tbl.getPartitionStorage()==PartitionStorage.COLUMN_FAMILY) {
+                return new CfTableReaderStream(ydb, tbl, partitionManagers.get(tbl), ascending, follow);
+            } else if(tbl.getPartitionStorage()==PartitionStorage.IN_KEY) {
+                return new InkeyTableReaderStream(ydb, tbl, partitionManagers.get(tbl), ascending, follow);
+            } else {
+                throw new RuntimeException("Unknwon partition storage: "+tbl.getPartitionStorage());
+            }
         } else {
-            throw new RuntimeException("Unknwon partition storage: "+tbl.getPartitionStorage());
+            return new CfTableReaderStream(ydb, tbl, partitionManagers.get(tbl), ascending, follow);
         }
     }
 

@@ -19,8 +19,6 @@ import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TimePartitionSchema.PartitionInfo;
 
-import com.google.common.base.Charsets;
-
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableDefinition.PartitionStorage;

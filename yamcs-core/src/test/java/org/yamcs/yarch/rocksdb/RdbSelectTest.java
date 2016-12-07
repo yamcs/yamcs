@@ -11,6 +11,10 @@ import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
@@ -25,16 +29,23 @@ import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.YarchTestCase;
+import org.yamcs.yarch.TableDefinition.PartitionStorage;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 import com.google.common.io.Files;
 
-
+@RunWith(Parameterized.class)
 public class RdbSelectTest extends YarchTestCase {
     
     private TupleDefinition tdef;
     private TableWriter tw;
+    @Parameter
+    public PartitionStorage partitionStorage; 
+    @Parameters
+    public static Iterable<PartitionStorage> data() {
+        return Arrays.asList(PartitionStorage.values());
+    }
     
     @Before
     public void before() throws StreamSqlException, YarchException {
@@ -43,6 +54,7 @@ public class RdbSelectTest extends YarchTestCase {
         tdef.addColumn(new ColumnDefinition("packetid", DataType.INT));
         tdef.addColumn(new ColumnDefinition("col3", DataType.INT));
         TableDefinition tblDef = new TableDefinition("RdbSelectTest", tdef, Arrays.asList("gentime"));
+        tblDef.setPartitionStorage(partitionStorage);
 
         String tmpdir=Files.createTempDir().getAbsolutePath();
         tblDef.setDataDir(tmpdir);

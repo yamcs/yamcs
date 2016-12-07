@@ -48,14 +48,14 @@ public class InkeyTableReaderStream extends AbstractTableReaderStream implements
         if(dt!=null) {
             this.partitionSize = ColumnValueSerializer.getSerializedSize(dt);
         } else {
-            this.partitionSize =0;
+           throw new IllegalStateException("InkeyTableReader is used only when the table is partitioned by value");
         }
     }
 
 
     @Override 
     public void start() {
-        (new Thread(this, "TcTableReader["+getName()+"]")).start();
+        (new Thread(this, "InkeyRdbTableReader["+getName()+"]")).start();
     }
 
 
@@ -85,68 +85,9 @@ public class InkeyTableReaderStream extends AbstractTableReaderStream implements
                 rangeEnd=cs.getByteArray(range.keyEnd);
             }
         }
-        if(partitionSize>0) {
             return runValuePartitions(partitions, rangeStart, strictStart, rangeEnd, strictEnd);
-        } else {
-            assert(partitions.size()==1);
-            return runSimplePartition((RdbPartition)partitions.get(0), rangeStart, strictStart, rangeEnd, strictEnd);
-        }
     }
-    
-    /*
-     * simple case when there is no value partitioning 
-     */
-    private boolean runSimplePartition(RdbPartition partition, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
-        DbIterator iterator = null;
-      
-        RDBFactory rdbf = RDBFactory.getInstance(ydb.getName());
-        String dbDir = partition.dir;
-        log.debug("opening database "+ dbDir);
-        YRDB rdb;
-        try {
-            rdb = rdbf.getRdb(tableDefinition.getDataDir()+"/"+partition.dir, false);
-        } catch (IOException e) {
-            log.error("Failed to open database", e);
-            return false;
-        }
-        ReadOptions readOptions = new ReadOptions();
-        readOptions.setTailing(follow);
-        Snapshot snapshot = null;
-        if(!follow) {
-            snapshot = rdb.getDb().getSnapshot();
-            readOptions.setSnapshot(snapshot);
-        }
-        
-        try {
-            RocksIterator it = rdb.getDb().newIterator(readOptions);
-            if(ascending) {
-                iterator = new AscendingRangeIterator(it, rangeStart, strictStart, rangeEnd, strictEnd);
-                while(!quit && iterator.isValid()){
-                    if(!emitIfNotPastStop(iterator.key(), iterator.value(), rangeEnd, strictEnd)) {
-                        return true;
-                    }
-                    iterator.next();
-                }
-                return false;
-                
-            } else {
-                iterator = new DescendingRangeIterator(it, rangeStart, strictStart, rangeEnd, strictEnd);
-                while(!quit && iterator.isValid()){
-                    if(!emitIfNotPastStart(iterator.key(), iterator.value(), rangeStart, strictStart)) {
-                        return true;
-                    }
-                    iterator.prev();
-                }
-                return false;
-            }   
-        } finally {
-            if(iterator!=null) iterator.close();
-            if(snapshot!=null) snapshot.close();
-            readOptions.close();
-            rdbf.dispose(rdb);
-        }
-    }
-    
+
     /*
      * runs value based partitions: the partition value is encoded as the first bytes of the key, so we have to make multiple parallel iterators
      */

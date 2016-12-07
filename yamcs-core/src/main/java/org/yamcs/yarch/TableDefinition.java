@@ -10,6 +10,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.utils.StringConverter;
+import org.yamcs.yarch.PartitioningSpec._type;
 import org.yamcs.yarch.streamsql.ColumnNotFoundException;
 import org.yamcs.yarch.streamsql.GenericStreamSqlException;
 import org.yamcs.yarch.streamsql.NotSupportedException;
@@ -497,5 +498,9 @@ public class TableDefinition {
 
     public void setPartitionStorage(PartitionStorage partitionStorage) {
         this.partitionStorage = partitionStorage;
+    }
+
+    public boolean isPartitionedByValue() {
+        return partitioningSpec.type==_type.TIME_AND_VALUE|| partitioningSpec.type==_type.VALUE;
     }
 }

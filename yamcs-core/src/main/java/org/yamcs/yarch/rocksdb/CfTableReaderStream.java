@@ -294,3 +294,61 @@ public class CfTableReaderStream extends AbstractTableReaderStream implements Ru
         }
     }    
 }
+
+
+
+/*
+ * simple case when there is no value partitioning 
+ */
+/* to replace maybe the above
+private boolean runSimplePartition(RdbPartition partition, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
+    DbIterator iterator = null;
+  
+    RDBFactory rdbf = RDBFactory.getInstance(ydb.getName());
+    String dbDir = partition.dir;
+    log.debug("opening database "+ dbDir);
+    YRDB rdb;
+    try {
+        rdb = rdbf.getRdb(tableDefinition.getDataDir()+"/"+partition.dir, false);
+    } catch (IOException e) {
+        log.error("Failed to open database", e);
+        return false;
+    }
+    ReadOptions readOptions = new ReadOptions();
+    readOptions.setTailing(follow);
+    Snapshot snapshot = null;
+    if(!follow) {
+        snapshot = rdb.getDb().getSnapshot();
+        readOptions.setSnapshot(snapshot);
+    }
+    
+    try {
+        RocksIterator it = rdb.getDb().newIterator(readOptions);
+        if(ascending) {
+            iterator = new AscendingRangeIterator(it, rangeStart, strictStart, rangeEnd, strictEnd);
+            while(!quit && iterator.isValid()){
+                if(!emitIfNotPastStop(iterator.key(), iterator.value(), rangeEnd, strictEnd)) {
+                    return true;
+                }
+                iterator.next();
+            }
+            return false;
+            
+        } else {
+            iterator = new DescendingRangeIterator(it, rangeStart, strictStart, rangeEnd, strictEnd);
+            while(!quit && iterator.isValid()){
+                if(!emitIfNotPastStart(iterator.key(), iterator.value(), rangeStart, strictStart)) {
+                    return true;
+                }
+                iterator.prev();
+            }
+            return false;
+        }   
+    } finally {
+        if(iterator!=null) iterator.close();
+        if(snapshot!=null) snapshot.close();
+        readOptions.close();
+        rdbf.dispose(rdb);
+    }
+}
+*/
