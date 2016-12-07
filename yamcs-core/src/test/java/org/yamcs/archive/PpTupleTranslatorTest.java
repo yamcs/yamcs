@@ -121,10 +121,10 @@ public class PpTupleTranslatorTest extends YarchTestCase {
 
     @Test
     public void testTranslation() throws Exception {
-        StreamInitializer streamInit = new StreamInitializer(context.getDbName());
+        StreamInitializer streamInit = new StreamInitializer(ydb.getName());
         streamInit.createStreams();
         
-        ParameterRecorder ppRecorder = new ParameterRecorder(context.getDbName());
+        ParameterRecorder ppRecorder = new ParameterRecorder(ydb.getName());
         ppRecorder.startAsync();
 
         // Get the stream
@@ -168,11 +168,13 @@ public class PpTupleTranslatorTest extends YarchTestCase {
         // And make sure the messages have appeared in the table
         final AtomicInteger tableReceivedCounter=new AtomicInteger(0);
         execute("create stream stream_pp_out as select * from "+ParameterRecorder.TABLE_NAME);
-        Stream s=ydb.getStream("stream_pp_out");
+        Stream s = ydb.getStream("stream_pp_out");
         final Semaphore finished=new Semaphore(0);
         s.addSubscriber(new StreamSubscriber() {
             @Override
-            public void streamClosed(Stream stream) { }
+            public void streamClosed(Stream stream) {
+                finished.release();
+            }
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
                 ParameterValue pv = (ParameterValue)tuple.getColumn( COL_STR );
