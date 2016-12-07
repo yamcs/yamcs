@@ -67,7 +67,7 @@ public class ParameterRecorder extends AbstractService {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new ConfigurationException("exception when creating pp input stream", e);
+            throw new ConfigurationException("exception when creating parameter input stream", e);
         }
     }
     

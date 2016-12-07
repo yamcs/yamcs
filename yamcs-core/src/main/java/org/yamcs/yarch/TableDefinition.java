@@ -44,7 +44,9 @@ public class TableDefinition {
    
     //used for rocksdb - IN_KEY means storing the partition in front of the key
     //                 - COLUMN_FAMILY : store data for each partition in a different column family
+    //this is used only if the table is partitioned by value
     public enum PartitionStorage {IN_KEY, COLUMN_FAMILY};
+    
     private PartitionStorage partitionStorage = PartitionStorage.IN_KEY;
     
     private final TupleDefinition keyDef;
