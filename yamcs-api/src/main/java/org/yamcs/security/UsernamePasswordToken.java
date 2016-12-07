@@ -64,11 +64,6 @@ public class UsernamePasswordToken implements AuthenticationToken {
     }
 
     @Override
-    public Object getCredentials() {
-        return password;
-    }
-
-    @Override
     public String toString() {
         String usernamepassword = "";
         usernamepassword += (username != null ? username : "null");

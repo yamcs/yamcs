@@ -14,14 +14,4 @@ public interface AuthenticationToken {
      */
     Object getPrincipal();
 
-    /**
-     * Returns the credentials submitted by the user during the authentication process that verifies
-     * the submitted {@link #getPrincipal() account identity}.
-     *
-     * <p>Ultimately, the credentials Object returned is application specific and can represent
-     * any credential mechanism.
-     *
-     * @return the credential submitted by the user during the authentication process.
-     */
-    Object getCredentials();
 }

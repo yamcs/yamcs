@@ -11,10 +11,4 @@ public class SystemToken implements AuthenticationToken {
     public Object getPrincipal() {
         return "System";
     }
-
-    @Override
-    public Object getCredentials() {
-        return null;
-    }
-
 }
