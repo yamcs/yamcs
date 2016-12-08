@@ -43,7 +43,7 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
 
     Logger log;
     String colName;
-
+    boolean stopReached = false;
 
     //FIXME: mergeTime does not merge records across partitions or segments
     public RdbHistogramIterator(YarchDatabase ydb, TableDefinition tblDef, String colName, TimeInterval interval, long mergeTime) throws RocksDBException {
@@ -107,9 +107,9 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
         }
         
         while(true) {
-            if(!addRecords(segmentIterator.key(), segmentIterator.value())){
-                break;
-            }
+            boolean beyondStop = addRecords(segmentIterator.key(), segmentIterator.value());
+            if(beyondStop) stopReached = true;
+
             segmentIterator.next();
             if(!segmentIterator.isValid()) {
                 readNextPartition();
@@ -128,7 +128,10 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
         }
     }
 
+    //add all records from this segment into the queue 
+    // if the stop has been reached add only partially the records, return true
     private boolean addRecords(byte[] key, byte[] val) {
+    //    System.out.println("interval: "+interval);
         ByteBuffer kbb = ByteBuffer.wrap(key);
         int sstart = kbb.getInt();
         byte[] columnv = new byte[kbb.remaining()];
@@ -140,9 +143,9 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
             long stop = sstart*HistogramSegment.GROUPING_FACTOR + vbb.getInt();              
             int num = vbb.getShort();
             if((interval.hasStart()) && (stop<interval.getStart())) continue;
-            
             if((interval.hasStop()) && (start>interval.getStop())) {
-                return false;
+                if(r!=null) records.add(r);
+                return true;
             }
             if(r==null) {
                 r = new HistogramRecord(columnv, start, stop, num);
@@ -156,7 +159,7 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
             }
         }
         records.add(r);
-        return true;
+        return false;
     }
 
     public boolean hasNext() {
@@ -167,7 +170,7 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
         if(records.isEmpty()) throw new NoSuchElementException();
         HistogramRecord r = records.poll();
 
-        if(records.isEmpty()) {
+        if(records.isEmpty() && !stopReached) {
             try {
                 readNextSegments();
             } catch (RocksDBException e) {
