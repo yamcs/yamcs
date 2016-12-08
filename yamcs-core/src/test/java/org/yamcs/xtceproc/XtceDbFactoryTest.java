@@ -23,7 +23,36 @@ public class XtceDbFactoryTest {
      *   - b3
      * 
      */
-    
+    @Test
+    public void testNamespaces() throws Exception {
+        YConfiguration.setup("refmdb");
+        ManagementService.setup(false);
+        XtceDbFactory.reset();
+        
+        XtceDb db = XtceDbFactory.getInstance("refmdb");
+        
+        SequenceContainer pkt1 = db.getSequenceContainer("/REFMDB/SUBSYS1/PKT1");
+        assertNotNull(pkt1);
+        // assertEquals(pkt1, db.getSequenceContainer("/REFMDB", "SUBSYS1/PKT1")); // Not supported yet
+        assertEquals(pkt1, db.getSequenceContainer("/REFMDB/SUBSYS1", "PKT1"));
+        
+        Parameter p = db.getParameter("/REFMDB/SUBSYS1/IntegerPara1_1");
+        assertNotNull(p);
+        assertEquals(p, db.getParameter("/REFMDB/SUBSYS1", "IntegerPara1_1"));
+        
+        SpaceSystem ss = db.getSpaceSystem("/REFMDB/SUBSYS1");
+        assertNotNull(ss);
+        assertEquals(ss, db.getSpaceSystem("/REFMDB", "SUBSYS1"));
+        
+        
+        NameDescription nd=XtceDbFactory.findReference(db.getRootSpaceSystem(), new NameReference("/REFMDB/SUBSYS1/IntegerPara1_1", Type.PARAMETER, null), ss);
+        assertNotNull(nd);
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1", nd.getQualifiedName());
+        
+        nd=XtceDbFactory.findReference(db.getRootSpaceSystem(), new NameReference("../SUBSYS1/IntegerPara1_1", Type.PARAMETER, null), ss);
+        assertNotNull(nd);
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1", nd.getQualifiedName());
+    }
     @Test
     public void testResolveReference() {
         SpaceSystem root=new SpaceSystem("");
@@ -98,76 +127,7 @@ public class XtceDbFactoryTest {
         nd=XtceDbFactory.findReference(root, new NameReference("p2", Type.PARAMETER, null), a_b2);
         assertNull(nd);
     }
-    
-    @Test
-    public void testNamespaces() throws Exception {
-        YConfiguration.setup("refmdb");
-        ManagementService.setup(false);
-        XtceDbFactory.reset();
-        
-        XtceDb db = XtceDbFactory.getInstance("refmdb");
-        
-        SequenceContainer pkt1 = db.getSequenceContainer("/REFMDB/SUBSYS1/PKT1");
-        assertNotNull(pkt1);
-        // assertEquals(pkt1, db.getSequenceContainer("/REFMDB", "SUBSYS1/PKT1")); // Not supported yet
-        assertEquals(pkt1, db.getSequenceContainer("/REFMDB/SUBSYS1", "PKT1"));
-        
-        Parameter p = db.getParameter("/REFMDB/SUBSYS1/IntegerPara1_1");
-        assertNotNull(p);
-        assertEquals(p, db.getParameter("/REFMDB/SUBSYS1", "IntegerPara1_1"));
-        
-        SpaceSystem ss = db.getSpaceSystem("/REFMDB/SUBSYS1");
-        assertNotNull(ss);
-        assertEquals(ss, db.getSpaceSystem("/REFMDB", "SUBSYS1"));
-        
-        
-        NameDescription nd=XtceDbFactory.findReference(db.getRootSpaceSystem(), new NameReference("/REFMDB/SUBSYS1/IntegerPara1_1", Type.PARAMETER, null), ss);
-        assertNotNull(nd);
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1", nd.getQualifiedName());
-        
-        nd=XtceDbFactory.findReference(db.getRootSpaceSystem(), new NameReference("../SUBSYS1/IntegerPara1_1", Type.PARAMETER, null), ss);
-        assertNotNull(nd);
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1", nd.getQualifiedName());
-    }
-
-    @Test
-    public void testParameterAliases() throws Exception {
-        YConfiguration.setup("refmdb");
-        ManagementService.setup(false);
-        XtceDbFactory.reset();
-
-        XtceDb db = XtceDbFactory.getInstance("refmdb");
-
-        Parameter p = db.getParameter("/REFMDB/SUBSYS1/IntegerPara1_1");
-        assertNotNull(p);
-        String aliasPathname = p.getAlias("MDB:Pathname");
-        assertEquals("/ccsds-default/PKT1/IntegerPara1_1", aliasPathname);
-
-        String aliasParam = p.getAlias("MDB:AliasParam");
-        assertEquals("AliasParam1", aliasParam);
-
-    }
-
-    @Test
-    public void testCommandAliases() throws Exception {
-        YConfiguration.setup("refmdb");
-        ManagementService.setup(false);
-        XtceDbFactory.reset();
-
-        XtceDb db = XtceDbFactory.getInstance("refmdb");
-
-        MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC");
-        assertNotNull(cmd1);
-        String alias = cmd1.getAlias("MDB:Alias1");
-        assertEquals("AlternativeName1", alias);
-
-        MetaCommand cmd2 = db.getMetaCommand("/REFMDB/SUBSYS1/FIXED_VALUE_TC");
-        assertNotNull(cmd1);
-        alias = cmd2.getAlias("MDB:Alias1");
-        assertEquals("AlternativeName2", alias);
-
-    }
-    
+ 
     @Test
     public void testInstantiation() throws Exception {
         YConfiguration.setup("XtceDbFactoryTest");

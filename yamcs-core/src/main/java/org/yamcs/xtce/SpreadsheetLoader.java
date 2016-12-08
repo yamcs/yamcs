@@ -69,63 +69,63 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     protected final static String SHEET_CHANGELOG="ChangeLog";
 
     //columns in the parameters sheet (including local parameters)
-    final static int IDX_PARAM_NAME=0;
-    final static int IDX_PARAM_BITLENGTH=1;
-    final static int IDX_PARAM_RAWTYPE=2;
-    final static int IDX_PARAM_ENGTYPE=3;
-    final static int IDX_PARAM_ENGUNIT=4;
-    final static int IDX_PARAM_CALIBRATION=5;
-    final static int IDX_PARAM_DESCRIPTION=6;
+    final static int IDX_PARAM_NAME = 0;
+    final static int IDX_PARAM_BITLENGTH = 1;
+    final static int IDX_PARAM_RAWTYPE = 2;
+    final static int IDX_PARAM_ENGTYPE = 3;
+    final static int IDX_PARAM_ENGUNIT = 4;
+    final static int IDX_PARAM_CALIBRATION = 5;
+    final static int IDX_PARAM_DESCRIPTION = 6;
 
 
     //columns in the containers sheet
-    final static int IDX_CONT_NAME=0;
-    final static int IDX_CONT_PARENT=1;
-    final static int IDX_CONT_CONDITION=2;
-    final static int IDX_CONT_FLAGS=3;
-    final static int IDX_CONT_PARA_NAME=4;
-    final static int IDX_CONT_RELPOS=5;
-    final static int IDX_CONT_SIZEINBITS=6;
-    final static int IDX_CONT_EXPECTED_INTERVAL=7;
-    final static int IDX_CONT_DESCRIPTION=8;
+    final static int IDX_CONT_NAME = 0;
+    final static int IDX_CONT_PARENT = 1;
+    final static int IDX_CONT_CONDITION = 2;
+    final static int IDX_CONT_FLAGS = 3;
+    final static int IDX_CONT_PARA_NAME = 4;
+    final static int IDX_CONT_RELPOS = 5;
+    final static int IDX_CONT_SIZEINBITS = 6;
+    final static int IDX_CONT_EXPECTED_INTERVAL = 7;
+    final static int IDX_CONT_DESCRIPTION = 8;
 
     //columns in calibrations sheet
-    final static int IDX_CALIB_NAME=0;
-    final static int IDX_CALIB_TYPE=1;
-    final static int IDX_CALIB_CALIB1=2;
-    final static int IDX_CALIB_CALIB2=3;
+    final static int IDX_CALIB_NAME = 0;
+    final static int IDX_CALIB_TYPE = 1;
+    final static int IDX_CALIB_CALIB1 = 2;
+    final static int IDX_CALIB_CALIB2 = 3;
 
     //columns in the algorithms sheet
-    final static int IDX_ALGO_NAME=0;
-    final static int IDX_ALGO_LANGUGAGE=1;
-    final static int IDX_ALGO_TEXT=2;
-    final static int IDX_ALGO_TRIGGER=3;
+    final static int IDX_ALGO_NAME = 0;
+    final static int IDX_ALGO_LANGUGAGE = 1;
+    final static int IDX_ALGO_TEXT = 2;
+    final static int IDX_ALGO_TRIGGER = 3;
     final static int IDX_ALGO_PARA_INOUT=4;
-    final static int IDX_ALGO_PARA_REF=5;
-    final static int IDX_ALGO_PARA_INSTANCE=6;
-    final static int IDX_ALGO_PARA_NAME=7;
-    final static int IDX_ALGO_PARA_FLAGS=8;
+    final static int IDX_ALGO_PARA_REF = 5;
+    final static int IDX_ALGO_PARA_INSTANCE = 6;
+    final static int IDX_ALGO_PARA_NAME = 7;
+    final static int IDX_ALGO_PARA_FLAGS = 8;
 
     //columns in the alarms sheet
-    final static int IDX_ALARM_PARAM_NAME=0;
-    final static int IDX_ALARM_CONTEXT=1;
-    final static int IDX_ALARM_REPORT=2;
-    final static int IDX_ALARM_MIN_VIOLATIONS=3;
-    final static int IDX_ALARM_WATCH_TRIGGER=4;
-    final static int IDX_ALARM_WATCH_VALUE=5;
-    final static int IDX_ALARM_WARNING_TRIGGER=6;
-    final static int IDX_ALARM_WARNING_VALUE=7;
-    final static int IDX_ALARM_DISTRESS_TRIGGER=8;
-    final static int IDX_ALARM_DISTRESS_VALUE=9;
-    final static int IDX_ALARM_CRITICAL_TRIGGER=10;
-    final static int IDX_ALARM_CRITICAL_VALUE=11;
-    final static int IDX_ALARM_SEVERE_TRIGGER=12;
-    final static int IDX_ALARM_SEVERE_VALUE=13;
+    final static int IDX_ALARM_PARAM_NAME = 0;
+    final static int IDX_ALARM_CONTEXT = 1;
+    final static int IDX_ALARM_REPORT = 2;
+    final static int IDX_ALARM_MIN_VIOLATIONS = 3;
+    final static int IDX_ALARM_WATCH_TRIGGER = 4;
+    final static int IDX_ALARM_WATCH_VALUE = 5;
+    final static int IDX_ALARM_WARNING_TRIGGER = 6;
+    final static int IDX_ALARM_WARNING_VALUE = 7;
+    final static int IDX_ALARM_DISTRESS_TRIGGER = 8;
+    final static int IDX_ALARM_DISTRESS_VALUE = 9;
+    final static int IDX_ALARM_CRITICAL_TRIGGER = 10;
+    final static int IDX_ALARM_CRITICAL_VALUE = 11;
+    final static int IDX_ALARM_SEVERE_TRIGGER = 12;
+    final static int IDX_ALARM_SEVERE_VALUE = 13;
 
     //columns in the processed parameters sheet
-    protected final static int IDX_PP_UMI=0;
-    protected final static int IDX_PP_GROUP=1;
-    protected final static int IDX_PP_ALIAS=2;
+    protected final static int IDX_PP_UMI = 0;
+    protected final static int IDX_PP_GROUP = 1;
+    protected final static int IDX_PP_ALIAS = 2;
 
     //columns in the command sheet
     protected final static int IDX_CMD_NAME = 0;
@@ -171,7 +171,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
     final static String FORMAT_VERSION="5.2";
     // Explicitly support these versions (i.e. load without warning)
-    final static String[] FORMAT_VERSIONS_SUPPORTED = new String[]{FORMAT_VERSION, "5.1"};
+    final static String[] FORMAT_VERSIONS_SUPPORTED = new String[]{FORMAT_VERSION, "5.3"};
 
 
     protected Workbook workbook;
@@ -408,10 +408,10 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             final Parameter param = new Parameter(name);
             parameters.put(param.getName(), param);
 
-            XtceAliasSet xas=new XtceAliasSet();
-            xas.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+param.getName());
-            param.setAliasSet(xas);
-            addAdditionalAliases(firstRow, cells, xas);
+            XtceAliasSet xas = getAliases(firstRow, cells);
+            if(xas!=null) {
+                param.setAliasSet(xas);
+            }
             spaceSystem.addParameter(param);
 
             //String path = cells[IDX_MEAS_PATH].getContents();
@@ -683,18 +683,20 @@ public class SpreadsheetLoader extends AbstractFileLoader {
      * @param cells
      * @param xas
      */
-    private void addAdditionalAliases(Cell[] firstRow, Cell[] cells, XtceAliasSet xas) {
+    private XtceAliasSet getAliases(Cell[] firstRow, Cell[] cells) {
         int n = Math.min(firstRow.length, cells.length);
-
+        XtceAliasSet xas = null;
         for(int i=0; i<n; i++) {
             if((firstRow[i]!=null) && firstRow[i].getContents().startsWith("namespace:")
                     && (cells[i]!=null) && (!cells[i].getContents().isEmpty())) {
+                if(xas==null) xas = new XtceAliasSet();
                 String s = firstRow[i].getContents();
                 String namespace = s.substring(10, s.length());
                 String alias = cells[i].getContents();
                 xas.addAlias(namespace, alias);
             }
         }
+        return xas;
     }
 
 
@@ -705,8 +707,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
         HashMap<String, SequenceContainer> containers = new HashMap<String, SequenceContainer>();
         HashMap<String, String> parents = new HashMap<String, String>();
-
-
+        Cell[] firstRow = jumpToRow(sheet, 0);
+        
         for (int i = 1; i < sheet.getRows(); i++) {
             // search for a new packet definition, starting from row i
             //  (explanatory note, i is incremented inside this loop too, and that's why the following 4 lines work)
@@ -783,6 +785,12 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     container.useAsArchivePartition(true);
                 }
             }
+            
+            XtceAliasSet xas = getAliases(firstRow, cells);
+            if(xas!=null) {
+                container.setAliasSet(xas);
+            }
+
 
             //System.out.println("for "+name+" got absoluteOffset="+)
             // we mark the start of the command and advance to the next line, to get to the first argument (if there is one)
@@ -931,10 +939,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     spaceSystem.setRootSequenceContainer(container);
                 }
             }
-            XtceAliasSet xas=new XtceAliasSet();
-            xas.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+container.getName());
-            container.setAliasSet(xas);
-
+            
+          
             spaceSystem.addSequenceContainer(container);
         }
     }
@@ -994,10 +1000,10 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             commands.put(name, cmd);
 
             // load aliases
-            XtceAliasSet xas=new XtceAliasSet();
-            xas.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+name);
-            addAdditionalAliases(firstRow, cells, xas);
-            cmd.setAliasSet(xas);
+            XtceAliasSet xas = getAliases(firstRow, cells);
+            if(xas!=null) {
+                cmd.setAliasSet(xas);
+            }
 
             if(hasColumn(cells, IDX_CMD_FLAGS)) {
                 String flags = cells[IDX_CMD_FLAGS].getContents();
@@ -1781,6 +1787,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         Sheet sheet = switchToSheet(SHEET_ALGORITHMS, required);
         if (sheet == null) return;
 
+        Cell[] firstRow = jumpToRow(sheet, 0);
         // start at 1 to not use the first line (= title line)
         int start = 1;
         while(true) {
@@ -1804,7 +1811,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             }
 
             String algorithmText = cells[IDX_ALGO_TEXT].getContents();
-
+            XtceAliasSet xas = getAliases(firstRow, cells);
+            
             // now we search for the matching last row of that algorithm
             int end = start + 1;
             while (end < sheet.getRows()) {
@@ -1816,7 +1824,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             }
 
             Algorithm algorithm = new Algorithm(name);
-            algorithm.addAlias(MdbMappings.MDB_OPSNAME, opsnamePrefix+algorithm.getName());
+            if(xas!=null) {
+                algorithm.setAliasSet(xas);
+            }
             algorithm.setLanguage(algorithmLanguage);
             // Replace smart-quotes “ and ” with regular quotes "
             algorithm.setAlgorithmText(algorithmText.replaceAll("[\u201c\u201d]", "\""));
