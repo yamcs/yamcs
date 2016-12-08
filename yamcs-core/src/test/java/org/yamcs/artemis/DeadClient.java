@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.api.core.client.ClientConsumer;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
@@ -16,7 +15,6 @@ import org.apache.activemq.artemis.api.core.client.ClientSession;
 import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
-import org.apache.activemq.artemis.core.client.impl.ClientSessionFactoryImpl;
 import org.apache.activemq.artemis.core.client.impl.ClientSessionImpl;
 import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
@@ -24,7 +22,6 @@ import org.apache.activemq.artemis.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.apache.activemq.artemis.core.remoting.impl.invm.InVMConnectorFactory;
 import org.apache.activemq.artemis.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnection;
-import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.server.JournalType;
 import org.apache.activemq.artemis.core.server.impl.ActiveMQServerImpl;
@@ -63,7 +60,7 @@ public class DeadClient {
         }
 
     }
-    static class HornetConsumer implements Runnable{
+    static class ArtemisConsumer implements Runnable{
         @Override
         public void run() {
             try {
@@ -83,7 +80,7 @@ public class DeadClient {
         }
 
     }
-    static class HornetProducer implements Runnable{
+    static class ArtemisProducer implements Runnable{
 
         @Override
         public void run() {
@@ -148,8 +145,8 @@ public class DeadClient {
         server.getAddressSettingsRepository().addMatch("tempAddress", as);
 
         new Thread(new DeadClient.NotificationConsumer()).start();
-        new Thread(new DeadClient.HornetConsumer()).start();
-        new Thread(new DeadClient.HornetProducer()).start();
+        new Thread(new DeadClient.ArtemisConsumer()).start();
+        new Thread(new DeadClient.ArtemisProducer()).start();
 
     }
 
