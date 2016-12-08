@@ -166,7 +166,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
                 log.warn("duplicate value for "+pv.getId()+"\nfirst: "+cols.get(idx)+"\n second: "+pv);
                 continue;
             }
-            tdef.addColumn(name, ParameterDataLinkInitialiser.PP_DATA_TYPE);
+            tdef.addColumn(name, ParameterDataLinkInitialiser.PARAMETER_DATA_TYPE);
             cols.add(pv);
         }
         Tuple t=new Tuple(tdef, cols);

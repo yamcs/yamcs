@@ -50,13 +50,13 @@ public class ParameterDataLinkInitialiser extends AbstractService {
     //the actual values are encoded as separated columns (umi_0x010203040506, value) value is ParameterValue
     static {
         PARAMETER_TUPLE_DEFINITION.addColumn(PARAMETER_TUPLE_COL_GENTIME, DataType.TIMESTAMP); //generation time
-        PARAMETER_TUPLE_DEFINITION.addColumn(PARAMETER_TUPLE_COL_GROUP, DataType.ENUM); //pp group - used for partitioning (i.e. splitting the archive in multiple files)
+        PARAMETER_TUPLE_DEFINITION.addColumn(PARAMETER_TUPLE_COL_GROUP, DataType.ENUM); //group - used for partitioning (i.e. splitting the archive in multiple files)
         PARAMETER_TUPLE_DEFINITION.addColumn(PARAMETER_TUPLE_COL_SEQ_NUM, DataType.INT); //sequence number
         PARAMETER_TUPLE_DEFINITION.addColumn(PARAMETER_TUPLE_COL_RECTIME, DataType.TIMESTAMP); //recording time
 
     } 
     
-    static public final DataType PP_DATA_TYPE=DataType.protobuf(org.yamcs.protobuf.Pvalue.ParameterValue.class.getName());
+    static public final DataType PARAMETER_DATA_TYPE = DataType.protobuf(org.yamcs.protobuf.Pvalue.ParameterValue.class.getName());
     final TimeService timeService;
     
     public ParameterDataLinkInitialiser(String yamcsInstance) throws IOException, ConfigurationException {
