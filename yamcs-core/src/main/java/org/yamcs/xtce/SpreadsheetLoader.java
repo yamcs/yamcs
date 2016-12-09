@@ -174,9 +174,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     protected final static int IDX_LOG_MESSAGE = 2;
 
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
-    final static String FORMAT_VERSION="5.3";
+    final static String FORMAT_VERSION="5.4";
     // Explicitly support these versions (i.e. load without warning)
-    final static String[] FORMAT_VERSIONS_SUPPORTED = new String[]{FORMAT_VERSION};
+    final static String[] FORMAT_VERSIONS_SUPPORTED = new String[]{FORMAT_VERSION, "5.3"};
 
 
     protected Workbook workbook;
