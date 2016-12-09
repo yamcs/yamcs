@@ -32,7 +32,6 @@ public class NameDescriptionSearchMatcherTest {
         NameDescriptionSearchMatcher matcher = new NameDescriptionSearchMatcher(searchTerm);
         for (Parameter p : mdb.getParameters()) {
             if (matcher.matches(p)) {
-                System.out.println(p.getQualifiedName());
                 return true;
             }
         }
