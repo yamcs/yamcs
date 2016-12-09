@@ -33,19 +33,19 @@ public class SpaceSystem extends NameDescription {
     Header header;
     private Map<String, SequenceContainer> containers=new LinkedHashMap<>();
     private Map<String, Parameter> parameters = new LinkedHashMap<>();
-    private HashMap<String, ParameterType> parameterTypes=new HashMap<>();
-    private HashMap<String, Algorithm> algorithms=new HashMap<>();
-    private HashMap<String, MetaCommand> commands=new HashMap<>();
+    private HashMap<String, ParameterType> parameterTypes = new HashMap<>();
+    private HashMap<String, Algorithm> algorithms = new HashMap<>();
+    private HashMap<String, MetaCommand> commands = new HashMap<>();
     private transient HashMap<Class<?>, NonStandardData> nonStandardDatas=new HashMap<>();
 
-    private HashMap<String, SpaceSystem> subsystems=new HashMap<String, SpaceSystem>();
+    private HashMap<String, SpaceSystem> subsystems = new HashMap<String, SpaceSystem>();
     static Logger log = LoggerFactory.getLogger(SpaceSystem.class.getName());
 
-    transient List<NameReference> unresolvedReferences=new ArrayList<NameReference>();
+    transient List<NameReference> unresolvedReferences = new ArrayList<NameReference>();
     SpaceSystem parent;
 
     public void setHeader(Header h) {
-        this.header=h;
+        this.header = h;
      }
 
     /**
@@ -61,7 +61,7 @@ public class SpaceSystem extends NameDescription {
 
     public void addParameter(Parameter parameter) throws IllegalArgumentException{
         if(parameters.containsKey(parameter.getName()))
-            throw new IllegalArgumentException("there is already a parameter with name "+parameter.getName()+" in space system "+qualifiedName );
+            throw new IllegalArgumentException("there is already a parameter with name "+parameter.getName()+" in space system "+(qualifiedName==null?name:qualifiedName));
         parameters.put(parameter.getName(), parameter);
     }
 

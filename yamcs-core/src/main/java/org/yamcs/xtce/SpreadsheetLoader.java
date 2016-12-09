@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
@@ -53,21 +54,25 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     protected SpreadsheetLoadContext ctx = new SpreadsheetLoadContext();
 
     //sheet names
-    protected final static String SHEET_GENERAL="General";
-    protected final static String SHEET_CALIBRATION="Calibration";
-    protected final static String SHEET_TELEMETERED_PARAMETERS="Parameters";
-    protected final static String SHEET_LOCAL_PARAMETERS="LocalParameters";
-    protected final static String SHEET_DERIVED_PARAMETERS="DerivedParameters";
-    protected final static String SHEET_CONTAINERS="Containers";
+    protected final static String SHEET_GENERAL = "General";
+    protected final static String SHEET_CHANGELOG = "ChangeLog";
 
-    protected final static String SHEET_PROCESSED_PARAMETERS="ProcessedParameters";
-    protected final static String SHEET_ALGORITHMS="Algorithms";
-    protected final static String SHEET_ALARMS="Alarms";
-    protected final static String SHEET_COMMANDS="Commands";
-    protected final static String SHEET_COMMANDOPTIONS="CommandOptions";
-    protected final static String SHEET_COMMANDVERIFICATION="CommandVerification";
-    protected final static String SHEET_CHANGELOG="ChangeLog";
+    
+    protected final static String SHEET_CALIBRATION = "Calibration";
+    protected final static String SHEET_TELEMETERED_PARAMETERS = "Parameters";
+    protected final static String SHEET_LOCAL_PARAMETERS = "LocalParameters";
+    protected final static String SHEET_DERIVED_PARAMETERS = "DerivedParameters";
+    protected final static String SHEET_CONTAINERS = "Containers";
 
+    protected final static String SHEET_ALGORITHMS = "Algorithms";
+    protected final static String SHEET_ALARMS = "Alarms";
+    protected final static String SHEET_COMMANDS = "Commands";
+    protected final static String SHEET_COMMANDOPTIONS = "CommandOptions";
+    protected final static String SHEET_COMMANDVERIFICATION = "CommandVerification";
+    //the list of sheets that can be part of subsystems with a sub1/sub2/sub3/SheetName notation
+    static String[] SUBSYSTEM_SHEET_NAMES = {SHEET_CALIBRATION, SHEET_TELEMETERED_PARAMETERS, SHEET_LOCAL_PARAMETERS, SHEET_DERIVED_PARAMETERS, 
+            SHEET_CONTAINERS, SHEET_ALGORITHMS, SHEET_ALARMS, SHEET_COMMANDS, SHEET_COMMANDOPTIONS, SHEET_COMMANDVERIFICATION};
+    
     //columns in the parameters sheet (including local parameters)
     final static int IDX_PARAM_NAME = 0;
     final static int IDX_PARAM_BITLENGTH = 1;
@@ -169,14 +174,13 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     protected final static int IDX_LOG_MESSAGE = 2;
 
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
-    final static String FORMAT_VERSION="5.2";
+    final static String FORMAT_VERSION="5.4";
     // Explicitly support these versions (i.e. load without warning)
     final static String[] FORMAT_VERSIONS_SUPPORTED = new String[]{FORMAT_VERSION, "5.3"};
 
 
     protected Workbook workbook;
-    protected String opsnamePrefix;
-    protected SpaceSystem spaceSystem;
+    protected SpaceSystem rootSpaceSystem;
 
     String fileFormatVersion;
 
@@ -223,28 +227,59 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             e.recheck();
         }
 
-        return spaceSystem;
+        return rootSpaceSystem;
     }
 
     protected void loadSheets() throws SpreadsheetLoadException {
         loadGeneralSheet(true);
-        loadCalibrationSheet(false);
-        loadParametersSheet(true, SHEET_TELEMETERED_PARAMETERS, DataSource.TELEMETERED);
-        loadParametersSheet(false, SHEET_DERIVED_PARAMETERS, DataSource.DERIVED);
-        loadParametersSheet(false, SHEET_LOCAL_PARAMETERS, DataSource.LOCAL);
-        loadContainersSheet(true);
-        loadProcessedParametersSheet(false);
-        loadNonStandardSheets(); // Extension point
-        loadAlgorithmsSheet(false);
-        loadAlarmsSheet(false);
-        loadCommandSheet(false);
-        loadCommandOptionsSheet(false);
-        loadCommandVerificationSheet(false);
         loadChangelogSheet(false);
+        
+        
+        //filter all sheets with names ending in the standard names SUBSYSTEM_SHEET_NAMES
+        List<String> relevantSheets =  Arrays.stream(workbook.getSheetNames()).filter(sheetName -> {
+            return Arrays.stream(SUBSYSTEM_SHEET_NAMES).filter(s -> sheetName.endsWith(s)).findAny().isPresent();
+        }).collect(Collectors.toList());
+      
+        //create all subsystems
+        for(String s: relevantSheets) {
+            String[] a = s.split("\\|");
+            SpaceSystem ss = rootSpaceSystem;
+            for(int i=0; i<a.length-1; i++) {
+                SpaceSystem ss1 =  ss.getSubsystem(a[i]);
+                if(ss1==null) {
+                    log.debug("Creating subsystem '{}'", a[i]);
+                    ss1 = new SpaceSystem(a[i]);
+                    ss.addSpaceSystem(ss1);
+                }
+                ss = ss1;
+            }
+        }
+        
+        loadSpaceSystem("", rootSpaceSystem);
     }
 
+    protected void loadSpaceSystem(String sheetNamePrefix, SpaceSystem spaceSystem) {
+        
+        loadCalibrationSheet(spaceSystem, sheetNamePrefix + SHEET_CALIBRATION);
+        loadParametersSheet(spaceSystem, sheetNamePrefix + SHEET_TELEMETERED_PARAMETERS, DataSource.TELEMETERED);
+        loadParametersSheet(spaceSystem, sheetNamePrefix + SHEET_DERIVED_PARAMETERS, DataSource.DERIVED);
+        loadParametersSheet(spaceSystem, sheetNamePrefix + SHEET_LOCAL_PARAMETERS, DataSource.LOCAL);
+        loadContainersSheet(spaceSystem, sheetNamePrefix + SHEET_CONTAINERS);
+        loadAlgorithmsSheet(spaceSystem, sheetNamePrefix + SHEET_ALGORITHMS);
+        loadAlarmsSheet(spaceSystem, sheetNamePrefix + SHEET_ALARMS);
+        loadCommandSheet(spaceSystem, sheetNamePrefix + SHEET_COMMANDS);
+        loadCommandOptionsSheet(spaceSystem, sheetNamePrefix + SHEET_COMMANDOPTIONS);
+        loadCommandVerificationSheet(spaceSystem, SHEET_COMMANDVERIFICATION);
+        
+        for(SpaceSystem ss: spaceSystem.getSubSystems()) {
+            String prefix = sheetNamePrefix.isEmpty()?ss.getName()+"|": sheetNamePrefix+ss.getName()+"|";
+            loadSpaceSystem(prefix, ss);
+        }
+    }
+    
+    
     protected void loadGeneralSheet(boolean required) {
-        Sheet sheet=switchToSheet(SHEET_GENERAL, required);
+        Sheet sheet = switchToSheet(SHEET_GENERAL, required);
         if(sheet==null)return;
         Cell[] cells=jumpToRow(sheet, 1);
 
@@ -273,11 +308,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         fileFormatVersion = version;
 
         String name=requireString(cells, 1);
-        spaceSystem=new SpaceSystem(name);
+        rootSpaceSystem = new SpaceSystem(name);
 
         // Add a header
         Header header = new Header();
-        spaceSystem.setHeader( header );
+        rootSpaceSystem.setHeader( header );
         if( cells.length >= 3 ) {
             header.setVersion( cells[2].getContents() );
         }
@@ -289,18 +324,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         } catch ( Exception e ) {
             // Ignore
         }
-
-        // Opsname prefix is optional
-        if( cells.length >= 4 ) {
-            opsnamePrefix=cells[3].getContents();
-        } else {
-            opsnamePrefix="";
-        }
     }
 
-    protected void loadCalibrationSheet(boolean required) {
+    protected void loadCalibrationSheet(SpaceSystem spaceSystem, String sheetName) {
         //read the calibrations
-        Sheet sheet=switchToSheet(SHEET_CALIBRATION, required);
+        Sheet sheet = switchToSheet(sheetName, false);
         if(sheet==null) return;
 
         double[] pol_coef = null;
@@ -383,15 +411,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         }
     }
 
-
-    private boolean isRowEmpty(Cell[] cells) {
-        for(int i=0;i<cells.length;i++)
-            if(cells[i].getContents().length()>0) return false;
-        return true;
-    }
-
-    protected void loadParametersSheet(boolean required, String sheetName, DataSource dataSource) {
-        Sheet sheet = switchToSheet(sheetName, required);
+    protected void loadParametersSheet(SpaceSystem spaceSystem, String sheetName, DataSource dataSource) {
+        Sheet sheet = switchToSheet(sheetName, false);
         if(sheet==null)return;
         Cell[] firstRow = jumpToRow(sheet, 0);
         for (int i = 1; i < sheet.getRows(); i++) {
@@ -701,8 +722,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
 
 
-    protected void loadContainersSheet(boolean required) {
-        Sheet sheet = switchToSheet(SHEET_CONTAINERS, required);
+    protected void loadContainersSheet(SpaceSystem spaceSystem, String sheetName) {
+        Sheet sheet = switchToSheet(sheetName, false);
         if(sheet==null)return;
 
         HashMap<String, SequenceContainer> containers = new HashMap<String, SequenceContainer>();
@@ -931,7 +952,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
                 // 2) extract the condition and create the restrictioncriteria
                 if(!"".equals(condition.trim())) {
-                    container.restrictionCriteria=toMatchCriteria(condition);
+                    container.restrictionCriteria=toMatchCriteria(spaceSystem, condition);
                     MatchCriteria.printParsedMatchCriteria(log, container.restrictionCriteria, "");
                 }
             } else {
@@ -946,8 +967,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     }
 
 
-    protected void loadCommandSheet(boolean required) {
-        Sheet sheet = switchToSheet(SHEET_COMMANDS, required);
+    protected void loadCommandSheet(SpaceSystem spaceSystem, String sheetName) {
+        Sheet sheet = switchToSheet(sheetName, false);
         if(sheet==null) return;
         Cell[] firstRow = jumpToRow(sheet, 0);
 
@@ -1118,8 +1139,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
 
 
-    protected void loadCommandOptionsSheet(boolean required) {
-        Sheet sheet = switchToSheet(SHEET_COMMANDOPTIONS, required);
+    protected void loadCommandOptionsSheet(SpaceSystem spaceSystem, String sheetName) {
+        Sheet sheet = switchToSheet(sheetName, false);
         if(sheet==null) return;
         int i = 1;
         while(i<sheet.getRows()) {
@@ -1156,7 +1177,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     String condition = cells[IDX_CMDOPT_TXCONST].getContents();
                     MatchCriteria criteria;
                     try {
-                        criteria=toMatchCriteria(condition);
+                        criteria=toMatchCriteria(spaceSystem, condition);
                     } catch (Exception e) {
                         throw new SpreadsheetLoadException(ctx, "Cannot parse condition '"+condition+"': "+e);
                     }
@@ -1191,8 +1212,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     }
 
 
-    protected void loadCommandVerificationSheet(boolean required) {
-        Sheet sheet = switchToSheet(SHEET_COMMANDVERIFICATION, required);
+    protected void loadCommandVerificationSheet(SpaceSystem spaceSystem, String sheetName) {
+        Sheet sheet = switchToSheet(sheetName, false);
         if(sheet==null) return;
         int i = 1;
         while(i<sheet.getRows()) {
@@ -1714,77 +1735,14 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     msg = cells[IDX_LOG_MESSAGE].getContents();
                 }
                 History history = new History(version, date, msg);
-                spaceSystem.getHeader().addHistory(history);
+                rootSpaceSystem.getHeader().addHistory(history);
             }
             i++;
         }
     }
 
-    protected void loadProcessedParametersSheet(boolean required) {
-        loadProcessedParametersSheet(required, IDX_PP_ALIAS);
-    }
-
-    protected void loadProcessedParametersSheet(boolean required, int firstAliasColumnIndex) {
-        Sheet sheet = switchToSheet(SHEET_PROCESSED_PARAMETERS, required);
-        if(sheet==null)return;
-
-        // Each row must specify a umi and an alias, with a group being optional
-        // The same umi may have many aliases, but a single alias value must
-        // be unique
-
-        // Alias keys are the extra column names
-        Cell [] header_cells = jumpToRow(sheet, 0);
-        if( header_cells.length <= firstAliasColumnIndex ) {
-            throw new SpreadsheetLoadException(ctx, "No aliases defined in ProcessedParameters sheet: Must have at least three columns including umi and group columns.");
-        }
-
-        log.info( "Spreadsheet has {} PP definition rows to be parsed", sheet.getRows() );
-
-        for (int i = 1; i < sheet.getRows(); i++) {
-            Cell[] cells = jumpToRow(sheet, i);
-            if ((cells == null) || (cells.length < firstAliasColumnIndex) || cells[0].getContents().startsWith("#")) {
-                log.debug( "Ignoring line {} because it is empty, starts with #, or has < 3 cells populated", i );
-                continue;
-            }
-            String umi = cells[IDX_PP_UMI].getContents();
-            if (umi.length() == 0) {
-                log.debug( "Ignoring line {} because the UMI column is empty", i );
-                continue;
-            }
-            String group = cells[IDX_PP_GROUP].getContents();
-
-            XtceAliasSet xtceAlias = new XtceAliasSet();
-            for( int alias_index = firstAliasColumnIndex; alias_index < cells.length; alias_index++ ) {
-                String alias = cells[ alias_index ].getContents();
-                if( ! "".equals( alias ) ) {
-                    if( alias_index > header_cells.length ) {
-                        throw new SpreadsheetLoadException(ctx, "Alias entry on line "+i+" does not have namespace specified in first row of column.");
-                    }
-                    log.debug( "Got alias '{}' with value '{}'", header_cells[ alias_index ].getContents(), alias );
-                    xtceAlias.addAlias( header_cells[ alias_index ].getContents(), alias );
-                }
-            }
-
-            Parameter ppDef=new Parameter(umi);
-            ppDef.setRecordingGroup(group);
-            ppDef.setAliasSet( xtceAlias );
-
-            log.debug( "Adding PP definition '{}'", ppDef.getName() );
-            spaceSystem.addParameter( ppDef );
-        }
-    }
-
-    /**
-     * Extension point enabling processing additional non-standard sheets. This method is
-     * called after all Parameters and Containers definitions are loaded, and just before
-     * loading the Algorithms.
-     */
-    protected void loadNonStandardSheets() {
-        // By default do nothing
-    }
-
-    protected void loadAlgorithmsSheet(boolean required) {
-        Sheet sheet = switchToSheet(SHEET_ALGORITHMS, required);
+    protected void loadAlgorithmsSheet(SpaceSystem spaceSystem, String sheetName) {
+        Sheet sheet = switchToSheet(sheetName, false);
         if (sheet == null) return;
 
         Cell[] firstRow = jumpToRow(sheet, 0);
@@ -1970,8 +1928,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         }
     }
 
-    protected void loadAlarmsSheet(boolean required) {
-        Sheet sheet = switchToSheet(SHEET_ALARMS, required);
+    protected void loadAlarmsSheet(SpaceSystem spaceSystem, String sheetName) {
+        Sheet sheet = switchToSheet(sheetName, false);
         if (sheet == null) return;
 
         // start at 1 to not use the first line (= title line)
@@ -2018,7 +1976,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 MatchCriteria context=previousContext;
                 if(hasColumn(cells, IDX_ALARM_CONTEXT)) {
                     String contextString = cells[IDX_ALARM_CONTEXT].getContents();
-                    context=toMatchCriteria(contextString);
+                    context=toMatchCriteria(spaceSystem, contextString);
                     minViolations = -1;
                 }
 
@@ -2140,20 +2098,20 @@ public class SpreadsheetLoader extends AbstractFileLoader {
      * @param criteriaString
      * @return
      */
-    private MatchCriteria toMatchCriteria(String criteriaString) {
+    private MatchCriteria toMatchCriteria(SpaceSystem spaceSystem, String criteriaString) {
         criteriaString = criteriaString.trim();
 
         if ((criteriaString.startsWith("&(") || criteriaString.startsWith("|(")) && (criteriaString.endsWith(")"))) {
-            return parseBooleanExpression(criteriaString);
+            return parseBooleanExpression(spaceSystem, criteriaString);
         } if(criteriaString.contains(";")) {
             ComparisonList cl = new ComparisonList();
             String splitted[] = criteriaString.split(";");
             for (String part: splitted) {
-                cl.comparisons.add(toComparison(part));
+                cl.comparisons.add(toComparison(spaceSystem, part));
             }
             return cl;
         } else {
-            return toComparison(criteriaString);
+            return toComparison(spaceSystem, criteriaString);
         }
     }
 
@@ -2179,7 +2137,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
      * @param rawExpression
      * @return
      */
-    private BooleanExpression parseBooleanExpression(String rawExpression) {
+    private BooleanExpression parseBooleanExpression(SpaceSystem spaceSystem, String rawExpression) {
         String regex = "([\"”])([^\"”\\\\]*(?:\\\\.[^\"”\\\\]*)*)([\"”])";
 
         rawExpression = rawExpression.trim();
@@ -2198,10 +2156,10 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
         String spec = p.matcher(rawExpression).replaceAll("\\$\\$");
 
-        return toBooleanExpression(spec, quotes);
+        return toBooleanExpression(spaceSystem, spec, quotes);
     }
 
-    private void parseConditionList(ExpressionList conditions, String spec, ArrayList<String> quotes) {
+    private void parseConditionList(SpaceSystem spaceSystem, ExpressionList conditions, String spec, ArrayList<String> quotes) {
         // Split top-level expressions
         ArrayList<String> expressions = new ArrayList<>();
         int balance = 0;
@@ -2229,28 +2187,28 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
         // Parse each expression
         for (String expression: expressions) {
-            conditions.addConditionExpression(toBooleanExpression(expression, quotes));
+            conditions.addConditionExpression(toBooleanExpression(spaceSystem, expression, quotes));
         }
     }
 
-    private BooleanExpression toBooleanExpression(String spec, ArrayList<String> quotes) {
+    private BooleanExpression toBooleanExpression(SpaceSystem spaceSystem, String spec, ArrayList<String> quotes) {
         spec = spec.trim();
         BooleanExpression condition = null;
 
         if (spec.startsWith("&(") && (spec.endsWith(")"))) {
             condition = new ANDedConditions();
-            parseConditionList((ExpressionList)condition, spec.substring(2, spec.length() -1), quotes);
+            parseConditionList(spaceSystem, (ExpressionList)condition, spec.substring(2, spec.length() -1), quotes);
         } else if (spec.startsWith("|(") && (spec.endsWith(")"))) {
             condition = new ORedConditions();
-            parseConditionList((ExpressionList)condition, spec.substring(2, spec.length() -1), quotes);
+            parseConditionList(spaceSystem, (ExpressionList)condition, spec.substring(2, spec.length() -1), quotes);
         } else {
-            condition = toCondition(spec, quotes);
+            condition = toCondition(spaceSystem, spec, quotes);
         }
 
         return condition;
     }
 
-    private Condition toCondition(String comparisonString, ArrayList<String> quotes) {
+    private Condition toCondition(SpaceSystem spaceSystem, String comparisonString, ArrayList<String> quotes) {
         Matcher m = Pattern.compile("(.*?)(=|!=|<=|>=|<|>)(.*)").matcher(comparisonString);
         if (!m.matches()) {
             throw new SpreadsheetLoadException(ctx, "Cannot parse condition '"+comparisonString+"'");
@@ -2327,7 +2285,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         return cond;
     }
 
-    private Comparison toComparison(String comparisonString) {
+    private Comparison toComparison(SpaceSystem spaceSystem, String comparisonString) {
         Matcher m = Pattern.compile("(.*?)(=|!=|<=|>=|<|>)(.*)").matcher(comparisonString);
         if(!m.matches())
             throw new SpreadsheetLoadException(ctx, "Cannot parse condition '"+comparisonString+"'");
