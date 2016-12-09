@@ -174,9 +174,10 @@ public class Router {
         RestRequest restReq = new RestRequest(ctx, req, qsDecoder, token);
 
         try {
-            String  uri = qsDecoder.path();
+            // Decode first the path/qs difference, then url-decode the path
+            String uri = new URI(qsDecoder.path()).getPath();
             log.debug("R{}: Handling REST Request {} {}", restReq.getRequestId(), req.getMethod(), uri);
-
+            
             RouteMatch match = matchURI(req.getMethod(), uri);
             restReq.setRouteMatch(match);
             if (match != null) {
@@ -185,6 +186,8 @@ public class Router {
                 log.info("R{}: No route matching URI: '{}'", restReq.getRequestId(), req.getUri());
                 HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.NOT_FOUND);
             }
+        } catch (URISyntaxException e) {
+            RestHandler.sendRestError(restReq, HttpResponseStatus.INTERNAL_SERVER_ERROR, e);
         } catch (MethodNotAllowedException e) {
             log.info("R{}: Method {} not allowed for URI: '{}'", restReq.getRequestId(), req.getMethod(), req.getUri());
             RestHandler.sendRestError(restReq, e.getStatus(), e);
