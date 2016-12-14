@@ -136,7 +136,7 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
         int sstart = kbb.getInt();
         byte[] columnv = new byte[kbb.remaining()];
         kbb.get(columnv);
-        ByteBuffer vbb=ByteBuffer.wrap(val);
+        ByteBuffer vbb = ByteBuffer.wrap(val);
         HistogramRecord r = null;
         while(vbb.hasRemaining()) {
             long start = sstart*HistogramSegment.GROUPING_FACTOR + vbb.getInt();
@@ -158,7 +158,7 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
                 }
             }
         }
-        records.add(r);
+        if(r!=null) records.add(r);
         return false;
     }
 
