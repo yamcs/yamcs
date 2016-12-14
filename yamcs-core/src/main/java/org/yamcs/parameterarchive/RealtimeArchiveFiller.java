@@ -6,9 +6,9 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.YConfiguration;
 import org.yamcs.YProcessor;
@@ -25,7 +25,7 @@ public class RealtimeArchiveFiller extends ArchiveFillerTask {
     public RealtimeArchiveFiller(ParameterArchive parameterArchive, Map<String, Object> config) {
         super(parameterArchive);
         this.yamcsInstance = parameterArchive.getYamcsInstance();
-        log = LoggerFactory.getLogger(this.getClass().getName()+"["+yamcsInstance+"]");
+        log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
         
         if(config!=null) {
             parseConfig(config);

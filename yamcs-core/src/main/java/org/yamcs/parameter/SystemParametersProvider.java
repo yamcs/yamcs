@@ -12,8 +12,8 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.YProcessor;
-import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SystemParameter;
@@ -55,9 +55,9 @@ public class SystemParametersProvider extends AbstractService implements StreamS
     @Override
     public void init(YProcessor yproc) throws ConfigurationException {
         String instance = yproc.getInstance();
-        log=YamcsServer.getLogger(this.getClass(), yproc);
-        YarchDatabase ydb=YarchDatabase.getInstance(instance);
-        stream=ydb.getStream(SystemParametersCollector.STREAM_NAME);
+        log = LoggingUtils.getLogger(this.getClass(), yproc);
+        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        stream = ydb.getStream(SystemParametersCollector.STREAM_NAME);
         if(stream==null) throw new ConfigurationException("Cannot find a stream named "+SystemParametersCollector.STREAM_NAME);
 
         this.yproc = yproc;

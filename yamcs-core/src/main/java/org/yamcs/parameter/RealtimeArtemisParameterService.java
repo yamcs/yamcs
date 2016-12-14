@@ -9,7 +9,6 @@ import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -28,6 +27,7 @@ import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.HqClientMessageToken;
+import org.yamcs.utils.LoggingUtils;
 
 /**
  * Provides realtime parameter subscription via hornetq.  
@@ -42,17 +42,17 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
     YamcsClient yclient;
     Logger log;
     //maps subscription ids <-> addresses
-    BiMap<Integer, SimpleString> subscriptions=Maps.synchronizedBiMap(HashBiMap.<Integer,SimpleString>create());
+    BiMap<Integer, SimpleString> subscriptions = Maps.synchronizedBiMap(HashBiMap.<Integer,SimpleString>create());
     ParameterWithIdRequestHelper prh;
     YamcsSession yamcsSession;
 
-    public RealtimeArtemisParameterService(YProcessor channel) throws ActiveMQException, YamcsApiException {
-        this.channel=channel;
-        prh = new ParameterWithIdRequestHelper(channel.getParameterRequestManager(), this);
+    public RealtimeArtemisParameterService(YProcessor proc) throws ActiveMQException, YamcsApiException {
+        this.channel=proc;
+        prh = new ParameterWithIdRequestHelper(proc.getParameterRequestManager(), this);
 
-        log=LoggerFactory.getLogger(RealtimeArtemisParameterService.class.getName()+"["+channel.getInstance()+"]");
+        log = LoggingUtils.getLogger(this.getClass(), proc);
         yamcsSession = YamcsSession.newBuilder().build();
-        SimpleString rpcAddress=Protocol.getParameterRealtimeAddress(channel.getInstance());
+        SimpleString rpcAddress = Protocol.getParameterRealtimeAddress(proc.getInstance());
         yclient=yamcsSession .newClientBuilder().setRpcAddress(rpcAddress).setDataProducer(true).build();
         yclient.rpcConsumer.setMessageHandler(new MessageHandler() {
             @Override

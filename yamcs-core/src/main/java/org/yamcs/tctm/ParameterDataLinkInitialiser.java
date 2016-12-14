@@ -16,6 +16,7 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.ParameterSink;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -60,11 +61,11 @@ public class ParameterDataLinkInitialiser extends AbstractService {
     final TimeService timeService;
     
     public ParameterDataLinkInitialiser(String yamcsInstance) throws IOException, ConfigurationException {
-        this.yamcsInstance=yamcsInstance;
-        YarchDatabase ydb=YarchDatabase.getInstance(yamcsInstance);
-        log=LoggerFactory.getLogger(this.getClass().getName()+"["+yamcsInstance+"]");
+        this.yamcsInstance = yamcsInstance;
+        YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+        log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
 
-        YConfiguration c=YConfiguration.getConfiguration("yamcs."+yamcsInstance);
+        YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
         @SuppressWarnings("rawtypes")
         List providers = c.getList(KEY_parameterDataLinks);

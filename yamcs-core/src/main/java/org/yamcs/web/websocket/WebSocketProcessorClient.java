@@ -11,6 +11,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementService;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
+import org.yamcs.utils.LoggingUtils;
 
 /**
  * Runs on the server side and oversees the life cycle of a client web socket connection to a Processor. Combines multiple types of subscriptions
@@ -34,7 +35,7 @@ public class WebSocketProcessorClient implements ProcessorClient {
         this.authToken = authToken;
         this.username = authToken != null ? authToken.getPrincipal().toString() : Privilege.getDefaultUser();
         this.wsHandler = wsHandler;
-        log = YamcsServer.getLogger(WebSocketProcessorClient.class, yamcsInstance);
+        log = LoggingUtils.getLogger(WebSocketProcessorClient.class, yamcsInstance);
         processor = YProcessor.getFirstProcessor(yamcsInstance);
 
         clientId = ManagementService.getInstance().registerClient(yamcsInstance, processor.getName(), this);

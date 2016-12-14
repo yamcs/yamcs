@@ -12,7 +12,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.GuardedBy;
 import org.yamcs.InvalidIdentification;
@@ -32,6 +31,7 @@ import org.yamcs.protobuf.Pvalue;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.InvalidAuthenticationToken;
 import org.yamcs.security.Privilege;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.MetaCommand;
@@ -58,11 +58,11 @@ import com.google.common.util.concurrent.AbstractService;
 @ThreadSafe
 public class CommandQueueManager extends AbstractService implements ParameterConsumer, SystemParametersProducer {
     @GuardedBy("this")
-    private HashMap<String, CommandQueue> queues=new HashMap<String, CommandQueue>();
+    private HashMap<String, CommandQueue> queues = new HashMap<String, CommandQueue>();
     CommandReleaser commandReleaser;
     CommandHistoryPublisher commandHistoryListener;
     CommandingManager commandingManager;
-    ConcurrentLinkedQueue<CommandQueueListener> monitoringClients=new ConcurrentLinkedQueue<CommandQueueListener>();
+    ConcurrentLinkedQueue<CommandQueueListener> monitoringClients = new ConcurrentLinkedQueue<CommandQueueListener>();
     private final Logger log;
 
     private Set<TransmissionConstraintChecker> pendingTcCheckers = new HashSet<TransmissionConstraintChecker>();
@@ -88,7 +88,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         this.commandingManager = commandingManager;
 
         yproc=commandingManager.getChannel();
-        log=LoggerFactory.getLogger(this.getClass().getName()+"["+yproc.getName()+"]");
+        log = LoggingUtils.getLogger(this.getClass(), yproc);
         this.commandHistoryListener = yproc.getCommandHistoryPublisher();
         this.commandReleaser = yproc.getCommandReleaser();
         this.instance = yproc.getInstance();

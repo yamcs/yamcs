@@ -10,7 +10,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
@@ -21,6 +20,7 @@ import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.tctm.ParameterDataLinkInitialiser;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SystemParameterDb;
@@ -44,7 +44,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     static long frequencyMillisec=1000;
     List<SystemParametersProducer> providers = new CopyOnWriteArrayList<SystemParametersProducer>();
 
-    final static String STREAM_NAME="sys_param";
+    final static String STREAM_NAME = "sys_param";
     private NamedObjectId sp_jvmTotalMemory_id;
     private NamedObjectId sp_jvmMemoryUsed_id;
     private NamedObjectId sp_jvmTheadCount_id;
@@ -77,15 +77,15 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     }
     public SystemParametersCollector(String instance, Map<String, Object> args) throws ConfigurationException {
         this.instance = instance;
-        log=LoggerFactory.getLogger(this.getClass().getName()+"["+instance+"]");
+        log = LoggingUtils.getLogger(this.getClass(), instance);
         processArgs(args);
 
-        YarchDatabase ydb=YarchDatabase.getInstance(instance);
-        Stream s=ydb.getStream(STREAM_NAME);
+        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        Stream s = ydb.getStream(STREAM_NAME);
         if(s==null) {
             throw new ConfigurationException("Stream '"+STREAM_NAME+"' does not exist");
         }
-        stream=s;
+        stream = s;
         timeService = YamcsServer.getInstance(instance).getTimeService();
 
         serverId = YamcsServer.getServerId();

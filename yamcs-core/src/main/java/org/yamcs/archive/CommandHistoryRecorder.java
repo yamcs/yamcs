@@ -3,9 +3,9 @@ package org.yamcs.archive;
 import java.util.Arrays;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
 import org.yamcs.tctm.TcUplinkerAdapter;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
@@ -29,7 +29,7 @@ public class CommandHistoryRecorder extends AbstractService {
     
     public CommandHistoryRecorder(String instance) {
         this.instance=instance;
-        log=LoggerFactory.getLogger(this.getClass().getName()+"["+instance+"]");
+        log = LoggingUtils.getLogger(this.getClass(), instance);
     }
     
 

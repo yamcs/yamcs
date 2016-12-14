@@ -18,6 +18,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.CcsdsPacket;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
@@ -53,7 +54,7 @@ public class CccsdsTmIndex implements TmIndex {
      * @throws IOException
      */
     public CccsdsTmIndex(String instance, boolean readonly) throws IOException {
-        log=YamcsServer.getLogger(this.getClass(), instance);
+        log = LoggingUtils.getLogger(this.getClass(), instance);
 
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
 
@@ -68,7 +69,7 @@ public class CccsdsTmIndex implements TmIndex {
     /**Used when started standalone
      * @throws RocksDBException */
     public CccsdsTmIndex(String filename) throws  RocksDBException {
-        log=LoggerFactory.getLogger(this.getClass().getName());
+        log = LoggerFactory.getLogger(this.getClass().getName());
         openDb(filename);
     }
 

@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.yamcs.utils.LoggingUtils;
 
 
 public abstract class AbstractStream implements Stream {
@@ -23,10 +23,10 @@ public abstract class AbstractStream implements Stream {
     private volatile AtomicInteger subscriberCount=new AtomicInteger();
     
     protected AbstractStream(YarchDatabase ydb, String name, TupleDefinition definition) {
-        this.name=name;
-        this.outputDefinition=definition;
-        this.ydb=ydb;
-        log = LoggerFactory.getLogger(this.getClass().getName()+"["+name+"]");
+        this.name = name;
+        this.outputDefinition = definition;
+        this.ydb = ydb;
+        log = LoggingUtils.getLogger(this.getClass(), ydb.getName(), this);
     }
 
     /* (non-Javadoc)

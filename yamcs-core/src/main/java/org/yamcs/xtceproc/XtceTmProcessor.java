@@ -18,6 +18,7 @@ import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.Parameter;
@@ -49,7 +50,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     final String CONFIG_KEY_ignoreOutOfContainerEntries = "ignoreOutOfContainerEntries";
     
     public XtceTmProcessor(YProcessor proc, Map<String, Object> tmProcessorConfig) {
-	log=LoggerFactory.getLogger(this.getClass().getName()+"["+proc.getName()+"]");
+	log = LoggingUtils.getLogger(this.getClass(), proc);
 	this.processor=proc;
 	this.xtcedb=proc.getXtceDb();
 	tmExtractor=new XtceTmExtractor(xtcedb);
@@ -65,19 +66,19 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 	}
     } 
     public XtceTmProcessor(YProcessor proc) {
-        log=LoggerFactory.getLogger(this.getClass().getName()+"["+proc.getName()+"]");
-        this.processor=proc;
-        this.xtcedb=proc.getXtceDb();
-        tmExtractor=new XtceTmExtractor(xtcedb);
+        log = LoggingUtils.getLogger(this.getClass(), proc);
+        this.processor = proc;
+        this.xtcedb = proc.getXtceDb();
+        tmExtractor = new XtceTmExtractor(xtcedb);
     }
 
 
 
     /**
-     * Creates a TmProcessor to be used in "standalone" mode, outside of any channel.
+     * Creates a TmProcessor to be used in "standalone" mode, outside of any processor
      */
     public XtceTmProcessor(XtceDb xtcedb) {
-        log=LoggerFactory.getLogger(this.getClass().getName());
+        log = LoggerFactory.getLogger(this.getClass());
         this.processor=null;
         this.xtcedb=xtcedb;
         tmExtractor=new XtceTmExtractor(xtcedb);

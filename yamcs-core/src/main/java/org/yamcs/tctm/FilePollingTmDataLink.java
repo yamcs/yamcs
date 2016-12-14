@@ -11,6 +11,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.LoggingUtils;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
@@ -29,8 +30,8 @@ public class FilePollingTmDataLink extends AbstractExecutionThreadService implem
     final TimeService timeService;
     
     public FilePollingTmDataLink(String yamcsInstance, String name, String incomingDir) {
-        log=LoggerFactory.getLogger(this.getClass().getName()+"["+yamcsInstance+"]");
-        this.incomingDir=incomingDir;
+        log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
+        this.incomingDir = incomingDir;
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 

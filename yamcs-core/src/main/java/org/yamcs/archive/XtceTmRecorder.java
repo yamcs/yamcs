@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.StreamConfig;
@@ -20,6 +19,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -87,7 +87,7 @@ public class XtceTmRecorder extends AbstractService {
     public XtceTmRecorder(String yamcsInstance, Map<String, Object> config) throws IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {
 
         this.yamcsInstance = yamcsInstance;
-        log=LoggerFactory.getLogger(this.getClass().getName()+"["+yamcsInstance+"]");
+        log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
 
         YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
        

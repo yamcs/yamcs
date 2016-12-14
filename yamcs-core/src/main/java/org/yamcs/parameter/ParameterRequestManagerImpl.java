@@ -11,7 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
@@ -20,6 +19,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.YProcessor;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.AlarmChecker;
 import org.yamcs.xtceproc.XtceTmProcessor;
@@ -37,7 +37,7 @@ import org.yamcs.xtceproc.XtceTmProcessor;
 public class ParameterRequestManagerImpl implements ParameterRequestManager {
     Logger log;
     //Maps the parameters to the request(subscription id) in which they have been asked
-    private ConcurrentHashMap<Parameter, SubscriptionArray> param2RequestMap= new ConcurrentHashMap<Parameter, SubscriptionArray>();
+    private ConcurrentHashMap<Parameter, SubscriptionArray> param2RequestMap = new ConcurrentHashMap<Parameter, SubscriptionArray>();
 
     //Maps the request (subscription id) to the consumer
     private Map<Integer, ParameterConsumer> request2ParameterConsumerMap = new ConcurrentHashMap<Integer,ParameterConsumer>();
@@ -71,7 +71,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
      */
     public ParameterRequestManagerImpl(YProcessor yproc, XtceTmProcessor tmProcessor) throws ConfigurationException {
         this.yproc = yproc;
-        log = LoggerFactory.getLogger(this.getClass().getName()+"["+yproc.getName()+"]");
+        log = LoggingUtils.getLogger(this.getClass(), yproc);
         cacheConfig = yproc.getPameterCacheConfig();
         cacheAll = cacheConfig.cacheAll;
 

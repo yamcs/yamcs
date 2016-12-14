@@ -17,6 +17,7 @@ import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.usoctools.PayloadModel;
 import org.yamcs.usoctools.XtceUtil;
 import org.yamcs.utils.CcsdsPacket;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.MdbMappings;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -47,7 +48,7 @@ public class FSEventDecoder extends AbstractService implements StreamSubscriber{
     final TupleDefinition tdef;
     
     public FSEventDecoder(String instance) throws ConfigurationException {
-        log=YamcsServer.getLogger(this.getClass(), instance);
+        log = LoggingUtils.getLogger(this.getClass(), instance);
         YConfiguration conf=YConfiguration.getConfiguration("yamcs."+instance);
         YObjectLoader<PayloadModel> objLoader=new YObjectLoader<PayloadModel>();
         

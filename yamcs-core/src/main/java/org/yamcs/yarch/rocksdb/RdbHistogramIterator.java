@@ -11,8 +11,8 @@ import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.TimeInterval;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.yarch.HistogramRecord;
 import org.yamcs.yarch.HistogramSegment;
 import org.yamcs.yarch.Partition;
@@ -55,7 +55,7 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
 
         PartitionManager partMgr = RdbStorageEngine.getInstance(ydb).getPartitionManager(tblDef);
         partitionIterator = partMgr.iterator(interval.getStart(), null);
-        log = LoggerFactory.getLogger(this.getClass().getName()+"["+tblDef.getName()+"]");
+        log = LoggingUtils.getLogger(this.getClass(), ydb.getName(), tblDef);
         readNextPartition();
     }
 

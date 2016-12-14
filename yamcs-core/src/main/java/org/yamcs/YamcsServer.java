@@ -27,6 +27,7 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.XtceDb;
@@ -82,7 +83,7 @@ public class YamcsServer {
         //TODO - fix bootstrap issue
         instances.put(instance, this);
 
-        log = getLogger(YamcsServer.class, instance);
+        log = LoggingUtils.getLogger(YamcsServer.class, instance);
 
         YConfiguration conf = YConfiguration.getConfiguration("yamcs."+instance);
         loadTimeService();
@@ -181,22 +182,6 @@ public class YamcsServer {
         for(YamcsServer ys: instances.values()) {
             ys.stop();
         }
-    }
-
-    /**
-     * Return a logger decorated with the applicable yamcs instance
-     * <p>Convenience method
-     */
-    public static Logger getLogger(Class<?> clazz, String instance) {
-        return LoggerFactory.getLogger(clazz.getName() + "["+instance+"]");
-    }
-
-    /**
-     * Return a logger decorated with the applicable yamcs instance and processor
-     * <p>Convenience method
-     */
-    public static Logger getLogger(Class<?> clazz, YProcessor processor) {
-        return LoggerFactory.getLogger(clazz.getName() + "["+processor.getInstance()+"/" +processor.getName()+ "]");
     }
 
     public void stop() {

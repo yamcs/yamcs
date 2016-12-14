@@ -34,6 +34,7 @@ import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.tctm.ArchiveTmPacketProvider;
 import org.yamcs.tctm.TcTmService;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
@@ -119,11 +120,11 @@ public class YProcessor extends AbstractService {
         if((name==null) || "".equals(name)) {
             throw new ProcessorException("The processor name must not be empty");
         }
-        this.yamcsInstance=yamcsInstance;
-        this.name=name;
-        this.creator=creator;
-        this.type=type;
-        log=YamcsServer.getLogger(YProcessor.class, this);
+        this.yamcsInstance = yamcsInstance;
+        this.name = name;
+        this.creator = creator;
+        this.type = type;
+        log = LoggingUtils.getLogger(YProcessor.class, this);
         log.info("Creating new processor '{}' of type '{}'", name, type);
     }
 
