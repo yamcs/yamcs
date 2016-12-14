@@ -13,6 +13,8 @@ import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.tctm.ParameterDataLinkInitialiser;
+import org.yamcs.tctm.TcUplinkerAdapter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -94,10 +96,10 @@ class IndexRequestProcessor implements Runnable {
     public void run() {
         boolean ok=true;
         try {
-            if(tmpackets.size()>0) ok=sendHistogramData(XtceTmRecorder.TABLE_NAME, "pname", 2000, tmpackets);
-            if(ok && sendParams) ok=sendHistogramData(ParameterRecorder.TABLE_NAME, "ppgroup", 20000, null); //use 20 sec for the PP to avoid millions of records
+            if(tmpackets.size()>0) ok=sendHistogramData(XtceTmRecorder.TABLE_NAME, XtceTmRecorder.PNAME_COLUMN, 2000, tmpackets);
+            if(ok && sendParams) ok=sendHistogramData(ParameterRecorder.TABLE_NAME, ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GROUP, 20000, null); //use 20 sec for the PP to avoid millions of records
             
-            if(req.getSendAllCmd()) ok=sendHistogramData(CommandHistoryRecorder.TABLE_NAME, "cmdName", 2000, null);
+            if(req.getSendAllCmd()) ok=sendHistogramData(CommandHistoryRecorder.TABLE_NAME, TcUplinkerAdapter.CMDHIST_TUPLE_COL_CMDNAME, 2000, null);
             if(req.getSendAllEvent()) ok=sendHistogramData(EventRecorder.TABLE_NAME, "source", 2000, null);
             if(ok && req.getSendCompletenessIndex()) ok=sendCompletenessIndex();
         } catch (Exception e) {

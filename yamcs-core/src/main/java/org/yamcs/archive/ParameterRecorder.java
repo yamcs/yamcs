@@ -1,6 +1,7 @@
 package org.yamcs.archive;
 
 import static org.yamcs.tctm.ParameterDataLinkInitialiser.PARAMETER_TUPLE_DEFINITION;
+import static org.yamcs.tctm.ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GROUP;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,7 @@ public class ParameterRecorder extends AbstractService {
         try {
             String cols = PARAMETER_TUPLE_DEFINITION.getStringDefinition1();
             if(ydb.getTable(TABLE_NAME)==null) {
-                String query="create table "+TABLE_NAME+"("+cols+", primary key(gentime, seqNum)) histogram(group) partition by time_and_value(gentime"+XtceTmRecorder.getTimePartitioningSchemaSql()+",group) table_format=compressed";
+                String query="create table "+TABLE_NAME+"("+cols+", primary key(gentime, seqNum)) histogram("+PARAMETER_TUPLE_COL_GROUP+") partition by time_and_value(gentime"+XtceTmRecorder.getTimePartitioningSchemaSql()+",group) table_format=compressed";
                 ydb.execute(query);
             }
             

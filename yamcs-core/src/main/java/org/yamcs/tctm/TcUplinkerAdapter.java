@@ -35,6 +35,8 @@ public class TcUplinkerAdapter extends AbstractService {
     final static public String KEY_tcDataLinks = "tcDataLinks";
     final static public String KEY_tcUplinkers = "tcUplinkers";
     
+    final static public String CMDHIST_TUPLE_COL_CMDNAME = "cmdName";
+    
     
     static public final TupleDefinition TC_TUPLE_DEFINITION=new TupleDefinition();
     //this is the commandId (used as the primary key when recording), the rest will be handled dynamically
@@ -42,7 +44,7 @@ public class TcUplinkerAdapter extends AbstractService {
 	TC_TUPLE_DEFINITION.addColumn("gentime", DataType.TIMESTAMP);
 	TC_TUPLE_DEFINITION.addColumn("origin", DataType.STRING);
 	TC_TUPLE_DEFINITION.addColumn("seqNum", DataType.INT);
-	TC_TUPLE_DEFINITION.addColumn("cmdName", DataType.STRING);
+	TC_TUPLE_DEFINITION.addColumn(CMDHIST_TUPLE_COL_CMDNAME, DataType.STRING);
     }
     static public final String REALTIME_TC_STREAM_NAME="tc_realtime";
 
