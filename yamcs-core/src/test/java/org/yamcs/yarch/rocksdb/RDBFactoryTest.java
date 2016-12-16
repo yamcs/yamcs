@@ -44,7 +44,6 @@ public class RDBFactoryTest {
 
     @Test
     public void testDispose() throws Exception {
-	TableDefinition tblDef= getTableDef();
 	YRDB[] dbs=new YRDB[RDBFactory.maxOpenDbs*2];
 	RDBFactory rdbf=new RDBFactory("testDispose");
 
