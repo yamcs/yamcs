@@ -39,14 +39,19 @@ public class RdbStorageEngine implements StorageEngine {
     static {
         RocksDB.loadLibrary();
     }
-    static Logger log=LoggerFactory.getLogger(RdbStorageEngine.class.getName());
+    static Logger log = LoggerFactory.getLogger(RdbStorageEngine.class.getName());
     RdbTagDb rdbTagDb = null;
-
-    public RdbStorageEngine(YarchDatabase ydb) throws YarchException {
+    boolean ignoreVersionIncompatibility = false;
+    
+    public RdbStorageEngine(YarchDatabase ydb, boolean ignoreVersionIncompatibility) throws YarchException {
         this.ydb = ydb;
         instances.put(ydb, this);
+        this.ignoreVersionIncompatibility = ignoreVersionIncompatibility;
     }
 
+    public RdbStorageEngine(YarchDatabase ydb) throws YarchException {
+        this(ydb, false);
+    }
 
     @Override
     public void loadTable(TableDefinition tbl) throws YarchException {
@@ -79,27 +84,30 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
     @Override
-    public TableWriter newTableWriter(TableDefinition tbl, InsertMode insertMode) throws YarchException {
-        if(!partitionManagers.containsKey(tbl)) {
+    public TableWriter newTableWriter(TableDefinition tblDef, InsertMode insertMode) throws YarchException {
+        if(!partitionManagers.containsKey(tblDef)) {
             throw new IllegalArgumentException("Do not have a partition manager for this table");
         }
+        checkFormatVersion(tblDef);
+        
         try {
-            if(tbl.isPartitionedByValue()) {
-                if(tbl.getPartitionStorage()==PartitionStorage.COLUMN_FAMILY) {
-                    return new CfTableWriter(ydb, tbl, insertMode, partitionManagers.get(tbl));
-                } else if(tbl.getPartitionStorage()==PartitionStorage.IN_KEY) {
-                    return new InKeyTableWriter(ydb, tbl, insertMode, partitionManagers.get(tbl));
+            if(tblDef.isPartitionedByValue()) {
+                if(tblDef.getPartitionStorage()==PartitionStorage.COLUMN_FAMILY) {
+                    return new CfTableWriter(ydb, tblDef, insertMode, partitionManagers.get(tblDef));
+                } else if(tblDef.getPartitionStorage()==PartitionStorage.IN_KEY) {
+                    return new InKeyTableWriter(ydb, tblDef, insertMode, partitionManagers.get(tblDef));
                 } else {
-                    throw new RuntimeException("Unknwon partition storage: "+tbl.getPartitionStorage());
+                    throw new RuntimeException("Unknwon partition storage: "+tblDef.getPartitionStorage());
                 }
             } else {
-                return new CfTableWriter(ydb, tbl, insertMode, partitionManagers.get(tbl));
+                return new CfTableWriter(ydb, tblDef, insertMode, partitionManagers.get(tblDef));
             }
         } catch (IOException e) {
             throw new YarchException("Failed to create writer", e);
         } 
     }
-
+    
+    
     @Override
     public AbstractStream newTableReaderStream(TableDefinition tbl, boolean ascending, boolean follow) {
         if(!partitionManagers.containsKey(tbl)) {
@@ -166,9 +174,26 @@ public class RdbStorageEngine implements StorageEngine {
         }
     }
 
-
+    /**
+     * set to ignore version incompatibility - only used from the version upgrading functions to allow loading old tables.
+     * 
+     * @param b
+     */
+    public void setIgnoreVersionIncompatibility(boolean b) {
+        this.ignoreVersionIncompatibility = b;
+    }
+    
+    private void checkFormatVersion(TableDefinition tblDef) throws YarchException {
+        if(ignoreVersionIncompatibility) return;
+    
+        if(tblDef.getFormatVersion()!=TableDefinition.CURRENT_FORMAT_VERSION) {
+            throw new YarchException("Table "+ydb.getName()+"/"+tblDef.getName()+" format version is "+tblDef.getFormatVersion()
+            + " instead of "+TableDefinition.CURRENT_FORMAT_VERSION+", please upgrade (use the yamcs command line with the upgrade subcommand).");
+        }
+    }
     @Override
-    public Iterator<HistogramRecord> getIterator(TableDefinition tblDef, String columnName, TimeInterval interval, long mergeTime) throws YarchException {
+    public Iterator<HistogramRecord> getHistogramIterator(TableDefinition tblDef, String columnName, TimeInterval interval, long mergeTime) throws YarchException {
+        checkFormatVersion(tblDef);
         try {
             return new RdbHistogramIterator(ydb, tblDef, columnName, interval, mergeTime);
         } catch (RocksDBException e) {

@@ -84,6 +84,13 @@ public class TableDefinitionConstructor  extends Constructor {
             if(m.containsKey(K_compressed)) {
                 tdef.setCompressed((Boolean)m.get(K_compressed));
             }
+            
+            if(m.containsKey(K_formatVersion)) {
+                tdef.setFormatVersion((Integer)m.get(K_formatVersion));
+            } else {
+                tdef.setFormatVersion(0);
+            }
+            
             if(m.containsKey(K_storageEngine)) {
                 tdef.setStorageEngineName((String)m.get(K_storageEngine));
             } else {//before the storageEngine has been invented, we only had TokyoCabinet, so assume that if it's not set then TokyoCabine is used

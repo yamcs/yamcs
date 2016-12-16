@@ -30,6 +30,7 @@ public class TableDefinitionRepresenter extends Representer {
     public final static String K_timePartitioningSchema = "timePartitioningSchema";
     public final static String K_storageEngine = "storageEngine";
     public final static String K_partitionStorage = "partitionStorage";
+    public final static String K_formatVersion = "formatVersion";
 
 
     public TableDefinitionRepresenter() {
@@ -49,6 +50,7 @@ public class TableDefinitionRepresenter extends Representer {
             m.put(K_valueDef, td.serializedValueDef);
             m.put(K_storageEngine, td.getStorageEngineName());
             m.put(K_partitionStorage, td.getPartitionStorage());
+            m.put(K_formatVersion, td.getFormatVersion());
 
             if(td.hasHistogram()) {
                 m.put(K_histogram, td.getHistogramColumns());

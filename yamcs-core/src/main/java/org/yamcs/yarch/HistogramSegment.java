@@ -9,7 +9,7 @@ import java.util.ArrayList;
  * */
 public class HistogramSegment {
     byte[] columnv;
-    int sstart; //segment start 
+    long sstart; //segment start 
     ArrayList<HistogramSegment.SegRecord> pps;
     public final static long GROUPING_FACTOR = 3600*1000; //has to be less than 2^16 *1000
     static final int REC_SIZE = 10; //4 bytes for start and stop, 2 bytes for num
@@ -21,13 +21,13 @@ public class HistogramSegment {
      * @param columnv - column value in binary
      * @param sstart
      */
-    public HistogramSegment(byte[] columnv, int sstart) {
+    public HistogramSegment(byte[] columnv, long sstart) {
         this.columnv = columnv;
         this.sstart = sstart;
         pps=new ArrayList<HistogramSegment.SegRecord>();
     }
 
-    public HistogramSegment(byte[] columnv, int sstart, byte[] val) {
+    public HistogramSegment(byte[] columnv, long sstart, byte[] val) {
         ByteBuffer v = ByteBuffer.wrap(val);
         this.columnv = columnv;
         this.sstart = sstart;
@@ -38,9 +38,9 @@ public class HistogramSegment {
     }
 
     public HistogramSegment(byte[] key, byte[] val) {
-        ByteBuffer k=ByteBuffer.wrap(key);
-        ByteBuffer v=ByteBuffer.wrap(val);
-        this.sstart = k.getInt(0);
+        ByteBuffer k = ByteBuffer.wrap(key);
+        ByteBuffer v = ByteBuffer.wrap(val);
+        this.sstart = k.getLong(0);
         columnv = new byte[k.remaining()];
         k.get(columnv);
         pps=new ArrayList<HistogramSegment.SegRecord>();
@@ -48,20 +48,23 @@ public class HistogramSegment {
             pps.add(new SegRecord(v.getInt(),v.getInt(),v.getShort()));
         }
     }
-
+    public static long getSstart(byte[] key) {
+        return ByteBuffer.wrap(key).getLong(0);
+    }
+    
     public byte[] key() {
         return key(sstart, columnv);
     }
 
-    public static byte[] key(int sstart, byte[] columnv) {
-        ByteBuffer bbk = ByteBuffer.allocate(4+columnv.length);
-        bbk.putInt(sstart);
+    public static byte[] key(long sstart, byte[] columnv) {
+        ByteBuffer bbk = ByteBuffer.allocate(8+columnv.length);
+        bbk.putLong(sstart);
         bbk.put(columnv);
         return bbk.array();
     }
 
     public byte[] val() {
-        ByteBuffer bbv=ByteBuffer.allocate(REC_SIZE*pps.size());
+        ByteBuffer bbv = ByteBuffer.allocate(REC_SIZE*pps.size());
         for(HistogramSegment.SegRecord p:pps) {
             bbv.putInt(p.dstart);
             bbv.putInt(p.dstop);

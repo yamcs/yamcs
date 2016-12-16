@@ -50,5 +50,5 @@ public interface StorageEngine {
 
     public TagDb getTagDb() throws YarchException;
 
-    public Iterator<HistogramRecord> getIterator(TableDefinition tblDef, String columnName, TimeInterval interval, long mergeTime) throws YarchException;
+    public Iterator<HistogramRecord> getHistogramIterator(TableDefinition tblDef, String columnName, TimeInterval interval, long mergeTime) throws YarchException;
 }

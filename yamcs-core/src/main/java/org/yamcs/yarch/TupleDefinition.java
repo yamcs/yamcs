@@ -6,16 +6,16 @@ import java.util.HashMap;
 
 public class TupleDefinition implements Serializable, Cloneable {
     private static final long serialVersionUID = 200805301445L;
-    private ArrayList<ColumnDefinition> columnDefinitions=new ArrayList<ColumnDefinition>();
-    private HashMap<String,Integer> columnNameIndex=new HashMap<String,Integer>();
-    public final static int MAX_COLS=32000;
+    private ArrayList<ColumnDefinition> columnDefinitions = new ArrayList<ColumnDefinition>();
+    private HashMap<String,Integer> columnNameIndex = new HashMap<String,Integer>();
+    public final static int MAX_COLS = 32000;
     
     public ArrayList<ColumnDefinition> getColumnDefinitions() {
         return columnDefinitions;
     }
 
     public void addColumn(String name, DataType type) {
-        ColumnDefinition c=new ColumnDefinition(name,type);
+        ColumnDefinition c = new ColumnDefinition(name,type);
         addColumn(c);
     }
 
@@ -73,6 +73,22 @@ public class TupleDefinition implements Serializable, Cloneable {
         return columnDefinitions.get(index);
     }
 
+    /**
+     * renames the column - this should not be used when the tuple is in used as there is no synchronization around it.
+     *  
+     * @param oldName
+     * @param newName
+     */
+    void renameColumn(String oldName, String newName) {
+        int idx = columnNameIndex.remove(oldName);
+        ColumnDefinition oldCd = columnDefinitions.get(idx);
+        
+        ColumnDefinition newCd = new ColumnDefinition(newName, oldCd.type);
+        columnDefinitions.set(idx, newCd);
+        columnNameIndex.put(newName, idx);
+    }
+    
+    
     /**
      * Reads a tuple from an IO inputStream(socket).
      * @param inputStream
@@ -157,6 +173,8 @@ public class TupleDefinition implements Serializable, Cloneable {
     public String toString() {
         return getStringDefinition();
     }
+
+ 
 
     
 }

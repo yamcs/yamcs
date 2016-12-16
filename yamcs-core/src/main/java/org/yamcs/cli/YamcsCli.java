@@ -7,7 +7,6 @@ import java.util.Map;
 import org.yamcs.api.YamcsConnectionProperties;
 
 import com.beust.jcommander.JCommander;
-import com.beust.jcommander.MissingCommandException;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.internal.Console;
@@ -39,7 +38,8 @@ public class YamcsCli {
         console.println( "\turl is the URL where yamcs can be reached (but not all commands require a connection to a live server)." );
         console.println( "Commands: " );
         console.println( "\tbackup\tprovides functionality for backing up and restoring databases");
-        console.println( "\trocksdb\tprovides utitlities for manipulating rocksdb databases");
+        console.println( "\trocksdb\tprovides low level utitlities for manipulating rocksdb databases");
+        console.println( "\tarchive\tprovides utitlities for manipulating yamcs archive");
         console.println( "" );
 
     }
@@ -55,7 +55,11 @@ public class YamcsCli {
         commands.put("rocksdb", rocksdb);
         jc.addCommand("rocksdb", rocksdb);
         
-      
+        ArchiveCli archive = new ArchiveCli();
+        commands.put("archive", archive);
+        jc.addCommand("archive", archive);
+        
+        
         try {
             jc.parse(args);
         } catch (ParameterException e) {
@@ -88,8 +92,11 @@ public class YamcsCli {
         }
         try {
             cmd.execute();
+        } catch (ParameterException e) {
+            System.err.println("ERROR: "+ e.getMessage());
+            System.exit(1);
         } catch (Exception e) {
-         //   e.printStackTrace();
+            e.printStackTrace();
             System.err.println(e.getMessage());
             System.exit(1);
         }

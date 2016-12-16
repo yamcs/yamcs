@@ -100,8 +100,8 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
     //reads all the segments with the same sstart time
     private void readNextSegments() throws RocksDBException {
         ByteBuffer bb = ByteBuffer.wrap(segmentIterator.key());
-        int sstart = bb.getInt();
-        if(sstart==Integer.MAX_VALUE) {
+        long sstart = bb.getLong();
+        if(sstart==Long.MAX_VALUE) {
             readNextPartition();
             return;
         }
@@ -116,7 +116,7 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
                 break;
             }
             bb = ByteBuffer.wrap(segmentIterator.key());
-            int g = bb.getInt();
+            long g = bb.getLong();
             if(g!=sstart) break;
         }
     }       
@@ -133,7 +133,7 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
     private boolean addRecords(byte[] key, byte[] val) {
     //    System.out.println("interval: "+interval);
         ByteBuffer kbb = ByteBuffer.wrap(key);
-        int sstart = kbb.getInt();
+        long sstart = kbb.getLong();
         byte[] columnv = new byte[kbb.remaining()];
         kbb.get(columnv);
         ByteBuffer vbb = ByteBuffer.wrap(val);

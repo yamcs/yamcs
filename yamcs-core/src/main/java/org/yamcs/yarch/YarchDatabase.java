@@ -69,7 +69,7 @@ public class YarchDatabase {
     static Map<String,YarchDatabase> databases = new HashMap<String,YarchDatabase>();
     private String dbname;
 
-    private YarchDatabase(String dbname) throws YarchException {
+    private YarchDatabase(String dbname, boolean ignoreVersionIncompatibility) throws YarchException {
         this.dbname = dbname;
         jmxService = JMXService.getInstance();
         tables = new HashMap<String,TableDefinition>();
@@ -105,22 +105,37 @@ public class YarchDatabase {
                     }
                     storageEngines.put(TC_ENGINE_NAME, tcStorageEngine);
                 } else if(RDB_ENGINE_NAME.equalsIgnoreCase(s)) {
-                    storageEngines.put(RDB_ENGINE_NAME, new RdbStorageEngine(this));
+                    storageEngines.put(RDB_ENGINE_NAME, new RdbStorageEngine(this, ignoreVersionIncompatibility));
                 }
             }
         }
         loadTables();
     }
 
-    static synchronized public YarchDatabase getInstance(String dbname) {
-        YarchDatabase instance=databases.get(dbname);
+    public static boolean instanceExistsOnDisk(String yamcsInstance) {
+        File dir=new File(getHome()+"/"+yamcsInstance);
+        return dir.exists() && dir.isDirectory();
+    }
+    
+    static public YarchDatabase getInstance(String yamcsInstance) {
+        return getInstance(yamcsInstance, false);
+    }
+    /**
+     * 
+     * @param yamcsInstance
+     * @param ignoreVersionIncompatibility - if set to true, the created StorageEngines will load old data (as far as possible). Used only when upgrading from old data formats to new ones.
+     * 
+     * @return
+     */
+    static synchronized public YarchDatabase getInstance(String yamcsInstance, boolean ignoreVersionIncompatibility) {
+        YarchDatabase instance = databases.get(yamcsInstance);
         if(instance==null) {
             try {
-                instance=new YarchDatabase(dbname);
+                instance = new YarchDatabase(yamcsInstance, ignoreVersionIncompatibility);
             } catch (YarchException e) {
-                throw new RuntimeException("Cannot create database '"+dbname+"'", e);
+                throw new RuntimeException("Cannot create database '"+yamcsInstance+"'", e);
             }
-            databases.put(dbname, instance);
+            databases.put(yamcsInstance, instance);
         }
         return instance;
     }
@@ -137,6 +152,10 @@ public class YarchDatabase {
         return dbname;
     }
 
+    public String getYamcsInstance() {
+        return dbname;
+    }
+    
     public String getDefaultStorageEngineName() {
         return defaultStorageEngineName;
     }

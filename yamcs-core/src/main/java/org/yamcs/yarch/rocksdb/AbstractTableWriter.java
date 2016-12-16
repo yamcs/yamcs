@@ -1,13 +1,13 @@
 package org.yamcs.yarch.rocksdb;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
 import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.HistogramSegment;
-import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.Tuple;
@@ -25,18 +25,16 @@ public abstract class AbstractTableWriter extends TableWriter {
         List<String> histoColumns = tableDefinition.getHistogramColumns();
         for(String c: histoColumns) {
             if(!t.hasColumn(c)) continue;
-            long time=(Long)t.getColumn(0);
+            long time = (Long)t.getColumn(0);
             ColumnSerializer cs = tableDefinition.getColumnSerializer(c);
             byte[] v = cs.getByteArray(t.getColumn(c));
             addHistogramForColumn(db, c, v, time);
         }
     }
 
-   
-
 
     private synchronized void addHistogramForColumn(YRDB db, String columnName, byte[] columnv, long time) throws RocksDBException {
-        int sstart = (int)(time/HistogramSegment.GROUPING_FACTOR);
+        long sstart = time/HistogramSegment.GROUPING_FACTOR;
         int dtime = (int)(time%HistogramSegment.GROUPING_FACTOR);
 
         HistogramSegment segment;
@@ -46,7 +44,7 @@ public abstract class AbstractTableWriter extends TableWriter {
         if(cfh==null) {
             cfh = db.createColumnFamily(cfHistoName);
             //add a record at the end to make sure the cursor doesn't run out
-            db.put(cfh, HistogramSegment.key(Integer.MAX_VALUE, zerobytes), new byte[0]);
+            db.put(cfh, HistogramSegment.key(Long.MAX_VALUE, zerobytes), new byte[0]);
         }  
         
         byte[] val = db.get(cfh, HistogramSegment.key(sstart, columnv));
@@ -63,5 +61,7 @@ public abstract class AbstractTableWriter extends TableWriter {
     static public String getHistogramColumnFamilyName(String tableColumnName) {
         return ("histo-"+tableColumnName).intern();
     }
+
+    public abstract RdbPartition getDbPartition(Tuple tuple) throws IOException ;
     
 }

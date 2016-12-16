@@ -4,7 +4,6 @@ import org.yamcs.yarch.DataType._type;
 
 
 public class ColumnDefinition {
-
     protected final String name;
     protected final DataType type;
     

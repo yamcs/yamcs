@@ -49,11 +49,11 @@ public abstract class PartitionManager {
      * 
      *  
      * @param partitionValueFilter - return only partitions whose value are in the filter. If null, return all partitions;
-     * @return
+     * @return iterator going over partitions
      */	
     public Iterator<List<Partition>> iterator(Set<Object> partitionValueFilter) {
-        Iterator<Entry<Long, Interval>> it=intervals.entrySet().iterator();
-        PartitionIterator pi=new PartitionIterator(partitioningSpec, it, partitionValueFilter, false);
+        Iterator<Entry<Long, Interval>> it = intervals.entrySet().iterator();
+        PartitionIterator pi = new PartitionIterator(partitioningSpec, it, partitionValueFilter, false);
         return pi;
     }
     

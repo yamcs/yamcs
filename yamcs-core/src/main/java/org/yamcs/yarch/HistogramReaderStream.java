@@ -48,7 +48,7 @@ public class HistogramReaderStream extends AbstractStream implements Runnable, D
     public void run() {
         log.debug("starting a histogram stream for interval {}, mergeTime: {})", interval, mergeTime);
         try {
-            iter = ydb.getStorageEngine(tblDef).getIterator(tblDef, histoColumnSerializer.getColumnName(), interval, mergeTime);
+            iter = ydb.getStorageEngine(tblDef).getHistogramIterator(tblDef, histoColumnSerializer.getColumnName(), interval, mergeTime);
             HistogramRecord r;
             while (!quit && iter.hasNext()) {
                 r = iter.next();

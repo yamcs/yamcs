@@ -34,7 +34,7 @@ public class PartitionIterator implements Iterator<List<Partition>> {
     @Override
     public boolean hasNext() {
         if(next!=null) return true;
-        next=new ArrayList<Partition>();
+        next = new ArrayList<Partition>();
     
         while(it.hasNext()) {
             Entry<Long,Interval> entry=it.next();

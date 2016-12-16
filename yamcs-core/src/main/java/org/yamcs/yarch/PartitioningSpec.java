@@ -18,7 +18,7 @@ public class PartitioningSpec {
     //by default partition by year only (best for RocksDB to avoid having too many SST files)
     private TimePartitionSchema timePartitioningSchema = TimePartitionSchema.getInstance("YYYY"); 
     
-    private PartitioningSpec (_type type, String timeColumn, String valueColumn) {
+    PartitioningSpec (_type type, String timeColumn, String valueColumn) {
     	this.type=type;
     	this.timeColumn = timeColumn;
     	this.valueColumn = valueColumn;
@@ -44,15 +44,15 @@ public class PartitioningSpec {
     	return pspec;
     }
     
+    public void setTimePartitioningSchema(TimePartitionSchema sch) {
+        this.timePartitioningSchema = sch;
+    }
     
     public void setTimePartitioningSchema(String schema) {
-    	timePartitioningSchema = TimePartitionSchema.getInstance(schema);
+        this.timePartitioningSchema = TimePartitionSchema.getInstance(schema);
     }
     
-    @Override
-    public String toString() {
-        return "timeColumn: "+timeColumn+" valueColumn:"+valueColumn;
-    }
+   
 
     public DataType getValueColumnType() {
         return valueColumnType;
@@ -67,5 +67,10 @@ public class PartitioningSpec {
 
     public TimePartitionSchema getTimePartitioningSchema() {
         return timePartitioningSchema;
+    }
+    
+    @Override
+    public String toString() {
+        return "timeColumn: "+timeColumn+" valueColumn:"+valueColumn;
     }
 }

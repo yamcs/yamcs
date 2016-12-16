@@ -67,17 +67,19 @@ public class CfTableWriter extends AbstractTableWriter {
                 inserted = insertAppend(db, partition, t);
                 break;
             case UPSERT_APPEND:
-			    inserted=upsertAppend(db, partition, t);
-			    updated=!inserted;
-			    break;
+                inserted=upsertAppend(db, partition, t);
+                updated=!inserted;
+                break;
             }
-            rdbFactory.dispose(db);
+            
             if(inserted && tableDefinition.hasHistogram()) {
                 addHistogram(db, t);
             }
+            
             if(updated && tableDefinition.hasHistogram()) {
                 // TODO updateHistogram(t);
             }
+            rdbFactory.dispose(db);
         } catch (IOException e) {
             log.error("failed to insert a record: ", e);
             e.printStackTrace();
@@ -210,7 +212,7 @@ public class CfTableWriter extends AbstractTableWriter {
      * @throws IOException if there was an error while creating the directories where the file should be located
      */
     public RdbPartition getDbPartition(Tuple t) throws IOException {
-        long time=TimeEncoding.INVALID_INSTANT;
+        long time = TimeEncoding.INVALID_INSTANT;
         Object value=null;
         if(partitioningSpec.timeColumn!=null) {
             time =(Long)t.getColumn(partitioningSpec.timeColumn);

@@ -1,5 +1,7 @@
 package org.yamcs;
 
+import org.yamcs.utils.TimeEncoding;
+
 /**
  *  time interval where both ends can be open 
  *  
@@ -14,9 +16,18 @@ public class TimeInterval {
         setStop(stop);
     }
     /**
-     * Creates a TimeInterval with no ends
+     * Creates a TimeInterval with no start and no stop
      */
     public TimeInterval() {
+    }
+    /**
+     * creates a TimeInterval with no start but with an stop
+     * @return
+     */
+    public static TimeInterval openStart(long stop) {
+        TimeInterval ti = new TimeInterval();
+        ti.setStop(stop);
+        return ti;
     }
   
     public boolean hasStart() {
@@ -51,6 +62,16 @@ public class TimeInterval {
         if(hasStart) sb.append(start);
         sb.append(",");
         if(hasStop) sb.append(stop);
+        sb.append(")");
+        return sb.toString();
+    }
+    
+    public String toStringEncoded() {
+        StringBuilder sb=new StringBuilder();
+        sb.append("(");
+        if(hasStart) sb.append(TimeEncoding.toString(start));
+        sb.append(",");
+        if(hasStop) sb.append(TimeEncoding.toString(stop));
         sb.append(")");
         return sb.toString();
     }
