@@ -135,10 +135,21 @@ public class YamcsServer {
                 args = m.get("args");
             } else {
                 throw new ConfigurationException("Services can either be specified by classname, or by {class: classname, args: ....} map. Cannot load a service from "+servobj);
+                
             }
             staticlog.info("Loading {} service {}", (instance==null)?"server-wide":instance, servclass);
-            ServiceWithConfig swc = createService(instance, servclass, servclass, args);
-            serviceList.add(swc);
+            ServiceWithConfig swc;
+            try {
+                swc = createService(instance, servclass, servclass, args);
+                serviceList.add(swc);
+            } catch (NoClassDefFoundError e) {
+                staticlog.error("Cannot create service {}, with arguments {}: class {} not found", servclass, args, e.getMessage());
+                throw e;
+            } catch (Throwable t) {
+                staticlog.error("Cannot create service {}, with arguments {}: {}", servclass, args, t.getMessage());
+                throw t;
+            }  
+           
             managementService.registerService(instance, servclass, swc.service);
         }
 
