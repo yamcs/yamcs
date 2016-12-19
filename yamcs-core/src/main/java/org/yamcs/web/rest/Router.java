@@ -126,7 +126,7 @@ public class Router {
     }
 
     // Using method handles for better invoke performance
-    public void registerRouteHandler(String instance, RouteHandler routeHandler) {
+    public void registerRouteHandler(String yamcsInstance, RouteHandler routeHandler) {
         MethodHandles.Lookup lookup = MethodHandles.lookup();
         Method[] declaredMethods = routeHandler.getClass().getDeclaredMethods();
 
@@ -158,12 +158,17 @@ public class Router {
         Collections.sort(routeConfigs);
 
         LinkedHashMap<Pattern, Map<HttpMethod, RouteConfig>> targetRoutes;
-        targetRoutes = (instance == null) ? defaultRoutes : dynamicRoutes;
+        targetRoutes = (yamcsInstance == null) ? defaultRoutes : dynamicRoutes;
 
         for (RouteConfig routeConfig : routeConfigs) {
             String routeString = routeConfig.originalPath;
-            if (instance != null) { // Expand :instance upon registration (only for dynamic routes)
-                routeString = routeString.replace(":instance", instance);
+            if (yamcsInstance != null) { // Expand :instance upon registration (only for dynamic routes)
+                if (!routeString.contains(":instance")) {
+                    log.warn("Dynamically added route {} {} is instance-specific, yet does not "
+                            + ", contain ':instance' in its url. Routing of incoming requests "
+                            + "will be ambiguous.", routeConfig.httpMethod, routeConfig.originalPath);
+                }
+                routeString = routeString.replace(":instance", yamcsInstance);
             }
             Pattern pattern = toPattern(routeString);
             targetRoutes.putIfAbsent(pattern, new LinkedHashMap<>());
@@ -312,7 +317,7 @@ public class Router {
             matcher.appendReplacement(buf, replacement.toString());
         }
         matcher.appendTail(buf);
-        return Pattern.compile(buf.append("$").toString());
+        return Pattern.compile(buf.append("/?$").toString());
     }
 
     /**
