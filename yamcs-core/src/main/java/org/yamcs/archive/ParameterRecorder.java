@@ -19,10 +19,15 @@ import org.yamcs.yarch.YarchDatabase;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- * PpRecorder
+ * ParameterRecorder
  * Records (processed) Parameters 
  * 
  * The base table definition is {@link ParameterDataLinkInitialiser}
+ * 
+ * This records parameters as tuples - good for realtime recording but not very efficient for retrieval of a few parameters over long time periods.
+ * 
+ * The {@link org.yamcs.parameterarchive} records parameters in a columnar fashion - not good for realtime but much more efficient for retrieval especially retrieval of few parameters over long time periods.   
+ * 
  * @author nm
  *
  */

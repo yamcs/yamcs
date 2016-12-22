@@ -168,7 +168,7 @@ public class ProcessorRestHandler extends RestHandler {
         boolean persistent = false;
         Set<Integer> clientIds = new HashSet<>();
         List<String> paraPatterns = new ArrayList<>();
-        List<String> ppGroups = new ArrayList<>();
+        List<String> paraGroups = new ArrayList<>();
         List<String> packetNames = new ArrayList<>();
         boolean cmdhist = false;
 
@@ -181,7 +181,7 @@ public class ProcessorRestHandler extends RestHandler {
         if (request.hasPersistent()) persistent = request.getPersistent();
         clientIds.addAll(request.getClientIdList());
         paraPatterns.addAll(request.getParanameList());
-        ppGroups.addAll(request.getPpgroupList());
+        paraGroups.addAll(request.getPpgroupList());
         packetNames.addAll(request.getPacketnameList());
 
         // Query params get priority
@@ -191,7 +191,8 @@ public class ProcessorRestHandler extends RestHandler {
         if (req.hasQueryParameter("speed")) speed = req.getQueryParameter("speed").toLowerCase();
         if (req.hasQueryParameter("loop")) loop = req.getQueryParameterAsBoolean("loop");
         if (req.hasQueryParameter("paraname")) paraPatterns.addAll(req.getQueryParameterList("paraname"));
-        if (req.hasQueryParameter("ppgroup")) ppGroups.addAll(req.getQueryParameterList("ppgroup"));
+        if (req.hasQueryParameter("ppgroup")) paraGroups.addAll(req.getQueryParameterList("ppgroup"));
+        if (req.hasQueryParameter("paragroup")) paraGroups.addAll(req.getQueryParameterList("paragroup"));
         if (req.hasQueryParameter("packetname")) packetNames.addAll(req.getQueryParameterList("packetname"));
         if (req.hasQueryParameter("cmdhist")) cmdhist = req.getQueryParameterAsBoolean("cmdhist");
         if (req.hasQueryParameter("persistent")) persistent = req.getQueryParameterAsBoolean("persistent");
@@ -283,8 +284,8 @@ public class ProcessorRestHandler extends RestHandler {
         // PP groups are just passed. Not sure if we should keep support for this. Parameters are not filterable
         // on containers either, so I don't see why these get special treatment. Would prefer they are handled
         // in the above paraPatterns loop instead.
-        if (!ppGroups.isEmpty()) {
-            rrb.setPpRequest(PpReplayRequest.newBuilder().addAllGroupNameFilter(ppGroups));
+        if (!paraGroups.isEmpty()) {
+            rrb.setPpRequest(PpReplayRequest.newBuilder().addAllGroupNameFilter(paraGroups));
         }
 
         // Packet names are also just passed. We may want to try something fancier here with wildcard support.

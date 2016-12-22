@@ -15,15 +15,20 @@ import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Tuple;
 
 import com.google.protobuf.MessageLite;
-
-public class PpReplayHandler implements ReplayHandler {
-    Set<String>currentGroups=new HashSet<String>();
-    final XtceDb ppdb;
+/**
+ * Replays parameters from tables recorded by the {@link org.yamcs.archive.ParameterRecorder}
+ * 
+ * @author nm
+ *
+ */
+public class ParameterReplayHandler implements ReplayHandler {
+    Set<String>currentGroups = new HashSet<String>();
+    final XtceDb xtceDb;
     ReplayRequest request;
-    final static Logger log=LoggerFactory.getLogger(PpReplayHandler.class);
+    final static Logger log = LoggerFactory.getLogger(ParameterReplayHandler.class);
     
-    public PpReplayHandler(XtceDb ppdb) {
-        this.ppdb=ppdb;
+    public ParameterReplayHandler(XtceDb xtceDb) {
+        this.xtceDb = xtceDb;
     }
 
     @Override
@@ -36,22 +41,28 @@ public class PpReplayHandler implements ReplayHandler {
     @Override
     /**
      * provides a select statement like this:
-     * select n,* from pp where ppgroup in (grp1, grp2,...) and gentime>x and gentime<y
+     * select n,* from pp where group in (grp1, grp2,...) and gentime>x and gentime<y
      * The definition of the PP table is in {@link PpRecorder} 
      */
     public String getSelectCmd() {
-        if(currentGroups.isEmpty())return null;
-        StringBuilder sb=new StringBuilder();
-        boolean first=true;
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
         sb.append("SELECT ").append(ProtoDataType.PP.getNumber()).
-        append(",* from pp where ppgroup in(");
-        for(String g:currentGroups) {
-            if(first) first=false;
-            else sb.append(", ");
-            sb.append("'").append(g).append("'");
+        append(",* from pp ");
+        if(!currentGroups.isEmpty()) {
+            sb.append("WHERE group in(");
+            for(String g:currentGroups) {
+                if(first) first = false;
+                else sb.append(", ");
+                sb.append("'").append(g).append("'");
+            }
+            sb.append(")");
+            XtceTmReplayHandler.appendTimeClause(sb, request, false);
+        } else {
+            sb.append("WHERE ");
+            XtceTmReplayHandler.appendTimeClause(sb, request, true);    
         }
-        sb.append(")");
-        XtceTmReplayHandler.appendTimeClause(sb, request, false);
+        
         if(request.hasReverse() && request.getReverse()) {
             sb.append(" ORDER DESC");
         }

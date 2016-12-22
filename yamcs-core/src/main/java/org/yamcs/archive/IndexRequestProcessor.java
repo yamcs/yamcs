@@ -40,7 +40,6 @@ class IndexRequestProcessor implements Runnable {
 
     //these maps contains the names with which the records will be sent to the client
     final Map<String, NamedObjectId> tmpackets=new HashMap<>();
-  //  final Map<String, NamedObjectId> ppgroups=new HashMap<>();
     
     boolean sendParams;
 
@@ -78,18 +77,6 @@ class IndexRequestProcessor implements Runnable {
         if(req.getSendAllPp() || req.getPpGroupCount()>0) {
             sendParams = true; //TODO: fix; currently always send all
         }
-        /*
-            PpDefDb ppdb=PpDbFactory.getInstance(archiveInstance);
-            if(req.getSendAllPp()) {
-                for(String s:ppdb.getGroups()) {
-                    ppgroups.put(s, NamedObjectId.newBuilder().setName(s).build());
-                }
-            } else {
-                for(NamedObjectId id:req.getPpGroupList()) {
-                    ppgroups.put(id.getName(), id);
-                }
-            }
-        }*/
     }
 
     @Override
