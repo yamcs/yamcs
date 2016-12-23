@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
+import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.rest.BulkRestDataReceiver;
 import org.yamcs.api.ws.WebSocketRequest;
@@ -30,7 +31,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.netty.handler.codec.http.HttpMethod;
 
 
-public class IntegrationTestArchive extends AbstractIntegrationTest {
+public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
 
     private void generateData(String utcStart, int numPackets) {
@@ -45,6 +46,8 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
     @Test
     public void testReplay() throws Exception {
         generateData("2015-01-01T10:00:00", 3600);
+        restClient.setAcceptMediaType(MediaType.JSON);
+        
         ClientInfo cinfo = getClientInfo();
         //create a parameter replay via REST
         CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
@@ -55,7 +58,7 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
                 .addPacketname("*")
                 .build();
 
-        restClient.doRequest("/processors/IntegrationTest", HttpMethod.POST, toJson(prequest, SchemaRest.CreateProcessorRequest.WRITE));
+        restClient.doRequest("/processors/IntegrationTest", HttpMethod.POST, toJson(prequest, SchemaRest.CreateProcessorRequest.WRITE)).get();
 
         cinfo = getClientInfo();
         assertEquals("testReplay", cinfo.getProcessorName());
@@ -80,7 +83,7 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
 
         //go back to realtime
         EditClientRequest pcrequest = EditClientRequest.newBuilder().setProcessor("realtime").build();
-        restClient.doRequest("/clients/" + cinfo.getId(), HttpMethod.GET, toJson(pcrequest, SchemaRest.EditClientRequest.WRITE)).get();
+        restClient.doRequest("/clients/" + cinfo.getId(), HttpMethod.PATCH, toJson(pcrequest, SchemaRest.EditClientRequest.WRITE)).get();
 
         cinfo = getClientInfo();
         assertEquals("realtime", cinfo.getProcessorName());
@@ -88,15 +91,16 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
 
     @Test
     public void testIndex() throws Exception {
-        generateData("2015-01-01T10:00:00", 3600);
-
+        generateData("2015-01-02T10:00:00", 3600);
+        restClient.setAcceptMediaType(MediaType.JSON);
         String response ;
 
-        response = restClient.doRequest("/archive/IntegrationTest/indexes/packets?start=2015-01-01T00:00:00", HttpMethod.GET, "").get();
+        response = restClient.doRequest("/archive/IntegrationTest/indexes/packets?start=2015-01-02T00:00:00", HttpMethod.GET, "").get();
         List<ArchiveRecord> arlist = allFromJson(response, org.yamcs.protobuf.SchemaYamcs.ArchiveRecord.MERGE);
-        assertEquals(4, arlist.size());
+        assertEquals(8, arlist.size());
 
-        response = restClient.doRequest("/archive/IntegrationTest/indexes/packets?start=2035-01-01T00:00:00", HttpMethod.GET, "").get();
+        response = restClient.doRequest("/archive/IntegrationTest/indexes/packets?start=2035-01-02T00:00:00", HttpMethod.GET, "").get();
+        
         assertTrue(response.isEmpty());
     }
 
@@ -105,8 +109,8 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
     public void testIndexWithRestClient() throws Exception {
         generateData("2015-02-01T10:00:00", 3600);
         List<ArchiveRecord> arlist = new ArrayList<>();
-
-        CompletableFuture<Void> f = restClient.doBulkGetRequest("/archive/IntegrationTest/indexes/packets?start=2015-02-01T00:00:00", new BulkRestDataReceiver() {
+        restClient.setAcceptMediaType(MediaType.PROTOBUF);
+        CompletableFuture<Void> f = restClient.doBulkGetRequest("/archive/IntegrationTest/indexes/packets?start=2015-02-01T00:00:00&stop=2015-02-01T11:00:00", new BulkRestDataReceiver() {
 
             @Override
             public void receiveException(Throwable t) {
@@ -118,7 +122,7 @@ public class IntegrationTestArchive extends AbstractIntegrationTest {
                 try {
                     arlist.add(ArchiveRecord.parseFrom(data));
                 } catch (InvalidProtocolBufferException e) {
-                    throw new YamcsApiException("Cannot decode ArchiveRecord: "+e.getMessage(), e);
+                    fail("Cannot decode archive record: "+e);
                 }
             }
         });

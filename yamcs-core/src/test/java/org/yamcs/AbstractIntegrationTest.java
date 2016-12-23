@@ -31,6 +31,7 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
+import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
@@ -76,7 +77,7 @@ public abstract class AbstractIntegrationTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-     //  enableDebugging();
+       //enableDebugging();
         setupYamcs();
     }
 
@@ -215,6 +216,7 @@ public abstract class AbstractIntegrationTest {
         LinkedBlockingQueue<StreamData> streamDataList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<TimeInfo> timeInfoList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<LinkEvent> linkEventList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<CommandQueueInfo> cmdQueueInfoList = new LinkedBlockingQueue<>();
 
         int count =0;
         @Override
@@ -238,14 +240,9 @@ public abstract class AbstractIntegrationTest {
             switch (data.getType()) {
             case PARAMETER:
                 count++;
-                if((count %1000) ==0 ){
-                    System.out.println("received pdata "+count);
-                }
-
                 parameterDataList.add(data.getParameterData());
                 break;
             case CMD_HISTORY:
-                //System.out.println("COMMAND HISTORY-------------"+cmdhistData);
                 cmdHistoryDataList.add(data.getCommand());
                 break;
             case CLIENT_INFO:
@@ -271,6 +268,9 @@ public abstract class AbstractIntegrationTest {
                 break;
             case LINK_EVENT:
                 linkEventList.add(data.getLinkEvent());
+                break;
+            case COMMAND_QUEUE_INFO:
+                cmdQueueInfoList.add(data.getCommandQueueInfo());
                 break;
             default:
                 throw new IllegalArgumentException("Unexpected type " + data.getType());

@@ -21,7 +21,7 @@ import org.yamcs.utils.TimeEncoding;
 
 import io.netty.handler.codec.http.HttpMethod;
 
-public class IntegrationTestParameterArchive extends AbstractIntegrationTest {
+public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
     private void generateData(String utcStart, int numPackets) {
         long t0 = TimeEncoding.parse(utcStart);

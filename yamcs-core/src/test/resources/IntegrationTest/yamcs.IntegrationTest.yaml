@@ -41,7 +41,7 @@ parameterDataLinks: []
 
 # config the tc uplinkers
 tcDataLinks:
-    - class: org.yamcs.IntegrationTestComVerif$MyTcDataLink
+    - class: org.yamcs.ComVerifIntegrationTest$MyTcDataLink
       stream: tc_realtime
 
 #Specify which MDB configuration to use, references a named section in mdb.yaml 

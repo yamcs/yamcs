@@ -21,7 +21,7 @@ import com.google.common.util.concurrent.AbstractService;
 
 import io.netty.handler.codec.http.HttpMethod;
 
-public class IntegrationTestComVerif extends AbstractIntegrationTest {
+public class ComVerifIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCommandVerificationContainter() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
@@ -40,6 +40,7 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
         assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC", cmdid.getCommandName());
         assertEquals(7, cmdid.getSequenceNumber());
         assertEquals("IntegrationTest", cmdid.getOrigin());
+        
         packetGenerator.generateContVerifCmdAck((short)1001, (byte)0, 0);
 
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
@@ -58,7 +59,7 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
         cha = cmdhist.getAttr(0);
         assertEquals("Verifier_Execution", cha.getName());
         assertEquals("OK", cha.getValue().getStringValue());
-
+        
         packetGenerator.generateContVerifCmdAck((short)1001, (byte)5, 0);
 
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
@@ -80,7 +81,6 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
 
     @Test
     public void testCommandVerificationAlgorithm() throws Exception {
-        enableDebugging();
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
 
@@ -88,7 +88,7 @@ public class IntegrationTestComVerif extends AbstractIntegrationTest {
         String resp = restClient.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/ALG_VERIF_TC",
                 HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE)).get();
         IssueCommandResponse response = (fromJson(resp, SchemaRest.IssueCommandResponse.MERGE)).build();
-        assertEquals("REFMDB/SUBSYS1/ALG_VERIF_TC()", response.getSource());
+        assertEquals("REFMDB/SUBSYS1/ALG_VERIF_TC(p1: 10, p2: 20)", response.getSource());
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
 

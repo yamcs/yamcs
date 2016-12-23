@@ -10,7 +10,7 @@ import org.rocksdb.RocksDB;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.utils.FileUtils;
 
-public class TestParameterIdMap {
+public class ParameterIdMapTest {
 
     @Test
     public void test1() throws Exception {

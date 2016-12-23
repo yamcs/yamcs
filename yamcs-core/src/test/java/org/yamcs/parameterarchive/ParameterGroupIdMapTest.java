@@ -11,7 +11,7 @@ import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.IntArray;
 
 
-public class TestParameterGroupIdMap {
+public class ParameterGroupIdMapTest {
 
     @Test
     public void test1() throws Exception {
