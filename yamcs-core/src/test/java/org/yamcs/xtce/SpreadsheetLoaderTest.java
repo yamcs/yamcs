@@ -1,7 +1,8 @@
 package org.yamcs.xtce;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
+
+import java.util.List;
 
 import org.junit.Test;
 import org.yamcs.YConfiguration;
@@ -46,6 +47,21 @@ public class SpreadsheetLoaderTest {
         alias = cmd2.getAlias("MDB:Alias1");
         assertEquals("AlternativeName2", alias);
 
+    }
+    
+    @Test
+    public void testCommandVerifiers() throws Exception {
+        YConfiguration.setup("refmdb");
+        ManagementService.setup(false);
+        XtceDbFactory.reset();
+
+        XtceDb db = XtceDbFactory.getInstance("refmdb");
+
+        MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/CONT_VERIF_TC");
+        assertNotNull(cmd1);
+        assertTrue(cmd1.hasCommandVerifiers());
+        List<CommandVerifier> verifiers = cmd1.getCommandVerifiers();
+        assertEquals(2, verifiers.size());
     }
     
     @Test

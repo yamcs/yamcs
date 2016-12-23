@@ -269,7 +269,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         loadAlarmsSheet(spaceSystem, sheetNamePrefix + SHEET_ALARMS);
         loadCommandSheet(spaceSystem, sheetNamePrefix + SHEET_COMMANDS);
         loadCommandOptionsSheet(spaceSystem, sheetNamePrefix + SHEET_COMMANDOPTIONS);
-        loadCommandVerificationSheet(spaceSystem, SHEET_COMMANDVERIFICATION);
+        loadCommandVerificationSheet(spaceSystem, sheetNamePrefix + SHEET_COMMANDVERIFICATION);
         
         for(SpaceSystem ss: spaceSystem.getSubSystems()) {
             String prefix = sheetNamePrefix.isEmpty()?ss.getName()+"|": sheetNamePrefix+ss.getName()+"|";
@@ -1214,7 +1214,6 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
     protected void loadCommandVerificationSheet(SpaceSystem spaceSystem, String sheetName) {
         Sheet sheet = switchToSheet(sheetName, false);
-        if(sheet==null) return;
         int i = 1;
         while(i<sheet.getRows()) {
             // search for a new command definition, starting from row i
