@@ -1214,6 +1214,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
     protected void loadCommandVerificationSheet(SpaceSystem spaceSystem, String sheetName) {
         Sheet sheet = switchToSheet(sheetName, false);
+        if(sheet==null) return;
         int i = 1;
         while(i<sheet.getRows()) {
             // search for a new command definition, starting from row i
