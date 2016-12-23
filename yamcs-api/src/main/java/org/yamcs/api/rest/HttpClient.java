@@ -79,7 +79,7 @@ public class HttpClient {
                 if(channelHandler.exception!=null) {
                     cf.completeExceptionally(channelHandler.exception);
                 } else if(channelHandler.httpResponse==null) {
-                    cf.completeExceptionally(new IOException("connection closed without providing an http response"));
+                    cf.complete(new byte[0]);
                 } else {
                     HttpResponse resp = channelHandler.httpResponse;
                     if(resp.getStatus().code() != HttpResponseStatus.OK.code()) {
