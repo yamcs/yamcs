@@ -91,6 +91,7 @@ public class MDBParameterRestHandler extends RestHandler {
         
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
+        boolean details = req.getQueryParameterAsBoolean("details", false);
         
         // Support both type[]=float&type[]=integer and type=float,integer
         Set<String> types = new HashSet<>();
@@ -109,7 +110,7 @@ public class MDBParameterRestHandler extends RestHandler {
             String namespace = req.getQueryParameter("namespace");
             
             Privilege privilege = Privilege.getInstance();
-            for (Parameter p : mdb.getParameters()) {
+            for (Parameter p : mdb.getParameters()) {                
                 if (!privilege.hasPrivilege1(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName()))
                     continue;
                 if (matcher != null && !matcher.matches(p))
