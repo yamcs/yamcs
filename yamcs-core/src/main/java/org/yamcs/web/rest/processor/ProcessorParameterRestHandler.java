@@ -43,8 +43,6 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
-import io.netty.channel.ChannelFuture;
-
 public class ProcessorParameterRestHandler extends RestHandler {
     
     private final static Logger log = LoggerFactory.getLogger(ProcessorParameterRestHandler.class);
@@ -67,6 +65,9 @@ public class ProcessorParameterRestHandler extends RestHandler {
         // URI can override body
         if (req.hasQueryParameter("state")) state = req.getQueryParameter("state");
         if (req.hasQueryParameter("comment")) comment = req.getQueryParameter("comment");
+        if(state==null) {
+            throw new BadRequestException("No state specified");
+        }
         
         switch (state.toLowerCase()) {
         case "acknowledged":
