@@ -253,14 +253,6 @@ public abstract class RestHandler extends RouteHandler {
             p = mdb.getParameter(id);
         }
 
-        // It could also be a system parameter
-        if (p == null) {
-            String rootedName = pathName.startsWith("/") ? pathName : "/" + pathName;
-            p = mdb.getSystemParameterDb().getSystemParameter(rootedName, false);
-            if(p!=null) {
-                id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
-            }
-        }
 
         if (p != null && !authorised(req, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
             log.warn("Parameter {} found, but withheld due to insufficient privileges. Returning 404 instead", StringConverter.idToString(id));

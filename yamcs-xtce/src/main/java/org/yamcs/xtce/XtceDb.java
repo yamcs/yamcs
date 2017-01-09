@@ -29,17 +29,23 @@ import org.yamcs.xtce.xml.XtceAliasSet;
  */
 public class XtceDb implements Serializable {
     private static final long  serialVersionUID   = 54L;
+   
     SpaceSystem rootSystem;
 
     //rwLock is used to guard the read/write of parameters and spaceSystems which are the only ones that can change dynamically as of now
     ReadWriteLock rwLock = new ReentrantReadWriteLock();
 
-    SystemParameterDb sysParamDb;
-
     public XtceDb(SpaceSystem spaceSystem) {
         this.rootSystem=spaceSystem;
     }
-
+    /**
+     * Namespaces system parameters
+     */
+    public static final String YAMCS_SPACESYSTEM_NAME = "/yamcs";
+    public static final String YAMCS_CMD_SPACESYSTEM_NAME = "/yamcs/cmd";
+    public static final String YAMCS_CMDHIST_SPACESYSTEM_NAME = "/yamcs/cmdHist";
+    
+    
     transient static Logger log = LoggerFactory.getLogger(XtceDb.class);
 
     //map from the fully qualified names to the objects
@@ -351,7 +357,7 @@ public class XtceDb implements Serializable {
         //build aliases maps
         for (SpaceSystem ss : spaceSystems.values()) {
             spaceSystemAliases.add(ss);
-            XtceAliasSet aliases=ss.getAliasSet();
+            XtceAliasSet aliases = ss.getAliasSet();
             if(aliases!=null) {
                 aliases.getNamespaces().forEach(ns -> namespaces.add(ns));
             }
@@ -359,7 +365,7 @@ public class XtceDb implements Serializable {
 
         for (SequenceContainer sc : sequenceContainers.values()) {
             sequenceContainerAliases.add(sc);
-            XtceAliasSet aliases=sc.getAliasSet();
+            XtceAliasSet aliases = sc.getAliasSet();
             if(aliases!=null) {
                 aliases.getNamespaces().forEach(ns -> namespaces.add(ns));
             }
@@ -456,22 +462,29 @@ public class XtceDb implements Serializable {
      * Adds  a new parameter to the XTCE db.
      *
      *
-     * If the SpaceSystem where this parameter belongs does not exist, throws an IllegalArgumentException
-     * If the SpaceSystem where this parameter belongs already contains an parameter by this name, throws and IllegalArgumentException
-     *
+     * If the SpaceSystem where this parameter belongs does not exist, and createSpaceSystem is false, throws an IllegalArgumentException
+     * If the SpaceSystem where this parameter belongs exists and already contains an parameter by this name, throws and IllegalArgumentException
+     * If the SpaceSystem where this parameter belongs does not exist, and createSpaceSystem is true, the whole SpaceSystem hierarchy is created. 
+     * 
      * Note that this method is used to create parameters on the fly.
      * The parameters are not saved anywhere and they will not be available when this object is created by the XtceDbFactory.
      *
      * @param p
+     * @param createSpaceSystem - if true, create all the necessary space systems
      */
-    public void addParameter(Parameter p) {
+    public void addParameter(Parameter p, boolean createSpaceSystem) {
         rwLock.writeLock().lock();
         try {
             String ssname = p.getSubsystemName();
             SpaceSystem ss = spaceSystems.get(ssname);
             if(ss==null) {
-                throw new IllegalArgumentException("No SpaceSystem by name '"+ssname+"'");
+                if(!createSpaceSystem) {
+                    throw new IllegalArgumentException("No SpaceSystem by name '"+ssname+"'");
+                } else {
+                    createAllSpaceSystems(ssname);
+                }
             }
+            ss = spaceSystems.get(ssname);
             ss.addParameter(p);
             parameters.put(p.getQualifiedName(), p);
 
@@ -484,7 +497,22 @@ public class XtceDb implements Serializable {
             rwLock.writeLock().unlock();
         }
     }
-
+    
+    private void createAllSpaceSystems(String ssname) {
+        String[] a = ssname.split("/");
+        String qn = "";
+        for(String name:a) {
+            if(name.isEmpty()) continue;
+            qn = qn+"/"+name;
+            if(getSpaceSystem(qn) == null) {
+                SpaceSystem ss = new SpaceSystem(name);
+                ss.setQualifiedName(qn);
+                addSpaceSystem(ss);
+            }
+        }
+    }
+    
+    
     /**
      * Adds a new command definition to the XTCE db.
      * <p>
@@ -534,7 +562,7 @@ public class XtceDb implements Serializable {
         try {
             if(system.getParent()!=null) throw new IllegalArgumentException("The parent of the space system has to be null (it will be set by this method");
             if(!system.getParameters().isEmpty() || !system.getSequenceContainers().isEmpty()|| !system.getAlgorithms().isEmpty()
-                    || !system.getMetaCommands().isEmpty()) throw new IllegalArgumentException("The space system must be empty (no parameters, containers, commands, algorithms)");
+                    || !system.getMetaCommands().isEmpty() || !system.getSubSystems().isEmpty()) throw new IllegalArgumentException("The space system must be empty (no parameters, containers, commands, algorithms, subsystems)");
 
 
             String parentName = system.getSubsystemName();
@@ -556,6 +584,31 @@ public class XtceDb implements Serializable {
         }
     }
 
+    public static boolean isSystemParameter(NamedObjectId id) {
+        boolean result;
+        if(!id.hasNamespace()) {
+            result = id.getName().startsWith(XtceDb.YAMCS_SPACESYSTEM_NAME);
+        } else {
+            result = id.getNamespace().startsWith(XtceDb.YAMCS_SPACESYSTEM_NAME);
+        }
+        return result;
+    }
+
+    
+   
+    private static void createSpaceSystem(XtceDb xtceDb, String ssname) {
+        String[] a = ssname.split("/");
+        String qn = "";
+        for(String name:a) {
+            if(name.isEmpty()) continue;
+            qn = qn+"/"+name;
+            if(xtceDb.getSpaceSystem(qn) == null) {
+                SpaceSystem ss = new SpaceSystem(name);
+                ss.setQualifiedName(qn);
+                xtceDb.addSpaceSystem(ss);
+            }
+        }
+    }
     private void print(SpaceSystem ss, PrintStream out) {
         if( ss.getHeader() != null ) {
             out.println("=========SpaceSystem "+ss.getQualifiedName()+" version: "+ss.getHeader().getVersion()+" date: "+ss.getHeader().getDate()+"=========");
@@ -643,14 +696,4 @@ public class XtceDb implements Serializable {
             removeNonOrphaned(ss1, orphanedParameters);
         }
     }
-
-    public void setSystemParameterDb(SystemParameterDb sysParamDb) {
-        this.sysParamDb = sysParamDb;
-    }
-
-    public SystemParameterDb getSystemParameterDb() {
-        return sysParamDb;
-    }
-
-
 }

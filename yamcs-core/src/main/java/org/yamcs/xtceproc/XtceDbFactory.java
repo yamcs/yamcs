@@ -22,11 +22,13 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.NameReference;
 import org.yamcs.xtce.NameReference.Type;
+import org.yamcs.xtce.xml.XtceAliasSet;
 import org.yamcs.xtce.NonStandardData;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
@@ -34,7 +36,7 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SpaceSystemLoader;
 import org.yamcs.xtce.SpreadsheetLoader;
-import org.yamcs.xtce.SystemParameterDb;
+import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.XtceLoader;
 
@@ -112,20 +114,19 @@ public class XtceDbFactory {
         if (db == null) {
             //Construct a Space System with one branch from the config file and the other one /yamcs for system variables
             SpaceSystem rootSs = loaderTree.load();
-            SystemParameterDb sysDb = new SystemParameterDb();
+            SpaceSystem yamcsSs = new SpaceSystem(XtceDb.YAMCS_SPACESYSTEM_NAME.substring(1));
+            yamcsSs.setQualifiedName(XtceDb.YAMCS_SPACESYSTEM_NAME);
 
-            rootSs.addSpaceSystem(sysDb.getYamcsSpaceSystem());
+            rootSs.addSpaceSystem(yamcsSs);
             //rootSs.setHeader(xss.getHeader());
 
             int n;
-            while((n=resolveReferences(rootSs, rootSs, sysDb))>0 ){};
+            while((n=resolveReferences(rootSs, rootSs))>0 ){};
             StringBuffer sb=new StringBuffer();
             collectUnresolvedReferences(rootSs, sb);
             if(n==0) throw new ConfigurationException("Cannot resolve (circular?) references: "+ sb.toString());
             setQualifiedNames(rootSs, "");
             db = new XtceDb(rootSs);
-
-            db.setSystemParameterDb(sysDb);
 
             //set the root sequence container as the first root sequence container found in the sub-systems.
             for(SpaceSystem ss: rootSs.getSubSystems()) {
@@ -171,7 +172,7 @@ public class XtceDbFactory {
      * @param sysDb
      * @return the number of references resolved or -1 if there was no reference to be resolved
      */
-    private static int resolveReferences(SpaceSystem rootSs, SpaceSystem ss, SystemParameterDb sysDb) throws ConfigurationException {
+    private static int resolveReferences(SpaceSystem rootSs, SpaceSystem ss) throws ConfigurationException {
         List<NameReference> refs = ss.getUnresolvedReferences();
 
         //This can happen when we deserialise the SpaceSystem since the unresolved references is a transient list.
@@ -183,13 +184,28 @@ public class XtceDbFactory {
         while (it.hasNext()) {
             NameReference nr=it.next();
 
-            //Special case for system parameters: they are created on the fly
-            NameDescription nd;
-            if(nr.getType()==Type.PARAMETER && nr.getReference().startsWith(SystemParameterDb.YAMCS_SPACESYSTEM_NAME)) {
-                nd = sysDb.getSystemParameter(nr.getReference(), true);
-            } else {
-                nd = findReference(rootSs, nr, ss);
-            }
+           
+            NameDescription nd = findReference(rootSs, nr, ss);
+            if(nd==null && nr.getType()==Type.PARAMETER && nr.getReference().startsWith(XtceDb.YAMCS_SPACESYSTEM_NAME)) {
+                //Special case for system parameters: they are created on the fly
+                String fqname = nr.getReference();
+                SystemParameter sp = SystemParameter.getForFullyQualifiedName(fqname);
+              
+                String ssname = sp.getSubsystemName();
+                String[] a = ssname.split("/");
+                SpaceSystem ss1 = rootSs;
+                for(String name:a) {
+                    if(name.isEmpty()) continue;
+                    SpaceSystem ss2 = ss1.getSubsystem(name);
+                    if(ss2 == null) {
+                        ss2 = new SpaceSystem(name);
+                        ss1.addSpaceSystem(ss2);
+                    }
+                    ss1 = ss2;
+                }
+                ss1.addParameter(sp);
+                nd = sp;
+            } 
             if(nd==null) throw new ConfigurationException("Cannot resolve reference SpaceSystem: "+ss.getName()+" "+nr);
             if(nr.resolved(nd)) {
                 n++;
@@ -197,7 +213,7 @@ public class XtceDbFactory {
             }
         }
         for(SpaceSystem ss1:ss.getSubSystems()) {
-            int m = resolveReferences(rootSs, ss1, sysDb);
+            int m = resolveReferences(rootSs, ss1);
             if(n==-1) {
                 n = m;
             } else if(m>0) {
@@ -206,7 +222,6 @@ public class XtceDbFactory {
         }
         return n;
     }
-
 
 
 

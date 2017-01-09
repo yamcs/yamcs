@@ -122,19 +122,6 @@ public class MDBParameterRestHandler extends RestHandler {
                     }
                 }
             }
-            for (SystemParameter p : mdb.getSystemParameterDb().getSystemParameters()) {
-                if (!privilege.hasPrivilege1(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName()))
-                    continue;
-                if (matcher != null && !matcher.matches(p))
-                    continue;
-                
-                String alias = p.getAlias(namespace);
-                if (alias != null || (recurse && p.getQualifiedName().startsWith(namespace))) {
-                    if (parameterTypeMatches(p, types)) {
-                        responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
-                    }
-                }
-            }
         } else { // List all
             for (Parameter p : mdb.getParameters()) {
                 if (matcher != null && !matcher.matches(p)) continue;

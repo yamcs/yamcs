@@ -48,7 +48,6 @@ import org.yamcs.security.InvalidAuthenticationToken;
 import org.yamcs.security.SystemToken;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.SystemParameterDb;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.Subscription;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -79,7 +78,6 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     TmProcessor tmProcessor;
     volatile long dataCount=0;
     final XtceDb xtceDb;
-    final SystemParameterDb sysParamDb;
     volatile long replayTime;
 
     private final String yamcsInstance;
@@ -95,7 +93,6 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         this.yamcsInstance = instance;
         this.originalReplayRequest = spec;
         xtceDb = XtceDbFactory.getInstance(instance);
-        sysParamDb = xtceDb.getSystemParameterDb();
     }
 
 
@@ -131,11 +128,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
             for(org.yamcs.protobuf.Pvalue.ParameterValue pbPv:pd.getParameterList()) {
                 
                 Parameter ppDef;
-                if(SystemParameterDb.isSystemParameter(pbPv.getId())) {
-                    ppDef = sysParamDb.getSystemParameter(pbPv.getId(), true);
-                } else {
-                    ppDef = xtceDb.getParameter(pbPv.getId());
-                }
+                ppDef = xtceDb.getParameter(pbPv.getId());
                 
                 if(ppDef!=null) {
                     ParameterValue pv = ParameterValue.fromGpb(ppDef, pbPv);
@@ -324,7 +317,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         if(p!=null) {
             result= canProvide(p);
         } else { //check if it's system parameter
-            if(SystemParameterDb.isSystemParameter(id)) {
+            if(XtceDb.isSystemParameter(id)) {
                 result = true;
             }
         }
@@ -345,12 +338,6 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     @Override
     public Parameter getParameter(NamedObjectId id) throws InvalidIdentification {
         Parameter p = xtceDb.getParameter(id);
-        if(p==null) {
-            if(SystemParameterDb.isSystemParameter(id)) {
-                p = xtceDb.getSystemParameterDb().getSystemParameter(id, true);
-            }
-
-        }
         if(p==null) {
             throw new InvalidIdentification();
         } else {

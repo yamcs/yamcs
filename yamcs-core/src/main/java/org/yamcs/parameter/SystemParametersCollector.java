@@ -23,7 +23,7 @@ import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.SystemParameterDb;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
@@ -89,7 +89,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         timeService = YamcsServer.getInstance(instance).getTimeService();
 
         serverId = YamcsServer.getServerId();
-        namespace = SystemParameterDb.YAMCS_SPACESYSTEM_NAME+NameDescription.PATH_SEPARATOR+serverId;
+        namespace = XtceDb.YAMCS_SPACESYSTEM_NAME+NameDescription.PATH_SEPARATOR+serverId;
         log.debug("Using {} as serverId, and {} as namespace for system parameters", serverId, namespace);
         if(provideJvmVariables) {
             sp_jvmTotalMemory_id = NamedObjectId.newBuilder().setName(namespace+"/jvmTotalMemory").build();

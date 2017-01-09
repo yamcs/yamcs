@@ -22,7 +22,6 @@ import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.SystemParameterDb;
 import org.yamcs.xtce.XtceDb;
 
 public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener, CommandHistoryConsumer {
@@ -50,13 +49,13 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
         List<ParameterValue> pvList = new ArrayList<ParameterValue>();
 
         for(CommandHistoryAttribute cha: pc.getAttributes()) {
-            String fqn = SystemParameterDb.YAMCS_CMD_SPACESYSTEM_NAME+"/"+cha.getName();
-            if(!xtcedb.getSystemParameterDb().isDefined(fqn)) {
+            String fqn = XtceDb.YAMCS_CMD_SPACESYSTEM_NAME+"/"+cha.getName();
+            if(xtcedb.getParameter(fqn)==null) {
               //if it was required in the algorithm, it would be already in the system parameter db  
-                log.debug("Not adding "+fqn+" to the context parameter list because it is not defined in the SystemParameterDb");
+                log.debug("Not adding "+fqn+" to the context parameter list because it is not defined in the XtceDb");
                 continue;
             }
-            Parameter p = xtcedb.getSystemParameterDb().getSystemParameter(fqn, true);
+            Parameter p = xtcedb.getParameter(fqn);
 
             ParameterValue pv = new ParameterValue(p);
             pv.setEngineeringValue(ValueUtility.fromGpb(cha.getValue()));
@@ -64,13 +63,13 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
         }
         Map<Argument, Value> argAssignment = pc.getArgAssignment();
         for(Map.Entry<Argument, Value> e: argAssignment.entrySet()) {
-            String fqn = SystemParameterDb.YAMCS_CMD_SPACESYSTEM_NAME+"/arg/"+e.getKey().getName();
-            if(!xtcedb.getSystemParameterDb().isDefined(fqn)) {
+            String fqn = XtceDb.YAMCS_CMD_SPACESYSTEM_NAME+"/arg/"+e.getKey().getName();
+            if(xtcedb.getParameter(fqn)==null) {
                 //if it was required in the algorithm, it would be already in the SystemParameterdb  
-                log.debug("Not adding "+fqn+" to the context parameter list because it is not defined in the SystemParameterDb");
+                log.debug("Not adding "+fqn+" to the context parameter list because it is not defined in the XtceDb");
                 continue;
             }
-            Parameter p =  xtcedb.getSystemParameterDb().getSystemParameter(fqn, true);
+            Parameter p =  xtcedb.getParameter(fqn);
 
             ParameterValue pv = new ParameterValue(p);
             pv.setEngineeringValue(e.getValue());
@@ -117,12 +116,12 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
     //called from the command history when things are added in the stream
     @Override
     public void updatedCommand(CommandId cmdId, long changeDate, String key, Value value) {
-        String fqn = SystemParameterDb.YAMCS_CMDHIST_SPACESYSTEM_NAME+"/"+key;
-        if(!xtcedb.getSystemParameterDb().isDefined(fqn)) {
+        String fqn = XtceDb.YAMCS_CMDHIST_SPACESYSTEM_NAME+"/"+key;
+        if(xtcedb.getParameter(fqn)==null) {
             //if it was required in the algorithm, it would be in the SystemParameterDb  
-            log.debug("Not adding "+fqn+" to the context parameter list because it is not defined in the SystemParameterDb");
+            log.debug("Not adding "+fqn+" to the context parameter list because it is not defined in the XtceDb");
         } else {            
-            Parameter p = xtcedb.getSystemParameterDb().getSystemParameter(fqn, true);
+            Parameter p = xtcedb.getParameter(fqn);
             ParameterValue pv = new ParameterValue(p);
             pv.setEngineeringValue(value);
             AlgorithmManager algMgr = cvh.getAlgorithmManager();

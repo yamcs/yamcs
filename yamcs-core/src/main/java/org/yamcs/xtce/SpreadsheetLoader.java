@@ -1803,7 +1803,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
                 if(paraInout==null) throw new SpreadsheetLoadException(ctx, "You must specify in/out attribute for this parameter");
                 if ("in".equalsIgnoreCase(paraInout)) {
-                    if(paraRef.startsWith(SystemParameterDb.YAMCS_CMD_SPACESYSTEM_NAME) || paraRef.startsWith(SystemParameterDb.YAMCS_CMDHIST_SPACESYSTEM_NAME)) {
+                    if(paraRef.startsWith(XtceDb.YAMCS_CMD_SPACESYSTEM_NAME) || paraRef.startsWith(XtceDb.YAMCS_CMDHIST_SPACESYSTEM_NAME)) {
                         algorithm.setScope(Algorithm.Scope.commandVerification);
                     }
                     inputParameterRefs.add(paraRef);

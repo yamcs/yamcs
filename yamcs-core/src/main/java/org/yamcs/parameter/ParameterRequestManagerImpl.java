@@ -174,7 +174,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
      * @throws InvalidIdentification
      */
     public int addRequest(final Parameter para, final ParameterConsumer tpc) throws InvalidIdentification {
-        ParameterProvider provider=getProvider(para);
+        ParameterProvider provider = getProvider(para);
         final int id=lastSubscriptionId.incrementAndGet();
         log.debug("new request with subscriptionId {} for parameter: {}, provider: {}", id, para.getQualifiedName(), provider);
         addItemToRequest(id, para, provider);
@@ -243,6 +243,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
      * @param subscriptionId
      * @param paraList - list of parameters that are added to the subscription
      * @throws InvalidIdentification
+     * @throws InvalidRequestIdentification 
      */
     public void addItemsToRequest(final int subscriptionId, final List<Parameter> paraList) throws InvalidIdentification, InvalidRequestIdentification {
         log.debug("adding to subscriptionID {}: items: {} ", subscriptionId, paraList);
@@ -365,6 +366,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
             }
         }
         throw new NoProviderException("No provider found for "+param);
+        
     }
 
 

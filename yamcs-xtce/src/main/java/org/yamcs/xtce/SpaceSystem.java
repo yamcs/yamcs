@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SpaceSystem extends NameDescription {
 
-    private static final long serialVersionUID = 4L;
+    private static final long serialVersionUID = 6L;
     private SequenceContainer rootSequenceContainer;
 
 
@@ -36,7 +36,7 @@ public class SpaceSystem extends NameDescription {
     private HashMap<String, ParameterType> parameterTypes = new HashMap<>();
     private HashMap<String, Algorithm> algorithms = new HashMap<>();
     private HashMap<String, MetaCommand> commands = new HashMap<>();
-    private transient HashMap<Class<?>, NonStandardData> nonStandardDatas=new HashMap<>();
+    private HashMap<Class<?>, NonStandardData> nonStandardDatas = new HashMap<>();
 
     private HashMap<String, SpaceSystem> subsystems = new HashMap<String, SpaceSystem>();
     static Logger log = LoggerFactory.getLogger(SpaceSystem.class.getName());
@@ -251,7 +251,4 @@ public class SpaceSystem extends NameDescription {
     public String toString() {
     	return "SpaceSystem["+getName()+"]";
     }
-
-
-
 }

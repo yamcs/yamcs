@@ -40,10 +40,10 @@ public abstract class AbstractFileLoader implements SpaceSystemLoader {
                 try {
                     Date serializedDate=sdf.parse(line.substring(configName.length()+1));
                     if(serializedDate.getTime()>=f.lastModified()) {
-                        log.debug("Serialized flatfile ppdb "+configName+" is up to date");
+                        log.debug("Serialized "+configName+" is up to date");
                         return false;
                     } else {
-                        log.debug("Serialized flatfile ppdb"+configName+" is NOT up to date: serializedDate="+serializedDate+" mdbConsistencyDate="+new Date(f.lastModified()));
+                        log.debug("Serialized "+configName+" is NOT up to date: serializedDate="+serializedDate+" mdbConsistencyDate="+new Date(f.lastModified()));
                         return true;
                     }
                 } catch (ParseException e) {
