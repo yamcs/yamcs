@@ -233,8 +233,10 @@ public class BackFiller implements StreamSubscriber {
     }
 
     public void stop() {
-        for(Stream s: subscribedStreams) {
-            s.removeSubscriber(this);
+        if(subscribedStreams!=null) {
+            for(Stream s: subscribedStreams) {
+                s.removeSubscriber(this);
+            }
         }
         executor.shutdownNow();
     }
