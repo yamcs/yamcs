@@ -58,8 +58,8 @@ public class BackFiller implements StreamSubscriber {
     private Set<Long> streamUpdates;
     //streams which are monitored
     private List<Stream> subscribedStreams;
-    //how often (in seconds) the 
-    long streamUpdateFillFrequency = 300;
+    //how often (in seconds) the fillup based on the stream monitoring is started
+    long streamUpdateFillFrequency;
 
     BackFiller(ParameterArchive parchive, Map<String, Object> config) {
         this.parchive = parchive;
