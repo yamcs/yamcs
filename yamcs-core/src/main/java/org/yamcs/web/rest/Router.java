@@ -42,7 +42,6 @@ import org.yamcs.web.rest.archive.ArchiveEventRestHandler;
 import org.yamcs.web.rest.archive.ArchiveIndexRestHandler;
 import org.yamcs.web.rest.archive.ArchivePacketRestHandler;
 import org.yamcs.web.rest.archive.ArchiveParameterRestHandler;
-import org.yamcs.web.rest.archive.ArchiveParameterReplayRestHandler;
 import org.yamcs.web.rest.archive.ArchiveStreamRestHandler;
 import org.yamcs.web.rest.archive.ArchiveTableRestHandler;
 import org.yamcs.web.rest.archive.ArchiveTagRestHandler;
