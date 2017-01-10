@@ -31,10 +31,9 @@
         }
 
         function getParameterSamples(qname, options, canceler) {
-            if(!!remoteConfig['useParameterArchive']) {
-                var targetUrl = '/api/archive/' + yamcsInstance + '/parameters2' + qname + '/samples';
-            } else {
-                var targetUrl = '/api/archive/' + yamcsInstance + '/parameters' + qname + '/samples';
+            var targetUrl = '/api/archive/' + yamcsInstance + '/parameters' + qname + '/samples';
+            if(('useParameterArchive' in remoteConfig) && (!remoteConfig['useParameterArchive'])) {
+                options['source'] = 'replay';
             }
             targetUrl += toQueryString(options);
             var ngOpts = {};
@@ -54,10 +53,9 @@
         }
 
         function getParameterHistory(qname, options) {
-            if(!!remoteConfig['useParameterArchive']) {
-                var targetUrl = '/api/archive/' + yamcsInstance + '/parameters2' + qname;
-            } else {
-                var targetUrl = '/api/archive/' + yamcsInstance + '/parameters' + qname;
+            var targetUrl = '/api/archive/' + yamcsInstance + '/parameters' + qname;
+            if(('useParameterArchive' in remoteConfig) && (!remoteConfig['useParameterArchive'])) {
+                options['source'] = 'replay';
             }
             targetUrl += toQueryString(options);
             return $http.get(targetUrl).then(function (response) {
