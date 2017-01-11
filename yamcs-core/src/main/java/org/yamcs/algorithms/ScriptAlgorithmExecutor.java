@@ -4,11 +4,8 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.script.Compilable;
 import javax.script.CompiledScript;
@@ -33,10 +30,8 @@ import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding.Encoding;
 import org.yamcs.xtce.IntegerParameterType;
-import org.yamcs.xtce.OnParameterUpdateTrigger;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.StringParameterType;
@@ -59,51 +54,38 @@ import com.google.protobuf.ByteString;
  * of the maven-compiler-plugin in order to lift Sun's Access Restrictions on these
  * internal classes), we generate classes with primitive raw/eng values when needed.  
  */
-public class AlgorithmEngine {
-    static final Logger log=LoggerFactory.getLogger(AlgorithmEngine.class);
+public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
+    static final Logger log = LoggerFactory.getLogger(ScriptAlgorithmExecutor.class);
 
     static final String RETURN_VALUE_VAR_NAME="returnValue";
     
     ScriptEngine scriptEngine; // Not shared with other algorithm engines
     CompiledScript compiledScript;
-    Algorithm def;
 
-    // Keep only unique arguments (for subscription purposes)
-    private Set<Parameter> requiredParameters=new HashSet<Parameter>();
     // Keeps one ValueBinding instance per InputParameter, recycled on each algorithm run
-    private Map<InputParameter,ValueBinding> bindingsByInput=new HashMap<InputParameter,ValueBinding>();
+    private Map<InputParameter,ValueBinding> bindingsByInput = new HashMap<InputParameter,ValueBinding>();
     // Keeps one OutputValueBinding instance per OutputParameter, recycled on each algorithm run
-    private Map<OutputParameter,OutputValueBinding> bindingsByOutput=new HashMap<OutputParameter,OutputValueBinding>();
+    private Map<OutputParameter,OutputValueBinding> bindingsByOutput = new HashMap<OutputParameter,OutputValueBinding>();
     // Each ValueBinding class represent a unique raw/eng type combination (== key)
-    private static Map<String, Class<ValueBinding>> valueBindingClasses=Collections.synchronizedMap(new HashMap<String,Class<ValueBinding>>());
+    private static Map<String, Class<ValueBinding>> valueBindingClasses = Collections.synchronizedMap(new HashMap<String,Class<ValueBinding>>());
 
-    private Set<InputParameter>mandatoryToRun = new HashSet<InputParameter>();
-    
-    protected boolean updated=true;
 
-    final AlgorithmExecutionContext execCtx;
-    
-    CopyOnWriteArrayList<AlgorithmExecListener> execListeners = new CopyOnWriteArrayList<AlgorithmExecListener>();
-
-    public AlgorithmEngine(Algorithm algorithmDef, ScriptEngine scriptEngine, AlgorithmExecutionContext execCtx) {
-        this.def=algorithmDef;
+    public ScriptAlgorithmExecutor(Algorithm algorithmDef, ScriptEngine scriptEngine, AlgorithmExecutionContext execCtx) {
+        super(algorithmDef, execCtx);
         this.scriptEngine=scriptEngine;
-        this.execCtx = execCtx;
+      
 
         for(InputParameter inputParameter:algorithmDef.getInputSet()) {
-            requiredParameters.add(inputParameter.getParameterInstance().getParameter());
-
             // Default-define all input values to null to prevent ugly runtime errors
-            String scriptName=inputParameter.getInputName();
+            String scriptName = inputParameter.getInputName();
             if(scriptName==null) {
-                scriptName=inputParameter.getParameterInstance().getParameter().getName();
+                scriptName = inputParameter.getParameterInstance().getParameter().getName();
             }
             scriptEngine.put(scriptName, null);
-            if(inputParameter.isMandatory()) mandatoryToRun.add(inputParameter);
         }
 
         // Improve error msgs
-        scriptEngine.put(ScriptEngine.FILENAME, def.getQualifiedName());
+        scriptEngine.put(ScriptEngine.FILENAME, algorithmDef.getQualifiedName());
 
         // Set empty output bindings so that algorithms can write their attributes
         for(OutputParameter outputParameter:algorithmDef.getOutputSet()) {
@@ -118,86 +100,22 @@ public class AlgorithmEngine {
 
         if(scriptEngine instanceof Compilable) {
             try {
-                compiledScript = ((Compilable)scriptEngine).compile(def.getAlgorithmText());
+                compiledScript = ((Compilable)scriptEngine).compile(algorithmDef.getAlgorithmText());
             } catch (ScriptException e) {
                 log.warn("Error while compiling algorithm "+algorithmDef.getName()+": "+e.getMessage(), e);
             }
         }
     }
 
-    /**
-     * update the parameters and return true if the algorithm should run
-     * @param items
-     * @return
-     */
-    synchronized boolean updateParameters(ArrayList<ParameterValue> items) {
-        ArrayList<ParameterValue> allItems=new ArrayList<ParameterValue>(items);
-        boolean skipRun=false;
-
-        // Set algorithm arguments based on incoming values
-        for(InputParameter inputParameter:def.getInputSet()) {
-            ParameterInstanceRef pInstance = inputParameter.getParameterInstance();
-            for(ParameterValue pval:allItems) {
-                if(pInstance.getParameter().equals(pval.getParameter())) {
-                    if(getLookbackSize(pInstance.getParameter())==0) {
-                        updateInput(inputParameter, pval);
-                    } else {
-                        ParameterValue historicValue=execCtx.getHistoricValue(pInstance);
-                        if(historicValue!=null) {
-                            updateInput(inputParameter, historicValue);
-                        }
-                    }
-                }
-            }
-            if(!skipRun && inputParameter.isMandatory() && !bindingsByInput.containsKey(inputParameter)) {
-                log.trace("Not running algorithm {} because mandatory input {} is not present", def.getName(), inputParameter.getInputName());
-                skipRun = true;
-            }
-        }
-
-        // But run it only, if this satisfies an onParameterUpdate trigger
-        boolean triggered=false;
-        for(OnParameterUpdateTrigger trigger:def.getTriggerSet().getOnParameterUpdateTriggers()) {
-            if(triggered) break;
-            for(ParameterValue pval:allItems) {
-                if(pval.getParameter().equals(trigger.getParameter())) {
-                    triggered=true;
-                    break;
-                }
-            }
-        }
-        boolean shouldRun =(!skipRun && triggered);
-        return shouldRun;
-    }
-
    
-    public Algorithm getAlgorithm() {
-        return def;
-    }
-
-    public Set<Parameter> getRequiredParameters() {
-        return requiredParameters;
-    }
-
-    public int getLookbackSize(Parameter parameter) {
-        // e.g. [ -3, -2, -1, 0 ]
-        int min=0;
-        for(InputParameter p:def.getInputSet()) {
-            ParameterInstanceRef pInstance=p.getParameterInstance();
-            if(pInstance.getParameter().equals(parameter) && pInstance.getInstance()<min) {
-                min=p.getParameterInstance().getInstance();
-            }
-        }
-        return -min;
-    }
-
-    private void updateInput(InputParameter inputParameter, ParameterValue newValue) {
+    @Override
+    protected void updateInput(InputParameter inputParameter, ParameterValue newValue) {
         // First time for an inputParameter, it will register a ValueBinding object with the engine.
         // Further calls will just update that object
         if(!bindingsByInput.containsKey(inputParameter)) {
             ValueBinding valueBinding = toValueBinding(newValue);
             bindingsByInput.put(inputParameter, valueBinding);
-            for(InputParameter input:def.getInputSet()) {
+            for(InputParameter input:algorithmDef.getInputSet()) {
                 if(input.equals(inputParameter)) {
                     String scriptName=inputParameter.getInputName();
                     if(scriptName==null) {
@@ -211,19 +129,17 @@ public class AlgorithmEngine {
     }
     
 
-    /**
-     * Runs the associated algorithm with the latest InputParameters
-     * @param acqTime 
-     * @param genTime 
-     * @return the outputted parameters, if any
+    /* (non-Javadoc)
+     * @see org.yamcs.algorithms.AlgorithmEngineIf#runAlgorithm(long, long)
      */
+    @Override
     public synchronized List<ParameterValue> runAlgorithm(long acqTime, long genTime) {
-        log.trace("Running algorithm '{}'",def.getName());
+        log.trace("Running algorithm '{}'",algorithmDef.getName());
         try {
             if(compiledScript!=null) {
                 compiledScript.eval();
             } else {
-                scriptEngine.eval(def.getAlgorithmText());
+                scriptEngine.eval(algorithmDef.getAlgorithmText());
             }
         } catch (ScriptException e) {
             log.warn("Error while executing algorithm: "+e.getMessage(), e);
@@ -232,7 +148,7 @@ public class AlgorithmEngine {
         Object returnValue = scriptEngine.get(RETURN_VALUE_VAR_NAME);
 
         List<ParameterValue> outputValues=new ArrayList<ParameterValue>();
-        for(OutputParameter outputParameter:def.getOutputSet()) {
+        for(OutputParameter outputParameter:algorithmDef.getOutputSet()) {
             String scriptName=outputParameter.getOutputName();
             if(scriptName==null) {
                 scriptName=outputParameter.getParameter().getName();
@@ -247,13 +163,11 @@ public class AlgorithmEngine {
                 }
             } else {
                 log.warn("Error while executing algorithm {}. Wrong type of output parameter. Ensure you assign to '{}.value' and not directly to '{}'",
-                        def.getQualifiedName(), scriptName, scriptName);
+                        algorithmDef.getQualifiedName(), scriptName, scriptName);
             }
 
         }
-        for(AlgorithmExecListener listener: execListeners) {
-            listener.algorithmRun(returnValue, outputValues);
-        }
+        propagateToListeners(returnValue, outputValues);
         return outputValues; 
     }
 
@@ -335,10 +249,6 @@ public class AlgorithmEngine {
         } else {
             pv.setRawValue(doubleValue);
         }
-    }
-
-    public boolean isUpdated() {
-        return updated;
     }
 
     @Override
@@ -482,10 +392,5 @@ public class AlgorithmEngine {
             throw new IllegalArgumentException("Unexpected value of type "+v.getType());
         }
     }
-
-
-    public void addExecListener(AlgorithmExecListener listener) {
-        execListeners.add(listener);
-    }
-    
+  
 }

@@ -150,6 +150,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
             int n = pvlist.size();
             for(int i = n-1; i>=0; i--) {
                 org.yamcs.parameter.ParameterValue pv = pvlist.get(i);
+                
                 if(pv.getGenerationTime() < start) continue;
                 if(pv.getGenerationTime() > stop) break;
                 if(pv.getGenerationTime() > sampler.lastSampleTime()) {
@@ -369,7 +370,8 @@ public class ArchiveParameterRestHandler extends RestHandler {
         //now add some data from cache
         if (pcache!=null) {
             if(mpvr.isAscending())  {
-                sendFromCache(p, id, pcache, true, lastParameterTime.l, mpvr.getStop(), replayListener);      
+                long start = (lastParameterTime.l==TimeEncoding.INVALID_INSTANT)?mpvr.getStart()-1:lastParameterTime.l;
+                sendFromCache(p, id, pcache, true, start, mpvr.getStop(), replayListener);      
             } else if (lastParameterTime.l==TimeEncoding.INVALID_INSTANT) {  //no data retrieved from archive, but maybe there is still something in the cache to send
                 sendFromCache(p, id, pcache, false, mpvr.getStart(), mpvr.getStop(), replayListener);
             }

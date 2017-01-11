@@ -161,7 +161,7 @@ public class Backup extends Command {
             try(DirectoryStream<Path> dirStream = Files.newDirectoryStream(path)) {
                 for(Path p: dirStream) {
                     isEmpty = false;
-                    if(p.endsWith("LATEST_BACKUP")) {
+                    if(p.endsWith("meta")) {
                         isBackupDir = true;
                         break;
                     }

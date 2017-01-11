@@ -171,6 +171,10 @@ public class RDBFactory implements Runnable {
 
     public synchronized void dispose(YRDB rdb) {
         DbAndAccessTime daat = databases.get(rdb.getPath());
+        if(daat==null) {
+            log.error("Dispose called with an invalid rdb (already disposed??): {}", rdb.getPath());
+            return;
+        }
         daat.lastAccess = System.currentTimeMillis();
         daat.refcount--;
     }

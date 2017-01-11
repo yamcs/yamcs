@@ -235,7 +235,7 @@ public class YarchDatabase {
 
     /**
      * serializes to disk to the rootDir/name.def
-     * @param def
+     * @param algorithmDef
      */
     void serializeTableDefinition(TableDefinition td) {
         String fn=getRoot()+"/"+td.getName()+".def";
