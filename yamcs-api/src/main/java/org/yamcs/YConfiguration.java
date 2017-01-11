@@ -112,7 +112,7 @@ public class YConfiguration {
 
 
     /**
-     * Loads (if not already loaded) and returns a configuration corresponding to a file <subsystem>.yaml
+     * Loads (if not already loaded) and returns a configuration corresponding to a file &lt;subsystem&gt;.yaml
      *
      * This method does not reload the configuration file if it has changed.
      *
@@ -135,7 +135,7 @@ public class YConfiguration {
     }
 
     /**
-     * Loads and returns a configuration corresponding to a file <subsystem>.yaml
+     * Loads and returns a configuration corresponding to a file &lt;subsystem&gt;.yaml
      *
      * This method reloads the configuration file always.
      *

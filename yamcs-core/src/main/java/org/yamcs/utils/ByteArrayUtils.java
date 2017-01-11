@@ -9,7 +9,7 @@ public class ByteArrayUtils {
      * returns true if a starts with b
      * @param a
      * @param b
-     * @return true if a and b are not null, a.length>=b.length and a[i]=b[i] for i=0...b.length-1
+     * @return true if a and b are not null, a.length &ge; b.length and a[i]=b[i] for i=0...b.length-1
      * @throws NullPointerException if any of them is null
      */
     static public boolean startsWith(byte[] a, byte[] b) {
@@ -29,7 +29,7 @@ public class ByteArrayUtils {
      * @param a - the first array to compare
      * @param b - the second array to compare
      * @param n - the number of bytes to compare
-     * @return true if a.length>=n, b.length >=n and a[i]==b[i] for i=0..n-1
+     * @return true if a.length &gt;= n, b.length &gt;= n and a[i]==b[i] for i=0..n-1
      * @throws NullPointerException if any of them is null
      */
     static public boolean equalsPrefix(byte[] a, byte b[], int n) {

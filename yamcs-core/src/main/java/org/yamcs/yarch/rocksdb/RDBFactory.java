@@ -56,7 +56,6 @@ public class RDBFactory implements Runnable {
      * 
      * 
      * @param absolutePath - absolute path - should be a directory
-     * @param cfSerializer - the class that converts between column families and byte arrays
      * @param readonly - open in readonly mode; if the database is open in readwrite mode, it will be returned like that
      * @return the database created or opened
      * @throws IOException

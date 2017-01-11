@@ -44,7 +44,6 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
      * @param instance 
      * @param name 
      * @param config 
-     * @param spec
      * @throws ConfigurationException if port is not defined in the config 
      */
     public UdpParameterDataLink(String instance, String name, Map<String, Object> config) throws ConfigurationException  {

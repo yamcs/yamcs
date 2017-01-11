@@ -14,7 +14,7 @@ import com.beust.jcommander.internal.Console;
 /**
  * Command line utility for doing yamcs stuff.
  * 
- * This usage is yamcs <command> [command_specific_options]
+ * This usage is yamcs &lt;command&gt; [command_specific_options]
  * 
  * The commands implemented currently are:
  *   backup

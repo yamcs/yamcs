@@ -81,7 +81,6 @@ public class XtceTmRecorder extends AbstractService {
      * @throws ConfigurationException
      * @throws StreamSqlException
      * @throws ParseException
-     * @throws ActiveMQException
      * @throws YamcsApiException
      */
     public XtceTmRecorder(String yamcsInstance, Map<String, Object> config) throws IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {

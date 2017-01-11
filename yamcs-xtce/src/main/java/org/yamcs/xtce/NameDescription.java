@@ -133,7 +133,7 @@ public class NameDescription implements Serializable {
      * Adds all aliases to the existing aliases.
      * The new aliases may overwrite already existing aliases - in this case the old ones will be replaced with the new ones.
      *
-     * @param aliasSet
+     * @param newAliases
      */
     public void addAliases(XtceAliasSet newAliases) {
         if(xtceAliasSet==null) {

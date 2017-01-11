@@ -432,7 +432,7 @@ public class RestRequest {
     /**
      * add numBytes to the transferred size
      * 
-     * @param bumBytes
+     * @param numBytes
      */
     public void addTransferredSize(long numBytes) {
         txSize+=numBytes;

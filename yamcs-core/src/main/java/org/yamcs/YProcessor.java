@@ -671,7 +671,7 @@ public class YProcessor extends AbstractService {
     /**
      * returns a list of all processors names
      * 
-     * @return all processors names as a list of <instance>.<processorName> 
+     * @return all processors names as a list of instance.processorName 
      */
     public static List<String> getAllProcessors() {
         List<String> l = new ArrayList<String>(instances.size());

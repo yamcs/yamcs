@@ -77,7 +77,6 @@ public interface AuthModule {
      * returns the user authenticated by the token
      * 
      * @param authToken
-     * @throws InvalidAuthenticationToken thrown in case the authentication token is not (anymore) valid
      * @return the authenticated user
      */
     User getUser(AuthenticationToken authToken);

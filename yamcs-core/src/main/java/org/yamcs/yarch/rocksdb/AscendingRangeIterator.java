@@ -7,7 +7,7 @@ import org.yamcs.utils.ByteArrayUtils;
  * wrapper around a rocksdb iterator that only supports next() and is restricted to a range.
  * 
  * if strictStart=true 
- *   -> the first rangeStart.length bytes of the key are compared with the rangeStart, if they are equal the record is skipped.
+ *   then the first rangeStart.length bytes of the key are compared with the rangeStart, if they are equal the record is skipped.
  *    same is valid for strictEnd  
  *  
  *  So with the following DB:

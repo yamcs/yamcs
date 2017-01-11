@@ -141,7 +141,6 @@ public class HttpClient {
      * @param receiver - send all the data to this receiver. To find out when the request has been finished, the Future has to be used
      * @return a future indicating when the operation is completed.
      * @throws URISyntaxException
-     * @throws InterruptedException
      */
     public CompletableFuture<Void> doBulkRequest(String url, HttpMethod httpMethod, byte[] body, AuthenticationToken authToken, BulkRestDataReceiver receiver) throws URISyntaxException {
         BulkChannelHandler channelHandler = new BulkChannelHandler(receiver);

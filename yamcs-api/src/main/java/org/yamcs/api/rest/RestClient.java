@@ -100,7 +100,7 @@ public class RestClient {
      * @param method - http method to use
      * @param body - the body of the request. Can be used even for the GET requests although strictly not allowed by the HTTP standard.
      * @return - the response body
-     * @throws RuntimeException(URISyntaxException) thrown in case the resource specification is invalid
+     * @throws RuntimeException thrown in case the resource specification is invalid
      */
     public CompletableFuture<String> doRequest(String resource, HttpMethod method, String body) {
         CompletableFuture<byte[]> cf;
@@ -154,8 +154,7 @@ public class RestClient {
      * @param resource
      * @param receiver
      * @return future that is completed when the request is finished
-     * @throws InterruptedException
-     * @throws RuntimeException(URISyntaxException) - thrown if the uri + resource does not form a correct URL
+     * @throws RuntimeException - thrown if the uri + resource does not form a correct URL
      */
     public CompletableFuture<Void> doBulkGetRequest(String resource, BulkRestDataReceiver receiver) {
         return doBulkGetRequest(resource, new byte[0], receiver);

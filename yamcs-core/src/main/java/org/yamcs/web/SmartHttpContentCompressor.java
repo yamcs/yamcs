@@ -16,7 +16,7 @@ import io.netty.handler.codec.http.HttpResponse;
  * <p>
  * Should be revisited with Netty upgrades, to see if this workaround is still needed.
  * 
- * @see http://stackoverflow.com/questions/20136334/netty-httpstaticfileserver-example-not-working-with-httpcontentcompressor 
+ * @see <a href="http://stackoverflow.com/questions/20136334/netty-httpstaticfileserver-example-not-working-with-httpcontentcompressor"> this post</a> 
  */
 public class SmartHttpContentCompressor extends HttpContentCompressor {
 
