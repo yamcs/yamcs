@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YProcessor;
 import org.yamcs.commanding.InvalidCommandId;
@@ -16,6 +15,7 @@ import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.parameter.Value;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.yarch.Stream;
 
@@ -36,7 +36,7 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class CommandHistoryRequestManager extends AbstractService {
-    private ConcurrentHashMap<CommandId, CommandHistoryEntry> activeCommands=new ConcurrentHashMap<CommandId,CommandHistoryEntry>();
+    private ConcurrentHashMap<CommandId, CommandHistoryEntry> activeCommands = new ConcurrentHashMap<CommandId,CommandHistoryEntry>();
     private ConcurrentHashMap<CommandId, ConcurrentLinkedQueue<CommandHistoryConsumer>> cmdSubcriptions = new ConcurrentHashMap<CommandId ,ConcurrentLinkedQueue<CommandHistoryConsumer>>();
     private ConcurrentHashMap<CommandHistoryFilter,CommandHistoryConsumer> historySubcriptions = new ConcurrentHashMap<CommandHistoryFilter,CommandHistoryConsumer>();
 
@@ -52,7 +52,7 @@ public class CommandHistoryRequestManager extends AbstractService {
     public CommandHistoryRequestManager(YProcessor processor) throws ConfigurationException {
         this.processor = processor;
         this.instance = processor.getInstance();
-        log=LoggerFactory.getLogger(this.getClass().getName()+"["+processor.getName()+"]");
+        log = LoggingUtils.getLogger(this.getClass(), processor);
     }
 
     /**

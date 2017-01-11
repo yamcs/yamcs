@@ -3,12 +3,6 @@
 instances:
    - testinst
 
-#where to find the web directory with ccs, js etc
-# the displays are also loaded from <webRoot>/displays/<instance> directory
-webRoot: /opt/yamcs/web
-# port used by the webserver
-webPort: 8090
-
 #the location of the data and the incoming files
 # inside there should be a different directory for each instance and for each data type (e.g. /storage/yamcs-data/testinst/tm)
 dataDir: /tmp/yamcs-data
@@ -17,11 +11,11 @@ incomingDir: /tmp/yamcs-incoming
 #max length of the data of type binary(e.g. tm packets)
 maxBinaryLength: 1048576
 
-storageEngines: [rocksdb]
+storageEngines: [rocksdb, rocksdb2]
 
 rdbConfig:
      tableConfig:
-        - tableNamePattern: NonePartition
+        - tableNamePattern: .*
           maxOpenFiles: 100
           columnFamilyOptions: 
               targetFileSizeBase: 10240 #in KB
@@ -32,3 +26,29 @@ rdbConfig:
               maxWriteBufferNumber: 2
           tableFormatConfig:
               blockSize: 512 #KB
+              
+     
+webConfig:
+   #where to find the web directory with ccs, js etc
+   # the displays are also loaded from <webRoot>/displays/<instance> directory
+   # This may be a list to indicate multiple webroot locations
+   webRoot:
+      - /opt/yamcs/web
+
+   # port used by the webserver
+   port: 8090
+
+   # Indicates whether zero-copy can be used to optimize non-ssl static file serving
+   # Leave this true unless you encounter a specific deployment issue (e.g. some docker hosts)
+   zeroCopyEnabled: true
+
+   # Configure Cross—origin Resource Sharing for the REST API.
+   # This facilitates use of the API in remote ajax applications.
+   # Note that as per W3C spec the exact allowed origin MUST be defined if credentials are to be passed.
+   # Our current recommendation is to NOT enable CORS on a Yamcs deployment requiring authenticated access
+   # unless both the origin and Yamcs are backed by the same authentication mechanism.
+   # In the future we should support oauth2 to cover other use cases.
+   cors:
+      enabled: true
+      allowOrigin: "*"
+      allowCredentials: false

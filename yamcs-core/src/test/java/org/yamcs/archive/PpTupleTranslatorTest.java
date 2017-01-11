@@ -1,8 +1,8 @@
 package org.yamcs.archive;
 
 import static org.junit.Assert.*;
-import static org.yamcs.api.Protocol.DATA_TYPE_HEADER_NAME;
-import static org.yamcs.api.Protocol.decode;
+import static org.yamcs.api.artemis.Protocol.DATA_TYPE_HEADER_NAME;
+import static org.yamcs.api.artemis.Protocol.decode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,22 +10,24 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
-import org.hornetq.core.server.embedded.EmbeddedHornetQ;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.tctm.PpProviderAdapter;
+import org.yamcs.tctm.ParameterDataLinkInitialiser;
 import org.yamcs.StreamInitializer;
-import org.yamcs.YamcsServer;
-import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
-import org.yamcs.api.YamcsSession;
-import org.yamcs.api.YamcsClient.ClientBuilder;
-import org.yamcs.hornetq.PpTupleTranslator;
+import org.yamcs.api.artemis.Protocol;
+import org.yamcs.api.artemis.YamcsClient;
+import org.yamcs.api.artemis.YamcsSession;
+import org.yamcs.api.artemis.YamcsClient.ClientBuilder;
+import org.yamcs.artemis.ArtemisManagement;
+import org.yamcs.artemis.ArtemisServer;
+import org.yamcs.artemis.PpTupleTranslator;
+import org.yamcs.artemis.StreamAdapter;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.ParameterData.Builder;
@@ -40,22 +42,22 @@ import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchTestCase;
-import org.yamcs.hornetq.StreamAdapter;
 
 public class PpTupleTranslatorTest extends YarchTestCase {
-    static EmbeddedHornetQ hornetServer;
+    static EmbeddedActiveMQ artemisServer;
     public static int sequenceCount = 0;
     public static final String COL_BYTE = "/pp/byte";
     public static final String COL_STR = "/pp/string";
     public static final String COL_DOUBLE = "/pp/double";
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        hornetServer=YamcsServer.setupHornet();
+        artemisServer = ArtemisServer.setupArtemis();
+        ArtemisManagement.setupYamcsServerControl();
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-        YamcsServer.stopHornet();
+        artemisServer.stop();
     }
 
     /**
@@ -90,16 +92,16 @@ public class PpTupleTranslatorTest extends YarchTestCase {
         msg.putIntProperty( DATA_TYPE_HEADER_NAME, ProtoDataType.PP.getNumber() );
 
         long curTime = TimeEncoding.getWallclockTime();
-        msg.putLongProperty( PpProviderAdapter.PP_TUPLE_COL_GENTIME, curTime - 10 );
-        msg.putStringProperty( PpProviderAdapter.PP_TUPLE_COL_PPGROUP, "no-group" );
-        msg.putIntProperty( PpProviderAdapter.PP_TUPLE_COL_SEQ_NUM, PpTupleTranslatorTest.sequenceCount ++ );
-        msg.putLongProperty( PpProviderAdapter.PP_TUPLE_COL_RECTIME, curTime );
+        msg.putLongProperty( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GENTIME, curTime - 10 );
+        msg.putStringProperty( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GROUP, "no-group" );
+        msg.putIntProperty( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_SEQ_NUM, PpTupleTranslatorTest.sequenceCount ++ );
+        msg.putLongProperty( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_RECTIME, curTime );
 
         return msg;
     }
 
     public static Tuple getTuple() {
-        TupleDefinition tupleDef = PpProviderAdapter.PP_TUPLE_DEFINITION.copy();
+        TupleDefinition tupleDef = ParameterDataLinkInitialiser.PARAMETER_TUPLE_DEFINITION.copy();
         tupleDef.addColumn( COL_BYTE, DataType.BYTE );
         tupleDef.addColumn( COL_STR, DataType.STRING );
         tupleDef.addColumn( COL_DOUBLE, DataType.DOUBLE );
@@ -119,10 +121,10 @@ public class PpTupleTranslatorTest extends YarchTestCase {
 
     @Test
     public void testTranslation() throws Exception {
-        StreamInitializer streamInit = new StreamInitializer(context.getDbName());
+        StreamInitializer streamInit = new StreamInitializer(ydb.getName());
         streamInit.createStreams();
         
-        PpRecorder ppRecorder = new PpRecorder(context.getDbName());
+        ParameterRecorder ppRecorder = new ParameterRecorder(ydb.getName());
         ppRecorder.startAsync();
 
         // Get the stream
@@ -165,12 +167,14 @@ public class PpTupleTranslatorTest extends YarchTestCase {
 
         // And make sure the messages have appeared in the table
         final AtomicInteger tableReceivedCounter=new AtomicInteger(0);
-        execute("create stream stream_pp_out as select * from "+PpRecorder.TABLE_NAME);
-        Stream s=ydb.getStream("stream_pp_out");
+        execute("create stream stream_pp_out as select * from "+ParameterRecorder.TABLE_NAME);
+        Stream s = ydb.getStream("stream_pp_out");
         final Semaphore finished=new Semaphore(0);
         s.addSubscriber(new StreamSubscriber() {
             @Override
-            public void streamClosed(Stream stream) { }
+            public void streamClosed(Stream stream) {
+                finished.release();
+            }
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
                 ParameterValue pv = (ParameterValue)tuple.getColumn( COL_STR );
@@ -182,13 +186,13 @@ public class PpTupleTranslatorTest extends YarchTestCase {
                 pv = (ParameterValue)tuple.getColumn( COL_BYTE );
                 assertEquals( 1, pv.getEngValue().getSint32Value() );
 
-                assertTrue( "no-group".equals( tuple.getColumn( PpProviderAdapter.PP_TUPLE_COL_PPGROUP ) ) );
+                assertTrue( "no-group".equals( tuple.getColumn( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GROUP ) ) );
 
-                assertEquals( tableReceivedCounter.get(), tuple.getColumn( PpProviderAdapter.PP_TUPLE_COL_SEQ_NUM ) );
+                assertEquals( tableReceivedCounter.get(), tuple.getColumn( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_SEQ_NUM ) );
                 tableReceivedCounter.incrementAndGet();
 
-                long gentime = ((Long)tuple.getColumn( PpProviderAdapter.PP_TUPLE_COL_GENTIME )).longValue();
-                long rectime = ((Long)tuple.getColumn( PpProviderAdapter.PP_TUPLE_COL_RECTIME )).longValue();
+                long gentime = ((Long)tuple.getColumn( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GENTIME )).longValue();
+                long rectime = ((Long)tuple.getColumn( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_RECTIME )).longValue();
                 assertEquals( gentime, rectime - 10, 0.0001 );
 
                 if(tableReceivedCounter.get()==numMessages)finished.release();

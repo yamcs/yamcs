@@ -134,7 +134,7 @@ public class MultiParameterDataRetrieval {
 
         } finally {
             for(int i =0 ; i<mpvr.parameterIds.length; i++) {
-                its[i].dispose();
+                its[i].close();
             }
         }
     }

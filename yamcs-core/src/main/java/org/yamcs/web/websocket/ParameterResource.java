@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.NoPermissionException;
+import org.yamcs.ProcessorException;
 import org.yamcs.YProcessor;
-import org.yamcs.YProcessorException;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
@@ -47,50 +47,50 @@ import org.yamcs.web.ComputationFactory;
  *
  */
 public class ParameterResource extends AbstractWebSocketResource implements ParameterWithIdConsumer {
-    private static final Logger log = LoggerFactory.getLogger(ParameterResource.class);
 
-    private int subscriptionId = -1;
+    private static final Logger log = LoggerFactory.getLogger(ParameterResource.class);
+    public static final String RESOURCE_NAME = "parameter";
+
     public static final String WSR_subscribe = "subscribe";
     public static final String WSR_unsubscribe = "unsubscribe";
     public static final String WSR_subscribeAll = "subscribeAll";
     public static final String WSR_unsubscribeAll = "unsubscribeAll";
 
-    //subscription id used for computations
-    int compSubscriptionId=-1;
+    private int subscriptionId = -1;
+    private int compSubscriptionId = -1; //subscription id used for computations
 
     final CopyOnWriteArrayList<Computation> compList=new CopyOnWriteArrayList<>();
 
     ParameterWithIdRequestHelper pidrm;
 
-    public ParameterResource(YProcessor yproc, WebSocketFrameHandler wsHandler) {
-        super(yproc, wsHandler);
-        pidrm = new ParameterWithIdRequestHelper(yproc.getParameterRequestManager(), this);
-        wsHandler.addResource("parameter", this);
+    public ParameterResource(WebSocketProcessorClient client) {
+        super(client);
+        pidrm = new ParameterWithIdRequestHelper(processor.getParameterRequestManager(), this);
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder, AuthenticationToken authToken) throws WebSocketException {
+    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
 
         switch (ctx.getOperation()) {
         case WSR_subscribe:
             NamedObjectList subscribeList = decoder.decodeMessageData(ctx, SchemaYamcs.NamedObjectList.MERGE).build();
-            return subscribe(ctx.getRequestId(), subscribeList, authToken);
+            return subscribe(ctx.getRequestId(), subscribeList, client.getAuthToken());
         case "subscribe2":
             // TODO Experimental, but intended to replace WSR_subscribe in a next version. Provides same functionality
             // but with the option to ignore invalid parameters and continue with the subscription
             ParameterSubscriptionRequest req = decoder.decodeMessageData(ctx, SchemaWeb.ParameterSubscriptionRequest.MERGE).build();
-            return subscribe2(ctx.getRequestId(), req, authToken);
+            return subscribe2(ctx.getRequestId(), req, client.getAuthToken());
         case WSR_subscribeAll:
             StringMessage stringMessage = decoder.decodeMessageData(ctx, SchemaYamcs.StringMessage.MERGE).build();
-            return subscribeAll(ctx.getRequestId(), stringMessage.getMessage(), authToken);
+            return subscribeAll(ctx.getRequestId(), stringMessage.getMessage(), client.getAuthToken());
         case WSR_unsubscribe:
             NamedObjectList unsubscribeList = decoder.decodeMessageData(ctx, SchemaYamcs.NamedObjectList.MERGE).build();
-            return unsubscribe(ctx.getRequestId(), unsubscribeList, authToken);
+            return unsubscribe(ctx.getRequestId(), unsubscribeList, client.getAuthToken());
         case WSR_unsubscribeAll:
             return unsubscribeAll(ctx.getRequestId());
         case "subscribeComputations":
             ComputationDefList cdefList = decoder.decodeMessageData(ctx, SchemaComp.ComputationDefList.MERGE).build();
-            return subscribeComputations(ctx.getRequestId(), cdefList, authToken);
+            return subscribeComputations(ctx.getRequestId(), cdefList, client.getAuthToken());
         default:
             throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
         }
@@ -366,14 +366,14 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
     }
 
     @Override
-    public void switchYProcessor(YProcessor c, AuthenticationToken authToken) throws YProcessorException {
+    public void switchYProcessor(YProcessor oldProcessor, YProcessor newProcessor) throws ProcessorException {
         try {
-            pidrm.switchPrm(c.getParameterRequestManager(), authToken);
-            processor = c;
+            pidrm.switchPrm(newProcessor.getParameterRequestManager(), client.getAuthToken());
+            super.switchYProcessor(oldProcessor, newProcessor);
         } catch (InvalidIdentification e) {
             log.warn("got InvalidIdentification when resubscribing", e);
         } catch (NoPermissionException e) {
-            throw new YProcessorException("No permission", e);
+            throw new ProcessorException("No permission", e);
         }
     }
 }

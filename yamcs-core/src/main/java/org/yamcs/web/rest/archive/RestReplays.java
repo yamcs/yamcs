@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.ProcessorFactory;
+import org.yamcs.YConfiguration;
 import org.yamcs.YProcessor;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
@@ -13,9 +14,12 @@ import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
+import org.yamcs.web.ServiceUnavailableException;
 import org.yamcs.web.rest.RestReplayListener;
 
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.Service.Listener;
+import com.google.common.util.concurrent.Service.State;
 
 
 /**
@@ -23,6 +27,8 @@ import com.google.common.util.concurrent.MoreExecutors;
  */
 public class RestReplays {
     static AtomicInteger count = new AtomicInteger();
+    private static int MAX_CONCURRENT_REPLAYS = YConfiguration.getConfiguration("yamcs").getInt("WebConfig", "maxConcurrentReplays", 2*Runtime.getRuntime().availableProcessors());
+    static AtomicInteger concurrentCount = new AtomicInteger();
     
     /**
      * launches a replay will only return when the replay is done (either
@@ -32,6 +38,13 @@ public class RestReplays {
      * throwing it up as RestException
      */
     public static ReplayWrapper replay(String instance, AuthenticationToken token, ReplayRequest replayRequest, RestReplayListener l) throws HttpException {
+        int n = concurrentCount.incrementAndGet();
+       
+        if(n>MAX_CONCURRENT_REPLAYS) {
+            concurrentCount.decrementAndGet();
+            throw new ServiceUnavailableException("Maximum number of concurrent replays has been reached");
+        }
+        
         try {
             YProcessor yproc = ProcessorFactory.create(instance, "RestReplays"+count.incrementAndGet(), "ArchiveRetrieval", "internal", replayRequest);
             ReplayWrapper wrapper = new ReplayWrapper(l, yproc);
@@ -39,19 +52,16 @@ public class RestReplays {
             ParameterWithIdRequestHelper pidrm = new ParameterWithIdRequestHelper(yproc.getParameterRequestManager(), wrapper);
             pidrm.addRequest(replayRequest.getParameterRequest().getNameFilterList(), token);
             yproc.startAsync();
+            yproc.addListener(new Listener() {
+                public void terminated(State from){concurrentCount.decrementAndGet();}
+                public void failed(State from, Throwable failure) {concurrentCount.decrementAndGet();}                    
+            }, MoreExecutors.directExecutor());
             
             return wrapper;
             
         } catch (Exception e) {
             throw new InternalServerErrorException("Exception creating the replay", e);
         }
-       
-        
-      
-    }
-    
-    public static void replayAndWait(String instance, AuthenticationToken token, ReplayRequest replayRequest, RestReplayListener l) throws HttpException {
-        replay(instance, token, replayRequest, l).await();
     }
     
     
@@ -66,11 +76,6 @@ public class RestReplays {
         }
         
         
-        public void await() throws InternalServerErrorException {
-           yproc.awaitTerminated();
-        }
-        
-
         @Override
         public void update(int subscriptionId, List<ParameterValueWithId> params) {
             if (!wrappedListener.isReplayAbortRequested()) {

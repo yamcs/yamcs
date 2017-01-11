@@ -30,6 +30,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.handler.codec.http.LastHttpContent;
 import io.protostuff.JsonIOUtil;
 
 /**
@@ -43,7 +45,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(ArchiveIndexRestHandler.class);
 
     /**
-     * indexes a combination of multiple indexes. If nothing is specified, returns empty
+     * indexes a combination of multiple indexes. If nothing is specified, sends all available
      */
     @Route(path = "/api/archive/:instance/indexes", method = "GET")
     public void downloadIndexes(RestRequest req) throws HttpException {
@@ -301,7 +303,9 @@ public class ArchiveIndexRestHandler extends RestHandler {
                 if (buf.readableBytes() > 0) {
                     writeChunk();
                 }
-                HttpRequestHandler.stopChunkedTransfer(req.getChannelHandlerContext(), lastChannelFuture);
+                req.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                .addListener(ChannelFutureListener.CLOSE)
+                .addListener(l-> req.getCompletableFuture().complete(null));
             } catch (IOException e) {
                 log.error("Could not write final chunk of data", e);
                 req.getChannelHandlerContext().close();
@@ -309,6 +313,8 @@ public class ArchiveIndexRestHandler extends RestHandler {
         }
 
         private void writeChunk() throws IOException {
+            int txSize = buf.readableBytes();
+            req.addTransferredSize(txSize);
             stats.totalBytes += buf.readableBytes();
             stats.chunkCount++;
             lastChannelFuture = HttpRequestHandler.writeChunk(req.getChannelHandlerContext(), buf);

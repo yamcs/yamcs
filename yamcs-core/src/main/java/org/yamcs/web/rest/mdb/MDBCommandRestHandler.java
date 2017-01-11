@@ -24,15 +24,15 @@ public class MDBCommandRestHandler extends RestHandler {
     
     @Route(path = "/api/mdb/:instance/commands", method = "GET")
     @Route(path = "/api/mdb/:instance/commands/:name*", method = "GET")
-    public ChannelFuture getCommand(RestRequest req) throws HttpException {
+    public void getCommand(RestRequest req) throws HttpException {
         if (req.hasRouteParam("name")) {
-            return getCommandInfo(req);
+            getCommandInfo(req);
         } else {
-            return listCommands(req);
+            listCommands(req);
         }
     }
     
-    private ChannelFuture getCommandInfo(RestRequest req) throws HttpException {
+    private void getCommandInfo(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
@@ -40,10 +40,10 @@ public class MDBCommandRestHandler extends RestHandler {
         
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
         CommandInfo cinfo = XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.FULL, req.getOptions());
-        return sendOK(req, cinfo, SchemaMdb.CommandInfo.WRITE);
+        completeOK(req, cinfo, SchemaMdb.CommandInfo.WRITE);
     }
     
-    private ChannelFuture listCommands(RestRequest req) throws HttpException {
+    private void listCommands(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         
@@ -62,7 +62,7 @@ public class MDBCommandRestHandler extends RestHandler {
             
             Privilege privilege = Privilege.getInstance();
             for (MetaCommand cmd : mdb.getMetaCommands()) {
-                if (!privilege.hasPrivilege(req.getAuthToken(), Type.TC, cmd.getQualifiedName()))
+                if (!privilege.hasPrivilege1(req.getAuthToken(), Type.TC, cmd.getQualifiedName()))
                     continue;
                 if (matcher != null && !matcher.matches(cmd))
                     continue;
@@ -79,6 +79,6 @@ public class MDBCommandRestHandler extends RestHandler {
             }
         }
         
-        return sendOK(req, responseb.build(), SchemaRest.ListCommandInfoResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.ListCommandInfoResponse.WRITE);
     }
 }

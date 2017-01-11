@@ -1,1 +1,3 @@
-mdb: refmdb
+mdb:
+  - type: "sheet"
+    spec: "mdb/refmdb.xls"    

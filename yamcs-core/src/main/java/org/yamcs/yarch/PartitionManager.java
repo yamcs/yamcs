@@ -36,8 +36,8 @@ public abstract class PartitionManager {
 
 
     public PartitionManager(TableDefinition tableDefinition) {
-        this.tableDefinition=tableDefinition;
-        this.partitioningSpec=tableDefinition.getPartitioningSpec();
+        this.tableDefinition = tableDefinition;
+        this.partitioningSpec = tableDefinition.getPartitioningSpec();
         if(partitioningSpec.type==_type.NONE || partitioningSpec.type==_type.VALUE) {//pcache never changes in this case
             pcache = new Interval(TimeEncoding.MIN_INSTANT, TimeEncoding.MAX_INSTANT);
             intervals.put(TimeEncoding.MIN_INSTANT, pcache);
@@ -49,24 +49,29 @@ public abstract class PartitionManager {
      * 
      *  
      * @param partitionValueFilter - return only partitions whose value are in the filter. If null, return all partitions;
-     * @return
+     * @return iterator going over partitions
      */	
-    Iterator<List<Partition>> iterator(Set<Object> partitionValueFilter) {
-        Iterator<Entry<Long, Interval>> it=intervals.entrySet().iterator();
-        PartitionIterator pi=new PartitionIterator(partitioningSpec, it, partitionValueFilter, false);
+    public Iterator<List<Partition>> iterator(Set<Object> partitionValueFilter) {
+        Iterator<Entry<Long, Interval>> it = intervals.entrySet().iterator();
+        PartitionIterator pi = new PartitionIterator(partitioningSpec, it, partitionValueFilter, false);
         return pi;
     }
     
-    Iterator<List<Partition>> reverseIterator(Set<Object> partitionValueFilter) {
+    /**
+     * same as above, only in reverse direction
+     * @param partitionValueFilter
+     * @return
+     */
+    public Iterator<List<Partition>> reverseIterator(Set<Object> partitionValueFilter) {
         Iterator<Entry<Long, Interval>> it=intervals.descendingMap().entrySet().iterator();
         PartitionIterator pi=new PartitionIterator(partitioningSpec, it, partitionValueFilter, true);
         return pi;
     }
 
     /**
-     * Same as above only start from a specific start time
+     * See {@link #iterator(Set)}
      * @param start
-     * @param partitionValueFilter values
+     * @param partitionValueFilter values - return only partitions whose value are in the filter. If null, return all partitions;
      * 
      * @return an iterator over the partitions starting at the specified start time
      * 
@@ -91,7 +96,9 @@ public abstract class PartitionManager {
      * value can be null (in case of no value partitioning)
      * 
      * @param instant - time for which the partition has to be created - can be TimeEncoding.INVALID in case value only or no partitioning 
-     * @param value - value for which the partition has to be created - can be null in case of time only or no partitioning
+     * @param value - value for which the partition has to be created - can be null in case of time only or no partitioning.
+     * 
+     * For the enum partitions, the value is the index (type Short) rather than the string.
      *  
      * @return a Partition
      * @throws IOException 
@@ -117,8 +124,8 @@ public abstract class PartitionManager {
         partition = tmpInterval.get(value);
         if(partition == null) {
             if(partitioningSpec.timeColumn!=null) {
-                PartitionInfo pinfo = partitioningSpec.timePartitioningSchema.getPartitionInfo(instant);
-                partition = createPartition(pinfo, value);
+                PartitionInfo pinfo = partitioningSpec.getTimePartitioningSchema().getPartitionInfo(instant);
+                partition = createPartitionByTime(pinfo, value);
             } else {
                 partition = createPartition(value);
             }
@@ -164,7 +171,7 @@ public abstract class PartitionManager {
      * @return
      * @throws IOException 
      */
-    protected abstract Partition createPartition(PartitionInfo pinfo, Object value) throws IOException;
+    protected abstract Partition createPartitionByTime(PartitionInfo pinfo, Object value) throws IOException;
 
     /**
      * Create a partition for value based partitioning

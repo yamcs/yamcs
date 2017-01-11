@@ -459,6 +459,12 @@ public final class SchemaWeb
                     if(message.hasCommandQueueEvent())
                         output.writeObject(14, message.getCommandQueueEvent(), org.yamcs.protobuf.SchemaCommanding.CommandQueueEvent.WRITE, false);
 
+                    if(message.hasTmPacket())
+                        output.writeObject(15, message.getTmPacket(), org.yamcs.protobuf.SchemaYamcs.TmPacketData.WRITE, false);
+
+                    if(message.hasExtensionData())
+                        output.writeObject(100, message.getExtensionData(), org.yamcs.protobuf.SchemaWeb.WebSocketExtensionData.WRITE, false);
+
                 }
                 public boolean isInitialized(org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData message)
                 {
@@ -552,6 +558,14 @@ public final class SchemaWeb
                                 builder.setCommandQueueEvent(input.mergeObject(org.yamcs.protobuf.Commanding.CommandQueueEvent.newBuilder(), org.yamcs.protobuf.SchemaCommanding.CommandQueueEvent.MERGE));
 
                                 break;
+                            case 15:
+                                builder.setTmPacket(input.mergeObject(org.yamcs.protobuf.Yamcs.TmPacketData.newBuilder(), org.yamcs.protobuf.SchemaYamcs.TmPacketData.MERGE));
+
+                                break;
+                            case 100:
+                                builder.setExtensionData(input.mergeObject(org.yamcs.protobuf.Web.WebSocketExtensionData.newBuilder(), org.yamcs.protobuf.SchemaWeb.WebSocketExtensionData.MERGE));
+
+                                break;
                             default:
                                 input.handleUnknownField(number, this);
                         }
@@ -606,6 +620,8 @@ public final class SchemaWeb
                     case 12: return "linkEvent";
                     case 13: return "commandQueueInfo";
                     case 14: return "commandQueueEvent";
+                    case 15: return "tmPacket";
+                    case 100: return "extensionData";
                     default: return null;
                 }
             }
@@ -631,6 +647,8 @@ public final class SchemaWeb
                 fieldMap.put("linkEvent", 12);
                 fieldMap.put("commandQueueInfo", 13);
                 fieldMap.put("commandQueueEvent", 14);
+                fieldMap.put("tmPacket", 15);
+                fieldMap.put("extensionData", 100);
             }
         }
 
@@ -767,6 +785,125 @@ public final class SchemaWeb
             fieldMap.put("reply", 2);
             fieldMap.put("exception", 3);
             fieldMap.put("data", 4);
+        }
+    }
+
+    public static final class WebSocketExtensionData
+    {
+        public static final org.yamcs.protobuf.SchemaWeb.WebSocketExtensionData.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaWeb.WebSocketExtensionData.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaWeb.WebSocketExtensionData.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaWeb.WebSocketExtensionData.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Web.WebSocketExtensionData>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Web.WebSocketExtensionData message) throws java.io.IOException
+            {
+                if(message.hasType())
+                    output.writeUInt32(1, message.getType(), false);
+                if(message.hasData())
+                    output.writeByteArray(2, message.getData().toByteArray(), false);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Web.WebSocketExtensionData message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaWeb.WebSocketExtensionData.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaWeb.WebSocketExtensionData.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Web.WebSocketExtensionData> typeClass()
+            {
+                return org.yamcs.protobuf.Web.WebSocketExtensionData.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Web.WebSocketExtensionData.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Web.WebSocketExtensionData.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Web.WebSocketExtensionData message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Web.WebSocketExtensionData newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Web.WebSocketExtensionData.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Web.WebSocketExtensionData.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setType(input.readUInt32());
+                            break;
+                        case 2:
+                            builder.setData(com.google.protobuf.ByteString.copyFrom(input.readByteArray()));
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Web.WebSocketExtensionData.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Web.WebSocketExtensionData.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Web.WebSocketExtensionData.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaWeb.WebSocketExtensionData.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaWeb.WebSocketExtensionData.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Web.WebSocketExtensionData.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Web.WebSocketExtensionData.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Web.WebSocketExtensionData.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Web.WebSocketExtensionData.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Web.WebSocketExtensionData.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "type";
+                case 2: return "data";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("type", 1);
+            fieldMap.put("data", 2);
         }
     }
 

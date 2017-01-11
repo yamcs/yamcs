@@ -9,11 +9,11 @@ import java.util.TreeMap;
 
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
 
@@ -34,13 +34,10 @@ class ArchiveFillerTask implements ParameterConsumer {
     long threshold = 60000;
 
     public ArchiveFillerTask(ParameterArchive parameterArchive) {
-        log = LoggerFactory.getLogger(this.getClass().getName()+"["+parameterArchive.getYamcsInstance()+"]");
-
         this.parameterArchive = parameterArchive;
-        
-        
         this.parameterIdMap = parameterArchive.getParameterIdDb();
         this.parameterGroupIdMap = parameterArchive.getParameterGroupIdDb();
+        log = LoggingUtils.getLogger(this.getClass(), parameterArchive.getYamcsInstance());
     }
     
 

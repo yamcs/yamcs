@@ -1,10 +1,8 @@
 package org.yamcs.parameterarchive;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -12,11 +10,7 @@ import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.concurrent.Future;
 
-import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
-import org.rocksdb.DBOptions;
-import org.rocksdb.Options;
-import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 import org.rocksdb.WriteBatch;
@@ -30,18 +24,21 @@ import org.yamcs.time.TimeService;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.rocksdb.RDBFactory;
+import org.yamcs.yarch.rocksdb.StringColumnFamilySerializer;
+import org.yamcs.yarch.rocksdb.YRDB;
 
 import com.google.common.util.concurrent.AbstractService;
 
 public class ParameterArchive  extends AbstractService {
-    static final byte[] CF_NAME_meta_p2pid = "meta_p2pid".getBytes(StandardCharsets.US_ASCII);
-    static final byte[] CF_NAME_meta_pgid2pg = "meta_pgid2pg".getBytes(StandardCharsets.US_ASCII); 
-    static final byte[] CF_NAME_data_prefix = "data_".getBytes(StandardCharsets.US_ASCII);
+    static final String CF_NAME_meta_p2pid = "meta_p2pid";
+    static final String CF_NAME_meta_pgid2pg = "meta_pgid2pg"; 
+    static final String CF_NAME_data_prefix = "data_";
 
     private final Logger log = LoggerFactory.getLogger(ParameterArchive.class);
     private ParameterIdDb parameterIdMap;
     private ParameterGroupIdDb parameterGroupIdMap;
-    RocksDB rdb;
+    YRDB yrdb;
 
     ColumnFamilyHandle p2pid_cfh;
     ColumnFamilyHandle pgid2pg_cfh;
@@ -50,16 +47,17 @@ public class ParameterArchive  extends AbstractService {
     private TreeMap<Long, Partition> partitions = new TreeMap<Long, ParameterArchive.Partition>();
     SegmentEncoderDecoder vsEncoder = new SegmentEncoderDecoder();
     public final static boolean STORE_RAW_VALUES = true; 
-       
+
     final TimeService timeService;
     private Map<String, Object> backFillerConfig;
     private Map<String, Object> realtimeFillerConfig;
     private boolean realtimeFillerEnabled = false;
     private BackFiller backFiller;
     private RealtimeArchiveFiller realtimeFiller;
+    static StringColumnFamilySerializer cfSerializer = new StringColumnFamilySerializer();
     
-    public ParameterArchive(String instance, Map<String, Object> args) throws RocksDBException {
-      
+    public ParameterArchive(String instance, Map<String, Object> args) throws IOException, RocksDBException {
+
         this.yamcsInstance = instance;
         this.timeService = YamcsServer.getTimeService(instance);
         String dbpath = YarchDatabase.getInstance(instance).getRoot() +"/ParameterArchive";
@@ -69,23 +67,22 @@ public class ParameterArchive  extends AbstractService {
         } else {
             createDb(dbpath);
         }
-        parameterIdMap = new ParameterIdDb(rdb, p2pid_cfh);
-        parameterGroupIdMap = new ParameterGroupIdDb(rdb, pgid2pg_cfh);
-        
+        parameterIdMap = new ParameterIdDb(yrdb.getDb(), p2pid_cfh);
+        parameterGroupIdMap = new ParameterGroupIdDb(yrdb.getDb(), pgid2pg_cfh);
+
         if(args!=null) {
             processConfig(args);
         } else {
             backFiller = new BackFiller(this, null);
         }
-       // HttpServer.getInstance().registerRouteHandler(yamcsInstance, new ArchiveParameter2RestHandler());
+        // HttpServer.getInstance().registerRouteHandler(yamcsInstance, new ArchiveParameter2RestHandler());
     }
 
-    public ParameterArchive(String instance) throws RocksDBException {
+    public ParameterArchive(String instance) throws RocksDBException, IOException {
         this(instance, null);
-        
     }
 
-    
+
     private void processConfig(Map<String, Object> args) {
         for(String s:args.keySet()) {
             if("backFiller".equals(s)) {
@@ -111,84 +108,51 @@ public class ParameterArchive  extends AbstractService {
         }
     }
 
-    private void createDb(String dbpath) throws RocksDBException {
+    private void createDb(String dbpath) throws RocksDBException, IOException {
         log.info("Creating new ParameterArchive RocksDb at {}", dbpath);
-        ColumnFamilyDescriptor cfd_p2pid = new ColumnFamilyDescriptor(CF_NAME_meta_p2pid);
-        ColumnFamilyDescriptor cfd_pgid2pg = new ColumnFamilyDescriptor(CF_NAME_meta_pgid2pg);
-        ColumnFamilyDescriptor cfd_default = new ColumnFamilyDescriptor(RocksDB.DEFAULT_COLUMN_FAMILY);
-
-
-        List<ColumnFamilyDescriptor> cfdList = Arrays.asList(cfd_p2pid, cfd_pgid2pg, cfd_default);
-        List<ColumnFamilyHandle> cfhList = new ArrayList<ColumnFamilyHandle>(cfdList.size());
-        DBOptions options = new DBOptions();
-        options.setCreateIfMissing(true);
-        options.setCreateMissingColumnFamilies(true);
-        rdb = RocksDB.open(options, dbpath, cfdList, cfhList);
-        p2pid_cfh = cfhList.get(0);
-        pgid2pg_cfh = cfhList.get(1);
+        yrdb = RDBFactory.getInstance(yamcsInstance).getRdb(dbpath, false);
+        p2pid_cfh = yrdb.createColumnFamily(CF_NAME_meta_p2pid);
+        pgid2pg_cfh = yrdb.createColumnFamily(CF_NAME_meta_pgid2pg);
     }
 
-    private void openExistingDb(String dbpath) throws RocksDBException {
+    private void openExistingDb(String dbpath) throws IOException {
         log.info("Opening existing ParameterArchive RocksDb at {}", dbpath);
-        List<byte[]> cfList = RocksDB.listColumnFamilies(new Options(), dbpath);
-        List<ColumnFamilyDescriptor> cfdList = new ArrayList<ColumnFamilyDescriptor>(cfList.size());
-        for(byte[] cf:cfList) {
-            ColumnFamilyDescriptor cfd = new ColumnFamilyDescriptor(cf);
-            cfdList.add(cfd);
-        }
-
-        List<ColumnFamilyHandle> cfhList = new ArrayList<ColumnFamilyHandle>(cfList.size());
-        DBOptions options = new DBOptions();
-        options.setCreateIfMissing(true);
-        options.setCreateMissingColumnFamilies(true);
-        rdb = RocksDB.open(options, dbpath, cfdList, cfhList);
-        for(int i=0; i<cfdList.size(); i++) {
-            byte[] cf = cfList.get(i);
-
-            if(Arrays.equals(CF_NAME_meta_p2pid, cf)) {
-                p2pid_cfh = cfhList.get(i);
-            } else if(Arrays.equals(CF_NAME_meta_pgid2pg, cf)) {
-                pgid2pg_cfh = cfhList.get(i);
-            }  else if(startsWith(cf, CF_NAME_data_prefix)) {
-                long partitionId = decodePartitionId(CF_NAME_data_prefix, cf);
+        yrdb = RDBFactory.getInstance(yamcsInstance).getRdb(dbpath, false);
+        
+        p2pid_cfh = yrdb.getColumnFamilyHandle(CF_NAME_meta_p2pid);
+        pgid2pg_cfh = yrdb.getColumnFamilyHandle(CF_NAME_meta_pgid2pg);
+        
+        Collection<String> l = yrdb.getColumnFamiliesAsStrings();
+        for(String o: l) {
+            String cn = (String)o;
+            if(cn.startsWith(CF_NAME_data_prefix)) {
+                long partitionId = decodePartitionId(CF_NAME_data_prefix, cn);
                 Partition p = partitions.get(partitionId);
                 if(p==null) {
                     p = new Partition(partitionId);
                     partitions.put(partitionId, p);
                 }
-                p.dataCfh = cfhList.get(i);
-            } else {
-                if(!Arrays.equals(RocksDB.DEFAULT_COLUMN_FAMILY, cf)) {
-                    log.warn("Ignoring unknown column family "+new String(cf, StandardCharsets.US_ASCII));
-                }
+                p.dataCfh = yrdb.getColumnFamilyHandle(o);
+            } else if(!"default".equals(cn) && !CF_NAME_meta_p2pid.equals(cn) && !CF_NAME_meta_pgid2pg.equals(cn)){
+                log.warn("Unknown column family '"+cn+"'");
             }
         }
+      
         if(p2pid_cfh==null) {
-            throw new ParameterArchiveException("Cannot find column family '"+new String(CF_NAME_meta_p2pid, StandardCharsets.US_ASCII)+"' in database at "+dbpath);
+            throw new ParameterArchiveException("Cannot find column family '"+CF_NAME_meta_p2pid+"' in database at "+dbpath);
         }
         if(pgid2pg_cfh==null) {
-            throw new ParameterArchiveException("Cannot find column family '"+new String(CF_NAME_meta_pgid2pg, StandardCharsets.US_ASCII)+"' in database at "+dbpath);
+            throw new ParameterArchiveException("Cannot find column family '"+CF_NAME_meta_pgid2pg+"' in database at "+dbpath);
         }      
     }
 
-    static long decodePartitionId(byte[] prefix, byte[] cf) {
-        int l = prefix.length;
+    static long decodePartitionId(String prefix, String cfname) {
         try {
-            return Long.parseLong(new String(cf, l, cf.length-l, StandardCharsets.US_ASCII), 16);
+            return Long.parseLong(cfname.substring(prefix.length()), 16);
         } catch (NumberFormatException e) {
-            byte[] b = new byte[cf.length-l];
-            System.arraycopy(cf, l, b, 0, b.length);
-            throw new ParameterArchiveException("Cannot decode partition id from column family: "+Arrays.toString(b)+" string: "+new String(b, StandardCharsets.US_ASCII));
+            throw new ParameterArchiveException("Cannot decode partition id from column family: "+cfname);
         }
     }
-
-    static byte[] encodePartitionId(byte[] prefix, long partitionId) {
-        byte[] pb = Long.toHexString(partitionId).getBytes(StandardCharsets.US_ASCII);
-        byte[] cf = Arrays.copyOf(prefix, prefix.length+pb.length);
-        System.arraycopy(pb, 0, cf, prefix.length, pb.length);
-        return cf;
-    }
-
 
     public ParameterIdDb getParameterIdDb() {
         return parameterIdMap;
@@ -200,23 +164,10 @@ public class ParameterArchive  extends AbstractService {
 
 
     /**
-     * returns true if a starts with prefix
-     * @param a
-     * @param prefix
-     * @return
+     * used from unit tests to force closing the database
      */
-    private boolean startsWith(byte[] a, byte[] prefix) {
-        int n = prefix.length;
-        if(a.length<n) return false;
-
-        for(int i=0;i<n;i++) {
-            if(a[i]!=prefix[i]) return false;
-        }
-        return true;
-    }
-
-    public void close() {
-        rdb.close();
+    void closeDb() {
+        RDBFactory.getInstance(yamcsInstance).close(yrdb);
     }
 
     public String getYamcsInstance() {
@@ -224,13 +175,14 @@ public class ParameterArchive  extends AbstractService {
     }
 
     public void writeToArchive(Collection<PGSegment> pgList) throws RocksDBException {
-        WriteBatch writeBatch = new WriteBatch();
-        for(PGSegment pgs: pgList) {
-            writeToBatch(writeBatch, pgs);
-        }
-        WriteOptions wo = new WriteOptions();
+        try (WriteBatch writeBatch = new WriteBatch();
+                WriteOptions wo = new WriteOptions()) {
 
-        rdb.write(wo, writeBatch);
+            for(PGSegment pgs: pgList) {
+                writeToBatch(writeBatch, pgs);
+            }
+            yrdb.getDb().write(wo, writeBatch);
+        }
     }
 
     private void writeToBatch(WriteBatch writeBatch, PGSegment pgs) throws RocksDBException {
@@ -297,10 +249,8 @@ public class ParameterArchive  extends AbstractService {
             Partition p = partitions.get(partitionId);
             if(p==null) {
                 p = new Partition(partitionId);
-                byte[] cfname = encodePartitionId(CF_NAME_data_prefix, partitionId);
-                ColumnFamilyDescriptor cfd = new ColumnFamilyDescriptor(cfname);
-                p.dataCfh = rdb.createColumnFamily(cfd);
-
+                String cfname = CF_NAME_data_prefix + Long.toHexString(partitionId);
+                p.dataCfh = yrdb.createColumnFamily(cfname);
                 partitions.put(partitionId, p);
             }
             return p;
@@ -361,19 +311,19 @@ public class ParameterArchive  extends AbstractService {
         public static long getPartitionEnd(long partitionId) {
             return partitionId  | TIMESTAMP_MASK;
         }
-        
+
         public String toString() {
             return "partition: ["+TimeEncoding.toString(partitionId)+" - "+TimeEncoding.toString(getPartitionEnd(partitionId))+"]";
         }
     }
 
     public RocksIterator getIterator(Partition p) {
-        return rdb.newIterator(p.dataCfh);
+        return yrdb.getDb().newIterator(p.dataCfh);
     }
 
     public SortedTimeSegment getTimeSegment(Partition p, long segmentStart,  int parameterGroupId) throws RocksDBException, DecodingException {
         byte[] timeKey = new SegmentKey(ParameterIdDb.TIMESTAMP_PARA_ID, parameterGroupId, segmentStart, SegmentKey.TYPE_ENG_VALUE).encode();
-        byte[] tv = rdb.get(p.dataCfh, timeKey);
+        byte[] tv = yrdb.getDb().get(p.dataCfh, timeKey);
         if(tv==null) {
             return null;
         }
@@ -399,24 +349,25 @@ public class ParameterArchive  extends AbstractService {
 
     @Override
     protected void doStop() {
-        rdb.close();
+        log.debug("Stopping ParameterArchive service for instance {}", yamcsInstance);
+        
         if(backFiller!=null) {
             backFiller.stop();
         }
-        
+
         if(realtimeFiller!=null) {
             realtimeFiller.stop();
         }
-        
+        RDBFactory.getInstance(yamcsInstance).dispose(yrdb);
         notifyStopped();
     }
 
- 
+
     public void printStats(PrintStream out)  {
         try {
             for(Partition p:partitions.values()) {
                 out.println("---------- Partition starting at "+TimeEncoding.toString(p.partitionId)+" -------------");
-                out.println(rdb.getProperty(p.dataCfh, "rocksdb.stats"));
+                out.println(yrdb.getDb().getProperty(p.dataCfh, "rocksdb.stats"));
             }
         } catch (RocksDBException e) {
             throw new RuntimeException(e);
@@ -426,23 +377,25 @@ public class ParameterArchive  extends AbstractService {
         out.println("pid\t pgid\t type\tSegmentStart\tcount\tsize\tstype");
         SegmentEncoderDecoder decoder = new SegmentEncoderDecoder();
         for(Partition p:partitions.values()) {
-            RocksIterator it = getIterator(p);
-            it.seekToFirst();
-            while(it.isValid()) {
-                SegmentKey key = SegmentKey.decode(it.key());
-                byte[] v = it.value();
-                BaseSegment s;
-                try {
-                    s = decoder.decode(it.value(), key.segmentStart);
-                } catch (DecodingException e) {
-                    throw new RuntimeException(e);
+            try(RocksIterator it = getIterator(p)) {
+                it.seekToFirst();
+                while(it.isValid()) {
+                    SegmentKey key = SegmentKey.decode(it.key());
+                    byte[] v = it.value();
+                    BaseSegment s;
+                    try {
+                        s = decoder.decode(it.value(), key.segmentStart);
+                    } catch (DecodingException e) {
+                        it.close();
+                        throw new RuntimeException(e);
+                    }
+                    out.println(key.parameterId+"\t "+key.parameterGroupId+"\t "+key.type+"\t"+TimeEncoding.toString(key.segmentStart)+"\t"+s.size()+"\t"+v.length+"\t"+s.getClass().getSimpleName());
+                    it.next();
                 }
-                out.println(key.parameterId+"\t "+key.parameterGroupId+"\t "+key.type+"\t"+TimeEncoding.toString(key.segmentStart)+"\t"+s.size()+"\t"+v.length+"\t"+s.getClass().getSimpleName());
-                it.next();
             }
         }
     }
-    
+
     /**
      * Delete all partitions that overlap with [start, stop) segment.
      * @param start
@@ -455,10 +408,10 @@ public class ParameterArchive  extends AbstractService {
         long stopPartitionId = Partition.getPartitionId(stop);
         NavigableMap<Long, Partition> parts = getPartitions(startPartitionId, stopPartitionId);
         for(Partition p: parts.values()) {
-            rdb.dropColumnFamily(p.dataCfh);
+            yrdb.dropColumnFamily(p.dataCfh);
             partitions.remove(p.partitionId);
         }
-        
+
         return parts;
     }
 }

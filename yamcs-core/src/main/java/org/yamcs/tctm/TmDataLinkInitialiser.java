@@ -7,11 +7,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.hornetq.api.core.HornetQException;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.management.ManagementService;
 import org.yamcs.utils.YObjectLoader;
@@ -36,10 +34,10 @@ public class TmDataLinkInitialiser extends AbstractService {
     
     private Collection<TmPacketDataLink> tmproviders=new ArrayList<TmPacketDataLink>();
     final String yamcsInstance;
-    final static public String GENTIME_COLUMN="gentime";
-    final static public String SEQNUM_COLUMN="seqNum";
-    final static public String RECTIME_COLUMN="rectime";
-    final static public String PACKET_COLUMN="packet";
+    final static public String GENTIME_COLUMN = "gentime";
+    final static public String SEQNUM_COLUMN = "seqNum";
+    final static public String RECTIME_COLUMN = "rectime";
+    final static public String PACKET_COLUMN = "packet";
 
     static public final TupleDefinition TM_TUPLE_DEFINITION=new TupleDefinition();
     static {
@@ -49,10 +47,8 @@ public class TmDataLinkInitialiser extends AbstractService {
         TM_TUPLE_DEFINITION.addColumn(PACKET_COLUMN, DataType.BINARY);
     }
 
-    YamcsClient yclient;
-
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public TmDataLinkInitialiser(String yamcsInstance) throws ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException, IOException {
+    public TmDataLinkInitialiser(String yamcsInstance) throws ConfigurationException, IOException {
         this.yamcsInstance = yamcsInstance;
         YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
         

@@ -7,6 +7,14 @@ import java.util.List;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.XtceDb;
 
+/**
+ * This class contains a list of default XTCE namespaces used in the CD-MCS (CGS/Columbus Ground System).
+ * 
+ * The final goal is to remove any dependency towards them but for the moment they are still used in several parts of Yamcs, especially the MDB_OPSNAME.
+ * 
+ * @author nm
+ *
+ */
 public class MdbMappings {
 
     public final static String MDB_SID="MDB:SID";

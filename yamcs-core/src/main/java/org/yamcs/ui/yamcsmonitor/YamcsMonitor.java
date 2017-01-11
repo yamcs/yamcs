@@ -5,6 +5,10 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsVersion;
 import org.yamcs.api.*;
+import org.yamcs.api.YamcsConnectDialog.YamcsConnectDialogResult;
+import org.yamcs.api.ws.ConnectionListener;
+import org.yamcs.api.ws.WebSocketClientCallback;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.YamcsManagement.*;
 import org.yamcs.ui.*;
@@ -19,6 +23,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableRowSorter;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -29,7 +34,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 
-public class YamcsMonitor implements YProcessorListener, ConnectionListener, ActionListener, ItemListener, LinkListener {
+public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener, ConnectionListener, ActionListener, ItemListener, LinkListener {
     YProcTableModel processorTableModel=new YProcTableModel();
     ScheduledThreadPoolExecutor timer=new ScheduledThreadPoolExecutor(1);
     LinkTableModel linkTableModel=new LinkTableModel(timer);
@@ -47,11 +52,11 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
     JTabbedPane processorStatusPanel;
     private JMenu clientsPopupMenu;
     private JTable linkTable, processorTable, clientsTable;
-    private JComboBox processorChooser;
+    private JComboBox<ProcessorWidget> processorChooser;
     private JTextField newYProcName;
     CommandQueueDisplay commandQueueDisplay;
     JScrollPane linkTableScroll, processorTableScroll;
-    private Set<String> allProcessors=new HashSet<String>();//stores instance.processorName for all processors to populate the connectToProcessor popup menu
+    private Set<String> allProcessors = new HashSet<String>();//stores instance.processorName for all processors to populate the connectToProcessor popup menu
 
     static boolean hasAdminRights=true;
     static String initialUrl=null;
@@ -59,15 +64,15 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
     private JButton createProcessorButton;
     private JCheckBox persistentCheckBox;
 
-    public YamcsConnectData connectionParams = null;
+    public YamcsConnectionProperties connectionParams = null;
 
 
-    private YamcsConnector yconnector;
     private LinkControlClient linkControl;
     private ArchiveIndexReceiver indexReceiver;
-    private YProcessorControlClient processorControl;
+    private ProcessorControlClient processorControl;
 
-
+    private YamcsConnector yconnector;
+    
     static YamcsMonitor theApp;
 
     HashMap<String, Statistics> processorStats=new HashMap<String, Statistics>();
@@ -85,16 +90,14 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
             authenticationEnabled = config.getBoolean("authenticationEnabled");
         }
 
-        yconnector=new YamcsConnector();
+        yconnector = new YamcsConnector("YamcsMonitor");
         yconnector.addConnectionListener(this);
-
-
-        processorControl = new YProcessorControlClient(yconnector);
+        
+        processorControl = new ProcessorControlClient(yconnector);
         processorControl.setYProcessorListener(this);
-        linkControl=new LinkControlClient(yconnector);
-        linkControl.setLinkListener(this);
+        linkControl = new LinkControlClient(yconnector, this);
 
-        indexReceiver=new YamcsArchiveIndexReceiver(yconnector);
+        indexReceiver = new YamcsArchiveIndexReceiver(yconnector);
         archiveBrowserSelector = new ArchiveBrowserSelector(frame, yconnector, indexReceiver, processorControl, hasAdminRights);
         indexReceiver.setIndexListener(archiveBrowserSelector);
 
@@ -505,7 +508,7 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
             throw new RuntimeException(e);
         }
 
-        processorChooser = new JComboBox(widgets.toArray());
+        processorChooser = new JComboBox<ProcessorWidget>(widgets.toArray(new ProcessorWidget[widgets.size()]));
 
         c.gridwidth = GridBagConstraints.REMAINDER; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1.0; gridbag.setConstraints(processorChooser, c);
         createPanel.add(processorChooser);
@@ -578,15 +581,21 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
 
 
     private void changeSelectedInstance(String newInstance) {
-        selectedInstance=newInstance;
-        commandQueueDisplay.setSelectedInstance(newInstance);
+        yconnector.disconnect();
+        selectedInstance = newInstance;
+        connectionParams.setInstance(newInstance);
+        yconnector.connect(connectionParams);
+        
+        /* commandQueueDisplay.setSelectedInstance(newInstance);
 
         linkTableModel.clear();
-        linkControl.receiveInitialConfig();
         processorTableModel.clear();
         processorControl.receiveInitialConfig();
+        linkControl.receiveInitialConfig();
         commandQueueDisplay.update();
-        setTitle("connected to "+yconnector.getUrl().replaceFirst("[^/]+$", selectedInstance));
+        */
+        setTitle("connected to "+yconnector.getUrl() + " "+selectedInstance);
+        
         updateBorders();
     }
 
@@ -633,35 +642,40 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
             showMessage("Please select at least one client to create the processor for.");
             return;
         }
-        String name=newYProcName.getText();
+        String name = newYProcName.getText();
         ProcessorWidget type = (ProcessorWidget)processorChooser.getSelectedItem();
-        Yamcs.ReplayRequest spec = type.getSpec();
+        Yamcs.ReplayRequest replayRequest = type.getReplayRequest();
         if(hasAdminRights) {
             persistent=persistentCheckBox.isSelected();
         }
 
-        if ( spec == null ) return;
+        if ( replayRequest == null ) return;
         int[] clients=new int[selectedRows.length];
         for(int i=0;i<selectedRows.length;i++) {
             clients[i]=(Integer) clientTableModel.getValueAt(clientsTable.convertRowIndexToModel(selectedRows[i]), 0);
         }
         try {
             //	archiveWindow.setBusyPointer();
-            processorControl.createProcessor(selectedInstance, name, type.toString(), spec, persistent, clients);
+            processorControl.createProcessor(selectedInstance, name, type.toString(), replayRequest, persistent, clients);
         } catch (Exception e) {
             showMessage(e.getMessage());
         }
         //	ArchivePanel.setNormalPointer(frame);
     }
 
+    public void connect(YamcsConnectionProperties ycp) {
+        connectionParams = ycp;
+        yconnector.connect(ycp);
+    }
+    
     @Override
     public void actionPerformed( ActionEvent ae ) {
         String cmd = ae.getActionCommand();
         if ( cmd.equals("connect") ) {
-            connectionParams= YamcsConnectDialog.showDialog(frame, false, authenticationEnabled);
-            if ( connectionParams.isOk ) {
+            YamcsConnectDialogResult ycdr = YamcsConnectDialog.showDialog(frame, false, authenticationEnabled); 
+            if ( ycdr.isOk() ) {
                 logTextArea.removeAll();
-                yconnector.connect(connectionParams);
+                connect(ycdr.getConnectionProperties());
             }
         } else if ( cmd.equals("exit") ) {
             System.exit(0);
@@ -714,7 +728,9 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
             log( "Failed to get instances from "+url );
             return;
         }
-        selectedInstance=instances.get(0);
+        if(selectedInstance==null) {
+           selectedInstance = instances.get(0);
+        }
         commandQueueDisplay.setSelectedInstance(selectedInstance);
 
         SwingUtilities.invokeLater(new Runnable() {
@@ -753,23 +769,19 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
     }
 
 
-    @Override
-    public void popup(String text) {
-        showMessage(text);
-    }
-
     //------------- end of interface ConnectionListener
 
     public ProcessorWidget getActiveProcessorWidget() {
         return (ProcessorWidget) processorChooser.getSelectedItem();
     }
 
-    private void connect(final YamcsConnectData ycd)	{
+/*    private void connect(final YamcsConnectData ycd) {
         yconnector.connect(ycd);
     }
-
+*/
     @Override
     public void log(final String s) {
+        System.out.println("received log: "+s);
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -850,7 +862,7 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
                 }
                 try {
                     String[] in=instanceDotName.split("\\.",2);
-                    processorControl.connectToYProcessor(in[0], in[1], clients);
+                    processorControl.connectToProcessor(in[0], in[1], clients);
                 } catch (Exception e) {
                     showMessage(e.toString());
                 }
@@ -883,7 +895,7 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
             public void run() {
                 allProcessors.add(ci.getInstance()+"."+ci.getName());
                 if(!ci.getInstance().equals(selectedInstance)) return;
-                boolean added=processorTableModel.upsertYProc(ci);
+                boolean added = processorTableModel.upsertYProc(ci);
                 buildClientListPopup();
                 archiveBrowserSelector.archivePanel.replayPanel.updateProcessorInfol(ci);
                 if(added && ci.getHasCommanding() && hasAdminRights) {
@@ -896,21 +908,21 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
      * Called by the server when a processor has been closed
      */
     @Override
-    public void yProcessorClosed(final ProcessorInfo ci) {
+    public void processorClosed(final ProcessorInfo pinfo) {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                allProcessors.remove(ci.getInstance()+"."+ci.getName());
-                if(!ci.getInstance().equals(selectedInstance)) return;
-                processorTableModel.removeProcessor(ci.getInstance(), ci.getName());
-                commandQueueDisplay.removeProcessor(ci.getInstance(), ci.getName());
+                allProcessors.remove(pinfo.getInstance()+"."+pinfo.getName());
+                if(!pinfo.getInstance().equals(selectedInstance)) return;
+                processorTableModel.removeProcessor(pinfo.getInstance(), pinfo.getName());
+                commandQueueDisplay.removeProcessor(pinfo.getInstance(), pinfo.getName());
                 buildClientListPopup();
             }
         });
     }
 
     /**
-     * Called by the server when a new client has disconnected
+     * Called by the server when a client has disconnected
      */
     @Override
     public void clientDisconnected(final ClientInfo ci) {
@@ -923,7 +935,7 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
     }
 
     /**
-     * Called by the server when a client has changed processor
+     * Called by the server when a client has changed processor or a new client has connected
      */
     @Override
     public void clientUpdated(final ClientInfo ci) {
@@ -951,7 +963,7 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
         System.err.println("-na:\tRun in non-admin mode - hide some options which will raise no permission exception (as to not confuse the user)");
         System.err.println("url:\tConnect at startup to the given yamcs url");
         System.err.println("-h:\tShow this help text");
-        System.err.println("Example:\n\t yamcs-monitor.sh yamcs://yamcs:5445/");
+        System.err.println("Example:\n\t yamcs-monitor.sh http://yamcs:8090/");
         System.exit(1);
     }
 
@@ -962,7 +974,7 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
                 hasAdminRights=false;
             } else if(args[i].equals("-h")) {
                 printUsageAndExit();
-            } else if(args[i].startsWith("yamcs://")) {
+            } else if(args[i].startsWith("http://")|| args[i].startsWith("https://")) {
                 initialUrl=args[i];
             } else {
                 printUsageAndExit();
@@ -971,7 +983,7 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
         YConfiguration.setup();
         final YamcsMonitor app=new YamcsMonitor();
 
-        final YamcsConnectData ycd=(initialUrl==null)?null:YamcsConnectData.parse(initialUrl);
+        final YamcsConnectionProperties ycd=(initialUrl==null)?null:YamcsConnectionProperties.parse(initialUrl);
         //Schedule a job for the event-dispatching thread:
         //creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -983,5 +995,19 @@ public class YamcsMonitor implements YProcessorListener, ConnectionListener, Act
                 }
             }
         });
+    }
+
+
+    @Override
+    public void onMessage(WebSocketSubscriptionData data) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
+    public void popup(String text) {
+        // TODO Auto-generated method stub
+        
     }
 }

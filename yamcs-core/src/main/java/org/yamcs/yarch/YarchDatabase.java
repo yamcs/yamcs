@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.YObjectLoader;
-import org.yamcs.yarch.management.ManagementService;
+import org.yamcs.yarch.management.JMXService;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.ParseException;
@@ -55,48 +55,43 @@ public class YarchDatabase {
     public static String TC_ENGINE_NAME="tokyocabinet";	
     public static String RDB_ENGINE_NAME="rocksdb";
 
-    private static String DEFAULT_STORAGE_ENGINE=RDB_ENGINE_NAME;
+    private static String DEFAULT_STORAGE_ENGINE = RDB_ENGINE_NAME;
     private final String defaultStorageEngineName;
-    
+
     static {
-        try {
-            config=YConfiguration.getConfiguration("yamcs");
-            home=config.getString("dataDir");
-        
-        } catch (ConfigurationException e) {
-            throw new RuntimeException(e);
-        }
+        config = YConfiguration.getConfiguration("yamcs");
+        home = config.getString("dataDir");
     } 
 
-    final ManagementService managementService;
+    final JMXService jmxService;
 
 
-    static Map<String,YarchDatabase> databases=new HashMap<String,YarchDatabase>();
+    static Map<String,YarchDatabase> databases = new HashMap<String,YarchDatabase>();
     private String dbname;
 
-    private YarchDatabase(String dbname) throws YarchException {
-        this.dbname=dbname;
-        managementService=ManagementService.getInstance();
-        tables=new HashMap<String,TableDefinition>();
-        streams=new HashMap<String,AbstractStream>();
-        
-        
+    private YarchDatabase(String dbname, boolean ignoreVersionIncompatibility) throws YarchException {
+        this.dbname = dbname;
+        jmxService = JMXService.getInstance();
+        tables = new HashMap<String,TableDefinition>();
+        streams = new HashMap<String,AbstractStream>();
+
+
         List<String> se;
         if(config.containsKey("storageEngines")) {
             se = config.getList("storageEngines");
         } else {
             se = Arrays.asList(RDB_ENGINE_NAME);
         }
-        
         if(config.containsKey("defaultStorageEngine")) {
             defaultStorageEngineName = config.getString("defaultStorageEngine");
-            if(!TC_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngineName) && !RDB_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngineName)) {
+            if(!TC_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngineName) 
+                    && !RDB_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngineName))  {
                 throw new ConfigurationException("Unknown storage engine: "+defaultStorageEngineName);
             }
         } else {
             defaultStorageEngineName = DEFAULT_STORAGE_ENGINE;
         }
-        
+
         if(se!=null) {
             for(String s:se) {
                 if(TC_ENGINE_NAME.equalsIgnoreCase(s)) {
@@ -110,22 +105,37 @@ public class YarchDatabase {
                     }
                     storageEngines.put(TC_ENGINE_NAME, tcStorageEngine);
                 } else if(RDB_ENGINE_NAME.equalsIgnoreCase(s)) {
-                    storageEngines.put(RDB_ENGINE_NAME, new RdbStorageEngine(this));
+                    storageEngines.put(RDB_ENGINE_NAME, new RdbStorageEngine(this, ignoreVersionIncompatibility));
                 }
             }
         }
         loadTables();
     }
 
-    static synchronized public YarchDatabase getInstance(String dbname) {
-        YarchDatabase instance=databases.get(dbname);
+    public static boolean instanceExistsOnDisk(String yamcsInstance) {
+        File dir=new File(getHome()+"/"+yamcsInstance);
+        return dir.exists() && dir.isDirectory();
+    }
+    
+    static public YarchDatabase getInstance(String yamcsInstance) {
+        return getInstance(yamcsInstance, false);
+    }
+    /**
+     * 
+     * @param yamcsInstance
+     * @param ignoreVersionIncompatibility - if set to true, the created StorageEngines will load old data (as far as possible). Used only when upgrading from old data formats to new ones.
+     * 
+     * @return
+     */
+    static synchronized public YarchDatabase getInstance(String yamcsInstance, boolean ignoreVersionIncompatibility) {
+        YarchDatabase instance = databases.get(yamcsInstance);
         if(instance==null) {
             try {
-                instance=new YarchDatabase(dbname);
+                instance = new YarchDatabase(yamcsInstance, ignoreVersionIncompatibility);
             } catch (YarchException e) {
-                throw new RuntimeException("Cannot create database '"+dbname+"'", e);
+                throw new RuntimeException("Cannot create database '"+yamcsInstance+"'", e);
             }
-            databases.put(dbname, instance);
+            databases.put(yamcsInstance, instance);
         }
         return instance;
     }
@@ -133,12 +143,16 @@ public class YarchDatabase {
     static public boolean hasInstance(String dbname) {
         return databases.containsKey(dbname);
     }
-    
+
     /**
      * 
      * @return the instance name
      */
     public String getName() {
+        return dbname;
+    }
+
+    public String getYamcsInstance() {
         return dbname;
     }
     
@@ -149,8 +163,8 @@ public class YarchDatabase {
     public StorageEngine getDefaultStorageEngine() {
         return storageEngines.get(defaultStorageEngineName);
     }
-    
-    
+
+
     /**
      * loads all the .def files from the disk. The ascii def file is structed as follows
      * col1 type1, col2 type2, col3 type3     <- definition of the columns
@@ -173,8 +187,8 @@ public class YarchDatabase {
                         }
 
                         getStorageEngine(tblDef).loadTable(tblDef);
-                        if(managementService!=null) {
-                            managementService.registerTable(dbname, tblDef);
+                        if(jmxService!=null) {
+                            jmxService.registerTable(dbname, tblDef);
                         }
                         tables.put(tblDef.getName(), tblDef);
                         log.debug("loaded table definition "+tblDef.getName()+" from "+f);
@@ -196,16 +210,17 @@ public class YarchDatabase {
     }
 
     TableDefinition deserializeTableDefinition(File f) throws FileNotFoundException, IOException, ClassNotFoundException {
-    	if(f.length()==0) {
-    		throw new IOException("Cannot load table definition from empty file "+f);
-    	}
+        if(f.length()==0) {
+            throw new IOException("Cannot load table definition from empty file "+f);
+        }
         String fn=f.getName();
         String tblName=fn.substring(0,fn.length()-4);
         Yaml yaml = new Yaml(new TableDefinitionConstructor());
         FileInputStream fis=new FileInputStream(f);
         Object o = yaml.load(fis);
         if(!(o instanceof TableDefinition)) {
-        	throw new IOException("Cannot load table definition from "+f+": object is "+o.getClass().getName()+"; should be "+TableDefinition.class.getName());
+            fis.close();
+            throw new IOException("Cannot load table definition from "+f+": object is "+o.getClass().getName()+"; should be "+TableDefinition.class.getName());
         }
         TableDefinition tblDef=(TableDefinition) o;
         fis.close();
@@ -213,14 +228,14 @@ public class YarchDatabase {
         tblDef.setName(tblName);
         tblDef.setDb(this);
         if(!tblDef.hasCustomDataDir()) tblDef.setDataDir(getRoot());
-        
+
         log.debug("loaded table definition "+tblName+" from "+fn);
         return tblDef;
     }
 
     /**
      * serializes to disk to the rootDir/name.def
-     * @param def
+     * @param algorithmDef
      */
     void serializeTableDefinition(TableDefinition td) {
         String fn=getRoot()+"/"+td.getName()+".def";
@@ -242,19 +257,24 @@ public class YarchDatabase {
      *  add a table to the dictionary
      *  throws exception if a table or a stream with the same name already exist
      *  
+     * @param def - table definition
+     * @throws YarchException - thrown in case a table or a stream with the same name already exists or if there was an error in creating the table 
+     *  
      */
     public void createTable(TableDefinition def) throws YarchException {
         if(tables.containsKey(def.getName())) throw new YarchException("A table named '"+def.getName()+"' already exists");
         if(streams.containsKey(def.getName())) throw new YarchException("A stream named '"+def.getName()+"' already exists");
-        
+
         StorageEngine se = storageEngines.get(def.getStorageEngineName());
         if(se==null) throw new YarchException("Invalid storage engine '"+def.getStorageEngineName()+"' specified. Valid names are: "+storageEngines.keySet());
         se.createTable(def);
-        
+
         tables.put(def.getName(),def);
         def.setDb(this);
         serializeTableDefinition(def);
-        managementService.registerTable(dbname, def);		
+        if(jmxService!=null) {
+            jmxService.registerTable(dbname, def);
+        }
     }
 
 
@@ -268,7 +288,9 @@ public class YarchDatabase {
         if(tables.containsKey(stream.getName())) throw new YarchException("A table named '"+stream.getName()+"' already exists");
         if(streams.containsKey(stream.getName())) throw new YarchException("A stream named '"+stream.getName()+"' already exists");
         streams.put(stream.getName(), stream);
-        managementService.registerStream(dbname, stream);
+        if(jmxService!=null) {
+            jmxService.registerStream(dbname, stream);
+        }
     }
 
     public TableDefinition getTable(String name) {
@@ -293,7 +315,9 @@ public class YarchDatabase {
         if(tbl==null) {
             throw new YarchException("There is no table named '"+tblName+"'");
         }
-        managementService.unregisterTable(dbname, tblName);
+        if(jmxService!=null) {
+            jmxService.unregisterTable(dbname, tblName);
+        }
         getStorageEngine(tbl).dropTable(tbl);
         File f=new File(getRoot()+"/"+tblName+".def");
         if(!f.delete()) {
@@ -304,7 +328,9 @@ public class YarchDatabase {
 
     public synchronized void removeStream(String name) {
         Stream s=streams.remove(name);
-        if(s!=null) managementService.unregisterStream(dbname, name);
+        if((s!=null) &&  (jmxService!=null)) {
+            jmxService.unregisterStream(dbname, name);
+        }
     }
 
     public StorageEngine getStorageEngine(TableDefinition tbldef) {
@@ -323,7 +349,7 @@ public class YarchDatabase {
     /**
      * Returns the root directory for this database instance.
      *  It is usually home/instance_name.
-     * @return
+     * @return the roor directory for this database instance
      */
     public String getRoot() {
         return getHome()+"/"+dbname;
@@ -337,14 +363,16 @@ public class YarchDatabase {
         return home;
     }
 
-    /**to be used for testing**/
+    /**to be used for testing
+     * @param dbName database name to be removed 
+     **/
     public static void removeInstance(String dbName) {
         databases.remove(dbName);
     }
 
     public StreamSqlResult execute(String query) throws StreamSqlException, ParseException {
-        ExecutionContext context=new ExecutionContext(dbname);
-        StreamSqlParser parser=new StreamSqlParser(new java.io.StringReader(query));
+        ExecutionContext context = new ExecutionContext(dbname);
+        StreamSqlParser parser = new StreamSqlParser(new java.io.StringReader(query));
         try {
             StreamSqlStatement s =  parser.OneStatement();
             return s.execute(context);

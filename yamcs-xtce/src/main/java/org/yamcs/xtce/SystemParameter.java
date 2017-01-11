@@ -19,7 +19,8 @@ public class SystemParameter extends Parameter {
         setDataSource(ds);
     }
 
-    public static SystemParameter getForFullyQualifiedName(String fqname, DataSource ds) {
+    public static SystemParameter getForFullyQualifiedName(String fqname) {
+        DataSource ds = getSystemParameterDataSource(fqname);
         SystemParameter sp = new SystemParameter(NameDescription.getSubsystemName(fqname), NameDescription.getName(fqname), ds);
         //set the recording name "/yamcs/a/b/c" -> "/yamcs/a"
         int pos = fqname.indexOf(PATH_SEPARATOR, 0);
@@ -29,7 +30,14 @@ public class SystemParameter extends Parameter {
         
         return sp;
     }
+    
+    private static DataSource getSystemParameterDataSource(String fqname) {
+        if(fqname.startsWith(XtceDb.YAMCS_CMD_SPACESYSTEM_NAME)) return DataSource.COMMAND;
+        else if(fqname.startsWith(XtceDb.YAMCS_CMDHIST_SPACESYSTEM_NAME)) return DataSource.COMMAND_HISTORY;
+        else return DataSource.SYSTEM;
+    }
 
+    
     @Override
     public String toString() {
         return "SysParam(qname=" + getQualifiedName() + ")";

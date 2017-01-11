@@ -3,6 +3,7 @@ package org.yamcs.tctm;
 import java.io.File;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.utils.DeprecationInfo;
 
 /**
  * Reads telemetry files from the directory yamcs.incomingDir/tm
@@ -11,6 +12,7 @@ import org.yamcs.YConfiguration;
  * @deprecated this class is deprecated - please use {@link FilePollingTmDataLink} instead
  */
 @Deprecated
+@DeprecationInfo(info = "Use FilePollingTmDataLink instead")
 public class FilePollingTmProvider extends FilePollingTmDataLink {
     public FilePollingTmProvider(String yamcsInstance, String name, String incomingDir) {
         super(yamcsInstance, name, incomingDir);

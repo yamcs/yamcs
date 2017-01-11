@@ -88,8 +88,7 @@ public class LdapRealm implements Realm {
     @Override
     public boolean authenticates(AuthenticationToken authenticationToken) {
         if(  authenticationToken == null
-                || authenticationToken.getPrincipal() == null
-                || authenticationToken.getCredentials() == null) {
+                || authenticationToken.getPrincipal() == null) {
             return false;
         }
         if(authenticationToken.getClass() == UsernamePasswordToken.class

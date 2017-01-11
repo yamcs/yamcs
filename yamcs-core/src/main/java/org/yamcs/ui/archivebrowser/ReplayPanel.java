@@ -6,7 +6,7 @@ import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.protobuf.YamcsManagement.TmStatistics;
-import org.yamcs.ui.YProcessorControlClient;
+import org.yamcs.ui.ProcessorControlClient;
 import org.yamcs.utils.TimeEncoding;
 
 import javax.swing.*;
@@ -30,7 +30,7 @@ public class ReplayPanel extends JPanel {
     static final int PLAY = 1;
     DataViewer dataViewer;
     
-    YProcessorControlClient channelControl;
+    ProcessorControlClient channelControl;
     long currentInstant;
     
     public ReplayPanel() {
@@ -159,7 +159,7 @@ public class ReplayPanel extends JPanel {
         this.dataViewer=dataViewer;
     }
     
-    public void setProcessorControlClient(YProcessorControlClient cc) {
+    public void setProcessorControlClient(ProcessorControlClient cc) {
         this.channelControl=cc;
     }
 

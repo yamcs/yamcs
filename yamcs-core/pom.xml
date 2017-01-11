@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>0.29.5</version>
+    <version>0.30.0</version>
     <relativePath>..</relativePath>
   </parent>
 
@@ -19,8 +19,8 @@
       <version>${project.version}</version>
       <exclusions>
         <exclusion>
-          <groupId>org.hornetq</groupId>
-          <artifactId>hornetq-core-client</artifactId>
+          <groupId>org.apache.activemq</groupId>
+          <artifactId>artemis-core-client</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -74,9 +74,9 @@
       <version>2.6.10</version>
     </dependency>
     <dependency>
-      <groupId>org.hornetq</groupId>
-      <artifactId>hornetq-server</artifactId>
-      <version>${hornetQVersion}</version>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>artemis-server</artifactId>
+      <version>${artemisVersion}</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -87,8 +87,15 @@
     <dependency>
       <groupId>org.rocksdb</groupId>
       <artifactId>rocksdbjni</artifactId>
-      <version>4.8.0</version>
+      <version>5.0.1</version>
     </dependency>
+
+    <dependency>
+      <groupId>com.beust</groupId>
+      <artifactId>jcommander</artifactId>
+      <version>1.48</version>
+    </dependency>
+    
   </dependencies>
 
   <build>

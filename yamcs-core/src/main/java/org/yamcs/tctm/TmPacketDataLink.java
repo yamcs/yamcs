@@ -11,15 +11,9 @@ import com.google.common.util.concurrent.Service;
  * 
  */
 public interface TmPacketDataLink extends Link, Service {
-	/**
-	 * sets the tm processor that should get all the tm packets
-	 */
-	public void setTmSink(TmSink tmSink);
-	
-	/**
-	 * true if this is a replay from archive
-	 * @return
-	 */
-	public boolean isArchiveReplay();
-
+    /**
+     * sets the tm processor that should get all the tm packets
+     * @param tmSink 
+     */
+    public void setTmSink(TmSink tmSink);
 }

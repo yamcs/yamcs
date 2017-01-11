@@ -16,13 +16,13 @@ public class NameDescriptionSearchMatcherTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setup("refmdb");
-        ManagementService.setup(false, false);
+        ManagementService.setup(false);
         XtceDbFactory.reset();
     }
 
     @Test
     public void testSearchMatch() throws ConfigurationException {
-        XtceDb mdb = XtceDbFactory.createInstance("refmdb");
+        XtceDb mdb = XtceDbFactory.createInstanceByConfig("refmdb");
         assertTrue(match("/REFMDB/CcSdS-APID", mdb));
         assertTrue(match("REFMDB_ccsds-apid", mdb));
         assertTrue(match("ap ReFmDB_CC", mdb));
@@ -32,7 +32,6 @@ public class NameDescriptionSearchMatcherTest {
         NameDescriptionSearchMatcher matcher = new NameDescriptionSearchMatcher(searchTerm);
         for (Parameter p : mdb.getParameters()) {
             if (matcher.matches(p)) {
-                System.out.println(p.getQualifiedName());
                 return true;
             }
         }

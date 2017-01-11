@@ -23,7 +23,6 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpRequestHandler;
-import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.RouteHandler;
 import org.yamcs.xtce.Algorithm;
@@ -42,10 +41,12 @@ import com.google.protobuf.MessageLite;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.LastHttpContent;
 import io.protostuff.JsonIOUtil;
 import io.protostuff.Schema;
 
@@ -57,17 +58,16 @@ public abstract class RestHandler extends RouteHandler {
     private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
     private static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
 
-    protected static ChannelFuture sendOK(RestRequest restRequest) {
-        ChannelHandlerContext ctx = restRequest.getChannelHandlerContext();
+    protected static void completeOK(RestRequest restRequest) {
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
         setContentLength(httpResponse, 0);
-        return HttpRequestHandler.sendOK(ctx, restRequest.getHttpRequest(), httpResponse);
+       completeRequest(restRequest, httpResponse);
     }
 
-    protected static <T extends MessageLite> ChannelFuture sendOK(RestRequest restRequest, T responseMsg, Schema<T> responseSchema) throws HttpException {
+    protected static <T extends MessageLite> void completeOK(RestRequest restRequest, T responseMsg, Schema<T> responseSchema) {
         ByteBuf body = restRequest.getChannelHandlerContext().alloc().buffer();
-        ByteBufOutputStream channelOut = new ByteBufOutputStream(body);
-        try {
+
+        try (ByteBufOutputStream channelOut = new ByteBufOutputStream(body)){
             if (MediaType.PROTOBUF.equals(restRequest.deriveTargetContentType())) {
                 responseMsg.writeTo(channelOut);
             } else {
@@ -77,36 +77,50 @@ public abstract class RestHandler extends RouteHandler {
                 body.writeBytes(NEWLINE_BYTES); // For curl comfort
             }
         } catch (IOException e) {
-            throw new InternalServerErrorException(e);
+            sendRestError(restRequest, HttpResponseStatus.INTERNAL_SERVER_ERROR, e);
         }
-
+        byte[] dst = new byte[body.readableBytes()];
+        body.markReaderIndex();
+        body.readBytes(dst);
+        body.resetReaderIndex();
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
         setContentTypeHeader(httpResponse, restRequest.deriveTargetContentType().toString());
-        setContentLength(httpResponse, body.readableBytes());
-        return HttpRequestHandler.sendOK(restRequest.getChannelHandlerContext(), restRequest.getHttpRequest(), httpResponse);
+
+        int txSize =  body.readableBytes();
+        setContentLength(httpResponse, txSize);
+        restRequest.addTransferredSize(txSize);
+        completeRequest(restRequest, httpResponse);
     }
 
-    protected static ChannelFuture sendOK(RestRequest restRequest, MediaType contentType, ByteBuf body) {
-        ChannelHandlerContext ctx = restRequest.getChannelHandlerContext();
+    protected static void completeOK(RestRequest restRequest, MediaType contentType, ByteBuf body) {
         if (body == null) {
             HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
             setContentLength(httpResponse, 0);
-            return HttpRequestHandler.sendOK(ctx, restRequest.getHttpRequest(), httpResponse);
+            completeRequest(restRequest, httpResponse);
         } else {
             HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
             setContentTypeHeader(httpResponse, contentType.toString());
-            setContentLength(httpResponse, body.readableBytes());
-            return HttpRequestHandler.sendOK(ctx, restRequest.getHttpRequest(), httpResponse);
+            int txSize =  body.readableBytes();
+            setContentLength(httpResponse, txSize);
+            restRequest.addTransferredSize(txSize);
+            completeRequest(restRequest, httpResponse);
         }
     }
 
-    static void sendRestError(RestRequest req, HttpResponseStatus status, Throwable t) {
+    private static void completeRequest(RestRequest restRequest, HttpResponse httpResponse) {
+        ChannelFuture cf = HttpRequestHandler.sendOK(restRequest.getChannelHandlerContext(), restRequest.getHttpRequest(), httpResponse);
+
+        cf.addListener(l -> {
+            restRequest.getCompletableFuture().complete(null);
+        });
+    }
+
+    protected static ChannelFuture sendRestError(RestRequest req, HttpResponseStatus status, Throwable t) {
         MediaType contentType = req.deriveTargetContentType();
         ChannelHandlerContext ctx = req.getChannelHandlerContext();
         if (MediaType.JSON.equals(contentType)) {
-            try {
-                ByteBuf buf = ctx.alloc().buffer();
-                ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
+            ByteBuf buf = ctx.alloc().buffer();
+            try (ByteBufOutputStream channelOut = new ByteBufOutputStream(buf)) {
                 JsonGenerator generator = req.createJsonGenerator(channelOut);
                 JsonIOUtil.writeTo(generator, toException(t).build(), SchemaWeb.RestExceptionMessage.WRITE, false);
                 generator.close();
@@ -114,31 +128,45 @@ public abstract class RestHandler extends RouteHandler {
                 HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
                 setContentTypeHeader(response, MediaType.JSON.toString()); // UTF-8 by default IETF RFC4627
                 setContentLength(response, buf.readableBytes());
-                HttpRequestHandler.sendError(ctx, req.getHttpRequest(), response);
+                return HttpRequestHandler.sendError(ctx, req.getHttpRequest(), response);
             } catch (IOException e2) {
                 log.error("Could not create JSON Generator", e2);
                 log.debug("Original exception not sent to client", t);
-                HttpRequestHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                return HttpRequestHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
             }
         } else if (MediaType.PROTOBUF.equals(contentType)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
-            ByteBufOutputStream channelOut = new ByteBufOutputStream(buf);
-            try {
+
+            try (ByteBufOutputStream channelOut = new ByteBufOutputStream(buf)) {
                 toException(t).build().writeTo(channelOut);
+                channelOut.close();
                 HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
                 setContentTypeHeader(response, MediaType.PROTOBUF.toString());
                 setContentLength(response, buf.readableBytes());
-                HttpRequestHandler.sendError(ctx, req.getHttpRequest(), response);
+                return HttpRequestHandler.sendError(ctx, req.getHttpRequest(), response);
             } catch (IOException e2) {
                 log.error("Could not write to channel buffer", e2);
                 log.debug("Original exception not sent to client", t);
-                HttpRequestHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                return HttpRequestHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
             }
         } else {
-            HttpRequestHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
+           return HttpRequestHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
+    /**
+     * write the error to the client and complete the request exceptionally
+     * @param req
+     * @param e
+     */
+    protected static void completeWithError(RestRequest req, HttpException e) {
+        ChannelFuture cf = sendRestError(req, e.getStatus(), e);
+        cf.addListener(l-> {
+           req.getCompletableFuture().completeExceptionally(e);
+        });
+    }
+    protected static void abortRequest(RestRequest req) {
+        req.getCompletableFuture().complete(null);
+    }
     /**
      * Just a little shortcut because builders are dead ugly
      */
@@ -198,16 +226,16 @@ public abstract class RestHandler extends RouteHandler {
 
         throw new NotFoundException(req, "No such namespace");
     }
-    
+
     protected static NamedObjectId verifyParameterId(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
-        return verifyParameterWithId(req, mdb, pathName).requestedId;
-    }
-    
-    protected static Parameter verifyParameter(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
-        return verifyParameterWithId(req, mdb, pathName).item;
+        return verifyParameterWithId(req, mdb, pathName).getRequestedId();
     }
 
-    private static NameDescriptionWithId<Parameter> verifyParameterWithId(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
+    protected static Parameter verifyParameter(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
+        return verifyParameterWithId(req, mdb, pathName).getItem();
+    }
+
+    protected static NameDescriptionWithId<Parameter> verifyParameterWithId(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
             throw new NotFoundException(req, "No such parameter (missing namespace?)");
@@ -225,11 +253,6 @@ public abstract class RestHandler extends RouteHandler {
             p = mdb.getParameter(id);
         }
 
-        // It could also be a system parameter
-        if (p == null) {
-            String rootedName = pathName.startsWith("/") ? pathName : "/" + pathName;
-            p = mdb.getSystemParameterDb().getSystemParameter(rootedName, false);
-        }
 
         if (p != null && !authorised(req, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
             log.warn("Parameter {} found, but withheld due to insufficient privileges. Returning 404 instead", StringConverter.idToString(id));
@@ -354,16 +377,30 @@ public abstract class RestHandler extends RouteHandler {
     }
 
     protected static boolean authorised(RestRequest req, Privilege.Type type, String privilege) {
-        return Privilege.getInstance().hasPrivilege(req.getAuthToken(), type, privilege);
+        return Privilege.getInstance().hasPrivilege1(req.getAuthToken(), type, privilege);
     }
-    
-    private static class NameDescriptionWithId<T extends NameDescription> {
-        T item;
-        NamedObjectId requestedId;
-        
+
+    protected static class NameDescriptionWithId<T extends NameDescription> {
+        final private T item;
+        private final NamedObjectId requestedId;
+
         NameDescriptionWithId(T item, NamedObjectId requestedId) {
             this.item = item;
             this.requestedId = requestedId;
         }
+
+        public T getItem() {
+            return item;
+        }
+
+        public NamedObjectId getRequestedId() {
+            return requestedId;
+        }
+    }
+
+    public static void completeChunkedTransfer(RestRequest req) {
+        req.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+        .addListener(ChannelFutureListener.CLOSE)
+        .addListener(l-> req.getCompletableFuture().complete(null));
     }
 }

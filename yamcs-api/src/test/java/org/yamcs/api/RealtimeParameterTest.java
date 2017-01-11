@@ -2,14 +2,14 @@ package org.yamcs.api;
 
 import java.net.URISyntaxException;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
-import org.yamcs.api.Protocol;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
-import org.yamcs.api.YamcsSession;
+import org.yamcs.api.artemis.Protocol;
+import org.yamcs.api.artemis.YamcsClient;
+import org.yamcs.api.artemis.YamcsSession;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -25,7 +25,7 @@ public class RealtimeParameterTest {
     final SimpleString rpcAddr;
     final String namespace="MDB:OPS Name";
     
-    RealtimeParameterTest() throws YamcsApiException, URISyntaxException, HornetQException {
+    RealtimeParameterTest() throws YamcsApiException, URISyntaxException, ActiveMQException {
         ysession=YamcsSession.newBuilder().setConnectionParams("yamcs://aces-test:5445").build();
         yclient=ysession.newClientBuilder()
         .setRpc(true)

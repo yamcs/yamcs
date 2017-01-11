@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.TimeInterval;
 import org.yamcs.api.MediaType;
@@ -38,7 +40,6 @@ import io.protostuff.Schema;
  * Encapsulates everything to do with one Rest Request. Object is gc-ed, when request ends.
  */
 public class RestRequest {
-    
     public enum Option {
         NO_LINK;
     }
@@ -49,12 +50,17 @@ public class RestRequest {
     private AuthenticationToken token;
     private RouteMatch routeMatch;
     private static JsonFactory jsonFactory = new JsonFactory();
+    CompletableFuture<Void> cf = new CompletableFuture<>();
+    static AtomicInteger counter = new AtomicInteger(); 
+    final int requestId;
+    long txSize = 0;
     
     public RestRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest, QueryStringDecoder qsDecoder, AuthenticationToken token) {
         this.channelHandlerContext = channelHandlerContext;
         this.httpRequest = httpRequest;
         this.token = token;
         this.qsDecoder = qsDecoder;
+        this.requestId = counter.incrementAndGet();
     }
     
     void setRouteMatch(RouteMatch routeMatch) {
@@ -76,6 +82,14 @@ public class RestRequest {
         return routeMatch.regexMatch.group(name);
     }
     
+    /**
+     * 
+     * @return unique across running yamcs server rest request id used to aid in tracking the request executin in the log file
+     * 
+     */
+    public int getRequestId() {
+        return requestId;
+    }
     public long getLongRouteParam(String name) throws BadRequestException {
         String routeParam = routeMatch.regexMatch.group(name);
         try {
@@ -155,20 +169,13 @@ public class RestRequest {
         }
     }
     
-    /**
-     * Returns the authenticated user. Or <tt>null</tt> if the user is not authenticated.
-     */
-    public User getUser() {
-        return Privilege.getInstance().getUser(token);
-    }
-    
+   
     /**
      * Returns the username of the authenticated user. Or {@link Privilege#getDefaultUser()} if the user
      * is not authenticated.
      */
     public String getUsername() {
-        User user = getUser();
-        return (user != null) ? user.getPrincipalName() : Privilege.getDefaultUser();
+        return Privilege.getInstance().getUsername(token);
     }
     
     public AuthenticationToken getAuthToken() {
@@ -197,7 +204,8 @@ public class RestRequest {
     
     public String getQueryParameter(String name) {
         List<String> param = qsDecoder.parameters().get(name);
-        if (param.isEmpty()) return null;
+
+        if (param==null || param.isEmpty()) return null;
         return param.get(0);
     }
     
@@ -367,6 +375,11 @@ public class RestRequest {
      * the (derived) source content type.
      */
     public MediaType deriveTargetContentType() {
+        return deriveTargetContentType(httpRequest);
+    }
+    
+    
+    public static MediaType deriveTargetContentType(HttpRequest httpRequest) {
         if (httpRequest.headers().contains(Names.ACCEPT)) {
             String acceptedContentType = httpRequest.headers().get(Names.ACCEPT);
             if (MediaType.JSON.is(acceptedContentType)) {
@@ -374,10 +387,16 @@ public class RestRequest {
             } else if (MediaType.PROTOBUF.is(acceptedContentType)) {
                 return MediaType.PROTOBUF;
             }
+        } else if (httpRequest.headers().contains(Names.CONTENT_TYPE)) {
+            String declaredContentType = httpRequest.headers().get(Names.CONTENT_TYPE);
+            if (MediaType.JSON.is(declaredContentType)) {
+                return MediaType.JSON;
+            } else if (MediaType.PROTOBUF.is(declaredContentType)) {
+                return MediaType.PROTOBUF;
+            }
         }
-
-        // Unsupported content type or wildcard, like */*, just use default
-        return deriveSourceContentType();
+        //if none of accept or content_type specified, just assume JSON
+        return MediaType.JSON;
     }
     
     public String getBaseURL() {
@@ -386,7 +405,38 @@ public class RestRequest {
         return (host != null) ? scheme + host : "";
     }
     
+    /**
+     * 
+     * When the request is finished, the CompleteableFuture has to be used to signal the end.
+     * 
+     * 
+     * @return future to be used to signal the end of processing the request
+     * 
+     */
+    public CompletableFuture<Void> getCompletableFuture() {
+        return cf;
+    }
     
+    
+    /**
+     * Get the number of bytes transferred as the result of the REST call.
+     * It should not include the http headers.
+     * Note that the number might be increased before the data is sent so it will be wrong if there was an error sending data.
+     * 
+     * 
+     * @return number of bytes transferred as part of the request
+     */
+    public long getTransferredSize() {
+        return txSize;
+    }
+    /**
+     * add numBytes to the transferred size
+     * 
+     * @param bumBytes
+     */
+    public void addTransferredSize(long numBytes) {
+        txSize+=numBytes;
+    }
     /**
      * Returns true if the request specifies descending by use of the query string paramter 'order=desc'
      */

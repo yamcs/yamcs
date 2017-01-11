@@ -22,36 +22,36 @@ import org.yaml.snakeyaml.error.YAMLException;
 /**
  * This class loads yamcs configurations. There are a number of "subsystems",
  *  each using a corresponding subsystem.yaml file
- *  
+ *
  *  There are three places where a configuration file is looked up in order:
  *  - in the prefix/file.yaml via the classpath if the prefix is set in the setup method (used in the unittests)
  *  - in the userConfigDirectory .yamcs/etc/file.yaml
  *  - in the file.yaml via the classpath.
- *  
+ *
  * @author nm
  */
 @SuppressWarnings("rawtypes")
 public class YConfiguration {
     Map<String, Object> root;
-    static String userConfigDirectory; //This is used by the users to overwrite 
-    private final String filename;
+    static String userConfigDirectory; //This is used by the users to overwrite
+    static YConfigurationResolver resolver = new YConfigurationResolver();
 
-
-    private static Map<String, YConfiguration> configurations=new HashMap<String,YConfiguration>();
+    private static Map<String, YConfiguration> configurations=new HashMap<>();
     static Logger log=LoggerFactory.getLogger(YConfiguration.class.getName());
     static String prefix=null;
 
+
     //keeps track of the configuration path so meaningful error messages can be printed
     //the path is someting like filename->key1->subkey2[3]->...
-    static private IdentityHashMap<Object, String> confPath=new IdentityHashMap<Object, String>();
+    static private IdentityHashMap<Object, String> confPath=new IdentityHashMap<>();
 
 
-    @SuppressWarnings("unchecked")	
+    @SuppressWarnings("unchecked")
     private YConfiguration(String subsystem) throws IOException, ConfigurationException {
         Yaml yaml=new Yaml();
-        filename=subsystem+".yaml";
+        String filename=subsystem+".yaml";
         try {
-            Object o=yaml.load(getConfigurationStream("/"+filename));
+            Object o=yaml.load(resolver.getConfigurationStream("/"+filename));
             if(o==null) {
                 o=new HashMap<String, Object>(); //config file is empty, not an error
             } else if(!(o instanceof Map<?, ?>)) {
@@ -66,9 +66,9 @@ public class YConfiguration {
 
     /**
      * If configPrefix is not null, sets up the configuration to search the classpath for files like "configPrefix/xyz.properties"
-     * 
+     *
      * Also sets up the TimeEncoding configuration
-     * 
+     *
      * @param configPrefix
      * @throws ConfigurationException
      */
@@ -94,7 +94,7 @@ public class YConfiguration {
 
         if(System.getProperty("java.util.logging.config.file")==null) {
             try {
-                LogManager.getLogManager().readConfiguration(getConfigurationStream("/logging.properties"));
+                LogManager.getLogManager().readConfiguration(resolver.getConfigurationStream("/logging.properties"));
             } catch (Exception e) {
                 //do nothing, the default java builtin logging is used
             }
@@ -103,7 +103,7 @@ public class YConfiguration {
     }
     /**
      * calls setup(null)
-     * 
+     *
      * @throws ConfigurationException
      */
     public synchronized static void setup() throws ConfigurationException {
@@ -115,7 +115,7 @@ public class YConfiguration {
      * Loads (if not already loaded) and returns a configuration corresponding to a file <subsystem>.yaml
      *
      * This method does not reload the configuration file if it has changed.
-     * 
+     *
      * @param subsystem
      * @return the loaded configuration
      * @throws ConfigurationException if the configuration file could not be found or not loaded (e.g. error in yaml formatting)
@@ -134,12 +134,11 @@ public class YConfiguration {
         return c;
     }
 
-    
     /**
      * Loads and returns a configuration corresponding to a file <subsystem>.yaml
-     * 
+     *
      * This method reloads the configuration file always.
-     * 
+     *
      * @param subsystem
      * @param reload
      * @return the loaded configuration
@@ -155,34 +154,16 @@ public class YConfiguration {
         return getConfiguration(subsystem);
     }
 
-    private static InputStream getConfigurationStream(String name) throws ConfigurationException {
-        InputStream is;
-        if(prefix!=null) {
-            if((is=YConfiguration.class.getResourceAsStream("/"+prefix+name))!=null) {
-                log.debug("Reading "+new File(YConfiguration.class.getResource("/"+prefix+name).getFile()).getAbsolutePath());
-                return is;
-            }
+    public static boolean isDefined(String subsystem) throws ConfigurationException {
+        try {
+            getConfiguration(subsystem);
+            return true;
+        } catch (ConfigurationNotFoundException e) {
+            return false;
         }
-
-        //see if the users has an own version of the file
-        File f=new File(userConfigDirectory+name);
-        if(f.exists()) {
-            try {
-                is=new FileInputStream(f);
-                log.debug("Reading "+f.getAbsolutePath());
-                return is;
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-        if((is=YConfiguration.class.getResourceAsStream(name))==null) {
-            throw(new ConfigurationException("Cannot find resource "+name));
-        }
-        log.debug("Reading "+new File(YConfiguration.class.getResource(name).getFile()).getAbsolutePath());
-        return is;
     }
 
-    public String getGlobalProperty(String key) {
+    public static String getGlobalProperty(String key) {
         return System.getProperty(key);
     }
 
@@ -196,7 +177,9 @@ public class YConfiguration {
     }
 
     public boolean containsKey(String key, String key1) throws ConfigurationException {
-        Map<String, Object> m=getMap(key);
+        if(!root.containsKey(key)) return false;
+
+        Map<String, Object> m = getMap(key);
         return m.containsKey(key1);
     }
 
@@ -352,16 +335,23 @@ public class YConfiguration {
 
     /**********************Boolean configs*/
     /**
-     * Returns m.get(key) if it exists and is of type boolean, otherwise throws an exception
+     * Returns m.get(key) if it exists and is of type boolean,
+     * if m.get(key) exists and is not boolean, throw an exception.
+     * if m.get(key) does not exist, return the default value.
      * @param m
      * @param key
-     * @return
+     * @param defaultValue - the default value to return if m.get(key) does not exist.
+     * @return the boolean config value
      * @throws ConfigurationException
      */
     static public boolean getBoolean(Map<String, Object> m, String key, boolean defaultValue)  throws ConfigurationException {
         Object o=m.get(key);
-        if((o!=null) && (o instanceof Boolean)) {
-            return (Boolean)o;
+        if(o!=null){
+            if (o instanceof Boolean) {
+                return (Boolean)o;
+            } else {
+                throw new ConfigurationException(confPath.get(m), "mapping for key '"+key+"' is of type "+getUnqualfiedClassName(o)+" and not Boolean (use true or false without quotes)");
+            }
         } else {
             return defaultValue;
         }
@@ -393,6 +383,9 @@ public class YConfiguration {
     }
 
 
+    public boolean getBoolean(String key, boolean defaultValue) {
+        return getBoolean(root, key, defaultValue);
+    }
 
     /********************** int configs */
     static public int getInt(Map<String, Object> m, String key) throws ConfigurationException {
@@ -406,16 +399,16 @@ public class YConfiguration {
     }
     /**
      * return the m.get(key) as an int if it's present or v if it is not.
-     * 
+     *
      * If the key is present but the value is not an integer, a ConfigurationException is thrown.
      * @param m
      * @param key
-     * @param v
+     * @param defaultValue
      * @return the value from the map or the passed value if the map does not contain the key
      * @throws ConfigurationException if the key is present but it's not an int
      */
-    static public int getInt(Map<String, Object> m, String key, int v) throws ConfigurationException {
-        if(!m.containsKey(key)) return v;
+    static public int getInt(Map<String, Object> m, String key, int defaultValue) throws ConfigurationException {
+        if(!m.containsKey(key)) return defaultValue;
         Object o=m.get(key);
         if(o instanceof Integer) {
             return (Integer)o;
@@ -423,7 +416,7 @@ public class YConfiguration {
             throw new ConfigurationException(confPath.get(m), "mapping for key '"+key+"' is of type "+getUnqualfiedClassName(o)+" and not Integer");
         }
     }
-    
+
     static public long getLong(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
         Object o=m.get(key);
@@ -435,10 +428,10 @@ public class YConfiguration {
             throw new ConfigurationException(confPath.get(m), "mapping for key '"+key+"' is of type "+getUnqualfiedClassName(o)+" and not Integer or Long");
         }
     }
-    
+
     /**
      * return the m.get(key) as an long if it's present or v if it is not.
-     * 
+     *
      * @param m
      * @param key
      * @param v
@@ -466,13 +459,73 @@ public class YConfiguration {
         return getInt(m, key1);
     }
 
+    public int getInt(String key, String key1, int defaultValue) throws ConfigurationException {
+        if(!root.containsKey(key)) return defaultValue;
+
+        Map<String, Object> m = getMap(key);
+
+        return getInt(m, key1, defaultValue);
+    }
+
     public boolean isList(String key) {
         return isList(root, key);
     }
 
-    public boolean isList(Map m, String key) {
+    public static boolean isList(Map m, String key) {
         checkKey(m, key);
         Object o = m.get(key);
         return (o instanceof List);
+    }
+
+    public static void setResolver(YConfigurationResolver resolver) {
+        YConfiguration.resolver = resolver;
+    }
+
+    /**
+     * Default config file resolver
+     */
+    public static class YConfigurationResolver {
+
+        public InputStream getConfigurationStream(String name) throws ConfigurationException {
+            InputStream is;
+            if(prefix!=null) {
+                if((is=YConfiguration.class.getResourceAsStream("/"+prefix+name))!=null) {
+                    log.debug("Reading "+new File(YConfiguration.class.getResource("/"+prefix+name).getFile()).getAbsolutePath());
+                    return is;
+                }
+            }
+
+            //see if the users has an own version of the file
+            File f=new File(userConfigDirectory+name);
+            if(f.exists()) {
+                try {
+                    is=new FileInputStream(f);
+                    log.debug("Reading "+f.getAbsolutePath());
+                    return is;
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+            if((is=YConfiguration.class.getResourceAsStream(name))==null) {
+                throw(new ConfigurationNotFoundException("Cannot find resource "+name));
+            }
+            log.debug("Reading "+new File(YConfiguration.class.getResource(name).getFile()).getAbsolutePath());
+            return is;
+        }
+    }
+
+    /**
+     * Introduced to be able to detect when a configuration file was not
+     * specified (as opposed to when there's a validation error inside). The
+     * current default behaviour of Yamcs is to throw an error when
+     * getConfiguration(String subystem) is called and the resource does not
+     * exist.
+     */
+    public static class ConfigurationNotFoundException extends ConfigurationException {
+        private static final long serialVersionUID = 1L;
+
+        public ConfigurationNotFoundException(String message) {
+            super(message);
+        }
     }
 }

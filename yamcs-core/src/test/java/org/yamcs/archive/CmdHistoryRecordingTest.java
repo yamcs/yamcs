@@ -2,24 +2,26 @@ package org.yamcs.archive;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.yamcs.api.Protocol.decode;
+import static org.yamcs.api.artemis.Protocol.decode;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.core.server.embedded.EmbeddedHornetQ;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.tctm.TcUplinkerAdapter;
-import org.yamcs.YamcsServer;
-import org.yamcs.api.Protocol;
-import org.yamcs.api.YamcsClient;
-import org.yamcs.api.YamcsSession;
-import org.yamcs.cmdhistory.CommandHistoryRecorder;
+import org.yamcs.api.artemis.Protocol;
+import org.yamcs.api.artemis.YamcsClient;
+import org.yamcs.api.artemis.YamcsSession;
+import org.yamcs.artemis.ArtemisManagement;
+import org.yamcs.artemis.ArtemisServer;
 import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
@@ -36,22 +38,23 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchTestCase;
 
 /**
- * Generates and saves some some command history and then it performs a replay via HornetQ
+ * Generates and saves some some command history and then it performs a replay via ActiveMQ
  * 
  * 
  * @author nm
  *
  */
 public class CmdHistoryRecordingTest extends YarchTestCase {
-    static EmbeddedHornetQ hornetServer;
+    static EmbeddedActiveMQ artemisServer;
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        hornetServer = YamcsServer.setupHornet();
+        artemisServer = ArtemisServer.setupArtemis();
+        ArtemisManagement.setupYamcsServerControl();
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-	YamcsServer.stopHornet();
+        artemisServer.stop();
     }
  
     
@@ -101,7 +104,9 @@ public class CmdHistoryRecordingTest extends YarchTestCase {
        
         
         //and now try remotely using replay
-        ReplayServer replay=new ReplayServer(ydb.getName());
+        Map<String, Object> config = new HashMap<>();
+        config.put(ReplayServer.CONFIG_KEY_startArtemisService, true);
+        ReplayServer replay=new ReplayServer(ydb.getName(), config);
         replay.startAsync();
         
         YamcsSession ysession=YamcsSession.newBuilder().build();

@@ -10,7 +10,7 @@ public enum DataSource {
  * 
  * 
  * Usage in Yamcs: 
- *  TELEMETERD - used for data aquired from outside
+ *  TELEMETERD - used for data acquired from outside
  *  DERIVED - are those set by algorithm manager
  *  LOCAL - are software parameters that can be set by user
  *  SYSTEM - parameters giving internal yamcs state -created on the fly (do not have to be defined in the database)

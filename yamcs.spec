@@ -84,7 +84,7 @@ fi
 
 %defattr(755,root,root,755) 
 %config /etc/init.d/* 
-%{prefix}/bin/*
+%config %{prefix}/bin/*
 
 %post
 

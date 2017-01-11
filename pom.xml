@@ -7,7 +7,7 @@
   <name>Yamcs</name>
   <description>Yet Another Mission Control System</description>
 
-  <version>0.29.5</version>
+  <version>0.30.0</version>
 
   <url>https://github.com/yamcs/yamcs.git</url>
   
@@ -47,7 +47,7 @@
       
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <hornetQVersion>2.4.6.Final</hornetQVersion>
+    <artemisVersion>1.5.0</artemisVersion>
   </properties>
 
   <build>
@@ -127,7 +127,7 @@
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.8.2</version>
+        <version>4.12</version>
         <scope>test</scope>
       </dependency>
 

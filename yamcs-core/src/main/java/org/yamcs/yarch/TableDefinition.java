@@ -10,6 +10,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.utils.StringConverter;
+import org.yamcs.yarch.PartitioningSpec._type;
 import org.yamcs.yarch.streamsql.ColumnNotFoundException;
 import org.yamcs.yarch.streamsql.GenericStreamSqlException;
 import org.yamcs.yarch.streamsql.NotSupportedException;
@@ -38,14 +39,30 @@ import com.google.common.io.ByteStreams;
  */
 public class TableDefinition {
     static Logger log=LoggerFactory.getLogger(TableDefinition.class.getName());
-
+    
+    /* table version history
+    /* 0 : yamcs version < 3.0 
+     *        - the histogram were stored in a separate rocksdb database.
+     *        - pp table contained a column ppgroup instead of group     
+     * 1 :  current version. To switch from version 0 to version 1, use the bin/yamcs archive --upgrade command    
+     */
+    public static int CURRENT_FORMAT_VERSION = 1;
+    private int formatVersion = CURRENT_FORMAT_VERSION;
+   
+    //used for rocksdb - IN_KEY means storing the partition in front of the key
+    //                 - COLUMN_FAMILY : store data for each partition in a different column family
+    //this is used only if the table is partitioned by value
+    public enum PartitionStorage {IN_KEY, COLUMN_FAMILY};
+    
+    private PartitionStorage partitionStorage = PartitionStorage.IN_KEY;
+    
     private final TupleDefinition keyDef;
     
     //the definition of all the value columns that the table can have. A particular row can have less columns
     //We have two references, one that is written to disk as part of the serialization and the other one that is actually used
     //we do this in order to prevent that a column is used before the serialization has been flushed to disk
-    TupleDefinition serializedValueDef=new TupleDefinition();
-    private volatile TupleDefinition valueDef=serializedValueDef;
+    TupleDefinition serializedValueDef = new TupleDefinition();
+    private volatile TupleDefinition valueDef = serializedValueDef;
     
     //   keyDef+valueDef
     private volatile TupleDefinition tupleDef; 
@@ -60,7 +77,7 @@ public class TableDefinition {
     private boolean compressed;
     private PartitioningSpec partitioningSpec;
     
-    private String storageEngineName=YarchDatabase.TC_ENGINE_NAME;
+    private String storageEngineName = YarchDatabase.RDB_ENGINE_NAME;
     
     transient private String name; //we make this transient such that tables names can be changed by changing the filename
     private List<String> histoColumns;
@@ -80,7 +97,7 @@ public class TableDefinition {
      * @throws StreamSqlException
      */
     public TableDefinition(String name, TupleDefinition tdef, List<String> primaryKey) throws StreamSqlException {
-        keyDef=new TupleDefinition();
+        keyDef = new TupleDefinition();
         this.name=name;
         for(String s:primaryKey) {
             ColumnDefinition c=tdef.getColumn(s);
@@ -104,12 +121,12 @@ public class TableDefinition {
      * @param enumValues
      */
     TableDefinition(TupleDefinition keyDef, TupleDefinition valueDef, Map<String, BiMap<String,Short>> enumValues) {
-    	this.valueDef=valueDef;
-    	this.serializedValueDef=valueDef;
-    	this.keyDef=keyDef;
+    	this.valueDef = valueDef;
+    	this.serializedValueDef = valueDef;
+    	this.keyDef = keyDef;
     	computeTupleDef();
-    	this.enumValues=enumValues;
-    	this.serializedEmumValues=enumValues;
+    	this.enumValues = enumValues;
+    	this.serializedEmumValues = enumValues;
     	
     	for(ColumnDefinition cd:keyDef.getColumnDefinitions()) {
     	    ColumnSerializer cs=new ColumnSerializer(this, cd);
@@ -261,18 +278,67 @@ public class TableDefinition {
     }
     
     /**
-     * adds a column to the value part and serialize the table definition to disk
+     * adds a column to the value part and serializes the table definition to disk
      * @param cd
      */
     private synchronized void addValueColumn(ColumnDefinition cd) {
-        serializedValueDef=valueDef.copy();
+        serializedValueDef = valueDef.copy();
         serializedValueDef.addColumn(cd);
         ydb.serializeTableDefinition(this);
-        valueDef=serializedValueDef;
+        valueDef = serializedValueDef;
         valueSerializers.add(new ColumnSerializer(this, cd));
         computeTupleDef();
     }
 
+    /**
+     * Changes the formatVersion and serializes the table definition to disk
+     * @param formatVersion new format version
+     */
+    public synchronized void changeFormatDefinition(int formatVersion) {
+        this.formatVersion = formatVersion;
+        ydb.serializeTableDefinition(this);
+    }
+    
+    /**
+     * Renames column and serializes the table definition to disk.
+     * 
+     * Should not be used when the table is in used (e.g. by a table writer or reader). 
+     * 
+     * @param oldName - old name of the column
+     * @param newName - new name of the column
+     */
+    public synchronized void renameColumn(String oldName, String newName) {
+        if(keyDef.hasColumn(oldName)) {
+            keyDef.renameColumn(oldName, newName);
+        } else if(valueDef.hasColumn(oldName)) {
+            valueDef.renameColumn(oldName, newName);
+        } else {
+            throw new IllegalArgumentException("no column named '"+oldName+"'");
+        }
+        
+        if(oldName.equals(partitioningSpec.timeColumn)) {
+            PartitioningSpec newSpec = new PartitioningSpec(partitioningSpec.type, newName, partitioningSpec.valueColumn);
+            newSpec.setTimePartitioningSchema(partitioningSpec.getTimePartitioningSchema());
+            partitioningSpec = newSpec;
+        } else if (oldName.equals(partitioningSpec.valueColumn)) {
+            PartitioningSpec newSpec = new PartitioningSpec(partitioningSpec.type,  partitioningSpec.timeColumn, newName);
+            newSpec.setTimePartitioningSchema(partitioningSpec.getTimePartitioningSchema());
+            partitioningSpec = newSpec;
+        }
+        
+        int idx = histoColumns.indexOf(oldName);
+        if(idx!=-1) {
+            histoColumns.set(idx, newName);
+        }
+        
+        if((enumValues!=null) && (enumValues.containsKey(oldName))) {
+            BiMap<String, Short> b =  enumValues.remove(oldName);
+            serializedEmumValues.put(newName, b);
+        }
+        ydb.serializeTableDefinition(this);
+        enumValues = serializedEmumValues;
+    }
+    
    /**
     * Adds a value to a enum and writes the table definition to disk
     * we first modify the serializedEnumValues to make sure that nobody else sees the new enum id
@@ -280,10 +346,10 @@ public class TableDefinition {
     * 
     */
    synchronized void addEnumValue(ColumnSerializer cs, String v) {
-       String columnName=cs.getColumnName();
+       String columnName = cs.getColumnName();
        BiMap<String, Short> b;
        
-       //first check if it's not already in the map (can happen if two threads were concurrently calling this method)
+       //first check if it's not already in the map
        if((enumValues!=null) && ((b=enumValues.get(columnName))!=null) && b.containsKey(v)) return; 
        
        log.debug("Adding enum value "+v+" for "+name+"."+columnName);
@@ -371,7 +437,7 @@ public class TableDefinition {
             //deserialize the value
             badi=ByteStreams.newDataInput(v);
             while(true) {
-                int cidx=badi.readInt(); //column index
+                int cidx = badi.readInt(); //column index
                 if(cidx==-1) break;
                 if(cidx>=valueDef.size())throw new RuntimeException("Reference to index "+cidx+" found but the table definition does not have this column"); 
 
@@ -399,8 +465,8 @@ public class TableDefinition {
     }
     
     /**
-     * Returns true if this is the first column of the key
-     * @return
+     * @param cname the column name
+     * @return true if cname is the first column of the key
      */
     public boolean isIndexedByKey(String cname) {
         return keyDef.getColumnIndex(cname)==0;
@@ -483,4 +549,26 @@ public class TableDefinition {
     public void setStorageEngineName(String storageEngineName) {
         this.storageEngineName = storageEngineName;
     }
+
+    public PartitionStorage getPartitionStorage() {
+        return partitionStorage;
+    }
+
+    public void setPartitionStorage(PartitionStorage partitionStorage) {
+        this.partitionStorage = partitionStorage;
+    }
+
+    public boolean isPartitionedByValue() {
+        return partitioningSpec.type==_type.TIME_AND_VALUE|| partitioningSpec.type==_type.VALUE;
+    }
+
+    public int getFormatVersion() {
+        return formatVersion;
+    }
+
+    void setFormatVersion(int formatVersion) {
+        this.formatVersion = formatVersion;
+    }
+
+ 
 }

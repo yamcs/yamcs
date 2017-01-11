@@ -43,14 +43,12 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
-import io.netty.channel.ChannelFuture;
-
 public class ProcessorParameterRestHandler extends RestHandler {
     
     private final static Logger log = LoggerFactory.getLogger(ProcessorParameterRestHandler.class);
     
     @Route(path = "/api/processors/:instance/:processor/parameters/:name*/alarms/:seqnum", method = { "PATCH", "PUT", "POST" })
-    public ChannelFuture patchParameterAlarm(RestRequest req) throws HttpException {
+    public void patchParameterAlarm(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         AlarmServer alarmServer = verifyAlarmServer(processor);
         
@@ -67,13 +65,16 @@ public class ProcessorParameterRestHandler extends RestHandler {
         // URI can override body
         if (req.hasQueryParameter("state")) state = req.getQueryParameter("state");
         if (req.hasQueryParameter("comment")) comment = req.getQueryParameter("comment");
+        if(state==null) {
+            throw new BadRequestException("No state specified");
+        }
         
         switch (state.toLowerCase()) {
         case "acknowledged":
             try {
                 // TODO permissions on AlarmServer
                 alarmServer.acknowledge(p, seqNum, req.getUsername(), processor.getCurrentTime(), comment);
-                return sendOK(req);
+                completeOK(req);
             } catch (CouldNotAcknowledgeAlarmException e) {
                 log.debug("Did not acknowledge alarm " + seqNum + ". " + e.getMessage());
                 throw new BadRequestException(e.getMessage());
@@ -84,7 +85,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
     }
     
     @Route(path = "/api/processors/:instance/:processor/parameters/:name*", method = { "PUT", "POST" })
-    public ChannelFuture setSingleParameterValue(RestRequest req) throws HttpException {
+    public void setSingleParameterValue(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         SoftwareParameterManager mgr = verifySoftwareParameterManager(processor);
         
@@ -97,11 +98,11 @@ public class ProcessorParameterRestHandler extends RestHandler {
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
         }
-        return sendOK(req);
+        completeOK(req);
     }
     
     @Route(path = "/api/processors/:instance/:processor/parameters/mset", method = { "POST", "PUT" }, priority=true)
-    public ChannelFuture setParameterValues(RestRequest req) throws HttpException {
+    public void setParameterValues(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         SoftwareParameterManager mgr = verifySoftwareParameterManager(processor);
         
@@ -112,7 +113,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         for(SetParameterValueRequest r : request.getRequestList()) {
             try {
                 String parameterName = prm.getParameter(r.getId()).getQualifiedName();
-                if(!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.TM_PARAMETER_SET, parameterName)) {
+                if(!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.Type.TM_PARAMETER_SET, parameterName)) {
                     throw new ForbiddenException("User " + req.getAuthToken() + " has no 'set' permission for parameter "
                             + parameterName);
                 }
@@ -135,17 +136,17 @@ public class ProcessorParameterRestHandler extends RestHandler {
             throw new BadRequestException(e.getMessage());
         }
 
-        return sendOK(req);
+        completeOK(req);
     }
     
     @Route(path = "/api/processors/:instance/:processor/parameters/:name*", method = "GET")
-    public ChannelFuture getParameterValue(RestRequest req) throws HttpException {
+    public void getParameterValue(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
         
-        if (!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
+        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
             log.warn("Parameter Info for {} not authorized for token {}", p.getQualifiedName(), req.getAuthToken());
             throw new BadRequestException("Invalid parameter name specified");
         }
@@ -165,11 +166,11 @@ public class ProcessorParameterRestHandler extends RestHandler {
             pval = pvals.get(0);
         }
             
-        return sendOK(req, pval, SchemaPvalue.ParameterValue.WRITE);
+        completeOK(req, pval, SchemaPvalue.ParameterValue.WRITE);
     }
     
     @Route(path = "/api/processors/:instance/:processor/parameters/mget", method = {"GET", "POST"}, priority=true)
-    public ChannelFuture getParameterValues(RestRequest req) throws HttpException {
+    public void getParameterValues(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         
         BulkGetParameterValueRequest request = req.bodyAsMessage(SchemaRest.BulkGetParameterValueRequest.MERGE).build();
@@ -193,7 +194,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
 
         BulkGetParameterValueResponse.Builder responseb = BulkGetParameterValueResponse.newBuilder();
         responseb.addAllValue(pvals);
-        return sendOK(req, responseb.build(), SchemaRest.BulkGetParameterValueResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.BulkGetParameterValueResponse.WRITE);
     }
     
     private List<ParameterValue> doGetParameterValues(YProcessor processor, AuthenticationToken authToken, List<NamedObjectId> ids, boolean fromCache, long timeout) throws HttpException {

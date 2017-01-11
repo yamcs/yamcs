@@ -8,6 +8,7 @@ import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueEvent;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Web.WebSocketExtensionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
@@ -15,6 +16,7 @@ import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
+import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.LinkEvent;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
@@ -28,9 +30,9 @@ import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.protostuff.Schema;
 
 public class ProtobufEncoder implements WebSocketEncoder {
-    
+
     private ChannelHandlerContext ctx;
-    
+
     public ProtobufEncoder(ChannelHandlerContext ctx) {
         this.ctx = ctx;
     }
@@ -84,6 +86,10 @@ public class ProtobufEncoder implements WebSocketEncoder {
             responseb.setCommandQueueInfo((CommandQueueInfo) message);
         } else if (dataType == ProtoDataType.COMMAND_QUEUE_EVENT) {
             responseb.setCommandQueueEvent((CommandQueueEvent) message);
+        } else if (dataType == ProtoDataType.TM_PACKET) {
+            responseb.setTmPacket((TmPacketData) message);
+        } else if (dataType == ProtoDataType.EXTENSION_DATA) {
+            responseb.setExtensionData((WebSocketExtensionData) message);
         } else {
             throw new IllegalArgumentException("Unsupported data type " + dataType);
         }

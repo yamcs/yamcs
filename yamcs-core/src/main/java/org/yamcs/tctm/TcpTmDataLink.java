@@ -23,6 +23,7 @@ import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.CcsdsPacket;
+import org.yamcs.utils.LoggingUtils;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
@@ -44,13 +45,13 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
     private NamedObjectId sv_linkStatus_id, sp_dataCount_id;
     final String yamcsInstance;
     final String name;
-    final TimeService timeService;
+    final protected TimeService timeService;
     
     protected TcpTmDataLink(String instance, String name) {// dummy constructor needed by subclass constructors
         this.yamcsInstance = instance;
         this.name = name;
         this.timeService = YamcsServer.getTimeService(instance);
-        log = YamcsServer.getLogger(this.getClass(), instance);
+        log = LoggingUtils.getLogger(this.getClass(), instance);
     }
 
     public TcpTmDataLink(String instance, String name, String spec) throws ConfigurationException  {
@@ -127,11 +128,6 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
             return new PacketWithTime(timeService.getMissionTime(), CcsdsPacket.getInstant(bb), bb.array());
         } 
         return null;
-    }
-    
-    @Override
-    public boolean isArchiveReplay() {
-        return false;
     }
     
     /**

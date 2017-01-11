@@ -1,13 +1,14 @@
 package org.yamcs.ui.yamcsmonitor;
 
 import org.yamcs.ConfigurationException;
-import org.yamcs.api.YamcsConnector;
-import org.yamcs.ui.YProcessorControlClient;
+import org.yamcs.ui.ProcessorControlClient;
+import org.yamcs.ui.YamcsConnector;
 import org.yamcs.ui.archivebrowser.ArchiveBrowser;
 import org.yamcs.ui.archivebrowser.ArchiveIndexReceiver;
 import org.yamcs.ui.archivebrowser.Selection;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -28,7 +29,7 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
     //JMenuItem  showHistoMenuItem; 
     JMenuItem  showCindexMenuItem; 
 
-    public ArchiveBrowserSelector(Component parent, YamcsConnector yconnector, ArchiveIndexReceiver indexReceiver, YProcessorControlClient processorControl, boolean isAdmin) throws ConfigurationException, IOException {
+    public ArchiveBrowserSelector(Component parent, YamcsConnector yconnector, ArchiveIndexReceiver indexReceiver, ProcessorControlClient processorControl, boolean isAdmin) throws ConfigurationException, IOException {
         super(yconnector, indexReceiver, true);
         // create menus
 
@@ -56,8 +57,10 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
         JMenu viewMenu = new JMenu("View");
         viewMenu.setMnemonic(KeyEvent.VK_V);
         menuBar.add(viewMenu);
-
-        menuBar.add(getToolsMenu());
+        JMenu toolsMenu = getToolsMenu();
+        if(toolsMenu!=null) {
+            menuBar.add(toolsMenu);
+        }
 
         for(JMenu customMenu:customMenus) {
             menuBar.add(customMenu);

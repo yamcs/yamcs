@@ -12,12 +12,11 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.YProcessor;
-import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SystemParameter;
-import org.yamcs.xtce.SystemParameterDb;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
@@ -55,9 +54,9 @@ public class SystemParametersProvider extends AbstractService implements StreamS
     @Override
     public void init(YProcessor yproc) throws ConfigurationException {
         String instance = yproc.getInstance();
-        log=YamcsServer.getLogger(this.getClass(), yproc);
-        YarchDatabase ydb=YarchDatabase.getInstance(instance);
-        stream=ydb.getStream(SystemParametersCollector.STREAM_NAME);
+        log = LoggingUtils.getLogger(this.getClass(), yproc);
+        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        stream = ydb.getStream(SystemParametersCollector.STREAM_NAME);
         if(stream==null) throw new ConfigurationException("Cannot find a stream named "+SystemParametersCollector.STREAM_NAME);
 
         this.yproc = yproc;
@@ -111,26 +110,24 @@ public class SystemParametersProvider extends AbstractService implements StreamS
         SystemParameter sv = variables.get(fqname);
         if(sv==null) {
             log.debug("Creating {}", fqname);
-            sv = SystemParameter.getForFullyQualifiedName(fqname, DataSource.SYSTEM);
-            
-            variables.put(fqname, sv);
-            xtceDb.getSystemParameterDb().registerSystemParameter(sv);
+            sv = SystemParameter.getForFullyQualifiedName(fqname);
+            xtceDb.addParameter(sv, true);
         }
         return sv;
     }
-    
+   
     /**
      * return true if parameter starts with "/YAMCS" or the namespace is null and the name starts with "/YAMCS" 
      * 
      */
     @Override
     public boolean canProvide(NamedObjectId paraId) {
-        return SystemParameterDb.isSystemParameter(paraId);
+        return XtceDb.isSystemParameter(paraId);
     }
 
     @Override
     public boolean canProvide(Parameter para) {
-            return para.getQualifiedName() != null && para.getQualifiedName().startsWith(SystemParameterDb.YAMCS_SPACESYSTEM_NAME);
+            return para.getQualifiedName() != null && para.getQualifiedName().startsWith(XtceDb.YAMCS_SPACESYSTEM_NAME);
     }
 
     
@@ -190,7 +187,7 @@ public class SystemParametersProvider extends AbstractService implements StreamS
     }
     
     private ParameterValue getYProcPV(String name, String value) {
-        ParameterValue pv = new ParameterValue(getSystemParameter(SystemParameterDb.YAMCS_SPACESYSTEM_NAME+"/yprocessor/"+name));
+        ParameterValue pv = new ParameterValue(getSystemParameter(XtceDb.YAMCS_SPACESYSTEM_NAME+"/yprocessor/"+name));
         pv.setAcquisitionTime(yproc.getCurrentTime());
         pv.setGenerationTime(yproc.getCurrentTime());
         pv.setStringValue(value);

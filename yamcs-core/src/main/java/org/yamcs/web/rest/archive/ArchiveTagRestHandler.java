@@ -23,12 +23,11 @@ import org.yamcs.web.rest.Route;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
 
-import io.netty.channel.ChannelFuture;
 
 public class ArchiveTagRestHandler extends RestHandler {
     
     @Route(path = "/api/archive/:instance/tags", method = "GET")
-    public ChannelFuture listTags(RestRequest req) throws HttpException {
+    public void listTags(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         TagDb tagDb = getTagDb(instance);
         
@@ -50,11 +49,11 @@ public class ArchiveTagRestHandler extends RestHandler {
         } catch (IOException e) {
             throw new InternalServerErrorException("Could not load tags", e);
         }
-        return sendOK(req, responseb.build(), SchemaRest.ListTagsResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.ListTagsResponse.WRITE);
     }
     
     @Route(path = "/api/archive/:instance/tags/:tagTime/:tagId", method = "GET")
-    public ChannelFuture getTag(RestRequest req) throws HttpException {
+    public void getTag(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         TagDb tagDb = getTagDb(instance);
         
@@ -62,7 +61,7 @@ public class ArchiveTagRestHandler extends RestHandler {
         int tagId = req.getIntegerRouteParam("tagId");
 
         ArchiveTag tag = verifyTag(req, tagDb, tagTime, tagId); 
-        return sendOK(req, tag, SchemaYamcs.ArchiveTag.WRITE);
+        completeOK(req, tag, SchemaYamcs.ArchiveTag.WRITE);
     }
     
     /**
@@ -70,7 +69,7 @@ public class ArchiveTagRestHandler extends RestHandler {
      * knows the assigned id.
      */
     @Route(path = "/api/archive/:instance/tags", method = "POST")
-    public ChannelFuture createTag(RestRequest req) throws HttpException {
+    public void createTag(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         TagDb tagDb = getTagDb(instance);
         
@@ -94,14 +93,14 @@ public class ArchiveTagRestHandler extends RestHandler {
         }
 
         // Echo back the tag, with its assigned ID
-        return sendOK(req, newTag, SchemaYamcs.ArchiveTag.WRITE);
+        completeOK(req, newTag, SchemaYamcs.ArchiveTag.WRITE);
     }
     
     /**
      * Updates an existing tag. Returns the updated tag
      */
     @Route(path = "/api/archive/:instance/tags/:tagTime/:tagId", method = { "PATCH", "PUT", "POST" })
-    public ChannelFuture updateTag(RestRequest req) throws HttpException {
+    public void updateTag(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         TagDb tagDb = getTagDb(instance);
         ArchiveTag tag = verifyTag(req, tagDb, req.getDateRouteParam("tagTime"), req.getIntegerRouteParam("tagId"));
@@ -134,14 +133,14 @@ public class ArchiveTagRestHandler extends RestHandler {
             throw new InternalServerErrorException(e);
         }
         
-        return sendOK(req, updatedTag, SchemaYamcs.ArchiveTag.WRITE);
+        completeOK(req, updatedTag, SchemaYamcs.ArchiveTag.WRITE);
     }
     
     /**
      * Deletes the identified tag. Returns the deleted tag
      */
     @Route(path = "/api/archive/:instance/tags/:tagTime/:tagId", method = "DELETE")
-    public ChannelFuture deleteTag(RestRequest req, TagDb tagDb, long tagTime, int tagId) throws HttpException {
+    public void deleteTag(RestRequest req, TagDb tagDb, long tagTime, int tagId) throws HttpException {
         ArchiveTag deletedTag;
         try {
             deletedTag = tagDb.deleteTag(tagTime, tagId);
@@ -151,7 +150,7 @@ public class ArchiveTagRestHandler extends RestHandler {
             throw new InternalServerErrorException(e);
         }
         
-        return sendOK(req, deletedTag, SchemaYamcs.ArchiveTag.WRITE);
+        completeOK(req, deletedTag, SchemaYamcs.ArchiveTag.WRITE);
     }
     
     private static TagDb getTagDb(String yamcsInstance) throws HttpException {

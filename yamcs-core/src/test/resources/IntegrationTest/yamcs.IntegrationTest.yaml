@@ -3,25 +3,19 @@ services:
     - org.yamcs.tctm.DataLinkInitialiser
     - org.yamcs.archive.XtceTmRecorder
     - org.yamcs.archive.FSEventDecoder
-    - org.yamcs.archive.PpRecorder
+    - org.yamcs.archive.ParameterRecorder
     - org.yamcs.archive.EventRecorder
     - org.yamcs.archive.ReplayServer
     - org.yamcs.archive.IndexServer
     - org.yamcs.parameterarchive.ParameterArchive
-    - class: org.yamcs.YProcessorCreatorService
+    - class: org.yamcs.ProcessorCreatorService
       args: 
          name: "realtime"
          type: "realtime"
    
     #this one sets up the command history table
-    - org.yamcs.cmdhistory.CommandHistoryRecorder
-    - org.yamcs.web.YamcsWebService
-    
-    # send TM packets to hornetq address (required for external hornetq clients like packet viewer)
-    #- class: org.yamcs.hornetq.HornetQTmService
-    #  args: [tm_realtime, tm_dump]
-    #- class: org.yamcs.hornetq.HornetQPpService
-    #  args: [pp_realtime, pp_dump]
+    - org.yamcs.archive.CommandHistoryRecorder
+
       
 
 
@@ -37,8 +31,8 @@ tmDataLinks:
       spec: /storage/yamcs-incoming/eyops/tm
       stream: tm_realtime
 
-#config the pp providers started by the PpProviderAdapter
-ppDataLinks: []
+#config the pp providers started by the ParameterProviderAdapter
+parameterDataLinks: []
      #- class: org.yamcs.tctm.MulticastPpProvider
      #  spec: cdmcs-s
      #  stream: pp_realtime
@@ -47,7 +41,7 @@ ppDataLinks: []
 
 # config the tc uplinkers
 tcDataLinks:
-    - class: org.yamcs.IntegrationTestComVerif$MyTcDataLink
+    - class: org.yamcs.ComVerifIntegrationTest$MyTcDataLink
       stream: tc_realtime
 
 #Specify which MDB configuration to use, references a named section in mdb.yaml 

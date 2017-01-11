@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.TableDefinition.PartitionStorage;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
@@ -16,6 +17,7 @@ public class CreateTableStatement extends StreamSqlStatement {
     ArrayList<String> primaryKey;
     ArrayList<String> histoColumns;
     PartitioningSpec partitioningSpec;
+    PartitionStorage partitionStorage;
     String dataDir;
     String engine;
 
@@ -78,6 +80,10 @@ public class CreateTableStatement extends StreamSqlStatement {
             if(histoColumns!=null) {
                 tableDefinition.setHistogramColumns(histoColumns);
             }
+            
+            if(partitionStorage!=null) {
+                tableDefinition.setPartitionStorage(partitionStorage);
+            }
 
             try {
                 if(!ifNotExists || ydb.getTable(tableName)==null) {
@@ -92,5 +98,10 @@ public class CreateTableStatement extends StreamSqlStatement {
 
     public void setEngine(String engine) {
         this.engine=engine;		
+    }
+
+
+    public void setPartitionStorage(PartitionStorage pstorage) {
+        this.partitionStorage = pstorage;
     }
 }

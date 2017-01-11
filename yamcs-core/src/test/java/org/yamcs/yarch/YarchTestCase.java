@@ -9,7 +9,7 @@ import java.util.concurrent.Semaphore;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.management.ManagementService;
+import org.yamcs.yarch.management.JMXService;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
@@ -37,25 +37,25 @@ public abstract class YarchTestCase {
 	} else {
 	    littleEndian=false;
 	}
-	ManagementService.setup(false);
+	JMXService.setup(false);
     }
 
     @Before
     public void setUp() throws Exception {
 	YConfiguration config=YConfiguration.getConfiguration("yamcs");
-	String dir=config.getString("dataDir");
+	String dir = config.getString("dataDir");
 	instance = "yarchtest_"+this.getClass().getSimpleName();
-	context=new ExecutionContext(instance);
+	context = new ExecutionContext(instance);
 
 	File ytdir=new File(dir+"/"+instance);               
 	
 	FileUtils.deleteRecursively(ytdir.toPath());
-
+	
 	if(!ytdir.mkdirs()) throw new IOException("Cannot create directory "+ytdir);
 	
 	if(YarchDatabase.hasInstance(instance)) {	
 	    YarchDatabase ydb = YarchDatabase.getInstance(instance);
-	    RdbStorageEngine.removeInstance(ydb);	
+	    RdbStorageEngine.removeInstance(ydb);
 	    YarchDatabase.removeInstance(instance);		
 	}
 	
@@ -70,7 +70,7 @@ public abstract class YarchTestCase {
 	return ydb.execute(cmd);
     }
 
-    protected List<Tuple> suckAll(String streamName) throws InterruptedException{
+    protected List<Tuple> fetchAll(String streamName) throws InterruptedException{
 	final List<Tuple> tuples=new ArrayList<Tuple>();
 	final Semaphore semaphore=new Semaphore(0);
 	Stream s=ydb.getStream(streamName);

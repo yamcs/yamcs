@@ -51,8 +51,8 @@ message SpaceSystemInfo {
 }
 
 message MissionDatabase {
-  required string configName = 1; //this is the config section in mdb.yaml
-  required string name = 2; //XTCE root SpaceSystem name
+  optional string configName = 1; //this is the config section in mdb.yaml
+  optional string name = 2; //XTCE root SpaceSystem name
   optional string version = 3; //XTCE root SpaceSystem header version
   repeated SpaceSystemInfo spaceSystem = 4;
   optional string url = 5;
@@ -75,15 +75,16 @@ message ProcessorInfo {
   optional string type = 3;
   optional string spec = 4;
   optional string creator = 5;
-  optional bool hasCommanding = 6;
-  optional ServiceState state = 7;
-  optional yamcs.ReplayRequest replayRequest = 8; //in case of replay
-  optional yamcs.ReplayStatus.ReplayState replayState = 9; //in case of replay
-  optional string url = 10;
-  optional string clientsUrl = 11;
-  optional string parametersUrl = 12;
-  optional string commandsUrl = 13;
-  optional string commandQueuesUrl = 14;
+  optional bool hasAlarms = 6;
+  optional bool hasCommanding = 7;
+  optional ServiceState state = 8;
+  optional yamcs.ReplayRequest replayRequest = 9; //in case of replay
+  optional yamcs.ReplayStatus.ReplayState replayState = 10; //in case of replay
+  optional string url = 11;
+  optional string clientsUrl = 12;
+  optional string parametersUrl = 13;
+  optional string commandsUrl = 14;
+  optional string commandQueuesUrl = 15;
 }
 
 message ClientInfo {
@@ -181,4 +182,11 @@ message LinkEvent {
   }
   optional Type type = 1;
   optional LinkInfo linkInfo = 2;
+}
+
+message ServiceInfo {
+  optional string instance = 1;
+  optional string name = 2;
+  optional ServiceState state = 3;
+  optional string className = 4;
 }

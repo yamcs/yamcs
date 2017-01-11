@@ -20,9 +20,6 @@ import org.yamcs.xtce.ParameterEntry;
  *
  */
 public class ParameterValue {
-    public MonitoringResult getDeltaMonitoringResult() {
-        return deltaMonitoringResult;
-    }
 
     //the definition of the parameter may be null if we do not have a reference to an XtceDB object 
     // this could happen if the ParameterValue is extracted from the ParameterArchive
@@ -39,35 +36,22 @@ public class ParameterValue {
     private long generationTime;
     private long expirationTime = TimeEncoding.INVALID_INSTANT;
 
-    private AcquisitionStatus acquisitionStatus;
-    private boolean processingStatus;
-    private MonitoringResult monitoringResult;
-    private MonitoringResult deltaMonitoringResult;
-    private RangeCondition rangeCondition;
-
-
-    public FloatRange watchRange = null;
-    public FloatRange warningRange = null;
-    public FloatRange distressRange = null;
-    public FloatRange criticalRange = null;
-    public FloatRange severeRange = null;
-
+    //use this singleton as a default status 
+    ParameterStatus status = ParameterStatus.NOMINAL;
 
     /**
      * Creates a parameter value for a parameter which has critical or warning range associated
      * @param def the parameter definition
      */
     public ParameterValue(Parameter def) {
-        this.def=def;
+        this.def = def;
         paramFqn = def.getQualifiedName();
-
-        setAcquisitionStatus(AcquisitionStatus.ACQUIRED);
-        setProcessingStatus(true);
     }
     public ParameterValue(String fqn) {
         this.def = null;
         this.paramFqn = fqn;
     }
+
 
     public int getAbsoluteBitOffset() {
         return absoluteBitOffset;
@@ -93,9 +77,7 @@ public class ParameterValue {
         return entry;
     }
 
-    public void setAcquisitionStatus(AcquisitionStatus a) {
-        acquisitionStatus=a;
-    }
+
 
     public void setAcquisitionTime(long instant) {
         acquisitionTime=instant;
@@ -111,62 +93,6 @@ public class ParameterValue {
 
     public Value getRawValue() {
         return rawValue;
-    }
-
-    public void setWatchRange(FloatRange range) {
-        watchRange=range;
-    }
-
-    public FloatRange getWatchRange() {
-        return watchRange;
-    }
-
-    public void setWarningRange(FloatRange range) {
-        warningRange=range;
-    }
-
-    public FloatRange getWarningRange() {
-        return warningRange;
-    }
-
-    public void setDistressRange(FloatRange range) {
-        distressRange=range;
-    }
-
-    public FloatRange getDistressRange() {
-        return distressRange;
-    }
-
-    public void setCriticalRange(FloatRange range) {
-        criticalRange=range;
-    }
-
-    public FloatRange getCriticalRange() {
-        return criticalRange;
-    }
-
-    public void setSevereRange(FloatRange range) {
-        severeRange=range;
-    }
-
-    public FloatRange getSevereRange() {
-        return severeRange;
-    }
-
-    public void setMonitoringResult(MonitoringResult m) {
-        monitoringResult=m;
-    }
-
-    public void setDeltaMonitoringResult(MonitoringResult m) {
-        deltaMonitoringResult=m;
-    }
-
-    public void setRangeCondition(RangeCondition rangeCondition) {
-        this.rangeCondition = rangeCondition;
-    }
-
-    public void setProcessingStatus(boolean p) {
-        processingStatus=p;
     }
 
 
@@ -186,26 +112,10 @@ public class ParameterValue {
         return generationTime;
     }
 
-    public MonitoringResult getMonitoringResult() {
-        return monitoringResult;
-    }
-
-    public RangeCondition getRangeCondition() {
-        return rangeCondition;
-    }
 
     public long getAcquisitionTime() {
         return acquisitionTime;
     }
-
-    public AcquisitionStatus getAcquisitionStatus() {
-        return acquisitionStatus;
-    }
-
-    public boolean getProcessingStatus() {
-        return processingStatus;
-    }
-
 
     public void setRawValue(Value rv) {
         this.rawValue=rv;
@@ -299,6 +209,100 @@ public class ParameterValue {
         this.engValue = engValue;
     }
 
+    
+    // *********** parameter status
+    private void changeNominalStatus() {
+        if(status == ParameterStatus.NOMINAL) {
+            status = new ParameterStatus();
+        }
+    }
+    public void setWatchRange(FloatRange range) {
+        changeNominalStatus();
+        status.setWatchRange(range);
+    }
+
+    public void setWarningRange(FloatRange range) {
+        changeNominalStatus();
+        status.setWarningRange(range);
+    }
+
+    public void setDistressRange(FloatRange range) {
+        changeNominalStatus();
+        status.setDistressRange(range);
+    }
+
+  
+    public void setCriticalRange(FloatRange range) {
+        changeNominalStatus();
+        status.setCriticalRange(range);
+    }
+
+    public void setSevereRange(FloatRange range) {
+        changeNominalStatus();
+        status.setSevereRange(range);
+    }
+
+    public void setMonitoringResult(MonitoringResult m) {
+        changeNominalStatus();
+        status.setMonitoringResult(m);
+    }
+
+    public void setDeltaMonitoringResult(MonitoringResult m) {
+        changeNominalStatus();
+        status.setDeltaMonitoringResult(m);
+    }
+
+    public void setRangeCondition(RangeCondition rangeCondition) {
+        changeNominalStatus();
+        status.setRangeCondition(rangeCondition);
+    }
+
+    public void setProcessingStatus(boolean p) {
+        if(status.getProcessingStatus()!=p) {
+            changeNominalStatus();
+        }
+        status.setProcessingStatus(p);
+    }
+    public void setAcquisitionStatus(AcquisitionStatus a) {
+        if(status.getAcquisitionStatus()!=a) {
+            changeNominalStatus(); 
+        }
+        status.setAcquisitionStatus(a);
+    }
+    public FloatRange getDistressRange() {
+        return status.getDistressRange();
+    }
+    public FloatRange getWatchRange() {
+        return status.getWatchRange();
+    }
+    public FloatRange getCriticalRange() {
+        return status.getCriticalRange();
+    }
+    public FloatRange getWarningRange() {
+        return status.getWarningRange();
+    }
+    public FloatRange getSevereRange() {
+        return status.getSevereRange();
+    }
+    public MonitoringResult getMonitoringResult() {
+        return status.getMonitoringResult();
+    }
+
+    public RangeCondition getRangeCondition() {
+        return status.getRangeCondition();
+    }
+
+    public AcquisitionStatus getAcquisitionStatus() {
+        return status.getAcquisitionStatus();
+    }
+
+    public boolean getProcessingStatus() {
+        return status.getProcessingStatus();
+    }
+    public MonitoringResult getDeltaMonitoringResult() {
+        return status.getDeltaMonitoringResult();
+    }
+
     public org.yamcs.protobuf.Pvalue.ParameterValue toGpb(NamedObjectId id) {
         org.yamcs.protobuf.Pvalue.ParameterValue.Builder gpvb=org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
                 .setAcquisitionStatus(getAcquisitionStatus())               
@@ -311,11 +315,11 @@ public class ParameterValue {
         if(engValue!=null) {
             gpvb.setEngValue(ValueUtility.toGbp(engValue));
         }
-        if(monitoringResult!=null) {
-            gpvb.setMonitoringResult(monitoringResult);
+        if(getMonitoringResult()!=null) {
+            gpvb.setMonitoringResult(getMonitoringResult());
         }
-        if(rangeCondition!=null) {
-            gpvb.setRangeCondition(rangeCondition);
+        if(getRangeCondition()!=null) {
+            gpvb.setRangeCondition(getRangeCondition());
         }
 
         // TODO make this optional
@@ -330,16 +334,16 @@ public class ParameterValue {
         }
 
         // TODO make this optional
-        if (watchRange != null)
-            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.WATCH, watchRange));
-        if (warningRange != null)
-            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.WARNING, warningRange));
-        if (distressRange != null)
-            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.DISTRESS, distressRange));
-        if (criticalRange != null)
-            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.CRITICAL, criticalRange));
-        if (severeRange!=null)
-            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.SEVERE, severeRange));
+        if (getWatchRange() != null)
+            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.WATCH, getWatchRange()));
+        if (getWarningRange() != null)
+            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.WARNING, getWarningRange()));
+        if (getDistressRange() != null)
+            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.DISTRESS, getDistressRange()));
+        if (getCriticalRange() != null)
+            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.CRITICAL, getCriticalRange()));
+        if (getSevereRange()!=null)
+            gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.SEVERE, getSevereRange()));
 
         if(id!=null) gpvb.setId(id);
         if(rawValue!=null) gpvb.setRawValue(ValueUtility.toGbp(rawValue));
@@ -379,7 +383,9 @@ public class ParameterValue {
         if(gpv.hasRangeCondition())
             pv.setRangeCondition(gpv.getRangeCondition());
 
-        pv.setProcessingStatus(gpv.getProcessingStatus());
+        if(gpv.hasProcessingStatus()) {
+            pv.setProcessingStatus(gpv.getProcessingStatus());
+        }
 
         if(gpv.hasRawValue()) {
             pv.setRawValue(ValueUtility.fromGpb(gpv.getRawValue()));
@@ -387,26 +393,26 @@ public class ParameterValue {
         return pv;
     }
 
-    
+
     public void addAlarmRanges(List<AlarmRange> alarmRangeList) {
         for(AlarmRange ar: alarmRangeList) {
             switch(ar.getLevel()){
-                case WATCH:
-                    watchRange = fromGbpAlarmRange(ar); 
-                    break;
-                case WARNING:
-                    warningRange = fromGbpAlarmRange(ar);
-                    break;
-                case DISTRESS:
-                    distressRange = fromGbpAlarmRange(ar);
-                    break;
-                case CRITICAL:
-                    criticalRange = fromGbpAlarmRange(ar);
-                    break;
-                case SEVERE:
-                    severeRange = fromGbpAlarmRange(ar);
-                    break;
-                case NORMAL: //never used
+            case WATCH:
+                setWatchRange(fromGbpAlarmRange(ar)); 
+                break;
+            case WARNING:
+                setWarningRange(fromGbpAlarmRange(ar));
+                break;
+            case DISTRESS:
+                setDistressRange(fromGbpAlarmRange(ar));
+                break;
+            case CRITICAL:
+                setCriticalRange(fromGbpAlarmRange(ar));
+                break;
+            case SEVERE:
+                setSevereRange(fromGbpAlarmRange(ar));
+                break;
+            case NORMAL: //never used
             }
         } 
     }
@@ -420,7 +426,7 @@ public class ParameterValue {
         double maxInclusive = ar.hasMaxInclusive()?ar.getMaxInclusive():Double.POSITIVE_INFINITY;
         return new FloatRange(minInclusive, maxInclusive);
     }
-    
+
     @Override
     public String toString() {
         StringBuilder sb=new StringBuilder();
@@ -434,7 +440,4 @@ public class ParameterValue {
         if(engValue!=null) sb.append(" engValue: {").append(engValue.toString()).append("}");
         return sb.toString();
     }
-    
-
-
 }

@@ -69,19 +69,7 @@ public class ParameterArchiveTest {
 
     @After
     public void closeDb() throws Exception {
-        parchive.close();
-    }
-    
-    @Test
-    public void testPartitionIdEncoding() throws Exception {
-        byte[] prefix = ParameterArchive.CF_NAME_data_prefix;
-        long p1 = Partition.getPartitionId(1000*3600*24*1000L+3232L);
-        byte[] b = ParameterArchive.encodePartitionId(prefix, p1);
-        
-        assertArrayEquals(prefix, Arrays.copyOf(b, prefix.length));
-        long p2 = ParameterArchive.decodePartitionId(prefix, b);
-        
-        assertEquals(p1, p2);
+        parchive.closeDb();
     }
     
     
@@ -91,7 +79,7 @@ public class ParameterArchiveTest {
         int p1id = pidMap.createAndGet("/test/p1", Type.BINARY);
 
         //close and reopen the archive to check that the parameter is still there
-        parchive.close();
+        parchive.closeDb();
 
         parchive = new ParameterArchive(instance);
         pidMap = parchive.getParameterIdDb();
@@ -231,8 +219,8 @@ public class ParameterArchiveTest {
         parchive.writeToArchive(Arrays.asList(pgSegment1));
         long segmentStart = SortedTimeSegment.getSegmentStart(100); 
         Partition p = parchive.getPartitions(Partition.getPartitionId(100));
-        assertNotNull(parchive.rdb.get(p.dataCfh, new SegmentKey(p1id, pg1id, segmentStart, SegmentKey.TYPE_ENG_VALUE).encode()));
-        assertNull(parchive.rdb.get(p.dataCfh, new SegmentKey(p1id, pg1id, segmentStart, SegmentKey.TYPE_RAW_VALUE).encode()));
+        assertNotNull(parchive.yrdb.get(p.dataCfh, new SegmentKey(p1id, pg1id, segmentStart, SegmentKey.TYPE_ENG_VALUE).encode()));
+        assertNull(parchive.yrdb.get(p.dataCfh, new SegmentKey(p1id, pg1id, segmentStart, SegmentKey.TYPE_RAW_VALUE).encode()));
         
         List<ParameterValueArray> l1a = retrieveSingleParamSingleGroup(0, TimeEncoding.MAX_INSTANT, p1id, pg1id , true, false, true, false);
         checkEquals(false, true, false, l1a.get(0), pv1_0, pv1_1);
@@ -556,7 +544,7 @@ public class ParameterArchiveTest {
         checkEquals(l7a.get(0), 100, pv1_0, pv2_0);
         checkEquals(l7a.get(1), t2, pv1_3, pv2_1);
         
-        parchive.close();
+        parchive.closeDb();
     }
 
 

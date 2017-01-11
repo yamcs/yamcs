@@ -26,6 +26,7 @@ import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.TimeEncoding;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -46,7 +47,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     protected ScheduledThreadPoolExecutor timer;
     protected volatile boolean disabled=false;
     protected int minimumTcPacketLength = -1; //the minimum size of the CCSDS packets uplinked
-    volatile long tcCount;
+    protected volatile long tcCount;
     private NamedObjectId sv_linkStatus_id, sp_dataCount_id;
 
     private SystemParametersCollector sysParamCollector;
@@ -56,11 +57,11 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     TimeService timeService;
     
     public TcpTcDataLink(String yamcsInstance, String name, String spec) throws ConfigurationException {
-        log=YamcsServer.getLogger(this.getClass(), yamcsInstance);
+        log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
         YConfiguration c = YConfiguration.getConfiguration("tcp");
         this.yamcsInstance=yamcsInstance;
-        host=c.getString(spec, "tcHost");
-        port=c.getInt(spec, "tcPort");
+        host = c.getString(spec, "tcHost");
+        port = c.getInt(spec, "tcPort");
         this.name = name;
         if(c.containsKey(spec, "minimumTcPacketLength")) {
             minimumTcPacketLength = c.getInt(spec, "minimumTcPacketLength");
@@ -318,8 +319,8 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         }       
     }
 
-    class TcAckStatus extends TcAck {
-        TcAckStatus(CommandId cmdId, String name, String value) {
+    public class TcAckStatus extends TcAck {
+        public TcAckStatus(CommandId cmdId, String name, String value) {
             super(cmdId, name, value);
         }
         @Override

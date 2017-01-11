@@ -1,10 +1,9 @@
 package org.yamcs.web.websocket;
 
+import org.yamcs.ProcessorException;
 import org.yamcs.YProcessor;
-import org.yamcs.YProcessorException;
 import org.yamcs.api.ws.WSConstants;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
-import org.yamcs.security.AuthenticationToken;
 
 /**
  * A resource bundles a set of logically related operations.
@@ -13,12 +12,14 @@ import org.yamcs.security.AuthenticationToken;
 public abstract class AbstractWebSocketResource {
 
     protected YProcessor processor;
+    protected WebSocketProcessorClient client;
     protected WebSocketFrameHandler wsHandler;
 
 
-    public AbstractWebSocketResource(YProcessor processor, WebSocketFrameHandler wsHandler) {
-        this.processor = processor;
-        this.wsHandler = wsHandler;
+    public AbstractWebSocketResource(WebSocketProcessorClient client) {
+        this.client = client;
+        this.processor = client.getProcessor();
+        wsHandler = client.getWebSocketFrameHandler();
     }
 
     /**
@@ -26,7 +27,7 @@ public abstract class AbstractWebSocketResource {
      * The reply can be null if the implementor of the resource takes care itself of sending the reply
      *   - this has been added because the parameterClient wants to send some date data immediately after reply
      */
-    public abstract WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder, AuthenticationToken authToken)
+    public abstract WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException;
 
     /**
@@ -41,7 +42,7 @@ public abstract class AbstractWebSocketResource {
                 .build();
     }
 
-    public void switchYProcessor(YProcessor processor, AuthenticationToken authToken)  throws YProcessorException {
-        this.processor = processor;
+    public void switchYProcessor(YProcessor oldProcessor, YProcessor newProcessor)  throws ProcessorException {
+        this.processor = newProcessor;
     }
 }

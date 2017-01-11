@@ -5,6 +5,7 @@ package org.yamcs.yarch;
  *  It is subclassed by storage engines to store additional information 
  */
 public class Partition {
+    
     final long start,  end; //for time based partitioning 
     final Object value; //for value based partitioning, otherwise null
 
@@ -30,5 +31,10 @@ public class Partition {
 
     public Object getValue() {
         return value;
-    }		
+    }
+
+    @Override
+    public String toString() {
+        return "Partition [start=" + start + ", end=" + end + ", value=" + value + "]";
+    }
 }

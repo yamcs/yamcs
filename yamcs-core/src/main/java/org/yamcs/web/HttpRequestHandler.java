@@ -1,23 +1,26 @@
 package org.yamcs.web;
 
-import static io.netty.handler.codec.http.HttpHeaders.setHeader;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
-import java.util.Base64;
+import java.nio.channels.ClosedChannelException;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.AuthorizationPendingException;
 import org.yamcs.security.Privilege;
-import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.web.rest.Router;
 import org.yamcs.web.websocket.WebSocketFrameHandler;
+
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -37,7 +40,7 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
@@ -63,60 +66,85 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
     }
 
     @Override
-    public void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
+    public void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) {
         // We have this also on info level coupled with the HTTP response status code,
         // but this is on debug for an earlier reporting while debugging issues
         log.debug("{} {}", req.getMethod(), req.getUri());
 
-        AuthenticationToken authToken = null;
-        if (Privilege.getInstance().isEnabled()) {
-            try {
-                authToken = authenticate(ctx, req);
-            } catch (BadRequestException e) {
-                sendPlainTextError(ctx, req, BAD_REQUEST);
-                return;
-            } catch (UnauthorizedException e) {
-                sendUnauthorized(ctx, req);
-                return;
-            }
-        }
+        Privilege priv = Privilege.getInstance();
 
-        String[] path = req.getUri().split("/", 3); //uri starts with / so path[0] is always empty
-        switch (path[1]) {
-        case STATIC_PATH:
-            if (path.length == 2) { //do not accept "/_static/" (i.e. directory listing) requests
-                sendPlainTextError(ctx, req, FORBIDDEN);
-                return;
-            }
-            fileRequestHandler.handleStaticFileRequest(ctx, req, path[2]);
-            return;
-        case API_PATH:
-            apiRouter.handleHttpRequest(ctx, req, authToken);
-            return;
-        case "":
-            // overview of all instances
-            fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/index.html");
-            return;
-        default:
-            String yamcsInstance = path[1];
-            if (!HttpServer.getInstance().isInstanceRegistered(yamcsInstance)) {
-                sendPlainTextError(ctx, req, NOT_FOUND);
-                return;
-            }
-
-            if (path.length > 2) {
-                String[] rpath = path[2].split("/", 2);
-                String handler = rpath[0];
-                if (WebSocketFrameHandler.WEBSOCKET_PATH.equals(handler)) {
-                    prepareChannelForWebSocketUpgrade(ctx, req, yamcsInstance, authToken);
-                    return;
+        if (priv.isEnabled()) {
+            priv.authenticateHttp(ctx, req)
+            .whenComplete((authToken, t) -> {
+                if(t!=null) {
+                    t = unwindThrowable(t);
+                    if(t instanceof AuthorizationPendingException) {
+                        return;
+                    } else {
+                        sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
+                    }
                 } else {
-                    // Everything else is handled by angular's router (enables deep linking in html5 mode)
+                    handleRequest(authToken, ctx, req);    
+                }
+                
+            });
+            
+           
+        } else {
+            handleRequest(null, ctx, req);
+        }
+    }
+    
+    private Throwable unwindThrowable(Throwable t) {
+        while(((t instanceof ExecutionException)||(t instanceof CompletionException)||(t instanceof UncheckedExecutionException))
+                && t.getCause()!=null) {
+            t = t.getCause();
+        }
+        return t;
+    }
+    private void handleRequest(AuthenticationToken authToken, ChannelHandlerContext ctx, FullHttpRequest req) {
+        try {
+            // Decode URI, to correctly ignore query strings in path handling
+            QueryStringDecoder qsDecoder = new QueryStringDecoder(req.getUri());
+            String[] path = qsDecoder.path().split("/", 3); // path starts with / so path[0] is always empty
+            switch (path[1]) {
+            case STATIC_PATH:
+                if (path.length == 2) { //do not accept "/_static/" (i.e. directory listing) requests
+                    sendPlainTextError(ctx, req, FORBIDDEN);
+                    return;
+                }
+                fileRequestHandler.handleStaticFileRequest(ctx, req, path[2]);
+                return;
+            case API_PATH:
+                apiRouter.handleHttpRequest(ctx, req, authToken, qsDecoder);
+                return;
+            case "":
+                // overview of all instances
+                fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/index.html");
+                return;
+            default:
+                String yamcsInstance = path[1];
+                if (!YamcsServer.hasInstance(yamcsInstance)) {
+                    sendPlainTextError(ctx, req, NOT_FOUND);
+                    return;
+                }
+                if (path.length > 2) {
+                    String[] rpath = path[2].split("/", 2);
+                    String handler = rpath[0];
+                    if (WebSocketFrameHandler.WEBSOCKET_PATH.equals(handler)) {
+                        prepareChannelForWebSocketUpgrade(ctx, req, yamcsInstance, authToken);
+                        return;
+                    } else {
+                        // Everything else is handled by angular's router (enables deep linking in html5 mode)
+                        fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/instance.html");
+                    }
+                } else {
                     fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/instance.html");
                 }
-            } else {
-                fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/instance.html");
             }
+        } catch (IOException e) {
+            log.warn("Exception while handling http request", e);
+            sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -145,35 +173,6 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         ctx.close();
     }
 
-    private AuthenticationToken authenticate(ChannelHandlerContext ctx, HttpRequest req) throws BadRequestException, UnauthorizedException {
-        if (!req.headers().contains(HttpHeaders.Names.AUTHORIZATION)) {
-            throw new UnauthorizedException("Authorization required, but nothing provided");
-        }
-
-        String authorizationHeader = req.headers().get(HttpHeaders.Names.AUTHORIZATION);
-        if (!authorizationHeader.startsWith("Basic ")) { // Exact case only
-            throw new BadRequestException("Unsupported Authorization header '" + authorizationHeader + "'");
-        }
-        // Get encoded user and password, comes after "Basic "
-        String userpassEncoded = authorizationHeader.substring(6);
-        String userpassDecoded;
-        try {
-            userpassDecoded = new String(Base64.getDecoder().decode(userpassEncoded));
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Could not decode Base64-encoded credentials");
-        }
-
-        // Username is not allowed to contain ':', but passwords are
-        String[] parts = userpassDecoded.split(":", 2);
-        if (parts.length < 2) {
-            throw new BadRequestException("Malformed username/password (Not separated by colon?)");
-        }
-        AuthenticationToken token = new UsernamePasswordToken(parts[0], parts[1]);
-        if (!Privilege.getInstance().authenticates(token)) {
-            throw new UnauthorizedException();
-        }
-        return token;
-    }
 
     public ChannelFuture sendRedirect(ChannelHandlerContext ctx, HttpRequest req, String newUri) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.FOUND);
@@ -182,15 +181,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         return ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
-    private ChannelFuture sendUnauthorized(ChannelHandlerContext ctx, HttpRequest request) {
-        ByteBuf buf = Unpooled.copiedBuffer(HttpResponseStatus.UNAUTHORIZED.toString() + "\r\n", CharsetUtil.UTF_8);
 
-        HttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.UNAUTHORIZED, buf);
-        setHeader(res, HttpHeaders.Names.WWW_AUTHENTICATE, "Basic realm=\"" + Privilege.getRealmName() + "\"");
-
-        log.warn("{} {} {} [realm=\"{}\"]", request.getMethod(), request.getUri(), res.getStatus().code(), Privilege.getRealmName());
-        return ctx.writeAndFlush(res).addListener(ChannelFutureListener.CLOSE);
-    }
 
     public static ChannelFuture sendPlainTextError(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status) {
         FullHttpResponse response = new DefaultFullHttpResponse(
@@ -239,7 +230,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
     public static ChannelFuture writeChunk(ChannelHandlerContext ctx, ByteBuf buf) throws IOException {
         Channel ch = ctx.channel();
         if (!ch.isOpen()) {
-            throw new IOException("Channel not or no longer open");
+            throw new ClosedChannelException();
         }
         ChannelFuture writeFuture = ctx.writeAndFlush(new DefaultHttpContent(buf));
         try {
@@ -255,39 +246,6 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
             throw new IOException(e);
         }
         return writeFuture;
-    }
-
-    /**
-     * Send empty chunk downstream to signal succesful end of response.
-     * <p>
-     * If lastChunkFuture is not null, the 'successful stop' of the chunked transfer will only be
-     * written out when that future returns succes.
-     */
-    public static void stopChunkedTransfer(ChannelHandlerContext ctx, ChannelFuture lastChunkFuture) {
-        if (lastChunkFuture != null) {
-            lastChunkFuture.addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture future) throws Exception {
-                    if (future.isSuccess()) {
-                        writeEmptyLastContent(ctx);
-                    } else {
-                        log.error("Last chunk was not written successfully. Closing channel without sending empty final chunk", future.cause());
-                        ctx.channel().close();
-                    }
-                }
-            });
-        } else {
-            writeEmptyLastContent(ctx);
-        }
-    }
-
-    private static ChannelFuture writeEmptyLastContent(ChannelHandlerContext ctx) {
-        // TODO is this correct? can we store this in channel ctx? No clean-up either?
-        ChunkedTransferStats stats = ctx.attr(CTX_CHUNK_STATS).get();
-        int totalBytes = (stats!=null) ?stats.totalBytes:0;
-        log.info("{} {} --- Finished chunked transfer ({} B)", stats.originalMethod, stats.originalUri, totalBytes);
-        ChannelFuture chunkWriteFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
-        return chunkWriteFuture.addListener(ChannelFutureListener.CLOSE);
     }
 
     public static class ChunkedTransferStats {

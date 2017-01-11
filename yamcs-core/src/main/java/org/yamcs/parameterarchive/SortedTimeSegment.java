@@ -6,7 +6,6 @@ import java.util.PrimitiveIterator;
 import me.lemire.integercompression.FastPFOR128;
 import me.lemire.integercompression.IntWrapper;
 
-import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.SortedIntArray;

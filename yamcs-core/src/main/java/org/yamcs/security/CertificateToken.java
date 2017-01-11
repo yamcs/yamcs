@@ -25,11 +25,6 @@ public class CertificateToken implements AuthenticationToken {
         return cert.getSubjectX500Principal().getName();
     }
 
-    @Override
-    public Object getCredentials() {
-        return cert;
-    }
-
     public X509Certificate getCert() {
         return cert;
     }

@@ -13,15 +13,13 @@ import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 
-import io.netty.channel.ChannelFuture;
-
 /**
  * Gives information on data links
  */
 public class LinkRestHandler extends RestHandler {
     
     @Route(path="/api/links/:instance?", method="GET")
-    public ChannelFuture listLinks(RestRequest req) throws HttpException {        
+    public void listLinks(RestRequest req) throws HttpException {        
         String instance = req.getRouteParam("instance");
         if (instance != null) {
             verifyInstance(req, instance);
@@ -35,17 +33,19 @@ public class LinkRestHandler extends RestHandler {
                 responseb.addLink(link);
             }
         }
-        return sendOK(req, responseb.build(), SchemaRest.ListLinkInfoResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.ListLinkInfoResponse.WRITE);
     }
     
+    @Route(path="/api/links/:instance/:name", method="GET")
     @Route(path="/api/links/:instance/link/:name", method="GET")
-    public ChannelFuture getLink(RestRequest req) throws HttpException {
+    public void getLink(RestRequest req) throws HttpException {
         LinkInfo linkInfo = verifyLink(req, req.getRouteParam("instance"), req.getRouteParam("name"));
-        return sendOK(req, linkInfo, SchemaYamcsManagement.LinkInfo.WRITE);
+        completeOK(req, linkInfo, SchemaYamcsManagement.LinkInfo.WRITE);
     }
     
+    @Route(path="/api/links/:instance/:name", method={"PATCH", "PUT", "POST"})
     @Route(path="/api/links/:instance/link/:name", method={"PATCH", "PUT", "POST"})
-    public ChannelFuture editLink(RestRequest req) throws HttpException {
+    public void editLink(RestRequest req) throws HttpException {
         LinkInfo linkInfo = verifyLink(req, req.getRouteParam("instance"), req.getRouteParam("name"));
         
         EditLinkRequest request = req.bodyAsMessage(SchemaRest.EditLinkRequest.MERGE).build();
@@ -59,14 +59,16 @@ public class LinkRestHandler extends RestHandler {
             case "enabled":
                 try {
                     mservice.enableLink(linkInfo.getInstance(), linkInfo.getName());
-                    return sendOK(req);
+                    completeOK(req);
+                    return;
                 } catch (YamcsException e) {
                     throw new InternalServerErrorException(e);
                 }
             case "disabled":
                 try {
                     mservice.disableLink(linkInfo.getInstance(), linkInfo.getName());
-                    return sendOK(req);                    
+                    completeOK(req);                    
+                    return;
                 } catch (YamcsException e) {
                     throw new InternalServerErrorException(e);
                 }
@@ -74,7 +76,7 @@ public class LinkRestHandler extends RestHandler {
                 throw new BadRequestException("Unsupported link state '" + state + "'");
             }
         } else {
-            return sendOK(req);
+            completeOK(req);
         }
     }
 }

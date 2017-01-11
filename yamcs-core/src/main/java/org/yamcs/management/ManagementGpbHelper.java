@@ -19,7 +19,7 @@ import com.google.protobuf.ByteString;
  * Provides common functionality to assemble and disassemble GPB messages
  */
 public final class ManagementGpbHelper {
-    
+
     public static Statistics buildStats(YProcessor processor) {
         ProcessingStatistics ps=processor.getTmProcessor().getStatistics();
         Statistics.Builder statsb=Statistics.newBuilder();
@@ -42,11 +42,13 @@ public final class ManagementGpbHelper {
         }
         return statsb.build();
     }
-    
+
     public static ProcessorInfo toProcessorInfo(YProcessor yproc) {
         ProcessorInfo.Builder cib=ProcessorInfo.newBuilder().setInstance(yproc.getInstance())
                 .setName(yproc.getName()).setType(yproc.getType())
-                .setCreator(yproc.getCreator()).setHasCommanding(yproc.hasCommanding())
+                .setCreator(yproc.getCreator())
+                .setHasCommanding(yproc.hasCommanding())
+                .setHasAlarms(yproc.hasAlarmServer())
                 .setState(yproc.getState());
 
         if(yproc.isReplay()) {
@@ -55,7 +57,7 @@ public final class ManagementGpbHelper {
         }
         return cib.build();
     }
-    
+
     public static CommandQueueEntry toCommandQueueEntry(CommandQueue q, PreparedCommand pc) {
         YProcessor c=q.getChannel();
         return CommandQueueEntry.newBuilder()
@@ -65,13 +67,23 @@ public final class ManagementGpbHelper {
                 .setGenerationTime(pc.getGenerationTime()).setUsername(pc.getUsername()).build();
     }
 
-    public static CommandQueueInfo toCommandQueueInfo(CommandQueue queue) {
+    public static CommandQueueInfo toCommandQueueInfo(CommandQueue queue, boolean detail) {
         YProcessor c=queue.getChannel();
-        return CommandQueueInfo.newBuilder()
+        CommandQueueInfo.Builder b= CommandQueueInfo.newBuilder()
                 .setInstance(c.getInstance()).setProcessorName(c.getName())
                 .setName(queue.getName()).setState(queue.getState())
-                .setStateExpirationTimeS(queue.getStateExpirationRemainingS())
                 .setNbRejectedCommands(queue.getNbRejectedCommands())
-                .setNbSentCommands(queue.getNbSentCommands()).build();
+                .setNbSentCommands(queue.getNbSentCommands());
+
+        if (queue.getStateExpirationRemainingS() != -1) {
+            b.setStateExpirationTimeS(queue.getStateExpirationRemainingS());
+        }
+        if (detail) {
+            for (PreparedCommand pc : queue.getCommands()) {
+                CommandQueueEntry qEntry = ManagementGpbHelper.toCommandQueueEntry(queue, pc);
+                b.addEntry(qEntry);
+            }
+        }
+        return b.build();
     }
 }

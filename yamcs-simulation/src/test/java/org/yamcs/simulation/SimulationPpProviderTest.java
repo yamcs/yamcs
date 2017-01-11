@@ -21,7 +21,7 @@ import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
 import org.yamcs.simulation.generated.ObjectFactory;
 import org.yamcs.simulation.generated.PpSimulation;
-import org.yamcs.tctm.PpListener;
+import org.yamcs.tctm.ParameterSink;
 import org.yamcs.utils.TimeEncoding;
 
 public class SimulationPpProviderTest {
@@ -89,7 +89,7 @@ public class SimulationPpProviderTest {
 		};
 		target.SetSimulationData(DATA_SCENARIO1);
 		FakePpListener ppListener = new FakePpListener();
-		target.setPpListener(ppListener);
+		target.setParameterSink(ppListener);
 		target.enable();
 
 		// Act
@@ -145,7 +145,7 @@ public class SimulationPpProviderTest {
 		};
 		target.SetSimulationData(DATA_SCENARIO2);
 		FakePpListener ppListener = new FakePpListener();
-		target.setPpListener(ppListener);
+		target.setParameterSink(ppListener);
 		target.enable();
 
 		// Act
@@ -167,7 +167,7 @@ public class SimulationPpProviderTest {
 		};
 		target.SetSimulationData(DATA_SCENARIO_DATE);
 		FakePpListener ppListener = new FakePpListener();
-		target.setPpListener(ppListener);
+		target.setParameterSink(ppListener);
 		target.enable();
 
 		// Act
@@ -197,7 +197,7 @@ public class SimulationPpProviderTest {
 	
 	
 
-	class FakePpListener implements PpListener {
+	class FakePpListener implements ParameterSink {
 		public List<ParameterValue> receivedValue;
 
 		public FakePpListener() {

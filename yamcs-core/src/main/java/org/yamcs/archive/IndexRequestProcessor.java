@@ -9,11 +9,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.cmdhistory.CommandHistoryRecorder;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.tctm.ParameterDataLinkInitialiser;
+import org.yamcs.tctm.TcUplinkerAdapter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -39,7 +40,6 @@ class IndexRequestProcessor implements Runnable {
 
     //these maps contains the names with which the records will be sent to the client
     final Map<String, NamedObjectId> tmpackets=new HashMap<>();
-  //  final Map<String, NamedObjectId> ppgroups=new HashMap<>();
     
     boolean sendParams;
 
@@ -77,28 +77,16 @@ class IndexRequestProcessor implements Runnable {
         if(req.getSendAllPp() || req.getPpGroupCount()>0) {
             sendParams = true; //TODO: fix; currently always send all
         }
-        /*
-            PpDefDb ppdb=PpDbFactory.getInstance(archiveInstance);
-            if(req.getSendAllPp()) {
-                for(String s:ppdb.getGroups()) {
-                    ppgroups.put(s, NamedObjectId.newBuilder().setName(s).build());
-                }
-            } else {
-                for(NamedObjectId id:req.getPpGroupList()) {
-                    ppgroups.put(id.getName(), id);
-                }
-            }
-        }*/
     }
 
     @Override
     public void run() {
         boolean ok=true;
         try {
-            if(tmpackets.size()>0) ok=sendHistogramData(XtceTmRecorder.TABLE_NAME, "pname", 2000, tmpackets);
-            if(ok && sendParams) ok=sendHistogramData(PpRecorder.TABLE_NAME, "ppgroup", 20000, null); //use 20 sec for the PP to avoid millions of records
+            if(tmpackets.size()>0) ok=sendHistogramData(XtceTmRecorder.TABLE_NAME, XtceTmRecorder.PNAME_COLUMN, 2000, tmpackets);
+            if(ok && sendParams) ok=sendHistogramData(ParameterRecorder.TABLE_NAME, ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GROUP, 20000, null); //use 20 sec for the PP to avoid millions of records
             
-            if(req.getSendAllCmd()) ok=sendHistogramData(CommandHistoryRecorder.TABLE_NAME, "cmdName", 2000, null);
+            if(req.getSendAllCmd()) ok=sendHistogramData(CommandHistoryRecorder.TABLE_NAME, TcUplinkerAdapter.CMDHIST_TUPLE_COL_CMDNAME, 2000, null);
             if(req.getSendAllEvent()) ok=sendHistogramData(EventRecorder.TABLE_NAME, "source", 2000, null);
             if(ok && req.getSendCompletenessIndex()) ok=sendCompletenessIndex();
         } catch (Exception e) {

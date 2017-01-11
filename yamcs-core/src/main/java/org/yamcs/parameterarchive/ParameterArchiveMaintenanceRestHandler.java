@@ -19,7 +19,6 @@ import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Route;
 
-import io.netty.channel.ChannelFuture;
 
 /**
  * Provides some maintenance operations on the parameter archive
@@ -27,12 +26,14 @@ import io.netty.channel.ChannelFuture;
  *
  */
 public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
+    
+  
     /**
      * Request to (re)build the parameterArchive between start and stop
      * 
      */
-    @Route(path = "/api/archive/:instance/parameterArchive/rebuild")
-    public ChannelFuture reprocess(RestRequest req) throws HttpException {
+    @Route(path = "/api/archive/:instance/parameterArchive/rebuild", method = "POST")
+    public void reprocess(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         checkPrivileges(req);
             
@@ -53,11 +54,11 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
             throw new BadRequestException(e.getMessage());
         }
         
-        return sendOK(req);
+        completeOK(req);
     }
     
-    @Route(path = "/api/archive/:instance/parameterArchive/deletePartitions")
-    public ChannelFuture deletePartition(RestRequest req) throws HttpException {
+    @Route(path = "/api/archive/:instance/parameterArchive/deletePartitions" , method = "POST")
+    public void deletePartition(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         checkPrivileges(req);
             
@@ -83,7 +84,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
             }
             StringMessage sm = StringMessage.newBuilder().setMessage(sb.toString()).build();
             
-            return sendOK(req, sm, org.yamcs.protobuf.SchemaYamcs.StringMessage.WRITE);
+            completeOK(req, sm, org.yamcs.protobuf.SchemaYamcs.StringMessage.WRITE);
             
         } catch (RocksDBException e){
             throw new InternalServerErrorException(e.getMessage());
@@ -92,8 +93,8 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
        
     }
     
-    @Route(path = "/api/archive/:instance/parameterArchive/info/parameter/:name*")
-    public ChannelFuture archiveInfo(RestRequest req) throws HttpException {
+    @Route(path = "/api/archive/:instance/parameterArchive/info/parameter/:name*", method = "GET")
+    public void archiveInfo(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         checkPrivileges(req);
         
@@ -102,7 +103,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
         ParameterIdDb pdb = parchive.getParameterIdDb();
         ParameterId[] pids = pdb.get(fqn);
         StringMessage sm = StringMessage.newBuilder().setMessage(Arrays.toString(pids)).build();
-        return sendOK(req, sm, org.yamcs.protobuf.SchemaYamcs.StringMessage.WRITE);
+        completeOK(req, sm, org.yamcs.protobuf.SchemaYamcs.StringMessage.WRITE);
     }
    
     
@@ -115,7 +116,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
     }
     
     private void checkPrivileges(RestRequest req) throws HttpException {
-        if(!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.SYSTEM, Privilege.SystemPrivilege.MayControlArchiving.name()))  {
+        if(!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.SystemPrivilege.MayControlArchiving))  {
             throw new ForbiddenException("No privilege for this operation");
         }
     }

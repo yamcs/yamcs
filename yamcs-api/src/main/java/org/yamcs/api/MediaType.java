@@ -11,6 +11,7 @@ public final class MediaType {
     public static final MediaType JAVA_SERIALIZED_OBJECT = new MediaType("application/x-java-serialized-object");
     public static final MediaType JSON = new MediaType("application/json");
     public static final MediaType PROTOBUF = new MediaType("application/protobuf");
+    public static final MediaType PLAIN_TEXT = new MediaType("plain/text");
 
     private final String typeString;
     

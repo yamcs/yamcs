@@ -1,10 +1,13 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+
+import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
+import org.yamcs.api.MediaType;
+import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.protobuf.*;
 import org.yamcs.protobuf.Pvalue.ParameterData;
@@ -16,39 +19,38 @@ import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.security.UsernamePasswordToken;
-import org.yamcs.utils.HttpClient;
 import org.yamcs.utils.TimeEncoding;
 
 import io.netty.handler.codec.http.HttpMethod;
 
-import java.io.IOException;
-import java.util.List;
 
 
 public class PermissionsTest extends AbstractIntegrationTest {
-          
+
     @Test
     public void testAuthenticationWebServices() throws Exception {
-        UsernamePasswordToken wrongUser = new UsernamePasswordToken("baduser", "wrongpassword");
-        currentUser = wrongUser;
-        String response = httpClient.doGetRequest("http://localhost:9190/api/user", null, currentUser);
-        assertTrue(response.contains("Unauthorized"));
+        RestClient restClient1 = getRestClient("baduser", "wrongpassword");
+        try {
+            restClient1.doRequest("/user", HttpMethod.GET, "").get();
+            fail("should have thrown an exception");
+        } catch (ExecutionException e) {
+            assertTrue(e.getCause().getMessage().contains("Unauthorized"));
+        }
+
+        restClient1.close();
     }
 
     @Test
     public void testPermissionArchive() throws Exception {
-
         // testuser is allowed to replay integer parameters but no string parameters
-        UsernamePasswordToken testuser = new UsernamePasswordToken("testuser", "password");
-        currentUser = testuser;
-
+        RestClient restClient1 = getRestClient("testuser", "password");
         // Check that integer parameter replay is ok
         generateData("2015-03-02T10:00:00", 3600);
-        String url = "http://localhost:9190/api/archive/IntegrationTest/parameters";
-        url += "/REFMDB/SUBSYS1/IntegerPara1_1_6";
-        url += "?start=2015-03-02T10:10:00&stop=2015-03-02T10:10:02&order=asc";
-        
-        String response = httpClient.doGetRequest(url, null, currentUser);
+        String resource = "/archive/IntegrationTest/parameters";
+        resource += "/REFMDB/SUBSYS1/IntegerPara1_1_6";
+        resource += "?start=2015-03-02T10:10:00&stop=2015-03-02T10:10:02&order=asc";
+
+        String response = restClient1.doRequest(resource, HttpMethod.GET, "").get();
         ParameterData pdata = (fromJson(response, SchemaPvalue.ParameterData.MERGE)).build();
         assertNotNull(pdata);
         assertEquals(2, pdata.getParameterCount());
@@ -59,10 +61,10 @@ public class PermissionsTest extends AbstractIntegrationTest {
         boolean gotException = false;
         try {
             String stringId = "/REFMDB/SUBSYS1/FixedStringPara1_3_1";
-            url = "http://localhost:9190/api/archive/IntegrationTest";
-            url += stringId;
-            url += "?start=2015-03-02T10:10:00&stop=2015-03-02T10:10:02&order=asc";
-            response = httpClient.doGetRequest(url, null, currentUser);
+            resource = "/archive/IntegrationTest";
+            resource += stringId;
+            resource += "?start=2015-03-02T10:10:00&stop=2015-03-02T10:10:02&order=asc";
+            response = restClient1.doRequest(resource, HttpMethod.GET, "").get();
             pdata = (fromJson(response, SchemaPvalue.ParameterData.MERGE)).build();
             if(pdata.getParameterCount() == 0) {
                 throw new Exception("should get parameters");
@@ -72,95 +74,120 @@ public class PermissionsTest extends AbstractIntegrationTest {
             gotException = true;
         }
         assertTrue("Permission should be denied for String parameter", gotException);
+        restClient1.close();
+        
     }
 
 
     @Test
     public void testPermissionSendCommand() throws Exception {
-        UsernamePasswordToken testuser = new UsernamePasswordToken("testuser", "password");
-        currentUser = testuser;
+        RestClient restClient1 = getRestClient("testuser", "password");
 
         // Command INT_ARG_TC is allowed
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
         IssueCommandRequest cmdreq = getCommand(5, "uint32_arg", "1000");
-        String resp = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/INT_ARG_TC",
-                HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE), currentUser);
+        String resp = restClient1.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/INT_ARG_TC",
+                HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE)).get();
         assertTrue(resp.contains("binary"));
 
         // Command FLOAT_ARG_TC is denied
         cmdreq = getCommand(5, "float_arg", "-15", "double_arg", "0");
-        resp = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/FLOAT_ARG_TC",
-                HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE), currentUser);
-        assertTrue("Should get 404 when no permission (shouldn't be able to derive existence)", resp.contains("No such command"));
+        try {
+            resp = restClient1.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/FLOAT_ARG_TC",
+                    HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE)).get();
+            fail("should have thrown an exception");
+        } catch (ExecutionException e) {
+            assertTrue(e.getCause().getMessage().contains("No such command"));
+        }
+
     }
 
     @Test
     public void testPermissionGetParameter() throws Exception {
-        UsernamePasswordToken testuser = new UsernamePasswordToken("testuser", "password");
-        currentUser = testuser;
+        RestClient restClient1 = getRestClient("testuser", "password");
 
         // Allowed to subscribe to Integer parameter from cache
         NamedObjectList validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6", "/REFMDB/SUBSYS1/IntegerPara1_1_7");
         BulkGetParameterValueRequest req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getListList()).build();
-        String response = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE), currentUser);
-        assertTrue("{}", !response.contains("ForbiddenException"));
-
+        restClient1.doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE)).get();
+        
         // Denied to subscribe to Float parameter from cache
         validSubscrList = getSubscription("/REFMDB/SUBSYS1/FloatPara1_1_3", "/REFMDB/SUBSYS1/FloatPara1_1_2");
         req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getListList()).build();
-        response = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE), currentUser);
-        assertTrue("Permission should be denied", response.contains("ForbiddenException"));
+        try {
+            restClient1.doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE)).get();
+            fail("should have thrown an exception");
+        } catch (ExecutionException e) {
+            assertTrue(e.getCause().getMessage().contains("ForbiddenException"));
+        }
+        restClient1.close();
     }
 
     @Test
     public void testPermissionSetParameter() throws Exception {
-        UsernamePasswordToken testuser = new UsernamePasswordToken("operator", "password");
-        currentUser = testuser;
+        RestClient restClient1 = getRestClient("operator", "password");
 
         BulkSetParameterValueRequest.Builder bulkPvals = BulkSetParameterValueRequest.newBuilder();
         bulkPvals.addRequest(SetParameterValueRequest.newBuilder()
                 .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalPara1"))
                 .setValue(ValueHelper.newValue(5)));
-        HttpClient httpClient = new HttpClient();
-        String response = httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/parameters/mset", HttpMethod.POST, toJson(bulkPvals.build(), SchemaRest.BulkSetParameterValueRequest.WRITE), currentUser);
-        assertTrue("Permission should be denied", response.contains("ForbiddenException"));
+        try {
+            restClient1.doRequest("/processors/IntegrationTest/realtime/parameters/mset", HttpMethod.POST, toJson(bulkPvals.build(), SchemaRest.BulkSetParameterValueRequest.WRITE)).get();
+            fail("should have thrown an exception");
+        } catch (ExecutionException e) {
+            assertTrue(e.getCause().getMessage().contains("ForbiddenException"));
+        }
+        restClient1.close();
     }
 
     @Test
     public void testPermissionUpdateCommandHistory() throws Exception {
-
         // testUser does not have the permission to update the command history
         // operator has the permission
-
-        UsernamePasswordToken testuser = new UsernamePasswordToken("testuser", "password");
-        currentUser = testuser;
-        String response = updateCommandHistory();
-        assertTrue("Permission should be denied", response.contains("ForbiddenException"));
-
-        UsernamePasswordToken operator = new UsernamePasswordToken("operator", "password");
-        currentUser = operator;
-        String response2 = updateCommandHistory();
-        assertTrue("Permission should be granted", !response2.contains("ForbiddenException"));
+        
+        try {
+            updateCommandHistory(getRestClient("testuser", "password"));
+        } catch (ExecutionException e) {
+            assertTrue(e.getCause().getMessage().contains("ForbiddenException"));
+        }
+        try {
+            updateCommandHistory(getRestClient("operator", "password"));
+        } catch (ExecutionException e) {
+            assertTrue(e.getCause().getMessage().contains("ForbiddenException"));
+        }
 
     }
 
 
-    private String updateCommandHistory() throws Exception {
+    private String updateCommandHistory(RestClient restClient1) throws Exception {
         // insert a value in the command history on dummy command id
         Commanding.CommandId commandId = Commanding.CommandId.newBuilder().setSequenceNumber(0).setOrigin("").setGenerationTime(0).build();
         Rest.UpdateCommandHistoryRequest.Builder updateHistoryRequest = Rest.UpdateCommandHistoryRequest.newBuilder().setCmdId(commandId);
         updateHistoryRequest.addHistoryEntry(Rest.UpdateCommandHistoryRequest.KeyValue.newBuilder().setKey("testKey1").setValue("testValue1"));
-        return httpClient.doRequest("http://localhost:9190/api/processors/IntegrationTest/realtime/commandhistory/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST, toJson(updateHistoryRequest.build(), SchemaRest.UpdateCommandHistoryRequest.WRITE), currentUser);
+        return restClient1.doRequest("/processors/IntegrationTest/realtime/commandhistory/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST, toJson(updateHistoryRequest.build(), SchemaRest.UpdateCommandHistoryRequest.WRITE)).get();
     }
 
 
     private void generateData(String utcStart, int numPackets) {
         long t0 = TimeEncoding.parse(utcStart);
         for (int i=0;i <numPackets; i++) {
-        	packetGenerator.setGenerationTime(t0+1000*i);
+            packetGenerator.setGenerationTime(t0+1000*i);
             packetGenerator.generate_PKT1_1();
             packetGenerator.generate_PKT1_3();
         }
+    }
+
+
+    private RestClient getRestClient(String username, String password) {
+        YamcsConnectionProperties ycp1 = ycp.clone();
+
+        ycp1.setAuthenticationToken(new UsernamePasswordToken(username, password));
+        RestClient restClient1 = new RestClient(ycp1);
+        restClient1.setAcceptMediaType(MediaType.JSON);
+        restClient1.setSendMediaType(MediaType.JSON);
+        restClient1.setAutoclose(false);
+        return restClient1;
+
     }
 }

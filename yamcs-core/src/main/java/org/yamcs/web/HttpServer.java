@@ -3,14 +3,15 @@ package org.yamcs.web;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
-import org.yamcs.YConfiguration;
 import org.yamcs.web.rest.Router;
+import org.yamcs.web.websocket.WebSocketResourceProvider;
+
+import com.google.common.util.concurrent.AbstractService;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -20,81 +21,64 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.concurrent.Future;
 
 /**
- * Runs a simple http server based on Netty
+ * Server wide HTTP server based on Netty that provides a number of
+ * Yamcs web services:
+ *
+ * <ul>
+ *  <li>REST API
+ *  <li>WebSocket API
+ *  <li>Static file serving
+ * </ul>
  */
-public class HttpServer {
-    
-    private static final Logger log = LoggerFactory.getLogger(HttpServer.class);
-    
-    private final int port;
-    private static HttpServer instance;
+public class HttpServer extends AbstractService {
 
-    private Map<String, YamcsWebService> yamcsInstances=new ConcurrentHashMap<>();
+    private static final Logger log = LoggerFactory.getLogger(HttpServer.class);
+
     private EventLoopGroup bossGroup;
-    
     private Router apiRouter = new Router();
-    
-    
-    public synchronized static HttpServer getInstance() throws ConfigurationException {
-        if(instance==null) {
-            int port = YConfiguration.getConfiguration("yamcs").getInt("webPort");
-            instance=new HttpServer(port);
-            instance.run();
-        } 
-        return instance;
+    private List<WebSocketResourceProvider> webSocketResourceProviders = new CopyOnWriteArrayList<>();
+    private WebConfig config;
+
+    public HttpServer() {
+        this(WebConfig.getInstance());
     }
-    
-    public HttpServer(int port) {
-        this.port = port;
+
+    public HttpServer(WebConfig config) {
+        this.config = config;
     }
-    
-    public void registerYamcsInstance(String yamcsInstance, YamcsWebService service) {
-        yamcsInstances.put(yamcsInstance, service);
-    }
-    
-    public void unregisterYamcsInstance(String yamcsInstance) {
-        yamcsInstances.remove(yamcsInstance);
-        if(yamcsInstances.isEmpty()) {
-            instance.shutdown();
+
+    @Override
+    protected void doStart() {
+        try {
+            startServer();
+            notifyStarted();
+        } catch (InterruptedException e) {
+            notifyFailed(e);
         }
     }
-    
-    private void shutdown() {
-        bossGroup.shutdownGracefully();
-    }
 
-    public boolean isInstanceRegistered(String yamcsInstance) {
-        return yamcsInstances.containsKey(yamcsInstance);
-    }
-    
-    public YamcsWebService getYamcsWebService(String yamcsInstance) {
-        return yamcsInstances.get(yamcsInstance);
-    }
-    
-    public void registerRouteHandler(String yamcsInstance, RouteHandler routeHandler) {
-        apiRouter.registerRouteHandler(yamcsInstance, routeHandler);
-    }
-    
-    public void run() {
-        // Configure the server.
-
+    public void startServer() throws InterruptedException {
+        StaticFileHandler.init();
+        int port = config.getPort();
         bossGroup = new NioEventLoopGroup(1);
+
         //Note that while the thread pools created with this method are unbounded, netty will limit the number
-        //of workers to 2*number of CPU
+        //of workers to 2*number of CPU cores
         EventLoopGroup workerGroup = new NioEventLoopGroup();
-       
+
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workerGroup)
-            .channel(NioServerSocketChannel.class)
-            .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
-            .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-            .childHandler(new HttpServerChannelInitializer(apiRouter));
-        
+        .channel(NioServerSocketChannel.class)
+        .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
+        .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+        .childHandler(new HttpServerChannelInitializer(apiRouter));
+
         // Bind and start to accept incoming connections.
-        bootstrap.bind(new InetSocketAddress(port));
-        
+        bootstrap.bind(new InetSocketAddress(port)).sync();
+
         try {
             log.info("Web address: http://{}:{}/", InetAddress.getLocalHost().getHostName(), port);
         } catch (UnknownHostException e) {
@@ -102,7 +86,29 @@ public class HttpServer {
         }
     }
 
-    public static void main(String[] args) throws ConfigurationException {
-        HttpServer.getInstance().registerYamcsInstance("byops", new YamcsWebService("byops"));
+    public Future<?> stopServer() {
+        return bossGroup.shutdownGracefully();
+    }
+
+    public WebConfig getConfig() {
+        return config;
+    }
+
+    public void registerRouteHandler(String yamcsInstance, RouteHandler routeHandler) {
+        apiRouter.registerRouteHandler(yamcsInstance, routeHandler);
+    }
+
+    public void registerWebSocketRouteHandler(WebSocketResourceProvider provider) {
+        webSocketResourceProviders.add(provider);
+    }
+
+    public List<WebSocketResourceProvider> getWebSocketResourceProviders() {
+        return webSocketResourceProviders;
+    }
+
+    @Override
+    protected void doStop() {
+        stopServer();
+        notifyStopped();
     }
 }

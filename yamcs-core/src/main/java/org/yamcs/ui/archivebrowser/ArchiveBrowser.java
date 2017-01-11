@@ -4,17 +4,19 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.TimeInterval;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
-import org.yamcs.api.ConnectionListener;
-import org.yamcs.api.YamcsConnectData;
 import org.yamcs.api.YamcsConnectDialog;
-import org.yamcs.api.YamcsConnector;
+import org.yamcs.api.YamcsConnectDialog.YamcsConnectDialogResult;
+import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.ui.YamcsArchiveIndexReceiver;
+import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -73,8 +75,10 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         closeMenuItem.setActionCommand("exit");
         closeMenuItem.addActionListener(this);
         fileMenu.add(closeMenuItem);
-
-        menuBar.add(getToolsMenu());
+        JMenu toolsMenu = getToolsMenu();
+        if(toolsMenu!=null) {
+            menuBar.add(toolsMenu);
+        }
    
         /*
          * BUTTONS
@@ -104,6 +108,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
 
     protected JMenu getToolsMenu() throws ConfigurationException, IOException {
         YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
+        if(!config.containsKey("archiveBrowserTools")) return null;
         List<Map<String, String>> tools=config.getList("archiveBrowserTools");
         
         JMenu toolsMenu = new JMenu("Tools");
@@ -263,7 +268,7 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         System.err.println("Usage: archive-browser.sh [-h] [url]");
         System.err.println("-h:\tShow this help text");
         System.err.println("url:\tConnect at startup to the given url");
-        System.err.println("Example to yamcs archive:\n\t archive-browser.sh yamcs://localhost:5445/");
+        System.err.println("Example to yamcs archive:\n\t archive-browser.sh http://localhost:8090/");
         System.exit(1);
     }
 
@@ -319,23 +324,23 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
     }
 
     public static void main(String[] args) throws URISyntaxException, ConfigurationException, IOException {
-        YamcsConnectData params=null;
+        YamcsConnectionProperties params=null;
         for(int i=0;i<args.length;i++) {
             if(args[i].equals("-h")) {
                 printUsageAndExit();
             } else {
                 if(args.length!=i+1) printUsageAndExit();
                 String initialUrl=args[i];
-                if(initialUrl.startsWith("yamcs://")){
-                    params=YamcsConnectData.parse(initialUrl);
+                if(initialUrl.startsWith("http://")){
+                    params = YamcsConnectionProperties.parse(initialUrl);
                  } else {
                      printUsageAndExit();
                  }
              }
         }
         TimeEncoding.setUp();
-        final YamcsConnector yconnector=new YamcsConnector();
-        final ArchiveIndexReceiver ir=new YamcsArchiveIndexReceiver(yconnector);
+        final YamcsConnector yconnector = new YamcsConnector("ArchiveBrowser");
+        final ArchiveIndexReceiver ir = new YamcsArchiveIndexReceiver(yconnector);
         final ArchiveBrowser archiveBrowser = new ArchiveBrowser(yconnector, ir, false);
         YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
         
@@ -347,11 +352,12 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         
         final boolean enableAuth = aetmp;
         archiveBrowser.connectMenuItem.addActionListener(new ActionListener() {
+            
             @Override
             public void actionPerformed(ActionEvent e) {
-                YamcsConnectData ycd=YamcsConnectDialog.showDialog(archiveBrowser, false, enableAuth);
-                if(ycd.isOk) {
-                    yconnector.connect(ycd);
+                YamcsConnectDialogResult r = YamcsConnectDialog.showDialog(archiveBrowser, false, enableAuth);
+                if(r.isOk()) {
+                    yconnector.connect(r.getConnectionProperties());
                 }
             }
         });
@@ -359,14 +365,14 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         ir.setIndexListener(archiveBrowser);
         yconnector.addConnectionListener(archiveBrowser);
         if(params!=null) {
-            yconnector.connect(params);
+            yconnector.connect(params); 
         }
         
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
                 System.out.println("shutting down");
-                if(yconnector!=null) yconnector.disconnect();
+                yconnector.disconnect();
             }
         });
         

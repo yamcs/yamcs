@@ -1,7 +1,7 @@
 package org.yamcs.web.rest.archive;
 
+import org.yamcs.archive.CommandHistoryRecorder;
 import org.yamcs.archive.GPBHelper;
-import org.yamcs.cmdhistory.CommandHistoryRecorder;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Rest.ListCommandsResponse;
 import org.yamcs.protobuf.SchemaRest;
@@ -19,12 +19,10 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 
-import io.netty.channel.ChannelFuture;
-
 public class ArchiveCommandRestHandler extends RestHandler {
     
     @Route(path = "/api/archive/:instance/commands/:name*")
-    public ChannelFuture listCommands(RestRequest req) throws HttpException {
+    public void listCommands(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         
         long pos = req.getQueryParameterAsLong("pos", 0);
@@ -43,14 +41,18 @@ public class ArchiveCommandRestHandler extends RestHandler {
         sqlb.descend(req.asksDescending(true));
         
         ListCommandsResponse.Builder responseb = ListCommandsResponse.newBuilder();
-        RestStreams.streamAndWait(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
+        RestStreams.stream(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
 
             @Override
             public void processTuple(Stream stream, Tuple tuple) {
                 CommandHistoryEntry che = GPBHelper.tupleToCommandHistoryEntry(tuple);
                 responseb.addEntry(che);
             }
+            @Override
+            public void streamClosed(Stream stream) {
+                completeOK(req, responseb.build(), SchemaRest.ListCommandsResponse.WRITE);
+            }
         });
-        return sendOK(req, responseb.build(), SchemaRest.ListCommandsResponse.WRITE);
+        
     }
 }

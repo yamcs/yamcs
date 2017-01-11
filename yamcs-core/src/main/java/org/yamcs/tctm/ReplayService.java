@@ -15,7 +15,7 @@ import org.yamcs.NoPermissionException;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.TmProcessor;
 import org.yamcs.YProcessor;
-import org.yamcs.YProcessorException;
+import org.yamcs.ProcessorException;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.archive.PacketWithTime;
@@ -44,10 +44,10 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.security.InvalidAuthenticationToken;
 import org.yamcs.security.SystemToken;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.SystemParameterDb;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.Subscription;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -78,7 +78,6 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     TmProcessor tmProcessor;
     volatile long dataCount=0;
     final XtceDb xtceDb;
-    final SystemParameterDb sysParamDb;
     volatile long replayTime;
 
     private final String yamcsInstance;
@@ -90,15 +89,11 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     CommandHistoryRequestManager commandHistoryRequestManager;
 
     
-    public ReplayService(String instance, ReplayRequest spec) throws YProcessorException, ConfigurationException {
+    public ReplayService(String instance, ReplayRequest spec) throws ProcessorException, ConfigurationException {
         this.yamcsInstance = instance;
         this.originalReplayRequest = spec;
         xtceDb = XtceDbFactory.getInstance(instance);
-        sysParamDb = xtceDb.getSystemParameterDb();
     }
-
-
-
 
 
     @Override
@@ -133,11 +128,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
             for(org.yamcs.protobuf.Pvalue.ParameterValue pbPv:pd.getParameterList()) {
                 
                 Parameter ppDef;
-                if(SystemParameterDb.isSystemParameter(pbPv.getId())) {
-                    ppDef = sysParamDb.getSystemParameter(pbPv.getId(), true);
-                } else {
-                    ppDef = xtceDb.getParameter(pbPv.getId());
-                }
+                ppDef = xtceDb.getParameter(pbPv.getId());
                 
                 if(ppDef!=null) {
                     ParameterValue pv = ParameterValue.fromGpb(ppDef, pbPv);
@@ -207,7 +198,6 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         Subscription subscription = tmproc.getSubscription();
         Collection<SequenceContainer> containers = subscription.getContainers();
 
-        
         if((containers==null)|| (containers.isEmpty())) {
             log.debug("No container required for the parameter subscription");
         } else {
@@ -230,26 +220,33 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
             pprecordings.add(p.getRecordingGroup());
         }
         if(pprecordings.isEmpty()) {
-            log.debug("No addition pp group added to the subscription");
+            log.debug("No aadditional pp group added to the subscription");
         } else {
             PpReplayRequest.Builder pprr = originalReplayRequest.getPpRequest().toBuilder();
             pprr.addAllGroupNameFilter(pprecordings);
             rawDataRequest.setPpRequest(pprr.build());
-            
         }
-        
+        if(!rawDataRequest.hasPacketRequest() && !rawDataRequest.hasPpRequest()) {
+            if(originalReplayRequest.hasParameterRequest()) {
+                throw new YamcsException("Cannot find a replay source for any parmeters from request: "+originalReplayRequest.getParameterRequest().toString());
+            } else {
+                throw new YamcsException("Refusing to create an empty replay request");
+            }
+        }
     }
 
-    private void createReplay() throws YProcessorException {
+    private void createReplay() throws ProcessorException {
         ReplayServer replayServer = YamcsServer.getService(yamcsInstance, ReplayServer.class);
         if(replayServer==null) {
-            throw new YProcessorException("ReplayServer not configured for this instance");
+            throw new ProcessorException("ReplayServer not configured for this instance");
         }
         try {
             yarchReplay = replayServer.createReplay(rawDataRequest.build(), this, new SystemToken());
         } catch (YamcsException e) {
             log.error("Exception creating the replay", e);
-            throw new YProcessorException("Exception creating the replay",e);
+            throw new ProcessorException("Exception creating the replay: "+e.getMessage(), e);
+        } catch (InvalidAuthenticationToken e) { //should never come here
+            throw new RuntimeException(e);
         }
     }
     @Override
@@ -257,7 +254,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         try {
             createRawSubscription();
             createReplay();
-        } catch (YamcsException | YProcessorException e){
+        } catch (YamcsException | ProcessorException e){
             notifyFailed(e);
             return;
         }
@@ -320,7 +317,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         if(p!=null) {
             result= canProvide(p);
         } else { //check if it's system parameter
-            if(SystemParameterDb.isSystemParameter(id)) {
+            if(XtceDb.isSystemParameter(id)) {
                 result = true;
             }
         }
@@ -342,12 +339,6 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     public Parameter getParameter(NamedObjectId id) throws InvalidIdentification {
         Parameter p = xtceDb.getParameter(id);
         if(p==null) {
-            if(SystemParameterDb.isSystemParameter(id)) {
-                p = xtceDb.getSystemParameterDb().getSystemParameter(id, true);
-            }
-
-        }
-        if(p==null) {
             throw new InvalidIdentification();
         } else {
             return p;
@@ -366,10 +357,13 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
 
     @Override
     public ReplayState getReplayState() {
-        if(!isRunning()) {
-            return ReplayState.CLOSED;
+        if(state() == State.NEW) {
+            return ReplayState.INITIALIZATION;
+        } else if(state() == State.FAILED) {
+            return ReplayState.ERROR;
+        } else {
+            return yarchReplay.getState();
         }
-        return yarchReplay.getState();
     }
 
     @Override

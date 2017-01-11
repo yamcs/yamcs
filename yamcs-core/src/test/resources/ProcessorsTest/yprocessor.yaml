@@ -1,0 +1,10 @@
+      
+dummy:
+    telemetryProvider: 
+        class: org.yamcs.management.ProcessorsTest$DummyTmProvider
+
+
+Archive:
+    telemetryProvider:
+        class: org.yamcs.tctm.ReplayService
+

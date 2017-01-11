@@ -171,11 +171,8 @@ public class RdbTagDb implements TagDb {
       
     }
     
-    
-    /** 
-     * Called from Unit tests to cleanup before the next test
-     */
-    public void shutdown() {
+    @Override
+    public void close() {
         db.close();
     }
 }

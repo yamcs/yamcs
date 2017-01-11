@@ -3,27 +3,30 @@ package org.yamcs.archive;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-import static org.yamcs.api.Protocol.decode;
+import static org.yamcs.api.artemis.Protocol.decode;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
-import org.hornetq.core.server.embedded.EmbeddedHornetQ;
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.YamcsServer;
-import org.yamcs.api.Protocol;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
-import org.yamcs.api.YamcsClient.ClientBuilder;
-import org.yamcs.api.YamcsSession;
-import org.yamcs.hornetq.EventTupleTranslator;
-import org.yamcs.hornetq.StreamAdapter;
+import org.yamcs.api.artemis.Protocol;
+import org.yamcs.api.artemis.YamcsClient;
+import org.yamcs.api.artemis.YamcsSession;
+import org.yamcs.api.artemis.YamcsClient.ClientBuilder;
+import org.yamcs.artemis.ArtemisManagement;
+import org.yamcs.artemis.ArtemisServer;
+import org.yamcs.artemis.EventTupleTranslator;
+import org.yamcs.artemis.StreamAdapter;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
@@ -39,22 +42,23 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchTestCase;
 
 /**
- * Generates and saves some some events and then it performs a replay via HornetQ
+ * Generates and saves some some events and then it performs a replay via ActiveMQ
  * 
  * 
  * @author nm
  *
  */
 public class EventRecordingTest extends YarchTestCase {
-    static EmbeddedHornetQ hornetServer;
+    static EmbeddedActiveMQ artemisServer;
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        hornetServer=YamcsServer.setupHornet();
+        artemisServer = ArtemisServer.setupArtemis();
+        ArtemisManagement.setupYamcsServerControl();
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-	YamcsServer.stopHornet();
+        artemisServer.stop();
     }
     
     private void checkEvent(int i, Event ev) {
@@ -67,9 +71,9 @@ public class EventRecordingTest extends YarchTestCase {
     
     @Test
     public void testRecording() throws Exception {
-	ydb.execute("create stream "+EventRecorder.REALTIME_EVENT_STREAM_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'))");
-	ydb.execute("create stream "+EventRecorder.DUMP_EVENT_STREAM_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'))");
-	EventRecorder eventRecorder = new EventRecorder(context.getDbName());
+        ydb.execute("create stream "+EventRecorder.REALTIME_EVENT_STREAM_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'))");
+        ydb.execute("create stream "+EventRecorder.DUMP_EVENT_STREAM_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'))");
+        EventRecorder eventRecorder = new EventRecorder(context.getDbName());
         final int n=100;
         eventRecorder.startAsync();
         YamcsSession ys=YamcsSession.newBuilder().build();
@@ -132,9 +136,12 @@ public class EventRecordingTest extends YarchTestCase {
         msgClient.close();
         
         
-        //and now try remotely using replay
-        ReplayServer replay=new ReplayServer(ydb.getName());
+        //and now try remotely using replay via artemis
+        Map<String, Object> config = new HashMap<>();
+        config.put(ReplayServer.CONFIG_KEY_startArtemisService, true);
+        ReplayServer replay = new ReplayServer(ydb.getName(), config);
         replay.startAsync();
+        
         msgClient=ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
         
         EventReplayRequest err=EventReplayRequest.newBuilder().build();
@@ -142,7 +149,7 @@ public class EventRecordingTest extends YarchTestCase {
                 .setEventRequest(err)
                 .setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build())
                 .build();
-        SimpleString replayServer=Protocol.getYarchRetrievalControlAddress(context.getDbName());
+        SimpleString replayServer = Protocol.getYarchRetrievalControlAddress(context.getDbName());
         StringMessage answer=(StringMessage) msgClient.executeRpc(replayServer, "createReplay", rr, StringMessage.newBuilder());
         
         SimpleString replayAddress=new SimpleString(answer.getMessage());

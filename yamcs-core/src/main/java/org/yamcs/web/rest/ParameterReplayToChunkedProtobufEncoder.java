@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.yamcs.api.MediaType;
 import org.yamcs.parameter.ParameterValueWithId;
+import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.web.HttpException;
@@ -25,11 +26,16 @@ public class ParameterReplayToChunkedProtobufEncoder extends ParameterReplayToCh
     
     @Override
     public void processParameterData(List<ParameterValueWithId> params, ByteBufOutputStream bufOut) throws IOException {
-        for (ParameterValueWithId pvalid : params) {
-            ParameterValue pval = pvalid.toGbpParameterValue();
-            if (MediaType.PROTOBUF.equals(contentType)) {
-                pval.writeDelimitedTo(bufOut);
-            } else {
+        if (MediaType.PROTOBUF.equals(contentType)) {
+            ParameterData.Builder pd = ParameterData.newBuilder();
+            for (ParameterValueWithId pvalid : params) {
+                ParameterValue pval = pvalid.toGbpParameterValue();
+                pd.addParameter(pval);
+            }
+            pd.build().writeDelimitedTo(bufOut);
+        } else {
+            for (ParameterValueWithId pvalid : params) {
+                ParameterValue pval = pvalid.toGbpParameterValue();
                 JsonGenerator generator = req.createJsonGenerator(bufOut);
                 JsonIOUtil.writeTo(generator, pval, SchemaPvalue.ParameterValue.WRITE, false);
                 generator.close();

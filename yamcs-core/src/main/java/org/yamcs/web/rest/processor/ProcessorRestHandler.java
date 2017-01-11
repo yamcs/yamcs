@@ -47,7 +47,7 @@ import io.netty.channel.ChannelFuture;
 public class ProcessorRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/:instance/:processor/clients", method = "GET")
-    public ChannelFuture listClientsForProcessor(RestRequest req) throws HttpException {
+    public void listClientsForProcessor(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         
         Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
@@ -58,39 +58,39 @@ public class ProcessorRestHandler extends RestHandler {
                 responseb.addClient(ClientInfo.newBuilder(client).setState(ClientState.CONNECTED));
             }
         }
-        return sendOK(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
     }
 
     @Route(path = "/api/processors", method = "GET")
-    public ChannelFuture listProcessors(RestRequest req) throws HttpException {
+    public void listProcessors(RestRequest req) throws HttpException {
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
         for (YProcessor processor : YProcessor.getProcessors()) {
             response.addProcessor(toProcessorInfo(processor, req, true));
         }
-        return sendOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
+        completeOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
     }
 
     @Route(path = "/api/processors/:instance", method = "GET")
-    public ChannelFuture listProcessorsForInstance(RestRequest req) throws HttpException {
+    public void listProcessorsForInstance(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
         for (YProcessor processor : YProcessor.getProcessors(instance)) {
             response.addProcessor(toProcessorInfo(processor, req, true));
         }
-        return sendOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
+        completeOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
     }
     
     @Route(path = "/api/processors/:instance/:processor", method = "GET")
-    public ChannelFuture getProcessor(RestRequest req) throws HttpException {
+    public void getProcessor(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         
         ProcessorInfo pinfo = toProcessorInfo(processor, req, true);
-        return sendOK(req, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
+        completeOK(req, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
     }
 
     @Route(path = "/api/processors/:instance/:processor", method = { "PATCH", "PUT", "POST" })
-    public ChannelFuture editProcessor(RestRequest req) throws HttpException {
+    public void editProcessor(RestRequest req) throws HttpException {
         YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.isReplay()) {
             throw new BadRequestException("Cannot update a non-replay processor");
@@ -149,11 +149,11 @@ public class ProcessorRestHandler extends RestHandler {
             processor.changeSpeed(replaySpeed);
         }
 
-        return sendOK(req);
+        completeOK(req);
     }
 
     @Route(path = "/api/processors/:instance", method = "POST")
-    public ChannelFuture createProcessorForInstance(RestRequest req) throws HttpException {
+    public void createProcessorForInstance(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         
@@ -168,7 +168,7 @@ public class ProcessorRestHandler extends RestHandler {
         boolean persistent = false;
         Set<Integer> clientIds = new HashSet<>();
         List<String> paraPatterns = new ArrayList<>();
-        List<String> ppGroups = new ArrayList<>();
+        List<String> paraGroups = new ArrayList<>();
         List<String> packetNames = new ArrayList<>();
         boolean cmdhist = false;
 
@@ -181,7 +181,7 @@ public class ProcessorRestHandler extends RestHandler {
         if (request.hasPersistent()) persistent = request.getPersistent();
         clientIds.addAll(request.getClientIdList());
         paraPatterns.addAll(request.getParanameList());
-        ppGroups.addAll(request.getPpgroupList());
+        paraGroups.addAll(request.getPpgroupList());
         packetNames.addAll(request.getPacketnameList());
 
         // Query params get priority
@@ -191,7 +191,8 @@ public class ProcessorRestHandler extends RestHandler {
         if (req.hasQueryParameter("speed")) speed = req.getQueryParameter("speed").toLowerCase();
         if (req.hasQueryParameter("loop")) loop = req.getQueryParameterAsBoolean("loop");
         if (req.hasQueryParameter("paraname")) paraPatterns.addAll(req.getQueryParameterList("paraname"));
-        if (req.hasQueryParameter("ppgroup")) ppGroups.addAll(req.getQueryParameterList("ppgroup"));
+        if (req.hasQueryParameter("ppgroup")) paraGroups.addAll(req.getQueryParameterList("ppgroup"));
+        if (req.hasQueryParameter("paragroup")) paraGroups.addAll(req.getQueryParameterList("paragroup"));
         if (req.hasQueryParameter("packetname")) packetNames.addAll(req.getQueryParameterList("packetname"));
         if (req.hasQueryParameter("cmdhist")) cmdhist = req.getQueryParameterAsBoolean("cmdhist");
         if (req.hasQueryParameter("persistent")) persistent = req.getQueryParameterAsBoolean("persistent");
@@ -283,8 +284,8 @@ public class ProcessorRestHandler extends RestHandler {
         // PP groups are just passed. Not sure if we should keep support for this. Parameters are not filterable
         // on containers either, so I don't see why these get special treatment. Would prefer they are handled
         // in the above paraPatterns loop instead.
-        if (!ppGroups.isEmpty()) {
-            rrb.setPpRequest(PpReplayRequest.newBuilder().addAllGroupNameFilter(ppGroups));
+        if (!paraGroups.isEmpty()) {
+            rrb.setPpRequest(PpReplayRequest.newBuilder().addAllGroupNameFilter(paraGroups));
         }
 
         // Packet names are also just passed. We may want to try something fancier here with wildcard support.
@@ -308,7 +309,7 @@ public class ProcessorRestHandler extends RestHandler {
         ManagementService mservice = ManagementService.getInstance();
         try {
             mservice.createProcessor(reqb.build(), req.getAuthToken());
-            return sendOK(req);
+            completeOK(req);
         } catch (YamcsException e) {
             throw new BadRequestException(e.getMessage());
         }

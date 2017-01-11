@@ -20,15 +20,18 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.yamcs.api.EventProducerFactory;
+import org.yamcs.api.MediaType;
+import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
-import org.yamcs.api.ws.YamcsConnectionProperties;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
+import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
@@ -42,13 +45,14 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.UsernamePasswordToken;
-import org.yamcs.tctm.TmPacketSource;
+import org.yamcs.tctm.TmPacketDataLink;
 import org.yamcs.tctm.TmSink;
 import org.yamcs.utils.FileUtils;
-import org.yamcs.utils.HttpClient;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.web.HttpServer;
 import org.yamcs.web.websocket.ManagementResource;
 import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.yarch.management.JMXService;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -66,40 +70,40 @@ public abstract class AbstractIntegrationTest {
     YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190, "IntegrationTest");
     MyWsListener wsListener;
     WebSocketClient wsClient;
-    HttpClient httpClient;
-    UsernamePasswordToken admin = new UsernamePasswordToken("admin", "rootpassword");
-    UsernamePasswordToken currentUser = null;
+    RestClient restClient;
+    protected UsernamePasswordToken admin = new UsernamePasswordToken("admin", "rootpassword");
     RefMdbPacketGenerator packetGenerator;
 
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-       // enableDebugging();
+       //enableDebugging();
         setupYamcs();
     }
 
     static void enableDebugging() {
         Logger.getLogger("org.yamcs").setLevel(Level.ALL);
     }
-    
+
     @Before
     public void before() throws InterruptedException {
 
         if(Privilege.getInstance().isEnabled())  {
-            currentUser = admin;
+            ycp.setAuthenticationToken(admin);
         }
 
         packetProvider = PacketProvider.instance;
         assertNotNull(packetProvider);
         wsListener = new MyWsListener();
-        if(currentUser != null)
-            wsClient = new WebSocketClient(ycp, wsListener, currentUser.getUsername(), currentUser.getPasswordS());
-        else
-            wsClient = new WebSocketClient(ycp, wsListener);
+
+        wsClient = new WebSocketClient(ycp, wsListener);
         wsClient.setUserAgent("it-junit");
         wsClient.connect();
         assertTrue(wsListener.onConnect.tryAcquire(5, TimeUnit.SECONDS));
-        httpClient = new HttpClient();
+        restClient = new RestClient(ycp);
+        restClient.setAcceptMediaType(MediaType.JSON);
+        restClient.setSendMediaType(MediaType.JSON);
+        restClient.setAutoclose(false);
         packetGenerator = packetProvider.mdbPacketGenerator;
         packetGenerator.setGenerationTime(TimeEncoding.INVALID_INSTANT);
 
@@ -115,7 +119,7 @@ public abstract class AbstractIntegrationTest {
         assertNotNull(cinfo);
         return cinfo;
     }
-    
+
 
 
     private static void setupYamcs() throws Exception {
@@ -125,10 +129,11 @@ public abstract class AbstractIntegrationTest {
 
         EventProducerFactory.setMockup(true);
         YConfiguration.setup("IntegrationTest");
-        ManagementService.setup(false, false);
-        org.yamcs.yarch.management.ManagementService.setup(false);
-        YamcsServer.setupHttpServer();
-        YamcsServer.setupHornet();
+        ManagementService.setup(false);
+        JMXService.setup(false);
+        new HttpServer().startServer();
+   //     artemisServer = ArtemisServer.setupArtemis();
+     //   ArtemisManagement.setupYamcsServerControl();
         YamcsServer.setupYamcsServer();
     }
 
@@ -143,7 +148,7 @@ public abstract class AbstractIntegrationTest {
 
         return b.build();
     }
-    
+
     protected NamedObjectList getSubscription(String... pfqname) {
         NamedObjectList.Builder b = NamedObjectList.newBuilder();
         for(String p: pfqname) {
@@ -161,10 +166,9 @@ public abstract class AbstractIntegrationTest {
     @AfterClass
     public static void shutDownYamcs()  throws Exception {
         YamcsServer.shutDown();
-        YamcsServer.stopHornet();
     }
 
-    
+
     <T extends MessageLite> String toJson(T msg, Schema<T> schema) throws IOException {
         StringWriter writer = new StringWriter();
         JsonIOUtil.writeTo(writer, msg, schema, false);
@@ -177,14 +181,14 @@ public abstract class AbstractIntegrationTest {
         JsonIOUtil.mergeFrom(reader, msg, schema, false);
         return msg;
     }
-    
+
     //parses a series of messages (not really a list because they are not separated by "," and do not have start and end of list ([ ])
     <T extends MessageLite> List<T> allFromJson(String jsonstr, Schema schema) throws IOException {
-        
+
         StringReader reader = new StringReader(jsonstr);
         JsonParser parser = JsonIOUtil.DEFAULT_JSON_FACTORY.createParser(reader);
         JsonInput input = new JsonInput(parser);
-        
+
         List<T> r = new ArrayList<>();
         while(true) {
             JsonToken t = parser.nextToken();
@@ -212,6 +216,7 @@ public abstract class AbstractIntegrationTest {
         LinkedBlockingQueue<StreamData> streamDataList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<TimeInfo> timeInfoList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<LinkEvent> linkEventList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<CommandQueueInfo> cmdQueueInfoList = new LinkedBlockingQueue<>();
 
         int count =0;
         @Override
@@ -224,7 +229,7 @@ public abstract class AbstractIntegrationTest {
         public void disconnected() {
             onDisconnect.release();
         }
-        
+
         @Override
         public void onInvalidIdentification(NamedObjectId id) {
             invalidIdentificationList.add(id);
@@ -235,14 +240,9 @@ public abstract class AbstractIntegrationTest {
             switch (data.getType()) {
             case PARAMETER:
                 count++;
-                if((count %1000) ==0 ){
-                    System.out.println("received pdata "+count);
-                }
-
                 parameterDataList.add(data.getParameterData());
                 break;
             case CMD_HISTORY:
-                //System.out.println("COMMAND HISTORY-------------"+cmdhistData);
                 cmdHistoryDataList.add(data.getCommand());
                 break;
             case CLIENT_INFO:
@@ -269,12 +269,15 @@ public abstract class AbstractIntegrationTest {
             case LINK_EVENT:
                 linkEventList.add(data.getLinkEvent());
                 break;
+            case COMMAND_QUEUE_INFO:
+                cmdQueueInfoList.add(data.getCommandQueueInfo());
+                break;
             default:
                 throw new IllegalArgumentException("Unexpected type " + data.getType());
             }
         }
     }
-    public static class PacketProvider extends AbstractService implements TmPacketSource, TmProcessor {
+    public static class PacketProvider extends AbstractService implements TmPacketDataLink, TmProcessor {
         static volatile PacketProvider instance;
         RefMdbPacketGenerator mdbPacketGenerator = new RefMdbPacketGenerator();
         TmSink tmSink;
@@ -309,13 +312,9 @@ public abstract class AbstractIntegrationTest {
 
         @Override
         public void setTmSink(TmSink tmSink) {
-            this.tmSink = tmSink;                   
+            this.tmSink = tmSink;
         }
 
-        @Override
-        public boolean isArchiveReplay() {
-            return false;
-        }
         @Override
         protected void doStart() {
             mdbPacketGenerator.init(null, this);

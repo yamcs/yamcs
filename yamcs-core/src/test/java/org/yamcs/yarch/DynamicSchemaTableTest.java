@@ -4,9 +4,14 @@ package org.yamcs.yarch;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.Semaphore;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * test for insert modes in a table with a dynamic schema
@@ -14,8 +19,7 @@ import org.junit.Test;
  *
  */
 public class DynamicSchemaTableTest extends YarchTestCase {
-	static final String engine="rocksdb"; 
-	
+    
     private void emit(Stream s, long key, String colName, int colValue) {
         TupleDefinition tdef=new TupleDefinition();
         tdef.addColumn("t",DataType.TIMESTAMP);
@@ -27,7 +31,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
     @Test
     public void testInsert() throws Exception {
     	
-        ydb.execute("create table test_insert (t timestamp, v1 int, v2 int, primary key(t)) engine "+engine);
+        ydb.execute("create table test_insert (t timestamp, v1 int, v2 int, primary key(t))");
        
         
         ydb.execute("create stream test_insert_in (t timestamp)");
@@ -88,7 +92,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
 
     @Test
     public void testInsertAppend() throws Exception {
-        ydb.execute("create table test_inserta (t timestamp, v1 int, v2 int, primary key(t)) engine "+engine);
+        ydb.execute("create table test_inserta (t timestamp, v1 int, v2 int, primary key(t))");
         ydb.execute("create stream test_inserta_in (t timestamp)");
         ydb.execute("insert_append into test_inserta select * from test_inserta_in");
         
@@ -148,7 +152,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
     @Test
     public void testUpsert() throws Exception {
         
-        ydb.execute("create table test_upsert (t timestamp, v1 int, v2 int, primary key(t)) engine "+engine);
+        ydb.execute("create table test_upsert (t timestamp, v1 int, v2 int, primary key(t))");
        
         
         ydb.execute("create stream test_upsert_in (t timestamp)");
@@ -210,19 +214,19 @@ public class DynamicSchemaTableTest extends YarchTestCase {
     @Test
     public void testUpsertAppend() throws Exception {
         
-        ydb.execute("create table test_upserta (t timestamp, v1 int, v2 int, primary key(t)) engine "+engine);
+        ydb.execute("create table test_upserta (t timestamp, v1 int, v2 int, primary key(t))");
        
         
         ydb.execute("create stream test_upserta_in (t timestamp)");
         ydb.execute("upsert_append into test_upserta select * from test_upserta_in");
         
-        TableDefinition tblDef=ydb.getTable("test_upserta");
+        TableDefinition tblDef =ydb.getTable("test_upserta");
         
-        TupleDefinition keyDef=tblDef.getKeyDefinition();
-        ArrayList<ColumnDefinition> keyCols=keyDef.getColumnDefinitions();
+        TupleDefinition keyDef = tblDef.getKeyDefinition();
+        ArrayList<ColumnDefinition> keyCols = keyDef.getColumnDefinitions();
         assertEquals(1, keyCols.size());
         
-        ArrayList<ColumnDefinition> valueCols=tblDef.getValueDefinition().getColumnDefinitions();
+        ArrayList<ColumnDefinition> valueCols = tblDef.getValueDefinition().getColumnDefinitions();
         assertEquals(2, valueCols.size());
         
         Stream s=ydb.getStream("test_upserta_in");
@@ -236,6 +240,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         
         
         valueCols=tblDef.getValueDefinition().getColumnDefinitions();
+        System.out.println("values: "+valueCols);
         assertEquals(3, valueCols.size());
         assertEquals("v3", valueCols.get(2).getName());
         

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hornetq.api.core.HornetQException;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.YamcsApiException;
@@ -17,17 +16,17 @@ import com.google.common.util.concurrent.ServiceManager;
 
 /**
  * Service that initialises all the data links
- * 
+ *
  * @author nm
  *
  */
 public class DataLinkInitialiser extends AbstractService {
     TmDataLinkInitialiser tmDataLinkInitialiser;
     TcUplinkerAdapter tcDataLinkInitialiser;
-    PpProviderAdapter ppDataLinkInitialiser;
+    ParameterDataLinkInitialiser ppDataLinkInitialiser;
     ServiceManager  serviceManager;
-    
-    public DataLinkInitialiser(String yamcsInstance) throws ConfigurationException, StreamSqlException, ParseException, HornetQException, YamcsApiException, IOException {
+
+    public DataLinkInitialiser(String yamcsInstance) throws ConfigurationException, StreamSqlException, ParseException, YamcsApiException, IOException {
         YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
         List<Service> services = new ArrayList<Service>();
         if(c.containsKey(TmDataLinkInitialiser.KEY_tmDataLinks)) {
@@ -38,27 +37,30 @@ public class DataLinkInitialiser extends AbstractService {
             tcDataLinkInitialiser = new TcUplinkerAdapter(yamcsInstance);
             services.add(tcDataLinkInitialiser);
         }
-        if(c.containsKey(PpProviderAdapter.KEY_ppDataLinks)) {
-            ppDataLinkInitialiser = new PpProviderAdapter(yamcsInstance);
+        if(c.containsKey(ParameterDataLinkInitialiser.KEY_parameterDataLinks)) {
+            ppDataLinkInitialiser = new ParameterDataLinkInitialiser(yamcsInstance);
             services.add(ppDataLinkInitialiser);
         }
-        if(services.isEmpty()) {
-            throw new ConfigurationException("None of the "+TmDataLinkInitialiser.KEY_tmDataLinks+", "+TcUplinkerAdapter.KEY_tcDataLinks+" or "+PpProviderAdapter.KEY_ppDataLinks+" configured");
+        if (!services.isEmpty()) {
+            serviceManager = new ServiceManager(services);
         }
-        serviceManager = new ServiceManager(services);
     }
 
     @Override
     protected void doStart() {
-        serviceManager.startAsync();
-        serviceManager.awaitHealthy();
+        if (serviceManager != null) {
+            serviceManager.startAsync();
+            serviceManager.awaitHealthy();
+        }
         notifyStarted();
     }
 
     @Override
     protected void doStop() {
-        serviceManager.stopAsync();
-        serviceManager.awaitStopped();
+        if (serviceManager != null) {
+            serviceManager.stopAsync();
+            serviceManager.awaitStopped();
+        }
         notifyStopped();
     }
 }

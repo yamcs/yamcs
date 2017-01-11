@@ -22,15 +22,15 @@ public class DataType {
     private TupleDefinition td=null;//for TUPLE and LIST
     private String className=null; //for PROTOBUF
     
-    static public final DataType BYTE=new DataType(_type.BYTE);
-    static public final DataType SHORT=new DataType(_type.SHORT);
-    static public final DataType INT=new DataType(_type.INT);
-    static public final DataType DOUBLE=new DataType(_type.DOUBLE);
-    static public final DataType STRING=new DataType(_type.STRING);
-    static public final DataType BINARY=new DataType(_type.BINARY);
-    static public final DataType BOOLEAN=new DataType(_type.BOOLEAN);
-    static public final DataType TIMESTAMP=new DataType(_type.TIMESTAMP);
-    static public final DataType ENUM=new DataType(_type.ENUM);
+    static public final DataType BYTE = new DataType(_type.BYTE);
+    static public final DataType SHORT = new DataType(_type.SHORT);
+    static public final DataType INT = new DataType(_type.INT);
+    static public final DataType DOUBLE = new DataType(_type.DOUBLE);
+    static public final DataType STRING = new DataType(_type.STRING);
+    static public final DataType BINARY = new DataType(_type.BINARY);
+    static public final DataType BOOLEAN = new DataType(_type.BOOLEAN);
+    static public final DataType TIMESTAMP = new DataType(_type.TIMESTAMP);
+    static public final DataType ENUM = new DataType(_type.ENUM);
 
 
     private DataType(_type t) {
@@ -230,6 +230,9 @@ public class DataType {
           return false;
         }
     }
+    
+   
+    
     public static boolean compatible(DataType dt1, DataType dt2) {
         if(dt1==dt2) return true;
         

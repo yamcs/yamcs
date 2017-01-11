@@ -10,7 +10,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
@@ -19,11 +18,12 @@ import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.tctm.PpProviderAdapter;
+import org.yamcs.tctm.ParameterDataLinkInitialiser;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.SystemParameterDb;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
@@ -34,8 +34,8 @@ import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Collects each second system processed parameters from whomever registers and sends them on the sys_var stream
- * 
- *   
+ *
+ *
  * @author nm
  *
  */
@@ -43,14 +43,14 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     static Map<String,SystemParametersCollector> instances=new HashMap<String,SystemParametersCollector>();
     static long frequencyMillisec=1000;
     List<SystemParametersProducer> providers = new CopyOnWriteArrayList<SystemParametersProducer>();
-    
-    final static String STREAM_NAME="sys_param";
+
+    final static String STREAM_NAME = "sys_param";
     private NamedObjectId sp_jvmTotalMemory_id;
     private NamedObjectId sp_jvmMemoryUsed_id;
     private NamedObjectId sp_jvmTheadCount_id;
     final static public int JVM_COLLECTION_INTERVAL = 10;
     private boolean provideJvmVariables = false;
-    private int jvmCollectionCountdown = 0; 
+    private int jvmCollectionCountdown = 0;
 
     ScheduledThreadPoolExecutor timer;
     final Stream stream;
@@ -77,19 +77,19 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     }
     public SystemParametersCollector(String instance, Map<String, Object> args) throws ConfigurationException {
         this.instance = instance;
-        log=LoggerFactory.getLogger(this.getClass().getName()+"["+instance+"]");
+        log = LoggingUtils.getLogger(this.getClass(), instance);
         processArgs(args);
-        
-        YarchDatabase ydb=YarchDatabase.getInstance(instance);
-        Stream s=ydb.getStream(STREAM_NAME);
+
+        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        Stream s = ydb.getStream(STREAM_NAME);
         if(s==null) {
-            throw new ConfigurationException("Stream ' "+STREAM_NAME+"' does not exist");
+            throw new ConfigurationException("Stream '"+STREAM_NAME+"' does not exist");
         }
-        stream=s;
+        stream = s;
         timeService = YamcsServer.getInstance(instance).getTimeService();
 
         serverId = YamcsServer.getServerId();
-        namespace = SystemParameterDb.YAMCS_SPACESYSTEM_NAME+NameDescription.PATH_SEPARATOR+serverId;
+        namespace = XtceDb.YAMCS_SPACESYSTEM_NAME+NameDescription.PATH_SEPARATOR+serverId;
         log.debug("Using {} as serverId, and {} as namespace for system parameters", serverId, namespace);
         if(provideJvmVariables) {
             sp_jvmTotalMemory_id = NamedObjectId.newBuilder().setName(namespace+"/jvmTotalMemory").build();
@@ -102,7 +102,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
             log.debug("publishing jvmThreadCount with parameter id {}", sp_jvmTheadCount_id);
         }
         synchronized(instances) {
-            instances.put(instance, this);    
+            instances.put(instance, this);
         }
     }
 
@@ -112,8 +112,8 @@ public class SystemParametersCollector extends AbstractService implements Runnab
             provideJvmVariables = YConfiguration.getBoolean(args, "provideJvmVariables");
         }
     }
-    
-    
+
+
     @Override
     public void doStart() {
         timer = new ScheduledThreadPoolExecutor(1);
@@ -139,7 +139,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
                 collectJvmParameters(params);
                 jvmCollectionCountdown = JVM_COLLECTION_INTERVAL;
             }
-        } 
+        }
         for(SystemParametersProducer p: providers) {
             try {
                 Collection<ParameterValue> pvc =p.getSystemParameters();
@@ -153,7 +153,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
 
         if(params.isEmpty()) return;
 
-        TupleDefinition tdef=PpProviderAdapter.PP_TUPLE_DEFINITION.copy();
+        TupleDefinition tdef=ParameterDataLinkInitialiser.PARAMETER_TUPLE_DEFINITION.copy();
         List<Object> cols=new ArrayList<Object>(4+params.size());
         cols.add(gentime);
         cols.add(namespace);
@@ -166,7 +166,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
                 log.warn("duplicate value for "+pv.getId()+"\nfirst: "+cols.get(idx)+"\n second: "+pv);
                 continue;
             }
-            tdef.addColumn(name, PpProviderAdapter.PP_DATA_TYPE);
+            tdef.addColumn(name, ParameterDataLinkInitialiser.PARAMETER_DATA_TYPE);
             cols.add(pv);
         }
         Tuple t=new Tuple(tdef, cols);
@@ -193,7 +193,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
 
     /**
      * this is the namespace all system parameters should be in
-     * 
+     *
      * @return the namespace to be used by the system parameters
      */
     public String getNamespace() {
@@ -211,7 +211,25 @@ public class SystemParametersCollector extends AbstractService implements Runnab
                 .build();
     }
 
+    public static ParameterValue getPV(NamedObjectId id, long time, double v) {
+        return ParameterValue.newBuilder()
+                .setId(id)
+                .setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
+                .setAcquisitionTime(time)
+                .setGenerationTime(time)
+                .setEngValue(Value.newBuilder().setType(Type.DOUBLE).setDoubleValue(v).build())
+                .build();
+    }
 
+    public static ParameterValue getPV(NamedObjectId id, long time, boolean v) {
+        return ParameterValue.newBuilder()
+                .setId(id)
+                .setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
+                .setAcquisitionTime(time)
+                .setGenerationTime(time)
+                .setEngValue(Value.newBuilder().setType(Type.BOOLEAN).setBooleanValue(v).build())
+                .build();
+    }
 
     public static ParameterValue getPV(NamedObjectId id, long time, long v) {
         return ParameterValue.newBuilder()

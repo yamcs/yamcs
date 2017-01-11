@@ -1,0 +1,148 @@
+package org.yamcs;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.Test;
+import org.yamcs.api.MediaType;
+import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.rest.BulkRestDataReceiver;
+import org.yamcs.api.ws.WebSocketRequest;
+import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.protobuf.Rest.CreateProcessorRequest;
+import org.yamcs.protobuf.Rest.EditClientRequest;
+import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.protobuf.Yamcs.ArchiveRecord;
+import org.yamcs.protobuf.Yamcs.NamedObjectList;
+import org.yamcs.protobuf.YamcsManagement.ClientInfo;
+import org.yamcs.utils.TimeEncoding;
+import org.yamcs.web.websocket.ParameterResource;
+
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import io.netty.handler.codec.http.HttpMethod;
+
+
+public class ArchiveIntegrationTest extends AbstractIntegrationTest {
+
+
+    private void generateData(String utcStart, int numPackets) {
+        long t0 = TimeEncoding.parse(utcStart);
+        for (int i=0;i <numPackets; i++) {
+            packetGenerator.setGenerationTime(t0+1000*i);
+            packetGenerator.generate_PKT1_1();
+            packetGenerator.generate_PKT1_3();
+        }
+    }
+
+    @Test
+    public void testReplay() throws Exception {
+        generateData("2015-01-01T10:00:00", 3600);
+        restClient.setAcceptMediaType(MediaType.JSON);
+        
+        ClientInfo cinfo = getClientInfo();
+        //create a parameter replay via REST
+        CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
+                .addClientId(cinfo.getId())
+                .setName("testReplay")
+                .setStart("2015-01-01T10:01:00")
+                .setStop("2015-01-01T10:05:00")
+                .addPacketname("*")
+                .build();
+
+        restClient.doRequest("/processors/IntegrationTest", HttpMethod.POST, toJson(prequest, SchemaRest.CreateProcessorRequest.WRITE)).get();
+
+        cinfo = getClientInfo();
+        assertEquals("testReplay", cinfo.getProcessorName());
+
+        NamedObjectList subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6");
+        WebSocketRequest wsr = new WebSocketRequest("parameter",ParameterResource.WSR_subscribe, subscrList);
+        wsClient.sendRequest(wsr);
+
+        ParameterData pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+        assertNotNull(pdata);
+
+        assertEquals(2, pdata.getParameterCount());
+        ParameterValue p1_1_6 = pdata.getParameter(0);
+        assertEquals("2015-01-01T10:01:00.000", p1_1_6.getGenerationTimeUTC());
+
+        pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+        assertNotNull(pdata);
+
+        assertEquals(2, pdata.getParameterCount());
+        p1_1_6 = pdata.getParameter(0);
+        assertEquals("2015-01-01T10:01:01.000", p1_1_6.getGenerationTimeUTC());
+
+        //go back to realtime
+        EditClientRequest pcrequest = EditClientRequest.newBuilder().setProcessor("realtime").build();
+        restClient.doRequest("/clients/" + cinfo.getId(), HttpMethod.PATCH, toJson(pcrequest, SchemaRest.EditClientRequest.WRITE)).get();
+
+        cinfo = getClientInfo();
+        assertEquals("realtime", cinfo.getProcessorName());
+    }
+
+    @Test
+    public void testIndex() throws Exception {
+        generateData("2015-01-02T10:00:00", 3600);
+        restClient.setAcceptMediaType(MediaType.JSON);
+        String response ;
+
+        response = restClient.doRequest("/archive/IntegrationTest/indexes/packets?start=2015-01-02T00:00:00", HttpMethod.GET, "").get();
+        List<ArchiveRecord> arlist = allFromJson(response, org.yamcs.protobuf.SchemaYamcs.ArchiveRecord.MERGE);
+        assertEquals(8, arlist.size());
+
+        response = restClient.doRequest("/archive/IntegrationTest/indexes/packets?start=2035-01-02T00:00:00", HttpMethod.GET, "").get();
+        
+        assertTrue(response.isEmpty());
+    }
+
+
+    @Test
+    public void testIndexWithRestClient() throws Exception {
+        generateData("2015-02-01T10:00:00", 3600);
+        List<ArchiveRecord> arlist = new ArrayList<>();
+        restClient.setAcceptMediaType(MediaType.PROTOBUF);
+        CompletableFuture<Void> f = restClient.doBulkGetRequest("/archive/IntegrationTest/indexes/packets?start=2015-02-01T00:00:00&stop=2015-02-01T11:00:00", new BulkRestDataReceiver() {
+
+            @Override
+            public void receiveException(Throwable t) {
+                fail(t.getMessage());
+            }
+
+            @Override
+            public void receiveData(byte[] data) throws YamcsApiException {
+                try {
+                    arlist.add(ArchiveRecord.parseFrom(data));
+                } catch (InvalidProtocolBufferException e) {
+                    fail("Cannot decode archive record: "+e);
+                }
+            }
+        });
+
+        f.get();
+        assertEquals(4, arlist.size());
+    }
+
+    @Test
+    public void testParameterHistory() throws Exception {
+        generateData("2015-02-02T10:00:00", 3600);
+        String respDl = restClient.doRequest("/archive/IntegrationTest/parameters/REFMDB/ccsds-apid?start=2015-02-02T10:10:00&norepeat=true&limit=3", HttpMethod.GET, "").get();
+
+        ParameterData pdata = fromJson(respDl, org.yamcs.protobuf.SchemaPvalue.ParameterData.MERGE).build();
+        assertEquals(1, pdata.getParameterCount());
+        ParameterValue pv = pdata.getParameter(0);
+        assertEquals(995, pv.getEngValue().getUint32Value());
+
+        respDl = restClient.doRequest("/archive/IntegrationTest/parameters/REFMDB/ccsds-apid?start=2015-02-02T10:10:00&norepeat=false&limit=3", HttpMethod.GET, "").get();
+        pdata = fromJson(respDl, org.yamcs.protobuf.SchemaPvalue.ParameterData.MERGE).build();
+        assertEquals(3, pdata.getParameterCount());
+    }
+}

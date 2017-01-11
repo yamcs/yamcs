@@ -25,8 +25,6 @@ import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
-import io.netty.channel.ChannelFuture;
-
 /**
  * Handles incoming requests related to parameter info from the MDB
  */
@@ -34,7 +32,7 @@ public class MDBParameterRestHandler extends RestHandler {
     final static Logger log = LoggerFactory.getLogger(MDBParameterRestHandler.class);
     
     @Route(path = "/api/mdb/:instance/parameters/bulk", method = { "GET", "POST" }, priority = true)
-    public ChannelFuture getBulkParameterInfo(RestRequest req) throws HttpException {
+    public void getBulkParameterInfo(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         
@@ -45,7 +43,7 @@ public class MDBParameterRestHandler extends RestHandler {
             if(p==null) {
                 throw new BadRequestException("Invalid parameter name specified "+id);
             }
-            if(!Privilege.getInstance().hasPrivilege(req.getAuthToken(), Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
+            if(!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
                 log.warn("Not providing information about parameter {} because no privileges exists", p.getQualifiedName());
                 continue;
             }
@@ -57,20 +55,20 @@ public class MDBParameterRestHandler extends RestHandler {
             responseb.addResponse(response);
         }
         
-        return sendOK(req, responseb.build(), SchemaRest.BulkGetParameterInfoResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.BulkGetParameterInfoResponse.WRITE);
     }
     
     @Route(path = "/api/mdb/:instance/parameters", method = "GET")
     @Route(path = "/api/mdb/:instance/parameters/:name*", method = "GET")
-    public ChannelFuture getParameter(RestRequest req) throws HttpException {
+    public void getParameter(RestRequest req) throws HttpException {
         if (req.hasRouteParam("name")) {
-            return getParameterInfo(req);
+            getParameterInfo(req);
         } else {
-            return listParameters(req);
+            listParameters(req);
         }
     }
     
-    private ChannelFuture getParameterInfo(RestRequest req) throws HttpException {
+    private void getParameterInfo(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         
         XtceDb mdb = XtceDbFactory.getInstance(instance);
@@ -78,10 +76,10 @@ public class MDBParameterRestHandler extends RestHandler {
         
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
         ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.FULL, req.getOptions());
-        return sendOK(req, pinfo, SchemaMdb.ParameterInfo.WRITE);
+        completeOK(req, pinfo, SchemaMdb.ParameterInfo.WRITE);
     }
     
-    private ChannelFuture listParameters(RestRequest req) throws HttpException {
+    private void listParameters(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         
@@ -112,20 +110,7 @@ public class MDBParameterRestHandler extends RestHandler {
             
             Privilege privilege = Privilege.getInstance();
             for (Parameter p : mdb.getParameters()) {
-                if (!privilege.hasPrivilege(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName()))
-                    continue;
-                if (matcher != null && !matcher.matches(p))
-                    continue;
-                
-                String alias = p.getAlias(namespace);
-                if (alias != null || (recurse && p.getQualifiedName().startsWith(namespace))) {
-                    if (parameterTypeMatches(p, types)) {
-                        responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
-                    }
-                }
-            }
-            for (SystemParameter p : mdb.getSystemParameterDb().getSystemParameters()) {
-                if (!privilege.hasPrivilege(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName()))
+                if (!privilege.hasPrivilege1(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName()))
                     continue;
                 if (matcher != null && !matcher.matches(p))
                     continue;
@@ -146,7 +131,7 @@ public class MDBParameterRestHandler extends RestHandler {
             }
         }
         
-        return sendOK(req, responseb.build(), SchemaRest.ListParameterInfoResponse.WRITE);
+        completeOK(req, responseb.build(), SchemaRest.ListParameterInfoResponse.WRITE);
     }
     
     private boolean parameterTypeMatches(Parameter p, Set<String> types) {

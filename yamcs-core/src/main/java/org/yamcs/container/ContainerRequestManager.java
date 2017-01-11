@@ -8,9 +8,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.YProcessor;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.ContainerListener;
@@ -32,17 +32,17 @@ public class ContainerRequestManager implements ContainerListener {
      * Creates a new ContainerRequestManager, configured to listen to a newly
      * created XtceTmProcessor.
      */
-    public ContainerRequestManager(YProcessor yamcsChannel) {
-        this(yamcsChannel, new XtceTmProcessor(yamcsChannel, null));
+    public ContainerRequestManager(YProcessor proc) {
+        this(proc, new XtceTmProcessor(proc, null));
     }
 
     /**
      * Creates a new ContainerRequestManager, configured to listen to the
      * specified XtceTmProcessor.
      */
-    public ContainerRequestManager(YProcessor yamcsChannel, XtceTmProcessor tmProcessor) {
+    public ContainerRequestManager(YProcessor proc, XtceTmProcessor tmProcessor) {
         this.tmProcessor = tmProcessor;
-        log = LoggerFactory.getLogger(getClass().getName() + "[" + yamcsChannel.getName() + "]");
+        log = LoggingUtils.getLogger(this.getClass(), proc);
         tmProcessor.setContainerListener(this);
     }
 

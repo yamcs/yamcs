@@ -22,7 +22,7 @@ public interface Realm {
     /**
      * loadUser, load the roles and privileges of the user
      * @param authenticationToken
-     * @return User with roles and priviledges loaded
+     * @return User with roles and privileges loaded
      */
     public User loadUser(AuthenticationToken authenticationToken);
 

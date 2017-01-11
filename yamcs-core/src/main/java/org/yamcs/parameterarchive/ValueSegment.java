@@ -6,6 +6,8 @@ public interface ValueSegment {
     
     /**
      * returns Value at position index
+     * @param index 
+     * @return the value at the index
      */
     public abstract Value getValue(int index);
 

@@ -3,8 +3,8 @@ package org.yamcs;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +34,7 @@ import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.tctm.ArchiveTmPacketProvider;
 import org.yamcs.tctm.TcTmService;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
@@ -43,6 +44,9 @@ import com.google.common.util.concurrent.Service;
 
 
 /**
+ * 
+ * 
+ * 
  * This class helps keeping track of the different objects used in a Yamcs Processor - i.e. all the 
  *  objects required to have a TM/TC processing chain (either realtime or playback).
  *
@@ -61,8 +65,8 @@ public class YProcessor extends AbstractService {
     private final String CONFIG_KEY_tmProcessor ="tmProcessor";
     private final String CONFIG_KEY_parameterCache ="parameterCache";
 
-    
-    static private Map<String,YProcessor>instances=Collections.synchronizedMap(new HashMap<String,YProcessor>());
+
+    static private Map<String,YProcessor>instances=Collections.synchronizedMap(new LinkedHashMap<>());
     private ParameterRequestManagerImpl parameterRequestManager;
     private ContainerRequestManager containerRequestManager;
     private CommandHistoryPublisher commandHistoryPublisher;
@@ -93,9 +97,9 @@ public class YProcessor extends AbstractService {
     private boolean persistent=false;
 
     ParameterCacheConfig parameterCacheConfig = new ParameterCacheConfig(false, false, 0, 0);
-    
+
     final Logger log;
-    static Set<YProcessorListener> listeners=new CopyOnWriteArraySet<>(); //send notifications for added and removed processors to this
+    static Set<ProcessorListener> listeners=new CopyOnWriteArraySet<>(); //send notifications for added and removed processors to this
 
     private boolean quitting;
     //a synchronous processor waits for all the clients to deliver tm packets and parameters
@@ -110,31 +114,31 @@ public class YProcessor extends AbstractService {
     TimeService timeService;
 
     @GuardedBy("this")
-    HashSet<YProcessorClient> connectedClients= new HashSet<YProcessorClient>();
+    HashSet<ProcessorClient> connectedClients= new HashSet<ProcessorClient>();
 
-    public YProcessor(String yamcsInstance, String name, String type, String creator) throws YProcessorException {
+    public YProcessor(String yamcsInstance, String name, String type, String creator) throws ProcessorException {
         if((name==null) || "".equals(name)) {
-            throw new YProcessorException("The processor name must not be empty");
+            throw new ProcessorException("The processor name must not be empty");
         }
-        this.yamcsInstance=yamcsInstance;
-        this.name=name;
-        this.creator=creator;
-        this.type=type;
-        log=YamcsServer.getLogger(YProcessor.class, this);
+        this.yamcsInstance = yamcsInstance;
+        this.name = name;
+        this.creator = creator;
+        this.type = type;
+        log = LoggingUtils.getLogger(YProcessor.class, this);
         log.info("Creating new processor '{}' of type '{}'", name, type);
     }
 
 
 
     @SuppressWarnings("unchecked")
-    void init(TcTmService tctms, Map<String, Object> config) throws YProcessorException, ConfigurationException {
+    void init(TcTmService tctms, Map<String, Object> config) throws ProcessorException, ConfigurationException {
         xtcedb = XtceDbFactory.getInstance(yamcsInstance);
 
         timeService = YamcsServer.getTimeService(yamcsInstance);
         Map<String, Object> tmProcessorConfig = null;
-        
+
         synchronized(instances) {
-            if(instances.containsKey(key(yamcsInstance,name))) throw new YProcessorException("A processor named '"+name+"' already exists in instance "+yamcsInstance);
+            if(instances.containsKey(key(yamcsInstance,name))) throw new ProcessorException("A processor named '"+name+"' already exists in instance "+yamcsInstance);
             if(config!=null) {
                 for(String c: config.keySet()) {
                     if(CONFIG_KEY_alarm.equals(c)) {
@@ -186,15 +190,15 @@ public class YProcessor extends AbstractService {
                 pprov.init(this);
                 parameterRequestManager.addParameterProvider(pprov);
             }
-            
-            
+
+
             //QUICK HACK  TODO
             if((tmPacketProvider!=null) && (tmPacketProvider instanceof ParameterProvider) ) {
                 parameterRequestManager.addParameterProvider((ParameterProvider)tmPacketProvider);
             }
 
             parameterRequestManager.init();
-            
+
 
             if(commandReleaser!=null) {
                 try {
@@ -207,7 +211,7 @@ public class YProcessor extends AbstractService {
                 commandHistoryRequestManager = new CommandHistoryRequestManager(this);
                 commandHistoryProvider = new StreamCommandHistoryProvider();
                 commandHistoryProvider.setCommandHistoryRequestManager(commandHistoryRequestManager);
-                
+
             } else {
                 commandingManager=null;
                 //QUICK HACK  TODO
@@ -252,7 +256,7 @@ public class YProcessor extends AbstractService {
         boolean enabled = false;
         boolean cacheAll = false;
         long duration = 10*60*1000;
-        
+
         Object v = cacheConfig.get("enabled");
         if(v!=null) {
             if(!(v instanceof Boolean)) {
@@ -268,7 +272,7 @@ public class YProcessor extends AbstractService {
             }
             return;
         }
-        
+
         v = cacheConfig.get("cacheAll");
         if(v!=null) {
             if(!(v instanceof Boolean)) {
@@ -279,7 +283,7 @@ public class YProcessor extends AbstractService {
         }
         duration = 1000L * YConfiguration.getInt(cacheConfig, "duration", 600);
         int maxNumEntries = YConfiguration.getInt(cacheConfig, "maxNumEntries", 4096);
-        
+
         parameterCacheConfig = new ParameterCacheConfig(enabled, cacheAll, duration, maxNumEntries);
     }
 
@@ -310,44 +314,52 @@ public class YProcessor extends AbstractService {
      */
     @Override
     public void doStart() {
-        if(tmPacketProvider!=null) {
-            tmPacketProvider.startAsync();
-        }
-        if(tmProcessor!=null) {
-            tmProcessor.startAsync();
-        }
-        if(commandReleaser!=null) {
-            commandReleaser.startAsync();
-            commandReleaser.awaitRunning();
-            commandingManager.startAsync();
-            commandingManager.awaitRunning();
-            CommandQueueManager cqm = commandingManager.getCommandQueueManager();
-            cqm.startAsync();
-            cqm.awaitRunning();
-        }
-        
-        if(commandHistoryRequestManager!=null) {
-            commandHistoryRequestManager.startAsync();
-            startIfNecessary(commandHistoryProvider);
-            
-            commandHistoryRequestManager.awaitRunning();
-            commandHistoryProvider.awaitRunning();
-        }
-        
-        
-        for(ParameterProvider pprov: parameterProviders) {
-            pprov.startAsync();
-        }
-        parameterRequestManager.start();
+        try {
+            if(tmPacketProvider!=null) {
+                tmPacketProvider.startAsync();
+            }
+            if(tmProcessor!=null) {
+                tmProcessor.startAsync();
+            }
+            if(commandReleaser!=null) {
+                commandReleaser.startAsync();
+                commandReleaser.awaitRunning();
+                commandingManager.startAsync();
+                commandingManager.awaitRunning();
+                CommandQueueManager cqm = commandingManager.getCommandQueueManager();
+                cqm.startAsync();
+                cqm.awaitRunning();
+            }
 
-        if(tmPacketProvider!=null) {
-            tmPacketProvider.awaitRunning();
+            if(commandHistoryRequestManager!=null) {
+                commandHistoryRequestManager.startAsync();
+                startIfNecessary(commandHistoryProvider);
+
+                commandHistoryRequestManager.awaitRunning();
+                commandHistoryProvider.awaitRunning();
+            }
+
+
+            for(ParameterProvider pprov: parameterProviders) {
+                pprov.startAsync();
+            }
+
+
+
+            parameterRequestManager.start();
+            if(tmPacketProvider!=null) {
+                tmPacketProvider.awaitRunning();
+            }
+            if(tmProcessor!=null) {
+                tmProcessor.awaitRunning();
+            }
+            notifyStarted();
+            
+        } catch (IllegalStateException e) {
+            notifyFailed(e.getCause());
+        } catch (Exception e) {
+            notifyFailed(e);
         }
-        if(tmProcessor!=null) {
-            tmProcessor.awaitRunning();
-        }
-        
-        notifyStarted();
         propagateProcessorStateChange();        
     }
 
@@ -422,17 +434,35 @@ public class YProcessor extends AbstractService {
     }
 
     public static YProcessor getInstance(String yamcsInstance, String name) {
-        return instances.get(key(yamcsInstance,name));
+        return instances.get(key(yamcsInstance, name));
+    }
+
+    /**
+     * Returns the first register processor for the given instance or null if there is no processor registered.
+     * 
+     * @param yamcsInstance - instance name for which the processor has to be returned.
+     * @return the first registered processor for the given instance 
+     */
+    public static YProcessor getFirstProcessor(String yamcsInstance) {
+        for(String k: instances.keySet()) {
+            if(k.startsWith(yamcsInstance+".")) {
+                return instances.get(k);
+            }
+        }
+        return null;
     }
     /**
      * Increase with one the number of connected clients to the named processor and return the processor.
+     * 
+     * @param yamcsInstance 
      * @param name
+     * @param s 
      * @return the processor with the given name
-     * @throws YProcessorException
+     * @throws ProcessorException
      */
-    public static YProcessor connect(String yamcsInstance, String name, YProcessorClient s) throws YProcessorException {
-        YProcessor ds=instances.get(key(yamcsInstance,name));
-        if(ds==null) throw new YProcessorException("There is no processor named '"+name+"'");
+    public static YProcessor connect(String yamcsInstance, String name, ProcessorClient s) throws ProcessorException {
+        YProcessor ds = instances.get(key(yamcsInstance, name));
+        if(ds==null) throw new ProcessorException("There is no processor named '"+name+"'");
         ds.connect(s);
         return ds;
     }
@@ -440,9 +470,9 @@ public class YProcessor extends AbstractService {
     /**
      * Increase with one the number of connected clients
      */
-    public synchronized void connect(YProcessorClient s) throws YProcessorException {
+    public synchronized void connect(ProcessorClient s) throws ProcessorException {
         log.debug("Session "+name+" has one more user: " +s);
-        if(quitting) throw new YProcessorException("This processor has been closed");
+        if(quitting) throw new ProcessorException("This processor has been closed");
         connectedClients.add(s);
     }
 
@@ -450,7 +480,7 @@ public class YProcessor extends AbstractService {
      * Disconnects a client from this processor. If the processor has no more clients, quit.
      *
      */
-    public void disconnect(YProcessorClient s) {
+    public void disconnect(ProcessorClient s) {
         if(quitting) return;
         boolean hasToQuit=false;
         synchronized(this) {
@@ -491,27 +521,38 @@ public class YProcessor extends AbstractService {
         if(quitting)return;
         log.info("Processor "+name+" quitting");
         quitting=true;
+        
         instances.remove(key(yamcsInstance,name));
+        
         for(ParameterProvider p:parameterProviders) {
             p.stopAsync();
         }
         if(commandReleaser!=null) commandReleaser.stopAsync();
+        if(tmProcessor!=null) {
+            tmProcessor.stopAsync();
+        }
+        if(tmPacketProvider!=null) {
+            tmPacketProvider.stopAsync();
+        }
+        
+        
         log.info("Processor "+name+" is out of business");
-        listeners.forEach(l -> l.yProcessorClosed(this));
+        listeners.forEach(l -> l.processorClosed(this));
         synchronized(this) {
-            for(YProcessorClient s:connectedClients) {
+            for(ProcessorClient s:connectedClients) {
                 s.yProcessorQuit();
             }
         }
-        if(getState() == ServiceState.RUNNING || getState() == ServiceState.STOPPING)
+        if(getState() == ServiceState.RUNNING || getState() == ServiceState.STOPPING) {
             notifyStopped();
+        }
     }
 
 
-    public static void addProcessorListener(YProcessorListener processorListener) {
+    public static void addProcessorListener(ProcessorListener processorListener) {
         listeners.add(processorListener);
     }
-    public static void removeProcessorListener(YProcessorListener processorListener) {
+    public static void removeProcessorListener(ProcessorListener processorListener) {
         listeners.remove(processorListener);
     }
 
@@ -627,11 +668,21 @@ public class YProcessor extends AbstractService {
         propagateProcessorStateChange();        
     }
 
-
+    /**
+     * returns a list of all processors names
+     * 
+     * @return all processors names as a list of <instance>.<processorName> 
+     */
+    public static List<String> getAllProcessors() {
+        List<String> l = new ArrayList<String>(instances.size());
+        l.addAll(instances.keySet());
+        return l;
+    }
+    
     public ParameterCacheConfig getPameterCacheConfig() {
         return parameterCacheConfig;
     }
-    
+
     public ParameterCache getParameterCache() {
         return parameterRequestManager.getParameterCache();
     }

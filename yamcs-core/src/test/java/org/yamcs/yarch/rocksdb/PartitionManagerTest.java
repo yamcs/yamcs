@@ -19,6 +19,7 @@ import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.TableDefinition.PartitionStorage;
 
 import com.google.common.io.Files;
 
@@ -115,8 +116,9 @@ public class PartitionManagerTest {
     @Test
     public void readFromDisk() throws Exception {    	
 	TableDefinition tblDef= getTableDefTimeAndValue();
-
-	String tmpdir=Files.createTempDir().getAbsolutePath();
+	tblDef.setPartitionStorage(PartitionStorage.COLUMN_FAMILY);
+	
+	String tmpdir = Files.createTempDir().getAbsolutePath();
 	tblDef.setDataDir(tmpdir);
 
 	new File(tmpdir+"/2011/001").mkdirs();
@@ -125,18 +127,19 @@ public class PartitionManagerTest {
 
 	YarchDatabase ydb = YarchDatabase.getInstance("test");
 	RDBFactory rdbFactory = RDBFactory.getInstance("test");
-	YRDB rdb = rdbFactory.getRdb(tmpdir+"/2011/001/tbltest", new ColumnValueSerializer(tblDef), false);
-	rdb.createColumnFamily((int)1);
+	ColumnValueSerializer cvs =  new ColumnValueSerializer(tblDef);
+	YRDB rdb = rdbFactory.getRdb(tmpdir+"/2011/001/tbltest",false);
+	rdb.createColumnFamily(cvs.objectToByteArray((int)1));
 	rdbFactory.dispose(rdb);        
 
-	rdb = rdbFactory.getRdb(tmpdir+"/2011/060/tbltest", new ColumnValueSerializer(tblDef), false);
-	rdb.createColumnFamily((int)1);
-	rdb.createColumnFamily((int)3);
+	rdb = rdbFactory.getRdb(tmpdir+"/2011/060/tbltest",false);
+	rdb.createColumnFamily(cvs.objectToByteArray((int)1));
+	rdb.createColumnFamily(cvs.objectToByteArray((int)3));
 	rdbFactory.dispose(rdb);
 
-	rdb = rdbFactory.getRdb(tmpdir+"/2011/032/tbltest", new ColumnValueSerializer(tblDef), false);
-	rdb.createColumnFamily((int)2);
-	rdb.createColumnFamily((int)3);
+	rdb = rdbFactory.getRdb(tmpdir+"/2011/032/tbltest",false);
+	rdb.createColumnFamily(cvs.objectToByteArray((int)2));
+	rdb.createColumnFamily(cvs.objectToByteArray((int)3));
 	rdbFactory.dispose(rdb);
 	rdbFactory.shutdown();
 
@@ -168,22 +171,24 @@ public class PartitionManagerTest {
     @Test
     public void readFromDiskValue() throws Exception {       
         TableDefinition tblDef= getTableDefValue();
-
+        tblDef.setPartitionStorage(PartitionStorage.COLUMN_FAMILY);
+        
         String tmpdir=Files.createTempDir().getAbsolutePath();
         tblDef.setDataDir(tmpdir);
 
 
         YarchDatabase ydb = YarchDatabase.getInstance("test");
         RDBFactory rdbFactory = RDBFactory.getInstance("test");
-        YRDB rdb = rdbFactory.getRdb(tmpdir+"/tbltest", new ColumnValueSerializer(tblDef), false);
-        rdb.createColumnFamily((int)1);
-        rdb.createColumnFamily((int)3);
-        rdb.createColumnFamily((int)2);
+        ColumnValueSerializer cvs =  new ColumnValueSerializer(tblDef);
+        YRDB rdb = rdbFactory.getRdb(tmpdir+"/tbltest", false);
+        rdb.createColumnFamily(cvs.objectToByteArray((int)1));
+        rdb.createColumnFamily(cvs.objectToByteArray((int)3));
+        rdb.createColumnFamily(cvs.objectToByteArray((int)2));
         
         rdbFactory.dispose(rdb);
         rdbFactory.shutdown();
 
-        RdbPartitionManager pm=new RdbPartitionManager(ydb, tblDef);
+        RdbPartitionManager pm = new RdbPartitionManager(ydb, tblDef);
         pm.readPartitionsFromDisk();
         Collection<Partition> partitions = pm.getPartitions();
         assertEquals(3, partitions.size());
@@ -220,16 +225,17 @@ public class PartitionManagerTest {
         new File(tmpdir+"/2011/001").mkdirs();
         new File(tmpdir+"/2011/032").mkdirs();
         new File(tmpdir+"/2011/060").mkdirs();
-
+        ColumnValueSerializer cvs =  new ColumnValueSerializer(tblDef);
+        
         YarchDatabase ydb = YarchDatabase.getInstance("test");
         RDBFactory rdbFactory = RDBFactory.getInstance("test");
-        YRDB rdb = rdbFactory.getRdb(tmpdir+"/2011/001/tbltest", new ColumnValueSerializer(tblDef), false);
+        YRDB rdb = rdbFactory.getRdb(tmpdir+"/2011/001/tbltest", false);
         rdbFactory.dispose(rdb);        
 
-        rdb = rdbFactory.getRdb(tmpdir+"/2011/060/tbltest", new ColumnValueSerializer(tblDef), false);       
+        rdb = rdbFactory.getRdb(tmpdir+"/2011/060/tbltest", false);       
         rdbFactory.dispose(rdb);
 
-        rdb = rdbFactory.getRdb(tmpdir+"/2011/032/tbltest", new ColumnValueSerializer(tblDef), false);
+        rdb = rdbFactory.getRdb(tmpdir+"/2011/032/tbltest", false);
         rdbFactory.dispose(rdb);
         rdbFactory.shutdown();
 
@@ -270,7 +276,7 @@ public class PartitionManagerTest {
 
         YarchDatabase ydb = YarchDatabase.getInstance("test");
         RDBFactory rdbFactory = RDBFactory.getInstance("test");
-        YRDB rdb = rdbFactory.getRdb(tmpdir+"/tblnp", new ColumnValueSerializer(tblDef), false);
+        YRDB rdb = rdbFactory.getRdb(tmpdir+"/tblnp", false);
         rdbFactory.dispose(rdb);        
     
         rdbFactory.shutdown();

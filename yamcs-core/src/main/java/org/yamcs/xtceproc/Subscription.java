@@ -156,7 +156,7 @@ public class Subscription {
    
     /**
      * Get the set of all containers subscribed
-     * @return
+     * @return set of containers subscribed
      */
     public Collection<SequenceContainer> getContainers() {
         Set<SequenceContainer> r = new HashSet<SequenceContainer>();
@@ -164,6 +164,7 @@ public class Subscription {
         for(HashSet<SequenceContainer> hs:container2InheritingContainerMap.values()) {
             r.addAll(hs);
         }
+        r.addAll(container2EntryMap.keySet());
         return r;
     }
 

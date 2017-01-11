@@ -59,7 +59,7 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
         try {         
             Iterator<List<Partition>> partitionIterator;
 
-            PartitioningSpec pspec=tableDefinition.getPartitioningSpec();
+            PartitioningSpec pspec = tableDefinition.getPartitioningSpec();
             if(pspec.valueColumn!=null) {
                 if((ascending) && (rangeIndexFilter!=null) && (rangeIndexFilter.keyStart!=null)) {
                     long start=(Long)rangeIndexFilter.keyStart;
@@ -84,7 +84,7 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
             
             while((!quit) && partitionIterator.hasNext()) {
                 List<Partition> partitions=partitionIterator.next();
-                boolean endReached=runPartitions(partitions, rangeIndexFilter);
+                boolean endReached = runPartitions(partitions, rangeIndexFilter);
                 if(endReached) break;
             }            
         } catch (Exception e) {
@@ -103,38 +103,34 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
      */
     protected abstract boolean runPartitions(List<Partition> partitions, IndexFilter range) throws IOException;
 
-
-    protected boolean emitIfNotPastStop (RawTuple rt,  byte[] rangeEnd, boolean strictEnd) {
+    protected boolean emitIfNotPastStop (byte[] key, byte[] value,  byte[] rangeEnd, boolean strictEnd) {
         boolean emit=true;
         if(rangeEnd!=null) { //check if we have reached the end
-            int c=compare(rt.key, rangeEnd);
+            int c=compare(key, rangeEnd);
             if(c<0) emit=true;
             else if((c==0) && (!strictEnd)) emit=true;
             else emit=false;
         }
-        lastEmitted=dataToTuple(rt.key, rt.value);
+        lastEmitted = dataToTuple(key, value);
         if(emit) emitTuple(lastEmitted);
         return emit;
     }
 
-    protected boolean emitIfNotPastStart (RawTuple rt,  byte[] rangeStart, boolean strictStart) {
+    protected boolean emitIfNotPastStart (byte[] key, byte[]value,  byte[] rangeStart, boolean strictStart) {
         boolean emit=true;
         if(rangeStart!=null) { //check if we have reached the start
-            int c=compare(rt.key, rangeStart);
+            int c = compare(key, rangeStart);
             if(c>0) emit=true;
             else if((c==0) && (!strictStart)) emit=true;
             else emit=false;
         }
-        lastEmitted=dataToTuple(rt.key, rt.value);
+        lastEmitted = dataToTuple(key, value);
         if(emit) emitTuple(lastEmitted);
         return emit;
     }
-
-    private Tuple dataToTuple(byte[] k, byte[] v) {
-        return tableDefinition.deserialize(k,v); //TODO adapt to the stream schema
-
-    }
-
+    
+    
+    
     @SuppressWarnings("unchecked")
     @Override
     public boolean addRelOpFilter(ColumnExpression cexpr, RelOp relOp, Object value) throws StreamSqlException {
@@ -217,7 +213,9 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
         }
         return values;
     }
-
+    protected Tuple dataToTuple(byte[] k, byte[] v) {
+        return tableDefinition.deserialize(k, v); //TODO adapt to the stream schema
+    }
     /**
      * currently adds only filters on value based partitions
      */

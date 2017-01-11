@@ -1,5 +1,8 @@
 package org.yamcs.yarch;
 
+import java.util.Iterator;
+
+import org.yamcs.TimeInterval;
 import org.yamcs.archive.TagDb;
 import org.yamcs.yarch.TableWriter.InsertMode;
 
@@ -7,8 +10,9 @@ public interface StorageEngine {
     /**
      *  Create a new table based on definition.
      * @param def
+     * @throws YarchException 
      */
-    public void createTable(TableDefinition def);
+    public void createTable(TableDefinition def) throws YarchException;
 
     /**
      * Drop the table (removing all files)
@@ -43,13 +47,8 @@ public interface StorageEngine {
      */
     public AbstractStream newTableReaderStream(TableDefinition tbl, boolean ascending, boolean follow);
 
-    /**
-     * gets the histogram database
-     * @param tbl
-     * @return
-     * @throws YarchException
-     */
-    public HistogramDb getHistogramDb(TableDefinition tbl) throws YarchException;
 
     public TagDb getTagDb() throws YarchException;
+
+    public Iterator<HistogramRecord> getHistogramIterator(TableDefinition tblDef, String columnName, TimeInterval interval, long mergeTime) throws YarchException;
 }

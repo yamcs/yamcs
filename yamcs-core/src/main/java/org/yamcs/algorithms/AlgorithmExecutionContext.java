@@ -29,7 +29,7 @@ public class AlgorithmExecutionContext {
     final AlgorithmExecutionContext parent;
     
     //all the algorithms that run in this context
-    HashMap<Algorithm,AlgorithmEngine> engineByAlgorithm=new HashMap<Algorithm,AlgorithmEngine>();
+    HashMap<Algorithm,AlgorithmExecutor> engineByAlgorithm=new HashMap<Algorithm,AlgorithmExecutor>();
     //name used for debugging
     final String contextName;
     
@@ -85,12 +85,12 @@ public class AlgorithmExecutionContext {
         return engineByAlgorithm.containsKey(algo);
     }
 
-    public AlgorithmEngine getEngine(Algorithm algo) {
+    public AlgorithmExecutor getExecutor(Algorithm algo) {
         return engineByAlgorithm.get(algo);
     }
 
 
-    public void addAlgorithm(Algorithm algorithm, AlgorithmEngine engine) {
+    public void addAlgorithm(Algorithm algorithm, AlgorithmExecutor engine) {
         engineByAlgorithm.put(algorithm, engine);
     }
     
@@ -99,7 +99,7 @@ public class AlgorithmExecutionContext {
         return engineByAlgorithm.keySet();
     }
 
-    public AlgorithmEngine remove(Algorithm algo) {
+    public AlgorithmExecutor remove(Algorithm algo) {
         return engineByAlgorithm.remove(algo);
     }
 }

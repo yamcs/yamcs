@@ -36,9 +36,7 @@ message WebSocketServerMessage {
     optional bytes data = 5; // Structured exception data
   }
 
-  // Currently hard-coding the set of available data types for easier client processing, but
-  // could in the future just make it bytes just like with the requests.
-  // oh, and protobuf3 plans to support an Any-type.
+  // Could use protobuf3 Any-type some day.
   message WebSocketSubscriptionData {
     optional uint32 sequenceNumber = 1;
     optional yamcs.ProtoDataType type = 2;
@@ -54,12 +52,21 @@ message WebSocketServerMessage {
     optional yamcsManagement.LinkEvent linkEvent = 12;
     optional commanding.CommandQueueInfo commandQueueInfo = 13;
     optional commanding.CommandQueueEvent commandQueueEvent = 14;
+    optional yamcs.TmPacketData tmPacket = 15;
+    
+    optional WebSocketExtensionData extensionData = 100;
   }
 
   optional MessageType type = 1;
   optional WebSocketReplyData reply = 2;
   optional WebSocketExceptionData exception = 3;
   optional WebSocketSubscriptionData data = 4;
+}
+
+// Escape hatch for providing non-core Yamcs data over web socket
+message WebSocketExtensionData {
+  optional uint32 type = 1;
+  optional bytes data = 2;
 }
 
 // Generic holder for an exception

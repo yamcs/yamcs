@@ -77,6 +77,6 @@ public class WebSocketRequest {
 
     @Override
     public String toString() {
-        return getResource() + "/" + getOperation() + ": " + getRequestData();
+        return getResource() + "/" + getOperation() + ((requestData==null)? "": ": " + getRequestData());
     }
 }

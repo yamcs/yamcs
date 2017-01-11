@@ -23,10 +23,10 @@ public class ProcessorFactory {
     static Logger log=LoggerFactory.getLogger(YProcessor.class.getName());
 
     /**
-     * Create a channel with the give name, type, creator and spec
+     * Create a processor with the give name, type, creator and spec
      *
      *  type is used to load the tm, parameter and command classes as defined in yprocessor.yaml
-     *  spec if not null is passed as an extra argument to those classes - it is used for example when creating replay channels to pass on the data that has to be replayed.
+     *  spec if not null is passed as an extra argument to those classes - it is used for example when creating replay processors to pass on the data that has to be replayed.
      *       should probably be changed from string to some sort of object.
      *
      * @param yamcsInstance
@@ -34,17 +34,21 @@ public class ProcessorFactory {
      * @param type
      * @param creator
      * @param spec
-     * @return
-     * @throws YProcessorException
+     * @return a new processor
+     * @throws ProcessorException
      * @throws ConfigurationException
      */
-    static public YProcessor create(String yamcsInstance, String name, String type, String creator, Object spec) throws YProcessorException,  ConfigurationException {
+    static public YProcessor create(String yamcsInstance, String name, String type, String creator, Object spec) throws ProcessorException,  ConfigurationException {
         boolean initialized = false;
         TcTmService tctms=null;
-        Map<String,Object> channelConfig = null;
+        Map<String,Object> processorConfig = null;
 
         YConfiguration conf=YConfiguration.getConfiguration("yprocessor");
         try {
+            if(!conf.containsKey(type)) {
+                throw new ConfigurationException("No processor type '"+type+"' found in yprocessor.yaml");
+            }
+            
             if(conf.containsKey(type,"tmtcpp")) {
                 Map<String, Object> m = (Map<String, Object>) conf.getMap(type, "tmtcpp");
                 String clsName = YConfiguration.getString(m, "class");
@@ -61,8 +65,6 @@ public class ProcessorFactory {
                     Object tmArgs = m.get("args");
                     tm = loadObject(tmClass, yamcsInstance, tmArgs, spec);
                     initialized = true;
-                } else {//TODO: it should work without telemetryProvider (currently causes a NPE in Channel.java)
-                    throw new ConfigurationException("No telemetryProvider specified for channel of type '"+type+"' in yprocessor.yaml");
                 }
 
                 if(conf.containsKey(type,"parameterProviders")) {
@@ -83,7 +85,7 @@ public class ProcessorFactory {
                     initialized = true;
                 }
                 if(conf.containsKey(type, "config")) {
-                    channelConfig = (Map<String, Object>) conf.getMap(type, "config");
+                    processorConfig = (Map<String, Object>) conf.getMap(type, "config");
                 }
                 tctms=new SimpleTcTmService(tm, pps, tc);
                 if(!initialized) {
@@ -94,7 +96,7 @@ public class ProcessorFactory {
             throw new ConfigurationException("Cannot load service",e);
         }
 
-        return create(yamcsInstance, name, type, tctms, creator, channelConfig);
+        return create(yamcsInstance, name, type, tctms, creator, processorConfig);
     }
     /**
      * loads objects but passes only non null parameters
@@ -112,14 +114,24 @@ public class ProcessorFactory {
         return new YObjectLoader<T>().loadObject(className, newargs.toArray());
     }
 
-    static public YProcessor create(String instance, String name, String type, TcTmService tctms, String creator) throws YProcessorException, ConfigurationException {
+    static public YProcessor create(String instance, String name, String type, TcTmService tctms, String creator) throws ProcessorException, ConfigurationException {
         return create(instance, name, type, tctms, creator, null);
     }
     /**
      *  Create a Processor by specifying the service.
+     *  
      *  The type is not used in this case, except for showing it in the yamcs monitor.
+     * @param instance 
+     * @param name 
+     * @param type 
+     * @param tctms 
+     * @param creator 
+     * @param config 
+     * @return 
+     * @throws ProcessorException 
+     * @throws ConfigurationException 
      **/
-    static public YProcessor create(String instance, String name, String type, TcTmService tctms, String creator, Map<String, Object> config) throws YProcessorException, ConfigurationException {
+    static public YProcessor create(String instance, String name, String type, TcTmService tctms, String creator, Map<String, Object> config) throws ProcessorException, ConfigurationException {
         YProcessor yproc = new YProcessor(instance, name, type, creator);
 
         yproc.init(tctms, config);

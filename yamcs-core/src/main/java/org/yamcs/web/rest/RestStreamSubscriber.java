@@ -45,10 +45,6 @@ public abstract class RestStreamSubscriber implements StreamSubscriber {
         }
     }
     
-    @Override
-    public void streamClosed(Stream stream) {
-        // NOP
-    }
-    
     public abstract void processTuple(Stream stream, Tuple tuple);
+
 }

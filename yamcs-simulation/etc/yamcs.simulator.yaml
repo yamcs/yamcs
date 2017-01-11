@@ -1,4 +1,3 @@
-############################################ testinst configuration  ############################################################################
 services:
     #loads all the tm providers specified in the tmproviders section below. Creates all the necessary streams
     - org.yamcs.tctm.DataLinkInitialiser
@@ -11,24 +10,19 @@ services:
     - org.yamcs.archive.IndexServer
     - org.yamcs.parameter.SystemParametersCollector
     # create a realtime channel
-    - class: org.yamcs.YProcessorCreatorService
+    - class: org.yamcs.ProcessorCreatorService
       args: 
          name: "realtime"
          type: "realtime"
 
     #this one sets up the recording of the command history 
-    - org.yamcs.cmdhistory.CommandHistoryRecorder
-    - class: org.yamcs.hornetq.HornetQTmService
-      args: [tm_realtime, tm_dump]
-
-    - org.yamcs.web.YamcsWebService
+    - org.yamcs.archive.CommandHistoryRecorder
     - org.yamcs.AlarmReporter
     - class: org.yamcs.parameterarchive.ParameterArchive
       args:
          realtimeFiller: 
              enabled: true
              flushInterval: 60
-    - org.yamcs.hornetq.HornetQReplayServer
 
 #name of the class that is used for the TM index. If not specified, org.yamcs.archive.GenericCccsdsTmIndex is used
 #tmIndexer: 
@@ -55,7 +49,7 @@ ppDataLinks:
 
 # config the tc uplinkers
 tcDataLinks: 
-    - class: org.yamcs.tctm.TcpTcUplinker
+    - class: org.yamcs.tctm.TcpTcDataLink
       spec: local
       stream: tc_realtime
 

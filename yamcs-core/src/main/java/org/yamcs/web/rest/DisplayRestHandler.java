@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
-import org.yamcs.web.StaticFileHandler;
+import org.yamcs.web.WebConfig;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -32,7 +32,7 @@ public class DisplayRestHandler extends RestHandler {
     private final static Logger log=LoggerFactory.getLogger(DisplayRestHandler.class);
 
     @Route(path="/api/displays/:instance", method="GET")
-    public ChannelFuture listDisplays(RestRequest req) throws HttpException {
+    public void listDisplays(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         ByteBuf cb=req.getChannelHandlerContext().alloc().buffer(1024);
         ByteBufOutputStream cbos=new ByteBufOutputStream(cb);
@@ -41,7 +41,7 @@ public class DisplayRestHandler extends RestHandler {
             json.writeStartArray();
             
             File displayDir = null;
-            for (String webRoot : StaticFileHandler.WEB_Roots) {
+            for (String webRoot : WebConfig.getInstance().getWebRoots()) {
                 File dir = new File(webRoot + File.separator + instance + File.separator + "displays");
                 if (dir.exists()) {
                     displayDir = dir;
@@ -52,7 +52,7 @@ public class DisplayRestHandler extends RestHandler {
                 writeFilesFromDir(json, new Path(), displayDir);
             }
             json.close();
-            return sendOK(req, MediaType.JSON, cb);
+            completeOK(req, MediaType.JSON, cb);
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }

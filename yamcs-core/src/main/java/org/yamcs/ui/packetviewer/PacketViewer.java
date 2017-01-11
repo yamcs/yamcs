@@ -1,6 +1,5 @@
 package org.yamcs.ui.packetviewer;
 
-import static org.yamcs.api.Protocol.decode;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
@@ -12,6 +11,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -64,33 +64,27 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.MessageHandler;
-import org.hornetq.utils.HornetQBufferInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
-import org.yamcs.api.ConnectionListener;
-import org.yamcs.api.ConnectionParameters;
-import org.yamcs.api.Protocol;
-import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.YamcsClient;
-import org.yamcs.api.YamcsConnectData;
-import org.yamcs.api.YamcsConnector;
+import org.yamcs.api.MediaType;
+import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.api.rest.RestClient;
+import org.yamcs.api.ws.ConnectionListener;
+import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 import org.yamcs.ui.PrefsObject;
+import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.web.websocket.CommandQueueResource;
+import org.yamcs.web.websocket.PacketResource;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.DataEncoding;
@@ -105,6 +99,8 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
 import com.google.protobuf.ByteString;
+
+import io.netty.handler.codec.http.HttpMethod;
 
 public class PacketViewer extends JFrame implements ActionListener,
 TreeSelectionListener, ParameterRequestManager, ConnectionListener {
@@ -136,12 +132,11 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
     static Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
     static final SimpleDateFormat dateTimeFormatFine = new SimpleDateFormat("yyyy.MM.dd/DDD HH:mm:ss.SSS");
     YamcsConnector yconnector;
-    YamcsClient yclient;
     ConnectDialog connectDialog;
     GoToPacketDialog goToPacketDialog;
     Preferences uiPrefs;
 
-    ConnectionParameters connectionParams;
+    YamcsConnectionProperties connectionParams;
     //used for decoding full packets
     XtceTmProcessor tmProcessor;
 
@@ -429,11 +424,15 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
     }
 
     void showMessage(String msg) {
-        JOptionPane.showMessageDialog(this, msg, getTitle(), JOptionPane.PLAIN_MESSAGE);
+        SwingUtilities.invokeLater(() -> {
+            JOptionPane.showMessageDialog(this, msg, getTitle(), JOptionPane.PLAIN_MESSAGE);
+        });
     }
 
     void showError(String msg) {
-        JOptionPane.showMessageDialog(this, msg, getTitle(), JOptionPane.ERROR_MESSAGE);
+        SwingUtilities.invokeLater(() -> {
+            JOptionPane.showMessageDialog(this, msg, getTitle(), JOptionPane.ERROR_MESSAGE);
+        });
     }
 
 
@@ -459,7 +458,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
             }
         } else if (cmd.equals("connect-yamcs")) {
             if(connectDialog==null) {
-                connectDialog=new ConnectDialog(this, authenticationEnabled, true, true, true);
+                connectDialog = new ConnectDialog(this, authenticationEnabled, true, true, true);
             }
             int ret = connectDialog.showDialog();
             if(ret==ConnectDialog.APPROVE_OPTION) {
@@ -506,7 +505,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         if(tmProcessor!=null) tmProcessor.stopAsync();
         log("Loading local XTCE db "+configName);
         try {
-            xtcedb=XtceDbFactory.createInstance(configName);
+            xtcedb=XtceDbFactory.createInstanceByConfig(configName);
         } catch (ConfigurationException e) {
             log.error(e.toString(), e);
             showError(e.getMessage());
@@ -532,19 +531,18 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
 
     private boolean loadRemoteXtcedb(String configName) {
         if(tmProcessor!=null) tmProcessor.stopAsync();
-        log("Loading remote XTCE db "+configName);
-        MissionDatabaseRequest mdr = MissionDatabaseRequest.newBuilder().setDbConfigName(configName).build();
+        log("Loading remote XTCE db for yamcs instance "+connectionParams.getInstance());
+        RestClient restClient = new RestClient(connectionParams);
         try {
-            YamcsClient yc=yconnector.getSession().newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
-            yc.executeRpc(Protocol.YAMCS_SERVER_CONTROL_ADDRESS, "getMissionDatabase", mdr, null);
-            ClientMessage msg=yc.dataConsumer.receive(5000);
-
-            ObjectInputStream ois=new ObjectInputStream(new HornetQBufferInputStream(msg.getBodyBuffer()));
+            restClient.setAcceptMediaType(MediaType.JAVA_SERIALIZED_OBJECT);
+            restClient.setMaxResponseLength(10*1024*1024);//TODO make this configurable
+            byte[] serializedMdb = restClient.doRequest("/mdb/"+connectionParams.getInstance(), HttpMethod.GET).get();
+            ObjectInputStream ois=new ObjectInputStream(new ByteArrayInputStream(serializedMdb));
             Object o=ois.readObject();
             xtcedb=(XtceDb) o;
-            yc.close();
             ois.close();
         } catch (Exception e) {
+            e.printStackTrace();
             showError(e.getMessage());
             return false;
         }
@@ -745,10 +743,10 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
     }
 
 
-    void connectYamcs(YamcsConnectData ycd) {
+    void connectYamcs(YamcsConnectionProperties ycd) {
         disconnect();
         connectionParams = ycd;
-        yconnector = new YamcsConnector();
+        yconnector = new YamcsConnector("PacketViewer");
         yconnector.addConnectionListener(this);
         yconnector.connect(ycd);
         updateTitle();
@@ -908,7 +906,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
 
     @Override
     public void connected(String url) {
-        YamcsConnectData ycd=yconnector.getConnectionParams();
+        connectionParams = yconnector.getConnectionParams();
         try {
             log("connected to "+url);
             if(connectDialog!=null) {
@@ -918,45 +916,27 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                     if(!loadLocalXtcedb(connectDialog.getLocalMdbConfig())) return;
                 }
             } else {
-                YamcsClient yc=yconnector.getSession().newClientBuilder().setRpc(true).build();
-                YamcsInstances ainst=(YamcsInstances) yc.executeRpc(Protocol.YAMCS_SERVER_CONTROL_ADDRESS, "getYamcsInstances", null, YamcsInstances.newBuilder());
-                yc.close();
-                for(YamcsInstance yi:ainst.getInstanceList()) {
-                    if(ycd.instance.equals(yi.getName())) {
+                RestClient restclient = new RestClient(connectionParams);
+                List<YamcsInstance> list = restclient.blockingGetYamcsInstances();
+
+                for(YamcsInstance yi:list) {
+                    if(connectionParams.getInstance().equals(yi.getName())) {
                         String mdbConfig = yi.getMissionDatabase().getConfigName();
                         if(!loadRemoteXtcedb(mdbConfig)) return;
                     }
                 }
 
             }
-            SimpleString dataAddress;
-            if(streamName==null || streamName.isEmpty()) {
-                dataAddress = Protocol.getPacketRealtimeAddress(ycd.instance);
-            } else {
-                dataAddress = Protocol.getPacketAddress(ycd.instance, streamName);
-            }
-            log("subscribing to "+dataAddress);
-            yclient=yconnector.getSession().newClientBuilder().setRpc(false).
-                    setDataConsumer(dataAddress, null).build();
-
-
-
-            yclient.dataConsumer.setMessageHandler(new MessageHandler() {
-                @Override
-                public void onMessage(ClientMessage msg) {
-                    TmPacketData data;
-                    try {
-                        data = (TmPacketData)decode(msg, TmPacketData.newBuilder());
-                        packetsTable.packetReceived(data);
-                    } catch (YamcsApiException e) {
-                        log(e.toString());
-                        e.printStackTrace();
+            WebSocketRequest wsr = new WebSocketRequest(PacketResource.RESOURCE_NAME, CommandQueueResource.OP_subscribe+" "+streamName);
+            yconnector.performSubscription(wsr,
+                data -> {
+                    if(data.hasTmPacket()) {
+                        TmPacketData tm = data.getTmPacket();
+                        packetsTable.packetReceived(tm);
                     }
-                }
-            });
-        } catch (HornetQException e) {
-            log(e.toString());
-            e.printStackTrace();
+                }, e-> {
+                    showError("Error subscribing to "+streamName+": "+e.getMessage());
+                });
         } catch(Exception e) {
             log(e.toString());
             e.printStackTrace();
@@ -1044,7 +1024,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
             System.err.println();
             System.err.println("    -s  name  Name of the stream to connect to (if not specified, it connects to tm_realtime");
             System.err.println("EXAMPLES");
-            System.err.println("        packetviewer.sh yamcs://localhost:5445/yops");
+            System.err.println("        packetviewer.sh http://localhost:8090/yops");
             System.err.println("        packetviewer.sh -l 50 -x my-db packet-file");
         }
         System.exit(1);
@@ -1103,17 +1083,17 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                 printArgsError("-l argument must be integer. Got: " + options.get("-l"));
             }
         }
-        if (fileOrUrl != null && fileOrUrl.startsWith("yamcs://")) {
+        if (fileOrUrl != null && fileOrUrl.startsWith("http://")) {
             if (!options.containsKey("-l")) {
                 maxLines = 1000; // Default for realtime connections
             }
         }
-        if (fileOrUrl != null && !fileOrUrl.startsWith("yamcs://")) {
+        if (fileOrUrl != null && !fileOrUrl.startsWith("http://")) {
             if (!options.containsKey("-x")) {
                 printArgsError("-x argument must be specified when opening a file");
             }
         }
-        if (fileOrUrl != null && !fileOrUrl.startsWith("yamcs://")) {
+        if (fileOrUrl != null && !fileOrUrl.startsWith("http://")) {
             if (options.containsKey("-s")) {
                 printArgsError("-s argument only valid for yamcs connections");
             }
@@ -1123,9 +1103,13 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         YConfiguration.setup();
         theApp = new PacketViewer();
         if (fileOrUrl != null) {
-            if (fileOrUrl.startsWith("yamcs://")) {
-                YamcsConnectData ycd = YamcsConnectData.parse(fileOrUrl);
-                theApp.setStreamName(options.get("-s"));
+            if (fileOrUrl.startsWith("http://")) {
+                YamcsConnectionProperties ycd = YamcsConnectionProperties.parse(fileOrUrl);
+                String streamName =options.get("-s");
+                if(streamName==null) {
+                    streamName = "tm_realtime";
+                }
+                theApp.setStreamName(streamName);
                 theApp.connectYamcs(ycd);
             } else {
                 File file = new File(fileOrUrl);

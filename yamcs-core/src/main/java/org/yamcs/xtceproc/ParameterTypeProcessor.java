@@ -5,8 +5,8 @@ import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.parameter.Value;
+import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.BinaryParameterType;
@@ -28,12 +28,12 @@ import com.google.common.collect.Multimap;
 public class ParameterTypeProcessor {
     ProcessingContext pcontext;
     static Logger log=LoggerFactory.getLogger(ParameterTypeProcessor.class.getName());
-    
+
     ParameterTypeProcessor(ProcessingContext pcontext) {
         this.pcontext=pcontext;
     }
 
-    static Multimap<Class<? extends ParameterType>, org.yamcs.protobuf.Yamcs.Value.Type> allowedAssignments = 
+    static Multimap<Class<? extends ParameterType>, org.yamcs.protobuf.Yamcs.Value.Type> allowedAssignments =
 	    new ImmutableSetMultimap.Builder<Class<? extends ParameterType>, org.yamcs.protobuf.Yamcs.Value.Type>()
 	    	   .putAll(BinaryParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.BINARY)
 	           .putAll(BooleanParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.BOOLEAN)
@@ -42,8 +42,8 @@ public class ParameterTypeProcessor {
 	           .putAll(IntegerParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.UINT32, org.yamcs.protobuf.Yamcs.Value.Type.SINT32, org.yamcs.protobuf.Yamcs.Value.Type.SINT64, org.yamcs.protobuf.Yamcs.Value.Type.UINT64)
 	           .putAll(StringParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.STRING)
 	           .build();
-	    
-    
+
+
     /**
      *  Extracts the parameter from the packet.
      * @return value of the parameter after extraction
@@ -57,14 +57,14 @@ public class ParameterTypeProcessor {
         doCalibrate(pv, ptype);
         return pv;
     }
-   
+
     /**
      * Sets the value of a pval, based on the raw value and the applicable calibrator
      */
     public static void calibrate(ParameterValue pval) {
         doCalibrate(pval, pval.getParameter().getParameterType());
     }
-    
+
     private static void doCalibrate(ParameterValue pval, ParameterType ptype) {
         if (ptype instanceof EnumeratedParameterType) {
             calibrateEnumerated((EnumeratedParameterType) ptype, pval);
@@ -168,7 +168,7 @@ public class ParameterTypeProcessor {
             throw new IllegalStateException("Unsupported raw value type '"+rawValue.getType()+"' cannot be converted to integer");
         }
     }
-    
+
     private static void doIntegerCalibration(IntegerParameterType ipt, ParameterValue pval, long longValue) {
         Calibrator calibrator=null;
         DataEncoding de=ipt.getEncoding();
@@ -180,11 +180,11 @@ public class ParameterTypeProcessor {
             calibrator=((FloatDataEncoding) de).getDefaultCalibrator();
         }
         else {
-            throw new IllegalStateException("Unsupported float encoding of type: "+de);
+            throw new IllegalStateException("Unsupported integer encoding of type: "+de);
         }
-        
-        long longCalValue = (calibrator == null) ? longValue:calibrator.calibrate(longValue).longValue(); 
-        
+
+        long longCalValue = (calibrator == null) ? longValue:calibrator.calibrate(longValue).longValue();
+
         if (ipt.getSizeInBits() <= 32) {
             if (ipt.isSigned())
                 pval.setSignedIntegerValue((int) longCalValue);
@@ -233,7 +233,7 @@ public class ParameterTypeProcessor {
             throw new IllegalStateException("Unsupported raw value type '"+rawValue.getType()+"' cannot be converted to float");
         }
     }
-    
+
     private static void doFloatCalibration(FloatParameterType fpt, ParameterValue pval, double doubleValue) {
         Calibrator calibrator=null;
         DataEncoding de=fpt.getEncoding();
@@ -244,7 +244,7 @@ public class ParameterTypeProcessor {
         } else {
             throw new IllegalStateException("Unsupported float encoding of type: "+de);
         }
-        
+
         double doubleCalValue = (calibrator == null) ? doubleValue:calibrator.calibrate(doubleValue);
         if(fpt.getSizeInBits() == 32) {
             pval.setFloatValue((float) doubleCalValue);
@@ -252,11 +252,11 @@ public class ParameterTypeProcessor {
             pval.setDoubleValue(doubleCalValue);
         }
     }
-    
+
     /**
      * Checks that a value can be assigned to a parameter as enginnering value
      * Throws an IllegalArgumentException if not
-     * 
+     *
      * @param p
      * @param engValue
      */

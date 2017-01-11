@@ -48,6 +48,6 @@ public class Parameter extends NameDescription {
     
     @Override
     public String toString() {
-        return "ParaName: " + this.getName() + " paraType:" + parameterType +" opsname: "+getOpsName();
+        return "ParaName: " + this.getName() + " paraType:" + parameterType + ((xtceAliasSet==null)?"":" aliases: "+xtceAliasSet.toString());
     }
 }

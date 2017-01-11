@@ -23,6 +23,7 @@ import java.math.BigInteger;
 
 import org.yamcs.yarch.*;
 import org.yamcs.yarch.TableWriter.InsertMode;
+import org.yamcs.yarch.TableDefinition.PartitionStorage;
 
 
 public class StreamSqlParser {
@@ -72,6 +73,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_BYTE:"BYTE">
 |   <K_CHAR:"CHAR">
 |   <K_CLOSE:"CLOSE">
+|   <K_COLUMN_FAMILY: "COLUMN_FAMILY">
 |   <K_COMPRESSED:"COMPRESSED">
 |   <K_CREATE:"CREATE">
 |   <K_CURRENT:"CURRENT">
@@ -90,11 +92,11 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_FIXED_DELAY:"FIXED_DELAY">
 |   <K_FLOAT:"FLOAT">
 |   <K_FROM:"FROM">
-|   <K_GROUP:"GROUP">
 |   <K_HAVING:"HAVING">
 |   <K_HISTOGRAM:"HISTOGRAM">
 |   <K_IF:"IF">
 |   <K_IN:"IN">
+|   <K_IN_KEY: "IN_KEY">
 |   <K_INPUT:"INPUT">
 |   <K_INDEX:"INDEX">
 |   <K_INSERT:"INSERT">
@@ -118,6 +120,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_OUT:"OUT">
 |   <K_OUTPUT:"OUTPUT">
 |   <K_PARTITION:"PARTITION">
+|   <K_PARTITION_STORAGE: "PARTITION_STORAGE"> 
 |   <K_PORT:"PORT">
 |   <K_PRIMARY:"PRIMARY">
 |   <K_PROTOBUF:"PROTOBUF">
@@ -264,10 +267,10 @@ CreateTableStatement CreateTableStatement() throws StreamSqlException: {
     TupleDefinition tupleDefinition=new TupleDefinition();
     ArrayList<String> primaryKey=new ArrayList<String>();
     ArrayList<String> partitions=new ArrayList<String>();
-    String tableName, columnName, pk, partitionColumn, datadir;
+    String tableName, columnName, pk, partitionColumn ;
     boolean ifNotExists=false;
-    String engine;
-    PartitioningSpec pspec;
+    
+    
     DataType columnType;
     String dataDir=null;
     CreateTableStatement cts;
@@ -277,14 +280,36 @@ CreateTableStatement CreateTableStatement() throws StreamSqlException: {
      <K_PRIMARY> <K_KEY> "(" pk=ObjectName() {primaryKey.add(pk);} ("," pk=ObjectName(){primaryKey.add(pk);})* ")" 
      ")"
      {cts=new CreateTableStatement(ifNotExists, tableName, tupleDefinition, primaryKey);}
-	[<K_HISTOGRAM> "(" columnName=ObjectName() {cts.addHistogramColumn(columnName);} ("," columnName=ObjectName(){cts.addHistogramColumn(columnName);})* ")"]
-	[<K_ENGINE>  engine=ObjectName() {cts.setEngine(engine);} ]
-	[<K_PARTITION> <K_BY>  pspec=PartitioningSpec() {cts.setPartitioning(pspec);} ]
-	[<K_DATADIR> datadir=ObjectName() {cts.setDataDir(datadir);}]
-	[<K_TABLE_FORMAT> "=" "COMPRESSED" {cts.setCompressed(true);}]
+     (TableOption(cts))*	
+	
     {
 	return cts;
     }
+}
+
+void TableOption(CreateTableStatement cts): {
+   String columnName, datadir, engine;
+   PartitioningSpec pspec;
+   PartitionStorage pstorage;
+} {
+   <K_HISTOGRAM> "(" columnName=ObjectName() {cts.addHistogramColumn(columnName);} ("," columnName=ObjectName(){cts.addHistogramColumn(columnName);})* ")"
+   |
+   <K_ENGINE>  engine=ObjectName() {cts.setEngine(engine);}
+   |
+   <K_PARTITION> <K_BY>  pspec=PartitioningSpec() {cts.setPartitioning(pspec);} 
+   |
+   <K_DATADIR> datadir=ObjectName() {cts.setDataDir(datadir);}
+   |
+   <K_TABLE_FORMAT> "=" "COMPRESSED" {cts.setCompressed(true);}
+   |
+   <K_PARTITION_STORAGE> "=" pstorage=PartitionStorage() {cts.setPartitionStorage(pstorage);}
+}
+
+PartitionStorage PartitionStorage(): {
+} {
+   <K_IN_KEY> {return PartitionStorage.IN_KEY;}
+   |
+   <K_COLUMN_FAMILY> {return PartitionStorage.COLUMN_FAMILY;}
 }
 
 PartitioningSpec PartitioningSpec(): {

@@ -21,7 +21,7 @@ public class PartitionIterator implements Iterator<List<Partition>> {
     PartitionIterator(PartitioningSpec partitioningSpec, Iterator<Entry<Long,Interval>> it, Set<Object> partitionFilter, boolean reverse){
         this.partitioningSpec=partitioningSpec;
         this.it=it;
-        this.partitionValueFilter=partitionFilter;
+        this.partitionValueFilter = partitionFilter;
         this.reverse=reverse;
     }
     
@@ -34,7 +34,7 @@ public class PartitionIterator implements Iterator<List<Partition>> {
     @Override
     public boolean hasNext() {
         if(next!=null) return true;
-        next=new ArrayList<Partition>();
+        next = new ArrayList<Partition>();
     
         while(it.hasNext()) {
             Entry<Long,Interval> entry=it.next();

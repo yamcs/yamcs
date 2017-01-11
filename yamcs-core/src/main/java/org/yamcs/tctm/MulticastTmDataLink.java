@@ -40,7 +40,7 @@ public class MulticastTmDataLink extends AbstractExecutionThreadService implemen
 
     private Logger log=LoggerFactory.getLogger(this.getClass().getName());
     final int maxLength=1500; //maximum length of tm packets in columbus is 1472
-    DatagramPacket datagram=new DatagramPacket(new byte[maxLength],maxLength);
+    DatagramPacket datagram = new DatagramPacket(new byte[maxLength], maxLength);
 
     /**
      * Creates a 
@@ -71,10 +71,6 @@ public class MulticastTmDataLink extends AbstractExecutionThreadService implemen
         openSocket();
     }
 
-    @Override
-    public boolean isArchiveReplay() {
-        return false;
-    }
 
     private void openSocket() throws IOException {
         tmSocket=new MulticastSocket(port);
@@ -100,7 +96,7 @@ public class MulticastTmDataLink extends AbstractExecutionThreadService implemen
      * @return anything that looks as a valid packet, just the size is taken into account to decide if it's valid or not
      */
     public PacketWithTime getNextPacket() {
-        ByteBuffer bb=null;
+        ByteBuffer packet = null;
         while(disabled) {
             try {
                 Thread.sleep(1000);
@@ -125,30 +121,37 @@ public class MulticastTmDataLink extends AbstractExecutionThreadService implemen
                     continue;
                 }
 
-                byte[] data=datagram.getData();
-                int offset=datagram.getOffset();
-                bb=ByteBuffer.wrap(data);
+                byte[] data = datagram.getData();                
+                int offset = datagram.getOffset();
+                
+                ByteBuffer  bb = ByteBuffer.wrap(data);
 
                 //the time sent by TMR is not really GPS, it's the unix local computer time shifted to GPS epoch
                 long unixTimesec=(0xFFFFFFFFL & (long)bb.getInt(offset+1))+315964800L;
                 int unixTimeMicrosec=(0xFF&bb.get(offset+5))*(1000000/256);
-                rectime=TimeEncoding.fromUnixTime(unixTimesec, unixTimeMicrosec);
-                int pktLength=7+((data[14+offset]&0xFF)<<8)+(data[15+offset]&0xFF);
+                rectime = TimeEncoding.fromUnixTime(unixTimesec, unixTimeMicrosec);
+                int pktLength = 7+((data[14+offset]&0xFF)<<8)+(data[15+offset]&0xFF);
+                if(pktLength<16) {
+                    invalidDatagramCount++;
+                    log.warn("Invalid packet received on the multicast, pktLength:"+pktLength+". Expecting minimum 16 bytes");
+                    continue;
+                }
                 if(datagram.getLength()<10+pktLength) {
                     invalidDatagramCount++;
                     log.warn("Incomplete packet received on the multicast. expected"+pktLength+", received"+(datagram.getLength()-10)+": "+datagram);
                     continue;
                 }
                 validDatagramCount++;
-                bb=ByteBuffer.allocate(pktLength);
-                bb.put(data,offset+10,pktLength);
+                packet = ByteBuffer.allocate(pktLength);
+                packet.put(data, offset+10, pktLength);
                 break;
             } catch (IOException e) {
                 log.warn("exception '"+e.toString()+"' thrown when reading from the multicast socket"+group+":"+port);
             }
         }
-        if(bb!=null) {
-            return new PacketWithTime(rectime, CcsdsPacket.getInstant(bb), bb.array());
+        
+        if(packet!=null) {
+            return new PacketWithTime(rectime, CcsdsPacket.getInstant(packet), packet.array());
         } else {
             return null;
         }

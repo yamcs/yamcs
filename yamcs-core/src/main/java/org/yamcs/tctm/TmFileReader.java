@@ -1,10 +1,12 @@
 package org.yamcs.tctm;
 
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.zip.GZIPInputStream;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -19,17 +21,32 @@ import org.yamcs.utils.TimeEncoding;
  *
  */
 public class TmFileReader  {
-    FileInputStream inputStream;
+    InputStream inputStream;
     int fileoffset = 0;
     int packetcount = 0;
 
     /**
-     * Constructs a reader for telemetry files 
+     * Constructs a reader for telemetry files. It reads the first two bytes to see if it's gzip
      * @param fileName
-     * @throws FileNotFoundException
+     * @throws IOException 
      */
-    public TmFileReader(String fileName) throws FileNotFoundException {
+    public TmFileReader(String fileName) throws IOException {
         inputStream = new FileInputStream(fileName);
+        boolean gzip = false;
+        
+        //read the first two bytes to check if it's gzip
+        byte[] b = new byte[2];
+        int x = inputStream.read(b);
+        if((x==2) && (b[0]==0x1F) && ((b[1]&0xFF)==0x8B)) {
+            gzip = true;
+        }
+        inputStream.close();
+        
+        if(gzip) {
+            inputStream = new BufferedInputStream(new GZIPInputStream(new FileInputStream(fileName)));
+        } else {
+            inputStream = new BufferedInputStream(new FileInputStream(fileName));
+        }
     }
 
     public PacketWithTime readPacket(long rectime) throws IOException {

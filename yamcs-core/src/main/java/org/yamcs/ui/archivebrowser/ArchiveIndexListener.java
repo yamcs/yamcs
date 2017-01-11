@@ -2,7 +2,7 @@ package org.yamcs.ui.archivebrowser;
 
 import java.util.List;
 
-import org.yamcs.api.ConnectionListener;
+import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.IndexResult;
 

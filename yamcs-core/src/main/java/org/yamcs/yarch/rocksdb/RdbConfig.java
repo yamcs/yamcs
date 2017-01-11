@@ -1,7 +1,6 @@
 package org.yamcs.yarch.rocksdb;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -62,22 +61,18 @@ public class RdbConfig {
                 }
             }
         }
-        if(getTableConfig("tm")==null) {
-            //make more sensible defaults for the tm table
-            Map<String, Object> m = new HashMap<String, Object>();
-            m.put(KEY_tableNamePattern, "tm");
-            Map<String, Object> cfm = new HashMap<String, Object>();
-            m.put(KEY_cfOptions, cfm);
-            cfm.put("writeBufferSize", 10*1024);//10MB
-            TableConfig tm = new TableConfig(m);
-            tblConfigList.add(tm);
-        }
+        
         env = Env.getDefault();
         defaultColumnFamilyOptions = new ColumnFamilyOptions().setWriteBufferSize(2*1024*1024);//2MB
+        BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
+        tableFormatConfig.setBlockSize(32*1024);//32KB
+        tableFormatConfig.setNoBlockCache(true);
+        defaultColumnFamilyOptions.setTableFormatConfig(tableFormatConfig);
         
         defaultOptions = new Options();
         defaultOptions.setEnv(env);
         defaultOptions.setCreateIfMissing(true);
+        defaultOptions.setTableFormatConfig(tableFormatConfig);
         
         defaultDBOptions = new DBOptions().setCreateIfMissing(true);
     }
@@ -87,7 +82,7 @@ public class RdbConfig {
      *  
      * @return default column family options
      */
-    ColumnFamilyOptions getDefaultColumnFamilyOptions() {
+    public ColumnFamilyOptions getDefaultColumnFamilyOptions() {
         return defaultColumnFamilyOptions;
     }
     /**
@@ -98,7 +93,7 @@ public class RdbConfig {
      *  
      * @return default options
      */
-    Options getDefaultOptions() {
+    public Options getDefaultOptions() {
         return defaultOptions;
     }
     /**
@@ -107,7 +102,7 @@ public class RdbConfig {
      * no specific option set
      * @return default options
      */
-    DBOptions getDefaultDBOptions() {
+    public DBOptions getDefaultDBOptions() {
         return defaultDBOptions;
     }
     /**
@@ -180,11 +175,17 @@ public class RdbConfig {
                     options.setMinWriteBufferNumberToMerge(YConfiguration.getInt(cm, "minWriteBufferNumberToMerge"));
                 }
                 
-                if(cm.containsKey(KEY_tfConfig)) {
+                if(m.containsKey(KEY_tfConfig)) {
                     Map<String, Object> tfc = YConfiguration.getMap(m, KEY_tfConfig);
                     BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
                     if(tfc.containsKey("blockSize")) {
-                        tableFormatConfig.setBlockSize(1024L*YConfiguration.getLong(cm, "blockSize"));
+                        tableFormatConfig.setBlockSize(1024L*YConfiguration.getLong(tfc, "blockSize"));
+                    }
+                    if(tfc.containsKey("blockCacheSize")) {
+                        tableFormatConfig.setBlockCacheSize(1024L*YConfiguration.getLong(tfc, "blockCacheSize"));
+                    }
+                    if(tfc.containsKey("noBlockCache")) {
+                        tableFormatConfig.setNoBlockCache(YConfiguration.getBoolean(tfc, "noBlockCache"));
                     }
                     options.setTableFormatConfig(tableFormatConfig);
                     cfOptions.setTableFormatConfig(tableFormatConfig);

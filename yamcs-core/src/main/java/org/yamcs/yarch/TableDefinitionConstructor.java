@@ -7,11 +7,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.yamcs.yarch.PartitioningSpec._type;
+import org.yamcs.yarch.TableDefinition.PartitionStorage;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yaml.snakeyaml.constructor.AbstractConstruct;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
+import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.nodes.SequenceNode;
 import org.yaml.snakeyaml.nodes.Tag;
 
@@ -35,6 +37,7 @@ public class TableDefinitionConstructor  extends Constructor {
         this.yamlConstructors.put(new Tag("TableDefinition"), new ConstructTableDefinition());
         this.yamlConstructors.put(new Tag("TupleDefinition"), new ConstructTupleDefinition());
         this.yamlConstructors.put(new Tag("PartitioningSpec"), new ConstructPartitioningSpec());
+        this.yamlConstructors.put(new Tag("PartitionStorage"), new ConstructPartitionStorage());
     }
 
     private class ConstructTableDefinition extends AbstractConstruct {
@@ -81,10 +84,23 @@ public class TableDefinitionConstructor  extends Constructor {
             if(m.containsKey(K_compressed)) {
                 tdef.setCompressed((Boolean)m.get(K_compressed));
             }
+            
+            if(m.containsKey(K_formatVersion)) {
+                tdef.setFormatVersion((Integer)m.get(K_formatVersion));
+            } else {
+                tdef.setFormatVersion(0);
+            }
+            
             if(m.containsKey(K_storageEngine)) {
                 tdef.setStorageEngineName((String)m.get(K_storageEngine));
             } else {//before the storageEngine has been invented, we only had TokyoCabinet, so assume that if it's not set then TokyoCabine is used
                 tdef.setStorageEngineName(YarchDatabase.TC_ENGINE_NAME);
+            }
+            
+            if(m.containsKey(K_partitionStorage)) {
+                tdef.setPartitionStorage((PartitionStorage)m.get(K_partitionStorage));
+            } else {//before the partitionStorage has been invented, we only had column_family
+                tdef.setPartitionStorage(PartitionStorage.COLUMN_FAMILY);
             }
 
             return tdef;
@@ -155,6 +171,14 @@ public class TableDefinitionConstructor  extends Constructor {
                 pspec.setTimePartitioningSchema("YYYY/DOY");
             }
             return pspec;
+        }
+    }
+    
+    private class ConstructPartitionStorage extends AbstractConstruct {
+        @Override
+        public Object construct(Node node) {
+            String ps = (String) constructScalar((ScalarNode)node);
+            return PartitionStorage.valueOf(ps.toUpperCase());
         }
     }
 }

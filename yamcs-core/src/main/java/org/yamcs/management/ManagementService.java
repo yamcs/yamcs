@@ -28,16 +28,13 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.YProcessor;
-import org.yamcs.YProcessorClient;
-import org.yamcs.YProcessorException;
-import org.yamcs.YProcessorListener;
+import org.yamcs.ProcessorClient;
+import org.yamcs.ProcessorException;
+import org.yamcs.ProcessorListener;
 import org.yamcs.YamcsException;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;
-import org.yamcs.hornetq.HornetQCommandQueueManagement;
-import org.yamcs.hornetq.HornetQManagement;
-import org.yamcs.hornetq.HornetQProcessorManagement;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
@@ -54,22 +51,19 @@ import com.google.common.util.concurrent.Service;
  * Responsible for integrating with core yamcs classes, encoding to protobuf,
  * and forwarding aggregated info downstream.
  * <p>
- * Notable examples of downstream listeners are the MBeanServer, the HornetQ-business,
+ * Notable examples of downstream listeners are the MBeanServer, the ActiveMQ-business,
  * and subscribed websocket clients.
  */
-public class ManagementService implements YProcessorListener {
+public class ManagementService implements ProcessorListener {
     
     final MBeanServer mbeanServer;
-    HornetQManagement hornetMgr;
-    HornetQProcessorManagement hornetProcessorMgr;
-    HornetQCommandQueueManagement hornetCmdQueueMgr;
 
-    final boolean jmxEnabled, hornetEnabled;
-    static Logger log=LoggerFactory.getLogger(ManagementService.class.getName());
+    final boolean jmxEnabled;
+    static Logger log = LoggerFactory.getLogger(ManagementService.class.getName());
     final String tld="yamcs";
     static ManagementService managementService;
 
-    Map<Integer, ClientControlImpl> clients=Collections.synchronizedMap(new HashMap<Integer, ClientControlImpl>());
+    Map<Integer, ClientControlImpl> clients = Collections.synchronizedMap(new HashMap<Integer, ClientControlImpl>());
     AtomicInteger clientId=new AtomicInteger();
     
     List<LinkControlImpl> links=new CopyOnWriteArrayList<LinkControlImpl>();
@@ -88,16 +82,15 @@ public class ManagementService implements YProcessorListener {
     Map<YProcessor, Statistics> yprocs=new ConcurrentHashMap<YProcessor, Statistics>();
     static final Statistics STATS_NULL=Statistics.newBuilder().setInstance("null").setYProcessorName("null").build();//we use this one because ConcurrentHashMap does not support null values
 
-    static public void setup(boolean hornetEnabled, boolean jmxEnabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
-        managementService=new ManagementService(hornetEnabled, jmxEnabled);
+    static public void setup(boolean jmxEnabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
+        managementService = new ManagementService(jmxEnabled);
     }
 
     static public ManagementService getInstance() {
         return managementService;
     }
 
-    private ManagementService(boolean hornetEnabled, boolean jmxEnabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
-        this.hornetEnabled=hornetEnabled;
+    private ManagementService(boolean jmxEnabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
         this.jmxEnabled=jmxEnabled;
 
         if(jmxEnabled)
@@ -105,20 +98,6 @@ public class ManagementService implements YProcessorListener {
         else
             mbeanServer=null;
 
-        if(hornetEnabled) {
-            try {
-                hornetMgr=new HornetQManagement(this);
-                hornetCmdQueueMgr=new HornetQCommandQueueManagement(this);
-                hornetProcessorMgr=new HornetQProcessorManagement(this);
-                addLinkListener(hornetMgr);
-                addCommandQueueListener(hornetCmdQueueMgr);
-                addManagementListener(hornetProcessorMgr);
-            } catch (Exception e) {
-                log.error("failed to start hornet management service", e);
-                hornetEnabled=false;
-            }
-        }
-        
         YProcessor.addProcessorListener(this);
         timer.scheduleAtFixedRate(() -> updateStatistics(), 1, 1, TimeUnit.SECONDS);
         timer.scheduleAtFixedRate(() -> checkLinkUpdate(), 1, 1, TimeUnit.SECONDS);
@@ -126,11 +105,6 @@ public class ManagementService implements YProcessorListener {
 
     public void shutdown() {
         managementListeners.clear();
-        if(hornetEnabled) {
-            hornetMgr.stop();
-            hornetCmdQueueMgr.stop();
-            hornetProcessorMgr.close();
-        }
     }
 
     public void registerService(String instance, String serviceName, Service service) {
@@ -242,7 +216,7 @@ public class ManagementService implements YProcessorListener {
         }
     }
 
-    public int registerClient(String instance, String yprocName,  YProcessorClient client) {
+    public int registerClient(String instance, String yprocName,  ProcessorClient client) {
         int id=clientId.incrementAndGet();
         try {
             YProcessor c=YProcessor.getInstance(instance, yprocName);
@@ -273,7 +247,7 @@ public class ManagementService implements YProcessorListener {
         }
     }
 
-    private void switchYProcessor(ClientControlImpl cci, YProcessor yproc, AuthenticationToken authToken) throws YProcessorException {
+    private void switchProcessor(ClientControlImpl cci, YProcessor yproc, AuthenticationToken authToken) throws ProcessorException {
         ClientInfo oldci=cci.getClientInfo();
         cci.switchYProcessor(yproc, authToken);
         ClientInfo ci=cci.getClientInfo();
@@ -299,7 +273,7 @@ public class ManagementService implements YProcessorListener {
         } else {
             username = Privilege.getDefaultUser();
         }
-        if(!Privilege.getInstance().hasPrivilege(authToken, Privilege.Type.SYSTEM, "MayControlYProcessor")) {
+        if(!Privilege.getInstance().hasPrivilege1(authToken, Privilege.SystemPrivilege.MayControlProcessor)) {
             if(cr.getPersistent()) {
                 log.warn("User "+username+" is not allowed to create persistent processors");
                 throw new YamcsException("Permission denied");
@@ -317,10 +291,10 @@ public class ManagementService implements YProcessorListener {
             }
         }
 
-
+        YProcessor yproc;
         try {
             int n=0;
-            YProcessor yproc;
+            
             Object spec;
             if(cr.hasReplaySpec()) {
                 spec = cr.getReplaySpec();
@@ -332,24 +306,29 @@ public class ManagementService implements YProcessorListener {
             for(int i=0;i<cr.getClientIdCount();i++) {
                 ClientControlImpl cci=clients.get(cr.getClientId(i));
                 if(cci!=null) {
-                    switchYProcessor(cci, yproc, authToken);
+                    switchProcessor(cci, yproc, authToken);
                     n++;
                 } else {
-                    log.warn("createYProcessor called with invalid client id:"+cr.getClientId(i)+"; ignored.");
+                    log.warn("createProcessor called with invalid client id:"+cr.getClientId(i)+"; ignored.");
                 }
             }
             if(n>0 || cr.getPersistent()) {
                 log.info("Starting new processor '" + yproc.getName() + "' with " + yproc.getConnectedClients() + " clients");
-                yproc.start();
+                yproc.startAsync();
+                yproc.awaitRunning();
             } else {
                 yproc.quit();
-                throw new YamcsException("createYProcessor invoked with a list full of invalid client ids");
+                throw new YamcsException("createProcessor invoked with a list full of invalid client ids");
             }
-        } catch (YProcessorException e) {
+        } catch (ProcessorException | ConfigurationException e) {
             throw new YamcsException(e.getMessage(), e.getCause());
-        } catch (ConfigurationException e) {
-            e.printStackTrace();
-            throw new YamcsException(e.getMessage(), e.getCause());
+        } catch (IllegalStateException e1) {
+            Throwable t =  e1.getCause();
+            if(t instanceof YamcsException) {
+                throw (YamcsException )t;
+            } else {
+                throw new YamcsException(t.getMessage(), t.getCause());
+            }
         }
     }
 
@@ -368,12 +347,12 @@ public class ManagementService implements YProcessorListener {
         log.debug("User "+ username+" wants to connect clients "+cr.getClientIdList()+" to processor "+cr.getName());
 
 
-        if(!Privilege.getInstance().hasPrivilege(usertoken, Privilege.Type.SYSTEM, "MayControlYProcessor") &&
+        if(!Privilege.getInstance().hasPrivilege1(usertoken, Privilege.SystemPrivilege.MayControlProcessor) &&
                 !((chan.isPersistent() || chan.getCreator().equals(username)))) {
             log.warn("User "+username+" is not allowed to connect users to processor "+cr.getName() );
             throw new YamcsException("permission denied");
         }
-        if(!Privilege.getInstance().hasPrivilege(usertoken, Privilege.Type.SYSTEM, "MayControlYProcessor")) {
+        if(!Privilege.getInstance().hasPrivilege1(usertoken, Privilege.SystemPrivilege.MayControlProcessor)) {
             for(int i=0; i<cr.getClientIdCount(); i++) {
                 ClientInfo si=clients.get(cr.getClientId(i)).getClientInfo();
                 if(!username.equals(si.getUsername())) {
@@ -387,9 +366,9 @@ public class ManagementService implements YProcessorListener {
             for(int i=0;i<cr.getClientIdCount();i++) {
                 int id=cr.getClientId(i);
                 ClientControlImpl cci=clients.get(id);
-                switchYProcessor(cci, chan, usertoken);
+                switchProcessor(cci, chan, usertoken);
             }
-        } catch(YProcessorException e) {
+        } catch(ProcessorException e) {
             throw new YamcsException(e.toString());
         }
     }
@@ -531,7 +510,9 @@ public class ManagementService implements YProcessorListener {
     }
     
     public ClientInfo getClientInfo(int clientId) {
-        return clients.get(clientId).getClientInfo();
+        ClientControlImpl cci = clients.get(clientId);
+        if(cci==null) return null;
+        return cci.getClientInfo();
     }
     
     private void updateStatistics() {
@@ -559,7 +540,7 @@ public class ManagementService implements YProcessorListener {
         // see if any link has changed
         for(LinkControlImpl lci:links) {
             if(lci.hasChanged()) {
-                LinkInfo li=lci.getLinkInfo();
+                LinkInfo li = lci.getLinkInfo();
                 linkListeners.forEach(l -> l.linkChanged(li));
             }
         }
@@ -573,7 +554,7 @@ public class ManagementService implements YProcessorListener {
     }
 
     @Override
-    public void yProcessorClosed(YProcessor processor) {
+    public void processorClosed(YProcessor processor) {
         ProcessorInfo pi = ManagementGpbHelper.toProcessorInfo(processor);
         managementListeners.forEach(l -> l.processorClosed(pi));
         yprocs.remove(processor);

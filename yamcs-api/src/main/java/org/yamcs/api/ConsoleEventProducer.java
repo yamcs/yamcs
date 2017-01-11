@@ -25,7 +25,7 @@ public class ConsoleEventProducer extends AbstractEventProducer {
 
 
     @Override
-    public long getMissionTime() {       
+    public long getMissionTime() {
         return TimeEncoding.getWallclockTime();
     }
 

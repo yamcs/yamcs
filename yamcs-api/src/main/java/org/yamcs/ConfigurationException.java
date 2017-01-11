@@ -2,22 +2,23 @@ package org.yamcs;
 
 /**
  * Exception thrown if there is an error in configuration.
- * 
+ *
  * If the config problem is related to a file, the confPath is the something like
  *  filename.yaml: key1-&gt;subkey2-&gt;subkey3...
- *  
+ *
  * @author nm
  *
  */
 public class ConfigurationException extends RuntimeException {
-    
-    String confpath; 
 
-    
+    private static final long serialVersionUID = 1L;
+    String confpath;
+
+
     public ConfigurationException(String message) {
         super(message);
     }
-    
+
 	public ConfigurationException(String confpath, String message) {
 		super(message);
 		this.confpath=confpath;
