@@ -1764,12 +1764,17 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             Cell[] cells = jumpToRow(sheet, start);
             String name = cells[IDX_ALGO_NAME].getContents();
             String algorithmLanguage = cells[IDX_ALGO_LANGUGAGE].getContents();
-            if(!"JavaScript".equals(algorithmLanguage) && !"python".equals(algorithmLanguage)) {
-                throw new SpreadsheetLoadException(ctx, "Invalid algorithm language '"+algorithmLanguage+"' specified. Supported are 'JavaScript' and 'python' (case sensitive)");
+            if(!"JavaScript".equals(algorithmLanguage) && !"python".equals(algorithmLanguage)&& !"java".equalsIgnoreCase(algorithmLanguage)) {
+                throw new SpreadsheetLoadException(ctx, "Invalid algorithm language '"+algorithmLanguage+"' specified. Supported are 'JavaScript', 'python' and java (case sensitive)");
             }
 
             String algorithmText = cells[IDX_ALGO_TEXT].getContents();
             XtceAliasSet xas = getAliases(firstRow, cells);
+
+            //Check that there is not specified by mistake a in/out param already on the same line with the algorithm name
+            if(hasColumn(cells, IDX_ALGO_PARA_INOUT) || hasColumn(cells, IDX_ALGO_PARA_REF)) {
+                throw new SpreadsheetLoadException(ctx, "Algorithm paramters have to start on the next line from the algorithm name and text definition");
+            }
             
             // now we search for the matching last row of that algorithm
             int end = start + 1;
@@ -1789,6 +1794,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             // Replace smart-quotes “ and ” with regular quotes "
             algorithm.setAlgorithmText(algorithmText.replaceAll("[\u201c\u201d]", "\""));
 
+            
             // In/out params
             String paraInout=null;
             Set<String> inputParameterRefs=new HashSet<String>();
