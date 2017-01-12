@@ -127,7 +127,6 @@ public class CommandQueueControlClient implements ConnectionListener,  WebSocket
     public void onMessage(WebSocketSubscriptionData data) {
         if(data.hasCommandQueueInfo()) {
             CommandQueueInfo cmdQueueInfo = data.getCommandQueueInfo();
-            System.out.println("onMessage cmdQueueInfo: "+cmdQueueInfo);
             for(CommandQueueListener cql: listeners) {
                 cql.updateQueue(cmdQueueInfo);
             }
@@ -136,7 +135,6 @@ public class CommandQueueControlClient implements ConnectionListener,  WebSocket
             CommandQueueEvent cmdQueueEvent = data.getCommandQueueEvent();
             CommandQueueEntry cqe = cmdQueueEvent.getData();
             Type eventType = cmdQueueEvent.getType();
-            System.out.println("evneType: "+eventType+" cqe: "+cqe+" listeners: "+listeners);
             for(CommandQueueListener cql: listeners) {
                 switch(eventType) {
                 case COMMAND_ADDED:
