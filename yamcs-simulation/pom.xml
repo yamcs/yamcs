@@ -5,7 +5,7 @@
   <parent>
     <artifactId>yamcs</artifactId>
     <groupId>org.yamcs</groupId>
-    <version>0.30.1-SNAPSHOT</version>
+    <version>0.30.0</version>
     <relativePath>..</relativePath>
   </parent>
 
@@ -14,11 +14,13 @@
   <packaging>jar</packaging>
   <name>Yamcs Simulation</name>
   
+  <!-- commented out for now - because yamcs-simulation is the last one in the list, this config will cause skipping all the nexus uploads
+  See https://issues.sonatype.org/browse/NEXUS-9138
   <properties>
     <skipStaging>true</skipStaging>
     <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
   </properties>
-
+  -->
   <dependencies>
     <dependency>
         <groupId>org.yamcs</groupId>
