@@ -7,7 +7,7 @@
   <name>Yamcs</name>
   <description>Yet Another Mission Control System</description>
 
-  <version>3.0.0-SNAPSHOT</version>
+  <version>3.0.0</version>
 
   <url>https://github.com/yamcs/yamcs.git</url>
   
@@ -23,7 +23,7 @@
     <connection>scm:git:git@github.com:yamcs/yamcs.git</connection>
     <developerConnection>scm:git:git@github.com:yamcs/yamcs.git</developerConnection>
     <url>http://github.com/yamcs/yamcs</url>
-    <tag>HEAD</tag>
+    <tag>yamcs-3.0.0</tag>
   </scm>
 
   <organization>
