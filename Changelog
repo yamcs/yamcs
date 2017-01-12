@@ -1,4 +1,8 @@
-Version 3.0.0
+Version 3.0.0 Released 12-Jan-2017
+- no change from 0.0.30 except this changelog
+
+
+Version 0.0.30 Released 12-Jan-2017
 - do now allow FixedString command arguments defined in the Spreadsheet to have a non multiple of 8 bitSize
 - fixed the encoding of command binary arguments
 - allow to specifiy the bitSize for LeadingString and TerminatedString command arguments and treat it as the minimum size of the encoded value (if the passed argument is shorter, the remaining will not be filled in) 
@@ -13,8 +17,10 @@ Version 3.0.0
 - changed all SWING Yamcs clients to use the REST and WebSocket API instead of HornetQ
 - allow to retrieve via REST internals of open RocksDB databases
 - implement backup support for RocksDB databases
-- introduced rocksdb2 storage engine that use a different way of partitioning the data
+- RocksDB allow storage of partitions using the partitioning key in front of the key instead of creating different column family.
 - allow TM file injector to inject gzipped files
+- changed the histograms (indexes) to be part of the same rocksdb database as the main data. To convert from the old format to the new, use the yamcs command line.
+- added yamcs command line that allows to perform backups, some low level rocksdb operations and some archive upgrade capability.
 
 
 Version 0.29.4 Released 26-June-2016
