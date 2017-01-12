@@ -7,7 +7,7 @@
   <name>Yamcs</name>
   <description>Yet Another Mission Control System</description>
 
-  <version>0.30.1-SNAPSHOT</version>
+  <version>0.30.0-SNAPSHOT</version>
 
   <url>https://github.com/yamcs/yamcs.git</url>
   
@@ -92,7 +92,7 @@
 	  <configuration>
             <autoVersionSubmodules>true</autoVersionSubmodules>
             <useReleaseProfile>false</useReleaseProfile>
-            <releaseProfiles>release-sign-artifacts</releaseProfiles>
+            <releaseProfiles>yamcs-release</releaseProfiles>
             <goals>deploy</goals>
           </configuration>
         </plugin>
@@ -212,14 +212,14 @@
             </build>
         </profile>
         <profile>
-        <id>release-sign-artifacts</id>
-        <activation>
+          <id>yamcs-release</id>
+          <activation>
             <property>
                 <name>performRelease</name>
                 <value>true</value>
             </property>
-        </activation>
-        <build>
+          </activation>
+          <build>
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
