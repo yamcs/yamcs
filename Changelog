@@ -1,3 +1,6 @@
+Version 3.1.0 
+- Java algorithms take one extra argument in their contstructor - processor.
+
 Version 3.0.0 Released 12-Jan-2017
 - no change from 0.0.30 except this changelog
 
