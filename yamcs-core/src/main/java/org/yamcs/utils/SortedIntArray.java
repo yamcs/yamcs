@@ -1,5 +1,6 @@
 package org.yamcs.utils;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.PrimitiveIterator;
 
@@ -10,7 +11,7 @@ import java.util.PrimitiveIterator;
  * @author nm
  *
  */
-public class SortedIntArray {
+public class SortedIntArray implements Serializable {
   
     public static int DEFAULT_CAPACITY = 10;
     private int[] a;
@@ -52,6 +53,7 @@ public class SortedIntArray {
      * Inserts value to the array and return the position on which has been inserted
      * 
      * @param x - value to be inserted
+     * @return the position on which the value has been inserted
      */
     public int insert(int x) {
         int pos = Arrays.binarySearch(a, 0, length, x);
@@ -71,7 +73,7 @@ public class SortedIntArray {
      * 
      * @see java.util.Arrays#binarySearch(int[], int)
      * @param x
-     * @return
+     * @return result of the binarySearch, @see java.util.Arrays#binarySearch(int[], int)
      */
     public int search(int x) {
         return  Arrays.binarySearch(a, 0, length, x);
@@ -79,7 +81,7 @@ public class SortedIntArray {
     /**
      * get element at position
      * @param pos
-     * @return
+     * @return the element at position
      */
     public int get(int pos) {
         if(pos >= length) throw new IndexOutOfBoundsException("Index: "+pos+" length: "+length);
@@ -113,7 +115,7 @@ public class SortedIntArray {
      * Constructs an ascending iterator starting from a specified value (inclusive) 
      * 
      * @param startFrom
-     * @return
+     * @return an iterator starting from the specified value
      */
     public PrimitiveIterator.OfInt getAscendingIterator(int startFrom) {
         return new PrimitiveIterator.OfInt() {
@@ -141,7 +143,7 @@ public class SortedIntArray {
      * Constructs an descending iterator starting from a specified value (exclusive) 
      * 
      * @param startFrom
-     * @return
+     * @return an descending iterator starting from the specified value
      */
     public PrimitiveIterator.OfInt getDescendingIterator(int startFrom) {
         return new PrimitiveIterator.OfInt() {
@@ -194,6 +196,17 @@ public class SortedIntArray {
         return h;
     }
     
+
+    /**
+     * Performs a binary search and returns true if this array contains the value.
+     * 
+     * @param x - value to check
+     * @return true of the array contains the specified value
+     * 
+     */
+    public boolean contains(int x) {
+        return Arrays.binarySearch(a, 0, length, x)>=0;
+    }
     
     public byte[] encodeToVarIntArray() {
         byte[] buf = new byte[length*4];
@@ -243,16 +256,5 @@ public class SortedIntArray {
        
         return true;
     }
-    
-    /**
-     * returns true if this array contains the value
-     * @param x - value to check
-     * 
-     */
-    public boolean contains(int x) {
-        return Arrays.binarySearch(a, 0, length, x)>=0;
-    }
-
-   
 
 }
