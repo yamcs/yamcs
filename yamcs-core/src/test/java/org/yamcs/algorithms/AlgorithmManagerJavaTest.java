@@ -135,8 +135,8 @@ public class AlgorithmManagerJavaTest {
  
     public static class MyAlgo1 extends AbstractAlgorithmExecutor {
         float v;
-        public MyAlgo1(Algorithm algorithmDef, AlgorithmExecutionContext execCtx) {
-            super(algorithmDef, execCtx);
+        public MyAlgo1(YProcessor yproc, Algorithm algorithmDef, AlgorithmExecutionContext execCtx) {
+            super(yproc, algorithmDef, execCtx);
         }
 
         @Override
@@ -157,8 +157,8 @@ public class AlgorithmManagerJavaTest {
     public static class MyAlgo2 extends AbstractAlgorithmExecutor {
         double x;
         float v;
-        public MyAlgo2(Algorithm algorithmDef, AlgorithmExecutionContext execCtx, Double x) {
-            super(algorithmDef, execCtx);
+        public MyAlgo2(YProcessor yproc, Algorithm algorithmDef, AlgorithmExecutionContext execCtx, Double x) {
+            super(yproc, algorithmDef, execCtx);
             this.x = x;
         }
 
@@ -182,8 +182,8 @@ public class AlgorithmManagerJavaTest {
         double b;
         String c;
         float v;
-        public MyAlgo3(Algorithm algorithmDef, AlgorithmExecutionContext execCtx, Map<String, Object> m) {
-            super(algorithmDef, execCtx);
+        public MyAlgo3(YProcessor yproc, Algorithm algorithmDef, AlgorithmExecutionContext execCtx, Map<String, Object> m) {
+            super(yproc, algorithmDef, execCtx);
             this.a = (Integer) m.get("a");
             this.b = (Double) m.get("b");
             this.c = (String) m.get("c");

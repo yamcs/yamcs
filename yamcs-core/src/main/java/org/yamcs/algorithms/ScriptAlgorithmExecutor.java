@@ -15,6 +15,7 @@ import javax.script.ScriptException;
 import org.codehaus.janino.SimpleCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YProcessor;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -70,8 +71,8 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     private static Map<String, Class<ValueBinding>> valueBindingClasses = Collections.synchronizedMap(new HashMap<String,Class<ValueBinding>>());
 
 
-    public ScriptAlgorithmExecutor(Algorithm algorithmDef, ScriptEngine scriptEngine, AlgorithmExecutionContext execCtx) {
-        super(algorithmDef, execCtx);
+    public ScriptAlgorithmExecutor(YProcessor yproc, Algorithm algorithmDef, ScriptEngine scriptEngine, AlgorithmExecutionContext execCtx) {
+        super(yproc, algorithmDef, execCtx);
         this.scriptEngine=scriptEngine;
       
 

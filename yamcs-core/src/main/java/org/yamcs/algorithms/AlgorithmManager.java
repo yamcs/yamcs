@@ -254,7 +254,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 
             scriptEngine.put("Yamcs", new AlgorithmUtils(yproc, xtcedb, algorithm.getName()));
 
-            executor = new ScriptAlgorithmExecutor(algorithm, scriptEngine, execCtx);
+            executor = new ScriptAlgorithmExecutor(yproc, algorithm, scriptEngine, execCtx);
         }
         if(listener!=null) {
             executor.addExecListener(listener);
@@ -322,9 +322,9 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             }
             
             if(arg==null){
-                return YObjectLoader.loadObject(className, alg, execCtx);
+                return YObjectLoader.loadObject(className, yproc, alg, execCtx);
             } else {
-                return YObjectLoader.loadObject(className, alg, execCtx, arg);
+                return YObjectLoader.loadObject(className,  yproc, alg, execCtx, arg);
             }
         } catch (ConfigurationException | IOException e) {
             log.warn("Cannot load object for algorithm", e);
