@@ -1840,10 +1840,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     }
 
                     InputParameter inputParameter = new InputParameter(parameterInstance);
-                    if (cells.length > IDX_ALGO_PARA_NAME) {
-                        if (!"".equals(cells[IDX_ALGO_PARA_NAME].getContents())) {
-                            inputParameter.setInputName(cells[IDX_ALGO_PARA_NAME].getContents());
-                        }
+                    if (hasColumn(cells, IDX_ALGO_PARA_NAME)) {
+                        inputParameter.setInputName(cells[IDX_ALGO_PARA_NAME].getContents());
                     }
                     if(flags.contains("M")) inputParameter.setMandatory(true);
                     algorithm.addInput(inputParameter);
@@ -1854,7 +1852,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     }
                     outputParameters.add(param);
                     OutputParameter outputParameter = new OutputParameter(param);
-                    if (cells.length > IDX_ALGO_PARA_NAME) {
+                    if (hasColumn(cells, IDX_ALGO_PARA_NAME)) {
                         outputParameter.setOutputName(cells[IDX_ALGO_PARA_NAME].getContents());
                     }
                     algorithm.addOutput(outputParameter);
