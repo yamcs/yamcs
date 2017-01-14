@@ -15,7 +15,6 @@ import javax.script.ScriptException;
 import org.codehaus.janino.SimpleCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -131,7 +130,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     
 
     /* (non-Javadoc)
-     * @see org.yamcs.algorithms.AlgorithmEngineIf#runAlgorithm(long, long)
+     * @see org.yamcs.algorithms.AlgorithmExecutor#runAlgorithm(long, long)
      */
     @Override
     public synchronized List<ParameterValue> runAlgorithm(long acqTime, long genTime) {
