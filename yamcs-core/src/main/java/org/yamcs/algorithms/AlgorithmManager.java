@@ -87,7 +87,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     // For scheduling OnPeriodicRate algorithms
     ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);;
     YProcessor yproc;
-    AlgorithmExecutionContext globalCtx = new AlgorithmExecutionContext("global", null);
+    AlgorithmExecutionContext globalCtx;
 
     public AlgorithmManager(String yamcsInstance) throws ConfigurationException {
         this(yamcsInstance, null);
@@ -152,6 +152,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         this.yproc = yproc;
         this.parameterRequestManager = yproc.getParameterRequestManager();
         xtcedb = yproc.getXtceDb();
+        globalCtx = new AlgorithmExecutionContext("global", null, yproc);
         try {
             subscriptionId=parameterRequestManager.addRequest(new ArrayList<Parameter>(0), this);
         } catch (InvalidIdentification e) {
@@ -163,6 +164,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                 loadAlgorithm(algo, globalCtx);
             }
         }
+        
     }
 
 
@@ -222,7 +224,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
      * @return the newly created context
      */
     public AlgorithmExecutionContext createContext(String name) {
-        return new AlgorithmExecutionContext(name, globalCtx);
+        return new AlgorithmExecutionContext(name, globalCtx, yproc);
     }
 
 
@@ -254,7 +256,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 
             scriptEngine.put("Yamcs", new AlgorithmUtils(yproc, xtcedb, algorithm.getName()));
 
-            executor = new ScriptAlgorithmExecutor(yproc, algorithm, scriptEngine, execCtx);
+            executor = new ScriptAlgorithmExecutor(algorithm, scriptEngine, execCtx);
         }
         if(listener!=null) {
             executor.addExecListener(listener);
@@ -322,9 +324,9 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             }
             
             if(arg==null){
-                return YObjectLoader.loadObject(className, yproc, alg, execCtx);
+                return YObjectLoader.loadObject(className, alg, execCtx);
             } else {
-                return YObjectLoader.loadObject(className,  yproc, alg, execCtx, arg);
+                return YObjectLoader.loadObject(className, alg, execCtx, arg);
             }
         } catch (ConfigurationException | IOException e) {
             log.warn("Cannot load object for algorithm", e);

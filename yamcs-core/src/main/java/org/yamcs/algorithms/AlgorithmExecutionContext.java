@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
+import org.yamcs.YProcessor;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.DataSource;
@@ -33,9 +34,12 @@ public class AlgorithmExecutionContext {
     //name used for debugging
     final String contextName;
     
-    public AlgorithmExecutionContext(String contextName, AlgorithmExecutionContext parent) {
+    final YProcessor yproc;
+    
+    public AlgorithmExecutionContext(String contextName, AlgorithmExecutionContext parent, YProcessor proc) {
         this.contextName = contextName;
         this.parent = parent;
+        this.yproc = proc;
     }
     
     public void enableBuffer(Parameter param, int lookbackSize) {
@@ -61,6 +65,13 @@ public class AlgorithmExecutionContext {
         }
     }
 
+    /**
+     * 
+     * @return the processor in which this context is part of
+     */
+    public YProcessor getProcessor() {
+        return yproc;
+    }
     private void updateHistoryWindow(ParameterValue pval) {
         if(buffersByParam.containsKey(pval.getParameter())) {
             buffersByParam.get(pval.getParameter()).update(pval);

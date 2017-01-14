@@ -11,7 +11,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.InputParameter;
@@ -30,12 +29,10 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
     
     
     static final Logger log = LoggerFactory.getLogger(AbstractAlgorithmExecutor.class);
-    protected YProcessor processor;
     
-    public AbstractAlgorithmExecutor(YProcessor processor, Algorithm algorithmDef, AlgorithmExecutionContext execCtx) {
+    public AbstractAlgorithmExecutor(Algorithm algorithmDef, AlgorithmExecutionContext execCtx) {
         this.algorithmDef = algorithmDef;
         this.execCtx = execCtx;
-        this.processor = processor;
         for(InputParameter inputParameter:algorithmDef.getInputSet()) {
             requiredParameters.add(inputParameter.getParameterInstance().getParameter());
 

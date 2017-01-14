@@ -71,8 +71,8 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     private static Map<String, Class<ValueBinding>> valueBindingClasses = Collections.synchronizedMap(new HashMap<String,Class<ValueBinding>>());
 
 
-    public ScriptAlgorithmExecutor(YProcessor yproc, Algorithm algorithmDef, ScriptEngine scriptEngine, AlgorithmExecutionContext execCtx) {
-        super(yproc, algorithmDef, execCtx);
+    public ScriptAlgorithmExecutor(Algorithm algorithmDef, ScriptEngine scriptEngine, AlgorithmExecutionContext execCtx) {
+        super(algorithmDef, execCtx);
         this.scriptEngine=scriptEngine;
       
 
@@ -90,11 +90,11 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
 
         // Set empty output bindings so that algorithms can write their attributes
         for(OutputParameter outputParameter:algorithmDef.getOutputSet()) {
-            OutputValueBinding valueBinding=new OutputValueBinding();
+            OutputValueBinding valueBinding = new OutputValueBinding();
             bindingsByOutput.put(outputParameter, valueBinding);
-            String scriptName=outputParameter.getOutputName();
+            String scriptName = outputParameter.getOutputName();
             if(scriptName==null) {
-                scriptName=outputParameter.getParameter().getName();
+                scriptName = outputParameter.getParameter().getName();
             }
             scriptEngine.put(scriptName, valueBinding);
         }
