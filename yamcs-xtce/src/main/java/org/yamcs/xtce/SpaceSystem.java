@@ -183,6 +183,15 @@ public class SpaceSystem extends NameDescription {
     public Collection<MetaCommand> getMetaCommands() {
         return commands.values();
     }
+    /**
+     * remove parameter from SpaceSystem - only used during loading or from XtceDb 
+     *  XtceDb has several maps pointing to these parameters.
+     * 
+     * @param p parameter to remove
+     */
+    public void removeParameter(Parameter p) {
+        parameters.remove(p.getName());
+    }
 
     public int getMetaCommandCount(boolean recurse) {
         if (!recurse) return commands.size();
