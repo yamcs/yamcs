@@ -7,8 +7,8 @@ package org.yamcs.xtce;
  */
 public class BooleanDataEncoding extends DataEncoding {
     private static final long serialVersionUID=200805131551L;
-    public BooleanDataEncoding(String name) {
-        super(name, 1);
+    public BooleanDataEncoding() {
+        super(1);
     }
 
     @Override

@@ -34,7 +34,7 @@ message AlarmRange {
 
 message EnumerationAlarm {
   optional AlarmLevelType level = 1;
-  optional int64 value = 2;
+//  optional int64 value = 2; //removed because it is not part of XTCE and it doesn't work with ranges
   optional string label = 3;
 }
 

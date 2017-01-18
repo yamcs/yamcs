@@ -9,7 +9,7 @@ public class IntegerDataEncoding extends DataEncoding {
     private static final long serialVersionUID = 200805131551L;
     static Logger log=LoggerFactory.getLogger(IntegerDataEncoding.class.getName());
     Calibrator defaultCalibrator=null;
-    public enum Encoding {unsigned, twosCompliment, onesCompliment, signMagnitude, BCD, packedBCD, string};
+    public enum Encoding {unsigned, twosComplement, onesComplement, signMagnitude, BCD, packedBCD, string};
     Encoding encoding=Encoding.unsigned;
     StringDataEncoding stringEncoding=null;
 
@@ -18,12 +18,12 @@ public class IntegerDataEncoding extends DataEncoding {
      * @param name
      * @param sizeInBits
      */
-    public IntegerDataEncoding(String name,int sizeInBits, ByteOrder byteOrder) {
-        super(name, sizeInBits, byteOrder);
+    public IntegerDataEncoding(int sizeInBits, ByteOrder byteOrder) {
+        super(sizeInBits, byteOrder);
     }
 
-    public IntegerDataEncoding(String name,int sizeInBits) {
-        super(name, sizeInBits, ByteOrder.BIG_ENDIAN);
+    public IntegerDataEncoding(int sizeInBits) {
+        super(sizeInBits, ByteOrder.BIG_ENDIAN);
     }
     /**
      * Integer data encoded as a string.
@@ -31,7 +31,7 @@ public class IntegerDataEncoding extends DataEncoding {
      * @param sde describes how the string is encoded.
      */
     public IntegerDataEncoding(String name, StringDataEncoding sde) {
-        super(name, sde.getSizeInBits());
+        super(sde.getSizeInBits());
         encoding = Encoding.string;
         stringEncoding = sde;
     }

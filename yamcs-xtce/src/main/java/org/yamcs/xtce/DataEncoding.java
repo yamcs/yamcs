@@ -6,19 +6,18 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteOrder;
 
-public abstract class DataEncoding extends NameDescription implements Serializable {
+public abstract class DataEncoding implements Serializable {
     private static final long serialVersionUID = 200805131551L;
 
     protected int sizeInBits;
     transient ByteOrder byteOrder=ByteOrder.BIG_ENDIAN; //DIFFERS_FROM_XTCE in xtce is bloody complicated
     
-    DataEncoding(String name, int sizeInBits) {
-        super(name);
+    DataEncoding(int sizeInBits) {
         this.sizeInBits = sizeInBits;
     }
     
-    DataEncoding(String name, int sizeInBits, ByteOrder byteOrder) {
-        this(name, sizeInBits);
+    DataEncoding(int sizeInBits, ByteOrder byteOrder) {
+        this(sizeInBits);
         this.byteOrder = byteOrder;
     }
     

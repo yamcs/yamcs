@@ -58,8 +58,8 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
      * Adds a new contextual alarm for the specified value
      * @param contextMatch use <tt>null</tt> for the default context
      */
-    public void addAlarm(MatchCriteria contextMatch, ValueEnumeration enumValue, AlarmLevels level) {
-        createOrGetAlarm(contextMatch).addAlarm(enumValue, level);
+    public void addAlarm(MatchCriteria contextMatch, String enumLabel, AlarmLevels level) {
+        createOrGetAlarm(contextMatch).addAlarm(enumLabel, level);
     }
 
     public EnumerationAlarm createOrGetAlarm(MatchCriteria contextMatch) {
@@ -85,7 +85,16 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
 
     public String calibrate(long raw) {
         ValueEnumeration v = enumeration.get(raw);
-        return v == null ? "UNDEF" : v.label;
+        if(v!=null) return v.label;
+        
+        if ( ranges != null ) {
+            for (ValueEnumerationRange range:ranges) {
+                if (range.isValueInRange(raw)) {
+                    return range.label;
+                }
+            }
+        }
+        return "UNDEF";
     }
 
     public String getCalibrationDescription() {
@@ -101,4 +110,6 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
     public String toString() {
         return "EnumeratedParameterType: "+enumerationList+" encoding:"+encoding+((defaultAlarm!=null)?defaultAlarm:"")+((contextAlarmList!=null)?contextAlarmList:"");
     }
+
+   
 }

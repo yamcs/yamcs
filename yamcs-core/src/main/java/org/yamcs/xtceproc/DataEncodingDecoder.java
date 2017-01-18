@@ -114,11 +114,11 @@ public class DataEncodingDecoder {
             rv = pcontext.bb.getLong(byteOffset);
             break;
         default:
-        	log.warn(String.format("parameter extraction for %d bytes not supported, used for %s", byteSize, ide.getName()));
+        	log.warn(String.format("parameter extraction for %d bytes not supported, used for %s", byteSize, pv.getParameter()));
         }
         pcontext.bitPosition+=ide.getSizeInBits();
         switch(ide.getEncoding()) {
-        case twosCompliment:
+        case twosComplement:
             //we shift it to the left first such that the sign bit arrives on the first position
             rv= (rv&mask)<<(64-ide.getSizeInBits()-bitsToShift);
             rv=rv>>(64-ide.getSizeInBits());

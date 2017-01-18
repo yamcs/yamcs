@@ -519,10 +519,10 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                         }
                     });
                 }
-                encoding = new IntegerDataEncoding(name, bitlength);
+                encoding = new IntegerDataEncoding(bitlength);
                 if (rawtype.toLowerCase().startsWith("int")) {
                     if ("int".equals(rawtype)) {
-                        ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosCompliment;
+                        ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosComplement;
                     } else {
                         int startBracket = rawtype.indexOf('(');
                         if (startBracket != -1) {
@@ -530,7 +530,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                             if (endBracket != -1) {
                                 String intRepresentation = rawtype.substring(startBracket+1, endBracket).trim().toLowerCase();
                                 if ("2c".equals(intRepresentation)) {
-                                    ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosCompliment;
+                                    ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosComplement;
                                 } else if ("si".equals(intRepresentation)) {
                                     ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.signMagnitude;
                                 } else {
@@ -556,7 +556,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 encoding=new BinaryDataEncoding(name, bitlength);
             } else if ("boolean".equalsIgnoreCase(rawtype)) {
                 if(bitlength!=-1) throw new SpreadsheetLoadException(ctx, "Bit length is not allowed for boolean parameters (defaults to 1). Use any other raw type if you want to specify the bitlength");
-                encoding=new BooleanDataEncoding(name);
+                encoding=new BooleanDataEncoding();
             } else if ("string".equalsIgnoreCase(rawtype)) {
                 // Version <= 1.6 String type
                 // STRING
@@ -616,7 +616,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                         }
                     });
                 }
-                encoding=new FloatDataEncoding(name, bitlength);
+                encoding=new FloatDataEncoding(bitlength);
                 if((!"enumerated".equalsIgnoreCase(engtype)) && calib!=null) {
                     Calibrator c = calibrators.get(calib);
                     if (c == null) {
@@ -651,7 +651,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 // Floats can be encoded as strings
                 if ( encoding instanceof StringDataEncoding ) {
                     // Create a new float encoding which uses the configured string encoding
-                    FloatDataEncoding floatStringEncoding = new FloatDataEncoding( name, ((StringDataEncoding)encoding) );
+                    FloatDataEncoding floatStringEncoding = new FloatDataEncoding(((StringDataEncoding)encoding) );
                     if(calib!=null) {
                         Calibrator c = calibrators.get(calib);
                         if( c == null ) {
@@ -1529,10 +1529,10 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             if(sizeInBits==-1) {
                 throw new SpreadsheetLoadException(ctx, "Size in bits length is mandatory for integer arguments");
             }
-            encoding = new IntegerDataEncoding(name, sizeInBits, byteOrder);
+            encoding = new IntegerDataEncoding(sizeInBits, byteOrder);
             if (rawType.toLowerCase().startsWith("int")) {
                 if ("int".equals(rawType)) {
-                    ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosCompliment;
+                    ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosComplement;
                 } else {
                     int startBracket = rawType.indexOf('(');
                     if (startBracket != -1) {
@@ -1540,7 +1540,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                         if (endBracket != -1) {
                             String intRepresentation = rawType.substring(startBracket+1, endBracket).trim().toLowerCase();
                             if ("2c".equals(intRepresentation)) {
-                                ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosCompliment;
+                                ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.twosComplement;
                             } else if ("si".equals(intRepresentation)) {
                                 ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.signMagnitude;
                             } else {
@@ -1562,7 +1562,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             encoding=new BinaryDataEncoding(name, sizeInBits);
         } else if ("boolean".equalsIgnoreCase(rawType)) {
             if(sizeInBits!=-1) throw new SpreadsheetLoadException(ctx, "Bit length is not allowed for boolean parameters (defaults to 1). Use any other raw type if you want to specify the bitlength");
-            encoding=new BooleanDataEncoding(name);
+            encoding = new BooleanDataEncoding();
         } else if ("string".equalsIgnoreCase(rawType)) {
             // Version <= 1.6 String type
             // STRING
@@ -1622,7 +1622,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             if(sizeInBits==-1) {
                 throw new SpreadsheetLoadException(ctx, "Size in bits is mandatory for integer arguments");
             }
-            encoding=new FloatDataEncoding(name, sizeInBits, byteOrder);
+            encoding=new FloatDataEncoding(sizeInBits, byteOrder);
             if((!"enumerated".equalsIgnoreCase(engType)) && (calib!=null)) {
                 Calibrator c = calibrators.get(calib);
                 if (c == null) {
@@ -1657,7 +1657,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             // Floats can be encoded as strings
             if ( encoding instanceof StringDataEncoding ) {
                 // Create a new float encoding which uses the configured string encoding
-                FloatDataEncoding floatStringEncoding = new FloatDataEncoding( name, ((StringDataEncoding)encoding));
+                FloatDataEncoding floatStringEncoding = new FloatDataEncoding(((StringDataEncoding)encoding));
                 if(calib!=null) {
                     Calibrator c = calibrators.get(calib);
                     if( c == null ) {
@@ -2002,27 +2002,27 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 if(hasColumn(cells, IDX_ALARM_WATCH_TRIGGER) && hasColumn(cells, IDX_ALARM_WATCH_VALUE)) {
                     String trigger=cells[IDX_ALARM_WATCH_TRIGGER].getContents();
                     String triggerValue=cells[IDX_ALARM_WATCH_VALUE].getContents();
-                    addAlarmRagne(para, context, trigger, triggerValue, AlarmLevels.watch);
+                    addAlarmRange(para, context, trigger, triggerValue, AlarmLevels.watch);
                 }
                 if(hasColumn(cells, IDX_ALARM_WARNING_TRIGGER) && hasColumn(cells, IDX_ALARM_WARNING_VALUE)) {
                     String trigger=cells[IDX_ALARM_WARNING_TRIGGER].getContents();
                     String triggerValue=cells[IDX_ALARM_WARNING_VALUE].getContents();
-                    addAlarmRagne(para, context, trigger, triggerValue, AlarmLevels.warning);
+                    addAlarmRange(para, context, trigger, triggerValue, AlarmLevels.warning);
                 }
                 if(hasColumn(cells, IDX_ALARM_DISTRESS_TRIGGER) && hasColumn(cells, IDX_ALARM_DISTRESS_VALUE)) {
                     String trigger=cells[IDX_ALARM_DISTRESS_TRIGGER].getContents();
                     String triggerValue=cells[IDX_ALARM_DISTRESS_VALUE].getContents();
-                    addAlarmRagne(para, context, trigger, triggerValue, AlarmLevels.distress);
+                    addAlarmRange(para, context, trigger, triggerValue, AlarmLevels.distress);
                 }
                 if(hasColumn(cells, IDX_ALARM_CRITICAL_TRIGGER) && hasColumn(cells, IDX_ALARM_CRITICAL_VALUE)) {
                     String trigger=cells[IDX_ALARM_CRITICAL_TRIGGER].getContents();
                     String triggerValue=cells[IDX_ALARM_CRITICAL_VALUE].getContents();
-                    addAlarmRagne(para, context, trigger, triggerValue, AlarmLevels.critical);
+                    addAlarmRange(para, context, trigger, triggerValue, AlarmLevels.critical);
                 }
                 if(hasColumn(cells, IDX_ALARM_SEVERE_TRIGGER) && hasColumn(cells, IDX_ALARM_SEVERE_VALUE)) {
                     String trigger=cells[IDX_ALARM_SEVERE_TRIGGER].getContents();
                     String triggerValue=cells[IDX_ALARM_SEVERE_VALUE].getContents();
-                    addAlarmRagne(para, context, trigger, triggerValue, AlarmLevels.severe);
+                    addAlarmRange(para, context, trigger, triggerValue, AlarmLevels.severe);
                 }
 
                 // Set minviolations and alarmreporttype
@@ -2061,7 +2061,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     }
 
 
-    private void addAlarmRagne(Parameter para, MatchCriteria context, String trigger, String triggerValue, AlarmLevels level) {
+    private void addAlarmRange(Parameter para, MatchCriteria context, String trigger, String triggerValue, AlarmLevels level) {
         if(para.getParameterType() instanceof IntegerParameterType) {
             IntegerParameterType ipt=(IntegerParameterType)para.getParameterType();
             if("low".equals(trigger)) {
@@ -2087,7 +2087,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 if(enumValue==null) {
                     throw new SpreadsheetLoadException(ctx, "Unknown enumeration value '"+triggerValue+"' for alarm of enumerated parameter "+para.getName());
                 } else {
-                    ept.addAlarm(context, enumValue, level);
+                    ept.addAlarm(context, triggerValue, level);
                 }
             } else {
                 throw new SpreadsheetLoadException(ctx, "Unexpected trigger type '"+trigger+"' for alarm of enumerated parameter "+para.getName());

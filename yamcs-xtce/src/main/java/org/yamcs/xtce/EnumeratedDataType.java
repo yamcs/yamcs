@@ -51,6 +51,22 @@ public class EnumeratedDataType extends BaseDataType {
         }
         return null;
     }
+    
+    public boolean hasLabel(String label) {
+        for(ValueEnumeration enumeration:enumerationList) {
+            if(enumeration.getLabel().equals(label)) {
+                return true;
+            }
+        }
+        if ( ranges != null ) {
+            for (ValueEnumerationRange range:ranges) {
+                if (range.getLabel().equals(label)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     /**
      * Add value to enumeration list
@@ -90,5 +106,7 @@ public class EnumeratedDataType extends BaseDataType {
     public Object parseString(String stringValue) {
         return stringValue;
     }
+    
+   
 }
 

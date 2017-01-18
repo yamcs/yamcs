@@ -3,12 +3,13 @@ package org.yamcs.xtce;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class FloatParameterType extends FloatDataType implements ParameterType {
-    private static final long serialVersionUID=200805131551L;
-    private NumericAlarm defaultAlarm=null;
-    private ArrayList<NumericContextAlarm> contextAlarmList=null;
+    private static final long serialVersionUID = 2L;
+    private NumericAlarm defaultAlarm = null;
+    private List<NumericContextAlarm> contextAlarmList = null;
 
 
     public FloatParameterType(String name){
@@ -122,7 +123,11 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
         return null;
     }
 
-    public ArrayList<NumericContextAlarm> getContextAlarmList() {
+    public void setContextAlarmList(List<NumericContextAlarm> contextAlarmList) {
+        this.contextAlarmList = contextAlarmList;
+    }
+    
+    public List<NumericContextAlarm> getContextAlarmList() {
         return contextAlarmList;
     }
 

@@ -22,8 +22,8 @@ public class EnumerationAlarm extends AlarmType implements Serializable{
 
 
 
-    public void addAlarm(ValueEnumeration enumValue, AlarmLevels level) {
-        alarmList.add(new EnumerationAlarmItem(enumValue,level));	
+    public void addAlarm(String label, AlarmLevels level) {
+        alarmList.add(new EnumerationAlarmItem(label,level));	
     }
 
     public AlarmLevels getDefaultAlarmLevel() {
@@ -44,18 +44,19 @@ public class EnumerationAlarm extends AlarmType implements Serializable{
 
     static public class EnumerationAlarmItem implements Serializable {
         private static final long serialVersionUID = 200707121420L;
-        EnumerationAlarmItem(ValueEnumeration enumValue, AlarmLevels level) {
-            this.enumerationValue=enumValue;
+        
+        AlarmLevels alarmLevel;
+        String enumerationLabel;
+        EnumerationAlarmItem(String label, AlarmLevels level) {
+            this.enumerationLabel = label;
             this.alarmLevel=level;
         }
-        AlarmLevels alarmLevel;
-        ValueEnumeration enumerationValue;
-        
         
 
-        public ValueEnumeration getEnumerationValue() {
-            return enumerationValue;
+        public String getEnumerationLabel() {
+            return enumerationLabel;
         }
+
 
         public AlarmLevels getAlarmLevel() {
             return alarmLevel;
@@ -63,10 +64,9 @@ public class EnumerationAlarm extends AlarmType implements Serializable{
         
         @Override
         public String toString() {
-            return "("+enumerationValue.getLabel()+"->"+alarmLevel+")";
+            return "("+enumerationLabel+"->"+alarmLevel+")";
         }
     }
-
 
     public void setDefaultAlarmLevel(AlarmLevels level) {
         this.defaultAlarmLevel=level;

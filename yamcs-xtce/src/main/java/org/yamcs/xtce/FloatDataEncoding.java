@@ -15,15 +15,14 @@ public class FloatDataEncoding extends DataEncoding {
     /**
      * FloadDataEncoding of type {@link FloatDataEncoding.Encoding#IEEE754_1985}
      * 
-     * @param name
      * @param sizeInBits
      */
-    public FloatDataEncoding(String name, int sizeInBits) {
-        this(name, sizeInBits, ByteOrder.BIG_ENDIAN);       
+    public FloatDataEncoding(int sizeInBits) {
+        this(sizeInBits, ByteOrder.BIG_ENDIAN);       
     }
 
-    public FloatDataEncoding(String name, int sizeInBits, ByteOrder byteOrder) {
-        super(name, sizeInBits, byteOrder);
+    public FloatDataEncoding(int sizeInBits, ByteOrder byteOrder) {
+        super(sizeInBits, byteOrder);
         encoding = Encoding.IEEE754_1985;
     }
     /**
@@ -31,8 +30,8 @@ public class FloatDataEncoding extends DataEncoding {
      * @param name
      * @param sde describes how the string is encoded
      */
-    public FloatDataEncoding(String name, StringDataEncoding sde) {
-        super(name, sde.getSizeInBits());
+    public FloatDataEncoding(StringDataEncoding sde) {
+        super(sde.getSizeInBits());
         encoding = Encoding.STRING;
         stringEncoding = sde;
     }

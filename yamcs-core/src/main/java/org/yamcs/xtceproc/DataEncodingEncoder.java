@@ -95,7 +95,7 @@ public class DataEncodingEncoder {
         //STEP 2 mix the extracted bytes x with he value of the argument v, depending on the encoding type        
         x = x & mask;
         switch(ide.getEncoding()) {
-        case twosCompliment:
+        case twosComplement:
             v = (v<<(64-ide.getSizeInBits())>>>(64-ide.getSizeInBits()));
             break;
         case unsigned:

@@ -489,11 +489,11 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testServicesStopStart() throws Exception {
-        String service = "org.yamcs.archive.FSEventDecoder";
+        String service = "org.yamcs.archive.CommandHistoryRecorder";
 
         String resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET, "").get();
         ListServiceInfoResponse r = fromJson(resp, SchemaRest.ListServiceInfoResponse.MERGE).build();
-        assertEquals(10, r.getServiceList().size());
+        assertEquals(9, r.getServiceList().size());
 
         ServiceInfo servInfo = r.getServiceList().stream().filter(si -> service.equals(si.getName())).findFirst().orElse(null);
         assertEquals(ServiceState.RUNNING, servInfo.getState());

@@ -665,8 +665,7 @@ public class XtceToGpbAssembler {
 
     public static Mdb.EnumerationAlarm toEnumerationAlarm(EnumerationAlarmItem xtceAlarmItem) {
         Mdb.EnumerationAlarm.Builder resultb = Mdb.EnumerationAlarm.newBuilder();
-        resultb.setValue(xtceAlarmItem.getEnumerationValue().getValue());
-        resultb.setLabel(xtceAlarmItem.getEnumerationValue().getLabel());
+        resultb.setLabel(xtceAlarmItem.getEnumerationLabel());
         switch (xtceAlarmItem.getAlarmLevel()) {
         case normal:
             resultb.setLevel(AlarmLevelType.NORMAL);

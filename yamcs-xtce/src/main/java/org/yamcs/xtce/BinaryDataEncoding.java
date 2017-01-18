@@ -9,7 +9,7 @@ package org.yamcs.xtce;
 public class BinaryDataEncoding extends DataEncoding {
     private static final long serialVersionUID=200805131551L;
     public BinaryDataEncoding(String name, int sizeInBits) {
-        super(name, sizeInBits);
+        super(sizeInBits);
     }
 
     @Override

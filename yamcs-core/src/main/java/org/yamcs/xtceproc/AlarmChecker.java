@@ -311,7 +311,7 @@ public class AlarmChecker {
         if(alarm != null) {
             AlarmLevels level=alarm.getDefaultAlarmLevel();
             for(EnumerationAlarmItem eai:alarm.getAlarmList()) {
-                if(eai.getEnumerationValue().getLabel().equals(s)) level=eai.getAlarmLevel();
+                if(eai.getEnumerationLabel().equals(s)) level=eai.getAlarmLevel();
             }
 
             switch(level) {

@@ -6,17 +6,24 @@ package org.yamcs.xtce;
  *
  */
 public class StringDataEncoding extends DataEncoding {
-    private static final long serialVersionUID=200805131551L;
+    private static final long serialVersionUID = 200805131551L;
     public enum SizeType {Fixed, TerminationChar, LeadingSize};
     private SizeType sizeType;
     private byte terminationChar=0;
     int sizeInBitsOfSizeTag=16;
-
+    
+    public StringDataEncoding() {
+        super(-1);
+    }
+    
+    
     public StringDataEncoding(String name, SizeType sizeType) {
-        super(name, -1);
+        super(-1);
         this.sizeType=sizeType;
     }
-
+    public void setSizeType(SizeType sizeType) {
+        this.sizeType = sizeType;
+    }
     public SizeType getSizeType() {
         return sizeType;
     }
@@ -68,4 +75,6 @@ public class StringDataEncoding extends DataEncoding {
     public Object parseString(String stringValue) {
         return stringValue;
     }
+
+ 
 }

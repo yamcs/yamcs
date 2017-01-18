@@ -13,10 +13,9 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.artemis.YamcsSession;
-import org.yamcs.usoctools.XtceUtil;
 import org.yamcs.utils.YObjectLoader;
-import org.yamcs.web.BadRequestException;
 import org.yamcs.xtce.MdbMappings;
+import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
@@ -263,7 +262,7 @@ public class Privilege {
         if( namespace == null ) {
             namespace = MdbMappings.MDB_OPSNAME;
         }
-        Collection<String> tl=XtceUtil.getInstance(XtceDbFactory.getInstance(yamcsInstance)).getTmPacketNames( namespace );
+        Collection<String> tl= getTmPacketNames(XtceDbFactory.getInstance(yamcsInstance), namespace);
         ArrayList<String> l=new ArrayList<String>();
         for(String name:tl) {
             if(!hasPrivilege(authToken, Privilege.Type.TM_PACKET, name)) continue;
@@ -271,7 +270,15 @@ public class Privilege {
         }
         return l;
     }
-
+    
+    private Collection<String> getTmPacketNames(XtceDb xtcedb, String namespace) {
+        ArrayList<String> pn=new ArrayList<String>();
+        for(SequenceContainer sc:xtcedb.getSequenceContainers()){
+            String alias=sc.getAlias(namespace);
+            if(alias!=null) pn.add(alias);
+        }
+        return pn;
+    }
     /**
      * Get parameter names this user has appropriate privileges for.
      *

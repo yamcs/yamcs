@@ -2,7 +2,6 @@
 services:  
     - org.yamcs.tctm.DataLinkInitialiser
     - org.yamcs.archive.XtceTmRecorder
-    - org.yamcs.archive.FSEventDecoder
     - org.yamcs.archive.ParameterRecorder
     - org.yamcs.archive.EventRecorder
     - org.yamcs.archive.ReplayServer
@@ -21,9 +20,6 @@ services:
 
 #name of the class that is used for the TM index. If not specified, org.yamcs.archive.GenericCccsdsTmIndex is used
 #tmIndexer: 
-
-#name of the class that is used to to generate events from the streams
-eventDecoders: []
 
 #config the tm providers started by the TmProviderAdapter
 tmDataLinks:
