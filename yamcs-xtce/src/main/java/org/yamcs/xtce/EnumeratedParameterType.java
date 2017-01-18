@@ -99,6 +99,6 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
 
     @Override
     public String toString() {
-        return "EnumeratedParameterType: "+enumeration+" encoding:"+encoding+((defaultAlarm!=null)?defaultAlarm:"")+((contextAlarmList!=null)?contextAlarmList:"");
+        return "EnumeratedParameterType: "+enumerationList+" encoding:"+encoding+((defaultAlarm!=null)?defaultAlarm:"")+((contextAlarmList!=null)?contextAlarmList:"");
     }
 }
