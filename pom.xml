@@ -48,7 +48,7 @@
       
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <artemisVersion>1.5.0</artemisVersion>
+    <artemisVersion>1.5.1</artemisVersion>
   </properties>
 
   <build>
