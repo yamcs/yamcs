@@ -34,6 +34,7 @@ import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.DataSource;
@@ -90,7 +91,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     AlgorithmExecutionContext globalCtx;
 
     public AlgorithmManager(String yamcsInstance) throws ConfigurationException {
-        this(yamcsInstance, null);
+        this(yamcsInstance, (Map<String, Object>)null);
     }
 
     @SuppressWarnings("unchecked")
@@ -146,7 +147,15 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             }
         }
     }
+    //these two constructors are invoked when part of a replay - we don't do anything with the replay request
+    public AlgorithmManager(String yamcsInstance, ReplayRequest rr) throws ConfigurationException {
+        this(yamcsInstance);
+    }
+    public AlgorithmManager(String yamcsInstance, Map<String, Object> config, ReplayRequest rr) throws ConfigurationException {
+        this(yamcsInstance, config);
+    }
 
+    
     @Override
     public void init(YProcessor yproc) {
         this.yproc = yproc;

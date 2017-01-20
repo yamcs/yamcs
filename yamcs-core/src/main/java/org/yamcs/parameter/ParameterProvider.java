@@ -9,8 +9,17 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Parameter;
 /**
- * interface implemented by all the classes that can provide parameters to the ParameterRequestManager
- * @author mache
+ * interface implemented by all the classes that can provide parameters to the ParameterRequestManager.
+ * 
+ * When the classes inherited from this object are created as part of a realtime processor, they need two constructors:
+ *  (String yamcsInstance, args)
+ *  
+ * When called as part of a replay processor, the following constructor is invoked 
+ *  (String yamcsInstance, args, ReplayRequest)
+ *  
+ *  args is the yaml parsed object used in the definition of the provider in yprocessor.yaml
+ *  
+ * @author nm
  *
  */
 public interface ParameterProvider extends Service {
