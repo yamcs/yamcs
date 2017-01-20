@@ -111,7 +111,7 @@ public class ProcessorFactory {
         if(spec!=null) {
             newargs.add(spec);
         }
-        return new YObjectLoader<T>().loadObject(className, newargs.toArray());
+        return YObjectLoader.loadObject(className, newargs.toArray());
     }
 
     static public YProcessor create(String instance, String name, String type, TcTmService tctms, String creator) throws ProcessorException, ConfigurationException {

@@ -674,8 +674,6 @@ public class XtceStaxReader {
     }
     
     private void readNumericAlarmElement(NumericAlarm numericAlarm) throws XMLStreamException {
-        String tag = xmlEvent.asStartElement().getName().getLocalPart();
-        System.out.println("readNumericAlarmElement tag: "+tag);
         if (isStartElementWithName(XTCE_StaticAlarmRanges)) {
             numericAlarm.setStaticAlarmRanges(readAlarmRanges());
         }
@@ -684,10 +682,8 @@ public class XtceStaxReader {
     private AlarmRanges readAlarmRanges() throws XMLStreamException {
         String tag = xmlEvent.asStartElement().getName().getLocalPart();
         AlarmRanges ar = new AlarmRanges();
-        System.out.println("in ReadAlarm Ranges tag: "+tag);
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-            System.out.println("AlarmRanges xmlEvent: "+xmlEvent);
             if (isStartElementWithName("WatchRange")) {
                 ar.addWatchRange(readFloatRange());
             }  else if (isStartElementWithName("WarningRange")) {
@@ -699,7 +695,6 @@ public class XtceStaxReader {
             } else if (isStartElementWithName("SevereRange")) {
                 ar.addSevereRange(readFloatRange());
             } else if (isEndElementWithName(tag)) {
-                System.out.println("-----ar: "+ar);
                 return ar;
             }
         }
@@ -719,7 +714,6 @@ public class XtceStaxReader {
         if (value != null) {
             maxInclusive = Double.parseDouble(value);            
         }
-        System.out.println("minInclusive: "+minInclusive+" maxInclusive: "+maxInclusive);
         return new FloatRange(minInclusive, maxInclusive);
     }
 

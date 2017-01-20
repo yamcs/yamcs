@@ -25,7 +25,7 @@ public class StreamEventProducer extends AbstractEventProducer {
     
     public StreamEventProducer(String yamcsInstance) {
         realtimeEventStream = YarchDatabase.getInstance(yamcsInstance).getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);                
-        if(realtimeEventStream==null) throw new ConfigurationException("Cannot find a stream named "+EventRecorder.REALTIME_EVENT_STREAM_NAME);
+        if(realtimeEventStream==null) throw new ConfigurationException("Cannot find a stream named '"+EventRecorder.REALTIME_EVENT_STREAM_NAME+"' in instance "+yamcsInstance);
         
         tdef=realtimeEventStream.getDefinition();       
         timeService = YamcsServer.getTimeService(yamcsInstance);
