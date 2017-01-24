@@ -115,12 +115,19 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
             for(ParameterProvider prov: parameterProviders.values()) {
                 prov.startProvidingAll();
             }
+        } else if(alarmChecker!=null) { //at least get all that have alarms
+            for(Parameter p:yproc.getXtceDb().getParameters()) {
+                if(p.getParameterType()!=null && p.getParameterType().hasAlarm()) {                    
+                    ParameterProvider provider = getProvider(p);
+                    if(provider==null) {
+                        log.warn("No provider found for parameter {} which has alarms", p.getQualifiedName());
+                    } else {
+                        log.debug("Asking provider {} to provide {} because it has alarms",provider, p.getQualifiedName());
+                        provider.startProviding(p);
+                    }
+                }
+            }
         }
-    }
-
-    /** Added by AMI on request of NM during a remote email session. */
-    public int generateDummyRequestId() {
-        return lastSubscriptionId.incrementAndGet();
     }
 
     /**
@@ -234,7 +241,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
             log.error(" addItemsToRequest called with an invalid subscriptionId="+subscriptionId+"\n current subscr:\n"+request2ParameterConsumerMap+"dv subscr:\n"+request2DVParameterConsumerMap);
             throw new InvalidRequestIdentification("no such subscriptionID",subscriptionId);
         }
-        ParameterProvider provider=getProvider(para);
+        ParameterProvider provider = getProvider(para);
         addItemToRequest(subscriptionId, para, provider);
     }
 
