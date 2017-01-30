@@ -119,7 +119,7 @@ public class MDBParameterRestHandler extends RestHandler {
                 String alias = p.getAlias(namespace);
                 if (alias != null || (recurse && p.getQualifiedName().startsWith(namespace))) {
                     if (parameterTypeMatches(p, types)) {
-                        responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                        responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, details?DetailLevel.FULL:DetailLevel.SUMMARY, req.getOptions()));
                     }
                 }
             }
@@ -127,7 +127,7 @@ public class MDBParameterRestHandler extends RestHandler {
             for (Parameter p : mdb.getParameters()) {
                 if (matcher != null && !matcher.matches(p)) continue;
                 if (parameterTypeMatches(p, types)) {
-                    responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                    responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, details?DetailLevel.FULL:DetailLevel.SUMMARY, req.getOptions()));
                 }
             }
         }
