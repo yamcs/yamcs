@@ -626,7 +626,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     }
                 }
             } else {
-                throw new SpreadsheetLoadException(ctx, "Unknown raw type " + rawtype);
+                // Raw type is optional if the parameter is not part of a container
+                // However a calibration is associated to a raw type
+                if(calib != null) {
+                    throw new SpreadsheetLoadException(ctx, "Parameter " + name + ": calibration specified without raw type");
+                }
             }
 
             if (ptype instanceof IntegerParameterType) {
