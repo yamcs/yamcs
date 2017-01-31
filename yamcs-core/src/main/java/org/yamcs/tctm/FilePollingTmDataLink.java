@@ -57,7 +57,7 @@ public class FilePollingTmDataLink extends AbstractExecutionThreadService implem
                     for(File f:files) {
                         log.info("Injecting the content of "+f);
                         try {
-                            TmFileReader prov=new TmFileReader(f.getAbsolutePath());
+                            TmFileReader prov=getTmFileReader(f.getAbsolutePath());
                             PacketWithTime pwrt;
                             while((pwrt=prov.readPacket(timeService.getMissionTime()))!=null) {
                                 tmSink.processPacket(pwrt);
@@ -74,6 +74,10 @@ public class FilePollingTmDataLink extends AbstractExecutionThreadService implem
         } catch(InterruptedException e) {
             log.debug("Interrupted");
         }
+    }
+
+    public TmFileReader getTmFileReader(String fileName) throws IOException {
+        return new TmFileReader(fileName);
     }
 
     @Override

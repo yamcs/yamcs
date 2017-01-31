@@ -21,7 +21,7 @@ import org.yamcs.utils.TimeEncoding;
  *
  */
 public class TmFileReader  {
-    InputStream inputStream;
+    protected InputStream inputStream;
     int fileoffset = 0;
     int packetcount = 0;
 

@@ -91,6 +91,7 @@ public class MDBParameterRestHandler extends RestHandler {
         
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
+        boolean details = req.getQueryParameterAsBoolean("details", false);
         
         // Support both type[]=float&type[]=integer and type=float,integer
         Set<String> types = new HashSet<>();
@@ -109,7 +110,7 @@ public class MDBParameterRestHandler extends RestHandler {
             String namespace = req.getQueryParameter("namespace");
             
             Privilege privilege = Privilege.getInstance();
-            for (Parameter p : mdb.getParameters()) {
+            for (Parameter p : mdb.getParameters()) {                
                 if (!privilege.hasPrivilege1(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName()))
                     continue;
                 if (matcher != null && !matcher.matches(p))
@@ -118,7 +119,7 @@ public class MDBParameterRestHandler extends RestHandler {
                 String alias = p.getAlias(namespace);
                 if (alias != null || (recurse && p.getQualifiedName().startsWith(namespace))) {
                     if (parameterTypeMatches(p, types)) {
-                        responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                        responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, details?DetailLevel.FULL:DetailLevel.SUMMARY, req.getOptions()));
                     }
                 }
             }
@@ -126,7 +127,7 @@ public class MDBParameterRestHandler extends RestHandler {
             for (Parameter p : mdb.getParameters()) {
                 if (matcher != null && !matcher.matches(p)) continue;
                 if (parameterTypeMatches(p, types)) {
-                    responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                    responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL, details?DetailLevel.FULL:DetailLevel.SUMMARY, req.getOptions()));
                 }
             }
         }
