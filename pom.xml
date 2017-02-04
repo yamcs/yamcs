@@ -156,9 +156,18 @@
           <effort>Default</effort>
         </configuration>
       </plugin>
-      <!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-checkstyle-plugin</artifactId> 
-        <configuration> <encoding>UTF-8</encoding> <configLocation>checkstyle.xml</configLocation> 
-        <enableRulesSummary>false</enableRulesSummary> </configuration> </plugin> -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>2.17</version>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>checkstyle</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>cobertura-maven-plugin</artifactId>
