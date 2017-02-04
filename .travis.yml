@@ -1,11 +1,16 @@
 language: java
 jdk: oraclejdk8
 
+addons:
+  sonarqube:
+    token:
+      secure: "O1s6pjmdgKBOsP/yhChOs37onVnUkSWLS+X+7+so1OYuDJCdlJwhxcxcC62LN3mayxECOiwt80fzR+h//SWUBK1ipg4bHfcz1KI0EdAEt+sKNQRc6Qt78+4L0uy49QGcoABH2RiKPzvQHKd6yMvXsVJ1enUnSZh5b5fjarlkYAo="
+
 sudo: false
 cache:
   directories:
     - $HOME/.m2
+    - $HOME/.sonar/cache
 
 script: mvn -Dsurefire.useFile=false test
-
-
+after_success: mvn -Dsurefire.useFile=false clean org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar
