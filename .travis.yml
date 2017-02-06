@@ -1,12 +1,12 @@
 language: java
 jdk: oraclejdk8
+sudo: false
 
 addons:
   sonarqube:
     token:
-      secure: "O1s6pjmdgKBOsP/yhChOs37onVnUkSWLS+X+7+so1OYuDJCdlJwhxcxcC62LN3mayxECOiwt80fzR+h//SWUBK1ipg4bHfcz1KI0EdAEt+sKNQRc6Qt78+4L0uy49QGcoABH2RiKPzvQHKd6yMvXsVJ1enUnSZh5b5fjarlkYAo="
+      secure: "BZHKofLWAebdg6XL7aHcJlRJ8YIjYfJdk8vlltNb9TuhRTrdFJ+bjOCMFN8iiPtg2uDNdbj13B2/TVbTwixeanrTz7zNTFo+I37kRuxtMV3qZZB7dBgjceu/xTRBX1XCNXhHpyoblBZcQntaKlLm5qnASs78GRUJr8YNFNZsTjE="
 
-sudo: false
 cache:
   directories:
     - $HOME/.m2
