@@ -65,11 +65,9 @@ public class UsernamePasswordToken implements AuthenticationToken {
 
     @Override
     public String toString() {
-        String usernamepassword = "";
-        usernamepassword += (username != null ? username : "null");
-        usernamepassword += "/";
-        usernamepassword += (password != null ? "*****" : "null");
-        return usernamepassword;
+        String repr = (username != null ? username : "null");
+        repr += (password != null ? "/*****" : "/null");
+        return repr;
     }
 
     @Override
