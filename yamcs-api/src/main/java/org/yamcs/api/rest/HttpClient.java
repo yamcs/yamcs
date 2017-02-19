@@ -262,7 +262,9 @@ public class HttpClient {
     }
     
     public void close() {
+        if(group!=null) {
             group.shutdownGracefully();
+        }
     }
 
 
