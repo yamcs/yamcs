@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.parameter.RealtimeArtemisParameterService;
+import org.yamcs.artemis.RealtimeArtemisParameterService;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
@@ -33,11 +33,11 @@ public class ProcessorCreatorService extends AbstractService {
 	this.yamcsInstance = yamcsInstance;
 
 	if(!config.containsKey("type")) {
-	    throw new ConfigurationException("Did not specify the yproc type");
+	    throw new ConfigurationException("Did not specify the processor type");
 	}
 	this.processorType = config.get("type");
 	if(!config.containsKey("name")) {
-	    throw new ConfigurationException("Did not specify the yproc name");
+	    throw new ConfigurationException("Did not specify the processor name");
 	}
 	this.processorName = config.get("name");
 
