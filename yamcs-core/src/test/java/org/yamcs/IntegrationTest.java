@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.RestEventProducer;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
@@ -34,6 +35,7 @@ import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs;
+import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
@@ -515,6 +517,22 @@ public class IntegrationTest extends AbstractIntegrationTest {
         servInfo = r.getServiceList().stream().filter(si -> service.equals(si.getName())).findFirst().orElse(null);
         assertEquals(ServiceState.RUNNING, servInfo.getState());
 
+    }
+    
+    @Test
+    public void testRestEvents() throws Exception {
+        WebSocketRequest wsr = new WebSocketRequest("events", "subscribe");
+        wsClient.sendRequest(wsr).get();
+            
+        RestEventProducer rep = new RestEventProducer(ycp);
+        Event e1 = Event.newBuilder().setSource("IntegrationTest").setSeqNumber(1).setReceptionTime(TimeEncoding.getWallclockTime()).setGenerationTime(TimeEncoding.getWallclockTime())
+                .setMessage("event1").build();
+        rep.sendEvent(e1);
+        
+       Event e2 = wsListener.eventList.poll(2,  TimeUnit.SECONDS);
+       assertNotNull(e2);
+       assertEquals(e1.getGenerationTime(), e2.getGenerationTime());
+       assertEquals(e1.getMessage(), e2.getMessage());
     }
 
 }

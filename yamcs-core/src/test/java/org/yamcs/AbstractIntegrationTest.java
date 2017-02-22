@@ -19,7 +19,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.yamcs.api.EventProducerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.RestClient;
@@ -77,7 +76,6 @@ public abstract class AbstractIntegrationTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-       //enableDebugging();
         setupYamcs();
     }
 
@@ -127,7 +125,6 @@ public abstract class AbstractIntegrationTest {
 
         FileUtils.deleteRecursively(dataDir.toPath());
 
-        EventProducerFactory.setMockup(true);
         YConfiguration.setup("IntegrationTest");
         ManagementService.setup(false);
         JMXService.setup(false);

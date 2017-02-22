@@ -4,17 +4,14 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
-import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.api.artemis.YamcsClient;
-import org.yamcs.api.ws.WebSocketClient;
-import org.yamcs.api.ws.WebSocketClientCallback;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
+import org.yamcs.api.rest.RestClient;
 import org.yamcs.protobuf.Yamcs.Event;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.utils.TimeEncoding;
 import org.yaml.snakeyaml.Yaml;
+
+import io.netty.handler.codec.http.HttpMethod;
 
 
 /**
@@ -24,20 +21,24 @@ import org.yaml.snakeyaml.Yaml;
  * events with a message like 'last event repeated X times'. This behaviour can
  * be turned off.
  */
-public class WebSocketEventProducer extends AbstractEventProducer implements WebSocketClientCallback {
+public class RestEventProducer extends AbstractEventProducer {
     static final String CONF_REPEATED_EVENT_REDUCTION = "repeatedEventReduction";
     
-    WebSocketClient wsClient;
-    YamcsClient yclient;
-    static Logger logger=LoggerFactory.getLogger(WebSocketEventProducer.class);
+    RestClient restClient;
+    static Logger logger=LoggerFactory.getLogger(RestEventProducer.class);
     
     static final int MAX_QUEUE_SIZE=1000;
     ArrayBlockingQueue<Event> queue=new ArrayBlockingQueue<Event>(MAX_QUEUE_SIZE);
     
-    WebSocketEventProducer(YamcsConnectionProperties connProp) {
-        wsClient = new WebSocketClient(connProp, this);
+    String eventResource;
+    YamcsConnectionProperties connProp;
+    
+    public RestEventProducer(YamcsConnectionProperties connProp) {
+        restClient = new RestClient(connProp);
+        this.connProp = connProp;
         
-        InputStream is=WebSocketEventProducer.class.getResourceAsStream("/event-producer.yaml");
+        eventResource = "/archive/"+connProp.getInstance()+"/events";
+        InputStream is = RestEventProducer.class.getResourceAsStream("/event-producer.yaml");
         boolean repeatedEventReduction = true;
         if(is!=null) {
             Object o = new Yaml().load(is);
@@ -51,49 +52,39 @@ public class WebSocketEventProducer extends AbstractEventProducer implements Web
             }
         }
         if (repeatedEventReduction) setRepeatedEventReduction(true);
-        wsClient.connect();
     }
     
     
 
-    @Override
-    public void disconnected() {
-    }
 
     @Override
     public void close() {
-        wsClient.disconnect();
+        restClient.close();
     }
+    
+    
     /* (non-Javadoc)
      * @see org.yamcs.api.EventProducer#sendEvent(org.yamcs.protobuf.Yamcs.Event)
      */
     @Override
     public synchronized void sendEvent(Event event) {
         logger.debug("Sending Event: {}", event.getMessage());
-        if(wsClient.isConnected()) {
-            try {
-                yclient.sendData(address, ProtoDataType.EVENT, event);
-            } catch (ActiveMQException e) {
-                logger.error("Failed to send event ",e);
-            }
-        } else {
-            queue.offer(event);
-        }
+        restClient.doRequest(eventResource, HttpMethod.POST, event.toByteArray());
     }
     
     @Override
     public String toString() {
-        return WebSocketEventProducer.class.getName()+" connected to "+wsClient;
+        return RestEventProducer.class.getName()+" sendign events to "+connProp;
     }
+    
     @Override
     public long getMissionTime() {       
-        return TimeEncoding.currentInstant();
+        return TimeEncoding.getWallclockTime();
     }
-
-
-    @Override
-    public void onMessage(WebSocketSubscriptionData data) {
-        // TODO Auto-generated method stub
+    
+    
+    public void main(String[] args) {
         
     }
+
 }
