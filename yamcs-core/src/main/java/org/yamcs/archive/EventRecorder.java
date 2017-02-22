@@ -1,7 +1,14 @@
 package org.yamcs.archive;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
+import org.apache.activemq.artemis.api.core.SimpleString;
+import org.yamcs.StreamConfig;
+import org.yamcs.StreamConfig.StreamConfigEntry;
+import org.yamcs.artemis.EventTupleTranslator;
+import org.yamcs.artemis.StreamAdapter;
+import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.streamsql.ParseException;
@@ -18,21 +25,26 @@ import com.google.common.util.concurrent.AbstractService;
 public class EventRecorder extends AbstractService {
     static TupleDefinition eventTpdef;
     static final public String TABLE_NAME="events";
-    static final public String REALTIME_EVENT_STREAM_NAME = "events_realtime";
-    static final public String DUMP_EVENT_STREAM_NAME = "events_dump";
     final String yamcsInstance;
-
+    
+    static final public String REALTIME_EVENT_STREAM_NAME = "events_realtime";
+    
     public EventRecorder(String instance) throws StreamSqlException, ParseException {
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
         this.yamcsInstance = instance;
+        
         if(ydb.getTable(TABLE_NAME)==null) {
             ydb.execute("create table "+TABLE_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'), primary key(gentime, source, seqNum)) histogram(source)"
                     + " partition by time(gentime"+XtceTmRecorder.getTimePartitioningSchemaSql()+") table_format=compressed");
         }
         eventTpdef = ydb.getTable("events").getTupleDefinition();
-
-        ydb.execute("insert into "+TABLE_NAME+" select * from "+REALTIME_EVENT_STREAM_NAME);
-        ydb.execute("insert into "+TABLE_NAME+" select * from "+DUMP_EVENT_STREAM_NAME);
+        
+        StreamConfig sc = StreamConfig.getInstance(instance);
+        for(StreamConfigEntry sce: sc.getEntries()) {
+            if(sce.getType() == StreamConfig.StandardStreamType.event) {
+                ydb.execute("insert into "+TABLE_NAME+" select * from "+sce.getName());
+            }
+        }
     }
 
     @Override
@@ -43,7 +55,9 @@ public class EventRecorder extends AbstractService {
     @Override
     protected void doStop() {
         YarchDatabase ydb=YarchDatabase.getInstance(yamcsInstance);
-        Utils.closeTableWriters(ydb,  Arrays.asList(REALTIME_EVENT_STREAM_NAME, DUMP_EVENT_STREAM_NAME));
+        StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
+            
+        Utils.closeTableWriters(ydb,  sc.getEntries().stream().map(sce -> sce.getName()).collect(Collectors.toList()));
 
         notifyStopped();
     }

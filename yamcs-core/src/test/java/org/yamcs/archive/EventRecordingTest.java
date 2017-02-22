@@ -72,7 +72,7 @@ public class EventRecordingTest extends YarchTestCase {
     @Test
     public void testRecording() throws Exception {
         ydb.execute("create stream "+EventRecorder.REALTIME_EVENT_STREAM_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'))");
-        ydb.execute("create stream "+EventRecorder.DUMP_EVENT_STREAM_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'))");
+        ydb.execute("create stream event_dump(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'))");
         EventRecorder eventRecorder = new EventRecorder(context.getDbName());
         final int n=100;
         eventRecorder.startAsync();
