@@ -10,8 +10,14 @@ In addition, the maven release plugin will create a tag and push it to github, s
 
 The gpg invokation will hopefull bring up a popup from the gpg agent asking for the passphrase (or it might even be automatically added to the agent at login). Alternatively, the passphrase can be configured using the gpg.passphrase property next to the pgp.keyname in the settings.xml.
 
-The maven release plugin makes a target/checkout directory with a clone of the reposiotry. This directory can be used in case of trouble to modify the pom.xml and do manual things like:
- mvn deploy -B -P yamcs-release [-DskipTests] - this should perform the deployment to nexus
+The maven release plugin makes a target/checkout directory with a clone of the repository for the tag (or you can get this version with git checkout <version-tag>).
+ This directory can be used in case of trouble to modify the pom.xml and do manual things like:
+ mvn deploy -B -P yamcs-release [-DskipTests] - this should perform the deployment to nexus - staging area.
+
+The release has to be done manually by logging in to oss.sonatype.org (make sure that you are logged in!!), select from the left Staging Repositories, find something like orgyamcs-xyz in the list. The satus should be closed (otherwise there was some error) and then you can press Release in the menubar. 
+
+
+
 
 
 
