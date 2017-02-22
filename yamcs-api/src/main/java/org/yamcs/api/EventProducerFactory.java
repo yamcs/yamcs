@@ -25,7 +25,7 @@ public class EventProducerFactory {
     
     /**
      * Configure the factory to produce mockup objects, optionally queuing the events in a queue
-     * @param queue - if trye then queue all messages in the mockupQueue queue.
+     * @param queue - if true then queue all messages in the mockupQueue queue.
      */
     static public void setMockup(boolean queue) {
         mockup=true;
@@ -52,13 +52,14 @@ public class EventProducerFactory {
     /**
      *
      * The instance passed as parameter will overwrite the instance in the config file if any.
-     * For yamcs internal services: leave the url as yamcs:/// and specify the instance with this method
      * 
-     * @return
+     * If the event-producer.yml config file is not found on the classpath, returns a ConsoleEventProducer when called outside yamcs or an StreamEventProducer when called inside.
+     * @param instance - instance for which the producer is to be returned
+     * 
+     * @return an EventProducer
      * @throws RuntimeException
      */
     static public EventProducer getEventProducer(String instance) throws RuntimeException {
-
         if(mockup)  {
             log.debug("Creating a ConsoleEventProducer with mockupQueue: "+mockupQueue);
             return new MockupEventProducer(mockupQueue);
@@ -67,11 +68,14 @@ public class EventProducerFactory {
         String configFile = "/event-producer.yaml";
         InputStream is = EventProducerFactory.class.getResourceAsStream(configFile);
         if(is==null) {
-            log.debug("Could not find {} in the classpath, returning a ConsoleEventProducer", configFile);
+            EventProducer producer = getStreamEventProducer(instance);     
+            if(producer!=null) return producer;
+            
+            log.debug("Could not find {} in the classpath, and not running inside Yamcs, returning a ConsoleEventProducer", configFile);
             return new ConsoleEventProducer();
         }
-        Yaml yaml=new Yaml();
-        Object o=yaml.load(is);
+        Yaml yaml = new Yaml();
+        Object o = yaml.load(is);
         if(!(o instanceof Map<?,?>)) {
             throw new RuntimeException("event-producer.yaml does not contain a map but a "+o.getClass());
         }
@@ -98,15 +102,7 @@ public class EventProducerFactory {
         }
         EventProducer producer = null;
         if(ycd.getHost()==null) {
-            try {
-                //try to load the stream event producer from yamcs core because probably we are running inside the yamcs server
-                @SuppressWarnings("unchecked")
-                Class<EventProducer> ic=(Class<EventProducer>) Class.forName("org.yamcs.StreamEventProducer");
-                Constructor<EventProducer> constructor = ic.getConstructor(String.class);
-                producer =  constructor.newInstance(instance);
-            } catch (Exception e) {
-                log.warn("Failed to load the internal StreamEventProducer", e);
-            }
+        
         }
 
         if(producer==null) {
@@ -115,10 +111,23 @@ public class EventProducerFactory {
                 producer = new  ArtemisEventProducer(ycd);
             } else {
                 log.debug("Creating a WebSocket Yamcs event producer connected to {}", ycd.getUrl());
-                producer = new WebSocketEventProducer(ycd);
+                producer = new RestEventProducer(ycd);
             }
         }
         
         return producer;
+    }
+    
+    
+    static private EventProducer getStreamEventProducer(String instance) {
+        try {
+            //try to load the stream event producer from yamcs core because probably we are running inside the yamcs server
+            @SuppressWarnings("unchecked")
+            Class<EventProducer> ic=(Class<EventProducer>) Class.forName("org.yamcs.StreamEventProducer");
+            Constructor<EventProducer> constructor = ic.getConstructor(String.class);
+            return constructor.newInstance(instance);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
