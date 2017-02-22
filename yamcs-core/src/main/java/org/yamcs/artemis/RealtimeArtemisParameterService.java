@@ -1,4 +1,4 @@
-package org.yamcs.parameter;
+package org.yamcs.artemis;
 
 import static org.yamcs.api.artemis.Protocol.*;
 
@@ -19,7 +19,11 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsSession;
-import org.yamcs.artemis.ArtemisManagement;
+import org.yamcs.parameter.ParameterRequestManagerImpl;
+import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueWithId;
+import org.yamcs.parameter.ParameterWithIdConsumer;
+import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
