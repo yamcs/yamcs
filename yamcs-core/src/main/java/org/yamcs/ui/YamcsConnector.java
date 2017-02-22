@@ -4,6 +4,7 @@ package org.yamcs.ui;
 import io.netty.channel.ChannelFuture;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -227,5 +228,12 @@ public class YamcsConnector implements WebSocketClientCallback {
             subscribers.add(client);
         }
         wsClient.sendRequest(wsr,  wsrh);
+    }
+    
+    public CompletableFuture<Void> performSubscription(WebSocketRequest wsr, WebSocketClientCallback client) {
+        if(!subscribers.contains(client)){
+            subscribers.add(client);
+        }
+       return wsClient.sendRequest(wsr);
     }
 }
