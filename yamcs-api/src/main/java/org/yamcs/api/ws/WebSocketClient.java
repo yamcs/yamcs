@@ -3,8 +3,10 @@ package org.yamcs.api.ws;
 import java.net.URI;
 import java.util.Base64;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -13,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.UsernamePasswordToken;
@@ -169,9 +172,24 @@ public class WebSocketClient {
      * Performs the request in a different thread
      * 
      * @param request 
+     * @return future that completes when the request is anwsered
      */
-    public void sendRequest(WebSocketRequest request) {
-        group.execute(() -> doSendRequest(request, null));
+    public CompletableFuture<Void> sendRequest(WebSocketRequest request) {
+        CompletableFuture<Void> cf = new CompletableFuture<Void>();
+        WebSocketResponseHandler wsr = new WebSocketResponseHandler() {
+            @Override
+            public void onException(WebSocketExceptionData e) {
+                cf.completeExceptionally(new WebSocketExecutionException(e));
+            }
+            
+            @Override
+            public void onCompletion() {
+                cf.complete(null);
+                
+            }
+        };
+        group.execute(() -> doSendRequest(request, wsr));
+        return cf;
     }
 
     public void sendRequest(WebSocketRequest request, WebSocketResponseHandler responseHandler) {
@@ -192,8 +210,8 @@ public class WebSocketClient {
         return requestResponsePairBySeqId.get(seqId);
     }
 
-    void forgetUpstreamRequest(int seqId) {
-        requestResponsePairBySeqId.remove(seqId);
+    RequestResponsePair removeUpstreamRequest(int seqId) {
+        return requestResponsePairBySeqId.remove(seqId);
     }
 
     boolean isReconnectionEnabled() {
