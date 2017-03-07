@@ -5,7 +5,6 @@ import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.ui.UiColors;
-import org.yamcs.utils.TimeEncoding;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -19,8 +18,6 @@ import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
 import java.util.*;
 import java.util.List;
-
-import static org.yamcs.utils.TimeEncoding.INVALID_INSTANT;
 
 /**
  * Main panel of the ArchiveBrowser
@@ -50,9 +47,8 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     
     int loadCount,recCount;
     boolean passiveUpdate = false;
-    
-    long dataStart = TimeEncoding.INVALID_INSTANT;
-    long dataStop = TimeEncoding.INVALID_INSTANT;
+   
+    private TimeInterval receivedDataInterval = new TimeInterval();
     
     volatile boolean lowOnMemoryReported=false;
     
@@ -323,8 +319,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             statusInfoLabel.repaint();
         }
         
-        totalRangeLabel.setText(TimeEncoding.toString(dataStart) + " - "
-                + TimeEncoding.toString(dataStop));
+        totalRangeLabel.setText(receivedDataInterval.toStringEncoded());
         totalRangeLabel.repaint();
         
    //     updateSelectionFields();
@@ -332,7 +327,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         passiveUpdate = false;
     }
     
-    public void startReloading() {
+    public synchronized void startReloading() {        
         recCount=0;
         archiveBrowser.setInstance(prefs.getInstance());
         
@@ -341,7 +336,6 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             @Override
             public void run() {
                 prefs.reloadButton.setEnabled(false);
-                //debugLog("requestData() mark 5 "+new Date());
                 instanceLabel.setText(archiveBrowser.getInstance());
             }
         });
@@ -354,7 +348,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             System.gc();
             lowOnMemoryReported=false;
         }
-        dataStart = dataStop = INVALID_INSTANT;
+        receivedDataInterval = new TimeInterval();
     }
 
     public static ImageIcon getIcon(String imagename) {
@@ -456,15 +450,8 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
     
-    public TimeInterval getRequestedDataInterval() {
+    public synchronized TimeInterval getRequestedDataInterval() {
         return prefs.getInterval();
-    }
-    public long getRequestedDataStop() {
-        return prefs.getEndTimestamp();
-    }
-
-    public long getRequestedDataStart() {
-        return prefs.getStartTimestamp();
     }
 
     public synchronized void receiveArchiveRecords(IndexResult ir) {
@@ -489,8 +476,8 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             start = r.getFirst();
             stop = r.getLast();
 
-            if ((dataStart == INVALID_INSTANT) || (start<dataStart)) dataStart = start;
-            if ((dataStop == INVALID_INSTANT) || (stop>dataStop)) dataStop = stop;
+            if ((!receivedDataInterval.hasStart()) || (start<receivedDataInterval.getStart())) receivedDataInterval.setStart(start);
+            if ((!receivedDataInterval.hasStop()) || (stop>receivedDataInterval.getStop())) receivedDataInterval.setStop(stop);
 
             recCount++;
             loadCount++;
@@ -498,7 +485,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         }
     }
 
-    public void receiveArchiveRecordsError(final String errorMessage) {
+    public synchronized void receiveArchiveRecordsError(final String errorMessage) {
          SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -518,7 +505,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
 
     public synchronized void archiveLoadFinished() {
         loadCount = 0;
-        if ((dataStart != INVALID_INSTANT) && (dataStop != INVALID_INSTANT)) {
+        if (receivedDataInterval.hasStart() && receivedDataInterval.hasStop()) {
             for(NavigatorItem item:itemsByName.values()) {
                 item.archiveLoadFinished();
             }
@@ -582,5 +569,9 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         for (NavigatorItem navigatorItem : itemsByName.values()) {
             navigatorItem.windowResized();
         }
+    }
+
+    public synchronized TimeInterval getReceivedDataInterval() {        
+        return receivedDataInterval;
     }
 }

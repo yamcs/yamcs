@@ -62,6 +62,10 @@ public class TMScale extends JSlider {
     
     void setToZoom(ZoomSpec zoom ) {
         this.zoom=zoom;
+        if((zoom.stopInstant - zoom.startInstant)>1000l*3600*24*365*100) {
+            throw new RuntimeException("Cannot show more than 100 years");
+        }
+        
         if(zoom.stopInstant-zoom.startInstant>(0x0FFFFFFFL)) {
             div=1000;
         } else {
