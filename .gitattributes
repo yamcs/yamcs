@@ -1,2 +1,2 @@
-yamcs-api/src/main/java/org/yamcs/protobuf/** binary linguist-generated
+yamcs-api/src/main/java/org/yamcs/protobuf/* linguist-generated
 yamcs-core/src/main/java/org/yamcs/yarch/streamsql/StreamSqlParser* linguist-generated
