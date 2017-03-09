@@ -127,7 +127,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
             log.error("Exception when sending data", e);
             return null;
         } catch (NoPermissionException e) {
-            log.error("no permission for parameters", e);
+            log.warn("no permission for parameters: {}", e.getMessage());
             throw new WebSocketException(requestId, "internal error: "+e.toString(), e);
         }
     }
@@ -180,13 +180,13 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
 
             return null;
         } catch (InvalidIdentification e) {
-            log.error("got invalid identification. Likely coming from cache", e);
+            log.warn("got invalid identification: {}", e.getMessage());
             throw new WebSocketException(requestId, "internal error: "+e.toString(), e);
         } catch (InvalidRequestIdentification e) {
             log.error("got invalid subscription id", e);
             throw new WebSocketException(requestId, "internal error: "+e.toString(), e);
         } catch (NoPermissionException e) {
-            log.error("no permission for parameters", e);
+            log.error("no permission for parameters: {}", e.getMessage());
             throw new WebSocketException(requestId, "internal error: "+e.toString(), e);
         } catch (IOException e) {
             log.error("Exception when sending data", e);
