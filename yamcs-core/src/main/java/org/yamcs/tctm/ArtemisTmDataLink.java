@@ -34,21 +34,13 @@ public class ArtemisTmDataLink extends  AbstractService implements TmPacketDataL
     protected Logger log=LoggerFactory.getLogger(this.getClass().getName());
     private TmSink tmSink;
     YamcsSession yamcsSession; 
-    final private YamcsClient msgClient;
+    private YamcsClient msgClient;
     final TimeService timeService;
+    final String artemisAddress;
+    
 
-    public ArtemisTmDataLink(String instance, String name, String hornetAddress) throws ConfigurationException  {
-        SimpleString queue = new SimpleString(hornetAddress+"-ActiveMQTmProvider");
-
-        try {
-            yamcsSession=YamcsSession.newBuilder().build();
-            msgClient=yamcsSession.newClientBuilder().setDataProducer(false).setDataConsumer(new SimpleString(hornetAddress), queue).
-                    setFilter(new SimpleString(AbstractArtemisTranslatorService.UNIQUEID_HDR_NAME+"<>"+AbstractArtemisTranslatorService.UNIQUEID)).
-                    build();
-
-        } catch (Exception e) {
-            throw new ConfigurationException(e.getMessage(),e);
-        }
+    public ArtemisTmDataLink(String instance, String name, String artemisAddress) throws ConfigurationException  {
+        this.artemisAddress = artemisAddress;
         timeService = YamcsServer.getTimeService(instance);
     }
 
@@ -114,10 +106,16 @@ public class ArtemisTmDataLink extends  AbstractService implements TmPacketDataL
     @Override
     protected void doStart() {
         try {
+            SimpleString queue = new SimpleString(artemisAddress+"-ActiveMQTmProvider");
+                yamcsSession = YamcsSession.newBuilder().build();
+                msgClient = yamcsSession.newClientBuilder().setDataProducer(false).setDataConsumer(new SimpleString(artemisAddress), queue).
+                        setFilter(new SimpleString(AbstractArtemisTranslatorService.UNIQUEID_HDR_NAME+"<>"+AbstractArtemisTranslatorService.UNIQUEID)).
+                        build();
+
             msgClient.dataConsumer.setMessageHandler(this);
             notifyStarted();
-        } catch (ActiveMQException e) {
-            log.error("Failed to set message handler");
+        } catch (ActiveMQException | YamcsApiException e) {
+            log.error("Failed to set connect to artemis");
             notifyFailed(e);
         }
     }
