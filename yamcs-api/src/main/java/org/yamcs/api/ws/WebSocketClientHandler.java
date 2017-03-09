@@ -65,9 +65,10 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
     public void channelInactive(ChannelHandlerContext ctx) {
         log.info("WebSocket Client disconnected!");
         callback.disconnected();
-
-        if (client.isReconnectionEnabled())
-            ctx.channel().eventLoop().schedule(() -> client.connect(), 1L, TimeUnit.SECONDS);
+       
+        if (client.isReconnectionEnabled()) {
+            ctx.channel().eventLoop().schedule(() -> client.connect(), client.reconnectionInterval, TimeUnit.MILLISECONDS);
+        }
     }
 
     @Override

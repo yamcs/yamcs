@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -48,7 +47,7 @@ public class WebSocketClient {
 
     private static final Logger log = LoggerFactory.getLogger(WebSocketClient.class);
 
-    private final WebSocketClientCallback callback;
+    private WebSocketClientCallback callback;
 
     private EventLoopGroup group = new NioEventLoopGroup(1);
     private Channel nettyChannel;
@@ -58,6 +57,9 @@ public class WebSocketClient {
     private AtomicInteger seqId = new AtomicInteger(1);
     YamcsConnectionProperties yprops;
     final boolean useProtobuf = true;
+
+    //if reconnection is enabled, how often to attempt to reconnect in case of failure
+    long reconnectionInterval = 1000;
 
     // Keeps track of sent subscriptions, so that we can do a resend when we get
     // an InvalidException on some of them :-(
@@ -73,6 +75,10 @@ public class WebSocketClient {
         this.callback = callback;
     }
 
+    public WebSocketClient(YamcsConnectionProperties yprops) {
+        this.yprops = yprops;
+    }
+
     public void setConnectionProperties(YamcsConnectionProperties yprops) {
         this.yprops=yprops;
     }
@@ -84,13 +90,29 @@ public class WebSocketClient {
         this.timeoutMs = timeoutMs;
     }
 
-    public ChannelFuture connect() {
-        return connect(false);
+    /**
+     * enable or disable reconnection in case of failure to connect or if the client is disconnected.
+     * 
+     * @param enableReconnection
+     */
+    public void enableReconnection(boolean enableReconnection) {
+        this.enableReconnection.set(enableReconnection);
     }
 
-    public ChannelFuture connect(boolean enableReconnection) {
-        this.enableReconnection.set(enableReconnection);
+    public ChannelFuture connect() {    
         return createBootstrap();
+    }
+
+    /**
+     * set the reconnection interval in milliseconds.
+     * 
+     * This value is used when the connection fails and after the client is disconnected.
+     * Make sure to use the {@link #enableReconnection(boolean)} to enable the recconnection. 
+     * 
+     * @param reconnectionIntervalMillisec
+     */
+    public void setReconnectionInterval(long reconnectionIntervalMillisec) {
+        this.reconnectionInterval = reconnectionIntervalMillisec;
     }
 
     private ChannelFuture createBootstrap() {
@@ -126,9 +148,9 @@ public class WebSocketClient {
         WebSocketClientHandler webSocketHandler = new WebSocketClientHandler(handshaker, this, callback);
 
         Bootstrap bootstrap = new Bootstrap()
-        .group(group)
-        .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-        .channel(NioSocketChannel.class);
+                .group(group)
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                .channel(NioSocketChannel.class);
 
         if(timeoutMs!=null) {
             bootstrap = bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeoutMs);
@@ -158,7 +180,7 @@ public class WebSocketClient {
                         // Set-up reconnection attempts every second
                         // during initial set-up.
                         log.info("reconnect..");
-                        group.schedule(() -> createBootstrap(), 1L, TimeUnit.SECONDS);
+                        group.schedule(() -> createBootstrap(), reconnectionInterval, TimeUnit.MILLISECONDS);
                     }
                 }
             }
@@ -181,11 +203,11 @@ public class WebSocketClient {
             public void onException(WebSocketExceptionData e) {
                 cf.completeExceptionally(new WebSocketExecutionException(e));
             }
-            
+
             @Override
             public void onCompletion() {
                 cf.complete(null);
-                
+
             }
         };
         group.execute(() -> doSendRequest(request, wsr));
@@ -250,34 +272,47 @@ public class WebSocketClient {
     }
 
     public static void main(String... args) throws InterruptedException {
-        YamcsConnectionProperties yprops = new YamcsConnectionProperties("localhost", 8090, "simulator");
-        CountDownLatch latch = new CountDownLatch(1);
-        WebSocketClient client = new WebSocketClient(yprops, new WebSocketClientCallback() {
+        YamcsConnectionProperties yprops = new YamcsConnectionProperties("localhost", 8090, "gs-sim");
+        WebSocketClient client = new WebSocketClient(yprops);
+
+        client.setCallback(new WebSocketClientCallback() {
             @Override
             public void connected() {
-                System.out.println("Connected..........");
-                latch.countDown();
+                System.out.println("Connection succeeded.......... subscribing to time");
+                client.sendRequest(new WebSocketRequest("time", "subscribe"));
             }
 
             @Override
             public void connectionFailed(Throwable t) {
-                System.out.println("failed.........."+t.getMessage());
+                System.out.println("Connection failed.........."+t.getMessage());
             }
 
             @Override
             public void onMessage(WebSocketSubscriptionData data) {
                 System.out.println("Got data " + data);
             }
+
+
+            @Override
+            public void disconnected() {
+                System.out.println("Disconnected.....");
+            }
         });
 
+
+        client.enableReconnection(true);
+        client.setReconnectionInterval(100);
         client.connect();
-        latch.await();
 
-        client.sendRequest(new WebSocketRequest("time", "subscribe"));
 
-        Thread.sleep(5000);
+        Thread.sleep(500000);
         client.shutdown();
     }
+    private void setCallback(WebSocketClientCallback webSocketClientCallback) {
+        this.callback = webSocketClientCallback;
+
+    }
+
     public boolean isConnected() {
         return nettyChannel.isOpen();
     }
