@@ -10,7 +10,9 @@
             'yamcs.home',
             'yamcs.intf',
             'yamcs.mdb',
-            'yamcs.uss'
+            'yamcs.uss',
+            'yamcs.services',
+            'yamcs.links'
         ])
         .config(configureModule);
 

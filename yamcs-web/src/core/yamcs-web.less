@@ -14,7 +14,8 @@
 @font-size-h5:            @font-size-base;
 @font-size-h6:            ceil((@font-size-base * 0.85)); // ~12px
 
-@brand-success: rgb(98, 196, 98);
+@brand-success: rgb(98, 220, 98);
+@brand-verysuccess: rgb(178, 255, 102);
 @brand-warning: rgb(248, 148, 6);
 @brand-danger: rgb(238, 95, 91);
 
@@ -281,4 +282,12 @@ table.table.borderless {
   th {
     border: none;
   }
+}
+
+.highlight-dark{
+  background-color: @brand-verysuccess;
+
+}
+.highlight-light{
+  background-color: @brand-success;
 }

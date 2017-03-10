@@ -1,0 +1,50 @@
+<links-pane active-pane="overview" yamcs-instance="yamcsInstance" shell="shell" standalone="standalone"></links-pane>
+    <h1 class="page-header"> {{vm.title}}</h1>
+    <p>&nbsp;</p>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="pull-left">
+                Some links options
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-body">
+        <div class="container-fluid pull-left">
+            <h2> The links </h2>
+            <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th> #</th>
+                    <th> Name </th>
+                    <th> Instance</th>
+                    <th> Type</th>
+                    <th> Spec</th>
+                    <th> Stream</th>
+                    <th> Disabled</th>
+                    <th> Status</th>
+                    <th> Data Count</th>
+                    <th> Detailed</th>
+                    <th> Change status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="link in vm.active_links">
+                    <th>{{$index}}</th>
+                    <td>{{ link.name}}</td>
+                    <td>{{ link.instance}} </td>
+                    <td>{{ link.type}} </td>
+                    <td>{{ link.spec}} </td>
+                    <td>{{ link.stream}} </td>
+                    <td>{{ link.disabled}}  </td>
+                    <td ng-class="{'highlight-light':link.highlight==true, 'highlight-dark':link.highlight==false}">{{ link.status}}{{link.highlight}} </td>
+                    <td>{{ link.dataCount}} </td>
+                    <td>{{ link.detailedStatus}} </td>
+                    <td><button class="btn btn-default" ng-click="vm.patchLink(link.name, link.status)">CHANGE</button></td>
+          
+                </tr>
+            </tbody>
+            </table>
+        </div>
+    </div>
+</links-pane>
