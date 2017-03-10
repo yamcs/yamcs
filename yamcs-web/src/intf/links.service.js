@@ -7,13 +7,10 @@
 
         var activeLinks = [];
         /* @ngInject */
+
         function linksService($rootScope, $http, $log, socket, yamcsInstance){
-            socket.on('open', function(){
-                        subscribeUpstream();
-                });
-            if (socket.isConnected()){
-                    subscribeUpstream();
-                };
+            
+            
 
         return {
             getAllListLinks: getAllListLinks,
@@ -22,8 +19,14 @@
             unsubscribeUpstream: unsubscribeUpstream
 
         }
-        function getActiveLinks(){
-                return activeLinks;
+        function getActiveLinks(){  
+            socket.on('open', function(){
+                        subscribeUpstream();
+                });
+            if (socket.isConnected()){
+                    subscribeUpstream();
+                };
+            return activeLinks;
         };
 
         function getAllListLinks(){
@@ -44,8 +47,16 @@
                 var linkInfo = data["linkInfo"];
                 if(data.type == 'REGISTERED'){
                     $log.log('The socket is registered', data);
-                    linkInfo.highlight = false;
-                    activeLinks.push(linkInfo);
+                    var is_in = false;
+                    for(var i=0; i<activeLinks.length; i++){
+                        if(activeLinks[i].name == linkInfo.name)   
+                            is_in = true;
+                    }
+                    if(!is_in || is_in){                        
+                        linkInfo.highlight = false;
+                        activeLinks.push(linkInfo);
+                    }
+                    $log.info('##### LENGTH BEFORE', activeLinks);
                 }
                 else if(data.type == 'UPDATED'){
                     for(var i = 0; i < activeLinks.length; i++){
@@ -83,9 +94,11 @@
 
         function unsubscribeUpstream(){
             $log.log("Unsubscribing from the websocket");
-            socket.emit('links', 'unsubscribe', {}, null, function(et, msg){
+            activeLinks.length= 0;
+            $log.info('LENGTH AFTER ######', activeLinks);
+           /* socket.emit('links', 'unsubscribe', {}, null, function(et, msg){
                 $log.log('Failed Unsubscribing from the event', et, '', msg);
-            });
+            });*/
         };
     }
 })();

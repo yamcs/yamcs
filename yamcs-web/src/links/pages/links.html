@@ -37,7 +37,7 @@
                     <td>{{ link.spec}} </td>
                     <td>{{ link.stream}} </td>
                     <td>{{ link.disabled}}  </td>
-                    <td ng-class="{'highlight-light':link.highlight==true, 'highlight-dark':link.highlight==false}">{{ link.status}}{{link.highlight}} </td>
+                    <td ng-class="{'highlight-light':link.highlight==true, 'highlight-dark':link.highlight==false}">{{ link.status}}</td>
                     <td>{{ link.dataCount}} </td>
                     <td>{{ link.detailedStatus}} </td>
                     <td><button class="btn btn-default" ng-click="vm.patchLink(link.name, link.status)">CHANGE</button></td>

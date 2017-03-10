@@ -11,15 +11,12 @@
         var vm = this;
         vm.title = 'Links';
         $rootScope.pageTitle = vm.title + ' | Yamcs';
-
-        //Websocket subscription 
+        
+        //Websocket subscription
+        vm.active_links = []; 
         vm.active_links = linksService.getActiveLinks();
         // Memorize the packets from previous interval
         var _memoryPackets = {};
-
-        linksService.getAllListLinks().then( function(response){
-            vm.all_links = response['link'];
-        });
 
         vm.patchLink = function(name, currentStatus){
             var status = (currentStatus == 'OK') ?  'disabled': 'enabled';
@@ -59,9 +56,11 @@
         //Cancel subscription and interval on route change
         $scope.$on('$destroy', function(){
             $log.info('Changing route');
-            //linksService.unsubscribeUpstream();
+            vm.active_links.length=0;
+            $log.log('Array', vm.active_links);
+            linksService.unsubscribeUpstream();
             $interval.cancel(vm.highlightTimer);
-            //event.stopPropagation();
+            
         });
     }
 })();
