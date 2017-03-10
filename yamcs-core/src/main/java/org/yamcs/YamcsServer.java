@@ -58,7 +58,7 @@ public class YamcsServer {
     List<ServiceWithConfig> serviceList;
 
     //global services
-    static List<ServiceWithConfig> globalServiceList;
+    static List<ServiceWithConfig> globalServiceList = null;
     Logger log;
     static Logger staticlog = LoggerFactory.getLogger(YamcsServer.class);
 
@@ -98,8 +98,6 @@ public class YamcsServer {
         }
         List<Object> services = conf.getList("services");
         serviceList = createServices(instance, services);
-        startServices(serviceList);
-
     }
 
     private static CrashHandler loadCrashHandler( YConfiguration conf) throws ConfigurationException, IOException {
@@ -230,17 +228,26 @@ public class YamcsServer {
         if(c.containsKey("services")) {
             List<Object> services=c.getList("services");
             globalServiceList = createServices(null, services);
-            startServices(globalServiceList);
         }
 
-
+        List<String> instArray = null;
         if (c.containsKey("instances")) {
-            List<String> instArray = c.getList("instances");
+            instArray = c.getList("instances");
             for(String inst:instArray) {
                 createYamcsInstance(inst);
             }
         }
-
+        
+        if(globalServiceList!=null) {
+            startServices(globalServiceList);
+        }
+        
+        if(instArray!=null) {
+            for(String inst:instArray) {
+                instances.get(inst).start();
+            }
+        }
+        
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread t, Throwable thrown) {
@@ -255,6 +262,13 @@ public class YamcsServer {
         } else {//the init.d/yamcs-server depends on this line on the standard output, do not change it (without changing the script also)!
             System.out.println("yamcsstartup success");
         }
+    }
+
+    /*
+     * Starts all the services
+     */
+    private void start() {
+        startServices(serviceList);
     }
 
     public static void createYamcsInstance(String name) throws IOException, StreamSqlException, ParseException, YamcsApiException {

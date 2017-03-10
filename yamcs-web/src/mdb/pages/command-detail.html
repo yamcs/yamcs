@@ -1,0 +1,76 @@
+<mdb-pane active-pane="{{vm.info.qualifiedName | spaceSystem}}" yamcs-instance="yamcsInstance" shell="shell" standalone="standalone">
+    <div>
+        <h1 class="page-header">{{vm.info.name}} <small>{{vm.info.qualifiedName | spaceSystem}} </small></h1>
+    </div>
+
+    <p>&nbsp;</p>
+
+    <div class="container-fluid">
+        <div class="container">
+            <h2> Information</h2>
+            <ul>
+                <li> <b>Qualified Name:</b> {{vm.info.qualifiedName}}</li>
+                <li> <b>Abstract:</b> {{vm.info.abstract}}</li>
+            </ul>
+            <h2> Significance</h4>
+            <ul>
+                <li><b>Consequence level:</b> {{vm.info.significance.consequenceLevel}}</li>
+                <li><b>Warning reason: </b>{{vm.info.significance.reasonForWarning}}</li>
+            </ul>
+        </div>
+        <hr/>
+        <br/>
+        <div>
+                <div class="pull-left" style="width:47%;">
+                    <h2>Arguments</h2>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Little Endian</th>
+                            <th>Bit Size</th>
+                            <th>Encoding</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr  ng-repeat="item in vm.info.argument">
+                                <th> {{item.name}}</th>
+                                <td> {{item.type.dataEncoding.type}} </td>
+                                <td> {{item.type.dataEncoding.littleEndian}}</td>
+                                <td> {{item.type.dataEncoding.sizeInBits}} </td>
+                                <td> {{item.type.dataEncoding.encoding}} </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pull-left" ng-if="vm.has_comparison">
+                    <h2>Parameter constraints</h2>
+                    <ul style="list-style-type: none;">
+                        <li ng-repeat="item in vm.info.constraint">
+                            <div class="card" ng-repeat="comp in item.comparison">
+                                <table class="table talbe-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Operator</th>
+                                            <th>Value</th>
+                                            <th>Result</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="comp in item.comparison">
+                                            <th>{{comp.parameter.name}} </th>
+                                            <td>{{comp.operator}} </th>
+                                            <td>{{comp.value}} </td>
+                                            <td>YES</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            <h2>Timeout: {{item.timeout}} </h2>
+                        </li>
+                    </ul>
+                </div>
+        </div>
+    </div>
+</mdb-pane>

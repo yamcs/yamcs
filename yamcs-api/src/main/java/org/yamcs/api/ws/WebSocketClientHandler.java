@@ -65,9 +65,10 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
     public void channelInactive(ChannelHandlerContext ctx) {
         log.info("WebSocket Client disconnected!");
         callback.disconnected();
-
-        if (client.isReconnectionEnabled())
-            ctx.channel().eventLoop().schedule(() -> client.connect(), 1L, TimeUnit.SECONDS);
+       
+        if (client.isReconnectionEnabled()) {
+            ctx.channel().eventLoop().schedule(() -> client.connect(), client.reconnectionInterval, TimeUnit.MILLISECONDS);
+        }
     }
 
     @Override
@@ -114,7 +115,13 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
             WebSocketServerMessage message = WebSocketServerMessage.newBuilder().mergeFrom(new ByteBufInputStream(frame.content())).build();
             switch (message.getType()) {
             case REPLY:
-                client.forgetUpstreamRequest(message.getReply().getSequenceNumber());
+                int reqId = message.getReply().getSequenceNumber();
+                RequestResponsePair pair =  client.removeUpstreamRequest(reqId);
+                if (pair == null) {
+                    log.warn("Received an exception for a request I did not send (or was already finished) seqNum: {}", reqId);
+                } else if(pair.responseHandler!=null) {
+                   pair.responseHandler.onCompletion();
+                }
                 break;
             case EXCEPTION:
                 processExceptionData(message.getException());
@@ -160,7 +167,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
             }
 
             // Get rid of the current pending request
-            client.forgetUpstreamRequest(reqId);
+            client.removeUpstreamRequest(reqId);
 
             if(!requestedIds.isEmpty()) {
                 // And have another go at it

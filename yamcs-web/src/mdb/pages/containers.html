@@ -18,7 +18,7 @@
       <th>Description</th>
     </tr>
     <tr ng-repeat="sq in vm.containers | orderBy:'qualifiedName'">
-      <td>{{ sq.name }}</td>
+      <td><a href="/{{yamcsInstance}}/mdb/containers/{{sq.qualifiedName}}">{{ sq.name }}</a></td>
       <td ng-if="sq.baseContainer">
         <a ng-if="!(sq.baseContainer.qualifiedName | sameSpaceSystem:sq.qualifiedName)"
             href="/{{ yamcsInstance }}/mdb{{ sq.baseContainer.qualifiedName | spaceSystem }}/containers">{{ sq.baseContainer.qualifiedName }}</a>

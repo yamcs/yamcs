@@ -17,6 +17,7 @@
             listContainers: listContainers,
 
             listCommands: listCommands,
+            getCommandInfo: getCommandInfo,
 
             listAlgorithms: listAlgorithms,
             getAlgorithmInfo: getAlgorithmInfo
@@ -51,6 +52,7 @@
 
         function listParameters(options) {
             var targetUrl = '/api/mdb/' + yamcsInstance + '/parameters';
+
             targetUrl += toQueryString(options);
 
             return $http.get(targetUrl).then(function (response) {
@@ -80,6 +82,20 @@
             return $http.get(targetUrl).then(function (response) {
                 return response.data['command'];
             }).catch(function (message) {
+                $log.error('XHR failed', message);
+                throw messageToException(message);
+            });
+        }
+
+        function getCommandInfo(urlname, options){
+            var targetUrl = '/api/mdb/'+yamcsInstance+'/commands'+urlname;
+            targetUrl += toQueryString(options);
+
+            $log.log('CALLING --=======+>',targetUrl);
+            return $http.get(targetUrl).then(function (response){
+                $log.log('DATA FOR COMMAND', response.data);
+                return response.data;
+            }).catch(function(message){
                 $log.error('XHR failed', message);
                 throw messageToException(message);
             });

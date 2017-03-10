@@ -258,7 +258,6 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
     }
 
     private void requestData() {
-        //debugLog("requestData() mark 1 "+new Date());
         archivePanel.startReloading();
         TimeInterval interval = archivePanel.getRequestedDataInterval();
         indexReceiver.getIndex(instance, interval);

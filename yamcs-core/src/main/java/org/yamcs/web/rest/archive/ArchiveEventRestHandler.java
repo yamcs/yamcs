@@ -142,7 +142,7 @@ public class ArchiveEventRestHandler extends RestHandler {
         event = event.toBuilder().setReceptionTime(YamcsServer.getTimeService(instance).getMissionTime()).build();
 
         // send event
-        log.debug("Adding event from REST API: " + event.toString());
+        log.debug("Adding event from REST API: {}", event.toString());
         eventProducer.sendEvent(event);
         completeOK(req);
     }

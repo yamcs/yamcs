@@ -12,7 +12,8 @@ import java.util.PrimitiveIterator;
  *
  */
 public class SortedIntArray implements Serializable {
-  
+    static final long serialVersionUID = 1L;
+    
     public static int DEFAULT_CAPACITY = 10;
     private int[] a;
     private int length;

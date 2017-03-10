@@ -1,7 +1,11 @@
 package org.yamcs.artemis;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.activemq.artemis.api.core.SimpleString;
-import org.yamcs.archive.EventRecorder;
+import org.yamcs.StreamConfig;
+import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
 
@@ -14,8 +18,7 @@ import com.google.common.util.concurrent.AbstractService;
  */
 public class ArtemisEventDataLink extends AbstractService {
     String instance;
-
-    StreamAdapter rtStreamAdapter, dumpStreamAdapter;
+    Map<String, StreamAdapter> streamAdapters = new HashMap<>();
 
     public ArtemisEventDataLink(String instance) {
         this.instance = instance;
@@ -24,11 +27,14 @@ public class ArtemisEventDataLink extends AbstractService {
     protected void doStart() {
         try {
             YarchDatabase ydb = YarchDatabase.getInstance(instance);
-            Stream realtimeEventStream=ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
-            rtStreamAdapter = new StreamAdapter(realtimeEventStream, new SimpleString(instance+".events_realtime"), new EventTupleTranslator());
-
-            Stream dumpEventStream=ydb.getStream(EventRecorder.DUMP_EVENT_STREAM_NAME);
-            dumpStreamAdapter = new StreamAdapter(dumpEventStream, new SimpleString(instance+".events_dump"), new EventTupleTranslator());
+            StreamConfig sc = StreamConfig.getInstance(instance);
+            for(StreamConfigEntry sce: sc.getEntries()) {
+                if(sce.getType() == StreamConfig.StandardStreamType.event) {
+                    Stream stream = ydb.getStream(sce.getName());
+                    StreamAdapter adapter = new StreamAdapter(stream, new SimpleString(instance+"."+sce.getName()), new EventTupleTranslator());
+                    streamAdapters.put(sce.getName(), adapter);
+                }
+            }
         } catch (Exception e){
             notifyFailed(e);
         }
@@ -37,8 +43,9 @@ public class ArtemisEventDataLink extends AbstractService {
 
     @Override
     protected void doStop() {
-        rtStreamAdapter.quit();
-        dumpStreamAdapter.quit();
+        for(StreamAdapter adapter: streamAdapters.values()) {
+            adapter.quit();
+        }
         notifyStopped();
     }
 

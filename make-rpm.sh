@@ -11,7 +11,8 @@ yamcshome=`pwd`
 version=`grep -m 1 '<version>.*</version>' pom.xml | sed -e 's/.*<version>\(.*\)<\/version>.*/\1/'`
 
 #in case we have a x.y.-SNAPSHOT -> change it into a x.y.z_SNAPSHOT because "-" is not allow in RPM version names
-version=${version/-/_}
+d=`date +%Y%m%d%H%M%S`
+version=${version/-SNAPSHOT/_SNAPSHOT$d}
 
 rev=`git rev-parse --short HEAD`
 

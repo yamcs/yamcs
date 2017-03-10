@@ -146,7 +146,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
     private String defaultNamespace;
 
 
-    public PacketViewer() throws ConfigurationException {
+    public PacketViewer(int maxLines) throws ConfigurationException {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         uiPrefs = Preferences.userNodeForPackage(PacketViewer.class);
@@ -161,7 +161,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         // table to the left which shows one row per packet
 
         packetsTable = new PacketsTable(this);
-        packetsTable.setMaxLines(1000);
+        packetsTable.setMaxLines(maxLines);
         JScrollPane packetScrollpane = new JScrollPane(packetsTable);
 
         // table to the right which shows one row per parameter in the selected packet
@@ -1101,7 +1101,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
 
         // Okay, launch the GUI now
         YConfiguration.setup();
-        theApp = new PacketViewer();
+        theApp = new PacketViewer(maxLines);
         if (fileOrUrl != null) {
             if (fileOrUrl.startsWith("http://")) {
                 YamcsConnectionProperties ycd = YamcsConnectionProperties.parse(fileOrUrl);

@@ -30,7 +30,7 @@ JMX_REMOTE="-Dcom.sun.management.jmxremote.port=9999  -Dcom.sun.management.jmxre
 
 # run the program
 exec "$_RUNJAVA" $JAVA_LIBRARY_PATH\
-    -Xmx512m\
+    -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/\
     -Djxl.nowarnings=true \
     -Djava.util.logging.config.file=$YAMCS_HOME/etc/logging.yamcs-server.properties \
     -Djacorb.home=$YAMCS_HOME\

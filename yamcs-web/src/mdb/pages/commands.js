@@ -4,7 +4,7 @@
     angular.module('yamcs.mdb').controller('MDBCommandsController',  MDBCommandsController);
 
     /* @ngInject */
-    function MDBCommandsController($rootScope, mdbService, $routeParams) {
+    function MDBCommandsController($rootScope, mdbService,$log, $routeParams) {
         var vm = this;
 
         var qname = '/' + $routeParams['ss'];
@@ -14,6 +14,7 @@
         vm.commandsLoaded = false;
         vm.mdbType = 'commands';
 
+        $log.log('Log of :', $routeParams['ss'])
         $rootScope.pageTitle = 'Commands | Yamcs';
 
         mdbService.listCommands({

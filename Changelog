@@ -1,4 +1,22 @@
 Version 3.1.0 
+- MDB: allow parameters without raw types if they are not part of a container
+- REST Api: add option to get the details of parameters in 'list parameter'
+- Ease extension of the FilePollingTmDatalink and TmFileReader.
+- if processor -> cacheall is disabled, retrieve at least all parameters that have alarms associated
+- allow algorithm manager to be usable in replays
+- Improved XTCE XML parsing support:
+      - read alarms
+      - read string parameters
+      - read multiple space systems    
+- Removed the name from the DataEncoding classes (in XTCE DataEncodings are not named)    
+- allow to remove a parameter from the XtceDB (to be used in a controlled way only)
+- Changed the order of starting the services:
+    1. All global services are created
+    2. All instance services are created
+    3. All global services are started
+    4. All instance services are started
+    
+    Used to be 1,3,(2,4)+ - and this makes for example the HttpServer to be started before the instances are created and some methods (like subscribe event,time,etc) will fail at first because the processor is not available.
 
 
 Version 3.0.0 Released 12-Jan-2017
