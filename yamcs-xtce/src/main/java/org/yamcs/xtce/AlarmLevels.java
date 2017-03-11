@@ -6,10 +6,10 @@ package org.yamcs.xtce;
  *
  */
 public enum AlarmLevels {
-	normal,
-	watch,
-	warning,
-	distress,
-	critical,
-	severe;
+    normal,
+    watch,
+    warning,
+    distress,
+    critical,
+    severe;
 }
