@@ -206,7 +206,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
             for(SequenceContainer sc: containers) {
                 rawPacketRequest.addNameFilter(NamedObjectId.newBuilder().setName(sc.getQualifiedName()).build());
             }
-            log.debug("after TM subscription, the request contains the following packets: "+rawPacketRequest);
+            log.debug("after TM subscription, the request contains the following packets: "+rawPacketRequest.getNameFilterList());
             rawDataRequest.setPacketRequest(rawPacketRequest);
         }
         
