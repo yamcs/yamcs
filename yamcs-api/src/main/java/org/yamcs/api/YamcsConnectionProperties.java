@@ -20,7 +20,7 @@ public class YamcsConnectionProperties {
     private AuthenticationToken authToken;
 
 
-    enum Protocol {
+    public static enum Protocol {
         http, artemis;
     }
     private Protocol protocol;

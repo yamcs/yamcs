@@ -11,12 +11,14 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import org.yamcs.ConfigurationException;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.protobuf.Rest.ListInstancesResponse;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 
+import static org.yamcs.api.YamcsConnectionProperties.Protocol;
 
 /**
  * A simple Yamcs Rest client to help with basic requests.
@@ -43,6 +45,10 @@ public class RestClient {
      * @param connectionProperties
      */
     public RestClient(YamcsConnectionProperties connectionProperties) {
+        YamcsConnectionProperties.Protocol p = connectionProperties.getProtocol(); 
+        if(p!=Protocol.http) {
+            throw new ConfigurationException("Unsupported protocol "+p+"; nly supported is "+Protocol.http);
+        }
         this.connectionProperties = connectionProperties;
         httpClient = new HttpClient();
         httpClient.setMaxResponseLength(MAX_RESPONSE_LENGTH);
