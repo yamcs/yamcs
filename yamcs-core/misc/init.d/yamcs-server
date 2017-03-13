@@ -24,7 +24,7 @@ function is_running {
     return $((1-`ps ww -p $pid -o args= | grep -c "yamcs-server.sh\|java.*yamcs.YamcsServer"`))
 }
 
-WAIT_FOR_START=30
+WAIT_FOR_START=120
 
 . /lib/lsb/init-functions
 
@@ -55,6 +55,7 @@ case "$1" in
             i=0
             #wait up to $WAIT_FOR_START seconds, maybe the database has to be loaded
             while [ $i -lt $WAIT_FOR_START ] ; do
+                sleep 1
                 if is_running $pid ; then
                     yamcsstartup=`grep yamcsstartup $OUTERR.0`
                     if [ "$yamcsstartup" != "" ] ; then
@@ -67,7 +68,6 @@ case "$1" in
                         fi
                         break
                     fi
-                    sleep 1
                     i=$((i+1))
                 else
                     log_failure_msg "yamcs failed to start; see $OUTERR.0 for details"
