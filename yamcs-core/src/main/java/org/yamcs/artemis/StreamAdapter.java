@@ -80,7 +80,6 @@ public class StreamAdapter implements StreamSubscriber, MessageHandler {
 
     @Override
     public void onMessage(ClientMessage msg) {
-        //System.out.println("mark 1: message received: "+msg);
         try {
             Tuple tuple=translator.buildTuple(stream.getDefinition(), msg);
             currentProcessingTuple.set(tuple);

@@ -1,1 +1,4 @@
 mdb: refmdb
+
+streamConfig:
+  event: ["events_realtime"]

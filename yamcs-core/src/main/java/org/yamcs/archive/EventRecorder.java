@@ -1,14 +1,9 @@
 package org.yamcs.archive;
 
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import org.apache.activemq.artemis.api.core.SimpleString;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StreamConfigEntry;
-import org.yamcs.artemis.EventTupleTranslator;
-import org.yamcs.artemis.StreamAdapter;
-import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.streamsql.ParseException;

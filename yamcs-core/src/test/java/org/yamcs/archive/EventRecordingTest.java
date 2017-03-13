@@ -76,6 +76,8 @@ public class EventRecordingTest extends YarchTestCase {
         EventRecorder eventRecorder = new EventRecorder(context.getDbName());
         final int n=100;
         eventRecorder.startAsync();
+        eventRecorder.awaitRunning();
+        
         YamcsSession ys=YamcsSession.newBuilder().build();
         ClientBuilder pcb=ys.newClientBuilder();
         SimpleString address=new SimpleString("events_realtime");
@@ -83,6 +85,7 @@ public class EventRecordingTest extends YarchTestCase {
         assertNotNull(rtstream);
         
         StreamAdapter streamAdapter= new StreamAdapter(rtstream, address, new EventTupleTranslator());
+        
         pcb.setDataProducer(true).setDataConsumer(address,null);
         YamcsClient msgClient=pcb.build();
         final AtomicInteger hornetReceivedCounter=new AtomicInteger(0);
@@ -131,8 +134,8 @@ public class EventRecordingTest extends YarchTestCase {
         s.start();
         finished.tryAcquire(10, TimeUnit.SECONDS);
 
-        assertEquals(n, tableReceivedCounter.get());
         assertEquals(n, hornetReceivedCounter.get());
+        assertEquals(n, tableReceivedCounter.get());
         msgClient.close();
         
         
