@@ -27,7 +27,6 @@ public class FloatDataEncoding extends DataEncoding {
     }
     /**
      * Float data encoded as a string. 
-     * @param name
      * @param sde describes how the string is encoded
      */
     public FloatDataEncoding(StringDataEncoding sde) {

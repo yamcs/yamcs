@@ -15,8 +15,8 @@ public class IntegerDataEncoding extends DataEncoding {
 
     /**
      * IntegerDataEncoding of type {@link IntegerDataEncoding.Encoding#unsigned}
-     * @param name
      * @param sizeInBits
+     * @param byteOrder 
      */
     public IntegerDataEncoding(int sizeInBits, ByteOrder byteOrder) {
         super(sizeInBits, byteOrder);
