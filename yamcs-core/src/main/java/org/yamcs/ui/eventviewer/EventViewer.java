@@ -176,7 +176,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             authenticationEnabled = config.getBoolean("authenticationEnabled");
         }
         
-        this.yconnector=yc;
+        this.yconnector = yc;
         this.eventReceiver = eventReceiver;
         
         readConfiguration();

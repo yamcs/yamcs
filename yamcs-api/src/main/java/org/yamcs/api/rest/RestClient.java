@@ -266,9 +266,6 @@ public class RestClient {
         httpClient.close();
     }
 
-
-
-
     public boolean isAutoclose() {
         return autoclose;
     }

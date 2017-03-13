@@ -45,6 +45,7 @@ public class YamcsConnectionProperties {
         this.host = host;
         this.port = port;
         this.authToken = authToken;
+        this.protocol = Protocol.http;
     }
 
     public String getHost() {
