@@ -4,7 +4,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +35,8 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.ClientCookieEncoder;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpResponse;
@@ -53,7 +59,7 @@ public class HttpClient {
     MediaType acceptMediaType = MediaType.PROTOBUF;
     URI uri;
     EventLoopGroup group;
-
+    private List<Cookie> cookies;
 
     private long maxResponseLength=1024*1024;//max length of the expected response 
 
@@ -227,7 +233,11 @@ public class HttpClient {
         request.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
         request.headers().set(HttpHeaders.Names.CONTENT_TYPE, sendMediaType);
         request.headers().set(HttpHeaders.Names.ACCEPT, acceptMediaType);
-
+        if(cookies!=null) {
+            String c = ClientCookieEncoder.STRICT.encode(cookies);
+            request.headers().set(HttpHeaders.Names.COOKIE, c);
+        }
+        
         if(authToken != null) {
             if(authToken instanceof UsernamePasswordToken) {
                 UsernamePasswordToken up = (UsernamePasswordToken)authToken;
@@ -244,7 +254,16 @@ public class HttpClient {
         return request;
     }
 
-
+    public void addCookie(Cookie c) {
+        if(cookies ==null) {
+            cookies = new ArrayList<>();
+        }
+        cookies.add(c);
+    }
+    
+    public List<Cookie> getCookies() {
+        return Collections.unmodifiableList(cookies);
+    }
     public MediaType getSendMediaType() {
         return sendMediaType;
     }

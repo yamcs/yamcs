@@ -2,6 +2,7 @@ package org.yamcs.api.rest;
 
 
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.cookie.Cookie;
 
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
@@ -55,9 +56,6 @@ public class RestClient {
         httpClient.setAcceptMediaType(MediaType.PROTOBUF);
         httpClient.setSendMediaType(MediaType.PROTOBUF);
     }
-
-
-    
 
     /**
      * Retrieve the list of yamcs instances from the server. The operation will block until the list is received.
@@ -282,5 +280,13 @@ public class RestClient {
      */
     public void setAutoclose(boolean autoclose) {
         this.autoclose = autoclose;
+    }
+    
+    public void addCookie(Cookie c) {
+        httpClient.addCookie(c);
+    }
+    
+    public List<Cookie> getCookies() {
+        return httpClient.getCookies();
     }
 }
