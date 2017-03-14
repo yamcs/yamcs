@@ -1,4 +1,8 @@
-Version 3.1.0 
+Version 3.1.1 Released 14-Mar-2017
+- fixed a bug in RestClient causing Swing client tools (Yamcs Monitor &co) to NPE when doing File -> Connect to Yamcs (connection by specifying the http url in the command line still worked)
+
+
+Version 3.1.0 Released 13-Mar-2017
 - MDB: allow parameters without raw types if they are not part of a container
 - REST Api: add option to get the details of parameters in 'list parameter'
 - Ease extension of the FilePollingTmDatalink and TmFileReader.

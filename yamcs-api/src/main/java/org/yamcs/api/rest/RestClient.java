@@ -47,8 +47,8 @@ public class RestClient {
      */
     public RestClient(YamcsConnectionProperties connectionProperties) {
         YamcsConnectionProperties.Protocol p = connectionProperties.getProtocol(); 
-        if(p!=Protocol.http) {
-            throw new ConfigurationException("Unsupported protocol "+p+"; nly supported is "+Protocol.http);
+        if(p!=null && p!=Protocol.http) {
+            throw new ConfigurationException("Unsupported protocol "+p+"; The only supported protocol is "+Protocol.http);
         }
         this.connectionProperties = connectionProperties;
         httpClient = new HttpClient();
