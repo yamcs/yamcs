@@ -49,6 +49,12 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <artemisVersion>1.5.1</artemisVersion>
+    <sonar.exclusions>
+      **/me/lemire/integercompression/**,
+      **/org/yamcs/protobuf/**,
+      **/org/yamcs/ui/**,
+      **/org/yamcs/yarch/streamsql/**
+    </sonar.exclusions>
   </properties>
 
   <build>
