@@ -58,6 +58,8 @@ public class WebSocketClient {
     YamcsConnectionProperties yprops;
     final boolean useProtobuf = true;
 
+    private boolean tcpKeepAlive = false;
+    
     //if reconnection is enabled, how often to attempt to reconnect in case of failure
     long reconnectionInterval = 1000;
 
@@ -150,12 +152,13 @@ public class WebSocketClient {
         Bootstrap bootstrap = new Bootstrap()
                 .group(group)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .channel(NioSocketChannel.class);
+                .channel(NioSocketChannel.class)
+                .option(ChannelOption.SO_KEEPALIVE, tcpKeepAlive);
 
         if(timeoutMs!=null) {
             bootstrap = bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeoutMs);
         }
-
+        
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
@@ -315,5 +318,13 @@ public class WebSocketClient {
 
     public boolean isConnected() {
         return nettyChannel.isOpen();
+    }
+    
+    /**
+     * Enable/disable the TCP Keep-Alive on websocket sockets. By default it is disabled. It has to be enabled before the connection is estabilished. 
+     * @param enabled
+     */
+    public void setTcpKeepAlive(boolean enabled) {
+        tcpKeepAlive = enabled;
     }
 }
