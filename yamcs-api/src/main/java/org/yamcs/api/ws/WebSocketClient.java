@@ -5,7 +5,6 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -258,6 +257,13 @@ public class WebSocketClient {
     }
 
     /**
+     * Enable/disable the TCP Keep-Alive on websocket sockets. By default it is disabled. It has to be enabled before the connection is estabilished. 
+     * @param enableTcpKeepAlive - if true the TCP SO_KEEPALIVE option is set 
+     */
+    public void enableTcpKeepAlive(boolean enableTcpKeepAlive) {
+        tcpKeepAlive = enableTcpKeepAlive;
+    }
+    /**
      * @return the Future which is notified when the executor has been
      *         terminated.
      */
@@ -275,9 +281,10 @@ public class WebSocketClient {
     }
 
     public static void main(String... args) throws InterruptedException {
-        YamcsConnectionProperties yprops = new YamcsConnectionProperties("localhost", 8090, "gs-sim");
+        YamcsConnectionProperties yprops = new YamcsConnectionProperties("aces-archive-ops.spaceapplications.com", 8090, "mwlgt-ops");
         WebSocketClient client = new WebSocketClient(yprops);
-
+        client.enableTcpKeepAlive(true);
+        
         client.setCallback(new WebSocketClientCallback() {
             @Override
             public void connected() {
@@ -320,11 +327,5 @@ public class WebSocketClient {
         return nettyChannel.isOpen();
     }
     
-    /**
-     * Enable/disable the TCP Keep-Alive on websocket sockets. By default it is disabled. It has to be enabled before the connection is estabilished. 
-     * @param enabled
-     */
-    public void setTcpKeepAlive(boolean enabled) {
-        tcpKeepAlive = enabled;
-    }
+   
 }
