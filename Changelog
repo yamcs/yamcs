@@ -1,4 +1,7 @@
-Version 3.1.1 Released 14-Mar-2017
+Persion 3.1.2 Released 
+- PacketViewer: fixed a bug causing the packetviewer to not be able to load files unless the -l (to limit the max num packets loaded) option was provided 
+
+Persion 3.1.1 Released 14-Mar-2017
 - fixed a bug in RestClient causing Swing client tools (Yamcs Monitor &co) to NPE when doing File -> Connect to Yamcs (connection by specifying the http url in the command line still worked)
 
 

@@ -65,7 +65,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
     public static final String FORWARD_ACTION_KEY = "forward";
     public static final String UP_ACTION_KEY = "up";
     public static final String DOWN_ACTION_KEY = "down";
-    
+
     public static final String PREF_COLNAMES = "columns";
 
     private PacketsTableModel tableModel;
@@ -142,7 +142,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         createActions();
         installPopupMenus();
     }
-    
+
     // It seems like this needs to be re-done after every model restructuring
     public void configureRowSorting() {
         rowSorter.setComparator(2, (ListPacket o1, ListPacket o2) -> {
@@ -517,9 +517,10 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         SwingUtilities.invokeLater(() -> {
             tableModel.addPacket(packet);
             if (getRowCount() == 1) updateActionStates();
-            while (tableModel.getRowCount() > maxLines) {
-                removeRow(0);
-            }
+            if(maxLines>0) {
+                while (tableModel.getRowCount() > maxLines) {
+                    removeRow(0);
+                }}
 
             if (packetViewer.miAutoScroll.isSelected()) {
                 int rowNum = convertRowIndexToModel(tableModel.getRowCount() - 1);
@@ -532,7 +533,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
             }
         });
     }
-    
+
     //reads from the preferences the columns (parameters) that have to be shown in the left table
     private void readColumnsFromPreference() {
         columnParaNames = new LinkedHashSet<>();
@@ -574,7 +575,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
             e.printStackTrace();
         }            
     }
-    
+
 
     /**
      * adds columns corresponding to existing parameters in XtceDB
@@ -583,7 +584,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
      * */
     void setupParameterColumns() {
         XtceDb xtceDb = packetViewer.xtcedb;
-    
+
         tmExtractor=new XtceTmExtractor(xtceDb);
         resetDynamicColumns();
         for(String pn: columnParaNames) {
@@ -596,7 +597,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
                 tmExtractor.startProviding(p);
             }
         }
-        
+
         SequenceContainer rootsc = xtceDb.getRootSequenceContainer();
         if(xtceDb.getInheritingContainers(rootsc) == null ) {
             tmExtractor.startProviding(rootsc);
@@ -615,7 +616,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
             tmExtractor.startProviding(p);
         }
     }
-    
+
     /**
      * Doesn't remove columns from preferences, but resets GUI.
      * Used on start-up, and when changing connections.
@@ -629,7 +630,7 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         tableModel.resetParameterColumns();
         configureRowSorting();
     }
-    
+
     // index in model
     void hideParameterColumn(int columnIndex) {
         TableColumn tableColumn = getColumnModel().getColumn(columnIndex);
