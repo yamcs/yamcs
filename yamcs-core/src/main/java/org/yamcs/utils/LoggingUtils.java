@@ -1,7 +1,6 @@
 package org.yamcs.utils;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.impl.YamcsLoggerFactory;
 import org.yamcs.YProcessor;
 import org.yamcs.yarch.Stream;
@@ -26,7 +25,7 @@ public class LoggingUtils {
      * @return a newly created logger
      */
     public static Logger getLogger(Class<?> clazz, YProcessor processor) {
-        return LoggerFactory.getLogger(clazz.getName() + "["+processor.getInstance()+"/" +processor.getName()+ "]");
+        return YamcsLoggerFactory.getLogger(clazz.getName() + "["+processor.getInstance()+"/" +processor.getName()+ "]");
     }
 
     public static Logger getLogger(Class<?> clazz, String instance, TableDefinition tblDef) {
