@@ -47,7 +47,6 @@
                         vm.active_links[i].highlight = false;
                     }
                 }
-                $log.info('1.5');
             };
         };
 
@@ -55,9 +54,7 @@
 
         //Cancel subscription and interval on route change
         $scope.$on('$destroy', function(){
-            $log.info('Changing route');
             vm.active_links.length=0;
-            $log.log('Array', vm.active_links);
             linksService.unsubscribeUpstream();
             $interval.cancel(vm.highlightTimer);
             

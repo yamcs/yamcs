@@ -2,7 +2,7 @@
     'use strict';
 
     angular
-        .module('yamcs.links', [])
+        .module('yamcs.links', ['yamcs.core'])
         .config(configure);
 
     /* @ngInject */

@@ -6,70 +6,129 @@
     <p>&nbsp;</p>
 
     <div class="container-fluid">
-        <div class="container">
-            <h2> Information</h2>
-            <ul>
-                <li> <b>Qualified Name:</b> {{vm.info.qualifiedName}}</li>
-                <li> <b>Abstract:</b> {{vm.info.abstract}}</li>
-            </ul>
-            <h2> Significance</h4>
-            <ul>
-                <li><b>Consequence level:</b> {{vm.info.significance.consequenceLevel}}</li>
-                <li><b>Warning reason: </b>{{vm.info.significance.reasonForWarning}}</li>
-            </ul>
+        <div class="row" style="padding-left:1px;">
+            <div class="col-md-6">
+                <dl class="dl-horizontal">
+                    <dt>Qualified&nbsp;Name</dt>
+                    <dd> {{vm.info.qualifiedName}}</dd>
+
+                    <dt>Is Abstract</dt>
+                    <dd>{{vm.info.abstract}} </dd>
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <dl class="dl-horizontal">
+                    <dt>Significance&nbsp;Level</dt>
+                    <dd>{{vm.info.significance.consequenceLevel}}</dd>
+                    
+                    <dt>Detailed</dt>
+                    <dd>{{vm.info.significance.reasonForWarning}}</dd>
+                </dl>
+            </div>
         </div>
-        <hr/>
-        <br/>
-        <div>
-                <div class="pull-left" style="width:47%;">
-                    <h2>Arguments</h2>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+                <div class="col-md-6 container">
+                    <div class="section"><h2>Arguments</h1></div>
+                    <div class="container-fluid">
+
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                            <th>Name</th>
-                            <th>Type</th>
-                            <th>Little Endian</th>
-                            <th>Bit Size</th>
-                            <th>Encoding</th>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>LE Byte Order</th>
+                                <th>Encoding</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr  ng-repeat="item in vm.info.argument">
-                                <th> {{item.name}}</th>
-                                <td> {{item.type.dataEncoding.type}} </td>
-                                <td> {{item.type.dataEncoding.littleEndian}}</td>
-                                <td> {{item.type.dataEncoding.sizeInBits}} </td>
-                                <td> {{item.type.dataEncoding.encoding}} </td>
+                        <body>
+                            <tr ng-repeat="item in vm.info.argument">
+                                <th>{{$index}} </th>
+                                <td>{{item.name}} </td>
+                                <td>{{item.type.engType}} </td>
+                                <td>{{item.type.dataEncoding.littleEndian}} </td>
+                                <td>{{item.type.dataEncoding.encoding}} </td>
                             </tr>
-                        </tbody>
+                        </body>
                     </table>
+                    </div>
+
                 </div>
-                <div class="pull-left" ng-if="vm.has_comparison">
-                    <h2>Parameter constraints</h2>
-                    <ul style="list-style-type: none;">
-                        <li ng-repeat="item in vm.info.constraint">
-                            <div class="card" ng-repeat="comp in item.comparison">
-                                <table class="table talbe-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Operator</th>
-                                            <th>Value</th>
-                                            <th>Result</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr ng-repeat="comp in item.comparison">
-                                            <th>{{comp.parameter.name}} </th>
-                                            <td>{{comp.operator}} </th>
-                                            <td>{{comp.value}} </td>
-                                            <td>YES</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            <h2>Timeout: {{item.timeout}} </h2>
-                        </li>
-                    </ul>
+                <div class="col-md-1"></div>
+                <div class="col-md-3" ng-if="vm.has._comparison">
+                    <div class="section">
+                        <h2>Parameter constraints</h1>
+                    </div>                        
+                    <div class="container-fluid">
+                        <ul style="list-style-type: none;">
+                            <li ng-repeat="item in vm.info.constraint">
+                                <div class="card" ng-repeat="comp in item.comparison">
+                                    <div class="card-block">
+                                        <span class="card-text"> {{comp.parameter.name}} {{vm.stringToOperator(comp.operator)}} {{comp.value}}</span>
+                                        <h2 class="card-text">Timeout: {{item.timeout}} </h2>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-2"></div>
+        </div>
+        <div class="row">
+                <div class="container col-md-6" ng-if="vm.has._baseCommand">
+                    <div class="section">
+                        <h2>Base Command Informations</h2>
+                    </div>
+                    <div class="container-fluid">
+                        <dl class="dl-horizontal dl-left">
+                            <dt>Base Command Name </dt>
+                            <dd>{{vm.info.baseCommand.name}} </dd>  
+
+                            <dt>SubName</dt>                          
+                            <dd>{{vm.baseCommand.name}} </dd>
+                        </dl>
+                        <div class="section"> Base Command Arguments </div>
+                        <div> 
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Value</th>
+                                        <th>Type</th>
+                                        <th>BitSize</th>
+                                        <th>Encoding</th>
+                                    </tr>
+                                </thead>
+                                <tbody ng-repeat="cmd in vm.baseCommand">
+                                    <tr ng-repeat="arg in cmd.argument">
+                                        <th>{{cmd.name}} </th>
+                                        <td>{{arg.name }} </td>
+                                        <td>{{vm.getArgumentValue( arg.name) }} </td>
+                                        <td>{{arg.type.engType || 'N/A'}} </td>
+                                        <td>{{arg.type.dataEncoding.sizeInBits || 'N/A'}} </td>
+                                        <td>{{arg.type.dataEncoding.encoding ||'N/A'}} </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="container col-md-6" ng-if="vm.has._baseCommand">
+                   <div class="section">
+                       <h2>Control Command</h2>
+                       </div>
+                       
+                   <div class="container-fluid">
+                       <button class="btn btn-warning" ng-click="vm.triggerCommand()">Trigger Command</button>
+                       <script type="text/ng-template">
+                            <div class=modal-header>
+                                Header
+                            </div>
+                       </script>
+                   </div>
                 </div>
         </div>
     </div>

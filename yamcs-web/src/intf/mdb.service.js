@@ -20,7 +20,9 @@
             getCommandInfo: getCommandInfo,
 
             listAlgorithms: listAlgorithms,
-            getAlgorithmInfo: getAlgorithmInfo
+            getAlgorithmInfo: getAlgorithmInfo,
+            
+            sendCommand: sendCommand
         };
 
         function getSummary() {
@@ -135,6 +137,23 @@
             });
         }
 
+        function sendCommand(urlname, assignements){
+            var targetUrl= '/api/processors/'+yamcsInstance+'/realtime/commands'+urlname;
+            
+            var query = {
+                "sequenceNumber" : 1,
+                "origin" : "user@my-machine",
+                "assignment" : assignements,
+                "dryRun" : false
+            }
+            $log.log('TRIGGER COMMAND', targetUrl, query);
+            return $http.post(targetUrl, query).then( function(response){
+                return response;
+            }).catch(function (msg){
+                $log.error("XHR failed", msg);
+                throw messageToException(msg);
+            });
+        }
         /*
             Returns an array of a space system and all of its nested children
          */

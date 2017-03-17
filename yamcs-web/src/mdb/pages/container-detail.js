@@ -9,7 +9,5 @@
     function MDBContainerDetailController($rootScope, $log, $routeParams, mdbService){
         var vm = this;
         $rootScope.pageTitle = $routeParams.name + ' | Yamcs';
-
-        $log.log('Into the CONTROLLER CONTIANER')
     };
 })();
