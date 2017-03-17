@@ -93,9 +93,9 @@
         function unsubscribeUpstream(){
             $log.log("Unsubscribing from the websocket");
             activeLinks.length= 0;
-           /* socket.emit('links', 'unsubscribe', {}, null, function(et, msg){
+            socket.emit('links', 'unsubscribe', {}, null, function(et, msg){
                 $log.log('Failed Unsubscribing from the event', et, '', msg);
-            });*/
+            });
         };
     }
 })();
