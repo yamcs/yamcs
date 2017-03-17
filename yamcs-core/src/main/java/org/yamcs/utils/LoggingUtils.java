@@ -24,14 +24,22 @@ public class LoggingUtils {
      * @param processor 
      * @return a newly created logger
      */
-    public static Logger getLogger(Class<?> clazz, YProcessor processor) {
-        return YamcsLoggerFactory.getLogger(clazz.getName() + "["+processor.getInstance()+"/" +processor.getName()+ "]");
+    public static Logger getLogger(Class<?> clazz, YProcessor processor) {        
+        //TODO - we really want to have the name of the processor in the logs but unfortunately JUL will make a node for it in the logging hierarchy 
+        // and and it will never be garbage collected causing the memory to ever increase when processors with random names are created 
+        //    (such as those from REST replays or from ParameterArchive fillup)
+        // same is below for streams
+        
+        //return YamcsLoggerFactory.getLogger(clazz.getName() + "["+processor.getInstance()+"/" +processor.getName()+ "]");                
+        return YamcsLoggerFactory.getLogger(clazz.getName() + "["+processor.getInstance()+"]");
     }
 
     public static Logger getLogger(Class<?> clazz, String instance, TableDefinition tblDef) {
         return YamcsLoggerFactory.getLogger(clazz.getName() + "["+instance+"/"+tblDef.getName()+"]");
     }
     public static Logger getLogger(Class<?> clazz, String instance, Stream stream) {
-        return YamcsLoggerFactory.getLogger(clazz.getName() + "["+instance+"/"+stream.getName()+"]");
+        //TODO see above
+        //return YamcsLoggerFactory.getLogger(clazz.getName() + "["+instance+"/"+stream.getName()+"]");
+        return YamcsLoggerFactory.getLogger(clazz.getName() + "["+instance+"]");
     }
 }
