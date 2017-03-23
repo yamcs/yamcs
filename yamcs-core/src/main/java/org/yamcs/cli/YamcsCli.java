@@ -5,10 +5,8 @@ import java.net.URISyntaxException;
 
 import org.yamcs.api.YamcsConnectionProperties;
 
-import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
-import com.beust.jcommander.internal.Console;
 
 /**
  * Command line utility for doing yamcs stuff.
@@ -28,6 +26,7 @@ public class YamcsCli extends Command {
 		addSubCommand(new Backup(this));
 		addSubCommand(new RocksDbCli(this));
 		addSubCommand(new ArchiveCli(this));
+		addSubCommand(new XtceDbCli(this));
 	}
 
 	@Parameter(names="-y", description="yamcs url")
