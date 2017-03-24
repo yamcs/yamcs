@@ -55,6 +55,7 @@
         //Cancel subscription and interval on route change
         $scope.$on('$destroy', function(){
             vm.active_links.length=0;
+            $log.log('Active links to show', vm.active_links);
             linksService.unsubscribeUpstream();
             $interval.cancel(vm.highlightTimer);
             

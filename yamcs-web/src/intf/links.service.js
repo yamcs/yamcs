@@ -10,7 +10,13 @@
 
         function linksService($rootScope, $http, $log, socket, yamcsInstance){
             
-            
+            socket.on('open', function(){
+                subscribeUpstream();
+                });
+            if (socket.isConnected()){
+                    subscribeUpstream();
+                };
+
 
         return {
             getAllListLinks: getAllListLinks,
@@ -20,18 +26,16 @@
 
         }
         function getActiveLinks(){  
-            socket.on('open', function(){
-                        subscribeUpstream();
-                });
             if (socket.isConnected()){
-                    subscribeUpstream();
+                    socket.emit('links', 'subscribe', {}, null, function(et, msg){
+                    $log.log('Failed Subscribe', et, '', msg);
+                        });
                 };
             return activeLinks;
         };
 
         function getAllListLinks(){
             var targetUrl = '/api/links';
-
             return $http.get(targetUrl).then( function(response){
                 $log.info('all links', response);
                 return response.data;
@@ -45,7 +49,6 @@
             socket.on('LINK_EVENT', function(data){
                 var linkInfo = data["linkInfo"];
                 if(data.type == 'REGISTERED'){
-                    $log.log('The socket is registered', data);
                     var is_in = false;
                     for(var i=0; i<activeLinks.length; i++){
                         if(activeLinks[i].name == linkInfo.name)   
@@ -76,7 +79,7 @@
             })
 
             socket.emit('links', 'subscribe', {}, null, function(et, msg){
-                $log.log('Failed Subscribe', et, '', msg);
+                $log.log('Failed failed sub', et, '', msg);
             });
         };
 
@@ -91,11 +94,11 @@
         };
 
         function unsubscribeUpstream(){
-            $log.log("Unsubscribing from the websocket");
-            activeLinks.length= 0;
+            activeLinks.length= 0;            
             socket.emit('links', 'unsubscribe', {}, null, function(et, msg){
-                $log.log('Failed Unsubscribing from the event', et, '', msg);
+                $log.log('Failed unsub from the event', et, '', msg);
             });
+            
         };
     }
 })();
