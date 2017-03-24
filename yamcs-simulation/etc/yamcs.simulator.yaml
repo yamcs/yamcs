@@ -37,7 +37,7 @@ tmDataLinks:
       spec: localDump
       stream: tm_dump
 
-ppDataLinks:
+parameterDataLinks:
     - class: org.yamcs.simulation.SimulationPpProvider
       stream: pp_realtime
       args: {simulationDataPath: "etc/gs-simulation.xml"}
