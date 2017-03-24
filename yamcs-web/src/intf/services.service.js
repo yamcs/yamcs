@@ -32,9 +32,7 @@
             var data = {
                 "state":state
             }
-            $log.log("SENDING to "+targetUrl, data)
             return $http.patch(targetUrl, data).then(function (resp){
-                $log.log('Patched successfully',resp)
             }).catch( function(msg){
                 $log.error('XHR failed', msg);
             })
