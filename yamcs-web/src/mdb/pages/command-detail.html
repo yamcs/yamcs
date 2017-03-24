@@ -75,9 +75,10 @@
                     </div>
                 </div>
                 <div class="col-md-2"></div>
+
         </div>
         <div class="row">
-                <div class="container col-md-6" ng-if="vm.has._baseCommand">
+                <div class="container col-md-8" ng-if="vm.has._baseCommand">
                     <div class="section">
                         <h2>Base Command Informations</h2>
                     </div>
@@ -91,7 +92,7 @@
                         </dl>
                         <div class="section"> Base Command Arguments </div>
                         <div> 
-                            <table class="table table-striped">
+                            <table class="table table-striped data-table">
                                 <thead>
                                     <tr>
                                         <th>#</th>
@@ -116,20 +117,46 @@
                         </div>
                     </div>
                 </div>
-                <div class="container col-md-6" ng-if="vm.has._baseCommand">
+                <div class="container col-md-4" ng-if="vm.has._baseCommand">
                    <div class="section">
-                       <h2>Control Command</h2>
-                       </div>
-                       
-                   <div class="container-fluid">
-                       <button class="btn btn-warning" ng-click="vm.triggerCommand()">Trigger Command</button>
-                       <script type="text/ng-template">
-                            <div class=modal-header>
-                                Header
+                       <h2>Commands Control</h2>
+                    </div>
+
+                   <div class="container" ng-if="vm.has._trigger">
+                        <form  ng-repeat='req in vm.commands'> 
+                            <div class="form-group" ng-hide='req.type === "enumeration"'>
+                                <label for = "commandToSend{{$index}}">{{req.desc}} </label>
+                                <input id = "commandToSend{{$index}}" 
+                                       type = "{{vm.getRequestType(req.type)}}" ng-model='req.value'
+                                       min="{{req.options.min}}" max="{{req.options.max}}">
                             </div>
-                       </script>
+                            <div class="form-group"  ng-if='req.type === "enumeration"'>
+                                <label for = "selectToSend{{$index}}">{{req.desc}}</label>
+                                <select id = "selectToSend{{$index}}" ng-model='req.value'> 
+                                    <option ng-repeat='op in req.options.range' value='{{op.label}}'>{{op.label}}</option>
+                                </select>
+                            </div>
+                        </form>  
+                                             
+                        <h2>DynamicForm inProgress {{vm.data}}</h2>
+                        <div ng-repeat='req in vm.commands'>
+                            <dynamic-form ng-model='value' request='{{vm.data}}'>
+                            </dynamic-form>
+                        </div>
+                        <hr/>
+
+                       <button class="btn btn-warning" ng-click="vm.triggerCommand()">Send Command</button>
+                        <div class="section" ng-if='vm.has._sentMsg'>
+                            <h2>Last Message info</h2>
+                            <div class="container">
+                            <dl class="dl-horizontal dl-left">
+                                <dt>Status</dt>
+                                <dd>{{vm.sentMsg.statusText}}</dd>
+                            </dl>
+                            </div>
+                        </div>                  
                    </div>
-                </div>
+               </div>
         </div>
     </div>
 </mdb-pane>

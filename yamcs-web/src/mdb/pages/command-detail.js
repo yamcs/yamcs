@@ -7,12 +7,25 @@
     function MDBCommandDetailController($rootScope, mdbService, $routeParams, $log){
         $rootScope.pageTitle = $routeParams.name + ' | Yamcs';
         var vm = this;
-        
+        //TEST DATA -> TO REMOVE
+        vm.command = {
+            'name':'',
+            'value':'',
+            'options':{
+               'min':'',
+               'max':'',
+               'range':[]
+            }};
+
+        vm.commands = [];
+
         var urlname = '/'+$routeParams['ss']+'/'+encodeURIComponent($routeParams.name);
         vm.urlname = urlname;
-        vm.has={
+        vm.has = {
             _comparison:false,
-            _baseCommand:false
+            _baseCommand:false,
+            _trigger:true,
+            _sentMsg:false
         };
 
        mdbService.getCommandInfo(urlname).then( function(data){
@@ -23,7 +36,7 @@
             if(data.baseCommand != undefined){
                 vm.has._baseCommand = true;
                 vm.baseCommand = toFlatToList(data, 'baseCommand');
-                vm.sendCommand = constructCommand();
+                constructCommand();
             }
         });
 
@@ -95,22 +108,86 @@
         };
 
         var constructCommand = function(){
-            var commands = [];
             for(var i=0; i < vm.baseCommand.length; i++){
-                if(vm.baseCommand[i].abstract == false){
-                    commands = commands.push(vm.baseCommand[i].argument);
+                var tempCommand = {};
+                var commandFrom = null;
+                if(vm.baseCommand[i].abstract == false && vm.baseCommand[i].argument != undefined){
+                    commandFrom = vm.baseCommand[i].argument[0];
+                    tempCommand = {
+                        'name':commandFrom.name,
+                        'desc':commandFrom.description,
+                        'type':commandFrom.type.engType,
+                        'value':'',
+                        'options':[]
+                    }
+                    if( commandFrom.type.rangeMin != undefined){
+                        tempCommand['options']['min']= commandFrom.type.rangeMin;
+                    }
+                    if( commandFrom.type.rangeMax != undefined){
+                        tempCommand['options']['max']= commandFrom.type.rangeMax;
+                    }
+                    if( commandFrom.type.engType === 'enumeration'){
+                        $log.info('COMMAND FROM', commandFrom);
+                        tempCommand['options']['range'] = commandFrom.type.enumValue;
+                    }
+                    vm.commands.push(tempCommand);
                 }
+            } 
+            if( vm.commands.length ==0 ){
+                vm.has._trigger=false;
             }
-            return commands;            
+            if( vm.commands.length == 1){
+                vm.command = vm.commands[0];
+            }         
+            $log.log('COMMANDS ARE ', vm.commands);
         };
 
         vm.triggerCommand = function(){
+            vm.has._sentMsg = false;
             var url = vm.urlname;
-            mdbService.sendCommand(url, vm.sendCommand).then( function(data){
-                $log.log('Success', data);
+            mdbService.sendCommand(url, generateRequests(vm.commands)).then( function(data){
+                vm.has._sentMsg = true;
+                vm.sentMsg= data;
             }).catch( function(msg){
                 $log.error("XHR Error");
             });
+        };
+
+        var generateRequests = function(commands){
+            var requests = []
+            for(var i=0; i<commands.length; i++){
+                var tempRequest = {};
+                tempRequest.name = commands[i].name;
+                $log.log('Type of value', typeof(commands[i]))
+                if( typeof (commands[i].value) === 'string'){
+                    tempRequest.value = commands[i].value;                  
+                }else{
+                    tempRequest.value =JSON.stringify(commands[i].value) ; 
+                }               
+                
+                if(tempRequest.value === ''){
+                    $log.error('Empty value to send');
+                }else 
+                    requests.push(tempRequest);
+            }
+            $log.log('REQUESTS', requests);
+            return requests;
+        }
+
+        vm.getRequestType = function(type){
+            var supportedType= {
+                'string':'text',
+                'integer':'number'
+            }
+            if(supportedType[type] == undefined){
+                return 'hidden'
+            }else
+                return supportedType[type];
+        };
+
+
+        vm.testFunction = function(){
+            $log.log('FUNCTION TESTED ####');
         };
     }
 })();

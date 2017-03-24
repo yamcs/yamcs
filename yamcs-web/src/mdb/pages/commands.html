@@ -19,8 +19,8 @@
     <tr ng-repeat="cmd in vm.commands | orderBy:'qualifiedName'">
       <td>
         <a href="/{{yamcsInstance}}/mdb/commands{{cmd.qualifiedName}}">
-        <!--{{cmd.name}} {{yamcsInstance}} + --> 
-        {{yamcsInstance}}/mdb/commands{{cmd.qualifiedName}}
+        {{cmd.name}}
+        <!--{{yamcsInstance}}/mdb/commands{{cmd.qualifiedName}}-->
         </a>
       </td>
       <td>{{ cmd.shortDescription | nvl:'-' }}</td>
