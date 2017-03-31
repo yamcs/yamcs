@@ -12,7 +12,8 @@
             'yamcs.mdb',
             'yamcs.uss',
             'yamcs.services',
-            'yamcs.links'
+            'yamcs.links',
+            'yamcs.history'
         ])
         .config(configureModule);
 

@@ -8,6 +8,7 @@
     /* @ngInject */
     function MDBContainerDetailController($rootScope, $log, $routeParams, mdbService){
         var vm = this;
-        $rootScope.pageTitle = $routeParams.name + ' | Yamcs';
+        $log.log('Got into containers');
+       // $rootScope.pageTitle = $routeParams.name + ' | Yamcs';
     };
 })();

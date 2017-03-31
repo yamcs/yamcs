@@ -123,7 +123,7 @@
                     </div>
 
                    <div class="container" ng-if="vm.has._trigger">
-                        <form  ng-repeat='req in vm.commands'> 
+                        <form ng-repeat='req in vm.commands'> 
                             <div class="form-group" ng-hide='req.type === "enumeration"'>
                                 <label for = "commandToSend{{$index}}">{{req.desc}} </label>
                                 <input id = "commandToSend{{$index}}" 
@@ -137,12 +137,13 @@
                                 </select>
                             </div>
                         </form>  
-                                             
+                        <!--                     
                         <h2>DynamicForm inProgress {{vm.data}}</h2>
                         <div ng-repeat='req in vm.commands'>
-                            <dynamic-form ng-model='value' request='{{vm.data}}'>
-                            </dynamic-form>
+                            <_dynamic-form ng-model='value' request='{{vm.data}}'>
+                            </_dynamic-form>
                         </div>
+                        -->
                         <hr/>
 
                        <button class="btn btn-warning" ng-click="vm.triggerCommand()">Send Command</button>

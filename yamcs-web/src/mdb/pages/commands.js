@@ -14,7 +14,6 @@
         vm.commandsLoaded = false;
         vm.mdbType = 'commands';
 
-        $log.log('Log of :', $routeParams['ss'])
         $rootScope.pageTitle = 'Commands | Yamcs';
 
         mdbService.listCommands({

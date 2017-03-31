@@ -1,6 +1,5 @@
 (function() {
     'use strict';
-
     angular
         .module('yamcs.mdb', ['yamcs.core'])
         .config(configure);
@@ -11,13 +10,13 @@
             templateUrl: '/_static/_site/mdb/pages/index.html',
             controller: 'MDBIndexController',
             controllerAs: 'vm'
+        }).when('/:instance/mdb/containers',{
+            templateUrl: '_static/_site/mdb/pages/container-detail.html',
+            controller: 'MDBContainerDetailController',
+            controllerAs: 'vm'
         }).when('/:instance/mdb/commands/:ss*/:name', {
             templateUrl: '/_static/_site/mdb/pages/command-detail.html',
             controller: 'MDBCommandDetailController',
-            controllerAs: 'vm'
-        }).when('/:instance/mdb/containers/:ss*/:name',{
-            templateUrl: '_static/_site/mdb/pages/container-detail.html',
-            controller: 'MDBContainerDetailController',
             controllerAs: 'vm'
         }).when('/:instance/mdb/:ss*/parameters', {
             templateUrl: '/_static/_site/mdb/pages/parameters.html',
