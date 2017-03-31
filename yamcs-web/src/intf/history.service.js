@@ -5,7 +5,7 @@
 
     /* @ngInject */
     function historyService($rootScope, $http, socket, yamcsInstance, $log){
-        var history={status:'', data:[] };
+        var history={status:'', data:[], hops:[] };
         var historyIn = {};
 
         socket.on('open', function () {
@@ -84,7 +84,7 @@
                }
             }
         }
-
+        
         function parseHopName(name){
             var not_parsed = {
                 TransmissionConstraints:true,

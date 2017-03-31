@@ -5,7 +5,7 @@
     <div class="section">
         <h2>Commands History</h2>
     </div>
-    <div class="container">
+    <div class="container-fluid">
         <table class="table table-stripped">
             <thead>
                 <tr>
@@ -23,7 +23,7 @@
                     <td>{{item.info.source}}</td>
                     <td>{{item.info.name}}</td>
                     <td>{{item.info.sequence}}</td>
-                    <td ng-repeat="(key,value) in item.hops" style="width: 30px;" ng-class="{'highlight-dark':vm.verifyStatusClass(value)}">{{key}}:{{vm.getDelay(value.time, item.info.time) | date:'sss'}}ms</td>
+                    <td ng-repeat="(key,value) in item.hops" style="width: 30px;" ng-class="{'highlight-dark':vm.verifyStatusClass(value)}">{{key}}:{{vm.getDelay(value.time, item.info.time) | date:'ss:sss'}}ms</td>
                 </tr>
             </tbody>
         </table>
