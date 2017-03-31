@@ -77,10 +77,6 @@
                         };
                 }                
             })
-
-            socket.emit('links', 'subscribe', {}, null, function(et, msg){
-                $log.log('Failed failed sub', et, '', msg);
-            });
         };
 
         function patchLinks(name, status){
