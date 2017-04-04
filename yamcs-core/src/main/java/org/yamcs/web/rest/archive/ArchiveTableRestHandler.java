@@ -174,7 +174,6 @@ public class ArchiveTableRestHandler extends RestHandler {
             ydb.execute("insert into "+tableName+" select * from "+sname);
             inputStream = ydb.getStream(sname);
         } catch (Exception e){
-            e.printStackTrace();
             throw new InternalServerErrorException(e);
         }
         
@@ -273,7 +272,6 @@ public class ArchiveTableRestHandler extends RestHandler {
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             if(errorState) return;
             errorState = true;
-            cause.printStackTrace();
             log.warn("Exception caught in the table load pipeline, closing the connection: {}", cause.getMessage());
             inputStream.close();
             if(cause instanceof DecoderException) {

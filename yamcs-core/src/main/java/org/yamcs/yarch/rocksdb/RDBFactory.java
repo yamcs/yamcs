@@ -240,7 +240,7 @@ public class RDBFactory implements Runnable {
                 opt.close();
                 cf.complete(null);
             } catch (Exception e) {
-                log.error("Got error when creating the backup ", e);
+                log.warn("Got error when creating the backup: {} ", e.getMessage());
                 cf.completeExceptionally(e);
             } finally { 
                 if(db!=null) {
