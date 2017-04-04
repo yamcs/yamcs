@@ -18,41 +18,68 @@ public class DynamicSchemaTableTest extends YarchTestCase {
     private void emit(Stream s, long key, String colName, int colValue) {
         TupleDefinition tdef=new TupleDefinition();
         tdef.addColumn("t",DataType.TIMESTAMP);
-        tdef.addColumn(colName,DataType.INT);
+        tdef.addColumn(colName, DataType.INT);
+        Tuple t=new Tuple(tdef, new Object[]{key, colValue});
+        s.emitTuple(t);
+    }
+    
+    private void emit(Stream s, long key, String colName, boolean colValue) {
+        TupleDefinition tdef=new TupleDefinition();
+        tdef.addColumn("t",DataType.TIMESTAMP);
+        tdef.addColumn(colName, DataType.BOOLEAN);
+        Tuple t=new Tuple(tdef, new Object[]{key, colValue});
+        s.emitTuple(t);
+    }
+    
+    private void emit(Stream s, long key, String colName, byte colValue) {
+        TupleDefinition tdef=new TupleDefinition();
+        tdef.addColumn("t",DataType.TIMESTAMP);
+        tdef.addColumn(colName, DataType.BYTE);
+        Tuple t=new Tuple(tdef, new Object[]{key, colValue});
+        s.emitTuple(t);
+    }
+    
+    private void emit(Stream s, long key, String colName, short colValue) {
+        TupleDefinition tdef=new TupleDefinition();
+        tdef.addColumn("t",DataType.TIMESTAMP);
+        tdef.addColumn(colName, DataType.SHORT);
         Tuple t=new Tuple(tdef, new Object[]{key, colValue});
         s.emitTuple(t);
     }
     
     @Test
     public void testInsert() throws Exception {
-    	
         ydb.execute("create table test_insert (t timestamp, v1 int, v2 int, primary key(t))");
-       
-        
         ydb.execute("create stream test_insert_in (t timestamp)");
-        ydb.execute("insert into test_insert select * from test_insert_in");
+        ydb.execute("insert_append into test_insert select * from test_insert_in");
         
-        TableDefinition tblDef=ydb.getTable("test_insert");
+        TableDefinition tblDef = ydb.getTable("test_insert");
         
-        TupleDefinition keyDef=tblDef.getKeyDefinition();
+        TupleDefinition keyDef = tblDef.getKeyDefinition();
         ArrayList<ColumnDefinition> keyCols=keyDef.getColumnDefinitions();
         assertEquals(1, keyCols.size());
         
-        ArrayList<ColumnDefinition> valueCols=tblDef.getValueDefinition().getColumnDefinitions();
+        ArrayList<ColumnDefinition> valueCols = tblDef.getValueDefinition().getColumnDefinitions();
         assertEquals(2, valueCols.size());
         
-        Stream s=ydb.getStream("test_insert_in");
+        Stream s = ydb.getStream("test_insert_in");
         emit(s, 1, "v1", 1);
         emit(s, 1, "v2", 2);
         emit(s, 1, "v3", 3);
         emit(s, 2, "v3", 3);
         
-        valueCols=tblDef.getValueDefinition().getColumnDefinitions();
-        assertEquals(3, valueCols.size());
+        emit(s, 2, "v4", true);
+        emit(s, 2, "v5", (byte) 5);
+        emit(s, 2, "v6", (short) 6);
+        
+        
+        valueCols = tblDef.getValueDefinition().getColumnDefinitions();
+        assertEquals(6, valueCols.size());
         assertEquals("v3", valueCols.get(2).getName());
+        assertEquals("v6", valueCols.get(5).getName());
         
         ydb.execute("create stream test_insert_out as select * from test_insert");
-        Stream sout=ydb.getStream("test_insert_out");
+        Stream sout = ydb.getStream("test_insert_out");
         final Semaphore semaphore=new Semaphore(0);
         final ArrayList<Tuple> tuples=new ArrayList<Tuple>();
         sout.addSubscriber(new StreamSubscriber() {
@@ -69,15 +96,21 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         sout.start();
         semaphore.acquire();
         assertEquals(2, tuples.size());
+        
         Tuple t=tuples.get(0);
-        assertEquals(2, t.getColumns().size());
+        assertEquals(4, t.getColumns().size());
         assertEquals(1L, ((Long)t.getColumn("t")).longValue());
         assertEquals(1, ((Integer)t.getColumn("v1")).intValue());
         
-        t=tuples.get(1);
-        assertEquals(2, t.getColumns().size());
+        t = tuples.get(1);
+        assertEquals(5, t.getColumns().size());
         assertEquals(2L, ((Long)t.getColumn("t")).longValue());
         assertEquals(3, ((Integer)t.getColumn("v3")).intValue());
+        
+        assertEquals(true, ((Boolean)t.getColumn("v4")).booleanValue());
+        assertEquals(5, ((Byte)t.getColumn("v5")).byteValue());
+        assertEquals(6, ((Short)t.getColumn("v6")).shortValue());
+        
         
         ydb.execute("drop table test_insert");
     }

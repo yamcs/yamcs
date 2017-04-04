@@ -277,7 +277,7 @@ public class ColumnSerializerFactory {
         public byte[] deserialize(DataInput stream) throws IOException {
             int length=stream.readInt();
             if(length>maxBinaryLength) { 
-                log.warn("binary length greater than maxBinaryLenght (is the endianess wrong?): "+length+">"+maxBinaryLength);
+                log.warn("binary length greater than maxBinaryLenght (is the endianess wrong?): ?>?", length, maxBinaryLength);
                 return null;
             }
             byte[] bp = new byte[length];
@@ -314,7 +314,7 @@ public class ColumnSerializerFactory {
         public MessageLite deserialize(DataInput stream) throws IOException {
             int length=stream.readInt();
             if(length>maxBinaryLength) { 
-                log.warn("binary length greater than maxBinaryLenght (is the endianess wrong?): "+length+">"+maxBinaryLength);
+                log.warn("binary length greater than maxBinaryLenght (is the endianess wrong?): ?>?", length, maxBinaryLength);
                 return null;
             }
             byte[] bp = new byte[length];
@@ -337,8 +337,7 @@ public class ColumnSerializerFactory {
                 b.mergeFrom(bp);
                 return b.build();
             } catch (Exception e) {
-                e.printStackTrace();
-                return null;
+                throw new RuntimeException(e);
             }
         }
     }
