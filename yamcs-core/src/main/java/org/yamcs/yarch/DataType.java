@@ -6,7 +6,7 @@ package org.yamcs.yarch;
 /**
  * Types supported by yarch. Currently TUPLE and LIST do now work well.
  * ENUM is just like String, except that when it's stored on disk a two bytes integer value from a map is stored instead of the String.
- * (maximum allowed version is 2^16 (which is anyway too big considering that the map is stored as serialized yaml file)
+ * (maximum allowed version is 2^16 (which is anyway too big considering that the map is stored as serialised yaml file)
  * 
  * PROTOBUF is a Google Protocol Buffer message
  * @author nm
@@ -14,7 +14,6 @@ package org.yamcs.yarch;
  */
 public class DataType {
     private static final long serialVersionUID = 201101181144L;
-
     
     public enum _type {BYTE, SHORT, INT, DOUBLE, TIMESTAMP, STRING, BINARY, BOOLEAN, ENUM, PROTOBUF, TUPLE, LIST};
     final public _type val;
