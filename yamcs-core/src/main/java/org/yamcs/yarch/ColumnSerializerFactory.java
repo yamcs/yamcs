@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.yarch.DataType._type;
 
 import com.google.common.collect.BiMap;
 import com.google.common.io.ByteArrayDataInput;
@@ -47,7 +48,17 @@ public class ColumnSerializerFactory {
         }
     } 
 
-    static ColumnSerializer<?> getColumnSerializer(TableDefinition tblDef, ColumnDefinition cd) {
+    public static ColumnSerializer<?> getColumnSerializer(TableDefinition tblDef, ColumnDefinition cd) {
+        DataType type = cd.getType();
+        if(type.val==_type.ENUM) {
+            return new EnumColumnSerializer(tblDef, cd);
+        } else {
+            return getColumnSerializer(cd);
+        }
+    }
+    
+    @SuppressWarnings("incomplete-switch")
+    public static ColumnSerializer<?> getColumnSerializer(ColumnDefinition cd) {
         DataType type = cd.getType();
         switch(type.val) {
         case BOOLEAN:
@@ -67,10 +78,7 @@ public class ColumnSerializerFactory {
         case BINARY:
             return BINARY_CS;
         case PROTOBUF:
-            return getProSerializer(tblDef, cd);
-        case ENUM:
-            return new EnumColumnSerializer(tblDef, cd);
-
+            return getProtobufSerializer(cd);
         case LIST:
         case TUPLE:
             //TODO
@@ -80,8 +88,7 @@ public class ColumnSerializerFactory {
     }
     
     
-    
-  static private ColumnSerializer<?> getProSerializer(TableDefinition tblDef,  ColumnDefinition cd) {
+  static private ColumnSerializer<?> getProtobufSerializer(ColumnDefinition cd) {
         String className = cd.getType().getClassName();
        
         synchronized(protoSerialziers) {
