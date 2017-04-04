@@ -4,14 +4,9 @@ package org.yamcs.yarch;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.Semaphore;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 
 /**
  * test for insert modes in a table with a dynamic schema
@@ -51,9 +46,6 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         emit(s, 1, "v2", 2);
         emit(s, 1, "v3", 3);
         emit(s, 2, "v3", 3);
-        
-       // System.out.println("tableDef: "+tblDef);
-        
         
         valueCols=tblDef.getValueDefinition().getColumnDefinitions();
         assertEquals(3, valueCols.size());
@@ -173,9 +165,6 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         emit(s, 1, "v3", 3);
         emit(s, 2, "v3", 3);
         
-       // System.out.println("tableDef: "+tblDef);
-        
-        
         valueCols=tblDef.getValueDefinition().getColumnDefinitions();
         assertEquals(3, valueCols.size());
         assertEquals("v3", valueCols.get(2).getName());
@@ -236,11 +225,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         emit(s, 1, "v3", 4);
         emit(s, 2, "v3", 3);
         
-       // System.out.println("tableDef: "+tblDef);
-        
-        
         valueCols=tblDef.getValueDefinition().getColumnDefinitions();
-        System.out.println("values: "+valueCols);
         assertEquals(3, valueCols.size());
         assertEquals("v3", valueCols.get(2).getName());
         

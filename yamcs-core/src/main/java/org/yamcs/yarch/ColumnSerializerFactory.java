@@ -243,7 +243,7 @@ public class ColumnSerializerFactory {
 
         @Override
         public void serialize(DataOutput stream, Long v) throws IOException {
-            stream.writeDouble(v);
+            stream.writeLong(v);
         }
     }
 
