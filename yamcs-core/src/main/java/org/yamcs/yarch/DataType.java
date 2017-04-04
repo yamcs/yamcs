@@ -117,6 +117,8 @@ public class DataType {
       }
 
     
+    
+  
     @Override
     public String toString() {
         if(val == _type.TUPLE) {
@@ -125,6 +127,23 @@ public class DataType {
             return "PROTOBUF("+className+")";
         } else { 
             return val.toString();
+        }
+    }
+    
+    /**
+     * Returns type as string. 
+     * 
+     * 
+     * @return for basic types returns the enum name
+     *         for PROTOBUF returns PROTOBUF(className)
+     */
+    public String name() {
+        if(val == _type.TUPLE) {
+            return "TUPLE("+td.toString()+")";
+        } else if(val == _type.PROTOBUF) {
+            return "PROTOBUF("+className+")";
+        } else { 
+            return val.name();
         }
     }
 

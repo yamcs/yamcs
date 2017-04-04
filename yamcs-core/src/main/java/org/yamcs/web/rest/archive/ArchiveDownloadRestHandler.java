@@ -20,6 +20,7 @@ import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
+import org.yamcs.protobuf.Table.Row;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -27,6 +28,7 @@ import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
+import org.yamcs.protobuf.YamcsManagement.LinkInfo.Builder;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.Privilege.Type;
@@ -218,6 +220,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
 
         TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
 
+        boolean dumpFormat = req.hasQueryParameter("dump");
+        
         List<String> cols = null;
         if (req.hasQueryParameter("cols")) {
             cols = new ArrayList<>(); // Order, and non-unique
@@ -239,15 +243,25 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
 
-        RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<TableRecord>(req, SchemaArchive.TableData.TableRecord.WRITE) {
-
+        if (dumpFormat) {
+            RestStreams.stream(instance, sql, new StreamToChunkedTransferEncoder(req, MediaType.PROTOBUF) {
+                @Override
+                public void processTuple(Tuple tuple, ByteBufOutputStream bufOut) throws IOException {
+                    TableRecord.Builder rec = TableRecord.newBuilder();
+                    rec.addAllColumn(ArchiveHelper.toColumnDataList(tuple));
+                    rec.build().writeDelimitedTo(bufOut);
+                }
+                });
+        } else {
+            RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<TableRecord>(req, SchemaArchive.TableData.TableRecord.WRITE) {
             @Override
             public TableRecord mapTuple(Tuple tuple) {
                 TableRecord.Builder rec = TableRecord.newBuilder();
                 rec.addAllColumn(ArchiveHelper.toColumnDataList(tuple));
                 return rec.build();
             }
-        });
+            });
+        }
     }
 
     @Route(path = "/api/archive/:instance/downloads/events", method = "GET")
