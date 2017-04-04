@@ -27,13 +27,10 @@ public abstract class PartitionManager {
     final protected TableDefinition tableDefinition;
     final protected PartitioningSpec partitioningSpec;
 
-
-
     protected NavigableMap<Long, Interval> intervals=new ConcurrentSkipListMap<Long, Interval>();
     //pcache is a cache of the last interval where data has been inserted
     // in case of value based partition, it is basically the list of all partitions
     protected Interval pcache;
-
 
     public PartitionManager(TableDefinition tableDefinition) {
         this.tableDefinition = tableDefinition;

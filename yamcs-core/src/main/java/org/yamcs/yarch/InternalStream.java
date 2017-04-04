@@ -8,14 +8,9 @@ public class InternalStream extends AbstractStream {
 
     @Override
     protected void doClose() {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void start() {
-        // TODO Auto-generated method stub
-
     }
-
 }

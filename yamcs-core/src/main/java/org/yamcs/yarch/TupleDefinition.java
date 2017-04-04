@@ -32,7 +32,7 @@ public class TupleDefinition implements Serializable, Cloneable {
      * @return the index of the column with name or -1 if there is no such column 
      */
     public int getColumnIndex(String name) {
-        Integer i=columnNameIndex.get(name);
+        Integer i = columnNameIndex.get(name);
         if(i==null) return -1;
         else return i;
     }

@@ -10,6 +10,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.utils.StringConverter;
+import org.yamcs.yarch.ColumnSerializerFactory.EnumColumnSerializer;
 import org.yamcs.yarch.PartitioningSpec._type;
 import org.yamcs.yarch.streamsql.ColumnNotFoundException;
 import org.yamcs.yarch.streamsql.GenericStreamSqlException;
@@ -75,15 +76,15 @@ public class TableDefinition {
     private String dataDir; 
     
     private boolean compressed;
-    private PartitioningSpec partitioningSpec;
+    private PartitioningSpec partitioningSpec = PartitioningSpec.noneSpec();
     
     private String storageEngineName = YarchDatabase.RDB_ENGINE_NAME;
     
     transient private String name; //we make this transient such that tables names can be changed by changing the filename
     private List<String> histoColumns;
     
-    private List<ColumnSerializer> keySerializers=new ArrayList<ColumnSerializer>();
-    private List<ColumnSerializer> valueSerializers=new ArrayList<ColumnSerializer>();
+    private List<ColumnSerializer<?>> keySerializers=new ArrayList<ColumnSerializer<?>>();
+    private List<ColumnSerializer<?>> valueSerializers=new ArrayList<ColumnSerializer<?>>();
     
     //mapping from String to short for the columns of type enum
     Map<String, BiMap<String,Short>> serializedEmumValues;
@@ -103,12 +104,12 @@ public class TableDefinition {
             ColumnDefinition c=tdef.getColumn(s);
             if(c==null) throw new ColumnNotFoundException(s);
             keyDef.addColumn(c);
-            keySerializers.add(new ColumnSerializer(this, c));
+            keySerializers.add(ColumnSerializerFactory.getColumnSerializer(this, c));
         }
         for(ColumnDefinition c:tdef.getColumnDefinitions()) {
             if(keyDef.getColumn(c.getName())==null) {
                 valueDef.addColumn(c);
-                valueSerializers.add(new ColumnSerializer(this, c));
+                valueSerializers.add(ColumnSerializerFactory.getColumnSerializer(this, c));
             }
         }
         computeTupleDef();
@@ -129,20 +130,20 @@ public class TableDefinition {
     	this.serializedEmumValues = enumValues;
     	
     	for(ColumnDefinition cd:keyDef.getColumnDefinitions()) {
-    	    ColumnSerializer cs=new ColumnSerializer(this, cd);
+    	    ColumnSerializer<?> cs = ColumnSerializerFactory.getColumnSerializer(this, cd);
     	    keySerializers.add(cs);
     	    if(cd.getType()==DataType.ENUM){
     	        if(enumValues.containsKey(cd.getName())) {
-    	            cs.setEnumValues(enumValues.get(cd.getName()));
+    	            ((EnumColumnSerializer)cs).setEnumValues(enumValues.get(cd.getName()));
     	        }
     	    }
     	}
     	for(ColumnDefinition cd:valueDef.getColumnDefinitions()) {
-    	    ColumnSerializer cs=new ColumnSerializer(this, cd);
+    	    ColumnSerializer<?> cs = ColumnSerializerFactory.getColumnSerializer(this, cd);
             valueSerializers.add(cs);
             if(cd.getType()==DataType.ENUM){
                 if(enumValues.containsKey(cd.getName())) {
-                    cs.setEnumValues(enumValues.get(cd.getName()));
+                    ((EnumColumnSerializer)cs).setEnumValues(enumValues.get(cd.getName()));
                 }
             }
         }
@@ -236,7 +237,7 @@ public class TableDefinition {
      * @param dataDir
      */
     public void setDataDir(String dataDir) {
-        this.dataDir=dataDir;
+        this.dataDir = dataDir;
     }
 
     public TupleDefinition getTupleDefinition() {
@@ -265,9 +266,12 @@ public class TableDefinition {
      * @return
      */
     public byte[] serializeKey(Tuple t) {
-        ByteArrayDataOutput bado=ByteStreams.newDataOutput();
-        for(ColumnSerializer cs:keySerializers) {
-            Object v=t.getColumn(cs.getColumnName());
+        ByteArrayDataOutput bado = ByteStreams.newDataOutput();
+        for(int i=0;i<keyDef.size();i++) {
+            ColumnSerializer cs = keySerializers.get(i);
+            String colName = keyDef.getColumn(i).getName();
+            Object v = t.getColumn(colName);
+            if(v==null) throw new IllegalArgumentException("Tuple does not have mandatory column '"+colName+"'");
             try {
                 cs.serialize(bado,v);
             } catch (IOException e) {
@@ -286,7 +290,7 @@ public class TableDefinition {
         serializedValueDef.addColumn(cd);
         ydb.serializeTableDefinition(this);
         valueDef = serializedValueDef;
-        valueSerializers.add(new ColumnSerializer(this, cd));
+        valueSerializers.add(ColumnSerializerFactory.getColumnSerializer(this, cd));
         computeTupleDef();
     }
 
@@ -345,7 +349,7 @@ public class TableDefinition {
     * before the serialization is finished (i.e. flushed on disk)
     * 
     */
-   synchronized void addEnumValue(ColumnSerializer cs, String v) {
+   synchronized void addEnumValue(EnumColumnSerializer cs, String v) {
        String columnName = cs.getColumnName();
        BiMap<String, Short> b;
        
@@ -374,7 +378,7 @@ public class TableDefinition {
        Short v1;
        BiMap<String, Short>  b;
        if((enumValues==null) || ((b=enumValues.get(columnName))==null) || (v1=b.get(value))==null) {
-           ColumnSerializer cs=getColumnSerializer(columnName);
+           EnumColumnSerializer cs = (EnumColumnSerializer)getColumnSerializer(columnName);
            addEnumValue(cs, value);
            enumValue = enumValues.get(columnName).get(value);
        } else {
@@ -403,8 +407,8 @@ public class TableDefinition {
                 addValueColumn(cd);
                 return serializeValue(t);
             }
-            Integer cidx=valueDef.getColumnIndex(cd.getName());
-            ColumnSerializer tcs=valueSerializers.get(cidx);
+            Integer cidx = valueDef.getColumnIndex(cd.getName());
+            ColumnSerializer tcs = valueSerializers.get(cidx);
 
             Object v=t.getColumn(cd.getName());
             try {
@@ -429,7 +433,7 @@ public class TableDefinition {
         try {
             //deserialize the key
             for(ColumnSerializer cd:keySerializers) {
-                Object o=cd.deserialize(badi);
+                Object o = cd.deserialize(badi);
                 if(o==null) return null;
                 cols.add(o);
             }

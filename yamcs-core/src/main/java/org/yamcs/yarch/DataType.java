@@ -144,6 +144,8 @@ public class DataType {
             return TIMESTAMP;
         } else if(v instanceof String) {
             return STRING;
+        } else if(v instanceof byte[]) {
+            return BINARY;
         } else {
             throw new IllegalArgumentException("invalid object of type of "+v.getClass());
         }
@@ -177,7 +179,7 @@ public class DataType {
      * 
      */
     public static Object castAs(DataType type, Object v) throws IllegalArgumentException{
-        DataType vdt=typeOf(v);
+        DataType vdt = typeOf(v);
         if(type.equals(vdt)) return v;
         
         if(v instanceof Number) {

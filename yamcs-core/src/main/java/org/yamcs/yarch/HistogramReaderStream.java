@@ -21,10 +21,10 @@ import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
  */
 public class HistogramReaderStream extends AbstractStream implements Runnable, DbReaderStream {
     //this is the table and the column on which we run the histogram
-    final private ColumnSerializer histoColumnSerializer;
+    final private ColumnSerializer<?> histoColumnSerializer;
     Iterator<HistogramRecord> iter;
     final TableDefinition tblDef;
-    
+    final String histoColumnName;
     //filter conditions
     TimeInterval interval = new TimeInterval();
 
@@ -37,6 +37,7 @@ public class HistogramReaderStream extends AbstractStream implements Runnable, D
         super(ydb, tblDef.getName()+"_histo_"+count.getAndIncrement(), tupleDef);
         this.histoColumnSerializer = tblDef.getColumnSerializer(histoColumnName);
         this.tblDef = tblDef;
+        this.histoColumnName = histoColumnName;
     }
 
     @Override 
@@ -48,7 +49,7 @@ public class HistogramReaderStream extends AbstractStream implements Runnable, D
     public void run() {
         log.debug("starting a histogram stream for interval {}, mergeTime: {})", interval, mergeTime);
         try {
-            iter = ydb.getStorageEngine(tblDef).getHistogramIterator(tblDef, histoColumnSerializer.getColumnName(), interval, mergeTime);
+            iter = ydb.getStorageEngine(tblDef).getHistogramIterator(tblDef,histoColumnName, interval, mergeTime);
             HistogramRecord r;
             while (!quit && iter.hasNext()) {
                 r = iter.next();

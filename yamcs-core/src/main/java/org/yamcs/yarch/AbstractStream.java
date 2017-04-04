@@ -54,6 +54,7 @@ public abstract class AbstractStream implements Stream {
                 s.onTuple(this,t);
             } catch(Exception e) {
                 log.warn("Exception received when emitting tuple to subscriber "+s+": {}", e);
+                throw e;
             }
         }
     }

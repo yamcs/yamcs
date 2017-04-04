@@ -31,9 +31,9 @@ public class ColumnDefinition {
      */
     public Object getStringDefinition() {
         if(type.val==_type.PROTOBUF) {
-            return String.format("%s PROTOBUF('%s')", name, type.getClassName());
+            return String.format("\"%s\" PROTOBUF('%s')", name, type.getClassName());
         } else {
-            return String.format("%s %s",name, type);
+            return String.format("\"%s\" %s",name, type);
         }
     }
     
