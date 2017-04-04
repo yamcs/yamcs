@@ -4,8 +4,8 @@ package org.yamcs.yarch;
 public class SpeedLimitStream extends AbstractStream implements StreamSubscriber {
     Stream input;
     volatile SpeedSpec speedSpec;
-    private long ltst=-1; //time when the last tuple has been sent 
-    private long ltt=-1; //time of the last tuple sent
+    private long ltst = -1; //time when the last tuple has been sent 
+    private long ltt = -1; //time of the last tuple sent
 
     /**
      * maximum time to wait if SPEED is ORIGINAL 
@@ -15,7 +15,7 @@ public class SpeedLimitStream extends AbstractStream implements StreamSubscriber
 
     public SpeedLimitStream(YarchDatabase dict, String name, TupleDefinition definition, SpeedSpec speedSpec){
         super(dict, name, definition);
-        this.speedSpec=speedSpec;
+        this.speedSpec = speedSpec;
     }
 
 
@@ -52,14 +52,12 @@ public class SpeedLimitStream extends AbstractStream implements StreamSubscriber
             case STEP_BY_STEP: //TODO 
                 break;
             }
-            //System.out.println("sleeping "+waitTime+" ms");
-
             if(waitTime>0) {
                 Thread.sleep(waitTime);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            e.printStackTrace();
+           log.debug("Interrupt received ",e);
         }
         ltst=System.currentTimeMillis();
         emitTuple(t);
