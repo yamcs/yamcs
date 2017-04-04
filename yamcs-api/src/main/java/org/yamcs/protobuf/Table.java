@@ -1403,49 +1403,49 @@ public final class Table {
   public interface RowOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // repeated .table.ColumnInfo columns = 1;
+    // repeated .table.ColumnInfo column = 1;
     /**
-     * <code>repeated .table.ColumnInfo columns = 1;</code>
+     * <code>repeated .table.ColumnInfo column = 1;</code>
      *
      * <pre>
      *the column info is only present for new columns in a stream of Row messages
      * </pre>
      */
     java.util.List<org.yamcs.protobuf.Table.ColumnInfo> 
-        getColumnsList();
+        getColumnList();
     /**
-     * <code>repeated .table.ColumnInfo columns = 1;</code>
+     * <code>repeated .table.ColumnInfo column = 1;</code>
      *
      * <pre>
      *the column info is only present for new columns in a stream of Row messages
      * </pre>
      */
-    org.yamcs.protobuf.Table.ColumnInfo getColumns(int index);
+    org.yamcs.protobuf.Table.ColumnInfo getColumn(int index);
     /**
-     * <code>repeated .table.ColumnInfo columns = 1;</code>
+     * <code>repeated .table.ColumnInfo column = 1;</code>
      *
      * <pre>
      *the column info is only present for new columns in a stream of Row messages
      * </pre>
      */
-    int getColumnsCount();
+    int getColumnCount();
     /**
-     * <code>repeated .table.ColumnInfo columns = 1;</code>
+     * <code>repeated .table.ColumnInfo column = 1;</code>
      *
      * <pre>
      *the column info is only present for new columns in a stream of Row messages
      * </pre>
      */
     java.util.List<? extends org.yamcs.protobuf.Table.ColumnInfoOrBuilder> 
-        getColumnsOrBuilderList();
+        getColumnOrBuilderList();
     /**
-     * <code>repeated .table.ColumnInfo columns = 1;</code>
+     * <code>repeated .table.ColumnInfo column = 1;</code>
      *
      * <pre>
      *the column info is only present for new columns in a stream of Row messages
      * </pre>
      */
-    org.yamcs.protobuf.Table.ColumnInfoOrBuilder getColumnsOrBuilder(
+    org.yamcs.protobuf.Table.ColumnInfoOrBuilder getColumnOrBuilder(
         int index);
 
     // repeated .table.Cell cell = 2;
@@ -1526,10 +1526,10 @@ public final class Table {
             }
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                columns_ = new java.util.ArrayList<org.yamcs.protobuf.Table.ColumnInfo>();
+                column_ = new java.util.ArrayList<org.yamcs.protobuf.Table.ColumnInfo>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              columns_.add(input.readMessage(org.yamcs.protobuf.Table.ColumnInfo.PARSER, extensionRegistry));
+              column_.add(input.readMessage(org.yamcs.protobuf.Table.ColumnInfo.PARSER, extensionRegistry));
               break;
             }
             case 18: {
@@ -1549,7 +1549,7 @@ public final class Table {
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-          columns_ = java.util.Collections.unmodifiableList(columns_);
+          column_ = java.util.Collections.unmodifiableList(column_);
         }
         if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
           cell_ = java.util.Collections.unmodifiableList(cell_);
@@ -1585,60 +1585,60 @@ public final class Table {
       return PARSER;
     }
 
-    // repeated .table.ColumnInfo columns = 1;
-    public static final int COLUMNS_FIELD_NUMBER = 1;
-    private java.util.List<org.yamcs.protobuf.Table.ColumnInfo> columns_;
+    // repeated .table.ColumnInfo column = 1;
+    public static final int COLUMN_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Table.ColumnInfo> column_;
     /**
-     * <code>repeated .table.ColumnInfo columns = 1;</code>
+     * <code>repeated .table.ColumnInfo column = 1;</code>
      *
      * <pre>
      *the column info is only present for new columns in a stream of Row messages
      * </pre>
      */
-    public java.util.List<org.yamcs.protobuf.Table.ColumnInfo> getColumnsList() {
-      return columns_;
+    public java.util.List<org.yamcs.protobuf.Table.ColumnInfo> getColumnList() {
+      return column_;
     }
     /**
-     * <code>repeated .table.ColumnInfo columns = 1;</code>
+     * <code>repeated .table.ColumnInfo column = 1;</code>
      *
      * <pre>
      *the column info is only present for new columns in a stream of Row messages
      * </pre>
      */
     public java.util.List<? extends org.yamcs.protobuf.Table.ColumnInfoOrBuilder> 
-        getColumnsOrBuilderList() {
-      return columns_;
+        getColumnOrBuilderList() {
+      return column_;
     }
     /**
-     * <code>repeated .table.ColumnInfo columns = 1;</code>
+     * <code>repeated .table.ColumnInfo column = 1;</code>
      *
      * <pre>
      *the column info is only present for new columns in a stream of Row messages
      * </pre>
      */
-    public int getColumnsCount() {
-      return columns_.size();
+    public int getColumnCount() {
+      return column_.size();
     }
     /**
-     * <code>repeated .table.ColumnInfo columns = 1;</code>
+     * <code>repeated .table.ColumnInfo column = 1;</code>
      *
      * <pre>
      *the column info is only present for new columns in a stream of Row messages
      * </pre>
      */
-    public org.yamcs.protobuf.Table.ColumnInfo getColumns(int index) {
-      return columns_.get(index);
+    public org.yamcs.protobuf.Table.ColumnInfo getColumn(int index) {
+      return column_.get(index);
     }
     /**
-     * <code>repeated .table.ColumnInfo columns = 1;</code>
+     * <code>repeated .table.ColumnInfo column = 1;</code>
      *
      * <pre>
      *the column info is only present for new columns in a stream of Row messages
      * </pre>
      */
-    public org.yamcs.protobuf.Table.ColumnInfoOrBuilder getColumnsOrBuilder(
+    public org.yamcs.protobuf.Table.ColumnInfoOrBuilder getColumnOrBuilder(
         int index) {
-      return columns_.get(index);
+      return column_.get(index);
     }
 
     // repeated .table.Cell cell = 2;
@@ -1678,7 +1678,7 @@ public final class Table {
     }
 
     private void initFields() {
-      columns_ = java.util.Collections.emptyList();
+      column_ = java.util.Collections.emptyList();
       cell_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
@@ -1693,8 +1693,8 @@ public final class Table {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      for (int i = 0; i < columns_.size(); i++) {
-        output.writeMessage(1, columns_.get(i));
+      for (int i = 0; i < column_.size(); i++) {
+        output.writeMessage(1, column_.get(i));
       }
       for (int i = 0; i < cell_.size(); i++) {
         output.writeMessage(2, cell_.get(i));
@@ -1708,9 +1708,9 @@ public final class Table {
       if (size != -1) return size;
 
       size = 0;
-      for (int i = 0; i < columns_.size(); i++) {
+      for (int i = 0; i < column_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, columns_.get(i));
+          .computeMessageSize(1, column_.get(i));
       }
       for (int i = 0; i < cell_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
@@ -1824,7 +1824,7 @@ public final class Table {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getColumnsFieldBuilder();
+          getColumnFieldBuilder();
           getCellFieldBuilder();
         }
       }
@@ -1834,11 +1834,11 @@ public final class Table {
 
       public Builder clear() {
         super.clear();
-        if (columnsBuilder_ == null) {
-          columns_ = java.util.Collections.emptyList();
+        if (columnBuilder_ == null) {
+          column_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000001);
         } else {
-          columnsBuilder_.clear();
+          columnBuilder_.clear();
         }
         if (cellBuilder_ == null) {
           cell_ = java.util.Collections.emptyList();
@@ -1873,14 +1873,14 @@ public final class Table {
       public org.yamcs.protobuf.Table.Row buildPartial() {
         org.yamcs.protobuf.Table.Row result = new org.yamcs.protobuf.Table.Row(this);
         int from_bitField0_ = bitField0_;
-        if (columnsBuilder_ == null) {
+        if (columnBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            columns_ = java.util.Collections.unmodifiableList(columns_);
+            column_ = java.util.Collections.unmodifiableList(column_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
-          result.columns_ = columns_;
+          result.column_ = column_;
         } else {
-          result.columns_ = columnsBuilder_.build();
+          result.column_ = columnBuilder_.build();
         }
         if (cellBuilder_ == null) {
           if (((bitField0_ & 0x00000002) == 0x00000002)) {
@@ -1906,29 +1906,29 @@ public final class Table {
 
       public Builder mergeFrom(org.yamcs.protobuf.Table.Row other) {
         if (other == org.yamcs.protobuf.Table.Row.getDefaultInstance()) return this;
-        if (columnsBuilder_ == null) {
-          if (!other.columns_.isEmpty()) {
-            if (columns_.isEmpty()) {
-              columns_ = other.columns_;
+        if (columnBuilder_ == null) {
+          if (!other.column_.isEmpty()) {
+            if (column_.isEmpty()) {
+              column_ = other.column_;
               bitField0_ = (bitField0_ & ~0x00000001);
             } else {
-              ensureColumnsIsMutable();
-              columns_.addAll(other.columns_);
+              ensureColumnIsMutable();
+              column_.addAll(other.column_);
             }
             onChanged();
           }
         } else {
-          if (!other.columns_.isEmpty()) {
-            if (columnsBuilder_.isEmpty()) {
-              columnsBuilder_.dispose();
-              columnsBuilder_ = null;
-              columns_ = other.columns_;
+          if (!other.column_.isEmpty()) {
+            if (columnBuilder_.isEmpty()) {
+              columnBuilder_.dispose();
+              columnBuilder_ = null;
+              column_ = other.column_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              columnsBuilder_ = 
+              columnBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                   getColumnsFieldBuilder() : null;
+                   getColumnFieldBuilder() : null;
             } else {
-              columnsBuilder_.addAllMessages(other.columns_);
+              columnBuilder_.addAllMessages(other.column_);
             }
           }
         }
@@ -1985,316 +1985,316 @@ public final class Table {
       }
       private int bitField0_;
 
-      // repeated .table.ColumnInfo columns = 1;
-      private java.util.List<org.yamcs.protobuf.Table.ColumnInfo> columns_ =
+      // repeated .table.ColumnInfo column = 1;
+      private java.util.List<org.yamcs.protobuf.Table.ColumnInfo> column_ =
         java.util.Collections.emptyList();
-      private void ensureColumnsIsMutable() {
+      private void ensureColumnIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          columns_ = new java.util.ArrayList<org.yamcs.protobuf.Table.ColumnInfo>(columns_);
+          column_ = new java.util.ArrayList<org.yamcs.protobuf.Table.ColumnInfo>(column_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilder<
-          org.yamcs.protobuf.Table.ColumnInfo, org.yamcs.protobuf.Table.ColumnInfo.Builder, org.yamcs.protobuf.Table.ColumnInfoOrBuilder> columnsBuilder_;
+          org.yamcs.protobuf.Table.ColumnInfo, org.yamcs.protobuf.Table.ColumnInfo.Builder, org.yamcs.protobuf.Table.ColumnInfoOrBuilder> columnBuilder_;
 
       /**
-       * <code>repeated .table.ColumnInfo columns = 1;</code>
+       * <code>repeated .table.ColumnInfo column = 1;</code>
        *
        * <pre>
        *the column info is only present for new columns in a stream of Row messages
        * </pre>
        */
-      public java.util.List<org.yamcs.protobuf.Table.ColumnInfo> getColumnsList() {
-        if (columnsBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(columns_);
+      public java.util.List<org.yamcs.protobuf.Table.ColumnInfo> getColumnList() {
+        if (columnBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(column_);
         } else {
-          return columnsBuilder_.getMessageList();
+          return columnBuilder_.getMessageList();
         }
       }
       /**
-       * <code>repeated .table.ColumnInfo columns = 1;</code>
+       * <code>repeated .table.ColumnInfo column = 1;</code>
        *
        * <pre>
        *the column info is only present for new columns in a stream of Row messages
        * </pre>
        */
-      public int getColumnsCount() {
-        if (columnsBuilder_ == null) {
-          return columns_.size();
+      public int getColumnCount() {
+        if (columnBuilder_ == null) {
+          return column_.size();
         } else {
-          return columnsBuilder_.getCount();
+          return columnBuilder_.getCount();
         }
       }
       /**
-       * <code>repeated .table.ColumnInfo columns = 1;</code>
+       * <code>repeated .table.ColumnInfo column = 1;</code>
        *
        * <pre>
        *the column info is only present for new columns in a stream of Row messages
        * </pre>
        */
-      public org.yamcs.protobuf.Table.ColumnInfo getColumns(int index) {
-        if (columnsBuilder_ == null) {
-          return columns_.get(index);
+      public org.yamcs.protobuf.Table.ColumnInfo getColumn(int index) {
+        if (columnBuilder_ == null) {
+          return column_.get(index);
         } else {
-          return columnsBuilder_.getMessage(index);
+          return columnBuilder_.getMessage(index);
         }
       }
       /**
-       * <code>repeated .table.ColumnInfo columns = 1;</code>
+       * <code>repeated .table.ColumnInfo column = 1;</code>
        *
        * <pre>
        *the column info is only present for new columns in a stream of Row messages
        * </pre>
        */
-      public Builder setColumns(
+      public Builder setColumn(
           int index, org.yamcs.protobuf.Table.ColumnInfo value) {
-        if (columnsBuilder_ == null) {
+        if (columnBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureColumnsIsMutable();
-          columns_.set(index, value);
+          ensureColumnIsMutable();
+          column_.set(index, value);
           onChanged();
         } else {
-          columnsBuilder_.setMessage(index, value);
+          columnBuilder_.setMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .table.ColumnInfo columns = 1;</code>
+       * <code>repeated .table.ColumnInfo column = 1;</code>
        *
        * <pre>
        *the column info is only present for new columns in a stream of Row messages
        * </pre>
        */
-      public Builder setColumns(
+      public Builder setColumn(
           int index, org.yamcs.protobuf.Table.ColumnInfo.Builder builderForValue) {
-        if (columnsBuilder_ == null) {
-          ensureColumnsIsMutable();
-          columns_.set(index, builderForValue.build());
+        if (columnBuilder_ == null) {
+          ensureColumnIsMutable();
+          column_.set(index, builderForValue.build());
           onChanged();
         } else {
-          columnsBuilder_.setMessage(index, builderForValue.build());
+          columnBuilder_.setMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .table.ColumnInfo columns = 1;</code>
+       * <code>repeated .table.ColumnInfo column = 1;</code>
        *
        * <pre>
        *the column info is only present for new columns in a stream of Row messages
        * </pre>
        */
-      public Builder addColumns(org.yamcs.protobuf.Table.ColumnInfo value) {
-        if (columnsBuilder_ == null) {
+      public Builder addColumn(org.yamcs.protobuf.Table.ColumnInfo value) {
+        if (columnBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureColumnsIsMutable();
-          columns_.add(value);
+          ensureColumnIsMutable();
+          column_.add(value);
           onChanged();
         } else {
-          columnsBuilder_.addMessage(value);
+          columnBuilder_.addMessage(value);
         }
         return this;
       }
       /**
-       * <code>repeated .table.ColumnInfo columns = 1;</code>
+       * <code>repeated .table.ColumnInfo column = 1;</code>
        *
        * <pre>
        *the column info is only present for new columns in a stream of Row messages
        * </pre>
        */
-      public Builder addColumns(
+      public Builder addColumn(
           int index, org.yamcs.protobuf.Table.ColumnInfo value) {
-        if (columnsBuilder_ == null) {
+        if (columnBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureColumnsIsMutable();
-          columns_.add(index, value);
+          ensureColumnIsMutable();
+          column_.add(index, value);
           onChanged();
         } else {
-          columnsBuilder_.addMessage(index, value);
+          columnBuilder_.addMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .table.ColumnInfo columns = 1;</code>
+       * <code>repeated .table.ColumnInfo column = 1;</code>
        *
        * <pre>
        *the column info is only present for new columns in a stream of Row messages
        * </pre>
        */
-      public Builder addColumns(
+      public Builder addColumn(
           org.yamcs.protobuf.Table.ColumnInfo.Builder builderForValue) {
-        if (columnsBuilder_ == null) {
-          ensureColumnsIsMutable();
-          columns_.add(builderForValue.build());
+        if (columnBuilder_ == null) {
+          ensureColumnIsMutable();
+          column_.add(builderForValue.build());
           onChanged();
         } else {
-          columnsBuilder_.addMessage(builderForValue.build());
+          columnBuilder_.addMessage(builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .table.ColumnInfo columns = 1;</code>
+       * <code>repeated .table.ColumnInfo column = 1;</code>
        *
        * <pre>
        *the column info is only present for new columns in a stream of Row messages
        * </pre>
        */
-      public Builder addColumns(
+      public Builder addColumn(
           int index, org.yamcs.protobuf.Table.ColumnInfo.Builder builderForValue) {
-        if (columnsBuilder_ == null) {
-          ensureColumnsIsMutable();
-          columns_.add(index, builderForValue.build());
+        if (columnBuilder_ == null) {
+          ensureColumnIsMutable();
+          column_.add(index, builderForValue.build());
           onChanged();
         } else {
-          columnsBuilder_.addMessage(index, builderForValue.build());
+          columnBuilder_.addMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .table.ColumnInfo columns = 1;</code>
+       * <code>repeated .table.ColumnInfo column = 1;</code>
        *
        * <pre>
        *the column info is only present for new columns in a stream of Row messages
        * </pre>
        */
-      public Builder addAllColumns(
+      public Builder addAllColumn(
           java.lang.Iterable<? extends org.yamcs.protobuf.Table.ColumnInfo> values) {
-        if (columnsBuilder_ == null) {
-          ensureColumnsIsMutable();
-          super.addAll(values, columns_);
+        if (columnBuilder_ == null) {
+          ensureColumnIsMutable();
+          super.addAll(values, column_);
           onChanged();
         } else {
-          columnsBuilder_.addAllMessages(values);
+          columnBuilder_.addAllMessages(values);
         }
         return this;
       }
       /**
-       * <code>repeated .table.ColumnInfo columns = 1;</code>
+       * <code>repeated .table.ColumnInfo column = 1;</code>
        *
        * <pre>
        *the column info is only present for new columns in a stream of Row messages
        * </pre>
        */
-      public Builder clearColumns() {
-        if (columnsBuilder_ == null) {
-          columns_ = java.util.Collections.emptyList();
+      public Builder clearColumn() {
+        if (columnBuilder_ == null) {
+          column_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000001);
           onChanged();
         } else {
-          columnsBuilder_.clear();
+          columnBuilder_.clear();
         }
         return this;
       }
       /**
-       * <code>repeated .table.ColumnInfo columns = 1;</code>
+       * <code>repeated .table.ColumnInfo column = 1;</code>
        *
        * <pre>
        *the column info is only present for new columns in a stream of Row messages
        * </pre>
        */
-      public Builder removeColumns(int index) {
-        if (columnsBuilder_ == null) {
-          ensureColumnsIsMutable();
-          columns_.remove(index);
+      public Builder removeColumn(int index) {
+        if (columnBuilder_ == null) {
+          ensureColumnIsMutable();
+          column_.remove(index);
           onChanged();
         } else {
-          columnsBuilder_.remove(index);
+          columnBuilder_.remove(index);
         }
         return this;
       }
       /**
-       * <code>repeated .table.ColumnInfo columns = 1;</code>
+       * <code>repeated .table.ColumnInfo column = 1;</code>
        *
        * <pre>
        *the column info is only present for new columns in a stream of Row messages
        * </pre>
        */
-      public org.yamcs.protobuf.Table.ColumnInfo.Builder getColumnsBuilder(
+      public org.yamcs.protobuf.Table.ColumnInfo.Builder getColumnBuilder(
           int index) {
-        return getColumnsFieldBuilder().getBuilder(index);
+        return getColumnFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .table.ColumnInfo columns = 1;</code>
+       * <code>repeated .table.ColumnInfo column = 1;</code>
        *
        * <pre>
        *the column info is only present for new columns in a stream of Row messages
        * </pre>
        */
-      public org.yamcs.protobuf.Table.ColumnInfoOrBuilder getColumnsOrBuilder(
+      public org.yamcs.protobuf.Table.ColumnInfoOrBuilder getColumnOrBuilder(
           int index) {
-        if (columnsBuilder_ == null) {
-          return columns_.get(index);  } else {
-          return columnsBuilder_.getMessageOrBuilder(index);
+        if (columnBuilder_ == null) {
+          return column_.get(index);  } else {
+          return columnBuilder_.getMessageOrBuilder(index);
         }
       }
       /**
-       * <code>repeated .table.ColumnInfo columns = 1;</code>
+       * <code>repeated .table.ColumnInfo column = 1;</code>
        *
        * <pre>
        *the column info is only present for new columns in a stream of Row messages
        * </pre>
        */
       public java.util.List<? extends org.yamcs.protobuf.Table.ColumnInfoOrBuilder> 
-           getColumnsOrBuilderList() {
-        if (columnsBuilder_ != null) {
-          return columnsBuilder_.getMessageOrBuilderList();
+           getColumnOrBuilderList() {
+        if (columnBuilder_ != null) {
+          return columnBuilder_.getMessageOrBuilderList();
         } else {
-          return java.util.Collections.unmodifiableList(columns_);
+          return java.util.Collections.unmodifiableList(column_);
         }
       }
       /**
-       * <code>repeated .table.ColumnInfo columns = 1;</code>
+       * <code>repeated .table.ColumnInfo column = 1;</code>
        *
        * <pre>
        *the column info is only present for new columns in a stream of Row messages
        * </pre>
        */
-      public org.yamcs.protobuf.Table.ColumnInfo.Builder addColumnsBuilder() {
-        return getColumnsFieldBuilder().addBuilder(
+      public org.yamcs.protobuf.Table.ColumnInfo.Builder addColumnBuilder() {
+        return getColumnFieldBuilder().addBuilder(
             org.yamcs.protobuf.Table.ColumnInfo.getDefaultInstance());
       }
       /**
-       * <code>repeated .table.ColumnInfo columns = 1;</code>
+       * <code>repeated .table.ColumnInfo column = 1;</code>
        *
        * <pre>
        *the column info is only present for new columns in a stream of Row messages
        * </pre>
        */
-      public org.yamcs.protobuf.Table.ColumnInfo.Builder addColumnsBuilder(
+      public org.yamcs.protobuf.Table.ColumnInfo.Builder addColumnBuilder(
           int index) {
-        return getColumnsFieldBuilder().addBuilder(
+        return getColumnFieldBuilder().addBuilder(
             index, org.yamcs.protobuf.Table.ColumnInfo.getDefaultInstance());
       }
       /**
-       * <code>repeated .table.ColumnInfo columns = 1;</code>
+       * <code>repeated .table.ColumnInfo column = 1;</code>
        *
        * <pre>
        *the column info is only present for new columns in a stream of Row messages
        * </pre>
        */
       public java.util.List<org.yamcs.protobuf.Table.ColumnInfo.Builder> 
-           getColumnsBuilderList() {
-        return getColumnsFieldBuilder().getBuilderList();
+           getColumnBuilderList() {
+        return getColumnFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
           org.yamcs.protobuf.Table.ColumnInfo, org.yamcs.protobuf.Table.ColumnInfo.Builder, org.yamcs.protobuf.Table.ColumnInfoOrBuilder> 
-          getColumnsFieldBuilder() {
-        if (columnsBuilder_ == null) {
-          columnsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+          getColumnFieldBuilder() {
+        if (columnBuilder_ == null) {
+          columnBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               org.yamcs.protobuf.Table.ColumnInfo, org.yamcs.protobuf.Table.ColumnInfo.Builder, org.yamcs.protobuf.Table.ColumnInfoOrBuilder>(
-                  columns_,
+                  column_,
                   ((bitField0_ & 0x00000001) == 0x00000001),
                   getParentForChildren(),
                   isClean());
-          columns_ = null;
+          column_ = null;
         }
-        return columnsBuilder_;
+        return columnBuilder_;
       }
 
       // repeated .table.Cell cell = 2;
@@ -2575,9 +2575,9 @@ public final class Table {
       "\n\013table.proto\022\005table\"H\n\nColumnInfo\022\n\n\002id" +
       "\030\001 \001(\r\022\014\n\004name\030\002 \001(\t\022\014\n\004type\030\003 \001(\t\022\022\n\npr" +
       "otoClass\030\004 \001(\t\"&\n\004Cell\022\020\n\010columnId\030\001 \001(\r" +
-      "\022\014\n\004data\030\002 \001(\014\"D\n\003Row\022\"\n\007columns\030\001 \003(\0132\021" +
-      ".table.ColumnInfo\022\031\n\004cell\030\002 \003(\0132\013.table." +
-      "CellB\024\n\022org.yamcs.protobuf"
+      "\022\014\n\004data\030\002 \001(\014\"C\n\003Row\022!\n\006column\030\001 \003(\0132\021." +
+      "table.ColumnInfo\022\031\n\004cell\030\002 \003(\0132\013.table.C" +
+      "ellB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -2601,7 +2601,7 @@ public final class Table {
           internal_static_table_Row_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_table_Row_descriptor,
-              new java.lang.String[] { "Columns", "Cell", });
+              new java.lang.String[] { "Column", "Cell", });
           return null;
         }
       };

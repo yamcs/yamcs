@@ -21,43 +21,45 @@ import com.beust.jcommander.ParameterException;
  */
 public class YamcsCli extends Command {    
 
-	public YamcsCli() {
-		super("yamcs", null);
-		addSubCommand(new Backup(this));
-		addSubCommand(new RocksDbCli(this));
-		addSubCommand(new ArchiveCli(this));
-		addSubCommand(new XtceDbCli(this));
-	}
+    public YamcsCli() {
+        super("yamcs", null);
+        addSubCommand(new Backup(this));
+        addSubCommand(new RocksDbCli(this));
+        addSubCommand(new ArchiveCli(this));
+        addSubCommand(new XtceDbCli(this));
+        addSubCommand(new TablesCli(this));
+    }
 
-	@Parameter(names="-y", description="yamcs url")
-	private String yamcsUrl;
+    @Parameter(names="-y", description="yamcs url")
+    private String yamcsUrl;
 
-	YamcsConnectionProperties ycp;
-
-
-	@Override
-	void validate() throws ParameterException {
-		if(yamcsUrl!=null) {
-			try {
-				ycp = YamcsConnectionProperties.parse(yamcsUrl);
-			} catch (URISyntaxException e) {
-				throw new ParameterException("Invalid yamcs url '"+yamcsUrl+"'");
-			}
-		}
-	}
+    YamcsConnectionProperties ycp;
 
 
-	public static void main(String[] args) {
-		YamcsCli yamcsCli = new YamcsCli();
-		yamcsCli.parse(args);
+    @Override
+    void validate() throws ParameterException {
+        if(yamcsUrl!=null) {
+            try {
+                ycp = YamcsConnectionProperties.parse(yamcsUrl);
+            } catch (URISyntaxException e) {
+                throw new ParameterException("Invalid yamcs url '"+yamcsUrl+"'");
+            }
+        }
+        selectedCommand.validate();
+    }
 
-		try {
-			yamcsCli.validate();
-			yamcsCli.execute();
-		} catch (Exception e) {
-			System.err.println(e.getMessage());
-		}
 
-	}
+    public static void main(String[] args) {
+        YamcsCli yamcsCli = new YamcsCli();
+        yamcsCli.parse(args);
+
+        try {
+            yamcsCli.validate();
+            yamcsCli.execute();
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+
+    }
 
 }

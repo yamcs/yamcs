@@ -72,15 +72,13 @@ public abstract class AbstractIntegrationTest {
     RestClient restClient;
     protected UsernamePasswordToken admin = new UsernamePasswordToken("admin", "rootpassword");
     RefMdbPacketGenerator packetGenerator;
-
+    static {  
+     //   Logger.getLogger("org.yamcs.web").setLevel(Level.ALL);
+    }
 
     @BeforeClass
     public static void beforeClass() throws Exception {
         setupYamcs();
-    }
-
-    static void enableDebugging() {
-        Logger.getLogger("org.yamcs").setLevel(Level.ALL);
     }
 
     @Before

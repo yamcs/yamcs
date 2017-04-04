@@ -1,6 +1,5 @@
 package org.yamcs.web.rest;
 
-import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
@@ -46,6 +45,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.protostuff.JsonIOUtil;
 import io.protostuff.Schema;
@@ -60,7 +60,7 @@ public abstract class RestHandler extends RouteHandler {
 
     protected static void completeOK(RestRequest restRequest) {
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
-        setContentLength(httpResponse, 0);
+        HttpUtil.setContentLength(httpResponse, 0);
        completeRequest(restRequest, httpResponse);
     }
 
@@ -87,7 +87,7 @@ public abstract class RestHandler extends RouteHandler {
         setContentTypeHeader(httpResponse, restRequest.deriveTargetContentType().toString());
 
         int txSize =  body.readableBytes();
-        setContentLength(httpResponse, txSize);
+        HttpUtil.setContentLength(httpResponse, txSize);
         restRequest.addTransferredSize(txSize);
         completeRequest(restRequest, httpResponse);
     }
@@ -95,13 +95,13 @@ public abstract class RestHandler extends RouteHandler {
     protected static void completeOK(RestRequest restRequest, MediaType contentType, ByteBuf body) {
         if (body == null) {
             HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
-            setContentLength(httpResponse, 0);
+            HttpUtil.setContentLength(httpResponse, 0);
             completeRequest(restRequest, httpResponse);
         } else {
             HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
             setContentTypeHeader(httpResponse, contentType.toString());
             int txSize =  body.readableBytes();
-            setContentLength(httpResponse, txSize);
+            HttpUtil.setContentLength(httpResponse, txSize);
             restRequest.addTransferredSize(txSize);
             completeRequest(restRequest, httpResponse);
         }
@@ -127,7 +127,7 @@ public abstract class RestHandler extends RouteHandler {
                 buf.writeBytes(NEWLINE_BYTES); // For curl comfort
                 HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
                 setContentTypeHeader(response, MediaType.JSON.toString()); // UTF-8 by default IETF RFC4627
-                setContentLength(response, buf.readableBytes());
+                HttpUtil.setContentLength(response, buf.readableBytes());
                 return HttpRequestHandler.sendError(ctx, req.getHttpRequest(), response);
             } catch (IOException e2) {
                 log.error("Could not create JSON Generator", e2);
@@ -142,7 +142,7 @@ public abstract class RestHandler extends RouteHandler {
                 channelOut.close();
                 HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
                 setContentTypeHeader(response, MediaType.PROTOBUF.toString());
-                setContentLength(response, buf.readableBytes());
+                HttpUtil.setContentLength(response, buf.readableBytes());
                 return HttpRequestHandler.sendError(ctx, req.getHttpRequest(), response);
             } catch (IOException e2) {
                 log.error("Could not write to channel buffer", e2);

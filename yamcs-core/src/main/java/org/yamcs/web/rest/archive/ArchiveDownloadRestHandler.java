@@ -20,7 +20,6 @@ import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
-import org.yamcs.protobuf.Table.Row;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -28,7 +27,6 @@ import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
-import org.yamcs.protobuf.YamcsManagement.LinkInfo.Builder;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.Privilege.Type;
@@ -220,7 +218,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
 
         TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
 
-        boolean dumpFormat = req.hasQueryParameter("dump");
+        boolean dumpFormat = req.hasQueryParameter("format") && "dump".equalsIgnoreCase(req.getQueryParameter("format"));
         
         List<String> cols = null;
         if (req.hasQueryParameter("cols")) {
@@ -244,14 +242,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         String sql = sqlb.toString();
 
         if (dumpFormat) {
-            RestStreams.stream(instance, sql, new StreamToChunkedTransferEncoder(req, MediaType.PROTOBUF) {
-                @Override
-                public void processTuple(Tuple tuple, ByteBufOutputStream bufOut) throws IOException {
-                    TableRecord.Builder rec = TableRecord.newBuilder();
-                    rec.addAllColumn(ArchiveHelper.toColumnDataList(tuple));
-                    rec.build().writeDelimitedTo(bufOut);
-                }
-                });
+            RestStreams.stream(instance, sql, new TableDumpEncoder(req));
         } else {
             RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<TableRecord>(req, SchemaArchive.TableData.TableRecord.WRITE) {
             @Override

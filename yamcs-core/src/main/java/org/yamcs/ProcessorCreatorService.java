@@ -45,13 +45,14 @@ public class ProcessorCreatorService extends AbstractService {
 	    channelSpec = config.get("spec");
 	}
 	startArtemisService = YConfiguration.getBoolean((Map)config, "startArtemisService", false);
+	log.debug("Creating a new processor instance:{}, procName: {}, procType: {}", yamcsInstance, processorName, processorType);
+	yproc =  ProcessorFactory.create(yamcsInstance, processorName, processorType, "system", channelSpec);
+        yproc.setPersistent(true);
     }
     @Override
     protected void doStart() {
-        log.debug("Creating a new processor instance:{}, procName: {}, procType: {}", yamcsInstance, processorName, processorType);
 	try {
-	    yproc =  ProcessorFactory.create(yamcsInstance, processorName, processorType, "system", channelSpec);
-	    yproc.setPersistent(true);
+	    log.debug("Starting processor {}", processorName);
 	    if(startArtemisService) {
 	        realtimeParameterService = new RealtimeArtemisParameterService(yproc);
 	    }

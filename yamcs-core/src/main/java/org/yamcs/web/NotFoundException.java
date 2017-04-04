@@ -2,6 +2,7 @@ package org.yamcs.web;
 
 import org.yamcs.web.rest.RestRequest;
 
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
@@ -20,7 +21,15 @@ public class NotFoundException extends HttpException {
     public NotFoundException(RestRequest request, String message) {
         super("No resource named '" + request.getFullPathWithoutQueryString() + "' (" + message + ")");
     }
-
+    public NotFoundException(HttpRequest request) {
+        super("No resource named '"+ request.uri() +"'");
+    }
+    
+    
+    public NotFoundException(HttpRequest request,  String message) {
+        super("No resource named '"+ request.uri() +"' (" + message + ")");
+    }
+    
     public NotFoundException(Throwable t) {
         super(t.getMessage(), t);
     }

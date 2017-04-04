@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
@@ -47,22 +46,19 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
     XtceDb xtceDb;
 
     Random rand = new Random();
-    private ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1);
 
-
-    public SimulationPpProvider(String yamcsInstance, String name,
-            LinkedHashMap args) throws ConfigurationException {
+    public SimulationPpProvider(String yamcsInstance, String name, LinkedHashMap<String,String> args) throws ConfigurationException {
         xtceDb = XtceDbFactory.getInstance(yamcsInstance);
-        SetSimulationData((String) args.get("simulationDataPath"));
-        simulationData = LoadSimulationData(simulationDataPath);
+        setSimulationData((String) args.get("simulationDataPath"));
+        simulationData = loadSimulationData(simulationDataPath);
     }
 
     public SimulationPpProvider() {
     }
 
-    public void SetSimulationData(String xmlFilePath) {
+    public void setSimulationData(String xmlFilePath) {
         simulationDataPath = xmlFilePath;
-        simulationData = LoadSimulationData(simulationDataPath);
+        simulationData = loadSimulationData(simulationDataPath);
     }
 
     @Override
@@ -83,7 +79,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
     public void enable() {
         // reload simulation data and reset simulation parameters
         if (disabled) {
-            simulationData = LoadSimulationData(simulationDataPath);
+            simulationData = loadSimulationData(simulationDataPath);
         }
         disabled = false;
 
@@ -111,10 +107,6 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
 
     }
 
-    public boolean IsRunning() {
-        return super.isRunning();
-    }
-
     // ///
     // run()
     // Entry point to run the simulation
@@ -125,12 +117,9 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
             try {
                 if (!disabled) {
                     // run simulation
-                    ProcessSimulationData();
-
-                    // wait for the link to be disable / re-enabled
-                    WaitDisable();
+                    processSimulationData();
                 } else {
-                    Thread.sleep(500);
+                    Thread.sleep(1000);
                 }
             } catch (Exception e) {
                 log.warn("exception thrown when processing a parameter. Details:\n"
@@ -144,19 +133,10 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
         }
     }
 
-    // /
-    // WaitDisable()
-    // Wait for the user to restart the simulation
-    //
-    private void WaitDisable() {
-        try {
-            while (IsRunning() && !disabled) {
-                Thread.sleep(500);
-            }
-        } catch (Exception e) {
-        }
+    boolean IsRunning() {
+        return isRunning();
     }
-
+    
     // ////
     // ProcessSimulationData()
     // Process the speceificed simulation scenario
@@ -167,7 +147,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
     public long simutationStep = 0;
     public boolean loopSimulation = false;
 
-    public void ProcessSimulationData() {
+    public void processSimulationData() {
 
         // get simulation starting date
         if (simulationData.getStartDate() != null)
@@ -190,7 +170,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
             List<PpSimulation.ParameterSequence> pss = simulationData
                     .getParameterSequence();
             for (ParameterSequence ps : pss) {
-                ProcessParameterSequence(ps);
+                processParameterSequence(ps);
             }
             if (!IsRunning() || disabled) {
                 break;
@@ -202,7 +182,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
     // ProcessParameterSequence()
     // Process a sequence of the simulation scenario
     //
-    private void ProcessParameterSequence(ParameterSequence ps) {
+    private void processParameterSequence(ParameterSequence ps) {
 
         int repeatCount = 0;
         int maxRepeat = ps.getRepeat() != null ? ps.getRepeat() : 1;
@@ -217,7 +197,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
             // process step offset
             int stepOffset = ps.getStepOffset() == null ? 0 : ps
                     .getStepOffset();
-            ProcessVoidStep(stepOffset);
+            processVoidStep(stepOffset);
             simutationStep += stepOffset;
 
             // initialize step count for this sequence
@@ -241,7 +221,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
                 // case where there is no parameter to send at this step
                 if (currentParameter.getAquisitionStep() != sequenceStep) {
                     assert (currentParameter.getAquisitionStep() > sequenceStep);
-                    ProcessVoidStep(1);
+                    processVoidStep(1);
                 } else {
                     // there is at least 1 parameter to send at this step
                     List<ParameterSequence.Parameter> stepParameters = new ArrayList<ParameterSequence.Parameter>();
@@ -255,7 +235,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
                         else
                             break;
                     }
-                    ProcessParameters(stepParameters);
+                    processParameters(stepParameters);
                     stepParameters.clear();
                 }
                 simutationStep++;
@@ -267,8 +247,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
     // ProcessParameters()
     // Create a specified parameter and insert it in the Yamcs PP Listener
     //
-    private void ProcessParameters(
-            List<ParameterSequence.Parameter> stepParameters) {
+    private void processParameters(List<ParameterSequence.Parameter> stepParameters) {
 
         String groupName = "simulation";
 
@@ -299,7 +278,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
             // get monitoring result
             String monitoringResult = sParameter.getMonitoringResult();
 
-            ParameterValue pv = CreatePv(sParameter.getSpaceSystem(),
+            ParameterValue pv = createPv(sParameter.getSpaceSystem(),
                     sParameter.getParaName(), generationTime, acquisitionTime,
                     value, monitoringResult);
             if (pv != null)
@@ -324,7 +303,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
     // ProcessVoidStep()
     // Used when no parameters need to be inserted at a given step of the
     // simulation scenario
-    private void ProcessVoidStep(int nbSteps) {
+    private void processVoidStep(int nbSteps) {
         try {
             log.trace("Processing " + nbSteps + " void steps");
             Thread.sleep(simulationStepLengthMs * nbSteps);
@@ -337,11 +316,11 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
     // LoadSimulationData()
     // Load data from an XML file
     //
-    public PpSimulation LoadSimulationData(String fileName) {
+    public PpSimulation loadSimulationData(String fileName) {
         try {
             final JAXBContext jc = JAXBContext.newInstance(PpSimulation.class);
             final Unmarshaller unmarshaller = jc.createUnmarshaller();
-
+            
             final PpSimulation ppSimulation = (PpSimulation) unmarshaller
                     .unmarshal(new FileReader(fileName));
             return ppSimulation;
@@ -356,7 +335,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
     // ///
     // CreatePv()
     //
-    private ParameterValue CreatePv(String spaceSystem, String paramName,
+    private ParameterValue createPv(String spaceSystem, String paramName,
             long generationTime, long acquisitionTime, float value,
             String monitoringResult) {
         // create parameter definition

@@ -22,15 +22,18 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
 import org.yamcs.web.rest.archive.RestDownsampler.Sample;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.ColumnDefinition;
+import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
@@ -133,6 +136,28 @@ public final class ArchiveHelper {
             i++;
         }
         return result;
+    }
+
+    final static Tuple toTuple(TableDefinition tblDef, List<ColumnData> columnList) {
+        List<Object>  cvalues = new ArrayList<>();
+        TupleDefinition tdef = new TupleDefinition();
+        
+        for (ColumnData cdata : columnList) {
+            String cname = cdata.getName();
+            ColumnDefinition cdef = tblDef.getColumnDefinition(cname);
+            Object v = ValueUtility.getYarchValue(cdata.getValue());
+            
+            if(cdef==null) {
+                cdef = new ColumnDefinition(cname, DataType.typeOf(v));
+            } else {
+                v = DataType.castAs(cdef.getType(), v);
+            }
+            tdef.addColumn(cdef);
+            cvalues.add(v);
+        }
+        Tuple tuple = new Tuple(tdef, cvalues);
+        
+        return tuple;
     }
 
     final static ReplayRequest toParameterReplayRequest(RestRequest req, Parameter p, boolean descendByDefault)

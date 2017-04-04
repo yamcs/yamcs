@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
 import org.slf4j.Logger;
@@ -20,7 +19,7 @@ import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpRequest;
 
 
 /**
@@ -45,7 +44,10 @@ public class Privilege {
         MayCommand,
         MayGetMissionDatabase,
         MayControlArchiving,
-        MayControlServices
+        MayControlServices,
+        MayReadTables,
+        MayWriteTables,
+        
     }
 
     private static String authModuleName;
@@ -337,7 +339,7 @@ public class Privilege {
     }
 
 
-    public CompletableFuture<AuthenticationToken> authenticateHttp(ChannelHandlerContext ctx, FullHttpRequest req) {       
+    public CompletableFuture<AuthenticationToken> authenticateHttp(ChannelHandlerContext ctx, HttpRequest req) {       
         return authModule.authenticateHttp(ctx, req);
     }
 }

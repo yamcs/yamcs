@@ -1304,27 +1304,29 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.AlarmLevelType getLevel();
 
-    // optional int64 value = 2;
-    /**
-     * <code>optional int64 value = 2;</code>
-     */
-    boolean hasValue();
-    /**
-     * <code>optional int64 value = 2;</code>
-     */
-    long getValue();
-
     // optional string label = 3;
     /**
      * <code>optional string label = 3;</code>
+     *
+     * <pre>
+     *  optional int64 value = 2; //removed because it is not part of XTCE and it doesn't work with ranges
+     * </pre>
      */
     boolean hasLabel();
     /**
      * <code>optional string label = 3;</code>
+     *
+     * <pre>
+     *  optional int64 value = 2; //removed because it is not part of XTCE and it doesn't work with ranges
+     * </pre>
      */
     java.lang.String getLabel();
     /**
      * <code>optional string label = 3;</code>
+     *
+     * <pre>
+     *  optional int64 value = 2; //removed because it is not part of XTCE and it doesn't work with ranges
+     * </pre>
      */
     com.google.protobuf.ByteString
         getLabelBytes();
@@ -1391,13 +1393,8 @@ public final class Mdb {
               }
               break;
             }
-            case 16: {
-              bitField0_ |= 0x00000002;
-              value_ = input.readInt64();
-              break;
-            }
             case 26: {
-              bitField0_ |= 0x00000004;
+              bitField0_ |= 0x00000002;
               label_ = input.readBytes();
               break;
             }
@@ -1457,33 +1454,25 @@ public final class Mdb {
       return level_;
     }
 
-    // optional int64 value = 2;
-    public static final int VALUE_FIELD_NUMBER = 2;
-    private long value_;
-    /**
-     * <code>optional int64 value = 2;</code>
-     */
-    public boolean hasValue() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
-    }
-    /**
-     * <code>optional int64 value = 2;</code>
-     */
-    public long getValue() {
-      return value_;
-    }
-
     // optional string label = 3;
     public static final int LABEL_FIELD_NUMBER = 3;
     private java.lang.Object label_;
     /**
      * <code>optional string label = 3;</code>
+     *
+     * <pre>
+     *  optional int64 value = 2; //removed because it is not part of XTCE and it doesn't work with ranges
+     * </pre>
      */
     public boolean hasLabel() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
      * <code>optional string label = 3;</code>
+     *
+     * <pre>
+     *  optional int64 value = 2; //removed because it is not part of XTCE and it doesn't work with ranges
+     * </pre>
      */
     public java.lang.String getLabel() {
       java.lang.Object ref = label_;
@@ -1501,6 +1490,10 @@ public final class Mdb {
     }
     /**
      * <code>optional string label = 3;</code>
+     *
+     * <pre>
+     *  optional int64 value = 2; //removed because it is not part of XTCE and it doesn't work with ranges
+     * </pre>
      */
     public com.google.protobuf.ByteString
         getLabelBytes() {
@@ -1518,7 +1511,6 @@ public final class Mdb {
 
     private void initFields() {
       level_ = org.yamcs.protobuf.Mdb.AlarmLevelType.NORMAL;
-      value_ = 0L;
       label_ = "";
     }
     private byte memoizedIsInitialized = -1;
@@ -1537,9 +1529,6 @@ public final class Mdb {
         output.writeEnum(1, level_.getNumber());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeInt64(2, value_);
-      }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeBytes(3, getLabelBytes());
       }
       getUnknownFields().writeTo(output);
@@ -1556,10 +1545,6 @@ public final class Mdb {
           .computeEnumSize(1, level_.getNumber());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(2, value_);
-      }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(3, getLabelBytes());
       }
@@ -1681,10 +1666,8 @@ public final class Mdb {
         super.clear();
         level_ = org.yamcs.protobuf.Mdb.AlarmLevelType.NORMAL;
         bitField0_ = (bitField0_ & ~0x00000001);
-        value_ = 0L;
-        bitField0_ = (bitField0_ & ~0x00000002);
         label_ = "";
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -1720,10 +1703,6 @@ public final class Mdb {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.value_ = value_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
-          to_bitField0_ |= 0x00000004;
-        }
         result.label_ = label_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -1744,11 +1723,8 @@ public final class Mdb {
         if (other.hasLevel()) {
           setLevel(other.getLevel());
         }
-        if (other.hasValue()) {
-          setValue(other.getValue());
-        }
         if (other.hasLabel()) {
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000002;
           label_ = other.label_;
           onChanged();
         }
@@ -1815,49 +1791,24 @@ public final class Mdb {
         return this;
       }
 
-      // optional int64 value = 2;
-      private long value_ ;
-      /**
-       * <code>optional int64 value = 2;</code>
-       */
-      public boolean hasValue() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>optional int64 value = 2;</code>
-       */
-      public long getValue() {
-        return value_;
-      }
-      /**
-       * <code>optional int64 value = 2;</code>
-       */
-      public Builder setValue(long value) {
-        bitField0_ |= 0x00000002;
-        value_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional int64 value = 2;</code>
-       */
-      public Builder clearValue() {
-        bitField0_ = (bitField0_ & ~0x00000002);
-        value_ = 0L;
-        onChanged();
-        return this;
-      }
-
       // optional string label = 3;
       private java.lang.Object label_ = "";
       /**
        * <code>optional string label = 3;</code>
+       *
+       * <pre>
+       *  optional int64 value = 2; //removed because it is not part of XTCE and it doesn't work with ranges
+       * </pre>
        */
       public boolean hasLabel() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
        * <code>optional string label = 3;</code>
+       *
+       * <pre>
+       *  optional int64 value = 2; //removed because it is not part of XTCE and it doesn't work with ranges
+       * </pre>
        */
       public java.lang.String getLabel() {
         java.lang.Object ref = label_;
@@ -1872,6 +1823,10 @@ public final class Mdb {
       }
       /**
        * <code>optional string label = 3;</code>
+       *
+       * <pre>
+       *  optional int64 value = 2; //removed because it is not part of XTCE and it doesn't work with ranges
+       * </pre>
        */
       public com.google.protobuf.ByteString
           getLabelBytes() {
@@ -1888,35 +1843,47 @@ public final class Mdb {
       }
       /**
        * <code>optional string label = 3;</code>
+       *
+       * <pre>
+       *  optional int64 value = 2; //removed because it is not part of XTCE and it doesn't work with ranges
+       * </pre>
        */
       public Builder setLabel(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000004;
+  bitField0_ |= 0x00000002;
         label_ = value;
         onChanged();
         return this;
       }
       /**
        * <code>optional string label = 3;</code>
+       *
+       * <pre>
+       *  optional int64 value = 2; //removed because it is not part of XTCE and it doesn't work with ranges
+       * </pre>
        */
       public Builder clearLabel() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000002);
         label_ = getDefaultInstance().getLabel();
         onChanged();
         return this;
       }
       /**
        * <code>optional string label = 3;</code>
+       *
+       * <pre>
+       *  optional int64 value = 2; //removed because it is not part of XTCE and it doesn't work with ranges
+       * </pre>
        */
       public Builder setLabelBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000004;
+  bitField0_ |= 0x00000002;
         label_ = value;
         onChanged();
         return this;
@@ -25863,103 +25830,103 @@ public final class Mdb {
       "\n\tmdb.proto\022\003mdb\032\013yamcs.proto\"\030\n\010UnitInf" +
       "o\022\014\n\004unit\030\001 \001(\t\"\\\n\nAlarmRange\022\"\n\005level\030\001" +
       " \001(\0162\023.mdb.AlarmLevelType\022\024\n\014minInclusiv" +
-      "e\030\002 \001(\001\022\024\n\014maxInclusive\030\003 \001(\001\"T\n\020Enumera" +
+      "e\030\002 \001(\001\022\024\n\014maxInclusive\030\003 \001(\001\"E\n\020Enumera" +
       "tionAlarm\022\"\n\005level\030\001 \001(\0162\023.mdb.AlarmLeve" +
-      "lType\022\r\n\005value\030\002 \001(\003\022\r\n\005label\030\003 \001(\t\"~\n\tA" +
-      "larmInfo\022\025\n\rminViolations\030\001 \001(\005\022)\n\020stati" +
-      "cAlarmRange\030\002 \003(\0132\017.mdb.AlarmRange\022/\n\020en" +
-      "umerationAlarm\030\003 \003(\0132\025.mdb.EnumerationAl" +
-      "arm\"\330\001\n\020DataEncodingInfo\022(\n\004type\030\001 \001(\0162\032",
-      ".mdb.DataEncodingInfo.Type\022\024\n\014littleEndi" +
-      "an\030\002 \001(\010\022\022\n\nsizeInBits\030\003 \001(\005\022\020\n\010encoding" +
-      "\030\004 \001(\t\022\031\n\021defaultCalibrator\030\005 \001(\t\"C\n\004Typ" +
-      "e\022\n\n\006BINARY\020\000\022\013\n\007BOOLEAN\020\001\022\t\n\005FLOAT\020\002\022\013\n" +
-      "\007INTEGER\020\003\022\n\n\006STRING\020\004\")\n\tEnumValue\022\r\n\005v" +
-      "alue\030\001 \001(\003\022\r\n\005label\030\002 \001(\t\"\272\001\n\021ParameterT" +
-      "ypeInfo\022\017\n\007engType\030\001 \001(\t\022+\n\014dataEncoding" +
-      "\030\002 \001(\0132\025.mdb.DataEncodingInfo\022\036\n\007unitSet" +
-      "\030\003 \003(\0132\r.mdb.UnitInfo\022$\n\014defaultAlarm\030\004 " +
-      "\001(\0132\016.mdb.AlarmInfo\022!\n\tenumValue\030\005 \003(\0132\016",
-      ".mdb.EnumValue\"\350\001\n\rParameterInfo\022\014\n\004name" +
-      "\030\001 \001(\t\022\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020shortDe" +
-      "scription\030\003 \001(\t\022\027\n\017longDescription\030\004 \001(\t" +
-      "\022#\n\005alias\030\005 \003(\0132\024.yamcs.NamedObjectId\022$\n" +
-      "\004type\030\006 \001(\0132\026.mdb.ParameterTypeInfo\022\'\n\nd" +
-      "ataSource\030\007 \001(\0162\023.mdb.DataSourceType\022\013\n\003" +
-      "url\030\010 \001(\t\"\267\001\n\020ArgumentTypeInfo\022\017\n\007engTyp" +
-      "e\030\001 \001(\t\022+\n\014dataEncoding\030\002 \001(\0132\025.mdb.Data" +
-      "EncodingInfo\022\036\n\007unitSet\030\003 \003(\0132\r.mdb.Unit" +
-      "Info\022!\n\tenumValue\030\005 \003(\0132\016.mdb.EnumValue\022",
-      "\020\n\010rangeMin\030\006 \001(\001\022\020\n\010rangeMax\030\007 \001(\001\"l\n\014A" +
-      "rgumentInfo\022\014\n\004name\030\001 \001(\t\022\023\n\013description" +
-      "\030\002 \001(\t\022\024\n\014initialValue\030\004 \001(\t\022#\n\004type\030\006 \001" +
-      "(\0132\025.mdb.ArgumentTypeInfo\"5\n\026ArgumentAss" +
-      "ignmentInfo\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t" +
-      "\"\326\001\n\020SignificanceInfo\022E\n\020consequenceLeve" +
-      "l\030\001 \001(\0162+.mdb.SignificanceInfo.Significa" +
-      "nceLevelType\022\030\n\020reasonForWarning\030\002 \001(\t\"a" +
-      "\n\025SignificanceLevelType\022\010\n\004NONE\020\001\022\t\n\005WAT" +
-      "CH\020\002\022\013\n\007WARNING\020\003\022\014\n\010DISTRESS\020\004\022\014\n\010CRITI",
-      "CAL\020\005\022\n\n\006SEVERE\020\006\"\213\002\n\016ComparisonInfo\022%\n\t" +
-      "parameter\030\001 \001(\0132\022.mdb.ParameterInfo\0222\n\010o" +
-      "perator\030\002 \001(\0162 .mdb.ComparisonInfo.Opera" +
-      "torType\022\r\n\005value\030\003 \001(\t\"\216\001\n\014OperatorType\022" +
-      "\014\n\010EQUAL_TO\020\001\022\020\n\014NOT_EQUAL_TO\020\002\022\020\n\014GREAT" +
-      "ER_THAN\020\003\022\034\n\030GREATER_THAN_OR_EQUAL_TO\020\004\022" +
-      "\020\n\014SMALLER_THAN\020\005\022\034\n\030SMALLER_THAN_OR_EQU" +
-      "AL_TO\020\006\"V\n\032TransmissionConstraintInfo\022\'\n" +
-      "\ncomparison\030\001 \003(\0132\023.mdb.ComparisonInfo\022\017" +
-      "\n\007timeout\030\002 \001(\003\"\220\003\n\013CommandInfo\022\014\n\004name\030",
+      "lType\022\r\n\005label\030\003 \001(\t\"~\n\tAlarmInfo\022\025\n\rmin" +
+      "Violations\030\001 \001(\005\022)\n\020staticAlarmRange\030\002 \003" +
+      "(\0132\017.mdb.AlarmRange\022/\n\020enumerationAlarm\030" +
+      "\003 \003(\0132\025.mdb.EnumerationAlarm\"\330\001\n\020DataEnc" +
+      "odingInfo\022(\n\004type\030\001 \001(\0162\032.mdb.DataEncodi",
+      "ngInfo.Type\022\024\n\014littleEndian\030\002 \001(\010\022\022\n\nsiz" +
+      "eInBits\030\003 \001(\005\022\020\n\010encoding\030\004 \001(\t\022\031\n\021defau" +
+      "ltCalibrator\030\005 \001(\t\"C\n\004Type\022\n\n\006BINARY\020\000\022\013" +
+      "\n\007BOOLEAN\020\001\022\t\n\005FLOAT\020\002\022\013\n\007INTEGER\020\003\022\n\n\006S" +
+      "TRING\020\004\")\n\tEnumValue\022\r\n\005value\030\001 \001(\003\022\r\n\005l" +
+      "abel\030\002 \001(\t\"\272\001\n\021ParameterTypeInfo\022\017\n\007engT" +
+      "ype\030\001 \001(\t\022+\n\014dataEncoding\030\002 \001(\0132\025.mdb.Da" +
+      "taEncodingInfo\022\036\n\007unitSet\030\003 \003(\0132\r.mdb.Un" +
+      "itInfo\022$\n\014defaultAlarm\030\004 \001(\0132\016.mdb.Alarm" +
+      "Info\022!\n\tenumValue\030\005 \003(\0132\016.mdb.EnumValue\"",
+      "\350\001\n\rParameterInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rquali" +
+      "fiedName\030\002 \001(\t\022\030\n\020shortDescription\030\003 \001(\t" +
+      "\022\027\n\017longDescription\030\004 \001(\t\022#\n\005alias\030\005 \003(\013" +
+      "2\024.yamcs.NamedObjectId\022$\n\004type\030\006 \001(\0132\026.m" +
+      "db.ParameterTypeInfo\022\'\n\ndataSource\030\007 \001(\016" +
+      "2\023.mdb.DataSourceType\022\013\n\003url\030\010 \001(\t\"\267\001\n\020A" +
+      "rgumentTypeInfo\022\017\n\007engType\030\001 \001(\t\022+\n\014data" +
+      "Encoding\030\002 \001(\0132\025.mdb.DataEncodingInfo\022\036\n" +
+      "\007unitSet\030\003 \003(\0132\r.mdb.UnitInfo\022!\n\tenumVal" +
+      "ue\030\005 \003(\0132\016.mdb.EnumValue\022\020\n\010rangeMin\030\006 \001",
+      "(\001\022\020\n\010rangeMax\030\007 \001(\001\"l\n\014ArgumentInfo\022\014\n\004" +
+      "name\030\001 \001(\t\022\023\n\013description\030\002 \001(\t\022\024\n\014initi" +
+      "alValue\030\004 \001(\t\022#\n\004type\030\006 \001(\0132\025.mdb.Argume" +
+      "ntTypeInfo\"5\n\026ArgumentAssignmentInfo\022\014\n\004" +
+      "name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\"\326\001\n\020Significan" +
+      "ceInfo\022E\n\020consequenceLevel\030\001 \001(\0162+.mdb.S" +
+      "ignificanceInfo.SignificanceLevelType\022\030\n" +
+      "\020reasonForWarning\030\002 \001(\t\"a\n\025SignificanceL" +
+      "evelType\022\010\n\004NONE\020\001\022\t\n\005WATCH\020\002\022\013\n\007WARNING" +
+      "\020\003\022\014\n\010DISTRESS\020\004\022\014\n\010CRITICAL\020\005\022\n\n\006SEVERE",
+      "\020\006\"\213\002\n\016ComparisonInfo\022%\n\tparameter\030\001 \001(\013" +
+      "2\022.mdb.ParameterInfo\0222\n\010operator\030\002 \001(\0162 " +
+      ".mdb.ComparisonInfo.OperatorType\022\r\n\005valu" +
+      "e\030\003 \001(\t\"\216\001\n\014OperatorType\022\014\n\010EQUAL_TO\020\001\022\020" +
+      "\n\014NOT_EQUAL_TO\020\002\022\020\n\014GREATER_THAN\020\003\022\034\n\030GR" +
+      "EATER_THAN_OR_EQUAL_TO\020\004\022\020\n\014SMALLER_THAN" +
+      "\020\005\022\034\n\030SMALLER_THAN_OR_EQUAL_TO\020\006\"V\n\032Tran" +
+      "smissionConstraintInfo\022\'\n\ncomparison\030\001 \003" +
+      "(\0132\023.mdb.ComparisonInfo\022\017\n\007timeout\030\002 \001(\003" +
+      "\"\220\003\n\013CommandInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rqualif",
+      "iedName\030\002 \001(\t\022\030\n\020shortDescription\030\003 \001(\t\022" +
+      "\027\n\017longDescription\030\004 \001(\t\022#\n\005alias\030\005 \003(\0132" +
+      "\024.yamcs.NamedObjectId\022%\n\013baseCommand\030\006 \001" +
+      "(\0132\020.mdb.CommandInfo\022\020\n\010abstract\030\007 \001(\010\022#" +
+      "\n\010argument\030\010 \003(\0132\021.mdb.ArgumentInfo\0227\n\022a" +
+      "rgumentAssignment\030\t \003(\0132\033.mdb.ArgumentAs" +
+      "signmentInfo\022+\n\014significance\030\n \001(\0132\025.mdb" +
+      ".SignificanceInfo\0223\n\nconstraint\030\013 \003(\0132\037." +
+      "mdb.TransmissionConstraintInfo\022\013\n\003url\030\014 " +
+      "\001(\t\"_\n\nRepeatInfo\022\022\n\nfixedCount\030\001 \001(\003\022(\n",
+      "\014dynamicCount\030\002 \001(\0132\022.mdb.ParameterInfo\022" +
+      "\023\n\013bitsBetween\030\003 \001(\005\"\245\002\n\021SequenceEntryIn" +
+      "fo\022\026\n\016locationInBits\030\001 \001(\005\022G\n\021referenceL" +
+      "ocation\030\002 \001(\0162,.mdb.SequenceEntryInfo.Re" +
+      "ferenceLocationType\022%\n\tcontainer\030\003 \001(\0132\022" +
+      ".mdb.ContainerInfo\022%\n\tparameter\030\004 \001(\0132\022." +
+      "mdb.ParameterInfo\022\037\n\006repeat\030\005 \001(\0132\017.mdb." +
+      "RepeatInfo\"@\n\025ReferenceLocationType\022\023\n\017C" +
+      "ONTAINER_START\020\001\022\022\n\016PREVIOUS_ENTRY\020\002\"\306\002\n" +
+      "\rContainerInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rqualifie",
+      "dName\030\002 \001(\t\022\030\n\020shortDescription\030\003 \001(\t\022\027\n" +
+      "\017longDescription\030\004 \001(\t\022#\n\005alias\030\005 \003(\0132\024." +
+      "yamcs.NamedObjectId\022\023\n\013maxInterval\030\006 \001(\003" +
+      "\022\022\n\nsizeInBits\030\007 \001(\005\022)\n\rbaseContainer\030\010 " +
+      "\001(\0132\022.mdb.ContainerInfo\0220\n\023restrictionCr" +
+      "iteria\030\t \003(\0132\023.mdb.ComparisonInfo\022%\n\005ent" +
+      "ry\030\n \003(\0132\026.mdb.SequenceEntryInfo\022\013\n\003url\030" +
+      "\013 \001(\t\"|\n\022InputParameterInfo\022%\n\tparameter" +
+      "\030\001 \001(\0132\022.mdb.ParameterInfo\022\021\n\tinputName\030" +
+      "\002 \001(\t\022\031\n\021parameterInstance\030\003 \001(\005\022\021\n\tmand",
+      "atory\030\004 \001(\010\"P\n\023OutputParameterInfo\022%\n\tpa" +
+      "rameter\030\001 \001(\0132\022.mdb.ParameterInfo\022\022\n\nout" +
+      "putName\030\002 \001(\t\"\274\003\n\rAlgorithmInfo\022\014\n\004name\030" +
       "\001 \001(\t\022\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020shortDes" +
       "cription\030\003 \001(\t\022\027\n\017longDescription\030\004 \001(\t\022" +
-      "#\n\005alias\030\005 \003(\0132\024.yamcs.NamedObjectId\022%\n\013" +
-      "baseCommand\030\006 \001(\0132\020.mdb.CommandInfo\022\020\n\010a" +
-      "bstract\030\007 \001(\010\022#\n\010argument\030\010 \003(\0132\021.mdb.Ar" +
-      "gumentInfo\0227\n\022argumentAssignment\030\t \003(\0132\033" +
-      ".mdb.ArgumentAssignmentInfo\022+\n\014significa" +
-      "nce\030\n \001(\0132\025.mdb.SignificanceInfo\0223\n\ncons" +
-      "traint\030\013 \003(\0132\037.mdb.TransmissionConstrain" +
-      "tInfo\022\013\n\003url\030\014 \001(\t\"_\n\nRepeatInfo\022\022\n\nfixe",
-      "dCount\030\001 \001(\003\022(\n\014dynamicCount\030\002 \001(\0132\022.mdb" +
-      ".ParameterInfo\022\023\n\013bitsBetween\030\003 \001(\005\"\245\002\n\021" +
-      "SequenceEntryInfo\022\026\n\016locationInBits\030\001 \001(" +
-      "\005\022G\n\021referenceLocation\030\002 \001(\0162,.mdb.Seque" +
-      "nceEntryInfo.ReferenceLocationType\022%\n\tco" +
-      "ntainer\030\003 \001(\0132\022.mdb.ContainerInfo\022%\n\tpar" +
-      "ameter\030\004 \001(\0132\022.mdb.ParameterInfo\022\037\n\006repe" +
-      "at\030\005 \001(\0132\017.mdb.RepeatInfo\"@\n\025ReferenceLo" +
-      "cationType\022\023\n\017CONTAINER_START\020\001\022\022\n\016PREVI" +
-      "OUS_ENTRY\020\002\"\306\002\n\rContainerInfo\022\014\n\004name\030\001 ",
-      "\001(\t\022\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020shortDescr" +
-      "iption\030\003 \001(\t\022\027\n\017longDescription\030\004 \001(\t\022#\n" +
-      "\005alias\030\005 \003(\0132\024.yamcs.NamedObjectId\022\023\n\013ma" +
-      "xInterval\030\006 \001(\003\022\022\n\nsizeInBits\030\007 \001(\005\022)\n\rb" +
-      "aseContainer\030\010 \001(\0132\022.mdb.ContainerInfo\0220" +
-      "\n\023restrictionCriteria\030\t \003(\0132\023.mdb.Compar" +
-      "isonInfo\022%\n\005entry\030\n \003(\0132\026.mdb.SequenceEn" +
-      "tryInfo\022\013\n\003url\030\013 \001(\t\"|\n\022InputParameterIn" +
-      "fo\022%\n\tparameter\030\001 \001(\0132\022.mdb.ParameterInf" +
-      "o\022\021\n\tinputName\030\002 \001(\t\022\031\n\021parameterInstanc",
-      "e\030\003 \001(\005\022\021\n\tmandatory\030\004 \001(\010\"P\n\023OutputPara" +
-      "meterInfo\022%\n\tparameter\030\001 \001(\0132\022.mdb.Param" +
-      "eterInfo\022\022\n\noutputName\030\002 \001(\t\"\274\003\n\rAlgorit" +
-      "hmInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rqualifiedName\030\002 " +
-      "\001(\t\022\030\n\020shortDescription\030\003 \001(\t\022\027\n\017longDes" +
-      "cription\030\004 \001(\t\022#\n\005alias\030\005 \003(\0132\024.yamcs.Na" +
-      "medObjectId\022\'\n\005scope\030\006 \001(\0162\030.mdb.Algorit" +
-      "hmInfo.Scope\022\020\n\010language\030\007 \001(\t\022\014\n\004text\030\010" +
-      " \001(\t\022/\n\016inputParameter\030\t \003(\0132\027.mdb.Input" +
-      "ParameterInfo\0221\n\017outputParameter\030\n \003(\0132\030",
-      ".mdb.OutputParameterInfo\022-\n\021onParameterU" +
-      "pdate\030\013 \003(\0132\022.mdb.ParameterInfo\022\026\n\016onPer" +
-      "iodicRate\030\014 \003(\003\022\013\n\003url\030\r \001(\t\"-\n\005Scope\022\n\n" +
-      "\006GLOBAL\020\000\022\030\n\024COMMAND_VERIFICATION\020\001*u\n\016D" +
-      "ataSourceType\022\017\n\013TELEMETERED\020\000\022\013\n\007DERIVE" +
-      "D\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003\022\n\n\006SYSTEM\020\004" +
-      "\022\013\n\007COMMAND\020\005\022\023\n\017COMMAND_HISTORY\020\006*\\\n\016Al" +
-      "armLevelType\022\n\n\006NORMAL\020\000\022\t\n\005WATCH\020\001\022\013\n\007W" +
-      "ARNING\020\002\022\014\n\010DISTRESS\020\003\022\014\n\010CRITICAL\020\004\022\n\n\006" +
-      "SEVERE\020\005B\024\n\022org.yamcs.protobuf"
+      "#\n\005alias\030\005 \003(\0132\024.yamcs.NamedObjectId\022\'\n\005" +
+      "scope\030\006 \001(\0162\030.mdb.AlgorithmInfo.Scope\022\020\n" +
+      "\010language\030\007 \001(\t\022\014\n\004text\030\010 \001(\t\022/\n\016inputPa" +
+      "rameter\030\t \003(\0132\027.mdb.InputParameterInfo\0221" +
+      "\n\017outputParameter\030\n \003(\0132\030.mdb.OutputPara",
+      "meterInfo\022-\n\021onParameterUpdate\030\013 \003(\0132\022.m" +
+      "db.ParameterInfo\022\026\n\016onPeriodicRate\030\014 \003(\003" +
+      "\022\013\n\003url\030\r \001(\t\"-\n\005Scope\022\n\n\006GLOBAL\020\000\022\030\n\024CO" +
+      "MMAND_VERIFICATION\020\001*u\n\016DataSourceType\022\017" +
+      "\n\013TELEMETERED\020\000\022\013\n\007DERIVED\020\001\022\014\n\010CONSTANT" +
+      "\020\002\022\t\n\005LOCAL\020\003\022\n\n\006SYSTEM\020\004\022\013\n\007COMMAND\020\005\022\023" +
+      "\n\017COMMAND_HISTORY\020\006*\\\n\016AlarmLevelType\022\n\n" +
+      "\006NORMAL\020\000\022\t\n\005WATCH\020\001\022\013\n\007WARNING\020\002\022\014\n\010DIS" +
+      "TRESS\020\003\022\014\n\010CRITICAL\020\004\022\n\n\006SEVERE\020\005B\024\n\022org" +
+      ".yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -25983,7 +25950,7 @@ public final class Mdb {
           internal_static_mdb_EnumerationAlarm_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mdb_EnumerationAlarm_descriptor,
-              new java.lang.String[] { "Level", "Value", "Label", });
+              new java.lang.String[] { "Level", "Label", });
           internal_static_mdb_AlarmInfo_descriptor =
             getDescriptor().getMessageTypes().get(3);
           internal_static_mdb_AlarmInfo_fieldAccessorTable = new

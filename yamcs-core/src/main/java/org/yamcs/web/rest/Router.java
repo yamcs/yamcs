@@ -30,6 +30,8 @@ import org.yamcs.protobuf.Rest.GetApiOverviewResponse;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfo;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.web.BadRequestException;
+import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpRequestHandler;
 import org.yamcs.web.InternalServerErrorException;
@@ -56,11 +58,22 @@ import org.yamcs.web.rest.processor.ProcessorCommandRestHandler;
 import org.yamcs.web.rest.processor.ProcessorParameterRestHandler;
 import org.yamcs.web.rest.processor.ProcessorRestHandler;
 
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.util.AttributeKey;
+import io.netty.channel.ChannelHandler.Sharable;
+
 
 /**
  * Matches a request uri to a registered route handler. Stops on the first
@@ -73,7 +86,8 @@ import io.netty.handler.codec.http.QueryStringDecoder;
  * Dynamic routes often mention ':instance' in their url, which will be
  * expanded upon registration into the actual yamcs instance.
  */
-public class Router {
+@Sharable
+public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     private static final Pattern ROUTE_PATTERN = Pattern.compile("(\\/)?:(\\w+)([\\?\\*])?");
     private static final Logger log = LoggerFactory.getLogger(Router.class);
@@ -85,9 +99,10 @@ public class Router {
     private boolean logSlowRequests = true;
     int SLOW_REQUEST_TIME = 20;//seconds; requests that execute more than this are logged
     ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
-
-
-
+    public final static int MAX_BODY_SIZE = 65536;
+    public static final AttributeKey<RouteMatch> CTX_ROUTE_MATCH = AttributeKey.valueOf("routeMatch");
+    private static final FullHttpResponse CONTINUE = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE, Unpooled.EMPTY_BUFFER);
+    
     public Router() {
         registerRouteHandler(null, new ClientRestHandler());
         registerRouteHandler(null, new DisplayRestHandler());
@@ -140,7 +155,7 @@ public class Router {
                     for (Route ann : anns) {
                         for (String m : ann.method()) {
                             HttpMethod httpMethod = HttpMethod.valueOf(m);
-                            routeConfigs.add(new RouteConfig(routeHandler, ann.path(), ann.priority(), httpMethod, handle));
+                            routeConfigs.add(new RouteConfig(routeHandler, ann.path(), ann.priority(), ann.dataLoad(), httpMethod, handle));
                         }
                     }
                 }
@@ -175,31 +190,71 @@ public class Router {
         }
     }
 
-    public void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest req, AuthenticationToken token, QueryStringDecoder qsDecoder) {
-        RestRequest restReq = new RestRequest(ctx, req, qsDecoder, token);
-
+    
+    /**
+     * At this point we do not have the full request (only the header) so we have to configure the pipeline either for receiving the 
+     * full request or with route specific pipeline for receiving (large amounts of) data in case of dataLoad routes.
+     * 
+     * @param ctx
+     * @param req
+     * @param qsDecoder
+     * @return true if the request has been scheduled and false if the request is invalid or there was another error
+     */
+    public boolean scheduleExecution(ChannelHandlerContext ctx, HttpRequest req, QueryStringDecoder qsDecoder) {
         try {
-            // Decode first the path/qs difference, then url-decode the path
             String uri = new URI(qsDecoder.path()).getPath();
-            log.debug("R{}: Handling REST Request {} {}", restReq.getRequestId(), req.getMethod(), uri);
-            
-            RouteMatch match = matchURI(req.getMethod(), uri);
-            restReq.setRouteMatch(match);
-            if (match != null) {
-                dispatch(restReq, match);
-            } else {
-                log.info("R{}: No route matching URI: '{}'", restReq.getRequestId(), req.getUri());
+           
+            RouteMatch match = matchURI(req.method(), uri);
+            if(match==null) {
+                log.info("No route matching URI: '{}'", req.uri());
                 HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.NOT_FOUND);
+                return false;
             }
-        } catch (URISyntaxException e) {
-            RestHandler.sendRestError(restReq, HttpResponseStatus.INTERNAL_SERVER_ERROR, e);
+            ctx.channel().attr(CTX_ROUTE_MATCH).set(match);
+            RouteConfig rc = match.getRouteConfig();
+            if(rc.isDataLoad()) {
+                try {
+                    RouteHandler target = match.routeConfig.routeHandler;
+                    match.routeConfig.handle.invoke(target, ctx, req, match);
+                    if (HttpUtil.is100ContinueExpected(req)) {
+                        ctx.writeAndFlush(CONTINUE.retainedDuplicate());
+                    }
+                } catch (HttpException e) {
+                    log.warn("Error invoking data load handler on URI '{}': {}", req.uri(), e.getMessage());
+                    HttpRequestHandler.sendPlainTextError(ctx, req, e.getStatus(), e.getMessage());
+                } catch(Throwable t) {
+                    log.error("Error invoking data load handler on URI: '{}'", req.uri(), t);
+                    HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST);
+                }
+            } else {            
+                //this will cause the channelRead0 to be called as soon as the request is complete 
+                // it will also reject requests whose body is greater than the MAX_BODY_SIZE) 
+                ctx.pipeline().addLast(new HttpObjectAggregator(MAX_BODY_SIZE));
+                ctx.pipeline().addLast(this);
+                ctx.fireChannelRead(req);
+            }
+            return true;
         } catch (MethodNotAllowedException e) {
-            log.info("R{}: Method {} not allowed for URI: '{}'", restReq.getRequestId(), req.getMethod(), req.getUri());
-            RestHandler.sendRestError(restReq, e.getStatus(), e);
+            log.info("Method {} not allowed for URI: '{}'", req.method(), req.uri());
+            HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
+        return false;
     }
 
-    protected RouteMatch matchURI(HttpMethod method, String uri) throws MethodNotAllowedException {
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
+        AuthenticationToken token = ctx.channel().attr(HttpRequestHandler.CTX_AUTH_TOKEN).get();
+        RouteMatch match = ctx.channel().attr(CTX_ROUTE_MATCH).get();
+        QueryStringDecoder qsDecoder = new QueryStringDecoder(req.uri());
+        RestRequest restReq = new RestRequest(ctx, req, qsDecoder, token);
+        restReq.setRouteMatch(match);
+        log.debug("R{}: Handling REST Request {} {}", restReq.getRequestId(), req.method(), req.uri());
+        dispatch(restReq, match);
+    }
+    
+    public RouteMatch matchURI(HttpMethod method, String uri) throws MethodNotAllowedException {
         Set<HttpMethod> allowedMethods = null;
         for (Entry<Pattern, Map<HttpMethod, RouteConfig>> entry : defaultRoutes.entrySet()) {
             Matcher matcher = entry.getKey().matcher(uri);
@@ -239,9 +294,8 @@ public class Router {
     }
 
     protected void dispatch(RestRequest req, RouteMatch match) {
-
         ScheduledFuture<?> x = timer.schedule(() ->{
-            log.error("R{} blocking the netty thread for 2 seconds. uri: {}", req.getRequestId(), req.getHttpRequest().getUri());
+            log.error("R{} blocking the netty thread for 2 seconds. uri: {}", req.getRequestId(), req.getHttpRequest().uri());
         }
         , 2, TimeUnit.SECONDS);
 
@@ -266,7 +320,7 @@ public class Router {
         if(logSlowRequests) {
             timer.schedule(() ->{
                 if(!cf.isDone()) {
-                    log.warn("R{} executing for more than 20 seconds. uri: {}", req.getRequestId(), req.getHttpRequest().getUri());
+                    log.warn("R{} executing for more than 20 seconds. uri: {}", req.getRequestId(), req.getHttpRequest().uri());
                 }
             }
             , 20, TimeUnit.SECONDS);
@@ -327,13 +381,16 @@ public class Router {
         final boolean priority;
         final HttpMethod httpMethod;
         final MethodHandle handle;
-
-        RouteConfig(RouteHandler routeHandler, String originalPath, boolean priority, HttpMethod httpMethod, MethodHandle handle) {
+        final boolean dataLoad;
+        
+        
+        RouteConfig(RouteHandler routeHandler, String originalPath, boolean priority, boolean dataLoad, HttpMethod httpMethod, MethodHandle handle) {
             this.routeHandler = routeHandler;
             this.originalPath = originalPath;
             this.priority = priority;
             this.httpMethod = httpMethod;
             this.handle = handle;
+            this.dataLoad = dataLoad;
         }
 
         @Override
@@ -350,6 +407,10 @@ public class Router {
                 }
             }
         }
+        
+        public boolean isDataLoad() {
+            return dataLoad;
+        }
     }
 
     /**
@@ -363,6 +424,14 @@ public class Router {
             this.regexMatch = regexMatch;
             this.routeConfig = routeConfig;
         }
+        
+        public RouteConfig getRouteConfig() {
+            return routeConfig;
+        }
+
+        public String getRouteParam(String name) {
+            return regexMatch.group(name);
+        }
     }
 
     /**
@@ -370,7 +439,6 @@ public class Router {
      * general server information.
      */
     private final class OverviewRouteHandler extends RestHandler {
-
         @Route(path="/api", method="GET")
         public void getApiOverview(RestRequest req) throws HttpException {
             GetApiOverviewResponse.Builder responseb = GetApiOverviewResponse.newBuilder();
@@ -408,4 +476,6 @@ public class Router {
             completeOK(req, responseb.build(), SchemaRest.GetApiOverviewResponse.WRITE);
         }
     }
+
+ 
 }

@@ -1,6 +1,5 @@
 package org.yamcs.security;
 
-import static io.netty.handler.codec.http.HttpHeaders.setHeader;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.security.cert.X509Certificate;
@@ -30,7 +29,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -80,12 +79,12 @@ public class BasicAuthModule implements AuthModule {
    
     @Override
     public CompletableFuture<AuthenticationToken> authenticateHttp(ChannelHandlerContext ctx, HttpRequest req) {
-        if (!req.headers().contains(HttpHeaders.Names.AUTHORIZATION)) {
-            sendUnauthorized(ctx, req);
+        if (!req.headers().contains(HttpHeaderNames.AUTHORIZATION)) {
+            sendUnauthorized(ctx, req, "No "+HttpHeaderNames.AUTHORIZATION+" header present");
             return completedExceptionally(new AuthorizationPendingException());
         }
 
-        String authorizationHeader = req.headers().get(HttpHeaders.Names.AUTHORIZATION);
+        String authorizationHeader = req.headers().get(HttpHeaderNames.AUTHORIZATION);
         if (!authorizationHeader.startsWith("Basic ")) { // Exact case only
             return completedExceptionally(new BadRequestException("Unsupported Authorization header '" + authorizationHeader + "'"));
         }
@@ -105,7 +104,7 @@ public class BasicAuthModule implements AuthModule {
         }
         AuthenticationToken token = new UsernamePasswordToken(parts[0], parts[1]);
         if (!realm.authenticates(token)) {
-            sendUnauthorized(ctx, req);
+            sendUnauthorized(ctx, req, "the realm could not authenticate the provided token");
             return completedExceptionally( new AuthorizationPendingException());
         }
         
@@ -193,7 +192,7 @@ public class BasicAuthModule implements AuthModule {
     }
     
     
-    private ChannelFuture sendUnauthorized(ChannelHandlerContext ctx, HttpRequest request) {
+    private ChannelFuture sendUnauthorized(ChannelHandlerContext ctx, HttpRequest request, String reason) {
         ByteBuf buf;
         MediaType mt = RestRequest.deriveTargetContentType(request);
         if(mt==MediaType.PROTOBUF) {
@@ -203,9 +202,9 @@ public class BasicAuthModule implements AuthModule {
             buf = Unpooled.copiedBuffer(HttpResponseStatus.UNAUTHORIZED.toString() + "\r\n", CharsetUtil.UTF_8);
         }
         HttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.UNAUTHORIZED, buf);
-        setHeader(res, HttpHeaders.Names.WWW_AUTHENTICATE, "Basic realm=\"" + Privilege.getAuthModuleName() + "\"");
+        res.headers().set(HttpHeaderNames.WWW_AUTHENTICATE, "Basic realm=\"" + Privilege.getAuthModuleName() + "\"");
 
-        log.warn("{} {} {} [realm=\"{}\"]", request.getMethod(), request.getUri(), res.getStatus().code(), Privilege.getAuthModuleName());
+        log.warn("{} {} {} [realm=\"{}\"]: {}", request.method(), request.uri(), res.status().code(), Privilege.getAuthModuleName(), reason);
         return ctx.writeAndFlush(res).addListener(ChannelFutureListener.CLOSE);
     }
     

@@ -5,34 +5,63 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.junit.Test;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.rest.BulkRestDataReceiver;
+import org.yamcs.api.rest.BulkRestDataSender;
 import org.yamcs.api.ws.WebSocketRequest;
+import org.yamcs.protobuf.Archive.ColumnData;
+import org.yamcs.protobuf.Archive.TableData.TableRecord;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
 import org.yamcs.protobuf.Rest.EditClientRequest;
 import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.protobuf.Table.Cell;
+import org.yamcs.protobuf.Table.ColumnInfo;
+import org.yamcs.protobuf.Table.Row;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
+import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ParameterResource;
+import org.yamcs.yarch.ColumnSerializer;
+import org.yamcs.yarch.ColumnSerializerFactory;
+import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.TupleDefinition;
+import org.yamcs.yarch.YarchDatabase;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.MessageLite;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpMethod;
 
-
 public class ArchiveIntegrationTest extends AbstractIntegrationTest {
-
+    
+    ColumnSerializer csint = ColumnSerializerFactory.getBasicColumnSerializer(DataType.INT);
+    ColumnSerializer csstr = ColumnSerializerFactory.getBasicColumnSerializer(DataType.STRING);
+    
+    
+    static { //to avoid getting the warning in the console in the test below that loads invalid table records
+        Logger.getLogger("org.yamcs.yarch").setLevel(Level.SEVERE);
+    }
 
     private void generateData(String utcStart, int numPackets) {
         long t0 = TimeEncoding.parse(utcStart);
@@ -47,7 +76,8 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     public void testReplay() throws Exception {
         generateData("2015-01-01T10:00:00", 3600);
         restClient.setAcceptMediaType(MediaType.JSON);
-        
+        restClient.setSendMediaType(MediaType.JSON);
+
         ClientInfo cinfo = getClientInfo();
         //create a parameter replay via REST
         CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
@@ -100,10 +130,9 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(8, arlist.size());
 
         response = restClient.doRequest("/archive/IntegrationTest/indexes/packets?start=2035-01-02T00:00:00", HttpMethod.GET, "").get();
-        
+
         assertTrue(response.isEmpty());
     }
-
 
     @Test
     public void testIndexWithRestClient() throws Exception {
@@ -144,5 +173,144 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         respDl = restClient.doRequest("/archive/IntegrationTest/parameters/REFMDB/ccsds-apid?start=2015-02-02T10:10:00&norepeat=false&limit=3", HttpMethod.GET, "").get();
         pdata = fromJson(respDl, org.yamcs.protobuf.SchemaPvalue.ParameterData.MERGE).build();
         assertEquals(3, pdata.getParameterCount());
+    }
+
+
+    @Test
+    public void testDataLoadDump() throws Exception {
+        BulkRestDataSender brds = initiateTableLoad("table0");
+
+        for(int i=0;i<100; i+=4) {
+            ByteBuf buf = encode(getRecord(i), getRecord(i+1), getRecord(i+2), getRecord(i+3));
+            brds.sendData(buf);
+        }
+        String resp = new String(brds.completeRequest().get());
+        assertTrue(resp.contains("100 records"));
+
+        verifyRecords("table0", 100);
+        verifyRecordsDumpFormat("table0", 100);
+    }
+
+    @Test
+    public void testDataLoadWithInvalidRecord() throws Exception {
+        Exception e1 = null;
+        BulkRestDataSender brds = initiateTableLoad("table1");
+        try {
+            for(int i=0;i<100; i++) {
+                    Row tr;
+                    if(i!=50) {
+                        tr = getRecord(i);
+                    } else {
+                        Row.Builder trb = Row.newBuilder();
+                        trb.addCell(Cell.newBuilder().setColumnId(2).setData(ByteString.copyFrom(csstr.getByteArray("test "+i))).build());
+                        tr=trb.build();
+                    }
+                    brds.sendData(encode(tr));
+            }
+            brds.completeRequest().get();
+        } catch (Exception e) {
+            e1 = e;
+        }
+        assertNotNull(e1);
+        assertTrue(e1.getMessage().contains("Error after inserting 50 records"));
+        verifyRecords("table1", 50);
+    }
+    
+    @Test
+    public void testDataLoadWithInvalidRecord2() throws Exception {
+        BulkRestDataSender brds = initiateTableLoad("table2");
+        Exception e1 = null;
+        
+        try {
+            for(int i=0;i<100; i++) {
+                ByteBuf buf = Unpooled.buffer();
+                    if(i!=50) { 
+                        buf = encode(getRecord(i));
+                    } else {
+                        buf = Unpooled.wrappedBuffer(new byte[] {3,4,3,4});
+                    }
+                    brds.sendData(buf);
+            }
+            brds.completeRequest().get();
+        } catch (Exception e) {
+            e1 = e;
+        }
+        assertNotNull(e1);        
+        assertTrue(e1.getMessage().contains("Error after inserting 50 records"));
+        verifyRecords("table2", 50);
+    }
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private Row getRecord(int i) {
+       
+        Row tr = Row.newBuilder()
+                .addColumn(ColumnInfo.newBuilder().setId(1).setName("a1").setType("INT").build()) //the column info is only required for the first record actually
+                .addColumn(ColumnInfo.newBuilder().setId(2).setName("a2").setType("STRING").build())
+                .addCell(Cell.newBuilder().setColumnId(1).setData(ByteString.copyFrom(csint.getByteArray(i))).build())
+                .addCell(Cell.newBuilder().setColumnId(2).setData(ByteString.copyFrom(csstr.getByteArray("test "+i))).build())
+                .build();
+        return tr;
+    }
+    
+    private void verifyRecords (String tblName, int n) throws Exception {
+        List<TableRecord> trList = new ArrayList<>();
+        CompletableFuture<Void> cf1 = restClient.doBulkGetRequest("/archive/IntegrationTest/downloads/tables/"+tblName, (data) -> {
+            TableRecord tr;
+            try {
+                tr = TableRecord.parseFrom(data);
+                trList.add(tr);
+            } catch (InvalidProtocolBufferException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        
+        cf1.get();
+        assertEquals(n, trList.size());
+    }
+    private void verifyRecordsDumpFormat (String tblName, int n) throws Exception {
+        List<Row> trList = new ArrayList<>();
+        CompletableFuture<Void> cf1 = restClient.doBulkGetRequest("/archive/IntegrationTest/downloads/tables/"+tblName+"?format=dump", (data) -> {
+            Row tr;
+            try {
+                tr = Row.parseFrom(data);
+                trList.add(tr);
+            } catch (InvalidProtocolBufferException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        
+        cf1.get();
+        assertEquals(n, trList.size());
+    }
+    
+    private BulkRestDataSender initiateTableLoad(String tblName) throws Exception {
+        restClient.setAcceptMediaType(MediaType.PROTOBUF);
+        restClient.setSendMediaType(MediaType.PROTOBUF); 
+        createTable(tblName);
+        CompletableFuture<BulkRestDataSender> cf = restClient.doBulkSendRequest("/archive/IntegrationTest/tables/"+tblName+"/data", HttpMethod.POST);
+        BulkRestDataSender brds = cf.get();
+        
+        return brds;
+    }
+    
+    
+    private void createTable(String tblName) throws Exception{
+        YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+        TupleDefinition td = new TupleDefinition();
+        td.addColumn("a1", DataType.INT);
+        td.addColumn("a2", DataType.STRING);
+        
+        TableDefinition tblDef = new TableDefinition(tblName,  td, Arrays.asList("a1"));
+        ydb.createTable(tblDef);
+        
+    }
+    ByteBuf encode(MessageLite... msgl) throws IOException {
+        ByteBuf buf = Unpooled.buffer();
+        ByteBufOutputStream bufstream = new ByteBufOutputStream(buf);
+        for(MessageLite msg: msgl) {
+            msg.writeDelimitedTo(bufstream);
+        }
+        bufstream.close();
+        return buf;
     }
 }

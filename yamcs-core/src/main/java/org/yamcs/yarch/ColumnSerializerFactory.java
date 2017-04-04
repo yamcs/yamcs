@@ -4,7 +4,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,14 +51,20 @@ public class ColumnSerializerFactory {
         DataType type = cd.getType();
         if(type.val==_type.ENUM) {
             return new EnumColumnSerializer(tblDef, cd);
+        } else if(type.val==_type.PROTOBUF) {
+            return getProtobufSerializer(cd);
         } else {
-            return getColumnSerializer(cd);
+            return getBasicColumnSerializer(cd.getType());
         }
     }
     
+    /**
+     * returns a column serializer for basic types
+     * @param cd
+     * @return
+     */
     @SuppressWarnings("incomplete-switch")
-    public static ColumnSerializer<?> getColumnSerializer(ColumnDefinition cd) {
-        DataType type = cd.getType();
+    public static ColumnSerializer<?> getBasicColumnSerializer(DataType type) {
         switch(type.val) {
         case BOOLEAN:
             return BOOLEAN_CS;
@@ -77,18 +82,15 @@ public class ColumnSerializerFactory {
             return STRING_CS;
         case BINARY:
             return BINARY_CS;
-        case PROTOBUF:
-            return getProtobufSerializer(cd);
         case LIST:
         case TUPLE:
             //TODO
             throw new RuntimeException("List and Tuple not implemented");
         }
-        throw new IllegalStateException();
+        throw new IllegalArgumentException("' "+type+" is not a basic type");
     }
     
-    
-  static private ColumnSerializer<?> getProtobufSerializer(ColumnDefinition cd) {
+    static public ColumnSerializer<?> getProtobufSerializer(ColumnDefinition cd) {
         String className = cd.getType().getClassName();
        
         synchronized(protoSerialziers) {

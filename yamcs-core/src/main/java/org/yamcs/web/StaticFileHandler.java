@@ -31,11 +31,13 @@ import io.netty.channel.ChannelProgressiveFuture;
 import io.netty.channel.ChannelProgressiveFutureListener;
 import io.netty.channel.DefaultFileRegion;
 import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpHeaders.Names;
+import io.netty.handler.codec.http.HttpChunkedInput;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedFile;
@@ -91,7 +93,7 @@ public class StaticFileHandler extends RouteHandler {
         }
 
         // Cache Validation
-        String ifModifiedSince = req.headers().get(HttpHeaders.Names.IF_MODIFIED_SINCE);
+        String ifModifiedSince = req.headers().get(HttpHeaderNames.IF_MODIFIED_SINCE);
         if (ifModifiedSince != null && !ifModifiedSince.equals("")) {
             SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
             Date ifModifiedSinceDate;
@@ -105,7 +107,7 @@ public class StaticFileHandler extends RouteHandler {
                     return;
                 }
             } catch (ParseException e) {
-                log.debug("Cannot parse {} header'{}'", HttpHeaders.Names.IF_MODIFIED_SINCE, ifModifiedSince);
+                log.debug("Cannot parse {} header'{}'", HttpHeaderNames.IF_MODIFIED_SINCE, ifModifiedSince);
             }
         }
 
@@ -119,15 +121,15 @@ public class StaticFileHandler extends RouteHandler {
         long fileLength = raf.length();
 
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
-        HttpHeaders.setContentLength(response, fileLength);
+        HttpUtil.setContentLength(response, fileLength);
         setContentTypeHeader(response, file);
         setDateAndCacheHeaders(response, file);
-        if (HttpHeaders.isKeepAlive(req)) {
-            response.headers().set(Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+        if (HttpUtil.isKeepAlive(req)) {
+            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
         }
-        //System.out.println("sending response: "+response);
+        HttpUtil.setTransferEncodingChunked(response, true);
         // Write the initial line and the header.
-        ctx.write(response);
+        ctx.writeAndFlush(response);
 
         // Write the content.
         ChannelFuture sendFileFuture;
@@ -137,18 +139,15 @@ public class StaticFileHandler extends RouteHandler {
             // Write the end marker.
             lastContentFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         } else {
-            //to be replaced with HttpChunkedInput when netty is upgraded.
-            sendFileFuture = ctx.writeAndFlush(new ChunkedFile(raf, 0, fileLength, 8192),  ctx.newProgressivePromise());
-            // the HttpChunkedInput will take care of the end marker so the next line can be replaced with this one:
-            // HttpChunkedInput will write the end marker (LastHttpContent) for us.
-            //lastContentFuture = sendFileFuture;
-            lastContentFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+            sendFileFuture = ctx.writeAndFlush(new HttpChunkedInput(new ChunkedFile(raf, 0, fileLength, 8192)),  ctx.newProgressivePromise());
+            lastContentFuture = sendFileFuture;
         }
 
         final File finalFile = file;
         sendFileFuture.addListener(new ChannelProgressiveFutureListener() {
             @Override
             public void operationProgressed(ChannelProgressiveFuture future, long progress, long total) {
+                System.out.println("progress: "+progress);
                 if (log.isTraceEnabled()) {
                     if (total < 0) { // total unknown
                         log.trace(future.channel() + " Transfer progress: " + progress);
@@ -166,12 +165,12 @@ public class StaticFileHandler extends RouteHandler {
             }
         });
 
-        log.info("{} {} 200", req.getMethod(), req.getUri());
-        if (!HttpHeaders.isKeepAlive(req)) {
+        log.info("{} {} 200", req.method(), req.uri());
+        if (!HttpUtil.isKeepAlive(req)) {
             lastContentFuture.addListener(ChannelFutureListener.CLOSE);
         }
     }
-
+    
 
     /**
      * Sets the content type header for the HTTP Response
@@ -180,7 +179,7 @@ public class StaticFileHandler extends RouteHandler {
      *            file to extract content type
      */
     private static void setContentTypeHeader(HttpResponse response, File file) {
-        response.headers().set(Names.CONTENT_TYPE, mimeTypesMap.getContentType(file.getPath()));
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, mimeTypesMap.getContentType(file.getPath()));
     }
 
     /**
@@ -195,13 +194,13 @@ public class StaticFileHandler extends RouteHandler {
 
         // Date header
         Calendar time = new GregorianCalendar();
-        response.headers().set(Names.DATE, dateFormatter.format(time.getTime()));
+        response.headers().set(HttpHeaderNames.DATE, dateFormatter.format(time.getTime()));
 
         // Add cache headers
         time.add(Calendar.SECOND, HTTP_CACHE_SECONDS);
-        response.headers().set(Names.EXPIRES, dateFormatter.format(time.getTime()));
-        response.headers().set(Names.CACHE_CONTROL, "private, max-age=" + HTTP_CACHE_SECONDS);
-        response.headers().set(Names.LAST_MODIFIED, dateFormatter.format(new Date(fileToCache.lastModified())));
+        response.headers().set(HttpHeaderNames.EXPIRES, dateFormatter.format(time.getTime()));
+        response.headers().set(HttpHeaderNames.CACHE_CONTROL, "private, max-age=" + HTTP_CACHE_SECONDS);
+        response.headers().set(HttpHeaderNames.LAST_MODIFIED, dateFormatter.format(new Date(fileToCache.lastModified())));
     }
 
 
@@ -211,7 +210,7 @@ public class StaticFileHandler extends RouteHandler {
     private void sendNotModified(ChannelHandlerContext ctx, HttpRequest req) {
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.NOT_MODIFIED);
         setDateHeader(response);
-        log.info("{} {} 304", req.getMethod(), req.getUri());
+        log.info("{} {} 304", req.method(), req.uri());
         // Close the connection as soon as the error message is sent.
         ctx.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
@@ -224,7 +223,6 @@ public class StaticFileHandler extends RouteHandler {
                 path.startsWith(".") || path.endsWith(".")) {
             return null;
         }
-
         return path;
     }
 }

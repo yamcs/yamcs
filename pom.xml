@@ -48,7 +48,7 @@
       
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <artemisVersion>1.5.1</artemisVersion>
+    <artemisVersion>1.5.4</artemisVersion>
     <sonar.exclusions>
       **/me/lemire/integercompression/**,
       **/org/yamcs/protobuf/**,

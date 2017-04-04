@@ -14,7 +14,6 @@ import org.yamcs.TimeInterval;
 import org.yamcs.api.MediaType;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
-import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
@@ -28,11 +27,12 @@ import com.google.protobuf.MessageLite;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpHeaders.Names;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.ssl.SslHandler;
+import io.netty.util.AsciiString;
 import io.protostuff.JsonIOUtil;
 import io.protostuff.Schema;
 
@@ -79,7 +79,7 @@ public class RestRequest {
     }
     
     public String getRouteParam(String name) {
-        return routeMatch.regexMatch.group(name);
+        return routeMatch.getRouteParam(name);
     }
     
     /**
@@ -129,7 +129,7 @@ public class RestRequest {
         return httpRequest.headers().contains(name);
     }
     
-    public String getHeader(String name) {
+    public String getHeader(AsciiString name) {
         return httpRequest.headers().get(name);
     }
     
@@ -164,8 +164,8 @@ public class RestRequest {
                 return mediaType.is(getQueryParameter("format"));
             }
         } else {
-            return getHttpRequest().headers().contains(Names.ACCEPT)
-                    && mediaType.is(getHttpRequest().headers().get(Names.ACCEPT));
+            return getHttpRequest().headers().contains(HttpHeaderNames.ACCEPT)
+                    && mediaType.is(getHttpRequest().headers().get(HttpHeaderNames.ACCEPT));
         }
     }
     
@@ -312,7 +312,7 @@ public class RestRequest {
     }
     
     public boolean hasBody() {
-        return HttpHeaders.getContentLength(httpRequest) > 0;
+        return HttpUtil.getContentLength(httpRequest) > 0;
     }
     
     /**
@@ -330,7 +330,7 @@ public class RestRequest {
         InputStream cin = bodyAsInputStream();
         T msg = sourceSchema.newMessage();
         // Allow for empty body, otherwise user has to specify '{}'
-        if (HttpHeaders.getContentLength(httpRequest) > 0) {
+        if (HttpUtil.getContentLength(httpRequest) > 0) {
             try {
                 if (MediaType.PROTOBUF.equals(sourceContentType)) {
                     msg.mergeFrom(cin);
@@ -356,23 +356,26 @@ public class RestRequest {
      * BINARY in that order.
      */
     public MediaType deriveSourceContentType() {
-        if (httpRequest.headers().contains(Names.CONTENT_TYPE)) {
-            String declaredContentType = httpRequest.headers().get(Names.CONTENT_TYPE);
-            if (MediaType.JSON.is(declaredContentType)) {
-                return MediaType.JSON;
-            } else if (MediaType.PROTOBUF.is(declaredContentType)) {
-                return MediaType.PROTOBUF;
-            }
+        return deriveSourceContentType(httpRequest);
+    }
+    
+    public static MediaType deriveSourceContentType(HttpRequest httpRequest) {
+        if (httpRequest.headers().contains(HttpHeaderNames.CONTENT_TYPE)) {
+            String declaredContentType = httpRequest.headers().get(HttpHeaderNames.CONTENT_TYPE);
+            return MediaType.from(declaredContentType);
         }
 
         // Assume default for simplicity
         return MediaType.JSON;
     }
 
+    
     /**
      * Derives an applicable content type for the output. This tries to match
      * JSON or BINARY media types with the ACCEPT header, else it will revert to
      * the (derived) source content type.
+     *
+     * @return the content type that will be used for the response message
      */
     public MediaType deriveTargetContentType() {
         return deriveTargetContentType(httpRequest);
@@ -380,28 +383,25 @@ public class RestRequest {
     
     
     public static MediaType deriveTargetContentType(HttpRequest httpRequest) {
-        if (httpRequest.headers().contains(Names.ACCEPT)) {
-            String acceptedContentType = httpRequest.headers().get(Names.ACCEPT);
-            if (MediaType.JSON.is(acceptedContentType)) {
-                return MediaType.JSON;
-            } else if (MediaType.PROTOBUF.is(acceptedContentType)) {
-                return MediaType.PROTOBUF;
-            }
-        } else if (httpRequest.headers().contains(Names.CONTENT_TYPE)) {
-            String declaredContentType = httpRequest.headers().get(Names.CONTENT_TYPE);
-            if (MediaType.JSON.is(declaredContentType)) {
-                return MediaType.JSON;
-            } else if (MediaType.PROTOBUF.is(declaredContentType)) {
-                return MediaType.PROTOBUF;
-            }
+        MediaType mt = MediaType.JSON;
+        if (httpRequest.headers().contains(HttpHeaderNames.ACCEPT)) {
+            String acceptedContentType = httpRequest.headers().get(HttpHeaderNames.ACCEPT);
+            mt =  MediaType.from(acceptedContentType);
+        } else if (httpRequest.headers().contains(HttpHeaderNames.CONTENT_TYPE)) {
+            String declaredContentType = httpRequest.headers().get(HttpHeaderNames.CONTENT_TYPE);
+            mt =  MediaType.from(declaredContentType);
         }
-        //if none of accept or content_type specified, just assume JSON
-        return MediaType.JSON;
+        
+        //we only support one of these two for the output, so just force JSON by default        
+        if(mt!=MediaType.JSON && mt!=MediaType.PROTOBUF) {
+            mt = MediaType.JSON;
+        }
+        return mt;
     }
     
     public String getBaseURL() {
         String scheme = isSSL() ? "https://" : "http://";
-        String host = getHeader(HttpHeaders.Names.HOST);
+        String host = getHeader(HttpHeaderNames.HOST);
         return (host != null) ? scheme + host : "";
     }
     

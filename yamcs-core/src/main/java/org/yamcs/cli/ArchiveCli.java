@@ -6,7 +6,7 @@ import com.beust.jcommander.Parameters;
 
 
 /**
- * Command line utility for doing archive operations
+ * Command line utility for doing general archive operations
  * 
  * @author nm
  *

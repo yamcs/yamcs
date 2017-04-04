@@ -26,207 +26,204 @@ import org.yamcs.utils.TimeEncoding;
 
 public class SimulationPpProviderTest {
 
-	private static final String DATA_SCENARIO1 = "src/test/resources/simulation_data.xml";
-	private static final String DATA_SCENARIO2 = "src/test/resources/simulation_data2.xml";
-	private static final String DATA_SCENARIO_DATE = "src/test/resources/simulation_data_date.xml";
+    private static final String DATA_SCENARIO1 = "src/test/resources/simulation_data.xml";
+    private static final String DATA_SCENARIO2 = "src/test/resources/simulation_data2.xml";
+    private static final String DATA_SCENARIO_DATE = "src/test/resources/simulation_data_date.xml";
 
-	@BeforeClass
-	public static void beforeClass() {
-	    TimeEncoding.setUp();
-	}
-	@Test
-	public void LoadSimulationData_loadOk() {
+    @BeforeClass
+    public static void beforeClass() {
+        TimeEncoding.setUp();
+    }
+    @Test
+    public void LoadSimulationData_loadOk() {
 
-		// Arrange
-		String fileName = DATA_SCENARIO1;
-		SimulationPpProvider target = new SimulationPpProvider();
+        // Arrange
+        String fileName = DATA_SCENARIO1;
+        SimulationPpProvider target = new SimulationPpProvider();
 
-		// Act
-		PpSimulation ppSimulation = target.LoadSimulationData(fileName);
+        // Act
+        PpSimulation ppSimulation = target.loadSimulationData(fileName);
 
-		// Assert
-		assertTrue(ppSimulation != null);
+        // Assert
+        assertTrue(ppSimulation != null);
 
-	}
+    }
 
-	@Test
-	public void CreateXml() throws JAXBException {
-		try {
-			// ARRANGE
-			File file = new File("src/test/resources/genTest.xml");
-			JAXBContext jaxbContext = JAXBContext
-					.newInstance(PpSimulation.class);
-			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+    @Test
+    public void CreateXml() throws JAXBException {
+        try {
+            // ARRANGE
+            File file = new File("src/test/resources/genTest.xml");
+            JAXBContext jaxbContext = JAXBContext
+                    .newInstance(PpSimulation.class);
+            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+            jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
-			// ACT
-			ObjectFactory of = new ObjectFactory();
-			PpSimulation ppSimulation = of.createPpSimulation();
-			PpSimulation.ParameterSequence paramSequence1 = new PpSimulation.ParameterSequence();
-			PpSimulation.ParameterSequence.Parameter parameter1 = new PpSimulation.ParameterSequence.Parameter();
-			parameter1.setSpaceSystem("APM");
-			parameter1.setAquisitionStep(1);
-			parameter1.setGenerationStep(2);
-			parameter1.setParaName("SOLAR_toto");
-			paramSequence1.getParameter().add(parameter1);
-			ppSimulation.getParameterSequence().add(paramSequence1);
-			jaxbMarshaller.marshal(ppSimulation, file);
-			jaxbMarshaller.marshal(ppSimulation, System.out);
-		} catch (Exception e) {
-			// ASSERT
-			assertFalse(e.toString(), true);
-		}
-	}
+            // ACT
+            ObjectFactory of = new ObjectFactory();
+            PpSimulation ppSimulation = of.createPpSimulation();
+            PpSimulation.ParameterSequence paramSequence1 = new PpSimulation.ParameterSequence();
+            PpSimulation.ParameterSequence.Parameter parameter1 = new PpSimulation.ParameterSequence.Parameter();
+            parameter1.setSpaceSystem("APM");
+            parameter1.setAquisitionStep(1);
+            parameter1.setGenerationStep(2);
+            parameter1.setParaName("SOLAR_toto");
+            paramSequence1.getParameter().add(parameter1);
+            ppSimulation.getParameterSequence().add(paramSequence1);
+            jaxbMarshaller.marshal(ppSimulation, file);
+            jaxbMarshaller.marshal(ppSimulation, System.out);
+        } catch (Exception e) {
+            // ASSERT
+            assertFalse(e.toString(), true);
+        }
+    }
 
-	@Test
-	public void ProcessSimulationData_Scenario1() {
-		// Arrange
-		SimulationPpProvider target = new SimulationPpProvider() {
-			@Override
-			public boolean IsRunning() {
-				return true;
-			}
-		};
-		target.SetSimulationData(DATA_SCENARIO1);
-		FakePpListener ppListener = new FakePpListener();
-		target.setParameterSink(ppListener);
-		target.enable();
+    @Test
+    public void ProcessSimulationData_Scenario1() {
+        // Arrange
+        SimulationPpProvider target = new SimulationPpProvider() {
+            public boolean IsRunning() {
+                return true;
+            }
+        };
+        target.setSimulationData(DATA_SCENARIO1);
+        FakePpListener ppListener = new FakePpListener();
+        target.setParameterSink(ppListener);
+        target.enable();
 
-		// Act
-		target.ProcessSimulationData();
+        // Act
+        target.processSimulationData();
 
-		// Assert
-		assertTrue(ppListener.receivedValue.size() == 21);
-		// check values
-		assertTrue(ppListener.receivedValue.get(0).getEngValue()
-				.getFloatValue() == (float) 1.1);
-		assertTrue(ppListener.receivedValue.get(1).getEngValue()
-				.getFloatValue() == (float) 1.2);
-		assertTrue(ppListener.receivedValue.get(2).getEngValue()
-				.getFloatValue() == (float) 2.1);
-		assertTrue(ppListener.receivedValue.get(3).getEngValue()
-				.getFloatValue() == (float) 3.5);
-		assertTrue(ppListener.receivedValue.get(4).getEngValue()
-				.getFloatValue() == (float) 1.1);
-		assertTrue(ppListener.receivedValue.get(5).getEngValue()
-				.getFloatValue() == (float) 1.2);
-		assertTrue(ppListener.receivedValue.get(6).getEngValue()
-				.getFloatValue() == (float) 2.1);
-		assertTrue(ppListener.receivedValue.get(7).getEngValue()
-				.getFloatValue() == (float) 3.5);
-		// check generation time
-		assertTrue(ppListener.receivedValue.get(0).getGenerationTime() == ppListener.receivedValue
-				.get(1).getGenerationTime());
-		assertTrue(ppListener.receivedValue.get(4).getGenerationTime() == ppListener.receivedValue
-				.get(5).getGenerationTime());
-		assertTrue(ppListener.receivedValue.get(2).getGenerationTime()
-				- ppListener.receivedValue.get(1).getGenerationTime() == 2);
-		assertTrue(ppListener.receivedValue.get(2).getGenerationTime()
-				- ppListener.receivedValue.get(1).getGenerationTime() == 2);
-		assertTrue(ppListener.receivedValue.get(18).getGenerationTime()
-				- ppListener.receivedValue.get(1).getGenerationTime() == 30);
-		assertTrue(ppListener.receivedValue.get(20).getGenerationTime()
-				- ppListener.receivedValue.get(1).getGenerationTime() == 42);
+        // Assert
+        assertEquals(21, ppListener.receivedValue.size());
+        // check values
+        assertTrue(ppListener.receivedValue.get(0).getEngValue()
+                .getFloatValue() == (float) 1.1);
+        assertTrue(ppListener.receivedValue.get(1).getEngValue()
+                .getFloatValue() == (float) 1.2);
+        assertTrue(ppListener.receivedValue.get(2).getEngValue()
+                .getFloatValue() == (float) 2.1);
+        assertTrue(ppListener.receivedValue.get(3).getEngValue()
+                .getFloatValue() == (float) 3.5);
+        assertTrue(ppListener.receivedValue.get(4).getEngValue()
+                .getFloatValue() == (float) 1.1);
+        assertTrue(ppListener.receivedValue.get(5).getEngValue()
+                .getFloatValue() == (float) 1.2);
+        assertTrue(ppListener.receivedValue.get(6).getEngValue()
+                .getFloatValue() == (float) 2.1);
+        assertTrue(ppListener.receivedValue.get(7).getEngValue()
+                .getFloatValue() == (float) 3.5);
+        // check generation time
+        assertTrue(ppListener.receivedValue.get(0).getGenerationTime() == ppListener.receivedValue
+                .get(1).getGenerationTime());
+        assertTrue(ppListener.receivedValue.get(4).getGenerationTime() == ppListener.receivedValue
+                .get(5).getGenerationTime());
+        assertTrue(ppListener.receivedValue.get(2).getGenerationTime()
+                - ppListener.receivedValue.get(1).getGenerationTime() == 2);
+        assertTrue(ppListener.receivedValue.get(2).getGenerationTime()
+                - ppListener.receivedValue.get(1).getGenerationTime() == 2);
+        assertTrue(ppListener.receivedValue.get(18).getGenerationTime()
+                - ppListener.receivedValue.get(1).getGenerationTime() == 30);
+        assertTrue(ppListener.receivedValue.get(20).getGenerationTime()
+                - ppListener.receivedValue.get(1).getGenerationTime() == 42);
 
-		// check monitoring result
-		assertEquals(MonitoringResult.WARNING, ppListener.receivedValue.get(20).getMonitoringResult());
-		assertEquals(RangeCondition.HIGH, ppListener.receivedValue.get(20).getRangeCondition());
-	}
+        // check monitoring result
+        assertEquals(MonitoringResult.WARNING, ppListener.receivedValue.get(20).getMonitoringResult());
+        assertEquals(RangeCondition.HIGH, ppListener.receivedValue.get(20).getRangeCondition());
+    }
 
-	@Test
-	public void ProcessSimulationData_Scenario2() {
+    @Test
+    public void ProcessSimulationData_Scenario2() {
 
-		// Arrange
-		SimulationPpProvider target = new SimulationPpProvider() {
-			@Override
-			public boolean IsRunning() {
-				return true;
-			}
-		};
-		target.SetSimulationData(DATA_SCENARIO2);
-		FakePpListener ppListener = new FakePpListener();
-		target.setParameterSink(ppListener);
-		target.enable();
+        // Arrange
+        SimulationPpProvider target = new SimulationPpProvider() {
+            public boolean IsRunning() {
+                return true;
+            }
+        };
+        target.setSimulationData(DATA_SCENARIO2);
+        FakePpListener ppListener = new FakePpListener();
+        target.setParameterSink(ppListener);
+        target.enable();
 
-		// Act
-		target.ProcessSimulationData();
+        // Act
+        target.processSimulationData();
 
-		// Assert
-		assertTrue(ppListener.receivedValue.size() == 52);
-	}
+        // Assert
+        assertTrue(ppListener.receivedValue.size() == 52);
+    }
 
-	@Test
-	public void ProcessSimulationData_Date() {
+    @Test
+    public void ProcessSimulationData_Date() {
 
-		// Arrange
-		SimulationPpProvider target = new SimulationPpProvider() {
-			@Override
-			public boolean IsRunning() {
-				return true;
-			}
-		};
-		target.SetSimulationData(DATA_SCENARIO_DATE);
-		FakePpListener ppListener = new FakePpListener();
-		target.setParameterSink(ppListener);
-		target.enable();
+        // Arrange
+        SimulationPpProvider target = new SimulationPpProvider() {
+            public boolean IsRunning() {
+                return true;
+            }
+        };
+        target.setSimulationData(DATA_SCENARIO_DATE);
+        FakePpListener ppListener = new FakePpListener();
+        target.setParameterSink(ppListener);
+        target.enable();
 
-		// Act
-		long dateStart = TimeEncoding.getWallclockTime();
-		target.ProcessSimulationData();
-		long dateEnd = TimeEncoding.getWallclockTime();
+        // Act
+        long dateStart = TimeEncoding.getWallclockTime();
+        target.processSimulationData();
+        long dateEnd = TimeEncoding.getWallclockTime();
 
-		// Assert
-		assertTrue(ppListener.receivedValue.size() == 2);
-		assertTrue(ppListener.receivedValue.get(1).getGenerationTime() == ppListener.receivedValue.get(1).getAcquisitionTime() - 1500);
+        // Assert
+        assertTrue(ppListener.receivedValue.size() == 2);
+        assertTrue(ppListener.receivedValue.get(1).getGenerationTime() == ppListener.receivedValue.get(1).getAcquisitionTime() - 1500);
 
-		long elapsedTimeGen0 = ppListener.receivedValue.get(0).getGenerationTime() - dateStart;
-		long elapsedTimeAcqu0 = ppListener.receivedValue.get(0).getAcquisitionTime() - dateStart;
-		
-		
-		assertTrue(0 <= elapsedTimeGen0 && elapsedTimeGen0 < 200);
-		assertTrue(1300 < elapsedTimeAcqu0 && elapsedTimeAcqu0 < 1600);
+        long elapsedTimeGen0 = ppListener.receivedValue.get(0).getGenerationTime() - dateStart;
+        long elapsedTimeAcqu0 = ppListener.receivedValue.get(0).getAcquisitionTime() - dateStart;
 
-		long elapsedTimeGen1 = ppListener.receivedValue.get(1).getGenerationTime() - dateStart;
-		long elapsedTimeAcqu1 = ppListener.receivedValue.get(1).getAcquisitionTime() - dateStart;
-		
-		assertTrue(1900 < elapsedTimeGen1 && elapsedTimeGen1 < 2100);
-		assertTrue(3400 < elapsedTimeAcqu1 && elapsedTimeAcqu1 < 3600);
 
-		assertTrue((dateEnd - dateStart) >= elapsedTimeAcqu1);
-	}
-	
-	
+        assertTrue(0 <= elapsedTimeGen0 && elapsedTimeGen0 < 200);
+        assertTrue(1300 < elapsedTimeAcqu0 && elapsedTimeAcqu0 < 1600);
 
-	class FakePpListener implements ParameterSink {
-		public List<ParameterValue> receivedValue;
+        long elapsedTimeGen1 = ppListener.receivedValue.get(1).getGenerationTime() - dateStart;
+        long elapsedTimeAcqu1 = ppListener.receivedValue.get(1).getAcquisitionTime() - dateStart;
 
-		public FakePpListener() {
-			receivedValue = new ArrayList<ParameterValue>();
-		}
+        assertTrue(1900 < elapsedTimeGen1 && elapsedTimeGen1 < 2100);
+        assertTrue(3400 < elapsedTimeAcqu1 && elapsedTimeAcqu1 < 3600);
 
-		@Override
-		public void updatePps(long gentime, String group, int seqNum,
-				Collection<ParameterValue> params) {
-			receivedValue.addAll(params);
-		}
+        assertTrue((dateEnd - dateStart) >= elapsedTimeAcqu1);
+    }
+
+
+
+    class FakePpListener implements ParameterSink {
+        public List<ParameterValue> receivedValue;
+
+        public FakePpListener() {
+            receivedValue = new ArrayList<ParameterValue>();
+        }
+
+        @Override
+        public void updatePps(long gentime, String group, int seqNum,
+                Collection<ParameterValue> params) {
+            receivedValue.addAll(params);
+        }
 
         @Override
         public void updateParams(long gentime, String group, int seqNum, Collection<Pvalue.ParameterValue> params) {
         }
 
-		@Override
+        @Override
         public String toString() {
-			String result = "";
-			long firstGenerationTime = 0;
-			for (ParameterValue pv : receivedValue) {
-				if (firstGenerationTime == 0)
-					firstGenerationTime = pv.getGenerationTime();
-				result += "(" + pv.getEngValue().getFloatValue() + ", "
-						+ (pv.getGenerationTime() - firstGenerationTime) + ") ";
-			}
-			return result;
-		}
+            String result = "";
+            long firstGenerationTime = 0;
+            for (ParameterValue pv : receivedValue) {
+                if (firstGenerationTime == 0)
+                    firstGenerationTime = pv.getGenerationTime();
+                result += "(" + pv.getEngValue().getFloatValue() + ", "
+                        + (pv.getGenerationTime() - firstGenerationTime) + ") ";
+            }
+            return result;
+        }
 
-	}
+    }
 
 }

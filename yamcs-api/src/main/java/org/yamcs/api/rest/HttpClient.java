@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +26,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -39,16 +39,20 @@ import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ClientCookieEncoder;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.DefaultHttpRequest;
 import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpContentDecompressor;
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.protostuff.JsonIOUtil;
@@ -57,7 +61,6 @@ import io.protostuff.Schema;
 public class HttpClient {
     MediaType sendMediaType = MediaType.PROTOBUF;
     MediaType acceptMediaType = MediaType.PROTOBUF;
-    URI uri;
     EventLoopGroup group;
     private List<Cookie> cookies;
 
@@ -65,10 +68,13 @@ public class HttpClient {
 
 
     public CompletableFuture<byte[]> doAsyncRequest(String url, HttpMethod httpMethod, byte[] body, AuthenticationToken authToken) throws URISyntaxException {
+        URI uri = new URI(url);
         AccumulatingChannelHandler channelHandler = new AccumulatingChannelHandler();
 
-        ChannelFuture chf = setupChannel(url ,channelHandler);
-        HttpRequest request = setupRequest(url, httpMethod, body, authToken);
+        ChannelFuture chf = setupChannel(uri, channelHandler);
+       
+        HttpRequest request = setupRequest(uri, httpMethod, body, authToken);
+
         CompletableFuture<byte[]> cf = new CompletableFuture<byte[]>();
         chf.addListener(f->{
             if(!f.isSuccess()) {
@@ -88,7 +94,7 @@ public class HttpClient {
                     cf.complete(new byte[0]);
                 } else {
                     HttpResponse resp = channelHandler.httpResponse;
-                    if(resp.getStatus().code() != HttpResponseStatus.OK.code()) {
+                    if(resp.status().code() != HttpResponseStatus.OK.code()) {
                         Exception exception = decodeException(resp, getByteArray(channelHandler.result));
                         cf.completeExceptionally(exception);
                     } else {
@@ -101,8 +107,30 @@ public class HttpClient {
         return cf;
     }
 
+    public CompletableFuture<BulkRestDataSender> doBulkSendRequest(String url, HttpMethod httpMethod, AuthenticationToken authToken) throws URISyntaxException {
+        URI uri = new URI(url);
+        CompletableFuture<BulkRestDataSender> cf = new CompletableFuture<BulkRestDataSender>();
+        BulkRestDataSender.ContinuationHandler chandler = new BulkRestDataSender.ContinuationHandler(cf);
 
-    private static YamcsApiException decodeException( HttpObject httpObj, byte[] data) throws IOException {
+        ChannelFuture chf = setupChannel(uri, chandler);
+        HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, httpMethod, getPathWithQuery(uri));
+        fillInHeaders(request, uri, authToken);
+        request.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);    
+        HttpUtil.set100ContinueExpected(request, true);
+        
+        chf.addListener(f->{
+            if(!f.isSuccess()) {
+                cf.completeExceptionally(f.cause());
+                return;
+            }
+            chf.channel().writeAndFlush(request);
+        });
+
+        return cf;
+    }
+
+
+    static YamcsApiException decodeException(HttpObject httpObj, byte[] data) throws IOException {
         YamcsApiException exception;
         if(httpObj instanceof DefaultHttpResponse) {
             if(httpObj instanceof DefaultFullHttpResponse) {
@@ -111,7 +139,7 @@ public class HttpClient {
             }
             DefaultHttpResponse resp = (DefaultHttpResponse) httpObj;
             if(data!=null) {
-                String contentType = resp.headers().get(HttpHeaders.Names.CONTENT_TYPE);
+                String contentType = resp.headers().get(HttpHeaderNames.CONTENT_TYPE);
                 if(MediaType.JSON.is(contentType)) {
                     RestExceptionMessage msg =  fromJson(new String(data), SchemaWeb.RestExceptionMessage.MERGE).build();
                     exception = new YamcsApiException(msg.getType()+" : "+msg.getMsg());
@@ -122,7 +150,7 @@ public class HttpClient {
                     exception = new YamcsApiException(new String(data));    
                 }
             } else {
-                exception = new YamcsApiException("Received http response: "+resp.getStatus());
+                exception = new YamcsApiException("Received http response: "+resp.status());
             }
         } else {
             exception = new YamcsApiException("Received http response: "+httpObj);
@@ -130,6 +158,28 @@ public class HttpClient {
         return exception;
 
     }
+    
+    static YamcsApiException decodeException(FullHttpResponse fullResp) throws IOException {
+        YamcsApiException exception;
+        
+        byte[] data = getByteArray(fullResp.content());
+        if(data!=null) {
+            String contentType = fullResp.headers().get(HttpHeaderNames.CONTENT_TYPE);
+            if(MediaType.JSON.is(contentType)) {
+                RestExceptionMessage msg =  fromJson(new String(data), SchemaWeb.RestExceptionMessage.MERGE).build();
+                exception = new YamcsApiException(msg.getType()+" : "+msg.getMsg());
+            } else if (MediaType.PROTOBUF.is(contentType)) {
+                RestExceptionMessage msg = RestExceptionMessage.parseFrom(data);
+                exception = new YamcsApiException(msg.getType()+" : "+msg.getMsg());
+            } else {
+                exception = new YamcsApiException(new String(data));    
+            }
+        } else {
+            exception = new YamcsApiException("Received http response: "+fullResp.status());
+        }
+        return exception;
+    }
+    
     /**
      * Sets the maximum size of the responses - this is not applicable to bulk requests whose response is practically unlimited and delivered piece by piece
      * @param length
@@ -148,14 +198,19 @@ public class HttpClient {
      * @return a future indicating when the operation is completed.
      * @throws URISyntaxException
      */
-    public CompletableFuture<Void> doBulkRequest(String url, HttpMethod httpMethod, byte[] body, AuthenticationToken authToken, BulkRestDataReceiver receiver) throws URISyntaxException {
+    public CompletableFuture<Void> doBulkReceiveRequest(String url, HttpMethod httpMethod, byte[] body, AuthenticationToken authToken, BulkRestDataReceiver receiver) throws URISyntaxException {
+        URI uri = new URI(url);
         BulkChannelHandler channelHandler = new BulkChannelHandler(receiver);
 
-        ChannelFuture chf = setupChannel(url ,channelHandler);
-        HttpRequest request = setupRequest(url, httpMethod, body, authToken);
+        ChannelFuture chf = setupChannel(uri, channelHandler);
+        HttpRequest request = setupRequest(uri, httpMethod, body, authToken);
         CompletableFuture<Void> cf = new CompletableFuture<Void>();
 
-        chf.addListener(f->{
+        chf.addListener(f-> {
+            if(!f.isSuccess()) {
+                cf.completeExceptionally(f.cause());
+                return;
+            }
             Channel ch = chf.channel();
             ch.writeAndFlush(request);
             ChannelFuture closeFuture = ch.closeFuture();
@@ -177,11 +232,10 @@ public class HttpClient {
     }
 
     public CompletableFuture<Void> doBulkRequest(String url, HttpMethod httpMethod, String body, AuthenticationToken authToken, BulkRestDataReceiver receiver) throws URISyntaxException {
-        return doBulkRequest(url, httpMethod, body.getBytes(), authToken, receiver);
+        return doBulkReceiveRequest(url, httpMethod, body.getBytes(), authToken, receiver);
     }
 
-    private ChannelFuture setupChannel(String url, SimpleChannelInboundHandler<HttpObject> channelHandler) throws URISyntaxException {
-        uri = new URI(url);
+    private ChannelFuture setupChannel(URI uri, ChannelHandler channelHandler) {
         String scheme = uri.getScheme() == null? "http" : uri.getScheme();
         String host = uri.getHost() == null? "127.0.0.1" : uri.getHost();
         int port = uri.getPort();
@@ -212,32 +266,16 @@ public class HttpClient {
         return b.connect(host, port);
     }
 
-
-    private HttpRequest setupRequest(String url, HttpMethod httpMethod, byte[] body, AuthenticationToken authToken) throws URISyntaxException {
-        uri = new URI(url);
+    private void fillInHeaders(HttpRequest request, URI uri, AuthenticationToken authToken) throws URISyntaxException {
         String host = uri.getHost() == null? "127.0.0.1" : uri.getHost();
-        String fullUri = uri.getRawPath();
-        if (uri.getRawQuery() != null) {
-            fullUri += "?" + uri.getRawQuery();
-        }
-        ByteBuf content = null;
-        if(body!=null) {
-            content = Unpooled.copiedBuffer(body);
-        } else {
-            content = Unpooled.EMPTY_BUFFER;
-        }
-
-        HttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, httpMethod, fullUri, content);
-        request.headers().set(HttpHeaders.Names.HOST, host);
-        request.headers().set(HttpHeaders.Names.CONTENT_LENGTH, content.readableBytes());
-        request.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
-        request.headers().set(HttpHeaders.Names.CONTENT_TYPE, sendMediaType);
-        request.headers().set(HttpHeaders.Names.ACCEPT, acceptMediaType);
+        request.headers().set(HttpHeaderNames.HOST, host);
+        request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
+        request.headers().set(HttpHeaderNames.CONTENT_TYPE, sendMediaType);
+        request.headers().set(HttpHeaderNames.ACCEPT, acceptMediaType);
         if(cookies!=null) {
             String c = ClientCookieEncoder.STRICT.encode(cookies);
-            request.headers().set(HttpHeaders.Names.COOKIE, c);
+            request.headers().set(HttpHeaderNames.COOKIE, c);
         }
-        
         if(authToken != null) {
             if(authToken instanceof UsernamePasswordToken) {
                 UsernamePasswordToken up = (UsernamePasswordToken)authToken;
@@ -246,14 +284,30 @@ public class HttpClient {
                     credentialsClear += ":" + up.getPasswordS();
                 String credentialsB64 = new String(Base64.getEncoder().encode(credentialsClear.getBytes()));
                 String authorization = "Basic " + credentialsB64;
-                request.headers().set(HttpHeaders.Names.AUTHORIZATION, authorization);
+                request.headers().set(HttpHeaderNames.AUTHORIZATION, authorization);
             } else {
                 throw new RuntimeException(authToken.getClass()+" not supported");
             }
-        }
+        } 
+    }
+
+    private HttpRequest setupRequest(URI uri, HttpMethod httpMethod, byte[] body, AuthenticationToken authToken) throws URISyntaxException {
+        ByteBuf content = (body==null)? Unpooled.EMPTY_BUFFER:Unpooled.copiedBuffer(body);
+        HttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, httpMethod, getPathWithQuery(uri), content);
+        fillInHeaders(request, uri, authToken);
+        int length = body==null?0:body.length;
+        HttpUtil.setContentLength(request, length);
         return request;
     }
 
+    private String getPathWithQuery(URI uri) {
+        String r = uri.getRawPath();
+        if (uri.getRawQuery() != null) {
+            r += "?" + uri.getRawQuery();
+        }
+        return r;
+    }
+    
     public void addCookie(Cookie c) {
         if(cookies ==null) {
             cookies = new ArrayList<>();
@@ -342,7 +396,7 @@ public class HttpClient {
         public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws IOException {
             if (msg instanceof HttpResponse) {
                 HttpResponse resp = (HttpResponse) msg;
-                if(resp.getStatus().code()!=HttpResponseStatus.OK.code()) {
+                if(resp.status().code()!=HttpResponseStatus.OK.code()) {
                     exception = decodeException(msg, null);
                     receiver.receiveException(exception);
                     ctx.close();

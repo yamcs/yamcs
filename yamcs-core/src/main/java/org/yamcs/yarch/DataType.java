@@ -58,8 +58,14 @@ public class DataType {
       return td;
     }
     
-    public static DataType valueOf(String name) {
-        if(name==null) return null;
+    /**
+     * this is the inverse of {@link #name()}
+     * @param name
+     * @return the DataType corresponding to the name
+     * @throws IllegalArgumentException thrown in case the name is invalid
+     */
+    public static DataType valueOf(String name) throws IllegalArgumentException {
+        if(name==null) throw new NullPointerException();
         if("BYTE".equalsIgnoreCase(name))return BYTE;
         if("SHORT".equalsIgnoreCase(name))return SHORT;
         if("INT".equalsIgnoreCase(name))return INT;
@@ -71,7 +77,7 @@ public class DataType {
         if("ENUM".equalsIgnoreCase(name))return ENUM;
         if(name.toUpperCase().startsWith("PROTOBUF(")) return protobuf(name.substring(9, name.length()-1));
         
-        return null;
+        throw new IllegalArgumentException("invalid DataType '"+name+"'");
     }
     
     /*returns Int, Short, etc suitable to use as getInt(), getShort() on the Object*/
@@ -146,7 +152,8 @@ public class DataType {
             return val.name();
         }
     }
-
+    
+  
     public static DataType typeOf(Object v) {
         if(v instanceof Boolean) {
             return BOOLEAN;

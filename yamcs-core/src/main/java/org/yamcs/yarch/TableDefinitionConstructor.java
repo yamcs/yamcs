@@ -122,9 +122,9 @@ public class TableDefinitionConstructor  extends Constructor {
                 if(idx>TupleDefinition.MAX_COLS) throw new RuntimeException("got idx="+idx+" but max_cols="+TupleDefinition.MAX_COLS);
                 String name=(String)m.get("name");
                 if(name==null) throw new RuntimeException("name not specifie for column with index idx="+idx);
-                DataType type=DataType.valueOf((String)m.get("type"));
+                DataType type = DataType.valueOf((String)m.get("type"));
 
-                ColumnDefinition cd=new ColumnDefinition(name, type);
+                ColumnDefinition cd = new ColumnDefinition(name, type);
 
                 for(int i=cols.size();i<idx+1;i++) 	cols.add(null);
                 cols.set(idx, cd);

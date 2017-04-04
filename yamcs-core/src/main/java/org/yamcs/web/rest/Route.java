@@ -6,6 +6,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.yamcs.web.HttpRequestHandler;
+
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(Routes.class)
@@ -43,4 +45,14 @@ public @interface Route {
      * may need rework.
      */
     boolean priority() default false;
+    
+    /**
+     * Data load routes expect to receive a large body and they receive it piece by piece in HttpContent objects.
+     * 
+     * See {@link org.yamcs.web.rest.archive.ArchiveTableRestHandler#loadTableData(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.HttpRequest)} for an example on how to implement this.
+     * 
+     * For the normal routes (where dataLoad=false) the body is limited to {@link HttpRequestHandler#MAX_BODY_SIZE} bytes provided to the HttpObjectAgregator.  
+     * 
+     */
+    boolean dataLoad() default false;
 }

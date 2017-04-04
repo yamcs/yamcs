@@ -19,6 +19,6 @@ message Cell {
 
 message Row {
   //the column info is only present for new columns in a stream of Row messages
-  repeated ColumnInfo columns = 1; 
+  repeated ColumnInfo column = 1; 
   repeated Cell cell = 2;   
 }

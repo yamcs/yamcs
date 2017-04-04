@@ -106,7 +106,7 @@ public class ValueUtility {
     public static Object getYarchValue(org.yamcs.protobuf.Yamcs.Value v) {
         switch(v.getType()) {
         case BINARY:
-            return v.getBinaryValue();
+            return v.getBinaryValue().toByteArray();
         case SINT32:
             return v.getSint32Value();
         case UINT32:

@@ -6,6 +6,7 @@ import java.io.IOException;
 /**
  * Serializes column values to byte arrays (used as part of tables) and back
  * @author nm
+ * @param <T> 
  *
  */
 public interface ColumnSerializer<T> {
@@ -16,6 +17,8 @@ public interface ColumnSerializer<T> {
     T deserialize(java.io.DataInput stream) throws IOException ;
     
     /**
+     * @param stream 
+     * @param v 
      * @throws IOException
      */
     public void serialize(DataOutput stream, T v) throws IOException ;    

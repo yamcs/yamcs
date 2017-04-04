@@ -256,8 +256,6 @@ public final class SchemaMdb
             {
                 if(message.hasLevel())
                     output.writeString(1, message.getLevel().name(), false);
-                if(message.hasValue())
-                    output.writeInt64(2, message.getValue(), false);
                 if(message.hasLabel())
                     output.writeString(3, message.getLabel(), false);
             }
@@ -301,9 +299,6 @@ public final class SchemaMdb
                             return;
                         case 1:
                             builder.setLevel(org.yamcs.protobuf.Mdb.AlarmLevelType.valueOf(input.readString()));
-                            break;
-                        case 2:
-                            builder.setValue(input.readInt64());
                             break;
                         case 3:
                             builder.setLabel(input.readString());
@@ -349,7 +344,6 @@ public final class SchemaMdb
             switch(number)
             {
                 case 1: return "level";
-                case 2: return "value";
                 case 3: return "label";
                 default: return null;
             }
@@ -363,7 +357,6 @@ public final class SchemaMdb
         static
         {
             fieldMap.put("level", 1);
-            fieldMap.put("value", 2);
             fieldMap.put("label", 3);
         }
     }
