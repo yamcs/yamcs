@@ -14,8 +14,8 @@ import com.beust.jcommander.Parameters;
 @Parameters(commandDescription = "Archive operations")
 public class ArchiveCli extends Command {
     public ArchiveCli(YamcsCli yamcsCli) {
-		super("archive", yamcsCli);
-		addSubCommand(new ArchiveUpgradeCommand(this));
-		TimeEncoding.setUp();
+        super("archive", yamcsCli);
+        addSubCommand(new ArchiveUpgradeCommand(this));
+        TimeEncoding.setUp();
     }
 }

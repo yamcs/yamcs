@@ -85,7 +85,7 @@ public abstract class Command {
             }
             if(help) {
                 console.println(getUsage());
-                System.exit(-1);
+                System.exit(0);
             }
         } catch (ParameterException e) {
             console.println(e.getMessage());

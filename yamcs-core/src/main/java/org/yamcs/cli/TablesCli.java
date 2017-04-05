@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.BulkRestDataSender;
 import org.yamcs.api.rest.RestClient;
@@ -93,7 +94,7 @@ public class TablesCli extends Command {
                     }
                 } catch (IOException e) {
                     System.err.println("Error receiving table row: "+e.getMessage());
-                    System.exit(1);
+                    throw new YamcsApiException("error decoding or writing table row: "+e.getMessage(), e);
                 }
             });
             cf.get();
@@ -107,7 +108,6 @@ public class TablesCli extends Command {
             for(String tableName:tableList) {
                 dumpTable(tableName);
             }
-            System.exit(0);
         }
     }        
 
