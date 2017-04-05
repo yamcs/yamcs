@@ -35,7 +35,7 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class ParameterDataLinkInitialiser extends AbstractService {
-    public static final String KEY_parameterDataLinks = "parameterDataLinks";
+    public static final String KEY_PARAMETER_DATA_LINKS = "parameterDataLinks";
     
     public static final String PARAMETER_TUPLE_COL_RECTIME = "rectime";
     public static final String PARAMETER_TUPLE_COL_SEQ_NUM = "seqNum";
@@ -67,11 +67,14 @@ public class ParameterDataLinkInitialiser extends AbstractService {
         YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
         @SuppressWarnings("rawtypes")
-        List providers = c.getList(KEY_parameterDataLinks);
+        List providers = c.getList(KEY_PARAMETER_DATA_LINKS);
         
         int count=1;
         for(Object o:providers) {
-            if(!(o instanceof Map)) throw new ConfigurationException("ppProvider has to be a Map and not a "+o.getClass());
+            if(!(o instanceof Map)) {
+                throw new ConfigurationException("ppProvider has to be a Map and not a "+o.getClass());
+            }
+
             @SuppressWarnings({ "rawtypes", "unchecked" })
             Map<String, Object> m = (Map)o;
             
@@ -95,10 +98,11 @@ public class ParameterDataLinkInitialiser extends AbstractService {
                 throw new ConfigurationException("Cannot find stream '"+streamName+"'");
             }
 
-
             ParameterDataLink prov = YObjectLoader.loadObject(m, yamcsInstance, providerName);
 
-            if(!enabledAtStartup) prov.disable();
+            if(!enabledAtStartup) {
+                prov.disable();
+            }
 
             prov.setParameterSink(new MyPpListener(stream));
 
@@ -151,11 +155,11 @@ public class ParameterDataLinkInitialiser extends AbstractService {
                 String qualifiedName = pv.getParameter().getQualifiedName();
                 if( qualifiedName == null || qualifiedName.isEmpty() ) {
                     qualifiedName = pv.getParameter().getName();
-                    log.trace( "Using namespaced name for PP "+qualifiedName+" because fully qualified name not available." );
+                    log.trace( "Using namespaced name for PP {} because fully qualified name not available.", qualifiedName);
                 }
                 int idx = tdef.getColumnIndex(qualifiedName);
                 if(idx!=-1) {
-                    log.warn("duplicate value for "+pv.getParameter()+"\nfirst: "+cols.get(idx)+"\n second: "+pv.toGpb(null));
+                    log.warn("duplicate value for {} \nfirst: {}"+"\n second: {} ", pv.getParameter(), cols.get(idx), pv.toGpb(null));
                     continue;
                 }
                 tdef.addColumn(qualifiedName, paraDataType);
@@ -178,12 +182,12 @@ public class ParameterDataLinkInitialiser extends AbstractService {
                 NamedObjectId id = pv.getId();
                 String qualifiedName = id.getName();
                 if(id.hasNamespace()) {
-                    log.trace("Using namespaced name for parameter "+id+" because fully qualified name not available.");
+                    log.trace("Using namespaced name for parameter {} because fully qualified name not available.", id);
                 }
                 
                 int idx=tdef.getColumnIndex(qualifiedName);
                 if(idx!=-1) {
-                    log.warn("duplicate value for "+id+"\nfirst: "+cols.get(idx)+"\n second: "+pv);
+                    log.warn("duplicate value for {}\nfirst: {}\n second: {}", id, cols.get(idx), pv);
                     continue;
                 }
                 tdef.addColumn(qualifiedName, paraDataType);

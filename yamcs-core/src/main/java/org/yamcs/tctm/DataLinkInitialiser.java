@@ -37,7 +37,7 @@ public class DataLinkInitialiser extends AbstractService {
             tcDataLinkInitialiser = new TcUplinkerAdapter(yamcsInstance);
             services.add(tcDataLinkInitialiser);
         }
-        if(c.containsKey(ParameterDataLinkInitialiser.KEY_parameterDataLinks)) {
+        if(c.containsKey(ParameterDataLinkInitialiser.KEY_PARAMETER_DATA_LINKS)) {
             ppDataLinkInitialiser = new ParameterDataLinkInitialiser(yamcsInstance);
             services.add(ppDataLinkInitialiser);
         }
