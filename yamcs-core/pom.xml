@@ -81,7 +81,7 @@
     <dependency>
       <groupId>org.rocksdb</groupId>
       <artifactId>rocksdbjni</artifactId>
-      <version>5.1.2</version>
+      <version>5.2.1</version>
     </dependency>
     <dependency>
       <groupId>com.beust</groupId>
