@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 
@@ -22,7 +23,7 @@ public class RouteHandler {
         dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
     
         Calendar time = new GregorianCalendar();
-        response.headers().set(HttpHeaders.Names.DATE, dateFormatter.format(time.getTime()));
+        response.headers().set(HttpHeaderNames.DATE, dateFormatter.format(time.getTime()));
     }
     
     /**
@@ -32,7 +33,7 @@ public class RouteHandler {
      *            content type of file to extract
      */
     protected static void setContentTypeHeader(HttpResponse response, String type) {
-        response.headers().set(HttpHeaders.Names.CONTENT_TYPE, type);
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, type);
     }
     
     /**
@@ -47,12 +48,12 @@ public class RouteHandler {
     
         // Date header
         Calendar time = new GregorianCalendar();
-        response.headers().set(HttpHeaders.Names.DATE, dateFormatter.format(time.getTime()));
+        response.headers().set(HttpHeaderNames.DATE, dateFormatter.format(time.getTime()));
     
         // Add cache headers
         //   time.add(Calendar.SECOND, HTTP_CACHE_SECONDS);
         //  response.setHeader(HttpHeaders.Names.EXPIRES, dateFormatter.format(time.getTime()));
         // response.setHeader(HttpHeaders.Names.CACHE_CONTROL, "private, max-age=" + HTTP_CACHE_SECONDS);
-        response.headers().set(HttpHeaders.Names.LAST_MODIFIED, dateFormatter.format(lastModified));
+        response.headers().set(HttpHeaderNames.LAST_MODIFIED, dateFormatter.format(lastModified));
     }
 }

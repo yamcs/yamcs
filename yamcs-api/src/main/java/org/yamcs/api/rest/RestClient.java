@@ -104,14 +104,14 @@ public class RestClient {
      * @param method - http method to use
      * @param body - the body of the request. Can be used even for the GET requests although strictly not allowed by the HTTP standard.
      * @return - the response body
-     * @throws RuntimeException thrown in case the resource specification is invalid
+     * @throws IllegalArgumentException thrown in case the resource specification is invalid
      */
     public CompletableFuture<String> doRequest(String resource, HttpMethod method, String body) {
         CompletableFuture<byte[]> cf;
         try {
             cf = httpClient.doAsyncRequest(connectionProperties.getRestApiUrl()+resource, method, body.getBytes(), connectionProperties.getAuthenticationToken());
         } catch (URISyntaxException e) { //throw a RuntimeException instead since if the code is not buggy it's unlikely to have this exception thrown
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException(e);
         }
         if(autoclose) {
             cf.whenComplete((v, t)->{

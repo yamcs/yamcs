@@ -150,10 +150,10 @@ public class HttpClient {
                     exception = new YamcsApiException(new String(data));    
                 }
             } else {
-                exception = new YamcsApiException("Received http response: "+resp.status());
+                exception = getInvalidHttpResponseException(resp.status().toString());
             }
         } else {
-            exception = new YamcsApiException("Received http response: "+httpObj);
+            exception = getInvalidHttpResponseException(httpObj.toString());
         }
         return exception;
 
@@ -175,11 +175,14 @@ public class HttpClient {
                 exception = new YamcsApiException(new String(data));    
             }
         } else {
-            exception = new YamcsApiException("Received http response: "+fullResp.status());
+            exception = getInvalidHttpResponseException(fullResp.status().toString());
         }
         return exception;
     }
     
+    static private  YamcsApiException getInvalidHttpResponseException(String resp) {
+        return new YamcsApiException("Received http response: "+resp);
+    }
     /**
      * Sets the maximum size of the responses - this is not applicable to bulk requests whose response is practically unlimited and delivered piece by piece
      * @param length

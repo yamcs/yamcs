@@ -1,6 +1,5 @@
 package org.yamcs.api.rest;
 
-import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +44,9 @@ public class BulkRestDataSender extends SimpleChannelInboundHandler<FullHttpResp
     }
     int count =0;
     public void sendData(ByteBuf buf)  throws YamcsApiException {
-        if(yamcsApiException!=null) throw yamcsApiException;
+        if(yamcsApiException!=null) { 
+            throw yamcsApiException;
+        }
         
         count++;
         try {
@@ -78,7 +79,9 @@ public class BulkRestDataSender extends SimpleChannelInboundHandler<FullHttpResp
      * @return a CompletableFuture that completes once the response from the server has been received.
      */
     public CompletableFuture<byte[]> completeRequest() {
-        if(completeRequestCf.isDone()) return completeRequestCf;
+        if(completeRequestCf.isDone()) {
+            return completeRequestCf;
+        }
         
         Channel ch = ctx.channel();
         if (!ch.isOpen()) {

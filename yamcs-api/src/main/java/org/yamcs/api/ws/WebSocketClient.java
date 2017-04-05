@@ -31,6 +31,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpClientCodec;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
@@ -119,7 +120,7 @@ public class WebSocketClient {
     private ChannelFuture createBootstrap() {
         HttpHeaders header = new DefaultHttpHeaders();
         if (userAgent != null) {
-            header.add(HttpHeaders.Names.USER_AGENT, userAgent);
+            header.add(HttpHeaderNames.USER_AGENT, userAgent);
         }
 
         AuthenticationToken authToken = yprops.getAuthenticationToken();
@@ -133,14 +134,14 @@ public class WebSocketClient {
                         credentialsClear += ":" + password;
                     String credentialsB64 = new String(Base64.getEncoder().encode(credentialsClear.getBytes()));
                     String authorization = "Basic " + credentialsB64;
-                    header.add(HttpHeaders.Names.AUTHORIZATION, authorization);
+                    header.add(HttpHeaderNames.AUTHORIZATION, authorization);
                 }
             } else {
                 throw new RuntimeException("authentication token of type "+authToken.getClass()+" not supported");
             }
         }
         if(useProtobuf) {
-            header.add(HttpHeaders.Names.ACCEPT, MediaType.PROTOBUF);
+            header.add(HttpHeaderNames.ACCEPT, MediaType.PROTOBUF);
         }
         URI uri = yprops.webSocketURI();
 

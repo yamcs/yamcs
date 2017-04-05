@@ -8,9 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
 
-import io.netty.handler.codec.http.HttpHeaders.Names;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.cors.CorsConfig;
+import io.netty.handler.codec.http.cors.CorsConfigBuilder;
 
 /**
  * Data holder for webConfig section of yamcs.yamnl
@@ -53,7 +54,7 @@ public class WebConfig {
             zeroCopyEnabled = yconf.getBoolean("zeroCopyEnabled");
         }
 
-        CorsConfig.Builder corsb = null;
+        CorsConfigBuilder corsb = null;
         if (yconf.containsKey("webConfig")) {
             Map<String, Object> webConfig = yconf.getMap("webConfig");
 
@@ -73,9 +74,9 @@ public class WebConfig {
                 if (YConfiguration.getBoolean(ycors, "enabled")) {
                     if (YConfiguration.isList(ycors, "allowOrigin")) {
                         List<String> originConf = YConfiguration.getList(ycors, "allowOrigin");
-                        corsb = CorsConfig.withOrigins(originConf.toArray(new String[originConf.size()]));
+                        corsb = CorsConfigBuilder.forOrigins(originConf.toArray(new String[originConf.size()]));
                     } else {
-                        corsb = CorsConfig.withOrigin(YConfiguration.getString(ycors, "allowOrigin"));
+                        corsb = CorsConfigBuilder.forOrigin(YConfiguration.getString(ycors, "allowOrigin"));
                     }
                     if (YConfiguration.getBoolean(ycors, "allowCredentials")) {
                         corsb.allowCredentials();
@@ -85,12 +86,12 @@ public class WebConfig {
         } else {
             // Allow CORS requests for unprotected Yamcs instances
             // (Browsers would anyway strip Authorization header)
-            corsb = CorsConfig.withAnyOrigin();
+            corsb = CorsConfigBuilder.forAnyOrigin();
         }
 
         if (corsb != null) {
             corsb.allowedRequestMethods(HttpMethod.GET, HttpMethod.POST, HttpMethod.PATCH, HttpMethod.PUT, HttpMethod.DELETE);
-            corsb.allowedRequestHeaders(Names.CONTENT_TYPE, Names.ACCEPT, Names.AUTHORIZATION, Names.ORIGIN);
+            corsb.allowedRequestHeaders(HttpHeaderNames.CONTENT_TYPE, HttpHeaderNames.ACCEPT, HttpHeaderNames.AUTHORIZATION, HttpHeaderNames.ORIGIN);
             corsConfig = corsb.build();
         }
     }
