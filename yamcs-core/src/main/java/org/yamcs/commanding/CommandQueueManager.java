@@ -267,11 +267,11 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
 
         if(q.getState()==QueueState.BLOCKED) {
-            log.debug("Command queue for command "+pc+" is blocked, leaving command in the queue");
+            log.debug("Command queue for command {} is blocked, leaving command in the queue", pc);
             return;
         }
         if(q.getState()==QueueState.DISABLED) {
-            log.debug("Command queue for command "+pc+" is disabled, dropping command");
+            log.debug("Command queue for command {} is disabled, dropping command", pc);
             q.remove(pc, false);
         }
 
@@ -283,7 +283,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             releaseCommand(q, pc, true, false);
         } else if(status == TCStatus.TIMED_OUT) {
             addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY, "NOK");
-            failedCommand(q, pc, "Transmission constraints check failed",true);
+            failedCommand(q, pc, "Transmission constraints check failed", true);
         }
     }
 
@@ -294,7 +294,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 m.commandAdded(q, pc);
             } catch (Exception e) {
                 e.printStackTrace();
-                log.warn("got exception "+e+" when notifying a monitor, removing it from the list");
+                log.warn("got exception when notifying a monitor, removing it from the list", e);
                 monitoringClients.remove(m);
             }
         }
@@ -307,7 +307,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             try {
                 m.commandSent(q, pc);
             } catch (Exception e) {
-                log.warn("got exception "+e+" when notifying a monitor, removing it from the list");
+                log.warn("got exception when notifying a monitor, removing it from the list", e);
                 monitoringClients.remove(m);
             }
         }
@@ -319,7 +319,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             try {
                 m.updateQueue(q);
             } catch (Exception e) {
-                log.warn("got exception "+e+" when notifying a monitor, removing it from the list");
+                log.warn("got exception when notifying a monitor, removing it from the list", e);
                 monitoringClients.remove(m);
             }
         }
@@ -341,7 +341,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 try {
                     m.commandRejected(cq, pc);
                 } catch (Exception e) {
-                    log.warn("got exception "+e+" when notifying a monitor, removing it from the list");
+                    log.warn("got exception when notifying a monitor, removing it from the list", e);
                     monitoringClients.remove(m);
                 }
             }
@@ -360,7 +360,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         //start the verifiers
         MetaCommand mc = pc.getMetaCommand();
         if(mc.hasCommandVerifiers()) {
-            log.debug("Starting command verification for "+pc);
+            log.debug("Starting command verification for {}", pc);
             CommandVerificationHandler cvh = new CommandVerificationHandler(yproc, pc);
             cvh.start();
         }
@@ -411,7 +411,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      * @return the command removed from the queeu
      */
     public synchronized PreparedCommand rejectCommand(CommandId commandId, String username) {
-        log.info("called to remove command: "+commandId);
+        log.info("called to remove command: {}", commandId);
         PreparedCommand pc=null;
         CommandQueue queue=null;
         for(CommandQueue q:queues.values()) {
@@ -442,7 +442,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 }
             }
         }
-        log.warn("no prepared command found for uuid "+uuid);
+        log.warn("no prepared command found for uuid {}", uuid);
         return null;
     }
 
@@ -480,7 +480,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 }
             }
         }
-        log.warn("no prepared command found for uuid "+uuid);
+        log.warn("no prepared command found for uuid {}", uuid);
         return null;
     }
 
@@ -531,7 +531,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
 
         if(queue.stateExpirationTimeS > 0 && newState != queue.defaultState) {
-            log.info("scheduling expiration state for new state " + newState +" for queue " + queue.name);
+            log.info("scheduling expiration state for new state {} for queue {}", newState, queue.name);
             scheduleStateExpiration(queue);
         }
 
@@ -549,12 +549,12 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             queue.stateExpirationJob = null;
         }
         Runnable r = () -> {
-            log.info("executing epiration state, reverting to " + queue.defaultState);
+            log.info("executing epiration state, reverting to {}", queue.defaultState);
             setQueueState(queue.name, queue.defaultState);
             queue.stateExpirationJob = null;
         };
 
-        log.info("sceduling expiration time in " + queue.stateExpirationTimeS);
+        log.info("sceduling expiration time in {}", queue.stateExpirationTimeS);
         queue.stateExpirationRemainingS = queue.stateExpirationTimeS;
         queue.stateExpirationJob  = timer.schedule(r , queue.stateExpirationTimeS, TimeUnit.SECONDS);
     }
