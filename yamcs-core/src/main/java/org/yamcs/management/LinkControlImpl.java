@@ -13,14 +13,17 @@ public class LinkControlImpl extends StandardMBean implements LinkControl {
 
     public LinkControlImpl(String archiveInstance, String name, String streamName, String spec, Link link) throws NotCompliantMBeanException {
         super(LinkControl.class);
-        this.link=link;
-        linkInfo=LinkInfo.newBuilder().setInstance(archiveInstance)
+        this.link = link;
+        LinkInfo.Builder linkb = LinkInfo.newBuilder().setInstance(archiveInstance)
                 .setName(name).setStream(streamName)
                 .setDisabled(link.isDisabled())
                 .setStatus(link.getLinkStatus())
-                .setDetailedStatus(link.getDetailedStatus())
                 .setType(link.getClass().getSimpleName()).setSpec(spec)
-                .setDataCount(link.getDataCount()).build();
+                .setDataCount(link.getDataCount());
+        if(link.getDetailedStatus()!=null) {
+            linkb.setDetailedStatus(link.getDetailedStatus());
+        }
+        linkInfo = linkb.build();
     }
 
     LinkInfo getLinkInfo(){
