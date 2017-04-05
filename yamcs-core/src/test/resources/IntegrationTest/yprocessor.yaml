@@ -23,9 +23,9 @@ realtime:
        args:
            stream: "tc_realtime"
     parameterProviders:
-#       - class: org.yamcs.tctm.YarchPpProvider
-#         args:
-#           stream: "pp_realtime"
+       - class: org.yamcs.tctm.StreamParameterProvider
+         args:
+             stream: "pp_realtime"
        # implements XTCE algorithms
        - class: org.yamcs.algorithms.AlgorithmManager
          args:            

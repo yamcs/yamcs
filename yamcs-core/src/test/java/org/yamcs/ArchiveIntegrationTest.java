@@ -66,6 +66,10 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
             packetGenerator.setGenerationTime(t0+1000*i);
             packetGenerator.generate_PKT1_1();
             packetGenerator.generate_PKT1_3();
+            
+            //parameters are 10ms later than packets to make sure that we have a predictible order during replay
+            parameterProvider.setGenerationTime(t0+1000*i+10);
+            parameterProvider.generateParameters(i);
         }
     }
 
@@ -83,6 +87,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                 .setStart("2015-01-01T10:01:00")
                 .setStop("2015-01-01T10:05:00")
                 .addPacketname("*")
+                .addPpgroup("IntegrationTest")                
                 .build();
 
         restClient.doRequest("/processors/IntegrationTest", HttpMethod.POST, toJson(prequest, SchemaRest.CreateProcessorRequest.WRITE)).get();
@@ -90,7 +95,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         cinfo = getClientInfo();
         assertEquals("testReplay", cinfo.getProcessorName());
 
-        NamedObjectList subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6");
+        NamedObjectList subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6", "/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/processed_para_uint", "/REFMDB/SUBSYS1/processed_para_double");
         WebSocketRequest wsr = new WebSocketRequest("parameter",ParameterResource.WSR_subscribe, subscrList);
         wsClient.sendRequest(wsr);
 
@@ -99,13 +104,24 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
         assertEquals(2, pdata.getParameterCount());
         ParameterValue p1_1_6 = pdata.getParameter(0);
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
         assertEquals("2015-01-01T10:01:00.000", p1_1_6.getGenerationTimeUTC());
+
+        
+        pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+        assertNotNull(pdata);
+
+        assertEquals(2, pdata.getParameterCount());
+        ParameterValue pp_para_uint = pdata.getParameter(0);
+        assertEquals("/REFMDB/SUBSYS1/processed_para_uint", pp_para_uint.getId().getName());
+        assertEquals("2015-01-01T10:01:00.010", pp_para_uint.getGenerationTimeUTC());
 
         pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
         assertNotNull(pdata);
 
         assertEquals(2, pdata.getParameterCount());
         p1_1_6 = pdata.getParameter(0);
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
         assertEquals("2015-01-01T10:01:01.000", p1_1_6.getGenerationTimeUTC());
 
         //go back to realtime
@@ -174,7 +190,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
 
     @Test
-    public void testDataLoadDump() throws Exception {
+    public void testTableLoadDump() throws Exception {
         BulkRestDataSender brds = initiateTableLoad("table0");
 
         for(int i=0;i<100; i+=4) {
@@ -189,7 +205,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testDataLoadWithInvalidRecord() throws Exception {
+    public void testTableLoadWithInvalidRecord() throws Exception {
         Exception e1 = null;
         BulkRestDataSender brds = initiateTableLoad("table1");
         try {
@@ -214,7 +230,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     }
     
     @Test
-    public void testDataLoadWithInvalidRecord2() throws Exception {
+    public void testTableLoadWithInvalidRecord2() throws Exception {
         BulkRestDataSender brds = initiateTableLoad("table2");
         Exception e1 = null;
         

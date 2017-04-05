@@ -59,7 +59,19 @@ public class ValueUtility {
     public static Value getDoubleValue(double d) {
         return new DoubleValue(d);
     }
-
+    
+    public static org.yamcs.protobuf.Yamcs.Value getDoubleGbpValue(double d) {
+        return org.yamcs.protobuf.Yamcs.Value.newBuilder().setType(Type.DOUBLE).setDoubleValue(d).build();
+    }
+    
+    public static org.yamcs.protobuf.Yamcs.Value getStringGbpValue(String s) {
+        return org.yamcs.protobuf.Yamcs.Value.newBuilder().setType(Type.STRING).setStringValue(s).build();
+    }
+    
+    public static org.yamcs.protobuf.Yamcs.Value getUint32GbpValue(int x) {
+        return org.yamcs.protobuf.Yamcs.Value.newBuilder().setType(Type.UINT32).setUint32Value(x).build();
+    }
+    
     public static Value getColumnValue(ColumnDefinition cd, Object v) {
         switch (cd.getType().val) { //TODO all types
         case INT:

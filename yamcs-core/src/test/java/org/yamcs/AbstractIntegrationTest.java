@@ -8,12 +8,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -31,7 +30,9 @@ import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
+import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
@@ -44,10 +45,13 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.UsernamePasswordToken;
+import org.yamcs.tctm.ParameterDataLink;
+import org.yamcs.tctm.ParameterSink;
 import org.yamcs.tctm.TmPacketDataLink;
 import org.yamcs.tctm.TmSink;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.web.HttpServer;
 import org.yamcs.web.websocket.ManagementResource;
 import org.yamcs.xtce.SequenceContainer;
@@ -66,6 +70,7 @@ import io.protostuff.Schema;
 public abstract class AbstractIntegrationTest {
     final String yamcsInstance = "IntegrationTest";
     PacketProvider packetProvider;
+    ParameterProvider parameterProvider;
     YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190, "IntegrationTest");
     MyWsListener wsListener;
     WebSocketClient wsClient;
@@ -73,7 +78,7 @@ public abstract class AbstractIntegrationTest {
     protected UsernamePasswordToken admin = new UsernamePasswordToken("admin", "rootpassword");
     RefMdbPacketGenerator packetGenerator;
     static {  
-     //   Logger.getLogger("org.yamcs.web").setLevel(Level.ALL);
+        //   Logger.getLogger("org.yamcs.web").setLevel(Level.ALL);
     }
 
     @BeforeClass
@@ -89,7 +94,10 @@ public abstract class AbstractIntegrationTest {
         }
 
         packetProvider = PacketProvider.instance;
+        parameterProvider = ParameterProvider.instance;
         assertNotNull(packetProvider);
+        assertNotNull(parameterProvider);
+        
         wsListener = new MyWsListener();
 
         wsClient = new WebSocketClient(ycp, wsListener);
@@ -127,8 +135,8 @@ public abstract class AbstractIntegrationTest {
         ManagementService.setup(false);
         JMXService.setup(false);
         new HttpServer().startServer();
-   //     artemisServer = ArtemisServer.setupArtemis();
-     //   ArtemisManagement.setupYamcsServerControl();
+        //     artemisServer = ArtemisServer.setupArtemis();
+        //   ArtemisManagement.setupYamcsServerControl();
         YamcsServer.setupYamcsServer();
     }
 
@@ -290,7 +298,6 @@ public abstract class AbstractIntegrationTest {
         }
         @Override
         public void enable() {
-
         }
         @Override
         public void disable() {
@@ -330,6 +337,89 @@ public abstract class AbstractIntegrationTest {
         @Override
         public void finished() {
 
+        }
+    }
+    
+    public static class ParameterProvider extends AbstractService implements ParameterDataLink {
+        int seqNum = 0;
+        ParameterSink ppListener;
+        long generationTime;
+        
+        static volatile ParameterProvider instance;
+        
+        public ParameterProvider(String yamcsInstance, String name) {
+            instance = this;
+        }
+        
+        @Override
+        public String getLinkStatus() {
+            return "OK";
+        }
+
+        @Override
+        public String getDetailedStatus() {
+            return null;
+        }
+
+        @Override
+        public void enable() {
+        }
+
+        @Override
+        public void disable() {
+        }
+
+        @Override
+        public boolean isDisabled() {
+            return false;
+        }
+
+        @Override
+        public long getDataCount() {
+            return seqNum*3;
+        }
+
+        @Override
+        public void setParameterSink(ParameterSink ppListener) {
+            this.ppListener = ppListener;
+        }
+
+        @Override
+        protected void doStart() {
+            notifyStarted();
+        }
+
+        @Override
+        protected void doStop() {
+            notifyStopped();
+        }
+        public void setGenerationTime(long genTime) {
+            this.generationTime = genTime;
+        }
+       
+        void generateParameters(int x) {
+            ParameterValue pv1 = ParameterValue.newBuilder().setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
+                   .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/processed_para_uint"))
+                   .setGenerationTime(generationTime)
+                   .setEngValue(ValueUtility.getUint32GbpValue(x))
+                   .build();
+            
+            ParameterValue pv2 = ParameterValue.newBuilder().setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
+                    .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/processed_para_string"))
+                    .setGenerationTime(generationTime)
+                    .setEngValue(ValueUtility.getStringGbpValue("para" +x))
+                    .build();
+             
+            ParameterValue pv3 = ParameterValue.newBuilder().setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
+                    .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/processed_para_double"))
+                    .setGenerationTime(generationTime)
+                    .setEngValue(ValueUtility.getDoubleGbpValue(x))
+                    .build();
+             
+            
+            ppListener.updateParams(generationTime, "IntegrationTest", seqNum, Arrays.asList(pv1, pv2, pv3));
+            
+            seqNum++;
         }
     }
 }
