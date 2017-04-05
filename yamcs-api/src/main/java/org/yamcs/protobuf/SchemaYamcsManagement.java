@@ -1748,8 +1748,8 @@ public final class SchemaYamcsManagement
                     output.writeString(3, message.getName(), false);
                 if(message.hasType())
                     output.writeString(4, message.getType(), false);
-                if(message.hasSpec())
-                    output.writeString(5, message.getSpec(), false);
+                if(message.hasConfig())
+                    output.writeString(5, message.getConfig(), false);
                 for(int clientId : message.getClientIdList())
                     output.writeInt32(6, clientId, true);
                 if(message.hasPersistent())
@@ -1809,7 +1809,7 @@ public final class SchemaYamcsManagement
                             builder.setType(input.readString());
                             break;
                         case 5:
-                            builder.setSpec(input.readString());
+                            builder.setConfig(input.readString());
                             break;
                         case 6:
                             builder.addClientId(input.readInt32());
@@ -1865,7 +1865,7 @@ public final class SchemaYamcsManagement
                 case 2: return "instance";
                 case 3: return "name";
                 case 4: return "type";
-                case 5: return "spec";
+                case 5: return "config";
                 case 6: return "clientId";
                 case 7: return "persistent";
                 case 8: return "replaySpec";
@@ -1884,7 +1884,7 @@ public final class SchemaYamcsManagement
             fieldMap.put("instance", 2);
             fieldMap.put("name", 3);
             fieldMap.put("type", 4);
-            fieldMap.put("spec", 5);
+            fieldMap.put("config", 5);
             fieldMap.put("clientId", 6);
             fieldMap.put("persistent", 7);
             fieldMap.put("replaySpec", 8);

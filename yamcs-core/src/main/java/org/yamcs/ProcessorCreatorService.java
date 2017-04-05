@@ -19,7 +19,7 @@ import com.google.common.util.concurrent.AbstractService;
 public class ProcessorCreatorService extends AbstractService {
     String processorName;
     String processorType;
-    String channelSpec;
+    String processorConfig;
 
     YProcessor yproc;
     String yamcsInstance;
@@ -41,12 +41,14 @@ public class ProcessorCreatorService extends AbstractService {
 	}
 	this.processorName = config.get("name");
 
-	if(config.containsKey("spec")) {
-	    channelSpec = config.get("spec");
+	if(config.containsKey("config")) {
+            processorConfig = config.get("config");
+        } else if(config.containsKey("spec")) {
+	    processorConfig = config.get("spec");
 	}
 	startArtemisService = YConfiguration.getBoolean((Map)config, "startArtemisService", false);
 	log.debug("Creating a new processor instance:{}, procName: {}, procType: {}", yamcsInstance, processorName, processorType);
-	yproc =  ProcessorFactory.create(yamcsInstance, processorName, processorType, "system", channelSpec);
+	yproc =  ProcessorFactory.create(yamcsInstance, processorName, processorType, "system", processorConfig);
         yproc.setPersistent(true);
     }
     @Override

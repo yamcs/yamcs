@@ -141,10 +141,10 @@ message ProcessorManagementRequest {
   optional string instance = 2; //yamcs instance
   optional string name = 3; //processor name
   optional string type = 4; //only for CREATE
-  optional string spec = 5; //only for CREATE
+  optional string config = 5; //only for CREATE - used to be called spec
   repeated int32 clientId = 6; //for CREATE and CONNECT
   optional bool persistent = 7[default=false]; //only for CREATE
-  optional yamcs.ReplayRequest replaySpec = 8; //for CREATE as alternative to string spec
+  optional yamcs.ReplayRequest replaySpec = 8 [deprecated=true]; //used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
 }
 
 message ProcessorRequest {

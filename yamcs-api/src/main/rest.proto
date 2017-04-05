@@ -145,16 +145,21 @@ message UpdateCommandHistoryRequest {
 
 message CreateProcessorRequest {
   optional string name = 1;
-  optional string start = 2;
-  optional string stop = 3;
-  optional bool loop = 4;
-  optional string speed = 5;
+
+  //fields 2-10 only work for creating replay processors and are deprecated
+  // instead use the config below with the type = Archive (as defined in the processor.yaml)
+  optional string start = 2 [deprecated = true];
+  optional string stop = 3 [deprecated = true];
+  optional bool loop = 4 [deprecated = true];
+  optional string speed = 5 [deprecated = true];
   repeated int32 clientId = 6;
-  repeated string paraname = 7;
-  repeated string ppgroup = 8;
-  repeated string packetname = 9;
-  optional bool cmdhist = 10;
+  repeated string paraname = 7 [deprecated = true];
+  repeated string ppgroup = 8 [deprecated = true];
+  repeated string packetname = 9 [deprecated = true];
+  optional bool cmdhist = 10 [deprecated = true];
   optional bool persistent = 11;
+  optional string type = 12;
+  optional string config = 13;
 }
 
 message EditProcessorRequest {

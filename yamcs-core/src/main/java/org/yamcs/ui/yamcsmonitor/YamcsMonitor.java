@@ -94,7 +94,7 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
         yconnector.addConnectionListener(this);
         
         processorControl = new ProcessorControlClient(yconnector);
-        processorControl.setYProcessorListener(this);
+        processorControl.setProcessorListener(this);
         linkControl = new LinkControlClient(yconnector, this);
 
         indexReceiver = new YamcsArchiveIndexReceiver(yconnector);
@@ -629,7 +629,7 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
     protected void destroyProcessor( int selectedRow ) {
         String name=(String)processorTableModel.getValueAt(selectedRow, 0);
         try {
-            processorControl.destroyYProcessor(name);
+            processorControl.destroyProcessor(name);
         } catch (YamcsApiException e) {
             showMessage("Cannot destroy processor '"+name+" because the processor was already closed");
         }

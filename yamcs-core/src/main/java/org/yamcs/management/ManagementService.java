@@ -265,7 +265,7 @@ public class ManagementService implements ProcessorListener {
     }
 
     public void createProcessor(ProcessorManagementRequest cr, AuthenticationToken authToken) throws YamcsException{
-        log.info("Creating new processor instance="+cr.getInstance()+" name="+cr.getName()+" type="+cr.getType()+" spec="+cr.getSpec()+"' persistent="+cr.getPersistent());
+        log.info("Creating new processor instance: {}, name: {}, type: {}, config: {}, persistent: {}",cr.getInstance(), cr.getName(), cr.getType(), cr.getConfig(), cr.getPersistent());
         
         String username;
         if (authToken != null && authToken.getPrincipal() != null) {
@@ -295,16 +295,16 @@ public class ManagementService implements ProcessorListener {
         try {
             int n=0;
             
-            Object spec;
+            Object config = null;
             if(cr.hasReplaySpec()) {
-                spec = cr.getReplaySpec();
-            } else {
-                spec = cr.getSpec();
+                config = cr.getReplaySpec();
+            } else if (cr.hasConfig()){
+                config = cr.getConfig();
             }
-            yproc = ProcessorFactory.create(cr.getInstance(), cr.getName(), cr.getType(), username, spec);
+            yproc = ProcessorFactory.create(cr.getInstance(), cr.getName(), cr.getType(), username, config);
             yproc.setPersistent(cr.getPersistent());
-            for(int i=0;i<cr.getClientIdCount();i++) {
-                ClientControlImpl cci=clients.get(cr.getClientId(i));
+            for(int i=0; i<cr.getClientIdCount(); i++) {
+                ClientControlImpl cci = clients.get(cr.getClientId(i));
                 if(cci!=null) {
                     switchProcessor(cci, yproc, authToken);
                     n++;

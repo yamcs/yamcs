@@ -17208,32 +17208,32 @@ public final class YamcsManagement {
     com.google.protobuf.ByteString
         getTypeBytes();
 
-    // optional string spec = 5;
+    // optional string config = 5;
     /**
-     * <code>optional string spec = 5;</code>
+     * <code>optional string config = 5;</code>
      *
      * <pre>
-     *only for CREATE
+     *only for CREATE - used to be called spec
      * </pre>
      */
-    boolean hasSpec();
+    boolean hasConfig();
     /**
-     * <code>optional string spec = 5;</code>
+     * <code>optional string config = 5;</code>
      *
      * <pre>
-     *only for CREATE
+     *only for CREATE - used to be called spec
      * </pre>
      */
-    java.lang.String getSpec();
+    java.lang.String getConfig();
     /**
-     * <code>optional string spec = 5;</code>
+     * <code>optional string config = 5;</code>
      *
      * <pre>
-     *only for CREATE
+     *only for CREATE - used to be called spec
      * </pre>
      */
     com.google.protobuf.ByteString
-        getSpecBytes();
+        getConfigBytes();
 
     // repeated int32 clientId = 6;
     /**
@@ -17279,31 +17279,31 @@ public final class YamcsManagement {
      */
     boolean getPersistent();
 
-    // optional .yamcs.ReplayRequest replaySpec = 8;
+    // optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];
     /**
-     * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+     * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
      *
      * <pre>
-     *for CREATE as alternative to string spec
+     *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
      * </pre>
      */
-    boolean hasReplaySpec();
+    @java.lang.Deprecated boolean hasReplaySpec();
     /**
-     * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+     * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
      *
      * <pre>
-     *for CREATE as alternative to string spec
+     *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
      * </pre>
      */
-    org.yamcs.protobuf.Yamcs.ReplayRequest getReplaySpec();
+    @java.lang.Deprecated org.yamcs.protobuf.Yamcs.ReplayRequest getReplaySpec();
     /**
-     * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+     * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
      *
      * <pre>
-     *for CREATE as alternative to string spec
+     *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
      * </pre>
      */
-    org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder getReplaySpecOrBuilder();
+    @java.lang.Deprecated org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder getReplaySpecOrBuilder();
   }
   /**
    * Protobuf type {@code yamcsManagement.ProcessorManagementRequest}
@@ -17384,7 +17384,7 @@ public final class YamcsManagement {
             }
             case 42: {
               bitField0_ |= 0x00000010;
-              spec_ = input.readBytes();
+              config_ = input.readBytes();
               break;
             }
             case 48: {
@@ -17732,28 +17732,28 @@ public final class YamcsManagement {
       }
     }
 
-    // optional string spec = 5;
-    public static final int SPEC_FIELD_NUMBER = 5;
-    private java.lang.Object spec_;
+    // optional string config = 5;
+    public static final int CONFIG_FIELD_NUMBER = 5;
+    private java.lang.Object config_;
     /**
-     * <code>optional string spec = 5;</code>
+     * <code>optional string config = 5;</code>
      *
      * <pre>
-     *only for CREATE
+     *only for CREATE - used to be called spec
      * </pre>
      */
-    public boolean hasSpec() {
+    public boolean hasConfig() {
       return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     /**
-     * <code>optional string spec = 5;</code>
+     * <code>optional string config = 5;</code>
      *
      * <pre>
-     *only for CREATE
+     *only for CREATE - used to be called spec
      * </pre>
      */
-    public java.lang.String getSpec() {
-      java.lang.Object ref = spec_;
+    public java.lang.String getConfig() {
+      java.lang.Object ref = config_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
@@ -17761,26 +17761,26 @@ public final class YamcsManagement {
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
-          spec_ = s;
+          config_ = s;
         }
         return s;
       }
     }
     /**
-     * <code>optional string spec = 5;</code>
+     * <code>optional string config = 5;</code>
      *
      * <pre>
-     *only for CREATE
+     *only for CREATE - used to be called spec
      * </pre>
      */
     public com.google.protobuf.ByteString
-        getSpecBytes() {
-      java.lang.Object ref = spec_;
+        getConfigBytes() {
+      java.lang.Object ref = config_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        spec_ = b;
+        config_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -17846,37 +17846,37 @@ public final class YamcsManagement {
       return persistent_;
     }
 
-    // optional .yamcs.ReplayRequest replaySpec = 8;
+    // optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];
     public static final int REPLAYSPEC_FIELD_NUMBER = 8;
     private org.yamcs.protobuf.Yamcs.ReplayRequest replaySpec_;
     /**
-     * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+     * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
      *
      * <pre>
-     *for CREATE as alternative to string spec
+     *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
      * </pre>
      */
-    public boolean hasReplaySpec() {
+    @java.lang.Deprecated public boolean hasReplaySpec() {
       return ((bitField0_ & 0x00000040) == 0x00000040);
     }
     /**
-     * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+     * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
      *
      * <pre>
-     *for CREATE as alternative to string spec
+     *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
      * </pre>
      */
-    public org.yamcs.protobuf.Yamcs.ReplayRequest getReplaySpec() {
+    @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.ReplayRequest getReplaySpec() {
       return replaySpec_;
     }
     /**
-     * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+     * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
      *
      * <pre>
-     *for CREATE as alternative to string spec
+     *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
      * </pre>
      */
-    public org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder getReplaySpecOrBuilder() {
+    @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder getReplaySpecOrBuilder() {
       return replaySpec_;
     }
 
@@ -17885,7 +17885,7 @@ public final class YamcsManagement {
       instance_ = "";
       name_ = "";
       type_ = "";
-      spec_ = "";
+      config_ = "";
       clientId_ = java.util.Collections.emptyList();
       persistent_ = false;
       replaySpec_ = org.yamcs.protobuf.Yamcs.ReplayRequest.getDefaultInstance();
@@ -17921,7 +17921,7 @@ public final class YamcsManagement {
         output.writeBytes(4, getTypeBytes());
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        output.writeBytes(5, getSpecBytes());
+        output.writeBytes(5, getConfigBytes());
       }
       for (int i = 0; i < clientId_.size(); i++) {
         output.writeInt32(6, clientId_.get(i));
@@ -17959,7 +17959,7 @@ public final class YamcsManagement {
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(5, getSpecBytes());
+          .computeBytesSize(5, getConfigBytes());
       }
       {
         int dataSize = 0;
@@ -18103,7 +18103,7 @@ public final class YamcsManagement {
         bitField0_ = (bitField0_ & ~0x00000004);
         type_ = "";
         bitField0_ = (bitField0_ & ~0x00000008);
-        spec_ = "";
+        config_ = "";
         bitField0_ = (bitField0_ & ~0x00000010);
         clientId_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000020);
@@ -18162,7 +18162,7 @@ public final class YamcsManagement {
         if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
           to_bitField0_ |= 0x00000010;
         }
-        result.spec_ = spec_;
+        result.config_ = config_;
         if (((bitField0_ & 0x00000020) == 0x00000020)) {
           clientId_ = java.util.Collections.unmodifiableList(clientId_);
           bitField0_ = (bitField0_ & ~0x00000020);
@@ -18214,9 +18214,9 @@ public final class YamcsManagement {
           type_ = other.type_;
           onChanged();
         }
-        if (other.hasSpec()) {
+        if (other.hasConfig()) {
           bitField0_ |= 0x00000010;
-          spec_ = other.spec_;
+          config_ = other.config_;
           onChanged();
         }
         if (!other.clientId_.isEmpty()) {
@@ -18598,100 +18598,100 @@ public final class YamcsManagement {
         return this;
       }
 
-      // optional string spec = 5;
-      private java.lang.Object spec_ = "";
+      // optional string config = 5;
+      private java.lang.Object config_ = "";
       /**
-       * <code>optional string spec = 5;</code>
+       * <code>optional string config = 5;</code>
        *
        * <pre>
-       *only for CREATE
+       *only for CREATE - used to be called spec
        * </pre>
        */
-      public boolean hasSpec() {
+      public boolean hasConfig() {
         return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
-       * <code>optional string spec = 5;</code>
+       * <code>optional string config = 5;</code>
        *
        * <pre>
-       *only for CREATE
+       *only for CREATE - used to be called spec
        * </pre>
        */
-      public java.lang.String getSpec() {
-        java.lang.Object ref = spec_;
+      public java.lang.String getConfig() {
+        java.lang.Object ref = config_;
         if (!(ref instanceof java.lang.String)) {
           java.lang.String s = ((com.google.protobuf.ByteString) ref)
               .toStringUtf8();
-          spec_ = s;
+          config_ = s;
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>optional string spec = 5;</code>
+       * <code>optional string config = 5;</code>
        *
        * <pre>
-       *only for CREATE
+       *only for CREATE - used to be called spec
        * </pre>
        */
       public com.google.protobuf.ByteString
-          getSpecBytes() {
-        java.lang.Object ref = spec_;
+          getConfigBytes() {
+        java.lang.Object ref = config_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          spec_ = b;
+          config_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>optional string spec = 5;</code>
+       * <code>optional string config = 5;</code>
        *
        * <pre>
-       *only for CREATE
+       *only for CREATE - used to be called spec
        * </pre>
        */
-      public Builder setSpec(
+      public Builder setConfig(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000010;
-        spec_ = value;
+        config_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string spec = 5;</code>
+       * <code>optional string config = 5;</code>
        *
        * <pre>
-       *only for CREATE
+       *only for CREATE - used to be called spec
        * </pre>
        */
-      public Builder clearSpec() {
+      public Builder clearConfig() {
         bitField0_ = (bitField0_ & ~0x00000010);
-        spec_ = getDefaultInstance().getSpec();
+        config_ = getDefaultInstance().getConfig();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string spec = 5;</code>
+       * <code>optional string config = 5;</code>
        *
        * <pre>
-       *only for CREATE
+       *only for CREATE - used to be called spec
        * </pre>
        */
-      public Builder setSpecBytes(
+      public Builder setConfigBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000010;
-        spec_ = value;
+        config_ = value;
         onChanged();
         return this;
       }
@@ -18839,28 +18839,28 @@ public final class YamcsManagement {
         return this;
       }
 
-      // optional .yamcs.ReplayRequest replaySpec = 8;
+      // optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];
       private org.yamcs.protobuf.Yamcs.ReplayRequest replaySpec_ = org.yamcs.protobuf.Yamcs.ReplayRequest.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Yamcs.ReplayRequest, org.yamcs.protobuf.Yamcs.ReplayRequest.Builder, org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder> replaySpecBuilder_;
       /**
-       * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+       * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
        *
        * <pre>
-       *for CREATE as alternative to string spec
+       *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
        * </pre>
        */
-      public boolean hasReplaySpec() {
+      @java.lang.Deprecated public boolean hasReplaySpec() {
         return ((bitField0_ & 0x00000080) == 0x00000080);
       }
       /**
-       * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+       * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
        *
        * <pre>
-       *for CREATE as alternative to string spec
+       *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
        * </pre>
        */
-      public org.yamcs.protobuf.Yamcs.ReplayRequest getReplaySpec() {
+      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.ReplayRequest getReplaySpec() {
         if (replaySpecBuilder_ == null) {
           return replaySpec_;
         } else {
@@ -18868,13 +18868,13 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+       * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
        *
        * <pre>
-       *for CREATE as alternative to string spec
+       *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
        * </pre>
        */
-      public Builder setReplaySpec(org.yamcs.protobuf.Yamcs.ReplayRequest value) {
+      @java.lang.Deprecated public Builder setReplaySpec(org.yamcs.protobuf.Yamcs.ReplayRequest value) {
         if (replaySpecBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -18888,13 +18888,13 @@ public final class YamcsManagement {
         return this;
       }
       /**
-       * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+       * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
        *
        * <pre>
-       *for CREATE as alternative to string spec
+       *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
        * </pre>
        */
-      public Builder setReplaySpec(
+      @java.lang.Deprecated public Builder setReplaySpec(
           org.yamcs.protobuf.Yamcs.ReplayRequest.Builder builderForValue) {
         if (replaySpecBuilder_ == null) {
           replaySpec_ = builderForValue.build();
@@ -18906,13 +18906,13 @@ public final class YamcsManagement {
         return this;
       }
       /**
-       * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+       * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
        *
        * <pre>
-       *for CREATE as alternative to string spec
+       *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
        * </pre>
        */
-      public Builder mergeReplaySpec(org.yamcs.protobuf.Yamcs.ReplayRequest value) {
+      @java.lang.Deprecated public Builder mergeReplaySpec(org.yamcs.protobuf.Yamcs.ReplayRequest value) {
         if (replaySpecBuilder_ == null) {
           if (((bitField0_ & 0x00000080) == 0x00000080) &&
               replaySpec_ != org.yamcs.protobuf.Yamcs.ReplayRequest.getDefaultInstance()) {
@@ -18929,13 +18929,13 @@ public final class YamcsManagement {
         return this;
       }
       /**
-       * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+       * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
        *
        * <pre>
-       *for CREATE as alternative to string spec
+       *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
        * </pre>
        */
-      public Builder clearReplaySpec() {
+      @java.lang.Deprecated public Builder clearReplaySpec() {
         if (replaySpecBuilder_ == null) {
           replaySpec_ = org.yamcs.protobuf.Yamcs.ReplayRequest.getDefaultInstance();
           onChanged();
@@ -18946,25 +18946,25 @@ public final class YamcsManagement {
         return this;
       }
       /**
-       * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+       * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
        *
        * <pre>
-       *for CREATE as alternative to string spec
+       *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
        * </pre>
        */
-      public org.yamcs.protobuf.Yamcs.ReplayRequest.Builder getReplaySpecBuilder() {
+      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.ReplayRequest.Builder getReplaySpecBuilder() {
         bitField0_ |= 0x00000080;
         onChanged();
         return getReplaySpecFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+       * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
        *
        * <pre>
-       *for CREATE as alternative to string spec
+       *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
        * </pre>
        */
-      public org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder getReplaySpecOrBuilder() {
+      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder getReplaySpecOrBuilder() {
         if (replaySpecBuilder_ != null) {
           return replaySpecBuilder_.getMessageOrBuilder();
         } else {
@@ -18972,10 +18972,10 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>optional .yamcs.ReplayRequest replaySpec = 8;</code>
+       * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
        *
        * <pre>
-       *for CREATE as alternative to string spec
+       *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
@@ -23605,35 +23605,35 @@ public final class YamcsManagement {
       "\n\nStatistics\022\020\n\010instance\030\001 \002(\t\022\026\n\016yProce" +
       "ssorName\030\002 \002(\t\022.\n\007tmstats\030\003 \003(\0132\035.yamcsM" +
       "anagement.TmStatistics\022\023\n\013lastUpdated\030\004 " +
-      "\001(\003\022\026\n\016lastUpdatedUTC\030\005 \001(\t\"\266\002\n\032Processo" +
+      "\001(\003\022\026\n\016lastUpdatedUTC\030\005 \001(\t\"\274\002\n\032Processo" +
       "rManagementRequest\022H\n\toperation\030\001 \001(\01625." +
       "yamcsManagement.ProcessorManagementReque",
       "st.Operation\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003" +
-      " \001(\t\022\014\n\004type\030\004 \001(\t\022\014\n\004spec\030\005 \001(\t\022\020\n\010clie" +
-      "ntId\030\006 \003(\005\022\031\n\npersistent\030\007 \001(\010:\005false\022(\n" +
-      "\nreplaySpec\030\010 \001(\0132\024.yamcs.ReplayRequest\"" +
-      ";\n\tOperation\022\024\n\020CREATE_PROCESSOR\020\000\022\030\n\024CO" +
-      "NNECT_TO_PROCESSOR\020\001\"\355\001\n\020ProcessorReques" +
-      "t\022>\n\toperation\030\001 \001(\0162+.yamcsManagement.P" +
-      "rocessorRequest.Operation\022\020\n\010instance\030\002 " +
-      "\001(\t\022\014\n\004name\030\003 \001(\t\022\020\n\010seekTime\030\004 \001(\003\022\'\n\013r" +
-      "eplaySpeed\030\005 \001(\0132\022.yamcs.ReplaySpeed\">\n\t",
-      "Operation\022\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK" +
-      "\020\004\022\020\n\014CHANGE_SPEED\020\005\"\243\001\n\010LinkInfo\022\020\n\010ins" +
-      "tance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022" +
-      "\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005 \001(\t\022\020\n\010disable" +
-      "d\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021\n\tdataCount\030\010 \001" +
-      "(\003\022\026\n\016detailedStatus\030\t \001(\t\"\236\001\n\tLinkEvent" +
-      "\022-\n\004type\030\001 \001(\0162\037.yamcsManagement.LinkEve" +
-      "nt.Type\022+\n\010linkInfo\030\002 \001(\0132\031.yamcsManagem" +
-      "ent.LinkInfo\"5\n\004Type\022\016\n\nREGISTERED\020\001\022\020\n\014" +
-      "UNREGISTERED\020\002\022\013\n\007UPDATED\020\003\"n\n\013ServiceIn",
-      "fo\022\020\n\010instance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022,\n\005st" +
-      "ate\030\003 \001(\0162\035.yamcsManagement.ServiceState" +
-      "\022\021\n\tclassName\030\004 \001(\t*\\\n\014ServiceState\022\007\n\003N" +
-      "EW\020\000\022\014\n\010STARTING\020\001\022\013\n\007RUNNING\020\002\022\014\n\010STOPP" +
-      "ING\020\003\022\016\n\nTERMINATED\020\004\022\n\n\006FAILED\020\005B\024\n\022org" +
-      ".yamcs.protobuf"
+      " \001(\t\022\014\n\004type\030\004 \001(\t\022\016\n\006config\030\005 \001(\t\022\020\n\010cl" +
+      "ientId\030\006 \003(\005\022\031\n\npersistent\030\007 \001(\010:\005false\022" +
+      ",\n\nreplaySpec\030\010 \001(\0132\024.yamcs.ReplayReques" +
+      "tB\002\030\001\";\n\tOperation\022\024\n\020CREATE_PROCESSOR\020\000" +
+      "\022\030\n\024CONNECT_TO_PROCESSOR\020\001\"\355\001\n\020Processor" +
+      "Request\022>\n\toperation\030\001 \001(\0162+.yamcsManage" +
+      "ment.ProcessorRequest.Operation\022\020\n\010insta" +
+      "nce\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\020\n\010seekTime\030\004 \001(" +
+      "\003\022\'\n\013replaySpeed\030\005 \001(\0132\022.yamcs.ReplaySpe",
+      "ed\">\n\tOperation\022\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010" +
+      "\n\004SEEK\020\004\022\020\n\014CHANGE_SPEED\020\005\"\243\001\n\010LinkInfo\022" +
+      "\020\n\010instance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030" +
+      "\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005 \001(\t\022\020\n\010d" +
+      "isabled\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021\n\tdataCou" +
+      "nt\030\010 \001(\003\022\026\n\016detailedStatus\030\t \001(\t\"\236\001\n\tLin" +
+      "kEvent\022-\n\004type\030\001 \001(\0162\037.yamcsManagement.L" +
+      "inkEvent.Type\022+\n\010linkInfo\030\002 \001(\0132\031.yamcsM" +
+      "anagement.LinkInfo\"5\n\004Type\022\016\n\nREGISTERED" +
+      "\020\001\022\020\n\014UNREGISTERED\020\002\022\013\n\007UPDATED\020\003\"n\n\013Ser",
+      "viceInfo\022\020\n\010instance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t" +
+      "\022,\n\005state\030\003 \001(\0162\035.yamcsManagement.Servic" +
+      "eState\022\021\n\tclassName\030\004 \001(\t*\\\n\014ServiceStat" +
+      "e\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013\n\007RUNNING\020\002\022\014\n" +
+      "\010STOPPING\020\003\022\016\n\nTERMINATED\020\004\022\n\n\006FAILED\020\005B" +
+      "\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -23711,7 +23711,7 @@ public final class YamcsManagement {
           internal_static_yamcsManagement_ProcessorManagementRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcsManagement_ProcessorManagementRequest_descriptor,
-              new java.lang.String[] { "Operation", "Instance", "Name", "Type", "Spec", "ClientId", "Persistent", "ReplaySpec", });
+              new java.lang.String[] { "Operation", "Instance", "Name", "Type", "Config", "ClientId", "Persistent", "ReplaySpec", });
           internal_static_yamcsManagement_ProcessorRequest_descriptor =
             getDescriptor().getMessageTypes().get(12);
           internal_static_yamcsManagement_ProcessorRequest_fieldAccessorTable = new

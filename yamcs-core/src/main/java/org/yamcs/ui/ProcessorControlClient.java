@@ -1,6 +1,9 @@
 package org.yamcs.ui;
 
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.YamcsException;
@@ -11,16 +14,10 @@ import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.api.ws.WebSocketResponseHandler;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
+import org.yamcs.protobuf.SchemaYamcs.ReplayRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs;
-import org.yamcs.protobuf.Yamcs.EndAction;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
-import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
-import org.yamcs.protobuf.Yamcs.PpReplayRequest;
-import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
@@ -30,6 +27,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ManagementResource;
 
 import io.netty.handler.codec.http.HttpMethod;
+import io.protostuff.JsonIOUtil;
 
 
 /**
@@ -48,69 +46,33 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         yconnector.addConnectionListener(this);
     }
 
-    public void setYProcessorListener(ProcessorListener yamcsMonitor) {
+    public void setProcessorListener(ProcessorListener yamcsMonitor) {
         this.yamcsMonitor=yamcsMonitor;
     }
 
-    public void destroyYProcessor(String name) throws YamcsApiException {
+    public void destroyProcessor(String name) throws YamcsApiException {
         // TODO Auto-generated method stub
 
     }
 
     public CompletableFuture<byte[]> createProcessor(String instance, String name, String type, Yamcs.ReplayRequest spec, boolean persistent, int[] clients) throws YamcsException, YamcsApiException{
-        CreateProcessorRequest.Builder cprb =  CreateProcessorRequest.newBuilder().setName(name);
+        CreateProcessorRequest.Builder cprb =  CreateProcessorRequest.newBuilder().setName(name).setType(type);
         cprb.setPersistent(persistent);
-
-        for(int cid:clients) cprb.addClientId(cid);
-        if(spec.hasStart()) {
-            cprb.setStart(TimeEncoding.toString(spec.getStart()));
-        } else if (spec.hasUtcStart()) {
-            cprb.setStart(spec.getUtcStart());
+        for(int cid:clients) {
+            cprb.addClientId(cid);
         }
-
-        if(spec.hasStop()) {
-            cprb.setStop(TimeEncoding.toString(spec.getStop()));
-        } else if (spec.hasUtcStop()) {
-            cprb.setStop(spec.getUtcStop());
-        }
-        if(spec.hasPacketRequest()) {
-            PacketReplayRequest prr = spec.getPacketRequest();
-            for(NamedObjectId oid: prr.getNameFilterList()) {
-                if(oid.hasNamespace()) cprb.addPacketname(oid.getNamespace()+"/"+oid.getName());
-                else cprb.addPacketname(oid.getName());
+        
+        if(spec!=null) {
+            StringWriter writer = new StringWriter();
+            try {
+                JsonIOUtil.writeTo(writer, spec, ReplayRequest.WRITE, false);
+            } catch (IOException e) {
+                throw new YamcsApiException("Error encoding the request to json", e);
             }
+            cprb.setConfig(writer.toString());
         }
-
-        for(int i=0;i<clients.length;i++) {
-            cprb.addClientId(clients[i]);
-        }
-        if(spec.hasPpRequest()) {
-            PpReplayRequest ppr = spec.getPpRequest();
-            cprb.addAllPpgroup(ppr.getGroupNameFilterList());
-        }
-        if(spec.hasParameterRequest()) {
-            ParameterReplayRequest ppr = spec.getParameterRequest();
-            for(NamedObjectId oid: ppr.getNameFilterList()) {
-                if(oid.hasNamespace()) cprb.addParaname(oid.getNamespace()+"/"+oid.getName());
-                else cprb.addParaname(oid.getName());
-            }
-        }
-        if(spec.hasSpeed()) {
-            ReplaySpeed speed = spec.getSpeed();
-            if(speed.getType()==ReplaySpeedType.AFAP) {
-                cprb.setSpeed("afap");
-            } else if(speed.getType()==ReplaySpeedType.FIXED_DELAY) {
-                cprb.setSpeed(Integer.toString(Math.round(speed.getParam())));
-            } else if(speed.getType()==ReplaySpeedType.REALTIME) {
-                cprb.setSpeed(speed.getParam()+"x");
-            }
-        }
-        if(spec.hasEndAction()) {
-            EndAction endAction = spec.getEndAction();
-            if(endAction==EndAction.LOOP) {
-                cprb.setLoop(true);
-            }
-        }
+        
+        
         RestClient restClient = yconnector.getRestClient();
         //POST "/api/processors/:instance"
         String resource = "/processors/"+instance;

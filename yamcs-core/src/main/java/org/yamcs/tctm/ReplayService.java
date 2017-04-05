@@ -1,6 +1,7 @@
 package org.yamcs.tctm;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -56,6 +57,8 @@ import org.yamcs.xtceproc.XtceTmProcessor;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.protobuf.MessageLite;
 
+import io.protostuff.JsonIOUtil;
+
 
 /**
  * Provides telemetry packets and processed parameters from the yamcs archive.
@@ -92,6 +95,18 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     public ReplayService(String instance, ReplayRequest spec) throws ProcessorException, ConfigurationException {
         this.yamcsInstance = instance;
         this.originalReplayRequest = spec;
+        xtceDb = XtceDbFactory.getInstance(instance);
+    }
+    
+    public ReplayService(String instance, String config) throws ProcessorException, ConfigurationException {
+        this.yamcsInstance = instance;
+        ReplayRequest.Builder rrb = ReplayRequest.newBuilder(); 
+        try {
+            JsonIOUtil.mergeFrom(config.getBytes(), rrb, org.yamcs.protobuf.SchemaYamcs.ReplayRequest.MERGE, false);
+        } catch (IOException e) {
+           throw new ConfigurationException("Cannot parse config into a replay request: "+e.getMessage());
+        }
+        this.originalReplayRequest = rrb.build();
         xtceDb = XtceDbFactory.getInstance(instance);
     }
 

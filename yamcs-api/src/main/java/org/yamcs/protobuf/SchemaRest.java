@@ -3469,6 +3469,10 @@ public final class SchemaRest
                     output.writeBool(10, message.getCmdhist(), false);
                 if(message.hasPersistent())
                     output.writeBool(11, message.getPersistent(), false);
+                if(message.hasType())
+                    output.writeString(12, message.getType(), false);
+                if(message.hasConfig())
+                    output.writeString(13, message.getConfig(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Rest.CreateProcessorRequest message)
             {
@@ -3541,6 +3545,12 @@ public final class SchemaRest
                         case 11:
                             builder.setPersistent(input.readBool());
                             break;
+                        case 12:
+                            builder.setType(input.readString());
+                            break;
+                        case 13:
+                            builder.setConfig(input.readString());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -3592,6 +3602,8 @@ public final class SchemaRest
                 case 9: return "packetname";
                 case 10: return "cmdhist";
                 case 11: return "persistent";
+                case 12: return "type";
+                case 13: return "config";
                 default: return null;
             }
         }
@@ -3614,6 +3626,8 @@ public final class SchemaRest
             fieldMap.put("packetname", 9);
             fieldMap.put("cmdhist", 10);
             fieldMap.put("persistent", 11);
+            fieldMap.put("type", 12);
+            fieldMap.put("config", 13);
         }
     }
 

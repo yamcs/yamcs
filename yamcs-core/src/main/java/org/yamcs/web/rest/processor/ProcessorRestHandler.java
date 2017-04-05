@@ -41,8 +41,6 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
-import io.netty.channel.ChannelFuture;
-
 
 public class ProcessorRestHandler extends RestHandler {
 
@@ -154,11 +152,61 @@ public class ProcessorRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/:instance", method = "POST")
     public void createProcessorForInstance(RestRequest req) throws HttpException {
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
-        
         CreateProcessorRequest request = req.bodyAsMessage(SchemaRest.CreateProcessorRequest.MERGE).build();
-
+        if(request.hasStart()) {
+            //the old create processor only allowed creating archive processors
+            createProcessorForInstanceOld(req, request);
+            return;
+        }
+        //the new one just passes on the config to the processor factory
+        
+        String yamcsInstance = verifyInstance(req, req.getRouteParam("instance"));
+        String processorName = null;
+        if (request.hasName()) {
+            processorName = request.getName();
+        } else  if (req.hasQueryParameter("name")) { 
+            processorName = req.getQueryParameter("name");
+        } else {
+            throw new BadRequestException("No processor name was specified");
+        }
+        
+        String processorType = null;
+        if (request.hasType()) {
+            processorType = request.getType();
+        } else  if (req.hasQueryParameter("type")) { 
+            processorName = req.getQueryParameter("type");
+        } else {
+            throw new BadRequestException("No processor type was specified");
+        }
+        ProcessorManagementRequest.Builder reqb = ProcessorManagementRequest.newBuilder();
+        reqb.setInstance(yamcsInstance);
+        reqb.setName(processorName);
+        reqb.setType(processorType);
+        if(request.hasPersistent()) {
+            reqb.setPersistent(request.getPersistent());
+        }
+        
+        reqb.addAllClientId(request.getClientIdList());
+        
+        if(request.hasConfig()) {
+            reqb.setConfig(request.getConfig());
+        }
+        
+        ManagementService mservice = ManagementService.getInstance();
+        try {
+            mservice.createProcessor(reqb.build(), req.getAuthToken());
+            completeOK(req);
+        } catch (YamcsException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+    }
+    
+    
+    public void createProcessorForInstanceOld(RestRequest req, CreateProcessorRequest request) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+    
         String name = null;
         long start = TimeEncoding.INVALID_INSTANT;
         long stop = TimeEncoding.INVALID_INSTANT;

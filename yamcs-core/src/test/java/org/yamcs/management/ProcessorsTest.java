@@ -20,15 +20,11 @@ import org.yamcs.ProcessorException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Yamcs;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.ui.ProcessorControlClient;
 import org.yamcs.ui.ProcessorListener;
 import org.yamcs.ui.YamcsConnector;
 import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
-import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
@@ -56,21 +52,14 @@ public class ProcessorsTest {
     }
     
     @Test
-    public void empty() {
-	
-    }
-    
-    @Test
     public void createProcessorWithoutClient() throws Exception {
         YamcsConnector yconnector = new YamcsConnector("ProcessorTest");
         ProcessorControlClient ccc = new ProcessorControlClient(yconnector);
-        ccc.setYProcessorListener(new MyListener("YProcessorsTest"));
+        ccc.setProcessorListener(new MyListener("YProcessorsTest"));
         yconnector.connect(YamcsConnectionProperties.parse("http://localhost:28090/")).get(5,TimeUnit.SECONDS);
 
         try {
-
-            Yamcs.ReplayRequest rr = Yamcs.ReplayRequest.newBuilder().setStart(1000).build();
-            ccc.createProcessor("yproctest0", "test1", "dummy", rr, false, new int[]{10,14}).get();
+            ccc.createProcessor("yproctest0", "test1", "dummy", null, false, new int[]{10,14}).get();
             assertTrue("YamcsException was expected", false);
         } catch(ExecutionException e) {
             Throwable cause = e.getCause();
@@ -84,15 +73,13 @@ public class ProcessorsTest {
         YamcsConnector yconnector = new YamcsConnector("ProcessorTest-randname1");
         ProcessorControlClient client1 = new ProcessorControlClient(yconnector);
         MyListener ml=new MyListener("yproctest1");
-        client1.setYProcessorListener(ml);
+        client1.setProcessorListener(ml);
         Future<YamcsConnectionProperties> f = yconnector.connect(YamcsConnectionProperties.parse("http://localhost:28090/yproctest1"));
         f.get(5, TimeUnit.SECONDS);
 
         Thread.sleep(3000);
-        Yamcs.ReplayRequest rr = Yamcs.ReplayRequest.newBuilder()
-                .setPacketRequest(PacketReplayRequest.newBuilder().addNameFilter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/PKT1").build()).build())
-                .setStart(1000).build();
-        client1.createProcessor("yproctest1", "yproc1", "dummy", rr, true, new int[]{}).get();
+       
+        client1.createProcessor("yproctest1", "yproc1", "dummy", null, true, new int[]{}).get();
         
         MyYProcClient client = new MyYProcClient();
         YProcessor yproc1 = YProcessor.getInstance("yproctest1", "yproc1");
@@ -106,7 +93,7 @@ public class ProcessorsTest {
         
         assertNotNull(ManagementService.getInstance().getClientInfo(myClientId));
         
-        client1.createProcessor("yproctest1", "yproc2", "dummy", rr, false, new int[]{myClientId}).get();
+        client1.createProcessor("yproctest1", "yproc2", "dummy", null, false, new int[]{myClientId}).get();
         
         
         assertNotNull(ManagementService.getInstance().getClientInfo(myClientId));
@@ -132,23 +119,19 @@ public class ProcessorsTest {
         
         List<ProcessorInfo> l = ml.yprocUpdated.get("realtime");
         assertEquals(1, l.size());
-        assertPEquals("realtime", ServiceState.RUNNING, ReplayState.INITIALIZATION, l.get(0));
+        assertPEquals("realtime", ServiceState.RUNNING, l.get(0));
         
         l = ml.yprocUpdated.get("yproc1");
-        assertEquals(4, l.size());
-        assertPEquals("yproc1", ServiceState.NEW, ReplayState.INITIALIZATION, l.get(0));        
-        assertPEquals("yproc1", ServiceState.RUNNING, ReplayState.RUNNING, l.get(1));
-        assertPEquals("yproc1", ServiceState.RUNNING, ReplayState.STOPPED, l.get(2));
-        assertPEquals("yproc1", ServiceState.STOPPING, ReplayState.STOPPED, l.get(3));
+        assertEquals(3, l.size());
+        assertPEquals("yproc1", ServiceState.NEW, l.get(0));        
+        assertPEquals("yproc1", ServiceState.RUNNING, l.get(1));
+        assertPEquals("yproc1", ServiceState.STOPPING, l.get(2));
         
         l = ml.yprocUpdated.get("yproc2");
-        assertEquals(4, l.size());
-        assertPEquals("yproc2", ServiceState.NEW, ReplayState.INITIALIZATION, l.get(0));
-        assertPEquals("yproc2", ServiceState.RUNNING, ReplayState.RUNNING, l.get(1));
-        assertPEquals("yproc2", ServiceState.RUNNING, ReplayState.STOPPED, l.get(2));
-        assertPEquals("yproc2", ServiceState.STOPPING, ReplayState.STOPPED, l.get(3));
-        
-        
+        assertEquals(3, l.size());
+        assertPEquals("yproc2", ServiceState.NEW, l.get(0));
+        assertPEquals("yproc2", ServiceState.RUNNING, l.get(1));
+        assertPEquals("yproc2", ServiceState.STOPPING, l.get(2));
         
         assertEquals(4, ml.clientUpdatedList.size());
         //first one is from the ProcessorControlClient    
@@ -167,10 +150,9 @@ public class ProcessorsTest {
         assertEquals(appname, clientInfo.getApplicationName());
     }
 
-    private void assertPEquals(String procName, ServiceState state, ReplayState replayState, ProcessorInfo processorInfo) {
+    private void assertPEquals(String procName, ServiceState state, ProcessorInfo processorInfo) {
         assertEquals(procName, processorInfo.getName());        
         assertEquals(state, processorInfo.getState());
-        assertEquals(replayState, processorInfo.getReplayState());
     }
 
     static class MyListener implements ProcessorListener {
@@ -267,9 +249,6 @@ public class ProcessorsTest {
         private TmProcessor tmProcessor;
 
         public DummyTmProvider(String instance) {
-        }
-        
-        public DummyTmProvider(String instance, Yamcs.ReplayRequest spec) {
         }
 
         @Override
