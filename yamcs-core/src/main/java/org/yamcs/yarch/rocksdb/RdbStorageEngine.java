@@ -188,7 +188,7 @@ public class RdbStorageEngine implements StorageEngine {
     
         if(tblDef.getFormatVersion()!=TableDefinition.CURRENT_FORMAT_VERSION) {
             throw new YarchException("Table "+ydb.getName()+"/"+tblDef.getName()+" format version is "+tblDef.getFormatVersion()
-            + " instead of "+TableDefinition.CURRENT_FORMAT_VERSION+", please upgrade (use the yamcs command line with the upgrade subcommand).");
+            + " instead of "+TableDefinition.CURRENT_FORMAT_VERSION+", please upgrade (use the \"yamcs archive upgrade\" command).");
         }
     }
     @Override
