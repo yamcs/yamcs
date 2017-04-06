@@ -140,7 +140,6 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         Future<String> responseFuture = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE));
 
-        LoggerFactory.getLogger(getClass()).error("GET  BACK                      " + responseFuture.get());
         bulkPvals = (fromJson(responseFuture.get(), SchemaRest.BulkGetParameterValueResponse.MERGE)).build();
         long t1 = System.currentTimeMillis();
         assertEquals(2000, t1-t0, 200);

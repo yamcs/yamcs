@@ -3,8 +3,6 @@ package org.yamcs.web.rest;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
-import java.io.IOException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YProcessor;
@@ -22,6 +20,7 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpRequestHandler;
+import org.yamcs.web.HttpUtils;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.RouteHandler;
 import org.yamcs.xtce.Algorithm;
@@ -34,11 +33,9 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchDatabase;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.protobuf.MessageLite;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -47,7 +44,6 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.LastHttpContent;
-import io.protostuff.JsonIOUtil;
 import io.protostuff.Schema;
 
 /**
@@ -56,59 +52,34 @@ import io.protostuff.Schema;
 public abstract class RestHandler extends RouteHandler {
 
     private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
-    private static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
 
     protected static void completeOK(RestRequest restRequest) {
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
         HttpUtil.setContentLength(httpResponse, 0);
-       completeRequest(restRequest, httpResponse);
+        completeRequest(restRequest, httpResponse);
     }
 
     protected static <T extends MessageLite> void completeOK(RestRequest restRequest, T responseMsg, Schema<T> responseSchema) {
-        ByteBuf body = restRequest.getChannelHandlerContext().alloc().buffer();
+        HttpRequestHandler.sendMessageResponse(restRequest.getChannelHandlerContext(), restRequest.getHttpRequest(), OK, responseMsg, responseSchema).addListener(l -> {
+            restRequest.getCompletableFuture().complete(null);
+        });
+    }
 
-        try (ByteBufOutputStream channelOut = new ByteBufOutputStream(body)){
-            if (MediaType.PROTOBUF.equals(restRequest.deriveTargetContentType())) {
-                responseMsg.writeTo(channelOut);
-            } else {
-                JsonGenerator generator = restRequest.createJsonGenerator(channelOut);
-                JsonIOUtil.writeTo(generator, responseMsg, responseSchema, false);
-                generator.close();
-                body.writeBytes(NEWLINE_BYTES); // For curl comfort
-            }
-        } catch (IOException e) {
-            sendRestError(restRequest, HttpResponseStatus.INTERNAL_SERVER_ERROR, e);
-        }
-        byte[] dst = new byte[body.readableBytes()];
-        body.markReaderIndex();
-        body.readBytes(dst);
-        body.resetReaderIndex();
+    protected static void completeOK(RestRequest restRequest, MediaType contentType, ByteBuf body) {
+        if (body == null) {
+            throw new NullPointerException("body cannot be null; use the completeOK(request) to send an empty response.");
+        } 
+        
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
-        setContentTypeHeader(httpResponse, restRequest.deriveTargetContentType().toString());
-
+        HttpUtils.setContentTypeHeader(httpResponse, contentType);
         int txSize =  body.readableBytes();
         HttpUtil.setContentLength(httpResponse, txSize);
         restRequest.addTransferredSize(txSize);
         completeRequest(restRequest, httpResponse);
     }
 
-    protected static void completeOK(RestRequest restRequest, MediaType contentType, ByteBuf body) {
-        if (body == null) {
-            HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
-            HttpUtil.setContentLength(httpResponse, 0);
-            completeRequest(restRequest, httpResponse);
-        } else {
-            HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
-            setContentTypeHeader(httpResponse, contentType.toString());
-            int txSize =  body.readableBytes();
-            HttpUtil.setContentLength(httpResponse, txSize);
-            restRequest.addTransferredSize(txSize);
-            completeRequest(restRequest, httpResponse);
-        }
-    }
-
     private static void completeRequest(RestRequest restRequest, HttpResponse httpResponse) {
-        ChannelFuture cf = HttpRequestHandler.sendOK(restRequest.getChannelHandlerContext(), restRequest.getHttpRequest(), httpResponse);
+        ChannelFuture cf = HttpRequestHandler.sendResponse(restRequest.getChannelHandlerContext(), restRequest.getHttpRequest(), httpResponse, true);
 
         cf.addListener(l -> {
             restRequest.getCompletableFuture().complete(null);
@@ -116,42 +87,9 @@ public abstract class RestHandler extends RouteHandler {
     }
 
     protected static ChannelFuture sendRestError(RestRequest req, HttpResponseStatus status, Throwable t) {
-        MediaType contentType = req.deriveTargetContentType();
         ChannelHandlerContext ctx = req.getChannelHandlerContext();
-        if (MediaType.JSON.equals(contentType)) {
-            ByteBuf buf = ctx.alloc().buffer();
-            try (ByteBufOutputStream channelOut = new ByteBufOutputStream(buf)) {
-                JsonGenerator generator = req.createJsonGenerator(channelOut);
-                JsonIOUtil.writeTo(generator, toException(t).build(), SchemaWeb.RestExceptionMessage.WRITE, false);
-                generator.close();
-                buf.writeBytes(NEWLINE_BYTES); // For curl comfort
-                HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
-                setContentTypeHeader(response, MediaType.JSON.toString()); // UTF-8 by default IETF RFC4627
-                HttpUtil.setContentLength(response, buf.readableBytes());
-                return HttpRequestHandler.sendError(ctx, req.getHttpRequest(), response);
-            } catch (IOException e2) {
-                log.error("Could not create JSON Generator", e2);
-                log.debug("Original exception not sent to client", t);
-                return HttpRequestHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
-            }
-        } else if (MediaType.PROTOBUF.equals(contentType)) {
-            ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
-
-            try (ByteBufOutputStream channelOut = new ByteBufOutputStream(buf)) {
-                toException(t).build().writeTo(channelOut);
-                channelOut.close();
-                HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, buf);
-                setContentTypeHeader(response, MediaType.PROTOBUF.toString());
-                HttpUtil.setContentLength(response, buf.readableBytes());
-                return HttpRequestHandler.sendError(ctx, req.getHttpRequest(), response);
-            } catch (IOException e2) {
-                log.error("Could not write to channel buffer", e2);
-                log.debug("Original exception not sent to client", t);
-                return HttpRequestHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
-            }
-        } else {
-           return HttpRequestHandler.sendPlainTextError(ctx, req.getHttpRequest(), HttpResponseStatus.INTERNAL_SERVER_ERROR);
-        }
+        RestExceptionMessage msg = toException(t).build();
+        return HttpRequestHandler.sendMessageResponse(ctx, req.getHttpRequest(), status, msg, SchemaWeb.RestExceptionMessage.WRITE);
     }
     /**
      * write the error to the client and complete the request exceptionally
@@ -161,7 +99,7 @@ public abstract class RestHandler extends RouteHandler {
     protected static void completeWithError(RestRequest req, HttpException e) {
         ChannelFuture cf = sendRestError(req, e.getStatus(), e);
         cf.addListener(l-> {
-           req.getCompletableFuture().completeExceptionally(e);
+            req.getCompletableFuture().completeExceptionally(e);
         });
     }
     protected static void abortRequest(RestRequest req) {

@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
 import org.yamcs.api.MediaType;
+import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.WebSocketRequest;
@@ -16,6 +17,7 @@ import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
+import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.security.UsernamePasswordToken;
@@ -119,7 +121,8 @@ public class PermissionsTest extends AbstractIntegrationTest {
             restClient1.doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE)).get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
-            assertTrue(e.getCause().getMessage().contains("ForbiddenException"));
+            RestExceptionMessage rem = ((YamcsApiException)e.getCause()).getRestExceptionMessage();
+            assertEquals("ForbiddenException", rem.getType());
         }
         restClient1.close();
     }
@@ -136,7 +139,9 @@ public class PermissionsTest extends AbstractIntegrationTest {
             restClient1.doRequest("/processors/IntegrationTest/realtime/parameters/mset", HttpMethod.POST, toJson(bulkPvals.build(), SchemaRest.BulkSetParameterValueRequest.WRITE)).get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
-            assertTrue(e.getCause().getMessage().contains("ForbiddenException"));
+            YamcsApiException e1 = (YamcsApiException)e.getCause();
+            RestExceptionMessage rem = e1.getRestExceptionMessage();
+            assertEquals("ForbiddenException", rem.getType());
         }
         restClient1.close();
     }
@@ -149,12 +154,14 @@ public class PermissionsTest extends AbstractIntegrationTest {
         try {
             updateCommandHistory(getRestClient("testuser", "password"));
         } catch (ExecutionException e) {
-            assertTrue(e.getCause().getMessage().contains("ForbiddenException"));
+            RestExceptionMessage rem = ((YamcsApiException)e.getCause()).getRestExceptionMessage();
+            assertEquals("ForbiddenException", rem.getType());
         }
         try {
             updateCommandHistory(getRestClient("operator", "password"));
         } catch (ExecutionException e) {
-            assertTrue(e.getCause().getMessage().contains("ForbiddenException"));
+            RestExceptionMessage rem = ((YamcsApiException)e.getCause()).getRestExceptionMessage();
+            assertEquals("ForbiddenException", rem.getType());
         }
 
     }

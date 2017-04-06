@@ -1,5 +1,6 @@
 package table;
 
+import "web.proto";
 /**
 *  This is low level table encoding used in table dump/load functionality.
 */
@@ -22,3 +23,11 @@ message Row {
   repeated ColumnInfo column = 1; 
   repeated Cell cell = 2;   
 }
+
+message TableLoadResponse {
+   optional uint32 rowsLoaded = 1;
+}
+
+extend web.RestExceptionMessage {
+   optional uint32 rowsLoaded = 100;
+}  

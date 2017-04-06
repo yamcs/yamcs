@@ -34,7 +34,7 @@ public class RestClient {
     final HttpClient httpClient;
 
     /** maximum size of the responses - this is not applicable to bulk requests */
-    final static long MAX_RESPONSE_LENGTH = 1024*1024;
+    final static int MAX_RESPONSE_LENGTH = 1024*1024;
 
     /**max message length of an individual ProtoBuf message part of a bulk retrieval*/ 
     final static int MAX_MESSAGE_LENGTH = 1024*1024;
@@ -255,10 +255,7 @@ public class RestClient {
         httpClient.setAcceptMediaType(acceptMediaType);
     }
 
-
-
-
-    public void setMaxResponseLength(long size) {
+    public void setMaxResponseLength(int size) {
         httpClient.setMaxResponseLength(size);
     }
 

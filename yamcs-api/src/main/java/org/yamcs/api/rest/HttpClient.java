@@ -10,15 +10,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.protobuf.SchemaWeb;
+import org.yamcs.protobuf.Table;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.UsernamePasswordToken;
 
+import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.MessageLite;
 
 import io.netty.bootstrap.Bootstrap;
@@ -36,11 +37,11 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.codec.http.cookie.ClientCookieEncoder;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpRequest;
-import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpContent;
@@ -49,6 +50,7 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObject;
+import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -64,46 +66,32 @@ public class HttpClient {
     EventLoopGroup group;
     private List<Cookie> cookies;
 
-    private long maxResponseLength=1024*1024;//max length of the expected response 
-
+    private int maxResponseLength=1024*1024;//max length of the expected response 
+    
+    //extensions for the RestExceptionMessage
+    static ExtensionRegistry exceptionRegistry = ExtensionRegistry.newInstance();
+    static {
+        exceptionRegistry.add(Table.rowsLoaded);
+    }
 
     public CompletableFuture<byte[]> doAsyncRequest(String url, HttpMethod httpMethod, byte[] body, AuthenticationToken authToken) throws URISyntaxException {
         URI uri = new URI(url);
-        AccumulatingChannelHandler channelHandler = new AccumulatingChannelHandler();
-
-        ChannelFuture chf = setupChannel(uri, channelHandler);
-       
-        HttpRequest request = setupRequest(uri, httpMethod, body, authToken);
-
+        HttpObjectAggregator aggregator = new HttpObjectAggregator(maxResponseLength);
+        
         CompletableFuture<byte[]> cf = new CompletableFuture<byte[]>();
+        
+        ResponseHandler respHandler = new ResponseHandler(cf);
+        HttpRequest request = setupRequest(uri, httpMethod, body, authToken);
+        
+        ChannelFuture chf = setupChannel(uri, aggregator, respHandler);
+        
         chf.addListener(f->{
             if(!f.isSuccess()) {
                 cf.completeExceptionally(f.cause());
                 return;
             }
-
-            Channel ch = chf.channel();
-            ch.writeAndFlush(request).await(1, TimeUnit.SECONDS);
-
-            ChannelFuture closeFuture = ch.closeFuture();
-
-            closeFuture.addListener(f1-> {
-                if(channelHandler.exception!=null) {
-                    cf.completeExceptionally(channelHandler.exception);
-                } else if(channelHandler.httpResponse==null) {
-                    cf.complete(new byte[0]);
-                } else {
-                    HttpResponse resp = channelHandler.httpResponse;
-                    if(resp.status().code() != HttpResponseStatus.OK.code()) {
-                        Exception exception = decodeException(resp, getByteArray(channelHandler.result));
-                        cf.completeExceptionally(exception);
-                    } else {
-                        cf.complete(getByteArray(channelHandler.result));
-                    }
-                }
-            });
+            chf.channel().writeAndFlush(request);
         });
-
         return cf;
     }
 
@@ -117,7 +105,7 @@ public class HttpClient {
         fillInHeaders(request, uri, authToken);
         request.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);    
         HttpUtil.set100ContinueExpected(request, true);
-        
+
         chf.addListener(f->{
             if(!f.isSuccess()) {
                 cf.completeExceptionally(f.cause());
@@ -130,56 +118,33 @@ public class HttpClient {
     }
 
 
-    static YamcsApiException decodeException(HttpObject httpObj, byte[] data) throws IOException {
+    static YamcsApiException decodeException(HttpObject httpObj) throws IOException {
         YamcsApiException exception;
-        if(httpObj instanceof DefaultHttpResponse) {
-            if(httpObj instanceof DefaultFullHttpResponse) {
-                DefaultFullHttpResponse fullResp = (DefaultFullHttpResponse)httpObj;
-                data = getByteArray(fullResp.content());
-            }
-            DefaultHttpResponse resp = (DefaultHttpResponse) httpObj;
-            if(data!=null) {
-                String contentType = resp.headers().get(HttpHeaderNames.CONTENT_TYPE);
+
+        if(httpObj instanceof HttpResponse) {
+            if(httpObj instanceof FullHttpResponse) {
+                FullHttpResponse fullResp = (FullHttpResponse)httpObj;
+                byte[] data = getByteArray(fullResp.content());
+                String contentType = fullResp.headers().get(HttpHeaderNames.CONTENT_TYPE);
+                
                 if(MediaType.JSON.is(contentType)) {
                     RestExceptionMessage msg =  fromJson(new String(data), SchemaWeb.RestExceptionMessage.MERGE).build();
-                    exception = new YamcsApiException(msg.getType()+" : "+msg.getMsg());
+                    exception = new YamcsApiException(msg);
                 } else if (MediaType.PROTOBUF.is(contentType)) {
-                    RestExceptionMessage msg = RestExceptionMessage.parseFrom(data);
-                    exception = new YamcsApiException(msg.getType()+" : "+msg.getMsg());
+                    RestExceptionMessage msg = RestExceptionMessage.parseFrom(data, exceptionRegistry);
+                    exception = new YamcsApiException(msg);
                 } else {
                     exception = new YamcsApiException(new String(data));    
                 }
             } else {
-                exception = getInvalidHttpResponseException(resp.status().toString());
+                exception = getInvalidHttpResponseException(((HttpResponse)httpObj).status().toString());
             }
         } else {
             exception = getInvalidHttpResponseException(httpObj.toString());
         }
         return exception;
+    }
 
-    }
-    
-    static YamcsApiException decodeException(FullHttpResponse fullResp) throws IOException {
-        YamcsApiException exception;
-        
-        byte[] data = getByteArray(fullResp.content());
-        if(data!=null) {
-            String contentType = fullResp.headers().get(HttpHeaderNames.CONTENT_TYPE);
-            if(MediaType.JSON.is(contentType)) {
-                RestExceptionMessage msg =  fromJson(new String(data), SchemaWeb.RestExceptionMessage.MERGE).build();
-                exception = new YamcsApiException(msg.getType()+" : "+msg.getMsg());
-            } else if (MediaType.PROTOBUF.is(contentType)) {
-                RestExceptionMessage msg = RestExceptionMessage.parseFrom(data);
-                exception = new YamcsApiException(msg.getType()+" : "+msg.getMsg());
-            } else {
-                exception = new YamcsApiException(new String(data));    
-            }
-        } else {
-            exception = getInvalidHttpResponseException(fullResp.status().toString());
-        }
-        return exception;
-    }
-    
     static private  YamcsApiException getInvalidHttpResponseException(String resp) {
         return new YamcsApiException("Received http response: "+resp);
     }
@@ -187,7 +152,7 @@ public class HttpClient {
      * Sets the maximum size of the responses - this is not applicable to bulk requests whose response is practically unlimited and delivered piece by piece
      * @param length
      */
-    public void setMaxResponseLength(long length) {
+    public void setMaxResponseLength(int length) {
         this.maxResponseLength = length;
     }
     /**
@@ -238,7 +203,7 @@ public class HttpClient {
         return doBulkReceiveRequest(url, httpMethod, body.getBytes(), authToken, receiver);
     }
 
-    private ChannelFuture setupChannel(URI uri, ChannelHandler channelHandler) {
+    private ChannelFuture setupChannel(URI uri, ChannelHandler...channelHandler) {
         String scheme = uri.getScheme() == null? "http" : uri.getScheme();
         String host = uri.getHost() == null? "127.0.0.1" : uri.getHost();
         int port = uri.getPort();
@@ -254,13 +219,13 @@ public class HttpClient {
         if(group==null) {
             group = new NioEventLoopGroup();
         }
-        
+
         Bootstrap b = new Bootstrap();
         b.group(group).channel(NioSocketChannel.class)
         .handler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(SocketChannel ch) {
-                ChannelPipeline p = ch.pipeline();
+                ChannelPipeline p = ch.pipeline();             
                 p.addLast(new HttpClientCodec());
                 p.addLast(new HttpContentDecompressor());
                 p.addLast(channelHandler);
@@ -310,14 +275,14 @@ public class HttpClient {
         }
         return r;
     }
-    
+
     public void addCookie(Cookie c) {
         if(cookies ==null) {
             cookies = new ArrayList<>();
         }
         cookies.add(c);
     }
-    
+
     public List<Cookie> getCookies() {
         return Collections.unmodifiableList(cookies);
     }
@@ -336,7 +301,7 @@ public class HttpClient {
     public void setAcceptMediaType(MediaType acceptMediaType) {
         this.acceptMediaType = acceptMediaType;
     }
-    
+
     public void close() {
         if(group!=null) {
             group.shutdownGracefully();
@@ -358,31 +323,42 @@ public class HttpClient {
         return b;
     }
 
-    class AccumulatingChannelHandler extends SimpleChannelInboundHandler<HttpObject> {
-        ByteBuf result = Unpooled.buffer();
+    class ResponseHandler extends SimpleChannelInboundHandler<FullHttpResponse> {
         Throwable exception;
-        HttpResponse httpResponse;
+        CompletableFuture<byte[]> cf; 
+        public ResponseHandler(CompletableFuture<byte[]> cf) {
+            this.cf = cf;
+        }
+
 
         @Override
-        public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
-            if (msg instanceof HttpResponse) {
-                httpResponse = (HttpResponse) msg;
-            } else if (msg instanceof HttpContent) {
-                HttpContent content = (HttpContent) msg;
-                result.writeBytes(content.content());
-                if (content instanceof LastHttpContent) {
-                    ctx.close();
-                } else if(result.readableBytes()>maxResponseLength) {
-                    exception = new IOException("Response too large, max accepted size: "+maxResponseLength);
-                    ctx.close();
+        public void channelRead0(ChannelHandlerContext ctx, FullHttpResponse fullHttpResp) {
+            if(fullHttpResp.status().code()!=HttpResponseStatus.OK.code()) {
+                try {
+                    exception = decodeException(fullHttpResp);
+                } catch (IOException e) {
+                    exception = e;
                 }
+                cf.completeExceptionally(exception);
+            } else {
+                cf.complete(getByteArray(fullHttpResp.content()));
             }
         }
 
+
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+            cause.printStackTrace();
             exception = cause;
             ctx.close();
+            cf.completeExceptionally(cause);
+        }
+        
+        @Override
+        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+            if(!cf.isDone()) {
+                cf.completeExceptionally(new IOException("connection closed: empty response received"));
+            }
         }
     }
 
@@ -400,7 +376,7 @@ public class HttpClient {
             if (msg instanceof HttpResponse) {
                 HttpResponse resp = (HttpResponse) msg;
                 if(resp.status().code()!=HttpResponseStatus.OK.code()) {
-                    exception = decodeException(msg, null);
+                    exception = decodeException(msg);
                     receiver.receiveException(exception);
                     ctx.close();
                 }

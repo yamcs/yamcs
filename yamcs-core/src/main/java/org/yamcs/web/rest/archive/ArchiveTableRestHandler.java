@@ -1,7 +1,5 @@
 package org.yamcs.web.rest.archive;
 
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,9 +21,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.SchemaArchive;
 import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.protobuf.Table;
 import org.yamcs.protobuf.Table.Cell;
 import org.yamcs.protobuf.Table.ColumnInfo;
 import org.yamcs.protobuf.Table.Row;
+import org.yamcs.protobuf.Table.TableLoadResponse;
+import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpContentToByteBufDecoder;
@@ -51,18 +52,13 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
-import io.netty.util.CharsetUtil;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 public class ArchiveTableRestHandler extends RestHandler {
@@ -148,7 +144,7 @@ public class ArchiveTableRestHandler extends RestHandler {
     public void loadTableData(ChannelHandlerContext ctx, HttpRequest req,  RouteMatch match) throws HttpException {
         AuthenticationToken token = ctx.channel().attr(HttpRequestHandler.CTX_AUTH_TOKEN).get();
         verifyAuthorization(token, SystemPrivilege.MayWriteTables);
-        MediaType contentType = RestRequest.deriveSourceContentType(req);
+        MediaType contentType = MediaType.getContentType(req);
         if(contentType!=MediaType.PROTOBUF) {
             throw new BadRequestException("Invalid Content-Type "+contentType+" for table load; please use "+MediaType.PROTOBUF);
         }
@@ -220,7 +216,7 @@ public class ArchiveTableRestHandler extends RestHandler {
                 inputStream.emitTuple(t);
             } catch (IllegalArgumentException e) {
                 errorState = true;
-                sendErrorAndCloseAfter2Seconds(ctx, HttpResponseStatus.BAD_REQUEST, "Error after inserting "+count+" records: "+e.toString());
+                sendErrorAndCloseAfter2Seconds(ctx, HttpResponseStatus.BAD_REQUEST, e.toString());
                 inputStream.close();
                 return;
             }
@@ -276,7 +272,7 @@ public class ArchiveTableRestHandler extends RestHandler {
             inputStream.close();
             if(cause instanceof DecoderException) {
                 Throwable t = cause.getCause();
-                sendErrorAndCloseAfter2Seconds(ctx, HttpResponseStatus.BAD_REQUEST, "Error after inserting "+count+" records: "+t.toString());
+                sendErrorAndCloseAfter2Seconds(ctx, HttpResponseStatus.BAD_REQUEST, t.toString());
             } else {
                 sendErrorAndCloseAfter2Seconds(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR, cause.toString());
             }
@@ -286,20 +282,22 @@ public class ArchiveTableRestHandler extends RestHandler {
         public void userEventTriggered(ChannelHandlerContext ctx, Object obj) throws Exception {
             if(obj == HttpRequestHandler.CONTENT_FINISHED_EVENT) {
                 log.debug("{} table load finished; inserted {} records ", ctx.channel().toString(), count);
-                HttpRequestHandler.sendOK(ctx, req, "inserted "+count+" records\r\n");
                 inputStream.close();
+                TableLoadResponse tlr = TableLoadResponse.newBuilder().setRowsLoaded(count).build();
+                HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, tlr, org.yamcs.protobuf.SchemaTable.TableLoadResponse.WRITE);
             }
         }
         
         void sendErrorAndCloseAfter2Seconds(ChannelHandlerContext ctx, HttpResponseStatus status, String msg) {
-            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, Unpooled.copiedBuffer(msg + "\r\n", CharsetUtil.UTF_8));
-            response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
-            //schedule close after 2 seconds so the client has the chance to read the error message
-            // see https://groups.google.com/forum/#!topic/netty/eVB6SMcXOHI
-            ctx.writeAndFlush(response).addListener(f-> {
-                ctx.executor().schedule(()-> { ctx.close();}, 2, TimeUnit.SECONDS);
+            RestExceptionMessage.Builder exb = RestExceptionMessage.newBuilder().setType("TableLoadError").setMsg(msg);
+            exb.setExtension(Table.rowsLoaded, count);
+            HttpRequestHandler.sendMessageResponse(ctx, req, status, exb.build(), org.yamcs.protobuf.SchemaWeb.RestExceptionMessage.WRITE, false).addListener(f-> {
+                //schedule close after 2 seconds so the client has the chance to read the error message
+                // see https://groups.google.com/forum/#!topic/netty/eVB6SMcXOHI
+                ctx.executor().schedule(()-> { 
+                    ctx.close();
+                }, 2, TimeUnit.SECONDS);
             });
-           
         }
     }
 }

@@ -2,6 +2,7 @@ package org.yamcs.web;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
@@ -18,12 +19,18 @@ import org.yamcs.api.MediaType;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.AuthorizationPendingException;
 import org.yamcs.security.Privilege;
+import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Router;
 import org.yamcs.web.websocket.WebSocketFrameHandler;
 
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.common.util.concurrent.UncheckedExecutionException;
+import com.google.protobuf.MessageLite;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -51,6 +58,8 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
+import io.protostuff.JsonIOUtil;
+import io.protostuff.Schema;
 
 /**
  * Handles handshakes and messages.
@@ -79,17 +88,20 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     private static StaticFileHandler fileRequestHandler = new StaticFileHandler();
     private Router apiRouter;
     private boolean contentExpected = false;
+    
+    private static JsonFactory jsonFactory = new JsonFactory();
+    
     private static final FullHttpResponse BAD_REQUEST = new DefaultFullHttpResponse(
             HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST,
             Unpooled.EMPTY_BUFFER);
     static {
         HttpUtil.setContentLength(BAD_REQUEST, 0);
     }
-
+    public static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
+    
     public HttpRequestHandler(Router apiRouter) {
         this.apiRouter = apiRouter;
     }
-
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg)  throws Exception {
         if (msg instanceof HttpRequest) {
@@ -236,6 +248,41 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         return ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
+    public static <T extends MessageLite> ChannelFuture sendMessageResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status, T responseMsg, Schema<T> responseSchema) {
+            return sendMessageResponse(ctx, req, status, responseMsg, responseSchema, true);
+    }
+    
+    public static <T extends MessageLite> ChannelFuture sendMessageResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status, T responseMsg, Schema<T> responseSchema, boolean autoCloseOnError) {
+        ByteBuf body = ctx.alloc().buffer();
+        MediaType contentType = MediaType.getAcceptType(req);
+        
+        try (ByteBufOutputStream channelOut = new ByteBufOutputStream(body)){
+            if (contentType == MediaType.PROTOBUF) {
+                responseMsg.writeTo(channelOut);
+            } else if (contentType == MediaType.PLAIN_TEXT) {
+                channelOut.write(responseMsg.toString().getBytes(StandardCharsets.UTF_8));
+            } else { //JSON by default
+                contentType = MediaType.JSON;
+                JsonGenerator generator = jsonFactory.createGenerator(channelOut, JsonEncoding.UTF8);
+                JsonIOUtil.writeTo(generator, responseMsg, responseSchema, false);
+                generator.close();
+                body.writeBytes(NEWLINE_BYTES); // For curl comfort
+            }
+        } catch (IOException e) {
+            return sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.toString());
+        }
+        byte[] dst = new byte[body.readableBytes()];
+        body.markReaderIndex();
+        body.readBytes(dst);
+        body.resetReaderIndex();
+        HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, body);
+        HttpUtils.setContentTypeHeader(response, contentType);
+
+        int txSize =  body.readableBytes();
+        HttpUtil.setContentLength(response, txSize);
+        return sendResponse(ctx, req, response, autoCloseOnError);
+    }
+    
     public static ChannelFuture sendPlainTextError(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status) {
         return sendPlainTextError(ctx, req, status, status.toString());
     }
@@ -243,34 +290,29 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public static ChannelFuture sendPlainTextError(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status, String msg) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, Unpooled.copiedBuffer(msg + "\r\n", CharsetUtil.UTF_8));
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
-        return sendError(ctx, req, response);
+        return sendResponse(ctx, req, response, true);
     }
     
-    public static ChannelFuture sendError(ChannelHandlerContext ctx, HttpRequest req, HttpResponse response) {
-        if (req != null) {
-            log.warn("{} {} {}", req.method(), req.uri(), response.status().code());
+    public static ChannelFuture sendResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponse response, boolean autoCloseOnError) {
+        if(response.status()==HttpResponseStatus.OK) {
+            log.info("{} {} {}", req.method(), req.uri(), response.status().code());
+            ChannelFuture writeFuture = ctx.writeAndFlush(response);
+            if (!HttpUtil.isKeepAlive(req)) {
+                writeFuture.addListener(ChannelFutureListener.CLOSE);
+            }
+            return writeFuture;
         } else {
-            log.warn("Malformed or illegal request. Sending back " + response.status().code());
+            if (req != null) {
+                log.warn("{} {} {}", req.method(), req.uri(), response.status().code());
+            } else {
+                log.warn("Malformed or illegal request. Sending back " + response.status().code());
+            }
+            ChannelFuture writeFuture = ctx.writeAndFlush(response);
+            if(autoCloseOnError) {
+                writeFuture = writeFuture.addListener(ChannelFutureListener.CLOSE);
+            } 
+            return writeFuture;
         }
-
-        return ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
-    }
-
-    public static ChannelFuture sendOK(ChannelHandlerContext ctx, HttpRequest req, HttpResponse response) {
-        log.info("{} {} {}", req.method(), req.uri(), response.status().code());
-        ChannelFuture writeFuture = ctx.writeAndFlush(response);
-
-        if (!HttpUtil.isKeepAlive(req)) {
-            writeFuture.addListener(ChannelFutureListener.CLOSE);
-        }
-        return writeFuture;
-    }
-
-    public static ChannelFuture sendOK(ChannelHandlerContext ctx, HttpRequest req, String body) {
-        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, Unpooled.copiedBuffer(body, StandardCharsets.UTF_8));
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
-        HttpUtil.setContentLength(response, response.content().readableBytes());
-        return sendOK(ctx, req, response);
     }
 
     private void cleanPipeline(ChannelPipeline pipeline) {

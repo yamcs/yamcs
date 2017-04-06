@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,9 +27,12 @@ import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
 import org.yamcs.protobuf.Rest.EditClientRequest;
 import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.protobuf.Table;
 import org.yamcs.protobuf.Table.Cell;
 import org.yamcs.protobuf.Table.ColumnInfo;
 import org.yamcs.protobuf.Table.Row;
+import org.yamcs.protobuf.Table.TableLoadResponse;
+import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
@@ -57,7 +61,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     
     
     static { //to avoid getting the warning in the console in the test below that loads invalid table records
-        Logger.getLogger("org.yamcs.yarch").setLevel(Level.SEVERE);
+        Logger.getLogger("org.yamcs.yarch").setLevel(Level.SEVERE);    
     }
 
     private void generateData(String utcStart, int numPackets) {
@@ -67,7 +71,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
             packetGenerator.generate_PKT1_1();
             packetGenerator.generate_PKT1_3();
             
-            //parameters are 10ms later than packets to make sure that we have a predictible order during replay
+            //parameters are 10ms later than packets to make sure that we have a predictable order during replay
             parameterProvider.setGenerationTime(t0+1000*i+10);
             parameterProvider.generateParameters(i);
         }
@@ -133,17 +137,8 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testIndex() throws Exception {
-        generateData("2015-01-02T10:00:00", 3600);
-        restClient.setAcceptMediaType(MediaType.JSON);
-        String response ;
-
-        response = restClient.doRequest("/archive/IntegrationTest/indexes/packets?start=2015-01-02T00:00:00", HttpMethod.GET, "").get();
-        List<ArchiveRecord> arlist = allFromJson(response, org.yamcs.protobuf.SchemaYamcs.ArchiveRecord.MERGE);
-        assertEquals(8, arlist.size());
-
-        response = restClient.doRequest("/archive/IntegrationTest/indexes/packets?start=2035-01-02T00:00:00", HttpMethod.GET, "").get();
-
+    public void testEmptyIndex() throws Exception {
+        String response = restClient.doRequest("/archive/IntegrationTest/indexes/packets?start=2035-01-02T00:00:00", HttpMethod.GET, "").get();
         assertTrue(response.isEmpty());
     }
 
@@ -197,8 +192,8 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
             ByteBuf buf = encode(getRecord(i), getRecord(i+1), getRecord(i+2), getRecord(i+3));
             brds.sendData(buf);
         }
-        String resp = new String(brds.completeRequest().get());
-        assertTrue(resp.contains("100 records"));
+        TableLoadResponse tlr = TableLoadResponse.parseFrom(brds.completeRequest().get());
+        assertEquals(100, tlr.getRowsLoaded());
 
         verifyRecords("table0", 100);
         verifyRecordsDumpFormat("table0", 100);
@@ -206,7 +201,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testTableLoadWithInvalidRecord() throws Exception {
-        Exception e1 = null;
+        Throwable t1 = null;
         BulkRestDataSender brds = initiateTableLoad("table1");
         try {
             for(int i=0;i<100; i++) {
@@ -221,18 +216,20 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                     brds.sendData(encode(tr));
             }
             brds.completeRequest().get();
-        } catch (Exception e) {
-            e1 = e;
+        } catch (ExecutionException e) {
+            t1 = e.getCause();
         }
-        assertNotNull(e1);
-        assertTrue(e1.getMessage().contains("Error after inserting 50 records"));
+        assertNotNull(t1);
+        RestExceptionMessage rem = ((YamcsApiException)t1).getRestExceptionMessage();
+        assertTrue(rem.hasExtension(Table.rowsLoaded));
+        assertEquals(50, (int)rem.getExtension(Table.rowsLoaded));
         verifyRecords("table1", 50);
     }
     
     @Test
     public void testTableLoadWithInvalidRecord2() throws Exception {
         BulkRestDataSender brds = initiateTableLoad("table2");
-        Exception e1 = null;
+        Throwable t1 = null;
         
         try {
             for(int i=0;i<100; i++) {
@@ -245,11 +242,16 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                     brds.sendData(buf);
             }
             brds.completeRequest().get();
-        } catch (Exception e) {
-            e1 = e;
+        } catch (ExecutionException e) {
+            t1 = e.getCause();
         }
-        assertNotNull(e1);        
-        assertTrue(e1.getMessage().contains("Error after inserting 50 records"));
+        assertNotNull(t1);
+        assertTrue(t1 instanceof YamcsApiException);
+        RestExceptionMessage rem = ((YamcsApiException)t1).getRestExceptionMessage();
+        
+        assertTrue(rem.hasExtension(Table.rowsLoaded));
+        int numRowsLoaded = rem.getExtension(Table.rowsLoaded);
+        assertEquals(50, numRowsLoaded);
         verifyRecords("table2", 50);
     }
     
@@ -296,9 +298,9 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(n, trList.size());
     }
     
-    private BulkRestDataSender initiateTableLoad(String tblName) throws Exception {
+    private BulkRestDataSender initiateTableLoad(String tblName) throws Exception {        
+        restClient.setSendMediaType(MediaType.PROTOBUF);
         restClient.setAcceptMediaType(MediaType.PROTOBUF);
-        restClient.setSendMediaType(MediaType.PROTOBUF); 
         createTable(tblName);
         CompletableFuture<BulkRestDataSender> cf = restClient.doBulkSendRequest("/archive/IntegrationTest/tables/"+tblName+"/data", HttpMethod.POST);
         BulkRestDataSender brds = cf.get();

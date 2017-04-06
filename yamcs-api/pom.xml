@@ -14,7 +14,7 @@
   <description>Used by external clients to communicate with Yamcs</description>
 
   <properties>
-    <protostuffVersion>1.4.0</protostuffVersion>
+    <protostuffVersion>1.5.3</protostuffVersion>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -155,6 +155,20 @@
             </protoModule>
             <protoModule>
               <source>src/main/yamcsManagement.proto</source>
+              <outputDir>src/main/java</outputDir>
+              <output>java_v2protoc_schema</output>
+              <encoding>UTF-8</encoding>
+              <options>
+                <property>
+                  <name>generate_field_map</name>
+                </property>
+                <property>
+                  <name>enums_by_name</name>
+                </property>
+              </options>
+            </protoModule>
+            <protoModule>
+              <source>src/main/table.proto</source>
               <outputDir>src/main/java</outputDir>
               <output>java_v2protoc_schema</output>
               <encoding>UTF-8</encoding>

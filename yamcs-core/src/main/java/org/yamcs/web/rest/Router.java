@@ -334,7 +334,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             RestHandler.sendRestError(req, e.getStatus(), e);
         } else if (t instanceof HttpException) {
             HttpException e = (HttpException)t;
-            log.warn("R{}: Sending nominal exception back to client: {}", req.getRequestId(), e.getMessage());
+            log.warn("R{}: Sending nominal exception {} back to client: {}", req.getRequestId(), e.getStatus(), e.getMessage());
             RestHandler.sendRestError(req, e.getStatus(), e);
         } else {
             log.error(String.format("R%d: Reporting internal server error to client", req.getRequestId()), t);

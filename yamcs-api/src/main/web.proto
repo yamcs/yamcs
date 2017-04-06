@@ -73,6 +73,7 @@ message WebSocketExtensionData {
 message RestExceptionMessage {
   optional string type = 1;
   optional string msg = 2;
+  extensions 100 to 200;
 }
 
 message ParameterSubscriptionRequest {

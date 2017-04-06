@@ -298,17 +298,21 @@ public class ArchiveIndexRestHandler extends RestHandler {
 
         @Override
         public void finished(boolean success) {
-            try {
-                bufOut.close();
-                if (buf.readableBytes() > 0) {
-                    writeChunk();
+            if (first) { //empty result
+                RestHandler.completeOK(req);
+            } else {
+                try {
+                    bufOut.close();
+                    if (buf.readableBytes() > 0) {
+                        writeChunk();
+                    }
+                    req.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                    .addListener(ChannelFutureListener.CLOSE)
+                    .addListener(l-> req.getCompletableFuture().complete(null));
+                } catch (IOException e) {
+                    log.error("Could not write final chunk of data", e);
+                    req.getChannelHandlerContext().close();
                 }
-                req.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
-                .addListener(ChannelFutureListener.CLOSE)
-                .addListener(l-> req.getCompletableFuture().complete(null));
-            } catch (IOException e) {
-                log.error("Could not write final chunk of data", e);
-                req.getChannelHandlerContext().close();
             }
         }
 

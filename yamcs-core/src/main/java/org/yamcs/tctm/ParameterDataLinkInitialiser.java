@@ -66,8 +66,7 @@ public class ParameterDataLinkInitialiser extends AbstractService {
 
         YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
-        @SuppressWarnings("rawtypes")
-        List providers = c.getList(KEY_PARAMETER_DATA_LINKS);
+        List<Object> providers = c.getList(KEY_PARAMETER_DATA_LINKS);
         
         int count=1;
         for(Object o:providers) {
@@ -75,8 +74,7 @@ public class ParameterDataLinkInitialiser extends AbstractService {
                 throw new ConfigurationException("ppProvider has to be a Map and not a "+o.getClass());
             }
 
-            @SuppressWarnings({ "rawtypes", "unchecked" })
-            Map<String, Object> m = (Map)o;
+            Map<String, Object> m = (Map<String, Object>)o;
             
             Object args=null;
             if(m.containsKey("args")) {

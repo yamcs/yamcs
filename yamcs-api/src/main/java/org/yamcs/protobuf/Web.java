@@ -7249,8 +7249,9 @@ public final class Web {
     // @@protoc_insertion_point(class_scope:web.WebSocketExtensionData)
   }
 
-  public interface RestExceptionMessageOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface RestExceptionMessageOrBuilder extends
+      com.google.protobuf.GeneratedMessage.
+          ExtendableMessageOrBuilder<RestExceptionMessage> {
 
     // optional string type = 1;
     /**
@@ -7290,10 +7291,10 @@ public final class Web {
    * </pre>
    */
   public static final class RestExceptionMessage extends
-      com.google.protobuf.GeneratedMessage
-      implements RestExceptionMessageOrBuilder {
+      com.google.protobuf.GeneratedMessage.ExtendableMessage<
+        RestExceptionMessage> implements RestExceptionMessageOrBuilder {
     // Use RestExceptionMessage.newBuilder() to construct.
-    private RestExceptionMessage(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private RestExceptionMessage(com.google.protobuf.GeneratedMessage.ExtendableBuilder<org.yamcs.protobuf.Web.RestExceptionMessage, ?> builder) {
       super(builder);
       this.unknownFields = builder.getUnknownFields();
     }
@@ -7482,6 +7483,10 @@ public final class Web {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
+      if (!extensionsAreInitialized()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -7489,12 +7494,16 @@ public final class Web {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
+      com.google.protobuf.GeneratedMessage
+        .ExtendableMessage<org.yamcs.protobuf.Web.RestExceptionMessage>.ExtensionWriter extensionWriter =
+          newExtensionWriter();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBytes(1, getTypeBytes());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeBytes(2, getMsgBytes());
       }
+      extensionWriter.writeUntil(201, output);
       getUnknownFields().writeTo(output);
     }
 
@@ -7512,6 +7521,7 @@ public final class Web {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(2, getMsgBytes());
       }
+      size += extensionsSerializedSize();
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
       return size;
@@ -7598,8 +7608,8 @@ public final class Web {
      * </pre>
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Web.RestExceptionMessageOrBuilder {
+        com.google.protobuf.GeneratedMessage.ExtendableBuilder<
+          org.yamcs.protobuf.Web.RestExceptionMessage, Builder> implements org.yamcs.protobuf.Web.RestExceptionMessageOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Web.internal_static_web_RestExceptionMessage_descriptor;
@@ -7698,11 +7708,16 @@ public final class Web {
           msg_ = other.msg_;
           onChanged();
         }
+        this.mergeExtensionFields(other);
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
 
       public final boolean isInitialized() {
+        if (!extensionsAreInitialized()) {
+          
+          return false;
+        }
         return true;
       }
 
@@ -9806,14 +9821,14 @@ public final class Web {
       "\rextensionData\030d \001(\0132\033.web.WebSocketExte" +
       "nsionData\"1\n\013MessageType\022\t\n\005REPLY\020\002\022\r\n\tE" +
       "XCEPTION\020\003\022\010\n\004DATA\020\004\"4\n\026WebSocketExtensi" +
-      "onData\022\014\n\004type\030\001 \001(\r\022\014\n\004data\030\002 \001(\014\"1\n\024Re" +
+      "onData\022\014\n\004type\030\001 \001(\r\022\014\n\004data\030\002 \001(\014\"8\n\024Re" +
       "stExceptionMessage\022\014\n\004type\030\001 \001(\t\022\013\n\003msg\030",
-      "\002 \001(\t\"X\n\034ParameterSubscriptionRequest\022 \n" +
-      "\002id\030\001 \003(\0132\024.yamcs.NamedObjectId\022\026\n\016abort" +
-      "OnInvalid\030\002 \001(\010\"k\n\035ParameterSubscription" +
-      "Response\022#\n\005valid\030\001 \003(\0132\024.yamcs.NamedObj" +
-      "ectId\022%\n\007invalid\030\002 \003(\0132\024.yamcs.NamedObje" +
-      "ctIdB\024\n\022org.yamcs.protobuf"
+      "\002 \001(\t*\005\010d\020\311\001\"X\n\034ParameterSubscriptionReq" +
+      "uest\022 \n\002id\030\001 \003(\0132\024.yamcs.NamedObjectId\022\026" +
+      "\n\016abortOnInvalid\030\002 \001(\010\"k\n\035ParameterSubsc" +
+      "riptionResponse\022#\n\005valid\030\001 \003(\0132\024.yamcs.N" +
+      "amedObjectId\022%\n\007invalid\030\002 \003(\0132\024.yamcs.Na" +
+      "medObjectIdB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

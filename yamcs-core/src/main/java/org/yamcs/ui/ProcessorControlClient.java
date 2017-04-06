@@ -3,7 +3,6 @@ package org.yamcs.ui;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.YamcsException;

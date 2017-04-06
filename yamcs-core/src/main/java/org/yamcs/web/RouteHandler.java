@@ -27,16 +27,6 @@ public class RouteHandler {
     }
     
     /**
-     * Sets the content type header for the HTTP Response
-     * 
-     * @param type
-     *            content type of file to extract
-     */
-    protected static void setContentTypeHeader(HttpResponse response, String type) {
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, type);
-    }
-    
-    /**
      * Sets the Date and Cache headers for the HTTP Response
      * 
      * @param lastModified

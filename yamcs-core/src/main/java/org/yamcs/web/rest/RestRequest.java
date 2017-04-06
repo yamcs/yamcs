@@ -352,23 +352,12 @@ public class RestRequest {
     }
     
     /**
-     * Derives the content type of the incoming request. Returns either JSON or
-     * BINARY in that order.
+     * @return  see {@link MediaType#getContentType(HttpRequest)}
      */
     public MediaType deriveSourceContentType() {
-        return deriveSourceContentType(httpRequest);
+        return MediaType.getContentType(httpRequest);
     }
-    
-    public static MediaType deriveSourceContentType(HttpRequest httpRequest) {
-        if (httpRequest.headers().contains(HttpHeaderNames.CONTENT_TYPE)) {
-            String declaredContentType = httpRequest.headers().get(HttpHeaderNames.CONTENT_TYPE);
-            return MediaType.from(declaredContentType);
-        }
-
-        // Assume default for simplicity
-        return MediaType.JSON;
-    }
-
+   
     
     /**
      * Derives an applicable content type for the output. This tries to match

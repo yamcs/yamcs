@@ -24,8 +24,10 @@ import org.yamcs.security.AuthenticationToken;
 import org.yamcs.ui.ProcessorControlClient;
 import org.yamcs.ui.ProcessorListener;
 import org.yamcs.ui.YamcsConnector;
+import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
+import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
@@ -62,8 +64,8 @@ public class ProcessorsTest {
             ccc.createProcessor("yproctest0", "test1", "dummy", null, false, new int[]{10,14}).get();
             assertTrue("YamcsException was expected", false);
         } catch(ExecutionException e) {
-            Throwable cause = e.getCause();
-            assertEquals("BadRequestException : createProcessor invoked with a list full of invalid client ids", cause.getMessage());
+            RestExceptionMessage rem = ((YamcsApiException)e.getCause()).getRestExceptionMessage();
+            assertEquals("createProcessor invoked with a list full of invalid client ids", rem.getMsg());
         }
         yconnector.disconnect();
     }
