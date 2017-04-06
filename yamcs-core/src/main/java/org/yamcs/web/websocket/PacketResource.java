@@ -3,7 +3,7 @@ package org.yamcs.web.websocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ProcessorException;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
@@ -71,9 +71,9 @@ public class PacketResource extends AbstractWebSocketResource {
     }
 
     @Override
-    public void switchYProcessor(YProcessor oldProcessor, YProcessor newProcessor) throws ProcessorException {
+    public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
         doUnsubscribe();
-        super.switchYProcessor(oldProcessor, newProcessor);
+        super.switchProcessor(oldProcessor, newProcessor);
         YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
         stream = ydb.getStream(streamName);
         doSubscribe();

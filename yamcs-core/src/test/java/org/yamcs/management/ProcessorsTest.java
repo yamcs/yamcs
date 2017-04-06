@@ -14,7 +14,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.TmPacketProvider;
 import org.yamcs.TmProcessor;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.ProcessorClient;
 import org.yamcs.ProcessorException;
 import org.yamcs.YConfiguration;
@@ -84,7 +84,7 @@ public class ProcessorsTest {
         client1.createProcessor("yproctest1", "yproc1", "dummy", null, true, new int[]{}).get();
         
         MyYProcClient client = new MyYProcClient();
-        YProcessor yproc1 = YProcessor.getInstance("yproctest1", "yproc1");
+        Processor yproc1 = Processor.getInstance("yproctest1", "yproc1");
         assertNotNull(yproc1);
         
         yproc1.connect(client);
@@ -221,17 +221,17 @@ public class ProcessorsTest {
     }
 
     static class MyYProcClient implements ProcessorClient {
-        YProcessor yproc;
+        Processor yproc;
 
         @Override
-        public void switchProcessor(YProcessor c, AuthenticationToken authToken) throws ProcessorException {
+        public void switchProcessor(Processor c, AuthenticationToken authToken) throws ProcessorException {
             yproc.disconnect(this);
             c.connect(this);
             yproc=c;
         }
 
         @Override
-        public void yProcessorQuit() {
+        public void processorQuit() {
             // TODO Auto-generated method stub
             
         }
@@ -270,7 +270,7 @@ public class ProcessorsTest {
         }
 
         @Override
-        public void init(YProcessor proc, TmProcessor tmProcessor) {
+        public void init(Processor proc, TmProcessor tmProcessor) {
             this.tmProcessor = tmProcessor;
         }
     }

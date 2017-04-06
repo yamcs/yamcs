@@ -16,7 +16,7 @@ import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.LoggingUtils;
@@ -54,7 +54,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     private Map<Class<?>,ParameterProvider> parameterProviders=new LinkedHashMap<Class<?>,ParameterProvider>();
 
     private static AtomicInteger lastSubscriptionId= new AtomicInteger();
-    public final YProcessor yproc;
+    public final Processor yproc;
 
     //if all parameter shall be subscribed/processed
     private boolean cacheAll = false;
@@ -69,7 +69,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
      * Creates a new ParameterRequestManager, configured to listen to the
      * specified XtceTmProcessor.
      */
-    public ParameterRequestManagerImpl(YProcessor yproc, XtceTmProcessor tmProcessor) throws ConfigurationException {
+    public ParameterRequestManagerImpl(Processor yproc, XtceTmProcessor tmProcessor) throws ConfigurationException {
         this.yproc = yproc;
         log = LoggingUtils.getLogger(this.getClass(), yproc);
         cacheConfig = yproc.getPameterCacheConfig();
@@ -166,7 +166,6 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
         for(int i=0;i<paraList.size();i++) {
             log.trace("adding to subscriptionID: {} item:{}, provider: {} ",id, paraList.get(i).getQualifiedName(), providers.get(i));
             addItemToRequest(id, paraList.get(i), providers.get(i));
-            //log.info("afterwards the subscription looks like: "+toString());
         }
 
         request2ParameterConsumerMap.put(id, tpc);
@@ -204,7 +203,6 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
         for(int i=0;i<paraList.size();i++) {
             log.trace("adding to subscriptionID:{} item:{}",id, paraList.get(i));
             addItemToRequest(id, paraList.get(i), providers.get(i));
-            //log.info("afterwards the subscription looks like: "+toString());
         }
         request2DVParameterConsumerMap.put(id, dvtpc);
         return id;
@@ -222,7 +220,6 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
         for(int i=0;i<paraList.size();i++) {
             log.trace("creating subscriptionID:{} with item:{}",subscriptionId, paraList.get(i));
             addItemToRequest(subscriptionId, paraList.get(i), providers.get(i));
-            //log.info("afterwards the subscription looks like: "+toString());
         }
         request2ParameterConsumerMap.put(subscriptionId, tpc);
     }
@@ -432,8 +429,12 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
         //and finally deliver the delivery :)
         for(Map.Entry<Integer, ArrayList<ParameterValue>> entry: delivery.entrySet()){
             Integer subscriptionId=entry.getKey();
-            if(request2DVParameterConsumerMap.containsKey(subscriptionId)) continue;
-            if(alarmChecker!=null && alarmChecker.getSubscriptionId()==subscriptionId) continue;
+            if(request2DVParameterConsumerMap.containsKey(subscriptionId)) {
+                continue;
+            }
+            if(alarmChecker!=null && alarmChecker.getSubscriptionId()==subscriptionId){
+                continue;
+            }
 
             ArrayList<ParameterValue> al=entry.getValue();
             ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
@@ -451,14 +452,18 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
      * @param params
      */
     private void updateDelivery(HashMap<Integer, ArrayList<ParameterValue>> delivery, Collection<ParameterValue> params) {
-        if(params==null) return;
+        if(params==null) {
+            return;
+        }
 
         for(Iterator<ParameterValue> it=params.iterator();it.hasNext();) {
             ParameterValue pv = it.next();
             Parameter pDef = pv.getParameter();
             SubscriptionArray cowal = param2RequestMap.get(pDef); 
             //now walk through the requests and add this item to their delivery list
-            if(cowal==null) continue;
+            if(cowal==null) {
+                continue;
+            }
 
             for(int s:cowal.getArray()) {
                 ArrayList<ParameterValue> al = delivery.get(s);
@@ -523,7 +528,8 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
         StringBuffer sb=new StringBuffer();
         sb.append("Current Subscription list:\n");
         for(Parameter param:param2RequestMap.keySet()) {
-            sb.append(param); sb.append("requested by [");
+            sb.append(param); 
+            sb.append("requested by [");
             SubscriptionArray al_req=param2RequestMap.get(param);
             for(int id: al_req.getArray()) {
                 sb.append(id);

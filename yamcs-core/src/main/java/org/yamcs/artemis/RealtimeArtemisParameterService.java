@@ -42,7 +42,7 @@ import org.yamcs.utils.LoggingUtils;
  *
  */
 public class RealtimeArtemisParameterService implements ParameterWithIdConsumer {
-    YProcessor channel;
+    Processor channel;
     YamcsClient yclient;
     Logger log;
     //maps subscription ids <-> addresses
@@ -50,7 +50,7 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
     ParameterWithIdRequestHelper prh;
     YamcsSession yamcsSession;
 
-    public RealtimeArtemisParameterService(YProcessor proc) throws ActiveMQException, YamcsApiException {
+    public RealtimeArtemisParameterService(Processor proc) throws ActiveMQException, YamcsApiException {
         this.channel=proc;
         prh = new ParameterWithIdRequestHelper(proc.getParameterRequestManager(), this);
 
@@ -71,7 +71,7 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
 
     }
 
-    private void processRequest(ClientMessage msg) throws YamcsApiException, ActiveMQException {
+    private void processRequest(ClientMessage msg) throws ActiveMQException {
         SimpleString replyto=msg.getSimpleStringProperty(REPLYTO_HEADER_NAME);
 
         if(replyto==null) {
@@ -108,7 +108,7 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
         try {
             paraList= ((NamedObjectList)Protocol.decode(msg, NamedObjectList.newBuilder())).getListList();
         } catch (YamcsApiException e) {
-            log.warn("Could not decode the parameter list");
+            log.warn("Could not decode the parameter list", e);
             return;
         }
         HqClientMessageToken authToken = new HqClientMessageToken(msg, null);

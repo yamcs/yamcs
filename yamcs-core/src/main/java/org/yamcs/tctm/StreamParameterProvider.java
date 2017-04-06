@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.parameter.ParameterValue;
@@ -41,7 +41,9 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
         String streamName = config.get("stream");
 
         stream=ydb.getStream(streamName);
-        if(stream==null) throw new ConfigurationException("Cannot find a stream named "+streamName);
+        if(stream==null) {
+            throw new ConfigurationException("Cannot find a stream named "+streamName);
+        }
         xtceDb=XtceDbFactory.getInstance(archiveInstance);
     }
 
@@ -65,7 +67,9 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
             org.yamcs.protobuf.Pvalue.ParameterValue gpv=(org.yamcs.protobuf.Pvalue.ParameterValue)tuple.getColumn(i);
             String name=tuple.getColumnDefinition(i).getName();
             Parameter ppdef=xtceDb.getParameter(name);
-            if(ppdef==null) continue;
+            if(ppdef==null) {
+                continue;
+            }
             ParameterValue pv=ParameterValue.fromGpb(ppdef, gpv);
             params.add(pv);
         }
@@ -90,7 +94,9 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
 
     @Override
     public boolean canProvide(NamedObjectId id) {
-        if(xtceDb.getParameter(id)!=null) return true;
+        if(xtceDb.getParameter(id)!=null) {
+            return true;
+        }
         else return false;
     }
 
@@ -102,7 +108,9 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
     @Override
     public Parameter getParameter(NamedObjectId id) throws InvalidIdentification {
         Parameter p=xtceDb.getParameter(id);
-        if(p==null) throw new InvalidIdentification();
+        if(p==null) {
+            throw new InvalidIdentification();
+        }
         else return p;
     }
 
@@ -120,7 +128,7 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
 
 
     @Override
-    public void init(YProcessor processor) {
+    public void init(Processor processor) {
         //nothing to be done here
     }
 }

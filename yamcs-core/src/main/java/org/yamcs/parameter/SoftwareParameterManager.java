@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
@@ -36,11 +36,11 @@ import com.google.common.util.concurrent.AbstractService;
 public class SoftwareParameterManager extends AbstractService implements ParameterProvider {
     ExecutorService executor = Executors.newFixedThreadPool(1);
     ParameterRequestManager prm;
-    private NamedDescriptionIndex<Parameter> params = new NamedDescriptionIndex<Parameter>();
-    Set<Parameter> subscribedParams = new HashSet<Parameter>();
+    private NamedDescriptionIndex<Parameter> params = new NamedDescriptionIndex<>();
+    Set<Parameter> subscribedParams = new HashSet<>();
     private static final Logger log=LoggerFactory.getLogger(SoftwareParameterManager.class);
     final String yamcsInstance;
-    YProcessor yproc;
+    Processor yproc;
 
     public SoftwareParameterManager(String yamcsInstance) {
         this.yamcsInstance = yamcsInstance;
@@ -56,7 +56,7 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
     }
 
     @Override
-    public void init(YProcessor yproc) throws ConfigurationException {
+    public void init(Processor yproc) throws ConfigurationException {
         init(yproc.getXtceDb());
         this.yproc = yproc;
     }
@@ -114,12 +114,7 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
             ParameterTypeProcessor.checkEngValueAssignment(p, ValueUtility.fromGpb(gpv.getEngValue()));
         }
         //then filter out the subscribed ones and send it to PRM
-        executor.submit(new Runnable() {
-            @Override
-            public void run() {
-                doUpdate(gpvList);
-            }
-        });
+        executor.submit(() -> doUpdate(gpvList));
     }
 
     /**
@@ -171,13 +166,7 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
     @Override
     public void stopProviding(final Parameter paramDef) {
         log.debug("requested to stop providing {}", paramDef.getQualifiedName());
-
-        executor.submit(new Runnable() {
-            @Override
-            public void run() {
-                subscribedParams.remove(paramDef);
-            }
-        });
+        executor.submit(() -> subscribedParams.remove(paramDef));
     }
 
     @Override
@@ -186,7 +175,7 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
     }
 
     private Parameter getParam(NamedObjectId paraId) {
-        Parameter p = null;
+        Parameter p;
         if(paraId.hasNamespace()) {
             p = params.get(paraId.getNamespace(), paraId.getName());
         } else {

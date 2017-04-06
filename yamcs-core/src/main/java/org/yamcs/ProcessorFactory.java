@@ -20,7 +20,7 @@ import org.yamcs.utils.YObjectLoader;
  *
  */
 public class ProcessorFactory {
-    static Logger log=LoggerFactory.getLogger(YProcessor.class.getName());
+    static Logger log=LoggerFactory.getLogger(Processor.class.getName());
 
     /**
      * Create a processor with the give name, type, creator and spec
@@ -38,7 +38,7 @@ public class ProcessorFactory {
      * @throws ProcessorException
      * @throws ConfigurationException
      */
-    static public YProcessor create(String yamcsInstance, String name, String type, String creator, Object spec) throws ProcessorException,  ConfigurationException {
+    static public Processor create(String yamcsInstance, String name, String type, String creator, Object spec) throws ProcessorException,  ConfigurationException {
         boolean initialized = false;
         TcTmService tctms=null;
         Map<String,Object> processorConfig = null;
@@ -101,7 +101,7 @@ public class ProcessorFactory {
     /**
      * loads objects but passes only non null parameters
      */
-    static private <T> T loadObject(String className, String yamcsInstance, Object args, Object spec) throws ConfigurationException, IOException {
+    private static <T> T loadObject(String className, String yamcsInstance, Object args, Object spec) throws ConfigurationException, IOException {
         List<Object> newargs = new ArrayList<Object>();
         newargs.add(yamcsInstance);
 
@@ -114,7 +114,7 @@ public class ProcessorFactory {
         return YObjectLoader.loadObject(className, newargs.toArray());
     }
 
-    static public YProcessor create(String instance, String name, String type, TcTmService tctms, String creator) throws ProcessorException, ConfigurationException {
+    public static Processor create(String instance, String name, String type, TcTmService tctms, String creator) throws ProcessorException, ConfigurationException {
         return create(instance, name, type, tctms, creator, null);
     }
     /**
@@ -131,8 +131,8 @@ public class ProcessorFactory {
      * @throws ProcessorException 
      * @throws ConfigurationException 
      **/
-    static public YProcessor create(String instance, String name, String type, TcTmService tctms, String creator, Map<String, Object> config) throws ProcessorException, ConfigurationException {
-        YProcessor yproc = new YProcessor(instance, name, type, creator);
+    public static Processor create(String instance, String name, String type, TcTmService tctms, String creator, Map<String, Object> config) throws ProcessorException, ConfigurationException {
+        Processor yproc = new Processor(instance, name, type, creator);
 
         yproc.init(tctms, config);
         return yproc;

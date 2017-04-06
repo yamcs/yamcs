@@ -19,7 +19,7 @@ import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterConsumer;
@@ -47,7 +47,7 @@ public class AlgorithmManagerJavaTest {
     }
     static String instance = "refmdb";
     private XtceDb db;
-    private YProcessor c;
+    private Processor c;
     private RefMdbPacketGenerator tmGenerator;
     private ParameterRequestManagerImpl prm;
 

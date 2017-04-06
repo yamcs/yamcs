@@ -1,6 +1,6 @@
 package org.yamcs.web.rest;
 
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
@@ -49,7 +49,7 @@ public class YamcsToGpbAssembler {
             instanceb.setClientsUrl(instanceUrl + "{/processor}/clients");
         }
         
-        for (YProcessor processor : YProcessor.getProcessors(instanceb.getName())) {
+        for (Processor processor : Processor.getProcessors(instanceb.getName())) {
             instanceb.addProcessor(ProcessorRestHandler.toProcessorInfo(processor, req, false));
         }
         return instanceb.build();

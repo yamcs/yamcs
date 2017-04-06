@@ -4,7 +4,7 @@ package org.yamcs.management;
 import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
 
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
@@ -14,13 +14,13 @@ import org.yamcs.protobuf.YamcsManagement.Statistics;
  * @author nm
  *
  */
-public class YProcessorControlImpl extends StandardMBean  implements YProcessorControl {
-    YProcessor channel;
+public class ProcessorControlImpl extends StandardMBean  implements ProcessorControl {
+    Processor channel;
     ProcessorInfo ci;
     Statistics stats;
     
-    public YProcessorControlImpl(YProcessor yproc)  throws NotCompliantMBeanException {
-        super(YProcessorControl.class);
+    public ProcessorControlImpl(Processor yproc)  throws NotCompliantMBeanException {
+        super(ProcessorControl.class);
         this.channel=yproc;
     }
     @Override

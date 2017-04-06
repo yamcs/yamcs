@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.DataSource;
@@ -34,9 +34,9 @@ public class AlgorithmExecutionContext {
     //name used for debugging
     final String contextName;
     
-    final YProcessor yproc;
+    final Processor yproc;
     
-    public AlgorithmExecutionContext(String contextName, AlgorithmExecutionContext parent, YProcessor proc) {
+    public AlgorithmExecutionContext(String contextName, AlgorithmExecutionContext parent, Processor proc) {
         this.contextName = contextName;
         this.parent = parent;
         this.yproc = proc;
@@ -69,7 +69,7 @@ public class AlgorithmExecutionContext {
      * 
      * @return the processor in which this context is part of
      */
-    public YProcessor getProcessor() {
+    public Processor getProcessor() {
         return yproc;
     }
     private void updateHistoryWindow(ParameterValue pval) {

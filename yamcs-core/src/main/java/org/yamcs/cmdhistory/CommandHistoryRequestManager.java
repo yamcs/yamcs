@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.commanding.InvalidCommandId;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
@@ -28,7 +28,6 @@ import com.google.common.util.concurrent.AbstractService;
  *   - subscription to specific commands
  *   - subscription to all the commands but filtered on source and time.
  *   
- *   TODO 1.0: when/how the commands should be removed from the activelist? Also clean the cmdSubcriptions
  *   
  *   It receives commands from the cmd_history stream
  *   
@@ -47,9 +46,9 @@ public class CommandHistoryRequestManager extends AbstractService {
     //maps strings are requested in the getCommandHistory to strings as they appear in the commnad history
     AtomicInteger extendedId=new AtomicInteger();
     final String instance;
-    final YProcessor processor;
+    final Processor processor;
 
-    public CommandHistoryRequestManager(YProcessor processor) throws ConfigurationException {
+    public CommandHistoryRequestManager(Processor processor) throws ConfigurationException {
         this.processor = processor;
         this.instance = processor.getInstance();
         log = LoggingUtils.getLogger(this.getClass(), processor);
@@ -191,14 +190,10 @@ public class CommandHistoryRequestManager extends AbstractService {
         notifyStarted();
     }
 
-
-
     @Override
     protected void doStop() {
         notifyStopped();
     }
-
-
 
     public String getInstance() {
         return instance;

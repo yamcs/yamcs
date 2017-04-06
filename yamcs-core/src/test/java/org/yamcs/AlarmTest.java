@@ -11,6 +11,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.yamcs.alarms.AlarmReporter;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterConsumer;
@@ -34,7 +35,7 @@ public class AlarmTest {
     }
     
     private XtceDb db;
-    private YProcessor c;
+    private Processor c;
     private RefMdbPacketGenerator tmGenerator;
     private ParameterRequestManagerImpl prm;
     private Queue<Event> q;

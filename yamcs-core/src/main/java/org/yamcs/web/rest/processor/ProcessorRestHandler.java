@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.YamcsException;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementService;
@@ -46,7 +46,7 @@ public class ProcessorRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/:instance/:processor/clients", method = "GET")
     public void listClientsForProcessor(RestRequest req) throws HttpException {
-        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         
         Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
         ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
@@ -62,7 +62,7 @@ public class ProcessorRestHandler extends RestHandler {
     @Route(path = "/api/processors", method = "GET")
     public void listProcessors(RestRequest req) throws HttpException {
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
-        for (YProcessor processor : YProcessor.getProcessors()) {
+        for (Processor processor : Processor.getProcessors()) {
             response.addProcessor(toProcessorInfo(processor, req, true));
         }
         completeOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
@@ -73,7 +73,7 @@ public class ProcessorRestHandler extends RestHandler {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
-        for (YProcessor processor : YProcessor.getProcessors(instance)) {
+        for (Processor processor : Processor.getProcessors(instance)) {
             response.addProcessor(toProcessorInfo(processor, req, true));
         }
         completeOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
@@ -81,7 +81,7 @@ public class ProcessorRestHandler extends RestHandler {
     
     @Route(path = "/api/processors/:instance/:processor", method = "GET")
     public void getProcessor(RestRequest req) throws HttpException {
-        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         
         ProcessorInfo pinfo = toProcessorInfo(processor, req, true);
         completeOK(req, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
@@ -89,7 +89,7 @@ public class ProcessorRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/:instance/:processor", method = { "PATCH", "PUT", "POST" })
     public void editProcessor(RestRequest req) throws HttpException {
-        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.isReplay()) {
             throw new BadRequestException("Cannot update a non-replay processor");
         }
@@ -97,8 +97,12 @@ public class ProcessorRestHandler extends RestHandler {
         EditProcessorRequest request = req.bodyAsMessage(SchemaRest.EditProcessorRequest.MERGE).build();
 
         String newState = null;
-        if (request.hasState()) newState = request.getState();
-        if (req.hasQueryParameter("state")) newState = req.getQueryParameter("state");
+        if (request.hasState()) {
+            newState = request.getState();
+        }
+        if (req.hasQueryParameter("state")) {
+            newState = req.getQueryParameter("state");
+        }
         if (newState != null) {
             switch (newState.toLowerCase()) {
             case "running":
@@ -111,15 +115,23 @@ public class ProcessorRestHandler extends RestHandler {
         }
 
         long seek = TimeEncoding.INVALID_INSTANT;
-        if (request.hasSeek()) seek = RestRequest.parseTime(request.getSeek());
-        if (req.hasQueryParameter("seek")) seek = req.getQueryParameterAsDate("seek");
+        if (request.hasSeek()) {
+            seek = RestRequest.parseTime(request.getSeek());
+        }
+        if (req.hasQueryParameter("seek")) {
+            seek = req.getQueryParameterAsDate("seek");
+        }
         if (seek != TimeEncoding.INVALID_INSTANT) {
             processor.seek(seek);
         }
 
         String speed = null;
-        if (request.hasSpeed()) speed = request.getSpeed().toLowerCase();
-        if (req.hasQueryParameter("speed")) speed = req.getQueryParameter("speed").toLowerCase();
+        if (request.hasSpeed()) {
+            speed = request.getSpeed().toLowerCase();
+        }
+        if (req.hasQueryParameter("speed")) {
+            speed = req.getQueryParameter("speed").toLowerCase();
+        }
         if (speed != null) {
             ReplaySpeed replaySpeed;
             if ("afap".equals(speed)) {
@@ -161,7 +173,7 @@ public class ProcessorRestHandler extends RestHandler {
         //the new one just passes on the config to the processor factory
         
         String yamcsInstance = verifyInstance(req, req.getRouteParam("instance"));
-        String processorName = null;
+        String processorName;
         if (request.hasName()) {
             processorName = request.getName();
         } else  if (req.hasQueryParameter("name")) { 
@@ -292,7 +304,9 @@ public class ProcessorRestHandler extends RestHandler {
         // IMO this should actually all be done by the replay server itself. Not just in REST.
         Set<NamedObjectId> includedParameters = new LinkedHashSet<>(); // Preserve order (in case it matters)
         for (String pattern : paraPatterns) {
-            if (!pattern.startsWith("/")) pattern = "/" + pattern; // only xtce
+            if (!pattern.startsWith("/")) {
+                pattern = "/" + pattern; // only xtce
+            }
             boolean resolved = false;
 
             // Is it a namespace? Include parameters directly at that level.
@@ -363,7 +377,7 @@ public class ProcessorRestHandler extends RestHandler {
         }
     }
 
-    public static ProcessorInfo toProcessorInfo(YProcessor processor, RestRequest req, boolean detail) {
+    public static ProcessorInfo toProcessorInfo(Processor processor, RestRequest req, boolean detail) {
         ProcessorInfo.Builder b;
         if (detail) {
             ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);

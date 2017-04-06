@@ -66,7 +66,7 @@ public class StreamTmPacketProvider extends AbstractService implements TmPacketP
     }
 
     @Override
-    public void init(YProcessor proc, TmProcessor tmProcessor) {
+    public void init(Processor proc, TmProcessor tmProcessor) {
         this.tmProcessor=tmProcessor;
     }
 

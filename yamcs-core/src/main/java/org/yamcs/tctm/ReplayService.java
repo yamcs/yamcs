@@ -15,7 +15,7 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.TmProcessor;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
@@ -85,7 +85,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
 
     private final String yamcsInstance;
     YarchReplay yarchReplay;
-    YProcessor yprocessor;
+    Processor yprocessor;
     //the originalReplayRequest contains possibly only parameters.
     //the modified one sent to the ReplayServer contains the raw data required for extracting/processing those parameters
     ReplayRequest.Builder rawDataRequest;
@@ -112,12 +112,12 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
 
 
     @Override
-    public void init(YProcessor proc) throws ConfigurationException {
+    public void init(Processor proc) throws ConfigurationException {
         this.yprocessor = proc;
     }
 
     @Override
-    public void init(YProcessor proc, TmProcessor tmProcessor) {
+    public void init(Processor proc, TmProcessor tmProcessor) {
         this.tmProcessor = tmProcessor;
         this.yprocessor = proc;
     }
@@ -192,7 +192,9 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         rawDataRequest = originalReplayRequest.toBuilder().clearParameterRequest();
                 
         List<NamedObjectId> plist = originalReplayRequest.getParameterRequest().getNameFilterList();
-        if(plist.isEmpty()) return; 
+        if(plist.isEmpty()) {
+            return; 
+        }
 
         ParameterWithIdRequestHelper pidrm = new ParameterWithIdRequestHelper(parameterRequestManager, new ParameterWithIdConsumer() {
             @Override
@@ -306,7 +308,6 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
 
     @Override
     public void startProviding(Parameter paramDef) {
-        
         synchronized(subscribedParameters) {
             subscribedParameters.add(paramDef);
         }

@@ -2,13 +2,12 @@ package org.yamcs.commanding;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.algorithms.AlgorithmManager;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
@@ -29,7 +28,7 @@ import org.yamcs.xtce.SequenceContainer;
  *
  */
 public class CommandVerificationHandler {
-    final YProcessor yproc;
+    final Processor yproc;
     final PreparedCommand preparedCommand;
     final ScheduledThreadPoolExecutor timer;
     private List<Verifier> pendingVerifiers = new ArrayList<Verifier>();
@@ -37,7 +36,7 @@ public class CommandVerificationHandler {
     enum VerifResult {OK, NOK, TIMEOUT};
     AlgorithmExecutionContext algorithmCtx;
 
-    public CommandVerificationHandler(YProcessor yproc, PreparedCommand pc) {
+    public CommandVerificationHandler(Processor yproc, PreparedCommand pc) {
         this.yproc = yproc;
         this.preparedCommand = pc;
         this.timer = yproc.getTimer();
@@ -57,7 +56,9 @@ public class CommandVerificationHandler {
             if(c!=null) {
                 verifier = new ContainerVerifier(this, cv, c);
             } else {
-                if(algorithmCtx==null)  createAlgorithmContext(); 
+                if(algorithmCtx==null)  {
+                    createAlgorithmContext(); 
+                }
                 verifier = new AlgorithmVerifier(this, cv);
             }
             CheckWindow checkWindow = cv.getCheckWindow();
@@ -86,7 +87,9 @@ public class CommandVerificationHandler {
                     break;
                 }
             }
-            if(!found) verifiers.add(cv);
+            if(!found) {
+                verifiers.add(cv);
+            }
         }
         MetaCommand basecmd = cmd.getBaseMetaCommand();
         if(basecmd!=null) {
@@ -124,12 +127,8 @@ public class CommandVerificationHandler {
             throw new IllegalArgumentException("The window stop has to be greater than 0");
         }
 
-        timer.schedule(new Runnable() {
-            @Override
-            public void run() {
-                onVerifierFinished(verifier, VerifResult.TIMEOUT);
-            }
-        }, windowStop, TimeUnit.MILLISECONDS);
+        timer.schedule(() -> onVerifierFinished(verifier, VerifResult.TIMEOUT)
+                ,windowStop, TimeUnit.MILLISECONDS);
     }
 
     void onVerifierFinished(Verifier v, VerifResult result) {
@@ -171,7 +170,7 @@ public class CommandVerificationHandler {
     }
 
 
-    public YProcessor getProcessor() {
+    public Processor getProcessor() {
         return yproc;
     }
 

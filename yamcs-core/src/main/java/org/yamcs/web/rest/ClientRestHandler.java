@@ -2,7 +2,7 @@ package org.yamcs.web.rest;
 
 import java.util.Set;
 
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.YamcsException;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Rest.EditClientRequest;
@@ -37,13 +37,21 @@ public class ClientRestHandler extends RestHandler {
         EditClientRequest request = req.bodyAsMessage(SchemaRest.EditClientRequest.MERGE).build();
         String newProcessorName = null;
         String newInstance = ci.getInstance(); // By default, use same instance
-        if (request.hasInstance()) newInstance = request.getInstance();
-        if (request.hasProcessor()) newProcessorName = request.getProcessor();
-        if (req.hasQueryParameter("processor")) newProcessorName = req.getQueryParameter("processor");
-        if (req.hasQueryParameter("instance")) newInstance = req.getQueryParameter("instance");
+        if (request.hasInstance()) {
+            newInstance = request.getInstance();
+        }
+        if (request.hasProcessor()) {
+            newProcessorName = request.getProcessor();
+        }
+        if (req.hasQueryParameter("processor")) {
+            newProcessorName = req.getQueryParameter("processor");
+        }
+        if (req.hasQueryParameter("instance")) {
+            newInstance = req.getQueryParameter("instance");
+        }
 
         if (newProcessorName != null) {
-            YProcessor newProcessor = YProcessor.getInstance(newInstance, newProcessorName);
+            Processor newProcessor = Processor.getInstance(newInstance, newProcessorName);
             if (newProcessor == null) {
                 throw new BadRequestException("Cannot switch user to non-existing processor '" + newProcessorName + "' (instance: '" + newInstance + "')");
             } else {

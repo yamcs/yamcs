@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ProcessorFactory;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.ProcessorClient;
 import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorListener;
@@ -60,7 +60,7 @@ public class ManagementService implements ProcessorListener {
 
     final boolean jmxEnabled;
     static Logger log = LoggerFactory.getLogger(ManagementService.class.getName());
-    final String tld="yamcs";
+    final String tld = "yamcs";
     static ManagementService managementService;
 
     Map<Integer, ClientControlImpl> clients = Collections.synchronizedMap(new HashMap<Integer, ClientControlImpl>());
@@ -79,7 +79,7 @@ public class ManagementService implements ProcessorListener {
     // keep track of registered services
     Map<String, Integer> servicesCount = new HashMap<>();
 
-    Map<YProcessor, Statistics> yprocs=new ConcurrentHashMap<YProcessor, Statistics>();
+    Map<Processor, Statistics> yprocs=new ConcurrentHashMap<Processor, Statistics>();
     static final Statistics STATS_NULL=Statistics.newBuilder().setInstance("null").setYProcessorName("null").build();//we use this one because ConcurrentHashMap does not support null values
 
     static public void setup(boolean jmxEnabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
@@ -98,7 +98,7 @@ public class ManagementService implements ProcessorListener {
         else
             mbeanServer=null;
 
-        YProcessor.addProcessorListener(this);
+        Processor.addProcessorListener(this);
         timer.scheduleAtFixedRate(() -> updateStatistics(), 1, 1, TimeUnit.SECONDS);
         timer.scheduleAtFixedRate(() -> checkLinkUpdate(), 1, 1, TimeUnit.SECONDS);
     }
@@ -139,8 +139,7 @@ public class ManagementService implements ProcessorListener {
                 // check if this serviceName has been registered several time
                 int serviceCount = 0;
                 String serviceName_  = serviceName;
-                if(servicesCount.containsKey(serviceName) && (serviceCount = servicesCount.get(serviceName)) > 0)
-                {
+                if(servicesCount.containsKey(serviceName) && (serviceCount = servicesCount.get(serviceName)) > 0) {
                     if(serviceCount > 1)
                         serviceName_ = serviceName + "_" + serviceCount;
                     serviceCount--;
@@ -195,9 +194,9 @@ public class ManagementService implements ProcessorListener {
         return qmanagers;
     }
 
-    public void registerYProcessor(YProcessor yproc) {
+    public void registerYProcessor(Processor yproc) {
         try {
-            YProcessorControlImpl cci = new YProcessorControlImpl(yproc);
+            ProcessorControlImpl cci = new ProcessorControlImpl(yproc);
             if(jmxEnabled) {
                 mbeanServer.registerMBean(cci, ObjectName.getInstance(tld+"."+yproc.getInstance()+":type=processors,name="+yproc.getName()));
             }
@@ -206,7 +205,7 @@ public class ManagementService implements ProcessorListener {
         }
     }
 
-    public void unregisterYProcessor(YProcessor yproc) {
+    public void unregisterYProcessor(Processor yproc) {
         if(jmxEnabled) {
             try {
                 mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+yproc.getInstance()+":type=processors,name="+yproc.getName()));
@@ -219,8 +218,10 @@ public class ManagementService implements ProcessorListener {
     public int registerClient(String instance, String yprocName,  ProcessorClient client) {
         int id=clientId.incrementAndGet();
         try {
-            YProcessor c=YProcessor.getInstance(instance, yprocName);
-            if(c==null) throw new YamcsException("Unexisting yprocessor ("+instance+", "+yprocName+") specified");
+            Processor c=Processor.getInstance(instance, yprocName);
+            if(c==null) {
+                throw new YamcsException("Unexisting yprocessor ("+instance+", "+yprocName+") specified");
+            }
             ClientControlImpl cci = new ClientControlImpl(instance, id, client.getUsername(), client.getApplicationName(), yprocName, client);
             clients.put(cci.getClientInfo().getId(), cci);
             if(jmxEnabled) {
@@ -235,7 +236,9 @@ public class ManagementService implements ProcessorListener {
 
     public void unregisterClient(int id) {
         ClientControlImpl cci=clients.remove(id);
-        if(cci==null) return;
+        if(cci==null) {
+            return;
+        }
         ClientInfo ci=cci.getClientInfo();
         try {
             if(jmxEnabled) {
@@ -247,7 +250,7 @@ public class ManagementService implements ProcessorListener {
         }
     }
 
-    private void switchProcessor(ClientControlImpl cci, YProcessor yproc, AuthenticationToken authToken) throws ProcessorException {
+    private void switchProcessor(ClientControlImpl cci, Processor yproc, AuthenticationToken authToken) throws ProcessorException {
         ClientInfo oldci=cci.getClientInfo();
         cci.switchYProcessor(yproc, authToken);
         ClientInfo ci=cci.getClientInfo();
@@ -275,23 +278,23 @@ public class ManagementService implements ProcessorListener {
         }
         if(!Privilege.getInstance().hasPrivilege1(authToken, Privilege.SystemPrivilege.MayControlProcessor)) {
             if(cr.getPersistent()) {
-                log.warn("User "+username+" is not allowed to create persistent processors");
+                log.warn("User {} is not allowed to create persistent processors", username);
                 throw new YamcsException("Permission denied");
             }
             if(!"Archive".equals(cr.getType())) {
-                log.warn("User "+username+" is not allowed to create processors of type "+cr.getType());
+                log.warn("User {} is not allowed to create processors of type {}", cr.getType(), username);
                 throw new YamcsException("Permission denied");
             }
             for(int i=0;i<cr.getClientIdCount();i++) {
                 ClientInfo si=clients.get(cr.getClientId(i)).getClientInfo();
                 if(!username.equals(si.getUsername())) {
-                    log.warn("User "+username+" is not allowed to connect "+si.getUsername()+" to new processor "+cr.getName() );
+                    log.warn("User {} is not allowed to connect {} to new processor {}", username, si.getUsername(), cr.getName());
                     throw new YamcsException("Permission denied");
                 }
             }
         }
 
-        YProcessor yproc;
+        Processor yproc;
         try {
             int n=0;
             
@@ -334,8 +337,10 @@ public class ManagementService implements ProcessorListener {
 
 
     public void connectToProcessor(ProcessorManagementRequest cr, AuthenticationToken usertoken) throws YamcsException {
-        YProcessor chan=YProcessor.getInstance(cr.getInstance(), cr.getName());
-        if(chan==null) throw new YamcsException("Unexisting processor "+cr.getInstance()+"/"+cr.getName()+" specified");
+        Processor chan=Processor.getInstance(cr.getInstance(), cr.getName());
+        if(chan==null) {
+            throw new YamcsException("Unexisting processor "+cr.getInstance()+"/"+cr.getName()+" specified");
+        }
 
 
         String username;
@@ -344,19 +349,19 @@ public class ManagementService implements ProcessorListener {
         } else {
             username = Privilege.getDefaultUser();
         }
-        log.debug("User "+ username+" wants to connect clients "+cr.getClientIdList()+" to processor "+cr.getName());
+        log.debug("User {} wants to connect clients {} to processor {}", username, cr.getClientIdList(), cr.getName());
 
 
         if(!Privilege.getInstance().hasPrivilege1(usertoken, Privilege.SystemPrivilege.MayControlProcessor) &&
                 !((chan.isPersistent() || chan.getCreator().equals(username)))) {
-            log.warn("User "+username+" is not allowed to connect users to processor "+cr.getName() );
+            log.warn("User {} is not allowed to connect users to processor {}", username, cr.getName() );
             throw new YamcsException("permission denied");
         }
         if(!Privilege.getInstance().hasPrivilege1(usertoken, Privilege.SystemPrivilege.MayControlProcessor)) {
             for(int i=0; i<cr.getClientIdCount(); i++) {
                 ClientInfo si=clients.get(cr.getClientId(i)).getClientInfo();
                 if(!username.equals(si.getUsername())) {
-                    log.warn("User "+username+" is not allowed to connect "+si.getUsername()+" to processor "+cr.getName());
+                    log.warn("User {} is not allowed to connect {} to processor {}", username, si.getUsername(), cr.getName());
                     throw new YamcsException("Permission denied");
                 }
             }
@@ -397,7 +402,7 @@ public class ManagementService implements ProcessorListener {
         return qmanagers;
     }
     
-    public CommandQueueManager getCommandQueueManager(YProcessor processor) {
+    public CommandQueueManager getCommandQueueManager(Processor processor) {
         for (CommandQueueManager mgr : qmanagers) {
             if (mgr.getInstance().equals(processor.getInstance())
                     && mgr.getChannelName().equals(processor.getName())) {
@@ -419,7 +424,9 @@ public class ManagementService implements ProcessorListener {
                 break;
             }
         }
-        if(!found) throw new YamcsException("There is no link named '"+name+"' in instance "+instance);
+        if(!found) {
+            throw new YamcsException("There is no link named '"+name+"' in instance "+instance);
+        }
     }
     
     public void disableLink(String instance, String name) throws YamcsException {
@@ -434,7 +441,9 @@ public class ManagementService implements ProcessorListener {
                 break;
             }
         }
-        if(!found) throw new YamcsException("There is no link named '"+name+"' in instance "+instance);
+        if(!found) {
+            throw new YamcsException("There is no link named '"+name+"' in instance "+instance);
+        }
     }
     
     /**
@@ -511,14 +520,16 @@ public class ManagementService implements ProcessorListener {
     
     public ClientInfo getClientInfo(int clientId) {
         ClientControlImpl cci = clients.get(clientId);
-        if(cci==null) return null;
+        if(cci==null) {
+            return null;
+        }
         return cci.getClientInfo();
     }
     
     private void updateStatistics() {
         try {
-            for(Entry<YProcessor,Statistics> entry:yprocs.entrySet()) {
-                YProcessor yproc=entry.getKey();
+            for(Entry<Processor,Statistics> entry:yprocs.entrySet()) {
+                Processor yproc=entry.getKey();
                 Statistics stats=entry.getValue();
                 ProcessingStatistics ps=yproc.getTmProcessor().getStatistics();
                 if((stats==STATS_NULL) || (ps.getLastUpdated()>stats.getLastUpdated())) {
@@ -532,7 +543,7 @@ public class ManagementService implements ProcessorListener {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+           log.warn("Error updating statistics ", e);
         }
     }
     
@@ -547,21 +558,21 @@ public class ManagementService implements ProcessorListener {
     }
 
     @Override
-    public void processorAdded(YProcessor processor) {
+    public void processorAdded(Processor processor) {
         ProcessorInfo pi = ManagementGpbHelper.toProcessorInfo(processor);
         managementListeners.forEach(l -> l.processorAdded(pi));
         yprocs.put(processor, STATS_NULL);
     }
 
     @Override
-    public void processorClosed(YProcessor processor) {
+    public void processorClosed(Processor processor) {
         ProcessorInfo pi = ManagementGpbHelper.toProcessorInfo(processor);
         managementListeners.forEach(l -> l.processorClosed(pi));
         yprocs.remove(processor);
     }
 
     @Override
-    public void processorStateChanged(YProcessor processor) {
+    public void processorStateChanged(Processor processor) {
         ProcessorInfo pi = ManagementGpbHelper.toProcessorInfo(processor);
         managementListeners.forEach(l -> l.processorStateChanged(pi));
     }

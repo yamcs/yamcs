@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
@@ -90,7 +90,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
             wsHandler.sendReply(toAckReply(ctx.getRequestId()));
 
             // Send current set of processors
-            for (YProcessor processor : YProcessor.getProcessors()) {
+            for (Processor processor : Processor.getProcessors()) {
                 ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
                 wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
             }
@@ -164,7 +164,9 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
 
     @Override
     public void clientUnregistered(ClientInfo ci) {
-        if (ci.getId() == clientId) return;
+        if (ci.getId() == clientId) {
+            return;
+        }
 
         ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.DISCONNECTED).setCurrentClient(false).build();
         try {
@@ -175,7 +177,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
     }
 
     @Override
-    public void statisticsUpdated(YProcessor processor, Statistics stats) {
+    public void statisticsUpdated(Processor processor, Statistics stats) {
         try {
             wsHandler.sendData(ProtoDataType.PROCESSING_STATISTICS, stats, SchemaYamcsManagement.Statistics.WRITE);
         } catch (IOException e) {

@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
@@ -46,7 +46,7 @@ public class RestReplays {
         }
         
         try {
-            YProcessor yproc = ProcessorFactory.create(instance, "RestReplays"+count.incrementAndGet(), "ArchiveRetrieval", "internal", replayRequest);
+            Processor yproc = ProcessorFactory.create(instance, "RestReplays"+count.incrementAndGet(), "ArchiveRetrieval", "internal", replayRequest);
             ReplayWrapper wrapper = new ReplayWrapper(l, yproc);
         
             ParameterWithIdRequestHelper pidrm = new ParameterWithIdRequestHelper(yproc.getParameterRequestManager(), wrapper);
@@ -67,9 +67,9 @@ public class RestReplays {
     
     private static class ReplayWrapper implements ParameterWithIdConsumer {
         RestReplayListener wrappedListener;
-        YProcessor yproc;
+        Processor yproc;
         
-        ReplayWrapper(RestReplayListener l, YProcessor yproc) {
+        ReplayWrapper(RestReplayListener l, Processor yproc) {
             this.wrappedListener = l;
             this.yproc = yproc;
             yproc.addListener(l, MoreExecutors.directExecutor());

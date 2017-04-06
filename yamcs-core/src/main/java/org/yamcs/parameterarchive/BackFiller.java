@@ -18,7 +18,7 @@ import org.yamcs.ProcessorFactory;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.YConfiguration;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
@@ -103,9 +103,11 @@ public class BackFiller implements StreamSubscriber {
         warmupTime = 1000L * YConfiguration.getInt(config, "warmupTime", 60);
         if(config.containsKey("schedule")) {
             List<Object> l = YConfiguration.getList(config, "schedule");
-            schedules = new ArrayList<BackFiller.Schedule>(l.size());
+            schedules = new ArrayList<>(l.size());
             for(Object o: l) {
-                if(!(o instanceof Map)) throw new ConfigurationException("Invalid schedule specification in "+config);
+                if(!(o instanceof Map)) {
+                    throw new ConfigurationException("Invalid schedule specification in "+config);
+                }
                 Map<String, Object> m = (Map<String, Object>)o;
                 int segstart = YConfiguration.getInt(m, "startSegment");
                 int numseg = YConfiguration.getInt(m, "numSegments");
@@ -121,7 +123,7 @@ public class BackFiller implements StreamSubscriber {
             monitoredStreams = YConfiguration.getList(config, "monitorStreams");
         } else {
             StreamConfig sc = StreamConfig.getInstance(parchive.getYamcsInstance());
-            monitoredStreams = new ArrayList<String>();
+            monitoredStreams = new ArrayList<>();
             sc.getEntries(StandardStreamType.tm).forEach(sce -> monitoredStreams.add(sce.getName()));
             sc.getEntries(StandardStreamType.param).forEach(sce -> monitoredStreams.add(sce.getName()));
         }
@@ -159,7 +161,7 @@ public class BackFiller implements StreamSubscriber {
             rrb.setStart(start-warmupTime).setStop(stop);
             rrb.setPacketRequest(PacketReplayRequest.newBuilder().build());
             rrb.setPpRequest(PpReplayRequest.newBuilder().build());
-            YProcessor yproc = ProcessorFactory.create(parchive.getYamcsInstance(), "ParameterArchive-backfilling_"+count.incrementAndGet(), "ParameterArchive", "internal", rrb.build());
+            Processor yproc = ProcessorFactory.create(parchive.getYamcsInstance(), "ParameterArchive-backfilling_"+count.incrementAndGet(), "ParameterArchive", "internal", rrb.build());
             yproc.getParameterRequestManager().subscribeAll(aft);
 
             yproc.start();
@@ -190,7 +192,9 @@ public class BackFiller implements StreamSubscriber {
     private void checkStreamUpdates() {
         long[] a;
         synchronized(streamUpdates) {
-            if(streamUpdates.isEmpty()) return;
+            if(streamUpdates.isEmpty()) {
+                return;
+            }
             a = new long[streamUpdates.size()];
             int i=0;
             for(Long l: streamUpdates) {
@@ -202,7 +206,9 @@ public class BackFiller implements StreamSubscriber {
         for(int i = 0; i<a.length; i++) {
             int j;
             for(j=i; j<a.length-1; j++) {
-                if(SortedTimeSegment.getNextSegmentStart(a[j])!=a[j+1]) break;  
+                if(SortedTimeSegment.getNextSegmentStart(a[j])!=a[j+1]) {
+                    break;  
+                }
             }
             runTask(a[i], a[j]);
             i=j;

@@ -29,7 +29,7 @@ public class ContainerRequestManagerTest {
     @Test
     public void testSubscriptions() throws Exception {
         RefMdbPacketGenerator packetGenerator = new RefMdbPacketGenerator();
-        YProcessor c = ProcessorFactory.create("refmdb", "ContainerRequestManagerTest", "refmdb", new RefMdbTmService(packetGenerator), "refmdb");
+        Processor c = ProcessorFactory.create("refmdb", "ContainerRequestManagerTest", "refmdb", new RefMdbTmService(packetGenerator), "refmdb");
         ContainerRequestManager rm = c.getContainerRequestManager();
         XtceDb xtceDb = c.getXtceDb();
 

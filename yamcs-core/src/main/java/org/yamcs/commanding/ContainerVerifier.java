@@ -1,7 +1,7 @@
 package org.yamcs.commanding;
 
 import org.yamcs.ContainerExtractionResult;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.commanding.CommandVerificationHandler.VerifResult;
 import org.yamcs.container.ContainerConsumer;
 import org.yamcs.container.ContainerRequestManager;
@@ -10,7 +10,7 @@ import org.yamcs.xtce.SequenceContainer;
 
 class ContainerVerifier extends Verifier implements ContainerConsumer {
     SequenceContainer container;
-    YProcessor yproc;
+    Processor yproc;
     
     ContainerVerifier( CommandVerificationHandler cvh, CommandVerifier cv, SequenceContainer c) {
         super(cvh, cv);

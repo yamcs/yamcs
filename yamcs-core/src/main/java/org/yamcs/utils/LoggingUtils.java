@@ -2,7 +2,7 @@ package org.yamcs.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.impl.YamcsLoggerFactory;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 
@@ -24,7 +24,7 @@ public class LoggingUtils {
      * @param processor 
      * @return a newly created logger
      */
-    public static Logger getLogger(Class<?> clazz, YProcessor processor) {        
+    public static Logger getLogger(Class<?> clazz, Processor processor) {        
         //TODO - we really want to have the name of the processor in the logs but unfortunately JUL will make a node for it in the logging hierarchy 
         // and and it will never be garbage collected causing the memory to ever increase when processors with random names are created 
         //    (such as those from REST replays or from ParameterArchive fillup)

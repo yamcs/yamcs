@@ -85,13 +85,17 @@ public class ArtemisReplayServer extends AbstractExecutionThreadService {
             while(isRunning()) {
                 ClientMessage msg=msgClient.rpcConsumer.receive();
                 if(msg==null) {
-                    if(isRunning()) log.warn("Null message received from the control queue");
+                    if(isRunning()){
+                        log.warn("Null message received from the control queue");
+                    }
                     continue;
                 }
                 SimpleString replyto=msg.getSimpleStringProperty(REPLYTO_HEADER_NAME);
                 SimpleString dataAddress=msg.getSimpleStringProperty(DATA_TO_HEADER_NAME);
                 if(replyto==null) {
-                    if(isRunning()) log.warn("Did not receive a replyto header. Ignoring the request");
+                    if(isRunning()) {
+                        log.warn("Did not receive a replyto header. Ignoring the request");
+                    }
                     continue;
                 }
                 try {
@@ -171,14 +175,13 @@ public class ArtemisReplayServer extends AbstractExecutionThreadService {
                     replayRequest = ReplayRequest.newBuilder(replayRequest).setPacketRequest(prr).build();
                 }
             }
-           //TODO Command history privilege??
         }
        
         
 
         ActiveMQReplayListener listener = new ActiveMQReplayListener(dataAddress);
         
-        YProcessor yproc = ProcessorFactory.create(instance, "ActiveMQReplay_"+count.incrementAndGet(), "ArchiveRetrieval", "internal", replayRequest);
+        Processor yproc = ProcessorFactory.create(instance, "ActiveMQReplay_"+count.incrementAndGet(), "ArchiveRetrieval", "internal", replayRequest);
         listener.yproc = yproc;
 
         try {
@@ -200,7 +203,7 @@ public class ArtemisReplayServer extends AbstractExecutionThreadService {
         }
         
         
-        YProcessor.addProcessorListener(listener);
+        Processor.addProcessorListener(listener);
 
         StringMessage addr=StringMessage.newBuilder().setMessage(listener.yclient.rpcAddress.toString()).build();
         msgClient.sendReply(replyto,"PACKET_REPLAY_CREATED", addr);
@@ -222,7 +225,7 @@ public class ArtemisReplayServer extends AbstractExecutionThreadService {
         YamcsClient yclient;
         SimpleString dataAddress;
         volatile boolean quitting = false;
-        YProcessor yproc;
+        Processor yproc;
         
         public ActiveMQReplayListener( SimpleString dataAddress)  throws IOException, ActiveMQException, YamcsException, YamcsApiException {
             this.dataAddress = dataAddress;
@@ -236,10 +239,12 @@ public class ArtemisReplayServer extends AbstractExecutionThreadService {
         @Override
         public void onMessage(ClientMessage msg) {
             if(msg==null) {
-                if(!quitting) log.warn("null message received from the control queue");
+                if(!quitting) {
+                    log.warn("null message received from the control queue");
+                }
             }
 
-            SimpleString replyto=msg.getSimpleStringProperty(REPLYTO_HEADER_NAME);
+            SimpleString replyto = msg.getSimpleStringProperty(REPLYTO_HEADER_NAME);
             if(replyto==null) {
                 log.warn("did not receive a replyto header. Ignoring the request");
             }
@@ -279,21 +284,9 @@ public class ArtemisReplayServer extends AbstractExecutionThreadService {
 
             } catch (Exception e) {
                 log.warn("caught exception in packet reply: ", e);
-                e.printStackTrace();
             }
         }
         
-/*
-        @Override
-        public void newData(ProtoDataType type, MessageLite data) {
-            try {
-                yclient.sendData(dataAddress, type, data);
-            } catch (ActiveMQException e) {
-                log.warn("Got exception when sending data to client", e);
-                quit();
-            }
-        }        
-  */      
         public void quit() {
             quitting = true;
             yproc.quit();
@@ -301,18 +294,20 @@ public class ArtemisReplayServer extends AbstractExecutionThreadService {
 
 
         @Override
-        public void processorAdded(YProcessor processor) {
+        public void processorAdded(Processor processor) {
         }
 
 
         @Override
-        public void processorClosed(YProcessor processor) {            
-            if(processor!=yproc) return;
+        public void processorClosed(Processor processor) {            
+            if(processor!=yproc) {
+                return;
+            }
             log.debug("processor closed");
             
             sendProcessorState();
             quitting = true;
-            YProcessor.removeProcessorListener(this);
+            Processor.removeProcessorListener(this);
             
             try {
                 ysession.close();
@@ -323,13 +318,17 @@ public class ArtemisReplayServer extends AbstractExecutionThreadService {
 
 
         @Override
-        public void processorStateChanged(YProcessor processor) {
-            if(processor!=yproc) return;
+        public void processorStateChanged(Processor processor) {
+            if(processor!=yproc) {
+                return;
+            }
             sendProcessorState();
         }
 
         private void sendProcessorState() {
-            if(quitting) return;
+            if(quitting) {
+                return;
+            }
             
             try { 
                 ReplayStatus.Builder rsb=ReplayStatus.newBuilder().setState(yproc.getReplayState());
@@ -342,7 +341,9 @@ public class ArtemisReplayServer extends AbstractExecutionThreadService {
 
         @Override
         public void update(int subscriptionId, List<ParameterValueWithId> params) {
-            if(quitting) return;
+            if(quitting) {
+                return;
+            }
             ParameterData.Builder pd = ParameterData.newBuilder();
             for(ParameterValueWithId pvwi:params) {
                 pd.addParameter(pvwi.getParameterValue().toGpb(pvwi.getId()));
@@ -374,7 +375,9 @@ public class ArtemisReplayServer extends AbstractExecutionThreadService {
 
         @Override
         public void addedCommand(PreparedCommand pc) {
-            if(quitting) return;
+            if(quitting) {
+                return;
+            }
             CommandHistoryEntry che = pc.toCommandHistoryEntry();
             try {
                 yclient.sendData(dataAddress, ProtoDataType.CMD_HISTORY, che);
@@ -387,7 +390,9 @@ public class ArtemisReplayServer extends AbstractExecutionThreadService {
 
         @Override
         public void updatedCommand(CommandId cmdId, long changeDate, String key, Value value) {
-            if(quitting) return;
+            if(quitting) {
+                return;
+            }
             CommandHistoryEntry.Builder cheb = CommandHistoryEntry.newBuilder().setCommandId(cmdId);
             cheb.addAttr(CommandHistoryAttribute.newBuilder().setName(key).setTime(changeDate).setValue(ValueUtility.toGbp(value)).build());
             try {

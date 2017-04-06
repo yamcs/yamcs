@@ -17,7 +17,7 @@ import org.yamcs.GuardedBy;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
@@ -71,7 +71,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
     ParameterValueList pvList = new ParameterValueList();
 
-    YProcessor yproc;
+    Processor yproc;
     int paramSubscriptionRequestId = -1;
 
     private final ScheduledThreadPoolExecutor timer;
@@ -293,7 +293,6 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             try {
                 m.commandAdded(q, pc);
             } catch (Exception e) {
-                e.printStackTrace();
                 log.warn("got exception when notifying a monitor, removing it from the list", e);
                 monitoringClients.remove(m);
             }
@@ -349,14 +348,6 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     private void releaseCommand(CommandQueue q, PreparedCommand pc, boolean notify, boolean rebuild) {
-        if(rebuild) {
-            /*		try {
-				pc=commandingManager.buildCommand(pc.source, pc.getCommandId().toBuilder());
-			} catch (YamcsException e) {
-				log.warn("Got Exception for a command already in the queue: ", e);
-				return;
-			}*/
-        }
         //start the verifiers
         MetaCommand mc = pc.getMetaCommand();
         if(mc.hasCommandVerifiers()) {
@@ -380,13 +371,19 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      */
     public CommandQueue getQueue(AuthenticationToken authToken, PreparedCommand pc) throws InvalidAuthenticationToken {
         Privilege priv = Privilege.getInstance();
-        if(authToken == null || !priv.isEnabled()) return queues.get("default");
+        if(authToken == null || !priv.isEnabled()){
+            return queues.get("default");
+        }
 
         String[] roles = priv.getRoles(authToken);
-        if(roles==null) return queues.get("default");
+        if(roles==null) {
+            return queues.get("default");
+        }
         for(String role:roles) {
             for(CommandQueue cq:queues.values()) {
-                if(cq.roles==null)continue;
+                if(cq.roles==null){
+                    continue;
+                }
                 for(String r1:cq.roles) {
                     if(role.equals(r1)){
                         if(cq.significances == null
@@ -498,7 +495,9 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 break;
             }
         }
-        if(queue==null) return null;
+        if(queue==null){
+            return null;
+        }
 
         if(queue.state == newState) {
             if(queue.stateExpirationJob != null && newState != queue.defaultState)
@@ -596,30 +595,16 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     private void scheduleImmediateCheck(final TransmissionConstraintChecker tcc) {
-        timer.execute(new Runnable() {
-            @Override
-            public void run() {
-                tcc.check();
-            }
-        });
+        timer.execute(tcc::check);
     }
 
     private void scheduleCheck(final TransmissionConstraintChecker tcc, long millisec) {
-        timer.schedule(new Runnable() {
-            @Override
-            public void run() {
-                tcc.check();
-            }
-        }, millisec, TimeUnit.MILLISECONDS);
+        timer.schedule(tcc::check , millisec, TimeUnit.MILLISECONDS);
     }
 
     @Override
     public void updateItems(int subscriptionId, final List<ParameterValue> items) {
-        timer.execute(new Runnable() {
-            @Override
-            public void run() {
-                doUpdateItems(items);
-            }});
+        timer.execute( () -> doUpdateItems(items));
     }
 
 
@@ -651,7 +636,9 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 aggregateStatus = TCStatus.PENDING;
             }
 
-            if(aggregateStatus!=TCStatus.PENDING) return;
+            if(aggregateStatus!=TCStatus.PENDING) {
+                return;
+            }
 
             CriteriaEvaluator condEvaluator = new CriteriaEvaluatorImpl(pvList);
 
@@ -659,7 +646,9 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             long scheduleNextCheck = Long.MAX_VALUE;
 
             for(TransmissionConstraintStatus tcs: tcsList) {
-                if(tcs.status == TCStatus.OK) continue;
+                if(tcs.status == TCStatus.OK) {
+                    continue;
+                }
 
                 if(tcs.status == TCStatus.PENDING) {
                     long timeRemaining = tcs.expirationTime - now;

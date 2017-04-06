@@ -11,10 +11,9 @@ import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.LoggingUtils;
-import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
@@ -38,26 +37,28 @@ import com.google.common.util.concurrent.AbstractService;
 public class SystemParametersProvider extends AbstractService implements StreamSubscriber, ParameterProvider {
     private ParameterRequestManager parameterListener;
 
-    volatile private Map<String, SystemParameter> variables = new HashMap<String, SystemParameter>(); 
+    volatile private Map<String, SystemParameter> variables = new HashMap<>(); 
     Logger log;
     Stream stream;
     XtceDb xtceDb;
-    YProcessor yproc;
-    ArrayList<ParameterValue> yprocParams = new ArrayList<ParameterValue>();
+    Processor yproc;
+    ArrayList<ParameterValue> procParams = new ArrayList<>();
     ScheduledThreadPoolExecutor timer=new ScheduledThreadPoolExecutor(1);
-    ParameterValue yprocModePv;
+    ParameterValue procModePv;
     
     public SystemParametersProvider(String yamcsInstance) throws ConfigurationException {
         xtceDb = XtceDbFactory.getInstance(yamcsInstance);
     }
     
     @Override
-    public void init(YProcessor yproc) throws ConfigurationException {
+    public void init(Processor yproc) throws ConfigurationException {
         String instance = yproc.getInstance();
         log = LoggingUtils.getLogger(this.getClass(), yproc);
         YarchDatabase ydb = YarchDatabase.getInstance(instance);
         stream = ydb.getStream(SystemParametersCollector.STREAM_NAME);
-        if(stream==null) throw new ConfigurationException("Cannot find a stream named "+SystemParametersCollector.STREAM_NAME);
+        if(stream==null) {
+            throw new ConfigurationException("Cannot find a stream named "+SystemParametersCollector.STREAM_NAME);
+        }
 
         this.yproc = yproc;
         setupYProcParameters();
@@ -96,7 +97,6 @@ public class SystemParametersProvider extends AbstractService implements StreamS
             ParameterValue pv=ParameterValue.fromGpb(sv, gpv);
             params.add(pv);
         }
-        //    System.out.println("-------------- updating parameters "+params);
         parameterListener.update(params);
     }
 
@@ -169,13 +169,8 @@ public class SystemParametersProvider extends AbstractService implements StreamS
     @Override
     protected void doStart() {
         stream.addSubscriber(this);
-        timer.scheduleAtFixedRate(new Runnable() {
-            
-            @Override
-            public void run() {
-                updateYProcParameters();  
-            }
-        }, 0, 1, TimeUnit.SECONDS);
+        timer.scheduleAtFixedRate(()-> updateProcParameters()  
+           , 0, 1, TimeUnit.SECONDS);
         notifyStarted();
     }
 
@@ -195,18 +190,18 @@ public class SystemParametersProvider extends AbstractService implements StreamS
     }
     private void setupYProcParameters() {
         ParameterValue yprocNamePv = getYProcPV("name", yproc.getName());
-        yprocParams.add(yprocNamePv);
+        procParams.add(yprocNamePv);
         
         ParameterValue yprocCreatorPv = getYProcPV("creator", yproc.getCreator());
-        yprocParams.add(yprocCreatorPv);
+        procParams.add(yprocCreatorPv);
         
         String mode =  yproc.isReplay()? "replay":"realtime";            
-        yprocModePv = getYProcPV("mode", mode);
-        yprocParams.add(yprocModePv); 
+        procModePv = getYProcPV("mode", mode);
+        procParams.add(procModePv); 
     }
     
-    private void updateYProcParameters() {
-        yprocModePv.setGenerationTime(yproc.getCurrentTime());
-        parameterListener.update(yprocParams);
+    private void updateProcParameters() {
+        procModePv.setGenerationTime(yproc.getCurrentTime());
+        parameterListener.update(procParams);
     }
 }

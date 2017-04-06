@@ -11,7 +11,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.YConfiguration;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 
 public class RealtimeArchiveFiller extends ArchiveFillerTask {
     ScheduledThreadPoolExecutor executor=new ScheduledThreadPoolExecutor(1);
@@ -19,7 +19,7 @@ public class RealtimeArchiveFiller extends ArchiveFillerTask {
     final Logger log;
     String processorName = "realtime";
     final String yamcsInstance;
-    YProcessor realtimeProcessor; 
+    Processor realtimeProcessor; 
     int subscriptionId;
     
     public RealtimeArchiveFiller(ParameterArchive parameterArchive, Map<String, Object> config) {
@@ -67,7 +67,7 @@ public class RealtimeArchiveFiller extends ArchiveFillerTask {
     
     void start() {
         //subscribe to the realtime processor
-        realtimeProcessor = YProcessor.getInstance(yamcsInstance, processorName);
+        realtimeProcessor = Processor.getInstance(yamcsInstance, processorName);
         if(realtimeProcessor == null) {
             throw new ConfigurationException("No processor named '"+processorName+"' in instance "+yamcsInstance);
         }

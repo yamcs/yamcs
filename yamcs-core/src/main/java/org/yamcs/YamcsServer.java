@@ -71,7 +71,7 @@ public class YamcsServer {
     //used for unit tests
     static TimeService mockupTimeService;
 
-    static private String serverId;
+    private static String serverId;
     static YObjectLoader<Service> objLoader = new YObjectLoader<>();
 
     static CrashHandler globalCrashHandler;
@@ -79,8 +79,6 @@ public class YamcsServer {
 
     YamcsServer(String instance) throws IOException, StreamSqlException, ParseException, YamcsApiException {
         this.instance = instance;
-
-        //TODO - fix bootstrap issue
         instances.put(instance, this);
 
         log = LoggingUtils.getLogger(YamcsServer.class, instance);
@@ -90,7 +88,7 @@ public class YamcsServer {
 
         ManagementService managementService = ManagementService.getInstance();
         StreamInitializer.createStreams(instance);
-        YProcessor.addProcessorListener(managementService);
+        Processor.addProcessorListener(managementService);
         if(conf.containsKey("crashHandler")) {
             crashHandler = loadCrashHandler(conf);
         } else {
@@ -101,11 +99,10 @@ public class YamcsServer {
     }
 
     private static CrashHandler loadCrashHandler( YConfiguration conf) throws ConfigurationException, IOException {
-        YObjectLoader<CrashHandler> loader = new YObjectLoader<>();
         if(conf.containsKey("crashHandler", "args")) {
-            return loader.loadObject(conf.getString("crashHandler", "class"), conf.getMap("crashHandler", "args"));
+            return YObjectLoader.loadObject(conf.getString("crashHandler", "class"), conf.getMap("crashHandler", "args"));
         } else {
-            return loader.loadObject(conf.getString("crashHandler", "class"));
+            return YObjectLoader.loadObject(conf.getString("crashHandler", "class"));
         }
     }
     /**
@@ -143,7 +140,7 @@ public class YamcsServer {
             } catch (NoClassDefFoundError e) {
                 staticlog.error("Cannot create service {}, with arguments {}: class {} not found", servclass, args, e.getMessage());
                 throw e;
-            } catch (Throwable t) {
+            } catch (Exception t) {
                 staticlog.error("Cannot create service {}, with arguments {}: {}", servclass, args, t.getMessage());
                 throw t;
             }  
@@ -187,7 +184,7 @@ public class YamcsServer {
         }
     }
 
-    public static void shutDown() throws Exception {
+    public static void shutDown() {
         for(YamcsServer ys: instances.values()) {
             ys.stop();
         }
@@ -216,7 +213,7 @@ public class YamcsServer {
         return serverId;
     }
 
-    public static void setupYamcsServer() throws Exception  {
+    public static void setupYamcsServer() throws Exception {
         YConfiguration c = YConfiguration.getConfiguration("yamcs");
         if(c.containsKey("crashHandler")) {
             globalCrashHandler = loadCrashHandler(c);
@@ -248,13 +245,10 @@ public class YamcsServer {
             }
         }
         
-        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread t, Throwable thrown) {
-                String msg = "Uncaught exception '"+thrown+"' in thread "+t+": "+Arrays.toString(thrown.getStackTrace());
-                staticlog.error(msg);
-                globalCrashHandler.handleCrash("UncaughtException", msg);
-            }
+        Thread.setDefaultUncaughtExceptionHandler((t, thrown) ->  {
+            String msg = "Uncaught exception '"+thrown+"' in thread "+t+": "+Arrays.toString(thrown.getStackTrace());
+            staticlog.error(msg);
+            globalCrashHandler.handleCrash("UncaughtException", msg);
         });
 
         if(System.getenv("YAMCS_DAEMON")==null) {
@@ -292,7 +286,9 @@ public class YamcsServer {
     }
 
     public static YamcsInstance getYamcsInstance(String name) {
-        if (!hasInstance(name)) return null;
+        if (!hasInstance(name)) {
+            return null;
+        }
         YamcsInstance.Builder aib=YamcsInstance.newBuilder();
         aib.setName(name);
         try {
@@ -338,16 +334,15 @@ public class YamcsServer {
     }
 
     private void loadTimeService() throws ConfigurationException, IOException {
-        YConfiguration conf=YConfiguration.getConfiguration("yamcs."+instance);
+        YConfiguration conf = YConfiguration.getConfiguration("yamcs."+instance);
         if(conf.containsKey("timeService")) {
             Map<String, Object> m = conf.getMap("timeService");
             String servclass = YConfiguration.getString(m, "class");
             Object args = m.get("args");
-            YObjectLoader<TimeService> objLoader = new YObjectLoader<>();
             if(args == null) {
-                timeService = objLoader.loadObject(servclass, instance);
+                timeService = YObjectLoader.loadObject(servclass, instance);
             } else {
-                timeService = objLoader.loadObject(servclass, instance, args);
+                timeService = YObjectLoader.loadObject(servclass, instance, args);
             }
         } else {
             timeService = new RealtimeTimeService();
@@ -366,7 +361,9 @@ public class YamcsServer {
      * @param args
      */
     public static void main(String[] args) {
-        if(args.length>0) printOptionsAndExit();
+        if(args.length>0) {
+            printOptionsAndExit();
+        }
 
         try {
             YConfiguration.setup();
@@ -381,9 +378,8 @@ public class YamcsServer {
             staticlog.error("Could not start Yamcs Server", e);
             System.err.println(e.toString());
             System.exit(-1);
-        } catch (Throwable e) {
+        } catch (Exception e) {
             staticlog.error("Could not start Yamcs Server", e);
-            e.printStackTrace();
             System.exit(-1);
         }
     }
@@ -424,7 +420,9 @@ public class YamcsServer {
         List<ServiceInfo> r = new ArrayList<>(serviceList.size());
         for(ServiceWithConfig swc: serviceList) {
             ServiceInfo.Builder sib = ServiceInfo.newBuilder().setName(swc.name).setClassName(swc.serviceClass).setState(ServiceState.valueOf(swc.service.state().name()));
-            if(instance!=null) sib.setInstance(instance);
+            if(instance!=null) {
+                sib.setInstance(instance);
+            }
             r.add(sib.build());
         }
         return r;
@@ -432,7 +430,9 @@ public class YamcsServer {
 
     public static <T extends Service> T getService(String yamcsInstance, Class<T> serviceClass) {
         YamcsServer ys = YamcsServer.getInstance(yamcsInstance);
-        if(ys==null) return null;
+        if(ys==null) {
+            return null;
+        }
         return ys.getService(serviceClass);
     }
 
@@ -441,7 +441,9 @@ public class YamcsServer {
     }
 
     public Service getService(String serviceName) {
-        if(serviceList==null) return null;
+        if(serviceList==null) {
+            return null;
+        }
 
         for(ServiceWithConfig swc: serviceList) {
             Service s = swc.service;
@@ -459,7 +461,9 @@ public class YamcsServer {
     }
 
     public static Service getGlobalService(String serviceName) {
-        if(globalServiceList==null) return null;
+        if(globalServiceList==null) {
+            return null;
+        }
 
         synchronized(globalServiceList) {
             for(ServiceWithConfig swc: globalServiceList) {
@@ -477,14 +481,20 @@ public class YamcsServer {
         return (T) getGlobalService(serviceClass.getName());
     }
 
-    static private ServiceWithConfig createService(String instance, String serviceClass, String serviceName, Object args) throws ConfigurationException, IOException {
+    private static ServiceWithConfig createService(String instance, String serviceClass, String serviceName, Object args) throws ConfigurationException, IOException {
         Service serv;
         if(instance!=null) {
-            if(args == null) serv = objLoader.loadObject(serviceClass, instance);
-            else serv = objLoader.loadObject(serviceClass, instance, args);
+            if(args == null){
+                serv = YObjectLoader.loadObject(serviceClass, instance);
+            } else {
+                serv = YObjectLoader.loadObject(serviceClass, instance, args);
+            }
         } else {
-            if(args == null) serv = objLoader.loadObject(serviceClass);
-            else serv = objLoader.loadObject(serviceClass, args);
+            if(args == null) {
+                serv = YObjectLoader.loadObject(serviceClass);
+            } else {
+                serv = YObjectLoader.loadObject(serviceClass, args);
+            }
         }
         return new ServiceWithConfig(serv, serviceClass, serviceName, args);
     }

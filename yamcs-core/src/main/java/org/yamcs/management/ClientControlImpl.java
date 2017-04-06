@@ -3,7 +3,7 @@ package org.yamcs.management;
 import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
 
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.ProcessorClient;
 import org.yamcs.ProcessorException;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
@@ -40,7 +40,7 @@ public class ClientControlImpl extends StandardMBean implements ClientControl {
         return client;
     }
 
-    public void switchYProcessor(YProcessor chan, AuthenticationToken authToken) throws ProcessorException {
+    public void switchYProcessor(Processor chan, AuthenticationToken authToken) throws ProcessorException {
         client.switchProcessor(chan, authToken);
 
         clientInfo=ClientInfo.newBuilder().mergeFrom(clientInfo)

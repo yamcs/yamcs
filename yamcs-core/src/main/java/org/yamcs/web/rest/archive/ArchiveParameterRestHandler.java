@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.parameter.ParameterCache;
@@ -83,7 +83,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
-        YProcessor realtimeProcessor = getRealtimeProc(instance, req);
+        Processor realtimeProcessor = getRealtimeProc(instance, req);
 
         /*
         TODO check commented out, in order to support sampling system parameters
@@ -287,7 +287,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         //mpvr.setLimit(limit);
 
 
-        YProcessor realtimeProcessor = getRealtimeProc(instance, req);
+        Processor realtimeProcessor = getRealtimeProc(instance, req);
         ParameterCache pcache = null;
         if(realtimeProcessor!=null) {
             pcache = realtimeProcessor.getParameterCache();
@@ -402,7 +402,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
             }
         }
     }
-    private YProcessor getRealtimeProc(String instance, RestRequest req) throws NotFoundException {
+    private Processor getRealtimeProc(String instance, RestRequest req) throws NotFoundException {
         String processorName;
         if(req.hasQueryParameter("norealtime")) {
             return null;
@@ -413,7 +413,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
                 processorName = DEFAULT_PROCESSOR;
             }
         }
-        return YProcessor.getInstance(instance, processorName);
+        return Processor.getInstance(instance, processorName);
     }
     private boolean isReplayAsked(RestRequest req) throws HttpException {
         if(!req.hasQueryParameter("source")) return false;

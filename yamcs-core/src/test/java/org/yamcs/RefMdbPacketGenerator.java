@@ -117,7 +117,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     }
 
     @Override
-    public void init(YProcessor proc, TmProcessor tmProcessor) {
+    public void init(Processor proc, TmProcessor tmProcessor) {
         this.tmProcessor=tmProcessor;
     }
 

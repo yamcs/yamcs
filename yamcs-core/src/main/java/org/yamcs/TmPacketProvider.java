@@ -18,6 +18,6 @@ public interface TmPacketProvider extends Service {
      */
     public boolean isArchiveReplay();
 
-    public void init(YProcessor yProcessor, TmProcessor tmProcessor);
+    public void init(Processor yProcessor, TmProcessor tmProcessor);
 
 }

@@ -11,7 +11,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.TmProcessor;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.container.ContainerProvider;
 import org.yamcs.parameter.ParameterProvider;
@@ -44,12 +44,12 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     private ParameterRequestManager parameterRequestManager;
     private ContainerListener containerRequestManager;
 
-    public final YProcessor processor;
+    public final Processor processor;
     public final XtceDb xtcedb;
     final XtceTmExtractor tmExtractor;
     final String CONFIG_KEY_ignoreOutOfContainerEntries = "ignoreOutOfContainerEntries";
     
-    public XtceTmProcessor(YProcessor proc, Map<String, Object> tmProcessorConfig) {
+    public XtceTmProcessor(Processor proc, Map<String, Object> tmProcessorConfig) {
 	log = LoggingUtils.getLogger(this.getClass(), proc);
 	this.processor=proc;
 	this.xtcedb=proc.getXtceDb();
@@ -65,7 +65,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 	    }
 	}
     } 
-    public XtceTmProcessor(YProcessor proc) {
+    public XtceTmProcessor(Processor proc) {
         log = LoggingUtils.getLogger(this.getClass(), proc);
         this.processor = proc;
         this.xtcedb = proc.getXtceDb();
@@ -93,7 +93,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     }
     
     @Override
-    public void init(YProcessor channel) throws ConfigurationException {
+    public void init(Processor channel) throws ConfigurationException {
 
     }
 
@@ -134,7 +134,9 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     @Override
     public boolean canProvide(NamedObjectId paraId) {
         Parameter p = xtcedb.getParameter(paraId);
-        if(p==null) return false;
+        if(p==null) {
+            return false;
+        }
         
         return xtcedb.getParameterEntries(p)!=null;
     }
@@ -147,7 +149,9 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     @Override
     public Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification {
         Parameter p = xtcedb.getParameter(paraId);
-        if(p==null) throw new InvalidIdentification(paraId);
+        if(p==null) {
+            throw new InvalidIdentification(paraId);
+        }
         return p;
     }
     
@@ -215,7 +219,9 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     @Override
     public void finished() {
         notifyStopped();
-        if(processor!=null) processor.quit();
+        if(processor!=null) {
+            processor.quit();
+        }
     }
 
     public void resetStatistics() {
@@ -249,7 +255,9 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     @Override
     public Container getContainer(NamedObjectId containerId) throws InvalidIdentification {
         SequenceContainer c = xtcedb.getSequenceContainer(containerId);
-        if(c==null) throw new InvalidIdentification(containerId);
+        if(c==null) {
+            throw new InvalidIdentification(containerId);
+        }
         return c;
     }
 

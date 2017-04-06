@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.algorithms.AlgorithmExecListener;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.algorithms.AlgorithmManager;
@@ -31,7 +31,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
     Logger log;
     final XtceDb xtcedb;
 
-    final YProcessor yproc;
+    final Processor yproc;
     AlgorithmVerifier(CommandVerificationHandler cvh, CommandVerifier cv) {
         super(cvh, cv);
         alg = cv.getAlgorithm();
@@ -52,7 +52,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
             String fqn = XtceDb.YAMCS_CMD_SPACESYSTEM_NAME+"/"+cha.getName();
             if(xtcedb.getParameter(fqn)==null) {
               //if it was required in the algorithm, it would be already in the system parameter db  
-                log.debug("Not adding "+fqn+" to the context parameter list because it is not defined in the XtceDb");
+                log.debug("Not adding {} to the context parameter list because it is not defined in the XtceDb", fqn);
                 continue;
             }
             Parameter p = xtcedb.getParameter(fqn);

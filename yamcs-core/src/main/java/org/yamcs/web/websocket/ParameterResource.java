@@ -14,7 +14,7 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.ProcessorException;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
@@ -311,9 +311,10 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
 
     @Override
     public void update(int subscrId, List<ParameterValueWithId> paramList) {
-        if(wsHandler==null) return;
-        if(paramList == null || paramList.size() == 0)
-        {
+        if(wsHandler==null) {
+            return;
+        }
+        if(paramList == null || paramList.isEmpty()) {
             return;
         }
 
@@ -342,9 +343,13 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         ParameterData.Builder pd=ParameterData.newBuilder();
         for(Computation c:compList) {
             org.yamcs.protobuf.Pvalue.ParameterValue pv=c.evaluate(parameters);
-            if(pv!=null) pd.addParameter(pv);
+            if(pv!=null) {
+                pd.addParameter(pv);
+            }
         }
-        if(pd.getParameterCount()==0) return;
+        if(pd.getParameterCount()==0) {
+            return;
+        }
 
         try {
             wsHandler.sendData(ProtoDataType.PARAMETER, pd.build(), SchemaPvalue.ParameterData.WRITE);
@@ -361,15 +366,19 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
     @Override
     public void quit() {
         ParameterRequestManagerImpl prm=processor.getParameterRequestManager();
-        if(subscriptionId!=-1) prm.removeRequest(subscriptionId);
-        if(compSubscriptionId!=-1) prm.removeRequest(compSubscriptionId);
+        if(subscriptionId!=-1) {
+            prm.removeRequest(subscriptionId);
+        }
+        if(compSubscriptionId!=-1) {
+            prm.removeRequest(compSubscriptionId);
+        }
     }
 
     @Override
-    public void switchYProcessor(YProcessor oldProcessor, YProcessor newProcessor) throws ProcessorException {
+    public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
         try {
             pidrm.switchPrm(newProcessor.getParameterRequestManager(), client.getAuthToken());
-            super.switchYProcessor(oldProcessor, newProcessor);
+            super.switchProcessor(oldProcessor, newProcessor);
         } catch (InvalidIdentification e) {
             log.warn("got InvalidIdentification when resubscribing", e);
         } catch (NoPermissionException e) {

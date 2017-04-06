@@ -2,7 +2,7 @@ package org.yamcs.algorithms;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.xtce.BaseDataType;
@@ -24,9 +24,9 @@ public class AlgorithmUtils {
     private String algorithmName;
     private EventProducer eventProducer;
     private final String yamcsInstance;
-    private final YProcessor channel;
+    private final Processor channel;
     
-    public AlgorithmUtils(YProcessor channel, XtceDb xtcedb, String algorithmName) {
+    public AlgorithmUtils(Processor channel, XtceDb xtcedb, String algorithmName) {
         this.yamcsInstance = channel.getInstance();
         this.channel = channel;
         

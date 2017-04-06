@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.yamcs.ContainerExtractionResult;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -24,7 +24,7 @@ public class ContainerRequestManager implements ContainerListener {
 
     private Logger log;
     // For each container, all the subscribers
-    private Map<SequenceContainer, Set<ContainerConsumer>> subscriptions = new ConcurrentHashMap<SequenceContainer, Set<ContainerConsumer>>();    
+    private Map<SequenceContainer, Set<ContainerConsumer>> subscriptions = new ConcurrentHashMap<>();    
 
     private XtceTmProcessor tmProcessor;
 
@@ -32,7 +32,7 @@ public class ContainerRequestManager implements ContainerListener {
      * Creates a new ContainerRequestManager, configured to listen to a newly
      * created XtceTmProcessor.
      */
-    public ContainerRequestManager(YProcessor proc) {
+    public ContainerRequestManager(Processor proc) {
         this(proc, new XtceTmProcessor(proc, null));
     }
 
@@ -40,7 +40,7 @@ public class ContainerRequestManager implements ContainerListener {
      * Creates a new ContainerRequestManager, configured to listen to the
      * specified XtceTmProcessor.
      */
-    public ContainerRequestManager(YProcessor proc, XtceTmProcessor tmProcessor) {
+    public ContainerRequestManager(Processor proc, XtceTmProcessor tmProcessor) {
         this.tmProcessor = tmProcessor;
         log = LoggingUtils.getLogger(this.getClass(), proc);
         tmProcessor.setContainerListener(this);
@@ -104,7 +104,9 @@ public class ContainerRequestManager implements ContainerListener {
         log.trace("Getting update of {} container(s)", results.size());
         for (ContainerExtractionResult result : results) {
             SequenceContainer def = result.getContainer();
-            if (!subscriptions.containsKey(def)) continue;
+            if (!subscriptions.containsKey(def)) {
+                continue;
+            }
             for (ContainerConsumer subscriber : subscriptions.get(def)) {               
                 subscriber.processContainer(result);
             }

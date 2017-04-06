@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.yamcs.ErrorInCommand;
 import org.yamcs.NoPermissionException;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.YamcsException;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueManager;
@@ -40,7 +40,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/:instance/:processor/commands/:name*", method = "POST")
     public void issueCommand(RestRequest req) throws HttpException {
-        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this processor");
         }
@@ -57,10 +57,18 @@ public class ProcessorCommandRestHandler extends RestHandler {
         List<ArgumentAssignment> assignments = new ArrayList<>();
         if (req.hasBody()) {
             IssueCommandRequest request = req.bodyAsMessage(SchemaRest.IssueCommandRequest.MERGE).build();
-            if (request.hasOrigin()) origin = request.getOrigin();
-            if (request.hasDryRun()) dryRun = request.getDryRun();
-            if (request.hasSequenceNumber()) sequenceNumber = request.getSequenceNumber();
-            if (request.hasComment()) comment = request.getComment();
+            if (request.hasOrigin()) {
+                origin = request.getOrigin();
+            }
+            if (request.hasDryRun()) {
+                dryRun = request.getDryRun();
+            }
+            if (request.hasSequenceNumber()) {
+                sequenceNumber = request.getSequenceNumber();
+            }
+            if (request.hasComment()) {
+                comment = request.getComment();
+            }
             for (Assignment a : request.getAssignmentList()) {
                 assignments.add(new ArgumentAssignment(a.getName(), a.getValue()));
             }
@@ -157,7 +165,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/:instance/:processor/commandhistory/:name*", method = "POST")
     public void updateCommandHistory(RestRequest req) throws HttpException {
-        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this processor");
         }

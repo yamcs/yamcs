@@ -24,7 +24,7 @@ import javax.script.ScriptException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
@@ -87,7 +87,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 
     // For scheduling OnPeriodicRate algorithms
     ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);;
-    YProcessor yproc;
+    Processor yproc;
     AlgorithmExecutionContext globalCtx;
 
     public AlgorithmManager(String yamcsInstance) throws ConfigurationException {
@@ -119,7 +119,9 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                     for(String lib:libraryNames) {
                         log.debug("Loading library "+lib);
                         File f=new File(lib);
-                        if(!f.exists()) throw new ConfigurationException("Algorithm library file '"+f+"' does not exist");
+                        if(!f.exists()) {
+                            throw new ConfigurationException("Algorithm library file '"+f+"' does not exist");
+                        }
 
                         scriptEngine.put(ScriptEngine.FILENAME, f.getPath()); // Improves error msgs
                         if (f.isFile()) {
@@ -157,7 +159,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 
     
     @Override
-    public void init(YProcessor yproc) {
+    public void init(Processor yproc) {
         this.yproc = yproc;
         this.parameterRequestManager = yproc.getParameterRequestManager();
         xtcedb = yproc.getXtceDb();
@@ -261,7 +263,9 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             executor = loadJavaExecutor(algorithm, execCtx);
         } else {
             ScriptEngine scriptEngine = scriptEngineManager.getEngineByName(algorithm.getLanguage());
-            if(scriptEngine==null) throw new RuntimeException("Cannot created a script engine for language '"+algorithm.getLanguage()+"'");
+            if(scriptEngine==null) {
+                throw new RuntimeException("Cannot created a script engine for language '"+algorithm.getLanguage()+"'");
+            }
 
             scriptEngine.put("Yamcs", new AlgorithmUtils(yproc, xtcedb, algorithm.getName()));
 
@@ -390,7 +394,9 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                                     break;
                                 }
                             }
-                            if(!doRemove) break;
+                            if(!doRemove) {
+                                break;
+                            }
                         }
                     }
                 }

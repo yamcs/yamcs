@@ -66,7 +66,7 @@ public class YarchReplay implements StreamSubscriber {
     volatile boolean ignoreClose;
     ReplayListener listener;
     public YarchReplay(ReplayServer replayServer, ReplayRequest rr, ReplayListener listener,  XtceDb xtceDb, AuthenticationToken authToken)
-            throws IOException, ConfigurationException,  YamcsException, YamcsApiException {
+            throws IOException,  YamcsException, YamcsApiException {
         this.listener = listener;
         this.replayServer=replayServer;
         this.xtceDb=xtceDb;
@@ -147,7 +147,6 @@ public class YarchReplay implements StreamSubscriber {
                 initReplay();
                 state=ReplayState.RUNNING;
             } catch (Exception e) {
-                e.printStackTrace();
                 log.error("Got exception when creating the stream: ", e);
                 errorString=e.toString();
                 state=ReplayState.ERROR;
@@ -243,7 +242,6 @@ public class YarchReplay implements StreamSubscriber {
                     log.debug("Stream already closed");
                 }
             } catch (Exception e) {
-                e.printStackTrace();
                 log.error("Got exception when closing the stream: ", e);
                 errorString=e.toString();
                 state=ReplayState.ERROR;
@@ -295,14 +293,18 @@ public class YarchReplay implements StreamSubscriber {
     }
 
     public synchronized void quit() {
-        if(quitting) return;
+        if(quitting) {
+            return;
+        }
         quitting=true;
         log.debug("Replay quitting");
         
         this.notify();
         try {
             YarchDatabase db=YarchDatabase.getInstance(instance);
-            if(db.getStream(streamName)!=null) db.execute("close stream "+streamName);
+            if(db.getStream(streamName)!=null){
+                db.execute("close stream "+streamName);
+            }
         } catch (Exception e) {
             log.error( "Exception whilst quitting", e );
         };
@@ -312,7 +314,9 @@ public class YarchReplay implements StreamSubscriber {
 
     @Override
     public void onTuple(Stream s, Tuple t) {
-        if(quitting) return;
+        if(quitting) {
+            return;
+        }
         try {
             while(state==ReplayState.PAUSED) {
                 pausedSemaphore.acquire();
@@ -331,7 +335,6 @@ public class YarchReplay implements StreamSubscriber {
         } catch (Exception e) {
             if(!quitting) {
                 log.warn("Exception received: ", e);
-                e.printStackTrace();
                 quit();
             }
         }
@@ -368,9 +371,13 @@ public class YarchReplay implements StreamSubscriber {
 
     private void signalStateChange() {
         try {
-            if(quitting) return;
+            if(quitting) {
+                return;
+            }
             ReplayStatus.Builder rsb=ReplayStatus.newBuilder().setState(state);
-            if(state==ReplayState.ERROR) rsb.setErrorMessage(errorString);
+            if(state==ReplayState.ERROR) {
+                rsb.setErrorMessage(errorString);
+            }
             ReplayStatus rs=rsb.build();
             listener.stateChanged(rs);
             

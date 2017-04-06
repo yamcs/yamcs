@@ -14,7 +14,7 @@ import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.YamcsException;
 import org.yamcs.api.Constants;
 import org.yamcs.api.YamcsApiException;
@@ -41,12 +41,14 @@ public class ArtemisProcessorManagement implements ManagementListener {
     static Logger log=LoggerFactory.getLogger(ArtemisProcessorManagement.class.getName());
     ManagementService mservice;
 
-    static public final String YPR_createProcessor = "createProcessor";
+    public static final String YPR_createProcessor = "createProcessor";
 
     public ArtemisProcessorManagement(ManagementService mservice) throws YamcsApiException, ActiveMQException {
         this.mservice=mservice;
 
-        if(ysession!=null) return;
+        if(ysession!=null) {
+            return;
+        }
         ysession=YamcsSession.newBuilder().build();
 
         //trick to make sure that the yprocessor info queue exists
@@ -54,15 +56,14 @@ public class ArtemisProcessorManagement implements ManagementListener {
         yclient.close();
 
         yclient=ysession.newClientBuilder().setDataProducer(true).build();
-        yprocControlServer=ysession.newClientBuilder().setRpcAddress(YPROCESSOR_CONTROL_ADDRESS).build();
+        yprocControlServer = ysession.newClientBuilder().setRpcAddress(YPROCESSOR_CONTROL_ADDRESS).build();
         yprocControlServer.rpcConsumer.setMessageHandler(new MessageHandler() {
             @Override
             public void onMessage(ClientMessage message) {
                 try {
                     processControlMessage(message);
                 } catch (Exception e) {
-                    log.error("Error when processing request");
-                    e.printStackTrace();
+                    log.error("Error when processing request", e);
                 }
             }
         });
@@ -91,18 +92,20 @@ public class ArtemisProcessorManagement implements ManagementListener {
                 yprocControlServer.sendReply(replyto, "OK", null);
             } else if(Constants.YPR_pauseReplay.equalsIgnoreCase(req)) {
                 ProcessorRequest cr=(ProcessorRequest)Protocol.decode(msg, ProcessorRequest.newBuilder());
-                YProcessor c=YProcessor.getInstance(cr.getInstance(), cr.getName());
+                Processor c=Processor.getInstance(cr.getInstance(), cr.getName());
                 c.pause();
                 yprocControlServer.sendReply(replyto, "OK", null);
             } else if(Constants.YPR_resumeReplay.equalsIgnoreCase(req)) {
                 ProcessorRequest cr=(ProcessorRequest)Protocol.decode(msg, ProcessorRequest.newBuilder());
-                YProcessor c=YProcessor.getInstance(cr.getInstance(), cr.getName());
+                Processor c=Processor.getInstance(cr.getInstance(), cr.getName());
                 c.resume();
                 yprocControlServer.sendReply(replyto, "OK", null);
             } else if(Constants.YPR_seekReplay.equalsIgnoreCase(req)) {
                 ProcessorRequest cr=(ProcessorRequest)Protocol.decode(msg, ProcessorRequest.newBuilder());
-                YProcessor c=YProcessor.getInstance(cr.getInstance(), cr.getName());
-                if(!cr.hasSeekTime()) throw new YamcsException("seekReplay requested without a seektime");
+                Processor c=Processor.getInstance(cr.getInstance(), cr.getName());
+                if(!cr.hasSeekTime()) {
+                    throw new YamcsException("seekReplay requested without a seektime");
+                }
                 c.seek(cr.getSeekTime());
                 yprocControlServer.sendReply(replyto, "OK", null);
             } else  {
@@ -155,7 +158,7 @@ public class ArtemisProcessorManagement implements ManagementListener {
     }
 
     @Override
-    public void statisticsUpdated(YProcessor yproc, Statistics stats) {
+    public void statisticsUpdated(Processor yproc, Statistics stats) {
         try {
             ClientMessage msg=ysession.session.createMessage(false);
             String lvn=yproc.getInstance()+"."+yproc.getName();
@@ -183,11 +186,9 @@ public class ArtemisProcessorManagement implements ManagementListener {
         sendClientEvent("clientUpdated", ci, false);
     }
 
-    static int x=0;
     private void sendClientEvent(String eventName, ClientInfo ci, boolean expire){
         ClientMessage msg=ysession.session.createMessage(false);
         String lvn="Client "+ci.getId();
-        x++;
         msg.putStringProperty(Message.HDR_LAST_VALUE_NAME, new SimpleString(lvn));
         msg.putStringProperty(HDR_EVENT_NAME, eventName);
         if(expire) {

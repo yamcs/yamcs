@@ -3,7 +3,7 @@ package org.yamcs.web.websocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ProcessorException;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.cmdhistory.CommandHistoryConsumer;
 import org.yamcs.cmdhistory.CommandHistoryFilter;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
@@ -54,7 +54,9 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
      */
     @Override
     public void quit() {
-        if(subscriptionId == -1) return;
+        if(subscriptionId == -1) {
+            return;
+        }
         CommandHistoryRequestManager chrm = processor.getCommandHistoryManager();
         if (chrm != null) {
             chrm.unsubscribeCommandHistory(subscriptionId);
@@ -62,8 +64,10 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
     }
 
     @Override
-    public void switchYProcessor(YProcessor oldProcessor, YProcessor newProcessor) throws ProcessorException {
-        if(subscriptionId == -1) return;
+    public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
+        if(subscriptionId == -1) {
+            return;
+        }
 
         CommandHistoryRequestManager chrm = processor.getCommandHistoryManager();
         CommandHistoryFilter filter = null;
@@ -71,7 +75,7 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
             filter = chrm.unsubscribeCommandHistory(subscriptionId);
         }
 
-        super.switchYProcessor(oldProcessor, newProcessor);
+        super.switchProcessor(oldProcessor, newProcessor);
 
         if (processor.hasCommanding()) {
             chrm = processor.getCommandHistoryManager();

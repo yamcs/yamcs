@@ -21,7 +21,7 @@ public class ProcessorCreatorService extends AbstractService {
     String processorType;
     String processorConfig;
 
-    YProcessor yproc;
+    Processor yproc;
     String yamcsInstance;
 
     final boolean startArtemisService;

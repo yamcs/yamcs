@@ -30,7 +30,9 @@ public class YObjectLoader<T> {
             Constructor[] constructors = ic.getConstructors();
             for(Constructor c:constructors) {
                 Class<?>[] params = c.getParameterTypes();
-                if(params.length!=args.length) continue;
+                if(params.length!=args.length) {
+                    continue;
+                }
                 boolean ok=true;
                 for(int i=0;i<params.length;i++) {
                     if(!params[i].isAssignableFrom(args[i].getClass())) {
@@ -48,7 +50,9 @@ public class YObjectLoader<T> {
                 sb.append("Cannot find a constructor for class '"+className+"' and arguments (");
                 boolean first=true;
                 for(Object o: args) {
-                    if(!first)sb.append(", ");
+                    if(!first) {
+                        sb.append(", ");
+                    }
                     else first = false;
                     sb.append(o.getClass().getName());
                 }

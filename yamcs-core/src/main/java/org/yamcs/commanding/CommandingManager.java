@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.NoPermissionException;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.YamcsException;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -27,14 +27,14 @@ import com.google.common.util.concurrent.AbstractService;
  */
 public class CommandingManager extends AbstractService {
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
-    private YProcessor processor;
+    private Processor processor;
     private CommandQueueManager commandQueueManager;
 
     /**
      * Keeps a reference to the channel and creates the queue manager
      * @param proc
      */
-    public CommandingManager(YProcessor proc) {
+    public CommandingManager(Processor proc) {
         this.processor=proc;
         this.commandQueueManager=new CommandQueueManager(this);
         ManagementService.getInstance().registerCommandQueueManager(proc.getInstance(), proc.getName(), commandQueueManager);
@@ -97,7 +97,7 @@ public class CommandingManager extends AbstractService {
         commandQueueManager.addToCommandHistory(commandId, key, value);
     }
 
-    public YProcessor getChannel() {
+    public Processor getChannel() {
         return processor;
     }
 

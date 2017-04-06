@@ -1,7 +1,7 @@
 package org.yamcs.web.websocket;
 
 import org.yamcs.ProcessorException;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.api.ws.WSConstants;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 
@@ -11,7 +11,7 @@ import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
  */
 public abstract class AbstractWebSocketResource {
 
-    protected YProcessor processor;
+    protected Processor processor;
     protected WebSocketProcessorClient client;
     protected WebSocketFrameHandler wsHandler;
 
@@ -42,7 +42,7 @@ public abstract class AbstractWebSocketResource {
                 .build();
     }
 
-    public void switchYProcessor(YProcessor oldProcessor, YProcessor newProcessor)  throws ProcessorException {
+    public void switchProcessor(Processor oldProcessor, Processor newProcessor)  throws ProcessorException {
         this.processor = newProcessor;
     }
 }

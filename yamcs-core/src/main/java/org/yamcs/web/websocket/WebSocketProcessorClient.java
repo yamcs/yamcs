@@ -6,8 +6,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
 import org.yamcs.ProcessorClient;
 import org.yamcs.ProcessorException;
-import org.yamcs.YProcessor;
-import org.yamcs.YamcsServer;
+import org.yamcs.Processor;
 import org.yamcs.management.ManagementService;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
@@ -25,7 +24,7 @@ public class WebSocketProcessorClient implements ProcessorClient {
     private final String username;
     private final AuthenticationToken authToken;
 
-    private YProcessor processor;
+    private Processor processor;
 
     private List<AbstractWebSocketResource> resources = new CopyOnWriteArrayList<>();
     private WebSocketFrameHandler wsHandler;
@@ -36,7 +35,7 @@ public class WebSocketProcessorClient implements ProcessorClient {
         this.username = authToken != null ? authToken.getPrincipal().toString() : Privilege.getDefaultUser();
         this.wsHandler = wsHandler;
         log = LoggingUtils.getLogger(WebSocketProcessorClient.class, yamcsInstance);
-        processor = YProcessor.getFirstProcessor(yamcsInstance);
+        processor = Processor.getFirstProcessor(yamcsInstance);
 
         clientId = ManagementService.getInstance().registerClient(yamcsInstance, processor.getName(), this);
 
@@ -55,17 +54,17 @@ public class WebSocketProcessorClient implements ProcessorClient {
     }
 
     @Override
-    public void switchProcessor(YProcessor newProcessor, AuthenticationToken authToken) throws ProcessorException {
+    public void switchProcessor(Processor newProcessor, AuthenticationToken authToken) throws ProcessorException {
         log.info("Switching processor from {}/{} to {}/{}", processor.getInstance(), processor.getName(), newProcessor.getInstance(), newProcessor.getName());
-        YProcessor oldProcessor = processor;
+        Processor oldProcessor = processor;
         processor = newProcessor;
         for (AbstractWebSocketResource resource : resources) {
-            resource.switchYProcessor(oldProcessor, newProcessor);
+            resource.switchProcessor(oldProcessor, newProcessor);
         }
         // Note: We're not updating log and clientId in case of instance change. Maybe that's something we should do though
     }
 
-    public YProcessor getProcessor() {
+    public Processor getProcessor() {
         return processor;
     }
 
@@ -87,7 +86,7 @@ public class WebSocketProcessorClient implements ProcessorClient {
     }
 
     @Override
-    public void yProcessorQuit() {
+    public void processorQuit() {
     }
 
     @Override

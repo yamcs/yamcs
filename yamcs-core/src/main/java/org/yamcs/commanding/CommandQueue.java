@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledFuture;
 
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.protobuf.Commanding.QueueState;
 import org.yamcs.protobuf.Pvalue;
@@ -16,7 +16,7 @@ public class CommandQueue {
     private ConcurrentLinkedQueue<PreparedCommand> commands=new ConcurrentLinkedQueue<PreparedCommand>();
     QueueState defaultState=QueueState.BLOCKED;
     QueueState state=QueueState.BLOCKED;
-    YProcessor processor;
+    Processor processor;
 
     int nbSentCommands = 0;
     int nbRejectedCommands = 0;
@@ -33,10 +33,12 @@ public class CommandQueue {
     NamedObjectId sp_numRejectedCommands_id;
     NamedObjectId sp_numCommands_id;
 
-    CommandQueue(YProcessor channel, String name) {
+    CommandQueue(Processor channel, String name) {
         this.processor=channel;
         this.name=name;
-        if(!Privilege.getInstance().isEnabled()) state=QueueState.ENABLED;
+        if(!Privilege.getInstance().isEnabled()) {
+            state=QueueState.ENABLED;
+        }
     }
 
     void setupSysParameters() {
@@ -58,7 +60,7 @@ public class CommandQueue {
         return state;
     }
 
-    public YProcessor getChannel() {
+    public Processor getChannel() {
         return processor;
     }
 

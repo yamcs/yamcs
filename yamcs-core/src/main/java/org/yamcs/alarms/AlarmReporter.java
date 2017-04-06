@@ -1,4 +1,4 @@
-package org.yamcs;
+package org.yamcs.alarms;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.yamcs.ConfigurationException;
+import org.yamcs.InvalidIdentification;
+import org.yamcs.Processor;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
@@ -26,7 +29,6 @@ import com.google.common.util.concurrent.AbstractService;
 /**
  * Generates realtime alarm events automatically, by subscribing to all relevant
  * parameters.
- * TODO should be moved into org.yamcs.alarms at some point
  */
 public class AlarmReporter extends AbstractService implements ParameterConsumer {
     
@@ -50,7 +52,7 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
     
     @Override
     public void doStart() {
-    	 YProcessor yproc = YProcessor.getInstance(yamcsInstance, yprocName);
+    	 Processor yproc = Processor.getInstance(yamcsInstance, yprocName);
     	 if(yproc==null) {
     		 ConfigurationException e = new ConfigurationException("Cannot find a yproc '"+yprocName+"' in instance '"+yamcsInstance+"'");
     		 notifyFailed(e);

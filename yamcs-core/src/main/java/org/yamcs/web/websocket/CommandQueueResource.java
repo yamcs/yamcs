@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ProcessorException;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;
@@ -89,9 +89,9 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
     }
 
     @Override
-    public void switchYProcessor(YProcessor oldProcessor, YProcessor newProcessor) throws ProcessorException {
+    public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
         doUnsubscribe();
-        super.switchYProcessor(oldProcessor, newProcessor);
+        super.switchProcessor(oldProcessor, newProcessor);
         doSubscribe();
     }
 

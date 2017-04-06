@@ -5,7 +5,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.api.MediaType;
@@ -142,9 +142,9 @@ public abstract class RestHandler extends RouteHandler {
         }
     }
 
-    protected static YProcessor verifyProcessor(RestRequest req, String instance, String processorName) throws NotFoundException {
+    protected static Processor verifyProcessor(RestRequest req, String instance, String processorName) throws NotFoundException {
         verifyInstance(req, instance);
-        YProcessor processor = YProcessor.getInstance(instance, processorName);
+        Processor processor = Processor.getInstance(instance, processorName);
         if (processor == null) {
             throw new NotFoundException(req, "No processor '" + processorName + "' within instance '" + instance + "'");
         } else {
@@ -304,7 +304,7 @@ public abstract class RestHandler extends RouteHandler {
         throw new NotFoundException(req, "No such container");
     }
 
-    protected static AlarmServer verifyAlarmServer(YProcessor processor) throws BadRequestException {
+    protected static AlarmServer verifyAlarmServer(Processor processor) throws BadRequestException {
         if (!processor.hasAlarmServer()) {
             String instance = processor.getInstance();
             String processorName = processor.getName();

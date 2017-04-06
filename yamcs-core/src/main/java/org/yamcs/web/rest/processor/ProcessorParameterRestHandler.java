@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.NoPermissionException;
-import org.yamcs.YProcessor;
+import org.yamcs.Processor;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.alarms.CouldNotAcknowledgeAlarmException;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
@@ -49,7 +49,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
     
     @Route(path = "/api/processors/:instance/:processor/parameters/:name*/alarms/:seqnum", method = { "PATCH", "PUT", "POST" })
     public void patchParameterAlarm(RestRequest req) throws HttpException {
-        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         AlarmServer alarmServer = verifyAlarmServer(processor);
         
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
@@ -59,12 +59,20 @@ public class ProcessorParameterRestHandler extends RestHandler {
         String state = null;
         String comment = null;
         EditAlarmRequest request = req.bodyAsMessage(SchemaRest.EditAlarmRequest.MERGE).build();
-        if (request.hasState()) state = request.getState();
-        if (request.hasComment()) comment = request.getComment();
+        if (request.hasState()) {
+            state = request.getState();
+        }
+        if (request.hasComment()) {
+            comment = request.getComment();
+        }
         
         // URI can override body
-        if (req.hasQueryParameter("state")) state = req.getQueryParameter("state");
-        if (req.hasQueryParameter("comment")) comment = req.getQueryParameter("comment");
+        if (req.hasQueryParameter("state")) {
+            state = req.getQueryParameter("state");
+        }
+        if (req.hasQueryParameter("comment")) {
+            comment = req.getQueryParameter("comment");
+        }
         if(state==null) {
             throw new BadRequestException("No state specified");
         }
@@ -86,7 +94,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
     
     @Route(path = "/api/processors/:instance/:processor/parameters/:name*", method = { "PUT", "POST" })
     public void setSingleParameterValue(RestRequest req) throws HttpException {
-        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         SoftwareParameterManager mgr = verifySoftwareParameterManager(processor);
         
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
@@ -103,7 +111,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
     
     @Route(path = "/api/processors/:instance/:processor/parameters/mset", method = { "POST", "PUT" }, priority=true)
     public void setParameterValues(RestRequest req) throws HttpException {
-        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         SoftwareParameterManager mgr = verifySoftwareParameterManager(processor);
         
         BulkSetParameterValueRequest request = req.bodyAsMessage(SchemaRest.BulkSetParameterValueRequest.MERGE).build();
@@ -141,7 +149,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
     
     @Route(path = "/api/processors/:instance/:processor/parameters/:name*", method = "GET")
     public void getParameterValue(RestRequest req) throws HttpException {
-        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
@@ -152,8 +160,12 @@ public class ProcessorParameterRestHandler extends RestHandler {
         }
         long timeout = 10000;
         boolean fromCache = true;
-        if (req.hasQueryParameter("timeout")) timeout = req.getQueryParameterAsLong("timeout");
-        if (req.hasQueryParameter("fromCache")) fromCache = req.getQueryParameterAsBoolean("fromCache");
+        if (req.hasQueryParameter("timeout")) {
+            timeout = req.getQueryParameterAsLong("timeout");
+        }
+        if (req.hasQueryParameter("fromCache")) {
+            fromCache = req.getQueryParameterAsBoolean("fromCache");
+        }
         
         NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
         List<NamedObjectId> ids = Arrays.asList(id);
@@ -171,7 +183,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
     
     @Route(path = "/api/processors/:instance/:processor/parameters/mget", method = {"GET", "POST"}, priority=true)
     public void getParameterValues(RestRequest req) throws HttpException {
-        YProcessor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         
         BulkGetParameterValueRequest request = req.bodyAsMessage(SchemaRest.BulkGetParameterValueRequest.MERGE).build();
         if (request.getIdCount() == 0) {
@@ -182,12 +194,20 @@ public class ProcessorParameterRestHandler extends RestHandler {
         boolean fromCache = true;
         
         // Consider body params first
-        if (request.hasTimeout()) timeout = request.getTimeout();
-        if (request.hasFromCache()) fromCache = request.getFromCache();
+        if (request.hasTimeout()) {
+            timeout = request.getTimeout();
+        }
+        if (request.hasFromCache()) {
+            fromCache = request.getFromCache();
+        }
             
         // URI params override body
-        if (req.hasQueryParameter("timeout")) timeout = req.getQueryParameterAsLong("timeout");
-        if (req.hasQueryParameter("fromCache")) fromCache = req.getQueryParameterAsBoolean("fromCache");
+        if (req.hasQueryParameter("timeout")) {
+            timeout = req.getQueryParameterAsLong("timeout");
+        }
+        if (req.hasQueryParameter("fromCache")) {
+            fromCache = req.getQueryParameterAsBoolean("fromCache");
+        }
         
         List<NamedObjectId> ids = request.getIdList();
         List<ParameterValue> pvals = doGetParameterValues(processor, req.getAuthToken(), ids, fromCache, timeout);
@@ -197,7 +217,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         completeOK(req, responseb.build(), SchemaRest.BulkGetParameterValueResponse.WRITE);
     }
     
-    private List<ParameterValue> doGetParameterValues(YProcessor processor, AuthenticationToken authToken, List<NamedObjectId> ids, boolean fromCache, long timeout) throws HttpException {
+    private List<ParameterValue> doGetParameterValues(Processor processor, AuthenticationToken authToken, List<NamedObjectId> ids, boolean fromCache, long timeout) throws HttpException {
         if (timeout > 60000) {
             throw new BadRequestException("Invalid timeout specified. Maximum is 60.000 milliseconds");
         }
@@ -225,13 +245,17 @@ public class ProcessorParameterRestHandler extends RestHandler {
                     t1 = System.currentTimeMillis();
                     long remaining = timeout - (t1-t0);
                     List<ParameterValueWithId> l = myConsumer.queue.poll(remaining, TimeUnit.MILLISECONDS);
-                    if(l==null) break;
+                    if(l==null) {
+                        break;
+                    }
 
                     for(ParameterValueWithId pvwi: l) {
                         pvals.add(pvwi.toGbpParameterValue());
                     }
                     //TODO: this may not be correct: if we get a parameter multiple times, we stop here before receiving all parameters
-                    if(pvals.size() == ids.size()) break;
+                    if(pvals.size() == ids.size()) {
+                        break;
+                    }
                 } 
                 pwirh.removeRequest(reqId);
             }
@@ -256,7 +280,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         }
     }
     
-    private SoftwareParameterManager verifySoftwareParameterManager(YProcessor processor) throws BadRequestException {
+    private SoftwareParameterManager verifySoftwareParameterManager(Processor processor) throws BadRequestException {
         SoftwareParameterManager mgr = processor.getParameterRequestManager().getSoftwareParameterManager();
         if (mgr == null) {
             throw new BadRequestException("SoftwareParameterManager not activated for this processor");
