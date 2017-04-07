@@ -136,14 +136,12 @@
         vm.triggerCommand = function(){
             vm.has._sentMsg = false;
             var url = vm.urlname;
-            for(var i = 0; i<500; i++){
             mdbService.sendCommand(url, generateRequests(vm.commands)).then( function(data){
                 vm.has._sentMsg = true;
                 vm.sentMsg= data;
             }).catch( function(msg){
                 $log.error("XHR Error");
             });
-            }
 
         };
 

@@ -5,9 +5,12 @@
 
     /* @ngInject */
     function historyService($rootScope, $http, socket, yamcsInstance, $log){
+        //history to return to controller 
         var history={status:'', data:[], dynamic_hops:{}};
-        var historyIn = {};
-        var oldData= [];
+        //to verify if the command is present or need to be initiated
+        var commandsIn = {};    
+        //List with old commands     
+        var historylist= [];
         socket.on('open', function () {
             subscribeUpstream();
         });
@@ -17,8 +20,8 @@
         
         return {
             getHistory : getHistory,
-            getOldHistory : getOldHistory
-        };
+            downloadHistory : downloadHistory
+        }
 
         function getHistory(){
             return history;
@@ -38,9 +41,9 @@
         function verifyData(data, oldData){
                 var id = data.commandId.generationTime+data.commandId.origin+data.commandId.sequenceNumber+data.commandId.commandName;
                 var id_hash = hashCode(id);
-                if( historyIn[id_hash] == undefined){
-                    historyIn[id_hash] = true;  
-                                            
+                $log.log('Hash collision ??', commandsIn[id_hash], oldData);
+                if( commandsIn[id_hash] == undefined){
+                    commandsIn[id_hash] = true;                                              
                     var historyData = {
                         'id':id_hash,
                         'info':{
@@ -117,27 +120,41 @@
                 }
             }
         }
-        
-        function getOldHistory(){
-            downloadHistory().then(function(data){
-                var oldData = true;
-                for(var i=0; i < data.length; i++){
-                    verifyData(data[i], oldData);
-                }
-            })
-        }
-        function downloadHistory(){
 
+
+        function downloadHistory(options){
         //->:: TO CHANGE
         //->:: /api/mdb/simulator/commands/YSS/SIMULATOR/DUMP_RECORDING
-        var str = '/YSS/SIMULATOR/DUMP_RECORDING';
+            var str = '/YSS/SIMULATOR/DUMP_RECORDING';
             var targetUrl = '/api/archive/'+yamcsInstance+'/commands'+str;
+            targetUrl += toQueryString(options);
+            $log.log('CALLING', targetUrl);
             return $http.get(targetUrl).then( function( oldCommands){
-                return oldCommands.data.entry; 
+                //$log.log('Server repsonse length', oldCommands.data.entry.length);
+                var data = oldCommands.data.entry;
+                if(data != undefined){
+                    var oldData = true;
+                    for(var i=0; i < data.length; i++){
+                        verifyData(data[i], oldData);
+                    }
+                }else{
+                    $log.error('URL Error->', targetUrl,oldCommands);
+                }            
+                return data; 
             }).catch(function (message){
                 $log.error('XHR failed', message);
             });
-        };
-        
+        }
+
+        function toQueryString(options) {
+            if (!options) return '?nolink';
+            var result = '?nolink';
+            for (var opt in options) {
+                if (options.hasOwnProperty(opt)) {
+                    result += '&' + opt + '=' + options[opt];
+                }
+            }
+            return result;
+        }
     }
 })();

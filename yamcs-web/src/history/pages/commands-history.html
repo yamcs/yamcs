@@ -2,7 +2,10 @@
     <div class="container-fluid">
 
         <h2>Commands History</h2>
-        <table class="table table-stripped">
+        <table class="table table-condensed" infinite-scroll="vm.loadMore()" 
+        infinite-scroll-distance="0" 
+        infinite-scroll-disable="vm.scrollOptions.disable"
+        infinite-scroll-use-document-bottom="vm.scrollOptions.use_bottom">
             <thead>
                 <tr>
                     <th>#</th>
@@ -14,19 +17,17 @@
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="item in vm.history.data">
+                <tr ng-repeat="item in vm.history.data | orderBy:'-info.time'">
                     <th> {{$index}} </th>
                     <td>{{item.info.time | date:'yyyy-MM-dd HH:mm:ss.sss Z'}}</td>
                     <td>{{item.info.source}}</td>
                     <td>{{item.info.name}}</td>
                     <td>{{item.info.sequence}}</td>
-                    <!--
-                    <td ng-repeat="(key,value) in item.hops" style="width: 30px;" ng-class="{'highlight-dark':vm.verifyStatusClass(value)}">{{key}}:{{vm.getDelay(value.time, item.info.time) | date:'ss:sss'}}ms</td>
-                    -->
                     <td ng-repeat="(key,value) in vm.history.dynamic_hops" style="width: 30px;" ng-class="{'highlight-dark':vm.verifyStatusClass(item.hops[key])}"> {{vm.getDelay(item.hops[key].time, item.info.time) | date:'ss.sss'}}s</td>
                 </tr>
             </tbody>
         </table>
+        <tr ng-show="vm.scrollOptions.show_loader">Fetching older commands from server...</tr>
     </div>
     
 </div>

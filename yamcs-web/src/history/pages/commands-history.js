@@ -8,9 +8,19 @@
 
         var vm= this;
         vm.history = historyService.getHistory();
-
         vm.headers = [];
-        vm.oldHistory = historyService.getOldHistory();
+
+        vm.scrollOptions= {
+            disable:false,
+            use_bottom: true,
+            show_loader: false
+        }
+        historyService.downloadHistory({
+                limit: 20
+            }).then(function(resp){
+                
+            })
+            
         vm.verifyStatusClass = function(data){
             if(data == undefined){
                 return false;
@@ -35,6 +45,27 @@
                 return delta;
             }
         }
-        $log.log('Loaded history controller', vm.history);
+        
+        vm.loadMore = function(){
+            vm.scrollOptions.show_loader = true;
+            if(vm.history != undefined){
+                if( vm.history.data != undefined){
+                    if((vm.history.data.length-1)>0){
+                        var finalCommand = vm.history.data[vm.history.data.length - 1];
+                        historyService.downloadHistory({
+                                limit:5,
+                                stop: finalCommand.info['time']
+                        }).then(function(res){
+                            vm.scrollOptions.show_loader = false;
+                        })
+                    }
+                }
+
+            }
+            $log.log('HISTORY LENGTH', vm.history.data.length);
+            vm.scrollOptions.disable = true;
+        }
+    
+        
     }
 })();

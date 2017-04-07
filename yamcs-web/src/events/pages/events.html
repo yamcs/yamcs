@@ -50,7 +50,11 @@
     <h1 class="page-header">Events</h1>
   </div>
 
-  <table class="table table-condensed" infinite-scroll="loadMoreEvents()" infinite-scroll-distance="0" infinite-scroll-disabled="ctx.loadingMoreData">
+  <table class="table table-condensed" 
+  infinite-scroll="loadMoreEvents()" 
+  infinite-scroll-distance="0" 
+  infinite-scroll-disabled="ctx.loadingMoreData"
+  infinite-scroll-use-document-bottom="ctx.stopBrowser">
     <tr>
       <th width="1"></th>
       <th>Message</th>
