@@ -134,7 +134,7 @@ public class ParameterArchive  extends AbstractService {
                 }
                 p.dataCfh = yrdb.getColumnFamilyHandle(o);
             } else if(!"default".equals(cn) && !CF_NAME_meta_p2pid.equals(cn) && !CF_NAME_meta_pgid2pg.equals(cn)){
-                log.warn("Unknown column family '"+cn+"'");
+                log.warn("Unknown column family '{}'", cn);
             }
         }
 

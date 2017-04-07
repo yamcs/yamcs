@@ -15,7 +15,6 @@ import org.yamcs.archive.PacketWithTime;
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
 import org.yamcs.utils.CcsdsPacket;
-import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 
 
@@ -117,7 +116,7 @@ public class MulticastTmDataLink extends AbstractExecutionThreadService implemen
                  *  The time in the "TMR header" is the reception time. It looks like the CCSDS GPS but is generated locally so it's UNIX time in fact
                  */
                 if(datagram.getLength()<26) { //10 for the TMR header plus 6 for the primary CCSDS header plus 10 for secondary CCSDS header
-                    log.warn("Incomplete packet received on the multicast, discarded: "+datagram);
+                    log.warn("Incomplete packet received on the multicast, discarded: {}", datagram);
                     continue;
                 }
 
@@ -133,12 +132,12 @@ public class MulticastTmDataLink extends AbstractExecutionThreadService implemen
                 int pktLength = 7+((data[14+offset]&0xFF)<<8)+(data[15+offset]&0xFF);
                 if(pktLength<16) {
                     invalidDatagramCount++;
-                    log.warn("Invalid packet received on the multicast, pktLength:"+pktLength+". Expecting minimum 16 bytes");
+                    log.warn("Invalid packet received on the multicast, pktLength: {}. Expecting minimum 16 bytes", pktLength);
                     continue;
                 }
                 if(datagram.getLength()<10+pktLength) {
                     invalidDatagramCount++;
-                    log.warn("Incomplete packet received on the multicast. expected"+pktLength+", received"+(datagram.getLength()-10)+": "+datagram);
+                    log.warn("Incomplete packet received on the multicast. expected {}, received: {}", pktLength, (datagram.getLength()-10));
                     continue;
                 }
                 validDatagramCount++;
@@ -146,7 +145,7 @@ public class MulticastTmDataLink extends AbstractExecutionThreadService implemen
                 packet.put(data, offset+10, pktLength);
                 break;
             } catch (IOException e) {
-                log.warn("exception '"+e.toString()+"' thrown when reading from the multicast socket"+group+":"+port);
+                log.warn("exception {} thrown when reading from the multicast socket {}:{}", group, port, e);
             }
         }
         
@@ -171,7 +170,7 @@ public class MulticastTmDataLink extends AbstractExecutionThreadService implemen
         if(disabled) {
             return "DISABLED";
         } else {
-            return String.format("OK (%s:%d)\nValid datagrams received: %d\nInvalid datagrams received: %d",
+            return String.format("OK (%s:%d)%nValid datagrams received: %d%nInvalid datagrams received: %d",
                     group, port, validDatagramCount, invalidDatagramCount);
         }
     }
@@ -195,14 +194,6 @@ public class MulticastTmDataLink extends AbstractExecutionThreadService implemen
     @Override
     public boolean isDisabled() {
         return disabled;
-    }
-
-    public static void main(String[] args) throws IOException {
-        MulticastTmDataLink tm=new MulticastTmDataLink("239.192.0.1",31002);
-        PacketWithTime pwrt=null;
-        while((pwrt=tm.getNextPacket())!=null) {
-            System.out.println("got new packet:\n"+StringConverter.arrayToHexString(pwrt.getPacket()));
-        }
     }
 
     @Override

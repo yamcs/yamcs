@@ -97,7 +97,7 @@ public class LdapRealm implements Realm {
         else if(authenticationToken.getClass() == CertificateToken.class)
             return authenticateCertificate((CertificateToken) authenticationToken);
 
-        log.error("Authentication Token of type " + authenticationToken.getClass() + " is not supported by LDAP realm.");
+        log.error("Authentication Token of type {} is not supported by LDAP realm.", authenticationToken.getClass());
         return false;
     }
 
@@ -110,7 +110,7 @@ public class LdapRealm implements Realm {
             try {
                 encodedCert = cert.getEncoded();
             } catch (java.security.cert.CertificateEncodingException e) {
-                log.warn("got CertificateEncodingException when encoding certificate:" + cert);
+                log.warn("got CertificateEncodingException when encoding certificate: {}",  cert, e);
                 return false;
             }
 
@@ -142,16 +142,13 @@ public class LdapRealm implements Realm {
             } finally {
                 context.close();
             }
-        }
-        catch (NamingException ne)
-        {
+        } catch (NamingException ne) {
             log.error("Unable to authenticate this X509Certificate certificate against LDAP.", ne);
             return false;
         }
     }
 
-    private boolean authenticateUsernamePassword(UsernamePasswordToken usernamePasswordToken)
-    {
+    private boolean authenticateUsernamePassword(UsernamePasswordToken usernamePasswordToken) {
         String username = usernamePasswordToken.getUsername();
         String password = usernamePasswordToken.getPasswordS();
         DirContext ctx = null;
@@ -183,8 +180,7 @@ public class LdapRealm implements Realm {
      *
      */
     @Override
-    public User loadUser(AuthenticationToken authenticationToken)
-    {
+    public User loadUser(AuthenticationToken authenticationToken) {
         log.info("");
 
         User u = new User(authenticationToken);
@@ -245,15 +241,14 @@ public class LdapRealm implements Realm {
                 roles.add(ldapRole.substring(start + 3, stop));
             }
             catch (Exception e){
-                log.error("Unable to extract role from LDAP search result");
+                log.error("Unable to extract role from LDAP search result", e);
             }
         }
         return roles;
     }
 
 
-    Set<String> loadAssertedIdentities(DirContext context, String dn)
-            throws NamingException {
+    Set<String> loadAssertedIdentities(DirContext context, String dn) throws NamingException {
         SearchControls cons = new SearchControls();
         cons.setSearchScope(SearchControls.SUBTREE_SCOPE);
         cons.setReturningAttributes(new String[] { "member" });
@@ -282,8 +277,9 @@ public class LdapRealm implements Realm {
         cons.setReturningAttributes(new String[] { "cn" });
         NamingEnumeration<SearchResult> results = context.search(rolePath, "member={0}", new String[] { dn }, cons);
 
-        if (!results.hasMore())
+        if (!results.hasMore()) {
             return null;
+        }
 
         HashSet<String> roles = new HashSet<String>();
 
@@ -315,12 +311,7 @@ public class LdapRealm implements Realm {
         return privs;
     }
 
-
-
-
     public String getUserPath() {
         return userPath;
     }
-
-
 }

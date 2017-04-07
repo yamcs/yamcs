@@ -138,7 +138,6 @@ public class XtceDbFactory {
 
             db.buildIndexMaps();
         }
-        // log.info("Loaded database with "+instance.sid2TcPacketMap.size()+" TC, "+instance.sid2SequenceContainertMap.size()+" TM containers, "+instance.sid2ParameterMap.size()+" TM parameters and "+instance.upcOpsname2PpMap.size()+" processed parameters");
 
         if ((!serializedLoaded)) {
             try {
@@ -398,7 +397,7 @@ public class XtceDbFactory {
 
     private static XtceDb loadSerializedInstance(String filename) throws IOException, ClassNotFoundException {
         ObjectInputStream in = null;
-        log.debug("Loading serialized XTCE DB from: " + filename);
+        log.debug("Loading serialized XTCE DB from: {}", filename);
         in = new ObjectInputStream(new FileInputStream(filename));
         XtceDb db = (XtceDb) in.readObject();
         in.close();

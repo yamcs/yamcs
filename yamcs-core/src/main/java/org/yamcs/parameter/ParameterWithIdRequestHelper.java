@@ -36,7 +36,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     ParameterRequestManagerImpl prm;
     final ParameterWithIdConsumer listener;
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
-    Map<Integer, ListMultimap<Parameter, NamedObjectId>> subscriptions = new ConcurrentHashMap<Integer, ListMultimap<Parameter, NamedObjectId>>();
+    Map<Integer, ListMultimap<Parameter, NamedObjectId>> subscriptions = new ConcurrentHashMap<>();
 
 
 
@@ -64,7 +64,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             throws InvalidIdentification, NoPermissionException {
         ListMultimap<Parameter, NamedObjectId> subscr = subscriptions.get(subscriptionId);
         if(subscr==null) {
-            log.warn("add item requested for an invalid subscription id "+subscriptionId);
+            log.warn("add item requested for an invalid subscription id {}", subscriptionId);
             return;
         }
 
@@ -95,7 +95,9 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
                 invalid.add(id);
             }
         }
-        if(!invalid.isEmpty()) throw new InvalidIdentification(invalid);
+        if(!invalid.isEmpty()) {
+            throw new InvalidIdentification(invalid);
+        }
 
         return result;
     }
@@ -103,7 +105,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
     public void removeRequest(int subscriptionId) {
         if(!subscriptions.containsKey(subscriptionId)) {
-            log.warn("remove requested for an invalid subscription id "+subscriptionId);
+            log.warn("remove requested for an invalid subscription id {}", subscriptionId);
             return;
         }
         prm.removeRequest(subscriptionId);
@@ -113,7 +115,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     public void removeItemsFromRequest(int subscriptionId,   List<NamedObjectId> parameterIds, AuthenticationToken authToken) throws NoPermissionException {
         ListMultimap<Parameter, NamedObjectId> subscr = subscriptions.get(subscriptionId);
         if(subscr==null) {
-            log.warn("remove requested for an invalid subscription id "+subscriptionId);
+            log.warn("remove requested for an invalid subscription id {}", subscriptionId);
             return;
         }
 
@@ -148,15 +150,15 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     public void updateItems(int subscriptionId, List<ParameterValue> items) {
         ListMultimap<Parameter, NamedObjectId> subscription = subscriptions.get(subscriptionId);
         if(subscription==null) { //probably the subscription has just been removed
-            log.debug("Received an updateItems for an unknown subscription "+subscriptionId);
+            log.debug("Received an updateItems for an unknown subscription {}", subscriptionId);
             return;
         }
         List<ParameterValueWithId> plist = new ArrayList<ParameterValueWithId>(items.size());
         synchronized(subscription) {
             for(ParameterValue pv: items) {
                 List<NamedObjectId> idList = subscription.get(pv.getParameter());
-                if(idList==null || idList.size() == 0) {
-                    log.warn("Received values for a parameter not subscribed: "+pv.getParameter());
+                if(idList==null || idList.isEmpty()) {
+                    log.warn("Received values for a parameter not subscribed: {}", pv.getParameter());
                     continue;
                 }
 
@@ -187,7 +189,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         for(ParameterValue pv: values) {
             List<NamedObjectId> l = lm.get(pv.getParameter());
             if(l==null) {
-                log.warn("Received values for a parameter not requested: "+pv.getParameter());
+                log.warn("Received values for a parameter not requested: {}", pv.getParameter());
                 continue;
             }
 

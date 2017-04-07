@@ -78,7 +78,9 @@ class ArchiveFillerTask implements ParameterConsumer {
             long t = entry.getKey();
             SortedParameterList pvList = entry.getValue();
             processParameters(t, pvList);
-            if(t>maxTimestamp) maxTimestamp = t;
+            if(t>maxTimestamp) {
+                maxTimestamp = t;
+            }
         }
         return maxTimestamp;
     } 
@@ -108,7 +110,7 @@ class ArchiveFillerTask implements ParameterConsumer {
     }
 
     void flush() {
-        log.info("Starting a consolidation process, number of intervals: "+pgSegments.size());
+        log.info("Starting a consolidation process, number of intervals: {}", pgSegments.size());
         for(Map<Integer, PGSegment> m: pgSegments.values()) {
             consolidateAndWriteToArchive(m.values());
         }
@@ -133,7 +135,9 @@ class ArchiveFillerTask implements ParameterConsumer {
     @Override
     public void updateItems(int subscriptionId, List<ParameterValue> items) {
         long t = processParameters(items);
-        if(t<0)return;
+        if(t<0){
+            return;
+        }
         
         long nextSegmentStart = SortedTimeSegment.getNextSegmentStart(collectionSegmentStart);
         

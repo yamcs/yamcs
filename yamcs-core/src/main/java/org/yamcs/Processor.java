@@ -149,7 +149,7 @@ public class Processor extends AbstractService {
                         }
                         tmProcessorConfig = (Map<String, Object>) o;
                     } else {
-                        log.warn("Ignoring unknown config key '"+c+"'");
+                        log.warn("Ignoring unknown config key '{}'", c);
                     }
                 }
             }
@@ -465,7 +465,7 @@ public class Processor extends AbstractService {
      * Increase with one the number of connected clients
      */
     public synchronized void connect(ProcessorClient s) throws ProcessorException {
-        log.debug("Session "+name+" has one more user: {}", s);
+        log.debug("Session {} has one more user: {}", name, s);
         if(quitting) {
             throw new ProcessorException("This processor has been closed");
         }

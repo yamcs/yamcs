@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.NotThreadSafe;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.CcsdsPacket;
@@ -76,8 +75,10 @@ public class CccsdsTmIndex implements TmIndex {
     private void openDb(String filename) throws RocksDBException {
         db = RocksDB.open(filename);
         long numKeys = db.getLongProperty("rocksdb.estimate-num-keys");
-        log.info("Opened "+filename+" with "+numKeys+" records");
-        if(numKeys==0) initDbs();
+        log.info("Opened {} with {} records", filename, numKeys);
+        if(numKeys==0) {
+            initDbs();
+        }
 
     }
     private void initDbs() throws RocksDBException {
@@ -97,7 +98,7 @@ public class CccsdsTmIndex implements TmIndex {
         try {
             addPacket(apid, time , seq);
         } catch (RocksDBException e) {
-            log.error("got exception while saving the packet into index");
+            log.error("got exception while saving the packet into index", e);
             e.printStackTrace();
         }
     }
@@ -112,9 +113,10 @@ public class CccsdsTmIndex implements TmIndex {
             while(true) {
                 rright = new Record(it.key(),it.value());
                 cright = compare(apid,instant, seq, rright);
-                //System.out.println("compare of "+apid+","+time+","+seq+" with "+rright+" is "+cright);
                 if(cright==0) { //duplicate packet
-                    if(log.isTraceEnabled()) log.trace("ignored duplicate packet: apid="+apid+" time="+TimeEncoding.toOrdinalDateTime(instant)+" seq="+seq);
+                    if(log.isTraceEnabled()) {
+                        log.trace("ignored duplicate packet: apid={} time={} seq={}", apid, TimeEncoding.toOrdinalDateTime(instant), seq);
+                    }
                     return;
                 } else if(cright<0) {
                     break;
@@ -127,10 +129,10 @@ public class CccsdsTmIndex implements TmIndex {
             rleft = new Record(it.key(),it.value());
 
             cleft = compare(apid,instant,seq,rleft);
-            //	System.out.println("arleft="+arleft+"\narright="+arright);
-            //	System.out.println("cleft="+cleft+"\ncright="+cright);
             if(cleft==0) {//duplicate packet
-                if(log.isTraceEnabled()) log.trace("ignored duplicate packet: apid="+apid+" time="+TimeEncoding.toOrdinalDateTime(instant)+" seq="+seq);
+                if(log.isTraceEnabled()) {
+                    log.trace("ignored duplicate packet: apid={} time={} seq={}", apid, TimeEncoding.toOrdinalDateTime(instant), seq);
+                }
                 return;
             }
             //the cursor is located on the left record and we have a few cases to examine
@@ -139,14 +141,14 @@ public class CccsdsTmIndex implements TmIndex {
                 rleft.lastTime = rright.lastTime;
                 rleft.numPackets += rright.numPackets+1;
                 db.put(rleft.key(), rleft.val());
-                db.remove(rright.key()); //remove the right record
+                db.delete(rright.key()); //remove the right record
             } else if(cleft==1) {//attach to left
                 rleft.seqLast=seq;
                 rleft.lastTime=instant;
                 rleft.numPackets++;
                 db.put(rleft.key(), rleft.val());
             } else if(cright==-1) {//attach to right
-                db.remove(rright.key());
+                db.delete(rright.key());
                 rright.seqFirst = seq;
                 rright.firstTime = instant;
                 rright.numPackets++;
@@ -174,9 +176,13 @@ public class CccsdsTmIndex implements TmIndex {
             return 0x3FFF*Integer.signum(apid-arapid);
         } 
         int c=compare(time,seq ,ar.firstTime(),ar.firstSeq());
-        if(c<=0)return c;
+        if(c<=0){
+            return c;
+        }
         c=compare(time,seq,ar.lastTime(),ar.lastSeq()) ;
-        if(c>=0)return c;
+        if(c>=0){
+            return c;
+        }
         return 0;
     }
     /**
@@ -189,14 +195,20 @@ public class CccsdsTmIndex implements TmIndex {
      */
     static int compare(long time1, short seq1, long time2, short seq2) {
         if(time1<time2) {
-            if(((time2-time1)<=maxApidInterval) && (((seq2-seq1) & 0x3FFF)==1))return -1;
+            if(((time2-time1)<=maxApidInterval) && (((seq2-seq1) & 0x3FFF)==1)){
+                return -1;
+            }
             else return -0x3FFF;
         } else if(time1==time2) {
             int d=(seq1-seq2)&0x3FFF;
-            if(d<0x2000) return d;
+            if(d<0x2000) {
+                return d;
+            }
             return d-0x4000;
         } else {
-            if(((time1-time2)<=maxApidInterval) && (((seq1-seq2) & 0x3FFF)==1)) return 1;
+            if(((time1-time2)<=maxApidInterval) && (((seq1-seq2) & 0x3FFF)==1)) {
+                return 1;
+            }
             else return 0x3FFF;
         }
     }
@@ -213,7 +225,9 @@ public class CccsdsTmIndex implements TmIndex {
      */
     @Override
     public synchronized void close() throws IOException {
-        if(closed)return;
+        if(closed){
+            return;
+        }
         
         log.info("Closing the tmindexdb");
         db.close();
@@ -234,22 +248,27 @@ public class CccsdsTmIndex implements TmIndex {
 
 
     private void printApidDb(short apid, long start, long stop, RocksIterator cur) {
-        //System.out.println("apid="+apid+" start="+new Date(start)+"stop="+stop);
         String format="%-10d  %-30s - %-30s  %12d - %12d";
         Record ar;
         if(start!=-1) {
             cur.seek(Record.key(apid, start, (short)0));
             cur.prev();
             ar=new Record(cur.key(), cur.value());
-            if((ar.apid()!=apid)||(ar.lastTime()<start)) cur.next();
+            if((ar.apid()!=apid)||(ar.lastTime()<start)) {
+                cur.next();
+            }
         } else {
             cur.seek(Record.key(apid, 0L, (short)0));
         }
 
         while(true) {
             ar=new Record(cur.key(), cur.value());
-            if(ar.apid()!=apid)break;
-            if((stop!=-1)&& (ar.firstTime()>stop)) break;
+            if(ar.apid()!=apid) {
+                break;
+            }
+            if((stop!=-1)&& (ar.firstTime()>stop)) {
+                break;
+            }
             System.out.println(String.format(format, ar.apid(),TimeEncoding.toOrdinalDateTime(ar.firstTime()), TimeEncoding.toOrdinalDateTime(ar.lastTime()),ar.firstSeq(),ar.lastSeq()));
             cur.next();
         }
@@ -268,7 +287,9 @@ public class CccsdsTmIndex implements TmIndex {
                 cur.seek(Record.key(apid, Long.MAX_VALUE, Short.MAX_VALUE));
                 ar=new Record(cur.key(),cur.value());
                 apid=ar.apid();
-                if(apid==Short.MAX_VALUE) break;
+                if(apid==Short.MAX_VALUE) {
+                    break;
+                }
                 printApidDb(ar.apid(),start,stop,cur);
             }
         } 
@@ -280,7 +301,9 @@ public class CccsdsTmIndex implements TmIndex {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception{
-        if(args.length<1) printUsageAndExit();
+        if(args.length<1) {
+            printUsageAndExit();
+        }
         YConfiguration.setup();
 
         long start=-1;
@@ -333,7 +356,9 @@ public class CccsdsTmIndex implements TmIndex {
         public ArchiveRecord getNextRecord() {
             while(true) {
                 Record r=iterator.getNextRecord();
-                if(r==null) return null;
+                if(r==null) {
+                    return null;
+                }
 
                 int apid=r.apid;
                 if((apids==null) || (apids.contains(apid))) {
@@ -376,22 +401,28 @@ public class CccsdsTmIndex implements TmIndex {
         boolean jumpAtApid() {
             Record r;
             if(start!=-1) {
-                cur.seek(Record.key(curApid, start, (short)0)); cur.prev();
+                cur.seek(Record.key(curApid, start, (short)0));
+                cur.prev();
                 r = new Record(cur.key(), cur.value());
-                if((r.apid()!=curApid) || r.lastTime()<start) cur.next();
+                if((r.apid()!=curApid) || r.lastTime()<start) {
+                    cur.next();
+                }
                 r=new Record(cur.key(),cur.value());
-                if(r.apid()!=curApid) return false;
+                if(r.apid()!=curApid) {
+                    return false;
+                }
             } else {
                 cur.seek(Record.key(curApid, 0, (short) 0));
                 r=new Record(cur.key(), cur.value());
-                if(r.apid()!=curApid) return false;
+                if(r.apid()!=curApid) {
+                    return false;
+                }
             }
             return true;
         }
 
         //sets the position of the acur at the beginning of the next apid which matches the start criteria
         boolean nextApid() {
-            //			System.out.println("apid="+apid+", curtApid="+curApid);
             if(curApid==-1) { //init
                 if(apid!=-1) {
                     curApid=apid;
@@ -400,33 +431,45 @@ public class CccsdsTmIndex implements TmIndex {
                     curApid=0;
                 }
             }
-            if(apid!=-1)return false;
+            if(apid!=-1) {
+                return false;
+            }
 
             while(true) {
                 cur.seek(Record.key(curApid, Long.MAX_VALUE, Short.MAX_VALUE));
                 Record ar=new Record(cur.key(), cur.value());
                 curApid=ar.apid();
-                if(curApid==Short.MAX_VALUE) return false;
+                if(curApid==Short.MAX_VALUE) {
+                    return false;
+                }
 
-                if(jumpAtApid())return true;
+                if(jumpAtApid()) {
+                    return true;
+                }
             }
         }
 
         //sets the position of the acur to the next id checking for the stop criteria
         private boolean nextId() {
             if(curr==null) { //init
-                if(!nextApid()) return false;
+                if(!nextApid()) {
+                    return false;
+                }
             }  else {
                 cur.next();
             }
             while(true) {
                 Record r=new Record(cur.key(), cur.value());
                 if(r.apid()!=curApid) {
-                    if(!nextApid()) return false;
+                    if(!nextApid()) {
+                        return false;
+                    }
                     continue;
                 }
                 if((stop!=-1)&&(r.firstTime()>stop)) {
-                    if(!nextApid()) return false;
+                    if(!nextApid()) {
+                        return false;
+                    }
                     continue;
                 }
                 curr=r;
@@ -438,8 +481,9 @@ public class CccsdsTmIndex implements TmIndex {
          * @see org.yamcs.yarch.usoc.IndexIterator#getNextRecord()
          */
         public Record getNextRecord() {
-            //	System.out.println("getNextRecord curId:"+curId+", start:"+start+", apid:"+apid+", stop:"+stop);
-            if(!nextId()) return null;
+            if(!nextId()) {
+                return null;
+            }
             return curr;	
         }
 

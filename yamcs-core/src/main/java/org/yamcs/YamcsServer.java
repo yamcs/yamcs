@@ -195,9 +195,9 @@ public class YamcsServer {
             try {
                 s.awaitTerminated(SERVICE_STOP_GRACE_TIME, TimeUnit.SECONDS);
             } catch (TimeoutException e) {
-                log.error("Service "+s.getClass().getName()+" did not stop in "+SERVICE_STOP_GRACE_TIME + " seconds");
+                log.error("Service {} did not stop in {} seconds", s.getClass().getName(), SERVICE_STOP_GRACE_TIME);
             } catch (IllegalStateException e) {
-                log.error("Service "+s.getClass().getName()+" was in a bad state: {}", e.getMessage());
+                log.error("Service {} was in a bad state: {}", s.getClass().getName(), e.getMessage());
             }
         }
     }
@@ -263,7 +263,7 @@ public class YamcsServer {
     }
 
     public static void createYamcsInstance(String name) throws IOException {
-        staticlog.info("Loading instance '" + name + "'");
+        staticlog.info("Loading instance '{}'", name);
         if (instances.containsKey(name)) {
             throw new ConfigurationException(String.format("There already exists an instance named '%s'", name));
         }
@@ -303,7 +303,7 @@ public class YamcsServer {
             }
             aib.setMissionDatabase(mdb.build());
         } catch (ConfigurationException e) {
-            staticlog.warn("Got error when finding the mission database for instance "+name, e);
+            staticlog.warn("Got error when finding the mission database for instance {}", name, e);
         }
         return aib.build();
     }

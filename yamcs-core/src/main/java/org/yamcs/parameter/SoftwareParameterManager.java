@@ -52,7 +52,7 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
                 params.add(p);
             }
         }
-        log.debug("Found "+params.size()+" local parameters");
+        log.debug("Found {} local parameters", params.size());
     }
 
     @Override

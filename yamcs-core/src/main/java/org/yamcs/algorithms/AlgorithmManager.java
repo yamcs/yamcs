@@ -117,7 +117,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                 }
                 try {
                     for(String lib:libraryNames) {
-                        log.debug("Loading library "+lib);
+                        log.debug("Loading library {}", lib);
                         File f=new File(lib);
                         if(!f.exists()) {
                             throw new ConfigurationException("Algorithm library file '"+f+"' does not exist");
@@ -310,12 +310,12 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             }
             executionOrder.add(executor); // Add at the back (dependent algorithms will come in front)
         } catch (InvalidIdentification e) {
-            log.error(String.format("InvalidIdentification caught when subscribing to the items "
-                    + "required for the algorithm %s\n\t The invalid items are: %s"
-                    , executor.getAlgorithm().getName(), e.invalidParameters), e);
+            log.error("InvalidIdentification caught when subscribing to the items "
+                    + "required for the algorithm {}\n\t The invalid items are: {}"
+                    , executor.getAlgorithm().getName(), e.invalidParameters, e);
         } catch (InvalidRequestIdentification e) {
-            log.error("InvalidRequestIdentification caught when subscribing to the items required for the algorithm "
-                    + executor.getAlgorithm().getName(), e);
+            log.error("InvalidRequestIdentification caught when subscribing to the items required for the algorithm {}"
+                     , executor.getAlgorithm().getName(), e);
         }
     }
 

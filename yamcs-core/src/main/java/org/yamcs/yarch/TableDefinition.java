@@ -362,9 +362,11 @@ public class TableDefinition {
        BiMap<String, Short> b;
        
        //first check if it's not already in the map
-       if((enumValues!=null) && ((b=enumValues.get(columnName))!=null) && b.containsKey(v)) return; 
+       if((enumValues!=null) && ((b=enumValues.get(columnName))!=null) && b.containsKey(v)) {
+           return; 
+       }
        
-       log.debug("Adding enum value "+v+" for "+name+"."+columnName);
+       log.debug("Adding enum value {} for {}.{}", v, name, columnName);
        serializedEmumValues = new HashMap<String, BiMap<String, Short>>();
        if(enumValues!=null) {
            serializedEmumValues.putAll(enumValues);
@@ -429,7 +431,7 @@ public class TableDefinition {
                 bado.writeInt(cidx);
                 tcs.serialize(bado, v);
             } catch (Exception e) {
-                throw new RuntimeException("Cannot serialize column "+cd+": "+e,e);
+                throw new IllegalArgumentException("Cannot serialize column "+cd+": "+e,e);
             }
         }
         
@@ -601,6 +603,4 @@ public class TableDefinition {
     void setFormatVersion(int formatVersion) {
         this.formatVersion = formatVersion;
     }
-
- 
 }

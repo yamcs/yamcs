@@ -29,7 +29,7 @@ public class SimulationTimeService implements TimeService {
     long javaTime0;
     long javaTime; //this is the java time when the last simElapsedTime has been set
     long simElapsedTime;
-    private static final Logger log=LoggerFactory.getLogger(SimulationTimeService.class);
+    private static final Logger log = LoggerFactory.getLogger(SimulationTimeService.class);
 
     public SimulationTimeService(String yamcsInstance) {
         javaTime0 = System.currentTimeMillis();
@@ -71,7 +71,7 @@ public class SimulationTimeService implements TimeService {
             String instance = verifyInstance(req, req.getRouteParam("instance"));
             TimeService ts = YamcsServer.getInstance(instance).getTimeService();
             if(!(ts instanceof SimulationTimeService)) {
-                log.warn("Simulation time service requested for a non-simulation TimeService "+ts);
+                log.warn("Simulation time service requested for a non-simulation TimeService {}", ts);
                 throw new NotFoundException(req);
             }
 

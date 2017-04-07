@@ -305,7 +305,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             if (req != null) {
                 log.warn("{} {} {}", req.method(), req.uri(), response.status().code());
             } else {
-                log.warn("Malformed or illegal request. Sending back " + response.status().code());
+                log.warn("Malformed or illegal request. Sending back {}",  response.status().code());
             }
             ChannelFuture writeFuture = ctx.writeAndFlush(response);
             if(autoCloseOnError) {

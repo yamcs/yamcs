@@ -25,7 +25,7 @@ public class SequenceEntryProcessor {
                 throw new UnsupportedOperationException("processing type "+se+" not implemented");
             }
         } catch (RuntimeException e) {
-            log.warn("Exception when extracting\n"+se+":\n"+e);
+            log.warn("Exception when extracting\n {} :\n",se, e);
             throw e;
         }
     }
@@ -33,9 +33,10 @@ public class SequenceEntryProcessor {
 
     private void extractContainerEntry(ContainerEntry ce) {
         if(pcontext.bitPosition%8!=0) 
-            log.warn("Container Entry that doesn't start at byte boundary is not supported."+ ce+" is supposed to start at bit"+pcontext.bitPosition);
+            log.warn("Container Entry that doesn't start at byte boundary is not supported.{} is supposed to start at bit {}", ce, pcontext.bitPosition);
         if(pcontext.bitPosition/8>pcontext.bb.capacity()) {
-            log.warn("Container Entry that doesn't fit in the buffer: "+ce+" is supposed to start at bit "+pcontext.bitPosition+" while the packet buffer has capacity "+pcontext.bb.capacity()+" bytes");
+            log.warn("Container Entry that doesn't fit in the buffer: {} is supposed to start at bit {}"
+                    + " while the packet buffer has capacity {} bytes", ce,  pcontext.bitPosition, pcontext.bb.capacity());
             return;
         }
         pcontext.bb.position(pcontext.bitPosition/8);

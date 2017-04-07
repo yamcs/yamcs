@@ -7,6 +7,7 @@ import java.util.PriorityQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.rocksdb.ColumnFamilyHandle;
+import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 import org.yamcs.yarch.AbstractTableReaderStream;
 import org.yamcs.yarch.ColumnDefinition;
@@ -33,7 +34,7 @@ public class CfTableReaderStream extends AbstractTableReaderStream implements Ru
     final RdbPartitionManager partitionManager;
     final TableDefinition tableDefinition;
     private long numRecordsRead = 0;
-    
+
     protected CfTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, RdbPartitionManager partitionManager, boolean ascending, boolean follow) {
         super(ydb, tblDef, partitionManager, ascending, follow);
         this.tableDefinition = tblDef;
@@ -74,23 +75,26 @@ public class CfTableReaderStream extends AbstractTableReaderStream implements Ru
                 rangeEnd=cs.getByteArray(range.keyEnd);
             }
         }
-        
-        if (ascending) {
-            return readAscending(partitions, rangeStart, strictStart, rangeEnd, strictEnd);
-        } else {
-            return readDescending(partitions, rangeStart, strictStart, rangeEnd, strictEnd);
+        try {
+            if (ascending) {
+                return readAscending(partitions, rangeStart, strictStart, rangeEnd, strictEnd);
+            } else {
+                return readDescending(partitions, rangeStart, strictStart, rangeEnd, strictEnd);
+            }
+        } catch (RocksDBException e) {
+            throw new IOException(e);
         }
-     
+
     }
-    
-    private boolean readAscending(List<Partition> partitions, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
+
+    private boolean readAscending(List<Partition> partitions, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) throws IOException, RocksDBException {
         PriorityQueue<RdbRawTuple> orderedQueue = new PriorityQueue<RdbRawTuple>();
         RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
         YRDB rdb = null;
         try {
             RdbPartition p1 = (RdbPartition) partitions.iterator().next();
             String dbDir = p1.dir;
-            log.debug("opening database "+ dbDir);
+            log.debug("opening database {}", dbDir);
             rdb = rdbFactory.getRdb(tableDefinition.getDataDir()+"/"+p1.dir, false);
             List<ColumnFamilyHandle> cfhList = new ArrayList<ColumnFamilyHandle>();
             for(Partition p: partitions) {
@@ -117,7 +121,9 @@ public class CfTableReaderStream extends AbstractTableReaderStream implements Ru
                     } else {
                         found=false;
                     }
-                    if(!found) log.debug("no record corresponding to the StartFilter");
+                    if(!found) {
+                        log.debug("no record corresponding to the StartFilter");
+                    }
                 } else {
                     it.seekToFirst();
                     if(!it.isValid()) {
@@ -147,34 +153,33 @@ public class CfTableReaderStream extends AbstractTableReaderStream implements Ru
                     rt.value = rt.iterator.value();
                     orderedQueue.add(rt);
                 } else {
-                    log.debug(rt.iterator+" finished");
+                    log.debug("{} finished", rt.iterator);
                     rt.iterator.close();                    
                 }
             }
-           
-            return false;
-        } catch (Exception e){
-            e.printStackTrace();
+
             return false;
         } finally {
             for(RdbRawTuple rt:orderedQueue) {
                 rt.iterator.close();                
             }
-            if(rdb!=null) rdbFactory.dispose(rdb);
+            if(rdb!=null) {
+                rdbFactory.dispose(rdb);
+            }
         }
     }
-    
-    private boolean readDescending(List<Partition> partitions, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
+
+    private boolean readDescending(List<Partition> partitions, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) throws IOException, RocksDBException {
         PriorityQueue<RdbRawTuple> orderedQueue=new PriorityQueue<RdbRawTuple>(RawTuple.reverseComparator);
         RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
         YRDB rdb = null;
         try {
-           
+
             RdbPartition p1 = (RdbPartition) partitions.get(0);
             String dbDir = p1.dir;
-            log.debug("opening database "+ dbDir);
+            log.debug("opening database {}", dbDir);
             rdb = rdbFactory.getRdb(tableDefinition.getDataDir()+"/"+p1.dir, false);
-            List<ColumnFamilyHandle> cfhList = new ArrayList<ColumnFamilyHandle>();
+            List<ColumnFamilyHandle> cfhList = new ArrayList<>();
 
             for(Partition p: partitions) {
                 ColumnFamilyHandle cfh = rdb.getColumnFamilyHandle(((RdbPartition)p).binaryValue);
@@ -185,7 +190,7 @@ public class CfTableReaderStream extends AbstractTableReaderStream implements Ru
 
             //create a cursor for all partitions
             List<RocksIterator> iteratorList = rdb.newIterators(cfhList, false);
-            
+
             int i=0;
             for(RocksIterator it:iteratorList) {
                 boolean found=true;
@@ -202,14 +207,14 @@ public class CfTableReaderStream extends AbstractTableReaderStream implements Ru
                         it.seekToLast();
                         verify=true;
                     }
-                    
+
                     if(verify && it.isValid()) {
                         int c=compare(it.key(), rangeEnd);
                         if (c>0) {//don't care about non-strict, covered before
                             it.seek(rangeEnd);
                         }
                     }
-                    
+
                     if(it.isValid()) {
                         if((strictEnd)&&(compare(rangeEnd, it.key())==0)) {
                             //if filter condition is "<" we skip the first record if it is equal to the key
@@ -219,7 +224,9 @@ public class CfTableReaderStream extends AbstractTableReaderStream implements Ru
                     } else {
                         found=false;
                     }
-                    if(!found) log.debug("no record corresponding to the StartFilter");
+                    if(!found) {
+                        log.debug("no record corresponding to the StartFilter");
+                    }
                 } else {
                     it.seekToLast();
                     if(!it.isValid()) {
@@ -233,9 +240,9 @@ public class CfTableReaderStream extends AbstractTableReaderStream implements Ru
                     orderedQueue.add(new RdbRawTuple(it.key(), it.value(), it, i++));
                 }
             }
-            
+
             log.debug("got one tuple from each partition, starting the business");
-    
+
             //now continue publishing the first element from the priority queue till it becomes empty
             while((!quit) && orderedQueue.size()>0){
                 RdbRawTuple rt=orderedQueue.poll();
@@ -248,23 +255,22 @@ public class CfTableReaderStream extends AbstractTableReaderStream implements Ru
                     rt.value = rt.iterator.value();
                     orderedQueue.add(rt);
                 } else {
-                    log.debug(rt.iterator+" finished");
+                    log.debug("{} finished", rt.iterator);
                     rt.iterator.close();                    
                 }
             }
 
             return false;
-        } catch (Exception e){
-            e.printStackTrace();
-            return false;
         } finally {
             for(RdbRawTuple rt:orderedQueue) {
                 rt.iterator.close();                
             }
-            if(rdb!=null) rdbFactory.dispose(rdb);
+            if(rdb!=null) {
+                rdbFactory.dispose(rdb);
+            }
         }
     }
-    
+
 
     public long getNumRecordsRead() {
         return numRecordsRead;
@@ -282,12 +288,12 @@ public class CfTableReaderStream extends AbstractTableReaderStream implements Ru
             this.key = key;
             this.value = value;
         }
-        
+
         @Override
         protected byte[] getKey() {
             return key;
         }
-        
+
         @Override
         protected byte[] getValue() {
             return value;
@@ -303,7 +309,7 @@ public class CfTableReaderStream extends AbstractTableReaderStream implements Ru
 /* to replace maybe the above
 private boolean runSimplePartition(RdbPartition partition, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
     DbIterator iterator = null;
-  
+
     RDBFactory rdbf = RDBFactory.getInstance(ydb.getName());
     String dbDir = partition.dir;
     log.debug("opening database "+ dbDir);
@@ -321,7 +327,7 @@ private boolean runSimplePartition(RdbPartition partition, byte[] rangeStart, bo
         snapshot = rdb.getDb().getSnapshot();
         readOptions.setSnapshot(snapshot);
     }
-    
+
     try {
         RocksIterator it = rdb.getDb().newIterator(readOptions);
         if(ascending) {
@@ -333,7 +339,7 @@ private boolean runSimplePartition(RdbPartition partition, byte[] rangeStart, bo
                 iterator.next();
             }
             return false;
-            
+
         } else {
             iterator = new DescendingRangeIterator(it, rangeStart, strictStart, rangeEnd, strictEnd);
             while(!quit && iterator.isValid()){
@@ -351,4 +357,4 @@ private boolean runSimplePartition(RdbPartition partition, byte[] rangeStart, bo
         rdbf.dispose(rdb);
     }
 }
-*/
+ */

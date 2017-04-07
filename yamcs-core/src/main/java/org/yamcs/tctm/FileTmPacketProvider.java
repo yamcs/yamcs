@@ -17,7 +17,7 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
  * @author nm
  *
  */
-public class FileTmPacketProvider extends AbstractExecutionThreadService implements Runnable, TmPacketSource {
+public class FileTmPacketProvider extends AbstractExecutionThreadService implements Runnable, TmPacketDataLink {
     volatile boolean quitting=false;
     EndAction endAction;
     String fileName;
@@ -47,10 +47,16 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
     public FileTmPacketProvider(String fileName, String endActionStr, long delayBetweenPackets) throws IOException {
         this.fileName = fileName;
         this.delayBetweenPackets=delayBetweenPackets;
-        if (endActionStr.equalsIgnoreCase("LOOP")) endAction=EndAction.LOOP;
-        else if (endActionStr.equalsIgnoreCase("QUIT")) endAction=EndAction.QUIT;
-        else if (endActionStr.equalsIgnoreCase("STOP")) endAction=EndAction.STOP;
-        log.debug("attempting to open file " + this.fileName);
+        if (endActionStr.equalsIgnoreCase("LOOP")) {
+            endAction=EndAction.LOOP;
+        }
+        else if (endActionStr.equalsIgnoreCase("QUIT")) {
+            endAction=EndAction.QUIT;
+        }
+        else if (endActionStr.equalsIgnoreCase("STOP")) {
+            endAction=EndAction.STOP;
+        }
+        log.debug("attempting to open file {}", this.fileName);
         tmFileReader = new TmFileReader(this.fileName);
         timeService = new RealtimeTimeService();
     }
@@ -72,10 +78,10 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
 
                 if(pwrt==null) {
                     if ( endAction==EndAction.LOOP ) {
-                        log.info("File " + fileName + " finished, looping back to the beginning");
+                        log.info("File {} finished, looping back to the beginning", fileName);
                         tmFileReader = new TmFileReader(this.fileName);
                     } else {
-                        log.info("File " + fileName + " finished");
+                        log.info("File {} finished", fileName);
                         break;
                     }
                 }
@@ -108,7 +114,9 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
 
     @Override
     public String getLinkStatus() {
-        if (disabled) return "DISABLED";
+        if (disabled) {
+            return "DISABLED";
+        }
         if(quitting) {
             return "UNAVAIL";
         } else {

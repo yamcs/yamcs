@@ -32,7 +32,7 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
     private Iterator<List<Partition>> partitionIterator;
     private RocksIterator segmentIterator;
 
-    private PriorityQueue<HistogramRecord> records = new PriorityQueue<HistogramRecord>();
+    private PriorityQueue<HistogramRecord> records = new PriorityQueue<>();
 
     private final TimeInterval interval;
     private final long mergeTime;
@@ -69,7 +69,7 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
                 RDBFactory rdbf = RDBFactory.getInstance(ydb.getName());
                 String dbDir = part.dir;
 
-                log.debug("opening database "+ dbDir);
+                log.debug("opening database {}", dbDir);
                 if(rdb!=null) {
                     rdbf.dispose(rdb);
                 }
@@ -108,7 +108,9 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
         
         while(true) {
             boolean beyondStop = addRecords(segmentIterator.key(), segmentIterator.value());
-            if(beyondStop) stopReached = true;
+            if(beyondStop) {
+                stopReached = true;
+            }
 
             segmentIterator.next();
             if(!segmentIterator.isValid()) {
@@ -117,7 +119,9 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
             }
             bb = ByteBuffer.wrap(segmentIterator.key());
             long g = bb.getLong();
-            if(g!=sstart) break;
+            if(g!=sstart) {
+                break;
+            }
         }
     }       
 
@@ -131,7 +135,6 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
     //add all records from this segment into the queue 
     // if the stop has been reached add only partially the records, return true
     private boolean addRecords(byte[] key, byte[] val) {
-    //    System.out.println("interval: "+interval);
         ByteBuffer kbb = ByteBuffer.wrap(key);
         long sstart = kbb.getLong();
         byte[] columnv = new byte[kbb.remaining()];
@@ -142,9 +145,13 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
             long start = sstart*HistogramSegment.GROUPING_FACTOR + vbb.getInt();
             long stop = sstart*HistogramSegment.GROUPING_FACTOR + vbb.getInt();              
             int num = vbb.getShort();
-            if((interval.hasStart()) && (stop<interval.getStart())) continue;
+            if((interval.hasStart()) && (stop<interval.getStart())) {
+                continue;
+            }
             if((interval.hasStop()) && (start>interval.getStop())) {
-                if(r!=null) records.add(r);
+                if(r!=null) {
+                    records.add(r);
+                }
                 return true;
             }
             if(r==null) {
@@ -158,18 +165,23 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
                 }
             }
         }
-        if(r!=null) records.add(r);
+        if(r!=null) {
+            records.add(r);
+        }
         return false;
     }
 
+    @Override
     public boolean hasNext() {
         return !records.isEmpty();
     }
 
+    @Override
     public HistogramRecord next() {
-        if(records.isEmpty()) throw new NoSuchElementException();
+        if(records.isEmpty()) {
+            throw new NoSuchElementException();
+        }
         HistogramRecord r = records.poll();
-
         if(records.isEmpty() && !stopReached) {
             try {
                 readNextSegments();

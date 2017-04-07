@@ -129,13 +129,13 @@ public class BasicAuthModule implements AuthModule {
                         try {
                             // check the realm support the type of provided token
                             if (!realm.supports(authenticationToken)) {
-                                log.error("Realm " + realmName + " does not support authentication token of type"
-                                        + authenticationToken.getClass());
+                                log.error("Realm {} does not support authentication token of type {}"
+                                        ,realmName, authenticationToken.getClass());
                                 return null;
                             }
                             return realm.loadUser(authenticationToken);
                         } catch (Exception e) {
-                            log.error("Unable to load user from realm " + realmName, e);
+                            log.error("Unable to load user from realm {}", realmName, e);
                             return new User(authenticationToken);
                         }
                     }
@@ -179,7 +179,9 @@ public class BasicAuthModule implements AuthModule {
      */
     public boolean hasPrivilege(final AuthenticationToken authenticationToken, Type type, String privilege) {
         User user = getUser(authenticationToken);
-        if(user == null) return false;
+        if(user == null) {
+            return false;
+        }
         return user.hasPrivilege(type, privilege);
     }
 

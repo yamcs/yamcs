@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
@@ -18,7 +17,6 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
 /**
  * Reads telemetry files from the directory yamcs.incomingDir/tm
- * @author mache
  *
  */
 public class FilePollingTmDataLink extends AbstractExecutionThreadService implements TmPacketDataLink {
@@ -55,7 +53,7 @@ public class FilePollingTmDataLink extends AbstractExecutionThreadService implem
                     File[] files=fdir.listFiles();
                     Arrays.sort(files);
                     for(File f:files) {
-                        log.info("Injecting the content of "+f);
+                        log.info("Injecting the content of {}", f);
                         try {
                             TmFileReader prov=getTmFileReader(f.getAbsolutePath());
                             PacketWithTime pwrt;
@@ -66,13 +64,16 @@ public class FilePollingTmDataLink extends AbstractExecutionThreadService implem
                         } catch (IOException e) {
                             log.warn("Got IOException while reading from "+f+": ", e);
                         }
-                        if(!f.delete()) log.warn("Could not remove "+f);
+                        if(!f.delete()) {
+                            log.warn("Could not remove {}", f);
+                        }
                     }
                 }
                 Thread.sleep(10000);
             }
         } catch(InterruptedException e) {
-            log.debug("Interrupted");
+            log.debug("Interrupted", e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -103,7 +104,9 @@ public class FilePollingTmDataLink extends AbstractExecutionThreadService implem
 
     @Override
     public String getLinkStatus() {
-        if (disabled) return "DISABLED";
+        if (disabled) {
+            return "DISABLED";
+        }
         if(isRunning()) {
             return "OK";
         } else {

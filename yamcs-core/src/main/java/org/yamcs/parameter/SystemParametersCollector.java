@@ -44,11 +44,11 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     static long frequencyMillisec=1000;
     List<SystemParametersProducer> providers = new CopyOnWriteArrayList<SystemParametersProducer>();
 
-    final static String STREAM_NAME = "sys_param";
+    static final String STREAM_NAME = "sys_param";
     private NamedObjectId sp_jvmTotalMemory_id;
     private NamedObjectId sp_jvmMemoryUsed_id;
     private NamedObjectId sp_jvmTheadCount_id;
-    final static public int JVM_COLLECTION_INTERVAL = 10;
+    public static final int JVM_COLLECTION_INTERVAL = 10;
     private boolean provideJvmVariables = false;
     private int jvmCollectionCountdown = 0;
 
@@ -57,10 +57,10 @@ public class SystemParametersCollector extends AbstractService implements Runnab
 
 
     int seqCount = 0;
-    final private Logger log;
+    private final  Logger log;
 
-    final private String namespace;
-    final private String serverId;
+    private final  String namespace;
+    private final  String serverId;
 
     final String instance;
     TimeService timeService;
@@ -145,13 +145,15 @@ public class SystemParametersCollector extends AbstractService implements Runnab
                 Collection<ParameterValue> pvc =p.getSystemParameters();
                 params.addAll(pvc);
             } catch (Exception e) {
-                log.warn("Error getting parameters from provider "+p, e);
+                log.warn("Error getting parameters from provider {}", p, e);
             }
         }
         long gentime = timeService.getMissionTime();
 
 
-        if(params.isEmpty()) return;
+        if(params.isEmpty()) {
+            return;
+        }
 
         TupleDefinition tdef=ParameterDataLinkInitialiser.PARAMETER_TUPLE_DEFINITION.copy();
         List<Object> cols=new ArrayList<Object>(4+params.size());
@@ -163,7 +165,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
             String name = pv.getId().getName();
             int idx=tdef.getColumnIndex(name);
             if(idx!=-1) {
-                log.warn("duplicate value for "+pv.getId()+"\nfirst: "+cols.get(idx)+"\n second: "+pv);
+                log.warn("duplicate value for {}\nfirst: {}\n second: {}", pv.getId(), cols.get(idx), pv);
                 continue;
             }
             tdef.addColumn(name, ParameterDataLinkInitialiser.PARAMETER_DATA_TYPE);

@@ -120,7 +120,7 @@ public class Subscription {
     public void addParameter(Parameter parameter) {
         List<ParameterEntry> tpips=xtcedb.getParameterEntries(parameter);
         if(tpips==null) {
-            log.warn("Parameter not part of any container: "+parameter);
+            log.warn("Parameter not part of any container: {}", parameter);
             return;
         }
         for(ParameterEntry pe:tpips) {

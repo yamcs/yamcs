@@ -93,9 +93,9 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 
     public void addParameterProvider(ParameterProvider parameterProvider) {
         if(parameterProviders.containsKey(parameterProvider.getClass())) {
-            log.warn("Ignoring duplicate parameter provider of type "+parameterProvider.getClass());
+            log.warn("Ignoring duplicate parameter provider of type {}", parameterProvider.getClass());
         } else {
-            log.debug("Adding parameter provider: "+parameterProvider.getClass());
+            log.debug("Adding parameter provider: {}", parameterProvider.getClass());
             parameterProvider.setParameterListener(this);
             parameterProviders.put(parameterProvider.getClass(), parameterProvider);
             if(parameterProvider instanceof SoftwareParameterManager) {
@@ -122,7 +122,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
                     if(provider==null) {
                         log.warn("No provider found for parameter {} which has alarms", p.getQualifiedName());
                     } else {
-                        log.debug("Asking provider {} to provide {} because it has alarms",provider, p.getQualifiedName());
+                        log.debug("Asking provider {} to provide {} because it has alarms", provider, p.getQualifiedName());
                         provider.startProviding(p);
                     }
                 }
@@ -135,7 +135,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
      */
     public int subscribeAll(ParameterConsumer consumer) {
         int id=lastSubscriptionId.incrementAndGet();
-        log.debug("new subscribeAll with subscriptionId "+id);
+        log.debug("new subscribeAll with subscriptionId {}", id);
         if(subscribeAll.isEmpty()) {
             for(ParameterProvider provider:parameterProviders.values()) {
                 provider.startProvidingAll();
@@ -199,9 +199,9 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     public int addRequest(List<Parameter> paraList, DVParameterConsumer dvtpc) throws InvalidIdentification {
         List<ParameterProvider> providers=getProviders(paraList);
         int id=lastSubscriptionId.incrementAndGet();
-        log.debug("new request with subscriptionId "+id+" for itemList="+paraList);
+        log.debug("new request with subscriptionId {} for itemList={}", id, paraList);
         for(int i=0;i<paraList.size();i++) {
-            log.trace("adding to subscriptionID:{} item:{}",id, paraList.get(i));
+            log.trace("adding to subscriptionID:{} item:{}", id, paraList.get(i));
             addItemToRequest(id, paraList.get(i), providers.get(i));
         }
         request2DVParameterConsumerMap.put(id, dvtpc);
@@ -235,7 +235,8 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
         final ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
         if((consumer==null) && !request2DVParameterConsumerMap.containsKey(subscriptionId)
                 && alarmChecker!=null && alarmChecker.getSubscriptionId()!=subscriptionId) {
-            log.error(" addItemsToRequest called with an invalid subscriptionId="+subscriptionId+"\n current subscr:\n"+request2ParameterConsumerMap+"dv subscr:\n"+request2DVParameterConsumerMap);
+            log.error(" addItemsToRequest called with an invalid subscriptionId={}\n current subscr:\n{}dv "
+                    + "subscr:\n {}", subscriptionId, request2ParameterConsumerMap, request2DVParameterConsumerMap);
             throw new InvalidRequestIdentification("no such subscriptionID",subscriptionId);
         }
         ParameterProvider provider = getProvider(para);
@@ -253,7 +254,8 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
         log.debug("adding to subscriptionID {}: items: {} ", subscriptionId, paraList);
         final ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
         if((consumer==null) && !request2DVParameterConsumerMap.containsKey(subscriptionId)) {
-            log.error(" addItemsToRequest called with an invalid subscriptionId="+subscriptionId+"\n current subscr:\n"+request2ParameterConsumerMap+"dv subscr:\n"+request2DVParameterConsumerMap);
+            log.error(" addItemsToRequest called with an invalid subscriptionId={}\n current "
+                    + "subscr:\ndv subscr:\n{}", subscriptionId, request2ParameterConsumerMap, request2DVParameterConsumerMap);
             throw new InvalidRequestIdentification("no such subscriptionID",subscriptionId);
         }
         List<ParameterProvider> providers=getProviders(paraList);
@@ -324,10 +326,10 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
                     if(!cacheAll)  provider.stopProviding(para);
                 }*/
             } else {
-                log.warn("parameter removal requested for "+para+" but not part of subscription "+subscriptionId);		
+                log.warn("parameter removal requested for {}but not part of subscription {}", para , subscriptionId);		
             }
         } else {
-            log.warn("parameter removal requested for "+para+" but not subscribed");
+            log.warn("parameter removal requested for {} but not subscribed", para);
         }
     }
 
@@ -337,7 +339,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
      * subscription to a different ParameterRequestManager
      */
     public ArrayList<Parameter> removeRequest(int subscriptionId) {
-        log.debug("removing request for subscriptionId "+subscriptionId);
+        log.debug("removing request for subscriptionId {}", subscriptionId);
         //It's a bit annoying that we have to loop through all the parameters to find the ones that
         // are relevant for this request. We could keep track of an additional map.
         ArrayList<Parameter> result=new ArrayList<Parameter>();
@@ -439,7 +441,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
             ArrayList<ParameterValue> al=entry.getValue();
             ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
             if(consumer==null) {
-                log.warn("subscriptionId "+subscriptionId+" appears in the delivery list, but there is no consumer for it");
+                log.warn("subscriptionId {} appears in the delivery list, but there is no consumer for it", subscriptionId);
             } else {
                 consumer.updateItems(subscriptionId, al);
             }
@@ -525,7 +527,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 
     @Override
     public String toString() {
-        StringBuffer sb=new StringBuffer();
+        StringBuilder sb=new StringBuilder();
         sb.append("Current Subscription list:\n");
         for(Parameter param:param2RequestMap.keySet()) {
             sb.append(param); 

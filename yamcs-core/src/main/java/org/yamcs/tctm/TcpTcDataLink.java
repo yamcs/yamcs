@@ -66,7 +66,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         if(c.containsKey(spec, "minimumTcPacketLength")) {
             minimumTcPacketLength = c.getInt(spec, "minimumTcPacketLength");
         } else {
-            log.debug("minimumTcPacketLength not defined, using the default value "+minimumTcPacketLength);
+            log.debug("minimumTcPacketLength not defined, using the default value {}", minimumTcPacketLength);
         }
         timeService = YamcsServer.getTimeService(yamcsInstance);
     }
@@ -104,11 +104,11 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             socketChannel.configureBlocking(false);
             socketChannel.socket().setKeepAlive(true);
             selector = Selector.open();
-            selectionKey=socketChannel.register(selector,SelectionKey.OP_WRITE|SelectionKey.OP_READ);
-            log.info("TC connection established to "+host+":"+port);
+            selectionKey = socketChannel.register(selector,SelectionKey.OP_WRITE|SelectionKey.OP_READ);
+            log.info("TC connection established to {}:{}", host, port);
         } catch (IOException e) {
             String exc = (e instanceof ConnectException) ? ((ConnectException) e).getMessage() : e.toString();
-            log.info("Cannot open TC connection to "+host+":"+port+" '"+exc+"'. Retrying in 10s");
+            log.info("Cannot open TC connection to {}:{} '{}'. Retrying in 10s", host, port, exc.toString());
             try {socketChannel.close();} catch (Exception e1) {}
             try {selector.close();} catch (Exception e1) {}
             socketChannel=null;
@@ -116,7 +116,9 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     }
 
     protected void disconnect() {
-        if(socketChannel==null) return;
+        if(socketChannel==null) {
+            return;
+        }
         try {
             socketChannel.close();
             selector.close();
@@ -139,7 +141,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         try {
             selector.select();
             if(selectionKey.isReadable()) {
-                int read=socketChannel.read(bb);
+                int read = socketChannel.read(bb);
                 if(read>0) {
                     log.info("Data read on the TC socket to "+host+":"+port+"!! :"+bb);
                     connected=true;
@@ -172,7 +174,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             log.warn("TC disabled, ignoring command "+pc.getCommandId());
             return;
         }
-        ByteBuffer bb=null;
+        ByteBuffer bb = null;
         if(pc.getBinary().length<minimumTcPacketLength) { //enforce the minimum packet length
             bb=ByteBuffer.allocate(minimumTcPacketLength);
             bb.put(pc.getBinary());
@@ -196,11 +198,13 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
                     tcCount++;
                     sent=true;
                 } catch (IOException e) {
-                    log.warn("Error writing to TC socket to "+host+":"+port+": "+e.getMessage());
+                    log.warn("Error writing to TC socket to {}:{} : {}", host, port, e.getMessage());
                     try {
-                        if(socketChannel.isOpen()) socketChannel.close();
+                        if(socketChannel.isOpen()) {
+                            socketChannel.close();
+                        }
                         selector.close();
-                        socketChannel=null;
+                        socketChannel = null;
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }
@@ -212,7 +216,8 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
                     log.warn("Command not sent, retrying in 2 seconds");
                     Thread.sleep(2000);
                 } catch (InterruptedException e) {
-                    log.warn("exception "+ e.toString()+" thrown when sleeping 2 sec");
+                    log.warn("exception {} thrown when sleeping 2 sec", e.toString());
+                    Thread.currentThread().interrupt();
                 }
             }
         }
@@ -243,7 +248,9 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
 
     @Override
     public String getLinkStatus() {
-        if (disabled) return "DISABLED";
+        if (disabled) {
+            return "DISABLED";
+        }
         if(isSocketOpen()) {
             return "OK";
         } else {
@@ -282,7 +289,9 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
 
     @Override
     public void run() {
-        if(!isRunning() || disabled) return;
+        if(!isRunning() || disabled) {
+            return;
+        }
         if (!isSocketOpen()) {
             openSocket();
         }
@@ -292,16 +301,6 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     public void doStop() {
         disconnect();
         notifyStopped();
-    }
-
-    public static void main(String[] argv) throws ConfigurationException, InterruptedException {
-        TcpTcDataLink tc=new TcpTcDataLink("epss", "test", "epss");
-        PreparedCommand pc=new PreparedCommand(new byte[20]);
-        for(int i=0;i<10;i++) {
-            System.out.println("getFwLinkStatus: "+tc.getLinkStatus());
-            Thread.sleep(3000);
-        }
-        tc.sendTc(pc);
     }
 
     class TcAck implements Runnable {

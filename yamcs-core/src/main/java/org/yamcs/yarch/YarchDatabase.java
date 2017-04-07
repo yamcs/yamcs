@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.yarch.management.JMXService;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yamcs.yarch.streamsql.ExecutionContext;
@@ -180,7 +181,7 @@ public class YarchDatabase {
                             jmxService.registerTable(dbname, tblDef);
                         }
                         tables.put(tblDef.getName(), tblDef);
-                        log.debug("loaded table definition "+tblDef.getName()+" from "+f);
+                        log.debug("loaded table definition {} from {}", tblDef.getName(), f);
                     } catch (IOException e) {
                         log.warn("Got exception when reading the table definition from {}: ", f, e);
                         throw new YarchException("Got exception when reading the table definition from "+f+": ", e);
@@ -191,9 +192,10 @@ public class YarchDatabase {
                 }
             }
         } else {
-            log.info("Creating directory for db "+dbname+": "+dir.getAbsolutePath());
+            log.info("Creating directory for db {}: {}", dbname, dir.getAbsolutePath());
             if(!dir.mkdirs()) {
-                log.error("Cannot create directory: "+dir);
+                YamcsServer.getCrashHandler(dbname).handleCrash("Archive", "Cannot create directory: "+dir);
+                log.error("Cannot create directory: {}", dir);
             }
         }
     }
@@ -220,7 +222,7 @@ public class YarchDatabase {
             tblDef.setDataDir(getRoot());
         }
 
-        log.debug("loaded table definition "+tblName+" from "+fn);
+        log.debug("loaded table definition {}  from {}", tblName, fn);
         return tblDef;
     }
 
@@ -230,17 +232,17 @@ public class YarchDatabase {
      */
     void serializeTableDefinition(TableDefinition td) {
         String fn=getRoot()+"/"+td.getName()+".def";
-        try {
+        try (FileOutputStream fos=new FileOutputStream(fn)) {
             Yaml yaml = new Yaml(new TableDefinitionRepresenter());
-            FileOutputStream fos=new FileOutputStream(fn);
+           
             Writer w=new BufferedWriter(new OutputStreamWriter(fos));
             yaml.dump(td, w);
             w.flush();
             fos.getFD().sync();
             w.close();
         } catch (IOException e) {
-            log.error("Got exception when writing table definition to "+fn+": ", e);
-            e.printStackTrace();
+            YamcsServer.getCrashHandler(dbname).handleCrash("Archive", "Cannot write table definition to "+fn+" :"+e);
+            log.error("Got exception when writing table definition to {} ",fn, e);
         }
     }
 

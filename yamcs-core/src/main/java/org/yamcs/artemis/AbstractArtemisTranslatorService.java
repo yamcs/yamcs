@@ -13,7 +13,6 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
-import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.yamcs.api.YamcsApiException;
@@ -23,7 +22,7 @@ import org.yamcs.api.artemis.YamcsSession;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- * takes data from yarch streams and publishes it to hornetq address (reverse of ActiveMQTmProvider)
+ * takes data from yarch streams and publishes it to artemis address (reverse of ActiveMQTmProvider)
  * 
  *
  */
@@ -49,8 +48,8 @@ public class AbstractArtemisTranslatorService extends AbstractService {
                 yamcsSession = YamcsSession.newBuilder().build();
                 yClient = yamcsSession.newClientBuilder().setDataProducer(true).build();
                 return yClient;
-            } catch (Exception e) {
-                throw new RuntimeException("Cannot create a hornetq client", e);
+            } catch (YamcsApiException e) {
+                throw new ConfigurationException("Cannot create a artemis client", e);
             }
         }
     };
@@ -61,7 +60,9 @@ public class AbstractArtemisTranslatorService extends AbstractService {
 
         for(String sn: streamNames) {
             Stream s = db.getStream(sn);
-            if(s==null) throw new ConfigurationException("Cannot find stream '"+sn+"'");
+            if(s==null) {
+                throw new ConfigurationException("Cannot find stream '"+sn+"'");
+            }
             streams.add(s);
         }
         this.translator = translator;
@@ -93,9 +94,7 @@ public class AbstractArtemisTranslatorService extends AbstractService {
                         ClientMessage msg=translator.buildMessage(yamcsClient.get().getYamcsSession().createMessage(false), tuple);
                         msg.putIntProperty(UNIQUEID_HDR_NAME, UNIQUEID);
                         yamcsClient.get().sendData(hornetAddress, msg);
-                    } catch (IllegalArgumentException e) {
-                        log.warn(e.getMessage());
-                    } catch (YamcsApiException e) {
+                    } catch (IllegalArgumentException|YamcsApiException e) {
                         log.warn("Got exception when sending message:", e);
                     }
                 }

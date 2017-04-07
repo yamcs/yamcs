@@ -46,7 +46,7 @@ public class CommandHistoryRecorder extends AbstractService {
             
             Stream stream=ydb.getStream(YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME);
             if(stream==null) {
-                log.error("The stream "+YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME+" has not been found");
+                log.warn("The stream {} has not been found", YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME);
                 notifyFailed(new Exception("The stream "+YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME+" has not been found"));
                 return;
             }
@@ -54,7 +54,7 @@ public class CommandHistoryRecorder extends AbstractService {
             
             stream=ydb.getStream(YarchCommandHistoryAdapter.DUMP_CMDHIST_STREAM_NAME);
             if(stream==null) {
-                log.error("The stream "+YarchCommandHistoryAdapter.DUMP_CMDHIST_STREAM_NAME+" has not been found");
+                log.warn("The stream {} has not been found", YarchCommandHistoryAdapter.DUMP_CMDHIST_STREAM_NAME);
                 notifyFailed(new Exception("The stream "+YarchCommandHistoryAdapter.DUMP_CMDHIST_STREAM_NAME+" has not been found"));
                 return;
             }
@@ -62,7 +62,6 @@ public class CommandHistoryRecorder extends AbstractService {
             
             
         } catch (Exception e) {
-            //e.printStackTrace();
             log.error("Failed to setup the recording",e);
             notifyFailed(e);
             return;

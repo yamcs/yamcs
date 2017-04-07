@@ -42,7 +42,7 @@ public class DataEncodingDecoder {
         } else if(de instanceof BinaryDataEncoding) {
             extractRawBinary((BinaryDataEncoding) de, pv);
         } else {
-            log.error("DataEncoding "+de+" not implemented");
+            log.error("DataEncoding {} not implemented", de);
             throw new IllegalArgumentException("DataEncoding "+de+" not implemented");
         }
     }
@@ -163,7 +163,7 @@ public class DataEncodingDecoder {
 
     private void extractRawString(StringDataEncoding sde, ParameterValue pv) {
         if(pcontext.bitPosition%8!=0) {
-            log.warn("String Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition);
+            log.warn("String Parameter that does not start at byte boundary not supported. bitPosition: {}", pcontext.bitPosition);
         }
         int sizeInBytes=0;
         switch(sde.getSizeType()) {
@@ -197,7 +197,7 @@ public class DataEncodingDecoder {
 
     private void extractRawFloat(FloatDataEncoding de, ParameterValue pv) {
         if(pcontext.bitPosition%8!=0) {
-            log.warn("Float Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition); 
+            log.warn("Float Parameter that does not start at byte boundary not supported. bitPosition: {}", pcontext.bitPosition); 
         }
         pcontext.bb.order(de.getByteOrder());
         switch(de.getEncoding()) {
@@ -214,7 +214,7 @@ public class DataEncodingDecoder {
 
     private void extractRawIEEE754_1985(FloatDataEncoding de, ParameterValue pv) {
         if(pcontext.bitPosition%8!=0) {
-            log.warn("Float Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition); 
+            log.warn("Float Parameter that does not start at byte boundary not supported. bitPosition: {}", pcontext.bitPosition); 
         }
         pcontext.bb.order(de.getByteOrder());
         int byteOffset=pcontext.bitPosition/8;
@@ -239,7 +239,7 @@ public class DataEncodingDecoder {
 
     private void extractRawBinary(BinaryDataEncoding bde, ParameterValue pv) {
         if(pcontext.bitPosition%8!=0) {
-            log.warn("Binary Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition);
+            log.warn("Binary Parameter that does not start at byte boundary not supported. bitPosition: {}", pcontext.bitPosition);
         }
         byte[] b=new byte[bde.getSizeInBits()/8];
         pcontext.bb.position(pcontext.bitPosition/8);

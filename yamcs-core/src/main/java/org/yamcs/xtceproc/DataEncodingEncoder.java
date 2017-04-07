@@ -41,7 +41,7 @@ public class DataEncodingEncoder {
         } else if(de instanceof BinaryDataEncoding) {
             encodeRawBinary((BinaryDataEncoding) de, rawValue);
         } else {
-            log.error("DataEncoding "+de+" not implemented");
+            log.error("DataEncoding {} not implemented", de);
             throw new IllegalArgumentException("DataEncoding "+de+" not implemented");
         }
     }
@@ -231,7 +231,7 @@ public class DataEncodingEncoder {
 
     private void encodeRawFloat(FloatDataEncoding de, Value rawValue) {
         if(pcontext.bitPosition%8!=0) {
-            log.warn("Float Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition); 
+            log.warn("Float Parameter that does not start at byte boundary not supported. bitPosition: {}", pcontext.bitPosition); 
         }
 
         switch(de.getEncoding()) {
@@ -248,7 +248,7 @@ public class DataEncodingEncoder {
 
     private void encodeRawIEEE754_1985(FloatDataEncoding de, Value rawValue) {
         if(pcontext.bitPosition%8!=0) {
-            throw new IllegalArgumentException("Float Argument that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition);        	
+            throw new IllegalArgumentException("Float Argument that does not start at byte boundary not supported. bitPosition: "+pcontext.bitPosition);        	
         }
         double v;
         switch(rawValue.getType()) {

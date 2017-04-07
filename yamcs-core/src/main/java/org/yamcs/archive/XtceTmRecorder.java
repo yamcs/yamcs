@@ -228,7 +228,9 @@ public class XtceTmRecorder extends AbstractService {
                 Tuple t;
                 while(true) {
                     t=tmQueue.take();
-                    if(t==END_MARK) break;
+                    if(t==END_MARK) {
+                        break;
+                    }
                     saveTuple(t);
                 }
             } catch (InterruptedException e) {
@@ -238,7 +240,9 @@ public class XtceTmRecorder extends AbstractService {
         }
         //subscribe all containers that have useAsArchivePartition set
         private void subscribeContainers(SequenceContainer sc) {
-            if(sc==null) return;
+            if(sc==null) {
+                return;
+            }
             
             if(sc.useAsArchivePartition()) {
                 tmExtractor.startProviding(sc);
@@ -267,11 +271,13 @@ public class XtceTmRecorder extends AbstractService {
         @Override
         public void streamClosed(Stream istream) {
             //shouldn't happen
-            log.error("stream "+istream+" closed");
+            log.error("stream {} closed", istream);
         }
 
         public void quit() {
-            if(!async) return;
+            if(!async) {
+                return;
+            }
 
             try {
                 tmQueue.put(END_MARK);
@@ -321,6 +327,5 @@ public class XtceTmRecorder extends AbstractService {
                 log.error("got exception when saving packet ", e);
             }
         }
-
     }
 }

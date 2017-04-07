@@ -29,10 +29,10 @@ import org.yamcs.cli.Backup;
  *
  */
 public class RDBFactory implements Runnable {
-    HashMap<String, DbAndAccessTime> databases=new HashMap<String, DbAndAccessTime>();
+    HashMap<String, DbAndAccessTime> databases=new HashMap<>();
 
     static Logger log = LoggerFactory.getLogger(RDBFactory.class.getName());
-    static HashMap<String, RDBFactory> instances=new HashMap<String, RDBFactory>(); 
+    static HashMap<String, RDBFactory> instances=new HashMap<>(); 
     static int maxOpenDbs = 200;
     ScheduledThreadPoolExecutor scheduler;
     final String instance;
@@ -197,15 +197,16 @@ public class RDBFactory implements Runnable {
      */
     public synchronized YRDB getOpenRdb(String absolutePath) {
         DbAndAccessTime daat = databases.get(absolutePath);
-        if(daat==null) return null;
+        if(daat==null) {
+            return null;
+        }
         daat.lastAccess = System.currentTimeMillis();
         daat.refcount++;
         return daat.db;
     }
 
     public synchronized List<String> getOpenDbPaths() {
-        List<String> l = new ArrayList<String>(databases.keySet());
-        return l;
+        return new ArrayList<>(databases.keySet());
     }
 
     /**
@@ -276,9 +277,8 @@ public class RDBFactory implements Runnable {
     }
     
     public CompletableFuture<Void> restoreBackup(int backupId, String backupDir, String dbPath) {
-        CompletableFuture<Void> cf = new CompletableFuture<Void>();
-        scheduler.execute(()->{
-            
+        CompletableFuture<Void> cf = new CompletableFuture<>();
+        scheduler.execute(()-> {
             try {
                 BackupableDBOptions opt = new BackupableDBOptions(backupDir);
                 BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
@@ -301,10 +301,6 @@ public class RDBFactory implements Runnable {
 
         return cf;
     }
-
-   
-
-    
 }
 
 class DbAndAccessTime {

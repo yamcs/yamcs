@@ -33,7 +33,7 @@ public class ValueProcessor {
                 return pv.getEngValue().getUint32Value();
             }
         }
-        log.warn("Could not find the parameter in the list of extracted parameters, parameter:" + pref);
+        log.warn("Could not find the parameter in the list of extracted parameters, parameter: {}", pref);
         return 0;
     }
 

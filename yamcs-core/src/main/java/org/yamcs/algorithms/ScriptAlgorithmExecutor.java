@@ -102,7 +102,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             try {
                 compiledScript = ((Compilable)scriptEngine).compile(algorithmDef.getAlgorithmText());
             } catch (ScriptException e) {
-                log.warn("Error while compiling algorithm "+algorithmDef.getName()+": "+e.getMessage(), e);
+                log.warn("Error while compiling algorithm {}: {}", algorithmDef.getName(), e.getMessage(), e);
             }
         }
     }
@@ -205,11 +205,11 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             if(outputValue instanceof Boolean) {
                 pval.setRawValue((Boolean)outputValue);
             } else {
-                log.error("Could not set boolean value of parameter "+pval.getParameter().getName()+". Algorithm returned wrong type: "+outputValue.getClass());
+                log.error("Could not set boolean value of parameter {}. Algorithm returned wrong type: {}", pval.getParameter().getName(), outputValue.getClass());
             }
         } else {
-            log.error("DataEncoding "+de+" not implemented as a raw return type for algorithms");
-            throw new RuntimeException("DataEncoding "+de+" not implemented as a raw return type for algorithms");
+            log.error("DataEncoding {} not implemented as a raw return type for algorithms", de);
+            throw new IllegalArgumentException("DataEncoding "+de+" not implemented as a raw return type for algorithms");
         }
     }
 
@@ -241,7 +241,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         if(outputValue instanceof Number) {
             doubleValue=((Number)outputValue).doubleValue();
         } else {
-            log.warn("Unexpected script return type for "+pv.getParameter().getName()+". Was expecting a number, but got: "+outputValue.getClass());
+            log.warn("Unexpected script return type for {}. Was expecting a number, but got: {}", pv.getParameter().getName(), outputValue.getClass());
             return; // TODO make exc, and catch to send to ev
         }
         if(fde.getSizeInBits() <= 32) {

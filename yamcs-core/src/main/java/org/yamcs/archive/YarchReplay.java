@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.protobuf.Yamcs.EndAction;
@@ -111,7 +110,7 @@ public class YarchReplay implements StreamSubscriber {
         }
 
         currentRequest = newRequest;
-        handlers=new HashMap<ProtoDataType,ReplayHandler>();
+        handlers = new HashMap<>();
         
         if (currentRequest.hasParameterRequest()) {
             throw new YamcsException("The replay cannot handle directly parameters. Please create a replay processor for that");
@@ -176,11 +175,17 @@ public class YarchReplay implements StreamSubscriber {
         for(ReplayHandler rh:handlers.values()) {
             String selectCmd=rh.getSelectCmd();
             if(selectCmd!=null) {
-                if(first) first=false;
+                if(first) {
+                    first=false;
+                }
                 else sb.append(", ");
-                if(handlers.size()>1) sb.append("(");
+                if(handlers.size()>1) {
+                    sb.append("(");
+                }
                 sb.append(selectCmd);
-                if(handlers.size()>1) sb.append(")");
+                if(handlers.size()>1) {
+                    sb.append(")");
+                }
             }
         }
         
@@ -215,7 +220,7 @@ public class YarchReplay implements StreamSubscriber {
         }
 
         String query=sb.toString();
-        log.debug("running query "+query);
+        log.debug("running query {}", query);
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
         ydb.execute(query);
         Stream s=ydb.getStream(streamName);
@@ -236,7 +241,7 @@ public class YarchReplay implements StreamSubscriber {
             try {
                 YarchDatabase db=YarchDatabase.getInstance(instance);
                 if(db.getStream(streamName)!=null) {
-                    log.debug("running query: "+query);
+                    log.debug("running query: {}", query);
                     db.execute(query);
                 } else {
                     log.debug("Stream already closed");
@@ -260,7 +265,7 @@ public class YarchReplay implements StreamSubscriber {
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
         Stream s=ydb.getStream(streamName);
         if(!(s instanceof SpeedLimitStream)) {
-            throw new RuntimeException("Cannot change speed on a "+s.getClass()+" stream");
+            throw new IllegalStateException("Cannot change speed on a "+s.getClass()+" stream");
         } else {
             ((SpeedLimitStream)s).setSpeedSpec(toSpeedSpec(newSpeed));
         }
@@ -283,7 +288,7 @@ public class YarchReplay implements StreamSubscriber {
             ss=new SpeedSpec(SpeedSpec.Type.ORIGINAL, "gentime", speed.getParam());
             break;
         default:
-            throw new RuntimeException("Unkown speed type "+speed.getType());                
+            throw new IllegalArgumentException("Unkown speed type "+speed.getType());                
         }
         return ss;
     }

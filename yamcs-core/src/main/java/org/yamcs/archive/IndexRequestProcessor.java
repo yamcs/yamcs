@@ -44,7 +44,7 @@ class IndexRequestProcessor implements Runnable {
     boolean sendParams;
 
     IndexRequestProcessor(TmIndex tmIndexer, IndexRequest req, IndexRequestListener l) {
-        log.debug("new index request: "+req);
+        log.debug("new index request: {}", req);
         this.archiveInstance=req.getInstance();
         this.req=req;
         this.tmIndexer=tmIndexer;
@@ -83,20 +83,30 @@ class IndexRequestProcessor implements Runnable {
     public void run() {
         boolean ok=true;
         try {
-            if(tmpackets.size()>0) ok=sendHistogramData(XtceTmRecorder.TABLE_NAME, XtceTmRecorder.PNAME_COLUMN, 2000, tmpackets);
-            if(ok && sendParams) ok=sendHistogramData(ParameterRecorder.TABLE_NAME, ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GROUP, 20000, null); //use 20 sec for the PP to avoid millions of records
+            if(tmpackets.size()>0) {
+                ok = sendHistogramData(XtceTmRecorder.TABLE_NAME, XtceTmRecorder.PNAME_COLUMN, 2000, tmpackets);
+            }
+            if(ok && sendParams) {
+                ok = sendHistogramData(ParameterRecorder.TABLE_NAME, ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GROUP, 20000, null); //use 20 sec for the PP to avoid millions of records
+            }
             
-            if(req.getSendAllCmd()) ok=sendHistogramData(CommandHistoryRecorder.TABLE_NAME, TcUplinkerAdapter.CMDHIST_TUPLE_COL_CMDNAME, 2000, null);
-            if(req.getSendAllEvent()) ok=sendHistogramData(EventRecorder.TABLE_NAME, "source", 2000, null);
-            if(ok && req.getSendCompletenessIndex()) ok=sendCompletenessIndex();
+            if(req.getSendAllCmd()) {
+                ok = sendHistogramData(CommandHistoryRecorder.TABLE_NAME, TcUplinkerAdapter.CMDHIST_TUPLE_COL_CMDNAME, 2000, null);
+            }
+            if(req.getSendAllEvent()) {
+                ok = sendHistogramData(EventRecorder.TABLE_NAME, "source", 2000, null);
+            }
+            if(ok && req.getSendCompletenessIndex()) {
+                ok = sendCompletenessIndex();
+            }
         } catch (Exception e) {
-            log.error("got exception while sending the response", e);
-            ok=false;
+            log.warn("got exception while sending the response", e);
+            ok = false;
         } finally {
             try {
                 indexRequestListener.finished(ok);
             } catch (Exception e) {
-                log.error("Error when sending finished signal ", e);
+                log.warn("Error when sending finished signal ", e);
             }
         }
     }
@@ -192,16 +202,22 @@ class IndexRequestProcessor implements Runnable {
         while((ar=it.getNextRecord())!=null) {
             builder.addRecords(ar);
             if(builder.getRecordsCount()>=n) {
-                if(!sendData(builder)) return false;
+                if(!sendData(builder)) {
+                    return false;
+                }
                 builder=IndexResult.newBuilder().setInstance(archiveInstance).setType("completeness");
             }
         }
-        if(!sendData(builder)) return false;
+        if(!sendData(builder)) {
+            return false;
+        }
         return true;
     }
 
     boolean sendData(IndexResult.Builder builder) {
-        if(builder.getRecordsCount()==0) return true;
+        if(builder.getRecordsCount()==0) {
+            return true;
+        }
         log.debug("sending {} {} records", builder.getRecordsCount(), builder.getType());
         try {
             indexRequestListener.processData(builder.build());

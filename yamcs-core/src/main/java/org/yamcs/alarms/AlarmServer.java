@@ -179,7 +179,7 @@ public class AlarmServer extends AbstractService {
             throw new CouldNotAcknowledgeAlarmException("Parameter " + p.getQualifiedName() + " is not in state of alarm");
         }
         if(aa.id!=id) {
-            log.warn("Got acknowledge for parameter "+p+" but the id does not match");
+            log.warn("Got acknowledge for parameter {} but the id does not match", p);
             throw new CouldNotAcknowledgeAlarmException("Alarm Id " + id + " does not match parameter " + p.getQualifiedName());
         }
         
