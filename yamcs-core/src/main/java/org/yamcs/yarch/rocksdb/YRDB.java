@@ -14,7 +14,6 @@ import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
 import org.rocksdb.DBOptions;
-import org.rocksdb.FlushOptions;
 import org.rocksdb.Options;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
@@ -187,7 +186,9 @@ public class YRDB {
 
 
     public String getProperites() throws RocksDBException {
-        if(isClosed) throw new RuntimeException("Database is closed");
+        if(isClosed) {
+            throw new IllegalStateException("Database is closed");
+        }
         
         final List<String> mlprops = Arrays.asList("rocksdb.stats", "rocksdb.sstables", "rocksdb.cfstats", "rocksdb.dbstats", "rocksdb.levelstats"
                 , "rocksdb.aggregated-table-properties");
@@ -255,7 +256,9 @@ public class YRDB {
             byte[] k = new byte[size];
             while(true) {
                 it.seek(k);
-                if(!it.isValid()) break;
+                if(!it.isValid()) {
+                    break;
+                }
 
                 byte[]found = it.key();
                 if(found.length<size) {

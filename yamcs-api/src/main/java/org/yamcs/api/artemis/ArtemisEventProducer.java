@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
 import org.yamcs.api.AbstractEventProducer;
+import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
@@ -71,7 +72,7 @@ public class ArtemisEventProducer extends AbstractEventProducer implements Conne
             while(!queue.isEmpty()) {
                 yclient.sendData(address, ProtoDataType.EVENT, queue.poll());
             }
-        } catch (ActiveMQException e) {
+        } catch (YamcsApiException e) {
             e.printStackTrace();
         }
     }
@@ -106,7 +107,7 @@ public class ArtemisEventProducer extends AbstractEventProducer implements Conne
         if(yconnector.isConnected()) {
             try {
                 yclient.sendData(address, ProtoDataType.EVENT, event);
-            } catch (ActiveMQException e) {
+            } catch (YamcsApiException e) {
                 logger.error("Failed to send event ",e);
             }
         } else {

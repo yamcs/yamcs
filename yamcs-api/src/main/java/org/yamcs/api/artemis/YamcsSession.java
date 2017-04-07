@@ -107,7 +107,7 @@ public class YamcsSession {
                         username = upt.getUsername();
                         password = upt.getPasswordS();
                     } else {
-                        throw new RuntimeException("Authentication token of type "+authToken.getClass()+" not supported for the Aremis connections");
+                        throw new IllegalArgumentException("Authentication token of type "+authToken.getClass()+" not supported for the Aremis connections");
                     }
                 }
 
@@ -125,7 +125,6 @@ public class YamcsSession {
             throw new YamcsApiException( e.getMessage(), e );
         } catch(Exception e) {
             // Pass Exception's cause as our cause.
-            e.printStackTrace();
             // close everything
             try {
                 close();
@@ -189,14 +188,11 @@ public class YamcsSession {
 
     @Override
     protected void finalize() {
-        if(sessionFactory!=null) sessionFactory.close();
-        if(locator!=null) locator.close();
+        if(sessionFactory!=null) {
+            sessionFactory.close();
+        }
+        if(locator!=null) {
+            locator.close();
+        }
     }
-
-    public static void main(String[] argv) throws Exception {
-        @SuppressWarnings("unused")
-        YamcsSession ysession=YamcsSession.newBuilder().setConnectionParams("aces-test",5445).build();
-    }
-
-
 }

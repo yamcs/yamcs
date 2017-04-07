@@ -41,7 +41,7 @@ public class ArtemisIndexServer extends AbstractExecutionThreadService {
     
     volatile boolean quitting=false;
 
-    public ArtemisIndexServer(IndexServer indexServer, TagDb tagDb) throws ActiveMQException, YamcsApiException {
+    public ArtemisIndexServer(IndexServer indexServer, TagDb tagDb) throws YamcsApiException {
         this.indexServer = indexServer;
         this.tagDb = tagDb;
         this.instance = indexServer.getInstance();
@@ -60,7 +60,9 @@ public class ArtemisIndexServer extends AbstractExecutionThreadService {
             while(!quitting) {
                 ClientMessage msg = msgClient.rpcConsumer.receive();
                 if(msg==null) {
-                    if(quitting) break;
+                    if(quitting) {
+                        break;
+                    }
                     log.warn("null message received from the control queue");
                     continue;
                 }
@@ -87,8 +89,12 @@ public class ArtemisIndexServer extends AbstractExecutionThreadService {
                         }
                         TagRequest req=(TagRequest)decode(msg, TagRequest.newBuilder());
                         TimeInterval intv = new TimeInterval();
-                        if (req.hasStart()) intv.setStart(req.getStart());
-                        if (req.hasStop()) intv.setStop(req.getStop());
+                        if (req.hasStart()) {
+                            intv.setStart(req.getStart());
+                        }
+                        if (req.hasStop()) {
+                            intv.setStop(req.getStop());
+                        }
                         tagDb.getTags(intv, new TagReceiver() {
                             private TagResult.Builder trb=TagResult.newBuilder().setInstance(instance);
                             
@@ -98,7 +104,7 @@ public class ArtemisIndexServer extends AbstractExecutionThreadService {
                                 if(trb.getTagCount()>500) {
                                     try {
                                         msgClient.sendData(dataAddress, ProtoDataType.ARCHIVE_TAG, trb.build());
-                                    } catch (ActiveMQException e) {
+                                    } catch (YamcsApiException e) {
                                         throw new RuntimeException(e);
                                     }
                                     trb=TagResult.newBuilder().setInstance(instance);
@@ -108,10 +114,11 @@ public class ArtemisIndexServer extends AbstractExecutionThreadService {
                             @Override
                             public void finished() {
                                 try {
-                                    if(trb.getTagCount()>0)
+                                    if(trb.getTagCount()>0){
                                         msgClient.sendData(dataAddress, ProtoDataType.ARCHIVE_TAG, trb.build());
+                                    }
                                     msgClient.sendDataEnd(dataAddress);
-                                } catch (ActiveMQException e) {
+                                } catch (YamcsApiException e) {
                                     throw new RuntimeException(e);
                                 }
                             }
@@ -122,7 +129,9 @@ public class ArtemisIndexServer extends AbstractExecutionThreadService {
                         ArchiveTag newTag=utr.getNewTag();
                         
                         if(utr.hasOldTag()) { //update
-                            if(!oldTag.hasId() || oldTag.getId()<1) throw new YamcsException("Invalid or unexisting id");
+                            if(!oldTag.hasId() || oldTag.getId()<1) {
+                                throw new YamcsException("Invalid or unexisting id");
+                            }
                             long tagTime = (oldTag.hasStart() ? oldTag.getStart() : 0); 
                             newTag=tagDb.updateTag(tagTime, oldTag.getId(), newTag);
                         } else {
@@ -132,7 +141,9 @@ public class ArtemisIndexServer extends AbstractExecutionThreadService {
                     } else if("deleteTag".equalsIgnoreCase(request)){
                         DeleteTagRequest dtr=(DeleteTagRequest)decode(msg, DeleteTagRequest.newBuilder());
                         ArchiveTag tag=dtr.getTag();
-                        if(!tag.hasId() || tag.getId()<1) throw new YamcsException("Invalid or unexisting id");
+                        if(!tag.hasId() || tag.getId()<1) {
+                            throw new YamcsException("Invalid or unexisting id");
+                        }
                         long tagTime = (tag.hasStart() ? tag.getStart() : 0);
                         ArchiveTag dtag = tagDb.deleteTag(tagTime, tag.getId());
                         msgClient.sendReply(replyto, "OK", dtag);

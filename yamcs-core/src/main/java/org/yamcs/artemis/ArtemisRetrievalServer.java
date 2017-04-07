@@ -259,7 +259,7 @@ public class ArtemisRetrievalServer extends AbstractExecutionThreadService {
         public void newData(ProtoDataType type, MessageLite data) {
             try {
                 yclient.sendData(dataAddress, type, data);
-            } catch (ActiveMQException e) {
+            } catch (YamcsApiException e) {
                 log.warn("Got exception when sending data to client", e);
                 quit();
             }
@@ -273,7 +273,7 @@ public class ArtemisRetrievalServer extends AbstractExecutionThreadService {
                     quit();
                 }
                 
-            } catch (ActiveMQException e) {
+            } catch (YamcsApiException e) {
                 log.warn("Got exception when signaling state change", e);
                 quit();
             }

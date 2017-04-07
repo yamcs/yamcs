@@ -248,7 +248,7 @@ public class YarchReplay implements StreamSubscriber {
                 signalStateChange();
             }
         }
-        currentRequest=ReplayRequest.newBuilder(currentRequest).setStart(newReplayTime).build();
+        currentRequest = ReplayRequest.newBuilder(currentRequest).setStart(newReplayTime).build();
         for(ReplayHandler rh:handlers.values()) {
             rh.setRequest(currentRequest);
         }

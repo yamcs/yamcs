@@ -152,7 +152,7 @@ public class ArtemisProcessorManagement implements ManagementListener {
         Protocol.encode(msg, ci);
         try {
             yclient.sendData(YPROCESSOR_INFO_ADDRESS, msg);
-        } catch (ActiveMQException e) {
+        } catch (YamcsApiException e) {
             log.error("Exception when sending yproc event: ", e);
         }
     }
@@ -166,7 +166,7 @@ public class ArtemisProcessorManagement implements ManagementListener {
             msg.setExpiration(System.currentTimeMillis()+2000);
             Protocol.encode(msg, stats);
             yclient.sendData(YPROCESSOR_STATISTICS_ADDRESS, msg);
-        } catch (ActiveMQException e){
+        } catch (YamcsApiException e){
             log.error("got exception when sending the yproc processing statistics: ", e);
         }
     }
@@ -197,7 +197,7 @@ public class ArtemisProcessorManagement implements ManagementListener {
         Protocol.encode(msg, ci);
         try {
             yclient.sendData(YPROCESSOR_INFO_ADDRESS, msg);
-        } catch (ActiveMQException e) {
+        } catch (YamcsApiException e) {
             log.error("exception when sedning client event: ", e);
         }
     }

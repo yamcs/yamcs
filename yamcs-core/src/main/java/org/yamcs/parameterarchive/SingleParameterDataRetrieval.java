@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.parameterarchive.MultiParameterDataRetrieval.PartitionIteratorComparator;
 import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
-import org.yamcs.utils.DecodingException;
 
 public class SingleParameterDataRetrieval {
     final private SingleParameterValueRequest spvr;
@@ -26,10 +25,10 @@ public class SingleParameterDataRetrieval {
 
 
 
-    public void retrieve(Consumer<ParameterValueArray> consumer) throws RocksDBException, DecodingException {
+    public void retrieve(Consumer<ParameterValueArray> consumer) throws RocksDBException {
         long startPartition = Partition.getPartitionId(spvr.start);
         long stopPartition = Partition.getPartitionId(spvr.stop);
-        
+
         NavigableMap<Long,Partition> parts = parchive.getPartitions(startPartition, stopPartition);
         if(!spvr.ascending) {
             parts = parts.descendingMap();
@@ -47,7 +46,7 @@ public class SingleParameterDataRetrieval {
 
 
     //this is the easy case, one single parameter group -> no merging of segments necessary
-    private void retrieveValuesFromPartitionSingleGroup(Partition p, Consumer<ParameterValueArray> consumer) throws DecodingException, RocksDBException {
+    private void retrieveValuesFromPartitionSingleGroup(Partition p, Consumer<ParameterValueArray> consumer) throws RocksDBException {
         int parameterGroupId = spvr.parameterGroupIds[0];
         RocksIterator it = parchive.getIterator(p);
         boolean retrieveEng = spvr.retrieveRawValues |  spvr.retrieveEngineeringValues;
@@ -61,106 +60,118 @@ public class SingleParameterDataRetrieval {
                 if(timeSegment==null) {
                     String msg = "Cannot find a time segment for parameterGroupId="+parameterGroupId+" segmentStart = "+key.segmentStart+" despite having a value segment for parameterId: "+spvr.parameterId;
                     log.error(msg);
-                    throw new RuntimeException(msg);
+                    throw new DatabaseCorruptionException(msg);
                 }
-                
+
                 retriveValuesFromSegment(timeSegment, pit, spvr, consumer);
                 pit.next();
             }
         } finally {
-            it.dispose();
+            it.close();
         }
     }
 
     //multiple parameter groups -> merging of segments necessary
-    private void retrieveValuesFromPartitionMultiGroup(Partition p, Consumer<ParameterValueArray> consumer) throws DecodingException, RocksDBException {
+    private void retrieveValuesFromPartitionMultiGroup(Partition p, Consumer<ParameterValueArray> consumer) throws RocksDBException {
         RocksIterator[] its = new RocksIterator[spvr.parameterGroupIds.length];
-        PriorityQueue<PartitionIterator> queue = new PriorityQueue<PartitionIterator>(new PartitionIteratorComparator(spvr.ascending));
-        boolean retrieveEng = spvr.retrieveRawValues |  spvr.retrieveEngineeringValues;
-        
-        for(int i =0 ; i<spvr.parameterGroupIds.length; i++) {
-            its[i] = parchive.getIterator(p);
-            PartitionIterator pi = new PartitionIterator(its[i], spvr.parameterId,  spvr.parameterGroupIds[i], spvr.start, spvr.stop, spvr.ascending,
-                    retrieveEng, spvr.retrieveRawValues, spvr.retrieveParameterStatus);
-            
-            if(pi.isValid()) {
-                queue.add(pi);
+        try {
+
+            PriorityQueue<PartitionIterator> queue = new PriorityQueue<PartitionIterator>(new PartitionIteratorComparator(spvr.ascending));
+            boolean retrieveEng = spvr.retrieveRawValues |  spvr.retrieveEngineeringValues;
+
+            for(int i =0 ; i<spvr.parameterGroupIds.length; i++) {
+                its[i] = parchive.getIterator(p);
+                PartitionIterator pi = new PartitionIterator(its[i], spvr.parameterId,  spvr.parameterGroupIds[i], spvr.start, spvr.stop, spvr.ascending,
+                        retrieveEng, spvr.retrieveRawValues, spvr.retrieveParameterStatus);
+
+                if(pi.isValid()) {
+                    queue.add(pi);
+                }
+            }
+            SegmentMerger merger = new SegmentMerger(spvr, consumer);
+            while(!queue.isEmpty()) {
+                PartitionIterator pit = queue.poll();
+                SegmentKey key = pit.key();
+                SortedTimeSegment timeSegment = parchive.getTimeSegment(p, key.segmentStart, pit.getParameterGroupId());
+                if(timeSegment==null) {
+                    String msg = "Cannot find a time segment for parameterGroupId="+pit.getParameterGroupId()+" segmentStart = "+key.segmentStart+" despite having a value segment for parameterId: "+spvr.parameterId;
+                    log.error(msg);
+                    throw new DatabaseCorruptionException(msg);
+                }
+                retriveValuesFromSegment(timeSegment, pit, spvr, merger);
+                pit.next();
+                if(pit.isValid()) {
+                    queue.add(pit);
+                }
+            } 
+            merger.flush();
+        } finally {
+            for(RocksIterator it:its) {
+                it.close();
             }
         }
-        SegmentMerger merger = new SegmentMerger(spvr, consumer);
-        while(!queue.isEmpty()) {
-            PartitionIterator pit = queue.poll();
-            SegmentKey key = pit.key();
-            SortedTimeSegment timeSegment = parchive.getTimeSegment(p, key.segmentStart, pit.getParameterGroupId());
-            if(timeSegment==null) {
-                String msg = "Cannot find a time segment for parameterGroupId="+pit.getParameterGroupId()+" segmentStart = "+key.segmentStart+" despite having a value segment for parameterId: "+spvr.parameterId;
-                log.error(msg);
-                throw new RuntimeException(msg);
-            }
-            retriveValuesFromSegment(timeSegment, pit, spvr, merger);
-            pit.next();
-            if(pit.isValid()) {
-                queue.add(pit);
-            }
-        } 
-        merger.flush();
-
-        for(RocksIterator it:its) {
-            it.dispose();
-        }
-
     }
 
 
 
-    private void retriveValuesFromSegment(SortedTimeSegment timeSegment, PartitionIterator pit, SingleParameterValueRequest pvr,   Consumer<ParameterValueArray> consumer) throws DecodingException {
+    private void retriveValuesFromSegment(SortedTimeSegment timeSegment, PartitionIterator pit, SingleParameterValueRequest pvr, Consumer<ParameterValueArray> consumer) {
         BaseSegment engValueSegment = pit.engValue();
         BaseSegment rawValueSegment = pit.rawValue();
         ParameterStatusSegment parameterStatusSegment = pit.parameterStatus();
-        
+
         //retrieveRawValues will be set only when the rawValues do exist-> if it is null means they are equal with the engValues
         if((rawValueSegment == null) && (spvr.retrieveRawValues)) {
             rawValueSegment = engValueSegment;
         }
-        
+
         if((engValueSegment==null) && (rawValueSegment==null) && (parameterStatusSegment==null)) {
-          return;
+            return;
         }
-        
-        
+
+
         int posStart, posStop;
         if(pvr.ascending) {
             if(pvr.start < timeSegment.getSegmentStart()) {
                 posStart = 0;
             } else {                          
                 posStart = timeSegment.search(pvr.start);
-                if(posStart<0) posStart = -posStart-1;
+                if(posStart<0) {
+                    posStart = -posStart-1;
+                }
             }
 
             if(pvr.stop>timeSegment.getSegmentEnd()) {
                 posStop = timeSegment.size();
             } else {                          
                 posStop = timeSegment.search(pvr.stop);
-                if(posStop<0) posStop = -posStop-1;
+                if(posStop<0) {
+                    posStop = -posStop-1;
+                }
             }
         } else {
             if(pvr.stop > timeSegment.getSegmentEnd()) {
                 posStop = timeSegment.size()-1;
             } else {                          
                 posStop = timeSegment.search(pvr.stop);
-                if(posStop<0)  posStop = -posStop-2;
+                if(posStop<0) {
+                    posStop = -posStop-2;
+                }
             }
 
             if(pvr.start < timeSegment.getSegmentStart()) {
                 posStart = -1;
             } else {                          
                 posStart = timeSegment.search(pvr.start);
-                if(posStart<0) posStart = -posStart-2;
+                if(posStart<0) {
+                    posStart = -posStart-2;
+                }
             }
         }
-        
-        if(posStart>=posStop) return;
-        
+
+        if(posStart>=posStop) {
+            return;
+        }
+
         long[] timestamps = timeSegment.getRange(posStart, posStop, pvr.ascending);
         Object engValues = null;
         if(pvr.retrieveEngineeringValues) {
@@ -170,7 +181,7 @@ public class SingleParameterDataRetrieval {
         if(pvr.retrieveRawValues) {
             rawValues = rawValueSegment.getRange(posStart, posStop, pvr.ascending);
         }
-        
+
         ParameterStatus[] paramStatus = null;
         if(pvr.retrieveParameterStatus) {
             paramStatus = parameterStatusSegment.getRange(posStart, posStop, pvr.ascending);
@@ -223,7 +234,7 @@ public class SingleParameterDataRetrieval {
             if(spvr.retrieveParameterStatus) {
                 paramStatus = (ParameterStatus[]) merge(mergedPva.timestamps, pva.timestamps, mergedPva.paramStatus, pva.paramStatus, timestamps);
             }
-            
+
             mergedPva = new ParameterValueArray(mergedPva.parameterId, timestamps, engValues, rawValues, paramStatus);
         }
 
@@ -268,7 +279,7 @@ public class SingleParameterDataRetrieval {
 
             return mergedValues;
         }
-        
+
 
         /**
          * sends the last segment

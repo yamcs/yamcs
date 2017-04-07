@@ -35,9 +35,13 @@ public class StreamInitializer {
     final String yamcsInstance;
     YarchDatabase ydb;
   
-    public static void createStreams(String yamcsInstance) throws StreamSqlException, ParseException, IOException {
+    public static void createStreams(String yamcsInstance) throws IOException {
         StreamInitializer si = new StreamInitializer(yamcsInstance);
-        si.createStreams();
+        try {
+            si.createStreams();
+        } catch (StreamSqlException | ParseException e) {
+            throw new ConfigurationException("Cannot create streams", e);
+        }
     }
     
     
@@ -64,7 +68,7 @@ public class StreamInitializer {
             } else if(sce.type == StreamConfig.StandardStreamType.sqlFile) {
                 loadSqlFile(sce.name); //filename in fact
             } else {
-                throw new RuntimeException("Unknown stream type "+sce.type);
+                throw new IllegalArgumentException("Unknown stream type "+sce.type);
             }
         }
       

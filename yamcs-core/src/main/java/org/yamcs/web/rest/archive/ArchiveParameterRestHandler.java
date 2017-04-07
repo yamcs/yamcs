@@ -207,7 +207,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
 
                 }
             });
-        } catch (RocksDBException | DecodingException e) {
+        } catch (RocksDBException e) {
             log.warn("Received exception during parmaeter retrieval ", e);
             throw new InternalServerErrorException(e.getMessage());
         }

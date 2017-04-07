@@ -264,7 +264,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         } else {
             ScriptEngine scriptEngine = scriptEngineManager.getEngineByName(algorithm.getLanguage());
             if(scriptEngine==null) {
-                throw new RuntimeException("Cannot created a script engine for language '"+algorithm.getLanguage()+"'");
+                throw new IllegalArgumentException("Cannot created a script engine for language '"+algorithm.getLanguage()+"'");
             }
 
             scriptEngine.put("Yamcs", new AlgorithmUtils(yproc, xtcedb, algorithm.getName()));
@@ -324,7 +324,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         Matcher m = p.matcher(alg.getAlgorithmText());
         if(!m.matches()) {
             log.warn("Cannot parse algorithm text '{}'", alg.getAlgorithmText());
-            throw new RuntimeException("Cannot parse algorithm text '"+alg.getAlgorithmText()+"'");
+            throw new IllegalArgumentException("Cannot parse algorithm text '"+alg.getAlgorithmText()+"'");
         }
         String className = m.group(1);
         
@@ -341,9 +341,9 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             } else {
                 return YObjectLoader.loadObject(className, alg, execCtx, arg);
             }
-        } catch (ConfigurationException | IOException e) {
+        } catch (IOException e) {
             log.warn("Cannot load object for algorithm", e);
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException(e);
         }
     }
 

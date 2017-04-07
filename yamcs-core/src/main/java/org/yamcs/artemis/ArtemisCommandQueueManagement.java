@@ -153,7 +153,7 @@ public class ArtemisCommandQueueManagement implements CommandQueueListener {
         Protocol.encode(msg, cqe);
         try {
             yclient.sendData(CMDQUEUE_INFO_ADDRESS, msg);
-        } catch (ActiveMQException e) {
+        } catch (YamcsApiException e) {
             log.error("exception when updating command queue status", e);
         }
     }
@@ -170,7 +170,7 @@ public class ArtemisCommandQueueManagement implements CommandQueueListener {
         Protocol.encode(msg, cqi);
         try {
             yclient.sendData(CMDQUEUE_INFO_ADDRESS, msg);
-        } catch (ActiveMQException e) {
+        } catch (YamcsApiException e) {
             log.error("exception when updating command queue status", e);
         }
     }

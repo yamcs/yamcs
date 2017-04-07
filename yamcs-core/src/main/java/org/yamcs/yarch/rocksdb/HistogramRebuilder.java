@@ -40,13 +40,14 @@ public class HistogramRebuilder {
     public HistogramRebuilder(YarchDatabase ydb, String tableName) {
         this.ydb = ydb;
         tblDef = ydb.getTable(tableName);
-        if(tblDef==null) throw new IllegalArgumentException("No table named '"+tableName+"' in instance "+ydb.getName());
+        if(tblDef==null) {
+            throw new IllegalArgumentException("No table named '"+tableName+"' in instance "+ydb.getName());
+        }
 
-        if(!tblDef.hasHistogram()) throw new IllegalArgumentException("Table '"+tableName+" does not have histograms");
-
-
+        if(!tblDef.hasHistogram()) {
+            throw new IllegalArgumentException("Table '"+tableName+" does not have histograms");
+        }
     }
-
 
     public CompletableFuture<Void> rebuild(TimeInterval interval) throws YarchException {
         if(interval.hasStart()||interval.hasStop()) {
@@ -103,7 +104,9 @@ public class HistogramRebuilder {
     
 
     private String getWhereCondition(String timeColumnName,  TimeInterval interval) {
-        if(!interval.hasStart() && !interval.hasStop()) return "";
+        if(!interval.hasStart() && !interval.hasStop()){
+            return "";
+        }
         StringBuilder whereCnd = new StringBuilder();
         whereCnd.append(" where ");
         if(interval.hasStart()) {
@@ -136,7 +139,9 @@ public class HistogramRebuilder {
         
         while(partitionIterator.hasNext()) {
             RdbPartition p0 = (RdbPartition)partitionIterator.next().get(0);
-            if(interval.hasStop()&& p0.getStart()>interval.getStop()) break;
+            if(interval.hasStop()&& p0.getStart()>interval.getStop()) {
+                break;
+            }
             log.debug("Removing existing histogram for partition {}", p0.dir);
           
             long pstart = p0.getStart()/HistogramSegment.GROUPING_FACTOR;
@@ -162,7 +167,9 @@ public class HistogramRebuilder {
                     it.seek(HistogramSegment.key(kstart, empty));
                     while(it.isValid()) {
                         long k = HistogramSegment.getSstart(it.key());
-                        if(k>kend) break;
+                        if(k>kend) {
+                            break;
+                        }
                         writeBatch.remove(cfh, it.key());
                         it.next();
                     }

@@ -33,9 +33,9 @@ import org.yamcs.yarch.YarchException;
  * 
  */
 public class RdbStorageEngine implements StorageEngine {
-    Map<TableDefinition, RdbPartitionManager> partitionManagers = new HashMap<TableDefinition, RdbPartitionManager>();
+    Map<TableDefinition, RdbPartitionManager> partitionManagers = new HashMap<>();
     final YarchDatabase ydb;
-    static Map<YarchDatabase, RdbStorageEngine> instances = new HashMap<YarchDatabase, RdbStorageEngine>();
+    static Map<YarchDatabase, RdbStorageEngine> instances = new HashMap<>();
     static {
         RocksDB.loadLibrary();
     }
@@ -97,7 +97,7 @@ public class RdbStorageEngine implements StorageEngine {
                 } else if(tblDef.getPartitionStorage()==PartitionStorage.IN_KEY) {
                     return new InKeyTableWriter(ydb, tblDef, insertMode, partitionManagers.get(tblDef));
                 } else {
-                    throw new RuntimeException("Unknwon partition storage: "+tblDef.getPartitionStorage());
+                    throw new IllegalArgumentException("Unknwon partition storage: "+tblDef.getPartitionStorage());
                 }
             } else {
                 return new CfTableWriter(ydb, tblDef, insertMode, partitionManagers.get(tblDef));
@@ -184,7 +184,9 @@ public class RdbStorageEngine implements StorageEngine {
     }
     
     private void checkFormatVersion(TableDefinition tblDef) throws YarchException {
-        if(ignoreVersionIncompatibility) return;
+        if(ignoreVersionIncompatibility) {
+            return;
+        }
     
         if(tblDef.getFormatVersion()!=TableDefinition.CURRENT_FORMAT_VERSION) {
             throw new YarchException("Table "+ydb.getName()+"/"+tblDef.getName()+" format version is "+tblDef.getFormatVersion()

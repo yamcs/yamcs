@@ -11,6 +11,7 @@ import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsSession;
@@ -58,7 +59,7 @@ public class ProducerKillerTest {
                         yclient1.sendData(dataClient.dataAddress, msg);
                         i++;
                     }
-                } catch (ActiveMQException e) {
+                } catch (YamcsApiException e) {
                     e.printStackTrace();
                 }
             }

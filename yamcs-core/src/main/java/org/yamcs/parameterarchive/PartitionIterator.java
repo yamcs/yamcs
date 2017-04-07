@@ -139,19 +139,37 @@ public class PartitionIterator {
         return currentKey;
     }
 
-    BaseSegment engValue() throws DecodingException {
-        if(currentEngValueSegment ==null) return null;
-        return (BaseSegment) segmentEncoder.decode(currentEngValueSegment, currentKey.segmentStart);
+    BaseSegment engValue() {
+        if(currentEngValueSegment ==null) {
+            return null;
+        }
+        try {
+            return (BaseSegment) segmentEncoder.decode(currentEngValueSegment, currentKey.segmentStart);
+        } catch (DecodingException e) {
+            throw new DatabaseCorruptionException(e);
+        }
     } 
 
-    BaseSegment rawValue() throws DecodingException {
-        if(currentRawValueSegment ==null) return null;
-        return (BaseSegment) segmentEncoder.decode(currentRawValueSegment, currentKey.segmentStart);
+    BaseSegment rawValue() {
+        if(currentRawValueSegment ==null) {
+            return null;
+        }
+        try {
+            return (BaseSegment) segmentEncoder.decode(currentRawValueSegment, currentKey.segmentStart);
+        } catch (DecodingException e) {
+            throw new DatabaseCorruptionException(e);
+        }
     }
 
-    ParameterStatusSegment parameterStatus() throws DecodingException {
-        if(currentStatusSegment==null) return null;
-        return (ParameterStatusSegment) segmentEncoder.decode(currentStatusSegment, currentKey.segmentStart);
+    ParameterStatusSegment parameterStatus() {
+        if(currentStatusSegment==null) {
+            return null;
+        }
+        try {
+            return (ParameterStatusSegment) segmentEncoder.decode(currentStatusSegment, currentKey.segmentStart);
+        } catch (DecodingException e) {
+            throw new DatabaseCorruptionException(e);
+        }
     }
 
     boolean isValid() {

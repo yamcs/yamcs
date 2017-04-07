@@ -73,10 +73,15 @@ public class ValueUtility {
     }
     
     public static Value getColumnValue(ColumnDefinition cd, Object v) {
-        switch (cd.getType().val) { //TODO all types
+        switch (cd.getType().val) {
         case INT:
             return getSint32Value((Integer)v);
+        case SHORT:
+            return getUint32Value((Short)v);
+        case BYTE:
+            return getUint32Value((Byte)v);
         case STRING:
+        case ENUM:
             return getStringValue((String)v);
         case TIMESTAMP:
             return getTimestampValue((Long)v);
@@ -84,8 +89,14 @@ public class ValueUtility {
             return getBinaryValue((byte[])v);
         case BOOLEAN:
             return getBooleanValue((Boolean)v);
+        case DOUBLE:
+            return getDoubleValue((Double)v);
+        case LIST:
+        case PROTOBUF:
+        case TUPLE:
+        default:
+            throw new IllegalArgumentException("cannot convert type to value "+cd.getType());
         }
-        throw new RuntimeException("cannot convert type to value "+cd.getType());
     }
 
 
@@ -110,9 +121,11 @@ public class ValueUtility {
         case SINT64:
             return v.getSint64Value();
         case UINT64:
-            return v.getSint64Value();
+            return v.getUint64Value();
+        default: 
+            throw new IllegalArgumentException("cannot values of type "+v.getType());
         }
-        throw new RuntimeException("cannot values of type "+v.getType());
+        
     }
 
     public static Object getYarchValue(org.yamcs.protobuf.Yamcs.Value v) {
@@ -136,9 +149,11 @@ public class ValueUtility {
         case SINT64:
             return v.getSint64Value();
         case UINT64:
-            return v.getSint64Value();
+            return v.getUint64Value();
+        default: 
+            throw new IllegalArgumentException("cannot values of type "+v.getType());
         }
-        throw new RuntimeException("cannot values of type "+v.getType());
+        
     }
 
     public static DataType getYarchType(Type type) {
@@ -158,7 +173,7 @@ public class ValueUtility {
         case TIMESTAMP:
             return DataType.TIMESTAMP;
         }
-        throw new RuntimeException("cannot values of type "+type);
+        throw new IllegalArgumentException("cannot values of type "+type);
     }
     
     public static boolean equals(Value a, Value b) {
@@ -191,7 +206,7 @@ public class ValueUtility {
         case UINT64:
             return a.getUint64Value() == b.getUint64Value();
         default:
-            throw new IllegalStateException("Unexpected type " + a.getType());
+            throw new IllegalArgumentException("Unexpected type " + a.getType());
         }
     }
 
@@ -226,7 +241,7 @@ public class ValueUtility {
         case UINT64:
             return Long.compareUnsigned(a.getUint64Value(), b.getUint64Value());
         default:
-            throw new IllegalStateException("Unexpected type " + a.getType());
+            throw new IllegalArgumentException("Unexpected type " + a.getType());
         }
     }
 
@@ -255,7 +270,7 @@ public class ValueUtility {
         case UINT64:
             return b.setUint64Value(v.getUint64Value()).build();
         default:
-            throw new IllegalStateException("Unexpected type " + v.getType());
+            throw new IllegalArgumentException("Unexpected type " + v.getType());
         }
     }
 
@@ -282,7 +297,7 @@ public class ValueUtility {
         case UINT64:
             return new UInt64Value(v.getUint64Value());
         default:
-            throw new IllegalStateException("Unexpected type " + v.getType());
+            throw new IllegalArgumentException("Unexpected type " + v.getType());
         }
     }
 

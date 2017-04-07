@@ -17,7 +17,6 @@ import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.archive.ReplayServer;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
@@ -33,8 +32,6 @@ import org.yamcs.xtce.Header;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.management.JMXService;
-import org.yamcs.yarch.streamsql.ParseException;
-import org.yamcs.yarch.streamsql.StreamSqlException;
 
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.Service.State;
@@ -77,7 +74,7 @@ public class YamcsServer {
     static CrashHandler globalCrashHandler;
     private CrashHandler crashHandler;
 
-    YamcsServer(String instance) throws IOException, StreamSqlException, ParseException, YamcsApiException {
+    YamcsServer(String instance) throws IOException {
         this.instance = instance;
         instances.put(instance, this);
 
@@ -265,7 +262,7 @@ public class YamcsServer {
         startServices(serviceList);
     }
 
-    public static void createYamcsInstance(String name) throws IOException, StreamSqlException, ParseException, YamcsApiException {
+    public static void createYamcsInstance(String name) throws IOException {
         staticlog.info("Loading instance '" + name + "'");
         if (instances.containsKey(name)) {
             throw new ConfigurationException(String.format("There already exists an instance named '%s'", name));

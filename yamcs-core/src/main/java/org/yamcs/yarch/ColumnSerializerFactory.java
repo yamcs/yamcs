@@ -3,20 +3,22 @@ package org.yamcs.yarch;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.yarch.DataType._type;
+import org.yamcs.yarch.streamsql.NotSupportedException;
 
 import com.google.common.collect.BiMap;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
 import com.google.protobuf.MessageLite.Builder;
 
@@ -25,25 +27,21 @@ public class ColumnSerializerFactory {
     static int maxBinaryLength=1048576;
     static Logger log=LoggerFactory.getLogger(ColumnSerializer.class.getName());
     
-    static BooleanColumnSerializer BOOLEAN_CS = new BooleanColumnSerializer();
-    static ByteColumnSerializer BYTE_CS = new ByteColumnSerializer();
-    static ShortColumnSerializer SHORT_CS = new ShortColumnSerializer();
-    static IntegerColumnSerializer INT_CS = new IntegerColumnSerializer();
-    static LongColumnSerializer LONG_CS = new LongColumnSerializer();
-    static DoubleColumnSerializer DOUBLE_CS = new DoubleColumnSerializer();
-    static StringColumnSerializer STRING_CS = new StringColumnSerializer();
-    static BinaryColumnSerializer BINARY_CS = new BinaryColumnSerializer();
+    static final BooleanColumnSerializer BOOLEAN_CS = new BooleanColumnSerializer();
+    static final ByteColumnSerializer BYTE_CS = new ByteColumnSerializer();
+    static final ShortColumnSerializer SHORT_CS = new ShortColumnSerializer();
+    static final IntegerColumnSerializer INT_CS = new IntegerColumnSerializer();
+    static final LongColumnSerializer LONG_CS = new LongColumnSerializer();
+    static final DoubleColumnSerializer DOUBLE_CS = new DoubleColumnSerializer();
+    static final StringColumnSerializer STRING_CS = new StringColumnSerializer();
+    static final BinaryColumnSerializer BINARY_CS = new BinaryColumnSerializer();
 
     static Map<String, ProtobufColumnSerializer> protoSerialziers = new HashMap<>(); 
     
     static {
-        try {
-            config=YConfiguration.getConfiguration("yamcs");
-            if(config.containsKey("maxBinaryLength")) {
-                maxBinaryLength=config.getInt("maxBinaryLength");
-            }
-        } catch (ConfigurationException e) {
-            throw new RuntimeException(e);
+        config=YConfiguration.getConfiguration("yamcs");
+        if(config.containsKey("maxBinaryLength")) {
+            maxBinaryLength=config.getInt("maxBinaryLength");
         }
     } 
 
@@ -85,7 +83,7 @@ public class ColumnSerializerFactory {
         case LIST:
         case TUPLE:
             //TODO
-            throw new RuntimeException("List and Tuple not implemented");
+            throw new UnsupportedOperationException("List and Tuple not implemented");
         }
         throw new IllegalArgumentException("' "+type+" is not a basic type");
     }
@@ -95,7 +93,9 @@ public class ColumnSerializerFactory {
        
         synchronized(protoSerialziers) {
             ProtobufColumnSerializer pcs = protoSerialziers.get(className);
-            if(pcs!=null) return pcs;
+            if(pcs!=null) {
+                return pcs;
+            }
             Class<?> c;
             try {
                 c = Class.forName(className);
@@ -104,9 +104,9 @@ public class ColumnSerializerFactory {
                 protoSerialziers.put(className, pcs);
                 return pcs;
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Cannot find class '"+className+"' required to deserialize column '"+cd.getName()+"'");
+                throw new IllegalArgumentException("Cannot find class '"+className+"' required to deserialize column '"+cd.getName()+"'", e);
             } catch (NoSuchMethodException e) {
-                throw new RuntimeException("Class '"+className+"' required to deserialize column '"+cd.getName()+"' does not have a method newBuilder");
+                throw new IllegalArgumentException("Class '"+className+"' required to deserialize column '"+cd.getName()+"' does not have a method newBuilder", e);
             }
         }
     }
@@ -198,7 +198,7 @@ public class ColumnSerializerFactory {
 
         @Override
         public Short fromByteArray(byte[] b) throws IOException {
-            return (short)((b[0]<<8) + b[1]);
+            return (short)(((b[0]&0xFF)<<8) + (b[1]&0xFF));
         }
     }
 
@@ -331,13 +331,13 @@ public class ColumnSerializerFactory {
 
        
 
-        private MessageLite readProtobufMessage(byte[] bp) {
+        private MessageLite readProtobufMessage(byte[] bp) throws InvalidProtocolBufferException {
             try {
-                Builder b=(Builder) newBuilderMethod.invoke(null);
+                Builder b = (Builder) newBuilderMethod.invoke(null);
                 b.mergeFrom(bp);
                 return b.build();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new IllegalStateException(e);
             }
         }
     }

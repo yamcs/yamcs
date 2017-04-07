@@ -69,7 +69,7 @@ public class StreamAdapter implements StreamSubscriber, MessageHandler {
             yClient.sendData(hornetAddress, msg);
         } catch (IllegalArgumentException e) {
             log.warn(e.getMessage());
-        } catch (ActiveMQException e) {
+        } catch (YamcsApiException e) {
             log.warn("Got exception when sending message:", e);
         }
     }

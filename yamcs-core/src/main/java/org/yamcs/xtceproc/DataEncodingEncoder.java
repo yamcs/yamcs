@@ -42,7 +42,7 @@ public class DataEncodingEncoder {
             encodeRawBinary((BinaryDataEncoding) de, rawValue);
         } else {
             log.error("DataEncoding "+de+" not implemented");
-            throw new RuntimeException("DataEncoding "+de+" not implemented");
+            throw new IllegalArgumentException("DataEncoding "+de+" not implemented");
         }
     }
 
@@ -230,7 +230,9 @@ public class DataEncodingEncoder {
     }
 
     private void encodeRawFloat(FloatDataEncoding de, Value rawValue) {
-        if(pcontext.bitPosition%8!=0) log.warn("Float Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition); 
+        if(pcontext.bitPosition%8!=0) {
+            log.warn("Float Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition); 
+        }
 
         switch(de.getEncoding()) {
         case IEEE754_1985:
@@ -240,7 +242,7 @@ public class DataEncodingEncoder {
             encodeRaw(de.getStringDataEncoding(), rawValue);
             break;
         default:
-            throw new RuntimeException("Float Encoding "+de.getEncoding()+" not implemented");
+            throw new IllegalArgumentException("Float Encoding "+de.getEncoding()+" not implemented");
         }
     }
 
@@ -296,7 +298,9 @@ public class DataEncodingEncoder {
             throw new IllegalArgumentException("Cannot encode as binary data values of type "+rawValue.getType());
         }
         int sizeInBytes = bde.getSizeInBits()/8;
-        if(sizeInBytes>v.length) sizeInBytes = v.length;
+        if(sizeInBytes>v.length) {
+            sizeInBytes = v.length;
+        }
         pcontext.bb.position(pcontext.bitPosition/8);
         pcontext.bb.put(v, 0, sizeInBytes);
         pcontext.bitPosition+=bde.getSizeInBits();

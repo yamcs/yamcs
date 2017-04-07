@@ -46,8 +46,6 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         ParameterGroupIdDb pgdb = parameterArchive.getParameterGroupIdDb();
         pdb.print(System.out);
         pgdb.print(System.out);
-
-        parameterArchive.printKeys(System.out);
     }
 
     @Test

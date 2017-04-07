@@ -71,7 +71,7 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
 
     }
 
-    private void processRequest(ClientMessage msg) throws ActiveMQException {
+    private void processRequest(ClientMessage msg) throws YamcsApiException {
         SimpleString replyto=msg.getSimpleStringProperty(REPLYTO_HEADER_NAME);
 
         if(replyto==null) {
@@ -102,8 +102,7 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
     }
 
 
-    private void subscribe( SimpleString replyto, SimpleString dataAddress, ClientMessage msg)
-            throws ActiveMQException {
+    private void subscribe( SimpleString replyto, SimpleString dataAddress, ClientMessage msg) throws YamcsApiException {
         List<NamedObjectId> paraList=null;
         try {
             paraList= ((NamedObjectList)Protocol.decode(msg, NamedObjectList.newBuilder())).getListList();
@@ -136,7 +135,7 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
     }
 
 
-    private void unsubscribe( SimpleString replyto, SimpleString dataAddress, ClientMessage msg) throws ActiveMQException {
+    private void unsubscribe( SimpleString replyto, SimpleString dataAddress, ClientMessage msg) throws YamcsApiException {
         List<NamedObjectId> paraList=null;
         try {
             paraList= ((NamedObjectList)Protocol.decode(msg, NamedObjectList.newBuilder())).getListList();
@@ -163,7 +162,7 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
     }
 
 
-    private void subscribeAll(SimpleString replyto, SimpleString dataAddress, ClientMessage msg) throws ActiveMQException {
+    private void subscribeAll(SimpleString replyto, SimpleString dataAddress, ClientMessage msg) throws YamcsApiException {
 
         String namespace=null;
         try {
@@ -188,7 +187,7 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
         }
     }
 
-    private void unsubscribeAll(SimpleString replyto, SimpleString dataAddress, ClientMessage msg) throws ActiveMQException {
+    private void unsubscribeAll(SimpleString replyto, SimpleString dataAddress, ClientMessage msg) throws YamcsApiException {
         if(!subscriptions.containsValue(dataAddress)) {
             yclient.sendErrorReply(replyto, "not subscribed for this address");
             return;
@@ -216,7 +215,7 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
         } 
         try {
             yclient.sendData(addr, ProtoDataType.PARAMETER, pd.build());
-        } catch (ActiveMQException e) {
+        } catch (YamcsApiException e) {
             subscriptions.remove(addr);
             log.warn("got error when sending parameter updates, removing any subscription of "+addr,e);
         }

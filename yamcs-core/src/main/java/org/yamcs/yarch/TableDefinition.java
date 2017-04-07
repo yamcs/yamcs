@@ -102,7 +102,9 @@ public class TableDefinition {
         this.name=name;
         for(String s:primaryKey) {
             ColumnDefinition c=tdef.getColumn(s);
-            if(c==null) throw new ColumnNotFoundException(s);
+            if(c==null) {
+                throw new ColumnNotFoundException(s);
+            }
             keyDef.addColumn(c);
             keySerializers.add(ColumnSerializerFactory.getColumnSerializer(this, c));
         }
@@ -166,8 +168,12 @@ public class TableDefinition {
             if(cd==null) {
                 throw new GenericStreamSqlException("time partition specified on a column not part of the primary key: '"+pspec.timeColumn+"'");
             }
-            if(cd.getType()!=DataType.TIMESTAMP) throw new GenericStreamSqlException("time partition specified on a column of type "+cd.getType());
-            if(!keyDef.getColumn(0).getName().equals(pspec.timeColumn)) throw new GenericStreamSqlException("time partition supported only on the first column of the primary key");
+            if(cd.getType()!=DataType.TIMESTAMP) {
+                throw new GenericStreamSqlException("time partition specified on a column of type "+cd.getType());
+            }
+            if(!keyDef.getColumn(0).getName().equals(pspec.timeColumn)){
+                throw new GenericStreamSqlException("time partition supported only on the first column of the primary key");
+            }
         }
 
         if((pspec.type==PartitioningSpec._type.VALUE) || 
@@ -271,11 +277,13 @@ public class TableDefinition {
             ColumnSerializer cs = keySerializers.get(i);
             String colName = keyDef.getColumn(i).getName();
             Object v = t.getColumn(colName);
-            if(v==null) throw new IllegalArgumentException("Tuple does not have mandatory column '"+colName+"'");
+            if(v==null){
+                throw new IllegalArgumentException("Tuple does not have mandatory column '"+colName+"'");
+            }
             try {
                 cs.serialize(bado,v);
             } catch (IOException e) {
-                throw new RuntimeException("Cannot serialize column "+cs,e);
+                throw new IllegalArgumentException("Cannot serialize column "+cs,e);
             }
         }
         return bado.toByteArray();
@@ -358,10 +366,14 @@ public class TableDefinition {
        
        log.debug("Adding enum value "+v+" for "+name+"."+columnName);
        serializedEmumValues = new HashMap<String, BiMap<String, Short>>();
-       if(enumValues!=null) serializedEmumValues.putAll(enumValues);
+       if(enumValues!=null) {
+           serializedEmumValues.putAll(enumValues);
+       }
        b = serializedEmumValues.remove(columnName);
        BiMap<String, Short> b2= HashBiMap.create();
-       if(b!=null) b2.putAll(b);
+       if(b!=null) {
+           b2.putAll(b);
+       }
        b2.put(v, (short)b2.size());
        serializedEmumValues.put(columnName, b2);
        ydb.serializeTableDefinition(this);
@@ -402,7 +414,9 @@ public class TableDefinition {
         TupleDefinition tdef=t.getDefinition();
 
         for(ColumnDefinition cd:tdef.getColumnDefinitions()) {
-            if(keyDef.hasColumn(cd.getName()))continue;
+            if(keyDef.hasColumn(cd.getName())){
+                continue;
+            }
             if(!valueDef.hasColumn(cd.getName())) {
                 addValueColumn(cd);
                 return serializeValue(t);
@@ -434,7 +448,9 @@ public class TableDefinition {
             //deserialize the key
             for(ColumnSerializer cd:keySerializers) {
                 Object o = cd.deserialize(badi);
-                if(o==null) return null;
+                if(o==null) {
+                    return null;
+                }
                 cols.add(o);
             }
 
@@ -442,19 +458,25 @@ public class TableDefinition {
             badi=ByteStreams.newDataInput(v);
             while(true) {
                 int cidx = badi.readInt(); //column index
-                if(cidx==-1) break;
-                if(cidx>=valueDef.size())throw new RuntimeException("Reference to index "+cidx+" found but the table definition does not have this column"); 
+                if(cidx==-1) {
+                    break;
+                }
+                if(cidx>=valueDef.size()){
+                    throw new IllegalArgumentException("Reference to index "+cidx+" found but the table definition does not have this column"); 
+                }
 
                 ColumnDefinition cd=valueDef.getColumn(cidx);
                 ColumnSerializer cs=valueSerializers.get(cidx);
              
                 Object o=cs.deserialize(badi);
-                if(o==null) return null;
+                if(o==null) {
+                    return null;
+                }
                 tdef.addColumn(cd);
                 cols.add(o);
             }
         } catch (IOException e) {
-            throw new RuntimeException("cannot deserialize ("
+            throw new IllegalArgumentException("cannot deserialize ("
                         +StringConverter.byteBufferToHexString(ByteBuffer.wrap(k))+ ","
                         +StringConverter.byteBufferToHexString(ByteBuffer.wrap(v))
                         +")", e);
@@ -477,8 +499,12 @@ public class TableDefinition {
     }
 
     public ColumnDefinition getColumnDefinition(String cname) {
-        if(keyDef.hasColumn(cname)) return keyDef.getColumn(cname);
-        if(valueDef.hasColumn(cname)) return valueDef.getColumn(cname);
+        if(keyDef.hasColumn(cname)) {
+            return keyDef.getColumn(cname);
+        }
+        if(valueDef.hasColumn(cname)) {
+            return valueDef.getColumn(cname);
+        }
         return null;
     }
 
@@ -512,7 +538,9 @@ public class TableDefinition {
     }
     
     public BiMap<String, Short> getEnumValues(String columnName) {
-        if(enumValues==null)return null;
+        if(enumValues==null){
+            return null;
+        }
         return enumValues.get(columnName);
     }
     
@@ -542,7 +570,7 @@ public class TableDefinition {
             int idx=valueDef.getColumnIndex(columnName);
             return valueSerializers.get(idx);
         } else { 
-            throw new RuntimeException("Cannot find a serializer for invalid column "+columnName);
+            throw new IllegalArgumentException("Cannot find a serializer for invalid column "+columnName);
         }
     }
 

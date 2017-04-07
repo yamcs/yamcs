@@ -14,11 +14,9 @@ import org.apache.activemq.artemis.api.core.Message;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.MessageHandler;
-import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.YamcsApiException;
@@ -29,7 +27,6 @@ import org.yamcs.management.LinkListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest;
-import org.yamcs.security.BasicArtemisAuthModule;
 import org.yamcs.security.HqClientMessageToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.utils.ActiveMQBufferOutputStream;
@@ -61,7 +58,7 @@ public class ArtemisManagement extends AbstractService implements LinkListener {
     static YamcsSession yamcsSession;
     static YamcsClient ctrlAddressClient;
 
-    public static void setupYamcsServerControl() throws Exception {
+    public static void setupYamcsServerControl() throws YamcsApiException, ActiveMQException {
         //create already the queue here to reduce (but not eliminate :( ) the chance that somebody connects to it before yamcs is started fully
         yamcsSession = YamcsSession.newBuilder().build();
         ctrlAddressClient = yamcsSession.newClientBuilder().setRpcAddress(Protocol.YAMCS_SERVER_CONTROL_ADDRESS).setDataProducer(true).build();
@@ -108,7 +105,7 @@ public class ArtemisManagement extends AbstractService implements LinkListener {
         });
     }
 
-    private static void sendMissionDatabase(MissionDatabaseRequest mdr, SimpleString replyTo, SimpleString dataAddress) throws ActiveMQException {
+    private static void sendMissionDatabase(MissionDatabaseRequest mdr, SimpleString replyTo, SimpleString dataAddress) throws YamcsApiException {
         final XtceDb xtcedb;
         try {
             if(mdr.hasInstance()) {
@@ -184,7 +181,7 @@ public class ArtemisManagement extends AbstractService implements LinkListener {
             msg.putStringProperty(Message.HDR_LAST_VALUE_NAME, new SimpleString(lvn));
             Protocol.encode(msg, linkInfo);
             yclient.sendData(LINK_INFO_ADDRESS, msg);
-        }   catch (ActiveMQException e) {
+        }   catch (YamcsApiException e) {
             log.error("Exception while updating link status: ", e);
         }
     }

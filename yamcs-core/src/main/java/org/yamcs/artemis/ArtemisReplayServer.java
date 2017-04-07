@@ -278,7 +278,7 @@ public class ArtemisReplayServer extends AbstractExecutionThreadService {
                 log.warn("sending error reply ", e);
                 try {
                     yclient.sendErrorReply(replyto, e.getMessage());
-                } catch (ActiveMQException e1) {
+                } catch (YamcsApiException e1) {
                    log.error("Error when sending error reply", e1);
                 }
 
@@ -333,7 +333,7 @@ public class ArtemisReplayServer extends AbstractExecutionThreadService {
             try { 
                 ReplayStatus.Builder rsb=ReplayStatus.newBuilder().setState(yproc.getReplayState());
                 yclient.sendData(dataAddress, ProtoDataType.STATE_CHANGE, rsb.build());                
-            } catch (ActiveMQException e) {
+            } catch (YamcsApiException e) {
                 log.warn("Got exception when signaling state change", e);
                 quit();
             }
@@ -350,7 +350,7 @@ public class ArtemisReplayServer extends AbstractExecutionThreadService {
             }
             try {
                 yclient.sendData(dataAddress, ProtoDataType.PARAMETER, pd.build());
-            } catch (ActiveMQException e) {
+            } catch (YamcsApiException e) {
                 log.warn("Got exception when sending data to client", e);
                 quit();
             }
@@ -366,7 +366,7 @@ public class ArtemisReplayServer extends AbstractExecutionThreadService {
                     .setPacket(ByteString.copyFrom(cer.getContainerContent())).build();
             try {
                 yclient.sendData(dataAddress, ProtoDataType.TM_PACKET, pd);
-            } catch (ActiveMQException e) {
+            } catch (YamcsApiException e) {
                 log.warn("Got exception when sending data to client", e);
                 quit();
             }
@@ -381,7 +381,7 @@ public class ArtemisReplayServer extends AbstractExecutionThreadService {
             CommandHistoryEntry che = pc.toCommandHistoryEntry();
             try {
                 yclient.sendData(dataAddress, ProtoDataType.CMD_HISTORY, che);
-            } catch (ActiveMQException e) {
+            } catch (YamcsApiException e) {
                 log.warn("Got exception when sending cmd history data to client", e);
                 quit();
             }
@@ -397,7 +397,7 @@ public class ArtemisReplayServer extends AbstractExecutionThreadService {
             cheb.addAttr(CommandHistoryAttribute.newBuilder().setName(key).setTime(changeDate).setValue(ValueUtility.toGbp(value)).build());
             try {
                 yclient.sendData(dataAddress, ProtoDataType.CMD_HISTORY, cheb.build());
-            } catch (ActiveMQException e) {
+            } catch (YamcsApiException e) {
                 log.warn("Got exception when sending cmd history data to client", e);
                 quit();
             }

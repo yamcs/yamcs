@@ -104,7 +104,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         try {
             JsonIOUtil.mergeFrom(config.getBytes(), rrb, org.yamcs.protobuf.SchemaYamcs.ReplayRequest.MERGE, false);
         } catch (IOException e) {
-           throw new ConfigurationException("Cannot parse config into a replay request: "+e.getMessage());
+           throw new ConfigurationException("Cannot parse config into a replay request: "+e.getMessage(), e);
         }
         this.originalReplayRequest = rrb.build();
         xtceDb = XtceDbFactory.getInstance(instance);
@@ -263,7 +263,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
             log.error("Exception creating the replay", e);
             throw new ProcessorException("Exception creating the replay: "+e.getMessage(), e);
         } catch (InvalidAuthenticationToken e) { //should never come here
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
     @Override

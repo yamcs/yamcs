@@ -24,12 +24,12 @@ public abstract class WindowProcessor {
              else if (ft==DataType.INT)
                  wp=new IntFieldBasedWP(spec);
              else 
-                 throw new RuntimeException("datatype "+ft+" not supported for field based windows");
+                 throw new IllegalArgumentException("datatype "+ft+" not supported for field based windows");
              break;
         case TIME:
         case TUPLES:
-            default://TODO
-            throw new RuntimeException("not implemented");
+        default:
+            throw new IllegalArgumentException(spec.type+"not implemented");
         }
         wp.aggList=aggList;
         wp.aggOutputDef=aggregateOutputDef;
@@ -55,8 +55,8 @@ public abstract class WindowProcessor {
                 }
                 ret=new ArrayList<Tuple>(1);
                 ret.add(new Tuple(aggOutputDef,v));
-            } else {
-                //TODO
+            } else {//TODO
+               throw new IllegalStateException("not implemented");
             }
             if(noOverlap) {
                 if(aggList!=null) {
@@ -68,8 +68,8 @@ public abstract class WindowProcessor {
                 }
                 windowTuples=new ArrayList<Tuple>();
                 setFirstTuple(tuple);
-            } else {
-                //TODO
+            } else {//TODO
+                throw new IllegalStateException("not implemented");
             }
         }
         windowTuples.add(tuple);

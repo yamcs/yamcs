@@ -4,6 +4,7 @@ import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsSession;
@@ -25,16 +26,16 @@ public class ArtemisIndexRequestListener implements IndexRequestListener {
     }
     
     @Override
-    public void processData(IndexResult indexResult) throws Exception {
+    public void processData(IndexResult indexResult) throws YamcsApiException {
         if (first) {
             createYamcsClient();
         }
         yamcsClient.sendData(dataAddress, ProtoDataType.ARCHIVE_INDEX, indexResult);
     }
 
-    private void createYamcsClient() throws Exception {
-        yamcsSession=YamcsSession.newBuilder().build();
-        yamcsClient=yamcsSession.newClientBuilder().setRpc(false).setDataProducer(true).build();
+    private void createYamcsClient() throws YamcsApiException {
+        yamcsSession = YamcsSession.newBuilder().build();
+        yamcsClient = yamcsSession.newClientBuilder().setRpc(false).setDataProducer(true).build();
         Protocol.killProducerOnConsumerClosed(yamcsClient.getDataProducer(), dataAddress);
         first = false;
     }
@@ -52,12 +53,16 @@ public class ArtemisIndexRequestListener implements IndexRequestListener {
             }
         }
         try {
-            if (yamcsClient != null) yamcsClient.close();
+            if (yamcsClient != null) {
+                yamcsClient.close();
+            }
         } catch (ActiveMQException e) {
             log.warn("Got exception while closing client", e);
         }
         try {
-            if( yamcsSession != null ) yamcsSession.close();
+            if( yamcsSession != null ) {
+                yamcsSession.close();
+            }
         } catch (ActiveMQException e) {
             log.warn("Got exception while closing client", e);
         }

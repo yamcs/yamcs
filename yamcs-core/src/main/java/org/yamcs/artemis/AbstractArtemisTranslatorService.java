@@ -16,6 +16,7 @@ import org.yamcs.yarch.YarchDatabase;
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsSession;
 
@@ -94,7 +95,7 @@ public class AbstractArtemisTranslatorService extends AbstractService {
                         yamcsClient.get().sendData(hornetAddress, msg);
                     } catch (IllegalArgumentException e) {
                         log.warn(e.getMessage());
-                    } catch (ActiveMQException e) {
+                    } catch (YamcsApiException e) {
                         log.warn("Got exception when sending message:", e);
                     }
                 }

@@ -50,7 +50,7 @@ public class EventSim {
         }
     }
 
-    public void sendEvents() throws ActiveMQException, IOException, InterruptedException {
+    public void sendEvents() throws YamcsApiException, IOException, InterruptedException {
         Random random=new Random();
         int i=0;
         while(!quitting) {

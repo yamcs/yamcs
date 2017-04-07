@@ -43,7 +43,7 @@ public class DataEncodingDecoder {
             extractRawBinary((BinaryDataEncoding) de, pv);
         } else {
             log.error("DataEncoding "+de+" not implemented");
-            throw new RuntimeException("DataEncoding "+de+" not implemented");
+            throw new IllegalArgumentException("DataEncoding "+de+" not implemented");
         }
     }
 
@@ -130,13 +130,14 @@ public class DataEncodingDecoder {
         case unsigned:
             //we use the ">>>" such that the sign bit is not carried
             rv=(rv&mask)>>>bitsToShift;
-            //System.out.println("extracted rv="+rv+" from byteOffset="+byteOffset+" using mask="+mask+" and bitsToShift="+bitsToShift);
             break;
         case signMagnitude:
         	boolean negative = ((rv>>>(ide.getSizeInBits()-1) & 1L) == 1L);
         	mask >>>= 1; // Don't include sign in mask
             rv=(rv&(mask))>>>bitsToShift;
-            if (negative) rv = -rv;
+            if (negative) {
+                rv = -rv;
+            }
             break;
         default:
             throw new UnsupportedOperationException("encoding "+ide.getEncoding()+" not implemented");
@@ -161,7 +162,9 @@ public class DataEncodingDecoder {
     }
 
     private void extractRawString(StringDataEncoding sde, ParameterValue pv) {
-        if(pcontext.bitPosition%8!=0) log.warn("String Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition);
+        if(pcontext.bitPosition%8!=0) {
+            log.warn("String Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition);
+        }
         int sizeInBytes=0;
         switch(sde.getSizeType()) {
         case Fixed:
@@ -182,7 +185,6 @@ public class DataEncodingDecoder {
             break;
         }
         byte[] b=new byte[sizeInBytes];
-        //System.out.println(sde.getName()+" Extracting string of size "+sizeInBytes+" para sizeInBytes of size tag="+sde.getSizeInBitsOfSizeTag()+" bitposition: "+pcontext.bitPosition);
         pcontext.bb.position(pcontext.bitPosition/8);
         pcontext.bb.get(b);
         pv.setRawValue(new String(b));
@@ -194,7 +196,9 @@ public class DataEncodingDecoder {
     }
 
     private void extractRawFloat(FloatDataEncoding de, ParameterValue pv) {
-        if(pcontext.bitPosition%8!=0) log.warn("Float Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition); 
+        if(pcontext.bitPosition%8!=0) {
+            log.warn("Float Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition); 
+        }
         pcontext.bb.order(de.getByteOrder());
         switch(de.getEncoding()) {
         case IEEE754_1985:
@@ -204,12 +208,14 @@ public class DataEncodingDecoder {
             extractRaw(de.getStringDataEncoding(), pv);
             break;
         default:
-            throw new RuntimeException("Float Encoding "+de.getEncoding()+" not implemented");
+            throw new IllegalArgumentException("Float Encoding "+de.getEncoding()+" not implemented");
         }
     }
 
     private void extractRawIEEE754_1985(FloatDataEncoding de, ParameterValue pv) {
-        if(pcontext.bitPosition%8!=0) log.warn("Float Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition); 
+        if(pcontext.bitPosition%8!=0) {
+            log.warn("Float Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition); 
+        }
         pcontext.bb.order(de.getByteOrder());
         int byteOffset=pcontext.bitPosition/8;
         pcontext.bitPosition+=de.getSizeInBits();
@@ -232,7 +238,9 @@ public class DataEncodingDecoder {
     }
 
     private void extractRawBinary(BinaryDataEncoding bde, ParameterValue pv) {
-        if(pcontext.bitPosition%8!=0) log.warn("Binary Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition);
+        if(pcontext.bitPosition%8!=0) {
+            log.warn("Binary Parameter that does not start at byte boundary not supported. bitPosition:"+pcontext.bitPosition);
+        }
         byte[] b=new byte[bde.getSizeInBits()/8];
         pcontext.bb.position(pcontext.bitPosition/8);
         pcontext.bb.get(b);
