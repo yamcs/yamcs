@@ -125,7 +125,7 @@
                    <div class="container" ng-if="vm.has._trigger">
                         <form ng-repeat='req in vm.commands'> 
                             <div class="form-group" ng-hide='req.type === "enumeration"'>
-                                <label for = "commandToSend{{$index}}">{{req.desc}} </label>
+                                <label for = "commandToSend{{$index}}">{{req.desc || req.name}} </label>
                                 <input id = "commandToSend{{$index}}" 
                                        type = "{{vm.getRequestType(req.type)}}" ng-model='req.value'
                                        min="{{req.options.min}}" max="{{req.options.max}}">

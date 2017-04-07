@@ -112,7 +112,9 @@
                 var tempCommand = {};
                 var commandFrom = null;
                 if(vm.baseCommand[i].abstract == false && vm.baseCommand[i].argument != undefined){
-                    commandFrom = vm.baseCommand[i].argument[0];
+                    for(var j = 0; j<vm.baseCommand[i].argument.length; j++){
+                        
+                    commandFrom = vm.baseCommand[i].argument[j];
                     tempCommand = {
                         'name':commandFrom.name,
                         'desc':commandFrom.description,
@@ -131,14 +133,13 @@
                         tempCommand['options']['range'] = commandFrom.type.enumValue;
                     }
                     vm.commands.push(tempCommand);
+                    }
                 }
             } 
             if( vm.commands.length ==0 ){
                 vm.has._trigger=false;
             }
-            if( vm.commands.length == 1){
-                vm.command = vm.commands[0];
-            }         
+   
             $log.log('COMMANDS ARE ', vm.commands);
         };
 
