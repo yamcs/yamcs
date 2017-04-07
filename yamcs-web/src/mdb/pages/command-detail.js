@@ -7,15 +7,7 @@
     function MDBCommandDetailController($rootScope, mdbService, $routeParams, $log){
         $rootScope.pageTitle = $routeParams.name + ' | Yamcs';
         var vm = this;
-        //TEST DATA -> TO REMOVE
-        vm.command = {
-            'name':'',
-            'value':'',
-            'options':{
-               'min':'',
-               'max':'',
-               'range':[]
-            }};
+
 
         vm.commands = [];
 
@@ -138,20 +130,21 @@
             } 
             if( vm.commands.length ==0 ){
                 vm.has._trigger=false;
-            }
-   
-            $log.log('COMMANDS ARE ', vm.commands);
+            }   
         };
 
         vm.triggerCommand = function(){
             vm.has._sentMsg = false;
             var url = vm.urlname;
+            for(var i = 0; i<500; i++){
             mdbService.sendCommand(url, generateRequests(vm.commands)).then( function(data){
                 vm.has._sentMsg = true;
                 vm.sentMsg= data;
             }).catch( function(msg){
                 $log.error("XHR Error");
             });
+            }
+
         };
 
         var generateRequests = function(commands){
@@ -171,7 +164,6 @@
                 }else 
                     requests.push(tempRequest);
             }
-            $log.log('REQUESTS', requests);
             return requests;
         }
 

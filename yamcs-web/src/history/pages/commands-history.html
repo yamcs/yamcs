@@ -1,11 +1,7 @@
 <div class="main" style="padding: 40px;">
-
-        <p ng-repeat="hist in vm.history.data">{{hist}} </li>
-   
-    <div class="section">
-        <h2>Commands History</h2>
-    </div>
     <div class="container-fluid">
+
+        <h2>Commands History</h2>
         <table class="table table-stripped">
             <thead>
                 <tr>
@@ -14,16 +10,20 @@
                     <th>Command</th>
                     <th>Source</th>
                     <th>Seq.ID</th>
+                    <th ng-repeat="(key,value) in vm.history.dynamic_hops">{{value || N/A}} </th>
                 </tr>
             </thead>
             <tbody>
                 <tr ng-repeat="item in vm.history.data">
                     <th> {{$index}} </th>
-                    <td>{{ item.info.time | date:'yyyy-MM-dd HH:mm:ss.sss Z'}}</td>
+                    <td>{{item.info.time | date:'yyyy-MM-dd HH:mm:ss.sss Z'}}</td>
                     <td>{{item.info.source}}</td>
                     <td>{{item.info.name}}</td>
                     <td>{{item.info.sequence}}</td>
+                    <!--
                     <td ng-repeat="(key,value) in item.hops" style="width: 30px;" ng-class="{'highlight-dark':vm.verifyStatusClass(value)}">{{key}}:{{vm.getDelay(value.time, item.info.time) | date:'ss:sss'}}ms</td>
+                    -->
+                    <td ng-repeat="(key,value) in vm.history.dynamic_hops" style="width: 30px;" ng-class="{'highlight-dark':vm.verifyStatusClass(item.hops[key])}"> {{vm.getDelay(item.hops[key].time, item.info.time) | date:'ss.sss'}}s</td>
                 </tr>
             </tbody>
         </table>

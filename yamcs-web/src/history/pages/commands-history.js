@@ -9,7 +9,12 @@
         var vm= this;
         vm.history = historyService.getHistory();
 
+        vm.headers = [];
+        vm.oldHistory = historyService.getOldHistory();
         vm.verifyStatusClass = function(data){
+            if(data == undefined){
+                return false;
+            }
             if(data.status != undefined && data.time != undefined){
                 if(data.status.search(/OK/i)>-1){
                     return true;

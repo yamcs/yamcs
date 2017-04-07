@@ -5,9 +5,9 @@
 
     /* @ngInject */
     function historyService($rootScope, $http, socket, yamcsInstance, $log){
-        var history={status:'', data:[], hops:[] };
+        var history={status:'', data:[], dynamic_hops:{}};
         var historyIn = {};
-
+        var oldData= [];
         socket.on('open', function () {
             subscribeUpstream();
         });
@@ -16,7 +16,8 @@
         }        
         
         return {
-            getHistory:getHistory
+            getHistory : getHistory,
+            getOldHistory : getOldHistory
         };
 
         function getHistory(){
@@ -26,9 +27,17 @@
         function subscribeUpstream(){
             socket.on('CMD_HISTORY', function(data){
                 history.status = 'Initiated';
+                var oldData = false;
+                verifyData(data ,oldData);
+            });
+
+            socket.emit("cmdhistory", 'subscribe', {}, null, function(et, msg){
+                $log.log('Failed subscribe ', et, ' ', msg);
+            });
+        }
+        function verifyData(data, oldData){
                 var id = data.commandId.generationTime+data.commandId.origin+data.commandId.sequenceNumber+data.commandId.commandName;
                 var id_hash = hashCode(id);
-                $log.log(id_hash);
                 if( historyIn[id_hash] == undefined){
                     historyIn[id_hash] = true;  
                                             
@@ -43,18 +52,15 @@
                         'hops':{}
                     }
 
-                    $log.log('Delta time ', historyData.info.time- data.commandId.generationTime);
                     history.data.push(historyData);
+                    if(oldData){
+                        addHop(data, id_hash);
+                    }
                 }else{
                     addHop(data,id_hash);
                 }
-            });
-
-            socket.emit("cmdhistory", 'subscribe', {}, null, function(et, msg){
-                $log.log('Failed subscribe ', et, ' ', msg);
-            });
         }
-
+        
         function hashCode(str){
             var hash = 0;
             if (str.length == 0) return hash;
@@ -67,37 +73,71 @@
         }
 
         function addHop(data,hash){
+            //Goes through the currently available commands history, if ID matched adds the hop to it
             for(var i=0; i<history.data.length; i++ ){
                if(hash == history.data[i].id ){
-                   var name = parseHopName(data.attr[0].name);
-                   if(name !=''){
-                       if(history.data[i].hops[name] == undefined){
-                           history.data[i].hops[name] ={};
-                       }
-                        if( data.attr[0].value.stringValue != undefined){
-                           history.data[i].hops[name].status = data.attr[0].value.stringValue;
-                        }else if( data.attr[0].value.timestampValue != undefined){
-                           history.data[i].hops[name].time = data.attr[0].value.timestampValue;
-                        }                
-                   }                
+                   for(var aIndex = 0; aIndex <data.attr.length; aIndex++){
+                    var name = parseHopName(data.attr[aIndex].name);
+                    if(name != undefined){
+                        if(history.data[i].hops[name] == undefined){
+                            history.data[i].hops[name] ={};
+                        }
+                            if( data.attr[aIndex].value.stringValue != undefined){
+                                history.data[i].hops[name].status = data.attr[aIndex].value.stringValue;
+                            }else if( data.attr[aIndex].value.timestampValue != undefined){
+                                history.data[i].hops[name].time = data.attr[aIndex].value.timestampValue;
+                            }                
+                    }  
+                   }           
 
                }
             }
         }
         
         function parseHopName(name){
+            // If the name is not a static name from dictionary, verifies if the hop name is between underscores
             var not_parsed = {
                 TransmissionConstraints:true,
-                Final_Sequence_Count:true
+                Final_Sequence_Count:true,
+                username:true,
+                binary:true,
+                source:true
             }
             if(not_parsed[name] == true){
-                return '';
+                return undefined;
             }else{                
                 var reg_ex = /_(.*?)_/g;
                 var hop = reg_ex.exec(name);
-                return hop[1];
+                //In case it was a static one
+                if(hop[1] == undefined){
+                    return undefined
+                }else{
+                    history.dynamic_hops[hop[1]]=hop[1];
+                    return hop[1]; 
+                }
             }
         }
+        
+        function getOldHistory(){
+            downloadHistory().then(function(data){
+                var oldData = true;
+                for(var i=0; i < data.length; i++){
+                    verifyData(data[i], oldData);
+                }
+            })
+        }
+        function downloadHistory(){
+
+        //->:: TO CHANGE
+        //->:: /api/mdb/simulator/commands/YSS/SIMULATOR/DUMP_RECORDING
+        var str = '/YSS/SIMULATOR/DUMP_RECORDING';
+            var targetUrl = '/api/archive/'+yamcsInstance+'/commands'+str;
+            return $http.get(targetUrl).then( function( oldCommands){
+                return oldCommands.data.entry; 
+            }).catch(function (message){
+                $log.error('XHR failed', message);
+            });
+        };
         
     }
 })();
