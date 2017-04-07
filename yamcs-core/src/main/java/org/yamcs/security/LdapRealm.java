@@ -57,20 +57,6 @@ public class LdapRealm implements Realm {
     }
 
 
-//    public String[] getRoles(User u) {
-//        Pattern dn2rolePattern=Pattern.compile("\\w+=([^,]+),.*");
-//        if(u.roles==null) return null;
-//        String[] roles=new String[u.roles.size()];
-//        int i=0;
-//        for(String roledn:u.roles) {
-//            Matcher m=dn2rolePattern.matcher(roledn);
-//            if(m.matches()) roles[i]=m.group(1);
-//            else roles[i]=roledn;
-//            i++;
-//        }
-//        return roles;
-//    }
-
     /**
      * supports
      * @param authenticationToken

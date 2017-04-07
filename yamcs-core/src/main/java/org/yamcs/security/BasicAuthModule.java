@@ -161,9 +161,8 @@ public class BasicAuthModule implements AuthModule {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return null;
-            }
-            catch (Exception e) {
-                log.error("Unable to load user");
+            } catch (Exception e) {
+                log.error("Unable to load user", e);
                 return null;
             }
         }
@@ -189,7 +188,9 @@ public class BasicAuthModule implements AuthModule {
     public boolean hasRole(final AuthenticationToken authenticationToken, String role ) {
         // Load user and read role from result
         User user = getUser(authenticationToken);
-        if(user == null) return false;
+        if(user == null) {
+            return false;
+        }
         return user.hasRole(role);
     }
     
@@ -208,49 +209,5 @@ public class BasicAuthModule implements AuthModule {
 
         log.warn("{} {} {} [realm=\"{}\"]: {}", request.method(), request.uri(), res.status().code(), Privilege.getAuthModuleName(), reason);
         return ctx.writeAndFlush(res).addListener(ChannelFutureListener.CLOSE);
-    }
-    
-    /**
-     * @param args
-     * @throws Exception
-     */
-    public static void main(String[] args) throws Exception {
-        if (args.length < 1 || args.length > 2) {
-            System.err.println("usage: print-priv.sh username | -f certificate.pem");
-            System.exit(-1);
-        }
-        int n = 1;
-        for (int i = 0; i < n; i++) {
-            long start = System.currentTimeMillis();
-            try {
-
-                AuthenticationToken authenticationToken = null;
-
-                if (args[0].equals("-f")) {
-                    java.io.FileInputStream fis = new java.io.FileInputStream(args[1]);
-                    java.io.BufferedInputStream bis = new java.io.BufferedInputStream(fis);
-
-                    java.security.cert.CertificateFactory cf = java.security.cert.CertificateFactory.getInstance("X.509");
-
-                    while (bis.available() > 0) {
-                        X509Certificate cert = (X509Certificate) cf.generateCertificate(bis);
-                        System.out.println("\n*******For certificate "+ cert.getIssuerX500Principal() + ":");
-                        authenticationToken = new CertificateToken(cert);
-                        // checking only the certificate username, not against the certificate binary data
-                    }
-                    bis.close();
-                } else {
-                    authenticationToken = new UsernamePasswordToken(args[0], "");
-                }
-
-                System.out.println(authenticationToken);
-            } catch (Exception e) {
-                System.err.println("got Exception: "+e);
-            }
-            Thread.sleep(1000);
-
-            long end = System.currentTimeMillis();
-            System.out.println("took " + (end - start) + " milisec");
-        }
     }
 }
