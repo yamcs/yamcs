@@ -10,8 +10,8 @@
             templateUrl: '/_static/_site/mdb/pages/index.html',
             controller: 'MDBIndexController',
             controllerAs: 'vm'
-        }).when('/:instance/mdb/containers',{
-            templateUrl: '_static/_site/mdb/pages/container-detail.html',
+        }).when('/:instance/mdb/containers/:ss*',{
+            templateUrl: '/_static/_site/mdb/pages/container-detail.html',
             controller: 'MDBContainerDetailController',
             controllerAs: 'vm'
         }).when('/:instance/mdb/commands/:ss*/:name', {

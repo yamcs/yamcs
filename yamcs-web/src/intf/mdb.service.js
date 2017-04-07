@@ -15,6 +15,7 @@
             getParameterInfo: getParameterInfo,
 
             listContainers: listContainers,
+            getContainerInfo: getContainerInfo,
 
             listCommands: listCommands,
             getCommandInfo: getCommandInfo,
@@ -77,6 +78,14 @@
             });
         }
 
+        function getContainerInfo(urlInfo,options){
+            var targetUrl = '/api/mdb/'+yamcsInstance+'/containers/'+urlInfo;
+            targetUrl+=toQueryString(options);
+            return $http.get(targetUrl).then( function(response){
+                return response;
+            })
+        }
+
         function listCommands(options) {
             var targetUrl = '/api/mdb/' + yamcsInstance + '/commands';
             targetUrl += toQueryString(options);
@@ -92,8 +101,6 @@
         function getCommandInfo(urlname, options){
             var targetUrl = '/api/mdb/'+yamcsInstance+'/commands'+urlname;
             targetUrl += toQueryString(options);
-
-            $log.log('CALLING --=======+>',targetUrl);
             return $http.get(targetUrl).then(function (response){
                 $log.log('DATA FOR COMMAND', response.data);
                 return response.data;
