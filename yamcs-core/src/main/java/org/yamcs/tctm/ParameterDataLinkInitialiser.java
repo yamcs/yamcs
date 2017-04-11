@@ -56,7 +56,7 @@ public class ParameterDataLinkInitialiser extends AbstractService {
 
     } 
     
-    static public final DataType PARAMETER_DATA_TYPE = DataType.protobuf(org.yamcs.protobuf.Pvalue.ParameterValue.class.getName());
+   
     final TimeService timeService;
     
     public ParameterDataLinkInitialiser(String yamcsInstance) throws IOException, ConfigurationException {
@@ -135,14 +135,14 @@ public class ParameterDataLinkInitialiser extends AbstractService {
 
     class MyPpListener implements ParameterSink {
         final Stream stream;
-        final DataType paraDataType = DataType.protobuf(org.yamcs.protobuf.Pvalue.ParameterValue.class.getName());
+        final DataType paraDataType = DataType.PARAMETER_VALUE;
         public MyPpListener(Stream stream) {
             this.stream = stream;
         }
 
 
         @Override
-        public void updatePps(long gentime, String group, int seqNum, Collection<ParameterValue> params) {
+        public void updateParameters(long gentime, String group, int seqNum, Collection<ParameterValue> params) {
             TupleDefinition tdef = PARAMETER_TUPLE_DEFINITION.copy();
             List<Object> cols=new ArrayList<Object>(4+params.size());
             cols.add(gentime);
@@ -150,50 +150,33 @@ public class ParameterDataLinkInitialiser extends AbstractService {
             cols.add(seqNum);
             cols.add(timeService.getMissionTime());
             for(ParameterValue pv:params) {
-                String qualifiedName = pv.getParameter().getQualifiedName();
-                if( qualifiedName == null || qualifiedName.isEmpty() ) {
-                    qualifiedName = pv.getParameter().getName();
-                    log.trace( "Using namespaced name for PP {} because fully qualified name not available.", qualifiedName);
-                }
+                String qualifiedName = pv.getParameterQualifiedNamed();
                 int idx = tdef.getColumnIndex(qualifiedName);
                 if(idx!=-1) {
-                    log.warn("duplicate value for {} \nfirst: {}"+"\n second: {} ", pv.getParameter(), cols.get(idx), pv.toGpb(null));
+                    log.warn("duplicate value for {} \nfirst: {}"+"\n second: {} ", pv.getParameter(), cols.get(idx), pv);
                     continue;
                 }
-                tdef.addColumn(qualifiedName, paraDataType);
-                cols.add(pv.toGpb( NamedObjectId.newBuilder().setName( qualifiedName ).build() ));
+                tdef.addColumn(qualifiedName, DataType.PARAMETER_VALUE);
+                cols.add(pv);
             }
-            Tuple t=new Tuple(tdef, cols);
+            Tuple t = new Tuple(tdef, cols);
             stream.emitTuple(t);
         }
         
         
         @Override
         public void updateParams(long gentime, String group, int seqNum, Collection<org.yamcs.protobuf.Pvalue.ParameterValue> params) {
-            TupleDefinition tdef = PARAMETER_TUPLE_DEFINITION.copy();
-            List<Object> cols = new ArrayList<Object>(4+params.size());
-            cols.add(gentime);
-            cols.add(group);
-            cols.add(seqNum);
-            cols.add(timeService.getMissionTime());
-            for(org.yamcs.protobuf.Pvalue.ParameterValue pv:params) {
-                NamedObjectId id = pv.getId();
+            List<ParameterValue> plist = new ArrayList<>(params.size());
+            for(org.yamcs.protobuf.Pvalue.ParameterValue pbv:params) {
+                NamedObjectId id = pbv.getId();
                 String qualifiedName = id.getName();
                 if(id.hasNamespace()) {
                     log.trace("Using namespaced name for parameter {} because fully qualified name not available.", id);
                 }
-                
-                int idx=tdef.getColumnIndex(qualifiedName);
-                if(idx!=-1) {
-                    log.warn("duplicate value for {}\nfirst: {}\n second: {}", id, cols.get(idx), pv);
-                    continue;
-                }
-                tdef.addColumn(qualifiedName, paraDataType);
-                cols.add(pv);
+                ParameterValue pv = ParameterValue.fromGpb(qualifiedName, pbv);
+                plist.add(pv);
             }
-            Tuple t=new Tuple(tdef, cols);
-            stream.emitTuple(t);
+            updateParameters(gentime, group, seqNum, plist);
         }
     }
-
 }

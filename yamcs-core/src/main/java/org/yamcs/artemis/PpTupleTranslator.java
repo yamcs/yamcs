@@ -9,6 +9,7 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterData.Builder;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Tuple;
@@ -37,8 +38,8 @@ public class PpTupleTranslator implements TupleTranslator {
         b.setGroup(ppGroup);
         for( int i = 4; i < tuple.size(); i++ ) {
             // PP name is part of the instance
-            ParameterValue ppValue = (ParameterValue)tuple.getColumn(i);
-            b.addParameter(ppValue);
+            org.yamcs.parameter.ParameterValue ppValue = (org.yamcs.parameter.ParameterValue)tuple.getColumn(i);
+            b.addParameter(ppValue.toGpb(NamedObjectId.newBuilder().setName(ppValue.getParameterQualifiedNamed()).build()));
         }
 
         Protocol.encode(msg, b.build());
@@ -47,7 +48,6 @@ public class PpTupleTranslator implements TupleTranslator {
 
     @Override
     public Tuple buildTuple( TupleDefinition tdef, ClientMessage message ) {
-        final DataType paraDataType=DataType.protobuf(org.yamcs.protobuf.Pvalue.ParameterValue.class.getName());
         Tuple t = null;
         try {
             ParameterData pd = (ParameterData)Protocol.decode(message, ParameterData.newBuilder());
@@ -64,8 +64,8 @@ public class PpTupleTranslator implements TupleTranslator {
                 if( processedParameterName == null || "".equals( processedParameterName ) ) {
                     throw new InvalidParameterException( "Processed Parameter must have a name." );
                 }
-                tupleDef.addColumn( processedParameterName, paraDataType );
-                columns.add( pv );
+                tupleDef.addColumn( processedParameterName, DataType.PARAMETER_VALUE);
+                columns.add( org.yamcs.parameter.ParameterValue.fromGpb(processedParameterName, pv));
             }
 
             t = new Tuple(tupleDef, columns);

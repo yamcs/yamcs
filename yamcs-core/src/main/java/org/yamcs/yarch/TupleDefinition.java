@@ -3,14 +3,15 @@ package org.yamcs.yarch;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class TupleDefinition implements Serializable, Cloneable {
     private static final long serialVersionUID = 200805301445L;
     private ArrayList<ColumnDefinition> columnDefinitions = new ArrayList<ColumnDefinition>();
     private HashMap<String,Integer> columnNameIndex = new HashMap<String,Integer>();
-    public final static int MAX_COLS = 32000;
+    public static final int MAX_COLS = 32000;
     
-    public ArrayList<ColumnDefinition> getColumnDefinitions() {
+    public List<ColumnDefinition> getColumnDefinitions() {
         return columnDefinitions;
     }
 
@@ -20,7 +21,9 @@ public class TupleDefinition implements Serializable, Cloneable {
     }
 
     public void addColumn(ColumnDefinition c) {
-        if(columnNameIndex.containsKey(c.getName())) throw new RuntimeException("Tuple has already a column '"+c.getName()+"'");
+        if(columnNameIndex.containsKey(c.getName())) {
+            throw new IllegalArgumentException("Tuple has already a column '"+c.getName()+"'");
+        }
         columnDefinitions.add(c);
         columnNameIndex.put(c.getName(), columnDefinitions.size()-1);
     }
@@ -33,40 +36,29 @@ public class TupleDefinition implements Serializable, Cloneable {
      */
     public int getColumnIndex(String name) {
         Integer i = columnNameIndex.get(name);
-        if(i==null) return -1;
-        else return i;
-    }
-    /**
-     * Check the compatibility between two tuple definitions. They are considered compatible when they have the same 
-     * number of columns and the corresponding columns have the same type.
-     * 
-     * DISABLED since we switch to dynamic schema. Still something has to be done TODO
-     * 
-     * 
-     * @param inputTuple
-     * @param outputTuple
-     * @return
-     */
-    public static String checkCompatibility(TupleDefinition inputTuple,TupleDefinition outputTuple) {
-        if(inputTuple.getColumnDefinitions().size()!=outputTuple.getColumnDefinitions().size()) return "different number of columns";
-        for(int i=0;i<inputTuple.getColumnDefinitions().size();i++) {
-            ColumnDefinition ic=inputTuple.getColumnDefinitions().get(i);
-            ColumnDefinition oc=inputTuple.getColumnDefinitions().get(i);
-            if(ic.getType()!=oc.getType()) {
-                return "input column "+ic.getName()+" of type "+ic.getType()+" is incompatible with output column "+oc.getName()+" of type "+oc.getType();
-            }
+        if(i==null) {
+            return -1;
+        } else {
+            return i;
         }
-        return null;
     }
     
     public boolean hasColumn(String name) {
         return columnNameIndex.containsKey(name);
     }
-    
+    /**
+     * Get a column definition by name
+     * 
+     * @param name
+     * @return the column definition of the named column or null if the table does not have a column by that name 
+     */
     public ColumnDefinition getColumn(String name) {
-        Integer i=columnNameIndex.get(name);
-        if(i==null) return null;
-        else return columnDefinitions.get(i);
+        Integer i = columnNameIndex.get(name);
+        if(i==null) {
+            return null;
+        } else {
+            return columnDefinitions.get(i);
+        }
     }
   
     public ColumnDefinition getColumn(int index) {
@@ -122,11 +114,13 @@ public class TupleDefinition implements Serializable, Cloneable {
      * 
      */
     public String getStringDefinition() {
-        StringBuffer sb=new StringBuffer();
+        StringBuilder sb=new StringBuilder();
         sb.append("(");
         boolean first=true;
         for(ColumnDefinition cd:getColumnDefinitions()) {
-            if(!first) sb.append(", ");
+            if(!first) {
+                sb.append(", ");
+            }
             else first=false;
             sb.append(cd.getStringDefinition());
         }
@@ -140,10 +134,12 @@ public class TupleDefinition implements Serializable, Cloneable {
      * 
      */
     public String getStringDefinition1() {
-        StringBuffer sb=new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         boolean first=true;
         for(ColumnDefinition cd:getColumnDefinitions()) {
-            if(!first) sb.append(", ");
+            if(!first) {
+                sb.append(", ");
+            }
             else first=false;
             sb.append(cd.toString());
         }

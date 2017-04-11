@@ -22,7 +22,7 @@ import com.google.protobuf.MessageLite;
  *
  */
 public class XtceTmReplayHandler implements ReplayHandler {
-    Set<String> partitions=new HashSet<String>();
+    Set<String> partitions=new HashSet<>();
     final XtceDb xtcedb;
     static Logger log=LoggerFactory.getLogger(XtceTmReplayHandler.class);
     ReplayRequest request;
@@ -47,7 +47,9 @@ public class XtceTmReplayHandler implements ReplayHandler {
     private void addPartitions(List<NamedObjectId> pnois, SequenceContainer rootSc) throws YamcsException {
         for(NamedObjectId pnoi : pnois) {
             SequenceContainer sc=xtcedb.getSequenceContainer(pnoi);
-            if(sc==null) throw new YamcsException("Cannot find any sequence container for "+pnoi);
+            if(sc==null) {
+                throw new YamcsException("Cannot find any sequence container for "+pnoi);
+            }
             if(sc==rootSc) { //retrieve all
                 partitions=null;
                 break;
@@ -70,11 +72,15 @@ public class XtceTmReplayHandler implements ReplayHandler {
         sb.append("SELECT ").append(ProtoDataType.TM_PACKET.getNumber()).
         append(",* from tm ");
         if(partitions!=null) {            
-            if(partitions.isEmpty())return null;
+            if(partitions.isEmpty()) {
+                return null;
+            }
             sb.append("WHERE pname IN (");
             boolean first=true;
             for(String pn:partitions) {
-                if(first) first=false;
+                if(first) {
+                    first=false;
+                }
                 else sb.append(", ");
                 sb.append("'").append(pn).append("'");
             }

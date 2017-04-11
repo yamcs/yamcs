@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.yamcs.Processor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.parameter.ParameterValue;
@@ -31,7 +33,7 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
     Stream stream;
     ParameterRequestManager paraListener;
     final XtceDb xtceDb;
-
+    private static final Logger log = LoggerFactory.getLogger(StreamParameterProvider.class);
     public StreamParameterProvider(String archiveInstance, Map<String, String> config) throws ConfigurationException {
         YarchDatabase ydb=YarchDatabase.getInstance(archiveInstance);
 
@@ -60,17 +62,36 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
         notifyStopped();
     }
 
+    /**
+     * Make sure all parameters are defined in the XtceDB, otherwise the PRM will choke
+     */
     @Override
     public void onTuple(Stream s, Tuple tuple) {//the definition of the tuple is in PpProviderAdapter
-        List<ParameterValue> params=new ArrayList<ParameterValue>();
-        for(int i=4;i<tuple.size();i++) {
-            org.yamcs.protobuf.Pvalue.ParameterValue gpv=(org.yamcs.protobuf.Pvalue.ParameterValue)tuple.getColumn(i);
-            String name=tuple.getColumnDefinition(i).getName();
-            Parameter ppdef=xtceDb.getParameter(name);
-            if(ppdef==null) {
+        List<ParameterValue> params=new ArrayList<>();
+        for(int i=4; i<tuple.size(); i++) {
+            Object o = tuple.getColumn(i);
+            ParameterValue pv;
+            if(o instanceof org.yamcs.protobuf.Pvalue.ParameterValue) {
+                org.yamcs.protobuf.Pvalue.ParameterValue gpv=(org.yamcs.protobuf.Pvalue.ParameterValue)tuple.getColumn(i);
+                String name = tuple.getColumnDefinition(i).getName();
+                Parameter ppdef = xtceDb.getParameter(name);
+                if(ppdef==null) {
+                    continue;
+                }
+                pv = ParameterValue.fromGpb(ppdef, gpv);
+            } else if(o instanceof ParameterValue) {
+                pv = (ParameterValue)o; 
+                if(pv.getParameter()==null) {
+                    Parameter ppdef = xtceDb.getParameter(pv.getParameterQualifiedNamed());
+                    if(ppdef==null) {
+                        continue;
+                    }
+                    pv.setParameter(ppdef);
+                }
+            } else {
+                log.warn("Recieved data that is not parameter value but {}", o.getClass());
                 continue;
             }
-            ParameterValue pv=ParameterValue.fromGpb(ppdef, gpv);
             params.add(pv);
         }
         paraListener.update(params);
@@ -84,7 +105,7 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
 
     @Override
     public void setParameterListener(ParameterRequestManager paraListener) {
-        this.paraListener=paraListener;
+        this.paraListener = paraListener;
     }
 
     @Override

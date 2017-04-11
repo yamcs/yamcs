@@ -1,7 +1,9 @@
 package org.yamcs.yarch;
 
-import java.io.DataInput;
-import java.io.DataOutput;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -12,12 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.yarch.DataType._type;
-import org.yamcs.yarch.streamsql.NotSupportedException;
 
 import com.google.common.collect.BiMap;
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
 import com.google.protobuf.MessageLite.Builder;
@@ -35,6 +33,7 @@ public class ColumnSerializerFactory {
     static final DoubleColumnSerializer DOUBLE_CS = new DoubleColumnSerializer();
     static final StringColumnSerializer STRING_CS = new StringColumnSerializer();
     static final BinaryColumnSerializer BINARY_CS = new BinaryColumnSerializer();
+    static final ParameterValueColumnSerializer PARAMETER_VALUE_CS = new ParameterValueColumnSerializer();
 
     static Map<String, ProtobufColumnSerializer> protoSerialziers = new HashMap<>(); 
     
@@ -80,6 +79,8 @@ public class ColumnSerializerFactory {
             return STRING_CS;
         case BINARY:
             return BINARY_CS;
+        case PARAMETER_VALUE:
+            return PARAMETER_VALUE_CS;
         case LIST:
         case TUPLE:
             //TODO
@@ -119,108 +120,109 @@ public class ColumnSerializerFactory {
             this.size = size;
         }
         @Override
-        public T fromByteArray(byte[] b) throws IOException {
-            ByteArrayDataInput badi=ByteStreams.newDataInput(b);
-            return deserialize(badi);
+        public T fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
+            DataInputStream dos = new DataInputStream(new ByteArrayInputStream(b));
+            return deserialize(dos, cd);
         }
         
-        public byte[] getByteArray(T v) {
-            ByteArrayDataOutput bado = ByteStreams.newDataOutput(size);
-            try {
-                serialize(bado, v);
+        public byte[] toByteArray(T v) {
+            try (ByteArrayOutputStream baos = new ByteArrayOutputStream(size)){
+                DataOutputStream dos = new DataOutputStream(baos);
+                serialize(dos, v);
+                return baos.toByteArray();
             } catch (IOException e) {
                 throw new RuntimeException("cannot serialize in memory?", e);
             }
-            return bado.toByteArray();
+           
         }
     }
     static class BooleanColumnSerializer implements ColumnSerializer<Boolean> {
         @Override
-        public Boolean deserialize(DataInput stream) throws IOException {
+        public Boolean deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
             return stream.readBoolean();
         }
 
         @Override
-        public void serialize(DataOutput stream, Boolean v) throws IOException {
+        public void serialize(DataOutputStream stream, Boolean v) throws IOException {
             stream.writeBoolean((Boolean)v);
         }
 
         @Override
-        public byte[] getByteArray(Boolean v) {
+        public byte[] toByteArray(Boolean v) {
             boolean b = (Boolean)v;
             return new byte[]{(byte)(b?1:0)};
         }
 
         @Override
-        public Boolean fromByteArray(byte[] b) throws IOException {
+        public Boolean fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
             return b[0]==1;
         }
     }
 
     static   class ByteColumnSerializer implements ColumnSerializer<Byte> {
         @Override
-        public Byte deserialize(DataInput stream) throws IOException {
+        public Byte deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
             return stream.readByte();
         }
 
         @Override
-        public void serialize(DataOutput stream, Byte v) throws IOException {
+        public void serialize(DataOutputStream stream, Byte v) throws IOException {
             stream.writeByte((Byte)v);
         }
 
         @Override
-        public byte[] getByteArray(Byte v) {
+        public byte[] toByteArray(Byte v) {
             return new byte[]{v};
         }
 
         @Override
-        public Byte fromByteArray(byte[] b) throws IOException {
+        public Byte fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
             return b[0];
         }
     }
 
     static class ShortColumnSerializer implements ColumnSerializer<Short> {
         @Override
-        public Short deserialize(DataInput stream) throws IOException {
+        public Short deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
             return stream.readShort();
         }
 
         @Override
-        public void serialize(DataOutput stream, Short v) throws IOException {
+        public void serialize(DataOutputStream stream, Short v) throws IOException {
             stream.writeShort((Short)v);
         }
 
         @Override
-        public byte[] getByteArray(Short v) {
+        public byte[] toByteArray(Short v) {
             short s = v;
             return new byte[] { (byte)((s>>8)&0xFF), (byte) (s&0xFF)};
         }
 
         @Override
-        public Short fromByteArray(byte[] b) throws IOException {
+        public Short fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
             return (short)(((b[0]&0xFF)<<8) + (b[1]&0xFF));
         }
     }
 
     static  class IntegerColumnSerializer implements ColumnSerializer<Integer> {
         @Override
-        public Integer deserialize(DataInput stream) throws IOException {
+        public Integer deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
             return stream.readInt();
         }
 
         @Override
-        public void serialize(DataOutput stream, Integer v) throws IOException {
+        public void serialize(DataOutputStream stream, Integer v) throws IOException {
             stream.writeInt((Integer)v);
         }
 
         @Override
-        public byte[] getByteArray(Integer v) {
+        public byte[] toByteArray(Integer v) {
             int x = v;
             return new byte[] { (byte)((x>>24)&0xFF),  (byte)((x>>16)&0xFF),  (byte)((x>>8)&0xFF), (byte) (x&0xFF)};
         }
 
         @Override
-        public Integer fromByteArray(byte[] b) throws IOException {
+        public Integer fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
             return  (b[0]<<24) + (b[1]<<16) + (b[2]<<8) +b[3];
         }
     }
@@ -231,12 +233,12 @@ public class ColumnSerializerFactory {
         }
 
         @Override
-        public Double deserialize(DataInput stream) throws IOException {
+        public Double deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
             return stream.readDouble();
         }
 
         @Override
-        public void serialize(DataOutput stream, Double v) throws IOException {
+        public void serialize(DataOutputStream stream, Double v) throws IOException {
             stream.writeDouble(v);
         }
     }
@@ -246,12 +248,12 @@ public class ColumnSerializerFactory {
         }
 
         @Override
-        public Long deserialize(DataInput stream) throws IOException {
+        public Long deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
             return stream.readLong();
         }
 
         @Override
-        public void serialize(DataOutput stream, Long v) throws IOException {
+        public void serialize(DataOutputStream stream, Long v) throws IOException {
             stream.writeLong(v);
         }
     }
@@ -262,19 +264,19 @@ public class ColumnSerializerFactory {
         }
 
         @Override
-        public String deserialize(DataInput stream) throws IOException {
+        public String deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
             return stream.readUTF();
         }
 
         @Override
-        public void serialize(DataOutput stream, String v) throws IOException {
+        public void serialize(DataOutputStream stream, String v) throws IOException {
             stream.writeUTF(v);
         }
     }
 
     static class BinaryColumnSerializer implements ColumnSerializer<byte[]> {
         @Override
-        public byte[] deserialize(DataInput stream) throws IOException {
+        public byte[] deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
             int length=stream.readInt();
             if(length>maxBinaryLength) { 
                 log.warn("binary length greater than maxBinaryLenght (is the endianess wrong?): ?>?", length, maxBinaryLength);
@@ -286,19 +288,19 @@ public class ColumnSerializerFactory {
         }
 
         @Override
-        public void serialize(DataOutput stream, byte[] v) throws IOException {
+        public void serialize(DataOutputStream stream, byte[] v) throws IOException {
             byte[]va=(byte[])v;
             stream.writeInt(va.length);
             stream.write(va);
         }
 
         @Override
-        public byte[] getByteArray(byte[] v) {
+        public byte[] toByteArray(byte[] v) {
             return v;
         }
 
         @Override
-        public byte[] fromByteArray(byte[] b) throws IOException {
+        public byte[] fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
             return b;
         }
     }
@@ -311,11 +313,11 @@ public class ColumnSerializerFactory {
             this.newBuilderMethod = newBuilderMethod;
         }
         @Override
-        public MessageLite deserialize(DataInput stream) throws IOException {
-            int length=stream.readInt();
+        public MessageLite deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
+            int length = stream.readInt();
             if(length>maxBinaryLength) { 
                 log.warn("binary length greater than maxBinaryLenght (is the endianess wrong?): ?>?", length, maxBinaryLength);
-                return null;
+                throw new IOException("binary length greater than maxBinaryLength");
             }
             byte[] bp = new byte[length];
             stream.readFully(bp);
@@ -323,7 +325,7 @@ public class ColumnSerializerFactory {
         }
 
         @Override
-        public void serialize(DataOutput stream, MessageLite v)  throws IOException {
+        public void serialize(DataOutputStream stream, MessageLite v)  throws IOException {
             byte[] b = v.toByteArray();
             stream.writeInt(b.length);
             stream.write(b);
@@ -357,12 +359,12 @@ public class ColumnSerializerFactory {
        
         
         @Override
-        public String deserialize(DataInput stream) throws IOException {
+        public String deserialize(DataInputStream stream, ColumnDefinition cd) throws IOException {
             short x=stream.readShort();
             return enumValues.inverse().get(x);
         }
         @Override
-        public void serialize(DataOutput stream, String v)  throws IOException {
+        public void serialize(DataOutputStream stream, String v)  throws IOException {
             Short v1;
             if((enumValues==null) || (v1=enumValues.get(v))==null) {
                 tblDef.addEnumValue(this, v);

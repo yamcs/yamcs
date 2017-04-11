@@ -1,6 +1,7 @@
 package org.yamcs.parameterarchive;
 
 import org.rocksdb.RocksIterator;
+import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.DecodingException;
 
 /**

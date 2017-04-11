@@ -213,9 +213,15 @@ public class YarchDatabase {
             fis.close();
             throw new IOException("Cannot load table definition from "+f+": object is "+o.getClass().getName()+"; should be "+TableDefinition.class.getName());
         }
-        TableDefinition tblDef=(TableDefinition) o;
+        TableDefinition tblDef = (TableDefinition) o;
         fis.close();
-
+        if(tblDef.getFormatVersion()!=TableDefinition.CURRENT_FORMAT_VERSION) {
+            //temporary upgrade to version 2 from version 1 - can be removed in a future version 
+            if(tblDef.getFormatVersion()==1) {
+                changeParaValueType(tblDef);
+            }
+        }
+        
         tblDef.setName(tblName);
         tblDef.setDb(this);
         if(!tblDef.hasCustomDataDir()){
@@ -226,6 +232,18 @@ public class YarchDatabase {
         return tblDef;
     }
 
+    static void changeParaValueType(TableDefinition tblDef) {
+        TupleDefinition valueDef = tblDef.getValueDefinition();
+        List<ColumnDefinition> l= valueDef.getColumnDefinitions();
+        for(int i=0; i<l.size(); i++) {
+            ColumnDefinition cd = l.get(i);
+            if("org.yamcs.protobuf.Pvalue$ParameterValue".equals(cd.getType().name())) {
+                ColumnDefinition cd1 = new ColumnDefinition(cd.getName(), DataType.PARAMETER_VALUE);
+                l.set(i,  cd1);
+            }
+        }
+    }
+    
     /**
      * serializes to disk to the rootDir/name.def
      * @param algorithmDef

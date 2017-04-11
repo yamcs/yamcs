@@ -27,7 +27,7 @@ public abstract class AbstractTableWriter extends TableWriter {
             if(!t.hasColumn(c)) continue;
             long time = (Long)t.getColumn(0);
             ColumnSerializer cs = tableDefinition.getColumnSerializer(c);
-            byte[] v = cs.getByteArray(t.getColumn(c));
+            byte[] v = cs.toByteArray(t.getColumn(c));
             addHistogramForColumn(db, c, v, time);
         }
     }

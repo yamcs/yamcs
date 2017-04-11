@@ -1,6 +1,7 @@
 package org.yamcs.parameter;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.protobuf.Mdb.AlarmRange;
@@ -16,14 +17,13 @@ import org.yamcs.xtce.ParameterEntry;
 
 /** 
  * Holds the value of a parameter
- * @author mache
  *
  */
 public class ParameterValue {
 
     //the definition of the parameter may be null if we do not have a reference to an XtceDB object 
     // this could happen if the ParameterValue is extracted from the ParameterArchive
-    private final Parameter def;
+    private Parameter def;
     private final String paramFqn;
 
 
@@ -77,8 +77,6 @@ public class ParameterValue {
         return entry;
     }
 
-
-
     public void setAcquisitionTime(long instant) {
         acquisitionTime=instant;
     }
@@ -95,7 +93,9 @@ public class ParameterValue {
         return rawValue;
     }
 
-
+    public void setParameter(Parameter p) {
+        this.def = p;
+    }
     /**
      * Retrieve the parameter definition for this parameter value
      * @return parameter definition
@@ -303,14 +303,28 @@ public class ParameterValue {
         return status.getDeltaMonitoringResult();
     }
 
-    public org.yamcs.protobuf.Pvalue.ParameterValue toGpb(NamedObjectId id) {
+    /**
+     * Convert a PV to a ProtobufPV 
+     * 
+     * @param id - the parameter identifier
+     * @param withUtc - if true - set the UTC string times
+     * @return the created ProtobufPV
+     */
+    public org.yamcs.protobuf.Pvalue.ParameterValue toProtobufParameterValue(Optional<NamedObjectId> id, boolean withUtc) {
+        
         org.yamcs.protobuf.Pvalue.ParameterValue.Builder gpvb=org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
                 .setAcquisitionStatus(getAcquisitionStatus())               
                 .setGenerationTime(getGenerationTime())
                 .setProcessingStatus(getProcessingStatus());
-
+        if(id.isPresent()) {
+            gpvb.setId(id.get());
+        }
+        
         if(acquisitionTime!=TimeEncoding.INVALID_INSTANT) {
             gpvb.setAcquisitionTime(acquisitionTime);
+            if(withUtc) {
+                gpvb.setAcquisitionTimeUTC(TimeEncoding.toString(getAcquisitionTime()));
+            }
         }
         if(engValue!=null) {
             gpvb.setEngValue(ValueUtility.toGbp(engValue));
@@ -321,35 +335,45 @@ public class ParameterValue {
         if(getRangeCondition()!=null) {
             gpvb.setRangeCondition(getRangeCondition());
         }
-
-        // TODO make this optional
-        if(acquisitionTime!=TimeEncoding.INVALID_INSTANT) {
-            gpvb.setAcquisitionTimeUTC(TimeEncoding.toString(getAcquisitionTime()));
+        if(withUtc) {
+            gpvb.setGenerationTimeUTC(TimeEncoding.toString(getGenerationTime()));
         }
-        gpvb.setGenerationTimeUTC(TimeEncoding.toString(getGenerationTime()));
 
         if(expirationTime!=TimeEncoding.INVALID_INSTANT) {
             gpvb.setExpirationTime(expirationTime);
-            gpvb.setExpirationTimeUTC(TimeEncoding.toString(expirationTime));
+            if(withUtc) {
+                gpvb.setExpirationTimeUTC(TimeEncoding.toString(expirationTime));
+            }
         }
 
-        // TODO make this optional
-        if (getWatchRange() != null)
+        if (getWatchRange() != null) {
             gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.WATCH, getWatchRange()));
-        if (getWarningRange() != null)
+        }
+        if (getWarningRange() != null) {
             gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.WARNING, getWarningRange()));
-        if (getDistressRange() != null)
+        }
+        if (getDistressRange() != null) {
             gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.DISTRESS, getDistressRange()));
-        if (getCriticalRange() != null)
+        }
+        if (getCriticalRange() != null) {
             gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.CRITICAL, getCriticalRange()));
-        if (getSevereRange()!=null)
+        }
+        if (getSevereRange()!=null) {
             gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.SEVERE, getSevereRange()));
+        }
 
-        if(id!=null) gpvb.setId(id);
-        if(rawValue!=null) gpvb.setRawValue(ValueUtility.toGbp(rawValue));
+      
+        if(rawValue!=null) {
+            gpvb.setRawValue(ValueUtility.toGbp(rawValue));
+        }
         return gpvb.build();
     }
-
+    
+    public org.yamcs.protobuf.Pvalue.ParameterValue toGpb(NamedObjectId id) {
+        Optional<NamedObjectId> optionalId = Optional.ofNullable(id);
+        return toProtobufParameterValue(optionalId, true);
+    }
+    
     private static AlarmRange toGpbAlarmRange(AlarmLevelType gpbLevel, FloatRange floatRange) {
         AlarmRange.Builder rangeb = AlarmRange.newBuilder();
         rangeb.setLevel(gpbLevel);
@@ -359,10 +383,19 @@ public class ParameterValue {
             rangeb.setMaxInclusive(floatRange.getMaxInclusive());
         return rangeb.build();
     }
-
+    public static ParameterValue fromGpb(String fqn, org.yamcs.protobuf.Pvalue.ParameterValue gpv) {
+        ParameterValue pv = new ParameterValue(fqn);
+        copyTo(gpv, pv);
+        return pv;
+    }
+    
     public static ParameterValue fromGpb(Parameter pdef, org.yamcs.protobuf.Pvalue.ParameterValue gpv) {
-        ParameterValue pv=new ParameterValue(pdef);
-
+        ParameterValue pv = new ParameterValue(pdef);
+        copyTo(gpv, pv);
+        return pv;
+    }
+    
+    private static void copyTo(org.yamcs.protobuf.Pvalue.ParameterValue gpv, ParameterValue pv) {
         pv.setAcquisitionStatus(gpv.getAcquisitionStatus());
         pv.setEngineeringValue(ValueUtility.fromGpb(gpv.getEngValue()));
 
@@ -390,8 +423,9 @@ public class ParameterValue {
         if(gpv.hasRawValue()) {
             pv.setRawValue(ValueUtility.fromGpb(gpv.getRawValue()));
         }
-        return pv;
     }
+
+    
 
 
     public void addAlarmRanges(List<AlarmRange> alarmRangeList) {
@@ -436,8 +470,12 @@ public class ParameterValue {
         } else {
             sb.append(paramFqn);
         }
-        if(rawValue!=null) sb.append(" rawValue: {").append(rawValue.toString()).append("}");
-        if(engValue!=null) sb.append(" engValue: {").append(engValue.toString()).append("}");
+        if(rawValue!=null) {
+            sb.append(" rawValue: {").append(rawValue.toString()).append("}");
+        }
+        if(engValue!=null) {
+            sb.append(" engValue: {").append(engValue.toString()).append("}");
+        }
         return sb.toString();
     }
 }

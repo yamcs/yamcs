@@ -13,16 +13,19 @@ public class ConfigurationException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
     String confpath;
-
-
+    
     public ConfigurationException(String message) {
         super(message);
     }
 
-	public ConfigurationException(String confpath, String message) {
-		super(message);
-		this.confpath=confpath;
-	}
+    public ConfigurationException(Exception e) {
+        super(e);
+    }
+
+    public ConfigurationException(String confpath, String message) {
+        super(message);
+        this.confpath=confpath;
+    }
 
     public ConfigurationException(String message, Throwable t) {
         super(message, t);

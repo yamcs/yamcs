@@ -68,11 +68,11 @@ public class CfTableReaderStream extends AbstractTableReaderStream implements Ru
             ColumnSerializer cs=tableDefinition.getColumnSerializer(cd.getName());
             if(range.keyStart!=null) {
                 strictStart=range.strictStart;
-                rangeStart=cs.getByteArray(range.keyStart);
+                rangeStart=cs.toByteArray(range.keyStart);
             }
             if(range.keyEnd!=null) {
                 strictEnd=range.strictEnd;
-                rangeEnd=cs.getByteArray(range.keyEnd);
+                rangeEnd=cs.toByteArray(range.keyEnd);
             }
         }
         try {

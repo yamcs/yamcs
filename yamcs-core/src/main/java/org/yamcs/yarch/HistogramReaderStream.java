@@ -32,10 +32,12 @@ public class HistogramReaderStream extends AbstractStream implements Runnable, D
 
     static AtomicInteger count=new AtomicInteger(0);
     volatile boolean quit=false;
+    private ColumnDefinition histoColumnDefinition;
 
     public HistogramReaderStream(YarchDatabase ydb, TableDefinition tblDef, String histoColumnName, TupleDefinition tupleDef) throws YarchException {
         super(ydb, tblDef.getName()+"_histo_"+count.getAndIncrement(), tupleDef);
         this.histoColumnSerializer = tblDef.getColumnSerializer(histoColumnName);
+        this.histoColumnDefinition = tblDef.getColumnDefinition(histoColumnName);
         this.tblDef = tblDef;
         this.histoColumnName = histoColumnName;
     }
@@ -65,7 +67,7 @@ public class HistogramReaderStream extends AbstractStream implements Runnable, D
     }
 
     private void emit(HistogramRecord r) throws IOException {
-        Object cvalue = histoColumnSerializer.fromByteArray(r.columnv);
+        Object cvalue = histoColumnSerializer.fromByteArray(r.columnv, histoColumnDefinition);
         Tuple t = new Tuple(getDefinition(), new Object[]{cvalue, r.start, r.stop, r.num});
         emitTuple(t);
     }

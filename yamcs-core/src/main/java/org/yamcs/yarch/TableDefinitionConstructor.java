@@ -25,11 +25,6 @@ import static org.yamcs.yarch.TableDefinitionRepresenter.*;
 /**
  * Constructs {@link org.yamcs.yarch.TableDefinition} from .def yaml files.
  * 
- * Note on the storage engine: before we had multiple storage engines, the only one existing was TokyoCabinets. 
- * So, when the .def file do not specify the storage engine, we assume it's TokyoCabinets. 
- * That despite the fact that when creating tables with the create table statement, a different storage engine is assumed as default.
- * 
- * @author nm
  *
  */
 public class TableDefinitionConstructor  extends Constructor {
@@ -128,7 +123,7 @@ public class TableDefinitionConstructor  extends Constructor {
                 if(name==null) {
                     throw new IllegalArgumentException("name not specifie for column with index idx="+idx);
                 }
-                DataType type = DataType.valueOf((String)m.get("type"));
+                DataType type = DataType.byName((String)m.get("type"));
 
                 ColumnDefinition cd = new ColumnDefinition(name, type);
 

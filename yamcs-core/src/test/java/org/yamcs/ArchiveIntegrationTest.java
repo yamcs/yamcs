@@ -79,11 +79,28 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testReplay() throws Exception {
-        generateData("2015-01-01T10:00:00", 3600);
+        Long t0 = System.currentTimeMillis();
+        generateData("2015-01-01T10:00:00", 300);
+        
         restClient.setAcceptMediaType(MediaType.JSON);
         restClient.setSendMediaType(MediaType.JSON);
 
+        
+        NamedObjectList subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6", "/REFMDB/SUBSYS1/IntegerPara1_1_7", 
+                "/REFMDB/SUBSYS1/processed_para_uint", "/REFMDB/SUBSYS1/processed_para_double");
+        WebSocketRequest wsr = new WebSocketRequest("parameter", ParameterResource.WSR_subscribe, subscrList);
+        wsClient.sendRequest(wsr);
+        
+        //these are from the realtime processor cache
+        ParameterData pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+        assertEquals(4, pdata.getParameterCount());
+        ParameterValue p1_1_6 = pdata.getParameter(0);
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
+     //   assertEquals("2015-01-01T10:59:59.000", p1_1_6.getGenerationTimeUTC());
+        
+        
         ClientInfo cinfo = getClientInfo();
+
         //create a parameter replay via REST
         CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
                 .addClientId(cinfo.getId())
@@ -99,27 +116,37 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         cinfo = getClientInfo();
         assertEquals("testReplay", cinfo.getProcessorName());
 
-        NamedObjectList subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6", "/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/processed_para_uint", "/REFMDB/SUBSYS1/processed_para_double");
-        WebSocketRequest wsr = new WebSocketRequest("parameter",ParameterResource.WSR_subscribe, subscrList);
-        wsClient.sendRequest(wsr);
 
-        ParameterData pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+        pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
         assertNotNull(pdata);
 
         assertEquals(2, pdata.getParameterCount());
-        ParameterValue p1_1_6 = pdata.getParameter(0);
+        p1_1_6 = pdata.getParameter(0);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
         assertEquals("2015-01-01T10:01:00.000", p1_1_6.getGenerationTimeUTC());
 
         
         pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
         assertNotNull(pdata);
-
         assertEquals(2, pdata.getParameterCount());
         ParameterValue pp_para_uint = pdata.getParameter(0);
         assertEquals("/REFMDB/SUBSYS1/processed_para_uint", pp_para_uint.getId().getName());
         assertEquals("2015-01-01T10:01:00.010", pp_para_uint.getGenerationTimeUTC());
+        
+        ParameterValue pp_para_double = pdata.getParameter(1);
+        assertEquals("/REFMDB/SUBSYS1/processed_para_double", pp_para_double.getId().getName());
+        assertEquals("2015-01-01T10:01:00.010", pp_para_uint.getGenerationTimeUTC());
 
+        
+        pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+        assertNotNull(pdata);
+        System.out.println("pdata: "+pdata);
+        assertEquals(1, pdata.getParameterCount());
+        pp_para_uint = pdata.getParameter(0);
+        assertEquals("/REFMDB/SUBSYS1/processed_para_uint", pp_para_uint.getId().getName());
+        assertEquals("2015-01-01T10:01:00.030", pp_para_uint.getGenerationTimeUTC());
+        
+        
         pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
         assertNotNull(pdata);
 
@@ -210,7 +237,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                         tr = getRecord(i);
                     } else {
                         Row.Builder trb = Row.newBuilder();
-                        trb.addCell(Cell.newBuilder().setColumnId(2).setData(ByteString.copyFrom(csstr.getByteArray("test "+i))).build());
+                        trb.addCell(Cell.newBuilder().setColumnId(2).setData(ByteString.copyFrom(csstr.toByteArray("test "+i))).build());
                         tr=trb.build();
                     }
                     brds.sendData(encode(tr));
@@ -261,8 +288,8 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         Row tr = Row.newBuilder()
                 .addColumn(ColumnInfo.newBuilder().setId(1).setName("a1").setType("INT").build()) //the column info is only required for the first record actually
                 .addColumn(ColumnInfo.newBuilder().setId(2).setName("a2").setType("STRING").build())
-                .addCell(Cell.newBuilder().setColumnId(1).setData(ByteString.copyFrom(csint.getByteArray(i))).build())
-                .addCell(Cell.newBuilder().setColumnId(2).setData(ByteString.copyFrom(csstr.getByteArray("test "+i))).build())
+                .addCell(Cell.newBuilder().setColumnId(1).setData(ByteString.copyFrom(csint.toByteArray(i))).build())
+                .addCell(Cell.newBuilder().setColumnId(2).setData(ByteString.copyFrom(csstr.toByteArray("test "+i))).build())
                 .build();
         return tr;
     }

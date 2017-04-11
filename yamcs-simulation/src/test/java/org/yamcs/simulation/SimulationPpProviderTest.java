@@ -202,8 +202,7 @@ public class SimulationPpProviderTest {
         }
 
         @Override
-        public void updatePps(long gentime, String group, int seqNum,
-                Collection<ParameterValue> params) {
+        public void updateParameters(long gentime, String group, int seqNum, Collection<ParameterValue> params) {
             receivedValue.addAll(params);
         }
 

@@ -81,9 +81,6 @@ public class InKeyTableWriter extends AbstractTableWriter {
         }
 
     }
-
-   
-
   
     private boolean insert(YRDB db, RdbPartition partition, Tuple t) throws RocksDBException {
         byte[] k = getPartitionKey(partition, tableDefinition.serializeKey(t));
@@ -118,7 +115,7 @@ public class InKeyTableWriter extends AbstractTableWriter {
      */
     private boolean insertAppend(YRDB db, RdbPartition partition, Tuple t) throws RocksDBException {
         byte[] k = getPartitionKey(partition, tableDefinition.serializeKey(t));
-        byte[] v=db.get(k);
+        byte[] v = db.get(k);
         boolean inserted=false;
         if(v!=null) {//append to an existing row
             Tuple oldt=tableDefinition.deserialize(k, v);
@@ -141,8 +138,8 @@ public class InKeyTableWriter extends AbstractTableWriter {
                 db.put(k, v);
             }
         } else {//new row
-            inserted=true;
-            v=tableDefinition.serializeValue(t);
+            inserted = true;
+            v = tableDefinition.serializeValue(t);
             db.put(k, v);
         }
         return inserted;

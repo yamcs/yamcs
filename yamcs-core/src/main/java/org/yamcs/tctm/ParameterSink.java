@@ -13,14 +13,26 @@ import org.yamcs.parameter.ParameterValue;
  */
 public interface ParameterSink {
     /**
-     * Update a collection of Parameters
-     *
+     * Update a collection of Parameters. The parameters are provided in ParameterValue format - that means they need to have associated a XtceDB Parameter.
+     * 
+     * The group is used as partition key in the recording (and can be used for retrieval as well).
+     * 
+     * The (gentime,group,seqNum) has to be unique for one parameter and will be used to detect and not save duplicates.
+     * 
+     * @param gentime - the generation time of the parameters
+     * @param group 
+     * @param seqNum 
+     * @param params 
      */
-    @Deprecated
-    public abstract void updatePps(long gentime, String group, int seqNum, Collection<ParameterValue> params);
+    public abstract void updateParameters(long gentime, String group, int seqNum, Collection<ParameterValue> params);
 
     /**
-     * Update the parameters
+     * Update the parameters. Alternative method to provide ProtoBuf parameter values instead of POJO versions.
+     * The parameters do not need an associated XtceDB Parameter but just a FullyQualifiedName. 
+     * 
+     * The ParameterRecorder will use the FQN to record them. If they are sent to a processor (e.g. on a pp_realtime stream), they have 
+     * to be found in the XtceDB for clients to be able subscribe to them. Also for triggering alarms.  
+     * 
      * @param gentime
      * @param group
      * @param seqNum

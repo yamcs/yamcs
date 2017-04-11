@@ -286,7 +286,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
         }
 
         datacount += stepParameters.size();
-        ppListener.updatePps(new Date().getTime(), groupName, (int) datacount, pvs);
+        ppListener.updateParameters(new Date().getTime(), groupName, (int) datacount, pvs);
 
 
         Long nextStepDate = simulationRealStartTime.getTime() + simulationStepLengthMs * simutationStep;

@@ -6,8 +6,6 @@ import static org.yamcs.api.artemis.Protocol.decode;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.activemq.artemis.api.core.SimpleString;
@@ -38,7 +36,6 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchTestCase;
@@ -123,7 +120,7 @@ public class PpTupleTranslatorTest extends YarchTestCase {
     public void testTranslation() throws Exception {
         StreamInitializer streamInit = new StreamInitializer(ydb.getName());
         streamInit.createStreams();
-        
+
         ParameterRecorder ppRecorder = new ParameterRecorder(ydb.getName());
         ppRecorder.startAsync();
 
@@ -133,7 +130,7 @@ public class PpTupleTranslatorTest extends YarchTestCase {
 
         // Add the adapter under test
         SimpleString address = new SimpleString("pp_realtime");
-        StreamAdapter streamAdapter = new StreamAdapter( rtstream, address, new PpTupleTranslator() );
+        StreamAdapter streamAdapter = new StreamAdapter(rtstream, address, new PpTupleTranslator() );
 
         // Create a client to generate messages with
         YamcsSession ys = YamcsSession.newBuilder().build();
@@ -166,43 +163,31 @@ public class PpTupleTranslatorTest extends YarchTestCase {
         Thread.sleep( 3000 );
 
         // And make sure the messages have appeared in the table
-        final AtomicInteger tableReceivedCounter=new AtomicInteger(0);
         execute("create stream stream_pp_out as select * from "+ParameterRecorder.TABLE_NAME);
-        Stream s = ydb.getStream("stream_pp_out");
-        final Semaphore finished=new Semaphore(0);
-        s.addSubscriber(new StreamSubscriber() {
-            @Override
-            public void streamClosed(Stream stream) {
-                finished.release();
-            }
-            @Override
-            public void onTuple(Stream stream, Tuple tuple) {
-                ParameterValue pv = (ParameterValue)tuple.getColumn( COL_STR );
-                assertTrue( "test".equals( pv.getEngValue().getStringValue() ) );
+        List<Tuple> tlist = fetchAllFromTable(ParameterRecorder.TABLE_NAME);
+        assertEquals(numMessages, tlist.size());
+        for(int i=0; i<numMessages; i++) {
+            Tuple tuple = tlist.get(i);
+            org.yamcs.parameter.ParameterValue pv = (org.yamcs.parameter.ParameterValue)tuple.getColumn( COL_STR );
+            assertTrue( "test".equals( pv.getEngValue().getStringValue() ) );
 
-                pv = (ParameterValue)tuple.getColumn( COL_DOUBLE );
-                assertEquals( 1.234, pv.getEngValue().getDoubleValue(), 0.0001 );
+            pv = (org.yamcs.parameter.ParameterValue)tuple.getColumn( COL_DOUBLE );
+            assertEquals( 1.234, pv.getEngValue().getDoubleValue(), 0.0001 );
 
-                pv = (ParameterValue)tuple.getColumn( COL_BYTE );
-                assertEquals( 1, pv.getEngValue().getSint32Value() );
+            pv = (org.yamcs.parameter.ParameterValue)tuple.getColumn( COL_BYTE );
+            assertEquals( 1, pv.getEngValue().getSint32Value() );
 
-                assertTrue( "no-group".equals( tuple.getColumn( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GROUP ) ) );
+            assertTrue( "no-group".equals( tuple.getColumn( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GROUP ) ) );
 
-                assertEquals( tableReceivedCounter.get(), tuple.getColumn( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_SEQ_NUM ) );
-                tableReceivedCounter.incrementAndGet();
+            assertEquals( i, tuple.getColumn( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_SEQ_NUM ) );
 
-                long gentime = ((Long)tuple.getColumn( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GENTIME )).longValue();
-                long rectime = ((Long)tuple.getColumn( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_RECTIME )).longValue();
-                assertEquals( gentime, rectime - 10, 0.0001 );
+            long gentime = ((Long)tuple.getColumn( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GENTIME )).longValue();
+            long rectime = ((Long)tuple.getColumn( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_RECTIME )).longValue();
+            assertEquals( gentime, rectime - 10, 0.0001 );
 
-                if(tableReceivedCounter.get()==numMessages)finished.release();
-            }
-        });
-        s.start();
-        finished.tryAcquire(10, TimeUnit.SECONDS);
+        }
 
         assertEquals(numMessages, hornetReceivedCounter.get());
-        assertEquals(numMessages, tableReceivedCounter.get());
         streamAdapter.quit();
 
         ppRecorder.stopAsync();

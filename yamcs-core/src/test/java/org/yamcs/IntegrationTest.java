@@ -47,6 +47,7 @@ import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ManagementResource;
+import org.yamcs.yarch.DataType;
 
 import com.google.protobuf.MessageLite;
 
@@ -517,7 +518,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(ServiceState.RUNNING, servInfo.getState());
 
     }
-    
+
+   
     @Test
     public void testRestEvents() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("events", "subscribe");

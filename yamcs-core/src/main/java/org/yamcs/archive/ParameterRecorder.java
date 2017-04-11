@@ -58,7 +58,7 @@ public class ParameterRecorder extends AbstractService {
                 List<StreamConfigEntry> sceList = sc.getEntries(StandardStreamType.param);
                 for(StreamConfigEntry sce: sceList){
                     streams.add(sce.getName());
-                    ydb.execute("insert into "+TABLE_NAME+" select * from "+sce.getName());
+                    ydb.execute("insert_append into "+TABLE_NAME+" select * from "+sce.getName());
                 }
             } else if(config.containsKey("streams")){
                 List<String> streamNames = YConfiguration.getList(config, "streams");
@@ -72,12 +72,9 @@ public class ParameterRecorder extends AbstractService {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
             throw new ConfigurationException("exception when creating parameter input stream", e);
         }
     }
-    
-    
 
     @Override
     protected void doStart() {

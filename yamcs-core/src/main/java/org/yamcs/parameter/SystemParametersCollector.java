@@ -24,6 +24,7 @@ import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
@@ -168,7 +169,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
                 log.warn("duplicate value for {}\nfirst: {}\n second: {}", pv.getId(), cols.get(idx), pv);
                 continue;
             }
-            tdef.addColumn(name, ParameterDataLinkInitialiser.PARAMETER_DATA_TYPE);
+            tdef.addColumn(name, DataType.PARAMETER_VALUE);
             cols.add(pv);
         }
         Tuple t=new Tuple(tdef, cols);

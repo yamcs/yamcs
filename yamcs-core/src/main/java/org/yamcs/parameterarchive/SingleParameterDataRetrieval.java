@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.parameterarchive.MultiParameterDataRetrieval.PartitionIteratorComparator;
 import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
+import org.yamcs.utils.DatabaseCorruptionException;
 
 public class SingleParameterDataRetrieval {
     final private SingleParameterValueRequest spvr;

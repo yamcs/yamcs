@@ -55,7 +55,6 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
 import com.google.common.util.concurrent.AbstractService;
-import com.google.protobuf.MessageLite;
 
 import io.protostuff.JsonIOUtil;
 
@@ -128,7 +127,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     }
 
     @Override
-    public void newData(ProtoDataType type, MessageLite data) {
+    public void newData(ProtoDataType type, Object data) {
         switch(type) {
         case TM_PACKET:
             dataCount++;
@@ -137,23 +136,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
             tmProcessor.processPacket(new PacketWithTime(tpd.getReceptionTime(), tpd.getGenerationTime(), tpd.getPacket().toByteArray()));
             break;
         case PP:
-            //convert from protobuf ParameterValue to internal ParameterValue 
-            ParameterData pd = (ParameterData)data;
-            ArrayList<ParameterValue> params=new ArrayList<ParameterValue>(pd.getParameterCount());
-            for(org.yamcs.protobuf.Pvalue.ParameterValue pbPv:pd.getParameterList()) {
-                
-                Parameter ppDef;
-                ppDef = xtceDb.getParameter(pbPv.getId());
-                
-                if(ppDef!=null) {
-                    ParameterValue pv = ParameterValue.fromGpb(ppDef, pbPv);
-                    params.add(pv);
-                    replayTime = pv.getGenerationTime();
-                } else { //this may happen if the xtcedb has been changed from when the archive has been built
-                    log.trace("Received value for a parameter id not in xtceDb: {}", pbPv.getId());
-                }
-            }
-            parameterRequestManager.update(params);
+            parameterRequestManager.update((List<ParameterValue>)data);
             break;
         case CMD_HISTORY:
             CommandHistoryEntry che = (CommandHistoryEntry) data;

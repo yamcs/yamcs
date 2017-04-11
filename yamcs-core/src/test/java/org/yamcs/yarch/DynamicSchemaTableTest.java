@@ -4,6 +4,7 @@ package org.yamcs.yarch;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import org.junit.Test;
@@ -56,10 +57,10 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         TableDefinition tblDef = ydb.getTable("test_insert");
         
         TupleDefinition keyDef = tblDef.getKeyDefinition();
-        ArrayList<ColumnDefinition> keyCols=keyDef.getColumnDefinitions();
+        List<ColumnDefinition> keyCols=keyDef.getColumnDefinitions();
         assertEquals(1, keyCols.size());
         
-        ArrayList<ColumnDefinition> valueCols = tblDef.getValueDefinition().getColumnDefinitions();
+        List<ColumnDefinition> valueCols = tblDef.getValueDefinition().getColumnDefinitions();
         assertEquals(2, valueCols.size());
         
         Stream s = ydb.getStream("test_insert_in");
@@ -124,10 +125,10 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         TableDefinition tblDef=ydb.getTable("test_inserta");
         
         TupleDefinition keyDef=tblDef.getKeyDefinition();
-        ArrayList<ColumnDefinition> keyCols=keyDef.getColumnDefinitions();
+        List<ColumnDefinition> keyCols=keyDef.getColumnDefinitions();
         assertEquals(1, keyCols.size());
         
-        ArrayList<ColumnDefinition> valueCols=tblDef.getValueDefinition().getColumnDefinitions();
+        List<ColumnDefinition> valueCols=tblDef.getValueDefinition().getColumnDefinitions();
         assertEquals(2, valueCols.size());
         
         Stream s=ydb.getStream("test_inserta_in");
@@ -186,10 +187,10 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         TableDefinition tblDef=ydb.getTable("test_upsert");
         
         TupleDefinition keyDef=tblDef.getKeyDefinition();
-        ArrayList<ColumnDefinition> keyCols=keyDef.getColumnDefinitions();
+        List<ColumnDefinition> keyCols=keyDef.getColumnDefinitions();
         assertEquals(1, keyCols.size());
         
-        ArrayList<ColumnDefinition> valueCols=tblDef.getValueDefinition().getColumnDefinitions();
+        List<ColumnDefinition> valueCols=tblDef.getValueDefinition().getColumnDefinitions();
         assertEquals(2, valueCols.size());
         
         Stream s=ydb.getStream("test_upsert_in");
@@ -198,7 +199,7 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         emit(s, 1, "v3", 3);
         emit(s, 2, "v3", 3);
         
-        valueCols=tblDef.getValueDefinition().getColumnDefinitions();
+        valueCols = tblDef.getValueDefinition().getColumnDefinitions();
         assertEquals(3, valueCols.size());
         assertEquals("v3", valueCols.get(2).getName());
         
@@ -245,10 +246,10 @@ public class DynamicSchemaTableTest extends YarchTestCase {
         TableDefinition tblDef =ydb.getTable("test_upserta");
         
         TupleDefinition keyDef = tblDef.getKeyDefinition();
-        ArrayList<ColumnDefinition> keyCols = keyDef.getColumnDefinitions();
+        List<ColumnDefinition> keyCols = keyDef.getColumnDefinitions();
         assertEquals(1, keyCols.size());
         
-        ArrayList<ColumnDefinition> valueCols = tblDef.getValueDefinition().getColumnDefinitions();
+        List<ColumnDefinition> valueCols = tblDef.getValueDefinition().getColumnDefinitions();
         assertEquals(2, valueCols.size());
         
         Stream s=ydb.getStream("test_upserta_in");

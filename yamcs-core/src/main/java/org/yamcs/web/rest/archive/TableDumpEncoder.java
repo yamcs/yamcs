@@ -56,7 +56,7 @@ public class TableDumpEncoder extends StreamToChunkedTransferEncoder {
             } else {
                 cs = ColumnSerializerFactory.getBasicColumnSerializer(cd.getType());
             }
-            rowb.addCell(Cell.newBuilder().setColumnId(colId).setData(ByteString.copyFrom(cs.getByteArray(v))).build());
+            rowb.addCell(Cell.newBuilder().setColumnId(colId).setData(ByteString.copyFrom(cs.toByteArray(v))).build());
         }
         rowb.build().writeDelimitedTo(bufOut);
     }

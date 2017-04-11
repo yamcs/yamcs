@@ -331,7 +331,7 @@ public class YarchReplay implements StreamSubscriber {
                 return;
             }
             ProtoDataType type=ProtoDataType.valueOf((Integer)t.getColumn(0));
-            MessageLite data = handlers.get(type).transform(t);
+            Object data = handlers.get(type).transform(t);
             
             if(data!=null) {
                 listener.newData(type, data);

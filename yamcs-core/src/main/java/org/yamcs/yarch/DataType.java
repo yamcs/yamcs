@@ -3,6 +3,8 @@
  */
 package org.yamcs.yarch;
 
+import org.yamcs.parameter.ParameterValue;
+
 /**
  * Types supported by yarch. Currently TUPLE and LIST do now work well.
  * ENUM is just like String, except that when it's stored on disk a two bytes integer value from a map is stored instead of the String.
@@ -13,23 +15,25 @@ package org.yamcs.yarch;
  *
  */
 public class DataType {
+
     private static final long serialVersionUID = 201101181144L;
     
-    public enum _type {BYTE, SHORT, INT, DOUBLE, TIMESTAMP, STRING, BINARY, BOOLEAN, ENUM, PROTOBUF, TUPLE, LIST};
-    final public _type val;
+    public enum _type {BYTE, SHORT, INT, DOUBLE, TIMESTAMP, STRING, BINARY, BOOLEAN, ENUM, PROTOBUF, PARAMETER_VALUE, TUPLE, LIST};
+    public final _type val;
     
-    private TupleDefinition td=null;//for TUPLE and LIST
-    private String className=null; //for PROTOBUF
+    private TupleDefinition td = null;//for TUPLE and LIST
+    private String className = null; //for PROTOBUF
     
-    static public final DataType BYTE = new DataType(_type.BYTE);
-    static public final DataType SHORT = new DataType(_type.SHORT);
-    static public final DataType INT = new DataType(_type.INT);
-    static public final DataType DOUBLE = new DataType(_type.DOUBLE);
-    static public final DataType STRING = new DataType(_type.STRING);
-    static public final DataType BINARY = new DataType(_type.BINARY);
-    static public final DataType BOOLEAN = new DataType(_type.BOOLEAN);
-    static public final DataType TIMESTAMP = new DataType(_type.TIMESTAMP);
-    static public final DataType ENUM = new DataType(_type.ENUM);
+    public static final DataType BYTE = new DataType(_type.BYTE);
+    public static final DataType SHORT = new DataType(_type.SHORT);
+    public static final DataType INT = new DataType(_type.INT);
+    public static final DataType DOUBLE = new DataType(_type.DOUBLE);
+    public static final DataType STRING = new DataType(_type.STRING);
+    public static final DataType BINARY = new DataType(_type.BINARY);
+    public static final DataType BOOLEAN = new DataType(_type.BOOLEAN);
+    public static final DataType TIMESTAMP = new DataType(_type.TIMESTAMP);
+    public static final DataType ENUM = new DataType(_type.ENUM);
+    public static final DataType PARAMETER_VALUE = new DataType(_type.PARAMETER_VALUE);
 
 
     private DataType(_type t) {
@@ -50,7 +54,7 @@ public class DataType {
     
     public static DataType protobuf(String className) {
         DataType dt=new DataType(_type.PROTOBUF);
-        dt.className=className;
+        dt.className = className;
         return dt;
     }
     
@@ -64,18 +68,46 @@ public class DataType {
      * @return the DataType corresponding to the name
      * @throws IllegalArgumentException thrown in case the name is invalid
      */
-    public static DataType valueOf(String name) throws IllegalArgumentException {
-        if(name==null) throw new NullPointerException();
-        if("BYTE".equalsIgnoreCase(name))return BYTE;
-        if("SHORT".equalsIgnoreCase(name))return SHORT;
-        if("INT".equalsIgnoreCase(name))return INT;
-        if("DOUBLE".equalsIgnoreCase(name))return DOUBLE;
-        if("STRING".equalsIgnoreCase(name))return STRING;
-        if("BINARY".equalsIgnoreCase(name))return BINARY;
-        if("BOOLEAN".equalsIgnoreCase(name))return BOOLEAN;
-        if("TIMESTAMP".equalsIgnoreCase(name))return TIMESTAMP;
-        if("ENUM".equalsIgnoreCase(name))return ENUM;
-        if(name.toUpperCase().startsWith("PROTOBUF(")) return protobuf(name.substring(9, name.length()-1));
+    public static DataType byName(String name) throws IllegalArgumentException {
+        if(name==null) {
+            throw new NullPointerException();
+        }
+        if("BYTE".equals(name)){
+            return BYTE;
+        }
+        if("SHORT".equals(name)){
+            return SHORT;
+        }
+        if("INT".equals(name)){
+            return INT;
+        }
+        if("DOUBLE".equals(name)){
+            return DOUBLE;
+        }
+        
+        if("STRING".equals(name)){
+            return STRING;
+        }
+        if("BINARY".equals(name)){
+            return BINARY;
+        }
+        if("BOOLEAN".equals(name)){
+            return BOOLEAN;
+        }
+        if("TIMESTAMP".equals(name)){
+            return TIMESTAMP;
+        }
+        if("ENUM".equals(name)) {
+            return ENUM;
+        }
+        
+        if("PARAMETER_VALUE".equals(name)){
+            return PARAMETER_VALUE;
+        }
+        
+        if(name.toUpperCase().startsWith("PROTOBUF(")) {
+            return protobuf(name.substring(9, name.length()-1));
+        }
         
         throw new IllegalArgumentException("invalid DataType '"+name+"'");
     }
@@ -102,6 +134,8 @@ public class DataType {
           return "String";
       case INT:
           return "Integer";
+      case PARAMETER_VALUE:
+          return "ParameterValue";
       }
       return null;
     }
@@ -171,6 +205,8 @@ public class DataType {
             return STRING;
         } else if(v instanceof byte[]) {
             return BINARY;
+        } else if(v instanceof ParameterValue) {
+            return PARAMETER_VALUE;
         } else {
             throw new IllegalArgumentException("invalid object of type of "+v.getClass());
         }
@@ -197,20 +233,22 @@ public class DataType {
     }
 
     /**
-     * Performs casting:
-     *  numbers to numbers
-     *  numbers to string
-     *  string to numbers
+     * Performs casting of v from type1 to type2
      * 
+     * @param sourceType
+     * @param targetType
+     * @param v
+     * @return the casted object (can be v if no casting is performed)
+     * @throws IllegalArgumentException
      */
-    public static Object castAs(DataType type, Object v) throws IllegalArgumentException{
-        DataType vdt = typeOf(v);
-        if(type.equals(vdt)) return v;
+    public static Object castAs(DataType sourceType, DataType targetType, Object v) throws IllegalArgumentException {
+        if(sourceType.equals(targetType)) {
+            return v;
+        }
         
         if(v instanceof Number) {
-            Number n=(Number)v;
-
-            switch(type.val) {
+            Number n = (Number)v;
+            switch(targetType.val) {
             case BYTE:
                 return n.byteValue();
             case DOUBLE:
@@ -226,8 +264,8 @@ public class DataType {
                 return n.toString();
             }
         } else if(v instanceof String) {
-            String s=(String)v;
-            switch(type.val) {
+            String s = (String)v;
+            switch(targetType.val) {
             case BYTE:
                 return Byte.decode(s);
             case DOUBLE:
@@ -242,7 +280,21 @@ public class DataType {
                 return s;
             }
         }
-        throw new IllegalArgumentException("Cannot convert '"+v+"' into "+type);
+        throw new IllegalArgumentException("Cannot convert '"+v+"' from "+sourceType+" into "+targetType);
+    }
+    /**
+     * Performs casting:
+     *  numbers to numbers
+     *  numbers to string
+     *  string to numbers
+     * @param targetType 
+     * @param v 
+     * @return the casted object (can be to v if no casting is performed)
+     * @throws IllegalArgumentException 
+     * 
+     */
+    public static Object castAs(DataType targetType, Object v) throws IllegalArgumentException {
+        return castAs(typeOf(v), targetType, v);
     }
 
     public static boolean isNumber(DataType dt) {
@@ -261,19 +313,18 @@ public class DataType {
    
     
     public static boolean compatible(DataType dt1, DataType dt2) {
-        if(dt1==dt2) return true;
-        
-        if(isNumber(dt1) && isNumber(dt2)) return true;
-        
-        
-        switch(dt1.val) {
-        case STRING:
-        case ENUM:
-            if(dt2.val==_type.STRING || dt2.val==_type.ENUM) return true;
-        default:
-            return false;
+        if(dt1==dt2) {
+            return true;
         }
         
+        if(isNumber(dt1) && isNumber(dt2)){
+            return true;
+        }
+        
+        if(dt1.val == _type.STRING || dt1.val == _type.ENUM) {
+            return dt2.val==_type.STRING || dt2.val==_type.ENUM;
+        }
+        return false;
     }
     /**
      * Returns the name of the class (implementing {@link com.google.protobuf.MessageLite})in case of PROTOBUF type
@@ -281,5 +332,48 @@ public class DataType {
      */
     public String getClassName() {
         return className;
+    }
+    
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + val.hashCode();
+        result = prime * result
+                + ((className == null) ? 0 : className.hashCode());
+        
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        
+        if (obj == null) {
+            return false;
+        }
+        
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        
+        DataType other = (DataType) obj;
+        
+        
+        if (val != other.val) {
+            return false;
+        }
+        
+        if (className == null) {
+            if (other.className != null) {
+                return false;
+            }
+        } else if (!className.equals(other.className)) {
+            return false;
+        }
+        return true;
     }
 }

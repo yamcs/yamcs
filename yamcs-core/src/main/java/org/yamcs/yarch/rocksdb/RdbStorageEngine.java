@@ -42,7 +42,7 @@ public class RdbStorageEngine implements StorageEngine {
     static Logger log = LoggerFactory.getLogger(RdbStorageEngine.class.getName());
     RdbTagDb rdbTagDb = null;
     boolean ignoreVersionIncompatibility = false;
-    
+
     public RdbStorageEngine(YarchDatabase ydb, boolean ignoreVersionIncompatibility) throws YarchException {
         this.ydb = ydb;
         instances.put(ydb, this);
@@ -89,7 +89,7 @@ public class RdbStorageEngine implements StorageEngine {
             throw new IllegalArgumentException("Do not have a partition manager for this table");
         }
         checkFormatVersion(tblDef);
-        
+
         try {
             if(tblDef.isPartitionedByValue()) {
                 if(tblDef.getPartitionStorage()==PartitionStorage.COLUMN_FAMILY) {
@@ -106,8 +106,8 @@ public class RdbStorageEngine implements StorageEngine {
             throw new YarchException("Failed to create writer", e);
         } 
     }
-    
-    
+
+
     @Override
     public AbstractStream newTableReaderStream(TableDefinition tbl, boolean ascending, boolean follow) {
         if(!partitionManagers.containsKey(tbl)) {
@@ -182,12 +182,12 @@ public class RdbStorageEngine implements StorageEngine {
     public void setIgnoreVersionIncompatibility(boolean b) {
         this.ignoreVersionIncompatibility = b;
     }
-    
+
     private void checkFormatVersion(TableDefinition tblDef) throws YarchException {
         if(ignoreVersionIncompatibility) {
             return;
         }
-    
+
         if(tblDef.getFormatVersion()!=TableDefinition.CURRENT_FORMAT_VERSION) {
             throw new YarchException("Table "+ydb.getName()+"/"+tblDef.getName()+" format version is "+tblDef.getFormatVersion()
             + " instead of "+TableDefinition.CURRENT_FORMAT_VERSION+", please upgrade (use the \"yamcs archive upgrade\" command).");

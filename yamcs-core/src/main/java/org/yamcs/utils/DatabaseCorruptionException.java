@@ -1,4 +1,4 @@
-package org.yamcs.parameterarchive;
+package org.yamcs.utils;
 
 import org.yamcs.utils.DecodingException;
 

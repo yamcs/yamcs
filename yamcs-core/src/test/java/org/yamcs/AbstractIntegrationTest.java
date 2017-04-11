@@ -26,13 +26,13 @@ import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.management.ManagementService;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterData;
-import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
@@ -55,6 +55,8 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.web.HttpServer;
 import org.yamcs.web.websocket.ManagementResource;
 import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.management.JMXService;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -346,9 +348,10 @@ public abstract class AbstractIntegrationTest {
         long generationTime;
         
         static volatile ParameterProvider instance;
-        
+        XtceDb xtcedb;
         public ParameterProvider(String yamcsInstance, String name) {
             instance = this;
+            xtcedb = XtceDbFactory.getInstance(yamcsInstance);
         }
         
         @Override
@@ -398,26 +401,34 @@ public abstract class AbstractIntegrationTest {
         }
        
         void generateParameters(int x) {
-            ParameterValue pv1 = ParameterValue.newBuilder().setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
-                   .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/processed_para_uint"))
-                   .setGenerationTime(generationTime)
-                   .setEngValue(ValueUtility.getUint32GbpValue(x))
-                   .build();
+           
+            ParameterValue pv1 = new ParameterValue(xtcedb.getParameter("/REFMDB/SUBSYS1/processed_para_uint"));
+            pv1.setUnsignedIntegerValue(x);
+            pv1.setGenerationTime(generationTime);
             
-            ParameterValue pv2 = ParameterValue.newBuilder().setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
-                    .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/processed_para_string"))
-                    .setGenerationTime(generationTime)
-                    .setEngValue(ValueUtility.getStringGbpValue("para" +x))
-                    .build();
-             
-            ParameterValue pv3 = ParameterValue.newBuilder().setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
+            ParameterValue pv2 = new ParameterValue(xtcedb.getParameter("/REFMDB/SUBSYS1/processed_para_string"));
+            pv2.setGenerationTime(generationTime);
+            pv2.setStringValue("para" +x);
+            
+
+            ppListener.updateParameters(generationTime, "IntegrationTest", seqNum, Arrays.asList(pv1, pv2));
+            
+            //this one should be combined with the two above in the archive as they have the same generation time, group and sequence
+            org.yamcs.protobuf.Pvalue.ParameterValue pv3 = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder().setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
                     .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/processed_para_double"))
                     .setGenerationTime(generationTime)
                     .setEngValue(ValueUtility.getDoubleGbpValue(x))
                     .build();
-             
+            ppListener.updateParams(generationTime, "IntegrationTest", seqNum, Arrays.asList(pv3));
             
-            ppListener.updateParams(generationTime, "IntegrationTest", seqNum, Arrays.asList(pv1, pv2, pv3));
+            
+            //mixup some ParameterValue with Protobuf ParameterValue to test compatibility with old yamcs
+            org.yamcs.protobuf.Pvalue.ParameterValue pv4 = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder().setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
+                    .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/processed_para_uint"))
+                    .setGenerationTime(generationTime+20)
+                    .setEngValue(ValueUtility.getUint32GbpValue(x))
+                    .build();
+            ppListener.updateParams(generationTime+20, "IntegrationTest", seqNum, Arrays.asList(pv4));
             
             seqNum++;
         }

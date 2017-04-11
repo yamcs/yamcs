@@ -209,7 +209,9 @@ public class ArchiveTableRestHandler extends RestHandler {
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Row msg)  throws Exception {
-            if(errorState) return;
+            if(errorState) {
+                return;
+            }
            
             try {
                 Tuple t = rowToTuple(msg);
@@ -231,7 +233,7 @@ public class ArchiveTableRestHandler extends RestHandler {
                 int colId = cinfo.getId();
                 String cname = cinfo.getName();
                 String ctype = cinfo.getType();
-                DataType type = DataType.valueOf(ctype);
+                DataType type = DataType.byName(ctype);
                 ColumnDefinition cd = new ColumnDefinition(cname, type);
                 ColumnSerializer<?> cs;
                 if(type.val == _type.PROTOBUF) {
@@ -250,7 +252,9 @@ public class ArchiveTableRestHandler extends RestHandler {
             TupleDefinition tdef = new TupleDefinition();
             List<Object> values = new ArrayList<>(row.getCellCount());
             for(Cell cell: row.getCellList()) {
-                if(!cell.hasColumnId() || !cell.hasData()) throw new IllegalArgumentException("Invalid cell provided, no id or no data");
+                if(!cell.hasColumnId() || !cell.hasData()) {
+                    throw new IllegalArgumentException("Invalid cell provided, no id or no data");
+                }
                 int colId = cell.getColumnId();
                 ColumnDefinition cd = colDefinitions.get(colId);
                 if(cd==null) {
@@ -258,7 +262,7 @@ public class ArchiveTableRestHandler extends RestHandler {
                 }
                 tdef.addColumn(cd);
                 ColumnSerializer<?> cs = serializers.get(colId);
-                Object v = cs.fromByteArray(cell.getData().toByteArray());
+                Object v = cs.fromByteArray(cell.getData().toByteArray(), cd);
                 values.add(v);
             }
             return new Tuple(tdef, values);
@@ -266,7 +270,9 @@ public class ArchiveTableRestHandler extends RestHandler {
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-            if(errorState) return;
+            if(errorState){
+                return;
+            }
             errorState = true;
             log.warn("Exception caught in the table load pipeline, closing the connection: {}", cause.getMessage());
             inputStream.close();

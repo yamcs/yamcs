@@ -21,6 +21,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.YarchDatabase;
