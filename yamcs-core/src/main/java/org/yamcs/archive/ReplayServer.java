@@ -8,9 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
-import org.yamcs.artemis.ArtemisRetrievalServer;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
@@ -37,30 +35,26 @@ public class ReplayServer extends AbstractService {
 
     final int MAX_REPLAYS=200;
     final String instance;
-    boolean startArtemisService = false;
 
     AtomicInteger replayCount = new AtomicInteger();
-    ArtemisRetrievalServer artemisRetrievalServer;
-    static String CONFIG_KEY_startArtemisService = "startArtemisService";
-    
+
     public ReplayServer(String instance ) {
         this.instance = instance;
     }
-    
-    
+
+
     public ReplayServer(String instance , Map<String, Object> config) {
         this.instance = instance;
-        startArtemisService = YConfiguration.getBoolean(config, CONFIG_KEY_startArtemisService, false);
     }
-        
-        /**
+
+    /**
      * create a new packet replay object
      * @param replayRequest 
      * @param replayListener 
      * @param authToken 
      * @return a replay object 
      * @throws YamcsException 
-         * @throws InvalidAuthenticationToken 
+     * @throws InvalidAuthenticationToken 
      */
     public YarchReplay createReplay(ReplayRequest replayRequest, ReplayListener replayListener, AuthenticationToken authToken) throws YamcsException, InvalidAuthenticationToken {
         if(replayCount.get()>=MAX_REPLAYS) {
@@ -133,24 +127,11 @@ public class ReplayServer extends AbstractService {
     }
     @Override
     protected void doStart() {
-        try {
-            if(startArtemisService) {
-                artemisRetrievalServer = new ArtemisRetrievalServer(this);
-                artemisRetrievalServer.startAsync();
-                artemisRetrievalServer.awaitRunning();
-            }
-            notifyStarted();
-        } catch (Exception e) {
-            notifyFailed(e);
-        }
+        notifyStarted();
     }
 
     @Override
     public void doStop() {
-        if(artemisRetrievalServer!=null) {
-            artemisRetrievalServer.stopAsync();
-            artemisRetrievalServer.awaitTerminated();
-        }
         notifyStopped();
     }
 

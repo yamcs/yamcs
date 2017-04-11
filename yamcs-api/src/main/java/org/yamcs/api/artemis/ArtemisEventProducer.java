@@ -39,17 +39,23 @@ public class ArtemisEventProducer extends AbstractEventProducer implements Conne
     ArrayBlockingQueue<Event> queue=new ArrayBlockingQueue<Event>(MAX_QUEUE_SIZE);
     
     public ArtemisEventProducer(YamcsConnectionProperties ycd) {
+        if(ycd.getInstance()==null) {
+            throw new IllegalArgumentException("Please provide the yamcs instance to connect to");
+        }
         yconnector = new YamcsConnector();
         yconnector.setMaxAttempts(Integer.MAX_VALUE);
         yconnector.addConnectionListener(this);
         yconnector.connect(ycd);
+        
         address = Protocol.getEventRealtimeAddress(ycd.getInstance());
         
         InputStream is = ArtemisEventProducer.class.getResourceAsStream("/event-producer.yaml");
         boolean repeatedEventReduction = true;
         if(is!=null) {
             Object o = new Yaml().load(is);
-            if(!(o instanceof Map<?,?>)) throw new RuntimeException("event-producer.yaml does not contain a map but a "+o.getClass());
+            if(!(o instanceof Map<?,?>)) {
+                throw new RuntimeException("event-producer.yaml does not contain a map but a "+o.getClass());
+            }
     
             @SuppressWarnings("unchecked")
             Map<String,Object> m = (Map<String, Object>) o;
@@ -58,7 +64,9 @@ public class ArtemisEventProducer extends AbstractEventProducer implements Conne
                 repeatedEventReduction = (Boolean) m.get(CONF_REPEATED_EVENT_REDUCTION);
             }
         }
-        if (repeatedEventReduction) setRepeatedEventReduction(true);
+        if (repeatedEventReduction) {
+            setRepeatedEventReduction(true);
+        }
     }
     
     

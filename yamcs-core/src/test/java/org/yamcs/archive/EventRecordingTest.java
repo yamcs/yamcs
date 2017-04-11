@@ -5,10 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.yamcs.api.artemis.Protocol.decode;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.activemq.artemis.api.core.SimpleString;
@@ -18,8 +15,10 @@ import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.yamcs.StreamEventProducer;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.api.artemis.Protocol;
+import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.api.artemis.ArtemisEventProducer;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsSession;
 import org.yamcs.api.artemis.YamcsClient.ClientBuilder;
@@ -27,17 +26,9 @@ import org.yamcs.artemis.ArtemisManagement;
 import org.yamcs.artemis.ArtemisServer;
 import org.yamcs.artemis.EventTupleTranslator;
 import org.yamcs.artemis.StreamAdapter;
-import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
-import org.yamcs.protobuf.Yamcs.EventReplayRequest;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
-import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
-import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchTestCase;
 
@@ -73,34 +64,33 @@ public class EventRecordingTest extends YarchTestCase {
     public void testRecording() throws Exception {
         ydb.execute("create stream "+EventRecorder.REALTIME_EVENT_STREAM_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'))");
         ydb.execute("create stream event_dump(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'))");
-        EventRecorder eventRecorder = new EventRecorder(context.getDbName());
-        final int n=100;
+        EventRecorder eventRecorder = new EventRecorder(instance);
+        final int n=10;
         eventRecorder.startAsync();
         eventRecorder.awaitRunning();
         
         YamcsSession ys=YamcsSession.newBuilder().build();
-        ClientBuilder pcb=ys.newClientBuilder();
-        SimpleString address=new SimpleString("events_realtime");
-        Stream rtstream=ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
+        ClientBuilder pcb = ys.newClientBuilder();
+        SimpleString address = new SimpleString(instance+".events_realtime");
+        Stream rtstream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
         assertNotNull(rtstream);
         
-        StreamAdapter streamAdapter= new StreamAdapter(rtstream, address, new EventTupleTranslator());
-        
+        StreamAdapter streamAdapter = new StreamAdapter(rtstream, address, new EventTupleTranslator());
+        ArtemisEventProducer aep = new ArtemisEventProducer(YamcsConnectionProperties.parse("yamcs:///"+instance));
+        Thread.sleep(1000);
         pcb.setDataProducer(true).setDataConsumer(address,null);
-        YamcsClient msgClient=pcb.build();
-        final AtomicInteger hornetReceivedCounter=new AtomicInteger(0);
+        YamcsClient msgClient = pcb.build();
+        final AtomicInteger artemisReceivedCounter=new AtomicInteger(0);
         msgClient.dataConsumer.setMessageHandler (
             new MessageHandler() {
                 @Override
                 public void onMessage(ClientMessage msg) {
                     try {
                         Event ev=(Event)decode(msg, Event.newBuilder());
-                        assertEquals(ev.getSeqNumber(),hornetReceivedCounter.getAndIncrement());
-                     //   System.out.println("got event "+ev);
+                        assertEquals(artemisReceivedCounter.getAndIncrement(), ev.getSeqNumber());
                     } catch (YamcsApiException e) {
                        fail("Exception received"+e);
                     }
-                    
                 }
                 
             }
@@ -109,70 +99,31 @@ public class EventRecordingTest extends YarchTestCase {
         for(int i=0;i<n;i++) {
             Event event=Event.newBuilder().setGenerationTime(i*1000).setMessage(i+" message "+i).
             setSeqNumber(i).setReceptionTime(18900).setSource("TEST"+(i&0xF)).build();
-            msgClient.sendData(address, ProtoDataType.EVENT, event);
+            aep.sendEvent(event);
         }
-        Thread.sleep(3000);//wait for the event recorder to record the events
+        Thread.sleep(1000);//wait for the event recorder to receive and record artemis events
         
-        //now try to read back the data from the table directly in yarch
-        final AtomicInteger tableReceivedCounter=new AtomicInteger(0);
-        execute("create stream stream_events_out as select * from events");
-        Stream s=ydb.getStream("stream_events_out");
-        final Semaphore finished=new Semaphore(0);
-        s.addSubscriber(new StreamSubscriber() {
-          @Override
-          public void streamClosed(Stream stream) {
-            
-          }
-          @Override
-          public void onTuple(Stream stream, Tuple tuple) {
-              Event ev=(Event)tuple.getColumn("body");
-              checkEvent(tableReceivedCounter.get(),ev);
-              tableReceivedCounter.incrementAndGet();
-              if(tableReceivedCounter.get()==n)finished.release();
-          }
-        });
-        s.start();
-        finished.tryAcquire(10, TimeUnit.SECONDS);
-
-        assertEquals(n, hornetReceivedCounter.get());
-        assertEquals(n, tableReceivedCounter.get());
-        msgClient.close();
-        
-        
-        //and now try remotely using replay via artemis
-        Map<String, Object> config = new HashMap<>();
-        config.put(ReplayServer.CONFIG_KEY_startArtemisService, true);
-        ReplayServer replay = new ReplayServer(ydb.getName(), config);
-        replay.startAsync();
-        
-        msgClient=ys.newClientBuilder().setRpc(true).setDataConsumer(null, null).build();
-        
-        EventReplayRequest err=EventReplayRequest.newBuilder().build();
-        ReplayRequest rr=ReplayRequest.newBuilder().setEndAction(EndAction.QUIT)
-                .setEventRequest(err)
-                .setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build())
-                .build();
-        SimpleString replayServer = Protocol.getYarchRetrievalControlAddress(context.getDbName());
-        StringMessage answer=(StringMessage) msgClient.executeRpc(replayServer, "createReplay", rr, StringMessage.newBuilder());
-        
-        SimpleString replayAddress=new SimpleString(answer.getMessage());
-        msgClient.executeRpc(replayAddress, "start", null, null);
-        for(int i=0;i<n;i++) {
-            ClientMessage msg=msgClient.dataConsumer.receive(5000);
-            assertNotNull(msg);
-            ProtoDataType dt=ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
-            assertEquals(ProtoDataType.EVENT, dt);
-            Event ev=(Event)decode(msg, Event.newBuilder());
-            checkEvent(i,ev);
+        //send now a bunch of events directly on the stream
+        StreamEventProducer sep = new StreamEventProducer(instance);
+        for(int i=n;i<2*n;i++) {
+            Event event=Event.newBuilder().setGenerationTime(i*1000).setMessage(i+" message "+i).
+            setSeqNumber(i).setReceptionTime(18900).setSource("TEST"+(i&0xF)).build();
+            sep.sendEvent(event);
         }
-        ClientMessage msg=msgClient.dataConsumer.receive(5000);
-        assertNotNull(msg);
-        ProtoDataType dt=ProtoDataType.valueOf(msg.getIntProperty(Protocol.DATA_TYPE_HEADER_NAME));
-        assertEquals(ProtoDataType.STATE_CHANGE, dt);
-        eventRecorder.stopAsync();
+        
+        //read back all the data from the table
+        List<Tuple> eventList = fetchAllFromTable(EventRecorder.TABLE_NAME);
+        
+        assertEquals(2*n, eventList.size());
+        int i =0;
+        for(Tuple tuple: eventList) {
+            Event ev=(Event)tuple.getColumn("body");
+            checkEvent(i, ev);
+            i++;
+        }
+        assertEquals(2*n, artemisReceivedCounter.get());
+        aep.close();
         streamAdapter.quit();
-        ys.close();
         msgClient.close();
-        replay.stopAsync();
     }
 }

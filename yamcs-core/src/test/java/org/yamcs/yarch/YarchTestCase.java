@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 import org.yamcs.YConfiguration;
@@ -26,7 +27,7 @@ public abstract class YarchTestCase {
     protected YarchDatabase ydb;
     static boolean littleEndian;
     protected String instance;
-
+    Random random = new Random();
     @BeforeClass 
     public static void setUpYarch() throws Exception {
 	YConfiguration.setup(); //reset the prefix if maven runs multiple tests in the same java 
@@ -70,10 +71,16 @@ public abstract class YarchTestCase {
 	return ydb.execute(cmd);
     }
 
+    protected List<Tuple> fetchAllFromTable(String tableName) throws Exception {
+        String sname = tableName+"_out_"+random.nextInt(10000);
+        ydb.execute("create stream "+sname+" as select * from "+tableName);
+        return fetchAll(sname);
+    }
     protected List<Tuple> fetchAll(String streamName) throws InterruptedException{
 	final List<Tuple> tuples=new ArrayList<Tuple>();
 	final Semaphore semaphore=new Semaphore(0);
-	Stream s=ydb.getStream(streamName);
+	Stream s = ydb.getStream(streamName);
+	if(s==null) throw new IllegalArgumentException("No stream named '"+streamName+"' in instance "+instance);
 	s.addSubscriber(new StreamSubscriber() {
 
 	    @Override

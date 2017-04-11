@@ -19,7 +19,7 @@ import com.google.common.util.concurrent.AbstractService;
  */
 public class EventRecorder extends AbstractService {
     static TupleDefinition eventTpdef;
-    static final public String TABLE_NAME="events";
+    public static final String TABLE_NAME = "events";
     final String yamcsInstance;
     
     static final public String REALTIME_EVENT_STREAM_NAME = "events_realtime";

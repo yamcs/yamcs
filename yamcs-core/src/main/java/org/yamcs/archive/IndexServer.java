@@ -16,7 +16,6 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
-import org.yamcs.artemis.ArtemisIndexServer;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
@@ -42,9 +41,6 @@ public class IndexServer extends AbstractService {
 
     final TagDb tagDb;
 
-    ArtemisIndexServer hqIndexServer;
-    boolean startArtemisServer;
-
     /**
      * Maps instance names to archive directories
      */
@@ -65,8 +61,6 @@ public class IndexServer extends AbstractService {
         } else {
             tmIndexer = new CccsdsTmIndex(yamcsInstance, readonly);
         }
-        startArtemisServer = c.getBoolean("startArtemisServer", false);
-
         if(!readonly) {
             StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
             if(config==null) {
@@ -92,25 +86,12 @@ public class IndexServer extends AbstractService {
 
     @Override
     protected void doStart() {
-        try {
-            if(startArtemisServer) {
-                hqIndexServer = new ArtemisIndexServer(this, tagDb);
-                hqIndexServer.startAsync();
-                hqIndexServer.awaitRunning();
-            }
-            notifyStarted();
-        } catch (Exception e) {
-            notifyFailed(e);
-        }
+        notifyStarted();
     }
 
     @Override
     protected void doStop() {
         try {
-            if(hqIndexServer!=null) {
-                hqIndexServer.stopAsync();
-                hqIndexServer.awaitTerminated();
-            }
             tmIndexer.close();
             tagDb.close();
             notifyStopped();
