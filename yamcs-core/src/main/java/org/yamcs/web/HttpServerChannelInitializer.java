@@ -5,11 +5,9 @@ import org.yamcs.web.rest.Router;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.cors.CorsConfig;
 import io.netty.handler.codec.http.cors.CorsHandler;
-import io.netty.handler.stream.ChunkedWriteHandler;
 
 
 public class HttpServerChannelInitializer extends ChannelInitializer<SocketChannel> {
@@ -31,16 +29,8 @@ public class HttpServerChannelInitializer extends ChannelInitializer<SocketChann
         if (corsConfig != null) {
             pipeline.addLast(new CorsHandler(corsConfig));
         }
-        pipeline.addLast(new HttpContentCompressor());
-        pipeline.addLast(new ChunkedWriteHandler());
-
+        
         //this has to be the last handler in the pipeline
         pipeline.addLast(new HttpRequestHandler(apiRouter));
-
-        // the following handlers are added dynamically depending on the request
-        //pipeline.addLast(new HttpObjectAggregator(65536));
-        //pipeline.addLast(new WebSocketServerProtocolHandler(websocketPath));
-        //pipeline.addLast(new WebSocketFrameHandler<TextWebSocketFrame>());
-        //pipeline.addLast(new WebSocketFrameHandler<BinaryWebSocketFrame>());
     }
 }

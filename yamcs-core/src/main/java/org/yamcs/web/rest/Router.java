@@ -64,6 +64,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequest;
@@ -71,6 +72,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.util.AttributeKey;
 import io.netty.channel.ChannelHandler.Sharable;
 
@@ -226,7 +228,10 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                     log.error("Error invoking data load handler on URI: '{}'", req.uri(), t);
                     HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST);
                 }
-            } else {            
+            } else {
+                ctx.pipeline().addLast(new HttpContentCompressor());
+                ctx.pipeline().addLast(new ChunkedWriteHandler());
+
                 //this will cause the channelRead0 to be called as soon as the request is complete 
                 // it will also reject requests whose body is greater than the MAX_BODY_SIZE) 
                 ctx.pipeline().addLast(new HttpObjectAggregator(MAX_BODY_SIZE));

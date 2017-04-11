@@ -32,6 +32,7 @@ import io.netty.channel.ChannelProgressiveFutureListener;
 import io.netty.channel.DefaultFileRegion;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpChunkedInput;
+import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpRequest;
@@ -39,8 +40,11 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedFile;
+import io.netty.handler.stream.ChunkedWriteHandler;
 
 
 public class StaticFileHandler extends RouteHandler {
@@ -51,7 +55,9 @@ public class StaticFileHandler extends RouteHandler {
     private static final Logger log = LoggerFactory.getLogger(StaticFileHandler.class.getName());
 
     public static void init() throws ConfigurationException {
-        if(mimeTypesMap!=null) return;
+        if(mimeTypesMap!=null) {
+            return;
+        }
 
         try(InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("mime.types")) {
             if(is==null) {
@@ -110,7 +116,9 @@ public class StaticFileHandler extends RouteHandler {
                 log.debug("Cannot parse {} header'{}'", HttpHeaderNames.IF_MODIFIED_SINCE, ifModifiedSince);
             }
         }
+        boolean zeroCopy = (webConfig.isZeroCopyEnabled() && ctx.pipeline().get(SslHandler.class) == null); 
 
+        
         RandomAccessFile raf;
         try {
             raf = new RandomAccessFile(file, "r");
@@ -120,26 +128,38 @@ public class StaticFileHandler extends RouteHandler {
         }
         long fileLength = raf.length();
 
+        
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
-        HttpUtil.setContentLength(response, fileLength);
         setContentTypeHeader(response, file);
         setDateAndCacheHeaders(response, file);
+
         if (HttpUtil.isKeepAlive(req)) {
             response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
         }
-        HttpUtil.setTransferEncodingChunked(response, true);
+        
+        
+        if(zeroCopy) {
+            HttpUtil.setContentLength(response, fileLength);
+        } else {
+            HttpUtil.setTransferEncodingChunked(response, true);
+            ctx.pipeline().addLast(new HttpContentCompressor());
+            ctx.pipeline().addLast(new ChunkedWriteHandler());
+            //propagate the request to the new handlers in the pipeline that need to configure themselves
+            ctx.fireChannelRead(req);
+        }
+        
         // Write the initial line and the header.
-        ctx.writeAndFlush(response);
+        ctx.channel().writeAndFlush(response);
 
         // Write the content.
         ChannelFuture sendFileFuture;
         ChannelFuture lastContentFuture;
-        if (webConfig.isZeroCopyEnabled() && ctx.pipeline().get(SslHandler.class) == null) {
+        if (zeroCopy) {
             sendFileFuture = ctx.writeAndFlush(new DefaultFileRegion(raf.getChannel(), 0, fileLength), ctx.newProgressivePromise());
             // Write the end marker.
             lastContentFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         } else {
-            sendFileFuture = ctx.writeAndFlush(new HttpChunkedInput(new ChunkedFile(raf, 0, fileLength, 8192)),  ctx.newProgressivePromise());
+            sendFileFuture = ctx.channel().writeAndFlush(new HttpChunkedInput(new ChunkedFile(raf, 0, fileLength, 8192)),  ctx.newProgressivePromise());
             lastContentFuture = sendFileFuture;
         }
 
@@ -147,7 +167,6 @@ public class StaticFileHandler extends RouteHandler {
         sendFileFuture.addListener(new ChannelProgressiveFutureListener() {
             @Override
             public void operationProgressed(ChannelProgressiveFuture future, long progress, long total) {
-                System.out.println("progress: "+progress);
                 if (log.isTraceEnabled()) {
                     if (total < 0) { // total unknown
                         log.trace(future.channel() + " Transfer progress: " + progress);
