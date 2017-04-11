@@ -40,8 +40,6 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.LastHttpContent;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedFile;
 import io.netty.handler.stream.ChunkedWriteHandler;
@@ -116,7 +114,7 @@ public class StaticFileHandler extends RouteHandler {
                 log.debug("Cannot parse {} header'{}'", HttpHeaderNames.IF_MODIFIED_SINCE, ifModifiedSince);
             }
         }
-        boolean zeroCopy = (webConfig.isZeroCopyEnabled() && ctx.pipeline().get(SslHandler.class) == null); 
+        boolean zeroCopy = webConfig.isZeroCopyEnabled() && ctx.pipeline().get(SslHandler.class) == null; 
 
         
         RandomAccessFile raf;

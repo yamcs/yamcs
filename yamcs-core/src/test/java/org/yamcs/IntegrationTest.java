@@ -6,15 +6,20 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.slf4j.LoggerFactory;
 import org.yamcs.api.RestEventProducer;
+import org.yamcs.api.rest.HttpClient;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
@@ -47,7 +52,6 @@ import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ManagementResource;
-import org.yamcs.yarch.DataType;
 
 import com.google.protobuf.MessageLite;
 
@@ -536,4 +540,35 @@ public class IntegrationTest extends AbstractIntegrationTest {
        assertEquals(e1.getMessage(), e2.getMessage());
     }
 
+    @Test
+    public void testStaticFile() throws Exception {
+        HttpClient httpClient = new HttpClient();
+        File dir = new File("/tmp/yamcs-web/");
+        dir.mkdirs();
+        
+        File file1 = File.createTempFile("test1_", null, dir);
+        FileOutputStream file1Out = new FileOutputStream(file1);
+        Random rand = new Random();
+        byte[] b = new byte[1932];
+        for(int i =0 ; i<20; i++) {
+            rand.nextBytes(b);
+            file1Out.write(b);
+        }
+        file1Out.close();
+        
+        File file2 = File.createTempFile("test2_", null, dir);
+        FileOutputStream file2Out = new FileOutputStream(file2);
+        
+        httpClient.doBulkReceiveRequest("http://localhost:9190/_static/"+file1.getName(), HttpMethod.GET, null, adminToken, data -> {
+            try {
+                file2Out.write(data);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).get();
+        file2Out.close();
+        assertTrue(com.google.common.io.Files.equal(file1, file2));
+        file1.delete();
+        file2.delete();
+    }
 }

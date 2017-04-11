@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -77,10 +79,10 @@ public abstract class AbstractIntegrationTest {
     MyWsListener wsListener;
     WebSocketClient wsClient;
     RestClient restClient;
-    protected UsernamePasswordToken admin = new UsernamePasswordToken("admin", "rootpassword");
+    protected UsernamePasswordToken adminToken = new UsernamePasswordToken("admin", "rootpassword");
     RefMdbPacketGenerator packetGenerator;
     static {  
-        //   Logger.getLogger("org.yamcs.web").setLevel(Level.ALL);
+      // Logger.getLogger("org.yamcs").setLevel(Level.ALL);
     }
 
     @BeforeClass
@@ -92,7 +94,7 @@ public abstract class AbstractIntegrationTest {
     public void before() throws InterruptedException {
 
         if(Privilege.getInstance().isEnabled())  {
-            ycp.setAuthenticationToken(admin);
+            ycp.setAuthenticationToken(adminToken);
         }
 
         packetProvider = PacketProvider.instance;

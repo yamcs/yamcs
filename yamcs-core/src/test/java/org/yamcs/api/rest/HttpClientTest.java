@@ -34,7 +34,7 @@ public class HttpClientTest extends AbstractIntegrationTest {
         HttpClient client = new HttpClient();
         Throwable t = null;
         try {
-            client.doAsyncRequest("http://localhost:9190/blaba", HttpMethod.GET, null, admin).get(2, TimeUnit.SECONDS);
+            client.doAsyncRequest("http://localhost:9190/blaba", HttpMethod.GET, null, adminToken).get(2, TimeUnit.SECONDS);
         } catch (ExecutionException e) {
             t = e.getCause();
         }
