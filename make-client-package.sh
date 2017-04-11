@@ -4,7 +4,8 @@ cd `dirname $0`
 yamcshome=`pwd`
 
 unset GREP_OPTIONS
-yjar=`ls -t -1 yamcs-core/target/yamcs*.jar | head -n 1`
+# Get the latest yamcs-core/yamcs*.jar but exclude the sources jar because the client needs the compiled Java class files
+yjar=`ls -t -1 yamcs-core/target/yamcs*.jar | grep -v -- -sources.jar | head -n 1`
 dist=yamcs-client-`echo $yjar | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'`
 version=`echo $yjar | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+'`
 
