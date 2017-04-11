@@ -92,7 +92,9 @@ public abstract class Command {
             console.println(getUsage());
             System.exit(1);
         }
-        if(subCommands.isEmpty()) return;
+        if(subCommands.isEmpty()) {
+            return;
+        }
 
         if(k==args.length) {
             JCommander.getConsole().println(getUsage());
@@ -129,7 +131,9 @@ public abstract class Command {
     
     int getArity(ParameterDescription pd) {
         Class<?> fieldType = pd.getParameterized().getType();
-        if ((fieldType == boolean.class || fieldType == Boolean.class)) return 0;
+        if ((fieldType == boolean.class || fieldType == Boolean.class)) {
+            return 0;
+        }
         
         return pd.getParameter().arity()==-1?1:pd.getParameter().arity();
     }
@@ -144,7 +148,9 @@ public abstract class Command {
         StringBuilder sb = new StringBuilder();
         for(int i=a.size()-1;;i--) {
             sb.append(a.get(i).getName());
-            if(i==0) break;
+            if(i==0) {
+                break;
+            }
             sb.append(" ");
         }
         return sb.toString();
@@ -163,7 +169,6 @@ public abstract class Command {
     }
 
     void validate() throws ParameterException {
-
         if(ycpRequired) {
             YamcsConnectionProperties ycp = getYamcsConnectionProperties();
             if(ycp==null) {
@@ -176,7 +181,7 @@ public abstract class Command {
         if(selectedCommand!=null) {
             selectedCommand.validate();
         }
-    };
+    }
 
     public String getUsage() {
         StringBuilder out = new StringBuilder();
@@ -210,9 +215,9 @@ public abstract class Command {
                 out.append(String.format("    %-"+maxLength+"s    %s\n",c.getName(), jc.getCommandDescription(c.getName())));
             }
         }
-
         return out.toString();
     }
+
     private Comparator<? super ParameterDescription> parameterDescriptionComparator
     = new Comparator<ParameterDescription>() {
         @Override

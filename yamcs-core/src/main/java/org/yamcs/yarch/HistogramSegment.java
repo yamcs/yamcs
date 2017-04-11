@@ -43,7 +43,7 @@ public class HistogramSegment {
         this.sstart = k.getLong(0);
         columnv = new byte[k.remaining()];
         k.get(columnv);
-        pps=new ArrayList<HistogramSegment.SegRecord>();
+        pps = new ArrayList<HistogramSegment.SegRecord>();
         while(v.hasRemaining()) {
             pps.add(new SegRecord(v.getInt(),v.getInt(),v.getShort()));
         }
@@ -108,9 +108,14 @@ public class HistogramSegment {
             }
         }
 
-        if(leftIndex!=-1) checkMergeLeft();
+        if(leftIndex!=-1) {
+            checkMergeLeft();
+        }
 
-        if(rightIndex!=-1)checkMergeRight();
+        if(rightIndex!=-1){
+            checkMergeRight();
+        }
+        
         if(mergeLeft && mergeRight) {
             selectBestMerge();
         }
@@ -144,8 +149,8 @@ public class HistogramSegment {
     }
 
 
-    float leftInterval=-1;
-    float rightInterval=-1;
+    int leftInterval=-1;
+    int rightInterval=-1;
 
 
     private void checkMergeLeft() { //check if it can be merged to left
@@ -153,7 +158,7 @@ public class HistogramSegment {
             if(left.num==1) {
                 mergeLeft=true;
             } else {
-                leftInterval=(left.dstop-left.dstart)/(left.num-1);
+                leftInterval = (left.dstop-left.dstart)/(left.num-1);
                 if((dtime-left.dstop) < leftInterval+LOSS_TIME) {
                     mergeLeft=true;
                 }
