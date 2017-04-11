@@ -216,9 +216,10 @@ public class YarchDatabase {
         TableDefinition tblDef = (TableDefinition) o;
         fis.close();
         if(tblDef.getFormatVersion()!=TableDefinition.CURRENT_FORMAT_VERSION) {
-            //temporary upgrade to version 2 from version 1 - can be removed in a future version 
+            //temporary upgrade to version 2 from version 1 - should be removed in a future version 
             if(tblDef.getFormatVersion()==1) {
                 changeParaValueType(tblDef);
+                tblDef.setFormatVersion(2);
             }
         }
         
