@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
@@ -19,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.api.RestEventProducer;
+import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.rest.HttpClient;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
@@ -51,10 +53,14 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.web.RouteHandler;
 import org.yamcs.web.websocket.ManagementResource;
 
 import com.google.protobuf.MessageLite;
 
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.protostuff.Schema;
 
@@ -568,6 +574,26 @@ public class IntegrationTest extends AbstractIntegrationTest {
         }).get();
         file2Out.close();
         assertTrue(com.google.common.io.Files.equal(file1, file2));
+        
+        //test if not modified since
+        SimpleDateFormat dateFormatter = new SimpleDateFormat(RouteHandler.HTTP_DATE_FORMAT);
+        
+        HttpHeaders httpHeaders = new DefaultHttpHeaders();
+        httpHeaders.add(HttpHeaderNames.IF_MODIFIED_SINCE, dateFormatter.format(file1.lastModified()));
+        YamcsApiException e1 = null;
+        try {
+            httpClient.doAsyncRequest("http://localhost:9190/_static/"+file1.getName(), HttpMethod.GET, null, adminToken, httpHeaders).get();
+        } catch (ExecutionException e) {
+            e1 = (YamcsApiException) e.getCause();
+        }
+        assertNotNull(e1);
+        assertTrue(e1.toString().contains("304"));
+        
+        httpHeaders = new DefaultHttpHeaders();
+        httpHeaders.add(HttpHeaderNames.IF_MODIFIED_SINCE, dateFormatter.format(file1.lastModified()-1000));
+        byte[] b1 = httpClient.doAsyncRequest("http://localhost:9190/_static/"+file1.getName(), HttpMethod.GET, null, adminToken, httpHeaders).get();
+        assertEquals(file1.length(), b1.length);
+        
         file1.delete();
         file2.delete();
     }

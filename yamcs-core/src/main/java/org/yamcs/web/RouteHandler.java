@@ -7,7 +7,6 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 
 public class RouteHandler {

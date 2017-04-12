@@ -37,8 +37,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.cookie.Cookie;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.codec.http.cookie.ClientCookieEncoder;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultHttpRequest;
@@ -48,6 +46,7 @@ import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpContentDecompressor;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpObjectAggregator;
@@ -75,6 +74,9 @@ public class HttpClient {
     }
 
     public CompletableFuture<byte[]> doAsyncRequest(String url, HttpMethod httpMethod, byte[] body, AuthenticationToken authToken) throws URISyntaxException {
+        return doAsyncRequest(url, httpMethod, body, authToken, null);
+    }
+    public CompletableFuture<byte[]> doAsyncRequest(String url, HttpMethod httpMethod, byte[] body, AuthenticationToken authToken, HttpHeaders extraHeaders) throws URISyntaxException {
         URI uri = new URI(url);
         HttpObjectAggregator aggregator = new HttpObjectAggregator(maxResponseLength);
         
@@ -82,6 +84,9 @@ public class HttpClient {
         
         ResponseHandler respHandler = new ResponseHandler(cf);
         HttpRequest request = setupRequest(uri, httpMethod, body, authToken);
+        if(extraHeaders!=null) {
+            request.headers().add(extraHeaders);
+        }
         
         ChannelFuture chf = setupChannel(uri, aggregator, respHandler);
         
@@ -126,7 +131,6 @@ public class HttpClient {
                 FullHttpResponse fullResp = (FullHttpResponse)httpObj;
                 byte[] data = getByteArray(fullResp.content());
                 String contentType = fullResp.headers().get(HttpHeaderNames.CONTENT_TYPE);
-                
                 if(MediaType.JSON.is(contentType)) {
                     RestExceptionMessage msg =  fromJson(new String(data), SchemaWeb.RestExceptionMessage.MERGE).build();
                     exception = new YamcsApiException(msg);
@@ -134,7 +138,7 @@ public class HttpClient {
                     RestExceptionMessage msg = RestExceptionMessage.parseFrom(data, exceptionRegistry);
                     exception = new YamcsApiException(msg);
                 } else {
-                    exception = new YamcsApiException(new String(data));    
+                    exception = new YamcsApiException(fullResp.status()+": "+new String(data));    
                 }
             } else {
                 exception = getInvalidHttpResponseException(((HttpResponse)httpObj).status().toString());
