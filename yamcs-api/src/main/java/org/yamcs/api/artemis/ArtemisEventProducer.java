@@ -8,6 +8,7 @@ import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsException;
 import org.yamcs.api.AbstractEventProducer;
 import org.yamcs.api.YamcsApiException;
@@ -54,7 +55,7 @@ public class ArtemisEventProducer extends AbstractEventProducer implements Conne
         if(is!=null) {
             Object o = new Yaml().load(is);
             if(!(o instanceof Map<?,?>)) {
-                throw new RuntimeException("event-producer.yaml does not contain a map but a "+o.getClass());
+                throw new ConfigurationException("event-producer.yaml does not contain a map but a "+o.getClass());
             }
     
             @SuppressWarnings("unchecked")
@@ -65,7 +66,7 @@ public class ArtemisEventProducer extends AbstractEventProducer implements Conne
             }
         }
         if (repeatedEventReduction) {
-            setRepeatedEventReduction(true);
+            setRepeatedEventReduction(true, 60000);
         }
     }
     
@@ -131,5 +132,4 @@ public class ArtemisEventProducer extends AbstractEventProducer implements Conne
     public long getMissionTime() {       
         return TimeEncoding.currentInstant();
     }
- 
 }

@@ -9,6 +9,7 @@ import java.util.Queue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
 import org.yamcs.api.YamcsConnectionProperties.Protocol;
 import org.yamcs.api.artemis.ArtemisEventProducer;
 import org.yamcs.protobuf.Yamcs.Event;
@@ -18,8 +19,8 @@ public class EventProducerFactory {
     /**
      * set to true from the unit tests
      */
-    static private boolean mockup=false;
-    static private Queue<Event>mockupQueue;
+    private static boolean mockup=false;
+    private static Queue<Event>mockupQueue;
 
     static Logger log = LoggerFactory.getLogger(EventProducerFactory.class);
     
@@ -27,13 +28,13 @@ public class EventProducerFactory {
      * Configure the factory to produce mockup objects, optionally queuing the events in a queue
      * @param queue - if true then queue all messages in the mockupQueue queue.
      */
-    static public void setMockup(boolean queue) {
+    public static void setMockup(boolean queue) {
         mockup=true;
         if(queue) {
             mockupQueue=new LinkedList<Event>();
         }
     }
-    static public Queue<Event> getMockupQueue() {
+    public static Queue<Event> getMockupQueue() {
         return mockupQueue;
     }
 
@@ -59,7 +60,7 @@ public class EventProducerFactory {
      * @return an EventProducer
      * @throws RuntimeException
      */
-    static public EventProducer getEventProducer(String instance) throws RuntimeException {
+    public static EventProducer getEventProducer(String instance) throws RuntimeException {
         if(mockup)  {
             log.debug("Creating a ConsoleEventProducer with mockupQueue: "+mockupQueue);
             return new MockupEventProducer(mockupQueue);
@@ -69,7 +70,9 @@ public class EventProducerFactory {
         InputStream is = EventProducerFactory.class.getResourceAsStream(configFile);
         if(is==null) {
             EventProducer producer = getStreamEventProducer(instance);     
-            if(producer!=null) return producer;
+            if(producer!=null) {
+                return producer;
+            }
             
             log.debug("Could not find {} in the classpath, and not running inside Yamcs, returning a ConsoleEventProducer", configFile);
             return new ConsoleEventProducer();
@@ -77,14 +80,14 @@ public class EventProducerFactory {
         Yaml yaml = new Yaml();
         Object o = yaml.load(is);
         if(!(o instanceof Map<?,?>)) {
-            throw new RuntimeException("event-producer.yaml does not contain a map but a "+o.getClass());
+            throw new ConfigurationException("event-producer.yaml does not contain a map but a "+o.getClass());
         }
 
         @SuppressWarnings("unchecked")
         Map<String,String> m=(Map<String, String>)o;
 
         if(!m.containsKey("yamcsURL")) {
-            throw new RuntimeException("event-producer.yaml does not contain a property yamcsURL");
+            throw new ConfigurationException("event-producer.yaml does not contain a property yamcsURL");
         } 
         String url=m.get("yamcsURL");
         YamcsConnectionProperties ycd;
@@ -92,34 +95,30 @@ public class EventProducerFactory {
             log.debug("Parsing a URL for an YamcsEventProducer: '{}'", url);
             ycd = YamcsConnectionProperties.parse(url);
         } catch (URISyntaxException e) {
-            throw new RuntimeException("cannot parse yamcsURL", e);
+            throw new IllegalArgumentException("cannot parse yamcsURL", e);
         }
 
         if(instance==null) {
-            if (ycd.getInstance()==null) throw new RuntimeException("yamcs instance has to be part of the URL");
+            if (ycd.getInstance()==null) {
+                throw new IllegalArgumentException("yamcs instance has to be part of the URL");
+            }
         } else {
             ycd.setInstance(instance);
         }
-        EventProducer producer = null;
-        if(ycd.getHost()==null) {
-        
-        }
-
-        if(producer==null) {
-            if(ycd.getProtocol()==Protocol.artemis) { 
-                log.debug("Creating an Artemis  Yamcs event producer connected to {}", ycd.getUrl());
-                producer = new  ArtemisEventProducer(ycd);
-            } else {
-                log.debug("Creating a WebSocket Yamcs event producer connected to {}", ycd.getUrl());
-                producer = new RestEventProducer(ycd);
-            }
+        EventProducer producer;
+        if(ycd.getProtocol()==Protocol.artemis) { 
+            log.debug("Creating an Artemis  Yamcs event producer connected to {}", ycd.getUrl());
+            producer = new  ArtemisEventProducer(ycd);
+        } else {
+            log.debug("Creating a REST Yamcs event producer connected to {}", ycd.getUrl());
+            producer = new RestEventProducer(ycd);
         }
         
         return producer;
     }
     
     
-    static private EventProducer getStreamEventProducer(String instance) {
+    private static EventProducer getStreamEventProducer(String instance) {
         try {
             //try to load the stream event producer from yamcs core because probably we are running inside the yamcs server
             @SuppressWarnings("unchecked")

@@ -18,11 +18,13 @@ public abstract class AbstractEventProducer implements EventProducer {
     String source;
     AtomicInteger seqNo = new AtomicInteger();
 
-    private boolean repeatedEventReduction; // Wether to check for message repetitions
+    private boolean repeatedEventReduction; // Whether to check for message repetitions
     private Event originalEvent; // Original evt of a series of repeated events
     private Event lastRepeat; // Last evt of a series of repeated events
     private int repeatCounter = 0;
-
+    private long repeatedEventTimeout = 60000; //how long in milliseconds to buffer repeated events
+    
+    
     // Flushes the Event Buffer about each minute
     private Timer flusher;
 
@@ -82,7 +84,7 @@ public abstract class AbstractEventProducer implements EventProducer {
                         public void run() {
                             flushEventBuffer(false);
                         }
-                    }, 60000, 60000);
+                    }, repeatedEventTimeout, repeatedEventTimeout);
                 }
                 lastRepeat = e;
                 repeatCounter++;
@@ -103,7 +105,7 @@ public abstract class AbstractEventProducer implements EventProducer {
      * By default event repetitions are checked for possible reduction. Disable if
      * 'realtime' events are required.
      */
-    public synchronized void setRepeatedEventReduction(boolean repeatedEventReduction) {
+    public synchronized void setRepeatedEventReduction(boolean repeatedEventReduction, long repeatedEventTimeoutMillisec) {
         this.repeatedEventReduction = repeatedEventReduction;
         if (!repeatedEventReduction) {
             if (flusher != null) {
@@ -117,13 +119,15 @@ public abstract class AbstractEventProducer implements EventProducer {
     protected synchronized void flushEventBuffer(boolean startNewSequence) {
         if (repeatCounter > 1) {
             sendEvent(Event.newBuilder(lastRepeat)
-                    .setMessage("last event repeated "+repeatCounter+" times")
+                    .setMessage("Repeated "+repeatCounter+" times: "+lastRepeat.getMessage())
                     .build());
         } else if (repeatCounter == 1) {
             sendEvent(lastRepeat);
             lastRepeat = null;
         }
-        if (startNewSequence) originalEvent = null;
+        if (startNewSequence) {
+            originalEvent = null;
+        }
         repeatCounter = 0;
     }
 
@@ -131,7 +135,9 @@ public abstract class AbstractEventProducer implements EventProducer {
      * Checks whether the specified Event is a repeat of the previous Event.
      */
     private boolean isRepeat(Event e) {
-        if (originalEvent == e) return true;
+        if (originalEvent == e) {
+            return true;
+        }
         return originalEvent.getMessage().equals(e.getMessage())
                 && originalEvent.getSeverity().equals(e.getSeverity())
                 && originalEvent.getSource().equals(e.getSource())
