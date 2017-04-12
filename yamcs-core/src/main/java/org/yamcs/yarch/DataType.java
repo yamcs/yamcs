@@ -18,7 +18,7 @@ public class DataType {
 
     private static final long serialVersionUID = 201101181144L;
     
-    public enum _type {BYTE, SHORT, INT, DOUBLE, TIMESTAMP, STRING, BINARY, BOOLEAN, ENUM, PROTOBUF, PARAMETER_VALUE, TUPLE, LIST};
+    public enum _type {BYTE, SHORT, INT, DOUBLE, TIMESTAMP, STRING, BINARY, BOOLEAN, ENUM, PROTOBUF, PARAMETER_VALUE, TUPLE, LIST}
     public final _type val;
     
     public static final DataType BYTE = new DataType(_type.BYTE);

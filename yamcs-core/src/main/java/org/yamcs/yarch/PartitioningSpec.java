@@ -7,7 +7,8 @@ public class PartitioningSpec {
     	TIME, //partition by time 
     	VALUE, //partition by value
     	TIME_AND_VALUE //partition by time and value (in this order)
-    	};
+    }
+    
     final public _type type;
     final public String timeColumn;
     final public String valueColumn;

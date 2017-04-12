@@ -1,7 +1,8 @@
 package org.yamcs.yarch;
 
 public class SpeedSpec {
-    public enum Type {AFAP, FIXED_DELAY, ORIGINAL, STEP_BY_STEP};
+    public enum Type {AFAP, FIXED_DELAY, ORIGINAL, STEP_BY_STEP}
+    
     private Type type;
     private float multiplier=1 ; //speed multiplier (for ORIGINAL) 
     private int x=1000; //DELAY in ms for FIXED_DELAY and STEP_BY_STEP
