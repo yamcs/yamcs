@@ -21,7 +21,7 @@ public class AbstractEventProducerTest {
         EventProducerFactory.setMockup(true);
         q=EventProducerFactory.getMockupQueue();
         producer = (AbstractEventProducer) EventProducerFactory.getEventProducer();
-        producer.setRepeatedEventReduction(true);
+        producer.setRepeatedEventReduction(true, 60000);
         producer.setSource("test-source");
     }
     
@@ -75,7 +75,7 @@ public class AbstractEventProducerTest {
     
     @Test
     public void testEventReduction_turnOff() {
-        producer.setRepeatedEventReduction(false);
+        producer.setRepeatedEventReduction(false, -1);
         producer.sendInfo("a-type", "a-msg");
         producer.sendInfo("a-type", "a-msg");
         producer.sendInfo("a-type", "a-msg");

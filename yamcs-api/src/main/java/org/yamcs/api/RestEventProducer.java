@@ -6,6 +6,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;
@@ -42,7 +43,9 @@ public class RestEventProducer extends AbstractEventProducer {
         boolean repeatedEventReduction = true;
         if(is!=null) {
             Object o = new Yaml().load(is);
-            if(!(o instanceof Map<?,?>)) throw new RuntimeException("event-producer.yaml does not contain a map but a "+o.getClass());
+            if(!(o instanceof Map<?,?>)) {
+                throw new ConfigurationException("event-producer.yaml does not contain a map but a "+o.getClass());
+            }
     
             @SuppressWarnings("unchecked")
             Map<String,Object> m = (Map<String, Object>) o;
@@ -51,7 +54,9 @@ public class RestEventProducer extends AbstractEventProducer {
                 repeatedEventReduction = (Boolean) m.get(CONF_REPEATED_EVENT_REDUCTION);
             }
         }
-        if (repeatedEventReduction) setRepeatedEventReduction(true);
+        if (repeatedEventReduction) {
+            setRepeatedEventReduction(true, 60000);
+        }
     }
     
     
