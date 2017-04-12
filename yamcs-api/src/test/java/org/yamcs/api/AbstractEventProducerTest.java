@@ -31,7 +31,7 @@ public class AbstractEventProducerTest {
         producer.sendInfo("a-type", "a-msg");
         producer.sendInfo("a-type", "a-msg");
         producer.flushEventBuffer(true);
-        assertMsgsEqual("a-msg", "last event repeated 2 times");
+        assertMsgsEqual("a-msg", "Repeated 2 times: a-msg");
         assertSeqNosEqual(0, 2);
     }
     
@@ -69,7 +69,7 @@ public class AbstractEventProducerTest {
         producer.sendInfo("a-type", "another-msg");
         producer.sendInfo("a-type", "a-msg");
         assertMsgsEqual("a-msg", "a-msg", "another-msg", "a-msg"
-                        , "another-msg", "last event repeated 2 times", "a-msg");
+                        , "another-msg", "Repeated 2 times: another-msg", "a-msg");
         assertSeqNosEqual(0, 1, 2, 3, 4, 6, 7);
     }
     
