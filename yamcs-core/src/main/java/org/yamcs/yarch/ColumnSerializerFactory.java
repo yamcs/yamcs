@@ -90,7 +90,7 @@ public class ColumnSerializerFactory {
     }
     
     static public ColumnSerializer<?> getProtobufSerializer(ColumnDefinition cd) {
-        String className = cd.getType().getClassName();
+        String className = ((ProtobufDataType)cd.getType()).getClassName();
        
         synchronized(protoSerialziers) {
             ProtobufColumnSerializer pcs = protoSerialziers.get(className);

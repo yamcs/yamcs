@@ -90,7 +90,9 @@ public class AscendingRangeIterator implements DbIterator {
 
     @Override
     public void next() {
-        if(!valid) throw new IllegalStateException("iterator is not valid");
+        if(!valid) {
+            throw new IllegalStateException("iterator is not valid");
+        }
         
         iterator.next();
         if(iterator.isValid()) {
@@ -107,12 +109,16 @@ public class AscendingRangeIterator implements DbIterator {
     }
 
     public byte[] key() {
-        if(!valid) throw new IllegalStateException("iterator is not valid");
+        if(!valid) {
+            throw new IllegalStateException("iterator is not valid");
+        }
         return curKey;
     }
 
     public byte[] value() {
-        if(!valid) throw new IllegalStateException("iterator is not valid");
+        if(!valid) {
+            throw new IllegalStateException("iterator is not valid");
+        }
         return iterator.value();
     }
 

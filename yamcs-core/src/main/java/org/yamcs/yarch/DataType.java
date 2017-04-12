@@ -21,9 +21,6 @@ public class DataType {
     public enum _type {BYTE, SHORT, INT, DOUBLE, TIMESTAMP, STRING, BINARY, BOOLEAN, ENUM, PROTOBUF, PARAMETER_VALUE, TUPLE, LIST};
     public final _type val;
     
-    private TupleDefinition td = null;//for TUPLE and LIST
-    private String className = null; //for PROTOBUF
-    
     public static final DataType BYTE = new DataType(_type.BYTE);
     public static final DataType SHORT = new DataType(_type.SHORT);
     public static final DataType INT = new DataType(_type.INT);
@@ -36,30 +33,21 @@ public class DataType {
     public static final DataType PARAMETER_VALUE = new DataType(_type.PARAMETER_VALUE);
 
 
-    private DataType(_type t) {
-      this.val=t;
+    protected DataType(_type t) {
+      this.val = t;
     }
     
     public static DataType tuple(TupleDefinition td) {
-        DataType dt=new DataType(_type.TUPLE);
-        dt.td=td;
-        return dt;
+        return new TupleDataType(td);
     }
     
+    
     public static DataType list(TupleDefinition td) {
-        DataType dt=new DataType(_type.LIST);
-        dt.td=td;
-        return dt;
+        return new ListDataType(td);
     }
     
     public static DataType protobuf(String className) {
-        DataType dt=new DataType(_type.PROTOBUF);
-        dt.className = className;
-        return dt;
-    }
-    
-    TupleDefinition tupleDefinition() {
-      return td;
+        return new ProtobufDataType(className);
     }
     
     /**
@@ -109,7 +97,7 @@ public class DataType {
             return protobuf(name.substring(9, name.length()-1));
         }
         
-        throw new IllegalArgumentException("invalid DataType '"+name+"'");
+        throw new IllegalArgumentException("invalid or unsupported DataType '"+name+"'");
     }
     
     /*returns Int, Short, etc suitable to use as getInt(), getShort() on the Object*/
@@ -161,13 +149,7 @@ public class DataType {
   
     @Override
     public String toString() {
-        if(val == _type.TUPLE) {
-            return "TUPLE("+td.toString()+")";
-        } else if(val == _type.PROTOBUF) {
-            return "PROTOBUF("+className+")";
-        } else { 
-            return val.toString();
-        }
+        return val.toString();
     }
     
     /**
@@ -178,13 +160,7 @@ public class DataType {
      *         for PROTOBUF returns PROTOBUF(className)
      */
     public String name() {
-        if(val == _type.TUPLE) {
-            return "TUPLE("+td.toString()+")";
-        } else if(val == _type.PROTOBUF) {
-            return "PROTOBUF("+className+")";
-        } else { 
-            return val.name();
-        }
+        return val.name();
     }
     
   
@@ -208,7 +184,7 @@ public class DataType {
         } else if(v instanceof ParameterValue) {
             return PARAMETER_VALUE;
         } else {
-            throw new IllegalArgumentException("invalid object of type of "+v.getClass());
+            throw new IllegalArgumentException("invalid or unsupported object of type of "+v.getClass());
         }
     }
 
@@ -325,55 +301,5 @@ public class DataType {
             return dt2.val==_type.STRING || dt2.val==_type.ENUM;
         }
         return false;
-    }
-    /**
-     * Returns the name of the class (implementing {@link com.google.protobuf.MessageLite})in case of PROTOBUF type
-     * @return
-     */
-    public String getClassName() {
-        return className;
-    }
-    
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + val.hashCode();
-        result = prime * result
-                + ((className == null) ? 0 : className.hashCode());
-        
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        
-        if (obj == null) {
-            return false;
-        }
-        
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        
-        DataType other = (DataType) obj;
-        
-        
-        if (val != other.val) {
-            return false;
-        }
-        
-        if (className == null) {
-            if (other.className != null) {
-                return false;
-            }
-        } else if (!className.equals(other.className)) {
-            return false;
-        }
-        return true;
     }
 }
