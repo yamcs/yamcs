@@ -3,8 +3,8 @@ package org.yamcs.xtceproc;
 import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
-import java.util.HashSet;
-import java.util.TreeSet;
+import java.util.Set;
+import java.util.SortedSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +37,7 @@ public class SequenceContainerProcessor {
         int maxposition = position.bitPosition;
 
         //then extract the entries
-        TreeSet<SequenceEntry> entries = pcontext.subscription.getEntries(seq);
+        SortedSet<SequenceEntry> entries = pcontext.subscription.getEntries(seq);
         if(entries!=null) {
             for (SequenceEntry se:entries) {
                 try {
@@ -63,14 +63,8 @@ public class SequenceContainerProcessor {
                             position.bitPosition += se.getRepeatEntry().getOffsetSizeInBits();
                         }
                     }
-                } catch (BufferUnderflowException e) {
-                    log.warn("Got buffer underflow when extracting from the buffer of length "+bb.capacity()+" bytes bitPosition "+position.bitPosition+" entry: "+se);
-                    break;
-                } catch (BufferOverflowException e) {
-                    log.warn("Got buffer overflow when extracting from the buffer of length "+bb.capacity()+" bytes bitPosition "+position.bitPosition+" entry: "+se);
-                    break;
-                } catch (IndexOutOfBoundsException e) {
-                    log.warn("Got index out of bounds when extracting from the buffer of length "+bb.capacity()+" bytes bitPosition "+position.bitPosition+" entry: "+se);
+                } catch (BufferUnderflowException|BufferOverflowException|IndexOutOfBoundsException e) {
+                    log.warn("Got "+e.getClass().getName()+" when extracting from the buffer of length "+bb.capacity()+" bytes bitPosition "+position.bitPosition+" entry: "+se);
                     break;
                 } 
                 if(position.bitPosition>maxposition) {
@@ -79,7 +73,7 @@ public class SequenceContainerProcessor {
             }
         }
 
-        HashSet<SequenceContainer> inheritingContainers=pcontext.subscription.getInheritingContainers(seq);
+        Set<SequenceContainer> inheritingContainers = pcontext.subscription.getInheritingContainers(seq);
         boolean hasDerived=false;
 
         if(inheritingContainers!=null) {

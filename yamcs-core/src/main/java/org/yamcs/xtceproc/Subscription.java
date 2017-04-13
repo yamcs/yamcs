@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.slf4j.Logger;
@@ -27,10 +28,10 @@ import org.yamcs.xtce.XtceDb;
  */
 public class Subscription {
     //Maps the packet definitions to the entries we actually need from these packets
-    private final Map<SequenceContainer, TreeSet<SequenceEntry>> container2EntryMap = new HashMap<SequenceContainer, TreeSet<SequenceEntry>>();
+    private final Map<SequenceContainer, TreeSet<SequenceEntry>> container2EntryMap = new HashMap<>();
     
     //For each container list the derived containers which have to be processed also
-    private final Map<SequenceContainer, HashSet<SequenceContainer>> container2InheritingContainerMap = new HashMap<SequenceContainer, HashSet<SequenceContainer>>();
+    private final Map<SequenceContainer, HashSet<SequenceContainer>> container2InheritingContainerMap = new HashMap<>();
     Logger log = LoggerFactory.getLogger(Subscription.class);
     
 
@@ -104,13 +105,12 @@ public class Subscription {
             }
             addSequenceEntry(setmp);
         }
-        if(se.getRepeatEntry()!=null) {
-            if(se.getRepeatEntry().getCount() instanceof DynamicIntegerValue) {
-                addParameter(((DynamicIntegerValue) se.getRepeatEntry().getCount()).getParameterInstnaceRef().getParameter());
-            }
+        if((se.getRepeatEntry()!=null) && (se.getRepeatEntry().getCount() instanceof DynamicIntegerValue)) {
+            addParameter(((DynamicIntegerValue) se.getRepeatEntry().getCount()).getParameterInstnaceRef().getParameter());
         }
-        if(!containerAlreadyAdded)
+        if(!containerAlreadyAdded) {
             addSequenceContainer(se.getSequenceContainer());
+        }
     }
     
     /**
@@ -129,28 +129,28 @@ public class Subscription {
     }
     
     private void addContainer2Entry(SequenceContainer sc, SequenceEntry se) {
-        TreeSet<SequenceEntry> ts_tpip=container2EntryMap.get(sc);
-        if(ts_tpip==null) {
-            ts_tpip=new TreeSet<SequenceEntry>();
-            container2EntryMap.put(sc,ts_tpip);
+        TreeSet<SequenceEntry> ts=container2EntryMap.get(sc);
+        if(ts==null) {
+            ts = new TreeSet<SequenceEntry>();
+            container2EntryMap.put(sc,ts);
         }
-        ts_tpip.add(se);
+        ts.add(se);
     }
     
     private void addContainer2InheritingContainer(SequenceContainer container, SequenceContainer inheritedContainer) {
-        HashSet<SequenceContainer> hs_sc=container2InheritingContainerMap.get(container);
-        if(hs_sc==null) {
-            hs_sc=new HashSet<SequenceContainer>();
-            container2InheritingContainerMap.put(container,hs_sc);  
+        HashSet<SequenceContainer> hs=container2InheritingContainerMap.get(container);
+        if(hs==null) {
+            hs = new HashSet<>();
+            container2InheritingContainerMap.put(container, hs);  
         }
-        hs_sc.add(inheritedContainer);
+        hs.add(inheritedContainer);
     }
 
-    public TreeSet<SequenceEntry> getEntries(SequenceContainer container) {
+    public SortedSet<SequenceEntry> getEntries(SequenceContainer container) {
         return container2EntryMap.get(container);
     }
 
-    public HashSet<SequenceContainer> getInheritingContainers(SequenceContainer container) {
+    public Set<SequenceContainer> getInheritingContainers(SequenceContainer container) {
         return container2InheritingContainerMap.get(container);
     }
    
@@ -170,12 +170,13 @@ public class Subscription {
 
     @Override
     public String toString() {
-        StringBuffer sb=new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("Current list of parameter subscribed:\n");
         for(SequenceContainer sc:container2EntryMap.keySet()) {
-            sb.append(sc);sb.append(" with entries:\n");
+            sb.append(sc);
+            sb.append(" with entries:\n");
             for(SequenceEntry se:container2EntryMap.get(sc)){
-                sb.append("\t");sb.append(se);sb.append("\n");
+                sb.append("\t").append(se).append("\n");
             }
         }
         sb.append("-----------------------------------\n");

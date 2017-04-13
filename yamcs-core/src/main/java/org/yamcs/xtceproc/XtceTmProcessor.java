@@ -93,8 +93,8 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     }
     
     @Override
-    public void init(Processor channel) throws ConfigurationException {
-
+    public void init(Processor processor) throws ConfigurationException {
+       //do nothing, we already know the processor
     }
 
     @Override

@@ -48,6 +48,10 @@ public class ProcessorData {
         return calibrator;
     }
 
+    public CalibratorProc getDecalibrator(DataEncoding de) {
+        return getCalibrator(de);
+    }
+
     private CalibratorProc getCalibrator(Calibrator c) {
         if(c==null) {
             return null;
@@ -61,18 +65,4 @@ public class ProcessorData {
         }
     }
 
-    public CalibratorProc getDecalibrator(DataEncoding de) {
-        CalibratorProc calibrator = calibrators.get(de);
-        if(calibrator==null) {
-            if(de instanceof IntegerDataEncoding) {
-                calibrator = getCalibrator(((IntegerDataEncoding) de).getDefaultCalibrator());
-            } else if(de instanceof  FloatDataEncoding) {
-                calibrator = getCalibrator(((FloatDataEncoding) de).getDefaultCalibrator());
-            } else {
-                throw new IllegalStateException("Unsupported integer encoding of type: "+de);
-            }
-            calibrators.put(de, calibrator);
-        }
-        return calibrator;
-    }
 }

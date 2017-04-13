@@ -74,7 +74,6 @@ public class XtceTmExtractor {
     }
 
     public void stopProviding(Parameter param) {
-        //TODO 2.0 do something here
     }
 
     /**
