@@ -18,8 +18,6 @@ import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
 
-import junit.framework.Assert;
-
 /**
  * Created by msc on 27/05/15.
  */
