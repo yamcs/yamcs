@@ -14,9 +14,7 @@ import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;
-import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatParameterType;
-import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
@@ -26,46 +24,32 @@ import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
 
 public class ParameterTypeProcessor {
-    ProcessingContext pcontext;
+    ProcessorData pcontext;
     static Logger log=LoggerFactory.getLogger(ParameterTypeProcessor.class.getName());
 
-    ParameterTypeProcessor(ProcessingContext pcontext) {
-        this.pcontext=pcontext;
+    public ParameterTypeProcessor(ProcessorData pcontext) {
+        this.pcontext = pcontext;
     }
 
     static Multimap<Class<? extends ParameterType>, org.yamcs.protobuf.Yamcs.Value.Type> allowedAssignments =
-	    new ImmutableSetMultimap.Builder<Class<? extends ParameterType>, org.yamcs.protobuf.Yamcs.Value.Type>()
-	    	   .putAll(BinaryParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.BINARY)
-	           .putAll(BooleanParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.BOOLEAN)
-	    	   .putAll(EnumeratedParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.STRING)
-	           .putAll(FloatParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.FLOAT, org.yamcs.protobuf.Yamcs.Value.Type.DOUBLE)
-	           .putAll(IntegerParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.UINT32, org.yamcs.protobuf.Yamcs.Value.Type.SINT32, org.yamcs.protobuf.Yamcs.Value.Type.SINT64, org.yamcs.protobuf.Yamcs.Value.Type.UINT64)
-	           .putAll(StringParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.STRING)
-	           .build();
-
-
-    /**
-     *  Extracts the parameter from the packet.
-     * @return value of the parameter after extraction
-     */
-    public ParameterValue extract(Parameter param) {
-        ParameterType ptype = param.getParameterType();
-        ParameterValue pv=new ParameterValue(param);
-        pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset*8+pcontext.bitPosition);
-        pv.setBitSize(((BaseDataType)ptype).getEncoding().getSizeInBits());
-        pcontext.dataEncodingProcessor.extractRaw(((BaseDataType)ptype).getEncoding(), pv);
-        doCalibrate(pv, ptype);
-        return pv;
-    }
+            new ImmutableSetMultimap.Builder<Class<? extends ParameterType>, org.yamcs.protobuf.Yamcs.Value.Type>()
+            .putAll(BinaryParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.BINARY)
+            .putAll(BooleanParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.BOOLEAN)
+            .putAll(EnumeratedParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.STRING)
+            .putAll(FloatParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.FLOAT, org.yamcs.protobuf.Yamcs.Value.Type.DOUBLE)
+            .putAll(IntegerParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.UINT32, org.yamcs.protobuf.Yamcs.Value.Type.SINT32, org.yamcs.protobuf.Yamcs.Value.Type.SINT64, org.yamcs.protobuf.Yamcs.Value.Type.UINT64)
+            .putAll(StringParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.STRING)
+            .build();
 
     /**
      * Sets the value of a pval, based on the raw value and the applicable calibrator
+     * @param pval 
      */
-    public static void calibrate(ParameterValue pval) {
+    public void calibrate(ParameterValue pval) {
         doCalibrate(pval, pval.getParameter().getParameterType());
     }
 
-    private static void doCalibrate(ParameterValue pval, ParameterType ptype) {
+    private void doCalibrate(ParameterValue pval, ParameterType ptype) {
         if (ptype instanceof EnumeratedParameterType) {
             calibrateEnumerated((EnumeratedParameterType) ptype, pval);
         } else if (ptype instanceof IntegerParameterType) {
@@ -144,7 +128,7 @@ public class ParameterTypeProcessor {
         pval.setBinaryValue(pval.getRawValue().getBinaryValue());
     }
 
-    private static void calibrateInteger(IntegerParameterType ipt, ParameterValue pval) {
+    private void calibrateInteger(IntegerParameterType ipt, ParameterValue pval) {
         Value rawValue = pval.getRawValue();
         if (rawValue.getType() == Type.UINT32) {
             doIntegerCalibration(ipt, pval, rawValue.getUint32Value()&0xFFFFFFFFL);
@@ -169,19 +153,8 @@ public class ParameterTypeProcessor {
         }
     }
 
-    private static void doIntegerCalibration(IntegerParameterType ipt, ParameterValue pval, long longValue) {
-        Calibrator calibrator=null;
-        DataEncoding de=ipt.getEncoding();
-        if(de instanceof IntegerDataEncoding) {
-            calibrator=((IntegerDataEncoding) de).getDefaultCalibrator();
-        }
-        else if(de instanceof  FloatDataEncoding)
-        {
-            calibrator=((FloatDataEncoding) de).getDefaultCalibrator();
-        }
-        else {
-            throw new IllegalStateException("Unsupported integer encoding of type: "+de);
-        }
+    private void doIntegerCalibration(IntegerParameterType ipt, ParameterValue pval, long longValue) {
+        CalibratorProc calibrator = pcontext.getCalibrator(ipt.getEncoding());
 
         long longCalValue = (calibrator == null) ? longValue:calibrator.calibrate(longValue).longValue();
 
@@ -207,7 +180,7 @@ public class ParameterTypeProcessor {
         }
     }
 
-    private static void calibrateFloat(FloatParameterType fpt, ParameterValue pval) {
+    private void calibrateFloat(FloatParameterType fpt, ParameterValue pval) {
         Value rawValue = pval.getRawValue();
         if(rawValue.getType() == Type.FLOAT) {
             doFloatCalibration(fpt, pval, rawValue.getFloatValue());
@@ -234,16 +207,8 @@ public class ParameterTypeProcessor {
         }
     }
 
-    private static void doFloatCalibration(FloatParameterType fpt, ParameterValue pval, double doubleValue) {
-        Calibrator calibrator=null;
-        DataEncoding de=fpt.getEncoding();
-        if(de instanceof FloatDataEncoding) {
-            calibrator=((FloatDataEncoding) de).getDefaultCalibrator();
-        } else if(de instanceof IntegerDataEncoding) {
-            calibrator=((IntegerDataEncoding) de).getDefaultCalibrator();
-        } else {
-            throw new IllegalStateException("Unsupported float encoding of type: "+de);
-        }
+    private void doFloatCalibration(FloatParameterType fpt, ParameterValue pval, double doubleValue) {
+        CalibratorProc calibrator = pcontext.getCalibrator(fpt.getEncoding());
 
         double doubleCalValue = (calibrator == null) ? doubleValue:calibrator.calibrate(doubleValue);
         if(fpt.getSizeInBits() == 32) {
@@ -261,9 +226,9 @@ public class ParameterTypeProcessor {
      * @param engValue
      */
     public static void checkEngValueAssignment(Parameter p, Value engValue) {
-	ParameterType ptype = p.getParameterType();
-	if(!allowedAssignments.containsEntry(ptype.getClass(), engValue.getType())) {
-	    throw new IllegalArgumentException("Cannot assign "+ptype.getTypeAsString()+" from "+engValue.getType());
-	}
+        ParameterType ptype = p.getParameterType();
+        if(!allowedAssignments.containsEntry(ptype.getClass(), engValue.getType())) {
+            throw new IllegalArgumentException("Cannot assign "+ptype.getTypeAsString()+" from "+engValue.getType());
+        }
     }
 }

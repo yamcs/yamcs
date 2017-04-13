@@ -1,8 +1,7 @@
 package org.yamcs.xtceproc;
 
-
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +10,8 @@ import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingPosition;
+import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingResult;
 
 /**
  * 
@@ -23,23 +24,32 @@ public class XtceTmExtractor {
     protected final Subscription subscription;
     private ProcessingStatistics stats=new ProcessingStatistics();
 
+    private ContainerProcessingResult result;
+    
     public final XtceDb xtcedb;
     final SequenceContainer rootContainer;
-    ParameterValueList paramResult=new ParameterValueList();
-
-    ArrayList<ContainerExtractionResult> containerResult = new ArrayList<ContainerExtractionResult>();
     boolean ignoreOutOfContainerEntries = false;
-    
+    final ProcessorData pcontext;
     /**
      * Creates a TmExtractor extracting data according to the XtceDb
      * @param xtcedb
      */
     public XtceTmExtractor(XtceDb xtcedb) {
-        this.xtcedb=xtcedb;
-        this.subscription=new Subscription(xtcedb);
-        rootContainer=xtcedb.getRootSequenceContainer();
+        this(xtcedb, new ProcessorData());
     }
-
+    /**
+     * Create a new TM extractor with the given context
+     * 
+     * @param xtcedb
+     * @param pcontext
+     */
+    public XtceTmExtractor(XtceDb xtcedb, ProcessorData pcontext) {
+        this.xtcedb = xtcedb;
+        this.subscription = new Subscription(xtcedb);
+        rootContainer = xtcedb.getRootSequenceContainer();
+        this.pcontext = pcontext;
+    }
+    
     /**
      * Adds a parameter to the current subscription list: 
      *  finds all the SequenceContainers in which this parameter may appear and adds them to the list.
@@ -76,15 +86,18 @@ public class XtceTmExtractor {
 
     /**
      * Extract one packet, starting at the specified container.
+     * @param bb 
+     * @param generationTime 
+     * @param aquisitionTime 
+     * @param startContainer 
      */
     public void processPacket(ByteBuffer bb, long generationTime, long aquisitionTime, SequenceContainer startContainer) {
+        result = new ContainerProcessingResult(aquisitionTime, generationTime, stats);
         try {
-            paramResult = new ParameterValueList();
-            containerResult = new ArrayList<ContainerExtractionResult>();
-            synchronized(subscription) {
-                ProcessingContext pcontext=new ProcessingContext(bb, 0, 0, subscription, paramResult, containerResult, aquisitionTime, generationTime, stats, ignoreOutOfContainerEntries);
-
-                pcontext.sequenceContainerProcessor.extract(startContainer);
+             synchronized(subscription) {
+                ContainerProcessingPosition position = new ContainerProcessingPosition(bb, 0, 0);
+                ContainerProcessingContext cpc = new ContainerProcessingContext(pcontext, position, result, subscription, ignoreOutOfContainerEntries);
+                cpc.sequenceContainerProcessor.extract(startContainer);
             }
         } catch (Exception e) {
             log.error("got exception in tmextractor ", e);
@@ -122,16 +135,15 @@ public class XtceTmExtractor {
     }
 
     public void stopProviding(SequenceContainer sequenceContainer) {
-        //TODO
     }
     
 
     public ParameterValueList getParameterResult() {
-        return paramResult;
+        return result.params;
     }
 
-    public ArrayList<ContainerExtractionResult> getContainerResult() {
-        return containerResult;
+    public List<ContainerExtractionResult> getContainerResult() {
+        return result.containers;
     }
 
     public Subscription getSubscription() {

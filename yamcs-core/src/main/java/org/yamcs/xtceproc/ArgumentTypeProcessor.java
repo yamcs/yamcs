@@ -10,14 +10,12 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.BinaryArgumentType;
 import org.yamcs.xtce.BooleanArgumentType;
-import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.EnumeratedArgumentType;
 import org.yamcs.xtce.FloatArgumentType;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatValidRange;
 import org.yamcs.xtce.IntegerArgumentType;
-import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerRange;
 import org.yamcs.xtce.IntegerValidRange;
 import org.yamcs.xtce.StringArgumentType;
@@ -26,8 +24,16 @@ import org.yamcs.xtce.ValueEnumeration;
 import com.google.common.primitives.UnsignedLongs;
 
 public class ArgumentTypeProcessor {
-
-    public static Value decalibrate(ArgumentType atype, Value v) {
+    ProcessorData pdata;
+    
+    public ArgumentTypeProcessor(ProcessorData pdata) {
+        if(pdata==null) {
+            throw new NullPointerException();
+        }
+        this.pdata = pdata;
+    }
+  
+    public Value decalibrate(ArgumentType atype, Value v) {
         if (atype instanceof EnumeratedArgumentType) {
             return decalibrateEnumerated((EnumeratedArgumentType) atype, v);
         } else if (atype instanceof IntegerArgumentType) {
@@ -45,14 +51,16 @@ public class ArgumentTypeProcessor {
         }
     }
 
-    private static Value decalibrateEnumerated(EnumeratedArgumentType atype, Value v) {
-        if(v.getType()!=Type.STRING) throw new IllegalArgumentException("Enumerated decalibrations only available for strings");
+    private Value decalibrateEnumerated(EnumeratedArgumentType atype, Value v) {
+        if(v.getType()!=Type.STRING) {
+            throw new IllegalArgumentException("Enumerated decalibrations only available for strings");
+        }
         
         return ValueUtility.getSint64Value(atype.decalibrate(v.getStringValue()));
     }
 
 
-    private static Value decalibrateInteger(IntegerArgumentType ipt, Value v) {
+    private Value decalibrateInteger(IntegerArgumentType ipt, Value v) {
         if (v.getType() == Type.UINT32) {
             return doIntegerDecalibration(ipt, v.getUint32Value()&0xFFFFFFFFL);
         } else if (v.getType() == Type.UINT64) {
@@ -68,18 +76,13 @@ public class ArgumentTypeProcessor {
         }
     }
 
-    private static Value doIntegerDecalibration(IntegerArgumentType ipt, long v) {
-        Calibrator calibrator=null;
-        DataEncoding de=ipt.getEncoding();
-        if(de instanceof IntegerDataEncoding) {
-            calibrator=((IntegerDataEncoding) de).getDefaultCalibrator();
-        }
-        else if(de instanceof FloatDataEncoding) {
+    private Value doIntegerDecalibration(IntegerArgumentType ipt, long v) {
+        DataEncoding de = ipt.getEncoding();
+        if(de instanceof FloatDataEncoding) {
             return doFloatDecalibration(ipt.getEncoding(), ipt.getSizeInBits(), v);
         }
-        else {
-            throw new IllegalStateException("Unsupported integer encoding of type: "+de);
-        }
+        
+        CalibratorProc calibrator = pdata.getDecalibrator(ipt.getEncoding());
 
         Value raw;
         long longDecalValue = (calibrator == null) ? v:calibrator.calibrate(v).longValue(); 
@@ -100,13 +103,14 @@ public class ArgumentTypeProcessor {
         return raw;
     }
 
-    private static Value decalibrateBoolean(BooleanArgumentType ipt, Value v) {
+    private Value decalibrateBoolean(BooleanArgumentType ipt, Value v) {
         if (v.getType() != Type.BOOLEAN) {
             throw new IllegalStateException("Unsupported raw value type '"+v.getType()+"' cannot be converted to boolean");
         } 
         return v;
     }
-    private static Value decalibrateFloat(FloatArgumentType fat, Value v) {
+    
+    private Value decalibrateFloat(FloatArgumentType fat, Value v) {
         if(v.getType() == Type.FLOAT) {
             return doFloatDecalibration(fat.getEncoding(), fat.getSizeInBits(), v.getFloatValue());
         } else if(v.getType() == Type.DOUBLE) {
@@ -126,15 +130,8 @@ public class ArgumentTypeProcessor {
         }
     }
 
-    private static Value doFloatDecalibration(DataEncoding de, int sizeInBits, double doubleValue) {
-        Calibrator calibrator=null;
-        if(de instanceof FloatDataEncoding) {
-            calibrator=((FloatDataEncoding) de).getDefaultCalibrator();
-        } else if(de instanceof IntegerDataEncoding) {
-            calibrator=((IntegerDataEncoding) de).getDefaultCalibrator();
-        } else {
-            throw new IllegalStateException("Unsupported float encoding of type: "+de);
-        }
+    private Value doFloatDecalibration(DataEncoding de, int sizeInBits, double doubleValue) {
+        CalibratorProc calibrator = pdata.getDecalibrator(de);
 
         double doubleCalValue = (calibrator == null) ? doubleValue:calibrator.calibrate(doubleValue);
         Value raw;
@@ -265,5 +262,4 @@ public class ArgumentTypeProcessor {
         }
         return v;
     }
-
 }

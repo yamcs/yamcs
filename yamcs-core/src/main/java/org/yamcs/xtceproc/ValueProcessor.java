@@ -9,10 +9,10 @@ import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.Parameter;
 
 public class ValueProcessor {
-    ProcessingContext pcontext;
+    ContainerProcessingContext pcontext;
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
 
-    public ValueProcessor(ProcessingContext pcontext) {
+    public ValueProcessor(ContainerProcessingContext pcontext) {
         this.pcontext=pcontext;
     }
 
@@ -28,7 +28,7 @@ public class ValueProcessor {
 
     private long getDynamicIntegerValue(DynamicIntegerValue div) {
         Parameter pref = div.getParameterInstnaceRef().getParameter();
-        for(ParameterValue pv:pcontext.paramResult) {
+        for(ParameterValue pv:pcontext.result.params) {
             if(pv.getParameter()==pref) {
                 return pv.getEngValue().getUint32Value();
             }
@@ -36,5 +36,4 @@ public class ValueProcessor {
         log.warn("Could not find the parameter in the list of extracted parameters, parameter: {}", pref);
         return 0;
     }
-
 }

@@ -14,25 +14,28 @@ import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.MetaCommandContainer;
 
 public class MetaCommandProcessor {
-    static public CommandBuildResult buildCommand(MetaCommand mc, List<ArgumentAssignment> argAssignmentList) throws ErrorInCommand {
+    public static CommandBuildResult buildCommand(MetaCommand mc, List<ArgumentAssignment> argAssignmentList) throws ErrorInCommand {
+        return buildCommand(new ProcessorData(), mc, argAssignmentList);
+    }
+    
+    public static CommandBuildResult buildCommand(ProcessorData pdata, MetaCommand mc, List<ArgumentAssignment> argAssignmentList) throws ErrorInCommand {
         if(mc.isAbstract()) {
             throw new ErrorInCommand("Will not build command "+mc.getQualifiedName()+" because it is abstract");
         }
 
-        MetaCommandContainer def=null;
-        def=mc.getCommandContainer();
+        MetaCommandContainer def = mc.getCommandContainer();
         if(def==null) {
             throw new ErrorInCommand("MetaCommand has no container: "+def);
         }
-        Map<Argument, Value> args = new HashMap<Argument,Value>();
-        Map<String,String> argAssignment = new HashMap<String, String> ();
+        Map<Argument, Value> args = new HashMap<>();
+        Map<String,String> argAssignment = new HashMap<> ();
         for(ArgumentAssignment aa: argAssignmentList) {
             argAssignment.put(aa.getArgumentName(), aa.getArgumentValue());
         }
 
         collectAndCheckArguments(mc, args, argAssignment);
 
-        TcProcessingContext pcontext = new TcProcessingContext(ByteBuffer.allocate(1000), 0);
+        TcProcessingContext pcontext = new TcProcessingContext(pdata, ByteBuffer.allocate(1000), 0);
         pcontext.argValues = args;
         pcontext.mccProcessor.encode(mc);
 
@@ -61,7 +64,9 @@ public class MetaCommandProcessor {
         if(argList!=null) {
             //check for each argument that we either have an assignment or a value 
             for(Argument a: argList) {
-                if(args.containsKey(a)) continue;
+                if(args.containsKey(a)) {
+                    continue;
+                }
                 String stringValue = null;
                 String argInitialValue = null;
                 Value argTypeInitialValue = null;

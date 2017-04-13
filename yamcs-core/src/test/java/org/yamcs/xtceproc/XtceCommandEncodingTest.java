@@ -37,7 +37,7 @@ public class XtceCommandEncodingTest {
         arguments.add(argumentAssignment2);
         byte[] b = MetaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
 
-        Assert.assertTrue(b[0] != 0);
+        assertTrue(b[0] != 0);
     }
 
     @Test

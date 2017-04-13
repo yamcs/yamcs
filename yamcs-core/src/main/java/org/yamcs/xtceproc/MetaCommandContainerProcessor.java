@@ -8,10 +8,12 @@ import org.yamcs.parameter.Value;
 import org.yamcs.xtce.*;
 
 public class MetaCommandContainerProcessor {
-    Logger log=LoggerFactory.getLogger(this.getClass().getName());
+    Logger log = LoggerFactory.getLogger(this.getClass().getName());
     TcProcessingContext pcontext;
+    ArgumentTypeProcessor argumentTypeProcessor;
     MetaCommandContainerProcessor(TcProcessingContext pcontext) {
-        this.pcontext=pcontext;
+        this.pcontext = pcontext;
+        argumentTypeProcessor = new ArgumentTypeProcessor(pcontext.pdata);
     }
 
     public void encode(MetaCommand metaCommand) throws ErrorInCommand {
@@ -56,7 +58,7 @@ public class MetaCommandContainerProcessor {
         }
 
         ArgumentType atype = arg.getArgumentType();
-        Value rawValue = ArgumentTypeProcessor.decalibrate(atype, argValue);
+        Value rawValue = argumentTypeProcessor.decalibrate(atype, argValue);
         
         pcontext.deEncoder.encodeRaw(((BaseDataType) atype).getEncoding(), rawValue);
 

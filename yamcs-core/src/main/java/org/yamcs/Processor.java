@@ -36,6 +36,7 @@ import org.yamcs.tctm.TcTmService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.ProcessorData;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
@@ -100,6 +101,7 @@ public class Processor extends AbstractService {
 
     TimeService timeService;
 
+    ProcessorData processorData = new ProcessorData();
     @GuardedBy("this")
     HashSet<ProcessorClient> connectedClients= new HashSet<ProcessorClient>();
 
@@ -691,5 +693,9 @@ public class Processor extends AbstractService {
 
     public ParameterCache getParameterCache() {
         return parameterRequestManager.getParameterCache();
+    }
+
+    public ProcessorData getProcessorData() {
+        return processorData;
     }
 }

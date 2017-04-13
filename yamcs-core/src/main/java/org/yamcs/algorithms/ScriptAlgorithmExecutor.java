@@ -68,12 +68,12 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     private Map<OutputParameter,OutputValueBinding> bindingsByOutput = new HashMap<OutputParameter,OutputValueBinding>();
     // Each ValueBinding class represent a unique raw/eng type combination (== key)
     private static Map<String, Class<ValueBinding>> valueBindingClasses = Collections.synchronizedMap(new HashMap<String,Class<ValueBinding>>());
-
+    ParameterTypeProcessor parameterTypeProcessor;
 
     public ScriptAlgorithmExecutor(Algorithm algorithmDef, ScriptEngine scriptEngine, AlgorithmExecutionContext execCtx) {
         super(algorithmDef, execCtx);
-        this.scriptEngine=scriptEngine;
-      
+        this.scriptEngine = scriptEngine;
+        this.parameterTypeProcessor = new ParameterTypeProcessor(execCtx.getProcessor().getProcessorData());
 
         for(InputParameter inputParameter:algorithmDef.getInputSet()) {
             // Default-define all input values to null to prevent ugly runtime errors
@@ -190,7 +190,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             throw new IllegalArgumentException("Unsupported parameter type "+ptype);
         }
 
-        ParameterTypeProcessor.calibrate(pval);
+        parameterTypeProcessor.calibrate(pval);
         return pval;
     }
 

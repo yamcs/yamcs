@@ -14,8 +14,8 @@ public class SplinePoint implements Serializable, Comparable<SplinePoint>{
         this.raw=raw;
         this.calibrated=calibrated;
     }
-    double raw;
-    double calibrated;
+    final double raw;
+    final double calibrated;
 
 
     @Override
@@ -25,7 +25,9 @@ public class SplinePoint implements Serializable, Comparable<SplinePoint>{
 
     @Override
     public boolean equals(Object o) {
-        if(!(o instanceof SplinePoint)) return false;
+        if(!(o instanceof SplinePoint)) {
+            return false;
+        }
         SplinePoint sp=(SplinePoint)o;
         return Double.compare(raw, sp.raw)==0;
     }
@@ -38,5 +40,13 @@ public class SplinePoint implements Serializable, Comparable<SplinePoint>{
     @Override
     public String toString() {
         return "("+raw+","+calibrated+")";
+    }
+
+    public double getRaw() {
+        return raw;
+    }
+
+    public double getCalibrated() {
+        return calibrated;
     }
 }

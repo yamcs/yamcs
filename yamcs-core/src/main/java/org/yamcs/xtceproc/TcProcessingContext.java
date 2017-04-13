@@ -12,28 +12,32 @@ import org.yamcs.xtce.Argument;
  *
  */
 public class TcProcessingContext {
-	
-	ByteBuffer bb;
-	public int bitPosition;
-	
-	//keep track of the maximum size in bytes to know at the end the buffer required
-	public int size;
-	
-	//arguments and their values - the lists have the same length all the time and arguments correspond one to one to values
-	public Map<Argument,Value> argValues;
+    final ProcessorData pdata;
 
-	
-	public long generationTime;
-	public MetaCommandContainerProcessor mccProcessor = new MetaCommandContainerProcessor(this);
-	public DataEncodingEncoder deEncoder = new DataEncodingEncoder(this);
-	
-	public TcProcessingContext(ByteBuffer bb, int bitPosition) {
-		this.bb = bb;
-		this.bitPosition = bitPosition;
-	}
+    ByteBuffer bb;
+    public int bitPosition;
 
-	public Value getArgumentValue(Argument arg) {
-		return argValues.get(arg);
-	}
-	
+    //keep track of the maximum size in bytes to know at the end the buffer required
+    public int size;
+
+    //arguments and their values - the lists have the same length all the time and arguments correspond one to one to values
+    public Map<Argument,Value> argValues;
+
+
+    public long generationTime;
+    final MetaCommandContainerProcessor mccProcessor; 
+    final DataEncodingEncoder deEncoder;
+
+    public TcProcessingContext(ProcessorData pdata, ByteBuffer bb, int bitPosition) {
+        this.bb = bb;
+        this.bitPosition = bitPosition;
+        this.pdata = pdata;
+        this.mccProcessor = new MetaCommandContainerProcessor(this);
+        this.deEncoder = new DataEncodingEncoder(this);
+    }
+
+    public Value getArgumentValue(Argument arg) {
+        return argValues.get(arg);
+    }
+
 }

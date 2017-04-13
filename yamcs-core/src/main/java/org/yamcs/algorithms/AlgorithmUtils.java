@@ -24,11 +24,10 @@ public class AlgorithmUtils {
     private String algorithmName;
     private EventProducer eventProducer;
     private final String yamcsInstance;
-    private final Processor channel;
-    
-    public AlgorithmUtils(Processor channel, XtceDb xtcedb, String algorithmName) {
-        this.yamcsInstance = channel.getInstance();
-        this.channel = channel;
+    private final Processor processor;
+    public AlgorithmUtils(Processor processor, XtceDb xtcedb, String algorithmName) {
+        this.yamcsInstance = processor.getInstance();
+        this.processor = processor;
         
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
         eventProducer.setSource("CustomAlgorithm");
@@ -49,7 +48,7 @@ public class AlgorithmUtils {
             } else {
                 DataEncoding encoding = ((BaseDataType)p.getParameterType()).getEncoding();
                 if(encoding instanceof IntegerDataEncoding) {
-                    return ((IntegerDataEncoding) encoding).getDefaultCalibrator().calibrate(raw);
+                    return  processor.getProcessorData().getCalibrator(encoding).calibrate(raw);
                 }
             }
         } else {
@@ -86,12 +85,12 @@ public class AlgorithmUtils {
         eventProducer.sendError(type, msg);
     }
 
-    public String channelName() {
-        return channel.getName();
+    public String processorName() {
+        return processor.getName();
     }
     
-    public boolean isReplayChannel() {
-        return channel.isReplay();
+    public boolean isReplayProcessor() {
+        return processor.isReplay();
     }
     
     /**

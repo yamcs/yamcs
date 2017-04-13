@@ -3,16 +3,21 @@ package org.yamcs.xtceproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.ContainerEntry;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
+import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceEntry;
+import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingPosition;
+import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingResult;
 
 public class SequenceEntryProcessor {
     static Logger log=LoggerFactory.getLogger(SequenceEntryProcessor.class.getName());
-    ProcessingContext pcontext;
+    ContainerProcessingContext pcontext;
 
-    SequenceEntryProcessor(ProcessingContext pcontext) {
-        this.pcontext=pcontext;
+    SequenceEntryProcessor(ContainerProcessingContext pcontext) {
+        this.pcontext = pcontext;
     }
 
     public void extract(SequenceEntry se) {
@@ -32,31 +37,40 @@ public class SequenceEntryProcessor {
 
 
     private void extractContainerEntry(ContainerEntry ce) {
-        if(pcontext.bitPosition%8!=0) 
-            log.warn("Container Entry that doesn't start at byte boundary is not supported.{} is supposed to start at bit {}", ce, pcontext.bitPosition);
-        if(pcontext.bitPosition/8>pcontext.bb.capacity()) {
+        ContainerProcessingPosition cpp = pcontext.position;
+        if(cpp.bitPosition%8!=0) 
+            log.warn("Container Entry that doesn't start at byte boundary is not supported.{} is supposed to start at bit {}", ce, cpp.bitPosition);
+        if(cpp.bitPosition/8>cpp.bb.capacity()) {
             log.warn("Container Entry that doesn't fit in the buffer: {} is supposed to start at bit {}"
-                    + " while the packet buffer has capacity {} bytes", ce,  pcontext.bitPosition, pcontext.bb.capacity());
+                    + " while the packet buffer has capacity {} bytes", ce,  cpp.bitPosition, cpp.bb.capacity());
             return;
         }
-        pcontext.bb.position(pcontext.bitPosition/8);
-        ProcessingContext pcontext1=new ProcessingContext(pcontext.bb.slice(), pcontext.bitPosition/8, 0,
-                pcontext.subscription, pcontext.paramResult, pcontext.containerResult,
-                pcontext.acquisitionTime, pcontext.generationTime, pcontext.stats, pcontext.ignoreOutOfContainerEntries);
-        pcontext1.sequenceContainerProcessor.extract(ce.getRefContainer());
+        cpp.bb.position(cpp.bitPosition/8);
+        ContainerProcessingPosition cpp1 = new ContainerProcessingPosition(cpp.bb.slice(), cpp.bitPosition/8, 0);
+        ContainerProcessingContext cpc1=new ContainerProcessingContext(pcontext.pdata, cpp1, pcontext.result, pcontext.subscription, pcontext.ignoreOutOfContainerEntries);
+        cpc1.sequenceContainerProcessor.extract(ce.getRefContainer());
         if(ce.getRefContainer().getSizeInBits()<0)
-            pcontext.bitPosition+=pcontext1.bitPosition;
+            cpp.bitPosition+=cpc1.position.bitPosition;
         else 
-            pcontext.bitPosition+=ce.getRefContainer().getSizeInBits();
+            cpp.bitPosition+=ce.getRefContainer().getSizeInBits();
     }
 
     private void extractParameterEntry(ParameterEntry pe) {
-        ParameterValue pv = pcontext.parameterTypeProcessor.extract(pe.getParameter());
-        pv.setAcquisitionTime(pcontext.acquisitionTime);
-        pv.setGenerationTime(pcontext.generationTime);
-        pv.setExpirationTime(pcontext.expirationTime);
+        ContainerProcessingPosition cpp = pcontext.position;
+
+        Parameter param = pe.getParameter();
+        ParameterType ptype = param.getParameterType();
+        ParameterValue pv = new ParameterValue(param);
+        pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset*8+cpp.bitPosition);
+        pv.setBitSize(((BaseDataType)ptype).getEncoding().getSizeInBits());
+        pcontext.dataEncodingProcessor.extractRaw(((BaseDataType)ptype).getEncoding(), pv);
+        pcontext.pdata.parameterTypeProcessor.calibrate(pv);
+        
+        pv.setAcquisitionTime(pcontext.result.acquisitionTime);
+        pv.setGenerationTime(pcontext.result.generationTime);
+        pv.setExpirationTime(pcontext.result.expirationTime);
         pv.setParameterEntry(pe);
 
-        pcontext.paramResult.add(pv);
+        pcontext.result.params.add(pv);
     }
 }

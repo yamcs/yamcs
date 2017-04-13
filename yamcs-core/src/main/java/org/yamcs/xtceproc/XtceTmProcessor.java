@@ -2,7 +2,7 @@ package org.yamcs.xtceproc;
 
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -53,7 +53,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 	log = LoggingUtils.getLogger(this.getClass(), proc);
 	this.processor=proc;
 	this.xtcedb=proc.getXtceDb();
-	tmExtractor=new XtceTmExtractor(xtcedb);
+	tmExtractor = new XtceTmExtractor(xtcedb, proc.getProcessorData());
 	if(tmProcessorConfig != null) {
 	    if(tmProcessorConfig.containsKey(CONFIG_KEY_ignoreOutOfContainerEntries)) {
 	        Object o = tmProcessorConfig.get(CONFIG_KEY_ignoreOutOfContainerEntries);
@@ -69,7 +69,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
         log = LoggingUtils.getLogger(this.getClass(), proc);
         this.processor = proc;
         this.xtcedb = proc.getXtceDb();
-        tmExtractor = new XtceTmExtractor(xtcedb);
+        tmExtractor = new XtceTmExtractor(xtcedb, proc.getProcessorData());
     }
 
 
@@ -79,9 +79,9 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
      */
     public XtceTmProcessor(XtceDb xtcedb) {
         log = LoggerFactory.getLogger(this.getClass());
-        this.processor=null;
-        this.xtcedb=xtcedb;
-        tmExtractor=new XtceTmExtractor(xtcedb);
+        this.processor = null;
+        this.xtcedb = xtcedb;
+        tmExtractor = new XtceTmExtractor(xtcedb);
     }
 
     /**
@@ -173,7 +173,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
             tmExtractor.processPacket(bb, pwrt.getGenerationTime(), getCurrentTime());
         
             ParameterValueList paramResult=tmExtractor.getParameterResult();
-            ArrayList<ContainerExtractionResult> containerResult=tmExtractor.getContainerResult();
+            List<ContainerExtractionResult> containerResult=tmExtractor.getContainerResult();
             
             if((parameterRequestManager!=null) &&( paramResult.size()>0)) {
                 //careful out of the synchronized block in order to avoid dead locks 
@@ -198,7 +198,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
             tmExtractor.processPacket(bb, pwrt.getGenerationTime(), TimeEncoding.getWallclockTime(), sc);
 
             ParameterValueList paramResult=tmExtractor.getParameterResult();
-            ArrayList<ContainerExtractionResult> containerResult=tmExtractor.getContainerResult();
+            List<ContainerExtractionResult> containerResult = tmExtractor.getContainerResult();
             
             if((parameterRequestManager!=null) &&( paramResult.size()>0)) {
                 //careful out of the synchronized block in order to avoid dead locks 

@@ -548,7 +548,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         }
 
 
-        tmProcessor=new XtceTmProcessor(xtcedb);
+        tmProcessor = new XtceTmProcessor(xtcedb);
         tmProcessor.setParameterListener(this);
         tmProcessor.startProvidingAll();
         tmProcessor.startAsync();

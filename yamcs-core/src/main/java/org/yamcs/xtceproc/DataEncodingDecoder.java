@@ -1,5 +1,6 @@
 package org.yamcs.xtceproc;
 
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding.Encoding;
 import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
+import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingPosition;
 
 /**
  * Decodes TM data according to the specification of the DataEncoding
@@ -20,10 +22,10 @@ import org.yamcs.xtce.StringDataEncoding.SizeType;
  *
  */
 public class DataEncodingDecoder {
-    ProcessingContext pcontext;
+    ContainerProcessingContext pcontext;
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
 
-    public DataEncodingDecoder(ProcessingContext pcontext) {
+    public DataEncodingDecoder(ContainerProcessingContext pcontext) {
         this.pcontext=pcontext;
     }
 
@@ -48,75 +50,77 @@ public class DataEncodingDecoder {
     }
 
     private void extractRawInteger(IntegerDataEncoding ide, ParameterValue pv) {
+        ContainerProcessingPosition position = pcontext.position;
+        ByteBuffer bb = position.bb;
         // Integer encoded as string, don't even try reading it as int
         if(ide.getEncoding() == Encoding.string) {
             extractRaw(ide.getStringEncoding(), pv);
             return;
         }
         
-        int byteOffset = (pcontext.bitPosition)/8;
-        int byteSize = (pcontext.bitPosition + ide.getSizeInBits()-1)/8-byteOffset+1;
-        int bitOffsetInsideMask = pcontext.bitPosition - 8*byteOffset;
+        int byteOffset = (position.bitPosition)/8;
+        int byteSize = (position.bitPosition + ide.getSizeInBits()-1)/8-byteOffset+1;
+        int bitOffsetInsideMask = position.bitPosition - 8*byteOffset;
         int bitsToShift = 8*byteSize-bitOffsetInsideMask-ide.getSizeInBits();
         long mask = (-1L<<(64-ide.getSizeInBits()))>>>(64-ide.getSizeInBits()-bitsToShift);
-        pcontext.bb.order(ide.getByteOrder());
+        bb.order(ide.getByteOrder());
 
         long rv=0;
         switch(byteSize) {
         case 1:
-            rv=pcontext.bb.get(byteOffset);
+            rv = bb.get(byteOffset);
             break;
         case 2:
-            rv=pcontext.bb.getShort(byteOffset);
+            rv = bb.getShort(byteOffset);
             break;
         case 3:
             if(ide.getByteOrder()==ByteOrder.BIG_ENDIAN) {
-                rv = (pcontext.bb.getShort(byteOffset) & 0xFFFF) << 8;
-                rv += pcontext.bb.get(byteOffset + 2) & 0xFF;
+                rv = (bb.getShort(byteOffset) & 0xFFFF) << 8;
+                rv += bb.get(byteOffset + 2) & 0xFF;
             } else {
-                rv = pcontext.bb.getShort(byteOffset) & 0xFFFF;
-                rv += (pcontext.bb.get(byteOffset + 2) & 0xFF) << 16;
+                rv = bb.getShort(byteOffset) & 0xFFFF;
+                rv += (bb.get(byteOffset + 2) & 0xFF) << 16;
             }
             break;
         case 4:
-            rv=pcontext.bb.getInt(byteOffset);
+            rv = bb.getInt(byteOffset);
             break;
         case 5:
             if(ide.getByteOrder()==ByteOrder.BIG_ENDIAN) {
-                rv = (pcontext.bb.getInt(byteOffset) & 0xFFFFFFFFL) << 8;
-                rv += pcontext.bb.get(byteOffset + 4) & 0xFF;
+                rv = (bb.getInt(byteOffset) & 0xFFFFFFFFL) << 8;
+                rv += bb.get(byteOffset + 4) & 0xFF;
             } else {
-                rv = pcontext.bb.getInt(byteOffset) & 0xFFFFFFFFL;
-                rv += (pcontext.bb.get(byteOffset + 4) & 0xFFL) << 32;
+                rv = bb.getInt(byteOffset) & 0xFFFFFFFFL;
+                rv += (bb.get(byteOffset + 4) & 0xFFL) << 32;
             }
             break;
         case 6:
             if (ide.getByteOrder()==ByteOrder.BIG_ENDIAN) {
-                rv = (pcontext.bb.getInt(byteOffset) & 0xFFFFFFFFL) << 16;
-                rv += pcontext.bb.getShort(byteOffset + 4) & 0xFFFF;
+                rv = (bb.getInt(byteOffset) & 0xFFFFFFFFL) << 16;
+                rv += bb.getShort(byteOffset + 4) & 0xFFFF;
             } else {
-                rv = pcontext.bb.getInt(byteOffset) & 0xFFFFFFFFL;
-                rv += pcontext.bb.getShort(byteOffset + 4) & 0xFFFFL << 32;
+                rv = bb.getInt(byteOffset) & 0xFFFFFFFFL;
+                rv += bb.getShort(byteOffset + 4) & 0xFFFFL << 32;
             }
             break;
         case 7:
             if (ide.getByteOrder() == ByteOrder.BIG_ENDIAN) {
-                rv = (pcontext.bb.getInt(byteOffset) & 0xFFFFFFFFL) << 24;
-                rv += (pcontext.bb.getShort(byteOffset + 4) & 0xFFFFL) << 8;
-                rv += pcontext.bb.get(byteOffset + 6) & 0xFFL;
+                rv = (bb.getInt(byteOffset) & 0xFFFFFFFFL) << 24;
+                rv += (bb.getShort(byteOffset + 4) & 0xFFFFL) << 8;
+                rv += bb.get(byteOffset + 6) & 0xFFL;
             } else {
-                rv = pcontext.bb.getInt(byteOffset) & 0xFFFFFFFFL;
-                rv += (pcontext.bb.getShort(byteOffset + 4) & 0xFFFFL) << 32;
-                rv += (pcontext.bb.get(byteOffset + 6) & 0xFFL) << 48;
+                rv = bb.getInt(byteOffset) & 0xFFFFFFFFL;
+                rv += (bb.getShort(byteOffset + 4) & 0xFFFFL) << 32;
+                rv += (bb.get(byteOffset + 6) & 0xFFL) << 48;
             }
             break;
         case 8:
-            rv = pcontext.bb.getLong(byteOffset);
+            rv = bb.getLong(byteOffset);
             break;
         default:
         	log.warn(String.format("parameter extraction for %d bytes not supported, used for %s", byteSize, pv.getParameter()));
         }
-        pcontext.bitPosition+=ide.getSizeInBits();
+        position.bitPosition+=ide.getSizeInBits();
         switch(ide.getEncoding()) {
         case twosComplement:
             //we shift it to the left first such that the sign bit arrives on the first position
@@ -162,8 +166,11 @@ public class DataEncodingDecoder {
     }
 
     private void extractRawString(StringDataEncoding sde, ParameterValue pv) {
-        if(pcontext.bitPosition%8!=0) {
-            log.warn("String Parameter that does not start at byte boundary not supported. bitPosition: {}", pcontext.bitPosition);
+        ContainerProcessingPosition position = pcontext.position;
+        ByteBuffer bb = position.bb;
+       
+        if(position.bitPosition%8!=0) {
+            log.warn("String Parameter that does not start at byte boundary not supported. bitPosition: {}", pcontext.position);
         }
         int sizeInBytes=0;
         switch(sde.getSizeType()) {
@@ -172,34 +179,37 @@ public class DataEncodingDecoder {
             break;
         case LeadingSize:
             for(int i=0;i<sde.getSizeInBitsOfSizeTag();i+=8) {
-                sizeInBytes=(sizeInBytes<<8) + pcontext.bb.get(pcontext.bitPosition/8);
-                pcontext.bitPosition+=8;
+                sizeInBytes=(sizeInBytes<<8) + bb.get(position.bitPosition/8);
+                position.bitPosition+=8;
             }
             break;
         case TerminationChar:
-            int byteOffset=pcontext.bitPosition/8;
-            while(pcontext.bb.get(byteOffset)!=sde.getTerminationChar()){ 
+            int byteOffset = position.bitPosition/8;
+            while(bb.get(byteOffset)!=sde.getTerminationChar()){ 
                 sizeInBytes++;
                 byteOffset++;
             }
             break;
         }
         byte[] b=new byte[sizeInBytes];
-        pcontext.bb.position(pcontext.bitPosition/8);
-        pcontext.bb.get(b);
+        bb.position(position.bitPosition/8);
+        bb.get(b);
         pv.setRawValue(new String(b));
         pv.setBitSize(8*sizeInBytes);
-        pcontext.bitPosition+=8*sizeInBytes;
+        position.bitPosition += 8*sizeInBytes;
         if(sde.getSizeType()==SizeType.TerminationChar) {
-            pcontext.bitPosition+=8;//the termination char
+            position.bitPosition+=8;//the termination char
         }
     }
 
     private void extractRawFloat(FloatDataEncoding de, ParameterValue pv) {
-        if(pcontext.bitPosition%8!=0) {
-            log.warn("Float Parameter that does not start at byte boundary not supported. bitPosition: {}", pcontext.bitPosition); 
+        ContainerProcessingPosition position = pcontext.position;
+        ByteBuffer bb = position.bb;
+       
+        if(position.bitPosition%8!=0) {
+            log.warn("Float Parameter that does not start at byte boundary not supported. bitPosition: {}", position.bitPosition); 
         }
-        pcontext.bb.order(de.getByteOrder());
+        bb.order(de.getByteOrder());
         switch(de.getEncoding()) {
         case IEEE754_1985:
             extractRawIEEE754_1985(de, pv);
@@ -213,38 +223,47 @@ public class DataEncodingDecoder {
     }
 
     private void extractRawIEEE754_1985(FloatDataEncoding de, ParameterValue pv) {
-        if(pcontext.bitPosition%8!=0) {
-            log.warn("Float Parameter that does not start at byte boundary not supported. bitPosition: {}", pcontext.bitPosition); 
+        ContainerProcessingPosition position = pcontext.position;
+        ByteBuffer bb = position.bb;
+       
+        if(position.bitPosition%8!=0) {
+            log.warn("Float Parameter that does not start at byte boundary not supported. bitPosition: {}", pcontext.position); 
         }
-        pcontext.bb.order(de.getByteOrder());
-        int byteOffset=pcontext.bitPosition/8;
-        pcontext.bitPosition+=de.getSizeInBits();
+        bb.order(de.getByteOrder());
+        int byteOffset=position.bitPosition/8;
+        position.bitPosition+=de.getSizeInBits();
         if(de.getSizeInBits()==32) {
-            pv.setRawValue(pcontext.bb.getFloat(byteOffset));
+            pv.setRawValue(bb.getFloat(byteOffset));
         } else {
-            pv.setRawValue(pcontext.bb.getDouble(byteOffset));
+            pv.setRawValue(bb.getDouble(byteOffset));
         }
     }
     
     private void extractRawBoolean(BooleanDataEncoding bde, ParameterValue pv) {
-        int byteOffset=(pcontext.bitPosition)/8;
-        int bitOffsetInsideMask=pcontext.bitPosition-8*byteOffset;
-        int bitsToShift=8-bitOffsetInsideMask-1;
-        int mask=(-1<<(32-1))>>>(32-1-bitsToShift);
-        int rv=pcontext.bb.get(byteOffset)&0xFF;
+        ContainerProcessingPosition position = pcontext.position;
+        ByteBuffer bb = position.bb;
+       
+        int byteOffset = (position.bitPosition)/8;
+        int bitOffsetInsideMask = position.bitPosition-8*byteOffset;
+        int bitsToShift = 8-bitOffsetInsideMask-1;
+        int mask = (-1<<(32-1))>>>(32-1-bitsToShift);
+        int rv = bb.get(byteOffset)&0xFF;
         rv=(rv&mask)>>>bitsToShift;
-        pcontext.bitPosition+=1;
+        position.bitPosition+=1;
         pv.setRawValue(rv!=0);
     }
 
     private void extractRawBinary(BinaryDataEncoding bde, ParameterValue pv) {
-        if(pcontext.bitPosition%8!=0) {
-            log.warn("Binary Parameter that does not start at byte boundary not supported. bitPosition: {}", pcontext.bitPosition);
+        ContainerProcessingPosition position = pcontext.position;
+        ByteBuffer bb = position.bb;
+       
+        if(position.bitPosition%8!=0) {
+            log.warn("Binary Parameter that does not start at byte boundary not supported. bitPosition: {}", pcontext.position);
         }
-        byte[] b=new byte[bde.getSizeInBits()/8];
-        pcontext.bb.position(pcontext.bitPosition/8);
-        pcontext.bb.get(b);
+        byte[] b = new byte[bde.getSizeInBits()/8];
+        bb.position(position.bitPosition/8);
+        bb.get(b);
         pv.setRawValue(b);
-        pcontext.bitPosition+=bde.getSizeInBits();
+        position.bitPosition += bde.getSizeInBits();
     }
 }

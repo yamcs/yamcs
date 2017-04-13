@@ -29,8 +29,6 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
         ResolvedValue lValue = resolveValue(lValueRef);
         ResolvedValue rValue = resolveValue(rValueRef);
 
-        //LOG.info("Evaluating " + lValue + OperatorType.operatorToString(op) + rValue);
-
         if ((lValue == null) || (rValue == null)) {
             return false;
         }
@@ -90,7 +88,6 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
         } else {
             v = pv.getRawValue();
         }
-
         switch (v.getType().getNumber()) {
         case Type.SINT32_VALUE:
             return new ResolvedValue((long)v.getSint32Value(), false, intEvaluator);

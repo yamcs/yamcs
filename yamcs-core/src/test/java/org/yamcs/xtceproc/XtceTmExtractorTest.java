@@ -21,7 +21,7 @@ import static org.yamcs.RefMdbPacketGenerator.pTerminatedStringPara1_3_3;
 import static org.yamcs.RefMdbPacketGenerator.pTerminatedStringPara1_3_4;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -318,7 +318,7 @@ public class XtceTmExtractorTest {
         ByteBuffer bb = tmGenerator.generate_PKT1_1();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
         
-        ArrayList<ContainerExtractionResult> received=tmExtractor.getContainerResult();
+        List<ContainerExtractionResult> received=tmExtractor.getContainerResult();
         assertEquals(2, received.size());
         assertEquals("/REFMDB/ccsds-default", received.get(0).getContainer().getQualifiedName());
         assertEquals("/REFMDB/SUBSYS1/PKT1", received.get(1).getContainer().getQualifiedName());
@@ -476,7 +476,7 @@ public class XtceTmExtractorTest {
         ByteBuffer bb=tmGenerator.generate_PKT1_List();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
 
-        ArrayList<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
+        List<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
         SequenceContainer container = tmExtractor.getContainerResult().get(containers.size() -1).getContainer();
         assertEquals("PKT1_List", container.getName());
 
@@ -493,7 +493,7 @@ public class XtceTmExtractorTest {
         ByteBuffer bb=tmGenerator.generate_PKT1_AND();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
 
-        ArrayList<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
+        List<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
         SequenceContainer container = tmExtractor.getContainerResult().get(containers.size() -1).getContainer();
         assertEquals("PKT1_AND", container.getName());
 
@@ -510,7 +510,7 @@ public class XtceTmExtractorTest {
         // first condition
         ByteBuffer bb=tmGenerator.generate_PKT1_OR_1();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
-        ArrayList<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
+        List<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
         SequenceContainer container = tmExtractor.getContainerResult().get(containers.size() -1).getContainer();
         assertEquals("PKT1_OR", container.getName());
         ParameterValueList received=tmExtractor.getParameterResult();
@@ -527,7 +527,7 @@ public class XtceTmExtractorTest {
         // first condition
         ByteBuffer bb=tmGenerator.generate_PKT1_AND_OR_1();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
-        ArrayList<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
+        List<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
         SequenceContainer container = tmExtractor.getContainerResult().get(containers.size() -1).getContainer();
         assertEquals("PKT1_AND_OR", container.getName());
         ParameterValueList received=tmExtractor.getParameterResult();
@@ -553,7 +553,7 @@ public class XtceTmExtractorTest {
         // or condition 1
         ByteBuffer bb=tmGenerator.generate_PKT1(0, 0, (short) 1);
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
-        ArrayList<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
+        List<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
         SequenceContainer container = tmExtractor.getContainerResult().get(containers.size() -1).getContainer();
         assertEquals("PKT1_OR_AND", container.getName());
         ParameterValueList received=tmExtractor.getParameterResult();
@@ -587,7 +587,7 @@ public class XtceTmExtractorTest {
         // in range ]0xA, 0xC[
         ByteBuffer bb=tmGenerator.generate_PKT1(0, 0, (short) 11);
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
-        ArrayList<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
+        List<ContainerExtractionResult> containers = tmExtractor.getContainerResult();
         SequenceContainer container = tmExtractor.getContainerResult().get(containers.size() -1).getContainer();
         assertEquals("PKT1_RANGE", container.getName());
         ParameterValueList received=tmExtractor.getParameterResult();
