@@ -82,9 +82,9 @@ public class SystemParametersProvider extends AbstractService implements StreamS
 
     @Override
     public void onTuple(Stream s, Tuple tuple) {//the definition of the tuple is in PpProviderAdapter
-        List<ParameterValue> params=new ArrayList<ParameterValue>();
+        List<ParameterValue> params=new ArrayList<>();
         for(int i=4;i<tuple.size();i++) {
-            org.yamcs.protobuf.Pvalue.ParameterValue gpv=(org.yamcs.protobuf.Pvalue.ParameterValue)tuple.getColumn(i);
+            ParameterValue pv = (ParameterValue)tuple.getColumn(i);
             String name = tuple.getColumnDefinition(i).getName();
             SystemParameter sv = variables.get(name);
             if(sv==null) {
@@ -93,8 +93,7 @@ public class SystemParametersProvider extends AbstractService implements StreamS
                     sv = createParameterForName(name);
                 }
             } 
-
-            ParameterValue pv=ParameterValue.fromGpb(sv, gpv);
+            pv.setParameter(sv);
             params.add(pv);
         }
         parameterListener.update(params);

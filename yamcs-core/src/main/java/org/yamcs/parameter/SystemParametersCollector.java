@@ -13,14 +13,10 @@ import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
-import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.Value;
-import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.tctm.ParameterDataLinkInitialiser;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
@@ -46,9 +42,9 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     List<SystemParametersProducer> providers = new CopyOnWriteArrayList<SystemParametersProducer>();
 
     static final String STREAM_NAME = "sys_param";
-    private NamedObjectId sp_jvmTotalMemory_id;
-    private NamedObjectId sp_jvmMemoryUsed_id;
-    private NamedObjectId sp_jvmTheadCount_id;
+    private String spJvmTotalMemory;
+    private String spJvmMemoryUsed;
+    private String spJvmTheadCount;
     public static final int JVM_COLLECTION_INTERVAL = 10;
     private boolean provideJvmVariables = false;
     private int jvmCollectionCountdown = 0;
@@ -76,6 +72,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     public SystemParametersCollector(String instance) throws ConfigurationException {
         this(instance, null);
     }
+    
     public SystemParametersCollector(String instance, Map<String, Object> args) throws ConfigurationException {
         this.instance = instance;
         log = LoggingUtils.getLogger(this.getClass(), instance);
@@ -93,14 +90,14 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         namespace = XtceDb.YAMCS_SPACESYSTEM_NAME+NameDescription.PATH_SEPARATOR+serverId;
         log.debug("Using {} as serverId, and {} as namespace for system parameters", serverId, namespace);
         if(provideJvmVariables) {
-            sp_jvmTotalMemory_id = NamedObjectId.newBuilder().setName(namespace+"/jvmTotalMemory").build();
-            log.debug("publishing jvmTotalMemory with parameter id {}", sp_jvmTotalMemory_id);
+            spJvmTotalMemory = namespace+"/jvmTotalMemory";
+            log.debug("publishing jvmTotalMemory with parameter id {}", spJvmTotalMemory);
 
-            sp_jvmMemoryUsed_id = NamedObjectId.newBuilder().setName(namespace+"/jvmMemoryUsed").build();
-            log.debug("publishing jvmMemoryUsed with parameter id {}", sp_jvmMemoryUsed_id);
+            spJvmMemoryUsed = namespace+"/jvmMemoryUsed";
+            log.debug("publishing jvmMemoryUsed with parameter id {}", spJvmMemoryUsed);
 
-            sp_jvmTheadCount_id = NamedObjectId.newBuilder().setName(namespace+"/jvmThreadCount").build();
-            log.debug("publishing jvmThreadCount with parameter id {}", sp_jvmTheadCount_id);
+            spJvmTheadCount = namespace+"/jvmThreadCount";
+            log.debug("publishing jvmThreadCount with parameter id {}", spJvmTheadCount);
         }
         synchronized(instances) {
             instances.put(instance, this);
@@ -165,10 +162,10 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         cols.add(seqCount);
         cols.add(timeService.getMissionTime());
         for(ParameterValue pv:params) {
-            String name = pv.getId().getName();
+            String name = pv.getParameterQualifiedNamed();
             int idx=tdef.getColumnIndex(name);
             if(idx!=-1) {
-                log.warn("duplicate value for {}\nfirst: {}\n second: {}", pv.getId(), cols.get(idx), pv);
+                log.warn("duplicate value for {}\nfirst: {}\n second: {}", name, cols.get(idx), pv);
                 continue;
             }
             tdef.addColumn(name, DataType.PARAMETER_VALUE);
@@ -181,9 +178,9 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     private void collectJvmParameters(List<ParameterValue> params) {
         long time = timeService.getMissionTime();
         Runtime r = Runtime.getRuntime();
-        ParameterValue jvmTotalMemory = SystemParametersCollector.getPV(sp_jvmTotalMemory_id, time, r.totalMemory()/1024);
-        ParameterValue jvmMemoryUsed = SystemParametersCollector.getPV(sp_jvmMemoryUsed_id, time, (r.totalMemory()-r.freeMemory())/1024);
-        ParameterValue jvmThreadCount = SystemParametersCollector.getUnsignedIntPV(sp_jvmTheadCount_id, time, Thread.activeCount());
+        ParameterValue jvmTotalMemory = SystemParametersCollector.getPV(spJvmTotalMemory, time, r.totalMemory()/1024);
+        ParameterValue jvmMemoryUsed = SystemParametersCollector.getPV(spJvmMemoryUsed, time, (r.totalMemory()-r.freeMemory())/1024);
+        ParameterValue jvmThreadCount = SystemParametersCollector.getUnsignedIntPV(spJvmTheadCount, time, Thread.activeCount());
 
         params.add(jvmTotalMemory);
         params.add(jvmMemoryUsed);
@@ -205,55 +202,40 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         return namespace;
     }
 
-
-    public static ParameterValue getPV(NamedObjectId id, long time, String v) {
-        return ParameterValue.newBuilder()
-                .setId(id)
-                .setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
-                .setAcquisitionTime(time)
-                .setGenerationTime(time)
-                .setEngValue(Value.newBuilder().setType(Type.STRING).setStringValue(v).build())
-                .build();
+    public static ParameterValue getNewPv(String fqn, long time) {
+        ParameterValue pv = new ParameterValue(fqn);
+        pv.setAcquisitionTime(time);
+        pv.setGenerationTime(time);
+        return pv;      
+    }
+    public static ParameterValue getPV(String fqn, long time, String v) {
+        ParameterValue pv = getNewPv(fqn, time);
+        pv.setEngValue(ValueUtility.getStringValue(v));
+        return pv;
     }
 
-    public static ParameterValue getPV(NamedObjectId id, long time, double v) {
-        return ParameterValue.newBuilder()
-                .setId(id)
-                .setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
-                .setAcquisitionTime(time)
-                .setGenerationTime(time)
-                .setEngValue(Value.newBuilder().setType(Type.DOUBLE).setDoubleValue(v).build())
-                .build();
+    public static ParameterValue getPV(String fqn, long time, double v) {
+        ParameterValue pv = getNewPv(fqn, time);
+        pv.setEngValue(ValueUtility.getDoubleValue(v));
+        return pv;
     }
 
-    public static ParameterValue getPV(NamedObjectId id, long time, boolean v) {
-        return ParameterValue.newBuilder()
-                .setId(id)
-                .setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
-                .setAcquisitionTime(time)
-                .setGenerationTime(time)
-                .setEngValue(Value.newBuilder().setType(Type.BOOLEAN).setBooleanValue(v).build())
-                .build();
+    public static ParameterValue getPV(String fqn, long time, boolean v) {
+        ParameterValue pv = getNewPv(fqn, time);
+        pv.setEngValue(ValueUtility.getBooleanValue(v));
+        return pv;
     }
 
-    public static ParameterValue getPV(NamedObjectId id, long time, long v) {
-        return ParameterValue.newBuilder()
-                .setId(id)
-                .setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
-                .setAcquisitionTime(time)
-                .setGenerationTime(time)
-                .setEngValue(Value.newBuilder().setType(Type.SINT64).setSint64Value(v).build())
-                .build();
+    public static ParameterValue getPV(String fqn, long time, long v) {
+        ParameterValue pv = getNewPv(fqn, time);
+        pv.setEngValue(ValueUtility.getSint64Value(v));
+        return pv;
     }
 
 
-    public static ParameterValue getUnsignedIntPV(NamedObjectId id, long time, int v) {
-        return ParameterValue.newBuilder()
-                .setId(id)
-                .setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
-                .setAcquisitionTime(time)
-                .setGenerationTime(time)
-                .setEngValue(Value.newBuilder().setType(Type.UINT64).setUint64Value(v).build())
-                .build();
+    public static ParameterValue getUnsignedIntPV(String fqn, long time, int v) {
+        ParameterValue pv = getNewPv(fqn, time);
+        pv.setEngValue(ValueUtility.getUint64Value(v));
+        return pv;
     }
 }

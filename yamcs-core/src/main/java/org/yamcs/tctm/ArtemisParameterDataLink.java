@@ -8,6 +8,7 @@ import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsSession;
@@ -18,9 +19,8 @@ import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.common.util.concurrent.AbstractService;
 
-
 /**
- * receives data from ActiveMQ and publishes it into a yamcs stream
+ * receives data from ActiveMQ Artemis and publishes it into a yamcs stream
  * 
  * @author nm
  *
@@ -31,23 +31,13 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
 
     protected Logger log=LoggerFactory.getLogger(this.getClass().getName());
     private ParameterSink ppListener;
-    YamcsSession yamcsSession; 
-    final private YamcsClient msgClient;
+    private YamcsSession yamcsSession; 
     final XtceDb ppdb;
-
+    final String hornetAddress; 
+    
     public ArtemisParameterDataLink(String instance, String name, String hornetAddress) throws ConfigurationException  {
-        SimpleString queue=new SimpleString(hornetAddress+"-ActiveMQPpProvider");
-        ppdb=XtceDbFactory.getInstance(instance);
-
-        try {
-            yamcsSession=YamcsSession.newBuilder().build();
-            msgClient=yamcsSession.newClientBuilder().setDataProducer(false).setDataConsumer(new SimpleString(hornetAddress), queue).
-                    setFilter(new SimpleString(AbstractArtemisTranslatorService.UNIQUEID_HDR_NAME+"<>"+AbstractArtemisTranslatorService.UNIQUEID)).
-                    build();
-
-        } catch (Exception e) {
-            throw new ConfigurationException(e.getMessage(),e);
-        }
+        ppdb = XtceDbFactory.getInstance(instance);
+        this.hornetAddress = hornetAddress;
     }
 
 
@@ -98,7 +88,9 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
 
     @Override
     public void onMessage(ClientMessage msg) {
-        if(disabled) return;
+        if(disabled) {
+            return;
+        }
         try {
             ParameterData pd = (ParameterData)Protocol.decode(msg, ParameterData.newBuilder());
             long genTime;
@@ -133,10 +125,16 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
     @Override
     protected void doStart() {
         try {
-            msgClient.dataConsumer.setMessageHandler(this);
+            SimpleString queue=new SimpleString(hornetAddress+"-ActiveMQPpProvider");
+            yamcsSession = YamcsSession.newBuilder().build();
+            YamcsClient yclient = yamcsSession.newClientBuilder().setDataProducer(false).setDataConsumer(new SimpleString(hornetAddress), queue).
+                    setFilter(new SimpleString(AbstractArtemisTranslatorService.UNIQUEID_HDR_NAME+"<>"+AbstractArtemisTranslatorService.UNIQUEID)).
+                    build();
+
+            yclient.dataConsumer.setMessageHandler(this);
             notifyStarted();
-        } catch (ActiveMQException e) {
-            log.error("Failed to set message handler");
+        } catch (ActiveMQException|YamcsApiException e) {
+            log.error("Failed connect to artemis");
             notifyFailed(e);
         }
     }
@@ -144,13 +142,12 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
     @Override
     protected void doStop() {
         try {
-            msgClient.close();
+            yamcsSession.close();
             notifyStopped();
         } catch (ActiveMQException e) {
             log.error("Got exception when quiting:", e);
             notifyFailed(e);
         }
     }
-
 }
 

@@ -698,8 +698,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     @Override
-    public Collection<Pvalue.ParameterValue> getSystemParameters() {
-        List<Pvalue.ParameterValue> pvlist = new ArrayList<>();
+    public Collection<ParameterValue> getSystemParameters() {
+        List<ParameterValue> pvlist = new ArrayList<>();
         long time = yproc.getCurrentTime();
         for(CommandQueue cq: queues.values()) {
             cq.fillInSystemParameters(pvlist, time);

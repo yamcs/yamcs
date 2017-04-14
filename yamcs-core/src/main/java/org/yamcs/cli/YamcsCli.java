@@ -28,6 +28,7 @@ public class YamcsCli extends Command {
         addSubCommand(new ArchiveCli(this));
         addSubCommand(new XtceDbCli(this));
         addSubCommand(new TablesCli(this));
+        addSubCommand(new ParameterArchiveCli(this));
     }
 
     @Parameter(names="-y", description="yamcs url")

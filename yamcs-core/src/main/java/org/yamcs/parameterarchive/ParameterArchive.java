@@ -32,10 +32,12 @@ import org.yamcs.yarch.rocksdb.YRDB;
 import com.google.common.util.concurrent.AbstractService;
 
 public class ParameterArchive  extends AbstractService {
-    static final String CF_NAME_meta_p2pid = "meta_p2pid";
-    static final String CF_NAME_meta_pgid2pg = "meta_pgid2pg"; 
-    static final String CF_NAME_data_prefix = "data_";
+    static final String CF_NAME_META_P2PID = "meta_p2pid";
+    static final String CF_NAME_META_PGID2PG = "meta_pgid2pg"; 
+    static final String CF_NAME_DATA_PREFIX = "data_";
 
+    public static final boolean STORE_RAW_VALUES = true; 
+    
     private final Logger log = LoggerFactory.getLogger(ParameterArchive.class);
     private ParameterIdDb parameterIdMap;
     private ParameterGroupIdDb parameterGroupIdMap;
@@ -44,15 +46,12 @@ public class ParameterArchive  extends AbstractService {
     ColumnFamilyHandle p2pid_cfh;
     ColumnFamilyHandle pgid2pg_cfh;
 
-    final private String yamcsInstance;
+    private final String yamcsInstance;
     private TreeMap<Long, Partition> partitions = new TreeMap<>();
     SegmentEncoderDecoder vsEncoder = new SegmentEncoderDecoder();
-    public final static boolean STORE_RAW_VALUES = true; 
+    
 
     final TimeService timeService;
-    private Map<String, Object> backFillerConfig;
-    private Map<String, Object> realtimeFillerConfig;
-    private boolean realtimeFillerEnabled = false;
     private BackFiller backFiller;
     private RealtimeArchiveFiller realtimeFiller;
     static StringColumnFamilySerializer cfSerializer = new StringColumnFamilySerializer();
@@ -76,7 +75,6 @@ public class ParameterArchive  extends AbstractService {
         } else {
             backFiller = new BackFiller(this, null);
         }
-        // HttpServer.getInstance().registerRouteHandler(yamcsInstance, new ArchiveParameter2RestHandler());
     }
 
     public ParameterArchive(String instance) throws RocksDBException, IOException {
@@ -87,7 +85,7 @@ public class ParameterArchive  extends AbstractService {
     private void processConfig(Map<String, Object> args) {
         for(String s:args.keySet()) {
             if("backFiller".equals(s)) {
-                backFillerConfig = YConfiguration.getMap(args, s);
+                Map<String, Object> backFillerConfig = YConfiguration.getMap(args, s);
                 boolean backFillerEnabled = true;
                 log.debug("backFillerConfig: {}", backFillerConfig);
                 if(backFillerConfig.containsKey("enabled")) {
@@ -97,8 +95,8 @@ public class ParameterArchive  extends AbstractService {
                     backFiller = new BackFiller(this, backFillerConfig);
                 }
             } else if("realtimeFiller".equals(s)) {
-                realtimeFillerConfig = YConfiguration.getMap(args, s);
-                realtimeFillerEnabled = YConfiguration.getBoolean(realtimeFillerConfig, "enabled", false);
+                Map<String, Object> realtimeFillerConfig = YConfiguration.getMap(args, s);
+                boolean realtimeFillerEnabled = YConfiguration.getBoolean(realtimeFillerConfig, "enabled", false);
                 log.debug("realtimeFillerConfig: {}", realtimeFillerConfig);
                 if(realtimeFillerEnabled) {
                     realtimeFiller = new RealtimeArchiveFiller(this, realtimeFillerConfig);
@@ -112,38 +110,38 @@ public class ParameterArchive  extends AbstractService {
     private void createDb(String dbpath) throws RocksDBException, IOException {
         log.info("Creating new ParameterArchive RocksDb at {}", dbpath);
         yrdb = RDBFactory.getInstance(yamcsInstance).getRdb(dbpath, false);
-        p2pid_cfh = yrdb.createColumnFamily(CF_NAME_meta_p2pid);
-        pgid2pg_cfh = yrdb.createColumnFamily(CF_NAME_meta_pgid2pg);
+        p2pid_cfh = yrdb.createColumnFamily(CF_NAME_META_P2PID);
+        pgid2pg_cfh = yrdb.createColumnFamily(CF_NAME_META_PGID2PG);
     }
 
     private void openExistingDb(String dbpath) throws IOException {
         log.info("Opening existing ParameterArchive RocksDb at {}", dbpath);
         yrdb = RDBFactory.getInstance(yamcsInstance).getRdb(dbpath, false);
 
-        p2pid_cfh = yrdb.getColumnFamilyHandle(CF_NAME_meta_p2pid);
-        pgid2pg_cfh = yrdb.getColumnFamilyHandle(CF_NAME_meta_pgid2pg);
+        p2pid_cfh = yrdb.getColumnFamilyHandle(CF_NAME_META_P2PID);
+        pgid2pg_cfh = yrdb.getColumnFamilyHandle(CF_NAME_META_PGID2PG);
 
         Collection<String> l = yrdb.getColumnFamiliesAsStrings();
         for(String o: l) {
             String cn = (String)o;
-            if(cn.startsWith(CF_NAME_data_prefix)) {
-                long partitionId = decodePartitionId(CF_NAME_data_prefix, cn);
+            if(cn.startsWith(CF_NAME_DATA_PREFIX)) {
+                long partitionId = decodePartitionId(CF_NAME_DATA_PREFIX, cn);
                 Partition p = partitions.get(partitionId);
                 if(p==null) {
                     p = new Partition(partitionId);
                     partitions.put(partitionId, p);
                 }
                 p.dataCfh = yrdb.getColumnFamilyHandle(o);
-            } else if(!"default".equals(cn) && !CF_NAME_meta_p2pid.equals(cn) && !CF_NAME_meta_pgid2pg.equals(cn)){
+            } else if(!"default".equals(cn) && !CF_NAME_META_P2PID.equals(cn) && !CF_NAME_META_PGID2PG.equals(cn)){
                 log.warn("Unknown column family '{}'", cn);
             }
         }
 
         if(p2pid_cfh==null) {
-            throw new ParameterArchiveException("Cannot find column family '"+CF_NAME_meta_p2pid+"' in database at "+dbpath);
+            throw new ParameterArchiveException("Cannot find column family '"+CF_NAME_META_P2PID+"' in database at "+dbpath);
         }
         if(pgid2pg_cfh==null) {
-            throw new ParameterArchiveException("Cannot find column family '"+CF_NAME_meta_pgid2pg+"' in database at "+dbpath);
+            throw new ParameterArchiveException("Cannot find column family '"+CF_NAME_META_PGID2PG+"' in database at "+dbpath);
         }      
     }
 
@@ -219,7 +217,7 @@ public class ParameterArchive  extends AbstractService {
                 if(rvs!=null) {
                     if(rvs.size()!=timeSegment.size()) {
                         throw new IllegalArgumentException("Trying to write to archive an raw value segment whose size ("+rvs.size()+") is different than the time segment ("+timeSegment.size()+") "
-                                +"for parameerId: "+parameterId+"("+pname+") and segment: ["+TimeEncoding.toString(timeSegment.getSegmentStart())+" - " + TimeEncoding.toString(timeSegment.getSegmentEnd())+"]");
+                                +"for parameterId: "+parameterId+"("+pname+") and segment: ["+TimeEncoding.toString(timeSegment.getSegmentStart())+" - " + TimeEncoding.toString(timeSegment.getSegmentEnd())+"]");
                     }
                     byte[] rawKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getSegmentStart(), SegmentKey.TYPE_RAW_VALUE).encode();
                     byte[] rawValue = vsEncoder.encode(rvs);
@@ -250,7 +248,7 @@ public class ParameterArchive  extends AbstractService {
             Partition p = partitions.get(partitionId);
             if(p==null) {
                 p = new Partition(partitionId);
-                String cfname = CF_NAME_data_prefix + Long.toHexString(partitionId);
+                String cfname = CF_NAME_DATA_PREFIX + Long.toHexString(partitionId);
                 p.dataCfh = yrdb.createColumnFamily(cfname);
                 partitions.put(partitionId, p);
             }

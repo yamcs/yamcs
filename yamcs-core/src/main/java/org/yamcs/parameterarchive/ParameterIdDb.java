@@ -61,7 +61,7 @@ public class ParameterIdDb {
 
         Map<Integer, Integer> m = p2pidCache.get(paramFqn);
         if(m==null) {
-            m = new HashMap<Integer, Integer>();
+            m = new HashMap<>();
             p2pidCache.put(paramFqn, m);
         }
         Integer pid = m.get(type);
@@ -133,7 +133,9 @@ public class ParameterIdDb {
     }
 
     static Value.Type getType(int x) {
-        if(x==0xFFFF) return null;
+        if(x==0xFFFF) {
+            return null;
+        }
         else return Value.Type.valueOf(x);
     }
 
@@ -144,8 +146,8 @@ public class ParameterIdDb {
             for(Map.Entry<Integer, Integer> e: m.entrySet()) {
                 int parameterId = e.getValue();
                 int et = e.getKey()>>16;
-        int rt = e.getKey()&0xFFFF;
-        out.println("\t("+getType(et)+", "+getType(rt)+") -> "+parameterId);
+                int rt = e.getKey()&0xFFFF;
+                out.println("\t("+getType(et)+", "+getType(rt)+") -> "+parameterId);
             }
         }
     }
