@@ -216,42 +216,6 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         final String cmd = ae.getActionCommand();
         if(cmd.equalsIgnoreCase("reload")) {
             requestData();
-        }  else if (cmd.equals("hide_resp")) {
-            //  buildPopup();
-        } else if (cmd.equals("show-dass-arc")) {
-            /*
-            Selection s = tmBox.getSelection();
-            if (s != null) {
-                String text = "Start_Archive_Replay Start_Time:\""
-                    + format_yyyymmdd.format(s.getStartInstant()) + "\", End_Time:\""
-                    + format_yyyymmdd.format(s.getStopInstant()) + "\"";
-                showClipboardDialog(text);
-            }
-             */
-        } else if (cmd.equals("show-raw-packet-dump")) {
-            /*
-            Selection s = tmBox.getSelection();
-            if (s != null) {
-                ArrayList<String> packets = new ArrayList<String>();
-                for (ArrayList<TMTypeSpec> plvec:payloads.values()) {
-                    for (TMTypeSpec pkt:plvec) {
-                        if ( pkt.enabled ) {
-                            packets.add(pkt.opsname);
-                        }
-                    }
-                }
-                StringBuffer sb=new StringBuffer();
-                sb.append("hrdp-raw-packet-dump.sh ").append(prefs.getInstance()).append(" ");
-                sb.append(TimeEncoding.toOrdinalDateTime(s.getStartInstant()));
-                sb.append(" ");
-                sb.append(TimeEncoding.toOrdinalDateTime(s.getStopInstant()));
-                sb.append(" \"");
-                for(String p:packets) sb.append(p).append(" ");
-                sb.deleteCharAt(sb.length()-1);
-                sb.append("\"");
-                showClipboardDialog(sb.toString());
-            }
-             */
         } else if(cmd.equalsIgnoreCase("exit")) {
             System.exit(0);
         }
@@ -328,7 +292,9 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
             if(args[i].equals("-h")) {
                 printUsageAndExit();
             } else {
-                if(args.length!=i+1) printUsageAndExit();
+                if(args.length!=i+1) {
+                    printUsageAndExit();
+                }
                 String initialUrl=args[i];
                 if(initialUrl.startsWith("http://")){
                     params = YamcsConnectionProperties.parse(initialUrl);

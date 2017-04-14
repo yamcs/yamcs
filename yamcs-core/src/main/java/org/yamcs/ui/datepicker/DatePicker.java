@@ -23,33 +23,35 @@ import static java.util.Calendar.*;
  */
 public final class DatePicker extends JPanel {
     MyDatePicker start, end;
-    JComboBox fixedRangesComboBox;
+    JComboBox<String> fixedRangesComboBox;
 
     public DatePicker() { 
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-        final String[] fixedRanges = {"Select Last...", "  3 months", "  6 months", "  12 months"};
-        fixedRangesComboBox = new JComboBox(fixedRanges);
+        final String[] fixedRanges = {"Select Last...",  "day", "week", "month", "3 months", "6 months", "12 months"};
+
+        final int[][] fixedRangesTime = {{}, {Calendar.DAY_OF_MONTH, 1}, {Calendar.WEEK_OF_YEAR, 1}, {Calendar.MONTH, 1}
+        , {Calendar.MONTH, 3}, {Calendar.MONTH, 6}, {Calendar.MONTH, 12}};
+
+        fixedRangesComboBox = new JComboBox<>(fixedRanges);
         fixedRangesComboBox.setSelectedIndex(0);
 
         start=new MyDatePicker();
         end=new MyDatePicker();
 
-        fixedRangesComboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                int idx = fixedRangesComboBox.getSelectedIndex();
-                if (idx != 0) {
-                	Calendar startCal = Calendar.getInstance();
-                    startCal.set(Calendar.HOUR_OF_DAY, 0);
-                    startCal.set(Calendar.MINUTE, 0);
-                    startCal.set(Calendar.SECOND, 0);
-                    startCal.set(Calendar.MILLISECOND, 0);
-                    startCal.add(Calendar.DAY_OF_MONTH, 1);
-                    end.setTime(startCal);
-                	Calendar endCal = Calendar.getInstance();
-                    endCal.add(Calendar.MONTH, -3*(1<<(idx-1)));
-                    start.setTime(endCal);
-                }
+        fixedRangesComboBox.addActionListener(e -> {
+            int idx = fixedRangesComboBox.getSelectedIndex();
+            if (idx != 0) {
+                Calendar startCal = Calendar.getInstance();
+                startCal.set(Calendar.HOUR_OF_DAY, 0);
+                startCal.set(Calendar.MINUTE, 0);
+                startCal.set(Calendar.SECOND, 0);
+                startCal.set(Calendar.MILLISECOND, 0);
+                startCal.add(Calendar.DAY_OF_MONTH, 1);
+                end.setTime(startCal);
+                Calendar endCal = Calendar.getInstance();
+                int[] x =fixedRangesTime[idx];
+                endCal.add(x[0], -x[1]);
+                start.setTime(endCal);
             }
         });
         add(start.datePicker);
@@ -61,8 +63,10 @@ public final class DatePicker extends JPanel {
      * Returns the starting date.
      */
     public long getStartTimestamp() {
-        if(start.getValue()==null) return TimeEncoding.INVALID_INSTANT;
-        
+        if(start.getValue()==null) {
+            return TimeEncoding.INVALID_INSTANT;
+        }
+
         return TimeEncoding.fromCalendar(start.getValue());
     }
 
@@ -70,8 +74,10 @@ public final class DatePicker extends JPanel {
      * Returns the ending date.
      */
     public long getEndTimestamp() {
-        if(end.getValue()==null) return TimeEncoding.INVALID_INSTANT;
-        
+        if(end.getValue()==null) {
+            return TimeEncoding.INVALID_INSTANT;
+        }
+
         return TimeEncoding.fromCalendar(end.getValue());
     }
 
@@ -79,11 +85,15 @@ public final class DatePicker extends JPanel {
         TimeInterval ti=new TimeInterval();
         Calendar calStart=start.getValue();
         Calendar calEnd=end.getValue();
-        if(calStart!=null) ti.setStart(TimeEncoding.fromCalendar(calStart));
-        if(calEnd!=null) ti.setStop(TimeEncoding.fromCalendar(calEnd));
+        if(calStart!=null) {
+            ti.setStart(TimeEncoding.fromCalendar(calStart));
+        }
+        if(calEnd!=null) {
+            ti.setStop(TimeEncoding.fromCalendar(calEnd));
+        }
         return ti;
     }
-    
+
 
     public void setStartTimestamp(long t) {
         start.setTime(TimeEncoding.toCalendar(t));
@@ -102,38 +112,37 @@ public final class DatePicker extends JPanel {
         Calendar calendar=null; //null means no value set
 
         MyDatePicker() {
-            //calendar=Calendar.getInstance();
-            //calendarModel.setValue(calendar);
             datePicker = (JDatePickerImpl) JDateComponentFactory.createJDatePicker(calendarModel, formatter);
             datePicker.getModel().setSelected(true);
             datePicker.setTextEditable(true);
-            datePicker.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    // if the date range is changed by date picker the fixed combo box becomes irrelevant,
-                    if (fixedRangesComboBox.getSelectedIndex() != 0) {
-                        fixedRangesComboBox.setSelectedIndex(0);
-                    }
+            datePicker.addActionListener(e-> {
+                // if the date range is changed by date picker the fixed combo box becomes irrelevant,
+                if (fixedRangesComboBox.getSelectedIndex() != 0) {
+                    fixedRangesComboBox.setSelectedIndex(0);
                 }
             });
         }
 
         public Calendar getValue() {
-            if(calendar==null) return null;
+            if(calendar==null) {
+                return null;
+            }
             Calendar cal=calendarModel.getValue();
             copyHhMmSs(calendar, cal);
             return cal;
         }
 
         public void setTime(Calendar cal) {
-        	if(cal==null) {
-        		calendar=null;
-        		calendarModel.setValue(null);
-        	} else {
-        		if(calendar==null) calendar=Calendar.getInstance();
-        		calendar.setTime(cal.getTime());
-        		calendarModel.setValue(cal);
-        	}
+            if(cal==null) {
+                calendar=null;
+                calendarModel.setValue(null);
+            } else {
+                if(calendar==null) {
+                    calendar=Calendar.getInstance();
+                }
+                calendar.setTime(cal.getTime());
+                calendarModel.setValue(cal);
+            }
         }
 
         /**
@@ -144,11 +153,11 @@ public final class DatePicker extends JPanel {
 
             @Override
             public Object stringToValue(final String dateString) throws ParseException {
-            	if(dateString.isEmpty()) {
-            		calendar=null;
-            		return null;
-            	}
-            	
+                if(dateString.isEmpty()) {
+                    calendar=null;
+                    return null;
+                }
+
                 Calendar cal = Calendar.getInstance();
                 SimpleDateFormat simpleDateFormatter = new SimpleDateFormat();
                 simpleDateFormatter.setCalendar(calendar);
@@ -158,7 +167,7 @@ public final class DatePicker extends JPanel {
                     simpleDateFormatter.applyPattern(p);
                     try {
                         Date date = simpleDateFormatter.parse(dateString);
-                        
+
                         cal.setTime(date);
                         copyHhMmSs(cal, calendar);
                         return cal;
@@ -167,29 +176,29 @@ public final class DatePicker extends JPanel {
 
                 JOptionPane.showMessageDialog(null,
                         "The date can only be in one of the following formats:\n"
-                        + "yyyy-mm-dd\n"
-                        + "yyyy-mm-ddThh:mm:ss\n"
-                        + "yyyy-mm-ddThh:mm:ss.sss.",
-                        "Unparseable date error!",
-                        JOptionPane.ERROR_MESSAGE);
+                                + "yyyy-mm-dd\n"
+                                + "yyyy-mm-ddThh:mm:ss\n"
+                                + "yyyy-mm-ddThh:mm:ss.sss.",
+                                "Unparseable date error!",
+                                JOptionPane.ERROR_MESSAGE);
 
                 throw new ParseException("Not a valid YAMCS DateTime string", 0);
             }
 
             @Override
             public String valueToString(final Object value) {
-            	if(calendar==null) {
-            		calendar=Calendar.getInstance();
-            		calendar.set(Calendar.HOUR_OF_DAY, 0);
-            		calendar.set(Calendar.MINUTE, 0);
-            		calendar.set(Calendar.SECOND, 0);
-            		calendar.set(Calendar.MILLISECOND, 0);
-            	}
+                if(calendar==null) {
+                    calendar=Calendar.getInstance();
+                    calendar.set(Calendar.HOUR_OF_DAY, 0);
+                    calendar.set(Calendar.MINUTE, 0);
+                    calendar.set(Calendar.SECOND, 0);
+                    calendar.set(Calendar.MILLISECOND, 0);
+                }
                 if (value != null) {
                     Calendar cal = (Calendar) value;
-                	
+
                     copyHhMmSs(calendar, cal);
-                    
+
                     SimpleDateFormat simpleDateFormatter = new SimpleDateFormat();
                     simpleDateFormatter.applyPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
@@ -208,5 +217,4 @@ public final class DatePicker extends JPanel {
             to.set(MILLISECOND, from.get(MILLISECOND));
         }
     }
-
 }

@@ -37,7 +37,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     private LinkedHashMap<String,NavigatorItem> itemsByName=new LinkedHashMap<String, NavigatorItem>();
 
     SideNavigator sideNavigator;
-    public JToolBar archiveToolbar;
+    JToolBar archiveToolbar;
     protected PrefsToolbar prefs;
     
     private JPanel insetPanel; // Contains switchable navigator insets (depends on open item)
@@ -45,7 +45,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     private NavigatorItem activeItem; // Currently opened item from SideNav
     public ReplayPanel replayPanel;
     
-    int loadCount,recCount;
+    int loadCount, recCount;
     boolean passiveUpdate = false;
    
     private TimeInterval receivedDataInterval = new TimeInterval();
@@ -273,7 +273,9 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             insetPanel.setVisible(false);
         }
 
-        if(activeItem!=null) activeItem.onClose();
+        if(activeItem!=null) {
+            activeItem.onClose();
+        }
         sourceItem.onOpen();
         activeItem = sourceItem;
     }
@@ -304,7 +306,9 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     
     private JLabel createLabelForStatusBar(String text) {
         JLabel lbl = new JLabel();
-        if(text != null) lbl.setText(text);
+        if(text != null) {
+            lbl.setText(text);
+        }
         lbl.setFont(lbl.getFont().deriveFont(Font.PLAIN, lbl.getFont().getSize2D()-2));
         return lbl;
     }
@@ -322,8 +326,6 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         totalRangeLabel.setText(receivedDataInterval.toStringEncoded());
         totalRangeLabel.repaint();
         
-   //     updateSelectionFields();
-
         passiveUpdate = false;
     }
     
@@ -416,10 +418,14 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         public boolean merge(IndexChunkSpec t, long mergeTime) {
             boolean merge=false;
             if(tmcount==1) {
-                if(t.startInstant-stopInstant<mergeTime) merge=true; 
+                if(t.startInstant-stopInstant<mergeTime){
+                    merge=true; 
+                }
             } else {
                 float dist=(stopInstant-startInstant)/((float)(tmcount-1));
-                if(t.startInstant-stopInstant<dist+mergeTime) merge=true;
+                if(t.startInstant-stopInstant<dist+mergeTime) {
+                    merge=true;
+                }
             }
             if(merge) {
                 stopInstant=t.stopInstant;
@@ -467,17 +473,18 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             navigatorItem.receiveArchiveRecords(ir);
         }
 
-        //progressMonitor.setProgress(30);
-        //progressMonitor.setNote("Receiving data");
-
         long start, stop;
         for (ArchiveRecord r:ir.getRecordsList()) {
             //debugLog(r.packet+"\t"+r.num+"\t"+new Date(r.first)+"\t"+new Date(r.last));
             start = r.getFirst();
             stop = r.getLast();
 
-            if ((!receivedDataInterval.hasStart()) || (start<receivedDataInterval.getStart())) receivedDataInterval.setStart(start);
-            if ((!receivedDataInterval.hasStop()) || (stop>receivedDataInterval.getStop())) receivedDataInterval.setStop(stop);
+            if ((!receivedDataInterval.hasStart()) || (start<receivedDataInterval.getStart())) {
+                receivedDataInterval.setStart(start);
+            }
+            if ((!receivedDataInterval.hasStop()) || (stop>receivedDataInterval.getStop())) {
+                receivedDataInterval.setStop(stop);
+            }
 
             recCount++;
             loadCount++;
@@ -512,13 +519,10 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             prefs.savePreferences();
         }
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                statusInfoLabel.setText("");
-                prefs.reloadButton.setEnabled(true);
-                setNormalPointer();
-            }
+        SwingUtilities.invokeLater(() -> {
+            statusInfoLabel.setText("");
+            prefs.reloadButton.setEnabled(true);
+            setNormalPointer();
         });
     }
 
