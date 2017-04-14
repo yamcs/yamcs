@@ -1,6 +1,6 @@
 package org.yamcs;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.yamcs.parameter.ParameterValue;
 
@@ -14,5 +14,5 @@ import org.yamcs.parameter.ParameterValue;
  *
  */
 public interface DVParameterConsumer {
-    public ArrayList<ParameterValue> updateParameters(int subcriptionid, ArrayList<ParameterValue> items);
+    public List<ParameterValue> updateParameters(int subcriptionid, List<ParameterValue> items);
 }

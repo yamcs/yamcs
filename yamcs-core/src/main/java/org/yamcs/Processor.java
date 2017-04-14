@@ -687,6 +687,11 @@ public class Processor extends AbstractService {
         return parameterRequestManager.getParameterCache();
     }
 
+    /**
+     * Returns the processor data used to store processor specific calibration, alarms 
+     * 
+     * @return processor specific data
+     */
     public ProcessorData getProcessorData() {
         return processorData;
     }

@@ -40,11 +40,11 @@ public class TableDefinitionConstructor  extends Constructor {
         @Override
         public Object construct(Node node) {
             Map<String, Object> m = (Map) constructMapping((MappingNode)node);
-            TupleDefinition keyDef=(TupleDefinition) m.get(K_keyDef);
-            TupleDefinition valueDef=(TupleDefinition) m.get(K_valueDef);
+            TupleDefinition keyDef=(TupleDefinition) m.get(K_KEY_DEF);
+            TupleDefinition valueDef=(TupleDefinition) m.get(K_VALUE_DEF);
             Map<String, BiMap<String,Short>> enumValues=new HashMap<>();
-            if(m.containsKey(K_enumValue)) {
-                Map<String, Map<String, Integer>> t=(Map)m.get(K_enumValue);
+            if(m.containsKey(K_ENUM_VALUE)) {
+                Map<String, Map<String, Integer>> t=(Map)m.get(K_ENUM_VALUE);
                 for(Entry<String, Map<String, Integer>> e:t.entrySet()) {
                     BiMap<String, Short> b=HashBiMap.create();
                     for(Entry<String,Integer> e1:e.getValue().entrySet()) {
@@ -54,21 +54,21 @@ public class TableDefinitionConstructor  extends Constructor {
                 }
             }
             TableDefinition tdef=new TableDefinition(keyDef, valueDef, enumValues);
-            if(m.containsKey(K_histogram)) {
-                List<String> h=(List<String>)m.get(K_histogram);
+            if(m.containsKey(K_HISTOGRAM)) {
+                List<String> h=(List<String>)m.get(K_HISTOGRAM);
                 try {
                     tdef.setHistogramColumns(h);
                 } catch (StreamSqlException e) {
                     throw new IllegalArgumentException(e);
                 }
             }
-            if(m.containsKey(K_dataDir)) {
+            if(m.containsKey(K_DATA_DIR)) {
                 tdef.setCustomDataDir(true);
-                tdef.setDataDir((String)m.get(K_dataDir));
+                tdef.setDataDir((String)m.get(K_DATA_DIR));
             }
             try {
-                if(m.containsKey(K_partitioningSpec)) {
-                    tdef.setPartitioningSpec((PartitioningSpec)m.get(K_partitioningSpec));
+                if(m.containsKey(K_PARTITIONING_SPEC)) {
+                    tdef.setPartitioningSpec((PartitioningSpec)m.get(K_PARTITIONING_SPEC));
                 } else {
                     PartitioningSpec ps = PartitioningSpec.noneSpec();
                     tdef.setPartitioningSpec(ps);
@@ -76,24 +76,24 @@ public class TableDefinitionConstructor  extends Constructor {
             } catch (StreamSqlException e) {
                 throw new IllegalArgumentException(e);
             }
-            if(m.containsKey(K_compressed)) {
-                tdef.setCompressed((Boolean)m.get(K_compressed));
+            if(m.containsKey(K_COMPRESSED)) {
+                tdef.setCompressed((Boolean)m.get(K_COMPRESSED));
             }
             
-            if(m.containsKey(K_formatVersion)) {
-                tdef.setFormatVersion((Integer)m.get(K_formatVersion));
+            if(m.containsKey(K_FORMAT_VERSION)) {
+                tdef.setFormatVersion((Integer)m.get(K_FORMAT_VERSION));
             } else {
                 tdef.setFormatVersion(0);
             }
             
-            if(m.containsKey(K_storageEngine)) {
-                tdef.setStorageEngineName((String)m.get(K_storageEngine));
+            if(m.containsKey(K_STORAGE_ENGINE)) {
+                tdef.setStorageEngineName((String)m.get(K_STORAGE_ENGINE));
             } else {//before the storageEngine has been invented, we only had TokyoCabinet, so assume that if it's not set then TokyoCabine is used
                 tdef.setStorageEngineName("TokyoCabinet");
             }
             
-            if(m.containsKey(K_partitionStorage)) {
-                tdef.setPartitionStorage((PartitionStorage)m.get(K_partitionStorage));
+            if(m.containsKey(K_PARTITION_STORAGE)) {
+                tdef.setPartitionStorage((PartitionStorage)m.get(K_PARTITION_STORAGE));
             } else {//before the partitionStorage has been invented, we only had column_family
                 tdef.setPartitionStorage(PartitionStorage.COLUMN_FAMILY);
             }
@@ -158,22 +158,22 @@ public class TableDefinitionConstructor  extends Constructor {
             if(type==_type.NONE) {
                 pspec = PartitioningSpec.noneSpec();
             } else if(type==_type.TIME) {
-                String timeColumn = (String)m.get(K_timeColumn);
+                String timeColumn = (String)m.get(K_TIME_COLUMN);
                 pspec = PartitioningSpec.timeSpec(timeColumn);
             } else if((type==_type.VALUE)) {
-                String valueColumn = (String)m.get(K_valueColumn);
+                String valueColumn = (String)m.get(K_VALUE_COLUMN);
                 pspec = PartitioningSpec.valueSpec(valueColumn);
             } else if(type==_type.TIME_AND_VALUE) {
-                String timeColumn = (String)m.get(K_timeColumn);
-                String valueColumn = (String)m.get(K_valueColumn);
+                String timeColumn = (String)m.get(K_TIME_COLUMN);
+                String valueColumn = (String)m.get(K_VALUE_COLUMN);
                 pspec = PartitioningSpec.timeAndValueSpec(timeColumn, valueColumn);				
             } else {
                 throw new IllegalArgumentException("Unkwnon partitioning type "+type);
             }
 
 
-            if(m.containsKey(K_timePartitioningSchema)) {
-                pspec.setTimePartitioningSchema((String)m.get(K_timePartitioningSchema));
+            if(m.containsKey(K_TIME_PARTITIONING_SCHEMA)) {
+                pspec.setTimePartitioningSchema((String)m.get(K_TIME_PARTITIONING_SCHEMA));
             } else {
                 pspec.setTimePartitioningSchema("YYYY/DOY");
             }

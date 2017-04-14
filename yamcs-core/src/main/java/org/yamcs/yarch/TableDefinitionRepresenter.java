@@ -18,19 +18,19 @@ import org.yaml.snakeyaml.representer.Representer;
  *
  */
 public class TableDefinitionRepresenter extends Representer {
-    public final static String K_compressed = "compressed";
-    public final static String K_keyDef = "keyDef";
-    public final static String K_valueDef = "valueDef";
-    public final static String K_dataDir = "dataDir";
-    public final static String K_histogram = "histogram";
-    public final static String K_enumValue = "enumValues";
-    public final static String K_partitioningSpec = "partitioningSpec";	
-    public final static String K_timeColumn = "timeColumn";
-    public final static String K_valueColumn = "valueColumn";
-    public final static String K_timePartitioningSchema = "timePartitioningSchema";
-    public final static String K_storageEngine = "storageEngine";
-    public final static String K_partitionStorage = "partitionStorage";
-    public final static String K_formatVersion = "formatVersion";
+    public static final String K_COMPRESSED = "compressed";
+    public static final String K_KEY_DEF = "keyDef";
+    public static final String K_VALUE_DEF = "valueDef";
+    public static final String K_DATA_DIR = "dataDir";
+    public static final String K_HISTOGRAM = "histogram";
+    public static final String K_ENUM_VALUE = "enumValues";
+    public static final String K_PARTITIONING_SPEC = "partitioningSpec";	
+    public static final String K_TIME_COLUMN = "timeColumn";
+    public static final String K_VALUE_COLUMN = "valueColumn";
+    public static final String K_TIME_PARTITIONING_SCHEMA = "timePartitioningSchema";
+    public static final String K_STORAGE_ENGINE = "storageEngine";
+    public static final String K_PARTITION_STORAGE = "partitionStorage";
+    public static final String K_FORMAT_VERSION = "formatVersion";
 
 
     public TableDefinitionRepresenter() {
@@ -44,25 +44,25 @@ public class TableDefinitionRepresenter extends Representer {
         @Override
         public Node representData(Object data) {
             TableDefinition td = (TableDefinition) data;
-            Map<String, Object> m=new HashMap<String, Object>();
-            m.put(K_compressed, td.isCompressed());
-            m.put(K_keyDef, td.getKeyDefinition());
-            m.put(K_valueDef, td.serializedValueDef);
-            m.put(K_storageEngine, td.getStorageEngineName());
-            m.put(K_partitionStorage, td.getPartitionStorage());
-            m.put(K_formatVersion, td.getFormatVersion());
+            Map<String, Object> m=new HashMap<>();
+            m.put(K_COMPRESSED, td.isCompressed());
+            m.put(K_KEY_DEF, td.getKeyDefinition());
+            m.put(K_VALUE_DEF, td.serializedValueDef);
+            m.put(K_STORAGE_ENGINE, td.getStorageEngineName());
+            m.put(K_PARTITION_STORAGE, td.getPartitionStorage());
+            m.put(K_FORMAT_VERSION, td.getFormatVersion());
 
             if(td.hasHistogram()) {
-                m.put(K_histogram, td.getHistogramColumns());
+                m.put(K_HISTOGRAM, td.getHistogramColumns());
             }
             if(td.serializedEmumValues!=null) {
-                m.put(K_enumValue, td.serializedEmumValues);
+                m.put(K_ENUM_VALUE, td.serializedEmumValues);
             }
             if(td.hasCustomDataDir()) {
-                m.put(K_dataDir, td.getDataDir());
+                m.put(K_DATA_DIR, td.getDataDir());
             }
             if(td.hasPartitioning()) {
-                m.put(K_partitioningSpec, td.getPartitioningSpec());
+                m.put(K_PARTITIONING_SPEC, td.getPartitioningSpec());
             }
             return representMapping(new Tag("TableDefinition"), m, false);
         }
@@ -72,10 +72,10 @@ public class TableDefinitionRepresenter extends Representer {
         @Override
         public Node representData(Object data) {
             TupleDefinition td = (TupleDefinition) data;
-            List<Object> list=new ArrayList<Object>(td.size());
+            List<Object> list=new ArrayList<>(td.size());
             for(int i=0;i<td.size();i++) {
                 ColumnDefinition cd=td.getColumn(i);
-                Map<String, Object> m=new HashMap<String, Object>();
+                Map<String, Object> m=new HashMap<>();
                 m.put("idx", i);
                 m.put("name", cd.getName());
                 m.put("type", cd.getType().toString());
@@ -89,14 +89,14 @@ public class TableDefinitionRepresenter extends Representer {
         @Override
         public Node representData(Object data) {
             PartitioningSpec p = (PartitioningSpec) data;
-            Map<String, Object> m=new HashMap<String, Object>();
+            Map<String, Object> m=new HashMap<>();
             m.put("type", p.type.toString());
             if((p.type==_type.TIME) || (p.type==_type.TIME_AND_VALUE)) {
                 m.put("timeColumn", p.timeColumn);
-                m.put(K_timePartitioningSchema, p.getTimePartitioningSchema().getName());
+                m.put(K_TIME_PARTITIONING_SCHEMA, p.getTimePartitioningSchema().getName());
             }
             if((p.type==_type.VALUE) || (p.type==_type.TIME_AND_VALUE)) {
-                m.put(K_valueColumn, p.valueColumn);
+                m.put(K_VALUE_COLUMN, p.valueColumn);
             }
 
 

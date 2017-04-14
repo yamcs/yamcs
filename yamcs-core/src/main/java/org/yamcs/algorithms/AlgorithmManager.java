@@ -447,7 +447,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     }
 
     @Override
-    public ArrayList<ParameterValue> updateParameters(int subscriptionId, ArrayList<ParameterValue> items) {
+    public List<ParameterValue> updateParameters(int subscriptionId, List<ParameterValue> items) {
         return updateParameters(items, globalCtx);
     }
 

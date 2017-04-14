@@ -200,7 +200,7 @@ public class YarchDatabase {
         }
     }
 
-    TableDefinition deserializeTableDefinition(File f) throws FileNotFoundException, IOException, ClassNotFoundException {
+    TableDefinition deserializeTableDefinition(File f) throws IOException, ClassNotFoundException {
         if(f.length()==0) {
             throw new IOException("Cannot load table definition from empty file "+f);
         }
@@ -215,20 +215,27 @@ public class YarchDatabase {
         }
         TableDefinition tblDef = (TableDefinition) o;
         fis.close();
-        if(tblDef.getFormatVersion()!=TableDefinition.CURRENT_FORMAT_VERSION) {
-            //temporary upgrade to version 2 from version 1 - should be removed in a future version 
-            if(tblDef.getFormatVersion()==1) {
-                changeParaValueType(tblDef);
-                tblDef.setFormatVersion(2);
-            }
-        }
+       
         
         tblDef.setName(tblName);
         tblDef.setDb(this);
         if(!tblDef.hasCustomDataDir()){
             tblDef.setDataDir(getRoot());
         }
-
+        
+        if(tblDef.getFormatVersion()!=TableDefinition.CURRENT_FORMAT_VERSION) {
+            //temporary upgrade to version 2 from version 1 - should be removed in a future version 
+            if(tblDef.getFormatVersion()==1) {
+                log.info("Converting {} from format version 1 to format version 2", tblDef.getName());
+                if("pp".equals(tblDef.getName())) {
+                    changeParaValueType(tblDef);
+                }
+                tblDef.setFormatVersion(2);
+                serializeTableDefinition(tblDef);
+                return deserializeTableDefinition(f);
+            }
+        }
+        
         log.debug("loaded table definition {}  from {}", tblName, fn);
         return tblDef;
     }
@@ -238,7 +245,7 @@ public class YarchDatabase {
         List<ColumnDefinition> l= valueDef.getColumnDefinitions();
         for(int i=0; i<l.size(); i++) {
             ColumnDefinition cd = l.get(i);
-            if("org.yamcs.protobuf.Pvalue$ParameterValue".equals(cd.getType().name())) {
+            if("PROTOBUF(org.yamcs.protobuf.Pvalue$ParameterValue)".equals(cd.getType().name())) {
                 ColumnDefinition cd1 = new ColumnDefinition(cd.getName(), DataType.PARAMETER_VALUE);
                 l.set(i,  cd1);
             }
@@ -251,10 +258,10 @@ public class YarchDatabase {
      */
     void serializeTableDefinition(TableDefinition td) {
         String fn=getRoot()+"/"+td.getName()+".def";
-        try (FileOutputStream fos=new FileOutputStream(fn)) {
+        try (FileOutputStream fos = new FileOutputStream(fn)) {
             Yaml yaml = new Yaml(new TableDefinitionRepresenter());
            
-            Writer w=new BufferedWriter(new OutputStreamWriter(fos));
+            Writer w = new BufferedWriter(new OutputStreamWriter(fos));
             yaml.dump(td, w);
             w.flush();
             fos.getFD().sync();

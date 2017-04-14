@@ -41,7 +41,7 @@ import com.google.common.collect.HashBiMap;
  *
  */
 public class TableDefinition {
-    static Logger log=LoggerFactory.getLogger(TableDefinition.class.getName());
+    static Logger log = LoggerFactory.getLogger(TableDefinition.class.getName());
 
     /* table version history
     /* 0: yamcs version < 3.0 
@@ -138,19 +138,15 @@ public class TableDefinition {
         for(ColumnDefinition cd:keyDef.getColumnDefinitions()) {
             ColumnSerializer<?> cs = ColumnSerializerFactory.getColumnSerializer(this, cd);
             keySerializers.add(cs);
-            if(cd.getType()==DataType.ENUM){
-                if(enumValues.containsKey(cd.getName())) {
-                    ((EnumColumnSerializer)cs).setEnumValues(enumValues.get(cd.getName()));
-                }
+            if((cd.getType()==DataType.ENUM) && enumValues.containsKey(cd.getName())) {
+                ((EnumColumnSerializer)cs).setEnumValues(enumValues.get(cd.getName()));
             }
         }
         for(ColumnDefinition cd:valueDef.getColumnDefinitions()) {
             ColumnSerializer<?> cs = ColumnSerializerFactory.getColumnSerializer(this, cd);
             valueSerializers.add(cs);
-            if(cd.getType()==DataType.ENUM){
-                if(enumValues.containsKey(cd.getName())) {
-                    ((EnumColumnSerializer)cs).setEnumValues(enumValues.get(cd.getName()));
-                }
+            if((cd.getType()==DataType.ENUM) && enumValues.containsKey(cd.getName())) {
+                ((EnumColumnSerializer)cs).setEnumValues(enumValues.get(cd.getName()));
             }
         }
     }
@@ -371,7 +367,7 @@ public class TableDefinition {
         }
 
         log.debug("Adding enum value {} for {}.{}", v, name, columnName);
-        serializedEmumValues = new HashMap<String, BiMap<String, Short>>();
+        serializedEmumValues = new HashMap<>();
         if(enumValues!=null) {
             serializedEmumValues.putAll(enumValues);
         }
@@ -446,7 +442,7 @@ public class TableDefinition {
 
     public Tuple deserialize(byte[] k, byte[] v) {
         TupleDefinition tdef=keyDef.copy();
-        ArrayList<Object> cols = new ArrayList<Object>();
+        ArrayList<Object> cols = new ArrayList<>();
         DataInputStream dis = new DataInputStream(new ByteArrayInputStream(k));
         try {
             //deserialize the key
@@ -509,7 +505,7 @@ public class TableDefinition {
     }
 
     public boolean hasPartitioning() {
-        return (partitioningSpec!=null);
+        return partitioningSpec!=null;
     }
 
     public PartitioningSpec getPartitioningSpec() {
@@ -517,7 +513,7 @@ public class TableDefinition {
     }
 
     public void setCompressed(boolean compressed) {
-        this.compressed=compressed;
+        this.compressed = compressed;
     }
 
     public void setHistogramColumns(List<String> histoColumns) throws StreamSqlException {
@@ -551,7 +547,7 @@ public class TableDefinition {
     @Override
     public String toString() {
         StringBuilder sb=new StringBuilder();
-        sb.append(name.toString()).
+        sb.append(name).
         append("(").
         append(keyDef.toString()).
         append(", ").

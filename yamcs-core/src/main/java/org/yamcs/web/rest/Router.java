@@ -204,7 +204,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
      */
     public boolean scheduleExecution(ChannelHandlerContext ctx, HttpRequest req, QueryStringDecoder qsDecoder) {
         try {
-            String uri = new URI(qsDecoder.path()).getPath();
+            String uri = qsDecoder.path();
            
             RouteMatch match = matchURI(req.method(), uri);
             if(match==null) {
@@ -242,8 +242,6 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         } catch (MethodNotAllowedException e) {
             log.info("Method {} not allowed for URI: '{}'", req.method(), req.uri());
             HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
         }
         return false;
     }
