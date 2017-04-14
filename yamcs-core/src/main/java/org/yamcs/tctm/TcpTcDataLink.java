@@ -109,8 +109,12 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         } catch (IOException e) {
             String exc = (e instanceof ConnectException) ? ((ConnectException) e).getMessage() : e.toString();
             log.info("Cannot open TC connection to {}:{} '{}'. Retrying in 10s", host, port, exc.toString());
-            try {socketChannel.close();} catch (Exception e1) {}
-            try {selector.close();} catch (Exception e1) {}
+            try {
+                socketChannel.close();
+            } catch (Exception e1) {}
+            try {
+                selector.close();
+            } catch (Exception e1) {}
             socketChannel=null;
         }
     }

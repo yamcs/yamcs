@@ -107,12 +107,16 @@ public class IntegerParameterType extends IntegerDataType implements ParameterTy
     }
 
     public void addContextAlarm(NumericContextAlarm nca) {
-        if(contextAlarmList==null) contextAlarmList=new ArrayList<NumericContextAlarm>();
+        if(contextAlarmList==null) {
+            contextAlarmList=new ArrayList<>();
+        }
         contextAlarmList.add(nca);
     }
 
     public void addContextAlarms(Collection<NumericContextAlarm> ncas) {
-        if(contextAlarmList==null) contextAlarmList=new ArrayList<NumericContextAlarm>();
+        if(contextAlarmList==null) {
+            contextAlarmList=new ArrayList<>();
+        }
         contextAlarmList.addAll(ncas);
     }
 
@@ -121,7 +125,9 @@ public class IntegerParameterType extends IntegerDataType implements ParameterTy
     }
 
     public NumericContextAlarm getNumericContextAlarm(MatchCriteria context) {
-        if(contextAlarmList==null) return null;
+        if(contextAlarmList==null) {
+            return null;
+        }
         for(NumericContextAlarm nca:contextAlarmList) {
             if(nca.getContextMatch().equals(context)) {
                 return nca;

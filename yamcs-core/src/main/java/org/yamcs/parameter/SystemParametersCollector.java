@@ -108,7 +108,9 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     }
 
     private void processArgs(Map<String, Object> args) {
-        if(args==null) return;
+        if(args==null) {
+            return;
+        }
         if(args.containsKey("provideJvmVariables")) {
             provideJvmVariables = YConfiguration.getBoolean(args, "provideJvmVariables");
         }

@@ -502,19 +502,17 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
     }
 
     private boolean loadLocalXtcedb(String configName) {
-        if(tmProcessor!=null) tmProcessor.stopAsync();
+        if(tmProcessor!=null) {
+            tmProcessor.stopAsync();
+        }
         log("Loading local XTCE db "+configName);
         try {
             xtcedb=XtceDbFactory.createInstanceByConfig(configName);
-        } catch (ConfigurationException e) {
+        } catch (ConfigurationException|DatabaseLoadException e) {
             log.error(e.toString(), e);
             showError(e.getMessage());
             return false;
-        } catch (DatabaseLoadException e) {
-            log.error(e.toString(), e);
-            showError(e.getMessage());
-            return false;
-        }
+        } 
 
         tmProcessor=new XtceTmProcessor(xtcedb);
 
@@ -530,7 +528,9 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
     }
 
     private boolean loadRemoteXtcedb(String configName) {
-        if(tmProcessor!=null) tmProcessor.stopAsync();
+        if(tmProcessor!=null) {
+            tmProcessor.stopAsync();
+        }
         log("Loading remote XTCE db for yamcs instance "+connectionParams.getInstance());
         RestClient restClient = new RestClient(connectionParams);
         try {
@@ -583,19 +583,27 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                 int packetCount = 0;
                 while (!progress.isCanceled()) {
                     res = reader.read(fourb, 0, 4);
-                    if (res != 4) break;
+                    if (res != 4) {
+                        break;
+                    }
                     buf = ByteBuffer.allocate(16);
                     long gentime = TimeEncoding.INVALID_INSTANT;
                     int seqcount = -1;
                     if ((fourb[0] & 0xe8) == 0x08) {// CCSDS packet
                         buf.put(fourb, 0, 4);
-                        if((r=reader.read(buf.array(), 4, 12))!=12) throw new ShortReadException(16, r, offset);
+                        if((r=reader.read(buf.array(), 4, 12))!=12) {
+                            throw new ShortReadException(16, r, offset);
+                        }
                         gentime = CcsdsPacket.getInstant(buf);
                         seqcount = CcsdsPacket.getSequenceCount(buf);
                     } else if((fourb[2]==0) && (fourb[3]==0)) { //hrdp packet - first 4 bytes are packet size in little endian
-                        if((r=reader.skip(6))!=6) throw new ShortReadException(6, r, offset);
+                        if((r=reader.skip(6))!=6) {
+                            throw new ShortReadException(6, r, offset);
+                        }
                         offset+=10;
-                        if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16, r, offset);
+                        if((r=reader.read(buf.array()))!=16) {
+                            throw new ShortReadException(16, r, offset);
+                        }
                     } else {//pacts packet
                         isPacts=true;
                         //System.out.println("pacts packet");
@@ -605,18 +613,26 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                         j = 0;
                         for(i=0;i<4;i++) {
                             hdr.append((char)fourb[i]);
-                            if ( fourb[i] == 32 ) ++j;
+                            if ( fourb[i] == 32 ) {
+                                ++j;
+                            }
                         }
                         offset+=4;
                         while((j < 2) && (i < 20)) {
                             int c = reader.read();
-                            if(c==-1)throw new ShortReadException(1, 0, offset);
+                            if(c==-1) {
+                                throw new ShortReadException(1, 0, offset);
+                            }
                             offset++;
                             hdr.append((char)c);
-                            if ( c == 32 ) ++j;
+                            if ( c == 32 ) {
+                                ++j;
+                            }
                             i++;
                         }
-                        if((r=reader.read(buf.array()))!=16) throw new ShortReadException(16,r,offset);
+                        if((r=reader.read(buf.array()))!=16) {
+                            throw new ShortReadException(16,r,offset);
+                        }
                     }
                     len = CcsdsPacket.getCccsdsPacketLength(buf) + 7;
                     if(len<16) {
@@ -626,7 +642,9 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                     byte[] bufn = new byte[len];
                     System.arraycopy(buf.array(), 0, bufn, 0, 16);
                     r=reader.read(bufn, 16, len-16);
-                    if (r != len - 16) throw new ShortReadException(len-16, r, offset);
+                    if (r != len - 16) {
+                        throw new ShortReadException(len-16, r, offset);
+                    }
 
                     TmPacketData.Builder packetb = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(bufn))
                             .setReceptionTime(TimeEncoding.getWallclockTime());
@@ -641,13 +659,17 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
 
                     offset += len;
                     if(isPacts) {
-                        if(reader.skip(1)!=1) throw new ShortReadException(1, 0, offset);
+                        if(reader.skip(1)!=1) {
+                            throw new ShortReadException(1, 0, offset);
+                        }
                         offset+=1;
                     }
                     publish(packet);
 
                     packetCount++;
-                    if (packetCount == maxLines) break;
+                    if (packetCount == maxLines) {
+                        break;
+                    }
                     progress.setProgress((maxLines == -1) ? (int)(offset>>10) : packetCount);
                 }
                 reader.close();
@@ -708,7 +730,9 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         // apply style for highlighted parts
 
         for (Range bitRange:highlightBits) {
-            if (bitRange == null) continue;
+            if (bitRange == null) {
+                continue;
+            }
             final int highlightStartNibble = bitRange.offset / 4;
             final int highlightStopNibble = (bitRange.offset + bitRange.size + 3) / 4;
             for (n = highlightStartNibble / 32 * 32 ; n < highlightStopNibble; n += 32) {
@@ -911,9 +935,13 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
             log("connected to "+url);
             if(connectDialog!=null) {
                 if(connectDialog.getUseServerMdb()) {
-                    if(!loadRemoteXtcedb(connectDialog.getServerMdbConfig())) return;
+                    if(!loadRemoteXtcedb(connectDialog.getServerMdbConfig())) {
+                        return;
+                    }
                 } else {
-                    if(!loadLocalXtcedb(connectDialog.getLocalMdbConfig())) return;
+                    if(!loadLocalXtcedb(connectDialog.getLocalMdbConfig())) {
+                        return;
+                    }
                 }
             } else {
                 RestClient restclient = new RestClient(connectionParams);
@@ -922,7 +950,9 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                 for(YamcsInstance yi:list) {
                     if(connectionParams.getInstance().equals(yi.getName())) {
                         String mdbConfig = yi.getMissionDatabase().getConfigName();
-                        if(!loadRemoteXtcedb(mdbConfig)) return;
+                        if(!loadRemoteXtcedb(mdbConfig)) {
+                            return;
+                        }
                     }
                 }
 
@@ -987,7 +1017,9 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                 exists = true;
             }
         }
-        if (!exists) recentFiles.add(0, new String[] { filename, xtceDb });
+        if (!exists) {
+            recentFiles.add(0, new String[] { filename, xtceDb });
+        }
         PrefsObject.putObject(uiPrefs, "RecentlyOpened", recentFiles);
 
         // Also update JMenu accordingly

@@ -204,7 +204,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         try {
             // Given path may be relative, so use absolute path to report issues
             File ssFile = new File(path);
-            if(!ssFile.exists()) throw new FileNotFoundException(ssFile.getAbsolutePath());
+            if(!ssFile.exists()) {
+                throw new FileNotFoundException(ssFile.getAbsolutePath());
+            }
             WorkbookSettings ws = new WorkbookSettings();
             ws.setEncoding("Cp1252");
             workbook = Workbook.getWorkbook(ssFile, ws);
@@ -280,11 +282,13 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     
     protected void loadGeneralSheet(boolean required) {
         Sheet sheet = switchToSheet(SHEET_GENERAL, required);
-        if(sheet==null)return;
+        if(sheet==null){
+            return;
+        }
         Cell[] cells=jumpToRow(sheet, 1);
 
         // Version check
-        String version=cells[0].getContents();
+        String version = cells[0].getContents();
         // Specific versions supported
         boolean supported = false;
         for( String supportedVersion:FORMAT_VERSIONS_SUPPORTED ) {
@@ -329,7 +333,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     protected void loadCalibrationSheet(SpaceSystem spaceSystem, String sheetName) {
         //read the calibrations
         Sheet sheet = switchToSheet(sheetName, false);
-        if(sheet==null) return;
+        if(sheet==null) {
+            return;
+        }
 
         double[] pol_coef = null;
         // SplinePoint = pointpair
@@ -413,7 +419,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
     protected void loadParametersSheet(SpaceSystem spaceSystem, String sheetName, DataSource dataSource) {
         Sheet sheet = switchToSheet(sheetName, false);
-        if(sheet==null)return;
+        if(sheet==null){
+            return;
+        }
         Cell[] firstRow = jumpToRow(sheet, 0);
         for (int i = 1; i < sheet.getRows(); i++) {
             Cell[] cells = jumpToRow(sheet, i);
@@ -435,13 +443,16 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             }
             spaceSystem.addParameter(param);
 
-            //String path = cells[IDX_MEAS_PATH].getContents();
             String rawtype = cells[IDX_PARAM_RAWTYPE].getContents();
-            if("DerivedValue".equalsIgnoreCase(rawtype)) continue;
+            if("DerivedValue".equalsIgnoreCase(rawtype)) {
+                continue;
+            }
             int bitlength=-1;
             try {
                 String bitls=cells[IDX_PARAM_BITLENGTH].getContents();
-                if(!bitls.isEmpty()) bitlength = Integer.decode(bitls);
+                if(!bitls.isEmpty()) {
+                    bitlength = Integer.decode(bitls);
+                }
             } catch(NumberFormatException e) {
                 throw new SpreadsheetLoadException(ctx, "Can't get bitlength out of '"+cells[IDX_PARAM_BITLENGTH].getContents()+"'");
             }
@@ -454,8 +465,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 String shortDescription = cells[IDX_PARAM_DESCRIPTION].getContents();
                 param.setShortDescription(shortDescription);
             }
-            if("n".equals(calib) || "".equals(calib))calib=null;
-            if("y".equalsIgnoreCase(calib)) calib=name;
+            if("n".equals(calib) || "".equals(calib)){
+                calib=null;
+            } else if("y".equalsIgnoreCase(calib)) {
+                calib=name;
+            }
 
             ParameterType ptype=null;
             if ("uint".equalsIgnoreCase(engtype)) {
@@ -502,7 +516,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             }
 
             String units=null;
-            if(cells.length>IDX_PARAM_ENGUNIT) units = cells[IDX_PARAM_ENGUNIT].getContents();
+            if(cells.length>IDX_PARAM_ENGUNIT) {
+                units = cells[IDX_PARAM_ENGUNIT].getContents();
+            }
             if(!"".equals(units) && units != null && ptype instanceof BaseDataType) {
                 UnitType unitType = new UnitType(units);
                 ((BaseDataType) ptype).addUnit(unitType);
@@ -552,10 +568,14 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     ((IntegerDataEncoding)encoding).defaultCalibrator = c;
                 }
             } else if ("bytestream".equalsIgnoreCase(rawtype)) {
-                if(bitlength==-1) throw new SpreadsheetLoadException(ctx, "Bit length is mandatory for bytestream parameters");
+                if(bitlength==-1) {
+                    throw new SpreadsheetLoadException(ctx, "Bit length is mandatory for bytestream parameters");
+                }
                 encoding=new BinaryDataEncoding(name, bitlength);
             } else if ("boolean".equalsIgnoreCase(rawtype)) {
-                if(bitlength!=-1) throw new SpreadsheetLoadException(ctx, "Bit length is not allowed for boolean parameters (defaults to 1). Use any other raw type if you want to specify the bitlength");
+                if(bitlength!=-1) {
+                    throw new SpreadsheetLoadException(ctx, "Bit length is not allowed for boolean parameters (defaults to 1). Use any other raw type if you want to specify the bitlength");
+                }
                 encoding=new BooleanDataEncoding();
             } else if ("string".equalsIgnoreCase(rawtype)) {
                 // Version <= 1.6 String type
@@ -570,7 +590,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             } else if ( "fixedstring".equalsIgnoreCase( rawtype ) ) {
                 // v1.7 String type
                 // FIXEDSTRING
-                if(bitlength==-1) throw new SpreadsheetLoadException(ctx, "Bit length is mandatory for fixedstring raw type");
+                if(bitlength==-1) {
+                    throw new SpreadsheetLoadException(ctx, "Bit length is mandatory for fixedstring raw type");
+                }
                 encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.Fixed);
                 encoding.setSizeInBits(bitlength);
             } else if ( rawtype.toLowerCase().startsWith( "terminatedstring" ) ) {
@@ -714,7 +736,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         for(int i=0; i<n; i++) {
             if((firstRow[i]!=null) && firstRow[i].getContents().startsWith("namespace:")
                     && (cells[i]!=null) && (!cells[i].getContents().isEmpty())) {
-                if(xas==null) xas = new XtceAliasSet();
+                if(xas==null) {
+                    xas = new XtceAliasSet();
+                }
                 String s = firstRow[i].getContents();
                 String namespace = s.substring(10, s.length());
                 String alias = cells[i].getContents();
@@ -728,7 +752,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
     protected void loadContainersSheet(SpaceSystem spaceSystem, String sheetName) {
         Sheet sheet = switchToSheet(sheetName, false);
-        if(sheet==null)return;
+        if(sheet==null){
+            return;
+        }
 
         HashMap<String, SequenceContainer> containers = new HashMap<String, SequenceContainer>();
         HashMap<String, String> parents = new HashMap<String, String>();
@@ -758,13 +784,12 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     throw new SpreadsheetLoadException(ctx, "Parent specified but without inheritance condition on container");
                 }
                 condition = cells[IDX_CONT_CONDITION].getContents();
-                //if( "".equals( condition ) ) {
-                //	error( String.format( "Container %s (from spreadsheet '%s' line %d) has a parent container specified but no inheritance condition", name, configName, i));
-                //}
                 parents.put(name,  parent);
             }
 
-            if("".equals(parent)) parent=null;
+            if("".equals(parent)) {
+                parent=null;
+            }
 
             // absoluteoffset is the absolute offset of the first parameter of the container
             int absoluteoffset=-1;
@@ -830,7 +855,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 cells = jumpToRow(sheet, i);
                 // determine whether we have not reached the end of the packet definition.
                 if (!hasColumn(cells,  IDX_CONT_PARA_NAME)) {
-                    end = true; continue;
+                    end = true; 
+                    continue;
                 }
 
                 // extract a few variables, for further use
@@ -914,7 +940,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 }
 
                 // increment the counters;
-                i++; counter++;
+                i++; 
+                counter++;
             }
 
             // at this point, we have added all the parameters and aggregate containers to the current packets. What remains to be done is link it with its base
@@ -973,10 +1000,12 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
     protected void loadCommandSheet(SpaceSystem spaceSystem, String sheetName) {
         Sheet sheet = switchToSheet(sheetName, false);
-        if(sheet==null) return;
+        if(sheet==null) {
+            return;
+        }
         Cell[] firstRow = jumpToRow(sheet, 0);
 
-        HashMap<String, MetaCommand> commands = new HashMap<String, MetaCommand>();
+        HashMap<String, MetaCommand> commands = new HashMap<>();
 
         for (int i = 1; i < sheet.getRows(); i++) {
             // search for a new command definition, starting from row i
@@ -1001,7 +1030,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 }
             }
 
-            if("".equals(parent)) parent=null;
+            if("".equals(parent)) {
+                parent=null;
+            }
 
 
 
@@ -1055,7 +1086,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
                 // determine whether we have not reached the end of the command definition.
                 if (!hasColumn(cells, IDX_CMD_ARGNAME)) {
-                    end = true; continue;
+                    end = true;
+                    continue;
                 }
 
 
@@ -1099,8 +1131,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     absoluteOffset = loadArgument(cells, cmd, container, absoluteOffset, counter);
                 }
 
-                // increment the counters;
-                i++; counter++;
+                i++; 
+                counter++;
             }
 
             // at this point, we have added all the parameters and aggregate containers to the current packets. What remains to be done is link it with its base
@@ -1145,7 +1177,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
     protected void loadCommandOptionsSheet(SpaceSystem spaceSystem, String sheetName) {
         Sheet sheet = switchToSheet(sheetName, false);
-        if(sheet==null) return;
+        if(sheet==null) {
+            return;
+        }
         int i = 1;
         while(i<sheet.getRows()) {
             // search for a new command definition, starting from row i
@@ -1172,7 +1206,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             int cmdEnd = i + 1;
             while (cmdEnd < sheet.getRows()) {
                 cells = jumpToRow(sheet, cmdEnd);
-                if (hasColumn(cells, IDX_CMDOPT_NAME))  break;
+                if (hasColumn(cells, IDX_CMDOPT_NAME)) {
+                    break;
+                }
                 cmdEnd++;
             }
             while (i<cmdEnd) {
@@ -1218,7 +1254,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
     protected void loadCommandVerificationSheet(SpaceSystem spaceSystem, String sheetName) {
         Sheet sheet = switchToSheet(sheetName, false);
-        if(sheet==null) return;
+        if(sheet==null) {
+            return;
+        }
         int i = 1;
         while(i<sheet.getRows()) {
             // search for a new command definition, starting from row i
@@ -1245,7 +1283,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             int cmdEnd = i + 1;
             while (cmdEnd < sheet.getRows()) {
                 cells = jumpToRow(sheet, cmdEnd);
-                if (hasColumn(cells, IDX_CMDVERIF_NAME))  break;
+                if (hasColumn(cells, IDX_CMDVERIF_NAME)) {
+                    break;
+                }
                 cmdEnd++;
             }
             while (i<cmdEnd) {
@@ -1349,7 +1389,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
     private ArgumentAssignment toArgumentAssignment(String argAssignment) {
         Matcher m = Pattern.compile("(.*?)(=)(.*)").matcher(argAssignment);
-        if(!m.matches()) throw new SpreadsheetLoadException(ctx, "Cannot parse argument assignment '"+argAssignment+"'");
+        if(!m.matches()) {
+            throw new SpreadsheetLoadException(ctx, "Cannot parse argument assignment '"+argAssignment+"'");
+        }
         String aname=m.group(1).trim();
         String value=m.group(3).trim();
         return new ArgumentAssignment(aname, value);
@@ -1379,8 +1421,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             rawType = cells[IDX_CMD_RAWTYPE].getContents();
         }
 
-        if("n".equals(calib) || "".equals(calib))calib=null;
-        if("y".equalsIgnoreCase(calib)) calib=name;
+        if("n".equals(calib) || "".equals(calib)){
+            calib = null;
+        } else if("y".equalsIgnoreCase(calib)) {
+            calib = name;
+        }
 
 
         ArgumentType atype=null;
@@ -1422,7 +1467,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         }else {
             throw new SpreadsheetLoadException(ctx, "Unknown argument type " + engType);
         }
-        if(cmd.getArgument(name)!=null) throw new SpreadsheetLoadException(ctx, "Duplicate argument with name '"+name+"'");
+        if(cmd.getArgument(name)!=null) {
+            throw new SpreadsheetLoadException(ctx, "Duplicate argument with name '"+name+"'");
+        }
         Argument arg = new Argument(name);
         cmd.addArgument(arg);
 
@@ -1562,10 +1609,14 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 ((IntegerDataEncoding)encoding).defaultCalibrator = c;
             }
         } else if ("binary".equalsIgnoreCase(rawType) || "bytestream".equalsIgnoreCase(rawType)) {
-            if(sizeInBits==-1) throw new SpreadsheetLoadException(ctx, "Bit length is mandatory for binary parameters");
+            if(sizeInBits==-1) {
+                throw new SpreadsheetLoadException(ctx, "Bit length is mandatory for binary parameters");
+            }
             encoding=new BinaryDataEncoding(name, sizeInBits);
         } else if ("boolean".equalsIgnoreCase(rawType)) {
-            if(sizeInBits!=-1) throw new SpreadsheetLoadException(ctx, "Bit length is not allowed for boolean parameters (defaults to 1). Use any other raw type if you want to specify the bitlength");
+            if(sizeInBits!=-1) {
+                throw new SpreadsheetLoadException(ctx, "Bit length is not allowed for boolean parameters (defaults to 1). Use any other raw type if you want to specify the bitlength");
+            }
             encoding = new BooleanDataEncoding();
         } else if ("string".equalsIgnoreCase(rawType)) {
             // Version <= 1.6 String type
@@ -1580,7 +1631,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         } else if ( "fixedstring".equalsIgnoreCase( rawType ) ) {
             // v1.7 String type
             // FIXEDSTRING
-            if(sizeInBits==-1) throw new SpreadsheetLoadException(ctx, "SizeInBits is mandatory for fixedstring raw type");
+            if(sizeInBits==-1) {
+                throw new SpreadsheetLoadException(ctx, "SizeInBits is mandatory for fixedstring raw type");
+            }
             encoding=new StringDataEncoding(name, StringDataEncoding.SizeType.Fixed);
             if((sizeInBits&0x7)!=0) {
                 throw new SpreadsheetLoadException(ctx, "SizeInBits has to be multiple of 8 for fixedstring raw type");
@@ -1707,7 +1760,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
     protected void loadChangelogSheet(boolean required) {
         Sheet sheet = switchToSheet(SHEET_CHANGELOG, required);
-        if(sheet==null) return;
+        if(sheet==null) {
+            return;
+        }
         int i = 1;
         while(i<sheet.getRows()) {
             Cell[] cells = jumpToRow(sheet, i);
@@ -1747,7 +1802,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
     protected void loadAlgorithmsSheet(SpaceSystem spaceSystem, String sheetName) {
         Sheet sheet = switchToSheet(sheetName, false);
-        if (sheet == null) return;
+        if (sheet == null) {
+            return;
+        }
 
         Cell[] firstRow = jumpToRow(sheet, 0);
         // start at 1 to not use the first line (= title line)
@@ -1811,7 +1868,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
                 String flags = hasColumn(cells, IDX_ALGO_PARA_FLAGS)?cells[IDX_ALGO_PARA_FLAGS].getContents():"";
 
-                if(paraInout==null) throw new SpreadsheetLoadException(ctx, "You must specify in/out attribute for this parameter");
+                if(paraInout==null) {
+                    throw new SpreadsheetLoadException(ctx, "You must specify in/out attribute for this parameter");
+                }
                 if ("in".equalsIgnoreCase(paraInout)) {
                     if(paraRef.startsWith(XtceDb.YAMCS_CMD_SPACESYSTEM_NAME) || paraRef.startsWith(XtceDb.YAMCS_CMDHIST_SPACESYSTEM_NAME)) {
                         algorithm.setScope(Algorithm.Scope.commandVerification);
@@ -1847,7 +1906,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     if (hasColumn(cells, IDX_ALGO_PARA_NAME)) {
                         inputParameter.setInputName(cells[IDX_ALGO_PARA_NAME].getContents());
                     }
-                    if(flags.contains("M")) inputParameter.setMandatory(true);
+                    if(flags.contains("M")) {
+                        inputParameter.setMandatory(true);
+                    }
                     algorithm.addInput(inputParameter);
                 } else if ("out".equalsIgnoreCase(paraInout)) {
                     Parameter param = spaceSystem.getParameter(paraRef);
@@ -1938,7 +1999,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
     protected void loadAlarmsSheet(SpaceSystem spaceSystem, String sheetName) {
         Sheet sheet = switchToSheet(sheetName, false);
-        if (sheet == null) return;
+        if (sheet == null) {
+            return;
+        }
 
         // start at 1 to not use the first line (= title line)
         int start = 1;
@@ -2111,7 +2174,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
         if ((criteriaString.startsWith("&(") || criteriaString.startsWith("|(")) && (criteriaString.endsWith(")"))) {
             return parseBooleanExpression(spaceSystem, criteriaString);
-        } if(criteriaString.contains(";")) {
+        } else if(criteriaString.contains(";")) {
             ComparisonList cl = new ComparisonList();
             String splitted[] = criteriaString.split(";");
             for (String part: splitted) {
@@ -2354,17 +2417,15 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         // either we have a Parameter or we have a SequenceContainer, we cannot have both or neither
         if (param != null) {
             DataEncoding de = ((BaseDataType)param.getParameterType()).getEncoding();
-            if(de==null) throw new SpreadsheetLoadException(ctx, "Cannot determine the data encoding for "+param.getName());
-            if (de instanceof FloatDataEncoding) {
+            if(de==null) {
+                throw new SpreadsheetLoadException(ctx, "Cannot determine the data encoding for "+param.getName());
+            }
+            
+            if ((de instanceof FloatDataEncoding) || (de instanceof IntegerDataEncoding)
+                    || (de instanceof BinaryDataEncoding) ||(de instanceof BooleanDataEncoding)){
                 return de.sizeInBits;
-            } else if (de instanceof IntegerDataEncoding) {
-                return de.sizeInBits;
-            } else	if (de instanceof BinaryDataEncoding) {
-                return de.sizeInBits;
-            } else	if (de instanceof StringDataEncoding) {
+            } else if (de instanceof StringDataEncoding) {
                 return -1;
-            } else if (de instanceof BooleanDataEncoding) {
-                return de.sizeInBits;
             } else {
                 throw new SpreadsheetLoadException(ctx, "No known size for data encoding : " + de);
             }
@@ -2453,7 +2514,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     static Pattern allowedInNameType = Pattern.compile("[\\d\\w_-]+");
     boolean draconicXtceNameRestrictions = true; //TODO - should be configurable
     private void validateNameType(String name) {
-        if(!draconicXtceNameRestrictions) return;
+        if(!draconicXtceNameRestrictions) {
+            return;
+        }
 
         if(!allowedInNameType.matcher(name).matches()) {
             throw new SpreadsheetLoadException(ctx, "Invalid name '"+name+"'; should only contain letters, digits, _, and -");

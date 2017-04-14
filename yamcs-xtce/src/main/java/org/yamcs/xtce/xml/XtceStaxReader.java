@@ -873,10 +873,12 @@ public class XtceStaxReader {
                 } else {
                     throwException("Only FixedValue supported for string size in bits");
                 }
-             } if (isStartElementWithName(XTCE_TerminationChar)) {
+             } else if (isStartElementWithName(XTCE_TerminationChar)) {
                 stringDataEncoding.setSizeType(SizeType.TerminationChar);
                 byte[] x = readHexBinary();
-                if(x==null || x.length!=1) throw new XMLStreamException("Terminated strings have to have the size of the termination character of 1");
+                if(x==null || x.length!=1) {
+                    throw new XMLStreamException("Terminated strings have to have the size of the termination character of 1");
+                }
                 stringDataEncoding.setTerminationChar(x[0]);
             } else if (isStartElementWithName(XTCE_LeadingSize)) {
                 stringDataEncoding.setSizeType(SizeType.LeadingSize);
@@ -906,7 +908,7 @@ public class XtceStaxReader {
 
 
     private IntegerParameterType readXtceIntegerParameterType(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
-        IntegerParameterType integerParamType = null;
+        IntegerParameterType integerParamType;
 
         log.trace(XTCE_IntegerParameterType);
         checkStartElementPreconditions();
@@ -1496,7 +1498,9 @@ public class XtceStaxReader {
         StringBuilder longDescr = new StringBuilder();
         while(true) {
             xmlEvent = xmlEventReader.nextEvent();
-            if(isEndElementWithName(XTCE_LongDescription)) break;
+            if(isEndElementWithName(XTCE_LongDescription)) {
+                break;
+            }
             if(!xmlEvent.isCharacters()) {
                 throw new IllegalStateException(XTCE_LongDescription + " characters or end element expected but instead got "+xmlEvent);
             }
@@ -1938,7 +1942,9 @@ public class XtceStaxReader {
             public boolean resolved(NameDescription nd) {
                 Parameter p=(Parameter)nd;
                 instanceRef.setParameter((Parameter) nd);                                
-                if(p.getParameterType()==null) return false;
+                if(p.getParameterType()==null) {
+                    return false;
+                }
                 comparison.resolveValueType();
                 return true;
             }

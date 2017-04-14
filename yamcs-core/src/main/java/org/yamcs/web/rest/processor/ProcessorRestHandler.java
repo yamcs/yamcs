@@ -232,35 +232,77 @@ public class ProcessorRestHandler extends RestHandler {
         List<String> packetNames = new ArrayList<>();
         boolean cmdhist = false;
 
-        if (request.hasName()) name = request.getName();
-        if (request.hasStart()) start = RestRequest.parseTime(request.getStart());
-        if (request.hasStop()) stop = RestRequest.parseTime(request.getStop());
-        if (request.hasSpeed()) speed = request.getSpeed().toLowerCase();
-        if (request.hasLoop()) loop = request.getLoop();
-        if (request.hasCmdhist()) cmdhist = request.getCmdhist();
-        if (request.hasPersistent()) persistent = request.getPersistent();
+        if (request.hasName()) {
+            name = request.getName();
+        }
+        if (request.hasStart()) {
+            start = RestRequest.parseTime(request.getStart());
+        }
+        if (request.hasStop()) {
+            stop = RestRequest.parseTime(request.getStop());
+        }
+        if (request.hasSpeed()) {
+            speed = request.getSpeed().toLowerCase();
+        }
+        if (request.hasLoop()) {
+            loop = request.getLoop();
+        }
+        if (request.hasCmdhist()) {
+            cmdhist = request.getCmdhist();
+        }
+        if (request.hasPersistent()) {
+            persistent = request.getPersistent();
+        }
         clientIds.addAll(request.getClientIdList());
         paraPatterns.addAll(request.getParanameList());
         paraGroups.addAll(request.getPpgroupList());
         packetNames.addAll(request.getPacketnameList());
 
         // Query params get priority
-        if (req.hasQueryParameter("name")) name = req.getQueryParameter("name");
-        if (req.hasQueryParameter("start")) start = req.getQueryParameterAsDate("start");
-        if (req.hasQueryParameter("stop")) stop = req.getQueryParameterAsDate("stop");
-        if (req.hasQueryParameter("speed")) speed = req.getQueryParameter("speed").toLowerCase();
-        if (req.hasQueryParameter("loop")) loop = req.getQueryParameterAsBoolean("loop");
-        if (req.hasQueryParameter("paraname")) paraPatterns.addAll(req.getQueryParameterList("paraname"));
-        if (req.hasQueryParameter("ppgroup")) paraGroups.addAll(req.getQueryParameterList("ppgroup"));
-        if (req.hasQueryParameter("paragroup")) paraGroups.addAll(req.getQueryParameterList("paragroup"));
-        if (req.hasQueryParameter("packetname")) packetNames.addAll(req.getQueryParameterList("packetname"));
-        if (req.hasQueryParameter("cmdhist")) cmdhist = req.getQueryParameterAsBoolean("cmdhist");
-        if (req.hasQueryParameter("persistent")) persistent = req.getQueryParameterAsBoolean("persistent");
-        if (req.hasQueryParameter("clientId")) clientIds.addAll(request.getClientIdList());
+        if (req.hasQueryParameter("name")) {
+            name = req.getQueryParameter("name");
+        }
+        if (req.hasQueryParameter("start")) {
+            start = req.getQueryParameterAsDate("start");
+        }
+        if (req.hasQueryParameter("stop")) {
+            stop = req.getQueryParameterAsDate("stop");
+        }
+        if (req.hasQueryParameter("speed")) {
+            speed = req.getQueryParameter("speed").toLowerCase();
+        }
+        if (req.hasQueryParameter("loop")) {
+            loop = req.getQueryParameterAsBoolean("loop");
+        }
+        if (req.hasQueryParameter("paraname")) {
+            paraPatterns.addAll(req.getQueryParameterList("paraname"));
+        }
+        if (req.hasQueryParameter("ppgroup")) {
+            paraGroups.addAll(req.getQueryParameterList("ppgroup"));
+        }
+        if (req.hasQueryParameter("paragroup")) {
+            paraGroups.addAll(req.getQueryParameterList("paragroup"));
+        }
+        if (req.hasQueryParameter("packetname")) {
+            packetNames.addAll(req.getQueryParameterList("packetname"));
+        }
+        if (req.hasQueryParameter("cmdhist")) {
+            cmdhist = req.getQueryParameterAsBoolean("cmdhist");
+        }
+        if (req.hasQueryParameter("persistent")) {
+            persistent = req.getQueryParameterAsBoolean("persistent");
+        }
+        if (req.hasQueryParameter("clientId")) {
+            clientIds.addAll(request.getClientIdList());
+        }
 
         // Only these must be user-provided
-        if (name == null) throw new BadRequestException("No processor name was specified");
-        if (start == TimeEncoding.INVALID_INSTANT) throw new BadRequestException("No start time was specified");
+        if (name == null) {
+            throw new BadRequestException("No processor name was specified");
+        }
+        if (start == TimeEncoding.INVALID_INSTANT) {
+            throw new BadRequestException("No start time was specified");
+        }
 
         // Make internal processor request
         ProcessorManagementRequest.Builder reqb = ProcessorManagementRequest.newBuilder();
@@ -320,7 +362,9 @@ public class ProcessorRestHandler extends RestHandler {
                     break;
                 }
             }
-            if (resolved) continue;
+            if (resolved) {
+                continue;
+            }
 
             // Is it a parameter name? Do index lookup
             Parameter p = mdb.getParameter(pattern);

@@ -171,7 +171,9 @@ class IndexRequestProcessor implements Runnable {
                     ArchiveRecord ar=ArchiveRecord.newBuilder().setId(id)
                     .setFirst(first).setLast(last).setNum(num).build();
                     builder.addRecords(ar);
-                    if(builder.getRecordsCount()>=n) sendData();
+                    if(builder.getRecordsCount()>=n) {
+                        sendData();
+                    }
                 }
 
                 void sendData() {

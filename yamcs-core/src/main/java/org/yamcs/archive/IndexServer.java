@@ -128,7 +128,9 @@ public class IndexServer extends AbstractService {
     private void subscribe(StreamConfigEntry sce) {
         YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
         Stream tmStream = ydb.getStream(sce.getName());
-        if(tmStream==null) throw new ConfigurationException("There is no stream named "+sce.getName());
+        if(tmStream==null) {
+            throw new ConfigurationException("There is no stream named "+sce.getName());
+        }
         tmStream.addSubscriber(tmIndexer);
     }
 

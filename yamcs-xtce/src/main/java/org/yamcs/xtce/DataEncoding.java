@@ -40,14 +40,18 @@ public abstract class DataEncoding implements Serializable {
     //these two methods are used for serialisation because ByteOrder is not serializable
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
-        if(byteOrder==ByteOrder.BIG_ENDIAN) out.writeInt(0);
+        if(byteOrder==ByteOrder.BIG_ENDIAN) {
+            out.writeInt(0);
+        }
         else out.writeInt(1);
     }
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         int o=in.readInt();
-        if(o==0) byteOrder=ByteOrder.BIG_ENDIAN;
-        else byteOrder=ByteOrder.LITTLE_ENDIAN;
+        if(o==0) {
+            byteOrder = ByteOrder.BIG_ENDIAN;
+        }
+        else byteOrder = ByteOrder.LITTLE_ENDIAN;
     }
 
     /**

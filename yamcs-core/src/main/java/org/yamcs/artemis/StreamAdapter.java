@@ -62,7 +62,9 @@ public class StreamAdapter implements StreamSubscriber, MessageHandler {
     
     @Override
     public void onTuple(Stream s, Tuple tuple) {
-        if(tuple==currentProcessingTuple.get())return;
+        if(tuple==currentProcessingTuple.get()){
+            return;
+        }
         try {
             ClientMessage msg=translator.buildMessage(yamcsSession.session.createMessage(false), tuple);
             msg.putIntProperty(UNIQUEID_HDR_NAME, UNIQUEID);

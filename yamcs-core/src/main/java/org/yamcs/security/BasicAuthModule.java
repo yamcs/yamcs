@@ -72,7 +72,9 @@ public class BasicAuthModule implements AuthModule {
    public String[] getRoles(final AuthenticationToken authenticationToken) {
        // Load user and read roles from result
        User user = getUser(authenticationToken);
-       if(user == null) return null;
+       if(user == null) {
+           return null;
+       }
        return user.getRoles();
    }
    

@@ -151,8 +151,12 @@ public class ArchiveParameterRestHandler extends RestHandler {
             for(int i = n-1; i>=0; i--) {
                 org.yamcs.parameter.ParameterValue pv = pvlist.get(i);
                 
-                if(pv.getGenerationTime() < start) continue;
-                if(pv.getGenerationTime() > stop) break;
+                if(pv.getGenerationTime() < start) {
+                    continue;
+                }
+                if(pv.getGenerationTime() > stop) {
+                    break;
+                }
                 if(pv.getGenerationTime() > sampler.lastSampleTime()) {
                     sampler.process(pv);
                 }
@@ -245,7 +249,9 @@ public class ArchiveParameterRestHandler extends RestHandler {
         Parameter p = requestedParamWithId.getItem();
         NamedObjectId requestedId = requestedParamWithId.getRequestedId();
         
-        if(req.hasQueryParameter("pos")) throw new BadRequestException("pos not supported");
+        if(req.hasQueryParameter("pos")) {
+            throw new BadRequestException("pos not supported");
+        }
         int limit = req.getQueryParameterAsInt("limit", 100);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
         long start = req.getQueryParameterAsDate("start", 0);
@@ -361,7 +367,9 @@ public class ArchiveParameterRestHandler extends RestHandler {
                 }
                 ParameterValue pv = pidvList.getValues().get(0);
                 replayListener.update(new ParameterValueWithId(pv, id));
-                if(replayListener.isReplayAbortRequested()) throw new ConsumerAbortException();
+                if(replayListener.isReplayAbortRequested()) {
+                    throw new ConsumerAbortException();
+                }
             }
         };
         MultiParameterDataRetrieval mpdr = new MultiParameterDataRetrieval(parchive, mpvr);
@@ -381,24 +389,36 @@ public class ArchiveParameterRestHandler extends RestHandler {
     //send data from cache with timestamps in (start, stop) if ascending or (start, stop] if descending interval 
     private void sendFromCache(Parameter p, NamedObjectId id, ParameterCache pcache, boolean ascending, long start, long stop, RestParameterReplayListener replayListener) {
         List<ParameterValue> pvlist = pcache.getAllValues(p);
-        if(pvlist==null) return;
+        if(pvlist==null) {
+            return;
+        }
 
         if(ascending) {
             int n = pvlist.size();
             for(int i = n-1; i>=0 ; i-- ) {
                 org.yamcs.parameter.ParameterValue pv = pvlist.get(i);
-                if(pv.getGenerationTime() >= stop) break;
+                if(pv.getGenerationTime() >= stop) {
+                    break;
+                }
                 if(pv.getGenerationTime()> start) {
                     replayListener.update(new ParameterValueWithId(pv, id));
-                    if(replayListener.isReplayAbortRequested()) break;
+                    if(replayListener.isReplayAbortRequested()) {
+                        break;
+                    }
                 }
             }
         } else {
             for(ParameterValue pv:pvlist) {
-                if(pv.getGenerationTime()>stop) continue;
-                if(pv.getGenerationTime() <= start) break;
+                if(pv.getGenerationTime()>stop) {
+                    continue;
+                }
+                if(pv.getGenerationTime() <= start) {
+                    break;
+                }
                 replayListener.update(new ParameterValueWithId(pv, id));
-                if(replayListener.isReplayAbortRequested()) break;
+                if(replayListener.isReplayAbortRequested()) {
+                    break;
+                }
             }
         }
     }
@@ -416,7 +436,9 @@ public class ArchiveParameterRestHandler extends RestHandler {
         return Processor.getInstance(instance, processorName);
     }
     private boolean isReplayAsked(RestRequest req) throws HttpException {
-        if(!req.hasQueryParameter("source")) return false;
+        if(!req.hasQueryParameter("source")) {
+            return false;
+        }
         
         String source = req.getQueryParameter("source");
         

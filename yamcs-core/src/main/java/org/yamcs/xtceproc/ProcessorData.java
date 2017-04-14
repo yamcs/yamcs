@@ -41,9 +41,11 @@ public class ProcessorData {
             } else if(de instanceof  FloatDataEncoding) {
                 calibrator = getCalibrator(((FloatDataEncoding) de).getDefaultCalibrator());
             } else {
-                throw new IllegalStateException("Unsupported integer encoding of type: "+de);
+                throw new IllegalStateException("Calibrators not supported for: "+de);
             }
-            calibrators.put(de, calibrator);
+            if(calibrator!=null) {
+                calibrators.put(de, calibrator);
+            }
         }
         return calibrator;
     }

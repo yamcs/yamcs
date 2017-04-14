@@ -129,7 +129,9 @@ public class MetaCommandContainerProcessor {
                 bytesToCopy--;
                 startByte++;
             }
-            if(bitshift>0) bytesToCopy--;
+            if(bitshift>0) {
+                bytesToCopy--;
+            }
 
             for(int i=0; i<bytesToCopy; i++) { //the middle part //could be optimised using a bulk put method
                 pcontext.bb.put(pcontext.bitPosition/8, v2[startByte+i]);

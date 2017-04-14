@@ -141,8 +141,12 @@ public class InkeyTableReaderStream extends AbstractTableReaderStream implements
                 return runDescending(iterator, rangeStart, strictStart);
             }
         } finally {
-            if(iterator!=null) iterator.close();
-            if(snapshot!=null) snapshot.close();
+            if(iterator!=null) {
+                iterator.close();
+            }
+            if(snapshot!=null) {
+                snapshot.close();
+            }
             readOptions.close();
             rdbf.dispose(rdb);
         }
@@ -247,11 +251,15 @@ public class InkeyTableReaderStream extends AbstractTableReaderStream implements
             int minLength = Math.min(b1.length, b2.length);
             for (int i = prefixSize; i < minLength; i++) {
                 int d=(b1[i]&0xFF)-(b2[i]&0xFF);
-                if(d!=0)return d;
+                if(d!=0){
+                    return d;
+                }
             }
             for (int i = 0; i < prefixSize; i++) {
                 int d=(b1[i]&0xFF)-(b2[i]&0xFF);
-                if(d!=0)return d;
+                if(d!=0){
+                    return d;
+                }
             }
             return b1.length - b2.length;
         }
@@ -269,11 +277,15 @@ public class InkeyTableReaderStream extends AbstractTableReaderStream implements
             int minLength = Math.min(b1.length, b2.length);
             for (int i = prefixSize; i < minLength; i++) {
                 int d=(b2[i]&0xFF)-(b1[i]&0xFF);
-                if(d!=0)return d;
+                if(d!=0){
+                    return d;
+                }
             }
             for (int i = 0; i < prefixSize; i++) {
                 int d=(b2[i]&0xFF)-(b1[i]&0xFF);
-                if(d!=0)return d;
+                if(d!=0){
+                    return d;
+                }
             }
             return b2.length - b1.length;
         }

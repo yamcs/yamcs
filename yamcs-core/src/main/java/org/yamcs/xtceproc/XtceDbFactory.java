@@ -296,9 +296,13 @@ public class XtceDbFactory {
 
             ss = ss.getSubsystem(path[i]);
 
-            if(ss==null) break;
+            if(ss==null) {
+                break;
+            }
         }
-        if(ss==null) return null;
+        if(ss==null) {
+            return null;
+        }
 
         String name=path[path.length-1];
         switch(nr.getType()) {
