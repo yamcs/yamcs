@@ -134,12 +134,12 @@ public class CommandVerificationHandler {
     void onVerifierFinished(Verifier v, VerifResult result) {
         if(!pendingVerifiers.remove(v)) {
             if(result!=VerifResult.TIMEOUT) {
-                log.warn("Got verifier finished for a verifier not in the pending list. cmd: "+preparedCommand.getCmdName()+" verifier:"+v.cv);
+                log.warn("Got verifier finished for a verifier not in the pending list. cmd: {} verifier:", preparedCommand.getCmdName(), v.cv);
             }
             return;
         }
         
-        log.debug("Command "+preparedCommand.getCmdName()+" verifier finished: "+v.cv+", result: "+result);
+        log.debug("Command {} verifier finished: {} result: {}", preparedCommand.getCmdName(), v.cv, result);
         CommandVerifier cv = v.cv;
         CommandHistoryPublisher cmdHistPublisher = yproc.getCommandHistoryPublisher();
         String histKey= CommandHistoryPublisher.Verifier_KEY_PREFIX+"_"+cv.getStage();

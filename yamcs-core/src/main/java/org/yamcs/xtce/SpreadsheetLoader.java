@@ -199,7 +199,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
     @Override
     public SpaceSystem load() {
-        log.info("Loading spreadsheet " + path);
+        log.info("Loading spreadsheet {}", path);
 
         try {
             // Given path may be relative, so use absolute path to report issues
@@ -210,9 +210,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             WorkbookSettings ws = new WorkbookSettings();
             ws.setEncoding("Cp1252");
             workbook = Workbook.getWorkbook(ssFile, ws);
-        } catch (BiffException e) {
-            throw new SpreadsheetLoadException(ctx, e);
-        } catch (IOException e) {
+        } catch (BiffException|IOException e) {
             throw new SpreadsheetLoadException(ctx, e);
         }
 

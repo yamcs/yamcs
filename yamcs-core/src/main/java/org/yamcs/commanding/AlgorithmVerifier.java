@@ -46,7 +46,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
     void start() {
         log.debug("Starting verifier "+cv.getStage()+" with the algorithm "+alg.getName());
         //push all the command information as parameters
-        List<ParameterValue> pvList = new ArrayList<ParameterValue>();
+        List<ParameterValue> pvList = new ArrayList<>();
 
         for(CommandHistoryAttribute cha: pc.getAttributes()) {
             String fqn = XtceDb.YAMCS_CMD_SPACESYSTEM_NAME+"/"+cha.getName();
@@ -66,7 +66,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
             String fqn = XtceDb.YAMCS_CMD_SPACESYSTEM_NAME+"/arg/"+e.getKey().getName();
             if(xtcedb.getParameter(fqn)==null) {
                 //if it was required in the algorithm, it would be already in the SystemParameterdb  
-                log.debug("Not adding "+fqn+" to the context parameter list because it is not defined in the XtceDb");
+                log.debug("Not adding {} to the context parameter list because it is not defined in the XtceDb", fqn);
                 continue;
             }
             Parameter p =  xtcedb.getParameter(fqn);
@@ -119,7 +119,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
         String fqn = XtceDb.YAMCS_CMDHIST_SPACESYSTEM_NAME+"/"+key;
         if(xtcedb.getParameter(fqn)==null) {
             //if it was required in the algorithm, it would be in the SystemParameterDb  
-            log.debug("Not adding "+fqn+" to the context parameter list because it is not defined in the XtceDb");
+            log.debug("Not adding {} to the context parameter list because it is not defined in the XtceDb", fqn);
         } else {            
             Parameter p = xtcedb.getParameter(fqn);
             ParameterValue pv = new ParameterValue(p);

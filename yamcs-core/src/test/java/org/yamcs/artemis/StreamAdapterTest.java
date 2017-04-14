@@ -19,7 +19,6 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsSession;
-import org.yamcs.artemis.ArtemisManagement;
 import org.yamcs.artemis.ArtemisServer;
 import org.yamcs.artemis.StreamAdapter;
 import org.yamcs.artemis.TupleTranslator;
@@ -33,7 +32,6 @@ public class StreamAdapterTest extends YarchTestCase {
     @BeforeClass
     public static void setUpBeforeClass1() throws Exception {
         artemisServer = ArtemisServer.setupArtemis();
-        ArtemisManagement.setupYamcsServerControl();
     }
 
     @AfterClass

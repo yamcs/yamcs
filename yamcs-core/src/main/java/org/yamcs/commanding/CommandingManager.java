@@ -84,7 +84,7 @@ public class CommandingManager extends AbstractService {
      * @throws InvalidAuthenticationToken 
      */
     public CommandQueue sendCommand(AuthenticationToken authToken, PreparedCommand pc) throws InvalidAuthenticationToken {
-        log.debug("sendCommand commandSource="+pc.getSource());
+        log.debug("sendCommand commandSource={}", pc.getSource());
         return commandQueueManager.addCommand(authToken, pc);
     }
 

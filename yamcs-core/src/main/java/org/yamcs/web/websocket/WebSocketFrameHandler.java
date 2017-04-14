@@ -160,7 +160,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         if (processorClient != null) {
-            log.info("Channel " + ctx.channel().remoteAddress() + " closed");
+            log.info("Channel {} closed", ctx.channel().remoteAddress());
             processorClient.quit();
         }
     }
@@ -173,7 +173,9 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     }
 
     public void sendReply(WebSocketReplyData reply) throws IOException {
-        if(!channel.isOpen()) throw new IOException("Channel not open");
+        if(!channel.isOpen()) {
+            throw new IOException("Channel not open");
+        }
         if(!channel.isWritable()) {
             log.warn("Dropping reply message because channel is not writable");
             return;
@@ -197,7 +199,9 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
      */
     public <S> void sendData(ProtoDataType dataType, S data, Schema<S> schema) throws IOException {
         dataSeqCount++;
-        if(!channel.isOpen()) throw new IOException("Channel not open");
+        if(!channel.isOpen()) {
+            throw new IOException("Channel not open");
+        }
 
         if(!channel.isWritable()) {
             log.warn("Dropping {} message for client [id={}, username={}] because channel is not or no longer writable",

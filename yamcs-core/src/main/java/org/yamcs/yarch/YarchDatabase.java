@@ -65,7 +65,7 @@ public class YarchDatabase {
     final JMXService jmxService;
 
 
-    static Map<String,YarchDatabase> databases = new HashMap<String,YarchDatabase>();
+    static Map<String,YarchDatabase> databases = new HashMap<>();
     private String dbname;
 
     private YarchDatabase(String dbname, boolean ignoreVersionIncompatibility) throws YarchException {
@@ -346,7 +346,7 @@ public class YarchDatabase {
 
 
     public void dropTable(String tblName) throws YarchException {
-        log.info("dropping table "+tblName);
+        log.info("dropping table {}", tblName);
         TableDefinition tbl=tables.remove(tblName);
         if(tbl==null) {
             throw new YarchException("There is no table named '"+tblName+"'");

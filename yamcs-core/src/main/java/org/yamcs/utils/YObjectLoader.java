@@ -180,11 +180,11 @@ public class YObjectLoader<T> {
     static void checkAndPrintDeprecatedWarning(String prefix, Class objclass) {
         DeprecationInfo di = (DeprecationInfo) objclass.getAnnotation(DeprecationInfo.class);
         if(di!=null) {
-            log.warn(prefix+": "+ di.info());
+            log.warn("{}: {}", prefix, di.info());
         } else {
             Annotation a  = objclass.getAnnotation(Deprecated.class);
             if(a!=null) {
-                log.warn(prefix+". Please check the javadoc for alternatives.");
+                log.warn("{}. Please check the javadoc for alternatives.", prefix);
             }
         }
 

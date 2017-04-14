@@ -79,7 +79,9 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
         setupSysVariables();
         while(isRunning()) {
             PacketWithTime pwrt=getNextPacket();
-            if(pwrt==null) break;
+            if(pwrt==null) {
+                break;
+            }
             tmSink.processPacket(pwrt);
         }
     }
@@ -88,7 +90,9 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
         ByteBuffer bb=null;
         while (isRunning()) {
             while(disabled) {
-                if(!isRunning()) return null;
+                if(!isRunning()) {
+                    return null;
+                }
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
@@ -99,7 +103,7 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
             try {
                 if (tmSocket==null) {
                     openSocket();
-                    log.info("TM connection established to "+host+":"+port);
+                    log.info("TM connection established to {}:{}", host, port);
                 } 
                 byte hdr[] = new byte[6];
                 if(!readWithBlocking(hdr,0,6))
@@ -113,13 +117,15 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
                 break;
             } catch (IOException e) {
                 String exc = (e instanceof ConnectException) ? ((ConnectException) e).getMessage() : e.toString();
-                log.info("Cannot open or read TM socket "+host+":"+port+" '"+exc+"'. Retrying in 10s");
-                try {tmSocket.close();} catch (Exception e2) {}
+                log.info("Cannot open or read TM socket {}:{} {}'. Retrying in 10s", host, port, exc);
+                try {
+                    tmSocket.close();
+                    } catch (Exception e2) {}
                 tmSocket=null;
                 try {
                     Thread.sleep(10000);
                 } catch (InterruptedException e1) {
-                    log.warn("Exception "+ e1.toString()+" while sleeping for 10s");
+                    log.warn("Exception {} while sleeping for 10s", e1.toString());
                     return null;
                 }
             }
@@ -159,7 +165,9 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
 
     @Override
     public String getLinkStatus() {
-        if (disabled) return "DISABLED";
+        if (disabled) {
+            return "DISABLED";
+        }
         if (tmSocket==null) {
             return "UNAVAIL";
         } else {
@@ -230,7 +238,6 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
             log.info("System variables collector not defined for instance {} ", yamcsInstance);
         }
     }
-
 
     @Override
     public Collection<ParameterValue> getSystemParameters() {

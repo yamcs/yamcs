@@ -58,11 +58,11 @@ import com.google.common.util.concurrent.AbstractService;
 @ThreadSafe
 public class CommandQueueManager extends AbstractService implements ParameterConsumer, SystemParametersProducer {
     @GuardedBy("this")
-    private HashMap<String, CommandQueue> queues = new HashMap<String, CommandQueue>();
+    private HashMap<String, CommandQueue> queues = new HashMap<>();
     CommandReleaser commandReleaser;
     CommandHistoryPublisher commandHistoryListener;
     CommandingManager commandingManager;
-    ConcurrentLinkedQueue<CommandQueueListener> monitoringClients = new ConcurrentLinkedQueue<CommandQueueListener>();
+    ConcurrentLinkedQueue<CommandQueueListener> monitoringClients = new ConcurrentLinkedQueue<>();
     private final Logger log;
 
     private Set<TransmissionConstraintChecker> pendingTcCheckers = new HashSet<>();
@@ -261,7 +261,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         PreparedCommand pc = tcChecker.pc;
         CommandQueue q = tcChecker.queue;
         TCStatus status = tcChecker.aggregateStatus;
-        log.info("transmission constraint finished for "+pc.getCmdName()+" status: "+status);
+        log.info("transmission constraint finished for {} status: {}", pc.getCmdName(),status);
 
         pendingTcCheckers.remove(tcChecker);
 

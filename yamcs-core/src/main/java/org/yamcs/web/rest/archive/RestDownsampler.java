@@ -54,7 +54,9 @@ public class RestDownsampler {
      * determine the time spread of the buckets, up until validEnd. :-/
      */
     public void process(long time, double value) {
-        if (time > projectedEnd || time < start) return;
+        if (time > projectedEnd || time < start) {
+            return;
+        }
         lastSampleTime = time;
 
         if (samplesByTime == null) {
@@ -67,12 +69,16 @@ public class RestDownsampler {
             return;
         }
         Sample sample = entry.getValue();
-        if (sample == null) samplesByTime.put(entry.getKey(), new Sample(time, value));
+        if (sample == null) {
+            samplesByTime.put(entry.getKey(), new Sample(time, value));
+        }
         else sample.process(time, value);
     }
 
     public List<Sample> collect() {
-        if (samplesByTime == null) return Collections.emptyList();
+        if (samplesByTime == null) {
+            return Collections.emptyList();
+        }
         return samplesByTime.values().stream().filter(s -> s != null).collect(Collectors.toList());
     }
 
@@ -134,7 +140,7 @@ public class RestDownsampler {
             process(pval.getGenerationTime(), pval.getEngValue().getUint64Value());
             break;
         default:
-            log.warn("Unexpected value type " + pval.getEngValue().getType());
+            log.warn("Unexpected value type {}", pval.getEngValue().getType());
         }
 
     }

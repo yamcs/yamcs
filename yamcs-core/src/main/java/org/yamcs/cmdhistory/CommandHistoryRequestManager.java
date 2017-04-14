@@ -35,9 +35,9 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class CommandHistoryRequestManager extends AbstractService {
-    private ConcurrentHashMap<CommandId, CommandHistoryEntry> activeCommands = new ConcurrentHashMap<CommandId,CommandHistoryEntry>();
-    private ConcurrentHashMap<CommandId, ConcurrentLinkedQueue<CommandHistoryConsumer>> cmdSubcriptions = new ConcurrentHashMap<CommandId ,ConcurrentLinkedQueue<CommandHistoryConsumer>>();
-    private ConcurrentHashMap<CommandHistoryFilter,CommandHistoryConsumer> historySubcriptions = new ConcurrentHashMap<CommandHistoryFilter,CommandHistoryConsumer>();
+    private ConcurrentHashMap<CommandId, CommandHistoryEntry> activeCommands = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<CommandId, ConcurrentLinkedQueue<CommandHistoryConsumer>> cmdSubcriptions = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<CommandHistoryFilter,CommandHistoryConsumer> historySubcriptions = new ConcurrentHashMap<>();
 
     Stream realtimeCmdHistoryStream; 
 
@@ -68,7 +68,7 @@ public class CommandHistoryRequestManager extends AbstractService {
             cmdSubcriptions.get(cmdId).add(consumer);
             return che;
         }
-        log.warn("Received subscribe command for a command not in my active list: ("+cmdId+")");
+        log.warn("Received subscribe command for a command not in my active list: ({})", cmdId);
         throw new InvalidCommandId("command "+cmdId+" is not in the list of active commands",cmdId);
         
     }
@@ -132,7 +132,7 @@ public class CommandHistoryRequestManager extends AbstractService {
      *  (i.e. when a users sends a telecommand)
      */
     public void addCommand(PreparedCommand pc) {
-        log.debug("addCommand cmdId="+pc);
+        log.debug("addCommand cmdId={}", pc);
         CommandHistoryEntry che = CommandHistoryEntry.newBuilder().setCommandId(pc.getCommandId()).build();
         
         //deliver to clients

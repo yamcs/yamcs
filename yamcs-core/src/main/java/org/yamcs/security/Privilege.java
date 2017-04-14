@@ -47,7 +47,6 @@ public class Privilege {
         MayControlServices,
         MayReadTables,
         MayWriteTables,
-        
     }
 
     private static String authModuleName;
@@ -105,13 +104,15 @@ public class Privilege {
         }
 
         if(usePrivileges) {
-            log.info("Privileges enabled, authenticating and authorising by module "+authModule);
+            log.info("Privileges enabled, authenticating and authorising by module {}", authModule);
         } else {
             log.warn("Privileges disabled, all connections are allowed and have full permissions");
         }
     }
     public String[] getRoles(final AuthenticationToken authenticationToken) throws InvalidAuthenticationToken {
-        if(!usePrivileges) return null;
+        if(!usePrivileges){
+            return null;
+        }
         
         return authModule.getRoles(authenticationToken);
     }
@@ -154,10 +155,16 @@ public class Privilege {
      * @throws InvalidAuthenticationToken 
      */
     public boolean hasRole(final AuthenticationToken authenticationToken, String role ) throws InvalidAuthenticationToken {
-        if(!usePrivileges) return false;
+        if(!usePrivileges) {
+            return false;
+        }
         
-        if(authenticationToken == null || authenticationToken.getPrincipal() == null) return false;
-        if (isSystemToken(authenticationToken)) return true;
+        if(authenticationToken == null || authenticationToken.getPrincipal() == null) {
+            return false;
+        }
+        if (isSystemToken(authenticationToken)) {
+            return true;
+        }
 
         return authModule.hasRole(authenticationToken, role);
     }
@@ -176,11 +183,17 @@ public class Privilege {
      * @throws InvalidAuthenticationToken 
      */
     public boolean hasPrivilege(final AuthenticationToken authenticationToken, Type type, String privilege) throws InvalidAuthenticationToken  {
-        if (!usePrivileges) return true;
+        if (!usePrivileges) {
+            return true;
+        }
         
-        if(authenticationToken == null || authenticationToken.getPrincipal() == null) return false;
+        if(authenticationToken == null || authenticationToken.getPrincipal() == null) {
+            return false;
+        }
 
-        if (isSystemToken(authenticationToken)) return true;
+        if (isSystemToken(authenticationToken)) {
+            return true;
+        }
 
         return authModule.hasPrivilege(authenticationToken, type, privilege);
     }
@@ -267,7 +280,9 @@ public class Privilege {
         Collection<String> tl= getTmPacketNames(XtceDbFactory.getInstance(yamcsInstance), namespace);
         ArrayList<String> l=new ArrayList<String>();
         for(String name:tl) {
-            if(!hasPrivilege(authToken, Privilege.Type.TM_PACKET, name)) continue;
+            if(!hasPrivilege(authToken, Privilege.Type.TM_PACKET, name)){
+                continue;
+            }
             l.add(name);
         }
         return l;
@@ -277,7 +292,9 @@ public class Privilege {
         ArrayList<String> pn=new ArrayList<String>();
         for(SequenceContainer sc:xtcedb.getSequenceContainers()){
             String alias=sc.getAlias(namespace);
-            if(alias!=null) pn.add(alias);
+            if(alias!=null){
+                pn.add(alias);
+            }
         }
         return pn;
     }
@@ -315,10 +332,14 @@ public class Privilege {
 
 
     public String getUsername(AuthenticationToken authToken) {
-        if(!usePrivileges) return defaultUser;
+        if(!usePrivileges){
+            return defaultUser;
+        }
         
         User u = authModule.getUser(authToken);
-        if(u==null) return null;
+        if(u==null){
+            return null;
+        }
         
         return u.getPrincipalName();
     }

@@ -97,7 +97,7 @@ public class InkeyTableReaderStream extends AbstractTableReaderStream implements
         RDBFactory rdbf = RDBFactory.getInstance(ydb.getName());
         RdbPartition p1 = (RdbPartition) partitions.get(0);
         String dbDir = p1.dir;
-        log.debug("opening database "+ dbDir);
+        log.debug("opening database {}", dbDir);
         YRDB rdb;
         try {
             rdb = rdbf.getRdb(tableDefinition.getDataDir()+"/"+p1.dir, p1.binaryValue.length, false);

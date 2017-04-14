@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsSession;
-import org.yamcs.artemis.ArtemisManagement;
 import org.yamcs.artemis.ArtemisServer;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabaseRequest;
@@ -30,7 +29,6 @@ public class YamcsServerArtemisTest {
         ManagementService.setup(false);
         org.yamcs.yarch.management.JMXService.setup(false);
         artemisServer = ArtemisServer.setupArtemis();
-        ArtemisManagement.setupYamcsServerControl();
         YamcsServer.setupYamcsServer();
     }
     

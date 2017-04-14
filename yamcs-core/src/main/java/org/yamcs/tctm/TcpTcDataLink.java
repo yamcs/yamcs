@@ -128,7 +128,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             selector.close();
             socketChannel=null;
         } catch (IOException e) {
-            log.warn("Exception caught when checking if the socket to "+host+":"+port+" is open", e);
+            log.warn("Exception caught when checking if the socket to {}:{} is open", host, port, e);
         }
     }
     /**
@@ -147,7 +147,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             if(selectionKey.isReadable()) {
                 int read = socketChannel.read(bb);
                 if(read>0) {
-                    log.info("Data read on the TC socket to "+host+":"+port+"!! :"+bb);
+                    log.info("Data read on the TC socket to {}:{}!! : {}",host, port, bb);
                     connected=true;
                 } else if(read<0) {
                     log.warn("TC socket to "+host+":"+port+" has been closed");
@@ -163,7 +163,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
                 connected=false;
             }
         } catch (IOException e) {
-            log.warn("Exception caught when checking if the socket to "+host+":"+port+" is open:", e);
+            log.warn("Exception caught when checking if the socket to {}:{} is open:",host, port, e);
             connected=false;
         }
         return connected;

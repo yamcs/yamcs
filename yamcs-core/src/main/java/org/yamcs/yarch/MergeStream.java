@@ -67,8 +67,10 @@ public class MergeStream extends AbstractStream implements StreamSubscriber, Run
 
     @Override
     public void streamClosed(Stream s) {
-        if(state==QUITTING)return;
-        log.debug("Got stream closed for "+s);
+        if(state==QUITTING){
+            return;
+        }
+        log.debug("Got stream closed for {}", s);
         try {
             tupleQueues.get(s).put(queueEndMark);
         } catch (InterruptedException e) {

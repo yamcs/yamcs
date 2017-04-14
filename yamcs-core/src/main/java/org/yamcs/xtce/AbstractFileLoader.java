@@ -35,15 +35,17 @@ public abstract class AbstractFileLoader implements SpaceSystemLoader {
         while((line=consistencyDateFile.readLine())!=null) {
             if(line.startsWith(configName)) {
                 File f=new File(path);
-                if(!f.exists()) throw new ConfigurationException("The file "+path+" doesn't exist");
+                if(!f.exists()) {
+                    throw new ConfigurationException("The file "+path+" doesn't exist");
+                }
                 SimpleDateFormat sdf=new SimpleDateFormat("yyyy/DDD HH:mm:ss");
                 try {
                     Date serializedDate=sdf.parse(line.substring(configName.length()+1));
                     if(serializedDate.getTime()>=f.lastModified()) {
-                        log.debug("Serialized "+configName+" is up to date");
+                        log.debug("Serialized {} is up to date", configName);
                         return false;
                     } else {
-                        log.debug("Serialized "+configName+" is NOT up to date: serializedDate="+serializedDate+" mdbConsistencyDate="+new Date(f.lastModified()));
+                        log.debug("Serialized {} is NOT up to date: serializedDate={}, mdbConsistencyDate={}", configName, serializedDate, new Date(f.lastModified()));
                         return true;
                     }
                 } catch (ParseException e) {

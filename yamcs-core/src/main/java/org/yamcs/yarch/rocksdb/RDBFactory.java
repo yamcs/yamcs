@@ -100,7 +100,7 @@ public class RDBFactory implements Runnable {
                     }
                 }
                 if(minFile!=null) {
-                    log.debug("Closing the database: "+minFile+" to not have more than "+maxOpenDbs+" open databases");
+                    log.debug("Closing the database: {}  to not have more than {} open databases", minFile, maxOpenDbs);
                     daat=databases.remove(minFile);
                     daat.db.close();
                 }

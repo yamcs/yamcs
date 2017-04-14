@@ -164,7 +164,7 @@ public class ManagementService implements ProcessorListener {
             links.add(lci);
             linkListeners.forEach(l -> l.registerLink(lci.getLinkInfo()));
         } catch (Exception e) {
-            log.warn("Got exception when registering a link: "+e, e);
+            log.warn("Got exception when registering a link: ", e);
         }
     }
 

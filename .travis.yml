@@ -13,4 +13,6 @@ cache:
     - $HOME/.sonar/cache
 
 script: mvn -Dsurefire.useFile=false test
-after_success: mvn -Dsurefire.useFile=false clean org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar
+
+#Remove .yamcs directory before running sonar, otherwise the XTCE Db loader will not be measured for test coverage
+after_success: rm -r $HOME/.yamcs; mvn -Dsurefire.useFile=false clean org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar
