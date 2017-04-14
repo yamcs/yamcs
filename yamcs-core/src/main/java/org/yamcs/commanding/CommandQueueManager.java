@@ -608,7 +608,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
 
-    static enum TCStatus {INIT, PENDING, OK, TIMED_OUT};
+    enum TCStatus {INIT, PENDING, OK, TIMED_OUT}
 
     class TransmissionConstraintChecker {
         List<TransmissionConstraintStatus> tcsList = new ArrayList<>();

@@ -84,23 +84,26 @@ public class TmFileReader  {
             ccsdshdroffset=4;
         } else {//pacts packet
             isPacts=true;
-            //System.out.println("pacts packet");
             // read ASCII header up to the second blank
             int i, j;
-            StringBuffer hdr = new StringBuffer();
+            StringBuilder hdr = new StringBuilder();
             j = 0;
             for(i=0;i<4;i++) {
                 hdr.append((char)fourb[i]);
-                if ( fourb[i] == 32 ) ++j;
+                if ( fourb[i] == 32 ) {
+                    ++j;
+                }
             }
             while((j < 2) && (i < 20)) {
-                int c = inputStream.read();;
+                int c = inputStream.read();
                 if(c==-1) {
                     inputStream.close();
                     throw new IOException("short PaCTS ASCII header: '"+ hdr.toString() + "'");
                 }
                 hdr.append((char)c);
-                if ( c == 32 ) ++j;
+                if ( c == 32 ) {
+                    ++j;
+                }
                 i++;
             }
 
@@ -146,9 +149,7 @@ public class TmFileReader  {
         PacketWithTime pwrt;
 
         while((pwrt=tfr.readPacket(TimeEncoding.getWallclockTime()))!=null) {
-            //System.out.println("packet received at "+TimeEncoding.toCombinedFormat(pwrt.rectime));
             CcsdsPacket c=new CcsdsPacket(pwrt.getPacket());
-            //System.out.println(c.toString());
             System.out.println("rectime: "+TimeEncoding.toString(pwrt.rectime)+" apid:" +c.getAPID()+" seq: "+c.getSequenceCount()+" coarse: "+c.getCoarseTime()+" fine: "+c.getFineTime()+
                     " time: "+ TimeEncoding.toCombinedFormat(c.getInstant())+" received: "+TimeEncoding.toCombinedFormat(pwrt.rectime)+" delta: "+(pwrt.rectime-c.getInstant()));
 

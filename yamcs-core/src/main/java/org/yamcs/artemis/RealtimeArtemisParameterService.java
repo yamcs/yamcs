@@ -123,7 +123,7 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
             }
             yclient.sendReply(replyto, "OK",null);
         } catch (InvalidIdentification e) {
-            NamedObjectList nol=NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
+            NamedObjectList nol=NamedObjectList.newBuilder().addAllList(e.getInvalidParameters()).build();
             yclient.sendErrorReply(replyto, new YamcsException("InvalidIdentification", "Invalid Identification", nol));
         } catch (InvalidRequestIdentification e) {
             log.error("got invalid subscription id", e);

@@ -25,7 +25,7 @@ public class DataEncodingEncoder {
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
 
     public DataEncodingEncoder(TcProcessingContext pcontext) {
-        this.pcontext=pcontext;
+        this.pcontext = pcontext;
     }
 
     /**
@@ -104,7 +104,7 @@ public class DataEncodingEncoder {
             if(v<0) {
                 v = -v;
                 v &= (1<<bitsToShift);
-            };
+            }
             break;
         default:
             throw new UnsupportedOperationException("encoding "+ide.getEncoding()+" not implemented");

@@ -86,7 +86,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     ParameterRequestManagerImpl parameterRequestManager;
 
     // For scheduling OnPeriodicRate algorithms
-    ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);;
+    ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);
     Processor yproc;
     AlgorithmExecutionContext globalCtx;
 
@@ -312,7 +312,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         } catch (InvalidIdentification e) {
             log.error("InvalidIdentification caught when subscribing to the items "
                     + "required for the algorithm {}\n\t The invalid items are: {}"
-                    , executor.getAlgorithm().getName(), e.invalidParameters, e);
+                    , executor.getAlgorithm().getName(), e.getInvalidParameters(), e);
         } catch (InvalidRequestIdentification e) {
             log.error("InvalidRequestIdentification caught when subscribing to the items required for the algorithm {}"
                      , executor.getAlgorithm().getName(), e);

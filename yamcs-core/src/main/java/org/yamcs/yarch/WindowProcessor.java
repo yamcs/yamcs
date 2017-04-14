@@ -8,14 +8,14 @@ import org.yamcs.yarch.streamsql.WindowSpecification;
 
 public abstract class WindowProcessor {
     List<CompiledAggregateExpression> aggList;
-    List<Tuple> windowTuples=new ArrayList<Tuple>();;
+    List<Tuple> windowTuples=new ArrayList<>();
     boolean noOverlap; //if there is no overlap between the windows, some optimizations are possible
     TupleDefinition aggOutputDef;
-    final private List<Tuple> emptyReturn=new ArrayList<Tuple>(0);
+    final private List<Tuple> emptyReturn=new ArrayList<>(0);
     public TupleDefinition aggInputDef;
     
     public static WindowProcessor getInstance(WindowSpecification spec, TupleDefinition aggInputDef, List<CompiledAggregateExpression> aggList, TupleDefinition aggregateOutputDef) {
-        WindowProcessor wp=null;
+        WindowProcessor wp;
         switch(spec.type) {
         case FIELD:
              DataType ft=spec.getFieldType();
@@ -108,7 +108,7 @@ class LongFieldBasedWP extends WindowProcessor {
 }
 
 class IntFieldBasedWP extends WindowProcessor {
-    final int size,advance;
+    final int size, advance;
     int firstValue;
     final String field;
     public IntFieldBasedWP(WindowSpecification spec) {
@@ -128,5 +128,3 @@ class IntFieldBasedWP extends WindowProcessor {
        firstValue=(Integer)tuple.getColumn(field);
     }
 }
-
-

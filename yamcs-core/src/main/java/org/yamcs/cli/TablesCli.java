@@ -74,7 +74,7 @@ public class TablesCli extends Command {
         private void dumpTable(String tableName) throws Exception {
             String fileName = tableName+".dump";
             if(dir!=null) {
-                fileName = dir+"/"+fileName;;
+                fileName = dir+"/"+fileName;
             }
             AtomicInteger count = new AtomicInteger();
             System.out.println("Dumping data from "+tableName+" table to "+fileName);

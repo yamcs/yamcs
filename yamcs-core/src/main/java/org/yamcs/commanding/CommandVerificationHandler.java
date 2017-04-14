@@ -31,9 +31,9 @@ public class CommandVerificationHandler {
     final Processor yproc;
     final PreparedCommand preparedCommand;
     final ScheduledThreadPoolExecutor timer;
-    private List<Verifier> pendingVerifiers = new ArrayList<Verifier>();
+    private List<Verifier> pendingVerifiers = new ArrayList<>();
     private final Logger log = LoggerFactory.getLogger(this.getClass().getName());
-    enum VerifResult {OK, NOK, TIMEOUT};
+    enum VerifResult {OK, NOK, TIMEOUT}
     AlgorithmExecutionContext algorithmCtx;
 
     public CommandVerificationHandler(Processor yproc, PreparedCommand pc) {
@@ -69,7 +69,7 @@ public class CommandVerificationHandler {
                     prevVerifier.nextVerifier = verifier;
                     scheduleNow = false;
                 }
-            };
+            }
 
             if(scheduleNow) {
                 scheduleVerifier(verifier, checkWindow.getTimeToStartChecking(), checkWindow.getTimeToStopChecking());

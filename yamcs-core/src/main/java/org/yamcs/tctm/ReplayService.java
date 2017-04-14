@@ -188,7 +188,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         try {
             subscriptionId = pidrm.addRequest(plist, new SystemToken());
         } catch (InvalidIdentification e) {
-            NamedObjectList nol=NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
+            NamedObjectList nol=NamedObjectList.newBuilder().addAllList(e.getInvalidParameters()).build();
             throw new YamcsException("InvalidIdentification", "Invalid identification", nol);
         } catch (NoPermissionException e) {
             throw new RuntimeException("Unexpected No permission");

@@ -100,7 +100,7 @@ public class ArchiveUpgradeCommand extends Command {
         if(tblDef.getColumnDefinition("ppgroup") == null) {
             log.info("Table {}/{} has no ppgroup column", ydb.getName(), tblDef.getName());
             return;
-        };
+        }
         log.info("Renaming ppgroup -> group column in table {}/{}", ydb.getName(), tblDef.getName());
         tblDef.renameColumn("ppgroup", "group");
     }

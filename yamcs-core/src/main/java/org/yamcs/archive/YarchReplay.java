@@ -312,7 +312,7 @@ public class YarchReplay implements StreamSubscriber {
             }
         } catch (Exception e) {
             log.error( "Exception whilst quitting", e );
-        };
+        }
         replayServer.replayFinished();
     }
 

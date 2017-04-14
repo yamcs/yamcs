@@ -49,7 +49,7 @@ public class ParameterGroupIdDb {
     public synchronized int createAndGet(SortedIntArray s) throws RocksDBException {
         Integer pgid = pg2pgidCache.get(s);
         if(pgid == null) {
-            int x = ++highestPgId;;
+            int x = ++highestPgId;
             pgid = x;
             db.put(pgid2pg_cfh, encodeInt(x), s.encodeToVarIntArray());
             pg2pgidCache.put(s, pgid);
@@ -81,7 +81,9 @@ public class ParameterGroupIdDb {
 
                 int pgid = ByteBuffer.wrap(it.key()).getInt();
 
-                if(highestPgId < pgid) highestPgId = pgid;
+                if(highestPgId < pgid) {
+                    highestPgId = pgid;
+                }
 
                 SortedIntArray svil = SortedIntArray.decodeFromVarIntArray(it.value());
                 pg2pgidCache.put(svil, pgid);
@@ -91,6 +93,7 @@ public class ParameterGroupIdDb {
     }
 
 
+    @Override
     public String toString() {
         return pg2pgidCache.toString();
     }

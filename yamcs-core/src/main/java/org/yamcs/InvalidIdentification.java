@@ -6,17 +6,21 @@ import java.util.List;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 
 public class InvalidIdentification extends Exception {
-	public List<NamedObjectId> invalidParameters;
-	
-	public InvalidIdentification(List<NamedObjectId> paraList) {
-		this.invalidParameters=paraList;
-	}
+    private List<NamedObjectId> invalidParameters;
 
-	public InvalidIdentification() {
-	}
+    public InvalidIdentification(List<NamedObjectId> paraList) {
+        this.invalidParameters = paraList;
+    }
 
-	public InvalidIdentification(NamedObjectId paraId) {
-		invalidParameters=new ArrayList<NamedObjectId>(1);
-		invalidParameters.add(paraId);
-	}
+    public InvalidIdentification() {
+    }
+
+    public InvalidIdentification(NamedObjectId paraId) {
+        this.invalidParameters = new ArrayList<>(1);
+        getInvalidParameters().add(paraId);
+    }
+
+    public List<NamedObjectId> getInvalidParameters() {
+        return invalidParameters;
+    }
 }

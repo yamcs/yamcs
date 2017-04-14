@@ -116,7 +116,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
 
             return null;
         } catch (InvalidIdentification e) {
-            NamedObjectList nol = NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
+            NamedObjectList nol = NamedObjectList.newBuilder().addAllList(e.getInvalidParameters()).build();
             WebSocketException ex = new WebSocketException(requestId, e);
             ex.attachData("InvalidIdentification", nol, SchemaYamcs.NamedObjectList.WRITE);
             throw ex;
@@ -143,20 +143,20 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                 }
             } catch (InvalidIdentification e) {
                 if (req.hasAbortOnInvalid() && req.getAbortOnInvalid()) {
-                    NamedObjectList nol = NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
+                    NamedObjectList nol = NamedObjectList.newBuilder().addAllList(e.getInvalidParameters()).build();
                     WebSocketException ex = new WebSocketException(requestId, e);
                     ex.attachData("InvalidIdentification", nol, SchemaYamcs.NamedObjectList.WRITE);
                     throw ex;
                 } else {
                     idList = new ArrayList<>(idList);
-                    idList.removeAll(e.invalidParameters);
+                    idList.removeAll(e.getInvalidParameters());
                     if (idList.isEmpty()) {
                         log.warn("Received subscribe attempt will all-invalid parameters");
                     } else {
                         log.warn("Received subscribe attempt with {} invalid parameters. Subscription will continue with {} remaining valids.",
-                                e.invalidParameters.size(), idList.size());
+                                e.getInvalidParameters().size(), idList.size());
                         if (log.isDebugEnabled()) {
-                            log.debug("The invalid IDs are: {}", StringConverter.idListToString(e.invalidParameters));
+                            log.debug("The invalid IDs are: {}", StringConverter.idListToString(e.getInvalidParameters()));
                         }
                         if(subscriptionId!=-1) {
                             pidrm.addItemsToRequest(subscriptionId, idList, authToken);
@@ -237,7 +237,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                 }
             } catch (InvalidIdentification e) {
                 if (cdefList.hasAbortOnInvalid() && cdefList.getAbortOnInvalid()) {
-                    NamedObjectList nol=NamedObjectList.newBuilder().addAllList(e.invalidParameters).build();
+                    NamedObjectList nol=NamedObjectList.newBuilder().addAllList(e.getInvalidParameters()).build();
                     WebSocketException ex = new WebSocketException(requestId, e);
                     ex.attachData("InvalidIdentification", nol, SchemaYamcs.NamedObjectList.WRITE);
                     throw ex;
@@ -250,7 +250,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                         ComputationDef computation = it.next();
                         boolean remove = false;
                         for (NamedObjectId argId : computation.getArgumentList()) {
-                            if (e.invalidParameters.contains(argId)) {
+                            if (e.getInvalidParameters().contains(argId)) {
                                 remove = true;
                                 break;
                             }

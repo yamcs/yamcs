@@ -13,7 +13,7 @@ import org.yamcs.security.Privilege;
 
 public class CommandQueue {
     String name;
-    private ConcurrentLinkedQueue<PreparedCommand> commands=new ConcurrentLinkedQueue<PreparedCommand>();
+    private ConcurrentLinkedQueue<PreparedCommand> commands = new ConcurrentLinkedQueue<>();
     QueueState defaultState=QueueState.BLOCKED;
     QueueState state=QueueState.BLOCKED;
     Processor processor;
@@ -55,7 +55,8 @@ public class CommandQueue {
 
     public String getName() {
         return name;
-    };
+    }
+    
     public QueueState getState() {
         return state;
     }

@@ -57,7 +57,9 @@ public abstract class RestReplayListener extends Service.Listener implements Par
     @Override
     public void update(int subscriptionId, List<ParameterValueWithId> params) {
         List<ParameterValueWithId> filteredData = filter(params);
-        if (filteredData == null) return;
+        if (filteredData == null) {
+            return;
+        }
         
         if (paginate) {
             if (rowNr >= pos) {
@@ -77,7 +79,9 @@ public abstract class RestReplayListener extends Service.Listener implements Par
     //fast path for one parameter only
     public void update(ParameterValueWithId pvwid) {
         pvwid = filter(pvwid);
-        if (pvwid == null) return;
+        if (pvwid == null) {
+            return;
+        }
         if (paginate) {
             if (rowNr >= pos) {
                 if (emitted < limit) {
@@ -106,10 +110,10 @@ public abstract class RestReplayListener extends Service.Listener implements Par
         return pvwid;
     }
     
-    protected void onParameterData(List<ParameterValueWithId> params){};
+    protected void onParameterData(List<ParameterValueWithId> params){}
     
-    protected void onParameterData(ParameterValueWithId pvwid){};
+    protected void onParameterData(ParameterValueWithId pvwid){}
     
-    public void replayFinished(){};
-    public void replayFailed(Throwable t){};
+    public void replayFinished(){}
+    public void replayFailed(Throwable t){}
 }

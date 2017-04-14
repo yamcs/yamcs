@@ -22,13 +22,11 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Algorithm;
-import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.NameReference;
 import org.yamcs.xtce.NameReference.Type;
-import org.yamcs.xtce.xml.XtceAliasSet;
 import org.yamcs.xtce.NonStandardData;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
@@ -118,13 +116,16 @@ public class XtceDbFactory {
             yamcsSs.setQualifiedName(XtceDb.YAMCS_SPACESYSTEM_NAME);
 
             rootSs.addSpaceSystem(yamcsSs);
-            //rootSs.setHeader(xss.getHeader());
 
             int n;
-            while((n=resolveReferences(rootSs, rootSs))>0 ){};
-            StringBuffer sb=new StringBuffer();
+            while((n=resolveReferences(rootSs, rootSs))>0 ){}
+            
+            
+            StringBuilder sb=new StringBuilder();
             collectUnresolvedReferences(rootSs, sb);
-            if(n==0) throw new ConfigurationException("Cannot resolve (circular?) references: "+ sb.toString());
+            if(n==0) {
+                throw new ConfigurationException("Cannot resolve (circular?) references: "+ sb.toString());
+            }
             setQualifiedNames(rootSs, "");
             db = new XtceDb(rootSs);
 
@@ -152,7 +153,7 @@ public class XtceDbFactory {
     }
 
     /*collects a description for all unresolved references into the StringBuffer to raise an error*/
-    private static void collectUnresolvedReferences(SpaceSystem ss, StringBuffer sb) {
+    private static void collectUnresolvedReferences(SpaceSystem ss, StringBuilder sb) {
         List<NameReference> refs = ss.getUnresolvedReferences();
         if(refs!=null) {
             for(NameReference nr: ss.getUnresolvedReferences()) {
@@ -175,7 +176,9 @@ public class XtceDbFactory {
         List<NameReference> refs = ss.getUnresolvedReferences();
 
         //This can happen when we deserialise the SpaceSystem since the unresolved references is a transient list.
-        if(refs==null) refs = Collections.emptyList();
+        if(refs==null) {
+            refs = Collections.emptyList();
+        }
 
         int n = (refs.size()==0)?-1:0;
 
@@ -194,7 +197,9 @@ public class XtceDbFactory {
                 String[] a = ssname.split("/");
                 SpaceSystem ss1 = rootSs;
                 for(String name:a) {
-                    if(name.isEmpty()) continue;
+                    if(name.isEmpty()) {
+                        continue;
+                    }
                     SpaceSystem ss2 = ss1.getSubsystem(name);
                     if(ss2 == null) {
                         ss2 = new SpaceSystem(name);
@@ -205,7 +210,9 @@ public class XtceDbFactory {
                 ss1.addParameter(sp);
                 nd = sp;
             } 
-            if(nd==null) throw new ConfigurationException("Cannot resolve reference SpaceSystem: "+ss.getName()+" "+nr);
+            if(nd==null) {
+                throw new ConfigurationException("Cannot resolve reference SpaceSystem: "+ss.getName()+" "+nr);
+            }
             if(nr.resolved(nd)) {
                 n++;
                 it.remove();
@@ -253,9 +260,10 @@ public class XtceDbFactory {
             startSs=ss;
             while(true) {
                 nd=findReference(startSs, nr);
-                if(nd!=null) break;
-                if(startSs==rootSs) break;
-                startSs=startSs.getParent();
+                if((nd!=null) || (startSs==rootSs)){
+                    break;
+                }
+                startSs = startSs.getParent();
             }
             return nd;
         }
@@ -276,11 +284,15 @@ public class XtceDbFactory {
                 continue;
             } else if("..".equals(path[i])) {
                 ss=ss.getParent();
-                if(ss==null) break; //this can only happen if the root has no parent (normally it's its own parent)
+                if(ss==null) {
+                    break; //this can only happen if the root has no parent (normally it's its own parent)
+                }
                 continue;
             }
 
-            if(i==path.length-1) break;
+            if(i==path.length-1) {
+                break;
+            }
 
             ss = ss.getSubsystem(path[i]);
 
@@ -320,7 +332,9 @@ public class XtceDbFactory {
         if (type.equals("xtce")) {
             l= new XtceLoader((String)args);
         } else if (type.equals("sheet")) {
-            if(args==null) throw new ConfigurationException("No argument specified for loading the XTCE spreadhseet in mdb.yaml section: "+m);
+            if(args==null) {
+                throw new ConfigurationException("No argument specified for loading the XTCE spreadhseet in mdb.yaml section: "+m);
+            }
             l=new SpreadsheetLoader((String)args);
         } else {
             // custom class
@@ -491,7 +505,9 @@ public class XtceDbFactory {
 
 
         void addChild(LoaderTree c) {
-            if(children==null) children=new ArrayList<LoaderTree>();
+            if(children==null) {
+                children=new ArrayList<LoaderTree>();
+            }
             children.add(c);
         }
 
