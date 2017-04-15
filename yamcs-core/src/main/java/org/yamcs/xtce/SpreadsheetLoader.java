@@ -54,125 +54,128 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     protected SpreadsheetLoadContext ctx = new SpreadsheetLoadContext();
 
     //sheet names
-    protected final static String SHEET_GENERAL = "General";
-    protected final static String SHEET_CHANGELOG = "ChangeLog";
+    protected static final String SHEET_GENERAL = "General";
+    protected static final String SHEET_CHANGELOG = "ChangeLog";
 
-    
-    protected final static String SHEET_CALIBRATION = "Calibration";
-    protected final static String SHEET_TELEMETERED_PARAMETERS = "Parameters";
-    protected final static String SHEET_LOCAL_PARAMETERS = "LocalParameters";
-    protected final static String SHEET_DERIVED_PARAMETERS = "DerivedParameters";
-    protected final static String SHEET_CONTAINERS = "Containers";
+    protected static final String SHEET_CALIBRATION = "Calibration";
+    protected static final String SHEET_TELEMETERED_PARAMETERS = "Parameters";
+    protected static final String SHEET_LOCAL_PARAMETERS = "LocalParameters";
+    protected static final String SHEET_DERIVED_PARAMETERS = "DerivedParameters";
+    protected static final String SHEET_CONTAINERS = "Containers";
 
-    protected final static String SHEET_ALGORITHMS = "Algorithms";
-    protected final static String SHEET_ALARMS = "Alarms";
-    protected final static String SHEET_COMMANDS = "Commands";
-    protected final static String SHEET_COMMANDOPTIONS = "CommandOptions";
-    protected final static String SHEET_COMMANDVERIFICATION = "CommandVerification";
+    protected static final String SHEET_ALGORITHMS = "Algorithms";
+    protected static final String SHEET_ALARMS = "Alarms";
+    protected static final String SHEET_COMMANDS = "Commands";
+    protected static final String SHEET_COMMANDOPTIONS = "CommandOptions";
+    protected static final String SHEET_COMMANDVERIFICATION = "CommandVerification";
     //the list of sheets that can be part of subsystems with a sub1/sub2/sub3/SheetName notation
     static String[] SUBSYSTEM_SHEET_NAMES = {SHEET_CALIBRATION, SHEET_TELEMETERED_PARAMETERS, SHEET_LOCAL_PARAMETERS, SHEET_DERIVED_PARAMETERS, 
             SHEET_CONTAINERS, SHEET_ALGORITHMS, SHEET_ALARMS, SHEET_COMMANDS, SHEET_COMMANDOPTIONS, SHEET_COMMANDVERIFICATION};
     
     //columns in the parameters sheet (including local parameters)
-    final static int IDX_PARAM_NAME = 0;
-    final static int IDX_PARAM_BITLENGTH = 1;
-    final static int IDX_PARAM_RAWTYPE = 2;
-    final static int IDX_PARAM_ENGTYPE = 3;
-    final static int IDX_PARAM_ENGUNIT = 4;
-    final static int IDX_PARAM_CALIBRATION = 5;
-    final static int IDX_PARAM_DESCRIPTION = 6;
+    static final int IDX_PARAM_NAME = 0;
+    static final int IDX_PARAM_BITLENGTH = 1;
+    static final int IDX_PARAM_RAWTYPE = 2;
+    static final int IDX_PARAM_ENGTYPE = 3;
+    static final int IDX_PARAM_ENGUNIT = 4;
+    static final int IDX_PARAM_CALIBRATION = 5;
+    static final int IDX_PARAM_DESCRIPTION = 6;
 
 
     //columns in the containers sheet
-    final static int IDX_CONT_NAME = 0;
-    final static int IDX_CONT_PARENT = 1;
-    final static int IDX_CONT_CONDITION = 2;
-    final static int IDX_CONT_FLAGS = 3;
-    final static int IDX_CONT_PARA_NAME = 4;
-    final static int IDX_CONT_RELPOS = 5;
-    final static int IDX_CONT_SIZEINBITS = 6;
-    final static int IDX_CONT_EXPECTED_INTERVAL = 7;
-    final static int IDX_CONT_DESCRIPTION = 8;
+    static final int IDX_CONT_NAME = 0;
+    static final int IDX_CONT_PARENT = 1;
+    static final int IDX_CONT_CONDITION = 2;
+    static final int IDX_CONT_FLAGS = 3;
+    static final int IDX_CONT_PARA_NAME = 4;
+    static final int IDX_CONT_RELPOS = 5;
+    static final int IDX_CONT_SIZEINBITS = 6;
+    static final int IDX_CONT_EXPECTED_INTERVAL = 7;
+    static final int IDX_CONT_DESCRIPTION = 8;
 
     //columns in calibrations sheet
-    final static int IDX_CALIB_NAME = 0;
-    final static int IDX_CALIB_TYPE = 1;
-    final static int IDX_CALIB_CALIB1 = 2;
-    final static int IDX_CALIB_CALIB2 = 3;
+    static final int IDX_CALIB_NAME = 0;
+    static final int IDX_CALIB_TYPE = 1;
+    static final int IDX_CALIB_CALIB1 = 2;
+    static final int IDX_CALIB_CALIB2 = 3;
 
     //columns in the algorithms sheet
-    final static int IDX_ALGO_NAME = 0;
-    final static int IDX_ALGO_LANGUGAGE = 1;
-    final static int IDX_ALGO_TEXT = 2;
-    final static int IDX_ALGO_TRIGGER = 3;
-    final static int IDX_ALGO_PARA_INOUT=4;
-    final static int IDX_ALGO_PARA_REF = 5;
-    final static int IDX_ALGO_PARA_INSTANCE = 6;
-    final static int IDX_ALGO_PARA_NAME = 7;
-    final static int IDX_ALGO_PARA_FLAGS = 8;
+    static final int IDX_ALGO_NAME = 0;
+    static final int IDX_ALGO_LANGUGAGE = 1;
+    static final int IDX_ALGO_TEXT = 2;
+    static final int IDX_ALGO_TRIGGER = 3;
+    static final int IDX_ALGO_PARA_INOUT=4;
+    static final int IDX_ALGO_PARA_REF = 5;
+    static final int IDX_ALGO_PARA_INSTANCE = 6;
+    static final int IDX_ALGO_PARA_NAME = 7;
+    static final int IDX_ALGO_PARA_FLAGS = 8;
 
     //columns in the alarms sheet
-    final static int IDX_ALARM_PARAM_NAME = 0;
-    final static int IDX_ALARM_CONTEXT = 1;
-    final static int IDX_ALARM_REPORT = 2;
-    final static int IDX_ALARM_MIN_VIOLATIONS = 3;
-    final static int IDX_ALARM_WATCH_TRIGGER = 4;
-    final static int IDX_ALARM_WATCH_VALUE = 5;
-    final static int IDX_ALARM_WARNING_TRIGGER = 6;
-    final static int IDX_ALARM_WARNING_VALUE = 7;
-    final static int IDX_ALARM_DISTRESS_TRIGGER = 8;
-    final static int IDX_ALARM_DISTRESS_VALUE = 9;
-    final static int IDX_ALARM_CRITICAL_TRIGGER = 10;
-    final static int IDX_ALARM_CRITICAL_VALUE = 11;
-    final static int IDX_ALARM_SEVERE_TRIGGER = 12;
-    final static int IDX_ALARM_SEVERE_VALUE = 13;
+    static final int IDX_ALARM_PARAM_NAME = 0;
+    static final int IDX_ALARM_CONTEXT = 1;
+    static final int IDX_ALARM_REPORT = 2;
+    static final int IDX_ALARM_MIN_VIOLATIONS = 3;
+    static final int IDX_ALARM_WATCH_TRIGGER = 4;
+    static final int IDX_ALARM_WATCH_VALUE = 5;
+    static final int IDX_ALARM_WARNING_TRIGGER = 6;
+    static final int IDX_ALARM_WARNING_VALUE = 7;
+    static final int IDX_ALARM_DISTRESS_TRIGGER = 8;
+    static final int IDX_ALARM_DISTRESS_VALUE = 9;
+    static final int IDX_ALARM_CRITICAL_TRIGGER = 10;
+    static final int IDX_ALARM_CRITICAL_VALUE = 11;
+    static final int IDX_ALARM_SEVERE_TRIGGER = 12;
+    static final int IDX_ALARM_SEVERE_VALUE = 13;
 
     //columns in the processed parameters sheet
-    protected final static int IDX_PP_UMI = 0;
-    protected final static int IDX_PP_GROUP = 1;
-    protected final static int IDX_PP_ALIAS = 2;
+    protected static final int IDX_PP_UMI = 0;
+    protected static final int IDX_PP_GROUP = 1;
+    protected static final int IDX_PP_ALIAS = 2;
 
     //columns in the command sheet
-    protected final static int IDX_CMD_NAME = 0;
-    protected final static int IDX_CMD_PARENT = 1;
-    protected final static int IDX_CMD_ARG_ASSIGNMENT = 2;
-    protected final static int IDX_CMD_FLAGS = 3;
-    protected final static int IDX_CMD_ARGNAME = 4;
-    protected final static int IDX_CMD_RELPOS = 5;
-    protected final static int IDX_CMD_SIZEINBITS = 6;
-    protected final static int IDX_CMD_ENGTYPE = 7;
-    protected final static int IDX_CMD_RAWTYPE = 8;
-    protected final static int IDX_CMD_DEFVALUE = 9;
-    protected final static int IDX_CMD_ENGUNIT = 10;
-    protected final static int IDX_CMD_CALIBRATION = 11;
-    protected final static int IDX_CMD_RANGELOW = 12;
-    protected final static int IDX_CMD_RANGEHIGH = 13;
-    protected final static int IDX_CMD_DESCRIPTION = 14;
+    protected static final int IDX_CMD_NAME = 0;
+    protected static final int IDX_CMD_PARENT = 1;
+    protected static final int IDX_CMD_ARG_ASSIGNMENT = 2;
+    protected static final int IDX_CMD_FLAGS = 3;
+    protected static final int IDX_CMD_ARGNAME = 4;
+    protected static final int IDX_CMD_RELPOS = 5;
+    protected static final int IDX_CMD_SIZEINBITS = 6;
+    protected static final int IDX_CMD_ENGTYPE = 7;
+    protected static final int IDX_CMD_RAWTYPE = 8;
+    protected static final int IDX_CMD_DEFVALUE = 9;
+    protected static final int IDX_CMD_ENGUNIT = 10;
+    protected static final int IDX_CMD_CALIBRATION = 11;
+    protected static final int IDX_CMD_RANGELOW = 12;
+    protected static final int IDX_CMD_RANGEHIGH = 13;
+    protected static final int IDX_CMD_DESCRIPTION = 14;
 
 
     //columns in the command options sheet
-    protected final static int IDX_CMDOPT_NAME = 0;
-    protected final static int IDX_CMDOPT_TXCONST = 1;
-    protected final static int IDX_CMDOPT_TXCONST_TIMEOUT = 2;
-    protected final static int IDX_CMDOPT_SIGNIFICANCE = 3;
-    protected final static int IDX_CMDOPT_SIGNIFICANCE_REASON = 4;
+    protected static final int IDX_CMDOPT_NAME = 0;
+    protected static final int IDX_CMDOPT_TXCONST = 1;
+    protected static final int IDX_CMDOPT_TXCONST_TIMEOUT = 2;
+    protected static final int IDX_CMDOPT_SIGNIFICANCE = 3;
+    protected static final int IDX_CMDOPT_SIGNIFICANCE_REASON = 4;
 
     //columns in the command verification sheet
-    protected final static int IDX_CMDVERIF_NAME = 0;
-    protected final static int IDX_CMDVERIF_STAGE = 1;
-    protected final static int IDX_CMDVERIF_TYPE = 2;
-    protected final static int IDX_CMDVERIF_TEXT = 3;
-    protected final static int IDX_CMDVERIF_CHECKWINDOW = 4;
-    protected final static int IDX_CMDVERIF_CHECKWINDOW_RELATIVETO = 5;
-    protected final static int IDX_CMDVERIF_ONSUCCESS = 6;
-    protected final static int IDX_CMDVERIF_ONFAIL = 7;
-    protected final static int IDX_CMDVERIF_ONTIMEOUT = 8;
+    protected static final int IDX_CMDVERIF_NAME = 0;
+    protected static final int IDX_CMDVERIF_STAGE = 1;
+    protected static final int IDX_CMDVERIF_TYPE = 2;
+    protected static final int IDX_CMDVERIF_TEXT = 3;
+    protected static final int IDX_CMDVERIF_CHECKWINDOW = 4;
+    protected static final int IDX_CMDVERIF_CHECKWINDOW_RELATIVETO = 5;
+    protected static final int IDX_CMDVERIF_ONSUCCESS = 6;
+    protected static final int IDX_CMDVERIF_ONFAIL = 7;
+    protected static final int IDX_CMDVERIF_ONTIMEOUT = 8;
 
     //columns in the changelog sheet
-    protected final static int IDX_LOG_VERSION = 0;
-    protected final static int IDX_LOG_DATE = 1;
-    protected final static int IDX_LOG_MESSAGE = 2;
+    protected static final int IDX_LOG_VERSION = 0;
+    protected static final int IDX_LOG_DATE = 1;
+    protected static final int IDX_LOG_MESSAGE = 2;
 
+    protected static final String CALIB_TYPE_ENUMERATION = "enumeration";
+    protected static final String CALIB_TYPE_POLYNOMIAL = "polynomial";
+    protected static final String CALIB_TYPE_SPLINE = "spline";
+    
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
     final static String FORMAT_VERSION="5.4";
     // Explicitly support these versions (i.e. load without warning)
@@ -369,42 +372,40 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             if ("pointpair".equalsIgnoreCase(type)) {
                 type = "spline";
             }
-            if ("enumeration".equalsIgnoreCase(type)) {
+            if (CALIB_TYPE_ENUMERATION.equalsIgnoreCase(type)) {
                 enumeration = new EnumerationDefinition();
-            } else if ("polynomial".equalsIgnoreCase(type)) {
+            } else if (CALIB_TYPE_POLYNOMIAL.equalsIgnoreCase(type)) {
                 pol_coef = new double[end - start];
-            } else if ("spline".equalsIgnoreCase(type)) {
-                spline = new ArrayList<SplinePoint>();
+            } else if (CALIB_TYPE_SPLINE.equalsIgnoreCase(type)) {
+                spline = new ArrayList<>();
             } else {
                 throw new SpreadsheetLoadException(ctx, "Calibration type '"+type+"' not supported. Supported types: enumeration, polynomial and spline(alias pointpair)");
             }
 
             for (int j = start; j < end; j++) {
                 cells = jumpToRow(sheet, j);
-                if ("enumeration".equalsIgnoreCase(type)) {
+                if (CALIB_TYPE_ENUMERATION.equalsIgnoreCase(type)) {
                     try {
                         long raw=Integer.decode(cells[IDX_CALIB_CALIB1].getContents());
                         enumeration.valueMap.put(raw, cells[IDX_CALIB_CALIB2].getContents());
                     } catch(NumberFormatException e) {
                         throw new SpreadsheetLoadException(ctx, "Can't get integer from raw value out of '"+cells[IDX_CALIB_CALIB1].getContents()+"'");
                     }
-                } else if ("polynomial".equalsIgnoreCase(type)) {
+                } else if (CALIB_TYPE_POLYNOMIAL.equalsIgnoreCase(type)) {
                     pol_coef[j - start] = getNumber(cells[IDX_CALIB_CALIB1]);
-                } else if ("spline".equalsIgnoreCase(type)) {
+                } else if (CALIB_TYPE_SPLINE.equalsIgnoreCase(type)) {
                     spline.add(new SplinePoint(getNumber(cells[IDX_CALIB_CALIB1]), getNumber(cells[IDX_CALIB_CALIB2])));
                 }
             }
-            if ("enumeration".equalsIgnoreCase(type)) {
+            if (CALIB_TYPE_ENUMERATION.equalsIgnoreCase(type)) {
                 enumerations.put(name, enumeration);
-            } else if ("polynomial".equalsIgnoreCase(type)) {
+            } else if (CALIB_TYPE_POLYNOMIAL.equalsIgnoreCase(type)) {
                 calibrators.put(name, new PolynomialCalibrator(pol_coef));
-            } else if ("spline".equalsIgnoreCase(type)) {
+            } else if (CALIB_TYPE_SPLINE.equalsIgnoreCase(type)) {
                 calibrators.put(name, new SplineCalibrator(spline));
             }
             start = end;
         }
-        //System.out.println("enumerations: " + enumerations + "\n");
-        //System.out.println("calibrators: " + calibrators + "\n");
     }
 
     private double getNumber(Cell cell) {
@@ -714,12 +715,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             param.setParameterType(ptype);
             param.setDataSource(dataSource);
         }
-
-        /*		System.out.println("got parameters:");
-		for (Parameter p: parameters.values()) {
-			System.out.println(p);
-		}
-         */	}
+    }
 
     /**
      * Searches firstRow for all cells that start with "namespace:" and adds corresponding aliases
