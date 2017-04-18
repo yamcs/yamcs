@@ -1,6 +1,5 @@
-Version 3.2.0 Released 
-- Improved the yamcs command line to make it easier to add new sub-commands 
-- Added a new yamcs xtcedb print command that replaces the old print-mdb.sh script
+Version 3.2.0 Released 18-Apr-2018
+- Improved the yamcs command line with several new sub-commands (xtcedb, parchive)
 - Removed Artemis based replays and management (control processors)
 - Added a new yatch(table/stream) data type PARAMETER_VALUE to replace PROTOBUF(ParameterValue) for more flexibility
 
