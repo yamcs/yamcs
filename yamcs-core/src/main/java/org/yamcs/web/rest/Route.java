@@ -7,6 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.yamcs.web.HttpRequestHandler;
+import org.yamcs.web.rest.Router.RouteMatch;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
@@ -49,9 +50,9 @@ public @interface Route {
     /**
      * Data load routes expect to receive a large body and they receive it piece by piece in HttpContent objects.
      * 
-     * See {@link org.yamcs.web.rest.archive.ArchiveTableRestHandler#loadTableData(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.HttpRequest)} for an example on how to implement this.
+     * See {@link org.yamcs.web.rest.archive.ArchiveTableRestHandler#loadTableData(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.HttpRequest, RouteMatch)} for an example on how to implement this.
      * 
-     * For the normal routes (where dataLoad=false) the body is limited to {@link HttpRequestHandler#MAX_BODY_SIZE} bytes provided to the HttpObjectAgregator.  
+     * For the normal routes (where dataLoad=false) the body is limited to {@link Router#MAX_BODY_SIZE} bytes provided to the HttpObjectAgregator.  
      * 
      */
     boolean dataLoad() default false;

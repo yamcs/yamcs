@@ -57,7 +57,7 @@ public class ColumnSerializerFactory {
     
     /**
      * returns a column serializer for basic types
-     * @param cd
+     * @param type
      * @return
      */
     @SuppressWarnings("incomplete-switch")

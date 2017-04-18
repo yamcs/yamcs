@@ -23,7 +23,7 @@ public interface EventProducer {
      * Two events are considered equal if their source, type, severity and message are equal. The sequence count and timestamp do not need to be equal.
      * 
      * The event sent in case the timeout is expired is a copy of the last event except that the message is replaced with 
-     *   "Repeated <x> times: <original message>" 
+     *   "Repeated x times: original message" 
      * 
      * @param repeatedEventReduction if true - enable the reduction of events.
      * @param repeatedEventTimeoutMillisec - how long to keep quiet in case of equal events being sent

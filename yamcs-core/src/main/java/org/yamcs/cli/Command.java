@@ -21,9 +21,8 @@ import com.beust.jcommander.internal.Console;
 /**
  * This represents a command together with its options and subcommands 
  * 
- *     yamcs <options> subcmd <options> subcmd <options>...
- * 
- * 
+ *     yamcs &lt;options&gt; subcmd &lt;options&gt; subcmd &lt;options&gt;...
+ *     
  */
 public abstract class Command {
     static protected Console console = JCommander.getConsole();

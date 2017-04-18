@@ -439,7 +439,7 @@ public class YamcsClient {
      *      
      * @param hornetAddress
      * @param msg
-     * @throws ActiveMQException
+     * @throws YamcsApiException
      */
     public synchronized void sendData(SimpleString hornetAddress, ClientMessage msg) throws YamcsApiException {
         synchronized(yamcsSession) {
