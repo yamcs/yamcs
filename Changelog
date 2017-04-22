@@ -1,3 +1,6 @@
+Version 3.2.1 Released
+- Added an option to yamcs rocksdb compact to specify the target file size and changed the default size from 64MB to 256MB
+
 Version 3.2.0 Released 18-Apr-2018
 - Improved the yamcs command line with several new sub-commands (xtcedb, parchive)
 - Removed Artemis based replays and management (control processors)
