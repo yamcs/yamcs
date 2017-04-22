@@ -3,6 +3,7 @@ package org.yamcs.cli;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.rocksdb.BlockBasedTableConfig;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
@@ -43,6 +44,9 @@ public class RocksDbCli extends Command {
         @Parameter(names="--dbDir", description="database directory", required=true)
         String dbDir;
 
+        @Parameter(names="--sizeMB", description="target size of each SST files in MB (by default 256 MB)", required=false)
+        int sizeMB = 256;
+
         public RocksdbCompact() {
             super("compact", RocksDbCli.this);
         }
@@ -51,14 +55,14 @@ public class RocksDbCli extends Command {
         void execute() throws Exception {
             Options opt = new Options();
             List<byte[]> cfl = RocksDB.listColumnFamilies(opt, dbDir);
-            List<ColumnFamilyDescriptor> cfdList = new ArrayList<ColumnFamilyDescriptor>(cfl.size());
+            List<ColumnFamilyDescriptor> cfdList = new ArrayList<>(cfl.size());
             ColumnFamilyOptions cfoptions = new ColumnFamilyOptions();
             cfoptions.setCompactionStyle(CompactionStyle.UNIVERSAL);
-
+            cfoptions.setTargetFileSizeBase(1024*1024*sizeMB);
             for(byte[] b: cfl) {
                 cfdList.add(new ColumnFamilyDescriptor(b, cfoptions));                                      
             }
-            List<ColumnFamilyHandle> cfhList = new ArrayList<ColumnFamilyHandle>(cfl.size());
+            List<ColumnFamilyHandle> cfhList = new ArrayList<>(cfl.size());
             DBOptions dbOptions = new DBOptions();
 
             RocksDB db = RocksDB.open(dbOptions, dbDir, cfdList, cfhList);
