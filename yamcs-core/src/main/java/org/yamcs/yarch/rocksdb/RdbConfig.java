@@ -140,7 +140,9 @@ public class RdbConfig {
             options.setCreateIfMissing(true);
             if(m.containsKey("maxOpenFiles")) {
                 int maxOpenFiles = YConfiguration.getInt(m, "maxOpenFiles");
-                if(maxOpenFiles<20) throw new ConfigurationException("Exception when reading table configuration for '"+tableNamePattern+"': maxOpenFiles has to be at least 20");
+                if(maxOpenFiles<20) {
+                    throw new ConfigurationException("Exception when reading table configuration for '"+tableNamePattern+"': maxOpenFiles has to be at least 20");
+                }
                 options.setMaxOpenFiles(maxOpenFiles);
                 dboptions.setMaxOpenFiles(maxOpenFiles);
             }

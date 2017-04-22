@@ -2,7 +2,6 @@ package org.yamcs.security;
 
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
-import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -54,15 +53,15 @@ public class BasicAuthModule implements AuthModule {
     
     private Realm loadRealm(String realmClass) throws ConfigurationException {
         // load the specified class;
-        Realm realm;
+        Realm r;
         try {
-            realm = (Realm) Realm.class.getClassLoader()
+            r = (Realm) Realm.class.getClassLoader()
                     .loadClass(realmClass).newInstance();
             realmName = realm.getClass().getSimpleName();
         } catch (Exception e) {
             throw new ConfigurationException("Unable to load the realm class: " + realmClass, e);
         }
-        return realm;
+        return r;
     }
     
     /**
