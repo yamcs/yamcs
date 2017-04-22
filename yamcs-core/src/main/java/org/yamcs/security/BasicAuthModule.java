@@ -57,7 +57,7 @@ public class BasicAuthModule implements AuthModule {
         try {
             r = (Realm) Realm.class.getClassLoader()
                     .loadClass(realmClass).newInstance();
-            realmName = realm.getClass().getSimpleName();
+            realmName = r.getClass().getSimpleName();
         } catch (Exception e) {
             throw new ConfigurationException("Unable to load the realm class: " + realmClass, e);
         }
