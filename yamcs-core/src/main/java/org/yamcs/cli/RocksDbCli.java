@@ -3,7 +3,6 @@ package org.yamcs.cli;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.rocksdb.BlockBasedTableConfig;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
@@ -58,7 +57,7 @@ public class RocksDbCli extends Command {
             List<ColumnFamilyDescriptor> cfdList = new ArrayList<>(cfl.size());
             ColumnFamilyOptions cfoptions = new ColumnFamilyOptions();
             cfoptions.setCompactionStyle(CompactionStyle.UNIVERSAL);
-            cfoptions.setTargetFileSizeBase(1024*1024*sizeMB);
+            cfoptions.setTargetFileSizeBase(1024L*1024*sizeMB);
             for(byte[] b: cfl) {
                 cfdList.add(new ColumnFamilyDescriptor(b, cfoptions));                                      
             }

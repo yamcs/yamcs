@@ -6,7 +6,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.yamcs.web.HttpRequestHandler;
 import org.yamcs.web.rest.Router.RouteMatch;
 
 @Target(ElementType.METHOD)
