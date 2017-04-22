@@ -9,12 +9,14 @@ enabled: false
 # The name of the default user when privileges are not enabled
 defaultUser: admin
 
-#one of: LdapRealm, YamlRealm
-realm: org.yamcs.security.YamlRealm
+authModule:
+    class: org.yamcs.security.BasicAuthModule
+    #one of: LdapRealm, YamlRealm
+    config:
+        realm: org.yamcs.security.YamlRealm
 
-#maximum number of CIS sessions clients are allowed
-maxNoSessions: 10
 
+#ldap configuration of LDapRealm is specified above 
 ldaphost:        host
 userPath:        "ou=People,o=usoc"
 rolePath:        "ou=Roles, ou=Operation, ou=Columbus,ou=Projects,o=usoc"
