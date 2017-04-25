@@ -43,8 +43,8 @@ public abstract class CompilableAggregateExpression extends AggregateExpression 
 
         try {
             SimpleCompiler compiler=new SimpleCompiler();
-            compiler.cook(new StringReader(code.toString()));
-            Class cexprClass = compiler.getClassLoader().loadClass("org.yamcs.yarch."+className);
+            compiler.cook(code.toString());
+            Class<?> cexprClass = compiler.getClassLoader().loadClass("org.yamcs.yarch."+className);
             return (CompiledAggregateExpression) cexprClass.newInstance();
         } catch (Exception e) {
             throw new StreamSqlException(ErrCode.COMPILE_ERROR, e.toString()); 

@@ -10,7 +10,7 @@ import org.yamcs.xtce.PolynomialCalibrator;
  * The first coefficient belongs with the X^0 term, the next coefficient belongs to the X^1 term and so on.
  *
  */
-public class PolynomialCalibratorProc extends CalibratorProc {
+public class PolynomialCalibratorProc implements CalibratorProc {
     private static final long serialVersionUID = 200706050619L;
     final double[] coefficients;
     
@@ -19,7 +19,7 @@ public class PolynomialCalibratorProc extends CalibratorProc {
     }
     
     @Override
-    public Double calibrate(double d) {
+    public double calibrate(double d) {
         double val=0;
         for(int i=coefficients.length-1; i>=0; i--) {
             val=d*val+coefficients[i];

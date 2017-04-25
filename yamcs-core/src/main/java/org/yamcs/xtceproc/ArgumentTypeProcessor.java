@@ -85,7 +85,7 @@ public class ArgumentTypeProcessor {
         CalibratorProc calibrator = pdata.getDecalibrator(ipt.getEncoding());
 
         Value raw;
-        long longDecalValue = (calibrator == null) ? v:calibrator.calibrate(v).longValue(); 
+        long longDecalValue = (calibrator == null) ? v : (long)calibrator.calibrate(v); 
 
         if (ipt.getSizeInBits() <= 32) {
             if (ipt.isSigned()) {

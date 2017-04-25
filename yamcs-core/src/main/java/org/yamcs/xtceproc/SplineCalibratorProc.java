@@ -11,7 +11,7 @@ import org.yamcs.xtce.SplinePoint;
  * The algorithm triggers on the input parameter.
  *
  */
-public class SplineCalibratorProc extends CalibratorProc {
+public class SplineCalibratorProc implements CalibratorProc {
     private static final long serialVersionUID = 200706050819L;
     SplinePoint[] points;
 
@@ -19,7 +19,7 @@ public class SplineCalibratorProc extends CalibratorProc {
         this.points = c.getPoints();
     }
     @Override
-    public Double calibrate(double d) {
+    public double calibrate(double d) {
         double val;
 
         int i=0, j=0;

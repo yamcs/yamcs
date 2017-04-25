@@ -39,6 +39,9 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public final int pkt1_9Length=pkt1Length+1;
     public final int pkt1_10Length=pkt1Length+8;
     public final int pkt1_11Length=pkt1Length+4;
+    
+    public final int pkt4Length=headerLength+4;
+  
     public final int pkt2Length=8;
     public final int pkt1_ListLength=pkt1Length;
     public final int pkt1_AndLength=pkt1Length;
@@ -63,6 +66,8 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public volatile long pIntegerPara1_1_8=5084265585L;
     public volatile int pIntegerPara1_11_1=0xAFFFFFFE; // a uint32 stored in signed java int
     public volatile long pIntegerPara1_11_1_unsigned_value=2952790014L; // the equivalent unsigned value
+    public volatile float pFloatPara1_20_1 = (float)(Math.PI/2);
+    
 
     public volatile byte pLEIntegerPara1_2_1 = 13;
     public volatile short pLEIntegerPara1_2_2 = 1300;
@@ -156,14 +161,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         sendToTmProcessor(bb);
         return bb;
     }
-
-    public ByteBuffer generate_PKT2() {
-        ByteBuffer bb=ByteBuffer.allocate(pkt2Length);
-        fill_PKT2(bb);
-        sendToTmProcessor(bb);
-        return bb;
-    }
-
+    
     /**
      * Generate a packet with configurable content
      */
@@ -220,6 +218,21 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public ByteBuffer generate_PKT1_12() {
         ByteBuffer bb=ByteBuffer.allocate(pkt1Length + pStringEnumPara1_12_1.length()+1);
         fill_PKT1_12(bb);
+        sendToTmProcessor(bb);
+        return bb;
+    }
+
+
+    public ByteBuffer generate_PKT4() {
+        ByteBuffer bb=ByteBuffer.allocate(pkt4Length);
+        fill_PKT4(bb);
+        sendToTmProcessor(bb);
+        return bb;
+    }
+
+    public ByteBuffer generate_PKT2() {
+        ByteBuffer bb=ByteBuffer.allocate(pkt2Length);
+        fill_PKT2(bb);
         sendToTmProcessor(bb);
         return bb;
     }
@@ -451,6 +464,13 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         // Straight string is null terminated
         putTerminatedStringParam(bb, pStringIntStrPara1_5_5, (byte)0);
     }
+
+    private void fill_PKT4(ByteBuffer bb) {
+        fill_CcsdsHeader(bb, 995, 4);
+        bb.position(headerLength);
+        bb.putFloat(pFloatPara1_20_1);
+    }
+
 
     private void fill_PKT2(ByteBuffer bb) {
         bb.position(4);

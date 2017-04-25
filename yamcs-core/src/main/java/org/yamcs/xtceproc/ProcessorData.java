@@ -7,6 +7,7 @@ import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
+import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.SplineCalibrator;
 
@@ -64,6 +65,8 @@ public class ProcessorData {
             return new PolynomialCalibratorProc((PolynomialCalibrator) c);
         } else if(c instanceof SplineCalibrator) {
             return new SplineCalibratorProc((SplineCalibrator) c);
+        } else if(c instanceof JavaExpressionCalibrator) {
+            return JavaExpressionCalibratorFactory.compile((JavaExpressionCalibrator) c);
         }  else {
             throw new IllegalStateException("No calibrator processor for "+c);
         }

@@ -8,11 +8,8 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.BooleanParameterType;
-import org.yamcs.xtce.Calibrator;
-import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.IntegerParameterType;
@@ -156,7 +153,7 @@ public class ParameterTypeProcessor {
     private void doIntegerCalibration(IntegerParameterType ipt, ParameterValue pval, long longValue) {
         CalibratorProc calibrator = pcontext.getCalibrator(ipt.getEncoding());
 
-        long longCalValue = (calibrator == null) ? longValue:calibrator.calibrate(longValue).longValue();
+        long longCalValue = (calibrator == null) ? longValue: (long)calibrator.calibrate(longValue);
 
         if (ipt.getSizeInBits() <= 32) {
             if (ipt.isSigned())

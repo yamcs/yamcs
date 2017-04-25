@@ -603,7 +603,26 @@ public class XtceTmExtractorTest {
         assertEquals(received.size(), 6);
     }
 
+    @Test
+    public void testPKT4_JavaAlgo() throws ConfigurationException {
+        RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
 
+        XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
+        tmExtractor.startProvidingAll();
+        
+        ByteBuffer bb=tmGenerator.generate_PKT4();
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        
+        ParameterValueList received = tmExtractor.getParameterResult();
+        assertEquals(4, received.size() );
+
+        ParameterValue pv2 = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/FloatPara4_1"));
+        assertNotNull(pv2);
+        
+        assertEquals(3.0, pv2.getEngValue().getFloatValue(), 1e-2);
+
+    
+    }
     private String byteBufferToHexString(ByteBuffer bb) {
         bb.mark();
         StringBuilder sb =new StringBuilder();
@@ -615,4 +634,6 @@ public class XtceTmExtractorTest {
         bb.reset();
         return sb.toString();
     }
+    
+    
 }
