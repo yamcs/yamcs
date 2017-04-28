@@ -69,7 +69,6 @@ public class MultiParameterDataRetrieval {
                 its[i] = null;
             }
         }
-        System.out.println("here queue: "+queue.size());
 
         try {
             while(!queue.isEmpty()) {
