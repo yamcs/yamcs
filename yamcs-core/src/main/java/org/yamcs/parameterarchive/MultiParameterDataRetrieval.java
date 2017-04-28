@@ -51,7 +51,6 @@ public class MultiParameterDataRetrieval {
     }
 
     private void retrieveFromPartition(Partition p, Consumer<ParameterIdValueList> consumer) throws RocksDBException, DecodingException {
-
         RocksIterator[] its = new RocksIterator[mpvr.parameterIds.length];
         Map<PartitionIterator, String> partition2ParameterName = new HashMap<>();
         PriorityQueue<PartitionIterator> queue = new PriorityQueue<PartitionIterator>(new PartitionIteratorComparator(mpvr.ascending));
@@ -65,12 +64,18 @@ public class MultiParameterDataRetrieval {
             if(pi.isValid()) {
                 queue.add(pi);
                 partition2ParameterName.put(pi, mpvr.parameterNames[i]);
+            } else {
+                its[i].close();
+                its[i] = null;
             }
-        } 
+        }
+        System.out.println("here queue: "+queue.size());
 
         try {
             while(!queue.isEmpty()) {
-                if((mpvr.limit>0) && (count>=mpvr.limit)) break;
+                if((mpvr.limit>0) && (count>=mpvr.limit)) {
+                    break;
+                }
 
                 PartitionIterator pit = queue.poll();
                 SegmentKey key = pit.key();
@@ -134,7 +139,9 @@ public class MultiParameterDataRetrieval {
 
         } finally {
             for(int i =0 ; i<mpvr.parameterIds.length; i++) {
-                its[i].close();
+                if(its[i]!=null) {
+                    its[i].close();
+                }
             }
         }
     }

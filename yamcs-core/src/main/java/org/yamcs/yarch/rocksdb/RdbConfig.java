@@ -24,14 +24,14 @@ import org.yamcs.YConfiguration;
  */
 public class RdbConfig {
     static private RdbConfig instance = new RdbConfig();
-    public static final String KEY_rdbConfig = "rdbConfig";
-    public static final String KEY_tableConfig = "tableConfig";
-    public static final String KEY_cfOptions = "columnFamilyOptions";
-    public static final String KEY_tableNamePattern = "tableNamePattern";
-    public static final String KEY_tfConfig = "tableFormatConfig";
+    public static final String KEY_RDB_CONFIG = "rdbConfig";
+    public static final String KEY_TABLE_CONFIG = "tableConfig";
+    public static final String KEY_CF_OPTIONS = "columnFamilyOptions";
+    public static final String KEY_TABLE_NAME_PATTERN = "tableNamePattern";
+    public static final String KEY_TF_CONFIG = "tableFormatConfig";
 
     
-    private List<TableConfig> tblConfigList = new ArrayList<TableConfig>();
+    private List<TableConfig> tblConfigList = new ArrayList<>();
     final Env env;
     final ColumnFamilyOptions defaultColumnFamilyOptions;
     final Options defaultOptions;
@@ -48,10 +48,10 @@ public class RdbConfig {
     @SuppressWarnings("unchecked")
     private RdbConfig() {
         YConfiguration config = YConfiguration.getConfiguration("yamcs");
-        if(config.containsKey(KEY_rdbConfig)) {
-            Map<String, Object> rdbOptions = config.getMap(KEY_rdbConfig);
-            if(rdbOptions.containsKey(KEY_tableConfig)) {
-                List<Object> tableConfigs = YConfiguration.getList(rdbOptions, KEY_tableConfig);
+        if(config.containsKey(KEY_RDB_CONFIG)) {
+            Map<String, Object> rdbOptions = config.getMap(KEY_RDB_CONFIG);
+            if(rdbOptions.containsKey(KEY_TABLE_CONFIG)) {
+                List<Object> tableConfigs = YConfiguration.getList(rdbOptions, KEY_TABLE_CONFIG);
                 for(Object o: tableConfigs) {
                     if(!(o instanceof Map)) {
                         throw new ConfigurationException("Error in rdbConfig -> tableConfig in yamcs.yaml: the entries of tableConfig have to be maps");
@@ -131,7 +131,7 @@ public class RdbConfig {
         long targetFileSizeBase;
         
         TableConfig(Map<String, Object> m) throws ConfigurationException {
-            String s = YConfiguration.getString(m, KEY_tableNamePattern);
+            String s = YConfiguration.getString(m, KEY_TABLE_NAME_PATTERN);
             try {
                 tableNamePattern = Pattern.compile(s);
             } catch (PatternSyntaxException e) {
@@ -146,8 +146,8 @@ public class RdbConfig {
                 options.setMaxOpenFiles(maxOpenFiles);
                 dboptions.setMaxOpenFiles(maxOpenFiles);
             }
-            if(m.containsKey(KEY_cfOptions)) {
-                Map<String, Object> cm = YConfiguration.getMap(m, KEY_cfOptions);
+            if(m.containsKey(KEY_CF_OPTIONS)) {
+                Map<String, Object> cm = YConfiguration.getMap(m, KEY_CF_OPTIONS);
                 if(cm.containsKey("targetFileSizeBase")) {
                     cfOptions.setTargetFileSizeBase(1024 * YConfiguration.getLong(cm, "targetFileSizeBase"));
                     options.setTargetFileSizeBase(1024 * YConfiguration.getLong(cm, "targetFileSizeBase"));
@@ -177,8 +177,8 @@ public class RdbConfig {
                     options.setMinWriteBufferNumberToMerge(YConfiguration.getInt(cm, "minWriteBufferNumberToMerge"));
                 }
                 
-                if(m.containsKey(KEY_tfConfig)) {
-                    Map<String, Object> tfc = YConfiguration.getMap(m, KEY_tfConfig);
+                if(m.containsKey(KEY_TF_CONFIG)) {
+                    Map<String, Object> tfc = YConfiguration.getMap(m, KEY_TF_CONFIG);
                     BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
                     if(tfc.containsKey("blockSize")) {
                         tableFormatConfig.setBlockSize(1024L*YConfiguration.getLong(tfc, "blockSize"));
