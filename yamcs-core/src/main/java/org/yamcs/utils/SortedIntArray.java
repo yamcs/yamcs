@@ -58,7 +58,9 @@ public class SortedIntArray implements Serializable {
      */
     public int insert(int x) {
         int pos = Arrays.binarySearch(a, 0, length, x);
-        if( pos<0 ) pos = -pos-1;
+        if( pos<0 ) {
+            pos = -pos-1;
+        }
 
         ensureCapacity(length+1);
         
@@ -85,17 +87,23 @@ public class SortedIntArray implements Serializable {
      * @return the element at position
      */
     public int get(int pos) {
-        if(pos >= length) throw new IndexOutOfBoundsException("Index: "+pos+" length: "+length);
+        if(pos >= length) {
+            throw new IndexOutOfBoundsException("Index: "+pos+" length: "+length);
+        }
         
         return a[pos];
     }
     
     private void ensureCapacity(int minCapacity) {
-        if(minCapacity<=a.length) return;
+        if(minCapacity<=a.length) {
+            return;
+        }
 
         int capacity = a.length;
         int newCapacity = capacity + (capacity >> 1);
-        if(newCapacity<minCapacity) newCapacity = minCapacity;
+        if(newCapacity<minCapacity) {
+            newCapacity = minCapacity;
+        }
         
         a = Arrays.copyOf(a, newCapacity);
     }
@@ -106,8 +114,9 @@ public class SortedIntArray implements Serializable {
     }
 
     public int[] getArray() {
-        return a;
+        return Arrays.copyOf(a, length);
     }
+    
     public int size() {
         return length;
     }
@@ -212,7 +221,9 @@ public class SortedIntArray implements Serializable {
     public byte[] encodeToVarIntArray() {
         byte[] buf = new byte[length*4];
         
-        if(length==0) return buf;
+        if(length==0) {
+            return buf;
+        }
         
         int pos = VarIntUtil.writeVarint32(buf, 0, a[0]);
         
@@ -228,7 +239,9 @@ public class SortedIntArray implements Serializable {
     }
     
     public static SortedIntArray decodeFromVarIntArray(byte[] buf) {
-        if(buf.length==0) return new SortedIntArray(0);
+        if(buf.length==0) {
+            return new SortedIntArray(0);
+        }
         SortedIntArray sia = new SortedIntArray();
         
         VarIntUtil.ArrayDecoder ad = VarIntUtil.newArrayDecoder(buf);
@@ -242,7 +255,9 @@ public class SortedIntArray implements Serializable {
     
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
+        if (this == obj) {
+            return true;
+        }
         
         if (obj == null) return false;
         

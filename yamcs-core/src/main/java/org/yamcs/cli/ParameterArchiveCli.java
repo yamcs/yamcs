@@ -4,7 +4,10 @@ import java.util.HashMap;
 
 import org.rocksdb.RocksDB;
 import org.yamcs.parameterarchive.ParameterArchive;
+import org.yamcs.parameterarchive.ParameterGroupIdDb;
 import org.yamcs.parameterarchive.ParameterIdDb;
+import org.yamcs.parameterarchive.ParameterIdDb.ParameterId;
+import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
 
 import com.beust.jcommander.Parameter;
@@ -25,13 +28,14 @@ public class ParameterArchiveCli extends Command {
     
     public ParameterArchiveCli(YamcsCli yamcsCli) {
         super("parchive", yamcsCli);
-        addSubCommand(new PrintMetadata());
+        addSubCommand(new PrintPid());
+        addSubCommand(new PrintPgid());
         TimeEncoding.setUp();
     }
     
     @Parameters(commandDescription = "Print parameter name to parameter id mapping")
-    class PrintMetadata extends Command {
-        PrintMetadata() {
+    class PrintPid extends Command {
+        PrintPid() {
             super("print-pid", ParameterArchiveCli.this);
         }
         
@@ -41,6 +45,41 @@ public class ParameterArchiveCli extends Command {
             ParameterArchive parchive = new ParameterArchive(yamcsInstance, new HashMap<String, Object>());
             ParameterIdDb pid = parchive.getParameterIdDb();
             pid.print(System.out);
+        }
+    }
+    
+    @Parameters(commandDescription = "Print parameter group compositions")
+    class PrintPgid extends Command {
+        @Parameter(names="--name", description="fully qualified name of the parameter", required=true)
+        String name;
+            
+        PrintPgid() {
+            super("print-pgid", ParameterArchiveCli.this);
+        }
+        
+        @Override
+        public void execute() throws Exception {
+            RocksDB.loadLibrary();
+            ParameterArchive parchive = new ParameterArchive(yamcsInstance, new HashMap<String, Object>());
+            ParameterIdDb pid = parchive.getParameterIdDb();
+            ParameterGroupIdDb pgid = parchive.getParameterGroupIdDb();
+            ParameterId[] pids = pid.get(name);
+            if(pids==null) {
+                console.println("No parameter named '"+name+"' in the parameter archive");
+                return;
+            }
+            for(ParameterId p: pids) {
+                console.println("groups for "+p+": ");
+                int[] groups = pgid.getAllGroups(p.pid);
+                for(int g: groups) {
+                    console.print(g+": ");
+                    SortedIntArray sia = pgid.getParameterGroup(g);
+                    for(int a:sia.getArray()) {
+                        console.print(pid.getParameterbyId(a)+ " ");
+                    }
+                   console.println("");
+                }
+            }
         }
     }
 }

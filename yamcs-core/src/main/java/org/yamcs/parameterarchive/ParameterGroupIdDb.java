@@ -92,7 +92,15 @@ public class ParameterGroupIdDb {
         }
     }
 
-
+   
+    public SortedIntArray getParameterGroup(int pg) {
+        for (Map.Entry<SortedIntArray, Integer> e: pg2pgidCache.entrySet()) {
+            if(e.getValue()==pg) {
+                return e.getKey();
+            }
+        }
+        throw new IllegalArgumentException("No parameter group with the id "+pg);
+    }
     @Override
     public String toString() {
         return pg2pgidCache.toString();
