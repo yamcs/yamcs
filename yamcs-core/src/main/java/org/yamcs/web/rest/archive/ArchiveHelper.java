@@ -112,7 +112,12 @@ public final class ArchiveHelper {
                 v.setType(Type.STRING);
                 v.setStringValue((String) column);
                 break;
+            case PARAMETER_VALUE:
+                org.yamcs.parameter.ParameterValue pv = (org.yamcs.parameter.ParameterValue)column;
+                v = ValueUtility.toGbp(pv.getEngValue()).toBuilder();
+                break;
             case PROTOBUF:
+           
                 // Perhaps we could be a bit smarter here. Proto3 will have an
                 // any-type
                 // String messageClassname = protoType.substring(9,

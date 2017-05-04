@@ -73,13 +73,21 @@ public class ArchiveDownloadRestHandler extends RestHandler {
 
         // First try from body
         BulkDownloadParameterValueRequest request = req.bodyAsMessage(SchemaRest.BulkDownloadParameterValueRequest.MERGE).build();
-        if (request.hasStart()) rr.setStart(RestRequest.parseTime(request.getStart()));
-        if (request.hasStop()) rr.setStop(RestRequest.parseTime(request.getStop()));
+        if (request.hasStart()) {
+            rr.setStart(RestRequest.parseTime(request.getStart()));
+        }
+        if (request.hasStop()) {
+            rr.setStop(RestRequest.parseTime(request.getStop()));
+        }
 
         // Next, try query param (potentially overriding previous)
         IntervalResult ir = req.scanForInterval();
-        if (ir.hasStart()) rr.setStart(req.getQueryParameterAsDate("start"));
-        if (ir.hasStop()) rr.setStop(req.getQueryParameterAsDate("stop"));
+        if (ir.hasStart()) {
+            rr.setStart(req.getQueryParameterAsDate("start"));
+        }
+        if (ir.hasStop()) {
+            rr.setStop(req.getQueryParameterAsDate("stop"));
+        }
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         List<NamedObjectId> ids = new ArrayList<>();
