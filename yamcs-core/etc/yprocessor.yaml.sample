@@ -55,9 +55,11 @@ Archive:
     telemetryProvider: 
         class: org.yamcs.tctm.ReplayService
     config:
+        #keep a small cache in case new displays are open while the replay is paused, to have the parameters readily available
         parameterCache:
             enabled: true
             cacheAll: true
+            maxNumEntries: 8
 
 
 #used by the ParameterArchive when rebuilding the parameter archive
