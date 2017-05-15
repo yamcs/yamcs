@@ -704,18 +704,19 @@ public class XtceStaxReader {
 
     private FloatRange readFloatRange() {
         StartElement e = xmlEvent.asStartElement();
-        double minInclusive = Double.MIN_VALUE;
-        double maxInclusive = Double.MAX_VALUE;
+        double minExclusive = Double.MIN_VALUE;
+        double maxExclusive = Double.MAX_VALUE;
         
-        String value = readAttribute("minInclusive", e);        
+        String value = readAttribute("minExclusive", e);        
         if (value != null) {
-            minInclusive = Double.parseDouble(value);            
-        }
-        value = readAttribute("maxInclusive", e);        
+            minExclusive = Double.parseDouble(value);            
+        } 
+        
+        value = readAttribute("maxExclusive", e);        
         if (value != null) {
-            maxInclusive = Double.parseDouble(value);            
-        }
-        return new FloatRange(minInclusive, maxInclusive);
+            maxExclusive = Double.parseDouble(value);            
+        } 
+        return new FloatRange(minExclusive, maxExclusive);
     }
 
 
@@ -939,6 +940,8 @@ public class XtceStaxReader {
                 integerParamType.addAllUnits(readXtceUnitSet());
             } else if (isStartElementWithName(XTCE_IntegerDataEncoding)) {
                 integerParamType.setEncoding(readXtceIntegerDataEncoding());
+            } else if (isStartElementWithName(XTCE_DefaultAlarm)) {
+                integerParamType.setDefaultAlarm(readDefaultAlarm());             
             } else if (isStartElementWithName(XTCE_ContextAlarmList)) {
                 integerParamType.setContextAlarmList(readNumericContextAlarmList(spaceSystem));
             } else if (isEndElementWithName(XTCE_IntegerParameterType)) {

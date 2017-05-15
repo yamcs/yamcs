@@ -847,12 +847,12 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                     vec[1] = value.getEngValue().toString();
                     vec[2] = value.getRawValue().toString();
 
-                    vec[3] = value.getWarningRange() == null ? "" : Double.toString(value.getWarningRange().getMinInclusive());
-                    vec[4] = value.getWarningRange() == null ? "" : Double.toString(value.getWarningRange().getMaxInclusive());;
+                    vec[3] = value.getWarningRange() == null ? "" : Double.toString(value.getWarningRange().getMinExclusive());
+                    vec[4] = value.getWarningRange() == null ? "" : Double.toString(value.getWarningRange().getMaxExclusive());;
 
 
-                    vec[5] = value.getCriticalRange() == null ? "" : Double.toString(value.getCriticalRange().getMinInclusive());
-                    vec[6] = value.getCriticalRange() == null ? "" : Double.toString(value.getCriticalRange().getMaxInclusive());
+                    vec[5] = value.getCriticalRange() == null ? "" : Double.toString(value.getCriticalRange().getMinExclusive());
+                    vec[6] = value.getCriticalRange() == null ? "" : Double.toString(value.getCriticalRange().getMaxExclusive());
                     vec[7] = String.valueOf(value.getAbsoluteBitOffset());
                     vec[8] = String.valueOf(value.getBitSize());
 

@@ -377,10 +377,10 @@ public class ParameterValue {
     private static AlarmRange toGpbAlarmRange(AlarmLevelType gpbLevel, FloatRange floatRange) {
         AlarmRange.Builder rangeb = AlarmRange.newBuilder();
         rangeb.setLevel(gpbLevel);
-        if (Double.isFinite(floatRange.getMinInclusive()))
-            rangeb.setMinInclusive(floatRange.getMinInclusive());
-        if (Double.isFinite(floatRange.getMaxInclusive()))
-            rangeb.setMaxInclusive(floatRange.getMaxInclusive());
+        if (Double.isFinite(floatRange.getMinExclusive()))
+            rangeb.setMinInclusive(floatRange.getMinExclusive());
+        if (Double.isFinite(floatRange.getMaxExclusive()))
+            rangeb.setMaxInclusive(floatRange.getMaxExclusive());
         return rangeb.build();
     }
     public static ParameterValue fromGpb(String fqn, org.yamcs.protobuf.Pvalue.ParameterValue gpv) {

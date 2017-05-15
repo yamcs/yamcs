@@ -524,8 +524,8 @@ public class XtceToGpbAssembler {
         } else if (argumentType instanceof FloatArgumentType) {
             FloatArgumentType fat = (FloatArgumentType) argumentType;
             if (fat.getValidRange() != null) {
-                infob.setRangeMin(fat.getValidRange().getMinInclusive());
-                infob.setRangeMax(fat.getValidRange().getMaxInclusive());
+                infob.setRangeMin(fat.getValidRange().getMinExclusive());
+                infob.setRangeMax(fat.getValidRange().getMaxExclusive());
             }
         } else if (argumentType instanceof EnumeratedArgumentType) {
             EnumeratedArgumentType eat = (EnumeratedArgumentType) argumentType;
@@ -656,10 +656,10 @@ public class XtceToGpbAssembler {
     public static AlarmRange toAlarmRange(AlarmLevelType level, FloatRange alarmRange) {
         AlarmRange.Builder resultb = AlarmRange.newBuilder();
         resultb.setLevel(level);
-        if (Double.isFinite(alarmRange.getMinInclusive()))
-            resultb.setMinInclusive(alarmRange.getMinInclusive());
-        if (Double.isFinite(alarmRange.getMaxInclusive()))
-            resultb.setMaxInclusive(alarmRange.getMaxInclusive());
+        if (Double.isFinite(alarmRange.getMinExclusive()))
+            resultb.setMinInclusive(alarmRange.getMinExclusive());
+        if (Double.isFinite(alarmRange.getMaxExclusive()))
+            resultb.setMaxInclusive(alarmRange.getMaxExclusive());
         return resultb.build();
     }
 

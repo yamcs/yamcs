@@ -62,10 +62,10 @@ public  class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
 
         AlarmRange.Builder rangeb = AlarmRange.newBuilder();
         rangeb.setLevel(level);
-        if (Double.isFinite(range.getMinInclusive()))
-            rangeb.setMinInclusive(range.getMinInclusive());
-        if (Double.isFinite(range.getMaxInclusive()))
-            rangeb.setMaxInclusive(range.getMaxInclusive());
+        if (Double.isFinite(range.getMinExclusive()))
+            rangeb.setMinInclusive(range.getMinExclusive());
+        if (Double.isFinite(range.getMaxExclusive()))
+            rangeb.setMaxInclusive(range.getMaxExclusive());
         pvfb.addAlarmRange(rangeb.build());
     }
 

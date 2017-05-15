@@ -237,46 +237,46 @@ public class AlarmChecker {
         FloatRange criticalRange=staticAlarmRanges.getCriticalRange();
         FloatRange severeRange=staticAlarmRanges.getSevereRange();
         if(severeRange!=null) {
-            if(severeRange.getMinInclusive()>doubleCalValue) {
+            if(severeRange.getMinExclusive()>doubleCalValue) {
                 pv.setMonitoringResult(MonitoringResult.SEVERE);
                 pv.setRangeCondition(RangeCondition.LOW);
-            } else if(severeRange.getMaxInclusive()<doubleCalValue) {
+            } else if(severeRange.getMaxExclusive()<doubleCalValue) {
                 pv.setMonitoringResult(MonitoringResult.SEVERE);
                 pv.setRangeCondition(RangeCondition.HIGH);
             }
         }
         if(pv.getMonitoringResult()==null && criticalRange!=null) {
-            if(criticalRange.getMinInclusive()>doubleCalValue) {
+            if(criticalRange.getMinExclusive()>doubleCalValue) {
                 pv.setMonitoringResult(MonitoringResult.CRITICAL);
                 pv.setRangeCondition(RangeCondition.LOW);
-            } else if(criticalRange.getMaxInclusive()<doubleCalValue) {
+            } else if(criticalRange.getMaxExclusive()<doubleCalValue) {
                 pv.setMonitoringResult(MonitoringResult.CRITICAL);
                 pv.setRangeCondition(RangeCondition.HIGH);
             }
         }
         if(pv.getMonitoringResult()==null && distressRange!=null) {
-            if(distressRange.getMinInclusive()>doubleCalValue) {
+            if(distressRange.getMinExclusive()>doubleCalValue) {
                 pv.setMonitoringResult(MonitoringResult.DISTRESS);
                 pv.setRangeCondition(RangeCondition.LOW);
-            } else if(distressRange.getMaxInclusive()<doubleCalValue) {
+            } else if(distressRange.getMaxExclusive()<doubleCalValue) {
                 pv.setMonitoringResult(MonitoringResult.DISTRESS);
                 pv.setRangeCondition(RangeCondition.HIGH);
             }
         }
         if(pv.getMonitoringResult()==null && warningRange!=null) {
-            if(warningRange.getMinInclusive()>doubleCalValue) {
+            if(warningRange.getMinExclusive()>doubleCalValue) {
                 pv.setMonitoringResult(MonitoringResult.WARNING);
                 pv.setRangeCondition(RangeCondition.LOW);
-            } else if(warningRange.getMaxInclusive()<doubleCalValue) {
+            } else if(warningRange.getMaxExclusive()<doubleCalValue) {
                 pv.setMonitoringResult(MonitoringResult.WARNING);
                 pv.setRangeCondition(RangeCondition.HIGH);
             }
         }
         if(pv.getMonitoringResult()==null && watchRange!=null) {
-            if(watchRange.getMinInclusive()>doubleCalValue) {
+            if(watchRange.getMinExclusive()>doubleCalValue) {
                 pv.setMonitoringResult(MonitoringResult.WATCH);
                 pv.setRangeCondition(RangeCondition.LOW);
-            } else if(watchRange.getMaxInclusive()<doubleCalValue) {
+            } else if(watchRange.getMaxExclusive()<doubleCalValue) {
                 pv.setMonitoringResult(MonitoringResult.WATCH);
                 pv.setRangeCondition(RangeCondition.HIGH);
             }

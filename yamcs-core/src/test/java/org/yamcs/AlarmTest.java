@@ -83,16 +83,16 @@ public class AlarmTest {
         tmGenerator.generate_PKT1_10(30, 7, 0);
         
         // Check whether spreadsheet loads all levels ok
-        assertEquals(-11, params.get(0).getWatchRange().getMinInclusive(), 1e-17);
-        assertEquals(30, params.get(0).getWatchRange().getMaxInclusive(), 1e-17);
-        assertEquals(-22, params.get(0).getWarningRange().getMinInclusive(), 1e-17);
-        assertEquals(40, params.get(0).getWarningRange().getMaxInclusive(), 1e-17);
-        assertEquals(-33, params.get(0).getDistressRange().getMinInclusive(), 1e-17);
-        assertEquals(50, params.get(0).getDistressRange().getMaxInclusive(), 1e-17);
-        assertEquals(Double.NEGATIVE_INFINITY, params.get(0).getCriticalRange().getMinInclusive(), 1e-17);
-        assertEquals(60, params.get(0).getCriticalRange().getMaxInclusive(), 1e-17);
-        assertEquals(Double.NEGATIVE_INFINITY, params.get(0).getSevereRange().getMinInclusive(), 1e-17);
-        assertEquals(70, params.get(0).getSevereRange().getMaxInclusive(), 1e-17);
+        assertEquals(-11, params.get(0).getWatchRange().getMinExclusive(), 1e-17);
+        assertEquals(30, params.get(0).getWatchRange().getMaxExclusive(), 1e-17);
+        assertEquals(-22, params.get(0).getWarningRange().getMinExclusive(), 1e-17);
+        assertEquals(40, params.get(0).getWarningRange().getMaxExclusive(), 1e-17);
+        assertEquals(-33, params.get(0).getDistressRange().getMinExclusive(), 1e-17);
+        assertEquals(50, params.get(0).getDistressRange().getMaxExclusive(), 1e-17);
+        assertEquals(Double.NEGATIVE_INFINITY, params.get(0).getCriticalRange().getMinExclusive(), 1e-17);
+        assertEquals(60, params.get(0).getCriticalRange().getMaxExclusive(), 1e-17);
+        assertEquals(Double.NEGATIVE_INFINITY, params.get(0).getSevereRange().getMinExclusive(), 1e-17);
+        assertEquals(70, params.get(0).getSevereRange().getMaxExclusive(), 1e-17);
         
         assertEquals(MonitoringResult.IN_LIMITS, params.get(0).getMonitoringResult());
         assertEquals(0, q.size());
@@ -168,16 +168,16 @@ public class AlarmTest {
         tmGenerator.generate_PKT1_10(0, 1, 30);
         
         // Check whether spreadsheet loads all levels ok
-        assertEquals(-11, params.get(0).getWatchRange().getMinInclusive(), 1e-17);
-        assertEquals(30, params.get(0).getWatchRange().getMaxInclusive(), 1e-17);
-        assertEquals(-22, params.get(0).getWarningRange().getMinInclusive(), 1e-17);
-        assertEquals(40, params.get(0).getWarningRange().getMaxInclusive(), 1e-17);
-        assertEquals(-33, params.get(0).getDistressRange().getMinInclusive(), 1e-17);
-        assertEquals(50, params.get(0).getDistressRange().getMaxInclusive(), 1e-17);
-        assertEquals(Double.NEGATIVE_INFINITY, params.get(0).getCriticalRange().getMinInclusive(), 1e-17);
-        assertEquals(60, params.get(0).getCriticalRange().getMaxInclusive(), 1e-17);
-        assertEquals(Double.NEGATIVE_INFINITY, params.get(0).getSevereRange().getMinInclusive(), 1e-17);
-        assertEquals(70, params.get(0).getSevereRange().getMaxInclusive(), 1e-17);
+        assertEquals(-11, params.get(0).getWatchRange().getMinExclusive(), 1e-17);
+        assertEquals(30, params.get(0).getWatchRange().getMaxExclusive(), 1e-17);
+        assertEquals(-22, params.get(0).getWarningRange().getMinExclusive(), 1e-17);
+        assertEquals(40, params.get(0).getWarningRange().getMaxExclusive(), 1e-17);
+        assertEquals(-33, params.get(0).getDistressRange().getMinExclusive(), 1e-17);
+        assertEquals(50, params.get(0).getDistressRange().getMaxExclusive(), 1e-17);
+        assertEquals(Double.NEGATIVE_INFINITY, params.get(0).getCriticalRange().getMinExclusive(), 1e-17);
+        assertEquals(60, params.get(0).getCriticalRange().getMaxExclusive(), 1e-17);
+        assertEquals(Double.NEGATIVE_INFINITY, params.get(0).getSevereRange().getMinExclusive(), 1e-17);
+        assertEquals(70, params.get(0).getSevereRange().getMaxExclusive(), 1e-17);
         
         assertEquals(MonitoringResult.IN_LIMITS, params.get(0).getMonitoringResult());
         assertEquals(0, q.size());

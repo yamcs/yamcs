@@ -11,18 +11,18 @@ import java.io.Serializable;
 public class FloatRange implements Serializable {
     private static final long serialVersionUID = 200706052351L;
 
-    double minInclusive;
-    double maxInclusive;
-    public FloatRange(double minInclusive, double maxInclusive) {
-        this.minInclusive=minInclusive;
-        this.maxInclusive=maxInclusive;
+    double minExclusive;
+    double maxExclusive;
+    public FloatRange(double minExclusive, double maxExclusive) {
+        this.minExclusive = minExclusive;
+        this.maxExclusive = maxExclusive;
     }
 
-    public double getMaxInclusive() {
-        return maxInclusive;
+    public double getMaxExclusive() {
+        return maxExclusive;
     }
-    public double getMinInclusive() {
-        return minInclusive;
+    public double getMinExclusive() {
+        return minExclusive;
     }
 
     /**
@@ -31,11 +31,11 @@ public class FloatRange implements Serializable {
      * inside of which pvals are _not_ out of limits)
      */
     public FloatRange intersectWith(FloatRange other) {
-        return new FloatRange(Math.max(minInclusive, other.minInclusive), Math.min(maxInclusive, other.maxInclusive));
+        return new FloatRange(Math.max(minExclusive, other.minExclusive), Math.min(maxExclusive, other.maxExclusive));
     }
 
     @Override
     public String toString() {
-        return "["+minInclusive+","+maxInclusive+"]";
+        return "["+minExclusive+","+maxExclusive+"]";
     }
 }
