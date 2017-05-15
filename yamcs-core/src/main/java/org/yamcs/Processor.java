@@ -515,8 +515,15 @@ public class Processor extends AbstractService {
         if(quitting) {
             return;
         }
+
         log.info("Processor {} quitting", name);
         quitting = true;
+        
+        //first send a STOPPING event
+        listeners.forEach(l -> l.processorStateChanged(this));
+        
+        
+        
         
         instances.remove(key(yamcsInstance,name));
         
@@ -533,16 +540,17 @@ public class Processor extends AbstractService {
             tmPacketProvider.stopAsync();
         }
         
-        
         log.info("Processor {} is out of business", name);
+        
+        if(getState() == ServiceState.RUNNING || getState() == ServiceState.STOPPING) {
+            notifyStopped();
+        }
+        //and now a CLOSED event
         listeners.forEach(l -> l.processorClosed(this));
         synchronized(this) {
             for(ProcessorClient s:connectedClients) {
                 s.processorQuit();
             }
-        }
-        if(getState() == ServiceState.RUNNING || getState() == ServiceState.STOPPING) {
-            notifyStopped();
         }
     }
 

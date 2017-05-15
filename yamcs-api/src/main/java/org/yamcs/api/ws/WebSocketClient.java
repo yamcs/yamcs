@@ -281,49 +281,6 @@ public class WebSocketClient {
         }
     }
 
-    public static void main(String... args) throws InterruptedException {
-        YamcsConnectionProperties yprops = new YamcsConnectionProperties("aces-archive-ops.spaceapplications.com", 8090, "mwlgt-ops");
-        WebSocketClient client = new WebSocketClient(yprops);
-        client.enableTcpKeepAlive(true);
-        
-        client.setCallback(new WebSocketClientCallback() {
-            @Override
-            public void connected() {
-                System.out.println("Connection succeeded.......... subscribing to time");
-                client.sendRequest(new WebSocketRequest("time", "subscribe"));
-            }
-
-            @Override
-            public void connectionFailed(Throwable t) {
-                System.out.println("Connection failed.........."+t.getMessage());
-            }
-
-            @Override
-            public void onMessage(WebSocketSubscriptionData data) {
-                System.out.println("Got data " + data);
-            }
-
-
-            @Override
-            public void disconnected() {
-                System.out.println("Disconnected.....");
-            }
-        });
-
-
-        client.enableReconnection(true);
-        client.setReconnectionInterval(100);
-        client.connect();
-
-
-        Thread.sleep(500000);
-        client.shutdown();
-    }
-    private void setCallback(WebSocketClientCallback webSocketClientCallback) {
-        this.callback = webSocketClientCallback;
-
-    }
-
     public boolean isConnected() {
         return nettyChannel.isOpen();
     }

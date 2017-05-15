@@ -8,6 +8,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -44,7 +46,7 @@ public class ProcessorsTest {
         ManagementService.setup(false);
         YConfiguration.setup("ProcessorsTest");
         YamcsServer.setupYamcsServer();
-        //Logger.getLogger("org.yamcs").setLevel(Level.ALL);
+        Logger.getLogger("org.yamcs").setLevel(Level.ALL);
     }
     
     @AfterClass
@@ -119,17 +121,18 @@ public class ProcessorsTest {
             System.out.println("\t"+pi.getInstance()+"/"+pi.getName()+" state: "+pi.getState()+" replayState: "+pi.getReplayState());
         }*/
         
-        List<ProcessorInfo> l = ml.yprocUpdated.get("realtime");
+        List<ProcessorInfo> l = ml.procUpdated.get("realtime");
         assertEquals(1, l.size());
         assertPEquals("realtime", ServiceState.RUNNING, l.get(0));
         
-        l = ml.yprocUpdated.get("yproc1");
+        l = ml.procUpdated.get("yproc1");
+        System.out.println("l: "+l);
         assertEquals(3, l.size());
         assertPEquals("yproc1", ServiceState.NEW, l.get(0));        
         assertPEquals("yproc1", ServiceState.RUNNING, l.get(1));
         assertPEquals("yproc1", ServiceState.STOPPING, l.get(2));
         
-        l = ml.yprocUpdated.get("yproc2");
+        l = ml.procUpdated.get("yproc2");
         assertEquals(3, l.size());
         assertPEquals("yproc2", ServiceState.NEW, l.get(0));
         assertPEquals("yproc2", ServiceState.RUNNING, l.get(1));
@@ -142,6 +145,9 @@ public class ProcessorsTest {
         assertCEquals("yproctest1", "yproc1",myClientId, "random-test-user", "random-app-name", ml.clientUpdatedList.get(1));
         assertCEquals("yproctest1", "yproc2",myClientId, "random-test-user", "random-app-name", ml.clientUpdatedList.get(2));
         assertCEquals("yproctest1", "yproc1",myClientId, "random-test-user", "random-app-name", ml.clientUpdatedList.get(3));
+        
+        assertEquals(2, ml.procClosedList.size());
+        
     }
     
     private void assertCEquals(String instance, String procName, int clientId, String username, String appname, ClientInfo clientInfo) {
@@ -158,8 +164,8 @@ public class ProcessorsTest {
     }
 
     static class MyListener implements ProcessorListener {
-        Map<String, List<ProcessorInfo>> yprocUpdated = new HashMap<>();
-        List<ProcessorInfo> yprocClosedList=Collections.synchronizedList(new ArrayList<ProcessorInfo>());
+        Map<String, List<ProcessorInfo>> procUpdated = new HashMap<>();
+        List<ProcessorInfo> procClosedList=Collections.synchronizedList(new ArrayList<ProcessorInfo>());
         List<ClientInfo> clientUpdatedList=Collections.synchronizedList(new ArrayList<ClientInfo>());
         List<ClientInfo> clientDisconnectedList=Collections.synchronizedList(new ArrayList<ClientInfo>());
         String instance;
@@ -184,10 +190,10 @@ public class ProcessorsTest {
         @Override
         public void processorUpdated(ProcessorInfo pi) {
             if(instance.equals(pi.getInstance())) {
-                List<ProcessorInfo> l = yprocUpdated.get(pi.getName());
+                List<ProcessorInfo> l = procUpdated.get(pi.getName());
                 if(l==null) {
                     l = new ArrayList<ProcessorInfo>();
-                    yprocUpdated.put(pi.getName(), l);
+                    procUpdated.put(pi.getName(), l);
                 }
                 l.add(pi);
             }
@@ -196,7 +202,7 @@ public class ProcessorsTest {
         @Override
         public void processorClosed(ProcessorInfo ci) {
             if(instance.equals(ci.getInstance()))
-                yprocClosedList.add(ci);
+                procClosedList.add(ci);
         }
 
         @Override

@@ -89,12 +89,16 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
     }
 
     public void addContextAlarm(NumericContextAlarm nca) {
-        if(contextAlarmList==null) contextAlarmList=new ArrayList<NumericContextAlarm>();
+        if(contextAlarmList==null) {
+            contextAlarmList = new ArrayList<>();
+        }
         contextAlarmList.add(nca);
     }
 
     public void addContextAlarms(Collection<NumericContextAlarm> ncas) {
-        if(contextAlarmList==null) contextAlarmList=new ArrayList<NumericContextAlarm>();
+        if(contextAlarmList==null) {
+            contextAlarmList = new ArrayList<>();
+        }
         contextAlarmList.addAll(ncas);
     }
 
@@ -105,16 +109,20 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
 
     @Override
     public Set<Parameter> getDependentParameters() {
-        if(getContextAlarmList()==null)
+        if(getContextAlarmList()==null) {
             return null;
-        Set<Parameter>dependentParameters=new HashSet<Parameter>();
-        for(NumericContextAlarm nca:contextAlarmList)
+        }
+        Set<Parameter>dependentParameters = new HashSet<>();
+        for(NumericContextAlarm nca:contextAlarmList) {
             dependentParameters.addAll(nca.getContextMatch().getDependentParameters());
+        }
         return dependentParameters;
     }
 
     public NumericContextAlarm getNumericContextAlarm(MatchCriteria context) {
-        if(contextAlarmList==null) return null;
+        if(contextAlarmList==null) {
+            return null;
+        }
         for(NumericContextAlarm nca:contextAlarmList) {
             if(nca.getContextMatch().equals(context)) {
                 return nca;
