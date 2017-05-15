@@ -75,7 +75,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     static Logger log=LoggerFactory.getLogger(ReplayService.class.getName());
 
     ReplayRequest originalReplayRequest;
-    private HashSet<Parameter> subscribedParameters=new HashSet<Parameter>();
+    private HashSet<Parameter> subscribedParameters=new HashSet<>();
     private ParameterRequestManagerImpl parameterRequestManager;
     TmProcessor tmProcessor;
     volatile long dataCount=0;
@@ -91,13 +91,13 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     CommandHistoryRequestManager commandHistoryRequestManager;
 
     
-    public ReplayService(String instance, ReplayRequest spec) throws ProcessorException, ConfigurationException {
+    public ReplayService(String instance, ReplayRequest spec) throws ConfigurationException {
         this.yamcsInstance = instance;
         this.originalReplayRequest = spec;
         xtceDb = XtceDbFactory.getInstance(instance);
     }
     
-    public ReplayService(String instance, String config) throws ProcessorException, ConfigurationException {
+    public ReplayService(String instance, String config) throws ConfigurationException {
         this.yamcsInstance = instance;
         ReplayRequest.Builder rrb = ReplayRequest.newBuilder(); 
         try {

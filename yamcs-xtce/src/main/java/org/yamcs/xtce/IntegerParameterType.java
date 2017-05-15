@@ -144,6 +144,10 @@ public class IntegerParameterType extends IntegerDataType implements ParameterTy
         this.contextAlarmList = contextAlarmList;
      }
     
+    public void setDefaultAlarm(NumericAlarm defaultAlarm) {
+        this.defaultAlarm = defaultAlarm;
+    }
+    
     @Override
     public boolean hasAlarm() {
         return defaultAlarm!=null || (contextAlarmList!=null && !contextAlarmList.isEmpty());
