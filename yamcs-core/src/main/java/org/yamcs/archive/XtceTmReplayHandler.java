@@ -22,7 +22,7 @@ import com.google.protobuf.MessageLite;
  *
  */
 public class XtceTmReplayHandler implements ReplayHandler {
-    Set<String> partitions=new HashSet<>();
+    Set<String> partitions; 
     final XtceDb xtcedb;
     static Logger log=LoggerFactory.getLogger(XtceTmReplayHandler.class);
     ReplayRequest request;
@@ -36,10 +36,10 @@ public class XtceTmReplayHandler implements ReplayHandler {
     public void setRequest(ReplayRequest newRequest) throws YamcsException {
         this.request=newRequest;
         if (newRequest.getPacketRequest().getNameFilterList().isEmpty()) {
-            partitions=null; //retrieve all
+            partitions = null; //retrieve all
             return;
         }
-        partitions.clear();
+        partitions = new HashSet<>();
         SequenceContainer rootSc=xtcedb.getRootSequenceContainer();
         addPartitions(newRequest.getPacketRequest().getNameFilterList(), rootSc);
     }
@@ -107,10 +107,14 @@ public class XtceTmReplayHandler implements ReplayHandler {
 
     static void appendTimeClause(StringBuilder sb, ReplayRequest request, boolean firstRestriction) {
         if(request.hasStart() || (request.hasStop())) {
-            if(!firstRestriction) sb.append(" and ");
+            if(!firstRestriction) {
+                sb.append(" and ");
+            }
             if(request.hasStart()) {
                 sb.append("gentime>="+request.getStart());
-                if(request.hasStop()) sb.append(" and gentime<"+request.getStop());
+                if(request.hasStop()) {
+                    sb.append(" and gentime<"+request.getStop());
+                }
             } else {
                 sb.append("gentime<"+request.getStop());
             }
