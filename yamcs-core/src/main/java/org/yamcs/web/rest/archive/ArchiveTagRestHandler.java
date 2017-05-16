@@ -79,10 +79,18 @@ public class ArchiveTagRestHandler extends RestHandler {
         
         // Translate to yamcs-api
         ArchiveTag.Builder tagb = ArchiveTag.newBuilder().setName(request.getName());
-        if (request.hasStart()) tagb.setStart(RestRequest.parseTime(request.getStart()));
-        if (request.hasStop()) tagb.setStop(RestRequest.parseTime(request.getStop()));
-        if (request.hasDescription()) tagb.setDescription(request.getDescription());
-        if (request.hasColor()) tagb.setColor(request.getColor());
+        if (request.hasStart()) {
+            tagb.setStart(RestRequest.parseTime(request.getStart()));
+        }
+        if (request.hasStop()) {
+            tagb.setStop(RestRequest.parseTime(request.getStop()));
+        }
+        if (request.hasDescription()) {
+            tagb.setDescription(request.getDescription());
+        }
+        if (request.hasColor()) {
+            tagb.setColor(request.getColor());
+        }
         
         // Do the insert
         ArchiveTag newTag;
@@ -109,18 +117,38 @@ public class ArchiveTagRestHandler extends RestHandler {
         
         // Patch the existing tag
         ArchiveTag.Builder tagb = ArchiveTag.newBuilder(tag);
-        if (request.hasName()) tagb.setName(request.getName());
-        if (request.hasStart()) tagb.setStart(RestRequest.parseTime(request.getStart()));
-        if (request.hasStop()) tagb.setStop(RestRequest.parseTime(request.getStop()));
-        if (request.hasDescription()) tagb.setDescription(request.getDescription());
-        if (request.hasColor()) tagb.setColor(request.getColor());
+        if (request.hasName()) {
+            tagb.setName(request.getName());
+        }
+        if (request.hasStart()) {
+            tagb.setStart(RestRequest.parseTime(request.getStart()));
+        }
+        if (request.hasStop()) {
+            tagb.setStop(RestRequest.parseTime(request.getStop()));
+        }
+        if (request.hasDescription()) {
+            tagb.setDescription(request.getDescription());
+        }
+        if (request.hasColor()) {
+            tagb.setColor(request.getColor());
+        }
         
         // Override with query params
-        if (req.hasQueryParameter("name")) tagb.setName(req.getQueryParameter("name"));
-        if (req.hasQueryParameter("start")) tagb.setStart(RestRequest.parseTime(req.getQueryParameter("start")));
-        if (req.hasQueryParameter("stop")) tagb.setStop(RestRequest.parseTime(req.getQueryParameter("stop")));
-        if (req.hasQueryParameter("description")) tagb.setDescription(req.getQueryParameter("description"));
-        if (req.hasQueryParameter("color")) tagb.setColor(req.getQueryParameter("color"));
+        if (req.hasQueryParameter("name")) {
+            tagb.setName(req.getQueryParameter("name"));
+        }
+        if (req.hasQueryParameter("start")) {
+            tagb.setStart(RestRequest.parseTime(req.getQueryParameter("start")));
+        }
+        if (req.hasQueryParameter("stop")) {
+            tagb.setStop(RestRequest.parseTime(req.getQueryParameter("stop")));
+        }
+        if (req.hasQueryParameter("description")) {
+            tagb.setDescription(req.getQueryParameter("description"));
+        }
+        if (req.hasQueryParameter("color")) {
+            tagb.setColor(req.getQueryParameter("color"));
+        }
         
         // Persist the update
         ArchiveTag updatedTag;
@@ -140,10 +168,13 @@ public class ArchiveTagRestHandler extends RestHandler {
      * Deletes the identified tag. Returns the deleted tag
      */
     @Route(path = "/api/archive/:instance/tags/:tagTime/:tagId", method = "DELETE")
-    public void deleteTag(RestRequest req, TagDb tagDb, long tagTime, int tagId) throws HttpException {
+    public void deleteTag(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        TagDb tagDb = getTagDb(instance);
+        ArchiveTag tag = verifyTag(req, tagDb, req.getDateRouteParam("tagTime"), req.getIntegerRouteParam("tagId"));
         ArchiveTag deletedTag;
         try {
-            deletedTag = tagDb.deleteTag(tagTime, tagId);
+            deletedTag = tagDb.deleteTag(tag.getStart(), tag.getId());
         } catch (YamcsException e) { // Delete-tag returns an exception when it's not found
             throw new NotFoundException(req);
         } catch (IOException e) {
