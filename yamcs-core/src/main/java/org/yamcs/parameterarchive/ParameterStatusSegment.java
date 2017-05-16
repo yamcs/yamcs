@@ -4,7 +4,6 @@ import java.nio.ByteBuffer;
 
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
-import org.yamcs.protobuf.Mdb.AlarmRange;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
@@ -57,16 +56,11 @@ public  class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
     }
 
 
-    static private void addAlarmRange(ParameterStatus.Builder pvfb, AlarmLevelType level, FloatRange range) {
-        if(range==null) return;
-
-        AlarmRange.Builder rangeb = AlarmRange.newBuilder();
-        rangeb.setLevel(level);
-        if (Double.isFinite(range.getMinExclusive()))
-            rangeb.setMinInclusive(range.getMinExclusive());
-        if (Double.isFinite(range.getMaxExclusive()))
-            rangeb.setMaxInclusive(range.getMaxExclusive());
-        pvfb.addAlarmRange(rangeb.build());
+    private static void addAlarmRange(ParameterStatus.Builder pvfb, AlarmLevelType level, FloatRange range) {
+        if(range==null) {
+            return;
+        }
+        pvfb.addAlarmRange(ParameterValue.toGpbAlarmRange(level, range));
     }
 
     

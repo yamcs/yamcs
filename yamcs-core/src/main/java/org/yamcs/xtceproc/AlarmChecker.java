@@ -226,6 +226,16 @@ public class AlarmChecker {
         }
     }
 
+    private void checkRange(ParameterValue pv, MonitoringResult mr, FloatRange fr, double v) {
+        int x = fr.inRange(v);
+        if(x<0) {
+            pv.setMonitoringResult(mr);
+            pv.setRangeCondition(RangeCondition.LOW);
+        } else if(x>0) {
+            pv.setMonitoringResult(mr);
+            pv.setRangeCondition(RangeCondition.HIGH);
+        }
+    }
     /**
      * Verify limits, giving priority to highest severity
      */
@@ -237,49 +247,19 @@ public class AlarmChecker {
         FloatRange criticalRange=staticAlarmRanges.getCriticalRange();
         FloatRange severeRange=staticAlarmRanges.getSevereRange();
         if(severeRange!=null) {
-            if(severeRange.getMinExclusive()>doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.SEVERE);
-                pv.setRangeCondition(RangeCondition.LOW);
-            } else if(severeRange.getMaxExclusive()<doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.SEVERE);
-                pv.setRangeCondition(RangeCondition.HIGH);
-            }
+            checkRange(pv, MonitoringResult.SEVERE, severeRange, doubleCalValue);
         }
         if(pv.getMonitoringResult()==null && criticalRange!=null) {
-            if(criticalRange.getMinExclusive()>doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.CRITICAL);
-                pv.setRangeCondition(RangeCondition.LOW);
-            } else if(criticalRange.getMaxExclusive()<doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.CRITICAL);
-                pv.setRangeCondition(RangeCondition.HIGH);
-            }
+            checkRange(pv, MonitoringResult.CRITICAL, criticalRange, doubleCalValue);
         }
         if(pv.getMonitoringResult()==null && distressRange!=null) {
-            if(distressRange.getMinExclusive()>doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.DISTRESS);
-                pv.setRangeCondition(RangeCondition.LOW);
-            } else if(distressRange.getMaxExclusive()<doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.DISTRESS);
-                pv.setRangeCondition(RangeCondition.HIGH);
-            }
+            checkRange(pv, MonitoringResult.DISTRESS, distressRange, doubleCalValue);
         }
         if(pv.getMonitoringResult()==null && warningRange!=null) {
-            if(warningRange.getMinExclusive()>doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.WARNING);
-                pv.setRangeCondition(RangeCondition.LOW);
-            } else if(warningRange.getMaxExclusive()<doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.WARNING);
-                pv.setRangeCondition(RangeCondition.HIGH);
-            }
+            checkRange(pv, MonitoringResult.WARNING, warningRange, doubleCalValue);
         }
         if(pv.getMonitoringResult()==null && watchRange!=null) {
-            if(watchRange.getMinExclusive()>doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.WATCH);
-                pv.setRangeCondition(RangeCondition.LOW);
-            } else if(watchRange.getMaxExclusive()<doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.WATCH);
-                pv.setRangeCondition(RangeCondition.HIGH);
-            }
+            checkRange(pv, MonitoringResult.WATCH, watchRange, doubleCalValue);
         }
 
         if (pv.getMonitoringResult() == null) {
@@ -311,7 +291,9 @@ public class AlarmChecker {
         if(alarm != null) {
             AlarmLevels level=alarm.getDefaultAlarmLevel();
             for(EnumerationAlarmItem eai:alarm.getAlarmList()) {
-                if(eai.getEnumerationLabel().equals(s)) level=eai.getAlarmLevel();
+                if(eai.getEnumerationLabel().equals(s)) {
+                    level = eai.getAlarmLevel();
+                }
             }
 
             switch(level) {

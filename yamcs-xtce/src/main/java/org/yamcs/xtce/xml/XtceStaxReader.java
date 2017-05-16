@@ -704,8 +704,10 @@ public class XtceStaxReader {
 
     private FloatRange readFloatRange() {
         StartElement e = xmlEvent.asStartElement();
-        double minExclusive = Double.MIN_VALUE;
-        double maxExclusive = Double.MAX_VALUE;
+        double minExclusive = Double.NaN;
+        double maxExclusive = Double.NaN;
+        double minInclusive = Double.NaN;
+        double maxInclusive = Double.NaN;
         
         String value = readAttribute("minExclusive", e);        
         if (value != null) {
@@ -716,7 +718,18 @@ public class XtceStaxReader {
         if (value != null) {
             maxExclusive = Double.parseDouble(value);            
         } 
-        return new FloatRange(minExclusive, maxExclusive);
+        value = readAttribute("minInclusive", e);        
+        if (value != null) {
+            minInclusive = Double.parseDouble(value);            
+        } 
+        
+        value = readAttribute("maxInclusive", e);        
+        if (value != null) {
+            maxInclusive = Double.parseDouble(value);            
+        } 
+       
+        
+        return FloatRange.fromXtceComplement(minExclusive, maxExclusive, minInclusive, maxInclusive);
     }
 
 

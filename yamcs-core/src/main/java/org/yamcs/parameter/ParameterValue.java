@@ -374,13 +374,25 @@ public class ParameterValue {
         return toProtobufParameterValue(optionalId, true);
     }
     
-    private static AlarmRange toGpbAlarmRange(AlarmLevelType gpbLevel, FloatRange floatRange) {
+    public static AlarmRange toGpbAlarmRange(AlarmLevelType gpbLevel, FloatRange floatRange) {
         AlarmRange.Builder rangeb = AlarmRange.newBuilder();
         rangeb.setLevel(gpbLevel);
-        if (Double.isFinite(floatRange.getMinExclusive()))
-            rangeb.setMinInclusive(floatRange.getMinExclusive());
-        if (Double.isFinite(floatRange.getMaxExclusive()))
-            rangeb.setMaxInclusive(floatRange.getMaxExclusive());
+        double min = floatRange.getMin();
+        if (Double.isFinite(min)) { //floatRange represents the IN_LIMIT range, that's why we invert the inclusive and exclusive
+            if(floatRange.isMinInclusive()) {
+                rangeb.setMinExclusive(min);
+            } else {
+                rangeb.setMinInclusive(min);
+            }
+        }
+        double max = floatRange.getMax();
+        if (Double.isFinite(max)) {
+            if(floatRange.isMaxInclusive()) {
+                rangeb.setMaxExclusive(max);
+            } else {
+                rangeb.setMaxInclusive(max);
+            }
+        }
         return rangeb.build();
     }
     public static ParameterValue fromGpb(String fqn, org.yamcs.protobuf.Pvalue.ParameterValue gpv) {

@@ -12,7 +12,7 @@ public class ValidRangeChecker {
      * @return
      */
     public static boolean checkFloatRange(FloatValidRange fvr, double x) {
-        return (x>=fvr.getMinExclusive() && x<=fvr.getMaxExclusive());
+        return fvr.inRange(x)==0;
     }
 
 

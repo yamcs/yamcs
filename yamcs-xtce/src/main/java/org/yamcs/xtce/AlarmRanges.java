@@ -9,12 +9,15 @@ import java.io.Serializable;
  * min and higher than the max values.   These ranges should not overlap, but if they do, assume the most
  * severe range is to be applied.  All ranges are optional and it is quite allowed for there to be only one
  * end of the range.  Range values are in calibrated engineering units.
+ * 
+ * Note that we actually keep here the ranges for the IN_LIMITS.
+ * This means that if range.inRange(v)!=0 (meaning v out of range), then the parameter is in alarm state. 
+ * 
  * @author nm
  *
  */
 public class AlarmRanges implements Serializable {
     private static final long serialVersionUID = 200706052351L;
-
     FloatRange watchRange=null;
     FloatRange warningRange=null;
     FloatRange distressRange=null;

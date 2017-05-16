@@ -31,8 +31,8 @@ public class ObjectSegmentTest {
         
         assertEquals(1, pss.rleValues.size());
         ParameterStatus s = pss.get(0);
-        assertEquals(pv.getCriticalRange().getMaxExclusive(), s.getAlarmRange(0).getMaxInclusive(), 1e-10);
-        assertEquals(pv.getCriticalRange().getMinExclusive(), s.getAlarmRange(0).getMinInclusive(), 1e-10);
+        assertEquals(pv.getCriticalRange().getMax(), s.getAlarmRange(0).getMaxInclusive(), 1e-10);
+        assertEquals(pv.getCriticalRange().getMin(), s.getAlarmRange(0).getMinInclusive(), 1e-10);
         
         //ascending range
         ParameterStatus[] statusList = (ParameterStatus[]) pss.getRange(0, 1, true);
@@ -72,10 +72,10 @@ public class ObjectSegmentTest {
         pss.consolidate();
         assertEquals(2, pss.rleValues.size());
         ParameterStatus s2 = pss.get(2);
-        assertEquals(pv.getWarningRange().getMaxExclusive(), s2.getAlarmRange(0).getMaxInclusive(), 1e-10);
-        assertEquals(pv.getWarningRange().getMinExclusive(), s2.getAlarmRange(0).getMinInclusive(), 1e-10);
-        assertEquals(pv.getCriticalRange().getMaxExclusive(), s2.getAlarmRange(1).getMaxInclusive(), 1e-10);
-        assertEquals(pv.getCriticalRange().getMinExclusive(), s2.getAlarmRange(1).getMinInclusive(), 1e-10);
+        assertEquals(pv.getWarningRange().getMax(), s2.getAlarmRange(0).getMaxInclusive(), 1e-10);
+        assertEquals(pv.getWarningRange().getMin(), s2.getAlarmRange(0).getMinInclusive(), 1e-10);
+        assertEquals(pv.getCriticalRange().getMax(), s2.getAlarmRange(1).getMaxInclusive(), 1e-10);
+        assertEquals(pv.getCriticalRange().getMin(), s2.getAlarmRange(1).getMinInclusive(), 1e-10);
         
         //ascending ranges
         statusList = (ParameterStatus[]) pss.getRange(0, 3, true);
