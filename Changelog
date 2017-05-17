@@ -1,13 +1,14 @@
-Version 3.2.2
+Version 3.2.2 Released 17-May-2017
 - Fixed tag handling in Yamcs Monitor/Archive Browser
-Version 3.2.1 Released 15-May-2018
+
+Version 3.2.1 Released 15-May-2017
 - Added an option to yamcs rocksdb compact to specify the target file size and changed the default size from 64MB to 256MB
 - Java expressions can be used for raw->engineering value calibration (in addition to polynomial and spline). This allow to use mathematical expressions such as logarithms and trigonometric functions.
 - fixed seek in replays
 - Fix in Yamcs Monitor: remove closed processors
 - RocksDB: set by default the table block cache to 8MB (previously it was disabled)
 
-Version 3.2.0 Released 18-Apr-2018
+Version 3.2.0 Released 18-Apr-2017
 - Improved the yamcs command line with several new sub-commands (xtcedb, parchive)
 - Removed Artemis based replays and management (control processors)
 - Added a new yatch(table/stream) data type PARAMETER_VALUE to replace PROTOBUF(ParameterValue) for more flexibility
