@@ -59,14 +59,14 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
         selectionMenu.setVisible(false);
         archivePanel.archiveBrowser.menuBar.add(selectionMenu);
 
-        packetRetrieval = new JMenuItem("Export Packets...");
-        packetRetrieval.setToolTipText("Start packet retrieval of the selected packets");
+        packetRetrieval = new JMenuItem("Export Telemetry Packets...");
+        packetRetrieval.setToolTipText("Start packet retrieval of the selected telemetry packets");
         packetRetrieval.addActionListener(this);
         packetRetrieval.setActionCommand("start-packet-retrieval");
         packetRetrieval.setEnabled(false);
         selectionMenu.add(packetRetrieval);
 
-        parameterRetrieval = new JMenuItem("Export Parameters...");
+        parameterRetrieval = new JMenuItem("Export Processed Parameters...");
         parameterRetrieval.setToolTipText("Start parameter retrieval for the selected time interval");
         parameterRetrieval.addActionListener(this);
         parameterRetrieval.setActionCommand("start-parameter-retrieval");
