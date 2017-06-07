@@ -108,7 +108,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         DataViewer completenessViewer = new DataViewer(archiveBrowser.yconnector, archiveBrowser.indexReceiver, this, false) {
             @Override
             public String getLabelName() {
-                return "Completeness";
+                return "Telemetry Completeness";
             }
 
             @Override
