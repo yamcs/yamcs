@@ -22974,6 +22974,30 @@ public final class Yamcs {
        * <code>ERROR = 2;</code>
        */
       ERROR(2, 2),
+      /**
+       * <code>XTCE_WATCH = 10;</code>
+       *
+       * <pre>
+       * Official XTCE Severity levels
+       * </pre>
+       */
+      XTCE_WATCH(3, 10),
+      /**
+       * <code>XTCE_WARNING = 11;</code>
+       */
+      XTCE_WARNING(4, 11),
+      /**
+       * <code>XTCE_DISTRESS = 12;</code>
+       */
+      XTCE_DISTRESS(5, 12),
+      /**
+       * <code>XTCE_CRITICAL = 13;</code>
+       */
+      XTCE_CRITICAL(6, 13),
+      /**
+       * <code>XTCE_SEVERE = 14;</code>
+       */
+      XTCE_SEVERE(7, 14),
       ;
 
       /**
@@ -22988,6 +23012,30 @@ public final class Yamcs {
        * <code>ERROR = 2;</code>
        */
       public static final int ERROR_VALUE = 2;
+      /**
+       * <code>XTCE_WATCH = 10;</code>
+       *
+       * <pre>
+       * Official XTCE Severity levels
+       * </pre>
+       */
+      public static final int XTCE_WATCH_VALUE = 10;
+      /**
+       * <code>XTCE_WARNING = 11;</code>
+       */
+      public static final int XTCE_WARNING_VALUE = 11;
+      /**
+       * <code>XTCE_DISTRESS = 12;</code>
+       */
+      public static final int XTCE_DISTRESS_VALUE = 12;
+      /**
+       * <code>XTCE_CRITICAL = 13;</code>
+       */
+      public static final int XTCE_CRITICAL_VALUE = 13;
+      /**
+       * <code>XTCE_SEVERE = 14;</code>
+       */
+      public static final int XTCE_SEVERE_VALUE = 14;
 
 
       public final int getNumber() { return value; }
@@ -22997,6 +23045,11 @@ public final class Yamcs {
           case 0: return INFO;
           case 1: return WARNING;
           case 2: return ERROR;
+          case 10: return XTCE_WATCH;
+          case 11: return XTCE_WARNING;
+          case 12: return XTCE_DISTRESS;
+          case 13: return XTCE_CRITICAL;
+          case 14: return XTCE_SEVERE;
           default: return null;
         }
       }
@@ -24479,24 +24532,26 @@ public final class Yamcs {
       " \001(\003\022\026\n\016sequenceNumber\030\004 \001(\005\022 \n\002id\030\005 \001(\013" +
       "2\024.yamcs.NamedObjectId\"7\n\010TimeInfo\022\023\n\013cu" +
       "rrentTime\030\001 \001(\003\022\026\n\016currentTimeUTC\030\002 \001(\t\"" +
-      "\233\002\n\005Event\022\016\n\006source\030\001 \002(\t\022\026\n\016generationT" +
+      "\365\002\n\005Event\022\016\n\006source\030\001 \002(\t\022\026\n\016generationT" +
       "ime\030\002 \002(\003\022\025\n\rreceptionTime\030\003 \002(\003\022\021\n\tseqN" +
       "umber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007message\030\006 \002" +
       "(\t\0222\n\010severity\030\007 \001(\0162\032.yamcs.Event.Event" +
       "Severity:\004INFO\022\031\n\021generationTimeUTC\030\010 \001(" +
-      "\t\022\030\n\020receptionTimeUTC\030\t \001(\t\"1\n\rEventSeve",
-      "rity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020\002*\005" +
-      "\010d\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022\010" +
-      "\n\004STOP\020\003*\332\002\n\rProtoDataType\022\014\n\010DT_ERROR\020\001" +
-      "\022\020\n\014STATE_CHANGE\020\002\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020" +
-      "\004\022\t\n\005EVENT\020\005\022\021\n\rARCHIVE_INDEX\020\006\022\017\n\013ARCHI" +
-      "VE_TAG\020\007\022\r\n\tPARAMETER\020\010\022\017\n\013CMD_HISTORY\020\t" +
-      "\022\022\n\016PROCESSOR_INFO\020\n\022\017\n\013CLIENT_INFO\020\013\022\031\n" +
-      "\025PROCESSING_STATISTICS\020\014\022\017\n\013STREAM_DATA\020" +
-      "\r\022\016\n\nALARM_DATA\020\016\022\r\n\tTIME_INFO\020\017\022\016\n\nLINK" +
-      "_EVENT\020\020\022\026\n\022COMMAND_QUEUE_INFO\020\021\022\027\n\023COMM",
-      "AND_QUEUE_EVENT\020\022\022\022\n\016EXTENSION_DATA\020dB\024\n" +
-      "\022org.yamcs.protobuf"
+      "\t\022\030\n\020receptionTimeUTC\030\t \001(\t\"\212\001\n\rEventSev",
+      "erity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020\002\022" +
+      "\016\n\nXTCE_WATCH\020\n\022\020\n\014XTCE_WARNING\020\013\022\021\n\rXTC" +
+      "E_DISTRESS\020\014\022\021\n\rXTCE_CRITICAL\020\r\022\017\n\013XTCE_" +
+      "SEVERE\020\016*\005\010d\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010" +
+      "\n\004QUIT\020\002\022\010\n\004STOP\020\003*\332\002\n\rProtoDataType\022\014\n\010" +
+      "DT_ERROR\020\001\022\020\n\014STATE_CHANGE\020\002\022\r\n\tTM_PACKE" +
+      "T\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rARCHIVE_INDEX\020" +
+      "\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPARAMETER\020\010\022\017\n\013CMD" +
+      "_HISTORY\020\t\022\022\n\016PROCESSOR_INFO\020\n\022\017\n\013CLIENT" +
+      "_INFO\020\013\022\031\n\025PROCESSING_STATISTICS\020\014\022\017\n\013ST",
+      "REAM_DATA\020\r\022\016\n\nALARM_DATA\020\016\022\r\n\tTIME_INFO" +
+      "\020\017\022\016\n\nLINK_EVENT\020\020\022\026\n\022COMMAND_QUEUE_INFO" +
+      "\020\021\022\027\n\023COMMAND_QUEUE_EVENT\020\022\022\022\n\016EXTENSION" +
+      "_DATA\020dB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

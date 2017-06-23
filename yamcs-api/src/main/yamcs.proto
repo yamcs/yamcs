@@ -259,6 +259,12 @@ message Event {
     INFO = 0;
     WARNING = 1;
     ERROR = 2;
+    // Official XTCE Severity levels
+    XTCE_WATCH = 10;
+    XTCE_WARNING = 11;
+    XTCE_DISTRESS = 12;
+    XTCE_CRITICAL = 13;
+    XTCE_SEVERE = 14;
   }
   required string source = 1;
   required int64 generationTime = 2;
