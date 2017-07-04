@@ -261,10 +261,13 @@ public class XtceTmRecorder extends AbstractService {
                 if(async) {
                     tmQueue.put(t);
                 } else {
-                    saveTuple(t);
+                    synchronized(this) {
+                        saveTuple(t);
+                    }
                 }
             } catch (InterruptedException e) {
-                log.warn("Got interrupted exception while putting data in the queue: ", e);
+                log.warn("Got interrupted exception while putting data in the queue");
+                Thread.currentThread().interrupt();
             }
         }
 
