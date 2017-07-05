@@ -141,6 +141,9 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
         menu.add(menuItem);
         frame.setJMenuBar(menuBar);
 
+        instanceMenuItem=new JMenu("Instance");
+        menuBar.add(instanceMenuItem);
+
         menu = new JMenu("Help");
         menu.setMnemonic(KeyEvent.VK_H);
         menuBar.add(menu);
@@ -149,9 +152,6 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
         menuItem.addActionListener(this);
         menuItem.setActionCommand("about");
         menu.add(menuItem);
-
-        instanceMenuItem=new JMenu("Instance");
-        menuBar.add(instanceMenuItem);
 
         // build GUI
         Box dsp=Box.createVerticalBox();

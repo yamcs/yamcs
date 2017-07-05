@@ -497,8 +497,12 @@ public class RestRequest {
         
         public TimeInterval asTimeInterval() {
             TimeInterval intv = new TimeInterval();
-            if (hasStart()) intv.setStart(start);
-            if (hasStop()) intv.setStop(stop);
+            if (hasStart()) {
+                intv.setStart(start);
+            }
+            if (hasStop()) {
+                intv.setStop(stop);
+            }
             return intv;
         }
         

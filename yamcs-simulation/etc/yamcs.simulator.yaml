@@ -16,7 +16,7 @@ services:
 
     #this one sets up the recording of the command history 
     - org.yamcs.archive.CommandHistoryRecorder
-    - org.yamcs.AlarmReporter
+    - org.yamcs.alarms.AlarmReporter
     - class: org.yamcs.parameterarchive.ParameterArchive
       args:
          realtimeFiller: 
@@ -48,6 +48,7 @@ tcDataLinks:
     - class: org.yamcs.tctm.TcpTcDataLink
       spec: local
       stream: tc_realtime
+      name: tc_realtime
 
 #Specify which MDB configuration to use, references a named section in mdb.yaml 
 mdb: landing

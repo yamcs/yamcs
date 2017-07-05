@@ -9,13 +9,17 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.rest.BulkRestDataReceiver;
 import org.yamcs.api.rest.RestClient;
+import org.yamcs.protobuf.Rest.CreateTagRequest;
+import org.yamcs.protobuf.Rest.EditTagRequest;
+import org.yamcs.protobuf.Rest.ListTagsResponse;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.DeleteTagRequest;
 import org.yamcs.protobuf.Yamcs.IndexResult;
-import org.yamcs.protobuf.Yamcs.TagResult;
 import org.yamcs.protobuf.Yamcs.UpsertTagRequest;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+
+import io.netty.handler.codec.http.HttpMethod;
 
 public class YamcsArchiveIndexReceiver implements ArchiveIndexReceiver {
     ArchiveIndexListener indexListener;
@@ -45,96 +49,89 @@ public class YamcsArchiveIndexReceiver implements ArchiveIndexReceiver {
             return;
         }
 
-        yconnector.getExecutor().submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    RestClient restClient = yconnector.getRestClient();
-                    StringBuilder resource = new StringBuilder().append("/archive/"+instance+"/indexes?");
+        yconnector.getExecutor().submit(() -> {
+            try {
+                RestClient restClient = yconnector.getRestClient();
+                StringBuilder resource = new StringBuilder().append("/archive/"+instance+"/indexes?");
 
-                    if(interval.hasStart()) resource.append("start="+TimeEncoding.toString(interval.getStart()));
-                    if(interval.hasStop()) resource.append("&stop="+TimeEncoding.toString(interval.getStop()));
-
-                    Future<Void> f = restClient.doBulkGetRequest(resource.toString(), new BulkRestDataReceiver() {
-                        @Override
-                        public void receiveData(byte[] data) throws YamcsApiException {
-                            try {
-                                indexListener.receiveArchiveRecords(IndexResult.parseFrom(data));
-                            } catch (InvalidProtocolBufferException e) {
-                                throw new YamcsApiException("Error parsing index result: "+e.getMessage());
-                            }
-                        }
-                        @Override
-                        public void receiveException(Throwable t) {
-                            indexListener.receiveArchiveRecordsError(t.getMessage());
-                        }
-                    });
-
-                    f.get();
-                    indexListener.receiveArchiveRecordsFinished();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    indexListener.receiveArchiveRecordsError(e.toString());
-                }  finally {
-                    receiving=false;
+                if(interval.hasStart()) {
+                    resource.append("start="+TimeEncoding.toString(interval.getStart()));
                 }
-            };
+                if(interval.hasStop()) {
+                    resource.append("&stop="+TimeEncoding.toString(interval.getStop()));
+                }
+
+                Future<Void> f = restClient.doBulkGetRequest(resource.toString(), new BulkRestDataReceiver() {
+                    @Override
+                    public void receiveData(byte[] data) throws YamcsApiException {
+                        try {
+                            indexListener.receiveArchiveRecords(IndexResult.parseFrom(data));
+                        } catch (InvalidProtocolBufferException e) {
+                            throw new YamcsApiException("Error parsing index result: "+e.getMessage());
+                        }
+                    }
+                    @Override
+                    public void receiveException(Throwable t) {
+                        indexListener.receiveArchiveRecordsError(t.getMessage());
+                    }
+                });
+
+                f.get();
+                indexListener.receiveArchiveRecordsFinished();
+            } catch (Exception e) {
+                e.printStackTrace();
+                indexListener.receiveArchiveRecordsError(e.toString());
+            }  finally {
+                receiving=false;
+            }
         });
     }
 
 
     @Override
     public void getTag(final String instance, final TimeInterval interval) {
-        //System.out.println("receiving tags for "+instance);
         if(receiving){
             indexListener.log("already receiving data");
             return;
         }
-        yconnector.getExecutor().submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    RestClient restClient = yconnector.getRestClient();
-                    StringBuilder resource = new StringBuilder().append("/archive/"+instance+"/tags?");
+        yconnector.getExecutor().submit(() -> {
+            try {
+                RestClient restClient = yconnector.getRestClient();
+                StringBuilder resource = new StringBuilder().append("/archive/"+instance+"/tags?");
 
-                    if(interval.hasStart()) resource.append("start="+TimeEncoding.toString(interval.getStart()));
-                    if(interval.hasStop()) resource.append("&stop="+TimeEncoding.toString(interval.getStop()));
-
-                    Future<Void> f = restClient.doBulkGetRequest(resource.toString(), new BulkRestDataReceiver() {
-                        @Override
-                        public void receiveData(byte[] data) throws YamcsApiException {
-                            try {
-                                indexListener.receiveTags(TagResult.parseFrom(data).getTagList());
-                            } catch (InvalidProtocolBufferException e) {
-                                throw new YamcsApiException("Error parsing tag result: "+e.getMessage());
-                            }
-                        }
-                        @Override
-                        public void receiveException(Throwable t) {
-                            indexListener.receiveArchiveRecordsError(t.getMessage());
-                        }
-                    });
-
-                    f.get();
-                    indexListener.receiveTagsFinished();
-                    
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    indexListener.receiveArchiveRecordsError(e.getMessage());
-                }  finally {
-                    receiving=false;
+                if(interval.hasStart()) {
+                    resource.append("start="+TimeEncoding.toString(interval.getStart()));
                 }
-            };
+                if(interval.hasStop()) {
+                    resource.append("&stop="+TimeEncoding.toString(interval.getStop()));
+                }
+
+                Future<byte[]> f = restClient.doRequest(resource.toString(), HttpMethod.GET);
+                byte[] data = f.get();
+                ListTagsResponse ltr = ListTagsResponse.parseFrom(data);
+                indexListener.receiveTags(ltr.getTagList());
+                indexListener.receiveTagsFinished();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                indexListener.receiveArchiveRecordsError(e.getMessage());
+            }  finally {
+                receiving=false;
+            }
         });
     }
 
 
     @Override
     public void insertTag(String instance, ArchiveTag tag) {
-        UpsertTagRequest utr=UpsertTagRequest.newBuilder().setNewTag(tag).build();
+        CreateTagRequest ctr = CreateTagRequest.newBuilder().setColor(tag.getColor())
+                .setDescription(tag.getDescription()).setName(tag.getName())
+                .setStart(TimeEncoding.toString(tag.getStart())).setStop(TimeEncoding.toString(tag.getStop())).build();
         try {
-        //    ArchiveTag ntag=(ArchiveTag)yamcsClient.executeRpc((Protocol.getYarchIndexControlAddress(instance)), "upsertTag", utr, ArchiveTag.newBuilder());
-         //   indexListener.tagAdded(ntag);
+            RestClient restClient = yconnector.getRestClient();
+            StringBuilder resource = new StringBuilder().append("/archive/"+instance+"/tags");
+            byte[] data = restClient.doRequest(resource.toString(), HttpMethod.POST, ctr.toByteArray()).get();
+            indexListener.tagAdded(ArchiveTag.parseFrom(data));
         } catch (Exception e) {
             indexListener.log("Failed to insert tag: "+e.getMessage());
         }
@@ -142,10 +139,16 @@ public class YamcsArchiveIndexReceiver implements ArchiveIndexReceiver {
 
     @Override
     public void updateTag(String instance, ArchiveTag oldTag, ArchiveTag newTag) {
-        UpsertTagRequest utr=UpsertTagRequest.newBuilder().setOldTag(oldTag).setNewTag(newTag).build();
+        EditTagRequest etr = EditTagRequest.newBuilder().setColor(newTag.getColor())
+                .setDescription(newTag.getDescription()).setName(newTag.getName())
+                .setStart(TimeEncoding.toString(newTag.getStart())).setStop(TimeEncoding.toString(newTag.getStop())).build();
+        
         try {
-       //     ArchiveTag ntag=(ArchiveTag)yamcsClient.executeRpc((Protocol.getYarchIndexControlAddress(instance)), "upsertTag", utr, ArchiveTag.newBuilder());
-        //    indexListener.tagChanged(oldTag, ntag);
+            RestClient restClient = yconnector.getRestClient();
+            StringBuilder resource = new StringBuilder().append("/archive/").append(instance).append("/tags/")
+                    .append(TimeEncoding.toString(oldTag.getStart())).append("/").append(oldTag.getId());
+            byte[] data = restClient.doRequest(resource.toString(), HttpMethod.PATCH, etr.toByteArray()).get();
+            indexListener.tagChanged(oldTag, ArchiveTag.parseFrom(data));
         } catch (Exception e) {
             indexListener.log("Failed to insert tag: "+e.getMessage());
         }
@@ -154,10 +157,12 @@ public class YamcsArchiveIndexReceiver implements ArchiveIndexReceiver {
 
     @Override
     public void deleteTag(String instance, ArchiveTag tag) {
-        DeleteTagRequest dtr=DeleteTagRequest.newBuilder().setTag(tag).build();
+        RestClient restClient = yconnector.getRestClient();
+        StringBuilder resource = new StringBuilder().append("/archive/").append(instance).append("/tags/")
+                .append(TimeEncoding.toString(tag.getStart())).append("/").append(tag.getId());
         try {
-        //    ArchiveTag rtag=(ArchiveTag)yamcsClient.executeRpc((Protocol.getYarchIndexControlAddress(instance)), "deleteTag", dtr, ArchiveTag.newBuilder());
-        //    indexListener.tagRemoved(rtag);
+            byte[] data = restClient.doRequest(resource.toString(), HttpMethod.DELETE).get();
+            indexListener.tagRemoved(ArchiveTag.parseFrom(data));
         } catch (Exception e) {
             indexListener.log("Failed to remove tag: "+e.getMessage());
         }

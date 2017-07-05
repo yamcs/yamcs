@@ -59,14 +59,14 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
         selectionMenu.setVisible(false);
         archivePanel.archiveBrowser.menuBar.add(selectionMenu);
 
-        packetRetrieval = new JMenuItem("Export Packets...");
-        packetRetrieval.setToolTipText("Start packet retrieval of the selected packets");
+        packetRetrieval = new JMenuItem("Export Telemetry Packets...");
+        packetRetrieval.setToolTipText("Start packet retrieval of the selected telemetry packets");
         packetRetrieval.addActionListener(this);
         packetRetrieval.setActionCommand("start-packet-retrieval");
         packetRetrieval.setEnabled(false);
         selectionMenu.add(packetRetrieval);
 
-        parameterRetrieval = new JMenuItem("Export Parameters...");
+        parameterRetrieval = new JMenuItem("Export Processed Parameters...");
         parameterRetrieval.setToolTipText("Start parameter retrieval for the selected time interval");
         parameterRetrieval.addActionListener(this);
         parameterRetrieval.setActionCommand("start-parameter-retrieval");
@@ -268,7 +268,6 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
         newTagButton.setToolTipText("Define a new tag for the current selection");
         newTagButton.addActionListener(this);
         newTagButton.setActionCommand("new-tag-button");
-        newTagButton.setVisible(false);
         buttonToolbar.add(newTagButton);
         return buttonToolbar;
     }
@@ -286,9 +285,13 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
             dataView.zoomIn();
             zoomOutButton.setEnabled(true);
         } else if (cmd.equalsIgnoreCase("completeness_selection_finished")) {
-            if(indexReceiver.supportsTags()) newTagButton.setEnabled(true);
+            if(indexReceiver.supportsTags()) {
+                newTagButton.setEnabled(true);
+            }
         } else if (cmd.toLowerCase().endsWith("selection_finished")) {
-            if(indexReceiver.supportsTags()) newTagButton.setEnabled(true);
+            if(indexReceiver.supportsTags()) {
+                newTagButton.setEnabled(true);
+            }
             if(cmd.startsWith("pp") || cmd.startsWith("tm")) {
                 packetRetrieval.setEnabled(true);
                 parameterRetrieval.setEnabled(true);
@@ -296,7 +299,9 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
                 cmdHistRetrieval.setEnabled(true);
             }
         } else  if(cmd.equalsIgnoreCase("selection_reset")) {
-            if (newTagButton != null) newTagButton.setEnabled(false);
+            if (newTagButton != null) {
+                newTagButton.setEnabled(false);
+            }
             packetRetrieval.setEnabled(false);
             parameterRetrieval.setEnabled(false);
             cmdHistRetrieval.setEnabled(false);

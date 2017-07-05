@@ -36,6 +36,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultHttpResponse;
@@ -43,6 +44,7 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpMessage;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequest;
@@ -102,6 +104,15 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     }
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg)  throws Exception {
+        if(msg instanceof HttpMessage) {
+            DecoderResult dr = ((HttpMessage)msg).decoderResult();
+            if(!dr.isSuccess()) {
+                log.warn("{} got exception decoding http message: {}", ctx.channel().id().asShortText(), dr.cause());
+                ctx.writeAndFlush(BAD_REQUEST);
+                return;
+            }
+        }
+        
         if (msg instanceof HttpRequest) {
             contentExpected = false;
             processRequest(ctx, (HttpRequest) msg);
@@ -113,21 +124,21 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                     ctx.fireUserEventTriggered(CONTENT_FINISHED_EVENT);
                 }
             } else if (!(msg instanceof LastHttpContent)) {
-                log.warn("Unexpected http content received: {}", msg);
+                log.warn("{} unexpected http content received: {}", ctx.channel().id().asShortText(), msg);
                 ReferenceCountUtil.release(msg);
                 ctx.close();
             }
         } else {
-            log.error("Unexpected message received: {}", msg);
+            log.error("{} unexpected message received: {}", ctx.channel().id().asShortText(), msg);
             ReferenceCountUtil.release(msg);
         }
     }
-
+    
     private void processRequest(ChannelHandlerContext ctx, HttpRequest req) {
         // We have this also on info level coupled with the HTTP response status
         // code,
         // but this is on debug for an earlier reporting while debugging issues
-        log.debug("{} {}", req.method(), req.uri());
+        log.debug("{} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri());
 
         Privilege priv = Privilege.getInstance();
 
@@ -242,7 +253,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public ChannelFuture sendRedirect(ChannelHandlerContext ctx, HttpRequest req, String newUri) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.FOUND);
         response.headers().set(HttpHeaderNames.LOCATION, newUri);
-        log.info("{} {} {}", req.method(), req.uri(), HttpResponseStatus.FOUND.code());
+        log.info("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(), HttpResponseStatus.FOUND.code());
         return ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
@@ -293,7 +304,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     
     public static ChannelFuture sendResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponse response, boolean autoCloseOnError) {
         if(response.status()==HttpResponseStatus.OK) {
-            log.info("{} {} {}", req.method(), req.uri(), response.status().code());
+            log.info("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(), response.status().code());
             ChannelFuture writeFuture = ctx.writeAndFlush(response);
             if (!HttpUtil.isKeepAlive(req)) {
                 writeFuture.addListener(ChannelFutureListener.CLOSE);
@@ -301,9 +312,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             return writeFuture;
         } else {
             if (req != null) {
-                log.warn("{} {} {}", req.method(), req.uri(), response.status().code());
+                log.warn("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(), response.status().code());
             } else {
-                log.warn("Malformed or illegal request. Sending back {}",  response.status().code());
+                log.warn("{} malformed or illegal request. Sending back {}",  ctx.channel().id().asShortText(), response.status().code());
             }
             ChannelFuture writeFuture = ctx.writeAndFlush(response);
             if(autoCloseOnError) {
@@ -323,7 +334,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
      * Sends base HTTP response indicating the use of chunked transfer encoding
      */
     public static ChannelFuture startChunkedTransfer(ChannelHandlerContext ctx, HttpRequest req, MediaType contentType, String filename) {
-        log.info("{} {} 200 Starting chunked transfer", req.method(), req.uri());
+        log.info("{} {} {} 200 starting chunked transfer", ctx.channel().id().asShortText(), req.method(), req.uri());
         ctx.channel().attr(CTX_CHUNK_STATS).set(new ChunkedTransferStats(req.method(), req.uri()));
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
