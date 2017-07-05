@@ -237,3 +237,10 @@ message ListServiceInfoResponse {
 message EditServiceRequest {
   optional string state = 1;
 }
+
+message BulkGetIndexRequest {
+  optional string start = 1;
+  optional string stop = 2;
+  repeated string filter = 3;
+  repeated string packetname = 4;
+}

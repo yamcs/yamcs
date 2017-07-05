@@ -11,11 +11,14 @@ import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.archive.IndexRequestListener;
 import org.yamcs.archive.IndexServer;
+import org.yamcs.protobuf.Rest.BulkGetIndexRequest;
+import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpRequestHandler;
@@ -78,7 +81,22 @@ public class ArchiveIndexRestHandler extends RestHandler {
                 }
             }
         }
-
+        
+        if(req.hasBody()) {
+            BulkGetIndexRequest bgir = req.bodyAsMessage(SchemaRest.BulkGetIndexRequest.MERGE).build();
+            System.out.println("bgir: "+bgir);
+            if(bgir.hasStart()) {
+                requestb.setStart(TimeEncoding.parse(bgir.getStart()));
+            }
+            if(bgir.hasStop()) {
+                requestb.setStop(TimeEncoding.parse(bgir.getStop()));
+            }
+            filter.addAll(bgir.getFilterList());
+            for (String name : bgir.getPacketnameList()) {
+                requestb.addTmPacket(NamedObjectId.newBuilder().setName(name));
+            }
+        }
+        
         if (filter.isEmpty() && requestb.getTmPacketCount() == 0) {
             requestb.setSendAllTm(true);
             requestb.setSendAllPp(true);

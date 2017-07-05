@@ -1,5 +1,9 @@
+Version 3.2.3 Released 
+- Support index requests with parameters encoded in the HTTP request body in order to allow a large number of packets to be specified (otherwise, the request would exceed maximum URI size).
+
 Version 3.2.2 Released 17-May-2017
 - Fixed tag handling in Yamcs Monitor/Archive Browser
+
 
 Version 3.2.1 Released 15-May-2017
 - Added an option to yamcs rocksdb compact to specify the target file size and changed the default size from 64MB to 256MB
