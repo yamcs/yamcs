@@ -19,6 +19,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.utils.DoubleRange;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.AlarmRanges;
@@ -36,7 +37,6 @@ import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.FixedIntegerValue;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatParameterType;
-import org.yamcs.xtce.FloatRange;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.IntegerValue;
@@ -702,7 +702,7 @@ public class XtceStaxReader {
     }
 
 
-    private FloatRange readFloatRange() {
+    private DoubleRange readFloatRange() {
         StartElement e = xmlEvent.asStartElement();
         double minExclusive = Double.NaN;
         double maxExclusive = Double.NaN;
@@ -729,7 +729,7 @@ public class XtceStaxReader {
         } 
        
         
-        return FloatRange.fromXtceComplement(minExclusive, maxExclusive, minInclusive, maxInclusive);
+        return DoubleRange.fromXtceComplement(minExclusive, maxExclusive, minInclusive, maxInclusive);
     }
 
 

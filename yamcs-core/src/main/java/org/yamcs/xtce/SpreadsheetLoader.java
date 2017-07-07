@@ -18,6 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.yamcs.utils.DoubleRange;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.CommandVerifier.TerminationAction;
@@ -2182,18 +2183,18 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             if(para.getParameterType() instanceof IntegerParameterType) {
                 IntegerParameterType ipt=(IntegerParameterType)para.getParameterType();
                 if("low".equals(trigger)) {
-                    ipt.addAlarmRange(context, new FloatRange(Double.parseDouble(triggerValue),Double.POSITIVE_INFINITY), level);
+                    ipt.addAlarmRange(context, new DoubleRange(Double.parseDouble(triggerValue),Double.POSITIVE_INFINITY), level);
                 } else if("high".equals(trigger)) {
-                    ipt.addAlarmRange(context, new FloatRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)), level);
+                    ipt.addAlarmRange(context, new DoubleRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)), level);
                 } else {
                     throw new SpreadsheetLoadException(ctx, "Unexpected trigger type '"+trigger+"' for numeric parameter "+para.getName());
                 }
             } else if(para.getParameterType() instanceof FloatParameterType) {
                 FloatParameterType fpt=(FloatParameterType)para.getParameterType();
                 if("low".equals(trigger)) {
-                    fpt.addAlarmRange(context, new FloatRange(Double.parseDouble(triggerValue),Double.POSITIVE_INFINITY), level);
+                    fpt.addAlarmRange(context, new DoubleRange(Double.parseDouble(triggerValue), Double.POSITIVE_INFINITY), level);
                 } else if("high".equals(trigger)) {
-                    fpt.addAlarmRange(context, new FloatRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)), level);
+                    fpt.addAlarmRange(context, new DoubleRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)), level);
                 } else {
                     throw new SpreadsheetLoadException(ctx, "Unexpected trigger type '"+trigger+"' for numeric parameter "+para.getName());
                 }

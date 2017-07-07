@@ -93,7 +93,8 @@ public class AlarmTest {
         assertEquals(60, params.get(0).getCriticalRange().getMax(), 1e-17);
         assertEquals(Double.NEGATIVE_INFINITY, params.get(0).getSevereRange().getMin(), 1e-17);
         assertEquals(70, params.get(0).getSevereRange().getMax(), 1e-17);
-        System.out.println("params0: "+params.get(0).getMonitoringResult());
+        
+        System.out.println("params0: "+params.get(0));
         assertEquals(MonitoringResult.IN_LIMITS, params.get(0).getMonitoringResult());
         assertEquals(0, q.size());
         

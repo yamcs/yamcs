@@ -9,9 +9,9 @@ import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.utils.DoubleRange;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
-import org.yamcs.xtce.FloatRange;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 
@@ -216,28 +216,28 @@ public class ParameterValue {
             status = new ParameterStatus();
         }
     }
-    public void setWatchRange(FloatRange range) {
+    public void setWatchRange(DoubleRange range) {
         changeNominalStatus();
         status.setWatchRange(range);
     }
 
-    public void setWarningRange(FloatRange range) {
+    public void setWarningRange(DoubleRange range) {
         changeNominalStatus();
         status.setWarningRange(range);
     }
 
-    public void setDistressRange(FloatRange range) {
+    public void setDistressRange(DoubleRange range) {
         changeNominalStatus();
         status.setDistressRange(range);
     }
 
   
-    public void setCriticalRange(FloatRange range) {
+    public void setCriticalRange(DoubleRange range) {
         changeNominalStatus();
         status.setCriticalRange(range);
     }
 
-    public void setSevereRange(FloatRange range) {
+    public void setSevereRange(DoubleRange range) {
         changeNominalStatus();
         status.setSevereRange(range);
     }
@@ -269,19 +269,19 @@ public class ParameterValue {
         }
         status.setAcquisitionStatus(a);
     }
-    public FloatRange getDistressRange() {
+    public DoubleRange getDistressRange() {
         return status.getDistressRange();
     }
-    public FloatRange getWatchRange() {
+    public DoubleRange getWatchRange() {
         return status.getWatchRange();
     }
-    public FloatRange getCriticalRange() {
+    public DoubleRange getCriticalRange() {
         return status.getCriticalRange();
     }
-    public FloatRange getWarningRange() {
+    public DoubleRange getWarningRange() {
         return status.getWarningRange();
     }
-    public FloatRange getSevereRange() {
+    public DoubleRange getSevereRange() {
         return status.getSevereRange();
     }
     public MonitoringResult getMonitoringResult() {
@@ -374,23 +374,23 @@ public class ParameterValue {
         return toProtobufParameterValue(optionalId, true);
     }
     
-    public static AlarmRange toGpbAlarmRange(AlarmLevelType gpbLevel, FloatRange floatRange) {
+    public static AlarmRange toGpbAlarmRange(AlarmLevelType gpbLevel, DoubleRange floatRange) {
         AlarmRange.Builder rangeb = AlarmRange.newBuilder();
         rangeb.setLevel(gpbLevel);
         double min = floatRange.getMin();
         if (Double.isFinite(min)) { //floatRange represents the IN_LIMIT range, that's why we invert the inclusive and exclusive
             if(floatRange.isMinInclusive()) {
-                rangeb.setMinExclusive(min);
-            } else {
                 rangeb.setMinInclusive(min);
+            } else {
+                rangeb.setMinExclusive(min);
             }
         }
         double max = floatRange.getMax();
         if (Double.isFinite(max)) {
             if(floatRange.isMaxInclusive()) {
-                rangeb.setMaxExclusive(max);
-            } else {
                 rangeb.setMaxInclusive(max);
+            } else {
+                rangeb.setMaxExclusive(max);                
             }
         }
         return rangeb.build();
@@ -467,10 +467,10 @@ public class ParameterValue {
         return acquisitionTime != TimeEncoding.INVALID_INSTANT;
     }
 
-    private FloatRange fromGbpAlarmRange(AlarmRange ar) {
+    private DoubleRange fromGbpAlarmRange(AlarmRange ar) {
         double minInclusive = ar.hasMinInclusive()?ar.getMinInclusive():Double.NEGATIVE_INFINITY;
         double maxInclusive = ar.hasMaxInclusive()?ar.getMaxInclusive():Double.POSITIVE_INFINITY;
-        return new FloatRange(minInclusive, maxInclusive);
+        return new DoubleRange(minInclusive, maxInclusive);
     }
 
     @Override

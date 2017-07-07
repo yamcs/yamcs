@@ -9,7 +9,7 @@ import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
 import org.yamcs.utils.DecodingException;
-import org.yamcs.xtce.FloatRange;
+import org.yamcs.utils.DoubleRange;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -56,7 +56,7 @@ public  class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
     }
 
 
-    private static void addAlarmRange(ParameterStatus.Builder pvfb, AlarmLevelType level, FloatRange range) {
+    private static void addAlarmRange(ParameterStatus.Builder pvfb, AlarmLevelType level, DoubleRange range) {
         if(range==null) {
             return;
         }

@@ -3,7 +3,7 @@ package org.yamcs.parameter;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
-import org.yamcs.xtce.FloatRange;
+import org.yamcs.utils.DoubleRange;
 
 public class ParameterStatus {
     public static final ParameterStatus NOMINAL = new ParameterStatus();
@@ -14,11 +14,11 @@ public class ParameterStatus {
     private MonitoringResult deltaMonitoringResult;
     private RangeCondition rangeCondition;
 
-    private FloatRange watchRange;
-    private FloatRange warningRange;
-    private FloatRange distressRange;
-    private FloatRange criticalRange;
-    private FloatRange severeRange;
+    private DoubleRange watchRange;
+    private DoubleRange warningRange;
+    private DoubleRange distressRange;
+    private DoubleRange criticalRange;
+    private DoubleRange severeRange;
     
     public AcquisitionStatus getAcquisitionStatus() {
         return acquisitionStatus;
@@ -50,34 +50,34 @@ public class ParameterStatus {
     public void setRangeCondition(RangeCondition rangeCondition) {
         this.rangeCondition = rangeCondition;
     }
-    public FloatRange getWatchRange() {
+    public DoubleRange getWatchRange() {
         return watchRange;
     }
-    public void setWatchRange(FloatRange watchRange) {
+    public void setWatchRange(DoubleRange watchRange) {
         this.watchRange = watchRange;
     }
-    public FloatRange getWarningRange() {
+    public DoubleRange getWarningRange() {
         return warningRange;
     }
-    public void setWarningRange(FloatRange warningRange) {
+    public void setWarningRange(DoubleRange warningRange) {
         this.warningRange = warningRange;
     }
-    public FloatRange getDistressRange() {
+    public DoubleRange getDistressRange() {
         return distressRange;
     }
-    public void setDistressRange(FloatRange distressRange) {
+    public void setDistressRange(DoubleRange distressRange) {
         this.distressRange = distressRange;
     }
-    public FloatRange getCriticalRange() {
+    public DoubleRange getCriticalRange() {
         return criticalRange;
     }
-    public void setCriticalRange(FloatRange criticalRange) {
+    public void setCriticalRange(DoubleRange criticalRange) {
         this.criticalRange = criticalRange;
     }
-    public FloatRange getSevereRange() {
+    public DoubleRange getSevereRange() {
         return severeRange;
     }
-    public void setSevereRange(FloatRange severeRange) {
+    public void setSevereRange(DoubleRange severeRange) {
         this.severeRange = severeRange;
     }
    

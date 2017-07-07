@@ -14,6 +14,7 @@ import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.DoubleRange;
 import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.AlarmType;
@@ -23,7 +24,6 @@ import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
 import org.yamcs.xtce.EnumerationContextAlarm;
 import org.yamcs.xtce.FloatParameterType;
-import org.yamcs.xtce.FloatRange;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.NumericContextAlarm;
@@ -226,7 +226,7 @@ public class AlarmChecker {
         }
     }
 
-    private void checkRange(ParameterValue pv, MonitoringResult mr, FloatRange fr, double v) {
+    private void checkRange(ParameterValue pv, MonitoringResult mr, DoubleRange fr, double v) {
         int x = fr.inRange(v);
         if(x<0) {
             pv.setMonitoringResult(mr);
@@ -241,11 +241,11 @@ public class AlarmChecker {
      */
     private void checkStaticAlarmRanges(ParameterValue pv, double doubleCalValue, AlarmRanges staticAlarmRanges) {
         pv.setMonitoringResult(null);
-        FloatRange watchRange=staticAlarmRanges.getWatchRange();
-        FloatRange warningRange=staticAlarmRanges.getWarningRange();
-        FloatRange distressRange=staticAlarmRanges.getDistressRange();
-        FloatRange criticalRange=staticAlarmRanges.getCriticalRange();
-        FloatRange severeRange=staticAlarmRanges.getSevereRange();
+        DoubleRange watchRange=staticAlarmRanges.getWatchRange();
+        DoubleRange warningRange=staticAlarmRanges.getWarningRange();
+        DoubleRange distressRange=staticAlarmRanges.getDistressRange();
+        DoubleRange criticalRange=staticAlarmRanges.getCriticalRange();
+        DoubleRange severeRange=staticAlarmRanges.getSevereRange();
         if(severeRange!=null) {
             checkRange(pv, MonitoringResult.SEVERE, severeRange, doubleCalValue);
         }
