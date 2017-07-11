@@ -200,6 +200,7 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
+      <!-- You need to have protoc version 2.5.0 installed, 2.6.1 won't work, let alone 3.x -->
       <version>2.5.0</version>
     </dependency>
     <dependency>
