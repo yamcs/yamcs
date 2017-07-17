@@ -30,6 +30,8 @@ message AlarmRange {
   optional AlarmLevelType level = 1;
   optional double minInclusive = 2;
   optional double maxInclusive = 3;
+  optional double minExclusive = 4;
+  optional double maxExclusive = 5;
 }
 
 message EnumerationAlarm {

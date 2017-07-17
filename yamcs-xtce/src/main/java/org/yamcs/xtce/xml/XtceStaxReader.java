@@ -19,6 +19,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.utils.DoubleRange;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.AlarmRanges;
@@ -36,7 +37,6 @@ import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.FixedIntegerValue;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatParameterType;
-import org.yamcs.xtce.FloatRange;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.IntegerValue;
@@ -702,20 +702,34 @@ public class XtceStaxReader {
     }
 
 
-    private FloatRange readFloatRange() {
+    private DoubleRange readFloatRange() {
         StartElement e = xmlEvent.asStartElement();
-        double minInclusive = Double.MIN_VALUE;
-        double maxInclusive = Double.MAX_VALUE;
+        double minExclusive = Double.NaN;
+        double maxExclusive = Double.NaN;
+        double minInclusive = Double.NaN;
+        double maxInclusive = Double.NaN;
         
-        String value = readAttribute("minInclusive", e);        
+        String value = readAttribute("minExclusive", e);        
+        if (value != null) {
+            minExclusive = Double.parseDouble(value);            
+        } 
+        
+        value = readAttribute("maxExclusive", e);        
+        if (value != null) {
+            maxExclusive = Double.parseDouble(value);            
+        } 
+        value = readAttribute("minInclusive", e);        
         if (value != null) {
             minInclusive = Double.parseDouble(value);            
-        }
+        } 
+        
         value = readAttribute("maxInclusive", e);        
         if (value != null) {
             maxInclusive = Double.parseDouble(value);            
-        }
-        return new FloatRange(minInclusive, maxInclusive);
+        } 
+       
+        
+        return DoubleRange.fromXtceComplement(minExclusive, maxExclusive, minInclusive, maxInclusive);
     }
 
 
@@ -939,6 +953,8 @@ public class XtceStaxReader {
                 integerParamType.addAllUnits(readXtceUnitSet());
             } else if (isStartElementWithName(XTCE_IntegerDataEncoding)) {
                 integerParamType.setEncoding(readXtceIntegerDataEncoding());
+            } else if (isStartElementWithName(XTCE_DefaultAlarm)) {
+                integerParamType.setDefaultAlarm(readDefaultAlarm());             
             } else if (isStartElementWithName(XTCE_ContextAlarmList)) {
                 integerParamType.setContextAlarmList(readNumericContextAlarmList(spaceSystem));
             } else if (isEndElementWithName(XTCE_IntegerParameterType)) {

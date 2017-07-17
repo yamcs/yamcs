@@ -135,6 +135,10 @@ public final class SchemaMdb
                     output.writeDouble(2, message.getMinInclusive(), false);
                 if(message.hasMaxInclusive())
                     output.writeDouble(3, message.getMaxInclusive(), false);
+                if(message.hasMinExclusive())
+                    output.writeDouble(4, message.getMinExclusive(), false);
+                if(message.hasMaxExclusive())
+                    output.writeDouble(5, message.getMaxExclusive(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Mdb.AlarmRange message)
             {
@@ -183,6 +187,12 @@ public final class SchemaMdb
                         case 3:
                             builder.setMaxInclusive(input.readDouble());
                             break;
+                        case 4:
+                            builder.setMinExclusive(input.readDouble());
+                            break;
+                        case 5:
+                            builder.setMaxExclusive(input.readDouble());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -226,6 +236,8 @@ public final class SchemaMdb
                 case 1: return "level";
                 case 2: return "minInclusive";
                 case 3: return "maxInclusive";
+                case 4: return "minExclusive";
+                case 5: return "maxExclusive";
                 default: return null;
             }
         }
@@ -240,6 +252,8 @@ public final class SchemaMdb
             fieldMap.put("level", 1);
             fieldMap.put("minInclusive", 2);
             fieldMap.put("maxInclusive", 3);
+            fieldMap.put("minExclusive", 4);
+            fieldMap.put("maxExclusive", 5);
         }
     }
 

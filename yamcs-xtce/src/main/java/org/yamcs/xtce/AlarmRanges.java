@@ -2,6 +2,8 @@ package org.yamcs.xtce;
 
 import java.io.Serializable;
 
+import org.yamcs.utils.DoubleRange;
+
 /**
  * Contains five ranges: Watch, Warning, Distress, Critical, and Severe each in increasing severity. 
  * Normally, only the Warning and Critical ranges are used and the color yellow is associated with Warning 
@@ -9,19 +11,22 @@ import java.io.Serializable;
  * min and higher than the max values.   These ranges should not overlap, but if they do, assume the most
  * severe range is to be applied.  All ranges are optional and it is quite allowed for there to be only one
  * end of the range.  Range values are in calibrated engineering units.
+ * 
+ * Note that we actually keep here the ranges for the IN_LIMITS.
+ * This means that if range.inRange(v)!=0 (meaning v out of range), then the parameter is in alarm state. 
+ * 
  * @author nm
  *
  */
 public class AlarmRanges implements Serializable {
     private static final long serialVersionUID = 200706052351L;
+    DoubleRange watchRange = null;
+    DoubleRange warningRange = null;
+    DoubleRange distressRange = null;
+    DoubleRange criticalRange = null;
+    DoubleRange severeRange = null;
 
-    FloatRange watchRange=null;
-    FloatRange warningRange=null;
-    FloatRange distressRange=null;
-    FloatRange criticalRange=null;
-    FloatRange severeRange=null;
-
-    public void addWatchRange(FloatRange range) {
+    public void addWatchRange(DoubleRange range) {
         if(this.watchRange == null) {
             this.watchRange = range;
         } else {
@@ -29,7 +34,7 @@ public class AlarmRanges implements Serializable {
         }
     }
 
-    public void addWarningRange(FloatRange range) {
+    public void addWarningRange(DoubleRange range) {
         if(this.warningRange == null) {
             this.warningRange = range;
         } else {
@@ -37,7 +42,7 @@ public class AlarmRanges implements Serializable {
         }
     }
 
-    public void addDistressRange(FloatRange range) {
+    public void addDistressRange(DoubleRange range) {
         if(this.distressRange == null) {
             this.distressRange = range;
         } else {
@@ -45,7 +50,7 @@ public class AlarmRanges implements Serializable {
         }
     }
 
-    public void addCriticalRange(FloatRange range) {
+    public void addCriticalRange(DoubleRange range) {
         if(this.criticalRange == null) {
             this.criticalRange = range;
         } else {
@@ -53,7 +58,7 @@ public class AlarmRanges implements Serializable {
         }
     }
 
-    public void addSevereRange(FloatRange range) {
+    public void addSevereRange(DoubleRange range) {
         if(this.severeRange == null) {
             this.severeRange = range;
         } else {
@@ -61,7 +66,7 @@ public class AlarmRanges implements Serializable {
         }
     }
 
-    public void addRange(FloatRange range, AlarmLevels level) {
+    public void addRange(DoubleRange range, AlarmLevels level) {
         switch(level) {
         case watch:
             addWatchRange(range);
@@ -84,23 +89,23 @@ public class AlarmRanges implements Serializable {
         }
     }
 
-    public FloatRange getWatchRange() {
+    public DoubleRange getWatchRange() {
         return watchRange;
     }
-    public FloatRange getWarningRange() {
+    public DoubleRange getWarningRange() {
         return warningRange;
     }
-    public FloatRange getDistressRange() {
+    public DoubleRange getDistressRange() {
         return distressRange;
     }
-    public FloatRange getCriticalRange() {
+    public DoubleRange getCriticalRange() {
         return criticalRange;
     }
-    public FloatRange getSevereRange() {
+    public DoubleRange getSevereRange() {
         return severeRange;
     }
 
-    public void setWarningRange(FloatRange warningRange) {
+    public void setWarningRange(DoubleRange warningRange) {
         this.warningRange=warningRange;
     }
 

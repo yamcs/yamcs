@@ -14,6 +14,7 @@ import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.DoubleRange;
 import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.AlarmType;
@@ -23,7 +24,6 @@ import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
 import org.yamcs.xtce.EnumerationContextAlarm;
 import org.yamcs.xtce.FloatParameterType;
-import org.yamcs.xtce.FloatRange;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.NumericContextAlarm;
@@ -226,60 +226,40 @@ public class AlarmChecker {
         }
     }
 
+    private void checkRange(ParameterValue pv, MonitoringResult mr, DoubleRange fr, double v) {
+        int x = fr.inRange(v);
+        if(x<0) {
+            pv.setMonitoringResult(mr);
+            pv.setRangeCondition(RangeCondition.LOW);
+        } else if(x>0) {
+            pv.setMonitoringResult(mr);
+            pv.setRangeCondition(RangeCondition.HIGH);
+        }
+    }
     /**
      * Verify limits, giving priority to highest severity
      */
     private void checkStaticAlarmRanges(ParameterValue pv, double doubleCalValue, AlarmRanges staticAlarmRanges) {
         pv.setMonitoringResult(null);
-        FloatRange watchRange=staticAlarmRanges.getWatchRange();
-        FloatRange warningRange=staticAlarmRanges.getWarningRange();
-        FloatRange distressRange=staticAlarmRanges.getDistressRange();
-        FloatRange criticalRange=staticAlarmRanges.getCriticalRange();
-        FloatRange severeRange=staticAlarmRanges.getSevereRange();
+        DoubleRange watchRange=staticAlarmRanges.getWatchRange();
+        DoubleRange warningRange=staticAlarmRanges.getWarningRange();
+        DoubleRange distressRange=staticAlarmRanges.getDistressRange();
+        DoubleRange criticalRange=staticAlarmRanges.getCriticalRange();
+        DoubleRange severeRange=staticAlarmRanges.getSevereRange();
         if(severeRange!=null) {
-            if(severeRange.getMinInclusive()>doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.SEVERE);
-                pv.setRangeCondition(RangeCondition.LOW);
-            } else if(severeRange.getMaxInclusive()<doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.SEVERE);
-                pv.setRangeCondition(RangeCondition.HIGH);
-            }
+            checkRange(pv, MonitoringResult.SEVERE, severeRange, doubleCalValue);
         }
         if(pv.getMonitoringResult()==null && criticalRange!=null) {
-            if(criticalRange.getMinInclusive()>doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.CRITICAL);
-                pv.setRangeCondition(RangeCondition.LOW);
-            } else if(criticalRange.getMaxInclusive()<doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.CRITICAL);
-                pv.setRangeCondition(RangeCondition.HIGH);
-            }
+            checkRange(pv, MonitoringResult.CRITICAL, criticalRange, doubleCalValue);
         }
         if(pv.getMonitoringResult()==null && distressRange!=null) {
-            if(distressRange.getMinInclusive()>doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.DISTRESS);
-                pv.setRangeCondition(RangeCondition.LOW);
-            } else if(distressRange.getMaxInclusive()<doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.DISTRESS);
-                pv.setRangeCondition(RangeCondition.HIGH);
-            }
+            checkRange(pv, MonitoringResult.DISTRESS, distressRange, doubleCalValue);
         }
         if(pv.getMonitoringResult()==null && warningRange!=null) {
-            if(warningRange.getMinInclusive()>doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.WARNING);
-                pv.setRangeCondition(RangeCondition.LOW);
-            } else if(warningRange.getMaxInclusive()<doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.WARNING);
-                pv.setRangeCondition(RangeCondition.HIGH);
-            }
+            checkRange(pv, MonitoringResult.WARNING, warningRange, doubleCalValue);
         }
         if(pv.getMonitoringResult()==null && watchRange!=null) {
-            if(watchRange.getMinInclusive()>doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.WATCH);
-                pv.setRangeCondition(RangeCondition.LOW);
-            } else if(watchRange.getMaxInclusive()<doubleCalValue) {
-                pv.setMonitoringResult(MonitoringResult.WATCH);
-                pv.setRangeCondition(RangeCondition.HIGH);
-            }
+            checkRange(pv, MonitoringResult.WATCH, watchRange, doubleCalValue);
         }
 
         if (pv.getMonitoringResult() == null) {
@@ -311,7 +291,9 @@ public class AlarmChecker {
         if(alarm != null) {
             AlarmLevels level=alarm.getDefaultAlarmLevel();
             for(EnumerationAlarmItem eai:alarm.getAlarmList()) {
-                if(eai.getEnumerationLabel().equals(s)) level=eai.getAlarmLevel();
+                if(eai.getEnumerationLabel().equals(s)) {
+                    level = eai.getAlarmLevel();
+                }
             }
 
             switch(level) {

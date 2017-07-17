@@ -8,6 +8,7 @@ import java.util.Set;
 
 import javax.xml.bind.DatatypeConverter;
 
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Mdb;
 import org.yamcs.protobuf.Mdb.AlarmInfo;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
@@ -36,6 +37,7 @@ import org.yamcs.protobuf.Mdb.UnitInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.YamcsManagement.HistoryInfo;
 import org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo;
+import org.yamcs.utils.DoubleRange;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.xtce.AlarmRanges;
@@ -63,7 +65,6 @@ import org.yamcs.xtce.FixedIntegerValue;
 import org.yamcs.xtce.FloatArgumentType;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatParameterType;
-import org.yamcs.xtce.FloatRange;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.History;
 import org.yamcs.xtce.InputParameter;
@@ -524,8 +525,8 @@ public class XtceToGpbAssembler {
         } else if (argumentType instanceof FloatArgumentType) {
             FloatArgumentType fat = (FloatArgumentType) argumentType;
             if (fat.getValidRange() != null) {
-                infob.setRangeMin(fat.getValidRange().getMinInclusive());
-                infob.setRangeMax(fat.getValidRange().getMaxInclusive());
+                infob.setRangeMin(fat.getValidRange().getMin());
+                infob.setRangeMax(fat.getValidRange().getMax());
             }
         } else if (argumentType instanceof EnumeratedArgumentType) {
             EnumeratedArgumentType eat = (EnumeratedArgumentType) argumentType;
@@ -621,23 +622,23 @@ public class XtceToGpbAssembler {
         alarmInfob.setMinViolations(numericAlarm.getMinViolations());
         AlarmRanges staticRanges = numericAlarm.getStaticAlarmRanges();
         if (staticRanges.getWatchRange() != null) {
-            AlarmRange watchRange = toAlarmRange(AlarmLevelType.WATCH, staticRanges.getWatchRange());
+            AlarmRange watchRange = ParameterValue.toGpbAlarmRange(AlarmLevelType.WATCH, staticRanges.getWatchRange());
             alarmInfob.addStaticAlarmRange(watchRange);
         }
         if (staticRanges.getWarningRange() != null) {
-            AlarmRange warningRange = toAlarmRange(AlarmLevelType.WARNING, staticRanges.getWarningRange());
+            AlarmRange warningRange = ParameterValue.toGpbAlarmRange(AlarmLevelType.WARNING, staticRanges.getWarningRange());
             alarmInfob.addStaticAlarmRange(warningRange);
         }
         if (staticRanges.getDistressRange() != null) {
-            AlarmRange distressRange = toAlarmRange(AlarmLevelType.DISTRESS, staticRanges.getDistressRange());
+            AlarmRange distressRange = ParameterValue.toGpbAlarmRange(AlarmLevelType.DISTRESS, staticRanges.getDistressRange());
             alarmInfob.addStaticAlarmRange(distressRange);
         }
         if (staticRanges.getCriticalRange() != null) {
-            AlarmRange criticalRange = toAlarmRange(AlarmLevelType.CRITICAL, staticRanges.getCriticalRange());
+            AlarmRange criticalRange = ParameterValue.toGpbAlarmRange(AlarmLevelType.CRITICAL, staticRanges.getCriticalRange());
             alarmInfob.addStaticAlarmRange(criticalRange);
         }
         if (staticRanges.getSevereRange() != null) {
-            AlarmRange severeRange = toAlarmRange(AlarmLevelType.SEVERE, staticRanges.getSevereRange());
+            AlarmRange severeRange = ParameterValue.toGpbAlarmRange(AlarmLevelType.SEVERE, staticRanges.getSevereRange());
             alarmInfob.addStaticAlarmRange(severeRange);
         }
 
@@ -651,16 +652,6 @@ public class XtceToGpbAssembler {
             alarmInfob.addEnumerationAlarm(toEnumerationAlarm(item));
         }
         return alarmInfob.build();
-    }
-
-    public static AlarmRange toAlarmRange(AlarmLevelType level, FloatRange alarmRange) {
-        AlarmRange.Builder resultb = AlarmRange.newBuilder();
-        resultb.setLevel(level);
-        if (Double.isFinite(alarmRange.getMinInclusive()))
-            resultb.setMinInclusive(alarmRange.getMinInclusive());
-        if (Double.isFinite(alarmRange.getMaxInclusive()))
-            resultb.setMaxInclusive(alarmRange.getMaxInclusive());
-        return resultb.build();
     }
 
     public static Mdb.EnumerationAlarm toEnumerationAlarm(EnumerationAlarmItem xtceAlarmItem) {

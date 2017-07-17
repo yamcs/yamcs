@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.yamcs.utils.DoubleRange;
+
 public class FloatParameterType extends FloatDataType implements ParameterType {
     private static final long serialVersionUID = 2L;
     private NumericAlarm defaultAlarm = null;
@@ -16,23 +18,23 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
         super(name);
     }
 
-    public void setDefaultWatchAlarmRange(FloatRange watchRange) {
+    public void setDefaultWatchAlarmRange(DoubleRange watchRange) {
         getAlarmRanges(null).watchRange=watchRange;
     }
 
-    public void setDefaultWarningAlarmRange(FloatRange warningRange) {
+    public void setDefaultWarningAlarmRange(DoubleRange warningRange) {
         getAlarmRanges(null).warningRange=warningRange;
     }
 
-    public void setDefaultDistressAlarmRange(FloatRange distressRange) {
+    public void setDefaultDistressAlarmRange(DoubleRange distressRange) {
         getAlarmRanges(null).distressRange=distressRange;
     }
 
-    public void setDefaultCriticalAlarmRange(FloatRange criticalRange) {
+    public void setDefaultCriticalAlarmRange(DoubleRange criticalRange) {
         getAlarmRanges(null).criticalRange=criticalRange;
     }
 
-    public void setDefaultSevereAlarmRange(FloatRange severeRange) {
+    public void setDefaultSevereAlarmRange(DoubleRange severeRange) {
         getAlarmRanges(null).severeRange=severeRange;
     }
 
@@ -44,7 +46,7 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
      * Adds a new, or unions with an existing range for the specified context and level
      * @param contextMatch use <tt>null</tt> for the default context
      */
-    public void addAlarmRange(MatchCriteria contextMatch, FloatRange floatRange, AlarmLevels level) {
+    public void addAlarmRange(MatchCriteria contextMatch, DoubleRange floatRange, AlarmLevels level) {
         getAlarmRanges(contextMatch).addRange(floatRange, level);
 
     }
@@ -52,7 +54,7 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
      * Adds a new, or unions with an existing watch range for the specified context
      * @param contextMatch use <tt>null</tt> for the default context
      */
-    public void addWatchAlarmRange(MatchCriteria contextMatch, FloatRange watchRange) {
+    public void addWatchAlarmRange(MatchCriteria contextMatch, DoubleRange watchRange) {
         getAlarmRanges(contextMatch).addWatchRange(watchRange);
     }
 
@@ -60,7 +62,7 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
      * Adds a new, or unions with an existing warning range for the specified context
      * @param contextMatch use <tt>null</tt> for the default context
      */
-    public void addWarningAlarmRange(MatchCriteria contextMatch, FloatRange warningRange) {
+    public void addWarningAlarmRange(MatchCriteria contextMatch, DoubleRange warningRange) {
         getAlarmRanges(contextMatch).addWarningRange(warningRange);
     }
 
@@ -68,7 +70,7 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
      * Adds a new, or unions with an existing distress range for the specified context
      * @param contextMatch use <tt>null</tt> for the default context
      */
-    public void addDistressAlarmRange(MatchCriteria contextMatch, FloatRange distressRange) {
+    public void addDistressAlarmRange(MatchCriteria contextMatch, DoubleRange distressRange) {
         getAlarmRanges(contextMatch).addDistressRange(distressRange);
     }
 
@@ -76,7 +78,7 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
      * Adds a new, or unions with an existing critical range for the specified context
      * @param contextMatch use <tt>null</tt> for the default context
      */
-    public void addCriticalAlarmRange(MatchCriteria contextMatch, FloatRange criticalRange) {
+    public void addCriticalAlarmRange(MatchCriteria contextMatch, DoubleRange criticalRange) {
         getAlarmRanges(contextMatch).addCriticalRange(criticalRange);
     }
 
@@ -84,7 +86,7 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
      * Adds a new, or unions with an existing severe range for the specified context
      * @param contextMatch use <tt>null</tt> for the default context
      */
-    public void addSevereAlarmRange(MatchCriteria contextMatch, FloatRange severeRange) {
+    public void addSevereAlarmRange(MatchCriteria contextMatch, DoubleRange severeRange) {
         getAlarmRanges(contextMatch).addSevereRange(severeRange);
     }
 
