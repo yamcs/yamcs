@@ -17,13 +17,21 @@ public class ParameterInstanceRef implements Serializable {
     private boolean useCalibratedValue=true;
     private int instance=0;
 
+    /**
+     * Constructor to be used when the parameter is not yet known. 
+     * The parameter will have to be set later with setParameter()
+     */
+    public ParameterInstanceRef() {
+        super();
+    }
+    
     public ParameterInstanceRef(Parameter para) {
         this.parameter=para;
     }
 
     public ParameterInstanceRef(Parameter para, boolean useCalibratedValue) {
-        this.parameter=para;
-        this.useCalibratedValue=useCalibratedValue;
+        this.parameter = para;
+        this.useCalibratedValue = useCalibratedValue;
     }
 
     public ParameterInstanceRef(boolean useCalibratedValue) {
@@ -31,7 +39,7 @@ public class ParameterInstanceRef implements Serializable {
     }
 
     public void setParameter(Parameter para) {
-        this.parameter=para;
+        this.parameter = para;
     }	
 
     public Parameter getParameter() {
@@ -43,7 +51,7 @@ public class ParameterInstanceRef implements Serializable {
     }
 
     public void setUseCalibratedValue(boolean useCalibratedValue) {
-        this.useCalibratedValue=useCalibratedValue;
+        this.useCalibratedValue = useCalibratedValue;
     }
 
     public void setInstance(int instance) {

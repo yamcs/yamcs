@@ -45,11 +45,11 @@ public class XtceDbFactoryTest {
         assertEquals(ss, db.getSpaceSystem("/REFMDB", "SUBSYS1"));
         
         
-        NameDescription nd=XtceDbFactory.findReference(db.getRootSpaceSystem(), new NameReference("/REFMDB/SUBSYS1/IntegerPara1_1", Type.PARAMETER, null), ss);
+        NameDescription nd=XtceDbFactory.findReference(db.getRootSpaceSystem(), new UnresolvedNameReference("/REFMDB/SUBSYS1/IntegerPara1_1", Type.PARAMETER), ss);
         assertNotNull(nd);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1", nd.getQualifiedName());
         
-        nd=XtceDbFactory.findReference(db.getRootSpaceSystem(), new NameReference("../SUBSYS1/IntegerPara1_1", Type.PARAMETER, null), ss);
+        nd=XtceDbFactory.findReference(db.getRootSpaceSystem(), new UnresolvedNameReference("../SUBSYS1/IntegerPara1_1", Type.PARAMETER), ss);
         assertNotNull(nd);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1", nd.getQualifiedName());
     }
@@ -83,48 +83,48 @@ public class XtceDbFactoryTest {
         
         NameDescription nd;
         
-        nd=XtceDbFactory.findReference(root, new NameReference("/a/b2/c1/p1", Type.PARAMETER, null), a_b1);
+        nd=XtceDbFactory.findReference(root, new UnresolvedNameReference("/a/b2/c1/p1", Type.PARAMETER), a_b1);
         assertEquals(a_b2_c1_p1, nd);
         
         
-        nd=XtceDbFactory.findReference(root, new NameReference("p1", Type.PARAMETER, null), a_b2_c1);
+        nd=XtceDbFactory.findReference(root, new UnresolvedNameReference("p1", Type.PARAMETER), a_b2_c1);
         assertEquals(nd, a_b2_c1_p1);
         
-        nd=XtceDbFactory.findReference(root, new NameReference("p1", Type.PARAMETER, null), a_b2);
+        nd=XtceDbFactory.findReference(root, new UnresolvedNameReference("p1", Type.PARAMETER), a_b2);
         assertEquals(a_p1, nd);
         
-        nd=XtceDbFactory.findReference(root, new NameReference("p1", Type.PARAMETER, null), a_b1);
+        nd=XtceDbFactory.findReference(root, new UnresolvedNameReference("p1", Type.PARAMETER), a_b1);
         assertEquals(a_b1_p1, nd);
         
-        nd=XtceDbFactory.findReference(root, new NameReference("b2/c1/p1", Type.PARAMETER, null), a_b2_c1);
+        nd=XtceDbFactory.findReference(root, new UnresolvedNameReference("b2/c1/p1", Type.PARAMETER), a_b2_c1);
         assertEquals(a_b2_c1_p1, nd);
         
-        nd=XtceDbFactory.findReference(root, new NameReference("b2/.//../b2/c1/p1", Type.PARAMETER, null), a_b2_c1);
+        nd=XtceDbFactory.findReference(root, new UnresolvedNameReference("b2/.//../b2/c1/p1", Type.PARAMETER), a_b2_c1);
         assertEquals(a_b2_c1_p1, nd);
         
-        nd=XtceDbFactory.findReference(root, new NameReference("../p1", Type.PARAMETER, null), a_b2_c1);
+        nd=XtceDbFactory.findReference(root, new UnresolvedNameReference("../p1", Type.PARAMETER), a_b2_c1);
         assertNull(nd);
         
-        nd=XtceDbFactory.findReference(root, new NameReference("../../p1", Type.PARAMETER, null), a_b2_c1);
+        nd=XtceDbFactory.findReference(root, new UnresolvedNameReference("../../p1", Type.PARAMETER), a_b2_c1);
         assertEquals(a_p1, nd);
         
-        nd=XtceDbFactory.findReference(root, new NameReference("../../p1", Type.PARAMETER, null), a_b3);
+        nd=XtceDbFactory.findReference(root, new UnresolvedNameReference("../../p1", Type.PARAMETER), a_b3);
         assertNull(nd);
         
-        nd=XtceDbFactory.findReference(root, new NameReference("./p1", Type.PARAMETER, null), a_b2_c1);
+        nd=XtceDbFactory.findReference(root, new UnresolvedNameReference("./p1", Type.PARAMETER), a_b2_c1);
         assertEquals(nd, a_b2_c1_p1);
         
-        nd=XtceDbFactory.findReference(root, new NameReference("./p1", Type.PARAMETER, null), a_b2);
+        nd=XtceDbFactory.findReference(root, new UnresolvedNameReference("./p1", Type.PARAMETER), a_b2);
         assertNull(nd);
         
-        nd=XtceDbFactory.findReference(root, new NameReference("/a/b2/c1/.//p1", Type.PARAMETER, null), a_b2);
+        nd=XtceDbFactory.findReference(root, new UnresolvedNameReference("/a/b2/c1/.//p1", Type.PARAMETER), a_b2);
         assertEquals(a_b2_c1_p1, nd);
         
        
-        nd=XtceDbFactory.findReference(root, new NameReference("/a/..", Type.PARAMETER, null), a_b2);
+        nd=XtceDbFactory.findReference(root, new UnresolvedNameReference("/a/..", Type.PARAMETER), a_b2);
         assertNull(nd);
         
-        nd=XtceDbFactory.findReference(root, new NameReference("p2", Type.PARAMETER, null), a_b2);
+        nd=XtceDbFactory.findReference(root, new UnresolvedNameReference("p2", Type.PARAMETER), a_b2);
         assertNull(nd);
     }
  

@@ -165,7 +165,9 @@ public class IntegerParameterType extends IntegerDataType implements ParameterTy
 
     @Override
     public String toString() {
-        return "IntegerDataType name:"+name+" sizeInBits:"+sizeInBits+" signed:"+signed+" encoding:"+encoding+((defaultAlarm!=null)?defaultAlarm:"");
+        return "IntegerDataType name:"+name+" sizeInBits:"+sizeInBits+" signed:"+signed+" encoding:"+encoding
+                +((defaultAlarm!=null)?", defaultAlarm:"+defaultAlarm:"")
+                +((contextAlarmList!=null)?", contextAlarmList:"+contextAlarmList:"");
     }
 
     @Override

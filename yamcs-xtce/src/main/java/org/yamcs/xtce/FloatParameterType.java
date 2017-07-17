@@ -172,7 +172,8 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
 
     @Override
     public String toString() {
-        return "FloatParameterType name:"+name+" sizeInBits:"+sizeInBits+" encoding:"+encoding+((getDefaultAlarm()!=null)?"defaultAlarm:"+getDefaultAlarm():"")
-                +((contextAlarmList!=null)?"contextAlarmList:"+contextAlarmList:"");
+        return "FloatParameterType name:"+name+" sizeInBits:"+sizeInBits+" encoding:"+encoding
+                +((getDefaultAlarm()!=null)?", defaultAlarm:"+getDefaultAlarm():"")
+                +((contextAlarmList!=null)?", contextAlarmList:"+contextAlarmList:"");
     }
 }

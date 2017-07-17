@@ -21,11 +21,11 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.YObjectLoader;
+import org.yamcs.xtce.NameReference;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
-import org.yamcs.xtce.NameReference;
 import org.yamcs.xtce.NameReference.Type;
 import org.yamcs.xtce.NonStandardData;
 import org.yamcs.xtce.Parameter;
@@ -184,8 +184,7 @@ public class XtceDbFactory {
 
         Iterator<NameReference> it = refs.iterator();
         while (it.hasNext()) {
-            NameReference nr=it.next();
-
+            NameReference nr = it.next();
            
             NameDescription nd = findReference(rootSs, nr, ss);
             if(nd==null && nr.getType()==Type.PARAMETER && nr.getReference().startsWith(XtceDb.YAMCS_SPACESYSTEM_NAME)) {
@@ -210,6 +209,9 @@ public class XtceDbFactory {
                 ss1.addParameter(sp);
                 nd = sp;
             } 
+            if(nd == null) { //look for aliases up the hierarchy
+                nd = findAliasReference(rootSs, nr, ss);
+            }
             if(nd==null) {
                 throw new ConfigurationException("Cannot resolve reference SpaceSystem: "+ss.getName()+" "+nr);
             }
@@ -232,7 +234,8 @@ public class XtceDbFactory {
 
 
     /**
-     * find the reference nr mentioned in the space system ss by looking either in root (if absolute reference) or in the parent hierarchy if relative reference
+     * find the reference nr mentioned in the space system ss by looking either in root (if absolute reference) 
+     *  or in the parent hierarchy if relative reference
      *
      * @param rootSs
      * @param nr
@@ -240,9 +243,9 @@ public class XtceDbFactory {
      * @return
      */
     static NameDescription findReference(SpaceSystem rootSs, NameReference nr, SpaceSystem ss) {
-        String ref=nr.getReference();
-        boolean absolute=false;
-        SpaceSystem startSs=null;
+        String ref = nr.getReference();
+        boolean absolute = false;
+        SpaceSystem startSs = null;
 
         if(ref.startsWith("/")) {
             absolute=true;
@@ -267,8 +270,31 @@ public class XtceDbFactory {
             }
             return nd;
         }
-
     }
+    
+    /**
+     * searches for aliases in the parent hierarchy
+     * @param rootSs
+     * @param nr
+     * @param ss
+     * @return
+     */
+    static NameDescription findAliasReference(SpaceSystem rootSs, NameReference nr, SpaceSystem startSs) {
+        //go up until the root
+        NameDescription nd=null;
+        SpaceSystem ss = startSs;
+        while(true) {
+            nd = findAliasReference(ss, nr);
+            if((nd!=null) || (ss==rootSs)){
+                break;
+            }
+            ss = ss.getParent();
+        }
+        return nd;
+    }
+        
+    
+    
     /**
      * find reference starting at startSs and looking through the SpaceSystem path
      * @param startSs
@@ -319,7 +345,44 @@ public class XtceDbFactory {
         return null;
     }
 
+    /**
+     * looks in the SpaceSystem ss for a namedObject with the given alias. 
+     * Prints a warning in case multiple references are found and returns the first one.
+     *  
+     * If none is found, returns null.
+     * @param ss
+     * @param nr
+     * @return
+     */
+    private static NameDescription findAliasReference(SpaceSystem ss, NameReference nr) {
+        System.out.println("looking for alias "+nr+" in "+ss);
+        
+        String alias = nr.getReference();
+        List<? extends NameDescription> l;
+        switch(nr.getType()) {
+        case PARAMETER:
+             l = ss.getParameterByAlias(alias);
+             break;
+        case SEQUENCE_CONTAINTER:
+            l =ss.getSequenceContainerByAlias(alias);
+            break;
+        case META_COMMAND:
+            l =ss.getMetaCommandByAlias(alias);
+            break;
+        default:
+            return null;
+        }
 
+        if(l==null || l.isEmpty()) {
+            return null;
+        } else if(l.size()>1) {
+            log.warn("When looking for aliases '{}' found multiple matches: ", nr, l);
+        }
+        return l.get(0);
+    }
+    
+    
+    
     @SuppressWarnings({ "unchecked" })
     private static LoaderTree getLoaderTree(Map<String,Object> m) throws ConfigurationException {
         String type=YConfiguration.getString(m, "type");
@@ -333,23 +396,18 @@ public class XtceDbFactory {
         SpaceSystemLoader l;
         LoaderTree ltree;
 
-        if (type.equals("xtce")) {
-            l= new XtceLoader((String)args);
-        } else if (type.equals("sheet")) {
-            if(args==null) {
-                throw new ConfigurationException("No argument specified for loading the XTCE spreadhseet in mdb.yaml section: "+m);
-            }
-            l=new SpreadsheetLoader((String)args);
-        } else {
-            // custom class
-            try {
-                YObjectLoader<SpaceSystemLoader> objloader=new YObjectLoader<SpaceSystemLoader>();
-                l = objloader.loadObject(type, args);
-            } catch (Exception e) {
-                log.warn(e.toString());
-                throw new ConfigurationException("Invalid database loader class: " + type, e);
-            }
+        if ("xtce".equals(type)) {
+            type = "org.yamcs.xtce.XtceLoader";
+        } else if ("sheet".equals(type)) {
+            type = "org.yamcs.xtce.SpreadsheetLoader";
         }
+        try {
+            l = YObjectLoader.loadObject(type, args);
+        } catch (Exception e) {
+            log.warn(e.toString());
+            throw new ConfigurationException("Cannot load xtce database: " + e.getMessage(), e);
+        }
+        
 
         ltree=new LoaderTree(l);
 
@@ -487,17 +545,6 @@ public class XtceDbFactory {
         instance2Db.clear();
         instance2DbConfigs.clear();
     }
-
-    public static void main(String argv[]) throws Exception {
-        if(argv.length!=1) {
-            System.out.println("Usage: print-mdb config-name");
-            System.exit(1);
-        }
-        YConfiguration.setup();
-        XtceDb xtcedb = createInstanceByConfig(argv[0]);
-        xtcedb.print(System.out);
-    }
-
 
     static class LoaderTree {
         SpaceSystemLoader root;

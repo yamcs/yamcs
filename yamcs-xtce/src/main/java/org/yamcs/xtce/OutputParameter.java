@@ -17,6 +17,10 @@ public class OutputParameter implements Serializable {
         this.outputName = outputName;
     }
     
+    public OutputParameter() {
+       super();
+    }
+
     public Parameter getParameter() {
         return parameter;
     }
@@ -35,7 +39,11 @@ public class OutputParameter implements Serializable {
     
     @Override
     public String toString() {
-        if(outputName==null) return parameter.getQualifiedName();
-        else return parameter.getQualifiedName()+" outputName:"+outputName;
+        System.out.println("here parameteR: "+parameter);
+        if(outputName==null) {
+            return parameter.getQualifiedName();
+        } else {
+            return parameter.getQualifiedName()+" outputName:"+outputName;
+        }
     }
 }

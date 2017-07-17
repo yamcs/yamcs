@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.xtce.xml.XtceAliasSet;
 
 /**
  * SpaceSystem is a collection of SpaceSystem(s) including space assets, ground assets,
@@ -25,11 +26,6 @@ public class SpaceSystem extends NameDescription {
     private static final long serialVersionUID = 6L;
     private SequenceContainer rootSequenceContainer;
 
-
-    public SpaceSystem(String name) {
-        super(name);
-    }
-
     Header header;
     private Map<String, SequenceContainer> containers=new LinkedHashMap<>();
     private Map<String, Parameter> parameters = new LinkedHashMap<>();
@@ -41,12 +37,17 @@ public class SpaceSystem extends NameDescription {
     private HashMap<String, SpaceSystem> subsystems = new HashMap<String, SpaceSystem>();
     static Logger log = LoggerFactory.getLogger(SpaceSystem.class.getName());
 
-    transient List<NameReference> unresolvedReferences = new ArrayList<NameReference>();
+    transient List<NameReference> unresolvedReferences = new ArrayList<>();
     SpaceSystem parent;
+
+
+    public SpaceSystem(String name) {
+        super(name);
+    }
 
     public void setHeader(Header h) {
         this.header = h;
-     }
+    }
 
     /**
      * Register the container
@@ -121,7 +122,9 @@ public class SpaceSystem extends NameDescription {
     }
 
     public int getSequenceContainerCount(boolean recurse) {
-        if (!recurse) return containers.size();
+        if (!recurse) {
+            return containers.size();
+        }
         int total = containers.size();
         for (SpaceSystem sub : getSubSystems()) {
             total += sub.getSequenceContainerCount(recurse);
@@ -151,7 +154,9 @@ public class SpaceSystem extends NameDescription {
     }
 
     public int getParameterCount(boolean recurse) {
-        if (!recurse) return parameters.size();
+        if (!recurse) {
+            return parameters.size();
+        }
         int total = parameters.size();
         for (SpaceSystem sub : getSubSystems()) {
             total += sub.getParameterCount(recurse);
@@ -172,7 +177,9 @@ public class SpaceSystem extends NameDescription {
     }
 
     public int getAlgorithmCount(boolean recurse) {
-        if (!recurse) return algorithms.size();
+        if (!recurse) {
+            return algorithms.size();
+        }
         int total = algorithms.size();
         for (SpaceSystem sub : getSubSystems()) {
             total += sub.getAlgorithmCount(recurse);
@@ -194,7 +201,9 @@ public class SpaceSystem extends NameDescription {
     }
 
     public int getMetaCommandCount(boolean recurse) {
-        if (!recurse) return commands.size();
+        if (!recurse) {
+            return commands.size();
+        }
         int total = commands.size();
         for (SpaceSystem sub : getSubSystems()) {
             total += sub.getMetaCommandCount(recurse);
@@ -258,6 +267,44 @@ public class SpaceSystem extends NameDescription {
 
     @Override
     public String toString() {
-    	return "SpaceSystem["+getName()+"]";
+        return "SpaceSystem["+getName()+"]";
+    }
+
+    /**
+     * Searches through all namespaces for a parameter with the given alias.
+     * 
+     * Returns a list with all matches.
+     * 
+     * This is an expensive operation as it iterates over all parameters
+     * @param alias
+     * @return a list of parameters matching the alias. If no alias matches the list will be empty.
+     */
+    public List<Parameter> getParameterByAlias(String alias) {
+        return getObjectByAlias(alias, parameters.values());
+    }
+
+    public List<SequenceContainer> getSequenceContainerByAlias(String alias) {
+        return getObjectByAlias(alias, containers.values());
+    }
+    
+    public List<MetaCommand> getMetaCommandByAlias(String alias) {
+        return getObjectByAlias(alias, commands.values());
+    }
+    
+    private static <T extends NameDescription> List<T> getObjectByAlias(String alias, Collection<T> ndObjects) {
+        List<T> l = new ArrayList<>(1); 
+        for(T nd:ndObjects) {
+            
+            XtceAliasSet aliasSet = nd.getAliasSet();
+            if(aliasSet==null) {
+                continue;
+            }
+            for(Map.Entry<String, String> m: nd.getAliasSet().getAliases().entrySet()) {
+                if(m.getValue().equals(alias)) {
+                    l.add(nd);
+                }
+            }
+        }
+        return l;
     }
 }

@@ -66,10 +66,14 @@ public class Comparison implements MatchCriteria {
     public void resolveValueType() {
         boolean useCalibratedValue = instanceRef.useCalibratedValue();
         ParameterType ptype = instanceRef.getParameter().getParameterType();
-        if(useCalibratedValue) {
-            value = ptype.parseString(stringValue);
-        } else {
-            value = ptype.parseStringForRawValue(stringValue);
+        try {
+            if(useCalibratedValue) {
+                value = ptype.parseString(stringValue);
+            } else {
+                value = ptype.parseStringForRawValue(stringValue);
+            }
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Cannot parse value required for comparing with "+instanceRef.getParameter().getName()+": "+e.getMessage(), e);
         }
     }
 
@@ -84,7 +88,7 @@ public class Comparison implements MatchCriteria {
 
     @Override
     public Set<Parameter> getDependentParameters() {
-        Set<Parameter> pset=new HashSet<Parameter>();
+        Set<Parameter> pset=new HashSet<>();
         pset.add(instanceRef.getParameter());
         return pset;
     }

@@ -43,6 +43,7 @@ import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.NameReference;
+import org.yamcs.xtce.UnresolvedNameReference;
 import org.yamcs.xtce.Repeat;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.NameReference.ResolvedAction;
@@ -63,7 +64,6 @@ import org.yamcs.xtce.SplinePoint;
 import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
 
-import io.netty.handler.codec.FixedLengthFrameDecoder;
 
 import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.ValueEnumerationRange;
@@ -1432,13 +1432,9 @@ public class XtceStaxReader {
                 parameter.setParameterType(ptype);
             } else {
                 final Parameter p=parameter;
-                NameReference nr=new NameReference(value, Type.PARAMETER_TYPE,
-                        new ResolvedAction() {
-                    @Override
-                    public boolean resolved(NameDescription nd) {
+                NameReference nr=new UnresolvedNameReference(value, Type.PARAMETER_TYPE).addResolvedAction( nd -> {
                         p.setParameterType((ParameterType) nd);
                         return true;
-                    }
                 });
                 spaceSystem.addUnresolvedReference(nr);
             }
@@ -1630,14 +1626,11 @@ public class XtceStaxReader {
                 SequenceContainer baseContainer = spaceSystem.getSequenceContainer(refName);
                 if (baseContainer != null) {
                     seqContainer.setBaseContainer(baseContainer);
-                } else { //must come from somwhere else
-                    final SequenceContainer finalsc=seqContainer;
-                    NameReference nr=new NameReference(refName, Type.SEQUENCE_CONTAINTER, new ResolvedAction() {
-                        @Override
-                        public boolean resolved(NameDescription nd) {
-                            finalsc.setBaseContainer((SequenceContainer) nd);
-                            return true;
-                        }
+                } else { //must come from somewhere else
+                    final SequenceContainer finalsc = seqContainer;
+                    NameReference nr = new UnresolvedNameReference(refName, Type.SEQUENCE_CONTAINTER).addResolvedAction( nd -> {
+                        finalsc.setBaseContainer((SequenceContainer) nd);
+                        return true;
                     });
                     spaceSystem.addUnresolvedReference(nr);
                 }
@@ -1707,13 +1700,9 @@ public class XtceStaxReader {
         } else {
             parameterEntry = new ParameterEntry(-1, null, 0, locationType);
             final ParameterEntry finalpe=parameterEntry;
-            NameReference nr=new NameReference(refName, Type.PARAMETER_TYPE,
-                    new ResolvedAction() {
-                @Override
-                public boolean resolved(NameDescription nd) {
-                    finalpe.setParameter((Parameter) nd);
-                    return true;
-                }
+            NameReference nr=new UnresolvedNameReference(refName, Type.PARAMETER_TYPE).addResolvedAction( nd -> {
+                finalpe.setParameter((Parameter) nd);
+                return true;
             });
             spaceSystem.addUnresolvedReference(nr);
         }
@@ -1753,12 +1742,9 @@ public class XtceStaxReader {
         } else {
             containerEntry = new ContainerEntry(-1, null, 0, locationType);
             final ContainerEntry finalce = containerEntry;
-            NameReference nr=new NameReference(refName, Type.SEQUENCE_CONTAINTER, new ResolvedAction() {
-                @Override
-                public boolean resolved(NameDescription nd) {
-                    finalce.setRefContainer((SequenceContainer) nd);
-                    return true;
-                }
+            NameReference nr = new UnresolvedNameReference(refName, Type.SEQUENCE_CONTAINTER).addResolvedAction( nd -> {
+                finalce.setRefContainer((SequenceContainer) nd);
+                return true;
             });
             spaceSystem.addUnresolvedReference(nr);
         }
@@ -1846,13 +1832,9 @@ public class XtceStaxReader {
 
         final ParameterInstanceRef instanceRef = new ParameterInstanceRef(true);
 
-        NameReference nr=new NameReference(paramRef, Type.PARAMETER_TYPE,
-                new ResolvedAction() {
-            @Override
-            public boolean resolved(NameDescription nd) {
-                instanceRef.setParameter((Parameter) nd);
-                return true;
-            }
+        NameReference nr=new UnresolvedNameReference(paramRef, Type.PARAMETER_TYPE).addResolvedAction( nd -> {
+            instanceRef.setParameter((Parameter) nd);
+            return true;
         });
 
         Parameter parameter = spaceSystem.getParameter(paramRef);
@@ -1937,9 +1919,7 @@ public class XtceStaxReader {
         final ParameterInstanceRef instanceRef = new ParameterInstanceRef(useCalibratedValue);
         Comparison comparison = new Comparison(instanceRef, theValue, optype);
         
-        NameReference nr = new NameReference(paramRef, Type.PARAMETER,  new ResolvedAction() {
-            @Override
-            public boolean resolved(NameDescription nd) {
+        NameReference nr = new UnresolvedNameReference(paramRef, Type.PARAMETER).addResolvedAction( nd -> {
                 Parameter p=(Parameter)nd;
                 instanceRef.setParameter((Parameter) nd);                                
                 if(p.getParameterType()==null) {
@@ -1947,8 +1927,7 @@ public class XtceStaxReader {
                 }
                 comparison.resolveValueType();
                 return true;
-            }
-        });
+            });
 
 
         Parameter parameter = spaceSystem.getParameter(paramRef);

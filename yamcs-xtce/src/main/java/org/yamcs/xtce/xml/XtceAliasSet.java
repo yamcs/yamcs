@@ -25,14 +25,14 @@ public class XtceAliasSet implements Serializable {
      * Constructor
      */
     public XtceAliasSet() {
-        aliases = new HashMap<String, String>();
+        aliases = new HashMap<>();
     }
 
     /**
      * Add alias name, only one name per namespace is possible
      * 
      * @param nameSpace
-     *            Namespace the alias adhers to
+     *            Namespace the alias adheres to
      * @param alias
      *            name in the given namespace
      */

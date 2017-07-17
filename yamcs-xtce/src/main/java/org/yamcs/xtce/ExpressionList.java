@@ -12,28 +12,28 @@ import java.util.Set;
  *
  */
 public abstract class ExpressionList implements BooleanExpression {
-	private static final long serialVersionUID = 2333657095062539096L;
-	protected ArrayList<BooleanExpression> expressions = new ArrayList<>();	
-	
-	public void addConditionExpression(BooleanExpression cond) {
-		expressions.add(cond);		
-	}
-	
+    private static final long serialVersionUID = 2333657095062539096L;
+    protected ArrayList<BooleanExpression> expressions = new ArrayList<>();	
+
+    public void addConditionExpression(BooleanExpression cond) {
+        expressions.add(cond);		
+    }
+
     public Set<Parameter> getDependentParameters() {
         Set<Parameter> pset=new HashSet<Parameter>();
         for(BooleanExpression c: expressions) {
-        	pset.addAll(c.getDependentParameters());
+            pset.addAll(c.getDependentParameters());
         }
         return pset;
     }
 
-	@Override
-	public String toString() {
+    @Override
+    public String toString() {
         StringBuilder sb=new StringBuilder();
         sb.append("ExpressionList: ");
         for(BooleanExpression exp: expressions) {
             sb.append(exp.toString()).append(" ");
         }
         return sb.toString();
-	}
+    }
 }

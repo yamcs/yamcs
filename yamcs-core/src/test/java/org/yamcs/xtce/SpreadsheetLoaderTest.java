@@ -97,6 +97,21 @@ public class SpreadsheetLoaderTest {
         assertEquals("REFMDB\\ACQ\\PKTS\\PKT12", alias);
     }
     
-    
-    
+    @Test
+    public void testReferenceAliases() throws Exception {
+        YConfiguration.setup("refmdb");
+        ManagementService.setup(false);
+        XtceDbFactory.reset();
+
+        XtceDb db = XtceDbFactory.getInstance("refmdb");
+
+        Algorithm a = db.getAlgorithm("/REFMDB/SUBSYS1/algo_ext_spacesys");
+        assertNotNull(a);
+        List<InputParameter> lin =  a.getInputSet();
+        assertEquals(1, lin.size());
+        assertEquals("/REFMDB/col-packet_id", lin.get(0).getParameterInstance().getParameter().getQualifiedName());
+        List<OutputParameter> lout = a.getOutputSet();
+        assertEquals(1, lout.size());
+        assertEquals("/REFMDB/algo_ext_spacesys_out", lout.get(0).getParameter().getQualifiedName());
+    }
 }
