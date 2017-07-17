@@ -1,6 +1,7 @@
 Version 3.3.0 Released 
 - Support index requests with parameters encoded in the HTTP request body in order to allow a large number of packets to be specified (otherwise, the request would exceed maximum URI size).
 - Allow alias parameter name  references in the MDB SpreadSheets (including in the Alarm sheet which didn't allow any reference at all)
+- Fixed the reading of ranges (inclusive vs exlcusive) from XTCE XML files
 
 Version 3.2.2 Released 17-May-2017
 - Fixed tag handling in Yamcs Monitor/Archive Browser
