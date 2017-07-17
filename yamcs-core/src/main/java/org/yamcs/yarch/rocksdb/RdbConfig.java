@@ -29,7 +29,7 @@ public class RdbConfig {
     public static final String KEY_CF_OPTIONS = "columnFamilyOptions";
     public static final String KEY_TABLE_NAME_PATTERN = "tableNamePattern";
     public static final String KEY_TF_CONFIG = "tableFormatConfig";
-
+    public static final int DEFAULT_MAX_OPEN_FILES = 1000;
     
     private List<TableConfig> tblConfigList = new ArrayList<>();
     final Env env;
@@ -138,14 +138,13 @@ public class RdbConfig {
                 throw new ConfigurationException("Cannot parse regexp "+e);
             }
             options.setCreateIfMissing(true);
-            if(m.containsKey("maxOpenFiles")) {
-                int maxOpenFiles = YConfiguration.getInt(m, "maxOpenFiles");
-                if(maxOpenFiles<20) {
-                    throw new ConfigurationException("Exception when reading table configuration for '"+tableNamePattern+"': maxOpenFiles has to be at least 20");
-                }
-                options.setMaxOpenFiles(maxOpenFiles);
-                dboptions.setMaxOpenFiles(maxOpenFiles);
+            int maxOpenFiles = YConfiguration.getInt(m, "maxOpenFiles", DEFAULT_MAX_OPEN_FILES); 
+            if(maxOpenFiles<20) {
+                throw new ConfigurationException("Exception when reading table configuration for '"+tableNamePattern+"': maxOpenFiles has to be at least 20");
             }
+            options.setMaxOpenFiles(maxOpenFiles);
+            dboptions.setMaxOpenFiles(maxOpenFiles);
+            
             if(m.containsKey(KEY_CF_OPTIONS)) {
                 Map<String, Object> cm = YConfiguration.getMap(m, KEY_CF_OPTIONS);
                 if(cm.containsKey("targetFileSizeBase")) {
