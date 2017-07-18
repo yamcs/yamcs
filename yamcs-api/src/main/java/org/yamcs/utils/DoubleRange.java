@@ -10,6 +10,8 @@ import java.io.Serializable;
  *
  */
 public class DoubleRange implements Serializable {
+    
+
     private static final long serialVersionUID = 3L;
 
     final double min;
@@ -130,5 +132,40 @@ public class DoubleRange implements Serializable {
     @Override
     public String toString() {
         return (minIncl?"[":"(") + (Double.isNaN(min)?"-inf":min) + "," + (Double.isNaN(max)?"+inf":max) + (maxIncl?"]":")");
+    }
+    
+    
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        long temp;
+        temp = Double.doubleToLongBits(max);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + (maxIncl ? 1231 : 1237);
+        temp = Double.doubleToLongBits(min);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + (minIncl ? 1231 : 1237);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        DoubleRange other = (DoubleRange) obj;
+        if (Double.doubleToLongBits(max) != Double.doubleToLongBits(other.max))
+            return false;
+        if (Double.doubleToLongBits(min) != Double.doubleToLongBits(other.min))
+            return false;
+        if (minIncl != other.minIncl)
+            return false;
+        if (maxIncl != other.maxIncl)
+            return false;
+        return true;
     }
 }
