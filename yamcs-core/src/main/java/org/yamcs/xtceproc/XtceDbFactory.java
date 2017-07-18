@@ -355,7 +355,6 @@ public class XtceDbFactory {
      * @return
      */
     private static NameDescription findAliasReference(SpaceSystem ss, NameReference nr) {
-        System.out.println("looking for alias "+nr+" in "+ss);
         
         String alias = nr.getReference();
         List<? extends NameDescription> l;
