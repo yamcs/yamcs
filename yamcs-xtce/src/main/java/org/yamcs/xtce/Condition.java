@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class Condition implements BooleanExpression {	
+    
+
     private static final long serialVersionUID = 1L;
 
     ParameterInstanceRef lValueRef = null;
@@ -67,7 +69,7 @@ public class Condition implements BooleanExpression {
 
     @Override
     public Set<Parameter> getDependentParameters() {
-        Set<Parameter> pset=new HashSet<Parameter>();
+        Set<Parameter> pset=new HashSet<>();
 
         pset.add(lValueRef.getParameter());
         if (rValueRef instanceof ParameterInstanceRef) {
@@ -94,5 +96,22 @@ public class Condition implements BooleanExpression {
 
         return "Condition: " + lValue + OperatorType.operatorToString(comparisonOperator) + rValue;
 
-    }        
+    }
+    
+    
+    public ParameterInstanceRef getlValueRef() {
+        return lValueRef;
+    }
+
+    /**
+     * 
+     * @return right value reference - could be itself an ParameterInstanceRef
+     */
+    public Object getrValueRef() {
+        return rValueRef;
+    }
+    
+    public OperatorType getComparisonOperator() {
+        return comparisonOperator;
+    }
 }
