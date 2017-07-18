@@ -18,6 +18,12 @@ public class StringDataType extends BaseDataType {
     StringDataType(String name) {
         super(name);
     }
+    
+    StringDataType(StringDataType t) {
+        super(t);
+        this.sizeRangeInCharacters = t.sizeRangeInCharacters;
+        this.initialValue = t.initialValue;
+    }
 
 
     public String getInitialValue() {

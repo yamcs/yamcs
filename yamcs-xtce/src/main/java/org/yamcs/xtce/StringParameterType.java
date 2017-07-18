@@ -8,6 +8,13 @@ public class StringParameterType extends StringDataType implements ParameterType
     public StringParameterType(String name) {
         super(name);
     }
+    /**
+     * Creates a shallow copy of the parameter type, giving it a new name. 
+     */
+    public StringParameterType(StringParameterType t) {
+        super(t);
+    }
+
     
     @Override
     public boolean hasAlarm() {
@@ -29,5 +36,5 @@ public class StringParameterType extends StringDataType implements ParameterType
     public String toString() {
         return "StringParameterType name:"+name+" encoding:"+encoding;
     }
-
+   
 }

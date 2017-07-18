@@ -6,13 +6,23 @@ import java.util.List;
 
 public abstract class BaseDataType extends NameDescription {
     private static final long serialVersionUID = 3L;
-    List<UnitType> unitSet = new ArrayList<UnitType>();
+    List<UnitType> unitSet = new ArrayList<>();
     protected DataEncoding encoding;
 
     BaseDataType(String name){
 	super(name);
     }
 
+    /**
+     * creates a shallow copy of t
+     * @param t
+     */
+    protected BaseDataType(BaseDataType t) {
+        super(t);
+        this.unitSet = t.unitSet;
+        this.encoding = t.encoding;
+    }
+    
     public DataEncoding getEncoding() {
 	return encoding;
     }

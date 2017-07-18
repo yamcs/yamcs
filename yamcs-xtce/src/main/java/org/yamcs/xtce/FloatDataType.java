@@ -15,16 +15,26 @@ public class FloatDataType extends NumericDataType {
      */
     Double initialValue;
 
+
+    int sizeInBits = 32;
+    
+    FloatDataType(String name) {
+        super(name);
+    }
+    
+    protected FloatDataType(FloatDataType t) {
+        super(t);
+        this.initialValue = t.initialValue;
+        this.validRange = t.validRange;
+        this.sizeInBits = t.sizeInBits;
+    }
+    
+
     public Double getInitialValue() {
         return initialValue;
     }
     public void setInitialValue(double initialValue) {
         this.initialValue = initialValue;
-    }
-
-    int sizeInBits=32;
-    FloatDataType(String name) {
-        super(name);
     }
     public int getSizeInBits() {
         return sizeInBits;
@@ -48,4 +58,5 @@ public class FloatDataType extends NumericDataType {
             return Double.parseDouble(stringValue);
         }
     }
+    
 }

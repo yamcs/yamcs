@@ -49,6 +49,19 @@ public class NameDescription implements Serializable {
         this.name = name;
     }
 
+    
+    /*
+     * creates a shallow copy
+     * */
+    protected NameDescription(NameDescription t) {
+        this.ancillaryDataSet = t.ancillaryDataSet;
+        this.longDescription = t.longDescription;
+        this.shortDescription = t.shortDescription;
+        this.name = t.name;
+        this.qualifiedName = t.qualifiedName;
+    }
+    
+    
     public void setName(String newName) {
         this.name = newName;
     }
@@ -61,21 +74,27 @@ public class NameDescription implements Serializable {
     }
 
     public String getAlias(String namespace) {
-        if(xtceAliasSet==null) return null;
+        if(xtceAliasSet==null) {
+            return null;
+        }
         return xtceAliasSet.getAlias(namespace);
     }
 
 
 
     public void setQualifiedName(String qname) {
-        if(!qname.endsWith(name)) throw new IllegalArgumentException("qualified name '"+qname+"' +must end with '"+name+"'");
+        if(!qname.endsWith(name)) {
+            throw new IllegalArgumentException("qualified name '"+qname+"' +must end with '"+name+"'");
+        }
         this.qualifiedName = qname;
         String ssName = getSubsystemName(qname);
         addAlias(ssName, name);
     }
 
     public AncillaryData getAncillaryData(String name) {
-        if (ancillaryDataSet == null) return null;
+        if (ancillaryDataSet == null) {
+            return null;
+        }
         return ancillaryDataSet.get(name);
     }
 
@@ -84,7 +103,9 @@ public class NameDescription implements Serializable {
      * applicable name, that entry will be overriden.
      */
     public void addAncillaryData(AncillaryData data) {
-        if (ancillaryDataSet == null) ancillaryDataSet = new LinkedHashMap<>();
+        if (ancillaryDataSet == null) {
+            ancillaryDataSet = new LinkedHashMap<>();
+        }
         ancillaryDataSet.put(data.getName(), data);
     }
 
@@ -182,7 +203,9 @@ public class NameDescription implements Serializable {
      */
     public static String getName(String fqname) {
         int index = fqname.lastIndexOf(PATH_SEPARATOR);
-        if (index < 0) return fqname;
+        if (index < 0) {
+            return fqname;
+        }
         return fqname.substring(index + 1);
     }
 
@@ -195,9 +218,14 @@ public class NameDescription implements Serializable {
     public static String getSubsystemName(String fqname) {
         int index = fqname.lastIndexOf(PATH_SEPARATOR);
 
-        if(index==0) return String.valueOf(PATH_SEPARATOR);
+        if(index==0) {
+            return String.valueOf(PATH_SEPARATOR);
+        }
 
-        if (index < 0) throw new RuntimeException("Illegal qualified name '"+fqname+"'");
+        if (index < 0) {
+            throw new RuntimeException("Illegal qualified name '"+fqname+"'");
+        }
         return fqname.substring(0, index);
     }
+
 }

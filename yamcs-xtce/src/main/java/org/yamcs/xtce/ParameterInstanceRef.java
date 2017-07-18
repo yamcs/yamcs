@@ -58,6 +58,11 @@ public class ParameterInstanceRef implements Serializable {
         this.instance = instance;
     }
 
+    /**
+     * A positive value for instance is forward in time, a negative value for count is backward in time, 
+     * a 0 value for count means use the current value of the parameter or the first value in a container.
+     * @return instance of the parameter that is required
+     */
     public int getInstance() {
         return instance;
     }

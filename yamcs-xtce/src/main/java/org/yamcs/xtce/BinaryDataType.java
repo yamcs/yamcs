@@ -14,6 +14,12 @@ public class BinaryDataType extends BaseDataType {
     BinaryDataType(String name) {
         super(name);
     }
+    
+    protected BinaryDataType(BinaryDataType t) {
+        super(t);
+        this.initialValue = t.initialValue;
+        this.sizeRangeInBytes = t.sizeRangeInBytes;
+    }
 
     public byte[] getInitialValue() {
         return initialValue;
@@ -67,5 +73,5 @@ public class BinaryDataType extends BaseDataType {
         return b;
     }
 
-
+ 
 }

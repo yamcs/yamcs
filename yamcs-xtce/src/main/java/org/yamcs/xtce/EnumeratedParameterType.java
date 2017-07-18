@@ -9,11 +9,21 @@ import java.util.Set;
 public class EnumeratedParameterType extends EnumeratedDataType implements ParameterType {
     private static final long serialVersionUID = 200805301432L;
 
-    EnumerationAlarm defaultAlarm=null;
-    ArrayList<EnumerationContextAlarm> contextAlarmList=null;
+    EnumerationAlarm defaultAlarm = null;
+    List<EnumerationContextAlarm> contextAlarmList = null;
 
     public EnumeratedParameterType(String name){
         super(name);
+    }
+    
+    /**
+     * Creates a shallow copy of the parameter type, giving it a new name. 
+     * 
+     */
+    public EnumeratedParameterType(EnumeratedParameterType t) {
+        super(t);
+        this.defaultAlarm = t.defaultAlarm;
+        this.contextAlarmList = t.contextAlarmList;
     }
 
     @Override
@@ -23,8 +33,9 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
 
     @Override
     public Set<Parameter> getDependentParameters() {
-        if(contextAlarmList==null)
+        if(contextAlarmList==null) {
             return null;
+        }
         Set<Parameter>dependentParameters=new HashSet<Parameter>();
         for(EnumerationContextAlarm eca:contextAlarmList)
             dependentParameters.addAll(eca.getContextMatch().getDependentParameters());
@@ -40,12 +51,16 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
     }	
 
     public void addContextAlarm(EnumerationContextAlarm nca) {
-        if(contextAlarmList==null) contextAlarmList=new ArrayList<EnumerationContextAlarm>();
+        if(contextAlarmList==null){
+            contextAlarmList = new ArrayList<EnumerationContextAlarm>();
+        }
         contextAlarmList.add(nca);
     }
 
     public EnumerationContextAlarm getContextAlarm(MatchCriteria contextMatch) {
-        if(contextAlarmList==null) return null;
+        if(contextAlarmList==null){
+            return null;
+        }
         for(EnumerationContextAlarm eca:contextAlarmList) {
             if(eca.getContextMatch().equals(contextMatch)) {
                 return eca;
@@ -85,7 +100,9 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
 
     public String calibrate(long raw) {
         ValueEnumeration v = enumeration.get(raw);
-        if(v!=null) return v.label;
+        if(v!=null) {
+            return v.label;
+        }
         
         if ( ranges != null ) {
             for (ValueEnumerationRange range:ranges) {
@@ -111,5 +128,9 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
         return "EnumeratedParameterType: "+enumerationList+" encoding:"+encoding+((defaultAlarm!=null)?defaultAlarm:"")+((contextAlarmList!=null)?contextAlarmList:"");
     }
 
+    public void setContextAlarmList(List<EnumerationContextAlarm> contextAlarmList) {
+        this.contextAlarmList = contextAlarmList;
+    }
+   
    
 }

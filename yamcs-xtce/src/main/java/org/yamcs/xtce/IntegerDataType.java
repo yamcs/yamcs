@@ -2,7 +2,7 @@ package org.yamcs.xtce;
 
 public class IntegerDataType extends NumericDataType {
     private static final long serialVersionUID = 200706051146L;
-    int sizeInBits=32;
+    int sizeInBits = 32;
     protected boolean signed=true;
 
     /**
@@ -21,7 +21,13 @@ public class IntegerDataType extends NumericDataType {
     IntegerDataType(String name){
         super(name);
     }
-
+    
+    protected IntegerDataType(IntegerDataType t) {
+        super(t);
+        this.sizeInBits = t.sizeInBits;
+        this.signed = t.signed;
+        this.initialValue = t.initialValue;
+    }
     public void setSigned(boolean signed) {
         this.signed=signed;
     }
@@ -66,4 +72,5 @@ public class IntegerDataType extends NumericDataType {
             return Long.decode(stringValue).intValue();
         }
     }
+  
 }

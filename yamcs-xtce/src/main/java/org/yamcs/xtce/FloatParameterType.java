@@ -17,7 +17,15 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
     public FloatParameterType(String name){
         super(name);
     }
-
+    /**
+     * Creates a shallow copy. 
+     * @param name
+     */
+    public FloatParameterType(FloatParameterType t) {
+        super(t);
+        this.defaultAlarm = t.defaultAlarm;
+        this.contextAlarmList = t.contextAlarmList;
+    }
     public void setDefaultWatchAlarmRange(DoubleRange watchRange) {
         getAlarmRanges(null).watchRange=watchRange;
     }
@@ -178,4 +186,6 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
                 +((getDefaultAlarm()!=null)?", defaultAlarm:"+getDefaultAlarm():"")
                 +((contextAlarmList!=null)?", contextAlarmList:"+contextAlarmList:"");
     }
+    
+   
 }

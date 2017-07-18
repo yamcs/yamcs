@@ -19,6 +19,15 @@ public class IntegerParameterType extends IntegerDataType implements ParameterTy
         super(name);
     }
 
+    /**
+     * Creates a shallow copy of the parameter type, giving it a new name. 
+     */
+    public IntegerParameterType(IntegerParameterType t) {
+        super(t);
+        this.defaultAlarm = t.defaultAlarm;
+        this.contextAlarmList = t.contextAlarmList;
+    }
+
     public NumericAlarm createOrGetAlarm(MatchCriteria contextMatch) {
         if(contextMatch==null) {
             if(defaultAlarm==null) {
@@ -176,4 +185,6 @@ public class IntegerParameterType extends IntegerDataType implements ParameterTy
     public String getTypeAsString() {
         return "integer";
     }
+    
+   
 }

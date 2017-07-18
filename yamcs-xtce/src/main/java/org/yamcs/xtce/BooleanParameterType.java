@@ -10,6 +10,16 @@ public class BooleanParameterType extends BooleanDataType implements ParameterTy
         super(name);
     }
     
+
+    /**
+     * Creates a shallow copy of the parameter type
+     * 
+     * @param newName
+     */
+    public BooleanParameterType(BooleanParameterType t) {
+        super(t);
+    }
+    
     @Override
     public boolean hasAlarm() {
         return false;
@@ -24,4 +34,6 @@ public class BooleanParameterType extends BooleanDataType implements ParameterTy
     public String getTypeAsString() {
         return "boolean";
     }
+    
+    
 }
