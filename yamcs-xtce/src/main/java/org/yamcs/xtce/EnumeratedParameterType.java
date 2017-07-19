@@ -47,12 +47,12 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
     }
 
     public void setDefaultAlarm(EnumerationAlarm enumerationAlarm) {
-        this.defaultAlarm=enumerationAlarm;
+        this.defaultAlarm = enumerationAlarm;
     }	
 
     public void addContextAlarm(EnumerationContextAlarm nca) {
         if(contextAlarmList==null){
-            contextAlarmList = new ArrayList<EnumerationContextAlarm>();
+            contextAlarmList = new ArrayList<>();
         }
         contextAlarmList.add(nca);
     }

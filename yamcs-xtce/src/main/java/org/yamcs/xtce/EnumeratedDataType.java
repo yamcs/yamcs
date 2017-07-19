@@ -6,12 +6,11 @@ import java.util.HashMap;
 import java.util.List;
 
 public class EnumeratedDataType extends BaseDataType {
-    private static final long serialVersionUID = 201002231432L;
-  
+    private static final long serialVersionUID = 2L;
 
     protected HashMap<Long,ValueEnumeration> enumeration = new HashMap<>();
-    protected List<ValueEnumeration> enumerationList = new ArrayList<>();//this keeps track of the duplicates but is not really used 
-    protected List<ValueEnumerationRange> ranges = null;
+    protected List<ValueEnumeration> enumerationList = new ArrayList<>();
+    protected List<ValueEnumerationRange> ranges = new ArrayList<>();
 
     protected String initialValue = null;
 
@@ -109,6 +108,10 @@ public class EnumeratedDataType extends BaseDataType {
     public List<ValueEnumeration> getValueEnumerationList() {
         return Collections.unmodifiableList(enumerationList);
     }
+    public List<ValueEnumerationRange> getValueEnumerationRangeList() {
+        return Collections.unmodifiableList(ranges);
+    }
+    
 
     /**
      * returns stringValue
