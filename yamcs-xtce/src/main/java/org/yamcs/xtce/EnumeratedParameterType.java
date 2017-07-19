@@ -9,15 +9,15 @@ import java.util.Set;
 public class EnumeratedParameterType extends EnumeratedDataType implements ParameterType {
     private static final long serialVersionUID = 200805301432L;
 
-    EnumerationAlarm defaultAlarm = null;
-    List<EnumerationContextAlarm> contextAlarmList = null;
+    private EnumerationAlarm defaultAlarm = null;
+    private List<EnumerationContextAlarm> contextAlarmList = null;
 
     public EnumeratedParameterType(String name){
         super(name);
     }
     
     /**
-     * Creates a shallow copy of the parameter type, giving it a new name. 
+     * Copy constructor 
      * 
      */
     public EnumeratedParameterType(EnumeratedParameterType t) {
@@ -36,7 +36,7 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
         if(contextAlarmList==null) {
             return null;
         }
-        Set<Parameter>dependentParameters=new HashSet<Parameter>();
+        Set<Parameter>dependentParameters = new HashSet<>();
         for(EnumerationContextAlarm eca:contextAlarmList)
             dependentParameters.addAll(eca.getContextMatch().getDependentParameters());
         return dependentParameters;
@@ -131,6 +131,4 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
     public void setContextAlarmList(List<EnumerationContextAlarm> contextAlarmList) {
         this.contextAlarmList = contextAlarmList;
     }
-   
-   
 }

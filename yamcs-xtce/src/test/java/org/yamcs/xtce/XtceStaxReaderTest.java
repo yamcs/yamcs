@@ -46,6 +46,5 @@ public class XtceStaxReaderTest {
         assertEquals(SizeType.TerminationChar, sde.getSizeType());
         assertEquals(0, sde.getTerminationChar());
         
-        System.out.println("ss: "+ss);
     }
 }
