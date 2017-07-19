@@ -46,5 +46,11 @@ public class XtceStaxReaderTest {
         assertEquals(SizeType.TerminationChar, sde.getSizeType());
         assertEquals(0, sde.getTerminationChar());
         
+        SequenceContainer sc = busElectronics.getSequenceContainer("SensorHistoryRecord");
+        assertNotNull(sc);
+        RateInStream ris = sc.getRateInStream();
+        assertNotNull(ris);
+        assertEquals(10000, ris.getMaxInterval());
+        assertEquals(100, ris.getMinInterval());
     }
 }

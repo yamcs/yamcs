@@ -27,7 +27,7 @@ public class SpaceSystem extends NameDescription {
     private SequenceContainer rootSequenceContainer;
 
     Header header;
-    private Map<String, SequenceContainer> containers=new LinkedHashMap<>();
+    private Map<String, SequenceContainer> containers = new LinkedHashMap<>();
     private Map<String, Parameter> parameters = new LinkedHashMap<>();
     private HashMap<String, ParameterType> parameterTypes = new HashMap<>();
     private HashMap<String, Algorithm> algorithms = new HashMap<>();

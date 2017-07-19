@@ -54,6 +54,7 @@ import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PolynomialCalibrator;
+import org.yamcs.xtce.RateInStream;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtce.SpaceSystem;
@@ -89,9 +90,9 @@ public class XtceStaxReader {
 
     // XTCE Schema defined tags, to minimize the mistyping errors
     private static final String  XTCE_SpaceSystem               = "SpaceSystem";
-    private static final String  XTCE_AliasSet                  = "AliasSet";
-    private static final String  XTCE_Alias                     = "Alias";
-    private static final String  XTCE_LongDescription           = "LongDescription";
+    private static final String  XTCE_ALIAS_SET                  = "AliasSet";
+    private static final String  XTCE_ALIAS                     = "Alias";
+    private static final String  XTCE_LONG_DESCRIPTION           = "LongDescription";
     private static final String  XTCE_Header                    = "Header";
 
     private static final String  XTCE_AuthorSet                 = "AuthorSet";
@@ -130,14 +131,14 @@ public class XtceStaxReader {
     private static final String  XTCE_TimeAssociation           = "TimeAssociation";
 
     private static final String  XTCE_ContainerSet              = "ContainerSet";
-    private static final String  XTCE_BaseContainer             = "BaseContainer";
+    private static final String  XTCE_BASE_CONTAINER             = "BaseContainer";
     private static final String  XTCE_MessageSet                = "MessageSet";
     private static final String  XTCE_StreamSet                 = "StreamSet";
     private static final String  XTCE_AlgorithmSet              = "AlgorithmSet";
 
     private static final String  XTCE_CommandMetaData           = "CommandMetaData";
     private static final String  XTCE_SequenceContainer         = "SequenceContainer";
-    private static final String  XTCE_EntryList                 = "EntryList";
+    private static final String  XTCE_ENTRY_LIST                 = "EntryList";
     private static final String  XTCE_ParameterRefEntry         = "ParameterRefEntry";
 
     private static final String  XTCE_LocationInContainerInBits = "LocationInContainerInBits";
@@ -151,35 +152,36 @@ public class XtceStaxReader {
     private static final String  XTCE_IndirectParameterRefEntry = "IndirectParameterRefEntry";
     private static final String  XTCE_ArrayParameterRefEntry    = "ArrayParameterRefEntry";
 
-    private static final String  XTCE_UnitSet                   = "UnitSet";
-    private static final String  XTCE_Unit                      = "Unit";
-    private static final String  XTCE_FloatDataEncoding         = "FloatDataEncoding";
-    private static final String  XTCE_BinaryDataEncoding        = "BinaryDataEncoding";
-    private static final String  XTCE_SizeInBits                = "SizeInBits";
-    private static final String  XTCE_FixedValue                = "FixedValue";
-    private static final String  XTCE_DynamicValue              = "DynamicValue";
-    private static final String  XTCE_DiscreteLookupList        = "DiscreteLookupList";
-    private static final String  XTCE_IntegerDataEncoding       = "IntegerDataEncoding";
-    private static final String  XTCE_StringDataEncoding       = "StringDataEncoding";
-    private static final String  XTCE_ContextAlarmList          = "ContextAlarmList";
-    private static final String  XTCE_ContextAlarm              = "ContextAlarm";
-    private static final String  XTCE_ContextMatch              = "ContextMatch";
-    private static final String  XTCE_DefaultCalibrator         = "DefaultCalibrator";
-    private static final String  XTCE_ContextCalibratorList     = "ContextCalibratorList";
-    private static final String  XTCE_SplineCalibrator          = "SplineCalibrator";
-    private static final String  XTCE_PolynomialCalibrator      = "PolynomialCalibrator";
-    private static final String  XTCE_MathOperationCalibrator   = "MathOperationCalibrator";
-    private static final String  XTCE_Term                      = "Term";
-    private static final String  XTCE_SplinePoint               = "SplinePoint";
-    private static final String  XTCE_Count                     = "Count";
-    private static final String  XTCE_IntegerValue              = "IntegerValue";
-    private static final String  XTCE_ParameterInstanceRef      = "ParameterInstanceRef";
-    private static final String  XTCE_StaticAlarmRanges         = "StaticAlarmRanges";
-    private static final String  XTCE_DefaultAlarm              = "DefaultAlarm";
-    private static final String  XTCE_Fixed                     = "Fixed";
-    private static final String  XTCE_TerminationChar           = "TerminationChar";
-    private static final String  XTCE_LeadingSize               = "LeadingSize";
-        
+    private static final String  XTCE_UNIT_SET                  = "UnitSet";
+    private static final String  XTCE_UNIT                      = "Unit";
+    private static final String  XTCE_FLOAT_DATA_ENCODING       = "FloatDataEncoding";
+    private static final String  XTCE_BINARY_DATA_ENCODING      = "BinaryDataEncoding";
+    private static final String  XTCE_SIZE_IN_BITS              = "SizeInBits";
+    private static final String  XTCE_FIXED_VALUE               = "FixedValue";
+    private static final String  XTCE_DYNAMIC_VALUE             = "DynamicValue";
+    private static final String  XTCE_DISCRETE_LOOKUP_LIST      = "DiscreteLookupList";
+    private static final String  XTCE_INTEGER_DATA_ENCODING     = "IntegerDataEncoding";
+    private static final String  XTCE_STRING_DATA_ENCODING      = "StringDataEncoding";
+    private static final String  XTCE_CONTEXT_ALARM_LIST        = "ContextAlarmList";
+    private static final String  XTCE_CONTEXT_ALARM             = "ContextAlarm";
+    private static final String  XTCE_CONTEXT_MATCH             = "ContextMatch";
+    private static final String  XTCE_DEFAULT_CALIBRATOR        = "DefaultCalibrator";
+    private static final String  XTCE_CONTEXT_CALIBRATOR_LIST   = "ContextCalibratorList";
+    private static final String  XTCE_SPLINE_CALIBRATOR         = "SplineCalibrator";
+    private static final String  XTCE_POLYNOMIAL_CALIBRATOR     = "PolynomialCalibrator";
+    private static final String  XTCE_MATH_OPERATION_CALIBRATOR = "MathOperationCalibrator";
+    private static final String  XTCE_TERM                      = "Term";
+    private static final String  XTCE_SPLINE_POINT              = "SplinePoint";
+    private static final String  XTCE_COUNT                     = "Count";
+    private static final String  XTCE_INTEGER_VALUE             = "IntegerValue";
+    private static final String  XTCE_PARAMETER_INSTANCE_REF    = "ParameterInstanceRef";
+    private static final String  XTCE_STATIC_ALARM_RANGES       = "StaticAlarmRanges";
+    private static final String  XTCE_DEFAULT_ALARM             = "DefaultAlarm";
+    private static final String  XTCE_FIXED                     = "Fixed";
+    private static final String  XTCE_TERMINATION_CHAR          = "TerminationChar";
+    private static final String  XTCE_LEADING_SIZE              = "LeadingSize";
+    private static final String  XTCE_DEFAULT_RATE_IN_STREAM    = "DefaultRateInStream";
+    
     /**
      * Logging subsystem
      */
@@ -287,7 +289,7 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_AliasSet)) {
+            if (isStartElementWithName(XTCE_ALIAS_SET)) {
                 XtceAliasSet aliasSet=readXtceAliasSet();
                 spaceSystem.setAliasSet(aliasSet);
             } else if (isStartElementWithName(XTCE_Header)) {
@@ -330,7 +332,7 @@ public class XtceStaxReader {
      * @throws XMLStreamException
      */
     private XtceAliasSet readXtceAliasSet() throws XMLStreamException {
-        log.trace(XTCE_AliasSet);
+        log.trace(XTCE_ALIAS_SET);
         checkStartElementPreconditions();
 
         XtceAliasSet xtceAliasSet = new XtceAliasSet();
@@ -340,9 +342,9 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             // <Alias> sections
-            if (isStartElementWithName(XTCE_Alias)) {
+            if (isStartElementWithName(XTCE_ALIAS)) {
                 readXtceAlias(xtceAliasSet);
-            } else if (isEndElementWithName(XTCE_AliasSet)) {
+            } else if (isEndElementWithName(XTCE_ALIAS_SET)) {
                 return xtceAliasSet;
             }
         }
@@ -355,7 +357,7 @@ public class XtceStaxReader {
      * @throws XMLStreamException
      */
     private void readXtceAlias(XtceAliasSet aliasSet) throws XMLStreamException {
-        log.trace(XTCE_Alias);
+        log.trace(XTCE_ALIAS);
         checkStartElementPreconditions();
 
         String nameSpace = readAttribute("nameSpace", xmlEvent.asStartElement());
@@ -372,8 +374,8 @@ public class XtceStaxReader {
 
         // read end element
         xmlEvent = xmlEventReader.nextEvent();
-        if (!isEndElementWithName(XTCE_Alias)) {
-            throw new IllegalStateException(XTCE_Alias + " end element expected");
+        if (!isEndElementWithName(XTCE_ALIAS)) {
+            throw new IllegalStateException(XTCE_ALIAS + " end element expected");
         }
     }
 
@@ -505,9 +507,9 @@ public class XtceStaxReader {
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-            if (isStartElementWithName(XTCE_UnitSet)) {
+            if (isStartElementWithName(XTCE_UNIT_SET)) {
                 boolParamType.addAllUnits(readXtceUnitSet());               
-            } else if (isStartElementWithName(XTCE_IntegerDataEncoding)) {
+            } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
                 boolParamType.setEncoding(readXtceIntegerDataEncoding());
             } else if (isEndElementWithName(XTCE_BooleanParameterType)) {
                 return boolParamType;
@@ -567,15 +569,15 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_UnitSet)) {
+            if (isStartElementWithName(XTCE_UNIT_SET)) {
                 floatParamType.addAllUnits(readXtceUnitSet());
-            } else if (isStartElementWithName(XTCE_IntegerDataEncoding)) {
+            } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
                 floatParamType.setEncoding(readXtceIntegerDataEncoding());
-            } else if (isStartElementWithName(XTCE_FloatDataEncoding)) {
+            } else if (isStartElementWithName(XTCE_FLOAT_DATA_ENCODING)) {
                 floatParamType.setEncoding(readXtceFloatDataEncoding());
-            } else if (isStartElementWithName(XTCE_DefaultAlarm)) {
+            } else if (isStartElementWithName(XTCE_DEFAULT_ALARM)) {
                 floatParamType.setDefaultAlarm(readDefaultAlarm());
-            } else if (isStartElementWithName(XTCE_ContextAlarmList)) {
+            } else if (isStartElementWithName(XTCE_CONTEXT_ALARM_LIST)) {
                 floatParamType.setContextAlarmList(readNumericContextAlarmList(spaceSystem));                
             } else if (isEndElementWithName(XTCE_FloatParameterType)) {
                 return floatParamType;
@@ -584,7 +586,7 @@ public class XtceStaxReader {
     }
 
     private FloatDataEncoding readXtceFloatDataEncoding() throws XMLStreamException {
-        log.trace(XTCE_FloatDataEncoding);
+        log.trace(XTCE_FLOAT_DATA_ENCODING);
         checkStartElementPreconditions();
 
         FloatDataEncoding floatDataEncoding = null;
@@ -618,25 +620,25 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_DefaultCalibrator)) {
+            if (isStartElementWithName(XTCE_DEFAULT_CALIBRATOR)) {
                 floatDataEncoding.setDefaultCalibrator(readDefaultCalibrator());
-            } else if (isStartElementWithName(XTCE_ContextCalibratorList)) {
-                skipXtceSection(XTCE_ContextCalibratorList);
-            } else if (isEndElementWithName(XTCE_FloatDataEncoding)) {
+            } else if (isStartElementWithName(XTCE_CONTEXT_CALIBRATOR_LIST)) {
+                skipXtceSection(XTCE_CONTEXT_CALIBRATOR_LIST);
+            } else if (isEndElementWithName(XTCE_FLOAT_DATA_ENCODING)) {
                 return floatDataEncoding;
             }
         }
     }
         
     private List<NumericContextAlarm> readNumericContextAlarmList(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException  {
-        log.trace(XTCE_ContextAlarmList);
+        log.trace(XTCE_CONTEXT_ALARM_LIST);
         List<NumericContextAlarm> contextAlarmList = new ArrayList<NumericContextAlarm>();
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_ContextAlarm)) {
+            if (isStartElementWithName(XTCE_CONTEXT_ALARM)) {
                 contextAlarmList.add(readNumericContextAlarm(spaceSystem));
-            } else if (isEndElementWithName(XTCE_ContextAlarmList)) {
+            } else if (isEndElementWithName(XTCE_CONTEXT_ALARM_LIST)) {
                 return contextAlarmList;
             }
         }
@@ -648,7 +650,7 @@ public class XtceStaxReader {
         
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();            
-            if (isEndElementWithName(XTCE_DefaultAlarm)) {
+            if (isEndElementWithName(XTCE_DEFAULT_ALARM)) {
                 return na;
             } else if(xmlEvent.getEventType() == XMLStreamConstants.START_ELEMENT){
                 readNumericAlarmElement(na);
@@ -656,15 +658,15 @@ public class XtceStaxReader {
         }
     }
     private NumericContextAlarm readNumericContextAlarm(SpaceSystem spaceSystem) throws XMLStreamException {
-        log.trace(XTCE_ContextAlarm);
+        log.trace(XTCE_CONTEXT_ALARM);
         NumericContextAlarm nca = new NumericContextAlarm();
         readAlarmAttributes(nca);
         
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();            
-            if (isStartElementWithName(XTCE_ContextMatch)) {
+            if (isStartElementWithName(XTCE_CONTEXT_MATCH)) {
                 nca.setContextMatch(readMatchCriteria(spaceSystem));
-            } else if (isEndElementWithName(XTCE_ContextAlarm)) {
+            } else if (isEndElementWithName(XTCE_CONTEXT_ALARM)) {
                 return nca;
             } else if(xmlEvent.getEventType() == XMLStreamConstants.START_ELEMENT){
                 readNumericAlarmElement(nca);
@@ -673,7 +675,7 @@ public class XtceStaxReader {
     }
     
     private void readNumericAlarmElement(NumericAlarm numericAlarm) throws XMLStreamException {
-        if (isStartElementWithName(XTCE_StaticAlarmRanges)) {
+        if (isStartElementWithName(XTCE_STATIC_ALARM_RANGES)) {
             numericAlarm.setStaticAlarmRanges(readAlarmRanges());
         }
     }
@@ -755,11 +757,11 @@ public class XtceStaxReader {
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-            if (isStartElementWithName(XTCE_UnitSet)) {
+            if (isStartElementWithName(XTCE_UNIT_SET)) {
                 binaryParamType.addAllUnits(readXtceUnitSet());
-            } else if (isStartElementWithName(XTCE_IntegerDataEncoding)) {
+            } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
                 binaryParamType.setEncoding(readXtceIntegerDataEncoding());
-            } else if (isStartElementWithName(XTCE_BinaryDataEncoding)) {
+            } else if (isStartElementWithName(XTCE_BINARY_DATA_ENCODING)) {
                 binaryParamType.setEncoding(readXtceBinaryDataEncoding(spaceSystem));
             } else if (isEndElementWithName(XTCE_BinaryParameterType)) {
                 return binaryParamType;
@@ -768,7 +770,7 @@ public class XtceStaxReader {
     }
 
     private DataEncoding readXtceBinaryDataEncoding(SpaceSystem spaceSystem) throws XMLStreamException {
-        log.trace(XTCE_BinaryDataEncoding);
+        log.trace(XTCE_BINARY_DATA_ENCODING);
         checkStartElementPreconditions();
 
         BinaryDataEncoding binaryDataEncoding = null;
@@ -777,7 +779,7 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_SizeInBits)) {
+            if (isStartElementWithName(XTCE_SIZE_IN_BITS)) {
                 IntegerValue v = readXtceIntegerValue(spaceSystem);
                 if(v instanceof FixedIntegerValue) {
                     binaryDataEncoding = new BinaryDataEncoding(name, (int)((FixedIntegerValue) v).getValue());
@@ -788,7 +790,7 @@ public class XtceStaxReader {
                 skipXtceSection("FromBinaryTransformAlgorithm");
             } else if (isStartElementWithName("ToBinaryTransformAlgorithm")) {
                 skipXtceSection("ToBinaryTransformAlgorithm");
-            } else if (isEndElementWithName(XTCE_BinaryDataEncoding)) {
+            } else if (isEndElementWithName(XTCE_BINARY_DATA_ENCODING)) {
                 return binaryDataEncoding;
             }
         }
@@ -843,12 +845,12 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_UnitSet)) {
+            if (isStartElementWithName(XTCE_UNIT_SET)) {
                 stringParamType.addAllUnits(readXtceUnitSet());
-            } else if (isStartElementWithName(XTCE_StringDataEncoding)) {
+            } else if (isStartElementWithName(XTCE_STRING_DATA_ENCODING)) {
                 stringParamType.setEncoding(readXtceStringDataEncoding(spaceSystem));
-            } else if (isStartElementWithName(XTCE_ContextAlarmList)) {
-                skipXtceSection(XTCE_ContextAlarmList);
+            } else if (isStartElementWithName(XTCE_CONTEXT_ALARM_LIST)) {
+                skipXtceSection(XTCE_CONTEXT_ALARM_LIST);
             } else if (isEndElementWithName(XTCE_StringParameterType)) {
                 return stringParamType;
             }
@@ -864,9 +866,9 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_SizeInBits)) {
+            if (isStartElementWithName(XTCE_SIZE_IN_BITS)) {
                 readStringSizeInBits(spaceSystem, stringDataEncoding);
-            } else if (isEndElementWithName(XTCE_StringDataEncoding)) {
+            } else if (isEndElementWithName(XTCE_STRING_DATA_ENCODING)) {
                 return stringDataEncoding;
             }
         }
@@ -877,7 +879,7 @@ public class XtceStaxReader {
         checkStartElementPreconditions();
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-            if (isStartElementWithName(XTCE_Fixed)) {
+            if (isStartElementWithName(XTCE_FIXED)) {
                 IntegerValue v = readXtceIntegerValue(spaceSystem);
                 if(v instanceof FixedIntegerValue) {
                     stringDataEncoding.setSizeType(SizeType.Fixed);
@@ -885,18 +887,18 @@ public class XtceStaxReader {
                 } else {
                     throwException("Only FixedValue supported for string size in bits");
                 }
-             } else if (isStartElementWithName(XTCE_TerminationChar)) {
+             } else if (isStartElementWithName(XTCE_TERMINATION_CHAR)) {
                 stringDataEncoding.setSizeType(SizeType.TerminationChar);
                 byte[] x = readHexBinary();
                 if(x==null || x.length!=1) {
                     throw new XMLStreamException("Terminated strings have to have the size of the termination character of 1");
                 }
                 stringDataEncoding.setTerminationChar(x[0]);
-            } else if (isStartElementWithName(XTCE_LeadingSize)) {
+            } else if (isStartElementWithName(XTCE_LEADING_SIZE)) {
                 stringDataEncoding.setSizeType(SizeType.LeadingSize);
                 String value = readAttribute("sizeInBitsOfSizeTag", xmlEvent.asStartElement());
                 stringDataEncoding.setSizeInBitsOfSizeTag(Integer.valueOf(value));
-            } else if (isEndElementWithName(XTCE_SizeInBits)) {
+            } else if (isEndElementWithName(XTCE_SIZE_IN_BITS)) {
                 return;
             }
         }
@@ -947,13 +949,13 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_UnitSet)) {
+            if (isStartElementWithName(XTCE_UNIT_SET)) {
                 integerParamType.addAllUnits(readXtceUnitSet());
-            } else if (isStartElementWithName(XTCE_IntegerDataEncoding)) {
+            } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
                 integerParamType.setEncoding(readXtceIntegerDataEncoding());
-            } else if (isStartElementWithName(XTCE_DefaultAlarm)) {
+            } else if (isStartElementWithName(XTCE_DEFAULT_ALARM)) {
                 integerParamType.setDefaultAlarm(readDefaultAlarm());             
-            } else if (isStartElementWithName(XTCE_ContextAlarmList)) {
+            } else if (isStartElementWithName(XTCE_CONTEXT_ALARM_LIST)) {
                 integerParamType.setContextAlarmList(readNumericContextAlarmList(spaceSystem));
             } else if (isEndElementWithName(XTCE_IntegerParameterType)) {
                 return integerParamType;
@@ -963,7 +965,7 @@ public class XtceStaxReader {
 
     private IntegerDataEncoding readXtceIntegerDataEncoding() throws IllegalStateException,
     XMLStreamException {
-        log.trace(XTCE_IntegerDataEncoding);
+        log.trace(XTCE_INTEGER_DATA_ENCODING);
         checkStartElementPreconditions();
 
         IntegerDataEncoding integerDataEncoding = null;
@@ -1006,18 +1008,18 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_DefaultCalibrator)) {
+            if (isStartElementWithName(XTCE_DEFAULT_CALIBRATOR)) {
                 integerDataEncoding.setDefaultCalibrator(readDefaultCalibrator());
-            } else if (isStartElementWithName(XTCE_ContextCalibratorList)) {
-                skipXtceSection(XTCE_ContextCalibratorList);
-            } else if (isEndElementWithName(XTCE_IntegerDataEncoding)) {
+            } else if (isStartElementWithName(XTCE_CONTEXT_CALIBRATOR_LIST)) {
+                skipXtceSection(XTCE_CONTEXT_CALIBRATOR_LIST);
+            } else if (isEndElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
                 return integerDataEncoding;
             }
         }
     }
 
     private Calibrator readDefaultCalibrator() throws IllegalStateException, XMLStreamException {
-        log.trace(XTCE_DefaultCalibrator);
+        log.trace(XTCE_DEFAULT_CALIBRATOR);
         checkStartElementPreconditions();
 
         Calibrator calibrator = null;
@@ -1025,13 +1027,13 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_PolynomialCalibrator)) {
+            if (isStartElementWithName(XTCE_POLYNOMIAL_CALIBRATOR)) {
                 calibrator = readXtcePolynomialCalibrator();
-            } else if (isStartElementWithName(XTCE_MathOperationCalibrator)) {
-                skipXtceSection(XTCE_MathOperationCalibrator);
-            } else if (isStartElementWithName(XTCE_SplineCalibrator)) {
+            } else if (isStartElementWithName(XTCE_MATH_OPERATION_CALIBRATOR)) {
+                skipXtceSection(XTCE_MATH_OPERATION_CALIBRATOR);
+            } else if (isStartElementWithName(XTCE_SPLINE_CALIBRATOR)) {
                 calibrator = readXtceSplineCalibrator();
-            } else if (isEndElementWithName(XTCE_DefaultCalibrator)) {
+            } else if (isEndElementWithName(XTCE_DEFAULT_CALIBRATOR)) {
                 return calibrator;
             }
         }
@@ -1045,7 +1047,7 @@ public class XtceStaxReader {
      * @throws XMLStreamException
      */
     private Calibrator readXtceSplineCalibrator() throws XMLStreamException {
-        log.trace(XTCE_SplineCalibrator);
+        log.trace(XTCE_SPLINE_CALIBRATOR);
         checkStartElementPreconditions();
 
         ArrayList<SplinePoint> splinePoints = new ArrayList<SplinePoint>();
@@ -1053,9 +1055,9 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_SplinePoint)) {
+            if (isStartElementWithName(XTCE_SPLINE_POINT)) {
                 splinePoints.add(readXtceSplinePoint());
-            } else if (isEndElementWithName(XTCE_SplineCalibrator)) {
+            } else if (isEndElementWithName(XTCE_SPLINE_CALIBRATOR)) {
                 return new SplineCalibrator(splinePoints);
             }
         }
@@ -1068,7 +1070,7 @@ public class XtceStaxReader {
      * @throws XMLStreamException 
      */
     private SplinePoint readXtceSplinePoint() throws XMLStreamException {
-        log.trace(XTCE_SplinePoint);
+        log.trace(XTCE_SPLINE_POINT);
         checkStartElementPreconditions();
 
         double raw = 0.0d;
@@ -1091,14 +1093,14 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isEndElementWithName(XTCE_SplinePoint)) {
+            if (isEndElementWithName(XTCE_SPLINE_POINT)) {
                 return new SplinePoint(raw, calibrated);
             }
         }
     }
 
     private Calibrator readXtcePolynomialCalibrator() throws XMLStreamException {
-        log.trace(XTCE_PolynomialCalibrator);
+        log.trace(XTCE_POLYNOMIAL_CALIBRATOR);
         checkStartElementPreconditions();
 
         int maxExponent = 0;
@@ -1107,13 +1109,13 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_Term)) {
+            if (isStartElementWithName(XTCE_TERM)) {
                 XtceTerm term = readXtceTerm();
                 if (term.getExponent() > maxExponent) {
                     maxExponent = term.getExponent();
                 }
                 polynome.put(term.getExponent(), term.getCoefficient());
-            } else if (isEndElementWithName(XTCE_PolynomialCalibrator)) {
+            } else if (isEndElementWithName(XTCE_POLYNOMIAL_CALIBRATOR)) {
                 double[] coefficients = new double[maxExponent + 1];
                 for (Map.Entry<Integer, Double> entry:polynome.entrySet()) {
                     coefficients[entry.getKey()] = entry.getValue();
@@ -1124,7 +1126,7 @@ public class XtceStaxReader {
     }
 
     private XtceTerm readXtceTerm() throws XMLStreamException {
-        log.trace(XTCE_Term);
+        log.trace(XTCE_TERM);
         checkStartElementPreconditions();
 
         int exponent = 0;
@@ -1147,23 +1149,23 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isEndElementWithName(XTCE_Term)) {
+            if (isEndElementWithName(XTCE_TERM)) {
                 return new XtceTerm(exponent, coefficient);
             }
         }
     }
 
     private List<UnitType> readXtceUnitSet() throws IllegalStateException, XMLStreamException {
-        log.trace(XTCE_UnitSet);
+        log.trace(XTCE_UNIT_SET);
 
         List<UnitType> units = new ArrayList<UnitType>();
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_Unit)) {
+            if (isStartElementWithName(XTCE_UNIT)) {
                 UnitType u = readXtceUnit();
                 units.add(u);
-            } else if (isEndElementWithName(XTCE_UnitSet)) {
+            } else if (isEndElementWithName(XTCE_UNIT_SET)) {
                 return units;
             }
         }
@@ -1171,7 +1173,7 @@ public class XtceStaxReader {
 
 
     private UnitType readXtceUnit() throws XMLStreamException {
-        log.trace(XTCE_Unit);
+        log.trace(XTCE_UNIT);
         checkStartElementPreconditions();
 
 
@@ -1189,7 +1191,7 @@ public class XtceStaxReader {
             if (xmlEvent.isCharacters()) {
                 unit = xmlEvent.asCharacters().getData();
                 break;
-            } else if (isEndElementWithName(XTCE_Unit)) {
+            } else if (isEndElementWithName(XTCE_UNIT)) {
                 return null;
             }
         }
@@ -1231,13 +1233,13 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_UnitSet)) {
+            if (isStartElementWithName(XTCE_UNIT_SET)) {
                 enumParamType.addAllUnits(readXtceUnitSet());               
-            } else if (isStartElementWithName(XTCE_IntegerDataEncoding)) {
+            } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
                 enumParamType.setEncoding(readXtceIntegerDataEncoding());
             } else if (isStartElementWithName(XTCE_EnumerationList)) {
                 readXtceEnumerationList(enumParamType);
-            } else if (isStartElementWithName(XTCE_DefaultAlarm)) {
+            } else if (isStartElementWithName(XTCE_DEFAULT_ALARM)) {
                 enumParamType.setDefaultAlarm(readXtceEnumerationAlarm(enumParamType));
             } else if (isEndElementWithName(XTCE_EnumeratedParameterType)) {
                 return enumParamType;
@@ -1467,11 +1469,11 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_AliasSet)) {
+            if (isStartElementWithName(XTCE_ALIAS_SET)) {
                 parameter.setAliasSet(readXtceAliasSet());
             } else if (isStartElementWithName(XTCE_ParameterProperties)) {
                 readXtceParameterProperties(spaceSystem);
-            } else if (isStartElementWithName(XTCE_LongDescription)) {
+            } else if (isStartElementWithName(XTCE_LONG_DESCRIPTION)) {
                 parameter.setLongDescription(readXtceLongDescription(spaceSystem));
             } else if (isEndElementWithName(XTCE_Parameter)) {
                 return parameter;
@@ -1508,16 +1510,44 @@ public class XtceStaxReader {
         StringBuilder longDescr = new StringBuilder();
         while(true) {
             xmlEvent = xmlEventReader.nextEvent();
-            if(isEndElementWithName(XTCE_LongDescription)) {
+            if(isEndElementWithName(XTCE_LONG_DESCRIPTION)) {
                 break;
             }
             if(!xmlEvent.isCharacters()) {
-                throw new IllegalStateException(XTCE_LongDescription + " characters or end element expected but instead got "+xmlEvent);
+                throw new IllegalStateException(XTCE_LONG_DESCRIPTION + " characters or end element expected but instead got "+xmlEvent);
             }
             longDescr.append(xmlEvent.asCharacters().getData());
         }
 
         return longDescr.toString();
+    }
+
+    private RateInStream readXtceRateInStream(SpaceSystem spaceSystem) throws XMLStreamException {
+        System.out.println("-------------------------------------------- in rate per stream");
+        checkStartElementPreconditions();
+
+        String basis = readAttribute("basis", xmlEvent.asStartElement());
+        if((basis!=null) && !"perSecond".equalsIgnoreCase(basis)) {
+            throw new XMLStreamException("Currently unsupported rate in stream basis: " + basis);
+        }
+        long minInterval = -1;
+        long maxInterval = -1;
+        String v= readAttribute("minimumValue", xmlEvent.asStartElement());
+        if(v!=null) {
+            maxInterval = (long) (1000/Double.parseDouble(v));
+        }
+        v= readAttribute("maximumValue", xmlEvent.asStartElement());
+        if(v!=null) {
+            minInterval = (long) (1000/Double.parseDouble(v));
+        }
+        RateInStream ris = new RateInStream(minInterval, maxInterval);
+
+        // read end element
+        xmlEvent = xmlEventReader.nextEvent();
+        if (!isEndElementWithName(XTCE_DEFAULT_RATE_IN_STREAM)) {
+            throw new IllegalStateException(XTCE_DEFAULT_RATE_IN_STREAM + " end element expected");
+        }
+        return ris;
     }
 
     private MatchCriteria readMatchCriteria(SpaceSystem spaceSystem) throws XMLStreamException {
@@ -1563,7 +1593,6 @@ public class XtceStaxReader {
      * Reads the definition of the containers
      * @param spaceSystem 
      * 
-     * @todo Must be implemented to be able to read current XTCE files
      * @return
      * @throws IllegalStateException
      * @throws XMLStreamException
@@ -1612,14 +1641,16 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_AliasSet)) {
+            if (isStartElementWithName(XTCE_ALIAS_SET)) {
                 seqContainer.setAliasSet(readXtceAliasSet());
-            } else if (isStartElementWithName(XTCE_EntryList)) {
+            } else if (isStartElementWithName(XTCE_ENTRY_LIST)) {
                 readXtceEntryList(spaceSystem, seqContainer);
-            } else if (isStartElementWithName(XTCE_BaseContainer)) {
+            } else if (isStartElementWithName(XTCE_BASE_CONTAINER)) {
                 readXtceBaseContainer(spaceSystem, seqContainer);
-            } else if (isStartElementWithName(XTCE_LongDescription)) {
+            } else if (isStartElementWithName(XTCE_LONG_DESCRIPTION)) {
                 seqContainer.setLongDescription(readXtceLongDescription(spaceSystem));
+            } else if (isStartElementWithName(XTCE_DEFAULT_RATE_IN_STREAM)) {
+                seqContainer.setRateInStream(readXtceRateInStream(spaceSystem));
             }  else if (isEndElementWithName(XTCE_SequenceContainer)) {
                 return seqContainer;
             }
@@ -1627,7 +1658,7 @@ public class XtceStaxReader {
     }
 
     private void readXtceBaseContainer(SpaceSystem spaceSystem, SequenceContainer seqContainer)  throws IllegalStateException, XMLStreamException {
-        log.trace(XTCE_BaseContainer);
+        log.trace(XTCE_BASE_CONTAINER);
         checkStartElementPreconditions();
 
         String refName = readAttribute("containerRef", xmlEvent.asStartElement());
@@ -1659,14 +1690,14 @@ public class XtceStaxReader {
             if (isStartElementWithName(XTCE_RestrictionCriteria)) {
                 MatchCriteria criteria = readMatchCriteria(spaceSystem);
                 seqContainer.setRestrictionCriteria(criteria);
-            } else if (isEndElementWithName(XTCE_BaseContainer)) {
+            } else if (isEndElementWithName(XTCE_BASE_CONTAINER)) {
                 return;
             }
         }
     }
 
     private void readXtceEntryList(SpaceSystem spaceSystem, SequenceContainer seqContainer) throws XMLStreamException {
-        log.trace(XTCE_EntryList);
+        log.trace(XTCE_ENTRY_LIST);
         checkStartElementPreconditions();
 
         while (true) {
@@ -1690,7 +1721,7 @@ public class XtceStaxReader {
                 skipXtceSection(XTCE_IndirectParameterRefEntry);
             } else if (isStartElementWithName(XTCE_ArrayParameterRefEntry)) {
                 skipXtceSection(XTCE_ArrayParameterRefEntry);
-            } else if (isEndElementWithName(XTCE_EntryList)) {
+            } else if (isEndElementWithName(XTCE_ENTRY_LIST)) {
                 return;
             }
         }
@@ -1786,7 +1817,7 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_Count)) {
+            if (isStartElementWithName(XTCE_COUNT)) {
                 r.setCount(readXtceIntegerValue(spaceSystem));
             } else if (isStartElementWithName("FromBinaryTransformAlgorithm")) {
                 skipXtceSection("FromBinaryTransformAlgorithm");
@@ -1808,9 +1839,9 @@ public class XtceStaxReader {
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-            if (isStartElementWithName(XTCE_FixedValue)) {
+            if (isStartElementWithName(XTCE_FIXED_VALUE)) {
                 v = new FixedIntegerValue(readIntegerValue());
-            } else if (isStartElementWithName(XTCE_DynamicValue)) {
+            } else if (isStartElementWithName(XTCE_DYNAMIC_VALUE)) {
                 v = readDynamicValue(spaceSystem);
             } else if (isEndElementWithName(tag)) {
                 return v;
@@ -1820,17 +1851,17 @@ public class XtceStaxReader {
 
 
     private DynamicIntegerValue readDynamicValue(SpaceSystem spaceSystem) throws XMLStreamException {
-        log.trace(XTCE_DynamicValue);
+        log.trace(XTCE_DYNAMIC_VALUE);
 
         checkStartElementPreconditions();
         DynamicIntegerValue v = new DynamicIntegerValue();
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-            if (isStartElementWithName(XTCE_ParameterInstanceRef)) {
+            if (isStartElementWithName(XTCE_PARAMETER_INSTANCE_REF)) {
                 ParameterInstanceRef pir = readXtceParameterInstanceRef(spaceSystem);
                 v.setParameterInstanceRef(pir);
-            } else if (isEndElementWithName(XTCE_DynamicValue)) {
+            } else if (isEndElementWithName(XTCE_DYNAMIC_VALUE)) {
                 return v;
             }
         }
@@ -1838,7 +1869,7 @@ public class XtceStaxReader {
 
 
     private ParameterInstanceRef readXtceParameterInstanceRef(SpaceSystem spaceSystem) throws XMLStreamException {
-        log.trace(XTCE_ParameterInstanceRef);
+        log.trace(XTCE_PARAMETER_INSTANCE_REF);
         String paramRef = readAttribute("parameterRef", xmlEvent.asStartElement());
         if(paramRef==null) {
             throw new XMLStreamException("Reference to parameter is missing");
@@ -1886,12 +1917,12 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
-            if (isStartElementWithName(XTCE_FixedValue)) {
+            if (isStartElementWithName(XTCE_FIXED_VALUE)) {
                 locationInContainerInBits = readIntegerValue();
-            } else if (isStartElementWithName(XTCE_DynamicValue)) {
-                skipXtceSection(XTCE_DynamicValue);
-            } else if (isStartElementWithName(XTCE_DiscreteLookupList)) {
-                skipXtceSection(XTCE_DiscreteLookupList);
+            } else if (isStartElementWithName(XTCE_DYNAMIC_VALUE)) {
+                skipXtceSection(XTCE_DYNAMIC_VALUE);
+            } else if (isStartElementWithName(XTCE_DISCRETE_LOOKUP_LIST)) {
+                skipXtceSection(XTCE_DISCRETE_LOOKUP_LIST);
             } else if (isEndElementWithName(XTCE_LocationInContainerInBits)) {
                 entry.setLocationInContainerInBits(locationInContainerInBits);
                 return;

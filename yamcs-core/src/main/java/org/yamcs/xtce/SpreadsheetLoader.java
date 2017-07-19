@@ -859,7 +859,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             RateInStream rate=null;
             if(hasColumn(cells, IDX_CONT_EXPECTED_INTERVAL)) {
                 int expint=Integer.decode(cells[IDX_CONT_EXPECTED_INTERVAL].getContents());
-                rate=new RateInStream(expint);
+                rate = new RateInStream(-1, expint);
             }
 
             String description="";

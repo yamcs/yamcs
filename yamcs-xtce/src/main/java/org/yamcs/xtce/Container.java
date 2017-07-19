@@ -18,7 +18,7 @@ public abstract class Container extends NameDescription {
     protected int sizeInBits=-1;
     
     //expected rate
-    RateInStream rate=null;
+    RateInStream rate = null;
 
     Container(String name) {
         super(name);

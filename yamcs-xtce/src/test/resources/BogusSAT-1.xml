@@ -567,6 +567,7 @@ limitations under the License.
                                             <xtce:ParameterRefEntry parameterRef="SunSensorLevel"/>
                                             <xtce:ParameterRefEntry parameterRef="EarthSensorLevel"/>
                                         </xtce:EntryList>
+                                        <xtce:DefaultRateInStream basis="perSecond" minimumValue="0.1" maximumValue="10"/>
                                     </xtce:SequenceContainer>
                                     <xtce:SequenceContainer name="SensorHistoryBuffer">
                                         <xtce:EntryList>
