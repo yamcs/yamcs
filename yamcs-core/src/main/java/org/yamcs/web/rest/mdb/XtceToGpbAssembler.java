@@ -54,6 +54,7 @@ import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.ComparisonList;
 import org.yamcs.xtce.ContainerEntry;
+import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.DynamicIntegerValue;
@@ -705,10 +706,10 @@ public class XtceToGpbAssembler {
                 }
             }
             switch (a.getScope()) {
-            case global:
+            case GLOBAL:
                 b.setScope(Scope.GLOBAL);
                 break;
-            case commandVerification:
+            case COMMAND_VERIFICATION:
                 b.setScope(Scope.COMMAND_VERIFICATION);
                 break;
             default:
@@ -717,11 +718,14 @@ public class XtceToGpbAssembler {
         }
 
         if (detail == DetailLevel.FULL) {
-            if (a.getLanguage() != null) {
-                b.setLanguage(a.getLanguage());
-            }
-            if (a.getAlgorithmText() != null) {
-                b.setText(a.getAlgorithmText());
+            if(a instanceof CustomAlgorithm) {
+                CustomAlgorithm ca= (CustomAlgorithm)a;
+                if (ca.getLanguage() != null) {
+                    b.setLanguage(ca.getLanguage());
+                }
+                if (ca.getAlgorithmText() != null) {
+                    b.setText(ca.getAlgorithmText());
+                }
             }
             for (InputParameter p : a.getInputSet()) {
                 b.addInputParameter(toInputParameterInfo(p, mdbURL, options));

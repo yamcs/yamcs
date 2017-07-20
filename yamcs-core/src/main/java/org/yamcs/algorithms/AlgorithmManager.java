@@ -37,6 +37,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.NamedDescriptionIndex;
@@ -157,7 +158,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         this(yamcsInstance, config);
     }
 
-    
+
     @Override
     public void init(Processor yproc) {
         this.yproc = yproc;
@@ -171,11 +172,11 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         }
 
         for(Algorithm algo : xtcedb.getAlgorithms()) {
-            if(algo.getScope()==Algorithm.Scope.global) {
+            if(algo.getScope()==Algorithm.Scope.GLOBAL) {
                 loadAlgorithm(algo, globalCtx);
             }
         }
-        
+
     }
 
 
@@ -258,18 +259,23 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             return;
         }
         log.trace("Activating algorithm....{}", algorithm.getQualifiedName());
-        String algLang = algorithm.getLanguage();
-        if(algLang.equalsIgnoreCase("java")) {
-            executor = loadJavaExecutor(algorithm, execCtx);
-        } else {
-            ScriptEngine scriptEngine = scriptEngineManager.getEngineByName(algorithm.getLanguage());
-            if(scriptEngine==null) {
-                throw new IllegalArgumentException("Cannot created a script engine for language '"+algorithm.getLanguage()+"'");
+        if(algorithm instanceof CustomAlgorithm) {
+            CustomAlgorithm calg = (CustomAlgorithm) algorithm;
+            String algLang = calg.getLanguage();
+            if(algLang.equalsIgnoreCase("java")) {
+                executor = loadJavaExecutor(calg, execCtx);
+            } else {
+                ScriptEngine scriptEngine = scriptEngineManager.getEngineByName(calg.getLanguage());
+                if(scriptEngine==null) {
+                    throw new IllegalArgumentException("Cannot created a script engine for language '"+calg.getLanguage()+"'");
+                }
+
+                scriptEngine.put("Yamcs", new AlgorithmUtils(yproc, xtcedb, algorithm.getName()));
+
+                executor = new ScriptAlgorithmExecutor(calg, scriptEngine, execCtx);
             }
-
-            scriptEngine.put("Yamcs", new AlgorithmUtils(yproc, xtcedb, algorithm.getName()));
-
-            executor = new ScriptAlgorithmExecutor(algorithm, scriptEngine, execCtx);
+        } else {
+            throw new UnsupportedOperationException("Algorithms of type "+algorithm.getClass()+" not yet implemented");
         }
         if(listener!=null) {
             executor.addExecListener(listener);
@@ -315,11 +321,11 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                     , executor.getAlgorithm().getName(), e.getInvalidParameters(), e);
         } catch (InvalidRequestIdentification e) {
             log.error("InvalidRequestIdentification caught when subscribing to the items required for the algorithm {}"
-                     , executor.getAlgorithm().getName(), e);
+                    , executor.getAlgorithm().getName(), e);
         }
     }
 
-    private AlgorithmExecutor loadJavaExecutor(Algorithm alg, AlgorithmExecutionContext execCtx) {
+    private AlgorithmExecutor loadJavaExecutor(CustomAlgorithm alg, AlgorithmExecutionContext execCtx) {
         Pattern p = Pattern.compile("([\\w\\$\\.]+)(\\(.*\\))?", Pattern.DOTALL);
         Matcher m = p.matcher(alg.getAlgorithmText());
         if(!m.matches()) {
@@ -327,7 +333,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             throw new IllegalArgumentException("Cannot parse algorithm text '"+alg.getAlgorithmText()+"'");
         }
         String className = m.group(1);
-        
+
         try {
             String s = m.group(2); //this includes the parentheses
             Object arg = null;
@@ -335,7 +341,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                 Yaml yaml = new Yaml();
                 arg = yaml.load(s.substring(1, s.length()-1));
             }
-            
+
             if(arg==null){
                 return YObjectLoader.loadObject(className, alg, execCtx);
             } else {

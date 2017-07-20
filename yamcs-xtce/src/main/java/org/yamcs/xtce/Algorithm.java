@@ -2,42 +2,27 @@ package org.yamcs.xtce;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.List;
 
-public class Algorithm extends NameDescription {
-    private static final long serialVersionUID = 5L;
+/**
+ * Abstract algorithm - just defines the inputs, outputs and triggers
+ * @author nm
+ *
+ */
+public abstract class Algorithm extends NameDescription {
+    private static final long serialVersionUID = 6L;
     
-    private String language;
-    private String algorithmText;
     private TriggerSetType triggerSet;
-    private ArrayList<InputParameter> inputSet = new ArrayList<InputParameter>();
-    private ArrayList<OutputParameter> outputSet = new ArrayList<OutputParameter>();
+    private ArrayList<InputParameter> inputSet = new ArrayList<>();
+    private ArrayList<OutputParameter> outputSet = new ArrayList<>();
     
     //commandVerification algorithms can only be run in the context of a command verifier
-    public enum Scope {global, commandVerification};
+    public enum Scope {GLOBAL, COMMAND_VERIFICATION};
     
-    private Scope scope = Scope.global;
+    private Scope scope = Scope.GLOBAL;
     
-    // Contrary to XTCE, no support for multiple languages per algorithm
-    // private String algorithmLocation;
     public Algorithm(String name) {
         super(name);
-    }
-    
-    
-    public String getLanguage() {
-        return language;
-    }
-    
-    public void setLanguage(String language) {
-        this.language = language;
-    }
-
-    public String getAlgorithmText() {
-        return algorithmText;
-    }
-
-    public void setAlgorithmText(String algorithmText) {
-        this.algorithmText = algorithmText;
     }
     
     public TriggerSetType getTriggerSet() {
@@ -56,11 +41,11 @@ public class Algorithm extends NameDescription {
         outputSet.add(outputParameter);
     }
     
-    public ArrayList<InputParameter> getInputSet() {
+    public List<InputParameter> getInputSet() {
         return inputSet;
     }
 
-    public ArrayList<OutputParameter> getOutputSet() {
+    public List<OutputParameter> getOutputSet() {
         return outputSet;
     }
     
@@ -75,10 +60,12 @@ public class Algorithm extends NameDescription {
     
     public void print(PrintStream out) {
         out.print("Algorithm name: "+name);
-        if(scope!=Scope.global) {
+        if(scope!=Scope.GLOBAL) {
             out.print(", scope: "+scope);
         }
-        if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());
+        if(getAliasSet()!=null) {
+            out.print(", aliases: "+getAliasSet());
+        }
         out.println();
         for(InputParameter p:inputSet) {
             out.println("\t\tInputParameter "+p);

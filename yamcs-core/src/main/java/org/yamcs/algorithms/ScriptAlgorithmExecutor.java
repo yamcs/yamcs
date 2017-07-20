@@ -18,10 +18,10 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.BooleanDataEncoding;
 import org.yamcs.xtce.BooleanParameterType;
+import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.FloatDataEncoding;
@@ -70,7 +70,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     private static Map<String, Class<ValueBinding>> valueBindingClasses = Collections.synchronizedMap(new HashMap<String,Class<ValueBinding>>());
     ParameterTypeProcessor parameterTypeProcessor;
 
-    public ScriptAlgorithmExecutor(Algorithm algorithmDef, ScriptEngine scriptEngine, AlgorithmExecutionContext execCtx) {
+    public ScriptAlgorithmExecutor(CustomAlgorithm algorithmDef, ScriptEngine scriptEngine, AlgorithmExecutionContext execCtx) {
         super(algorithmDef, execCtx);
         this.scriptEngine = scriptEngine;
         this.parameterTypeProcessor = new ParameterTypeProcessor(execCtx.getProcessor().getProcessorData());
@@ -139,7 +139,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             if(compiledScript!=null) {
                 compiledScript.eval();
             } else {
-                scriptEngine.eval(algorithmDef.getAlgorithmText());
+                scriptEngine.eval(((CustomAlgorithm)algorithmDef).getAlgorithmText());
             }
         } catch (ScriptException e) {
             log.warn("Error while executing algorithm: "+e.getMessage(), e);

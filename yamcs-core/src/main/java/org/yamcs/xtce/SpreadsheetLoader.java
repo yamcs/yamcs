@@ -1904,7 +1904,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 end++;
             }
 
-            Algorithm algorithm = new Algorithm(name);
+            CustomAlgorithm algorithm = new CustomAlgorithm(name);
             if(xas!=null) {
                 algorithm.setAliasSet(xas);
             }
@@ -1930,7 +1930,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 }
                 if ("in".equalsIgnoreCase(paraInout)) {
                     if(paraRefName.startsWith(XtceDb.YAMCS_CMD_SPACESYSTEM_NAME) || paraRefName.startsWith(XtceDb.YAMCS_CMDHIST_SPACESYSTEM_NAME)) {
-                        algorithm.setScope(Algorithm.Scope.commandVerification);
+                        algorithm.setScope(Algorithm.Scope.COMMAND_VERIFICATION);
                     }
                     inputParameterRefs.add(paraRefName);
                     NameReference paramRef = getParameterReference(spaceSystem, paraRefName, false);

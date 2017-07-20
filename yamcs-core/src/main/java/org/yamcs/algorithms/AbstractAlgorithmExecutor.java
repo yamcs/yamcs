@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
 import org.yamcs.xtce.Parameter;
@@ -42,7 +43,9 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
                 scriptName = inputParameter.getParameterInstance().getParameter().getName();
             }
            
-            if(inputParameter.isMandatory()) mandatoryToRun.add(inputParameter);
+            if(inputParameter.isMandatory()) {
+                mandatoryToRun.add(inputParameter);
+            }
         }
     }
     
