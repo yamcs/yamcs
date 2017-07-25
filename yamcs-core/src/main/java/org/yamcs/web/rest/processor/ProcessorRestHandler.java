@@ -47,7 +47,7 @@ public class ProcessorRestHandler extends RestHandler {
     @Route(path = "/api/processors/:instance/:processor/clients", method = "GET")
     public void listClientsForProcessor(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
-        
+
         Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
         ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
         for (ClientInfo client : clients) {
@@ -71,18 +71,18 @@ public class ProcessorRestHandler extends RestHandler {
     @Route(path = "/api/processors/:instance", method = "GET")
     public void listProcessorsForInstance(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        
+
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
         for (Processor processor : Processor.getProcessors(instance)) {
             response.addProcessor(toProcessorInfo(processor, req, true));
         }
         completeOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
     }
-    
+
     @Route(path = "/api/processors/:instance/:processor", method = "GET")
     public void getProcessor(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
-        
+
         ProcessorInfo pinfo = toProcessorInfo(processor, req, true);
         completeOK(req, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
     }
@@ -93,8 +93,9 @@ public class ProcessorRestHandler extends RestHandler {
         if (!processor.isReplay()) {
             throw new BadRequestException("Cannot update a non-replay processor");
         }
-        
+
         EditProcessorRequest request = req.bodyAsMessage(SchemaRest.EditProcessorRequest.MERGE).build();
+        boolean quit = false;
 
         String newState = null;
         if (request.hasState()) {
@@ -111,54 +112,60 @@ public class ProcessorRestHandler extends RestHandler {
             case "paused":
                 processor.pause();
                 break;
+            case "closed":
+                processor.quit();
+                break;
+            default:
+                throw new BadRequestException("Invalid processor state '"+newState+"'");
             }
         }
-
-        long seek = TimeEncoding.INVALID_INSTANT;
-        if (request.hasSeek()) {
-            seek = RestRequest.parseTime(request.getSeek());
-        }
-        if (req.hasQueryParameter("seek")) {
-            seek = req.getQueryParameterAsDate("seek");
-        }
-        if (seek != TimeEncoding.INVALID_INSTANT) {
-            processor.seek(seek);
-        }
-
-        String speed = null;
-        if (request.hasSpeed()) {
-            speed = request.getSpeed().toLowerCase();
-        }
-        if (req.hasQueryParameter("speed")) {
-            speed = req.getQueryParameter("speed").toLowerCase();
-        }
-        if (speed != null) {
-            ReplaySpeed replaySpeed;
-            if ("afap".equals(speed)) {
-                replaySpeed = ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build();
-            } else if (speed.endsWith("x")) {
-                try {
-                    float factor = Float.parseFloat(speed.substring(0, speed.length() - 1));
-                    replaySpeed = ReplaySpeed.newBuilder()
-                            .setType(ReplaySpeedType.REALTIME)
-                            .setParam(factor).build();
-                } catch (NumberFormatException e) {
-                    throw new BadRequestException("Speed factor is not a valid number");
-                }
-                
-            } else {
-                try {
-                    int fixedDelay = Integer.parseInt(speed);
-                    replaySpeed = ReplaySpeed.newBuilder()
-                            .setType(ReplaySpeedType.FIXED_DELAY)
-                            .setParam(fixedDelay).build();
-                } catch (NumberFormatException e) {
-                    throw new BadRequestException("Fixed delay value is not an integer");
-                }
+        
+        if(!quit) { //if the processor is closed, we ignore everything else
+            long seek = TimeEncoding.INVALID_INSTANT;
+            if (request.hasSeek()) {
+                seek = RestRequest.parseTime(request.getSeek());
             }
-            processor.changeSpeed(replaySpeed);
-        }
+            if (req.hasQueryParameter("seek")) {
+                seek = req.getQueryParameterAsDate("seek");
+            }
+            if (seek != TimeEncoding.INVALID_INSTANT) {
+                processor.seek(seek);
+            }
 
+            String speed = null;
+            if (request.hasSpeed()) {
+                speed = request.getSpeed().toLowerCase();
+            }
+            if (req.hasQueryParameter("speed")) {
+                speed = req.getQueryParameter("speed").toLowerCase();
+            }
+            if (speed != null) {
+                ReplaySpeed replaySpeed;
+                if ("afap".equals(speed)) {
+                    replaySpeed = ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build();
+                } else if (speed.endsWith("x")) {
+                    try {
+                        float factor = Float.parseFloat(speed.substring(0, speed.length() - 1));
+                        replaySpeed = ReplaySpeed.newBuilder()
+                                .setType(ReplaySpeedType.REALTIME)
+                                .setParam(factor).build();
+                    } catch (NumberFormatException e) {
+                        throw new BadRequestException("Speed factor is not a valid number");
+                    }
+
+                } else {
+                    try {
+                        int fixedDelay = Integer.parseInt(speed);
+                        replaySpeed = ReplaySpeed.newBuilder()
+                                .setType(ReplaySpeedType.FIXED_DELAY)
+                                .setParam(fixedDelay).build();
+                    } catch (NumberFormatException e) {
+                        throw new BadRequestException("Fixed delay value is not an integer");
+                    }
+                }
+                processor.changeSpeed(replaySpeed);
+            }
+        }
         completeOK(req);
     }
 
@@ -171,7 +178,7 @@ public class ProcessorRestHandler extends RestHandler {
             return;
         }
         //the new one just passes on the config to the processor factory
-        
+
         String yamcsInstance = verifyInstance(req, req.getRouteParam("instance"));
         String processorName;
         if (request.hasName()) {
@@ -181,7 +188,7 @@ public class ProcessorRestHandler extends RestHandler {
         } else {
             throw new BadRequestException("No processor name was specified");
         }
-        
+
         String processorType = null;
         if (request.hasType()) {
             processorType = request.getType();
@@ -197,13 +204,13 @@ public class ProcessorRestHandler extends RestHandler {
         if(request.hasPersistent()) {
             reqb.setPersistent(request.getPersistent());
         }
-        
+
         reqb.addAllClientId(request.getClientIdList());
-        
+
         if(request.hasConfig()) {
             reqb.setConfig(request.getConfig());
         }
-        
+
         ManagementService mservice = ManagementService.getInstance();
         try {
             mservice.createProcessor(reqb.build(), req.getAuthToken());
@@ -212,13 +219,13 @@ public class ProcessorRestHandler extends RestHandler {
             throw new BadRequestException(e.getMessage());
         }
     }
-    
-    
+
+
     public void createProcessorForInstanceOld(RestRequest req, CreateProcessorRequest request) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        
+
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-    
+
         String name = null;
         long start = TimeEncoding.INVALID_INSTANT;
         long stop = TimeEncoding.INVALID_INSTANT;

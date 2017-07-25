@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -83,17 +84,18 @@ public class IntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testWsParameter() throws Exception {
         //subscribe to parameters
-        ParameterSubscriptionRequest invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6","/REFMDB/SUBSYS1/InvalidParaName");
+        ParameterSubscriptionRequest invalidSubscrList = getSubscription(true, false, "/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6","/REFMDB/SUBSYS1/InvalidParaName");
 
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", invalidSubscrList);
-        wsClient.sendRequest(wsr);
-
+        CompletableFuture<Void> cf = wsClient.sendRequest(wsr);
+        
+        cf.get();
         NamedObjectId invalidId = wsListener.invalidIdentificationList.poll(5, TimeUnit.SECONDS);
         assertNotNull(invalidId);
         assertEquals("/REFMDB/SUBSYS1/InvalidParaName", invalidId.getName());
         //TODO: because there is an invalid parameter, the request is sent back so we have to wait a little;
         // should fix this - we should have an ack that the thing has been subscribed
-        Thread.sleep(1000);
+      //  Thread.sleep(1000);
         //generate some TM packets and monitor realtime reception
         for (int i=0;i <10; i++) {
             packetGenerator.generate_PKT1_1();
@@ -117,22 +119,19 @@ public class IntegrationTest extends AbstractIntegrationTest {
     public void testWsParameterExpiration() throws Exception {
         //subscribe to parameters
         ParameterSubscriptionRequest req = getSubscription(false, true, "/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6");
-        System.out.println("request: "+req);
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", req);
-        wsClient.sendRequest(wsr);
+        wsClient.sendRequest(wsr).get();
         assertTrue(wsListener.parameterDataList.isEmpty());
         
         //generate a TM packets and monitor realtime reception
         packetGenerator.generate_PKT1_1();
-        ParameterData pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+        ParameterData pdata = wsListener.parameterDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(pdata);
      //   assertEquals(2, pdata.getParameterCount());
-        System.out.println("pdata: "+pdata);
         checkPvals(pdata.getParameterList(), packetGenerator);
         
         //after 1.5 sec we should get an set of expired parameters
         pdata = wsListener.parameterDataList.poll(3, TimeUnit.SECONDS);
-        System.out.println("pdata: "+pdata);
         assertNotNull(pdata);
         assertEquals(2, pdata.getParameterCount());
         for(ParameterValue pv: pdata.getParameterList()) {
@@ -497,19 +496,26 @@ public class IntegrationTest extends AbstractIntegrationTest {
     public void testChangeReplaySpeed() throws Exception {
 
         // generate some data
-        for (int i=0;i <100; i++) packetGenerator.generate_PKT1_1();
+        for (int i=0;i <100; i++) {
+            packetGenerator.generate_PKT1_1();
+        }
 
         // sget client info
         ClientInfo ci = getClientInfo();
-
+        String config = "{\n"
+                + "  \"utcStart\": \""+TimeEncoding.toString(0)+"\", \n"
+                + "  \"utcStop\": \""+TimeEncoding.toString(TimeEncoding.MAX_INSTANT)+"\", \n"
+                +"  \"loop\": false, \n"
+                +"  \"parameterRequest\": {\n"
+                + "   \"nameFilter\": [{\"name\":\"/REFMDB/SUBSYS1/IntegerPara1_1_6\"}]\n"
+                + "}\n"
+                + "}";
         // Create replay
         Rest.CreateProcessorRequest cpr = Rest.CreateProcessorRequest.newBuilder()
                 .setName("replay_test")
-                .setStart(TimeEncoding.toString(0))
-                .setStop(TimeEncoding.toString(TimeEncoding.MAX_INSTANT))
-                .setLoop(false)
+                .setType("Archive")
+                .setConfig(config)
                 .setPersistent(true)
-                .addParaname("/REFMDB/SUBSYS1/IntegerPara1_1_6")
                 .addClientId(ci.getId()).build();
         String resp1 = restClient.doRequest("/processors/IntegrationTest", HttpMethod.POST, toJson(cpr, SchemaRest.CreateProcessorRequest.WRITE)).get();
 
@@ -518,7 +524,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         // Check speed is 1.0
         ProcessorInfo pi1 = getProcessorInfo();
         Yamcs.ReplaySpeed speed1 = pi1.getReplayRequest().getSpeed();
-        assertEquals(speed1.getParam(), 1.0f, 1e-6);
+        assertEquals(1.0f, speed1.getParam(), 1e-6);
 
         // Set replay speed to 2.0
         Rest.EditProcessorRequest epr = Rest.EditProcessorRequest.newBuilder()
@@ -530,6 +536,9 @@ public class IntegrationTest extends AbstractIntegrationTest {
         ProcessorInfo pi2 = getProcessorInfo();
         Yamcs.ReplaySpeed speed2 = pi2.getReplayRequest().getSpeed();
         assertEquals(speed2.getParam(), 2.0f, 1e-6);
+        epr = Rest.EditProcessorRequest.newBuilder().setState("closed").build();
+        String resp3 = restClient.doRequest("/processors/IntegrationTest/replay_test", HttpMethod.POST, toJson(epr, SchemaRest.EditProcessorRequest.WRITE)).get();
+        Thread.sleep(2000);
     }
 
     @Test

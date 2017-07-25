@@ -238,10 +238,8 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             Subscription subscription = me.getValue();
             synchronized(subscription) {
                 long now = TimeEncoding.getWallclockTime();
-                System.out.println("Checking periodic expiration: "+TimeEncoding.toString(now)+" subscr.check: "+subscription.checkExpiration+" lastCheck: "+TimeEncoding.toString(subscription.lastExpirationCheck)+" pvexp: "+subscription.pvexp);
                 if((subscription.checkExpiration) && (now-subscription.lastExpirationCheck>CHECK_EXPIRATION_INTERVAL)) {
                     List<ParameterValueWithId> expired = checkExpiration(subscription, now);
-                    System.out.println("expired: "+expired);
                     if(!expired.isEmpty()) {
                         log.debug("Updating {} parameters due to expiration");
                         listener.update(me.getKey(), expired);
@@ -274,7 +272,6 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     private List<ParameterValueWithId> checkExpiration(Subscription subscription, long now) {
         List<ParameterValueWithId> expired = new ArrayList<>();
         for(ParameterValue pv: subscription.pvexp.values()) {
-            System.out.println("checking "+pv);
             if(pv.getAcquisitionStatus()==AcquisitionStatus.ACQUIRED && pv.hasExpirationTime()
                     && pv.getExpirationTime()<now) {
                 ParameterValue tmp = new ParameterValue(pv); //make a copy because this is shared by other subscribers

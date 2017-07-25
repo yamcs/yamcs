@@ -1221,6 +1221,54 @@ public final class Web {
        * </pre>
        */
       int getSequenceNumber();
+
+      // optional string type = 3;
+      /**
+       * <code>optional string type = 3;</code>
+       */
+      boolean hasType();
+      /**
+       * <code>optional string type = 3;</code>
+       */
+      java.lang.String getType();
+      /**
+       * <code>optional string type = 3;</code>
+       */
+      com.google.protobuf.ByteString
+          getTypeBytes();
+
+      // optional string message = 4;
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      boolean hasMessage();
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      java.lang.String getMessage();
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      com.google.protobuf.ByteString
+          getMessageBytes();
+
+      // optional bytes data = 5;
+      /**
+       * <code>optional bytes data = 5;</code>
+       *
+       * <pre>
+       * Structured data
+       * </pre>
+       */
+      boolean hasData();
+      /**
+       * <code>optional bytes data = 5;</code>
+       *
+       * <pre>
+       * Structured data
+       * </pre>
+       */
+      com.google.protobuf.ByteString getData();
     }
     /**
      * Protobuf type {@code web.WebSocketServerMessage.WebSocketReplyData}
@@ -1281,6 +1329,21 @@ public final class Web {
               case 16: {
                 bitField0_ |= 0x00000002;
                 sequenceNumber_ = input.readInt32();
+                break;
+              }
+              case 26: {
+                bitField0_ |= 0x00000004;
+                type_ = input.readBytes();
+                break;
+              }
+              case 34: {
+                bitField0_ |= 0x00000008;
+                message_ = input.readBytes();
+                break;
+              }
+              case 42: {
+                bitField0_ |= 0x00000010;
+                data_ = input.readBytes();
                 break;
               }
             }
@@ -1363,9 +1426,122 @@ public final class Web {
         return sequenceNumber_;
       }
 
+      // optional string type = 3;
+      public static final int TYPE_FIELD_NUMBER = 3;
+      private java.lang.Object type_;
+      /**
+       * <code>optional string type = 3;</code>
+       */
+      public boolean hasType() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional string type = 3;</code>
+       */
+      public java.lang.String getType() {
+        java.lang.Object ref = type_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            type_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>optional string type = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTypeBytes() {
+        java.lang.Object ref = type_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          type_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      // optional string message = 4;
+      public static final int MESSAGE_FIELD_NUMBER = 4;
+      private java.lang.Object message_;
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      public boolean hasMessage() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      public java.lang.String getMessage() {
+        java.lang.Object ref = message_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            message_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getMessageBytes() {
+        java.lang.Object ref = message_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          message_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      // optional bytes data = 5;
+      public static final int DATA_FIELD_NUMBER = 5;
+      private com.google.protobuf.ByteString data_;
+      /**
+       * <code>optional bytes data = 5;</code>
+       *
+       * <pre>
+       * Structured data
+       * </pre>
+       */
+      public boolean hasData() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional bytes data = 5;</code>
+       *
+       * <pre>
+       * Structured data
+       * </pre>
+       */
+      public com.google.protobuf.ByteString getData() {
+        return data_;
+      }
+
       private void initFields() {
         protocolVersion_ = 0;
         sequenceNumber_ = 0;
+        type_ = "";
+        message_ = "";
+        data_ = com.google.protobuf.ByteString.EMPTY;
       }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
@@ -1385,6 +1561,15 @@ public final class Web {
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
           output.writeInt32(2, sequenceNumber_);
         }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          output.writeBytes(3, getTypeBytes());
+        }
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          output.writeBytes(4, getMessageBytes());
+        }
+        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          output.writeBytes(5, data_);
+        }
         getUnknownFields().writeTo(output);
       }
 
@@ -1401,6 +1586,18 @@ public final class Web {
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
           size += com.google.protobuf.CodedOutputStream
             .computeInt32Size(2, sequenceNumber_);
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(3, getTypeBytes());
+        }
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(4, getMessageBytes());
+        }
+        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(5, data_);
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -1522,6 +1719,12 @@ public final class Web {
           bitField0_ = (bitField0_ & ~0x00000001);
           sequenceNumber_ = 0;
           bitField0_ = (bitField0_ & ~0x00000002);
+          type_ = "";
+          bitField0_ = (bitField0_ & ~0x00000004);
+          message_ = "";
+          bitField0_ = (bitField0_ & ~0x00000008);
+          data_ = com.google.protobuf.ByteString.EMPTY;
+          bitField0_ = (bitField0_ & ~0x00000010);
           return this;
         }
 
@@ -1558,6 +1761,18 @@ public final class Web {
             to_bitField0_ |= 0x00000002;
           }
           result.sequenceNumber_ = sequenceNumber_;
+          if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+            to_bitField0_ |= 0x00000004;
+          }
+          result.type_ = type_;
+          if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+            to_bitField0_ |= 0x00000008;
+          }
+          result.message_ = message_;
+          if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+            to_bitField0_ |= 0x00000010;
+          }
+          result.data_ = data_;
           result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
@@ -1579,6 +1794,19 @@ public final class Web {
           }
           if (other.hasSequenceNumber()) {
             setSequenceNumber(other.getSequenceNumber());
+          }
+          if (other.hasType()) {
+            bitField0_ |= 0x00000004;
+            type_ = other.type_;
+            onChanged();
+          }
+          if (other.hasMessage()) {
+            bitField0_ |= 0x00000008;
+            message_ = other.message_;
+            onChanged();
+          }
+          if (other.hasData()) {
+            setData(other.getData());
           }
           this.mergeUnknownFields(other.getUnknownFields());
           return this;
@@ -1685,6 +1913,206 @@ public final class Web {
         public Builder clearSequenceNumber() {
           bitField0_ = (bitField0_ & ~0x00000002);
           sequenceNumber_ = 0;
+          onChanged();
+          return this;
+        }
+
+        // optional string type = 3;
+        private java.lang.Object type_ = "";
+        /**
+         * <code>optional string type = 3;</code>
+         */
+        public boolean hasType() {
+          return ((bitField0_ & 0x00000004) == 0x00000004);
+        }
+        /**
+         * <code>optional string type = 3;</code>
+         */
+        public java.lang.String getType() {
+          java.lang.Object ref = type_;
+          if (!(ref instanceof java.lang.String)) {
+            java.lang.String s = ((com.google.protobuf.ByteString) ref)
+                .toStringUtf8();
+            type_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>optional string type = 3;</code>
+         */
+        public com.google.protobuf.ByteString
+            getTypeBytes() {
+          java.lang.Object ref = type_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            type_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>optional string type = 3;</code>
+         */
+        public Builder setType(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+          type_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string type = 3;</code>
+         */
+        public Builder clearType() {
+          bitField0_ = (bitField0_ & ~0x00000004);
+          type_ = getDefaultInstance().getType();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string type = 3;</code>
+         */
+        public Builder setTypeBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+          type_ = value;
+          onChanged();
+          return this;
+        }
+
+        // optional string message = 4;
+        private java.lang.Object message_ = "";
+        /**
+         * <code>optional string message = 4;</code>
+         */
+        public boolean hasMessage() {
+          return ((bitField0_ & 0x00000008) == 0x00000008);
+        }
+        /**
+         * <code>optional string message = 4;</code>
+         */
+        public java.lang.String getMessage() {
+          java.lang.Object ref = message_;
+          if (!(ref instanceof java.lang.String)) {
+            java.lang.String s = ((com.google.protobuf.ByteString) ref)
+                .toStringUtf8();
+            message_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>optional string message = 4;</code>
+         */
+        public com.google.protobuf.ByteString
+            getMessageBytes() {
+          java.lang.Object ref = message_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            message_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>optional string message = 4;</code>
+         */
+        public Builder setMessage(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+          message_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string message = 4;</code>
+         */
+        public Builder clearMessage() {
+          bitField0_ = (bitField0_ & ~0x00000008);
+          message_ = getDefaultInstance().getMessage();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string message = 4;</code>
+         */
+        public Builder setMessageBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+          message_ = value;
+          onChanged();
+          return this;
+        }
+
+        // optional bytes data = 5;
+        private com.google.protobuf.ByteString data_ = com.google.protobuf.ByteString.EMPTY;
+        /**
+         * <code>optional bytes data = 5;</code>
+         *
+         * <pre>
+         * Structured data
+         * </pre>
+         */
+        public boolean hasData() {
+          return ((bitField0_ & 0x00000010) == 0x00000010);
+        }
+        /**
+         * <code>optional bytes data = 5;</code>
+         *
+         * <pre>
+         * Structured data
+         * </pre>
+         */
+        public com.google.protobuf.ByteString getData() {
+          return data_;
+        }
+        /**
+         * <code>optional bytes data = 5;</code>
+         *
+         * <pre>
+         * Structured data
+         * </pre>
+         */
+        public Builder setData(com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+          data_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional bytes data = 5;</code>
+         *
+         * <pre>
+         * Structured data
+         * </pre>
+         */
+        public Builder clearData() {
+          bitField0_ = (bitField0_ & ~0x00000010);
+          data_ = getDefaultInstance().getData();
           onChanged();
           return this;
         }
@@ -10621,49 +11049,50 @@ public final class Web {
       "SocketClientMessage\022\027\n\017protocolVersion\030\001" +
       " \001(\r\022\026\n\016sequenceNumber\030\002 \001(\r\022\020\n\010resource" +
       "\030\003 \001(\t\022\021\n\toperation\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\"" +
-      "\352\t\n\026WebSocketServerMessage\0225\n\004type\030\001 \001(\016" +
+      "\227\n\n\026WebSocketServerMessage\0225\n\004type\030\001 \001(\016" +
       "2\'.web.WebSocketServerMessage.MessageTyp" +
       "e\022=\n\005reply\030\002 \001(\0132..web.WebSocketServerMe" +
       "ssage.WebSocketReplyData\022E\n\texception\030\003 ",
       "\001(\01322.web.WebSocketServerMessage.WebSock" +
       "etExceptionData\022C\n\004data\030\004 \001(\01325.web.WebS" +
       "ocketServerMessage.WebSocketSubscription" +
-      "Data\032E\n\022WebSocketReplyData\022\027\n\017protocolVe" +
-      "rsion\030\001 \001(\r\022\026\n\016sequenceNumber\030\002 \001(\005\032v\n\026W" +
-      "ebSocketExceptionData\022\027\n\017protocolVersion" +
-      "\030\001 \001(\r\022\026\n\016sequenceNumber\030\002 \001(\005\022\014\n\004type\030\003" +
-      " \001(\t\022\017\n\007message\030\004 \001(\t\022\014\n\004data\030\005 \001(\014\032\333\005\n\031" +
-      "WebSocketSubscriptionData\022\026\n\016sequenceNum" +
-      "ber\030\001 \001(\r\022\"\n\004type\030\002 \001(\0162\024.yamcs.ProtoDat",
-      "aType\022,\n\rparameterData\030\003 \001(\0132\025.pvalue.Pa" +
-      "rameterData\0220\n\007command\030\004 \001(\0132\037.commandin" +
-      "g.CommandHistoryEntry\0225\n\rprocessorInfo\030\005" +
-      " \001(\0132\036.yamcsManagement.ProcessorInfo\022/\n\n" +
-      "clientInfo\030\006 \001(\0132\033.yamcsManagement.Clien" +
-      "tInfo\022/\n\nstatistics\030\007 \001(\0132\033.yamcsManagem" +
-      "ent.Statistics\022\033\n\005event\030\010 \001(\0132\014.yamcs.Ev" +
-      "ent\022\'\n\nstreamData\030\t \001(\0132\023.archive.Stream" +
-      "Data\022$\n\talarmData\030\n \001(\0132\021.alarms.AlarmDa" +
-      "ta\022!\n\010timeInfo\030\013 \001(\0132\017.yamcs.TimeInfo\022-\n",
-      "\tlinkEvent\030\014 \001(\0132\032.yamcsManagement.LinkE" +
-      "vent\0226\n\020commandQueueInfo\030\r \001(\0132\034.command" +
-      "ing.CommandQueueInfo\0228\n\021commandQueueEven" +
-      "t\030\016 \001(\0132\035.commanding.CommandQueueEvent\022%" +
-      "\n\010tmPacket\030\017 \001(\0132\023.yamcs.TmPacketData\0222\n" +
-      "\rextensionData\030d \001(\0132\033.web.WebSocketExte" +
-      "nsionData\"1\n\013MessageType\022\t\n\005REPLY\020\002\022\r\n\tE" +
-      "XCEPTION\020\003\022\010\n\004DATA\020\004\"4\n\026WebSocketExtensi" +
-      "onData\022\014\n\004type\030\001 \001(\r\022\014\n\004data\030\002 \001(\014\"8\n\024Re" +
-      "stExceptionMessage\022\014\n\004type\030\001 \001(\t\022\013\n\003msg\030",
-      "\002 \001(\t*\005\010d\020\311\001\"\264\001\n\034ParameterSubscriptionRe" +
-      "quest\022 \n\002id\030\001 \003(\0132\024.yamcs.NamedObjectId\022" +
-      "\026\n\016abortOnInvalid\030\002 \001(\010\022\032\n\022updateOnExpir" +
-      "ation\030\003 \001(\010\022\025\n\rsendFromCache\030\004 \001(\010\022\'\n\004li" +
-      "st\030\220N \003(\0132\024.yamcs.NamedObjectIdB\002\030\001\"k\n\035P" +
-      "arameterSubscriptionResponse\022#\n\005valid\030\001 " +
-      "\003(\0132\024.yamcs.NamedObjectId\022%\n\007invalid\030\002 \003" +
-      "(\0132\024.yamcs.NamedObjectIdB\024\n\022org.yamcs.pr" +
-      "otobuf"
+      "Data\032r\n\022WebSocketReplyData\022\027\n\017protocolVe" +
+      "rsion\030\001 \001(\r\022\026\n\016sequenceNumber\030\002 \001(\005\022\014\n\004t" +
+      "ype\030\003 \001(\t\022\017\n\007message\030\004 \001(\t\022\014\n\004data\030\005 \001(\014" +
+      "\032v\n\026WebSocketExceptionData\022\027\n\017protocolVe" +
+      "rsion\030\001 \001(\r\022\026\n\016sequenceNumber\030\002 \001(\005\022\014\n\004t" +
+      "ype\030\003 \001(\t\022\017\n\007message\030\004 \001(\t\022\014\n\004data\030\005 \001(\014" +
+      "\032\333\005\n\031WebSocketSubscriptionData\022\026\n\016sequen",
+      "ceNumber\030\001 \001(\r\022\"\n\004type\030\002 \001(\0162\024.yamcs.Pro" +
+      "toDataType\022,\n\rparameterData\030\003 \001(\0132\025.pval" +
+      "ue.ParameterData\0220\n\007command\030\004 \001(\0132\037.comm" +
+      "anding.CommandHistoryEntry\0225\n\rprocessorI" +
+      "nfo\030\005 \001(\0132\036.yamcsManagement.ProcessorInf" +
+      "o\022/\n\nclientInfo\030\006 \001(\0132\033.yamcsManagement." +
+      "ClientInfo\022/\n\nstatistics\030\007 \001(\0132\033.yamcsMa" +
+      "nagement.Statistics\022\033\n\005event\030\010 \001(\0132\014.yam" +
+      "cs.Event\022\'\n\nstreamData\030\t \001(\0132\023.archive.S" +
+      "treamData\022$\n\talarmData\030\n \001(\0132\021.alarms.Al",
+      "armData\022!\n\010timeInfo\030\013 \001(\0132\017.yamcs.TimeIn" +
+      "fo\022-\n\tlinkEvent\030\014 \001(\0132\032.yamcsManagement." +
+      "LinkEvent\0226\n\020commandQueueInfo\030\r \001(\0132\034.co" +
+      "mmanding.CommandQueueInfo\0228\n\021commandQueu" +
+      "eEvent\030\016 \001(\0132\035.commanding.CommandQueueEv" +
+      "ent\022%\n\010tmPacket\030\017 \001(\0132\023.yamcs.TmPacketDa" +
+      "ta\0222\n\rextensionData\030d \001(\0132\033.web.WebSocke" +
+      "tExtensionData\"1\n\013MessageType\022\t\n\005REPLY\020\002" +
+      "\022\r\n\tEXCEPTION\020\003\022\010\n\004DATA\020\004\"4\n\026WebSocketEx" +
+      "tensionData\022\014\n\004type\030\001 \001(\r\022\014\n\004data\030\002 \001(\014\"",
+      "8\n\024RestExceptionMessage\022\014\n\004type\030\001 \001(\t\022\013\n" +
+      "\003msg\030\002 \001(\t*\005\010d\020\311\001\"\264\001\n\034ParameterSubscript" +
+      "ionRequest\022 \n\002id\030\001 \003(\0132\024.yamcs.NamedObje" +
+      "ctId\022\026\n\016abortOnInvalid\030\002 \001(\010\022\032\n\022updateOn" +
+      "Expiration\030\003 \001(\010\022\025\n\rsendFromCache\030\004 \001(\010\022" +
+      "\'\n\004list\030\220N \003(\0132\024.yamcs.NamedObjectIdB\002\030\001" +
+      "\"k\n\035ParameterSubscriptionResponse\022#\n\005val" +
+      "id\030\001 \003(\0132\024.yamcs.NamedObjectId\022%\n\007invali" +
+      "d\030\002 \003(\0132\024.yamcs.NamedObjectIdB\024\n\022org.yam" +
+      "cs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -10687,7 +11116,7 @@ public final class Web {
           internal_static_web_WebSocketServerMessage_WebSocketReplyData_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_web_WebSocketServerMessage_WebSocketReplyData_descriptor,
-              new java.lang.String[] { "ProtocolVersion", "SequenceNumber", });
+              new java.lang.String[] { "ProtocolVersion", "SequenceNumber", "Type", "Message", "Data", });
           internal_static_web_WebSocketServerMessage_WebSocketExceptionData_descriptor =
             internal_static_web_WebSocketServerMessage_descriptor.getNestedTypes().get(1);
           internal_static_web_WebSocketServerMessage_WebSocketExceptionData_fieldAccessorTable = new

@@ -2,7 +2,6 @@ package org.yamcs.tctm;
 
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -33,7 +32,6 @@ import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
-import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
@@ -45,6 +43,7 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.security.InvalidAuthenticationToken;
 import org.yamcs.security.SystemToken;
 import org.yamcs.xtce.Parameter;
@@ -68,14 +67,11 @@ import io.protostuff.JsonIOUtil;
 public class ReplayService extends AbstractService implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider, CommandHistoryProvider {
     static final long timeout=10000;
 
-    boolean loop;
-    long start, stop; // start and stop times of playback request
-    String[] packets; // array of opsnames of packets to subscribe
     EndAction endAction;
     static Logger log=LoggerFactory.getLogger(ReplayService.class.getName());
 
     ReplayRequest originalReplayRequest;
-    private HashSet<Parameter> subscribedParameters=new HashSet<>();
+    private HashSet<Parameter> subscribedParameters = new HashSet<>();
     private ParameterRequestManagerImpl parameterRequestManager;
     TmProcessor tmProcessor;
     volatile long dataCount=0;
@@ -104,6 +100,9 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
             JsonIOUtil.mergeFrom(config.getBytes(), rrb, org.yamcs.protobuf.SchemaYamcs.ReplayRequest.MERGE, false);
         } catch (IOException e) {
            throw new ConfigurationException("Cannot parse config into a replay request: "+e.getMessage(), e);
+        }
+        if(!rrb.hasSpeed()) {
+            rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.REALTIME).setParam(1));
         }
         this.originalReplayRequest = rrb.build();
         xtceDb = XtceDbFactory.getInstance(instance);

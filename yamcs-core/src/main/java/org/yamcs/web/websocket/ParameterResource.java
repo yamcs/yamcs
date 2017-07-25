@@ -14,6 +14,7 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.ProcessorException;
+import org.yamcs.api.ws.WSConstants;
 import org.yamcs.Processor;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValue;
@@ -102,6 +103,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
     private WebSocketReplyData subscribe(int requestId, ParameterSubscriptionRequest req, AuthenticationToken authToken) throws WebSocketException {
         List<NamedObjectId> idList = req.getIdList();
         try {
+            WebSocketReply reply = new WebSocketReply(requestId);
             try {
                 if(subscriptionId!=-1) {
                     pidrm.addItemsToRequest(subscriptionId, idList, authToken);
@@ -109,10 +111,11 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                     subscriptionId = pidrm.addRequest(idList, req.getUpdateOnExpiration(), authToken);
                 }
             } catch (InvalidIdentification e) {
+                NamedObjectList invalidList = NamedObjectList.newBuilder().addAllList(e.getInvalidParameters()).build();
+                
                 if (!req.hasAbortOnInvalid() || req.getAbortOnInvalid()) {
-                    NamedObjectList nol = NamedObjectList.newBuilder().addAllList(e.getInvalidParameters()).build();
                     WebSocketException ex = new WebSocketException(requestId, e);
-                    ex.attachData("InvalidIdentification", nol, SchemaYamcs.NamedObjectList.WRITE);
+                    ex.attachData("InvalidIdentification", invalidList, SchemaYamcs.NamedObjectList.WRITE);
                     throw ex;
                 } else {
                     idList = new ArrayList<>(idList);
@@ -131,12 +134,10 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                             subscriptionId=pidrm.addRequest(idList, req.getUpdateOnExpiration(), authToken);
                         }
                     }
-                    // TODO send back invalid list as part of nominal response. Requires work in the websocket framework which
-                    // currently only supports ACK responses in the reply itself
+                    reply.attachData("InvalidIdentification", invalidList, SchemaYamcs.NamedObjectList.WRITE);
                 }
             }
 
-            WebSocketReplyData reply = toAckReply(requestId);
             wsHandler.sendReply(reply);
             if(req.hasSendFromCache() && req.getSendFromCache() && pidrm.hasParameterCache()) {
                 List<ParameterValueWithId> pvlist = pidrm.getValuesFromCache(idList, authToken);

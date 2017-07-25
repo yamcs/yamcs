@@ -12,8 +12,11 @@ import org.yamcs.api.ws.WebSocketClient.RequestResponsePair;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.Channel;
@@ -67,7 +70,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
     public void channelInactive(ChannelHandlerContext ctx) {
         log.info("WebSocket Client disconnected!");
         callback.disconnected();
-       
+
         if (client.isReconnectionEnabled()) {
             ctx.channel().eventLoop().schedule(() -> client.connect(), client.reconnectionInterval, TimeUnit.MILLISECONDS);
         }
@@ -117,13 +120,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
             WebSocketServerMessage message = WebSocketServerMessage.newBuilder().mergeFrom(new ByteBufInputStream(frame.content())).build();
             switch (message.getType()) {
             case REPLY:
-                int reqId = message.getReply().getSequenceNumber();
-                RequestResponsePair pair =  client.removeUpstreamRequest(reqId);
-                if (pair == null) {
-                    log.warn("Received an exception for a request I did not send (or was already finished) seqNum: {}", reqId);
-                } else if(pair.responseHandler!=null) {
-                   pair.responseHandler.onCompletion();
-                }
+                processReplyData(message.getReply());
                 break;
             case EXCEPTION:
                 processExceptionData(message.getException());
@@ -139,6 +136,30 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         }
     }
 
+    private void processReplyData(WebSocketReplyData reply) throws InvalidProtocolBufferException {
+        int reqId = reply.getSequenceNumber();
+        RequestResponsePair pair =  client.removeUpstreamRequest(reqId);
+        if (pair == null) {
+            log.warn("Received an exception for a request I did not send (or was already finished) seqNum: {}", reqId);
+            return;
+        } 
+        if(reply.hasData()) {
+            String dataType = reply.getType();
+            if("InvalidIdentification".equals(dataType)) {
+                byte[] barray = reply.getData().toByteArray();
+                NamedObjectList invalidList = NamedObjectList.newBuilder().mergeFrom(barray).build();
+                for (NamedObjectId invalidId : invalidList.getListList()) {
+                    // Notify downstream
+                    callback.onInvalidIdentification(invalidId);
+                }
+            }
+        }
+        if(pair.responseHandler!=null) {
+            pair.responseHandler.onCompletion();
+        }
+    }
+    
+    
     private void processExceptionData(WebSocketExceptionData exceptionData) throws IOException {
         int reqId = exceptionData.getSequenceNumber();
         RequestResponsePair pair =  client.getRequestResponsePair(reqId);
@@ -146,42 +167,10 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
             log.warn("Received an exception for a request I did not send (or was already finished) seqNum: {}", reqId);
             return;
         }
-        
-        // this can be done on server side with abortOnInvalidParameters:false but currently the server doens't send back
-        // the list of invalid parameters
-        if ("InvalidIdentification".equals(exceptionData.getType())) {
-            // Well that's unfortunate, we need to resend another subscription with
-            // the invalid parameters excluded
-            byte[] barray = exceptionData.getData().toByteArray();
-            NamedObjectList invalidList = NamedObjectList.newBuilder().mergeFrom(barray).build();
-            
-            WebSocketRequest req = pair.request;
-            if(!req.getResource().equals("parameter") || !req.getOperation().equals("subscribe")) {
-                log.warn("Received an InvalidIdentification exception for a request that is not a parameter/subscribe request, seqNum: {}", reqId);
-                return;
-            }
 
-            List<NamedObjectId> requestedIdList = ((ParameterSubscriptionRequest) req.getRequestData()).getIdList();
-            Set<NamedObjectId> requestedIds = new HashSet<>(requestedIdList);
-            for (NamedObjectId invalidId : invalidList.getListList()) {
-                // Notify downstream
-                callback.onInvalidIdentification(invalidId);
-                requestedIds.remove(invalidId);
-            }
-
-            // Get rid of the current pending request
-            client.removeUpstreamRequest(reqId);
-
-            if(!requestedIds.isEmpty()) {
-                // And have another go at it
-                ParameterSubscriptionRequest newReq = ((ParameterSubscriptionRequest) req.getRequestData()).toBuilder().clearId().addAllId(requestedIds).build();
-                client.sendRequest(new WebSocketRequest("parameter", "subscribe", newReq));
-            }
-        } else {
-            log.warn("Got exception message " + exceptionData.getMessage());
-            if (pair.responseHandler != null) {
-                pair.responseHandler.onException(exceptionData);
-            }
+        log.warn("Got exception message " + exceptionData.getMessage());
+        if (pair.responseHandler != null) {
+            pair.responseHandler.onException(exceptionData);
         }
     }
 

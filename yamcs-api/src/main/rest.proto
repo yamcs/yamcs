@@ -157,6 +157,7 @@ message CreateProcessorRequest {
   repeated string ppgroup = 8 [deprecated = true];
   repeated string packetname = 9 [deprecated = true];
   optional bool cmdhist = 10 [deprecated = true];
+
   optional bool persistent = 11;
   optional string type = 12;
   optional string config = 13;

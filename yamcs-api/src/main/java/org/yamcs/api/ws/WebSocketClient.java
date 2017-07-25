@@ -199,7 +199,7 @@ public class WebSocketClient {
      * @return future that completes when the request is anwsered
      */
     public CompletableFuture<Void> sendRequest(WebSocketRequest request) {
-        CompletableFuture<Void> cf = new CompletableFuture<Void>();
+        CompletableFuture<Void> cf = new CompletableFuture<>();
         WebSocketResponseHandler wsr = new WebSocketResponseHandler() {
             @Override
             public void onException(WebSocketExceptionData e) {
@@ -209,7 +209,6 @@ public class WebSocketClient {
             @Override
             public void onCompletion() {
                 cf.complete(null);
-
             }
         };
         group.execute(() -> doSendRequest(request, wsr));

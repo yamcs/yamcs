@@ -26,6 +26,9 @@ message WebSocketServerMessage {
   message WebSocketReplyData {
     optional uint32 protocolVersion = 1;
     optional int32 sequenceNumber = 2; // allow for -1
+    optional string type = 3;
+    optional string message = 4;
+    optional bytes data = 5; // Structured data
   }
 
   message WebSocketExceptionData {

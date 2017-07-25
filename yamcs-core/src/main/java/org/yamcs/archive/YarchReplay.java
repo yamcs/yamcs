@@ -47,13 +47,13 @@ import com.google.protobuf.MessageLite;
 public class YarchReplay implements StreamSubscriber {
     ReplayServer replayServer;
     volatile String streamName;
-    volatile boolean quitting=false;
+    volatile boolean quitting = false;
     private volatile ReplayState state = ReplayState.INITIALIZATION;
-    static Logger log=LoggerFactory.getLogger(YarchReplay.class.getName());
+    static Logger log = LoggerFactory.getLogger(YarchReplay.class.getName());
     private volatile String errorString="";
     int numPacketsSent;
     final String instance;
-    static AtomicInteger counter=new AtomicInteger();
+    static AtomicInteger counter = new AtomicInteger();
     XtceDb xtceDb;
    
     volatile ReplayRequest currentRequest;
@@ -206,7 +206,7 @@ public class YarchReplay implements StreamSubscriber {
             rs = ReplaySpeed.newBuilder().setType(ReplaySpeedType.REALTIME).setParam(1).build();
         }
         switch(rs.getType()) {
-        case    AFAP:
+        case AFAP:
             sb.append(" SPEED AFAP");
             break;
         case FIXED_DELAY:

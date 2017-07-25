@@ -3,7 +3,7 @@ package org.yamcs.web.websocket;
 import java.io.IOException;
 
 import org.yamcs.api.ws.WSConstants;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
@@ -11,34 +11,22 @@ import com.google.protobuf.MessageLite;
 import io.protostuff.Schema;
 
 /**
- * When an exception occurred while handling an incoming web socket request. Used as a one-time response to a client request.
+ * response to a request message
  */
-public class WebSocketException extends Exception {
-    private static final long serialVersionUID = 1L;
+public class WebSocketReply  {
 
     private int requestId;
 
     // Optional accompanying data
     // eg. for InvalidIdentification we want to pass the names of the invalid parameters
-    private String dataType = "STRING";
+    private String dataType = null;
     private MessageLite data;
     private Schema<MessageLite> dataSchema;
 
     /**
      * @param requestId the client request id, if at least this could be successfully interpreted.
      */
-    public WebSocketException(int requestId, String message) {
-        super(message);
-        this.requestId = requestId;
-    }
-
-    public WebSocketException(int requestId, Throwable t) {
-       super(t.getMessage(), t);
-        this.requestId = requestId;
-    }
-
-    public WebSocketException(int requestId, String message, Throwable t) {
-        super(message + ": " + t.getMessage(), t);
+    public WebSocketReply(int requestId) {
         this.requestId = requestId;
     }
 
@@ -68,17 +56,13 @@ public class WebSocketException extends Exception {
     /**
      * Converts this exception to a protobuf message
      */
-    public WebSocketExceptionData toWebSocketExceptionData() throws IOException {
-        WebSocketExceptionData.Builder resultb = WebSocketExceptionData.newBuilder();
+    public WebSocketReplyData toWebSocketReplyData() throws IOException {
+        WebSocketReplyData.Builder resultb = WebSocketReplyData.newBuilder();
         resultb.setProtocolVersion(WSConstants.PROTOCOL_VERSION);
         resultb.setSequenceNumber(requestId);
-        resultb.setType(dataType);
-        String msg = getMessage();
-        if(msg!=null) {
-            resultb.setMessage(msg);
-        }
         
-        if (!dataType.equals("STRING")) {
+        if (dataType!=null) {
+            resultb.setType(dataType);
             try (ByteString.Output out = ByteString.newOutput()) {
                 data.writeTo(out);
                 out.close();

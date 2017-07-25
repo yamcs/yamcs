@@ -412,7 +412,7 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
     public void update(Collection<ParameterValue> params) {
         log.trace("ParamRequestManager.updateItems with {} parameters", params.size());
         //maps subscription id to a list of (value,id) to be delivered for that subscription
-        HashMap<Integer, ArrayList<ParameterValue>> delivery= new HashMap<Integer, ArrayList<ParameterValue>>();
+        HashMap<Integer, ArrayList<ParameterValue>> delivery= new HashMap<>();
 
         //so first we add to the delivery the parameters just received
         updateDelivery(delivery, params);

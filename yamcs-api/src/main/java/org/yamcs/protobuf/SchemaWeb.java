@@ -165,6 +165,13 @@ public final class SchemaWeb
                         output.writeUInt32(1, message.getProtocolVersion(), false);
                     if(message.hasSequenceNumber())
                         output.writeInt32(2, message.getSequenceNumber(), false);
+                    if(message.hasType())
+                        output.writeString(3, message.getType(), false);
+                    if(message.hasMessage())
+                        output.writeString(4, message.getMessage(), false);
+                    if(message.hasData())
+                        output.writeByteArray(5, message.getData().toByteArray(), false);
+
                 }
                 public boolean isInitialized(org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData message)
                 {
@@ -210,6 +217,15 @@ public final class SchemaWeb
                             case 2:
                                 builder.setSequenceNumber(input.readInt32());
                                 break;
+                            case 3:
+                                builder.setType(input.readString());
+                                break;
+                            case 4:
+                                builder.setMessage(input.readString());
+                                break;
+                            case 5:
+                                builder.setData(com.google.protobuf.ByteString.copyFrom(input.readByteArray()));
+                                break;
                             default:
                                 input.handleUnknownField(number, this);
                         }
@@ -252,6 +268,9 @@ public final class SchemaWeb
                 {
                     case 1: return "protocolVersion";
                     case 2: return "sequenceNumber";
+                    case 3: return "type";
+                    case 4: return "message";
+                    case 5: return "data";
                     default: return null;
                 }
             }
@@ -265,6 +284,9 @@ public final class SchemaWeb
             {
                 fieldMap.put("protocolVersion", 1);
                 fieldMap.put("sequenceNumber", 2);
+                fieldMap.put("type", 3);
+                fieldMap.put("message", 4);
+                fieldMap.put("data", 5);
             }
         }
 

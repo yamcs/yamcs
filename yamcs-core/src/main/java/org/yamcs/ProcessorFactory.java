@@ -56,7 +56,7 @@ public class ProcessorFactory {
                 tctms= loadObject(clsName, yamcsInstance, args, spec);
             } else {
                 TmPacketProvider tm=null;
-                List<ParameterProvider> pps = new ArrayList<ParameterProvider>();
+                List<ParameterProvider> pps = new ArrayList<>();
                 CommandReleaser tc=null;
 
                 if(conf.containsKey(type,"telemetryProvider")) {

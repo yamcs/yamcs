@@ -163,6 +163,7 @@ public abstract class AbstractIntegrationTest {
         }
         b.setSendFromCache(sendFromCache);
         b.setUpdateOnExpiration(updateOnExpiration);
+        b.setAbortOnInvalid(false);
         return b.build();
     }
 

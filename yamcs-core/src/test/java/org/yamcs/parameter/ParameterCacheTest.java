@@ -6,15 +6,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
 
 public class ParameterCacheTest {
     Parameter p1 = new Parameter("p1");
     Parameter p2 = new Parameter("p2");
+    
+    @BeforeClass
+    public static void before() {
+        TimeEncoding.setUp();
+    }
     
     @Test
     public void test1() {

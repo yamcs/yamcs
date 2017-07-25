@@ -223,4 +223,8 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     public Channel getChannel() {
         return channel;
     }
+
+    public void sendReply(WebSocketReply reply) throws IOException {
+        sendReply(reply.toWebSocketReplyData());
+    }
 }
