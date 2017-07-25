@@ -46,10 +46,10 @@
   fill: red;
 }
 
-.static-foreground {
+.expired-foreground {
   fill: black;
 }
 
-.static-background {
+.expired-background {
   fill: cyan;
 }

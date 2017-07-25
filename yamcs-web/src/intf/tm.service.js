@@ -69,14 +69,16 @@
             if (parameters.length == 0) return;
             var msg = {
                 abortOnInvalid: false,
+                sendFromCache: true,
+                updateOnExpiration: true,
                 id: parameters
             };
 
             socket.on('open', function () {
-                socket.emit('parameter', 'subscribe2', msg);
+                socket.emit('parameter', 'subscribe', msg);
             });
             if (socket.isConnected()) {
-                socket.emit('parameter', 'subscribe2', msg);
+                socket.emit('parameter', 'subscribe', msg);
             }
         }
 
