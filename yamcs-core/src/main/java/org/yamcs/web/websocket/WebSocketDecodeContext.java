@@ -12,7 +12,7 @@ public class WebSocketDecodeContext {
     private int requestId;
     private String resource;
     private String operation;
-
+    
     // Could maybe do this better, enables us to maintain our parse state when decoding the payload after the envelope
     // which is useful in particular for jackson.
     private Object data;

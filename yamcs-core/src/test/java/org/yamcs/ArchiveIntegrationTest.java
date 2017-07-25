@@ -32,6 +32,7 @@ import org.yamcs.protobuf.Table.Cell;
 import org.yamcs.protobuf.Table.ColumnInfo;
 import org.yamcs.protobuf.Table.Row;
 import org.yamcs.protobuf.Table.TableLoadResponse;
+import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
@@ -86,9 +87,9 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         restClient.setSendMediaType(MediaType.JSON);
 
         
-        NamedObjectList subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6", "/REFMDB/SUBSYS1/IntegerPara1_1_7", 
+        ParameterSubscriptionRequest subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6", "/REFMDB/SUBSYS1/IntegerPara1_1_7", 
                 "/REFMDB/SUBSYS1/processed_para_uint", "/REFMDB/SUBSYS1/processed_para_double");
-        WebSocketRequest wsr = new WebSocketRequest("parameter", ParameterResource.WSR_subscribe, subscrList);
+        WebSocketRequest wsr = new WebSocketRequest("parameter", ParameterResource.WSR_SUBSCRIBE, subscrList);
         wsClient.sendRequest(wsr);
         
         //these are from the realtime processor cache

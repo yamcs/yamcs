@@ -26,6 +26,7 @@ import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest;
@@ -40,10 +41,10 @@ import org.yamcs.protobuf.SchemaPvalue;
 import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.ValueHelper;
+import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -71,7 +72,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
     public void testWsParameterSubscriPerformance() throws Exception {
         //subscribe to parameters
         long t0 = System.currentTimeMillis();
-        NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6");
+        ParameterSubscriptionRequest invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6");
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", invalidSubscrList);
         wsClient.sendRequest(wsr);
 
@@ -82,7 +83,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testWsParameter() throws Exception {
         //subscribe to parameters
-        NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6","/REFMDB/SUBSYS1/InvalidParaName");
+        ParameterSubscriptionRequest invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6","/REFMDB/SUBSYS1/InvalidParaName");
 
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", invalidSubscrList);
         wsClient.sendRequest(wsr);
@@ -94,11 +95,14 @@ public class IntegrationTest extends AbstractIntegrationTest {
         // should fix this - we should have an ack that the thing has been subscribed
         Thread.sleep(1000);
         //generate some TM packets and monitor realtime reception
-        for (int i=0;i <10; i++) packetGenerator.generate_PKT1_1();
+        for (int i=0;i <10; i++) {
+            packetGenerator.generate_PKT1_1();
+        }
         ParameterData pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        assertNotNull(pdata);
         checkPvals(pdata.getParameterList(), packetGenerator);
 
-        NamedObjectList subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6");
+        ParameterSubscriptionRequest subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6");
         wsr = new WebSocketRequest("parameter", "unsubscribe", subscrList);
         wsClient.sendRequest(wsr);
 
@@ -107,6 +111,33 @@ public class IntegrationTest extends AbstractIntegrationTest {
         wsClient.sendRequest(wsr);
         pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
         checkPvals(pdata.getParameterList(), packetGenerator);
+    }
+    
+    @Test
+    public void testWsParameterExpiration() throws Exception {
+        //subscribe to parameters
+        ParameterSubscriptionRequest req = getSubscription(false, true, "/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6");
+        System.out.println("request: "+req);
+        WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", req);
+        wsClient.sendRequest(wsr);
+        assertTrue(wsListener.parameterDataList.isEmpty());
+        
+        //generate a TM packets and monitor realtime reception
+        packetGenerator.generate_PKT1_1();
+        ParameterData pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+        assertNotNull(pdata);
+     //   assertEquals(2, pdata.getParameterCount());
+        System.out.println("pdata: "+pdata);
+        checkPvals(pdata.getParameterList(), packetGenerator);
+        
+        //after 1.5 sec we should get an set of expired parameters
+        pdata = wsListener.parameterDataList.poll(3, TimeUnit.SECONDS);
+        System.out.println("pdata: "+pdata);
+        assertNotNull(pdata);
+        assertEquals(2, pdata.getParameterCount());
+        for(ParameterValue pv: pdata.getParameterList()) {
+            assertEquals(AcquisitionStatus.EXPIRED, pv.getAcquisitionStatus());
+        }
     }
 
     @Test
@@ -120,8 +151,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testRestParameterGet() throws Exception {
         ////// gets parameters from cache via REST - first attempt with one invalid parameter
-        NamedObjectList invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6","/REFMDB/SUBSYS1/InvalidParaName");
-        BulkGetParameterValueRequest req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(invalidSubscrList.getListList()).build();
+        ParameterSubscriptionRequest invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7", "/REFMDB/SUBSYS1/IntegerPara1_1_6","/REFMDB/SUBSYS1/InvalidParaName");
+        BulkGetParameterValueRequest req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(invalidSubscrList.getIdList()).build();
 
         try {
             restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE)).get();
@@ -135,8 +166,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
         packetGenerator.generate_PKT1_1();
         Thread.sleep(1000);
         /////// gets parameters from cache via REST - second attempt with valid parameters
-        NamedObjectList validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6", "/REFMDB/SUBSYS1/IntegerPara1_1_7");
-        req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getListList()).build();
+        ParameterSubscriptionRequest validSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6", "/REFMDB/SUBSYS1/IntegerPara1_1_7");
+        req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(validSubscrList.getIdList()).build();
 
         String response = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE)).get();
         BulkGetParameterValueResponse bulkPvals = (fromJson(response, SchemaRest.BulkGetParameterValueResponse.MERGE)).build();
@@ -146,7 +177,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         long t0 = System.currentTimeMillis();
         req = BulkGetParameterValueRequest.newBuilder()
                 .setFromCache(false)
-                .setTimeout(2000).addAllId(validSubscrList.getListList()).build();
+                .setTimeout(2000).addAllId(validSubscrList.getIdList()).build();
 
         Future<String> responseFuture = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req, SchemaRest.BulkGetParameterValueRequest.WRITE));
 
@@ -436,6 +467,9 @@ public class IntegrationTest extends AbstractIntegrationTest {
             p1 = p2;
             p2 = ptmp;
         }
+        
+        assertEquals(AcquisitionStatus.ACQUIRED, p1.getAcquisitionStatus());
+        assertEquals(AcquisitionStatus.ACQUIRED, p2.getAcquisitionStatus());
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1.getId().getName());
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_7", p2.getId().getName());
 

@@ -7,11 +7,11 @@ print "connected"
 
 print " subcribing to parameters...",
 
-ws.send('[1,1,3, {"parameter": "subscribe", "data": { "list" : [ \
+ws.send('[1,1,3, {"parameter": "subscribe", "data": { "id" : [ \
            {"name": "/YSS/SIMULATOR/Alpha"},\
            {"name": "/YSS/SIMULATOR/Heading"}, \
            {"name": "SIMULATOR_PrimBusVoltage1", "namespace": "MDB:OPS Name"}\
-        ]}}]')
+        ], "updateOnExpiration": true }}]')
 print "subscribed"
 while True:
     result =  ws.recv()

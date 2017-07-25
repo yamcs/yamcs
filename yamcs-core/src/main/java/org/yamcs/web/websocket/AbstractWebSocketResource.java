@@ -5,6 +5,8 @@ import org.yamcs.Processor;
 import org.yamcs.api.ws.WSConstants;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 
+import io.netty.channel.Channel;
+
 /**
  * A resource bundles a set of logically related operations.
  * Instances of this class are created for every client session separately.
@@ -44,5 +46,9 @@ public abstract class AbstractWebSocketResource {
 
     public void switchProcessor(Processor oldProcessor, Processor newProcessor)  throws ProcessorException {
         this.processor = newProcessor;
+    }
+    
+    public Channel getChannel() {
+        return wsHandler.getChannel();
     }
 }

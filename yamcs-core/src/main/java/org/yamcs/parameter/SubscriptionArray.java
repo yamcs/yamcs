@@ -26,7 +26,9 @@ public class SubscriptionArray {
 	try {
 	    int[] a = array;
 	    int pos = Arrays.binarySearch(a, subscriptionId);
-	    if(pos>=0) return;
+	    if(pos>=0) {
+	        return;
+	    }
 	    pos = -pos-1;
 	    int[] b = new int[a.length+1];
 	    System.arraycopy(a, 0, b, 0, pos);

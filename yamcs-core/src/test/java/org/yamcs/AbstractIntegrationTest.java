@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -36,10 +34,10 @@ import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
+import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.LinkEvent;
@@ -155,12 +153,16 @@ public abstract class AbstractIntegrationTest {
 
         return b.build();
     }
-
-    protected NamedObjectList getSubscription(String... pfqname) {
-        NamedObjectList.Builder b = NamedObjectList.newBuilder();
+    protected ParameterSubscriptionRequest getSubscription(String... pfqname) {
+        return getSubscription(true, false, pfqname);
+    }
+    protected ParameterSubscriptionRequest getSubscription(boolean sendFromCache, boolean updateOnExpiration,  String... pfqname) {
+        ParameterSubscriptionRequest.Builder b = ParameterSubscriptionRequest.newBuilder();
         for(String p: pfqname) {
-            b.addList(NamedObjectId.newBuilder().setName(p).build());
+            b.addId(NamedObjectId.newBuilder().setName(p).build());
         }
+        b.setSendFromCache(sendFromCache);
+        b.setUpdateOnExpiration(updateOnExpiration);
         return b.build();
     }
 

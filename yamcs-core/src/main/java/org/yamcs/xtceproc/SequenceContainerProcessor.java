@@ -16,7 +16,7 @@ import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingPosition
 import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingResult;
 
 public class SequenceContainerProcessor {
-    Logger log=LoggerFactory.getLogger(this.getClass().getName());
+    Logger log = LoggerFactory.getLogger(this.getClass().getName());
     ContainerProcessingContext pcontext;
     SequenceContainerProcessor(ContainerProcessingContext pcontext) {
         this.pcontext = pcontext;

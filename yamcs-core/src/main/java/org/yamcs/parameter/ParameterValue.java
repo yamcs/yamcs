@@ -52,7 +52,20 @@ public class ParameterValue {
         this.paramFqn = fqn;
     }
 
-
+    //copy constructor - copies all the fields in a shallow mode
+    public ParameterValue(ParameterValue pv) {
+        this.def = pv.def;
+        this.paramFqn = pv.paramFqn;
+        this.entry = pv.entry;
+        this.absoluteBitOffset = pv.absoluteBitOffset;
+        this.bitSize = pv.bitSize;
+        this.rawValue = pv.rawValue;
+        this.engValue = pv.engValue;
+        this.acquisitionTime = pv.acquisitionTime;
+        this.generationTime = pv.generationTime;
+        this.expirationTime = pv.expirationTime;
+    }
+    
     public int getAbsoluteBitOffset() {
         return absoluteBitOffset;
     }
@@ -466,7 +479,11 @@ public class ParameterValue {
     public boolean hasAcquisitionTime() {
         return acquisitionTime != TimeEncoding.INVALID_INSTANT;
     }
-
+    
+    public boolean hasExpirationTime() {
+        return expirationTime != TimeEncoding.INVALID_INSTANT;
+    }
+    
     private DoubleRange fromGbpAlarmRange(AlarmRange ar) {
         double minInclusive = ar.hasMinInclusive()?ar.getMinInclusive():Double.NEGATIVE_INFINITY;
         double maxInclusive = ar.hasMaxInclusive()?ar.getMaxInclusive():Double.POSITIVE_INFINITY;
@@ -490,4 +507,5 @@ public class ParameterValue {
         }
         return sb.toString();
     }
+    
 }

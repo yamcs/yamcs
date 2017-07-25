@@ -78,7 +78,23 @@ message RestExceptionMessage {
 
 message ParameterSubscriptionRequest {
   repeated yamcs.NamedObjectId id = 1;
+  //if set to true, an error message will be sent back if any parameter from the list above is invalid
+  // by default is false
   optional bool abortOnInvalid = 2;
+
+  // if set to true, send parameter updates when parameters expire.
+  // the parameter will have the same value and timestamp like the previous sent one, but the acquisition status will be set to EXPIRED (instead of ACQUIRED)
+  //by default is false
+  optional bool updateOnExpiration = 3;
+
+  //if set to true (default), send a first batch of the parameters from cache if available
+  // otherwise just wait for the parameters to be updated
+  optional bool sendFromCache = 4;
+
+//Hack to allow the old subscribe with NamedObjectList to work when json is used.
+// When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+// remove this field when we are sure nobody uses the old method
+  repeated yamcs.NamedObjectId list = 10000 [deprecated=true]; 
 }
 
 message ParameterSubscriptionResponse {

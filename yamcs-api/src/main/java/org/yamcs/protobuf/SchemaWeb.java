@@ -1041,6 +1041,13 @@ public final class SchemaWeb
 
                 if(message.hasAbortOnInvalid())
                     output.writeBool(2, message.getAbortOnInvalid(), false);
+                if(message.hasUpdateOnExpiration())
+                    output.writeBool(3, message.getUpdateOnExpiration(), false);
+                if(message.hasSendFromCache())
+                    output.writeBool(4, message.getSendFromCache(), false);
+                for(org.yamcs.protobuf.Yamcs.NamedObjectId list : message.getListList())
+                    output.writeObject(10000, list, org.yamcs.protobuf.SchemaYamcs.NamedObjectId.WRITE, true);
+
             }
             public boolean isInitialized(org.yamcs.protobuf.Web.ParameterSubscriptionRequest message)
             {
@@ -1087,6 +1094,16 @@ public final class SchemaWeb
                         case 2:
                             builder.setAbortOnInvalid(input.readBool());
                             break;
+                        case 3:
+                            builder.setUpdateOnExpiration(input.readBool());
+                            break;
+                        case 4:
+                            builder.setSendFromCache(input.readBool());
+                            break;
+                        case 10000:
+                            builder.addList(input.mergeObject(org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(), org.yamcs.protobuf.SchemaYamcs.NamedObjectId.MERGE));
+
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -1129,6 +1146,9 @@ public final class SchemaWeb
             {
                 case 1: return "id";
                 case 2: return "abortOnInvalid";
+                case 3: return "updateOnExpiration";
+                case 4: return "sendFromCache";
+                case 10000: return "list";
                 default: return null;
             }
         }
@@ -1142,6 +1162,9 @@ public final class SchemaWeb
         {
             fieldMap.put("id", 1);
             fieldMap.put("abortOnInvalid", 2);
+            fieldMap.put("updateOnExpiration", 3);
+            fieldMap.put("sendFromCache", 4);
+            fieldMap.put("list", 10000);
         }
     }
 

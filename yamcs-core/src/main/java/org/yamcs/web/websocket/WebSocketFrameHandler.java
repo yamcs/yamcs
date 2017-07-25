@@ -220,5 +220,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         channel.writeAndFlush(frame);
     }
 
-
+    public Channel getChannel() {
+        return channel;
+    }
 }

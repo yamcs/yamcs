@@ -41,8 +41,7 @@ import jxl.WorkbookSettings;
 import jxl.read.biff.BiffException;
 
 /**
- * This class loads database from excel spreadsheets. Used for the Solar instruments for which the TM
- * database is too complicated to store in the MDB.
+ * This class loads database from excel spreadsheets.
  *
  * @author nm, ddw
  *
@@ -54,7 +53,6 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     protected HashMap<String, EnumerationDefinition> enumerations = new HashMap<>();
     protected HashMap<String, Parameter> parameters = new HashMap<>();
     protected HashSet<Parameter> outputParameters = new HashSet<>(); // Outputs to algorithms
-    protected HashSet<PotentialExtractionError> potentialErrors = new HashSet<>();
 
     final protected SpreadsheetLoadContext ctx = new SpreadsheetLoadContext();
 
@@ -253,11 +251,6 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             throw e;
         } catch (Exception e) {
             throw new SpreadsheetLoadException(ctx, e);
-        }
-
-        // Check errors after all sheets have been read
-        for(PotentialExtractionError e : potentialErrors) {
-            e.recheck();
         }
 
         return rootSpaceSystem;

@@ -10,7 +10,6 @@ import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingPosition;
-import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingResult;
 
 public class SequenceEntryProcessor {
     static Logger log=LoggerFactory.getLogger(SequenceEntryProcessor.class.getName());

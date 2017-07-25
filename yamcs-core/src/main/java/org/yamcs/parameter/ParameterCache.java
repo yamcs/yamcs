@@ -8,6 +8,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 
 /**
@@ -63,9 +65,11 @@ public class ParameterCache {
      * @return
      */
     public List<ParameterValue> getValues(List<Parameter> plist) {
+        long now = TimeEncoding.getWallclockTime();
+        
         //use a bitset to clear out the parameters that have already been found
         BitSet bs = new BitSet(plist.size());
-        List<ParameterValue> result = new ArrayList<ParameterValue>(plist.size());
+        List<ParameterValue> result = new ArrayList<>(plist.size());
         bs.set(0, plist.size(), true);
 
         for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i+1)) {
@@ -74,6 +78,10 @@ public class ParameterCache {
             if(ce!=null) { //last delivery where this parameter appears
                 ParameterValueList pvlist = ce.getLast();
                 ParameterValue pv = pvlist.getLastInserted(p);
+                //take the opportunity to check for expiration
+                if((pv.getAcquisitionStatus()==AcquisitionStatus.ACQUIRED) && pv.hasExpirationTime() && pv.getExpirationTime()<now) {
+                    pv.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
+                }
                 result.add(pv);
                 bs.clear(i);
                 //find all the other parameters that are in this delivery
@@ -81,6 +89,9 @@ public class ParameterCache {
                     Parameter p1 = plist.get(j);
                     pv = pvlist.getLastInserted(p1);
                     if(pv!=null) {
+                        if((pv.getAcquisitionStatus()==AcquisitionStatus.ACQUIRED) && pv.hasExpirationTime() && pv.getExpirationTime()<now) {
+                            pv.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
+                        }
                         result.add(pv);
                         bs.clear(j);
                     }
@@ -101,7 +112,9 @@ public class ParameterCache {
      */
     public ParameterValue getLastValue(Parameter p) {
         CacheEntry ce = cache.get(p);
-        if(ce==null) return null;
+        if(ce==null) {
+            return null;
+        }
         ParameterValueList pvlist = ce.getLast();
         return pvlist.getLastInserted(p);
     }

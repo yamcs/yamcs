@@ -7930,12 +7930,119 @@ public final class Web {
     // optional bool abortOnInvalid = 2;
     /**
      * <code>optional bool abortOnInvalid = 2;</code>
+     *
+     * <pre>
+     *if set to true, an error message will be sent back if any parameter from the list above is invalid
+     * by default is false
+     * </pre>
      */
     boolean hasAbortOnInvalid();
     /**
      * <code>optional bool abortOnInvalid = 2;</code>
+     *
+     * <pre>
+     *if set to true, an error message will be sent back if any parameter from the list above is invalid
+     * by default is false
+     * </pre>
      */
     boolean getAbortOnInvalid();
+
+    // optional bool updateOnExpiration = 3;
+    /**
+     * <code>optional bool updateOnExpiration = 3;</code>
+     *
+     * <pre>
+     * if set to true, send parameter updates when parameters expire.
+     * the parameter will have the same value and timestamp like the previous sent one, but the acquisition status will be set to EXPIRED (instead of ACQUIRED)
+     *by default is false
+     * </pre>
+     */
+    boolean hasUpdateOnExpiration();
+    /**
+     * <code>optional bool updateOnExpiration = 3;</code>
+     *
+     * <pre>
+     * if set to true, send parameter updates when parameters expire.
+     * the parameter will have the same value and timestamp like the previous sent one, but the acquisition status will be set to EXPIRED (instead of ACQUIRED)
+     *by default is false
+     * </pre>
+     */
+    boolean getUpdateOnExpiration();
+
+    // optional bool sendFromCache = 4;
+    /**
+     * <code>optional bool sendFromCache = 4;</code>
+     *
+     * <pre>
+     *if set to true (default), send a first batch of the parameters from cache if available
+     * otherwise just wait for the parameters to be updated
+     * </pre>
+     */
+    boolean hasSendFromCache();
+    /**
+     * <code>optional bool sendFromCache = 4;</code>
+     *
+     * <pre>
+     *if set to true (default), send a first batch of the parameters from cache if available
+     * otherwise just wait for the parameters to be updated
+     * </pre>
+     */
+    boolean getSendFromCache();
+
+    // repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];
+    /**
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+     *
+     * <pre>
+     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+     * remove this field when we are sure nobody uses the old method
+     * </pre>
+     */
+    @java.lang.Deprecated java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> 
+        getListList();
+    /**
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+     *
+     * <pre>
+     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+     * remove this field when we are sure nobody uses the old method
+     * </pre>
+     */
+    @java.lang.Deprecated org.yamcs.protobuf.Yamcs.NamedObjectId getList(int index);
+    /**
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+     *
+     * <pre>
+     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+     * remove this field when we are sure nobody uses the old method
+     * </pre>
+     */
+    @java.lang.Deprecated int getListCount();
+    /**
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+     *
+     * <pre>
+     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+     * remove this field when we are sure nobody uses the old method
+     * </pre>
+     */
+    @java.lang.Deprecated java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
+        getListOrBuilderList();
+    /**
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+     *
+     * <pre>
+     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+     * remove this field when we are sure nobody uses the old method
+     * </pre>
+     */
+    @java.lang.Deprecated org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getListOrBuilder(
+        int index);
   }
   /**
    * Protobuf type {@code web.ParameterSubscriptionRequest}
@@ -8001,6 +8108,24 @@ public final class Web {
               abortOnInvalid_ = input.readBool();
               break;
             }
+            case 24: {
+              bitField0_ |= 0x00000002;
+              updateOnExpiration_ = input.readBool();
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000004;
+              sendFromCache_ = input.readBool();
+              break;
+            }
+            case 80002: {
+              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+                list_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
+                mutable_bitField0_ |= 0x00000010;
+              }
+              list_.add(input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -8011,6 +8136,9 @@ public final class Web {
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
           id_ = java.util.Collections.unmodifiableList(id_);
+        }
+        if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+          list_ = java.util.Collections.unmodifiableList(list_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -8085,20 +8213,153 @@ public final class Web {
     private boolean abortOnInvalid_;
     /**
      * <code>optional bool abortOnInvalid = 2;</code>
+     *
+     * <pre>
+     *if set to true, an error message will be sent back if any parameter from the list above is invalid
+     * by default is false
+     * </pre>
      */
     public boolean hasAbortOnInvalid() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
      * <code>optional bool abortOnInvalid = 2;</code>
+     *
+     * <pre>
+     *if set to true, an error message will be sent back if any parameter from the list above is invalid
+     * by default is false
+     * </pre>
      */
     public boolean getAbortOnInvalid() {
       return abortOnInvalid_;
     }
 
+    // optional bool updateOnExpiration = 3;
+    public static final int UPDATEONEXPIRATION_FIELD_NUMBER = 3;
+    private boolean updateOnExpiration_;
+    /**
+     * <code>optional bool updateOnExpiration = 3;</code>
+     *
+     * <pre>
+     * if set to true, send parameter updates when parameters expire.
+     * the parameter will have the same value and timestamp like the previous sent one, but the acquisition status will be set to EXPIRED (instead of ACQUIRED)
+     *by default is false
+     * </pre>
+     */
+    public boolean hasUpdateOnExpiration() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional bool updateOnExpiration = 3;</code>
+     *
+     * <pre>
+     * if set to true, send parameter updates when parameters expire.
+     * the parameter will have the same value and timestamp like the previous sent one, but the acquisition status will be set to EXPIRED (instead of ACQUIRED)
+     *by default is false
+     * </pre>
+     */
+    public boolean getUpdateOnExpiration() {
+      return updateOnExpiration_;
+    }
+
+    // optional bool sendFromCache = 4;
+    public static final int SENDFROMCACHE_FIELD_NUMBER = 4;
+    private boolean sendFromCache_;
+    /**
+     * <code>optional bool sendFromCache = 4;</code>
+     *
+     * <pre>
+     *if set to true (default), send a first batch of the parameters from cache if available
+     * otherwise just wait for the parameters to be updated
+     * </pre>
+     */
+    public boolean hasSendFromCache() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional bool sendFromCache = 4;</code>
+     *
+     * <pre>
+     *if set to true (default), send a first batch of the parameters from cache if available
+     * otherwise just wait for the parameters to be updated
+     * </pre>
+     */
+    public boolean getSendFromCache() {
+      return sendFromCache_;
+    }
+
+    // repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];
+    public static final int LIST_FIELD_NUMBER = 10000;
+    private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> list_;
+    /**
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+     *
+     * <pre>
+     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+     * remove this field when we are sure nobody uses the old method
+     * </pre>
+     */
+    @java.lang.Deprecated public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getListList() {
+      return list_;
+    }
+    /**
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+     *
+     * <pre>
+     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+     * remove this field when we are sure nobody uses the old method
+     * </pre>
+     */
+    @java.lang.Deprecated public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
+        getListOrBuilderList() {
+      return list_;
+    }
+    /**
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+     *
+     * <pre>
+     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+     * remove this field when we are sure nobody uses the old method
+     * </pre>
+     */
+    @java.lang.Deprecated public int getListCount() {
+      return list_.size();
+    }
+    /**
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+     *
+     * <pre>
+     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+     * remove this field when we are sure nobody uses the old method
+     * </pre>
+     */
+    @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId getList(int index) {
+      return list_.get(index);
+    }
+    /**
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+     *
+     * <pre>
+     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+     * remove this field when we are sure nobody uses the old method
+     * </pre>
+     */
+    @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getListOrBuilder(
+        int index) {
+      return list_.get(index);
+    }
+
     private void initFields() {
       id_ = java.util.Collections.emptyList();
       abortOnInvalid_ = false;
+      updateOnExpiration_ = false;
+      sendFromCache_ = false;
+      list_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -8107,6 +8368,12 @@ public final class Web {
 
       for (int i = 0; i < getIdCount(); i++) {
         if (!getId(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      for (int i = 0; i < getListCount(); i++) {
+        if (!getList(i).isInitialized()) {
           memoizedIsInitialized = 0;
           return false;
         }
@@ -8124,6 +8391,15 @@ public final class Web {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBool(2, abortOnInvalid_);
       }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBool(3, updateOnExpiration_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBool(4, sendFromCache_);
+      }
+      for (int i = 0; i < list_.size(); i++) {
+        output.writeMessage(10000, list_.get(i));
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -8140,6 +8416,18 @@ public final class Web {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(2, abortOnInvalid_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(3, updateOnExpiration_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(4, sendFromCache_);
+      }
+      for (int i = 0; i < list_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(10000, list_.get(i));
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -8250,6 +8538,7 @@ public final class Web {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getIdFieldBuilder();
+          getListFieldBuilder();
         }
       }
       private static Builder create() {
@@ -8266,6 +8555,16 @@ public final class Web {
         }
         abortOnInvalid_ = false;
         bitField0_ = (bitField0_ & ~0x00000002);
+        updateOnExpiration_ = false;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        sendFromCache_ = false;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        if (listBuilder_ == null) {
+          list_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000010);
+        } else {
+          listBuilder_.clear();
+        }
         return this;
       }
 
@@ -8307,6 +8606,23 @@ public final class Web {
           to_bitField0_ |= 0x00000001;
         }
         result.abortOnInvalid_ = abortOnInvalid_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.updateOnExpiration_ = updateOnExpiration_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.sendFromCache_ = sendFromCache_;
+        if (listBuilder_ == null) {
+          if (((bitField0_ & 0x00000010) == 0x00000010)) {
+            list_ = java.util.Collections.unmodifiableList(list_);
+            bitField0_ = (bitField0_ & ~0x00000010);
+          }
+          result.list_ = list_;
+        } else {
+          result.list_ = listBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -8352,6 +8668,38 @@ public final class Web {
         if (other.hasAbortOnInvalid()) {
           setAbortOnInvalid(other.getAbortOnInvalid());
         }
+        if (other.hasUpdateOnExpiration()) {
+          setUpdateOnExpiration(other.getUpdateOnExpiration());
+        }
+        if (other.hasSendFromCache()) {
+          setSendFromCache(other.getSendFromCache());
+        }
+        if (listBuilder_ == null) {
+          if (!other.list_.isEmpty()) {
+            if (list_.isEmpty()) {
+              list_ = other.list_;
+              bitField0_ = (bitField0_ & ~0x00000010);
+            } else {
+              ensureListIsMutable();
+              list_.addAll(other.list_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.list_.isEmpty()) {
+            if (listBuilder_.isEmpty()) {
+              listBuilder_.dispose();
+              listBuilder_ = null;
+              list_ = other.list_;
+              bitField0_ = (bitField0_ & ~0x00000010);
+              listBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getListFieldBuilder() : null;
+            } else {
+              listBuilder_.addAllMessages(other.list_);
+            }
+          }
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -8359,6 +8707,12 @@ public final class Web {
       public final boolean isInitialized() {
         for (int i = 0; i < getIdCount(); i++) {
           if (!getId(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        for (int i = 0; i < getListCount(); i++) {
+          if (!getList(i).isInitialized()) {
             
             return false;
           }
@@ -8629,18 +8983,33 @@ public final class Web {
       private boolean abortOnInvalid_ ;
       /**
        * <code>optional bool abortOnInvalid = 2;</code>
+       *
+       * <pre>
+       *if set to true, an error message will be sent back if any parameter from the list above is invalid
+       * by default is false
+       * </pre>
        */
       public boolean hasAbortOnInvalid() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
        * <code>optional bool abortOnInvalid = 2;</code>
+       *
+       * <pre>
+       *if set to true, an error message will be sent back if any parameter from the list above is invalid
+       * by default is false
+       * </pre>
        */
       public boolean getAbortOnInvalid() {
         return abortOnInvalid_;
       }
       /**
        * <code>optional bool abortOnInvalid = 2;</code>
+       *
+       * <pre>
+       *if set to true, an error message will be sent back if any parameter from the list above is invalid
+       * by default is false
+       * </pre>
        */
       public Builder setAbortOnInvalid(boolean value) {
         bitField0_ |= 0x00000002;
@@ -8650,12 +9019,475 @@ public final class Web {
       }
       /**
        * <code>optional bool abortOnInvalid = 2;</code>
+       *
+       * <pre>
+       *if set to true, an error message will be sent back if any parameter from the list above is invalid
+       * by default is false
+       * </pre>
        */
       public Builder clearAbortOnInvalid() {
         bitField0_ = (bitField0_ & ~0x00000002);
         abortOnInvalid_ = false;
         onChanged();
         return this;
+      }
+
+      // optional bool updateOnExpiration = 3;
+      private boolean updateOnExpiration_ ;
+      /**
+       * <code>optional bool updateOnExpiration = 3;</code>
+       *
+       * <pre>
+       * if set to true, send parameter updates when parameters expire.
+       * the parameter will have the same value and timestamp like the previous sent one, but the acquisition status will be set to EXPIRED (instead of ACQUIRED)
+       *by default is false
+       * </pre>
+       */
+      public boolean hasUpdateOnExpiration() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional bool updateOnExpiration = 3;</code>
+       *
+       * <pre>
+       * if set to true, send parameter updates when parameters expire.
+       * the parameter will have the same value and timestamp like the previous sent one, but the acquisition status will be set to EXPIRED (instead of ACQUIRED)
+       *by default is false
+       * </pre>
+       */
+      public boolean getUpdateOnExpiration() {
+        return updateOnExpiration_;
+      }
+      /**
+       * <code>optional bool updateOnExpiration = 3;</code>
+       *
+       * <pre>
+       * if set to true, send parameter updates when parameters expire.
+       * the parameter will have the same value and timestamp like the previous sent one, but the acquisition status will be set to EXPIRED (instead of ACQUIRED)
+       *by default is false
+       * </pre>
+       */
+      public Builder setUpdateOnExpiration(boolean value) {
+        bitField0_ |= 0x00000004;
+        updateOnExpiration_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool updateOnExpiration = 3;</code>
+       *
+       * <pre>
+       * if set to true, send parameter updates when parameters expire.
+       * the parameter will have the same value and timestamp like the previous sent one, but the acquisition status will be set to EXPIRED (instead of ACQUIRED)
+       *by default is false
+       * </pre>
+       */
+      public Builder clearUpdateOnExpiration() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        updateOnExpiration_ = false;
+        onChanged();
+        return this;
+      }
+
+      // optional bool sendFromCache = 4;
+      private boolean sendFromCache_ ;
+      /**
+       * <code>optional bool sendFromCache = 4;</code>
+       *
+       * <pre>
+       *if set to true (default), send a first batch of the parameters from cache if available
+       * otherwise just wait for the parameters to be updated
+       * </pre>
+       */
+      public boolean hasSendFromCache() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional bool sendFromCache = 4;</code>
+       *
+       * <pre>
+       *if set to true (default), send a first batch of the parameters from cache if available
+       * otherwise just wait for the parameters to be updated
+       * </pre>
+       */
+      public boolean getSendFromCache() {
+        return sendFromCache_;
+      }
+      /**
+       * <code>optional bool sendFromCache = 4;</code>
+       *
+       * <pre>
+       *if set to true (default), send a first batch of the parameters from cache if available
+       * otherwise just wait for the parameters to be updated
+       * </pre>
+       */
+      public Builder setSendFromCache(boolean value) {
+        bitField0_ |= 0x00000008;
+        sendFromCache_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool sendFromCache = 4;</code>
+       *
+       * <pre>
+       *if set to true (default), send a first batch of the parameters from cache if available
+       * otherwise just wait for the parameters to be updated
+       * </pre>
+       */
+      public Builder clearSendFromCache() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        sendFromCache_ = false;
+        onChanged();
+        return this;
+      }
+
+      // repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];
+      private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> list_ =
+        java.util.Collections.emptyList();
+      private void ensureListIsMutable() {
+        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+          list_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>(list_);
+          bitField0_ |= 0x00000010;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> listBuilder_;
+
+      /**
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+       *
+       * <pre>
+       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+       * remove this field when we are sure nobody uses the old method
+       * </pre>
+       */
+      @java.lang.Deprecated public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getListList() {
+        if (listBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(list_);
+        } else {
+          return listBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+       *
+       * <pre>
+       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+       * remove this field when we are sure nobody uses the old method
+       * </pre>
+       */
+      @java.lang.Deprecated public int getListCount() {
+        if (listBuilder_ == null) {
+          return list_.size();
+        } else {
+          return listBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+       *
+       * <pre>
+       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+       * remove this field when we are sure nobody uses the old method
+       * </pre>
+       */
+      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId getList(int index) {
+        if (listBuilder_ == null) {
+          return list_.get(index);
+        } else {
+          return listBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+       *
+       * <pre>
+       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+       * remove this field when we are sure nobody uses the old method
+       * </pre>
+       */
+      @java.lang.Deprecated public Builder setList(
+          int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
+        if (listBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureListIsMutable();
+          list_.set(index, value);
+          onChanged();
+        } else {
+          listBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+       *
+       * <pre>
+       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+       * remove this field when we are sure nobody uses the old method
+       * </pre>
+       */
+      @java.lang.Deprecated public Builder setList(
+          int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
+        if (listBuilder_ == null) {
+          ensureListIsMutable();
+          list_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          listBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+       *
+       * <pre>
+       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+       * remove this field when we are sure nobody uses the old method
+       * </pre>
+       */
+      @java.lang.Deprecated public Builder addList(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
+        if (listBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureListIsMutable();
+          list_.add(value);
+          onChanged();
+        } else {
+          listBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+       *
+       * <pre>
+       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+       * remove this field when we are sure nobody uses the old method
+       * </pre>
+       */
+      @java.lang.Deprecated public Builder addList(
+          int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
+        if (listBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureListIsMutable();
+          list_.add(index, value);
+          onChanged();
+        } else {
+          listBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+       *
+       * <pre>
+       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+       * remove this field when we are sure nobody uses the old method
+       * </pre>
+       */
+      @java.lang.Deprecated public Builder addList(
+          org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
+        if (listBuilder_ == null) {
+          ensureListIsMutable();
+          list_.add(builderForValue.build());
+          onChanged();
+        } else {
+          listBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+       *
+       * <pre>
+       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+       * remove this field when we are sure nobody uses the old method
+       * </pre>
+       */
+      @java.lang.Deprecated public Builder addList(
+          int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
+        if (listBuilder_ == null) {
+          ensureListIsMutable();
+          list_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          listBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+       *
+       * <pre>
+       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+       * remove this field when we are sure nobody uses the old method
+       * </pre>
+       */
+      @java.lang.Deprecated public Builder addAllList(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
+        if (listBuilder_ == null) {
+          ensureListIsMutable();
+          super.addAll(values, list_);
+          onChanged();
+        } else {
+          listBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+       *
+       * <pre>
+       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+       * remove this field when we are sure nobody uses the old method
+       * </pre>
+       */
+      @java.lang.Deprecated public Builder clearList() {
+        if (listBuilder_ == null) {
+          list_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000010);
+          onChanged();
+        } else {
+          listBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+       *
+       * <pre>
+       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+       * remove this field when we are sure nobody uses the old method
+       * </pre>
+       */
+      @java.lang.Deprecated public Builder removeList(int index) {
+        if (listBuilder_ == null) {
+          ensureListIsMutable();
+          list_.remove(index);
+          onChanged();
+        } else {
+          listBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+       *
+       * <pre>
+       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+       * remove this field when we are sure nobody uses the old method
+       * </pre>
+       */
+      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder getListBuilder(
+          int index) {
+        return getListFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+       *
+       * <pre>
+       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+       * remove this field when we are sure nobody uses the old method
+       * </pre>
+       */
+      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getListOrBuilder(
+          int index) {
+        if (listBuilder_ == null) {
+          return list_.get(index);  } else {
+          return listBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+       *
+       * <pre>
+       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+       * remove this field when we are sure nobody uses the old method
+       * </pre>
+       */
+      @java.lang.Deprecated public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
+           getListOrBuilderList() {
+        if (listBuilder_ != null) {
+          return listBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(list_);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+       *
+       * <pre>
+       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+       * remove this field when we are sure nobody uses the old method
+       * </pre>
+       */
+      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addListBuilder() {
+        return getListFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+       *
+       * <pre>
+       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+       * remove this field when we are sure nobody uses the old method
+       * </pre>
+       */
+      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addListBuilder(
+          int index) {
+        return getListFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
+       *
+       * <pre>
+       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
+       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
+       * remove this field when we are sure nobody uses the old method
+       * </pre>
+       */
+      @java.lang.Deprecated public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId.Builder> 
+           getListBuilderList() {
+        return getListFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
+          getListFieldBuilder() {
+        if (listBuilder_ == null) {
+          listBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder>(
+                  list_,
+                  ((bitField0_ & 0x00000010) == 0x00000010),
+                  getParentForChildren(),
+                  isClean());
+          list_ = null;
+        }
+        return listBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:web.ParameterSubscriptionRequest)
@@ -9823,12 +10655,15 @@ public final class Web {
       "XCEPTION\020\003\022\010\n\004DATA\020\004\"4\n\026WebSocketExtensi" +
       "onData\022\014\n\004type\030\001 \001(\r\022\014\n\004data\030\002 \001(\014\"8\n\024Re" +
       "stExceptionMessage\022\014\n\004type\030\001 \001(\t\022\013\n\003msg\030",
-      "\002 \001(\t*\005\010d\020\311\001\"X\n\034ParameterSubscriptionReq" +
-      "uest\022 \n\002id\030\001 \003(\0132\024.yamcs.NamedObjectId\022\026" +
-      "\n\016abortOnInvalid\030\002 \001(\010\"k\n\035ParameterSubsc" +
-      "riptionResponse\022#\n\005valid\030\001 \003(\0132\024.yamcs.N" +
-      "amedObjectId\022%\n\007invalid\030\002 \003(\0132\024.yamcs.Na" +
-      "medObjectIdB\024\n\022org.yamcs.protobuf"
+      "\002 \001(\t*\005\010d\020\311\001\"\264\001\n\034ParameterSubscriptionRe" +
+      "quest\022 \n\002id\030\001 \003(\0132\024.yamcs.NamedObjectId\022" +
+      "\026\n\016abortOnInvalid\030\002 \001(\010\022\032\n\022updateOnExpir" +
+      "ation\030\003 \001(\010\022\025\n\rsendFromCache\030\004 \001(\010\022\'\n\004li" +
+      "st\030\220N \003(\0132\024.yamcs.NamedObjectIdB\002\030\001\"k\n\035P" +
+      "arameterSubscriptionResponse\022#\n\005valid\030\001 " +
+      "\003(\0132\024.yamcs.NamedObjectId\022%\n\007invalid\030\002 \003" +
+      "(\0132\024.yamcs.NamedObjectIdB\024\n\022org.yamcs.pr" +
+      "otobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -9882,7 +10717,7 @@ public final class Web {
           internal_static_web_ParameterSubscriptionRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_web_ParameterSubscriptionRequest_descriptor,
-              new java.lang.String[] { "Id", "AbortOnInvalid", });
+              new java.lang.String[] { "Id", "AbortOnInvalid", "UpdateOnExpiration", "SendFromCache", "List", });
           internal_static_web_ParameterSubscriptionResponse_descriptor =
             getDescriptor().getMessageTypes().get(5);
           internal_static_web_ParameterSubscriptionResponse_fieldAccessorTable = new

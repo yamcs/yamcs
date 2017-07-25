@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.UsernamePasswordToken;
 

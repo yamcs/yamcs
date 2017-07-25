@@ -25,7 +25,6 @@ import org.yamcs.xtceproc.AlarmChecker;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
 /**
- * @author mache
  * Keeps track of which parameters are part of which subscriptions.
  * 
  * There are two types of subscriptions:
@@ -37,21 +36,21 @@ import org.yamcs.xtceproc.XtceTmProcessor;
 public class ParameterRequestManagerImpl implements ParameterRequestManager {
     Logger log;
     //Maps the parameters to the request(subscription id) in which they have been asked
-    private ConcurrentHashMap<Parameter, SubscriptionArray> param2RequestMap = new ConcurrentHashMap<Parameter, SubscriptionArray>();
+    private ConcurrentHashMap<Parameter, SubscriptionArray> param2RequestMap = new ConcurrentHashMap<>();
 
     //Maps the request (subscription id) to the consumer
-    private Map<Integer, ParameterConsumer> request2ParameterConsumerMap = new ConcurrentHashMap<Integer,ParameterConsumer>();
+    private Map<Integer, ParameterConsumer> request2ParameterConsumerMap = new ConcurrentHashMap<>();
 
     //these are the consumers that may update the list of parameters
     // they are delivered with priority such that in onde update cycle the algorithms (or derived values) are also computed
-    private Map<Integer,DVParameterConsumer> request2DVParameterConsumerMap = new HashMap<Integer,DVParameterConsumer>();
+    private Map<Integer,DVParameterConsumer> request2DVParameterConsumerMap = new HashMap<>();
 
     //contains subscribe all
     private SubscriptionArray subscribeAll = new SubscriptionArray();
 
 
     private AlarmChecker alarmChecker;
-    private Map<Class<?>,ParameterProvider> parameterProviders=new LinkedHashMap<Class<?>,ParameterProvider>();
+    private Map<Class<?>,ParameterProvider> parameterProviders=new LinkedHashMap<>();
 
     private static AtomicInteger lastSubscriptionId= new AtomicInteger();
     public final Processor yproc;
@@ -335,10 +334,10 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 
     /**
      * Removes all the items from this subscription and returns them into an
-     * ArrayList. The result is usually used in the TelemetryImpl to move this
+     * List. The result is usually used in the TelemetryImpl to move this
      * subscription to a different ParameterRequestManager
      */
-    public ArrayList<Parameter> removeRequest(int subscriptionId) {
+    public List<Parameter> removeRequest(int subscriptionId) {
         log.debug("removing request for subscriptionId {}", subscriptionId);
         //It's a bit annoying that we have to loop through all the parameters to find the ones that
         // are relevant for this request. We could keep track of an additional map.
