@@ -186,10 +186,14 @@ public final class ArchiveHelper {
     final static TimeSeries.Sample toGPBSample(Sample sample) {
         TimeSeries.Sample.Builder b = TimeSeries.Sample.newBuilder();
         b.setTime(TimeEncoding.toString(sample.avgt));
-        b.setAvg(sample.avg);
-        b.setMin(sample.min);
-        b.setMax(sample.max);
         b.setN(sample.n);
+        
+        if(sample.n>0) {
+            b.setAvg(sample.avg);
+            b.setMin(sample.min);
+            b.setMax(sample.max);
+        }
+        
         return b.build();
     }
 

@@ -1,7 +1,9 @@
 package org.yamcs.web.rest.archive;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -23,7 +25,7 @@ public class RestDownsampler {
 
     private static final Logger log = LoggerFactory.getLogger(RestDownsampler.class);
     private static final int DEFAULT_INTERVAL_COUNT = 500;
-
+    private static long GAP_TIME = 120000; 
 
     private TreeMap<Long, Sample> samplesByTime;
     private long start;
@@ -79,7 +81,22 @@ public class RestDownsampler {
         if (samplesByTime == null) {
             return Collections.emptyList();
         }
-        return samplesByTime.values().stream().filter(s -> s != null).collect(Collectors.toList());
+        List<Sample> r = new ArrayList<>(DEFAULT_INTERVAL_COUNT);
+        Sample prev = null;
+        for(Map.Entry<Long, Sample> e: samplesByTime.entrySet()) {
+            Sample s = e.getValue();
+            if(s==null) {
+                long t = e.getKey();
+                if((prev!=null) && (t-prev.avgt > GAP_TIME)) { //generate a gap
+                    r.add(new Sample(t));
+                }
+            } else {
+                r.add(s);
+                prev = s;
+            }
+        }
+
+        return r;
     }
 
     /**
@@ -93,15 +110,29 @@ public class RestDownsampler {
         double avg;
         int n;
 
+
+        //construct a gap
+        Sample(long t) {
+            this.avgt = t;
+            n = 0;
+            min = avg = max = Double.NaN;
+        }
+
+        //sample with one value
         public Sample(long t, double value) {
             avgt = t;
             min = avg = max = value;
             n = 1;
         }
 
+
         public void process(long t, double value) {
-            if (value < min) min = value;
-            if (value > max) max = value;
+            if (value < min) {
+                min = value;
+            }
+            if (value > max) {
+                max = value;
+            }
             n++;
             avgt -= (avgt / n);
             avgt += (t / n);

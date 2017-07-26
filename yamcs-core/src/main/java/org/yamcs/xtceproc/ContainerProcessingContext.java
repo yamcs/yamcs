@@ -62,7 +62,7 @@ public class ContainerProcessingContext {
         long acquisitionTime;
         long generationTime;
         ProcessingStatistics stats;
-        long expirationTime = TimeEncoding.INVALID_INSTANT      ;
+        long expireMillis = -1;//-1 means not defined
         public ContainerProcessingResult(long aquisitionTime, long generationTime, ProcessingStatistics stats) {
             this.acquisitionTime = aquisitionTime;
             this.generationTime = generationTime;

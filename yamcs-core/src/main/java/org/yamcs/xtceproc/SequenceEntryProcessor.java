@@ -67,7 +67,7 @@ public class SequenceEntryProcessor {
         
         pv.setAcquisitionTime(pcontext.result.acquisitionTime);
         pv.setGenerationTime(pcontext.result.generationTime);
-        pv.setExpirationTime(pcontext.result.expirationTime);
+        pv.setExpireMillis(pcontext.result.expireMillis);
         pv.setParameterEntry(pe);
 
         pcontext.result.params.add(pv);

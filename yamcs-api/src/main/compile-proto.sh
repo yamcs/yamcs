@@ -14,4 +14,4 @@ protoc --java_out=java table.proto
 
 
 #protostuff is handled from maven with
-# mvn protostuff:compile
+cd ../../; mvn protostuff:compile

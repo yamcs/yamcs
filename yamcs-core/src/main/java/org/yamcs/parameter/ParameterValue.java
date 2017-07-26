@@ -34,7 +34,9 @@ public class ParameterValue {
     private Value engValue;
     private long acquisitionTime = TimeEncoding.INVALID_INSTANT;
     private long generationTime;
-    private long expirationTime = TimeEncoding.INVALID_INSTANT;
+    
+    //-1 means it's not set.
+    private long expireMillis = -1;
 
     //use this singleton as a default status 
     ParameterStatus status = ParameterStatus.NOMINAL;
@@ -63,7 +65,7 @@ public class ParameterValue {
         this.engValue = pv.engValue;
         this.acquisitionTime = pv.acquisitionTime;
         this.generationTime = pv.generationTime;
-        this.expirationTime = pv.expirationTime;
+        this.expireMillis = pv.expireMillis;
     }
     
     public int getAbsoluteBitOffset() {
@@ -210,12 +212,12 @@ public class ParameterValue {
         this.engValue=ev;
     }
 
-    public void setExpirationTime(long et) {
-        this.expirationTime = et;
+    public void setExpireMillis(long em) {
+        this.expireMillis = em;
     }
 
-    public long getExpirationTime() {
-        return expirationTime;
+    public long getExpireMills() {
+        return expireMillis;
     }
 
     public void setEngValue(Value engValue) {
@@ -352,10 +354,13 @@ public class ParameterValue {
             gpvb.setGenerationTimeUTC(TimeEncoding.toString(getGenerationTime()));
         }
 
-        if(expirationTime!=TimeEncoding.INVALID_INSTANT) {
-            gpvb.setExpirationTime(expirationTime);
+        if(expireMillis>=0) {
+            gpvb.setExpireMillis(expireMillis);
+            
+            //to remove in the future
+            gpvb.setExpirationTime(acquisitionTime+expireMillis);
             if(withUtc) {
-                gpvb.setExpirationTimeUTC(TimeEncoding.toString(expirationTime));
+                gpvb.setExpirationTimeUTC(TimeEncoding.toString(acquisitionTime+expireMillis));
             }
         }
 
@@ -428,8 +433,8 @@ public class ParameterValue {
             pv.setAcquisitionTime(gpv.getAcquisitionTime());
         }
 
-        if(gpv.hasExpirationTime()) {
-            pv.setExpirationTime(gpv.getExpirationTime());
+        if(gpv.hasExpireMillis()) {
+            pv.setExpireMillis(gpv.getExpireMillis());
         }
 
         if(gpv.hasGenerationTime()) {
@@ -481,7 +486,7 @@ public class ParameterValue {
     }
     
     public boolean hasExpirationTime() {
-        return expirationTime != TimeEncoding.INVALID_INSTANT;
+        return expireMillis>=0;
     }
     
     private DoubleRange fromGbpAlarmRange(AlarmRange ar) {
@@ -490,6 +495,17 @@ public class ParameterValue {
         return new DoubleRange(minInclusive, maxInclusive);
     }
 
+    /**
+     * Verifies if the parameter value is expired at a given timestamp. Returns false if the expireMillis is not set.
+     * 
+     * @param now
+     * @return true if the parameter is expired at the timestamp now. 
+     */
+    public boolean isExpired(long now) {
+        return (expireMillis>0) && (acquisitionTime+expireMillis<now);
+    }
+    
+    
     @Override
     public String toString() {
         StringBuilder sb=new StringBuilder();
@@ -507,5 +523,6 @@ public class ParameterValue {
         }
         return sb.toString();
     }
+    
     
 }

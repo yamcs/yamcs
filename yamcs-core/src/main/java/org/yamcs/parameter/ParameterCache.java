@@ -79,7 +79,7 @@ public class ParameterCache {
                 ParameterValueList pvlist = ce.getLast();
                 ParameterValue pv = pvlist.getLastInserted(p);
                 //take the opportunity to check for expiration
-                if((pv.getAcquisitionStatus()==AcquisitionStatus.ACQUIRED) && pv.hasExpirationTime() && pv.getExpirationTime()<now) {
+                if((pv.getAcquisitionStatus()==AcquisitionStatus.ACQUIRED) && pv.isExpired(now)) {
                     pv.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
                 }
                 result.add(pv);
@@ -89,7 +89,7 @@ public class ParameterCache {
                     Parameter p1 = plist.get(j);
                     pv = pvlist.getLastInserted(p1);
                     if(pv!=null) {
-                        if((pv.getAcquisitionStatus()==AcquisitionStatus.ACQUIRED) && pv.hasExpirationTime() && pv.getExpirationTime()<now) {
+                        if((pv.getAcquisitionStatus()==AcquisitionStatus.ACQUIRED) && pv.isExpired(now)) {
                             pv.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
                         }
                         result.add(pv);

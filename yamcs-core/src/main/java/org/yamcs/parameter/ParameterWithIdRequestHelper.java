@@ -257,8 +257,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         for(ParameterValue pv: items) {
             Parameter p = pv.getParameter();
             ParameterValue oldPv = subscription.pvexp.put(p, pv);
-            if((oldPv!=null) && oldPv.hasExpirationTime() 
-                    && oldPv.getAcquisitionStatus()==AcquisitionStatus.ACQUIRED && oldPv.getExpirationTime()<now) {
+            if((oldPv!=null) && oldPv.getAcquisitionStatus()==AcquisitionStatus.ACQUIRED && oldPv.isExpired(now)) {
                 
                 ParameterValue tmp = new ParameterValue(oldPv); //make a copy because this is shared by other subscribers
                 tmp.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
@@ -272,8 +271,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     private List<ParameterValueWithId> checkExpiration(Subscription subscription, long now) {
         List<ParameterValueWithId> expired = new ArrayList<>();
         for(ParameterValue pv: subscription.pvexp.values()) {
-            if(pv.getAcquisitionStatus()==AcquisitionStatus.ACQUIRED && pv.hasExpirationTime()
-                    && pv.getExpirationTime()<now) {
+            if(pv.getAcquisitionStatus()==AcquisitionStatus.ACQUIRED && pv.isExpired(now)) {
                 ParameterValue tmp = new ParameterValue(pv); //make a copy because this is shared by other subscribers
                 tmp.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
                 subscription.pvexp.put(pv.getParameter(), tmp);

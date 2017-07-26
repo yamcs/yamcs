@@ -463,18 +463,22 @@
                 var sample = incomingData['sample'][i];
                 var t = new Date();
                 t.setTime(Date.parse(sample['time']));
-                var v = sample['avg'];
-                var min = sample['min'];
-                var max = sample['max'];
+                if(sample.n>0) {
+                    var v = sample['avg'];
+                    var min = sample['min'];
+                    var max = sample['max'];
 
-                if (typeof rangeMin === 'undefined') {
-                    rangeMin = min;
-                    rangeMax = max;
-                } else {
-                    if (rangeMin > min) rangeMin = min;
-                    if (rangeMax < max) rangeMax = max;
-                }
-                points.push([t, [min, v, max]]);
+                    if (typeof rangeMin === 'undefined') {
+                        rangeMin = min;
+                        rangeMax = max;
+                    } else {
+                        if (rangeMin > min) rangeMin = min;
+                        if (rangeMax < max) rangeMax = max;
+                    }
+                    points.push([t, [min, v, max]]);
+		} else {
+		   points.push([t, null]);
+		}
             }
         }
 

@@ -50,6 +50,8 @@ public final class SchemaPvalue
                 for(org.yamcs.protobuf.Mdb.AlarmRange alarmRange : message.getAlarmRangeList())
                     output.writeObject(25, alarmRange, org.yamcs.protobuf.SchemaMdb.AlarmRange.WRITE, true);
 
+                if(message.hasExpireMillis())
+                    output.writeInt64(26, message.getExpireMillis(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Pvalue.ParameterValue message)
             {
@@ -135,6 +137,9 @@ public final class SchemaPvalue
                             builder.addAlarmRange(input.mergeObject(org.yamcs.protobuf.Mdb.AlarmRange.newBuilder(), org.yamcs.protobuf.SchemaMdb.AlarmRange.MERGE));
 
                             break;
+                        case 26:
+                            builder.setExpireMillis(input.readInt64());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -189,6 +194,7 @@ public final class SchemaPvalue
                 case 23: return "expirationTime";
                 case 24: return "expirationTimeUTC";
                 case 25: return "alarmRange";
+                case 26: return "expireMillis";
                 default: return null;
             }
         }
@@ -214,6 +220,7 @@ public final class SchemaPvalue
             fieldMap.put("expirationTime", 23);
             fieldMap.put("expirationTimeUTC", 24);
             fieldMap.put("alarmRange", 25);
+            fieldMap.put("expireMillis", 26);
         }
     }
 
@@ -237,6 +244,8 @@ public final class SchemaPvalue
                 for(org.yamcs.protobuf.Mdb.AlarmRange alarmRange : message.getAlarmRangeList())
                     output.writeObject(4, alarmRange, org.yamcs.protobuf.SchemaMdb.AlarmRange.WRITE, true);
 
+                if(message.hasExpireMillis())
+                    output.writeInt64(5, message.getExpireMillis(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Pvalue.ParameterStatus message)
             {
@@ -289,6 +298,9 @@ public final class SchemaPvalue
                             builder.addAlarmRange(input.mergeObject(org.yamcs.protobuf.Mdb.AlarmRange.newBuilder(), org.yamcs.protobuf.SchemaMdb.AlarmRange.MERGE));
 
                             break;
+                        case 5:
+                            builder.setExpireMillis(input.readInt64());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -333,6 +345,7 @@ public final class SchemaPvalue
                 case 2: return "monitoringResult";
                 case 3: return "rangeCondition";
                 case 4: return "alarmRange";
+                case 5: return "expireMillis";
                 default: return null;
             }
         }
@@ -348,6 +361,7 @@ public final class SchemaPvalue
             fieldMap.put("monitoringResult", 2);
             fieldMap.put("rangeCondition", 3);
             fieldMap.put("alarmRange", 4);
+            fieldMap.put("expireMillis", 5);
         }
     }
 

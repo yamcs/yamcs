@@ -32,7 +32,7 @@ public class SequenceContainerProcessor {
 
         RateInStream ris = seq.getRateInStream();
         if((ris != null) && ris.getMaxInterval()>0) {
-            result.expirationTime = result.acquisitionTime + ris.getMaxInterval();
+            result.expireMillis = ris.getMaxInterval();
         }
         int maxposition = position.bitPosition;
 

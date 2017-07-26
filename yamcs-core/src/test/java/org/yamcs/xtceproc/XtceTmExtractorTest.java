@@ -117,7 +117,7 @@ public class XtceTmExtractorTest {
         assertNotNull(pv);
         assertEquals(tmGenerator.pLEFloatPara1_2_2, pv.getEngValue().getFloatValue(), 0);
         
-        assertEquals(pv.getAcquisitionTime()+1500, pv.getExpirationTime());
+        assertEquals(1500, pv.getExpireMills());
     }
 
     
