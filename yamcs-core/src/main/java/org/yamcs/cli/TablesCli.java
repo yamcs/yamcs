@@ -15,7 +15,6 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.BulkRestDataSender;
 import org.yamcs.api.rest.RestClient;
-import org.yamcs.protobuf.Archive.TableData.TableRecord;
 import org.yamcs.protobuf.Table.Row;
 
 import com.beust.jcommander.Parameter;
@@ -33,7 +32,7 @@ import io.netty.handler.codec.http.HttpMethod;
  * @author nm
  *
  */
-@Parameters(commandDescription = "Tables operations")
+@Parameters(commandDescription = "Table operations")
 public class TablesCli extends Command {
     public TablesCli(Command parent) {
         super("tables", parent);

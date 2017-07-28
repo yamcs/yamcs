@@ -226,14 +226,14 @@ limitations under the License.
 					</xtce:StringParameterType>
 					<xtce:BooleanParameterType name="Battery_Charge_Mode_Type" zeroStringValue="DISCHARGE" oneStringValue="CHARGE" shortDescription="This parameter indicates whether the charger is charging the battery">
 						<xtce:UnitSet/>
-						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="unsigned" sizeInBits="1" changeThreshold="1"/>
+						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="unsigned" sizeInBits="1"/>
 					</xtce:BooleanParameterType>
 					<xtce:FloatParameterType name="Battery_Voltage_Type" sizeInBits="32" shortDescription="This parameter describes the measured battery voltage">
 						<xtce:LongDescription>The battery on BogusSAT is a modeled by a typical flooded lead acid car battery.</xtce:LongDescription>
 						<xtce:UnitSet>
 							<xtce:Unit description="Potential">Volts</xtce:Unit>
 						</xtce:UnitSet>
-						<xtce:FloatDataEncoding bitOrder="mostSignificantBitFirst" encoding="IEEE754_1985" sizeInBits="32" changeThreshold="0.01"/>
+						<xtce:FloatDataEncoding bitOrder="mostSignificantBitFirst" encoding="IEEE754_1985" sizeInBits="32"/>
 						<xtce:ValidRange minInclusive="0.0" maxInclusive="15.0"/>
 						<xtce:DefaultAlarm minViolations="1">
 							<xtce:StaticAlarmRanges>
@@ -267,7 +267,7 @@ limitations under the License.
 						<xtce:UnitSet>
 							<xtce:Unit description="Current">Amperes</xtce:Unit>
 						</xtce:UnitSet>
-						<xtce:FloatDataEncoding bitOrder="mostSignificantBitFirst" encoding="IEEE754_1985" sizeInBits="32" changeThreshold="0.01"/>
+						<xtce:FloatDataEncoding bitOrder="mostSignificantBitFirst" encoding="IEEE754_1985" sizeInBits="32"/>
 						<xtce:ValidRange minInclusive="-100.0" maxInclusive="100.0"/>
 						<xtce:DefaultAlarm minViolations="1">
 							<xtce:StaticAlarmRanges>
@@ -287,7 +287,7 @@ limitations under the License.
 						<xtce:UnitSet>
 							<xtce:Unit description="Potential">Volts</xtce:Unit>
 						</xtce:UnitSet>
-						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="unsigned" sizeInBits="12" changeThreshold="1">
+						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="unsigned" sizeInBits="12" >
 							<xtce:DefaultCalibrator>
 								<xtce:PolynomialCalibrator>
 									<xtce:Term exponent="0" coefficient="-100.0"/>
@@ -304,7 +304,7 @@ limitations under the License.
 					</xtce:FloatParameterType>
 					<xtce:FloatParameterType name="Quadratic_Demo_Type" sizeInBits="64" shortDescription="This is an analog parameter with a simple quadratic encoding">
 						<xtce:UnitSet/>
-						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="unsigned" sizeInBits="16" changeThreshold="1">
+						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="unsigned" sizeInBits="16">
 							<xtce:DefaultCalibrator shortDescription="this is y = x^2 + 2x - 8">
 								<xtce:PolynomialCalibrator>
 									<xtce:Term exponent="0" coefficient="-8"/>
@@ -313,7 +313,7 @@ limitations under the License.
 								</xtce:PolynomialCalibrator>
 							</xtce:DefaultCalibrator>
 						</xtce:IntegerDataEncoding>
-						<xtce:ValidRange minInclusive="0.00" maxInclusive="4000.00" rangeAppliesToCalibrated="true"/>
+						<xtce:ValidRange minInclusive="0.00" maxInclusive="4000.00" validRangeAppliesToCalibrated="true"/>
 						<xtce:DefaultAlarm minViolations="1">
 							<xtce:StaticAlarmRanges>
 								<xtce:CriticalRange minInclusive="-100.0" maxInclusive="100.0"/>
@@ -330,7 +330,7 @@ limitations under the License.
 								</xtce:PolynomialCalibrator>
 							</xtce:DefaultCalibrator>
 						</xtce:FloatDataEncoding>
-						<xtce:ValidRange minInclusive="-10.00" maxInclusive="10.00" rangeAppliesToCalibrated="false"/>
+						<xtce:ValidRange minInclusive="-10.00" maxInclusive="10.00" validRangeAppliesToCalibrated="false"/>
 					</xtce:FloatParameterType>
 					<xtce:FloatParameterType name="Quadratic_Demo_SingleRoot2_Type" sizeInBits="32" shortDescription="This is a float parameter with a float quadratic encoding">
 						<xtce:UnitSet/>
@@ -361,7 +361,7 @@ limitations under the License.
 					</xtce:FloatParameterType>
 					<xtce:BooleanParameterType name="Solar_Array_Voltage_State_Type" initialValue="OFF" zeroStringValue="OFF" oneStringValue="ON" shortDescription="The operational state of the solar array voltage sensor">
 						<xtce:UnitSet/>
-						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="unsigned" sizeInBits="8" changeThreshold="1"/>
+						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="unsigned" sizeInBits="8"/>
 					</xtce:BooleanParameterType>
                                         <xtce:FloatParameterType sizeInBits="64" name="SunSensorPolyCalType">
                                             <xtce:UnitSet>
@@ -430,7 +430,7 @@ limitations under the License.
                                                             <xtce:Comparison value="HIGH" parameterRef="/BogusSAT/SC001/BusElectronics/EarthSensorMode"/>
                                                         </xtce:ContextMatch>
                                                         <xtce:Calibrator>
-                                                            <xtce:SplineCalibrator order="0">
+                                                            <xtce:SplineCalibrator order="1">
                                                                 <xtce:SplinePoint raw="0" calibrated="10.0"/>
                                                                 <xtce:SplinePoint raw="10" calibrated="15.0"/>
                                                                 <xtce:SplinePoint raw="20" calibrated="20.0"/>
@@ -560,6 +560,14 @@ limitations under the License.
 				</xtce:ParameterSet>
                                 <xtce:ContainerSet>
                                     <xtce:SequenceContainer name="SensorHistoryRecord">
+                                    <xtce:AliasSet>
+          <xtce:Alias nameSpace="MDB:Pathname" alias="\APM\USOC\CADMOS_ACES\ACES\ACQ\PKTS\HK_ASW"/>
+          <xtce:Alias nameSpace="MDB:SID" alias="313251323"/>
+          <xtce:Alias nameSpace="MDB:OPS Name" alias="ACES_Pkt_HK_ASW"/>
+        </xtce:AliasSet>
+                                        <DefaultRateInStream basis="perSecond" minimumValue="0.1" maximumValue="10"/>
+                                        
+                                        
                                         <xtce:EntryList>
                                             <xtce:ParameterRefEntry parameterRef="SensorTime"/>
                                             <xtce:ParameterRefEntry parameterRef="SunSensorMode"/>
@@ -567,7 +575,6 @@ limitations under the License.
                                             <xtce:ParameterRefEntry parameterRef="SunSensorLevel"/>
                                             <xtce:ParameterRefEntry parameterRef="EarthSensorLevel"/>
                                         </xtce:EntryList>
-                                        <xtce:DefaultRateInStream basis="perSecond" minimumValue="0.1" maximumValue="10"/>
                                     </xtce:SequenceContainer>
                                     <xtce:SequenceContainer name="SensorHistoryBuffer">
                                         <xtce:EntryList>
@@ -604,7 +611,7 @@ limitations under the License.
 				<xtce:ParameterTypeSet>
 					<xtce:IntegerParameterType name="GENERIC_16BIT_UNSIGNED_INT" signed="false" sizeInBits="16" shortDescription="Generic unsigned 16 bit number">
 						<xtce:UnitSet/>
-						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="unsigned" sizeInBits="16" changeThreshold="1"/>
+						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="unsigned" sizeInBits="16"/>
 					</xtce:IntegerParameterType>
 					<xtce:StringParameterType name="Payload_Fault_Message_Type" shortDescription="Payload Error Message">
 						<xtce:UnitSet/>
@@ -625,11 +632,11 @@ limitations under the License.
 					</xtce:BinaryParameterType>
 					<xtce:BooleanParameterType name="Payload_1_State_Type" zeroStringValue="OFF" oneStringValue="ON" shortDescription="Payload 1 enable state">
 						<xtce:UnitSet/>
-						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" sizeInBits="4" encoding="unsigned" changeThreshold="1"/>
+						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" sizeInBits="4" encoding="unsigned"/>
 					</xtce:BooleanParameterType>
 					<xtce:EnumeratedParameterType name="Payload_1_Phase_Type" shortDescription="Operational Phase of Payload">
 						<xtce:UnitSet/>
-						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" sizeInBits="4" encoding="unsigned" changeThreshold="1"/>
+						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" sizeInBits="4" encoding="unsigned"/>
 						<xtce:EnumerationList>
 							<xtce:Enumeration label="TEST" value="1"/>
 							<xtce:Enumeration label="LAUNCH" value="2"/>
@@ -679,27 +686,27 @@ limitations under the License.
 					</xtce:StringParameterType>
 					<xtce:FloatParameterType name="Basic_Float32_Type" sizeInBits="32" shortDescription="This is a float32 parameter with a simple float32 encoding">
 						<xtce:UnitSet/>
-						<xtce:FloatDataEncoding bitOrder="mostSignificantBitFirst" encoding="IEEE754_1985" sizeInBits="32" changeThreshold="0.001"/>
+						<xtce:FloatDataEncoding bitOrder="mostSignificantBitFirst" encoding="IEEE754_1985" sizeInBits="32"/>
 					</xtce:FloatParameterType>
 					<xtce:FloatParameterType name="Basic_Float64_Type" sizeInBits="64" shortDescription="This is a float64 parameter with a simple float64 encoding">
 						<xtce:UnitSet/>
-						<xtce:FloatDataEncoding bitOrder="mostSignificantBitFirst" encoding="IEEE754_1985" sizeInBits="64" changeThreshold="0.000001"/>
+						<xtce:FloatDataEncoding bitOrder="mostSignificantBitFirst" encoding="IEEE754_1985" sizeInBits="64"/>
 					</xtce:FloatParameterType>
 					<xtce:IntegerParameterType name="Basic_uint32_Type" signed="false" sizeInBits="32" shortDescription="Generic unsigned 32 bit number">
 						<xtce:UnitSet/>
-						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="unsigned" sizeInBits="32" changeThreshold="1"/>
+						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="unsigned" sizeInBits="32"/>
 					</xtce:IntegerParameterType>
 					<xtce:IntegerParameterType name="Basic_int32_signmag_Type" signed="true" sizeInBits="32" shortDescription="Generic signed 32 bit number with sign magnitude encoding">
 						<xtce:UnitSet/>
-						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="signMagnitude" sizeInBits="32" changeThreshold="1"/>
+						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="signMagnitude" sizeInBits="32"/>
 					</xtce:IntegerParameterType>
 					<xtce:IntegerParameterType name="Basic_int32_twoscomp_Type" signed="true" sizeInBits="32" shortDescription="Generic signed 32 bit number with twos complement encoding">
 						<xtce:UnitSet/>
-						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="twosComplement" sizeInBits="32" changeThreshold="1"/>
+						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="twosComplement" sizeInBits="32"/>
 					</xtce:IntegerParameterType>
 					<xtce:IntegerParameterType name="Basic_int32_onescomp_Type" signed="true" sizeInBits="32" shortDescription="Generic signed 32 bit number with ones complement encoding">
 						<xtce:UnitSet/>
-						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="onesComplement" sizeInBits="32" changeThreshold="1"/>
+						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="onesComplement" sizeInBits="32"/>
 					</xtce:IntegerParameterType>
 				</xtce:ParameterTypeSet>
 				<xtce:ParameterSet>

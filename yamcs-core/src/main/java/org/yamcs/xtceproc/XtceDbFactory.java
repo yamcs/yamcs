@@ -56,6 +56,10 @@ public class XtceDbFactory {
      * @throws ConfigurationException
      */
     public static synchronized XtceDb createInstanceByConfig(String configSection) throws ConfigurationException {
+        return createInstanceByConfig(configSection, true);
+    }
+    
+    public static synchronized XtceDb createInstanceByConfig(String configSection, boolean attemptToLoadSerialized) throws ConfigurationException {
         YConfiguration c = YConfiguration.getConfiguration("mdb");
 
         if(configSection == null) {
@@ -63,11 +67,11 @@ public class XtceDbFactory {
         }
 
         List<Object> list = c.getList(configSection);
-        return createInstance(list);
+        return createInstance(list, attemptToLoadSerialized);
     }
 
     @SuppressWarnings("unchecked")
-    private static synchronized XtceDb createInstance(List<Object> treeConfig) throws ConfigurationException {
+    private static synchronized XtceDb createInstance(List<Object> treeConfig, boolean attemptToLoadSerialized) throws ConfigurationException {
         LoaderTree loaderTree = new LoaderTree(new RootSpaceSystemLoader());
 
         for(Object o: treeConfig) {
@@ -78,10 +82,10 @@ public class XtceDbFactory {
             }
         }
 
+        boolean loadSerialized = attemptToLoadSerialized;
         boolean serializedLoaded = false;
-        boolean loadSerialized = true;
         String filename = loaderTree.getConfigName()+".xtce";
-
+       
         if (new File(getFullName(filename) + ".serialized").exists()) {
             try {
                 RandomAccessFile raf = new RandomAccessFile(getFullName(filename) + ".consistency_date", "r");
@@ -512,7 +516,7 @@ public class XtceDbFactory {
         if (db == null) {
             YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
             if (c.isList("mdb")) {
-                db = createInstance(c.getList("mdb"));
+                db = createInstance(c.getList("mdb"), true);
                 instance2Db.put(yamcsInstance, db);
             } else {
                 db = getInstanceByConfig(yamcsInstance, c.getString("mdb"));
