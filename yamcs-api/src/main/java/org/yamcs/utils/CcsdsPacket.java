@@ -201,29 +201,45 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
         StringBuffer text = new StringBuffer();
         byte c;
         int len = bb.limit();
+        int lengthRoundedUpToNextMultipleOf16 = (int) Math.ceil(len / 16.0) * 16;
         sb.append("apid: "+getAPID()+"\n");
         sb.append("packetId: "+getPacketID()+"\n");
         sb.append("time: "+ TimeEncoding.toCombinedFormat(getInstant()));
         sb.append("\n");
-        for(int i=0;i<len;++i) {
+        for(int i=0;i<lengthRoundedUpToNextMultipleOf16;++i) {
+            // If we are at the beginning of a 16 byte multiple
             if(i%16==0) {
                 sb.append(String.format("%04x:",i));
                 text.setLength(0);
             }
-            c = bb.get(i);
-            if ( (i & 1) == 0 ) {
-                sb.append(String.format(" %02x",0xFF&c));
-            } else {
-                sb.append(String.format("%02x",0xFF&c));
+
+            // For every 2 bytes, insert an extra space
+            if ((i & 1) == 0)
+                sb.append(" ");
+
+            // If we did not reach the end of the buffer
+            if (i < len) {
+                c = bb.get(i);
+                // Add 2 byte hexadecimal translation of the byte
+                sb.append(String.format("%02x", 0xFF & c));
+                // Add printable characters or a dot to the ASCII buffer of the line being parsed
+                text.append(((c >= ' ') && (c <= 127)) ? String.format("%c", c) : ".");
+            } else {    // If we reached the end of the buffer
+                // Pad with spaces
+                sb.append("  ");
+                text.append(" ");
             }
-            text.append(((c >= ' ') && (c <= 127)) ? String.format("%c",c) : ".");
+
+            // If we reached the end of a 16 byte multiple
             if((i+1)%16==0) {
+                // Append the ASCII buffer of the parsed line
                 sb.append(" ");
                 sb.append(text);
                 sb.append("\n");
             }
         }
-        sb.append("\n\n");
+        // End with an extra newline
+        sb.append("\n");
         return sb.toString();
     }
 
