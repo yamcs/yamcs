@@ -31,8 +31,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
  *
  */
 public class CliParameterExtractor {
-    
-    
+
+
     static void printUsageAndExit(String error) {
         if(error!=null) {
             System.err.println(error);
@@ -50,7 +50,7 @@ public class CliParameterExtractor {
         System.err.println("Example:\n parameter-extractor.sh http://localhost:8090/yops 2007-08-01T12:34:00 2007-08-23T18:34:00 IntegerPara11 FloatPara11_1");
         System.exit(1);
     }
-    
+
     public static BulkDownloadParameterValueRequest.Builder getRequest(String... params) {
         BulkDownloadParameterValueRequest.Builder prr=BulkDownloadParameterValueRequest.newBuilder();
         for(String p:params) {
@@ -58,24 +58,24 @@ public class CliParameterExtractor {
         }
         return prr;
     }
-    
-    
-   
+
+
+
     /**
      * @param args
      * http://aces-test:8090/aces-test 2010-05-19T00:00:00 2011-05-20T00:00:00   aces_SHM_HP_SET aces_SHM_HP_MEAS aces_SHM_IS_HEATER
-     * @throws ExecutionException 
-     * @throws URISyntaxException 
-     * @throws IOException 
-     * @throws FileNotFoundException 
-     * @throws InterruptedException 
-     * 
+     * @throws ExecutionException
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws FileNotFoundException
+     * @throws InterruptedException
+     *
      */
     public static void main(String[] args) throws ExecutionException, URISyntaxException, FileNotFoundException, IOException, InterruptedException {
         if(args.length<1) {
             printUsageAndExit(null);
         }
-        
+
         int k=0;
         int timewindow = -1;
         boolean printRaw = false;
@@ -83,7 +83,7 @@ public class CliParameterExtractor {
         boolean printTime = false;
         boolean allParametersPresent = false;
         boolean keepValues = false;
-        
+
         while(args[k].startsWith("-")) {
             if(args[k].equals("-t")) {
                 printTime=true;
@@ -117,32 +117,32 @@ public class CliParameterExtractor {
             } else printUsageAndExit("Unknown option '"+args[k]+"'");
             k++;
         }
-        
-        
+
+
         if(args.length<k+4){
             printUsageAndExit("too few arguments");
         }
-      
+
         YamcsConnectionProperties ycd = YamcsConnectionProperties.parse(args[k++]);
         if(ycd.getInstance()==null) {
-            printUsageAndExit("The Yamcs URL does not contain the archive instance. Use something like yamcs://hostname/archiveInstance");
+            printUsageAndExit("The Yamcs URL does not contain the archive instance. Use something like http://hostname/archiveInstance");
         }
-        
+
         TimeEncoding.setUp();
-        
+
         String start = args[k++];
         String stop = args[k++];
         BulkDownloadParameterValueRequest.Builder prr=null;
-        
+
         if("-f".equals(args[k])) {
             prr=BulkDownloadParameterValueRequest.newBuilder()
-                .addAllId(ParameterRetrievalGui.loadParameters(new BufferedReader(new FileReader(args[k+1]))));                
+                    .addAllId(ParameterRetrievalGui.loadParameters(new BufferedReader(new FileReader(args[k+1]))));
         } else {
             prr=getRequest(Arrays.copyOfRange(args, k, args.length));
         }
-        
-       prr.setStart(start).setStop(stop);
-      
+
+        prr.setStart(start).setStop(stop);
+
         final ParameterFormatter pf=new ParameterFormatter(new BufferedWriter(new PrintWriter(System.out)), prr.getIdList());
         pf.setPrintRaw(printRaw);
         pf.setPrintTime(printTime);
@@ -151,12 +151,12 @@ public class CliParameterExtractor {
         pf.setKeepValues(keepValues);
         pf.setTimeWindow(timewindow);
         RestClient restClient = new RestClient(ycd);
-        
+
         CompletableFuture<Void> completableFuture = restClient.doBulkGetRequest("/archive/"+ycd.getInstance()+"/downloads/parameters", prr.build().toByteArray(), new BulkRestDataReceiver() {
             @Override
-            public void receiveData(byte[] data) throws YamcsApiException {                   
+            public void receiveData(byte[] data) throws YamcsApiException {
                 ParameterData pd;
-                
+
                 try {
                     pd = ParameterData.parseFrom(data);
                     pf.writeParameters(pd.getParameterList());
@@ -164,7 +164,7 @@ public class CliParameterExtractor {
                     System.err.println("cannot decode parameter message"+e);
                 } catch (IOException e) {
                     System.err.println("Error when saving parameters: "+e);
-                }     
+                }
             }
         });
 
