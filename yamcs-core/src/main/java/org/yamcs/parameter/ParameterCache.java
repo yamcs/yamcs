@@ -43,7 +43,6 @@ public class ParameterCache {
      * @param pvs - parameter value list
      */
     public void update(Collection<ParameterValue> pvs) {
-        //System.out.println("ParameterCache ------- updated with "+pvs);
         ParameterValueList  pvlist = new ParameterValueList(pvs);
         for (ParameterValue pv:pvs) {
             Parameter p = pv.getParameter();
@@ -128,7 +127,9 @@ public class ParameterCache {
      */
     public List<ParameterValue> getAllValues(Parameter p) {
         CacheEntry ce = cache.get(p);
-        if(ce==null) return null;
+        if(ce==null) {
+            return null;
+        }
 
         return ce.getAll();
     }
@@ -154,7 +155,11 @@ public class ParameterCache {
             this.parameter = p;
             this.timeToCache = timeToCache;
             this.maxNumEntries = maxNumEntries;
-            elements = new ParameterValueList[INITIAL_CAPACITY];
+            int initialCapacity = Math.min(INITIAL_CAPACITY, maxNumEntries);
+            if(initialCapacity>1) { //make sure it's power of 2
+                initialCapacity = Integer.highestOneBit(initialCapacity-1)<<1;
+            }
+            elements = new ParameterValueList[initialCapacity];
         }
 
 
@@ -169,7 +174,9 @@ public class ParameterCache {
                 do {
                     t = (t-1)&(n-1);
                     ParameterValueList pvl = elements[t];
-                    if(pvl==null) break;
+                    if(pvl==null) {
+                        break;
+                    }
                     pvl.forEach(parameter, (ParameterValue pv) -> plist.add(pv));
                     
                 } while (t!=_tail);
@@ -198,7 +205,9 @@ public class ParameterCache {
                 if(pv1!=null) {
                     ParameterValue oldpv = pv1.getFirstInserted(parameter);
                     ParameterValue newpv = pvlist.getFirstInserted(parameter);
-                    if((oldpv==null) || (newpv==null)) return; // shouldn't happen
+                    if((oldpv==null) || (newpv==null)) {
+                        return; // shouldn't happen
+                    }
                     if(newpv.getGenerationTime() < oldpv.getGenerationTime()) {
                         // parameter older than the last one in the queue -> ignore
                         return;
@@ -217,7 +226,9 @@ public class ParameterCache {
 
         private void doubleCapacity() {
             int capacity = elements.length;
-            if(capacity>=maxNumEntries) return;
+            if(capacity>=maxNumEntries) {
+                return;
+            }
 
             int newCapacity = 2*capacity;
 
