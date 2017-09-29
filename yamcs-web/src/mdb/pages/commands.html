@@ -1,4 +1,4 @@
-<mdb-pane active-pane="{{ vm.qname }}" yamcs-instance="yamcsInstance" shell="shell" standalone="standalone">
+<mdb-pane active-pane="{{vm.qname}}" yamcs-instance="yamcsInstance" shell="shell" standalone="standalone">
   <h1 class="page-header">{{ vm.qname }}</h1>
   <p>&nbsp;</p>
 
@@ -12,11 +12,17 @@
   </uib-alert>
   <table class="table" ng-if="vm.commands.length">
     <tr>
-      <th width="200">Name</th>
+      <!--<th width="200">Name</th>-->
+        <th >Name</th>
       <th>Description</th>
     </tr>
     <tr ng-repeat="cmd in vm.commands | orderBy:'qualifiedName'">
-      <td>{{ cmd.name }}</td>
+      <td>
+        <a href="/{{yamcsInstance}}/mdb/commands{{cmd.qualifiedName}}">
+        {{cmd.name}}
+        <!--{{yamcsInstance}}/mdb/commands{{cmd.qualifiedName}}-->
+        </a>
+      </td>
       <td>{{ cmd.shortDescription | nvl:'-' }}</td>
     </tr>
   </table>
