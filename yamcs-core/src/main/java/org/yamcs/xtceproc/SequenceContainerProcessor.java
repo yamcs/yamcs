@@ -80,10 +80,8 @@ public class SequenceContainerProcessor {
             //And then any derived containers
             int bitp = position.bitPosition;
             for(SequenceContainer sc:inheritingContainers) {
-
-                if(sc.getRestrictionCriteria() == null)
-                {
-                    log.warn("Container "+sc.getName()+" inherits without defining an inheritance condition. Ignoring the container.");
+                if(sc.getRestrictionCriteria() == null) {
+                    log.warn("Container {} inherits without defining an inheritance condition. Ignoring the container.", sc.getName());
                     continue;
                 }
                 if(sc.getRestrictionCriteria().isMet(pcontext.criteriaEvaluator)) {
