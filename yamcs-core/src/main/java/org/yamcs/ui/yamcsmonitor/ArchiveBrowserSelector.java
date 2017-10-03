@@ -122,7 +122,9 @@ public class ArchiveBrowserSelector extends ArchiveBrowser implements ActionList
             if ( sel == null ) {
                 showError("Select the range you want to apply. Then try again");
             } else {
-                List<String> packets = archivePanel.getSelectedPackets("tm");
+                // Add all TM and PP packets to the list of parameters to replay
+                ArrayList<String> packets = new ArrayList<String>(archivePanel.getSelectedPackets("tm"));
+                packets.addAll(archivePanel.getSelectedPackets("pp"));
                 ProcessorWidget widget=YamcsMonitor.theApp.getActiveProcessorWidget();
                 if(widget instanceof ArchiveProcWidget) {
                     ((ArchiveProcWidget) widget).apply(getInstance(), sel.getStartInstant(), sel.getStopInstant(), packets.toArray(new String[0]));

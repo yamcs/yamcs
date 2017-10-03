@@ -560,7 +560,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     public List<String> getSelectedPackets(String tableName) {
         DataViewer dataViewer = (DataViewer) activeItem;
         if(dataViewer.getDataView().indexBoxes.containsKey(tableName)) {
-            return dataViewer.getDataView().getSelectedPackets("tm");
+            return dataViewer.getDataView().getSelectedPackets(tableName);
         }
         return Collections.emptyList();
     }
