@@ -17,7 +17,7 @@ public abstract class Algorithm extends NameDescription {
     private ArrayList<OutputParameter> outputSet = new ArrayList<>();
     
     //commandVerification algorithms can only be run in the context of a command verifier
-    public enum Scope {GLOBAL, COMMAND_VERIFICATION};
+    public enum Scope {GLOBAL, COMMAND_VERIFICATION, CONTAINER_PROCESSING};
     
     private Scope scope = Scope.GLOBAL;
     

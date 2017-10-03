@@ -41,6 +41,8 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public final int pkt1_11Length=pkt1Length+4;
     
     public final int pkt4Length=headerLength+4;
+    public final int pkt5Length=headerLength+pFixedBinary1.length + pPrependedSizeBinary1.length;
+    
   
     public final int pkt2Length=8;
     public final int pkt1_ListLength=pkt1Length;
@@ -48,6 +50,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public final int pkt1_OrLength=pkt1Length;
     public final int pkt1_And_OrLength=pkt1Length;
 
+ 
 
     public final int contVerifCmdAck_Length = headerLength+7;
     public final int algVerifCmdAck_Length = headerLength+9;
@@ -99,6 +102,9 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     static public final String pStringIntPrePara1_5_4="1204507"; // Prepended size (16 bits)
     static public final String pStringIntStrPara1_5_5="123406789"; // string
 
+    static public final byte[] pFixedBinary1= StringConverter.hexStringToArray("0102030004050607");
+    static public final byte[] pPrependedSizeBinary1= StringConverter.hexStringToArray("0220AC");
+    
     //Get enumerations from strings
     public String pStringEnumPara1_12_1="1";
 
@@ -228,6 +234,19 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         fill_PKT4(bb);
         sendToTmProcessor(bb);
         return bb;
+    }
+    
+    public ByteBuffer generate_PKT5() {
+        ByteBuffer bb=ByteBuffer.allocate(pkt5Length);
+        fill_PKT5(bb);
+        sendToTmProcessor(bb);
+        return bb;
+    }
+    private void fill_PKT5(ByteBuffer bb) {
+        fill_CcsdsHeader(bb, 995, 5);
+        bb.position(headerLength);
+        bb.put(pFixedBinary1);
+        bb.put(pPrependedSizeBinary1);
     }
 
     public ByteBuffer generate_PKT2() {

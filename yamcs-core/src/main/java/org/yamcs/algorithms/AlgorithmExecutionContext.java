@@ -10,12 +10,13 @@ import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
+import org.yamcs.xtceproc.ProcessorData;
 
 /**
  * Algorithms for command verifiers must execute in parallel in different contexts - meaning that each algorithm will have 
  * their own values for inputs referring to command specifics (e.g. command sequence count) 
  * 
- * That's why we associate to each AlgorithmEngine (which represents the instantiation of one algorithm) one of these AlgorithmExecutionContext.
+ * That's why we associate to each AlgorithmExecutor (which represents the instantiation of one algorithm) one of these AlgorithmExecutionContext.
  * 
  * Currently it stores the historical values for parameters requiring that.
  * 
@@ -26,20 +27,20 @@ import org.yamcs.xtce.ParameterInstanceRef;
  */
 public class AlgorithmExecutionContext {
     // For storing a window of previous parameter instances
-    HashMap<Parameter,WindowBuffer> buffersByParam = new HashMap<Parameter,WindowBuffer>();
+    HashMap<Parameter,WindowBuffer> buffersByParam = new HashMap<>();
     final AlgorithmExecutionContext parent;
     
     //all the algorithms that run in this context
-    HashMap<Algorithm,AlgorithmExecutor> engineByAlgorithm=new HashMap<Algorithm,AlgorithmExecutor>();
+    HashMap<Algorithm, AlgorithmExecutor> executorByAlgorithm=new HashMap<>();
     //name used for debugging
     final String contextName;
     
-    final Processor yproc;
+    final ProcessorData procData;
     
-    public AlgorithmExecutionContext(String contextName, AlgorithmExecutionContext parent, Processor proc) {
+    public AlgorithmExecutionContext(String contextName, AlgorithmExecutionContext parent, ProcessorData procData) {
         this.contextName = contextName;
         this.parent = parent;
-        this.yproc = proc;
+        this.procData = procData;
     }
     
     public void enableBuffer(Parameter param, int lookbackSize) {
@@ -65,13 +66,6 @@ public class AlgorithmExecutionContext {
         }
     }
 
-    /**
-     * 
-     * @return the processor in which this context is part of
-     */
-    public Processor getProcessor() {
-        return yproc;
-    }
     private void updateHistoryWindow(ParameterValue pval) {
         if(buffersByParam.containsKey(pval.getParameter())) {
             buffersByParam.get(pval.getParameter()).update(pval);
@@ -93,24 +87,28 @@ public class AlgorithmExecutionContext {
     }
 
     public boolean containsAlgorithm(Algorithm algo) {
-        return engineByAlgorithm.containsKey(algo);
+        return executorByAlgorithm.containsKey(algo);
     }
 
     public AlgorithmExecutor getExecutor(Algorithm algo) {
-        return engineByAlgorithm.get(algo);
+        return executorByAlgorithm.get(algo);
     }
 
 
     public void addAlgorithm(Algorithm algorithm, AlgorithmExecutor engine) {
-        engineByAlgorithm.put(algorithm, engine);
+        executorByAlgorithm.put(algorithm, engine);
     }
     
 
     public Collection<Algorithm> getAlgorithms() {
-        return engineByAlgorithm.keySet();
+        return executorByAlgorithm.keySet();
     }
 
     public AlgorithmExecutor remove(Algorithm algo) {
-        return engineByAlgorithm.remove(algo);
+        return executorByAlgorithm.remove(algo);
+    }
+
+    public ProcessorData getProcessorData() {
+        return procData;
     }
 }

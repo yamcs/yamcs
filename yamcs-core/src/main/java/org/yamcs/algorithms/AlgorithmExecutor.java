@@ -1,6 +1,5 @@
 package org.yamcs.algorithms;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -26,7 +25,8 @@ public interface AlgorithmExecutor {
      * @param paramList - list of input parameters
      * @return true if the algorithm should run
      */
-    boolean updateParameters(ArrayList<ParameterValue> paramList);
+    boolean updateParameters(List<ParameterValue> paramList);
+  
     /**
      * Runs the associated algorithm with the latest InputParameters
      * @param acqTime 

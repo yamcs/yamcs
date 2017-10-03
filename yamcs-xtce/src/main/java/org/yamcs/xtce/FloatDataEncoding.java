@@ -23,7 +23,7 @@ public class FloatDataEncoding extends DataEncoding {
 
     public FloatDataEncoding(int sizeInBits, ByteOrder byteOrder) {
         super(sizeInBits, byteOrder);
-        encoding = Encoding.IEEE754_1985;
+        setEncoding(Encoding.IEEE754_1985);
     }
     /**
      * Float data encoded as a string. 
@@ -31,7 +31,7 @@ public class FloatDataEncoding extends DataEncoding {
      */
     public FloatDataEncoding(StringDataEncoding sde) {
         super(sde.getSizeInBits());
-        encoding = Encoding.STRING;
+        setEncoding(Encoding.STRING);
         stringEncoding = sde;
     }
 
@@ -53,7 +53,7 @@ public class FloatDataEncoding extends DataEncoding {
 
     @Override
     public String toString() {
-        switch(encoding) {
+        switch(getEncoding()) {
         case IEEE754_1985:
             return "FloatDataEncoding(sizeInBits="+sizeInBits+""
             +(defaultCalibrator==null?"":(", defaultCalibrator:"+defaultCalibrator)) 
@@ -63,14 +63,14 @@ public class FloatDataEncoding extends DataEncoding {
                     +(defaultCalibrator==null?"":(", defaultCalibrator:"+defaultCalibrator)) 
                     +")";
         default:
-            return "UnknownFloatEncoding("+encoding+")";
+            return "UnknownFloatEncoding("+getEncoding()+")";
         }
 
     }
 
     @Override
     public Object parseString(String stringValue) {
-        switch(encoding) {
+        switch(getEncoding()) {
         case IEEE754_1985:
             if(sizeInBits==32) {
                 return Float.parseFloat(stringValue);
@@ -80,7 +80,11 @@ public class FloatDataEncoding extends DataEncoding {
         case STRING:
             return stringValue;
         default:
-            throw new IllegalStateException("Unknown encoding "+encoding);
+            throw new IllegalStateException("Unknown encoding "+getEncoding());
         }
+    }
+
+    public void setEncoding(Encoding encoding) {
+        this.encoding = encoding;
     }
 }

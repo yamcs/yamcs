@@ -21,6 +21,7 @@ import static org.yamcs.RefMdbPacketGenerator.pTerminatedStringPara1_3_3;
 import static org.yamcs.RefMdbPacketGenerator.pTerminatedStringPara1_3_4;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.BeforeClass;
@@ -30,10 +31,14 @@ import org.yamcs.ContainerExtractionResult;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
+import org.yamcs.algorithms.AbstractAlgorithmExecutor;
+import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -267,12 +272,12 @@ public class XtceTmExtractorTest {
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
         
         //System.out.println("PKT15 buffer: "+StringConvertors.arrayToHexString(bb.array()));
-        ParameterValueList received=tmExtractor.getParameterResult();
+        ParameterValueList received = tmExtractor.getParameterResult();
         // Check all the parameters have been parsed
         assertEquals( 11, received.size() );
         
         ParameterValue pv = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/StringIntTermPara1_5_2"));
-        assertEquals( AcquisitionStatus.INVALID, pv.getAcquisitionStatus());
+        assertEquals(AcquisitionStatus.INVALID, pv.getAcquisitionStatus());
     }
     
     
@@ -607,10 +612,10 @@ public class XtceTmExtractorTest {
     public void testPKT4_JavaAlgo() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
 
-        XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
+        XtceTmExtractor tmExtractor = new XtceTmExtractor(xtcedb);
         tmExtractor.startProvidingAll();
         
-        ByteBuffer bb=tmGenerator.generate_PKT4();
+        ByteBuffer bb = tmGenerator.generate_PKT4();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
         
         ParameterValueList received = tmExtractor.getParameterResult();
@@ -623,6 +628,33 @@ public class XtceTmExtractorTest {
 
     
     }
+    
+    @Test
+    public void testPKT5BinaryRawValues() throws ConfigurationException {
+        RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
+
+        XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
+        tmExtractor.startProvidingAll();
+        
+        ByteBuffer bb = tmGenerator.generate_PKT5();
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        
+        ParameterValueList received = tmExtractor.getParameterResult();
+        assertEquals(6, received.size() );
+
+        ParameterValue pv1 = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/FixedBinary1"));
+        assertTrue(Arrays.equals(RefMdbPacketGenerator.pFixedBinary1, pv1.getRawValue().getBinaryValue()));
+        
+        ParameterValue pv2 = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/PrependedSizeBinary1"));
+        byte[] psb = RefMdbPacketGenerator.pPrependedSizeBinary1;
+        //the first byte is the size
+        assertTrue(Arrays.equals(Arrays.copyOfRange(psb, 1, psb.length), pv2.getRawValue().getBinaryValue()));
+        
+        ParameterValue pv3 = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/CustomBinaryEncoding1"));        
+        assertTrue(Arrays.equals(MyDecoder.fixedValue, pv3.getRawValue().getBinaryValue()));
+    }
+    
+    
     private String byteBufferToHexString(ByteBuffer bb) {
         bb.mark();
         StringBuilder sb =new StringBuilder();
@@ -636,4 +668,16 @@ public class XtceTmExtractorTest {
     }
     
     
+    public static class MyDecoder implements DataDecoder {
+        static byte[] fixedValue = new byte[] {0x02, 0x03, 0x1b};
+        
+        public MyDecoder(Algorithm a, AlgorithmExecutionContext c, Double x) {
+            
+        }
+        @Override
+        public void extractRaw(DataEncoding de, ContainerBuffer position, ParameterValue pv) {
+            position.setBitPosition(position.getBitPosition()+32);
+            pv.setRawValue(fixedValue);            
+        }
+    }
 }

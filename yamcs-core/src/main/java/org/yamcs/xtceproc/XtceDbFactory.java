@@ -355,6 +355,8 @@ public class XtceDbFactory {
             return ss.getSequenceContainer(name);
         case META_COMMAND:
             return ss.getMetaCommand(name);
+        case ALGORITHM:
+            return ss.getAlgorithm(name);
         }
         //shouldn't arrive here
         return null;

@@ -35,7 +35,7 @@ public class YObjectLoader<T> {
                 }
                 boolean ok=true;
                 for(int i=0;i<params.length;i++) {
-                    if(!params[i].isAssignableFrom(args[i].getClass())) {
+                    if((args[i]!=null ) && !params[i].isAssignableFrom(args[i].getClass())) {
                         ok=false;
                         break;
                     }
@@ -52,9 +52,14 @@ public class YObjectLoader<T> {
                 for(Object o: args) {
                     if(!first) {
                         sb.append(", ");
+                    } else {
+                        first = false;
                     }
-                    else first = false;
-                    sb.append(o.getClass().getName());
+                    if(o==null) {
+                        sb.append("java.lang.Object");
+                    } else {
+                        sb.append(o.getClass().getName());
+                    }
                 }
                 sb.append(")");
                 throw new ConfigurationException(sb.toString());

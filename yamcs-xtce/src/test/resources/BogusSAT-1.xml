@@ -36,7 +36,7 @@ limitations under the License.
 					<xtce:IntegerDataEncoding sizeInBits="64"/>
 				</xtce:Encoding>
 				<xtce:ReferenceTime>
-					<xtce:Epoch>1970-01-01</xtce:Epoch>
+					<xtce:Epoch>1970-01-01T00:00:00</xtce:Epoch>
 				</xtce:ReferenceTime>
 			</xtce:AbsoluteTimeParameterType>
 			<xtce:EnumeratedParameterType name="TM_CHECKSUMType" initialValue="NotUsed">
@@ -565,9 +565,7 @@ limitations under the License.
           <xtce:Alias nameSpace="MDB:SID" alias="313251323"/>
           <xtce:Alias nameSpace="MDB:OPS Name" alias="ACES_Pkt_HK_ASW"/>
         </xtce:AliasSet>
-                                        <DefaultRateInStream basis="perSecond" minimumValue="0.1" maximumValue="10"/>
-                                        
-                                        
+                                        <xtce:DefaultRateInStream basis="perSecond" minimumValue="0.1" maximumValue="10"/>                                        
                                         <xtce:EntryList>
                                             <xtce:ParameterRefEntry parameterRef="SensorTime"/>
                                             <xtce:ParameterRefEntry parameterRef="SunSensorMode"/>

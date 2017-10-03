@@ -1,24 +1,32 @@
 package org.yamcs.xtceproc;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.yamcs.algorithms.AlgorithmExecutionContext;
+import org.yamcs.algorithms.AlgorithmExecutor;
+import org.yamcs.utils.YObjectLoader;
+import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Calibrator;
+import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.SplineCalibrator;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * Holds information related and required for XTCE processing. 
  * It is separated from Processor because it has to be usable when not a full blown processor is available (e.g. XTCE packet processing)
- * 
- *  For the moment is just calibrators used - but in the future could be any deviation from loaded XTCE DB (e.g. alarm definitions and others).
  *  
  *  Ultimately should be connected with the ParameterCache for things that depend on the history (contextual alarms, contextual calibrations, algorithms, etc)
  *  
+ *  Not thread safe
  *
  */
 public class ProcessorData {
@@ -28,6 +36,7 @@ public class ProcessorData {
     final ParameterTypeProcessor parameterTypeProcessor = new ParameterTypeProcessor(this);
 
     private Map<DataEncoding, CalibratorProc> calibrators = new HashMap<>();
+    private Map<DataEncoding, DataDecoder> decoders = new HashMap<>();
 
     /**
      * returns a calibrator processor for the given data encoding. 
@@ -72,4 +81,15 @@ public class ProcessorData {
         }
     }
 
+    public DataDecoder getDataDecoder(DataEncoding de) {
+        DataDecoder dd = decoders.get(de);
+        if(dd==null) {
+            dd = DataDecoderFactory.get(de.getFromBinaryTransformAlgorithm());
+        }
+        
+        return dd;
+    }
+ 
+
+    
 }

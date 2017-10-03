@@ -11,6 +11,7 @@ import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.ProcessorData;
 
 /**
  * Library of functions available from within Algorithm scripts using this
@@ -24,15 +25,19 @@ public class AlgorithmUtils {
     private String algorithmName;
     private EventProducer eventProducer;
     private final String yamcsInstance;
+    private final ProcessorData processorData;
+
+    //can be null if the algorithms are not running inside a processor
     private final Processor processor;
-    public AlgorithmUtils(Processor processor, XtceDb xtcedb, String algorithmName) {
-        this.yamcsInstance = processor.getInstance();
-        this.processor = processor;
+    public AlgorithmUtils(String yamcsInstance, ProcessorData processorData, Processor processor, XtceDb xtcedb, String algorithmName) {
+        this.yamcsInstance = yamcsInstance;
         
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
         eventProducer.setSource("CustomAlgorithm");
         this.xtcedb = xtcedb;
         this.algorithmName = algorithmName;
+        this.processorData = processorData;
+        this.processor = processor;
     }
     
     /**
@@ -48,7 +53,7 @@ public class AlgorithmUtils {
             } else {
                 DataEncoding encoding = ((BaseDataType)p.getParameterType()).getEncoding();
                 if(encoding instanceof IntegerDataEncoding) {
-                    return  processor.getProcessorData().getCalibrator(encoding).calibrate(raw);
+                    return  processorData.getCalibrator(encoding).calibrate(raw);
                 }
             }
         } else {
@@ -85,12 +90,12 @@ public class AlgorithmUtils {
         eventProducer.sendError(type, msg);
     }
 
+    /**
+     * returns the processor name if the algorithm is running in a processor or null otherwise
+     * @return
+     */
     public String processorName() {
-        return processor.getName();
-    }
-    
-    public boolean isReplayProcessor() {
-        return processor.isReplay();
+        return (processor==null) ? null:processor.getName();
     }
     
     /**

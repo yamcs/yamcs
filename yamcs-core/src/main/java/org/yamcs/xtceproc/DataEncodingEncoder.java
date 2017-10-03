@@ -48,7 +48,7 @@ public class DataEncodingEncoder {
 
     private void encodeRawInteger(IntegerDataEncoding ide, Value rawValue) {
         // Integer encoded as string, don't even try reading it as int
-        if(ide.getEncoding() == Encoding.string) {
+        if(ide.getEncoding() == Encoding.STRING) {
             encodeRaw(ide.getStringEncoding(), rawValue);
             return;
         }
@@ -95,12 +95,12 @@ public class DataEncodingEncoder {
         //STEP 2 mix the extracted bytes x with he value of the argument v, depending on the encoding type        
         x = x & mask;
         switch(ide.getEncoding()) {
-        case twosComplement:
+        case TWOS_COMPLEMENT:
             v = (v<<(64-ide.getSizeInBits())>>>(64-ide.getSizeInBits()));
             break;
-        case unsigned:
+        case UNSIGNED:
             break;
-        case signMagnitude:
+        case SIGN_MAGNITUDE:
             if(v<0) {
                 v = -v;
                 v &= (1<<bitsToShift);
@@ -175,7 +175,7 @@ public class DataEncodingEncoder {
         int initialBitPosition = pcontext.bitPosition;
         
         switch(sde.getSizeType()) {
-        case Fixed:
+        case FIXED:
             int byteOffset = pcontext.bitPosition/8;
             int sdeSizeInBytes = sde.getSizeInBits()/8;
             int sizeInBytes = (sdeSizeInBytes > rawValueBytes.length)?rawValueBytes.length:sdeSizeInBytes;
@@ -188,7 +188,7 @@ public class DataEncodingEncoder {
             }
             pcontext.bitPosition+=sde.getSizeInBits();
             break;
-        case LeadingSize:
+        case LEADING_SIZE:
             pcontext.bb.order(ByteOrder.BIG_ENDIAN); //TBD
             
             byteOffset = pcontext.bitPosition/8;
@@ -213,7 +213,7 @@ public class DataEncodingEncoder {
             pcontext.bb.put(rawValueBytes, 0, rawValueBytes.length);
             pcontext.bitPosition = pcontext.bb.position() * 8;
             break;
-        case TerminationChar:
+        case TERMINATION_CHAR:
             byteOffset=pcontext.bitPosition/8;
             pcontext.bb.position(byteOffset);
             pcontext.bb.put(rawValueBytes, 0, rawValueBytes.length);

@@ -73,7 +73,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     public ScriptAlgorithmExecutor(CustomAlgorithm algorithmDef, ScriptEngine scriptEngine, AlgorithmExecutionContext execCtx) {
         super(algorithmDef, execCtx);
         this.scriptEngine = scriptEngine;
-        this.parameterTypeProcessor = new ParameterTypeProcessor(execCtx.getProcessor().getProcessorData());
+        this.parameterTypeProcessor = new ParameterTypeProcessor(execCtx.getProcessorData());
 
         for(InputParameter inputParameter:algorithmDef.getInputSet()) {
             // Default-define all input values to null to prevent ugly runtime errors
@@ -222,13 +222,13 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             return; // TODO make exc, and catch to send to ev
         }
         if(ide.getSizeInBits() <= 32) {
-            if(ide.getEncoding() == Encoding.unsigned) {
+            if(ide.getEncoding() == Encoding.UNSIGNED) {
                 pv.setRawUnsignedInteger((int)longValue);
             } else {
                 pv.setRawSignedInteger((int)longValue);
             }
         } else {
-            if(ide.getEncoding() == Encoding.unsigned) {
+            if(ide.getEncoding() == Encoding.UNSIGNED) {
                 pv.setRawUnsignedLong(longValue);
             } else {
                 pv.setRawSignedLong(longValue);

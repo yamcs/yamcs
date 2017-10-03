@@ -77,6 +77,7 @@ import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.ui.PrefsObject;
@@ -828,7 +829,6 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                 DataEncoding encoding;
                 Calibrator calib;
                 Object paramtype;
-                String name;
 
                 parametersTable.clear();
                 structureRoot.removeAllChildren();
@@ -838,14 +838,14 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                     // add new leaf to the structure tree
                     // parameters become leaves, and sequence containers become nodes recursively
 
-                    name = value.getParameter().getOpsName();
                     getTreeNode(value.getParameterEntry().getSequenceContainer()).add(new TreeEntry(value));
 
                     // add new row for parameter table
 
                     vec[0] = value.getParameter();
-                    vec[1] = value.getEngValue().toString();
-                    vec[2] = value.getRawValue().toString();
+                    
+                    vec[1] = (value.getEngValue()!=null)?value.getEngValue().toString():null;
+                    vec[2] = (value.getRawValue()!=null)?value.getRawValue().toString():null;
 
                     vec[3] = value.getWarningRange() == null ? "" : Double.toString(value.getWarningRange().getMin());
                     vec[4] = value.getWarningRange() == null ? "" : Double.toString(value.getWarningRange().getMax());

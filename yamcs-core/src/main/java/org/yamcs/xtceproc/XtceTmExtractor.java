@@ -10,7 +10,6 @@ import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingPosition;
 import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingResult;
 
 /**
@@ -94,7 +93,7 @@ public class XtceTmExtractor {
         result = new ContainerProcessingResult(aquisitionTime, generationTime, stats);
         try {
              synchronized(subscription) {
-                ContainerProcessingPosition position = new ContainerProcessingPosition(bb, 0, 0);
+                ContainerBuffer position = new ContainerBuffer(bb, 0);
                 ContainerProcessingContext cpc = new ContainerProcessingContext(pcontext, position, result, subscription, ignoreOutOfContainerEntries);
                 cpc.sequenceContainerProcessor.extract(startContainer);
             }

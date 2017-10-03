@@ -784,7 +784,7 @@ public class XtceStaxReader {
             if (isStartElementWithName(XTCE_SIZE_IN_BITS)) {
                 IntegerValue v = readXtceIntegerValue(spaceSystem);
                 if(v instanceof FixedIntegerValue) {
-                    binaryDataEncoding = new BinaryDataEncoding(name, (int)((FixedIntegerValue) v).getValue());
+                    binaryDataEncoding = new BinaryDataEncoding((int)((FixedIntegerValue) v).getValue());
                 } else {
                     throwException("Only FixedIntegerValue supported for sizeInBits");
                 }
@@ -884,20 +884,20 @@ public class XtceStaxReader {
             if (isStartElementWithName(XTCE_FIXED)) {
                 IntegerValue v = readXtceIntegerValue(spaceSystem);
                 if(v instanceof FixedIntegerValue) {
-                    stringDataEncoding.setSizeType(SizeType.Fixed);
+                    stringDataEncoding.setSizeType(SizeType.FIXED);
                     stringDataEncoding.setSizeInBits((int)((FixedIntegerValue) v).getValue());
                 } else {
                     throwException("Only FixedValue supported for string size in bits");
                 }
              } else if (isStartElementWithName(XTCE_TERMINATION_CHAR)) {
-                stringDataEncoding.setSizeType(SizeType.TerminationChar);
+                stringDataEncoding.setSizeType(SizeType.TERMINATION_CHAR);
                 byte[] x = readHexBinary();
                 if(x==null || x.length!=1) {
                     throw new XMLStreamException("Terminated strings have to have the size of the termination character of 1");
                 }
                 stringDataEncoding.setTerminationChar(x[0]);
             } else if (isStartElementWithName(XTCE_LEADING_SIZE)) {
-                stringDataEncoding.setSizeType(SizeType.LeadingSize);
+                stringDataEncoding.setSizeType(SizeType.LEADING_SIZE);
                 String value = readAttribute("sizeInBitsOfSizeTag", xmlEvent.asStartElement());
                 stringDataEncoding.setSizeInBitsOfSizeTag(Integer.valueOf(value));
             } else if (isEndElementWithName(XTCE_SIZE_IN_BITS)) {
@@ -986,25 +986,19 @@ public class XtceStaxReader {
         value = readAttribute("encoding", xmlEvent.asStartElement());
         if (value != null) {
             if ("unsigned".equalsIgnoreCase(value)) {
-                integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.unsigned);
+                integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.UNSIGNED);
             } else if ("signMagnitude".equalsIgnoreCase(value)) {
-                integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.signMagnitude);
+                integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.SIGN_MAGNITUDE);
             } else if ("twosComplement".equalsIgnoreCase(value)) {
-                integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.twosComplement);
-            } else if ("onesComplement".equalsIgnoreCase(value)) {
-                integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.onesComplement);
-            } else if ("BCD".equalsIgnoreCase(value)) {
-                integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.BCD);
-            } else if ("packedBCD".equalsIgnoreCase(value)) {
-                integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.packedBCD);
+                integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.TWOS_COMPLEMENT);
             } else if ("twosCompliment".equalsIgnoreCase(value)) { //this is for compatibility with CD-MCS/CGS SCOE XML exporter
-                integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.twosComplement);
+                integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.TWOS_COMPLEMENT);
             } else {
                 throwException("Unsupported encoding '"+value+"'");
             }
         } else {
             // default is unsigned
-            integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.unsigned);
+            integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.UNSIGNED);
         }
 
         while (true) {

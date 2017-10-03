@@ -12,7 +12,6 @@ import org.yamcs.ContainerExtractionResult;
 import org.yamcs.xtce.RateInStream;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
-import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingPosition;
 import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingResult;
 
 public class SequenceContainerProcessor {
@@ -24,7 +23,7 @@ public class SequenceContainerProcessor {
 
     public void extract(SequenceContainer seq) {
         ContainerProcessingResult result = pcontext.result;
-        ContainerProcessingPosition position = pcontext.position;
+        ContainerBuffer position = pcontext.buffer;
         ByteBuffer bb = position.bb;
         //First add it to the result
         result.containers.add(new ContainerExtractionResult(seq, bb.asReadOnlyBuffer(), 

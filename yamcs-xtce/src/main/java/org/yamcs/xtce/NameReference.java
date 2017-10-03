@@ -15,7 +15,7 @@ package org.yamcs.xtce;
  */
 public abstract class NameReference {
 
-    public enum Type {SEQUENCE_CONTAINTER, PARAMETER, PARAMETER_TYPE, META_COMMAND}
+    public enum Type {SEQUENCE_CONTAINTER, PARAMETER, PARAMETER_TYPE, META_COMMAND, ALGORITHM}
 
     @FunctionalInterface
     public interface ResolvedAction {

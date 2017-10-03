@@ -9,7 +9,6 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceEntry;
-import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingPosition;
 
 public class SequenceEntryProcessor {
     static Logger log=LoggerFactory.getLogger(SequenceEntryProcessor.class.getName());
@@ -36,7 +35,7 @@ public class SequenceEntryProcessor {
 
 
     private void extractContainerEntry(ContainerEntry ce) {
-        ContainerProcessingPosition cpp = pcontext.position;
+        ContainerBuffer cpp = pcontext.buffer;
         if(cpp.bitPosition%8!=0) 
             log.warn("Container Entry that doesn't start at byte boundary is not supported.{} is supposed to start at bit {}", ce, cpp.bitPosition);
         if(cpp.bitPosition/8>cpp.bb.capacity()) {
@@ -45,17 +44,17 @@ public class SequenceEntryProcessor {
             return;
         }
         cpp.bb.position(cpp.bitPosition/8);
-        ContainerProcessingPosition cpp1 = new ContainerProcessingPosition(cpp.bb.slice(), cpp.bitPosition/8, 0);
-        ContainerProcessingContext cpc1=new ContainerProcessingContext(pcontext.pdata, cpp1, pcontext.result, pcontext.subscription, pcontext.ignoreOutOfContainerEntries);
+        ContainerBuffer cpp1 = new ContainerBuffer(cpp.bb.slice(), 0);
+        ContainerProcessingContext cpc1 = new ContainerProcessingContext(pcontext.pdata, cpp1, pcontext.result, pcontext.subscription, pcontext.ignoreOutOfContainerEntries);
         cpc1.sequenceContainerProcessor.extract(ce.getRefContainer());
         if(ce.getRefContainer().getSizeInBits()<0)
-            cpp.bitPosition+=cpc1.position.bitPosition;
+            cpp.bitPosition+=cpc1.buffer.bitPosition;
         else 
             cpp.bitPosition+=ce.getRefContainer().getSizeInBits();
     }
 
     private void extractParameterEntry(ParameterEntry pe) {
-        ContainerProcessingPosition cpp = pcontext.position;
+        ContainerBuffer cpp = pcontext.buffer;
 
         Parameter param = pe.getParameter();
         ParameterType ptype = param.getParameterType();
