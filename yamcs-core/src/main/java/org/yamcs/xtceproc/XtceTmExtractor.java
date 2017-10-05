@@ -1,12 +1,12 @@
 package org.yamcs.xtceproc;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.parameter.ParameterValueList;
+import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -78,8 +78,8 @@ public class XtceTmExtractor {
     /**
      * Extract one packet, starting at the root sequence container
      */
-    public void processPacket(ByteBuffer bb, long generationTime, long acquisitionTime) {
-        processPacket(bb, generationTime, acquisitionTime, rootContainer);
+    public void processPacket(byte[] b, long generationTime, long acquisitionTime) {
+        processPacket(b, generationTime, acquisitionTime, rootContainer);
     }
 
     /**
@@ -89,12 +89,12 @@ public class XtceTmExtractor {
      * @param aquisitionTime 
      * @param startContainer 
      */
-    public void processPacket(ByteBuffer bb, long generationTime, long aquisitionTime, SequenceContainer startContainer) {
+    public void processPacket(byte[] b, long generationTime, long aquisitionTime, SequenceContainer startContainer) {
         result = new ContainerProcessingResult(aquisitionTime, generationTime, stats);
         try {
              synchronized(subscription) {
-                ContainerBuffer position = new ContainerBuffer(bb, 0);
-                ContainerProcessingContext cpc = new ContainerProcessingContext(pcontext, position, result, subscription, ignoreOutOfContainerEntries);
+                BitBuffer buf = new BitBuffer(b, 0);
+                ContainerProcessingContext cpc = new ContainerProcessingContext(pcontext, buf, result, subscription, ignoreOutOfContainerEntries);
                 cpc.sequenceContainerProcessor.extract(startContainer);
             }
         } catch (Exception e) {

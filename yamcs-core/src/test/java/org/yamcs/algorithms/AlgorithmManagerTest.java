@@ -101,7 +101,7 @@ public class AlgorithmManagerTest {
             if(pvwi.getParameter().equals(floatPara)) {
                 assertEquals(0.1672918, pvwi.getEngValue().getFloatValue(), 0.001);
             } else if(pvwi.getParameter().equals(floatAddition)) {
-                assertEquals(2.1672918, pvwi.getRawValue().getFloatValue(), 0.001);
+                assertEquals(2.1672918, pvwi.getEngValue().getFloatValue(), 0.001);
             } else {
                 fail("Unexpected parameter "+pvwi.getParameter());
             }
@@ -326,10 +326,7 @@ public class AlgorithmManagerTest {
         c.start();
         tmGenerator.generate_PKT1_9();
         assertEquals(2, params.size());
-        assertEquals(true, params.get(0).getRawValue().getBooleanValue());
         assertEquals(true, params.get(0).getEngValue().getBooleanValue());
-        
-        assertEquals(false, params.get(1).getRawValue().getBooleanValue());
         assertEquals(false, params.get(1).getEngValue().getBooleanValue());
     }
     

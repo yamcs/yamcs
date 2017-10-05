@@ -9,8 +9,8 @@ public class IntegerDataEncoding extends DataEncoding {
     private static final long serialVersionUID = 200805131551L;
     static Logger log=LoggerFactory.getLogger(IntegerDataEncoding.class.getName());
     Calibrator defaultCalibrator=null;
-    public enum Encoding {UNSIGNED, TWOS_COMPLEMENT, SIGN_MAGNITUDE, STRING};
-    Encoding encoding=Encoding.UNSIGNED;
+    public enum Encoding {UNSIGNED, TWOS_COMPLEMENT, SIGN_MAGNITUDE, ONES_COMPLEMENT, STRING};
+    Encoding encoding = Encoding.UNSIGNED;
     StringDataEncoding stringEncoding=null;
 
     /**

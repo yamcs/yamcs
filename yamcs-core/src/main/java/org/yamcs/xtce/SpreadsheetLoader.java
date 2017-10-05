@@ -25,6 +25,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.utils.DoubleRange;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
+import org.yamcs.xtce.Algorithm.Scope;
 import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.CommandVerifier.TerminationAction;
 import org.yamcs.xtce.NameReference.Type;
@@ -572,9 +573,13 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             }
             customFromBinaryTransform = new UnresolvedNameReference(algoName, Type.ALGORITHM);
             spaceSystem.addUnresolvedReference(customFromBinaryTransform);
+            customFromBinaryTransform.addResolvedAction(nd-> {
+                    ((Algorithm)nd).setScope(Scope.CONTAINER_PROCESSING);
+                    return true;
+                });
         }
         DataEncoding encoding = null;
-        if (PARAM_RAWTYPE_INT.equalsIgnoreCase(rawtype)) {
+        if (PARAM_RAWTYPE_INT.equalsIgnoreCase(rawtype)||PARAM_RAWTYPE_UINT.equalsIgnoreCase(rawtype)) {
             if (customFromBinaryTransform!=null) {
                 IntegerDataEncoding e = new IntegerDataEncoding(customBitLength);
                 customFromBinaryTransform.addResolvedAction(nd-> {
@@ -587,9 +592,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     throw new SpreadsheetLoadException(ctx, "Size in bits mandatory for int encoding.");
                 }
                 int  bitlength = parseInt(ctx, encodingArgs[0]);
-
                 encoding = new IntegerDataEncoding(bitlength);
                 ((IntegerDataEncoding)encoding).encoding = getIntegerEncoding(ctx, encodingType);
+                if(encodingArgs.length>1) {
+                    ((IntegerDataEncoding)encoding).setByteOrder(getByteOrder(ctx, encodingArgs[1])); 
+                }
             }
 
             if ((!PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)) && (calib!=null)) {
@@ -618,11 +625,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 int bitlength = parseInt(ctx, encodingArgs[0]);
 
                 encoding = new FloatDataEncoding(bitlength);
-                try {
-
-                    ((FloatDataEncoding)encoding).setEncoding(getFloatEncoding(ctx, encodingType));
-                } catch (IllegalArgumentException e) {
-                    throw new SpreadsheetLoadException(ctx, "Unsupported float representation: "+encodingType+" Supported: "+Arrays.toString(FloatDataEncoding.Encoding.values()));
+                ((FloatDataEncoding)encoding).setEncoding(getFloatEncoding(ctx, encodingType));
+                if(encodingArgs.length>1) {
+                    ((FloatDataEncoding)encoding).setByteOrder(getByteOrder(ctx, encodingArgs[1])); 
                 }
             }
             if((!PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)) && calib!=null) {
@@ -924,15 +929,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     checkThatParameterSizeCanBeComputed(param);
                     SequenceEntry se;
                     if(flags.contains("L") || flags.contains("l")) {
-                        if(param.parameterType instanceof IntegerParameterType) {
-                            ((IntegerParameterType)param.parameterType).encoding.byteOrder = ByteOrder.LITTLE_ENDIAN;
-                        } else if(param.parameterType instanceof FloatParameterType) {
-                            ((FloatParameterType)param.parameterType).encoding.byteOrder = ByteOrder.LITTLE_ENDIAN;
-                        } else if(param.parameterType instanceof EnumeratedParameterType) {
-                            ((EnumeratedParameterType)param.parameterType).encoding.byteOrder = ByteOrder.LITTLE_ENDIAN;
-                        } else {
-                            throw new SpreadsheetLoadException(ctx, "Little endian not supported for parameter "+param);
-                        }
+                        throw new SpreadsheetLoadException(ctx, "Cannot specify (anymore) the endianess of a parameter in the container sheet. Please use the encoding column in the parameter sheet. ");
                     }
 
                     // if absoluteoffset is -1, somewhere along the line we came across a measurement or aggregate that had as a result that the absoluteoffset could not be determined anymore; hence, a relative position is added

@@ -42,7 +42,7 @@ public class ContainerBuffer {
         long mask = (-1L<<(64-numBits))>>>(64-numBits-bitsToShift);
         bb.order(order);
 
-        long rv=0;
+        long rv = 0;
         switch(byteSize) {
             case 1:
                 rv = bb.get(byteOffset);
@@ -117,7 +117,19 @@ public class ContainerBuffer {
                 rv = -rv;
             }
             break;
-            default:
+        case ONES_COMPLEMENT:
+            negative = ((rv>>>(numBits-1) & 1L) == 1L);
+            System.out.print("rv: "+rv+" negative: "+negative);
+            mask >>>= 1; // Don't include sign in mask
+            if (negative) {
+                rv = ~rv;
+            }
+            rv=(rv&(mask))>>>bitsToShift;
+            System.out.println("  rv: "+rv);
+            break;
+                    
+            
+        default:
                 throw new UnsupportedOperationException("encoding "+encoding+" not implemented");
         }
         return rv;

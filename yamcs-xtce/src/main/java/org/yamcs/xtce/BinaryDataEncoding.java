@@ -10,7 +10,7 @@ package org.yamcs.xtce;
  *
  */
 public class BinaryDataEncoding extends DataEncoding {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
     
     public enum Type {FIXED_SIZE, LEADING_SIZE, CUSTOM}
     
@@ -23,16 +23,10 @@ public class BinaryDataEncoding extends DataEncoding {
         this.type=type;
     }
     
-   
-    
     public BinaryDataEncoding(int sizeInBits) {
         super(sizeInBits);
+        this.type = Type.FIXED_SIZE;
     }
-
-    public BinaryDataEncoding(String string) {
-       super(-1);
-    }
-
 
 
     public void setSizeType(Type sizeType) {

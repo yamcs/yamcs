@@ -3,6 +3,7 @@ package org.yamcs.xtceproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.Parameter;
@@ -35,31 +36,30 @@ public class SequenceEntryProcessor {
 
 
     private void extractContainerEntry(ContainerEntry ce) {
-        ContainerBuffer cpp = pcontext.buffer;
-        if(cpp.bitPosition%8!=0) 
-            log.warn("Container Entry that doesn't start at byte boundary is not supported.{} is supposed to start at bit {}", ce, cpp.bitPosition);
-        if(cpp.bitPosition/8>cpp.bb.capacity()) {
+        BitBuffer buf = pcontext.buffer;
+        if(buf.getPosition()%8!=0) 
+            log.warn("Container Entry that doesn't start at byte boundary is not supported.{} is supposed to start at bit {}", ce, buf.getPosition());
+        if(buf.getPosition()/8>buf.length()) {
             log.warn("Container Entry that doesn't fit in the buffer: {} is supposed to start at bit {}"
-                    + " while the packet buffer has capacity {} bytes", ce,  cpp.bitPosition, cpp.bb.capacity());
+                    + " while the packet buffer has capacity {} bytes", ce,  buf.getPosition(), buf.length());
             return;
         }
-        cpp.bb.position(cpp.bitPosition/8);
-        ContainerBuffer cpp1 = new ContainerBuffer(cpp.bb.slice(), 0);
-        ContainerProcessingContext cpc1 = new ContainerProcessingContext(pcontext.pdata, cpp1, pcontext.result, pcontext.subscription, pcontext.ignoreOutOfContainerEntries);
+        BitBuffer buf1 = buf.slice();
+        ContainerProcessingContext cpc1 = new ContainerProcessingContext(pcontext.pdata, buf1, pcontext.result, pcontext.subscription, pcontext.ignoreOutOfContainerEntries);
         cpc1.sequenceContainerProcessor.extract(ce.getRefContainer());
         if(ce.getRefContainer().getSizeInBits()<0)
-            cpp.bitPosition+=cpc1.buffer.bitPosition;
+            buf.setPosition(buf.getPosition()+buf1.getPosition());
         else 
-            cpp.bitPosition+=ce.getRefContainer().getSizeInBits();
+            buf.setPosition(buf.getPosition()+ce.getRefContainer().getSizeInBits());
     }
 
     private void extractParameterEntry(ParameterEntry pe) {
-        ContainerBuffer cpp = pcontext.buffer;
+        BitBuffer buf = pcontext.buffer;
 
         Parameter param = pe.getParameter();
         ParameterType ptype = param.getParameterType();
         ParameterValue pv = new ParameterValue(param);
-        pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset*8+cpp.bitPosition);
+        pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset*8+buf.getPosition());
         pv.setBitSize(((BaseDataType)ptype).getEncoding().getSizeInBits());
         pcontext.dataEncodingProcessor.extractRaw(((BaseDataType)ptype).getEncoding(), pv);
         pcontext.pdata.parameterTypeProcessor.calibrate(pv);

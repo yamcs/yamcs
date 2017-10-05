@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.parameter.ParameterValueList;
+import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.CriteriaEvaluator;
 
 
@@ -15,7 +16,7 @@ import org.yamcs.xtce.CriteriaEvaluator;
  */
 public class ContainerProcessingContext {	
     final ProcessorData pdata;
-    final ContainerBuffer buffer;
+    final BitBuffer buffer;
     
     //Keeps track of the absolute offset of the container where the processing takes place. 
     //Normally 0, but if the processing takes place inside a subcontainer, it reflects the offset of that container with respect to the primary container where the processing started 
@@ -33,10 +34,10 @@ public class ContainerProcessingContext {
     public final ValueProcessor valueProcessor=new ValueProcessor(this);
     public final CriteriaEvaluator criteriaEvaluator;
 
-    public ContainerProcessingContext(ProcessorData pdata, ContainerBuffer position, ContainerProcessingResult result, Subscription subscription, 
+    public ContainerProcessingContext(ProcessorData pdata, BitBuffer buffer, ContainerProcessingResult result, Subscription subscription, 
             boolean ignoreOutOfContainerEntries) {
         this.pdata = pdata;
-        this.buffer = position;
+        this.buffer = buffer;
         this.subscription = subscription;
         this.criteriaEvaluator = new CriteriaEvaluatorImpl(result.params);
         this.ignoreOutOfContainerEntries = ignoreOutOfContainerEntries;

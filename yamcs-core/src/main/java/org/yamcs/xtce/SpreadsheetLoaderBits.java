@@ -1,6 +1,7 @@
 package org.yamcs.xtce;
 
 
+import java.nio.ByteOrder;
 import java.util.regex.Pattern;
 
 
@@ -129,6 +130,7 @@ public class SpreadsheetLoaderBits {
 
     protected static final String PARAM_RAWTYPE_FLOAT = "float";
     protected static final String PARAM_RAWTYPE_INT = "int";
+    protected static final String PARAM_RAWTYPE_UINT = "uint";
     protected static final String PARAM_RAWTYPE_DOUBLE = "double";
     protected static final String PARAM_RAWTYPE_BOOLEAN = "boolean";
     protected static final String PARAM_RAWTYPE_BINARY = "binary";
@@ -261,6 +263,8 @@ public class SpreadsheetLoaderBits {
             return IntegerDataEncoding.Encoding.TWOS_COMPLEMENT;
         } else if("signMagnitude".equalsIgnoreCase(encodingType)) {
             return IntegerDataEncoding.Encoding.SIGN_MAGNITUDE;
+        } else if("onesComplement".equalsIgnoreCase(encodingType)) {
+            return IntegerDataEncoding.Encoding.ONES_COMPLEMENT;
         } else if("unsigned".equalsIgnoreCase(encodingType)) {
             return IntegerDataEncoding.Encoding.UNSIGNED;
         } else if("string".equalsIgnoreCase(encodingType)) {
@@ -271,7 +275,17 @@ public class SpreadsheetLoaderBits {
         }
 
     }
-
+    
+    static ByteOrder getByteOrder(SpreadsheetLoadContext ctx, String bo) {
+        if("LE".equalsIgnoreCase(bo)) {
+            return ByteOrder.LITTLE_ENDIAN;
+        } else if("BE".equalsIgnoreCase(bo)) {
+            return ByteOrder.BIG_ENDIAN;
+        } else {
+            throw new SpreadsheetLoadException(ctx, "Unsupported byte order '"+bo+"'. Supported values: LE|BE");
+        }
+    }
+    
     static class RawTypeEncoding {
         String rawType;
         String encoding;

@@ -24,7 +24,7 @@ public class YamcsCliTest extends AbstractIntegrationTest {
     @Test
     public void testXtceDbCli() throws Exception {
         YamcsCli yamcsCli = new YamcsCli();
-        yamcsCli.parse(new String[] {"xtcedb", "print", "--config", "refmdb"});
+        yamcsCli.parse(new String[] {"xtcedb", "print", "refmdb"});
         yamcsCli.validate();
         yamcsCli.execute();
         String out = outStream.toString();

@@ -204,7 +204,7 @@ public class XtceStaxReader {
      */
     private Map<String, Integer> xtceSkipStatistics             = new HashMap<String, Integer>();
     private Set<String> excludedContainers = new HashSet<String>();
-
+    String fileName;
     /**
      * Constructor
      */
@@ -222,7 +222,7 @@ public class XtceStaxReader {
      * 
      */
     public SpaceSystem readXmlDocument(String fileName) throws XMLStreamException, IOException  {
-
+        this.fileName = fileName;
         xmlEventReader = initEventReader(fileName);
         xmlEvent = null;
         SpaceSystem spaceSystem = null;
@@ -993,6 +993,8 @@ public class XtceStaxReader {
                 integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.TWOS_COMPLEMENT);
             } else if ("twosCompliment".equalsIgnoreCase(value)) { //this is for compatibility with CD-MCS/CGS SCOE XML exporter
                 integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.TWOS_COMPLEMENT);
+            } else if ("onesComplement".equalsIgnoreCase(value)) {
+                integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.ONES_COMPLEMENT);
             } else {
                 throwException("Unsupported encoding '"+value+"'");
             }
@@ -1282,7 +1284,9 @@ public class XtceStaxReader {
 
             if (isStartElementWithName("EnumerationAlarm")) {
                 String label = readAttribute("enumerationLabel", xmlEvent.asStartElement());
-                 
+                if(label==null) {
+                    throw new XMLStreamException(fileName+": error in In definition of "+enumParamType.getName()+"EnumerationAlarm: no enumerationLabel specified", xmlEvent.getLocation());
+                }
                 if(!enumParamType.hasLabel(label)) {
                     throw new XMLStreamException("Reference to invalid enumeration label '"+label+"'");
                 }
@@ -1518,7 +1522,6 @@ public class XtceStaxReader {
     }
 
     private RateInStream readXtceRateInStream(SpaceSystem spaceSystem) throws XMLStreamException {
-        System.out.println("-------------------------------------------- in rate per stream");
         checkStartElementPreconditions();
 
         String basis = readAttribute("basis", xmlEvent.asStartElement());

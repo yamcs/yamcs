@@ -300,8 +300,7 @@ public class XtceTmRecorder extends AbstractService {
             byte[] packet=(byte[])t.getColumn(3);
             totalNumPackets++;
 
-            ByteBuffer bb=ByteBuffer.wrap(packet);
-            tmExtractor.processPacket(bb, gentime, timeService.getMissionTime(), rootSequenceContainer);
+            tmExtractor.processPacket(packet, gentime, timeService.getMissionTime(), rootSequenceContainer);
 
             //the result contains a list with all the matching containers, the first one is the root container
             //we should normally have just two elements in the list

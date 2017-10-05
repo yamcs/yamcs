@@ -133,114 +133,114 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     }
 
 
-    public ByteBuffer generate_PKT1_1() {
+    public byte[] generate_PKT1_1() {
         ByteBuffer bb=ByteBuffer.allocate(pkt1_1Length);
         fill_PKT1_1(bb);
         sendToTmProcessor(bb);
-        return bb;
+        return bb.array();
     }
 
-    public ByteBuffer generate_PKT1_2() {
+    public byte[] generate_PKT1_2() {
         ByteBuffer bb=ByteBuffer.allocate(pkt1_2Length);
         fill_PKT1_2(bb);
         sendToTmProcessor(bb);
-        return bb;
+        return bb.array();
     }
 
-    public ByteBuffer generate_PKT1_3() {
+    public byte[] generate_PKT1_3() {
         ByteBuffer bb=ByteBuffer.allocate(pkt1_3Length);
         fill_PKT1_3(bb);
         sendToTmProcessor(bb);
-        return bb;
+        return bb.array();
     }
 
-    public ByteBuffer generate_PKT14() {
+    public byte[] generate_PKT14() {
         ByteBuffer bb=ByteBuffer.allocate(pkt1_4Length);
         fill_PKT1_4(bb);
         sendToTmProcessor(bb);
-        return bb;
+        return bb.array();
     }
 
-    public ByteBuffer generate_PKT1_5() {
+    public byte[] generate_PKT1_5() {
         ByteBuffer bb=ByteBuffer.allocate(pkt1_5Length);
         fill_PKT1_5(bb);
         sendToTmProcessor(bb);
-        return bb;
+        return bb.array();
     }
     
     /**
      * Generate a packet with configurable content
      */
-    public ByteBuffer generate_PKT1_6(int pIntegerPara16_1, int pIntegerPara16_2) {
+    public byte[] generate_PKT1_6(int pIntegerPara16_1, int pIntegerPara16_2) {
         return generate_PKT1_6(pIntegerPara16_1, pIntegerPara16_2, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
     }
 
     /**
      * Generate a packet with configurable content
      */
-    public ByteBuffer generate_PKT1_6(int pIntegerPara16_1, int pIntegerPara16_2, long rectime, long gentime) {
+    public byte[] generate_PKT1_6(int pIntegerPara16_1, int pIntegerPara16_2, long rectime, long gentime) {
         ByteBuffer bb=ByteBuffer.allocate(pkt1_6Length);
         fill_PKT1_6(bb, pIntegerPara16_1, pIntegerPara16_2);
         sendToTmProcessor(bb, rectime, gentime);
-        return bb;
+        return bb.array();
     }
 
-    public ByteBuffer generate_PKT1_7() {
+    public byte[] generate_PKT1_7() {
         ByteBuffer bb=ByteBuffer.allocate(pkt1_7Length);
         fill_PKT1_7(bb);
         sendToTmProcessor(bb);
-        return bb;
+        return bb.array();
     }
 
-    public ByteBuffer generate_PKT1_8(int pIntegerPara18_1, int pIntegerPara18_2) {
+    public byte[] generate_PKT1_8(int pIntegerPara18_1, int pIntegerPara18_2) {
         ByteBuffer bb=ByteBuffer.allocate(pkt1_8Length);
         fill_PKT1_8(bb, pIntegerPara18_1, pIntegerPara18_2);
         sendToTmProcessor(bb);
-        return bb;
+        return bb.array();
     }
 
-    public ByteBuffer generate_PKT1_9() {
+    public byte[] generate_PKT1_9() {
         ByteBuffer bb=ByteBuffer.allocate(pkt1_9Length);
         fill_PKT1_9(bb);
         sendToTmProcessor(bb);
-        return bb;
+        return bb.array();
     }
 
-    public ByteBuffer generate_PKT1_10(int pIntegerPara1_10_1, int pEnumerationPara1_10_2, float pFloatPara1_10_3) {
+    public byte[] generate_PKT1_10(int pIntegerPara1_10_1, int pEnumerationPara1_10_2, float pFloatPara1_10_3) {
         ByteBuffer bb=ByteBuffer.allocate(pkt1_10Length);
         fill_PKT1_10(bb, pIntegerPara1_10_1, pEnumerationPara1_10_2, pFloatPara1_10_3);
         sendToTmProcessor(bb);
-        return bb;
+        return bb.array();
     }
 
-    public ByteBuffer generate_PKT1_11() {
+    public byte[] generate_PKT1_11() {
         ByteBuffer bb=ByteBuffer.allocate(pkt1_11Length);
         fill_PKT1_11(bb);
         sendToTmProcessor(bb);
-        return bb;
+        return bb.array();
     }
 
 
-    public ByteBuffer generate_PKT1_12() {
+    public  byte[] generate_PKT1_12() {
         ByteBuffer bb=ByteBuffer.allocate(pkt1Length + pStringEnumPara1_12_1.length()+1);
         fill_PKT1_12(bb);
         sendToTmProcessor(bb);
-        return bb;
+        return bb.array();
     }
 
 
-    public ByteBuffer generate_PKT4() {
+    public  byte[] generate_PKT4() {
         ByteBuffer bb=ByteBuffer.allocate(pkt4Length);
         fill_PKT4(bb);
         sendToTmProcessor(bb);
-        return bb;
+        return bb.array();
     }
     
-    public ByteBuffer generate_PKT5() {
+    public  byte[] generate_PKT5() {
         ByteBuffer bb=ByteBuffer.allocate(pkt5Length);
         fill_PKT5(bb);
         sendToTmProcessor(bb);
-        return bb;
+        return bb.array();
     }
     private void fill_PKT5(ByteBuffer bb) {
         fill_CcsdsHeader(bb, 995, 5);
@@ -512,10 +512,10 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 
         // 16-bit signed integer (in sign-magnitude)
         bb.put(StringConverter.hexStringToArray("BA50"));
-        // 6 (000110), filler (000), -6 (100110) (sign-magnitude)
+        // 6 (000110), filler (000), -6 (1000110) (sign-magnitude)
         bb.put(StringConverter.hexStringToArray("1846"));
-        // 6 (000110), filler (000), -6 (111010) (2's complement)
-        bb.put(StringConverter.hexStringToArray("187A"));
+        // 6 (000110), filler (000), -6 (1111001) (1's complement)
+        bb.put(StringConverter.hexStringToArray("1879"));
     }
 
     private void fill_PKT1_8(ByteBuffer bb, int pIntegerPara18_1, int pIntegerPara18_2) {
