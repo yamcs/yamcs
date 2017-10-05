@@ -147,7 +147,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
         };
         itemsByName.put(tmViewer.getLabelName(), tmViewer);
 
-        DataViewer ppViewer = new DataViewer(archiveBrowser.yconnector, archiveBrowser.indexReceiver, this, false) {
+        DataViewer ppViewer = new DataViewer(archiveBrowser.yconnector, archiveBrowser.indexReceiver, this, replayEnabled) {
             @Override
             public String getLabelName() {
                 return "Processed Parameters";
@@ -560,7 +560,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
     public List<String> getSelectedPackets(String tableName) {
         DataViewer dataViewer = (DataViewer) activeItem;
         if(dataViewer.getDataView().indexBoxes.containsKey(tableName)) {
-            return dataViewer.getDataView().getSelectedPackets("tm");
+            return dataViewer.getDataView().getSelectedPackets(tableName);
         }
         return Collections.emptyList();
     }
