@@ -22,23 +22,26 @@ import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.MetaCommandProcessor;
+import org.yamcs.xtceproc.ProcessorData;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 public class CommandingManagerTest {
     static XtceDb xtceDb;
-
+    static MetaCommandProcessor metaCommandProcessor;
+    
     @BeforeClass 
     public static void beforeClass() throws ConfigurationException {        
         TimeEncoding.setUp();
         YConfiguration.setup();
         xtceDb = XtceDbFactory.createInstanceByConfig("refmdb");
+        metaCommandProcessor = new MetaCommandProcessor(new ProcessorData(xtceDb));
     }
             
     @Test
     public void testOneIntArg() throws Exception {
         MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC");
         assertNotNull(mc);
-        byte[] b= MetaCommandProcessor.buildCommand(mc, new ArrayList<ArgumentAssignment>()).getCmdPacket();
+        byte[] b= metaCommandProcessor.buildCommand(mc, new ArrayList<ArgumentAssignment>()).getCmdPacket();
         assertEquals("ABCDEFAB", StringConverter.arrayToHexString(b));
 
     }
@@ -47,7 +50,7 @@ public class CommandingManagerTest {
     public void testFixedValue() throws Exception {
         MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/FIXED_VALUE_TC");
         assertNotNull(mc);
-        byte[] b= MetaCommandProcessor.buildCommand(mc, new ArrayList<ArgumentAssignment>()).getCmdPacket();
+        byte[] b= metaCommandProcessor.buildCommand(mc, new ArrayList<ArgumentAssignment>()).getCmdPacket();
         assertEquals("ABCD901408081808", StringConverter.arrayToHexString(b));
 
     }
@@ -55,7 +58,7 @@ public class CommandingManagerTest {
     public void testIntegerArg() throws Exception {
         MetaCommand mc = xtceDb.getMetaCommand("/REFMDB/SUBSYS1/INT_ARG_TC");
         assertNotNull(mc);
-        byte[] b= MetaCommandProcessor.buildCommand(mc, new ArrayList<ArgumentAssignment>()).getCmdPacket();
+        byte[] b= metaCommandProcessor.buildCommand(mc, new ArrayList<ArgumentAssignment>()).getCmdPacket();
         assertEquals("ABCD901408081808", StringConverter.arrayToHexString(b));
 
     }
@@ -70,7 +73,7 @@ public class CommandingManagerTest {
                 new ArgumentAssignment("double_arg", "25.4"));
 
 
-        byte[] b= MetaCommandProcessor.buildCommand(mc, aaList).getCmdPacket();
+        byte[] b= metaCommandProcessor.buildCommand(mc, aaList).getCmdPacket();
 
         assertEquals(16, b.length);
         ByteBuffer bb = ByteBuffer.wrap(b);
@@ -92,7 +95,7 @@ public class CommandingManagerTest {
                 );
 
 
-        byte[] b= MetaCommandProcessor.buildCommand(mc, aaList).getCmdPacket();
+        byte[] b= metaCommandProcessor.buildCommand(mc, aaList).getCmdPacket();
         assertEquals(12, b.length);
         ByteBuffer bb = ByteBuffer.wrap(b);
         bb.order(ByteOrder.LITTLE_ENDIAN);
@@ -112,7 +115,7 @@ public class CommandingManagerTest {
                 new ArgumentAssignment("int32_arg", "-3"),
                 new ArgumentAssignment("uint64_arg", "4"));
 
-        byte[] b= MetaCommandProcessor.buildCommand(mc, aaList).getCmdPacket();
+        byte[] b= metaCommandProcessor.buildCommand(mc, aaList).getCmdPacket();
         assertEquals(31, b.length);
 
         CcsdsPacket p = new CcsdsPacket(b);
@@ -141,7 +144,7 @@ public class CommandingManagerTest {
                 new ArgumentAssignment("uint64_arg", "4"));
         ErrorInCommand e = null;
         try {
-            MetaCommandProcessor.buildCommand(mc, aaList);
+            metaCommandProcessor.buildCommand(mc, aaList);
         } catch (ErrorInCommand e1) {
             e=e1;
         }		
@@ -159,7 +162,7 @@ public class CommandingManagerTest {
                 new ArgumentAssignment("p3", "-3.2"),
                 new ArgumentAssignment("p4", "value2"));
 
-        byte[] b= MetaCommandProcessor.buildCommand(mc, aaList).getCmdPacket();
+        byte[] b= metaCommandProcessor.buildCommand(mc, aaList).getCmdPacket();
         assertEquals(9, b.length);
 
         ByteBuffer bb = ByteBuffer.wrap(b);
@@ -185,7 +188,7 @@ public class CommandingManagerTest {
 
         ErrorInCommand e = null;
         try {
-            MetaCommandProcessor.buildCommand(mc, aaList);
+            metaCommandProcessor.buildCommand(mc, aaList);
         } catch (ErrorInCommand e1) {
             e=e1;
         }
@@ -201,6 +204,6 @@ public class CommandingManagerTest {
                 new ArgumentAssignment("int32_arg", "2"),
                 new ArgumentAssignment("uint64_arg", "2"),
                 new ArgumentAssignment("ccsds-apid", "123")); // Already assigned by parent
-        MetaCommandProcessor.buildCommand(mc, assignments);
+        metaCommandProcessor.buildCommand(mc, assignments);
     }
 }

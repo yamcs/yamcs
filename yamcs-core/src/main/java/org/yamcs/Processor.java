@@ -101,7 +101,7 @@ public class Processor extends AbstractService {
 
     TimeService timeService;
 
-    ProcessorData processorData = new ProcessorData();
+    ProcessorData processorData;
     @GuardedBy("this")
     HashSet<ProcessorClient> connectedClients= new HashSet<ProcessorClient>();
 
@@ -122,7 +122,8 @@ public class Processor extends AbstractService {
     @SuppressWarnings("unchecked")
     void init(TcTmService tctms, Map<String, Object> config) throws ProcessorException, ConfigurationException {
         xtcedb = XtceDbFactory.getInstance(yamcsInstance);
-
+        processorData = new ProcessorData(xtcedb);
+        
         timeService = YamcsServer.getTimeService(yamcsInstance);
         Map<String, Object> tmProcessorConfig = null;
 

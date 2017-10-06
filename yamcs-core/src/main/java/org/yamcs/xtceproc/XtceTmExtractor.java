@@ -34,7 +34,7 @@ public class XtceTmExtractor {
      * @param xtcedb
      */
     public XtceTmExtractor(XtceDb xtcedb) {
-        this(xtcedb, new ProcessorData());
+        this(xtcedb, new ProcessorData(xtcedb));
     }
     /**
      * Create a new TM extractor with the given context

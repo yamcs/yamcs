@@ -18,6 +18,7 @@ import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.SplineCalibrator;
+import org.yamcs.xtce.XtceDb;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -38,6 +39,11 @@ public class ProcessorData {
     private Map<DataEncoding, CalibratorProc> calibrators = new HashMap<>();
     private Map<DataEncoding, DataDecoder> decoders = new HashMap<>();
 
+    final XtceDb xtcedb;
+    
+    public ProcessorData(XtceDb xtcedb) {
+        this.xtcedb = xtcedb;
+    }
     /**
      * returns a calibrator processor for the given data encoding. 
      * Can be null if the DataEncoding does not define a calibrator.
@@ -89,7 +95,8 @@ public class ProcessorData {
         
         return dd;
     }
- 
-
     
+    public XtceDb getXtceDb() {
+        return xtcedb;
+    }
 }
