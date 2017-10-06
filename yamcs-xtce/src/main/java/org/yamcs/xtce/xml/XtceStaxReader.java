@@ -1285,6 +1285,9 @@ public class XtceStaxReader {
             if (isStartElementWithName("EnumerationAlarm")) {
                 String label = readAttribute("enumerationLabel", xmlEvent.asStartElement());
                 if(label==null) {
+                    label = readAttribute("enumerationValue", xmlEvent.asStartElement()); //XTCE 1.1
+                }
+                if(label==null) {
                     throw new XMLStreamException(fileName+": error in In definition of "+enumParamType.getName()+"EnumerationAlarm: no enumerationLabel specified", xmlEvent.getLocation());
                 }
                 if(!enumParamType.hasLabel(label)) {
