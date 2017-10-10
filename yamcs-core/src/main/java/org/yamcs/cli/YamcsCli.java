@@ -73,6 +73,7 @@ public class YamcsCli extends Command {
             yamcsCli.execute();
         } catch (Exception e) {
             System.err.println(e.getMessage());
+            System.exit(1);
         }
     }
 
