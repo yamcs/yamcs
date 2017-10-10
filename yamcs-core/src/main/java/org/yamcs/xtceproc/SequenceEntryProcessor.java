@@ -39,9 +39,9 @@ public class SequenceEntryProcessor {
         BitBuffer buf = pcontext.buffer;
         if(buf.getPosition()%8!=0) 
             log.warn("Container Entry that doesn't start at byte boundary is not supported.{} is supposed to start at bit {}", ce, buf.getPosition());
-        if(buf.getPosition()/8>buf.length()) {
+        if(buf.getPosition()>buf.sizeInBits()) {
             log.warn("Container Entry that doesn't fit in the buffer: {} is supposed to start at bit {}"
-                    + " while the packet buffer has capacity {} bytes", ce,  buf.getPosition(), buf.length());
+                    + " while the packet buffer has capacity {} bits", ce,  buf.getPosition(), buf.sizeInBits());
             return;
         }
         BitBuffer buf1 = buf.slice();

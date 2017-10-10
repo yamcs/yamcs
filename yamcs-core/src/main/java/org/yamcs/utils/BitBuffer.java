@@ -3,8 +3,15 @@ package org.yamcs.utils;
 import java.nio.ByteOrder;
 
 /**
- * allows to read bits from a byte[]
- * keeps a position 
+ * Allows to read bits from a byte array (byte[])
+ * keeps a bit position and the extractions are relative to the position.
+ * It allows also to provide an offset (in bytes) inside the byte array and then the bit position is relative to the offset.
+ * 
+ * Supported operations are
+ *  - extract up to 64 bits into a long.
+ *  - extract a byte array but only if the position is at the beginning of a byte
+ * 
+ * 
  * 
  * Note on the Little Endian: it is designed to work on x86 architecture which uses internally little endian byte _and_ bit 
  * ordering but when accessing memory, full bytes are transferred in big endian order.
@@ -179,12 +186,20 @@ public class BitBuffer {
         System.arraycopy(b, bytePos, dst, 0, dst.length);
         position += (dst.length<<3);
     }
-
+    
     /**
-     * returns the byt array length (in bytes!)
+     * returns the size of the buffer in bits
      * @return
      */
-    public int length() {
+    public int sizeInBits() {
+        return (b.length-offset)<<3;
+    }
+    
+    /**
+     * returns the backing array length in bytes!
+     * @return
+     */
+    public int arrayLength() {
         return b.length;
     }
     

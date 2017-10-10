@@ -2,7 +2,6 @@ package org.yamcs.xtceproc;
 
 import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
-import java.nio.ByteBuffer;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -48,7 +47,7 @@ public class SequenceContainerProcessor {
                         buf.setPosition(se.getLocationInContainerInBits());
                     }
                     
-                    if(pcontext.ignoreOutOfContainerEntries && (buf.getPosition() >= buf.length())) {
+                    if(pcontext.ignoreOutOfContainerEntries && (buf.getPosition() >= buf.sizeInBits())) {
                         //the next entry is outside of the packet
                         break;
                     }
@@ -63,9 +62,9 @@ public class SequenceContainerProcessor {
                         }
                     }
                 } catch (BufferUnderflowException|BufferOverflowException|IndexOutOfBoundsException e) {
-                    log.warn("Got "+e.getClass().getName()+" when extracting from the buffer of length "+buf.length()+" bytes bitPosition "+buf.getPosition()+" entry: "+se);
+                    log.warn("Got "+e.getClass().getName()+" when extracting from the buffer of length "+buf.sizeInBits()+" bits, bitPosition "+buf.getPosition()+" entry: "+se);
                     break;
-                } 
+                }
                 if(buf.getPosition()>maxposition) {
                     maxposition = buf.getPosition();
                 }
