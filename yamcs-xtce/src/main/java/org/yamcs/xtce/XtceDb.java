@@ -677,7 +677,9 @@ public class XtceDb implements Serializable {
             out.println("================ Orphaned parameters (not referenced in any container or algorithm):");
             for(Parameter p:orphanedParameters) {
                 String namespaces = "";
-                if(p.getAliasSet()!=null) namespaces = ", aliases: "+ p.getAliasSet();
+                if(p.getAliasSet()!=null) {
+                    namespaces = ", aliases: "+ p.getAliasSet();
+                }
                 out.println(p.getQualifiedName()+", datasource: "+p.getDataSource()+ namespaces);
             }
         }
@@ -695,5 +697,9 @@ public class XtceDb implements Serializable {
         for(SpaceSystem ss1:ss.getSubSystems()) {
             removeNonOrphaned(ss1, orphanedParameters);
         }
+    }
+
+    public Collection<SpaceSystem> getSpaceSystems() {
+        return spaceSystems.values();
     }
 }

@@ -568,7 +568,7 @@ public class XtceToGpbAssembler {
             }
         } else if (xtceDataEncoding instanceof IntegerDataEncoding) {
             IntegerDataEncoding ide = (IntegerDataEncoding) xtceDataEncoding;
-            if (ide.getEncoding() == IntegerDataEncoding.Encoding.string) {
+            if (ide.getEncoding() == IntegerDataEncoding.Encoding.STRING) {
                 infob.setType(Type.STRING);
                 infob.setEncoding(toTextualEncoding(ide.getStringEncoding()));
             } else {
@@ -590,13 +590,13 @@ public class XtceToGpbAssembler {
     public static String toTextualEncoding(StringDataEncoding sde) {
         String result = sde.getSizeType() + "(";
         switch (sde.getSizeType()) {
-        case Fixed:
+        case FIXED:
             result += sde.getSizeInBits();
             break;
-        case LeadingSize:
+        case LEADING_SIZE:
             result += sde.getSizeInBitsOfSizeTag();
             break;
-        case TerminationChar:
+        case TERMINATION_CHAR:
             String hexChar = Integer.toHexString(sde.getTerminationChar()).toUpperCase();
             if (hexChar.length() == 1) hexChar = "0" + hexChar;
             result += "0x" + hexChar;

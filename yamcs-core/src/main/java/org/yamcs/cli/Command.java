@@ -138,7 +138,7 @@ public abstract class Command {
     }
 
     String getFullCommandName() {
-        List<Command> a = new ArrayList<Command>();
+        List<Command> a = new ArrayList<>();
         Command c = this;
         while(c!=null) {
             a.add(c);

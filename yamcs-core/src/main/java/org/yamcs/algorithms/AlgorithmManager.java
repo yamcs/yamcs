@@ -68,8 +68,8 @@ import com.google.common.util.concurrent.AbstractService;
  * choice all algorithms within the same AlgorithmManager, share the same language.
  */
 public class AlgorithmManager extends AbstractService implements ParameterProvider, DVParameterConsumer {
-    private static final Logger log=LoggerFactory.getLogger(AlgorithmManager.class);
-    static final String KEY_ALGO_NAME="algoName";
+    private static final Logger log = LoggerFactory.getLogger(AlgorithmManager.class);
+    static final String KEY_ALGO_NAME = "algoName";
 
     XtceDb xtcedb;
     ScriptEngineManager scriptEngineManager;
@@ -79,11 +79,11 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     int subscriptionId;
 
     // Index of all available out params
-    NamedDescriptionIndex<Parameter> outParamIndex=new NamedDescriptionIndex<Parameter>();
+    NamedDescriptionIndex<Parameter> outParamIndex = new NamedDescriptionIndex<>();
 
-    CopyOnWriteArrayList<AlgorithmExecutor> executionOrder=new CopyOnWriteArrayList<AlgorithmExecutor>();
-    HashSet<Parameter> requiredInParams=new HashSet<Parameter>(); // required by this class
-    ArrayList<Parameter> requestedOutParams=new ArrayList<Parameter>(); // requested by clients
+    CopyOnWriteArrayList<AlgorithmExecutor> executionOrder = new CopyOnWriteArrayList<>();
+    HashSet<Parameter> requiredInParams = new HashSet<>(); // required by this class
+    ArrayList<Parameter> requestedOutParams = new ArrayList<>(); // requested by clients
     ParameterRequestManagerImpl parameterRequestManager;
 
     // For scheduling OnPeriodicRate algorithms
@@ -139,7 +139,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 
                 // Put engine bindings in shared global scope - we want the variables in the libraries to be global
                 Bindings commonBindings=scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
-                Set<String> existingBindings = new HashSet<String>(scriptEngineManager.getBindings().keySet());
+                Set<String> existingBindings = new HashSet<>(scriptEngineManager.getBindings().keySet());
 
                 existingBindings.retainAll(commonBindings.keySet());
                 if(!existingBindings.isEmpty()) {
@@ -164,9 +164,9 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         this.yproc = yproc;
         this.parameterRequestManager = yproc.getParameterRequestManager();
         xtcedb = yproc.getXtceDb();
-        globalCtx = new AlgorithmExecutionContext("global", null, yproc);
+        globalCtx = new AlgorithmExecutionContext("global", null, yproc.getProcessorData());
         try {
-            subscriptionId=parameterRequestManager.addRequest(new ArrayList<Parameter>(0), this);
+            subscriptionId = parameterRequestManager.addRequest(new ArrayList<Parameter>(0), this);
         } catch (InvalidIdentification e) {
             log.error("InvalidIdentification while subscribing to the parameterRequestManager with an empty subscription list", e);
         }
@@ -196,13 +196,10 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             activateAlgorithm(algo, ctx, null);
             final AlgorithmExecutor engine = ctx.getExecutor(algo);
             for(OnPeriodicRateTrigger trigger:timedTriggers) {
-                timer.scheduleAtFixedRate(new Runnable() {
-                    @Override
-                    public void run() {
+                timer.scheduleAtFixedRate(()-> {
                         long t = yproc.getCurrentTime();
                         List<ParameterValue> params = engine.runAlgorithm(t, t);
-                        parameterRequestManager.update(params);
-                    }
+                        parameterRequestManager.update(params);                    
                 }, 1000, trigger.getFireRate(), TimeUnit.MILLISECONDS);
             }
         }
@@ -236,7 +233,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
      * @return the newly created context
      */
     public AlgorithmExecutionContext createContext(String name) {
-        return new AlgorithmExecutionContext(name, globalCtx, yproc);
+        return new AlgorithmExecutionContext(name, globalCtx, yproc.getProcessorData());
     }
 
 
@@ -270,7 +267,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                     throw new IllegalArgumentException("Cannot created a script engine for language '"+calg.getLanguage()+"'");
                 }
 
-                scriptEngine.put("Yamcs", new AlgorithmUtils(yproc, xtcedb, algorithm.getName()));
+                scriptEngine.put("Yamcs", new AlgorithmUtils(yproc.getInstance(), yproc.getProcessorData(), yproc, xtcedb, algorithm.getName()));
 
                 executor = new ScriptAlgorithmExecutor(calg, scriptEngine, execCtx);
             }
@@ -283,7 +280,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
 
         execCtx.addAlgorithm(algorithm, executor);
         try {
-            ArrayList<Parameter> newItems=new ArrayList<Parameter>();
+            ArrayList<Parameter> newItems = new ArrayList<>();
             for(Parameter param:executor.getRequiredParameters()) {
                 if(!requiredInParams.contains(param)) {
                     requiredInParams.add(param);
@@ -372,7 +369,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         if(requestedOutParams.remove(paramDef)) {
             // Remove algorithm engine (and any that are no longer needed as a consequence)
             // We need to clean-up three more internal structures: requiredInParams, executionOrder and engineByAlgorithm
-            HashSet<Parameter> stillRequired=new HashSet<Parameter>(); // parameters still required by any other algorithm
+            HashSet<Parameter> stillRequired = new HashSet<>(); // parameters still required by any other algorithm
             for(Iterator<AlgorithmExecutor> it=Lists.reverse(executionOrder).iterator();it.hasNext();) {
                 AlgorithmExecutor engine = it.next();
                 Algorithm algo = engine.getAlgorithm();
@@ -463,14 +460,14 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
      * @param ctx
      * @return the parameters resulting from running the algorithms
      */
-    public ArrayList<ParameterValue> updateParameters(List<ParameterValue> items, AlgorithmExecutionContext ctx) {
-        ArrayList<ParameterValue> newItems=new ArrayList<ParameterValue>();
+    public List<ParameterValue> updateParameters(List<ParameterValue> items, AlgorithmExecutionContext ctx) {
+        ArrayList<ParameterValue> newItems=new ArrayList<>();
 
         ctx.updateHistoryWindows(items);
         long acqTime = yproc.getCurrentTime();
         long genTime = items.get(0).getGenerationTime();
 
-        ArrayList<ParameterValue> allItems=new ArrayList<ParameterValue>(items);
+        ArrayList<ParameterValue> allItems=new ArrayList<>(items);
         for(AlgorithmExecutor executor:executionOrder) {
             if(ctx==globalCtx || executor.getExecutionContext()==ctx) {
                 boolean shouldRun = executor.updateParameters(allItems);

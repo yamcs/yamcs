@@ -2,17 +2,16 @@ package org.yamcs.xtceproc;
 
 import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
-import java.nio.ByteBuffer;
 import java.util.Set;
 import java.util.SortedSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ContainerExtractionResult;
+import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.RateInStream;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
-import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingPosition;
 import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingResult;
 
 public class SequenceContainerProcessor {
@@ -24,17 +23,16 @@ public class SequenceContainerProcessor {
 
     public void extract(SequenceContainer seq) {
         ContainerProcessingResult result = pcontext.result;
-        ContainerProcessingPosition position = pcontext.position;
-        ByteBuffer bb = position.bb;
+        BitBuffer buf = pcontext.buffer;
         //First add it to the result
-        result.containers.add(new ContainerExtractionResult(seq, bb.asReadOnlyBuffer(), 
-                position.bitPosition, result.acquisitionTime, result.generationTime));
+        result.containers.add(new ContainerExtractionResult(seq, buf.array(), 
+                buf.getPosition()+buf.offset()*8, result.acquisitionTime, result.generationTime));
 
         RateInStream ris = seq.getRateInStream();
         if((ris != null) && ris.getMaxInterval()>0) {
             result.expireMillis = ris.getMaxInterval();
         }
-        int maxposition = position.bitPosition;
+        int maxposition = buf.getPosition();
 
         //then extract the entries
         SortedSet<SequenceEntry> entries = pcontext.subscription.getEntries(seq);
@@ -43,13 +41,13 @@ public class SequenceContainerProcessor {
                 try {
                     switch(se.getReferenceLocation()) {
                     case previousEntry:
-                        position.bitPosition+=se.getLocationInContainerInBits();
+                        buf.setPosition(buf.getPosition()+se.getLocationInContainerInBits());
                         break;
                     case containerStart:
-                        position.bitPosition=se.getLocationInContainerInBits();
+                        buf.setPosition(se.getLocationInContainerInBits());
                     }
                     
-                    if(pcontext.ignoreOutOfContainerEntries && (position.bitPosition >= position.bb.capacity()*8)) {
+                    if(pcontext.ignoreOutOfContainerEntries && (buf.getPosition() >= buf.sizeInBits())) {
                         //the next entry is outside of the packet
                         break;
                     }
@@ -60,15 +58,15 @@ public class SequenceContainerProcessor {
                         long n = pcontext.valueProcessor.getValue(se.getRepeatEntry().getCount());
                         for (int i=0; i<n; i++) {
                             pcontext.sequenceEntryProcessor.extract(se);
-                            position.bitPosition += se.getRepeatEntry().getOffsetSizeInBits();
+                            buf.setPosition(buf.getPosition()+se.getRepeatEntry().getOffsetSizeInBits());
                         }
                     }
                 } catch (BufferUnderflowException|BufferOverflowException|IndexOutOfBoundsException e) {
-                    log.warn("Got "+e.getClass().getName()+" when extracting from the buffer of length "+bb.capacity()+" bytes bitPosition "+position.bitPosition+" entry: "+se);
+                    log.warn("Got "+e.getClass().getName()+" when extracting from the buffer of length "+buf.sizeInBits()+" bits, bitPosition "+buf.getPosition()+" entry: "+se);
                     break;
-                } 
-                if(position.bitPosition>maxposition) {
-                    maxposition = position.bitPosition;
+                }
+                if(buf.getPosition()>maxposition) {
+                    maxposition = buf.getPosition();
                 }
             }
         }
@@ -78,19 +76,23 @@ public class SequenceContainerProcessor {
 
         if(inheritingContainers!=null) {
             //And then any derived containers
-            int bitp = position.bitPosition;
+            int bitp = buf.getPosition();
             for(SequenceContainer sc:inheritingContainers) {
+                if(sc.getRestrictionCriteria() == null) {
+                    log.warn("Container {} inherits without defining an inheritance condition. Ignoring the container.", sc.getName());
+                    continue;
+                }
                 if(sc.getRestrictionCriteria().isMet(pcontext.criteriaEvaluator)) {
                     hasDerived=true;
-                    position.bitPosition=bitp;
+                    buf.setPosition(bitp);
                     extract(sc);
-                    if(position.bitPosition>maxposition) {
-                        maxposition = position.bitPosition;
+                    if(buf.getPosition()>maxposition) {
+                        maxposition = buf.getPosition();
                     }
                 }
             }
         }
-        position.bitPosition=maxposition;
+        buf.setPosition(maxposition);
         //Finaly update the stats. We add the packet into the statistics only if it doesn't have a derived container
         if(!hasDerived && (result.stats != null)) {
             result.stats.newPacket(seq.getName(), (entries==null)?0:entries.size(), 

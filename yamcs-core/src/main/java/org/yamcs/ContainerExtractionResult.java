@@ -11,14 +11,14 @@ import org.yamcs.xtce.SequenceContainer;
 public class ContainerExtractionResult {
 
     final private SequenceContainer container;
-    final private ByteBuffer containerContent;
+    final private byte[] containerContent;
     final private int locationInContainerInBits;
 
     final private long acquisitionTime;
     final private long generationTime;
 
     public ContainerExtractionResult(SequenceContainer container,
-            ByteBuffer containerContent,
+            byte[] containerContent,
             int locationInContainerInBits,
             long acquisitionTime,
             long generationTime) {
@@ -28,14 +28,13 @@ public class ContainerExtractionResult {
         this.acquisitionTime = acquisitionTime;
         this.generationTime = generationTime;
 
-        containerContent.position(0);
     }
 
     public SequenceContainer getContainer() {
         return container;
     }
 
-    public ByteBuffer getContainerContent() {
+    public byte[] getContainerContent() {
         return containerContent;
     }
 

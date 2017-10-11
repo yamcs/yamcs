@@ -34,19 +34,20 @@ public class CliParameterExtractor {
     
     
     static void printUsageAndExit(String error) {
-        if(error!=null) System.err.println(error);
+        if(error!=null) {
+            System.err.println(error);
+        }
         System.err.println("Usage: parameter-extractor.sh [OPTIONS] yamcs-url startTime stopTime [parameter_opsnames | -f file_with_parameters]");
         System.err.println("The yamcs-url has to contain the archive instance");
         System.err.println("OPTIONS:");
         System.err.println("         \t-a      print only those lines where all parameters are set");
         System.err.println("         \t-h      print this help");
-        //System.err.println("         \t-i      ignore invalid parameters");
         System.err.println("         \t-k      keep previous parameters");
         System.err.println("         \t-r      print raw values in addition to engineering values");
         System.err.println("         \t-t      print the generation time on the first column");
         System.err.println("         \t-u      print unique lines only");
         System.err.println("         \t-w <ms> join multiple lines with timestamps within the given time window");
-        System.err.println("Example:\n parameter-extractor.sh yamcs://localhost/yops 2007-08-01T12:34:00 2007-08-23T18:34:00 IntegerPara11 FloatPara11_1");
+        System.err.println("Example:\n parameter-extractor.sh http://localhost:8090/yops 2007-08-01T12:34:00 2007-08-23T18:34:00 IntegerPara11 FloatPara11_1");
         System.exit(1);
     }
     
@@ -71,20 +72,32 @@ public class CliParameterExtractor {
      * 
      */
     public static void main(String[] args) throws ExecutionException, URISyntaxException, FileNotFoundException, IOException, InterruptedException {
-        if(args.length<1) printUsageAndExit(null);
+        if(args.length<1) {
+            printUsageAndExit(null);
+        }
         
-        int k=0, timewindow = -1;
-        boolean printRaw=false, printUnique=false, printTime=false, ignoreInvalidParameters=false,
-        allParametersPresent=false, keepValues = false;
+        int k=0;
+        int timewindow = -1;
+        boolean printRaw = false;
+        boolean printUnique = false;
+        boolean printTime = false;
+        boolean allParametersPresent = false;
+        boolean keepValues = false;
+        
         while(args[k].startsWith("-")) {
-            if(args[k].equals("-t")) printTime=true;
-            else if(args[k].equals("-r")) printRaw=true;
-            else if(args[k].equals("-u")) printUnique=true;
-            else if(args[k].equals("-i")) ignoreInvalidParameters=true;
-            else if(args[k].equals("-a")) allParametersPresent=true;
-            else if(args[k].equals("-k")) keepValues=true;
-            else if(args[k].equals("-h")) printUsageAndExit(null);
-            else if(args[k].equals("-w")) {
+            if(args[k].equals("-t")) {
+                printTime=true;
+            } else if(args[k].equals("-r")) {
+                printRaw=true;
+            } else if(args[k].equals("-u")) {
+                printUnique=true;
+            } else if(args[k].equals("-a")) {
+                allParametersPresent=true;
+            } else if(args[k].equals("-k")) {
+                keepValues=true;
+            } else if(args[k].equals("-h")) {
+                printUsageAndExit(null);
+            } else if(args[k].equals("-w")) {
                 boolean ok = true;
                 try {
                     if ( ++k < args.length ) {
@@ -92,7 +105,9 @@ public class CliParameterExtractor {
                     } else {
                         printUsageAndExit("timewindow value missing");
                     }
-                    if ( timewindow < 0 ) ok = false;
+                    if ( timewindow < 0 ) {
+                        ok = false;
+                    }
                 } catch (NumberFormatException x) {
                     ok = false;
                 }
@@ -104,10 +119,14 @@ public class CliParameterExtractor {
         }
         
         
-        if(args.length<k+4)printUsageAndExit("too few arguments");
+        if(args.length<k+4){
+            printUsageAndExit("too few arguments");
+        }
       
         YamcsConnectionProperties ycd = YamcsConnectionProperties.parse(args[k++]);
-        if(ycd.getInstance()==null) printUsageAndExit("The Yamcs URL does not contain the archive instance. Use something like yamcs://hostname/archiveInstance");
+        if(ycd.getInstance()==null) {
+            printUsageAndExit("The Yamcs URL does not contain the archive instance. Use something like yamcs://hostname/archiveInstance");
+        }
         
         TimeEncoding.setUp();
         

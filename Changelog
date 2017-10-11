@@ -6,6 +6,9 @@ Version 3.3.0 Released
   - send an update when parameters are expiring (by default false)
   - send the first value from cache if available (by default true)
 - Change the expirationTime (absolute time) to expireMillis (relative time) in the ParameterValue.
+- Allow to specify custom decoders to be used in container(packet) processing
+- Added binary data encoding with leading size specified (similar to string)
+- Changed the spreadsheet to make it clerarer the difference between raw value, encoding (how to decode the raw value from the binary) and engineering value (raw value passed through a calibration function)
 
 Version 3.2.2 Released 17-May-2017
 - Fixed tag handling in Yamcs Monitor/Archive Browser

@@ -34,7 +34,7 @@ public class XtceStaxReaderTest {
         StringParameterType sp = (StringParameterType)p.getParameterType();
         assertEquals(sp.encoding.getClass(), StringDataEncoding.class);
         StringDataEncoding sde = (StringDataEncoding) sp.encoding;
-        assertEquals(SizeType.Fixed, sde.getSizeType());
+        assertEquals(SizeType.FIXED, sde.getSizeType());
         assertEquals(128, sde.getSizeInBits());
         
         p = payload1.getParameter("Payload_Fault_Message");
@@ -43,7 +43,7 @@ public class XtceStaxReaderTest {
         sp = (StringParameterType)p.getParameterType();
         assertEquals(sp.encoding.getClass(), StringDataEncoding.class);
         sde = (StringDataEncoding) sp.encoding;
-        assertEquals(SizeType.TerminationChar, sde.getSizeType());
+        assertEquals(SizeType.TERMINATION_CHAR, sde.getSizeType());
         assertEquals(0, sde.getTerminationChar());
         
         SequenceContainer sc = busElectronics.getSequenceContainer("SensorHistoryRecord");

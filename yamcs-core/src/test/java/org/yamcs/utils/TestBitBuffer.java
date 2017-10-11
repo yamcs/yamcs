@@ -1,60 +1,90 @@
 package org.yamcs.utils;
 
-import org.junit.Test;
-import org.yamcs.parameterarchive.BitBuffer;
-
 import static org.junit.Assert.*;
 
-import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
+import org.junit.Test;
 
 public class TestBitBuffer {
-	
     @Test
-    public void tesSingleBit1() {
-    	ByteBuffer bb = ByteBuffer.allocate(16);
-    	BitWriter bw =new BitWriter(bb);
-        for(int i=0; i<128; i++) {
-            bw.write(i, 1);
-        }
-        assertEquals(0x5555555555555555L, bb.getLong(0));
-        bw.flush();
-        bb.rewind();
-        BitReader br = new BitReader(bb);
-        for(int i=0; i<128; i++) {
-            assertEquals(i&1, br.read(1));
-        }
-    }
-    
-    
-    @Test
-    public void tesVariableBits() {
-    	ByteBuffer bb = ByteBuffer.allocate(32);
-    	BitWriter bw  = new BitWriter(bb);
+    public void testBigEndian() {
+        BitBuffer bitbuf = new BitBuffer(new byte[]{0x18, 0x7A, 0x23, (byte) 0xFF},0);
+        assertEquals(0, bitbuf.getBits(1));
+        assertEquals(1, bitbuf.getPosition());
+        assertEquals(1, bitbuf.getBits(3));
+        assertEquals(4, bitbuf.getPosition());
         
-        for(int i=0; i<50; i++) {
-            bw.write(1, 2);
-            bw.write(3, 3);
-        }
-        bw.flush();
+        bitbuf.setPosition(0);        
+        assertEquals(0x18, bitbuf.getBits(8));
         
-        assertEquals(0x5ad6b5ad6b5ad6b5L, bb.getLong(0));
-        bb.rewind();
-        BitReader br = new BitReader(bb);
-        for(int i=0; i<50; i++) {
-            assertEquals(1, br.read(2));
-            assertEquals(3, br.read(3));
-        }
+        bitbuf.setPosition(4);
+        assertEquals(0x87, bitbuf.getBits(8));
+        
+        bitbuf.setPosition(0);        
+        assertEquals(0x187A, bitbuf.getBits(16));
+        
+        bitbuf.setPosition(4);
+        assertEquals(0x87A, bitbuf.getBits(12));
+        
+        bitbuf.setPosition(4);
+        assertEquals(0x87A2, bitbuf.getBits(16));
+        
+        bitbuf.setPosition(4);
+        assertEquals(0x87A23, bitbuf.getBits(20));
+        
+        bitbuf.setPosition(0);
+        
+        assertEquals(0x187A23FF, bitbuf.getBits(32));
     }
     
     @Test
-    public void tesV32Bits() {
-    	ByteBuffer bb = ByteBuffer.allocate(32);
-    	BitWriter bw  = new BitWriter(bb);
-    	bw.write(0x01020304, 32);
-    	bw.flush();
-    	
-    	bb.rewind();
-        BitReader br = new BitReader(bb);
-        assertEquals(0x01020304, br.read(32));
+    public void test2() {
+        BitBuffer bitbuf = new BitBuffer(new byte[]{(byte)0xE0, 0x7A}, 0);
+        assertEquals(14, bitbuf.getBits(4));
+    }
+    
+    @Test
+    public void testLittleEndian() {
+        BitBuffer bitbuf = new BitBuffer(new byte[]{0x18, 0x7A, 0x23, (byte) 0xFF},0);
+        bitbuf.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        
+        assertEquals(0, bitbuf.getBits(1));
+        assertEquals(1, bitbuf.getPosition());
+
+        assertEquals(4, bitbuf.getBits(3));
+        assertEquals(4, bitbuf.getPosition());
+        
+        bitbuf.setPosition(0);        
+        assertEquals(0x18, bitbuf.getBits(8));
+        
+        bitbuf.setPosition(4);
+        assertEquals(0xA1, bitbuf.getBits(8));
+        
+        bitbuf.setPosition(0);        
+        assertEquals(0x7A18, bitbuf.getBits(16));
+        
+        bitbuf.setPosition(4);
+        assertEquals(0x7A1, bitbuf.getBits(12));
+        
+        bitbuf.setPosition(4);
+        assertEquals(0x37A1, bitbuf.getBits(16));
+        
+        bitbuf.setPosition(4);
+        assertEquals(0x237A1, bitbuf.getBits(20));
+        
+        bitbuf.setPosition(0);
+        
+        assertEquals(0xFF237A18L, bitbuf.getBits(32));
+    }
+    
+    @Test
+    public void testLittleEndian1() {
+        BitBuffer bitbuf = new BitBuffer(new byte[]{0x03, (byte)0x80, (byte)0xFF, (byte) 0xFF}, 0);
+        bitbuf.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        
+        assertEquals(3, bitbuf.getBits(3));        
+        assertEquals(0, bitbuf.getBits(12));
+        assertEquals(0x1FFFFL, bitbuf.getBits(17));
     }
 }

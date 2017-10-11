@@ -71,7 +71,9 @@ public class ParameterValueList implements Collection<ParameterValue> {
 
     @Override
     public boolean add(ParameterValue pv) {
-        if(pv==null) throw new NullPointerException();
+        if(pv==null) {
+            throw new NullPointerException();
+        }
         if(size-1 >= threshold) {
             ensureCapacity(2*table.length);
             threshold = 2*threshold;
@@ -118,7 +120,9 @@ public class ParameterValueList implements Collection<ParameterValue> {
                 if(e1 == null) {
                     newt[index] = e;
                 } else {
-                    while(e1.next!=null) e1=e1.next;
+                    while(e1.next!=null) {
+                        e1=e1.next;
+                    }
                     e1.next = e;
 
                 }
@@ -144,7 +148,9 @@ public class ParameterValueList implements Collection<ParameterValue> {
             t[index] = newEntry;
         } else {
             Entry e = t[index];
-            while(e.next!=null) e=e.next;
+            while(e.next!=null) {
+                e=e.next;
+            }
             e.next = newEntry;
         }
         newEntry.after = head;
@@ -218,7 +224,9 @@ public class ParameterValueList implements Collection<ParameterValue> {
     public ParameterValue removeLast(Parameter p) {
         int index =  getHash(p) & (table.length - 1);
         Entry e = table[index];
-        if(e == null) return null;
+        if(e == null) {
+            return null;
+        }
 
         Entry prev_r = null;
 
@@ -263,7 +271,9 @@ public class ParameterValueList implements Collection<ParameterValue> {
     public ParameterValue removeFirst(Parameter p) {
         int index =  getHash(p) & (table.length - 1);
         Entry prev = table[index];
-        if(prev == null) return null;
+        if(prev == null) {
+            return null;
+        }
 
 
         Entry e = prev;
@@ -353,7 +363,9 @@ public class ParameterValueList implements Collection<ParameterValue> {
      */
     @Override
     public boolean contains(Object o) {
-        if(!(o instanceof ParameterValue)) return false;
+        if(!(o instanceof ParameterValue)) {
+            return false;
+        }
 
         ParameterValue pv = (ParameterValue)o;
 
@@ -470,7 +482,9 @@ public class ParameterValueList implements Collection<ParameterValue> {
 
         @Override
         public ParameterValue next() {
-            if(next==head) throw new NoSuchElementException();
+            if(next==head) {
+                throw new NoSuchElementException();
+            }
 
             Entry r = next;
             next = r.after;

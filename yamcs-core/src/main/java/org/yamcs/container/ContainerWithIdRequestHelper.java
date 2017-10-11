@@ -53,7 +53,6 @@ public class ContainerWithIdRequestHelper implements ContainerConsumer {
     @Override
     public void processContainer(ContainerExtractionResult cer) {
         SequenceContainer container = cer.getContainer();
-        ByteBuffer content = cer.getContainerContent();
         boolean found = false;
         for(ContainerWithId cwi: subscription) {
             if(cwi.def==container) {

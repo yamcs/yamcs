@@ -21,11 +21,11 @@ import org.yamcs.xtce.ParameterInstanceRef;
 public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
     final protected AlgorithmExecutionContext execCtx;
     final protected Algorithm algorithmDef;
-    final protected CopyOnWriteArrayList<AlgorithmExecListener> execListeners = new CopyOnWriteArrayList<AlgorithmExecListener>();
+    final protected CopyOnWriteArrayList<AlgorithmExecListener> execListeners = new CopyOnWriteArrayList<>();
     // Keep only unique arguments (for subscription purposes)
-    protected Set<Parameter> requiredParameters = new HashSet<Parameter>();
-    protected Set<InputParameter>mandatoryToRun = new HashSet<InputParameter>();
-    private Map<InputParameter,ParameterValue> inputValues = new HashMap<InputParameter,ParameterValue>();
+    protected Set<Parameter> requiredParameters = new HashSet<>();
+    protected Set<InputParameter>mandatoryToRun = new HashSet<>();
+    private Map<InputParameter,ParameterValue> inputValues = new HashMap<>();
     
     
     static final Logger log = LoggerFactory.getLogger(AbstractAlgorithmExecutor.class);
@@ -53,8 +53,8 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
      * @param items
      * @return true if the algorithm should run
      */
-    public synchronized boolean updateParameters(ArrayList<ParameterValue> items) {
-        ArrayList<ParameterValue> allItems=new ArrayList<ParameterValue>(items);
+    public synchronized boolean updateParameters(List<ParameterValue> items) {
+        ArrayList<ParameterValue> allItems = new ArrayList<>(items);
         boolean skipRun=false;
 
         // Set algorithm arguments based on incoming values
@@ -83,7 +83,9 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
         // But run it only, if this satisfies an onParameterUpdate trigger
         boolean triggered=false;
         for(OnParameterUpdateTrigger trigger:algorithmDef.getTriggerSet().getOnParameterUpdateTriggers()) {
-            if(triggered) break;
+            if(triggered) {
+                break;
+            }
             for(ParameterValue pval:allItems) {
                 if(pval.getParameter().equals(trigger.getParameter())) {
                     triggered=true;

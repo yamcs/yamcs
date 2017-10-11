@@ -31,5 +31,4 @@ public class CustomAlgorithm extends Algorithm {
     public void setAlgorithmText(String algorithmText) {
         this.algorithmText = algorithmText;
     }
-    
 }

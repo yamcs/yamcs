@@ -9,12 +9,12 @@ public class IntegerDataEncoding extends DataEncoding {
     private static final long serialVersionUID = 200805131551L;
     static Logger log=LoggerFactory.getLogger(IntegerDataEncoding.class.getName());
     Calibrator defaultCalibrator=null;
-    public enum Encoding {unsigned, twosComplement, onesComplement, signMagnitude, BCD, packedBCD, string};
-    Encoding encoding=Encoding.unsigned;
+    public enum Encoding {UNSIGNED, TWOS_COMPLEMENT, SIGN_MAGNITUDE, ONES_COMPLEMENT, STRING};
+    Encoding encoding = Encoding.UNSIGNED;
     StringDataEncoding stringEncoding=null;
 
     /**
-     * IntegerDataEncoding of type {@link IntegerDataEncoding.Encoding#unsigned}
+     * IntegerDataEncoding of type {@link IntegerDataEncoding.Encoding#UNSIGNED}
      * @param sizeInBits
      * @param byteOrder 
      */
@@ -32,7 +32,7 @@ public class IntegerDataEncoding extends DataEncoding {
      */
     public IntegerDataEncoding(String name, StringDataEncoding sde) {
         super(sde.getSizeInBits());
-        encoding = Encoding.string;
+        encoding = Encoding.STRING;
         stringEncoding = sde;
     }
 
@@ -68,7 +68,9 @@ public class IntegerDataEncoding extends DataEncoding {
 
     @Override
     public Object parseString(String stringValue) {
-        if(encoding == Encoding.string) return stringValue;
+        if(encoding == Encoding.STRING) {
+            return stringValue;
+        }
         
         if(sizeInBits>32) {
             return Long.decode(stringValue);

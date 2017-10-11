@@ -169,8 +169,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     @Override
     public void processPacket(PacketWithTime pwrt){
         try {
-            ByteBuffer bb= ByteBuffer.wrap(pwrt.getPacket());
-            tmExtractor.processPacket(bb, pwrt.getGenerationTime(), getCurrentTime());
+            tmExtractor.processPacket(pwrt.getPacket(), pwrt.getGenerationTime(), getCurrentTime());
         
             ParameterValueList paramResult=tmExtractor.getParameterResult();
             List<ContainerExtractionResult> containerResult=tmExtractor.getContainerResult();
@@ -194,8 +193,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     @Override
     public void processPacket(PacketWithTime pwrt, SequenceContainer sc){
         try {
-            ByteBuffer bb= ByteBuffer.wrap(pwrt.getPacket());
-            tmExtractor.processPacket(bb, pwrt.getGenerationTime(), TimeEncoding.getWallclockTime(), sc);
+            tmExtractor.processPacket(pwrt.getPacket(), pwrt.getGenerationTime(), TimeEncoding.getWallclockTime(), sc);
 
             ParameterValueList paramResult=tmExtractor.getParameterResult();
             List<ContainerExtractionResult> containerResult = tmExtractor.getContainerResult();

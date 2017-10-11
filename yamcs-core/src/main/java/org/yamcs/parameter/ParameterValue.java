@@ -209,7 +209,7 @@ public class ParameterValue {
     }
 
     public void setEngineeringValue(Value ev) {
-        this.engValue=ev;
+        this.engValue = ev;
     }
 
     public void setExpireMillis(long em) {

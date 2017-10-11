@@ -68,8 +68,11 @@ public class RestClient {
             return getYamcsInstances().get(timeout, TimeUnit.MILLISECONDS);
         } catch (ExecutionException e) {
             Throwable t = e.getCause();
-            if(t instanceof Exception) throw (Exception)t;
-            else throw new RuntimeException(t);//should never happen
+            if(t instanceof Exception) {
+                throw (Exception)t;
+            } else {
+                throw new RuntimeException(t);//should never happen
+            }
         }
     }
 
@@ -234,9 +237,13 @@ public class RestClient {
         byte b = bb.get();
         int v = b &0x7F;
         for (int shift = 7; (b & 0x80) != 0; shift += 7) {
-            if(shift>28) throw new YamcsApiException("Invalid VarInt32: more than 5 bytes!");
+            if(shift>28) {
+                throw new YamcsApiException("Invalid VarInt32: more than 5 bytes!");
+            }
 
-            if(!bb.hasRemaining()) return Integer.MAX_VALUE;//we miss some bytes from the size itself
+            if(!bb.hasRemaining()) {
+                return Integer.MAX_VALUE;//we miss some bytes from the size itself
+            }
             b = bb.get();
             v |= (b & 0x7F) << shift;
 

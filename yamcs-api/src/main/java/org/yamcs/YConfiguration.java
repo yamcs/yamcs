@@ -34,7 +34,7 @@ import org.yaml.snakeyaml.error.YAMLException;
 public class YConfiguration {
     Map<String, Object> root;
     static String userConfigDirectory; //This is used by the users to overwrite
-    static YConfigurationResolver resolver = new YConfigurationResolver();
+    static YConfigurationResolver resolver = new DefaultConfigurationResolver();
 
     private static Map<String, YConfiguration> configurations=new HashMap<>();
     static Logger log=LoggerFactory.getLogger(YConfiguration.class.getName());
@@ -49,9 +49,9 @@ public class YConfiguration {
     @SuppressWarnings("unchecked")
     private YConfiguration(String subsystem) throws IOException, ConfigurationException {
         Yaml yaml=new Yaml();
-        String filename=subsystem+".yaml";
+        String filename = subsystem+".yaml";
         try {
-            Object o=yaml.load(resolver.getConfigurationStream("/"+filename));
+            Object o = yaml.load(resolver.getConfigurationStream("/"+filename));
             if(o==null) {
                 o=new HashMap<String, Object>(); //config file is empty, not an error
             } else if(!(o instanceof Map<?, ?>)) {
@@ -121,11 +121,13 @@ public class YConfiguration {
      * @throws ConfigurationException if the configuration file could not be found or not loaded (e.g. error in yaml formatting)
      */
     public synchronized static YConfiguration getConfiguration(String subsystem) throws ConfigurationException {
-        if(subsystem.contains("..") || subsystem.contains("/")) throw new ConfigurationException("Invalid subsystem '"+subsystem+"'");
+        if(subsystem.contains("..") || subsystem.contains("/")) {
+            throw new ConfigurationException("Invalid subsystem '"+subsystem+"'");
+        }
         YConfiguration c = configurations.get(subsystem);
         if(c==null) {
             try {
-                c=new YConfiguration(subsystem);
+                c = new YConfiguration(subsystem);
             } catch (IOException e){
                 throw new ConfigurationException("Cannot load configuration for subsystem "+subsystem+": "+e);
             }
@@ -167,9 +169,12 @@ public class YConfiguration {
         return System.getProperty(key);
     }
 
-    static private void checkKey(Map m, String key) throws ConfigurationException {
-        if(!m.containsKey(key)) throw new ConfigurationException(confPath.get(m), "cannot find a mapping for key '"+key+"'");
-        else if(m.get(key)==null) throw new ConfigurationException(confPath.get(m), key+" exists but is null");
+    private static void checkKey(Map m, String key) throws ConfigurationException {
+        if(!m.containsKey(key)) {
+            throw new ConfigurationException(confPath.get(m), "cannot find a mapping for key '"+key+"'");
+        } else if(m.get(key)==null) {
+            throw new ConfigurationException(confPath.get(m), key+" exists but is null");
+        }
     }
 
     public boolean containsKey(String key) {
@@ -177,7 +182,9 @@ public class YConfiguration {
     }
 
     public boolean containsKey(String key, String key1) throws ConfigurationException {
-        if(!root.containsKey(key)) return false;
+        if(!root.containsKey(key)) {
+            return false;
+        }
 
         Map<String, Object> m = getMap(key);
         return m.containsKey(key1);
@@ -408,7 +415,9 @@ public class YConfiguration {
      * @throws ConfigurationException if the key is present but it's not an int
      */
     static public int getInt(Map<String, Object> m, String key, int defaultValue) throws ConfigurationException {
-        if(!m.containsKey(key)) return defaultValue;
+        if(!m.containsKey(key)) {
+            return defaultValue;
+        }
         Object o=m.get(key);
         if(o instanceof Integer) {
             return (Integer)o;
@@ -439,7 +448,9 @@ public class YConfiguration {
      * @throws ConfigurationException if the key is present but it's not an long
      */
     static public long getLong(Map<String, Object> m, String key, long v) throws ConfigurationException {
-        if(!m.containsKey(key)) return v;
+        if(!m.containsKey(key)) {
+            return v;
+        }
         Object o=m.get(key);
         if(o instanceof Integer) {
             return (Integer)o;
@@ -460,7 +471,9 @@ public class YConfiguration {
     }
 
     public int getInt(String key, String key1, int defaultValue) throws ConfigurationException {
-        if(!root.containsKey(key)) return defaultValue;
+        if(!root.containsKey(key)) {
+            return defaultValue;
+        }
 
         Map<String, Object> m = getMap(key);
 
@@ -481,11 +494,12 @@ public class YConfiguration {
         YConfiguration.resolver = resolver;
     }
 
+    
     /**
-     * Default config file resolver
+     * Default config file resolver.
+     * Looks for configuration files in the classpath and in the user config directory (~/.yamcs/).
      */
-    public static class YConfigurationResolver {
-
+    public static class DefaultConfigurationResolver implements YConfigurationResolver {
         public InputStream getConfigurationStream(String name) throws ConfigurationException {
             InputStream is;
             if(prefix!=null) {
@@ -496,17 +510,17 @@ public class YConfiguration {
             }
 
             //see if the users has an own version of the file
-            File f=new File(userConfigDirectory+name);
+            File f = new File(userConfigDirectory+name);
             if(f.exists()) {
                 try {
-                    is=new FileInputStream(f);
+                    is = new FileInputStream(f);
                     log.debug("Reading "+f.getAbsolutePath());
                     return is;
                 } catch (FileNotFoundException e) {
-                    e.printStackTrace();
+                    throw new ConfigurationException("Cannot read file "+f, e);
                 }
             }
-            if((is=YConfiguration.class.getResourceAsStream(name))==null) {
+            if((is = YConfiguration.class.getResourceAsStream(name))==null) {
                 throw(new ConfigurationNotFoundException("Cannot find resource "+name));
             }
             log.debug("Reading "+new File(YConfiguration.class.getResource(name).getFile()).getAbsolutePath());
@@ -514,6 +528,8 @@ public class YConfiguration {
         }
     }
 
+    
+    
     /**
      * Introduced to be able to detect when a configuration file was not
      * specified (as opposed to when there's a validation error inside). The

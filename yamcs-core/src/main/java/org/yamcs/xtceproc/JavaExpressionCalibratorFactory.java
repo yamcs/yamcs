@@ -1,6 +1,5 @@
 package org.yamcs.xtceproc;
 
-import org.codehaus.janino.CompileException;
 import org.codehaus.janino.Location;
 import org.codehaus.janino.SimpleCompiler;
 import org.codehaus.janino.util.LocatedException;

@@ -45,7 +45,7 @@ public class CommandVerificationHandler {
 
     public void start() {
         MetaCommand cmd = preparedCommand.getMetaCommand();
-        List<CommandVerifier> verifiers = new ArrayList<CommandVerifier>();
+        List<CommandVerifier> verifiers = new ArrayList<>();
         collectVerifiers(cmd, verifiers);
         Verifier prevVerifier = null;
 

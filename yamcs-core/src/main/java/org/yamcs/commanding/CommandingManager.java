@@ -29,15 +29,17 @@ public class CommandingManager extends AbstractService {
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
     private Processor processor;
     private CommandQueueManager commandQueueManager;
-
+    final MetaCommandProcessor metaCommandProcessor;
+    
     /**
      * Keeps a reference to the channel and creates the queue manager
      * @param proc
      */
     public CommandingManager(Processor proc) {
-        this.processor=proc;
+        this.processor = proc;
         this.commandQueueManager=new CommandQueueManager(this);
         ManagementService.getInstance().registerCommandQueueManager(proc.getInstance(), proc.getName(), commandQueueManager);
+        metaCommandProcessor = new MetaCommandProcessor(proc.getProcessorData());
     }
 
     public CommandQueueManager getCommandQueueManager() {
@@ -59,7 +61,7 @@ public class CommandingManager extends AbstractService {
             origin = "anonymous";
 
         
-        CommandBuildResult cbr = MetaCommandProcessor.buildCommand(mc, argAssignmentList);
+        CommandBuildResult cbr = metaCommandProcessor.buildCommand(mc, argAssignmentList);
 
         CommandId cmdId = CommandId.newBuilder().setCommandName(mc.getQualifiedName()).setOrigin(origin).setSequenceNumber(seq).setGenerationTime(processor.getCurrentTime()).build();
         PreparedCommand pc = new PreparedCommand(cmdId);

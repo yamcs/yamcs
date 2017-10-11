@@ -35,8 +35,7 @@ import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 /**
- * Just a small sanity check to verify python/jython still works.
- * Uses algorithms in the spreadsheet that are interpreted the same in javascript and python
+ * Java algorithms test
  */
 public class AlgorithmManagerJavaTest {
     @BeforeClass

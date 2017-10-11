@@ -1,12 +1,11 @@
 package org.yamcs.xtceproc;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.parameter.ParameterValueList;
-import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.CriteriaEvaluator;
 
 
@@ -17,7 +16,7 @@ import org.yamcs.xtce.CriteriaEvaluator;
  */
 public class ContainerProcessingContext {	
     final ProcessorData pdata;
-    final ContainerProcessingPosition position;
+    final BitBuffer buffer;
     
     //Keeps track of the absolute offset of the container where the processing takes place. 
     //Normally 0, but if the processing takes place inside a subcontainer, it reflects the offset of that container with respect to the primary container where the processing started 
@@ -35,25 +34,14 @@ public class ContainerProcessingContext {
     public final ValueProcessor valueProcessor=new ValueProcessor(this);
     public final CriteriaEvaluator criteriaEvaluator;
 
-    public ContainerProcessingContext(ProcessorData pdata, ContainerProcessingPosition position, ContainerProcessingResult result, Subscription subscription, 
+    public ContainerProcessingContext(ProcessorData pdata, BitBuffer buffer, ContainerProcessingResult result, Subscription subscription, 
             boolean ignoreOutOfContainerEntries) {
         this.pdata = pdata;
-        this.position = position;
+        this.buffer = buffer;
         this.subscription = subscription;
         this.criteriaEvaluator = new CriteriaEvaluatorImpl(result.params);
         this.ignoreOutOfContainerEntries = ignoreOutOfContainerEntries;
         this.result = result;
-    }
-    
-    static class ContainerProcessingPosition {
-        ByteBuffer bb;
-        int containerAbsoluteByteOffset;
-        int bitPosition;
-        public ContainerProcessingPosition(ByteBuffer bb, int containerAbsoluteByteOffset, int bitPosition) {
-            this.bb = bb;
-            this.containerAbsoluteByteOffset = containerAbsoluteByteOffset;
-            this.bitPosition = bitPosition;
-        }
     }
     
     static class ContainerProcessingResult {

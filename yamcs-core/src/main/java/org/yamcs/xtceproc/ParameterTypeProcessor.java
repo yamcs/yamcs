@@ -122,7 +122,7 @@ public class ParameterTypeProcessor {
     }
 
     private static void calibrateBinary(BinaryParameterType bpt, ParameterValue pval) {
-        pval.setBinaryValue(pval.getRawValue().getBinaryValue());
+        pval.setEngineeringValue(pval.getRawValue());
     }
 
     private void calibrateInteger(IntegerParameterType ipt, ParameterValue pval) {
@@ -171,7 +171,7 @@ public class ParameterTypeProcessor {
     private static void calibrateString(StringParameterType spt, ParameterValue pval) {
         Value rawValue = pval.getRawValue();
         if(rawValue.getType() == Type.STRING) {
-            pval.setStringValue(rawValue.getStringValue());
+            pval.setEngineeringValue(rawValue);
         } else {
             throw new IllegalStateException("Unsupported raw value type '"+rawValue.getType()+"' cannot be converted to string");
         }

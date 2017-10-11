@@ -33,10 +33,8 @@ import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SpaceSystemLoader;
-import org.yamcs.xtce.SpreadsheetLoader;
 import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtce.XtceLoader;
 
 
 public class XtceDbFactory {
@@ -56,6 +54,10 @@ public class XtceDbFactory {
      * @throws ConfigurationException
      */
     public static synchronized XtceDb createInstanceByConfig(String configSection) throws ConfigurationException {
+        return createInstanceByConfig(configSection, true);
+    }
+
+    public static synchronized XtceDb createInstanceByConfig(String configSection, boolean attemptToLoadSerialized) throws ConfigurationException {
         YConfiguration c = YConfiguration.getConfiguration("mdb");
 
         if(configSection == null) {
@@ -63,11 +65,23 @@ public class XtceDbFactory {
         }
 
         List<Object> list = c.getList(configSection);
-        return createInstance(list);
+        return createInstance(list, attemptToLoadSerialized, true);
     }
 
+    /**
+     * Load a XTCE database from a description.
+     * 
+     * 
+     * @param treeConfig - this should be a list of maps as it would come out of the mdb.yaml definition.
+     * @param attemptToLoadSerialized - if true, it will attempt to load a serialized version from the disk 
+     *        instead of creating a new object by loading all elements from the tree definition. 
+     * @param saveSerialized - if the result should be saved as a serialized file. 
+     *        If the database has been loaded from a serialized file, this option will have no effect.
+     * @return a newly created XTCE database object.
+     * @throws ConfigurationException
+     */
     @SuppressWarnings("unchecked")
-    private static synchronized XtceDb createInstance(List<Object> treeConfig) throws ConfigurationException {
+    public static synchronized XtceDb createInstance(List<Object> treeConfig, boolean attemptToLoadSerialized, boolean saveSerialized) throws ConfigurationException {
         LoaderTree loaderTree = new LoaderTree(new RootSpaceSystemLoader());
 
         for(Object o: treeConfig) {
@@ -78,30 +92,31 @@ public class XtceDbFactory {
             }
         }
 
+        boolean loadSerialized = attemptToLoadSerialized;
         boolean serializedLoaded = false;
-        boolean loadSerialized = true;
         String filename = loaderTree.getConfigName()+".xtce";
 
-        if (new File(getFullName(filename) + ".serialized").exists()) {
-            try {
-                RandomAccessFile raf = new RandomAccessFile(getFullName(filename) + ".consistency_date", "r");
-                if(loaderTree.needsUpdate(raf)) {
+        if (loadSerialized) {
+            if (new File(getFullName(filename) + ".serialized").exists()) {
+                try(RandomAccessFile raf = new RandomAccessFile(getFullName(filename) + ".consistency_date", "r")) {                
+                    if(loaderTree.needsUpdate(raf)) {
+                        loadSerialized = false;
+                    }
+                } catch (IOException e) {
+                    if (new File(getFullName(filename) + ".serialized").exists()) {
+                        log.warn("can't check the consistency date of the serialized database", e);
+                    }
                     loadSerialized = false;
-                }
-            } catch (IOException e) {
-                if (new File(getFullName(filename) + ".serialized").exists()) {
-                    log.warn("can't check the consistency date of the serialized database", e);
-                }
+                } 
+            } else {
                 loadSerialized = false;
             }
-        } else {
-            loadSerialized = false;
         }
 
         XtceDb db = null;
         if (loadSerialized) {
             try {
-                db = loadSerializedInstance(getFullName(filename.toString()) + ".serialized");
+                db = loadSerializedInstance(getFullName(filename) + ".serialized");
                 serializedLoaded = true;
             } catch (Exception e) {
                 log.info("Cannot load serialized database", e);
@@ -119,8 +134,8 @@ public class XtceDbFactory {
 
             int n;
             while((n=resolveReferences(rootSs, rootSs))>0 ){}
-            
-            
+
+
             StringBuilder sb=new StringBuilder();
             collectUnresolvedReferences(rootSs, sb);
             if(n==0) {
@@ -140,9 +155,9 @@ public class XtceDbFactory {
             db.buildIndexMaps();
         }
 
-        if ((!serializedLoaded)) {
+        if (saveSerialized && (!serializedLoaded)) {
             try {
-                saveSerializedInstance(loaderTree, db, filename.toString());
+                saveSerializedInstance(loaderTree, db, filename);
                 log.info("Serialized database saved locally");
             } catch (Exception e) {
                 log.warn("Cannot save serialized MDB", e);
@@ -185,13 +200,13 @@ public class XtceDbFactory {
         Iterator<NameReference> it = refs.iterator();
         while (it.hasNext()) {
             NameReference nr = it.next();
-           
+
             NameDescription nd = findReference(rootSs, nr, ss);
             if(nd==null && nr.getType()==Type.PARAMETER && nr.getReference().startsWith(XtceDb.YAMCS_SPACESYSTEM_NAME)) {
                 //Special case for system parameters: they are created on the fly
                 String fqname = nr.getReference();
                 SystemParameter sp = SystemParameter.getForFullyQualifiedName(fqname);
-              
+
                 String ssname = sp.getSubsystemName();
                 String[] a = ssname.split("/");
                 SpaceSystem ss1 = rootSs;
@@ -271,7 +286,7 @@ public class XtceDbFactory {
             return nd;
         }
     }
-    
+
     /**
      * searches for aliases in the parent hierarchy
      * @param rootSs
@@ -292,9 +307,9 @@ public class XtceDbFactory {
         }
         return nd;
     }
-        
-    
-    
+
+
+
     /**
      * find reference starting at startSs and looking through the SpaceSystem path
      * @param startSs
@@ -340,6 +355,8 @@ public class XtceDbFactory {
             return ss.getSequenceContainer(name);
         case META_COMMAND:
             return ss.getMetaCommand(name);
+        case ALGORITHM:
+            return ss.getAlgorithm(name);
         }
         //shouldn't arrive here
         return null;
@@ -355,13 +372,13 @@ public class XtceDbFactory {
      * @return
      */
     private static NameDescription findAliasReference(SpaceSystem ss, NameReference nr) {
-        
+
         String alias = nr.getReference();
         List<? extends NameDescription> l;
         switch(nr.getType()) {
         case PARAMETER:
-             l = ss.getParameterByAlias(alias);
-             break;
+            l = ss.getParameterByAlias(alias);
+            break;
         case SEQUENCE_CONTAINTER:
             l =ss.getSequenceContainerByAlias(alias);
             break;
@@ -379,9 +396,9 @@ public class XtceDbFactory {
         }
         return l.get(0);
     }
-    
-    
-    
+
+
+
     @SuppressWarnings({ "unchecked" })
     private static LoaderTree getLoaderTree(Map<String,Object> m) throws ConfigurationException {
         String type=YConfiguration.getString(m, "type");
@@ -406,7 +423,7 @@ public class XtceDbFactory {
             log.warn(e.toString());
             throw new ConfigurationException("Cannot load xtce database: " + e.getMessage(), e);
         }
-        
+
 
         ltree=new LoaderTree(l);
 
@@ -512,7 +529,7 @@ public class XtceDbFactory {
         if (db == null) {
             YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
             if (c.isList("mdb")) {
-                db = createInstance(c.getList("mdb"));
+                db = createInstance(c.getList("mdb"), true, true);
                 instance2Db.put(yamcsInstance, db);
             } else {
                 db = getInstanceByConfig(yamcsInstance, c.getString("mdb"));

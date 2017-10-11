@@ -14,8 +14,13 @@ import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.MetaCommandContainer;
 
 public class MetaCommandProcessor {
-    public static CommandBuildResult buildCommand(MetaCommand mc, List<ArgumentAssignment> argAssignmentList) throws ErrorInCommand {
-        return buildCommand(new ProcessorData(), mc, argAssignmentList);
+    final ProcessorData pdata;
+    public MetaCommandProcessor(ProcessorData pdata) {
+        this.pdata = pdata;
+    }
+    
+    public CommandBuildResult buildCommand(MetaCommand mc, List<ArgumentAssignment> argAssignmentList) throws ErrorInCommand {
+        return buildCommand(pdata, mc, argAssignmentList);
     }
     
     public static CommandBuildResult buildCommand(ProcessorData pdata, MetaCommand mc, List<ArgumentAssignment> argAssignmentList) throws ErrorInCommand {
