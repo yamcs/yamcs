@@ -37,7 +37,7 @@ public class ParameterRecorder extends AbstractService {
     Stream realtimeStream, dumpStream;
 
     static public final String TABLE_NAME = "pp";
-    List<String> streams = new ArrayList<String>();
+    List<String> streams = new ArrayList<>();
     
     public ParameterRecorder(String yamcsInstance) {
         this(yamcsInstance, null);

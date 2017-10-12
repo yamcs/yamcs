@@ -93,7 +93,7 @@ public class XtceTmExtractor {
         result = new ContainerProcessingResult(aquisitionTime, generationTime, stats);
         try {
              synchronized(subscription) {
-                BitBuffer buf = new BitBuffer(b, 0);
+                BitBuffer buf = new BitBuffer(b);
                 ContainerProcessingContext cpc = new ContainerProcessingContext(pcontext, buf, result, subscription, ignoreOutOfContainerEntries);
                 cpc.sequenceContainerProcessor.extract(startContainer);
             }

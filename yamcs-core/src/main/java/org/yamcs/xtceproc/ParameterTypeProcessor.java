@@ -20,6 +20,13 @@ import org.yamcs.xtce.StringParameterType;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
 
+/**
+ * Responsible for converting between raw and engineering value by usage of calibrators or by simple type conversions.
+ * 
+ * 
+ * @author nm
+ *
+ */
 public class ParameterTypeProcessor {
     ProcessorData pcontext;
     static Logger log=LoggerFactory.getLogger(ParameterTypeProcessor.class.getName());

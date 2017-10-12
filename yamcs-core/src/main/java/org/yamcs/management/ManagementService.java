@@ -251,10 +251,10 @@ public class ManagementService implements ProcessorListener {
     }
 
     private void switchProcessor(ClientControlImpl cci, Processor yproc, AuthenticationToken authToken) throws ProcessorException {
-        ClientInfo oldci=cci.getClientInfo();
-        cci.switchYProcessor(yproc, authToken);
-        ClientInfo ci=cci.getClientInfo();
-
+        ClientInfo oldci = cci.getClientInfo();
+        cci.switchProcessor(yproc, authToken);
+        ClientInfo ci = cci.getClientInfo();
+        
         try {
             if(jmxEnabled) {
                 mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+oldci.getInstance()+":type=clients,processor="+oldci.getProcessorName()+",id="+ci.getId()));

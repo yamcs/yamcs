@@ -140,11 +140,11 @@ public class ParameterValue {
         rawValue = new BinaryValue(b);
     }
 
-    public void setRawValue(float f) {
+    public void setRawFloatValue(float f) {
         rawValue = new FloatValue(f);
     }
 
-    public void setRawValue(double d) {
+    public void setRawDoubleValue(double d) {
         rawValue = new DoubleValue(d);
     }
 
@@ -427,7 +427,9 @@ public class ParameterValue {
     
     private static void copyTo(org.yamcs.protobuf.Pvalue.ParameterValue gpv, ParameterValue pv) {
         pv.setAcquisitionStatus(gpv.getAcquisitionStatus());
-        pv.setEngineeringValue(ValueUtility.fromGpb(gpv.getEngValue()));
+        if(gpv.hasEngValue()) {
+            pv.setEngineeringValue(ValueUtility.fromGpb(gpv.getEngValue()));
+        }
 
         if(gpv.hasAcquisitionTime()) {
             pv.setAcquisitionTime(gpv.getAcquisitionTime());

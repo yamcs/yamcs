@@ -90,7 +90,7 @@ public class ProcessorsTest {
         assertNotNull(yproc1);
         
         yproc1.connect(client);
-        client.yproc = yproc1;
+        client.proc = yproc1;
         
         
         int myClientId = ManagementService.getInstance().registerClient("yproctest1", "yproc1", client);
@@ -107,7 +107,6 @@ public class ProcessorsTest {
         CompletableFuture<Void> f1= client1.connectToProcessor("yproctest1", "yproc1", new int[]{myClientId}); 
         f1.get();
         
-        yproc1.disconnect(client);
         ManagementService.getInstance().unregisterClient(myClientId);
         
         yproc1.quit();
@@ -126,7 +125,6 @@ public class ProcessorsTest {
         assertPEquals("realtime", ServiceState.RUNNING, l.get(0));
         
         l = ml.procUpdated.get("yproc1");
-        System.out.println("l: "+l);
         assertEquals(3, l.size());
         assertPEquals("yproc1", ServiceState.NEW, l.get(0));        
         assertPEquals("yproc1", ServiceState.RUNNING, l.get(1));
@@ -227,13 +225,12 @@ public class ProcessorsTest {
     }
 
     static class MyYProcClient implements ProcessorClient {
-        Processor yproc;
+        Processor proc;
 
         @Override
         public void switchProcessor(Processor c, AuthenticationToken authToken) throws ProcessorException {
-            yproc.disconnect(this);
             c.connect(this);
-            yproc=c;
+            proc = c;
         }
 
         @Override
@@ -250,6 +247,11 @@ public class ProcessorsTest {
         @Override
         public String getApplicationName() {
             return "random-app-name";
+        }
+
+        @Override
+        public Processor getProcessor() {
+            return proc;
         }
     }
     

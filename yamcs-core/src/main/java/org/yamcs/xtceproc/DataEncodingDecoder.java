@@ -174,15 +174,14 @@ public class DataEncodingDecoder {
         buf.setByteOrder(de.getByteOrder());
         
         if(de.getSizeInBits()==32) {
-            pv.setRawValue(Float.intBitsToFloat((int)buf.getBits(32)));
+            pv.setRawFloatValue(Float.intBitsToFloat((int)buf.getBits(32)));
         } else {
-            pv.setRawValue(Double.longBitsToDouble(buf.getBits(64)));
+            pv.setRawDoubleValue(Double.longBitsToDouble(buf.getBits(64)));
         }
     }
 
     private void extractRawBoolean(BooleanDataEncoding bde, ParameterValue pv) {
         BitBuffer buf = pcontext.buffer;
-        
         pv.setRawValue(buf.getBits(1)!=0);
     }
 
@@ -191,6 +190,7 @@ public class DataEncodingDecoder {
         if(buf.getPosition()%8!=0) {
             log.warn("Binary Parameter that does not start at byte boundary not supported. bitPosition: {}", pcontext.buffer);
             pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
+            return;
         }
 
         int sizeInBytes;
@@ -204,8 +204,8 @@ public class DataEncodingDecoder {
         default: //shouldn't happen
            throw new IllegalStateException();
         }
-        if(sizeInBytes>buf.remaining()) {
-            throw new IndexOutOfBoundsException("Cannot extract binary parameter of size "+sizeInBytes+". Remaining in the buffer: "+buf.remaining());
+        if(sizeInBytes>buf.remainingBytes()) {
+            throw new IndexOutOfBoundsException("Cannot extract binary parameter of size "+sizeInBytes+". Remaining in the buffer: "+buf.remainingBytes());
         }
         byte[] b = new byte[sizeInBytes];
         buf.getByteArray(b);

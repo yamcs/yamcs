@@ -15,6 +15,7 @@ import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.ParameterTypeProcessor;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -34,6 +35,9 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
     ParameterRequestManager paraListener;
     final XtceDb xtceDb;
     private static final Logger log = LoggerFactory.getLogger(StreamParameterProvider.class);
+    
+    ParameterTypeProcessor ptypeProcessor;
+    
     public StreamParameterProvider(String archiveInstance, Map<String, String> config) throws ConfigurationException {
         YarchDatabase ydb=YarchDatabase.getInstance(archiveInstance);
 
@@ -91,6 +95,10 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
             } else {
                 log.warn("Recieved data that is not parameter value but {}", o.getClass());
                 continue;
+            }
+            
+            if(pv.getEngValue()==null &&pv.getRawValue()!=null) {
+                ptypeProcessor.calibrate(pv);                
             }
             params.add(pv);
         }
@@ -150,6 +158,6 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
 
     @Override
     public void init(Processor processor) {
-        //nothing to be done here
+        ptypeProcessor = processor.getProcessorData().getParameterTypeProcessor();
     }
 }

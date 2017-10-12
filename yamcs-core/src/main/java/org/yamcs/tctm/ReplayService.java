@@ -49,6 +49,7 @@ import org.yamcs.security.SystemToken;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.ParameterTypeProcessor;
 import org.yamcs.xtceproc.Subscription;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
@@ -135,7 +136,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
             tmProcessor.processPacket(new PacketWithTime(tpd.getReceptionTime(), tpd.getGenerationTime(), tpd.getPacket().toByteArray()));
             break;
         case PP:
-            parameterRequestManager.update((List<ParameterValue>)data);
+            parameterRequestManager.update(calibrate((List<ParameterValue>)data));
             break;
         case CMD_HISTORY:
             CommandHistoryEntry che = (CommandHistoryEntry) data;
@@ -147,6 +148,18 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
 
     }
 
+    private List<ParameterValue> calibrate(List<ParameterValue> pvlist) {
+        ParameterTypeProcessor ptypeProcessor = yprocessor.getProcessorData().getParameterTypeProcessor();
+        
+        for(ParameterValue pv:pvlist) {
+            if(pv.getEngValue()==null &&pv.getRawValue()!=null) {
+                System.out.println("calibrating "+pv);
+                  ptypeProcessor.calibrate(pv);
+                  System.out.println("after calibration "+pv);
+            }
+        }
+        return pvlist;
+    }
     @Override
     public void stateChanged(ReplayStatus rs) {
         if(rs.getState()==ReplayState.CLOSED) {
