@@ -15,8 +15,13 @@ import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingResult;
 
 public class SequenceContainerProcessor {
+   
+
     Logger log = LoggerFactory.getLogger(this.getClass().getName());
     ContainerProcessingContext pcontext;
+    
+  
+    
     SequenceContainerProcessor(ContainerProcessingContext pcontext) {
         this.pcontext = pcontext;
     }
@@ -30,7 +35,7 @@ public class SequenceContainerProcessor {
 
         RateInStream ris = seq.getRateInStream();
         if((ris != null) && ris.getMaxInterval()>0) {
-            result.expireMillis = ris.getMaxInterval();
+            result.expireMillis = (long) (pcontext.options.getExpirationTolerance()*ris.getMaxInterval());
         }
         int maxposition = buf.getPosition();
 
@@ -47,7 +52,7 @@ public class SequenceContainerProcessor {
                         buf.setPosition(se.getLocationInContainerInBits());
                     }
                     
-                    if(pcontext.ignoreOutOfContainerEntries && (buf.getPosition() >= buf.sizeInBits())) {
+                    if(pcontext.options.ignoreOutOfContainerEntries() && (buf.getPosition() >= buf.sizeInBits())) {
                         //the next entry is outside of the packet
                         break;
                     }
@@ -99,4 +104,5 @@ public class SequenceContainerProcessor {
                     result.acquisitionTime, result.generationTime);
         }
     }
+       
 }

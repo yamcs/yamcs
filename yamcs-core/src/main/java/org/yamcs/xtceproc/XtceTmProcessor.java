@@ -48,21 +48,32 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     public final XtceDb xtcedb;
     final XtceTmExtractor tmExtractor;
     final String CONFIG_KEY_ignoreOutOfContainerEntries = "ignoreOutOfContainerEntries";
+    final String CONFIG_KEY_expirationTolerance = "expirationTolerance";
     
     public XtceTmProcessor(Processor proc, Map<String, Object> tmProcessorConfig) {
 	log = LoggingUtils.getLogger(this.getClass(), proc);
 	this.processor=proc;
 	this.xtcedb=proc.getXtceDb();
 	tmExtractor = new XtceTmExtractor(xtcedb, proc.getProcessorData());
+	
 	if(tmProcessorConfig != null) {
+	    ContainerProcessingOptions opts = new ContainerProcessingOptions();
 	    if(tmProcessorConfig.containsKey(CONFIG_KEY_ignoreOutOfContainerEntries)) {
 	        Object o = tmProcessorConfig.get(CONFIG_KEY_ignoreOutOfContainerEntries);
 	        if(!(o instanceof Boolean)) {
 	            throw new ConfigurationException(CONFIG_KEY_ignoreOutOfContainerEntries+" has to be a boolean");
 	        }
-	        boolean iooce = (Boolean) o;
-	        tmExtractor.setIgnoreOutOfContainerEntries(iooce);
+	        opts.setIgnoreOutOfContainerEntries((Boolean) o);
 	    }
+	    
+	    if(tmProcessorConfig.containsKey(CONFIG_KEY_expirationTolerance)) {
+	        Object o = tmProcessorConfig.get(CONFIG_KEY_ignoreOutOfContainerEntries);
+                if(!(o instanceof Number)) {
+                    throw new ConfigurationException(CONFIG_KEY_expirationTolerance+" has to be a number");
+                }
+                opts.setExpirationTolerance(((Number)o).doubleValue());
+	    }
+	    tmExtractor.setOptions(opts);
 	}
     } 
     public XtceTmProcessor(Processor proc) {
@@ -84,14 +95,6 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
         tmExtractor = new XtceTmExtractor(xtcedb);
     }
 
-    /**
-     * See {@link XtceTmExtractor#setIgnoreOutOfContainerEntries}
-     * @param ignoreOutOfContainerEntries
-     */
-    public void setIgnoreOutOfContainerEntries(boolean ignoreOutOfContainerEntries) {
-        tmExtractor.setIgnoreOutOfContainerEntries(ignoreOutOfContainerEntries);
-    }
-    
     @Override
     public void init(Processor processor) throws ConfigurationException {
        //do nothing, we already know the processor
