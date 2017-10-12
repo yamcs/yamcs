@@ -88,13 +88,13 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
         
         ParameterSubscriptionRequest subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6", "/REFMDB/SUBSYS1/IntegerPara1_1_7", 
-                "/REFMDB/SUBSYS1/processed_para_uint", "/REFMDB/SUBSYS1/processed_para_double");
+                "/REFMDB/SUBSYS1/processed_para_uint", "/REFMDB/SUBSYS1/processed_para_double", "/REFMDB/SUBSYS1/processed_para_enum_nc");
         WebSocketRequest wsr = new WebSocketRequest("parameter", ParameterResource.WSR_SUBSCRIBE, subscrList);
         wsClient.sendRequest(wsr);
         
         //these are from the realtime processor cache
         ParameterData pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
-        assertEquals(4, pdata.getParameterCount());
+        assertEquals(5, pdata.getParameterCount());
         ParameterValue p1_1_6 = pdata.getParameter(0);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
      //   assertEquals("2015-01-01T10:59:59.000", p1_1_6.getGenerationTimeUTC());
@@ -129,15 +129,24 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         
         pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
         assertNotNull(pdata);
-        assertEquals(2, pdata.getParameterCount());
+        assertEquals(3, pdata.getParameterCount());
         ParameterValue pp_para_uint = pdata.getParameter(0);
         assertEquals("/REFMDB/SUBSYS1/processed_para_uint", pp_para_uint.getId().getName());
         assertEquals("2015-01-01T10:01:00.010", pp_para_uint.getGenerationTimeUTC());
         
-        ParameterValue pp_para_double = pdata.getParameter(1);
+
+        ParameterValue pp_para_enum_nc = pdata.getParameter(1);
+        assertEquals("/REFMDB/SUBSYS1/processed_para_enum_nc", pp_para_enum_nc.getId().getName());
+        assertEquals("2015-01-01T10:01:00.010", pp_para_uint.getGenerationTimeUTC());
+        assertEquals(1, pp_para_enum_nc.getRawValue().getUint32Value());
+        System.out.println("received pp: "+pp_para_enum_nc);
+        assertEquals("one_why not", pp_para_enum_nc.getEngValue().getStringValue());
+        
+        ParameterValue pp_para_double = pdata.getParameter(2);
         assertEquals("/REFMDB/SUBSYS1/processed_para_double", pp_para_double.getId().getName());
         assertEquals("2015-01-01T10:01:00.010", pp_para_uint.getGenerationTimeUTC());
 
+        
         
         pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
         assertNotNull(pdata);

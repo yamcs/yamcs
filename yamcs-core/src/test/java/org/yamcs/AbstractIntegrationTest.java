@@ -415,8 +415,14 @@ public abstract class AbstractIntegrationTest {
             pv2.setGenerationTime(generationTime);
             pv2.setStringValue("para" +x);
             
-
-            ppListener.updateParameters(generationTime, "IntegrationTest", seqNum, Arrays.asList(pv1, pv2));
+            //add a parameter raw value to see that it's calibrated
+            ParameterValue pv5 = new ParameterValue(xtcedb.getParameter("/REFMDB/SUBSYS1/processed_para_enum_nc"));
+            pv5.setGenerationTime(generationTime);
+            pv5.setRawUnsignedInteger(1);
+            
+            System.out.println("sending "+pv5+" to "+ppListener);
+            
+            ppListener.updateParameters(generationTime, "IntegrationTest", seqNum, Arrays.asList(pv1, pv2, pv5));
             
             //this one should be combined with the two above in the archive as they have the same generation time, group and sequence
             org.yamcs.protobuf.Pvalue.ParameterValue pv3 = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder().setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
@@ -434,6 +440,8 @@ public abstract class AbstractIntegrationTest {
                     .setEngValue(ValueUtility.getUint32GbpValue(x))
                     .build();
             ppListener.updateParams(generationTime+20, "IntegrationTest", seqNum, Arrays.asList(pv4));
+            
+           
             
             seqNum++;
         }

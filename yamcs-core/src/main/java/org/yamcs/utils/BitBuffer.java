@@ -8,9 +8,9 @@ import java.nio.ByteOrder;
  * It allows also to provide an offset (in bytes) inside the byte array and then the bit position is relative to the offset.
  * 
  * Supported operations are
- *  - extract up to 64 bits into a long.
- *  - extract a byte array but only if the position is at the beginning of a byte
- * 
+ *  - extract up to 64 bits into a long - big endian or little endian
+ *  - extract a byte array (throws exception if the position is not at the beginning of a byte)
+ *  - exact a byte (throws exception if the position is not at the beginning of a byte)
  * 
  * 
  * Note on the Little Endian: it is designed to work on x86 architecture which uses internally little endian byte _and_ bit 
@@ -18,9 +18,9 @@ import java.nio.ByteOrder;
  * 
  * For example when in C you have a 32 bit structure:
  * struct S {
- *   int a: 3;
- *   int b: 12;
- *   int c: 17;
+ *   unsigned int a: 3;
+ *   unsigned int b: 12;
+ *   unsigned int c: 17;
  * }
  * and you pack that in a packet by just reading the corresponding 4 bytes memory, you will get the following representation
  * (0 is the most significant bit):
@@ -51,7 +51,16 @@ public class BitBuffer {
     final int offset;
     
     /**
-     * Creates a new bit buffer that covers the array b starting at offset (in bytes)
+     * Creates a new bit buffer that wraps array b starting at offset 0
+     * @param b
+     * @param offset
+     */
+    public BitBuffer(byte[] b) {
+        this(b,0);
+    }
+    
+    /**
+     * Creates a new bit buffer that wraps the array b starting at offset (in bytes)
      * @param b
      * @param offset
      */
@@ -176,7 +185,6 @@ public class BitBuffer {
      * Copies bytes from the buffer to the given destination array.
      * Works only when position%8 = 0 - otherwise throws an IllegalStateException
      * 
-     * 
      * @param dst - destination array
      */
     public void getByteArray(byte[] dst) {
@@ -188,8 +196,8 @@ public class BitBuffer {
     }
     
     /**
-     * returns the size of the buffer in bits
-     * @return
+     * returns the size of the buffer (from the offset to the end of the byte array) in bits
+     * @return size in bits
      */
     public int sizeInBits() {
         return (b.length-offset)<<3;
@@ -197,7 +205,7 @@ public class BitBuffer {
     
     /**
      * returns the backing array length in bytes!
-     * @return
+     * @return array length
      */
     public int arrayLength() {
         return b.length;
@@ -209,7 +217,9 @@ public class BitBuffer {
 
     /**
      * Creates a new BitBuffer backed by the same array but with the offset set at the current position of this buffer
-     * @return
+     * Works only when position%8 = 0 - otherwise throws an IllegalStateException
+     * 
+     * @return new bit buffer
      */
     public BitBuffer slice() {
         ensureByteBoundary();
@@ -220,11 +230,21 @@ public class BitBuffer {
         return b;
     }
 
+    /**
+     * Returns the offset inside the byte array where this buffer starts
+     * @return
+     */
     public int offset() {
         return offset;
     }
 
-    public int remaining() {
+    /**
+     * Returns the remaining bytes from position until the end of the buffer.
+     * Works only when position%8 = 0 - otherwise throws an IllegalStateException
+     * @return
+     */
+    public int remainingBytes() {
+        ensureByteBoundary();
         return b.length-offset-(position>>3);
     }
 } 

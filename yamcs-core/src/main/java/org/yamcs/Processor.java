@@ -103,7 +103,7 @@ public class Processor extends AbstractService {
 
     ProcessorData processorData;
     @GuardedBy("this")
-    HashSet<ProcessorClient> connectedClients= new HashSet<ProcessorClient>();
+    HashSet<ProcessorClient> connectedClients= new HashSet<>();
 
     public Processor(String yamcsInstance, String name, String type, String creator) throws ProcessorException {
         if((name==null) || "".equals(name)) {
@@ -460,7 +460,7 @@ public class Processor extends AbstractService {
      * Increase with one the number of connected clients
      */
     public synchronized void connect(ProcessorClient s) throws ProcessorException {
-        log.debug("Session {} has one more user: {}", name, s);
+        log.debug("Processor {} has one more user: {}", name, s);
         if(quitting) {
             throw new ProcessorException("This processor has been closed");
         }

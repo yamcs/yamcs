@@ -1,17 +1,9 @@
 package org.yamcs.xtceproc;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.yamcs.algorithms.AlgorithmExecutionContext;
-import org.yamcs.algorithms.AlgorithmExecutor;
-import org.yamcs.utils.YObjectLoader;
-import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Calibrator;
-import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
@@ -19,7 +11,6 @@ import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.XtceDb;
-import org.yaml.snakeyaml.Yaml;
 
 /**
  * Holds information related and required for XTCE processing. 
@@ -98,5 +89,13 @@ public class ProcessorData {
     
     public XtceDb getXtceDb() {
         return xtcedb;
+    }
+    
+    /**
+     * Returns the parameter type processor (this is the guy that converts from raw to engineering value) used by the associated processor.
+     * @return
+     */
+    public ParameterTypeProcessor getParameterTypeProcessor() {
+        return parameterTypeProcessor;
     }
 }

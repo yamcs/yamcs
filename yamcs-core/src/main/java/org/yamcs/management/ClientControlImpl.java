@@ -40,11 +40,14 @@ public class ClientControlImpl extends StandardMBean implements ClientControl {
         return client;
     }
 
-    public void switchYProcessor(Processor chan, AuthenticationToken authToken) throws ProcessorException {
-        client.switchProcessor(chan, authToken);
-
+    public void switchProcessor(Processor proc, AuthenticationToken authToken) throws ProcessorException {
+        Processor oldProc = client.getProcessor();
+        oldProc.disconnect(client);
+        client.switchProcessor(proc, authToken);
+        proc.connect(client);
+        
         clientInfo=ClientInfo.newBuilder().mergeFrom(clientInfo)
-                .setInstance(chan.getInstance()).setProcessorName(chan.getName())
+                .setInstance(proc.getInstance()).setProcessorName(proc.getName())
                 .build();
     }
 }

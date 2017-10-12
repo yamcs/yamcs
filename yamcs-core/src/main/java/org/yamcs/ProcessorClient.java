@@ -18,6 +18,11 @@ public interface ProcessorClient {
      */
     void processorQuit();
 
+    /**    
+     * @return the current processor the client is connected to 
+     */
+    public Processor getProcessor();
+    
     public String getUsername();
     public String getApplicationName();
 }

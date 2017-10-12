@@ -30,8 +30,6 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
-import com.google.protobuf.MessageLite;
-
 /**
  * Performs a replay from Yarch So far supported are: TM packets, PP groups, Events, Parameters and Command History.
  * 

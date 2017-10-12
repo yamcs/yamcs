@@ -292,9 +292,9 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             return;
         }
         if(fde.getSizeInBits() <= 32) {
-            pv.setRawValue((float) doubleValue);
+            pv.setRawFloatValue((float) doubleValue);
         } else {
-            pv.setRawValue(doubleValue);
+            pv.setRawDoubleValue(doubleValue);
         }
     }
     

@@ -144,7 +144,7 @@ public class ParameterDataLinkInitialiser extends AbstractService {
         @Override
         public void updateParameters(long gentime, String group, int seqNum, Collection<ParameterValue> params) {
             TupleDefinition tdef = PARAMETER_TUPLE_DEFINITION.copy();
-            List<Object> cols=new ArrayList<Object>(4+params.size());
+            List<Object> cols=new ArrayList<>(4+params.size());
             cols.add(gentime);
             cols.add(group);
             cols.add(seqNum);

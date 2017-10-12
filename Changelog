@@ -9,6 +9,11 @@ Version 3.3.0 Released
 - Allow to specify custom decoders to be used in container(packet) processing
 - Added binary data encoding with leading size specified (similar to string)
 - Changed the spreadsheet to make it clerarer the difference between raw value, encoding (how to decode the raw value from the binary) and engineering value (raw value passed through a calibration function)
+- For standalone parameters (i.e. not extracted from XTCE packets) coming without an enginnering value, 
+  calibrate (raw->eng value) them inside the processor rather than before being injected in the stream.
+  This means the parameters are stored in the L0 archive also in the initial form (could be raw+eng,only raw or only eng) and they are calibrated (using the current MDB) for each replay
+  Of course ParameterArchive will store them calibrated.
+  
 
 Version 3.2.2 Released 17-May-2017
 - Fixed tag handling in Yamcs Monitor/Archive Browser
