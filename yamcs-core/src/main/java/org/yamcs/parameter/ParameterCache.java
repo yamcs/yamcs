@@ -29,7 +29,7 @@ import org.yamcs.xtce.Parameter;
  *
  */
 public class ParameterCache {
-    final ConcurrentHashMap<Parameter, CacheEntry> cache = new ConcurrentHashMap<Parameter, CacheEntry>();
+    final ConcurrentHashMap<Parameter, CacheEntry> cache = new ConcurrentHashMap<>();
     final long timeToCache;
     final int maxNumEntries;
     
