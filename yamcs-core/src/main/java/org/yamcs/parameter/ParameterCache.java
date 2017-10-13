@@ -60,7 +60,7 @@ public class ParameterCache {
             Parameter p = pv.getParameter();
             CacheEntry ce = cache.get(p);
             if(ce==null) {
-                if(cacheAll||parametersToCache.containsKey(p)) { 
+                if(cacheAll||parametersToCache.containsKey(p)) {
                     ce = new CacheEntry(p, timeToCache, maxNumEntries);
                     cache.put(p, ce);
                     ce.add(pvlist);
@@ -148,6 +148,7 @@ public class ParameterCache {
      * @return
      */
     public List<ParameterValue> getAllValues(Parameter p) {
+      
         CacheEntry ce = cache.get(p);
         if(ce==null) {
             if(!cacheAll) {

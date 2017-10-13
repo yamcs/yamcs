@@ -420,7 +420,6 @@ public abstract class AbstractIntegrationTest {
             pv5.setGenerationTime(generationTime);
             pv5.setRawUnsignedInteger(1);
             
-            System.out.println("sending "+pv5+" to "+ppListener);
             
             ppListener.updateParameters(generationTime, "IntegrationTest", seqNum, Arrays.asList(pv1, pv2, pv5));
             

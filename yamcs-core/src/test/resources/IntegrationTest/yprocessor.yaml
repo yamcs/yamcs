@@ -45,6 +45,7 @@ realtime:
             enabled: true
             cacheAll: true
             duration: 7200
+            maxNumEntries: 4096
 
 
 #used for archive replays (to displays, etc)
