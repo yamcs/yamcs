@@ -107,6 +107,7 @@ public abstract class AbstractEventProducer implements EventProducer {
      */
     public synchronized void setRepeatedEventReduction(boolean repeatedEventReduction, long repeatedEventTimeoutMillisec) {
         this.repeatedEventReduction = repeatedEventReduction;
+        this.repeatedEventTimeout = repeatedEventTimeoutMillisec;
         if (!repeatedEventReduction) {
             if (flusher != null) {
                 flusher.cancel();
