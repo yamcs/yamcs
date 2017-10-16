@@ -7,6 +7,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -16,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.AuthorizationPendingException;
+import org.yamcs.security.AuthenticationPendingException;
 import org.yamcs.security.Privilege;
 import org.yamcs.web.rest.Router;
 import org.yamcs.web.websocket.WebSocketFrameHandler;
@@ -144,20 +145,32 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         if (priv.isEnabled()) {
             ctx.channel().attr(CTX_AUTH_TOKEN).set(null);
-            priv.authenticateHttp(ctx, req).whenComplete((authToken, t) -> {
-                if (t != null) {
-                    t = unwindThrowable(t);
-                    if (t instanceof AuthorizationPendingException) {
-                        return;
-                    } else {
-                        sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
-                    }
+            
+            CompletableFuture<AuthenticationToken> cf = priv.authenticateHttp(ctx, req);
+            try {
+                //TODO: make this non-blocking
+                // but pay attention that as soon as we return the method to netty, 
+                //    it will immediately call the pipeline with the next http message (for example with an EmptyLastHttpContent)
+                //    and those have to be queued somehow while the authentication is being performed
+                //One can use this to make sure no data is read from the client while the authentication is going on:
+                //   ctx.channel().config().setAutoRead(false);
+                //   cf.whenComplete((...) -> {ctx.channel().config().setAutoRead(true)})
+                //  however this doesn't prevent the  EmptyLastHttpContent to come through 
+                //  because that one is generated from the first GET request in case no body or small body is present
+                
+                AuthenticationToken authToken = cf.get(5000, TimeUnit.MILLISECONDS);
+                
+                ctx.channel().attr(CTX_AUTH_TOKEN).set(authToken);
+                
+                handleRequest(authToken, ctx, req);
+            } catch (Exception e) {
+               Throwable t = unwindThrowable(e);
+                if (t instanceof AuthenticationPendingException) {
+                    return;
                 } else {
-                    ctx.channel().attr(CTX_AUTH_TOKEN).set(authToken);
-                    handleRequest(authToken, ctx, req);
+                    sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
                 }
-            });
-
+            }
         } else {
             handleRequest(null, ctx, req);
         }
@@ -172,7 +185,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void handleRequest(AuthenticationToken authToken, ChannelHandlerContext ctx, HttpRequest req) {
-
         try {
             cleanPipeline(ctx.pipeline());
             // Decode URI, to correctly ignore query strings in path handling

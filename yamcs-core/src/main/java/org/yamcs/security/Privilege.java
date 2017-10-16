@@ -223,10 +223,16 @@ public class Privilege {
      * @throws InvalidAuthenticationToken
      */
     public boolean hasPrivilege(final AuthenticationToken authenticationToken, SystemPrivilege privilege) throws InvalidAuthenticationToken {
-        if (!usePrivileges)     return true;
-        if(authenticationToken == null || authenticationToken.getPrincipal() == null) return false;
+        if (!usePrivileges) {
+            return true;
+        }
+        if(authenticationToken == null || authenticationToken.getPrincipal() == null) {
+            return false;
+        }
 
-        if (isSystemToken(authenticationToken)) return true;
+        if (isSystemToken(authenticationToken)) {
+            return true;
+        }
     
         return hasPrivilege(authenticationToken, Type.SYSTEM, privilege.name());
     }
@@ -278,7 +284,7 @@ public class Privilege {
             namespace = MdbMappings.MDB_OPSNAME;
         }
         Collection<String> tl= getTmPacketNames(XtceDbFactory.getInstance(yamcsInstance), namespace);
-        ArrayList<String> l=new ArrayList<String>();
+        ArrayList<String> l=new ArrayList<>();
         for(String name:tl) {
             if(!hasPrivilege(authToken, Privilege.Type.TM_PACKET, name)){
                 continue;
@@ -289,7 +295,7 @@ public class Privilege {
     }
     
     private Collection<String> getTmPacketNames(XtceDb xtcedb, String namespace) {
-        ArrayList<String> pn=new ArrayList<String>();
+        ArrayList<String> pn=new ArrayList<>();
         for(SequenceContainer sc:xtcedb.getSequenceContainers()){
             String alias=sc.getAlias(namespace);
             if(alias!=null){
@@ -314,7 +320,7 @@ public class Privilege {
             namespace = MdbMappings.MDB_OPSNAME;
         }
         XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
-        ArrayList<String> l=new ArrayList<String>();
+        ArrayList<String> l=new ArrayList<>();
         for(String name: xtcedb.getParameterNames() ) {
             if(!hasPrivilege(authToken, Privilege.Type.TM_PARAMETER, name)) {
                 log.trace( "User '{}' does not have privilege '{}' for parameter '{}'", authToken, Privilege.Type.TM_PARAMETER, name );
@@ -345,7 +351,9 @@ public class Privilege {
     }
 
     public User getUser(AuthenticationToken authToken) {
-        if(!usePrivileges) return null;
+        if(!usePrivileges) {
+            return null;
+        }
         
         return authModule.getUser(authToken);
     }
