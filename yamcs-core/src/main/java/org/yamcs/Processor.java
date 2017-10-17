@@ -70,7 +70,7 @@ public class Processor extends AbstractService {
 
     private TmPacketProvider tmPacketProvider;
     private CommandReleaser commandReleaser;
-    private List<ParameterProvider> parameterProviders = new ArrayList<ParameterProvider>();
+    private List<ParameterProvider> parameterProviders = new ArrayList<>();
 
     private XtceDb xtcedb;
 
@@ -271,8 +271,8 @@ public class Processor extends AbstractService {
                 enabled=true;
             }
         }
-        long duration = 1000L * YConfiguration.getInt(cacheConfig, "duration", 600);
-        int maxNumEntries = YConfiguration.getInt(cacheConfig, "maxNumEntries", 4096);
+        long duration = 1000L * YConfiguration.getInt(cacheConfig, "duration", 300);
+        int maxNumEntries = YConfiguration.getInt(cacheConfig, "maxNumEntries", 512);
 
         parameterCacheConfig = new ParameterCacheConfig(enabled, cacheAll, duration, maxNumEntries);
     }

@@ -84,7 +84,6 @@ public class ArchiveIndexRestHandler extends RestHandler {
         
         if(req.hasBody()) {
             BulkGetIndexRequest bgir = req.bodyAsMessage(SchemaRest.BulkGetIndexRequest.MERGE).build();
-            System.out.println("bgir: "+bgir);
             if(bgir.hasStart()) {
                 requestb.setStart(TimeEncoding.parse(bgir.getStart()));
             }

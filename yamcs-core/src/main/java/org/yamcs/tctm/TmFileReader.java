@@ -114,7 +114,6 @@ public class TmFileReader  {
         }
 
         res = inputStream.read(ccsdshdr, ccsdshdroffset, 16-ccsdshdroffset);
-        //System.out.println("Read ccsdshdr: "+StringConvertors.arrayToHexString(ccsdshdr));
         if (res != 16-ccsdshdroffset) {
             inputStream.close();
             throw new IOException("CCSDS packet header short read " + res + "/16-ccsdshdroffset");

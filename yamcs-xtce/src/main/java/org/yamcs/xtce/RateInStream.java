@@ -22,6 +22,7 @@ import java.io.Serializable;
  *
  */
 public class RateInStream implements Serializable {
+    
     private static final long serialVersionUID = 1L;
     
     private long maxInterval = -1;
@@ -39,4 +40,10 @@ public class RateInStream implements Serializable {
     public long getMinInterval() {
         return minInterval;
     }
+
+    @Override
+    public String toString() {
+        return "RateInStream [maxInterval=" + maxInterval + ", minInterval="+ minInterval + "]";
+    }
+
 }

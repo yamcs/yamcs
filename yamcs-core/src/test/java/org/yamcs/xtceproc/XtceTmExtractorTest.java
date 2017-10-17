@@ -31,7 +31,6 @@ import org.yamcs.ContainerExtractionResult;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
-import org.yamcs.algorithms.AbstractAlgorithmExecutor;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterValueList;
@@ -124,7 +123,7 @@ public class XtceTmExtractorTest {
         assertNotNull(pv);
         assertEquals(tmGenerator.pLEFloatPara1_2_2, pv.getEngValue().getFloatValue(), 0);
         
-        assertEquals(1500, pv.getExpireMills());
+        assertEquals((long)(1500*1.9), pv.getExpireMills());
     }
 
     

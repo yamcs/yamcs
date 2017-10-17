@@ -156,7 +156,9 @@ USS.Display.prototype = {
         opts.dataBindings=[];
         $(e).children('DataBindings').children('DataBinding').each(function(idx,val) {
             var db=USS.parseDataBinding(val);
-            opts.dataBindings.push(db);
+	    if(db) {
+                opts.dataBindings.push(db);
+	    }
         });
         return opts;
     },
@@ -298,9 +300,14 @@ $.extend(USS.Field.prototype, {
         }
 
         var id = USS.getParameterFromWidget(this);
-        var yamcsInstance = location.pathname.match(/\/([^\/]*)\/?/)[1];
-        var rectLink = svg.link(parent, '/' + yamcsInstance + '/mdb/' + id.namespace + '/' + id.name, {});
-        svg.rect(rectLink, 0, 0, this.width, this.height, settings);
+        if(id) {
+            var yamcsInstance = location.pathname.match(/\/([^\/]*)\/?/)[1];
+            var rectLink = svg.link(parent, '/' + yamcsInstance + '/mdb/' + id.namespace + '/' + id.name, {});
+            svg.rect(rectLink, 0, 0, this.width, this.height, settings);
+        } else {
+            svg.rect(parent, 0, 0, this.width, this.height, settings);
+        }
+       
 
         USS.writeText(svg, parent, {id: this.id, x: 0, y: 0, width: this.width, height: this.height}, $e.children('TextStyle'), " ");
 

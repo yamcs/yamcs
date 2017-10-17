@@ -2,7 +2,6 @@ package org.yamcs.xtce;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -13,17 +12,16 @@ import java.util.List;
  * The idle pattern is part of any unallocated space in the Container.
  */
 public class SequenceContainer extends Container {
-    private static final long serialVersionUID = 3L;
+    private static final long serialVersionUID = 4L;
+
+    List<SequenceEntry> entryList =new ArrayList<>();
+
+    SequenceContainer baseContainer;
+    MatchCriteria restrictionCriteria;
     
     public SequenceContainer(String name) {
         super(name);
     }
-
-    ArrayList<SequenceEntry> entryList =new ArrayList<SequenceEntry>();
-
-    SequenceContainer baseContainer;
-    MatchCriteria restrictionCriteria;
-
     /**
      * Use this container as a partition when archiving (name of the container is used as partitioning key in the tm table).
      * Notes:
@@ -61,24 +59,12 @@ public class SequenceContainer extends Container {
         this.restrictionCriteria = restrictionCriteria;
     }
 
-    public void print(PrintStream out) {
-        out.print("SequenceContainer name: "+name+((sizeInBits>-1)?", sizeInBits: "+sizeInBits:""));
-        if(getAliasSet()!=null) out.print(", aliases: "+getAliasSet());
-        out.print(", useAsArchivePartition:" +useAsArchivePartition);
-        out.println();
-        if(baseContainer!=null) {
-            out.print("\tbaseContainer: '"+baseContainer.getQualifiedName());
-            out.println("', restrictionCriteria: "+restrictionCriteria);
-        }
-        for(SequenceEntry se:getEntryList()) {
-            out.println("\t\t"+se);
-        }
-    }
-    public void setEntryList(ArrayList<SequenceEntry> entryList) {
+   
+    public void setEntryList(List<SequenceEntry> entryList) {
         this.entryList = entryList;
     }
 
-    public ArrayList<SequenceEntry> getEntryList() {
+    public List<SequenceEntry> getEntryList() {
         return entryList;
     }
 
@@ -95,5 +81,24 @@ public class SequenceContainer extends Container {
 
     public void useAsArchivePartition(boolean useAsArchivePartition) {
         this.useAsArchivePartition = useAsArchivePartition;
+    }
+    
+    public void print(PrintStream out) {
+        out.print("SequenceContainer name: "+name+((sizeInBits>-1)?", sizeInBits: "+sizeInBits:""));
+        if(getAliasSet()!=null) {
+            out.print(", aliases: "+getAliasSet());
+        }
+        out.print(", useAsArchivePartition:" +useAsArchivePartition);
+        if(rate!=null) {
+            out.print(", rateInStream: "+rate);
+        }
+        out.println();
+        if(baseContainer!=null) {
+            out.print("\tbaseContainer: '"+baseContainer.getQualifiedName());
+            out.println("', restrictionCriteria: "+restrictionCriteria);
+        }
+        for(SequenceEntry se:getEntryList()) {
+            out.println("\t\t"+se);
+        }
     }
 }

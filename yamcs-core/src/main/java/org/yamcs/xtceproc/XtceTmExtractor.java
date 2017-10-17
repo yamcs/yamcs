@@ -27,7 +27,7 @@ public class XtceTmExtractor {
     
     public final XtceDb xtcedb;
     final SequenceContainer rootContainer;
-    boolean ignoreOutOfContainerEntries = false;
+    ContainerProcessingOptions options = new ContainerProcessingOptions();
     final ProcessorData pcontext;
     /**
      * Creates a TmExtractor extracting data according to the XtceDb
@@ -94,7 +94,7 @@ public class XtceTmExtractor {
         try {
              synchronized(subscription) {
                 BitBuffer buf = new BitBuffer(b);
-                ContainerProcessingContext cpc = new ContainerProcessingContext(pcontext, buf, result, subscription, ignoreOutOfContainerEntries);
+                ContainerProcessingContext cpc = new ContainerProcessingContext(pcontext, buf, result, subscription, options);
                 cpc.sequenceContainerProcessor.extract(startContainer);
             }
         } catch (Exception e) {
@@ -110,22 +110,6 @@ public class XtceTmExtractor {
         return stats;
     }
     
-    public boolean isIgnoreOutOfContainerEntries() {
-        return ignoreOutOfContainerEntries;
-    }
-
-    /**
-     * If set to true, the entries that  fit outside the packet definition, will not be even logged.
-     * If set to false, a log message at WARNING level will be printed for the first entry that fits outside the binary packet.
-     * 
-     * In both cases, the processing stops at first such entry.
-     *  
-     * @param ignoreOutOfContainerEntries
-     */
-    public void setIgnoreOutOfContainerEntries(boolean ignoreOutOfContainerEntries) {
-        this.ignoreOutOfContainerEntries = ignoreOutOfContainerEntries;
-    }
-
     public void startProviding(SequenceContainer sequenceContainer) {
         synchronized(subscription) {
             subscription.addSequenceContainer(sequenceContainer);
@@ -151,5 +135,8 @@ public class XtceTmExtractor {
     @Override
     public String toString() {
         return subscription.toString();
+    }
+    public void setOptions(ContainerProcessingOptions opts) {
+        this.options = opts;
     }
 }

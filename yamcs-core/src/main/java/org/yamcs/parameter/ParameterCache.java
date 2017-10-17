@@ -24,18 +24,30 @@ import org.yamcs.xtce.Parameter;
  * 
  * We keep delivery consisting of lists of parameter values together such that
  *  if two parameters have been acquired in the same delivery, they will be given from the same delivery to the clients.
+ *  
+ *  if cacheAll is enabled, all parameters will be cached as they are received.
+ *  if cacheAll is disabled:
+ *   - a parameter will be put on the list to cache only if somebody has requested it.
+ *   - obviously first time when the parameter is requested, no value will be returned. 
+ *   - however this will greatly reduce the cache size since only a few parameters are monitored in the displays
  * 
  * @author nm
  *
  */
 public class ParameterCache {
-    final ConcurrentHashMap<Parameter, CacheEntry> cache = new ConcurrentHashMap<Parameter, CacheEntry>();
+    final ConcurrentHashMap<Parameter, CacheEntry> cache = new ConcurrentHashMap<>();
+    //which parameters to cache
+    final ConcurrentHashMap<Parameter, Boolean> parametersToCache;
     final long timeToCache;
     final int maxNumEntries;
+    boolean cacheAll;
+    
     
     public ParameterCache(ParameterCacheConfig cacheConfig) {
         this.timeToCache = cacheConfig.maxDuration;
         this.maxNumEntries = cacheConfig.maxNumEntries;
+        this.cacheAll = cacheConfig.cacheAll;
+        parametersToCache = cacheAll?null:new ConcurrentHashMap<>();
     }
     /**
      * update the parameters in the cache
@@ -48,10 +60,14 @@ public class ParameterCache {
             Parameter p = pv.getParameter();
             CacheEntry ce = cache.get(p);
             if(ce==null) {
-                ce = new CacheEntry(p, timeToCache, maxNumEntries);
-                cache.put(p, ce);
+                if(cacheAll||parametersToCache.containsKey(p)) {
+                    ce = new CacheEntry(p, timeToCache, maxNumEntries);
+                    cache.put(p, ce);
+                    ce.add(pvlist);
+                }
+            } else {
+                ce.add(pvlist);
             }
-            ce.add(pvlist);
         }
     }
 
@@ -97,6 +113,9 @@ public class ParameterCache {
                 }
             } else { //no value for this parameter
                 bs.clear(i);
+                if(!cacheAll) {
+                    parametersToCache.put(p, Boolean.TRUE);
+                }
             }
         }
 
@@ -112,6 +131,9 @@ public class ParameterCache {
     public ParameterValue getLastValue(Parameter p) {
         CacheEntry ce = cache.get(p);
         if(ce==null) {
+            if(!cacheAll) {
+                parametersToCache.put(p, Boolean.TRUE);
+            }
             return null;
         }
         ParameterValueList pvlist = ce.getLast();
@@ -126,8 +148,12 @@ public class ParameterCache {
      * @return
      */
     public List<ParameterValue> getAllValues(Parameter p) {
+      
         CacheEntry ce = cache.get(p);
         if(ce==null) {
+            if(!cacheAll) {
+                parametersToCache.put(p, Boolean.TRUE);
+            }
             return null;
         }
 

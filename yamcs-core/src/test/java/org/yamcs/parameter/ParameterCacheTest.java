@@ -54,6 +54,35 @@ public class ParameterCacheTest {
     }
     
     @Test
+    public void testNoCacheAll() {
+        ParameterCacheConfig pcc = new ParameterCacheConfig(true, false, 1000, 4096);
+       
+        ParameterCache pcache = new ParameterCache(pcc); //1 second
+        assertNull(pcache.getLastValue(p1));
+        
+        ParameterValue p1v1 = getParameterValue(p1, 10);
+        ParameterValue p2v1 = getParameterValue(p2, 10);
+        pcache.update(Arrays.asList(p1v1, p2v1));
+        
+        assertEquals(p1v1, pcache.getLastValue(p1));
+        assertNull(pcache.getLastValue(p2));
+        
+        
+        ParameterValue p2v2 = getParameterValue(p2, 20);
+        pcache.update(Arrays.asList(p2v2));
+                
+        assertEquals(p2v2, pcache.getLastValue(p2));
+        
+        
+        List<ParameterValue> pvlist = pcache.getValues(Arrays.asList(p1, p2));
+        checkEquals(pvlist, p1v1, p2v1);
+        
+        pvlist = pcache.getValues(Arrays.asList(p2, p1));
+        checkEquals(pvlist, p2v2, p1v1);
+        
+    }
+    
+    @Test
     public void testCircularity() {
         ParameterCacheConfig pcc = new ParameterCacheConfig(true, true, 1000, 4096);
         ParameterCache pcache = new ParameterCache(pcc); //1 second
@@ -164,7 +193,7 @@ public class ParameterCacheTest {
     
     /**
      * 
-     * Perforamnce tests for different syncrhonization strategies in ParameterCache.CacheEntry
+     * Performance tests for different syncrhonization strategies in ParameterCache.CacheEntry
      * 
      * Results on Quad Core Intel(R) Core(TM) i7-4610M CPU @ 3.00GHz
      * Ubuntu 14.04

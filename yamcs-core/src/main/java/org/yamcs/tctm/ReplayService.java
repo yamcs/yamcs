@@ -153,9 +153,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         
         for(ParameterValue pv:pvlist) {
             if(pv.getEngValue()==null &&pv.getRawValue()!=null) {
-                System.out.println("calibrating "+pv);
-                  ptypeProcessor.calibrate(pv);
-                  System.out.println("after calibration "+pv);
+                ptypeProcessor.calibrate(pv);
             }
         }
         return pvlist;

@@ -24,24 +24,23 @@ public class ContainerProcessingContext {
 
     Subscription subscription;
     ContainerProcessingResult result;
-
+    ContainerProcessingOptions options;
+    
     //if set to true, out of packet parameters will be silently ignored, otherwise an exception will be thrown
-    final boolean ignoreOutOfContainerEntries;
 
-    public final SequenceContainerProcessor sequenceContainerProcessor=new SequenceContainerProcessor(this);
+    public final SequenceContainerProcessor sequenceContainerProcessor = new SequenceContainerProcessor(this);
     public final SequenceEntryProcessor sequenceEntryProcessor=new SequenceEntryProcessor(this);
     public final DataEncodingDecoder dataEncodingProcessor=new DataEncodingDecoder(this);
     public final ValueProcessor valueProcessor=new ValueProcessor(this);
     public final CriteriaEvaluator criteriaEvaluator;
 
-    public ContainerProcessingContext(ProcessorData pdata, BitBuffer buffer, ContainerProcessingResult result, Subscription subscription, 
-            boolean ignoreOutOfContainerEntries) {
+    public ContainerProcessingContext(ProcessorData pdata, BitBuffer buffer, ContainerProcessingResult result, Subscription subscription, ContainerProcessingOptions options) {
         this.pdata = pdata;
         this.buffer = buffer;
         this.subscription = subscription;
         this.criteriaEvaluator = new CriteriaEvaluatorImpl(result.params);
-        this.ignoreOutOfContainerEntries = ignoreOutOfContainerEntries;
         this.result = result;
+        this.options = options;
     }
     
     static class ContainerProcessingResult {

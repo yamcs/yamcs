@@ -30,6 +30,7 @@ USS.parseDataBinding = function(e) {
             db.parameterNamespace = USS.opsNamespace.trim();
          } else {
             console.log("External Data source without Opsname", ds);
+            return
          }
          db.usingRaw=($(ds).children('UsingRaw').text().toLowerCase()==='true');
     } else if (db.type=='Computation') {

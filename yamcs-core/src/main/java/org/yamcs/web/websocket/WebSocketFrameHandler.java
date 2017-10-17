@@ -2,6 +2,7 @@ package org.yamcs.web.websocket;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -124,6 +125,9 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
                 ByteBuf binary = frame.content();
                 if (binary != null) {
+                    if(log.isTraceEnabled()) {
+                        log.debug("Websocket data: {}", frame);
+                    }
                     InputStream in = new ByteBufInputStream(binary);
                     WebSocketDecodeContext msg = decoder.decodeMessage(in);
                     AbstractWebSocketResource resource = resourcesByName.get(msg.getResource());

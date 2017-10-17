@@ -119,13 +119,11 @@ public class ContainerBuffer {
             break;
         case ONES_COMPLEMENT:
             negative = ((rv>>>(numBits-1) & 1L) == 1L);
-            System.out.print("rv: "+rv+" negative: "+negative);
             mask >>>= 1; // Don't include sign in mask
             if (negative) {
                 rv = ~rv;
             }
             rv=(rv&(mask))>>>bitsToShift;
-            System.out.println("  rv: "+rv);
             break;
                     
             

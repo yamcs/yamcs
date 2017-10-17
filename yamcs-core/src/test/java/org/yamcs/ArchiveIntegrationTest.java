@@ -139,7 +139,6 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals("/REFMDB/SUBSYS1/processed_para_enum_nc", pp_para_enum_nc.getId().getName());
         assertEquals("2015-01-01T10:01:00.010", pp_para_uint.getGenerationTimeUTC());
         assertEquals(1, pp_para_enum_nc.getRawValue().getUint32Value());
-        System.out.println("received pp: "+pp_para_enum_nc);
         assertEquals("one_why not", pp_para_enum_nc.getEngValue().getStringValue());
         
         ParameterValue pp_para_double = pdata.getParameter(2);

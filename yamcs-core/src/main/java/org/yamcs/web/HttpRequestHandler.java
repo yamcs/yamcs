@@ -63,14 +63,14 @@ import io.protostuff.Schema;
 
 /**
  * Handles handshakes and messages.
- * 
+ *
  * We have following different request types - static requests - sent to the
  * fileRequestHandler - do no go higher in the netty pipeline - websocket
  * requests - the pipeline is modified to add the websocket handshaker. - load
  * data requests - the pipeline is modified by the respective route handler -
  * standard API calls (the vast majority) - the HttpObjectAgreggator is added
  * upstream to collect (and limit) all data from the http request in one object.
- * 
+ *
  * Because we support multiple http requests on one connection (keep-alive), we
  * have to clean the pipeline when the request type changes
  */
@@ -88,9 +88,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     private static StaticFileHandler fileRequestHandler = new StaticFileHandler();
     private Router apiRouter;
     private boolean contentExpected = false;
-    
+
     private static JsonFactory jsonFactory = new JsonFactory();
-    
+
     private static final FullHttpResponse BAD_REQUEST = new DefaultFullHttpResponse(
             HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST,
             Unpooled.EMPTY_BUFFER);
@@ -98,7 +98,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         HttpUtil.setContentLength(BAD_REQUEST, 0);
     }
     public static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
-    
+
     public HttpRequestHandler(Router apiRouter) {
         this.apiRouter = apiRouter;
     }
@@ -112,7 +112,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                 return;
             }
         }
-        
+
         if (msg instanceof HttpRequest) {
             contentExpected = false;
             processRequest(ctx, (HttpRequest) msg);
@@ -133,7 +133,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             ReferenceCountUtil.release(msg);
         }
     }
-    
+
     private void processRequest(ChannelHandlerContext ctx, HttpRequest req) {
         // We have this also on info level coupled with the HTTP response status
         // code,
@@ -164,7 +164,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     }
 
     private Throwable unwindThrowable(Throwable t) {
-        while (((t instanceof ExecutionException) || (t instanceof CompletionException) || (t instanceof UncheckedExecutionException)) 
+        while (((t instanceof ExecutionException) || (t instanceof CompletionException) || (t instanceof UncheckedExecutionException))
                 && t.getCause() != null) {
             t = t.getCause();
         }
@@ -172,7 +172,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void handleRequest(AuthenticationToken authToken, ChannelHandlerContext ctx, HttpRequest req) {
-     
+
         try {
             cleanPipeline(ctx.pipeline());
             // Decode URI, to correctly ignore query strings in path handling
@@ -217,13 +217,13 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         } catch (IOException e) {
             log.warn("Exception while handling http request", e);
             sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
-        } 
+        }
     }
 
-    
+
     /**
      * Adapts Netty's pipeline for allowing WebSocket upgrade
-     * 
+     *
      * @param ctx
      *  context for this channel handler
      */
@@ -258,13 +258,13 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     }
 
     public static <T extends MessageLite> ChannelFuture sendMessageResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status, T responseMsg, Schema<T> responseSchema) {
-            return sendMessageResponse(ctx, req, status, responseMsg, responseSchema, true);
+        return sendMessageResponse(ctx, req, status, responseMsg, responseSchema, true);
     }
-    
+
     public static <T extends MessageLite> ChannelFuture sendMessageResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status, T responseMsg, Schema<T> responseSchema, boolean autoCloseOnError) {
         ByteBuf body = ctx.alloc().buffer();
         MediaType contentType = MediaType.getAcceptType(req);
-        
+
         try (ByteBufOutputStream channelOut = new ByteBufOutputStream(body)){
             if (contentType == MediaType.PROTOBUF) {
                 responseMsg.writeTo(channelOut);
@@ -291,7 +291,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         HttpUtil.setContentLength(response, txSize);
         return sendResponse(ctx, req, response, autoCloseOnError);
     }
-    
+
     public static ChannelFuture sendPlainTextError(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status) {
         return sendPlainTextError(ctx, req, status, status.toString());
     }
@@ -301,7 +301,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
         return sendResponse(ctx, req, response, true);
     }
-    
+
     public static ChannelFuture sendResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponse response, boolean autoCloseOnError) {
         if(response.status()==HttpResponseStatus.OK) {
             log.info("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(), response.status().code());
@@ -319,7 +319,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             ChannelFuture writeFuture = ctx.writeAndFlush(response);
             if(autoCloseOnError) {
                 writeFuture = writeFuture.addListener(ChannelFutureListener.CLOSE);
-            } 
+            }
             return writeFuture;
         }
     }
@@ -356,15 +356,13 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         ChannelFuture writeFuture = ctx.writeAndFlush(new DefaultHttpContent(buf));
         try {
             if (!ch.isWritable()) {
-                log.warn("Channel open, but not writable. Waiting it out for max 10 seconds");
                 boolean writeCompleted = writeFuture.await(10, TimeUnit.SECONDS);
                 if (!writeCompleted) {
                     throw new IOException("Channel did not become writable in 10 seconds");
                 }
             }
         } catch (InterruptedException e) {
-            log.warn("Interrupted while waiting for channel to become writable", e);
-            throw new IOException(e);
+            Thread.currentThread().interrupt();
         }
         return writeFuture;
     }
