@@ -26,6 +26,7 @@ import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -173,6 +174,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
      */
     @Override
     public void sendTc(PreparedCommand pc) {
+    	System.out.println("sendtc0 "+StringConverter.arrayToHexString(pc.getBinary()));
         if(disabled) {
             log.warn("TC disabled, ignoring command "+pc.getCommandId());
             return;
@@ -183,12 +185,15 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             bb.put(pc.getBinary());
             bb.putShort(4, (short)(minimumTcPacketLength - 7)); // fix packet length
         } else {
-            bb=ByteBuffer.wrap(pc.getBinary());
+        	 bb=ByteBuffer.wrap(pc.getBinary());
+             bb.putShort(4, (short)(pc.getBinary().length - 7)); // fix packet length
+        	
         }
 
         int retries=5;
         boolean sent=false;
         int seqCount=seqAndChecksumFiller.fill(bb, pc.getCommandId().getGenerationTime());
+    	System.out.println("sendtc1 "+StringConverter.arrayToHexString(pc.getBinary()));
         bb.rewind();
         while (!sent&&(retries>0)) {
             if (!isSocketOpen()) {

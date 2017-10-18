@@ -166,8 +166,8 @@ public class LaunchAndLandingSimulator extends Simulator {
         while(pendingCommands.size()>0) {
             CCSDSPacket commandPacket = pendingCommands.poll();
             if (commandPacket.getPacketType() == 10) {
-                log.debug("BATT COMMAND: " + commandPacket.getPacketId()+" batNum: "+commandPacket.getUserDataBuffer().get(0));
-
+                log.info("BATT COMMAND: " + commandPacket.getPacketId()); //+" batNum: "+commandPacket.getUserDataBuffer().get(0));
+            	
                 switch(commandPacket.getPacketId()){
                     case 1:
                         switchBatteryOn(commandPacket);
@@ -184,6 +184,8 @@ public class LaunchAndLandingSimulator extends Simulator {
                     case 7:
                         deleteRecording(commandPacket);
                         break;
+                    default:
+                    	log.error("Invalid command packet id: " + commandPacket.getPacketId());
                 }
             }
         }
@@ -256,9 +258,9 @@ public class LaunchAndLandingSimulator extends Simulator {
     
     private void listRecordings() {
         // send ack
-        //ackPacket = new CCSDSPacket(1, 2, 7);
-        //AckDataHandler.fillAckPacket(ackPacket, 1);
-        //tl.tmTransmit(ackPacket);
+    	CCSDSPacket ackPacket = new CCSDSPacket(1, 2, 7);
+    	ackDataHandler.fillAckPacket(ackPacket, 1);
+        transmitTM(ackPacket);
 
         CCSDSPacket losNamePacket = getLosStore().getLosNames();
         transmitTM(losNamePacket);

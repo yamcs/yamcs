@@ -37,6 +37,7 @@ public class CcsdsSeqAndChecksumFiller {
 	 * @param genTime 
 	 */
 	public int fill(ByteBuffer bb, long genTime) {
+		
 		int apid=bb.getShort(0)&0x07FF;
 		int seqCount=getSeqCount(apid);
 		int seqFlags=bb.getShort(2)>>>14;
@@ -47,12 +48,12 @@ public class CcsdsSeqAndChecksumFiller {
 		bb.put(10, gpsTime.fineTime);
 		
 		
-		int checksum=0;
-		int l=bb.capacity();
-		for(int i=0;i<l-2;i+=2) {
-			checksum+=bb.getShort(i);
-		}
-		bb.putShort(l-2,(short)(checksum&0xFFFF));
+//		int checksum=0;
+//		int l=bb.capacity() - 2;
+//		for(int i=0;i<l;i+=2) {
+//			checksum+=bb.getShort(i);
+//		}
+		//bb.putShort(l,(short)(checksum&0xFFFF)); //Checksum overlapping package id
 		
 		return seqCount;
 	}

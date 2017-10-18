@@ -88,6 +88,7 @@ public class CCSDSPacket {
         buffer.put(11, (byte) ((SH_TIME_ID_TIME_OF_PACKET_GENERATION << 6) | packetType)); // no checksum id		   // modified to allow for packet type assignment 
         buffer.putInt(12, packetid);
         //describePacketHeader();
+        
     }
 
     public ByteBuffer getUserDataBuffer() {
