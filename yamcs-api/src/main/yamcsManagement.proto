@@ -30,6 +30,7 @@ message HistoryInfo {
   optional string version = 1;
   optional string date = 2;
   optional string message = 3;
+  optional string author = 4;
 }
 
 message SpaceSystemInfo {

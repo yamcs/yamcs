@@ -1,5 +1,7 @@
 package org.yamcs.xtce;
 
+import static org.yamcs.xtce.SpreadsheetLoaderBits.*;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -24,12 +26,12 @@ import java.util.stream.Collectors;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.DoubleRange;
 import org.yamcs.utils.StringConverter;
-import org.yamcs.xtce.StringDataEncoding.SizeType;
 import org.yamcs.xtce.Algorithm.Scope;
 import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.CommandVerifier.TerminationAction;
 import org.yamcs.xtce.NameReference.Type;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
+import org.yamcs.xtce.StringDataEncoding.SizeType;
 import org.yamcs.xtce.xml.XtceAliasSet;
 import org.yamcs.xtceproc.JavaExpressionCalibratorFactory;
 
@@ -43,7 +45,6 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.WorkbookSettings;
 import jxl.read.biff.BiffException;
-import static org.yamcs.xtce.SpreadsheetLoaderBits.*;
 /**
  * This class loads database from excel spreadsheets.
  *
@@ -78,7 +79,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     protected static final String SHEET_COMMANDOPTIONS = "CommandOptions";
     protected static final String SHEET_COMMANDVERIFICATION = "CommandVerification";
     //the list of sheets that can be part of subsystems with a sub1/sub2/sub3/SheetName notation
-    static String[] SUBSYSTEM_SHEET_NAMES = {SHEET_CALIBRATION, SHEET_TELEMETERED_PARAMETERS, SHEET_LOCAL_PARAMETERS, SHEET_DERIVED_PARAMETERS, 
+    static String[] SUBSYSTEM_SHEET_NAMES = {SHEET_CALIBRATION, SHEET_TELEMETERED_PARAMETERS, SHEET_LOCAL_PARAMETERS, SHEET_DERIVED_PARAMETERS,
             SHEET_CONTAINERS, SHEET_ALGORITHMS, SHEET_ALARMS, SHEET_COMMANDS, SHEET_COMMANDOPTIONS, SHEET_COMMANDVERIFICATION};
 
 
@@ -95,7 +96,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
 
     boolean enableAliasReferences = false;
-    boolean enableXtceNameRestrictions = true; 
+    boolean enableXtceNameRestrictions = true;
 
 
     public SpreadsheetLoader(Map<String, Object> config) {
@@ -337,7 +338,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 calibrators.put(name, new PolynomialCalibrator(pol_coef));
             } else if (CALIB_TYPE_SPLINE.equalsIgnoreCase(type)) {
                 calibrators.put(name, new SplineCalibrator(spline));
-            } 
+            }
             start = end;
         }
     }
@@ -400,7 +401,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 engtype = PARAM_ENGTYPE_UINT32;
             } else if("int".equalsIgnoreCase(engtype)) {
                 engtype = PARAM_ENGTYPE_INT32;
-            } 
+            }
 
             ParameterType ptype = null;
             if (PARAM_ENGTYPE_UINT32.equalsIgnoreCase(engtype)) {
@@ -574,9 +575,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             customFromBinaryTransform = new UnresolvedNameReference(algoName, Type.ALGORITHM);
             spaceSystem.addUnresolvedReference(customFromBinaryTransform);
             customFromBinaryTransform.addResolvedAction(nd-> {
-                    ((Algorithm)nd).setScope(Scope.CONTAINER_PROCESSING);
-                    return true;
-                });
+                ((Algorithm)nd).setScope(Scope.CONTAINER_PROCESSING);
+                return true;
+            });
         }
         DataEncoding encoding = null;
         if (PARAM_RAWTYPE_INT.equalsIgnoreCase(rawtype)||PARAM_RAWTYPE_UINT.equalsIgnoreCase(rawtype)) {
@@ -595,7 +596,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 encoding = new IntegerDataEncoding(bitlength);
                 ((IntegerDataEncoding)encoding).encoding = getIntegerEncoding(ctx, encodingType);
                 if(encodingArgs.length>1) {
-                    ((IntegerDataEncoding)encoding).setByteOrder(getByteOrder(ctx, encodingArgs[1])); 
+                    ((IntegerDataEncoding)encoding).setByteOrder(getByteOrder(ctx, encodingArgs[1]));
                 }
             }
 
@@ -627,7 +628,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 encoding = new FloatDataEncoding(bitlength);
                 ((FloatDataEncoding)encoding).setEncoding(getFloatEncoding(ctx, encodingType));
                 if(encodingArgs.length>1) {
-                    ((FloatDataEncoding)encoding).setByteOrder(getByteOrder(ctx, encodingArgs[1])); 
+                    ((FloatDataEncoding)encoding).setByteOrder(getByteOrder(ctx, encodingArgs[1]));
                 }
             }
             if((!PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)) && calib!=null) {
@@ -690,7 +691,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 ((StringDataEncoding)encoding).setSizeInBitsOfSizeTag(parseInt(ctx, encodingArgs[0]));
             } else  {
                 throw new SpreadsheetLoadException(ctx, "Unsupported encoding type "+encodingType+" Use one of 'fixed', 'terminated', 'PrependedSize' or 'custom'");
-            } 
+            }
             ((StringDataEncoding)encoding).setEncoding(charset);
         } else if (PARAM_RAWTYPE_BINARY.equalsIgnoreCase(rawtype)) {
             if (customFromBinaryTransform!=null) {
@@ -798,8 +799,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             return;
         }
 
-        HashMap<String, SequenceContainer> containers = new HashMap<String, SequenceContainer>();
-        HashMap<String, String> parents = new HashMap<String, String>();
+        HashMap<String, SequenceContainer> containers = new HashMap<>();
+        HashMap<String, String> parents = new HashMap<>();
         Cell[] firstRow = jumpToRow(sheet, 0);
 
         for (int i = 1; i < sheet.getRows(); i++) {
@@ -897,7 +898,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 cells = jumpToRow(sheet, i);
                 // determine whether we have not reached the end of the packet definition.
                 if (!hasColumn(cells,  IDX_CONT_PARA_NAME)) {
-                    end = true; 
+                    end = true;
                     continue;
                 }
 
@@ -972,7 +973,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     absoluteoffset = -1;
                 }
 
-                i++; 
+                i++;
                 counter++;
             }
 
@@ -1177,7 +1178,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     absoluteOffset = loadArgument(cells, cmd, container, absoluteOffset, counter);
                 }
 
-                i++; 
+                i++;
                 counter++;
             }
 
@@ -1421,7 +1422,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     }
 
     private List<ArgumentAssignment> toArgumentAssignmentList(String argAssignment) {
-        List<ArgumentAssignment> aal = new ArrayList<ArgumentAssignment>();
+        List<ArgumentAssignment> aal = new ArrayList<>();
         String splitted[] = argAssignment.split(";");
         for (String part: splitted) {
             aal.add(toArgumentAssignment(part));
@@ -1836,7 +1837,12 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 if (cells.length >= 3) {
                     msg = cells[IDX_LOG_MESSAGE].getContents();
                 }
-                History history = new History(version, date, msg);
+
+                String author = null;
+                if (cells.length >= 4) {
+                    author = cells[IDX_LOG_AUTHOR].getContents();
+                }
+                History history = new History(version, date, msg, author);
                 rootSpaceSystem.getHeader().addHistory(history);
             }
             i++;
@@ -1901,7 +1907,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
             // In/out params
             String paraInout=null;
-            Set<String> inputParameterRefs=new HashSet<String>();
+            Set<String> inputParameterRefs=new HashSet<>();
             for (int j = start+1; j < end; j++) {
                 cells = jumpToRow(sheet, j);
                 String paraRefName = cells[IDX_ALGO_PARA_REF].getContents();
@@ -2159,7 +2165,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         paraRef.addResolvedAction(nd -> {
             Parameter para = (Parameter) nd;
             ParameterType ptype = para.getParameterType();
-            if(ptype == null) { //the type has to be resolved somewhere else first 
+            if(ptype == null) { //the type has to be resolved somewhere else first
                 return false;
             }
 
@@ -2294,7 +2300,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             paraRef = new UnresolvedNameReference(paramName, Type.PARAMETER);
             spaceSystem.addUnresolvedReference(paraRef);
         } else {
-            paraRef = new ResolvedNameReference(paramName, Type.PARAMETER, para);    
+            paraRef = new ResolvedNameReference(paramName, Type.PARAMETER, para);
         }
 
         return paraRef;

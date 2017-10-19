@@ -4,18 +4,19 @@ import java.io.Serializable;
 
 /**
  * Capture creation or change history of document.
- * 
+ *
  * DIFFERS_FROM_XTCE XTCE only has one string-field.
  */
 public class History implements Serializable, Comparable<History> {
 
     private static final long serialVersionUID = 1L;
-    
+
     private String version;
     private String date;
     private String message;
-    
-    public History(String version, String date, String message) {
+    private String author;
+
+    public History(String version, String date, String message, String author) {
         if(version == null)
             throw new IllegalArgumentException("Version can not be null");
         if(!version.matches("[0-9]+.*"))
@@ -23,20 +24,25 @@ public class History implements Serializable, Comparable<History> {
         this.version = version;
         this.date = date;
         this.message = message;
+        this.author = author;
     }
-    
+
     public String getVersion() {
         return version;
     }
-    
+
     public String getDate() {
         return date;
     }
-    
+
     public String getMessage() {
         return message;
     }
-    
+
+    public String getAuthor() {
+        return author;
+    }
+
     @Override
     public String toString() {
         return version + "; " + date + (message != null ? "; " + message : "");

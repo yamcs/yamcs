@@ -110,6 +110,7 @@ public class SpreadsheetLoaderBits {
     protected static final int IDX_LOG_VERSION = 0;
     protected static final int IDX_LOG_DATE = 1;
     protected static final int IDX_LOG_MESSAGE = 2;
+    protected static final int IDX_LOG_AUTHOR = 3;
 
     protected static final String CALIB_TYPE_ENUMERATION = "enumeration";
     protected static final String CALIB_TYPE_POLYNOMIAL = "polynomial";
@@ -275,7 +276,7 @@ public class SpreadsheetLoaderBits {
         }
 
     }
-    
+
     static ByteOrder getByteOrder(SpreadsheetLoadContext ctx, String bo) {
         if("LE".equalsIgnoreCase(bo)) {
             return ByteOrder.LITTLE_ENDIAN;
@@ -285,7 +286,7 @@ public class SpreadsheetLoaderBits {
             throw new SpreadsheetLoadException(ctx, "Unsupported byte order '"+bo+"'. Supported values: LE|BE");
         }
     }
-    
+
     static class RawTypeEncoding {
         String rawType;
         String encoding;
