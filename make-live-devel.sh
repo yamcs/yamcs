@@ -14,7 +14,8 @@ if [ -n "$1" ] ; then
 fi
 
 
-YAMCS_HOME=`pwd`
+PRG_DIR=`dirname $0`
+YAMCS_HOME=`cd "$PRG_DIR"; pwd`
 
 mkdir -p $TARGET/etc
 mkdir -p $TARGET/bin
