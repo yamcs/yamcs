@@ -185,7 +185,12 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             bb.put(pc.getBinary());
             bb.putShort(4, (short)(minimumTcPacketLength - 7)); // fix packet length
         } else {
-            bb=ByteBuffer.wrap(pc.getBinary());
+        	int checksumIndicator = pc.getBinary()[2] & 0x04;
+        	if(checksumIndicator ==1) {
+        		bb=ByteBuffer.allocate(pc.getBinary().length +2); //extra slots for check sum
+        	} else {
+        		bb=ByteBuffer.wrap(pc.getBinary());
+        	}
             bb.putShort(4, (short)(pc.getBinary().length - 7));
             
         }
