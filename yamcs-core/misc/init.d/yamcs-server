@@ -71,7 +71,7 @@ case "$1" in
                     i=$((i+1))
                 else
                     log_failure_msg "yamcs failed to start; see $OUTERR.0 for details"
-                    break
+                    exit 1
                 fi
             done
             if [ $i -eq $WAIT_FOR_START ] ; then 
