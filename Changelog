@@ -13,6 +13,7 @@ Version 3.3.0 Released
   calibrate (raw->eng value) them inside the processor rather than before being injected in the stream.
   This means the parameters are stored in the L0 archive also in the initial form (could be raw+eng,only raw or only eng) and they are calibrated (using the current MDB) for each replay
   Of course ParameterArchive will store them calibrated.
+- Added a command to check the configuration by loading the services without starting them
   
 
 Version 3.2.2 Released 17-May-2017

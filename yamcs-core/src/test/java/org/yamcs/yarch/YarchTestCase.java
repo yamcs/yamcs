@@ -8,6 +8,7 @@ import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 import org.yamcs.YConfiguration;
+import org.yamcs.management.ManagementService;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.yarch.YarchDatabase;
 import org.junit.Before;
@@ -30,7 +31,7 @@ public abstract class YarchTestCase {
     @BeforeClass 
     public static void setUpYarch() throws Exception {
 	YConfiguration.setup(); //reset the prefix if maven runs multiple tests in the same java 
-
+	ManagementService.setup(false);
 	YConfiguration config=YConfiguration.getConfiguration("yamcs");
 	if(config.containsKey("littleEndian")) {
 	    littleEndian=config.getBoolean("littleEndian");
