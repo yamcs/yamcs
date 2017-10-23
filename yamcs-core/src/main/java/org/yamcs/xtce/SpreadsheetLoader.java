@@ -723,7 +723,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         return encoding;
     }
 
-    private int parseInt(SpreadsheetLoadContext ctx, String s) {
+    private static int parseInt(SpreadsheetLoadContext ctx, String s) {
         try {
             return Integer.parseInt(s);
         } catch (NumberFormatException e) {
@@ -731,11 +731,18 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         }
     }
 
+    private static double parseDouble(SpreadsheetLoadContext ctx, String s) {
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            throw new SpreadsheetLoadException(ctx, "Could not parse double from '"+s+"'");
+        }
+    }
     private byte parseByte(SpreadsheetLoadContext ctx, String s) {
         try {
             return Byte.decode(s);
         } catch (NumberFormatException e) {
-            throw new SpreadsheetLoadException(ctx, "Could not parse integer from '"+s+"'");
+            throw new SpreadsheetLoadException(ctx, "Could not parse byte from '"+s+"'");
         }
     }
     private Calibrator getFloatCalibrator(String paraName, String calibName) {
@@ -2105,38 +2112,42 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         }
         String trigger = cells[idxTrigger].getContents();
         String triggerValue = cells[idxValue].getContents();
-
+        
+        SpreadsheetLoadContext ctx1 = ctx.copy();
         paraRef.addResolvedAction(nd -> {
+           
             Parameter para = (Parameter)nd;
             if(para.getParameterType() instanceof IntegerParameterType) {
+                double tvd = parseDouble(ctx1, triggerValue);
                 IntegerParameterType ipt=(IntegerParameterType)para.getParameterType();
                 if("low".equals(trigger)) {
-                    ipt.addAlarmRange(context, new DoubleRange(Double.parseDouble(triggerValue),Double.POSITIVE_INFINITY), level);
+                    ipt.addAlarmRange(context, new DoubleRange(tvd,Double.POSITIVE_INFINITY), level);
                 } else if("high".equals(trigger)) {
-                    ipt.addAlarmRange(context, new DoubleRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)), level);
+                    ipt.addAlarmRange(context, new DoubleRange(Double.NEGATIVE_INFINITY, tvd), level);
                 } else {
-                    throw new SpreadsheetLoadException(ctx, "Unexpected trigger type '"+trigger+"' for numeric parameter "+para.getName());
+                    throw new SpreadsheetLoadException(ctx1, "Unexpected trigger type '"+trigger+"' for numeric parameter "+para.getName());
                 }
             } else if(para.getParameterType() instanceof FloatParameterType) {
+                double tvd = parseDouble(ctx1, triggerValue);
                 FloatParameterType fpt=(FloatParameterType)para.getParameterType();
                 if("low".equals(trigger)) {
-                    fpt.addAlarmRange(context, new DoubleRange(Double.parseDouble(triggerValue), Double.POSITIVE_INFINITY), level);
+                    fpt.addAlarmRange(context, new DoubleRange(tvd, Double.POSITIVE_INFINITY), level);
                 } else if("high".equals(trigger)) {
-                    fpt.addAlarmRange(context, new DoubleRange(Double.NEGATIVE_INFINITY, Double.parseDouble(triggerValue)), level);
+                    fpt.addAlarmRange(context, new DoubleRange(Double.NEGATIVE_INFINITY, tvd), level);
                 } else {
-                    throw new SpreadsheetLoadException(ctx, "Unexpected trigger type '"+trigger+"' for numeric parameter "+para.getName());
+                    throw new SpreadsheetLoadException(ctx1, "Unexpected trigger type '"+trigger+"' for numeric parameter "+para.getName());
                 }
             } else if(para.getParameterType() instanceof EnumeratedParameterType) {
                 EnumeratedParameterType ept=(EnumeratedParameterType)para.getParameterType();
                 if("state".equals(trigger)) {
                     ValueEnumeration enumValue=ept.enumValue(triggerValue);
                     if(enumValue==null) {
-                        throw new SpreadsheetLoadException(ctx, "Unknown enumeration value '"+triggerValue+"' for alarm of enumerated parameter "+para.getName());
+                        throw new SpreadsheetLoadException(ctx1, "Unknown enumeration value '"+triggerValue+"' for alarm of enumerated parameter "+para.getName());
                     } else {
                         ept.addAlarm(context, triggerValue, level);
                     }
                 } else {
-                    throw new SpreadsheetLoadException(ctx, "Unexpected trigger type '"+trigger+"' for alarm of enumerated parameter "+para.getName());
+                    throw new SpreadsheetLoadException(ctx1, "Unexpected trigger type '"+trigger+"' for alarm of enumerated parameter "+para.getName());
                 }
             }
             return true;
