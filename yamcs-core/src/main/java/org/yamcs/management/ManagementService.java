@@ -44,6 +44,10 @@ import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.tctm.Link;
 import org.yamcs.xtceproc.ProcessingStatistics;
+import org.yamcs.yarch.AbstractStream;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.management.JMXService;
 
 import com.google.common.util.concurrent.Service;
 
@@ -66,11 +70,11 @@ public class ManagementService implements ProcessorListener {
     Map<Integer, ClientControlImpl> clients = Collections.synchronizedMap(new HashMap<Integer, ClientControlImpl>());
     AtomicInteger clientId=new AtomicInteger();
     
-    List<LinkControlImpl> links=new CopyOnWriteArrayList<LinkControlImpl>();
-    List<CommandQueueManager> qmanagers=new CopyOnWriteArrayList<>();
+    List<LinkControlImpl> links = new CopyOnWriteArrayList<>();
+    List<CommandQueueManager> qmanagers = new CopyOnWriteArrayList<>();
     
     // Used to update TM-statistics, and Link State
-    ScheduledThreadPoolExecutor timer=new ScheduledThreadPoolExecutor(1);
+    ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
     
     Set<ManagementListener> managementListeners = new CopyOnWriteArraySet<>(); // Processors & Clients. Should maybe split up
     Set<LinkListener> linkListeners = new CopyOnWriteArraySet<>();
@@ -79,7 +83,9 @@ public class ManagementService implements ProcessorListener {
     // keep track of registered services
     Map<String, Integer> servicesCount = new HashMap<>();
 
-    Map<Processor, Statistics> yprocs=new ConcurrentHashMap<Processor, Statistics>();
+    Map<Processor, Statistics> yprocs=new ConcurrentHashMap<>();
+    JMXService jmxService;
+    
     static final Statistics STATS_NULL=Statistics.newBuilder().setInstance("null").setYProcessorName("null").build();//we use this one because ConcurrentHashMap does not support null values
 
     static public void setup(boolean jmxEnabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
@@ -93,11 +99,13 @@ public class ManagementService implements ProcessorListener {
     private ManagementService(boolean jmxEnabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
         this.jmxEnabled=jmxEnabled;
 
-        if(jmxEnabled)
-            mbeanServer=ManagementFactory.getPlatformMBeanServer();
-        else
+        if(jmxEnabled) {
+            JMXService.setup();
+            mbeanServer = ManagementFactory.getPlatformMBeanServer();
+            jmxService = JMXService.getInstance();
+        } else {
             mbeanServer=null;
-
+        }
         Processor.addProcessorListener(this);
         timer.scheduleAtFixedRate(() -> updateStatistics(), 1, 1, TimeUnit.SECONDS);
         timer.scheduleAtFixedRate(() -> checkLinkUpdate(), 1, 1, TimeUnit.SECONDS);
@@ -575,5 +583,30 @@ public class ManagementService implements ProcessorListener {
     public void processorStateChanged(Processor processor) {
         ProcessorInfo pi = ManagementGpbHelper.toProcessorInfo(processor);
         managementListeners.forEach(l -> l.processorStateChanged(pi));
+    }
+
+    public void registerTable(String dbname, TableDefinition tblDef) {
+        if(jmxService!=null) {
+            jmxService.registerTable(dbname, tblDef);
+        }
+        
+    }
+
+    public void registerStream(String dbname, Stream stream) {
+        if(jmxService!=null) {
+            jmxService.registerStream(dbname, stream);
+        }
+    }
+
+    public void unregisterTable(String dbname, String tblName) {
+        if(jmxService!=null) {
+            jmxService.unregisterTable(dbname, tblName);
+        }
+    }
+
+    public void unregisterStream(String dbname, String name) {
+        if(jmxService!=null) {
+            jmxService.unregisterStream(dbname, name);
+        }
     }
 }

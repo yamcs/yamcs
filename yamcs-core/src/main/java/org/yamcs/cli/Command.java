@@ -56,10 +56,14 @@ public abstract class Command {
         jc.addCommand(cmd.name, cmd);
     }
     protected YamcsConnectionProperties getYamcsConnectionProperties() {
+        return getYamcsCli().ycp;
+    }
+    
+    protected YamcsCli getYamcsCli() {
         Command c = this;
         while(c!=null) {
             if(c instanceof YamcsCli) {
-                return ((YamcsCli) c).ycp;
+                return (YamcsCli) c;
             }
             c = c.parent;
         }
@@ -209,7 +213,7 @@ public abstract class Command {
         }	
         if(!subCommands.isEmpty()) {
             out.append("Commands:\n");
-            int maxLength = 2+subCommands.values().stream().map(c -> c.getName().length()).max(Integer::max).get();
+            int maxLength = subCommands.values().stream().mapToInt(c -> c.getName().length()).max().getAsInt();
             for(Command c: subCommands.values()) {
                 out.append(String.format("    %-"+maxLength+"s    %s\n",c.getName(), jc.getCommandDescription(c.getName())));
             }

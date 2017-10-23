@@ -72,11 +72,31 @@ public class YConfiguration {
      * @param configPrefix
      * @throws ConfigurationException
      */
-    public synchronized static void setup(String configPrefix) throws ConfigurationException {
+    public static synchronized  void setup(String configPrefix) throws ConfigurationException {
+        String ucf;
+        if(System.getenv("YAMCS_DAEMON")==null) {
+            ucf = System.getProperty("user.home")+File.separatorChar+".yamcs";
+        } else {
+            String yamcsDirectory=System.getProperty("user.home");
+            ucf = yamcsDirectory+File.separatorChar+"etc";
+        }
+        setup(configPrefix, ucf);
+    }
+    
+    public static synchronized  void setup(String configPrefix, String userConfigDirectory) {
         prefix=configPrefix;
         configurations.clear();//forget any known config (useful in the maven unit tests called in the same VM)
-        if(System.getenv("YAMCS_DAEMON")==null) {
-            userConfigDirectory=System.getProperty("user.home")+File.separatorChar+".yamcs";
+        
+        YConfiguration.userConfigDirectory = userConfigDirectory;
+        if(System.getProperty("java.util.logging.config.file")==null) {
+            try {
+                LogManager.getLogManager().readConfiguration(resolver.getConfigurationStream("/logging.properties"));
+            } catch (Exception e) {
+                //do nothing, the default java builtin logging is used
+            }
+        }
+        
+        if(System.getenv("YAMCS_DAEMON")==null) {            
             File logDir = new File(userConfigDirectory+File.separatorChar+"log");
             if (!logDir.exists()) {
                 if (logDir.mkdirs()) {
@@ -89,18 +109,11 @@ public class YConfiguration {
         } else {
             String yamcsDirectory=System.getProperty("user.home");
             System.getProperties().put("cacheDirectory", yamcsDirectory+File.separatorChar+"cache"+File.separatorChar);
-            userConfigDirectory=yamcsDirectory+File.separatorChar+"etc";
-        }
-
-        if(System.getProperty("java.util.logging.config.file")==null) {
-            try {
-                LogManager.getLogManager().readConfiguration(resolver.getConfigurationStream("/logging.properties"));
-            } catch (Exception e) {
-                //do nothing, the default java builtin logging is used
-            }
+          
         }
         TimeEncoding.setUp();
     }
+    
     /**
      * calls setup(null)
      *
@@ -510,7 +523,7 @@ public class YConfiguration {
             }
 
             //see if the users has an own version of the file
-            File f = new File(userConfigDirectory+name);
+            File f = new File(userConfigDirectory+"/"+name);
             if(f.exists()) {
                 try {
                     is = new FileInputStream(f);
@@ -542,6 +555,10 @@ public class YConfiguration {
 
         public ConfigurationNotFoundException(String message) {
             super(message);
+        }
+        
+        public ConfigurationNotFoundException(String message, Throwable t) {
+            super(message, t);
         }
     }
 }

@@ -57,7 +57,6 @@ public class ParameterArchive  extends AbstractService {
     static StringColumnFamilySerializer cfSerializer = new StringColumnFamilySerializer();
 
     public ParameterArchive(String instance, Map<String, Object> args) throws IOException, RocksDBException {
-
         this.yamcsInstance = instance;
         this.timeService = YamcsServer.getTimeService(instance);
         String dbpath = YarchDatabase.getInstance(instance).getRoot() +"/ParameterArchive";
@@ -341,13 +340,13 @@ public class ParameterArchive  extends AbstractService {
 
     @Override
     protected void doStart() {
-        notifyStarted();
         if(backFiller!=null) {
             backFiller.start();
         }
         if(realtimeFiller!=null) {
             realtimeFiller.start();
         }
+        notifyStarted();
     }
 
     @Override

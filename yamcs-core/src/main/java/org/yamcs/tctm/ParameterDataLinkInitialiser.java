@@ -103,7 +103,7 @@ public class ParameterDataLinkInitialiser extends AbstractService {
             }
 
             prov.setParameterSink(new MyPpListener(stream));
-
+            
             ManagementService.getInstance().registerLink(yamcsInstance, providerName, streamName, args!=null?args.toString():"", prov);
             parameterDataLinks .add(prov);
             count++;

@@ -40,19 +40,21 @@ public class IndexServer extends AbstractService {
     ThreadPoolExecutor executor=new ThreadPoolExecutor(10,10,10,TimeUnit.SECONDS,new ArrayBlockingQueue<>(10));
 
     final TagDb tagDb;
-
+    boolean readonly = false;
     /**
      * Maps instance names to archive directories
      */
     final HashSet<String> instances=new HashSet<>();
-
+    final Map<String, Object> config;
+    
     public IndexServer(String instance) throws IOException, YarchException {
         this(instance, null);
     }
 
     public IndexServer(String yamcsInstance, Map<String, Object> config) throws YarchException, IOException {
-        boolean readonly = false;
         this.yamcsInstance = yamcsInstance;
+        this.config = config;
+        
         YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
 
         if(c.containsKey("tmIndexer")) {
@@ -61,6 +63,13 @@ public class IndexServer extends AbstractService {
         } else {
             tmIndexer = new CccsdsTmIndex(yamcsInstance, readonly);
         }
+       
+        tagDb = YarchDatabase.getInstance(yamcsInstance).getDefaultStorageEngine().getTagDb();
+        executor.allowCoreThreadTimeOut(true);
+    }
+
+    @Override
+    protected void doStart() {
         if(!readonly) {
             StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
             if(config==null) {
@@ -80,12 +89,6 @@ public class IndexServer extends AbstractService {
             }
         }
 
-        tagDb = YarchDatabase.getInstance(yamcsInstance).getDefaultStorageEngine().getTagDb();
-        executor.allowCoreThreadTimeOut(true);
-    }
-
-    @Override
-    protected void doStart() {
         notifyStarted();
     }
 

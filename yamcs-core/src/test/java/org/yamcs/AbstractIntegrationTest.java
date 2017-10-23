@@ -57,7 +57,6 @@ import org.yamcs.web.websocket.ManagementResource;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.yarch.management.JMXService;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -135,7 +134,6 @@ public abstract class AbstractIntegrationTest {
 
         YConfiguration.setup("IntegrationTest");
         ManagementService.setup(false);
-        JMXService.setup(false);
         new HttpServer().startServer();
         //     artemisServer = ArtemisServer.setupArtemis();
         //   ArtemisManagement.setupYamcsServerControl();

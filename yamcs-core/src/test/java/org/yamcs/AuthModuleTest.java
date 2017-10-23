@@ -31,7 +31,6 @@ public class AuthModuleTest {
         new HttpServer().startServer();
         
         ManagementService.setup(false);
-        JMXService.setup(false);
         YamcsServer.setupYamcsServer();
     }
     

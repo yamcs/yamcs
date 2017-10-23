@@ -140,9 +140,10 @@ public class YamcsServer {
             } catch (Exception t) {
                 staticlog.error("Cannot create service {}, with arguments {}: {}", servclass, args, t.getMessage());
                 throw t;
-            }  
-           
-            managementService.registerService(instance, servclass, swc.service);
+            }
+            if(managementService!=null) {
+                managementService.registerService(instance, servclass, swc.service);
+            }
         }
 
         return serviceList;
@@ -209,8 +210,10 @@ public class YamcsServer {
     public static String getServerId() {
         return serverId;
     }
-
-    public static void setupYamcsServer() throws Exception {
+    
+    public static void createServices() throws Exception {
+        serverId = deriveServerId();
+        
         YConfiguration c = YConfiguration.getConfiguration("yamcs");
         if(c.containsKey("crashHandler")) {
             globalCrashHandler = loadCrashHandler(c);
@@ -224,23 +227,26 @@ public class YamcsServer {
             globalServiceList = createServices(null, services);
         }
 
-        List<String> instArray = null;
         if (c.containsKey("instances")) {
-            instArray = c.getList("instances");
+            List<String> instArray = c.getList("instances");
             for(String inst:instArray) {
                 createYamcsInstance(inst);
             }
         }
-        
+    }
+
+    public static void startServices() throws Exception {
         if(globalServiceList!=null) {
             startServices(globalServiceList);
         }
         
-        if(instArray!=null) {
-            for(String inst:instArray) {
+        for(String inst:instances.keySet()) {
                 instances.get(inst).start();
-            }
         }
+    }
+    public static void setupYamcsServer() throws Exception {
+        createServices();
+        startServices();
         
         Thread.setDefaultUncaughtExceptionHandler((t, thrown) ->  {
             String msg = "Uncaught exception '"+thrown+"' in thread "+t+": "+Arrays.toString(thrown.getStackTrace());
@@ -354,6 +360,14 @@ public class YamcsServer {
         return timeService;
     }
 
+    public static void setupManagement() throws Exception {
+        YConfiguration c = YConfiguration.getConfiguration("yamcs");
+        boolean jmxEnabled = c.getBoolean("jmxEnabled", false);
+        if(jmxEnabled) {
+            JMXService.setup();
+        }
+        ManagementService.setup(jmxEnabled);
+    }
     /**
      * @param args
      */
@@ -364,11 +378,8 @@ public class YamcsServer {
 
         try {
             YConfiguration.setup();
-            serverId = deriveServerId();
             setupSecurity();
-            JMXService.setup(true);
-            ManagementService.setup(true);
-
+            setupManagement();
             setupYamcsServer();
 
         } catch (ConfigurationException e) {
