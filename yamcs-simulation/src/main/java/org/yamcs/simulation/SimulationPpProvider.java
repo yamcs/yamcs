@@ -34,32 +34,40 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
 // Command line to generate xml classes:
 //[...]/yamcs/yamcs-simulation/src/main/resources/org/yamcs/xsd$ xjc simulation_data.xsd -p org.yamcs.simulation.generated -d [...]/yamcs/yamcs-simulation/src/main/java/
 public class SimulationPpProvider extends AbstractExecutionThreadService implements ParameterDataLink, Runnable {
-    protected volatile long datacount = 0;
-    private ParameterSink ppListener;
-    protected volatile boolean disabled = false;
-    PpSimulation simulationData = null;
+    
+	
+    public Date simulationStartTime;
+    public Date simulationRealStartTime;
+    public int simulationStepLengthMs;
+    public long simutationStep;
+    public boolean loopSimulation;
+	
+	protected volatile long datacount = 0;
+	protected volatile boolean disabled = false;
+    
+	private ParameterSink ppListener;
+    
+    private PpSimulation simulationData;
     // static String SIMULATION_DATA =
     // "/home/msc/development/git/yamcs/live/etc/simulation.xml";
-    static String simulationDataPath = "";
+    private static String simulationDataPath = "";
+    
+    private XtceDb xtceDb;
 
+    private Random rand = new Random();
+    
     private Logger log = LoggerFactory.getLogger(this.getClass().getName());
-    XtceDb xtceDb;
 
-    Random rand = new Random();
-
+    
     public SimulationPpProvider(String yamcsInstance, String name, LinkedHashMap<String,String> args) throws ConfigurationException {
         xtceDb = XtceDbFactory.getInstance(yamcsInstance);
         setSimulationData((String) args.get("simulationDataPath"));
         simulationData = loadSimulationData(simulationDataPath);
     }
 
-    public SimulationPpProvider() {
-    }
+    public SimulationPpProvider() {}
 
-    public void setSimulationData(String xmlFilePath) {
-        simulationDataPath = xmlFilePath;
-        simulationData = loadSimulationData(simulationDataPath);
-    }
+    
 
     @Override
     public String getLinkStatus() {
@@ -88,7 +96,6 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
     @Override
     public void disable() {
         disabled = true;
-
     }
 
     @Override
@@ -107,13 +114,12 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
 
     }
 
-    // ///
-    // run()
-    // Entry point to run the simulation
-    //
+    /**
+     * Entry point to run the simulation
+     */
     @Override
     public void run() {
-        while (IsRunning()) {
+        while (isRunning()) {
             try {
                 if (!disabled) {
                     // run simulation
@@ -132,21 +138,18 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
             }
         }
     }
-
-    boolean IsRunning() {
-        return isRunning();
-    }
     
-    // ////
-    // ProcessSimulationData()
-    // Process the speceificed simulation scenario
-    //
-    public Date simulationStartTime;
-    public Date simulationRealStartTime;
-    public int simulationStepLengthMs;
-    public long simutationStep = 0;
-    public boolean loopSimulation = false;
 
+    
+    public void setSimulationData(String xmlFilePath) {
+        simulationDataPath = xmlFilePath;
+        simulationData = loadSimulationData(simulationDataPath);
+    }
+
+    
+    /**
+     * Processes the specified simulation scenario
+     */
     public void processSimulationData() {
 
         // get simulation starting date
@@ -172,16 +175,40 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
             for (ParameterSequence ps : pss) {
                 processParameterSequence(ps);
             }
-            if (!IsRunning() || disabled) {
+            if (!isRunning() || disabled) {
                 break;
             }
         } while (loopSimulation);
     }
 
-    // ////
-    // ProcessParameterSequence()
-    // Process a sequence of the simulation scenario
-    //
+
+
+
+    /**
+     * Load simulation data from an XML file
+     * @param fileName
+     * @return simulation data
+     */
+    public PpSimulation loadSimulationData(String fileName) {
+        try {
+            final JAXBContext jc = JAXBContext.newInstance(PpSimulation.class);
+            final Unmarshaller unmarshaller = jc.createUnmarshaller();
+            
+            final PpSimulation ppSimulation = (PpSimulation) unmarshaller
+                    .unmarshal(new FileReader(fileName));
+            return ppSimulation;
+
+        } catch (Exception e) {
+            log.error("Unable to load Simulation Data. Check the XML file is correct. Details:\n"
+                    + e.toString());
+            throw new ConfigurationException("Unable to load Simulation Data. Check the XML file is correct. Details:\n"+ e.toString());
+        }
+    }
+    
+    /**
+     * Processes a sequence of the simulation scenario
+     * @param ps - sequence
+     */
     private void processParameterSequence(ParameterSequence ps) {
 
         int repeatCount = 0;
@@ -191,7 +218,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
         // repeat the sequence as specified
         while (loopSequence || repeatCount++ < maxRepeat) {
 
-            if (!IsRunning() || disabled)
+            if (!isRunning()|| disabled)
                 break;
 
             // process step offset
@@ -212,7 +239,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
             // process each step of the sequence
             for (int sequenceStep = 0; sequenceStep <= lastSequenceStep; sequenceStep++) {
 
-                if (!IsRunning() || disabled)
+                if (!isRunning() || disabled)
                     break;
 
                 ParameterSequence.Parameter currentParameter = parameters
@@ -243,10 +270,26 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
         }
     }
 
-    // ///
-    // ProcessParameters()
-    // Create a specified parameter and insert it in the Yamcs PP Listener
-    //
+
+    /**
+     * Used when no parameters need to be inserted at a given step of the
+     * simulation scenario
+     * @param nbSteps
+     */
+    private void processVoidStep(int nbSteps) {
+        try {
+            log.trace("Processing " + nbSteps + " void steps");
+            Thread.sleep(simulationStepLengthMs * nbSteps);
+        } catch (InterruptedException e) {
+            log.error(e.toString());
+        }
+    }
+    
+
+    /**
+     * Create a specified parameter and insert it in the Yamcs PP Listener
+     * @param stepParameters
+     */
     private void processParameters(List<ParameterSequence.Parameter> stepParameters) {
 
         String groupName = "simulation";
@@ -254,7 +297,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
         List<ParameterValue> pvs = new LinkedList<ParameterValue>();
         for (ParameterSequence.Parameter sParameter : stepParameters) {
 
-            if (!IsRunning() || disabled)
+            if (!isRunning() || disabled)
                 break;
 
             // compute value
@@ -299,48 +342,24 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
         }
     }
 
-    // //
-    // ProcessVoidStep()
-    // Used when no parameters need to be inserted at a given step of the
-    // simulation scenario
-    private void processVoidStep(int nbSteps) {
-        try {
-            log.trace("Processing " + nbSteps + " void steps");
-            Thread.sleep(simulationStepLengthMs * nbSteps);
-        } catch (InterruptedException e) {
-            log.error(e.toString());
-        }
-    }
 
-    // ///
-    // LoadSimulationData()
-    // Load data from an XML file
-    //
-    public PpSimulation loadSimulationData(String fileName) {
-        try {
-            final JAXBContext jc = JAXBContext.newInstance(PpSimulation.class);
-            final Unmarshaller unmarshaller = jc.createUnmarshaller();
-            
-            final PpSimulation ppSimulation = (PpSimulation) unmarshaller
-                    .unmarshal(new FileReader(fileName));
-            return ppSimulation;
-
-        } catch (Exception e) {
-            log.error("Unable to load Simulation Data. Check the XML file is correct. Details:\n"
-                    + e.toString());
-            throw new ConfigurationException("Unable to load Simulation Data. Check the XML file is correct. Details:\n"+ e.toString());
-        }
-    }
-
-    // ///
-    // CreatePv()
-    //
+    
+    /**
+     * Creates parameter value
+     * @param spaceSystem
+     * @param paramName
+     * @param generationTime
+     * @param acquisitionTime
+     * @param value
+     * @param monitoringResult
+     * @return parameter value object
+     */
     private ParameterValue createPv(String spaceSystem, String paramName,
             long generationTime, long acquisitionTime, float value,
             String monitoringResult) {
         // create parameter definition
         String parameterName = spaceSystem + paramName;
-        Parameter param = null;
+        Parameter param;
         if (xtceDb != null) {
             param = xtceDb.getParameter(parameterName);
             if (param == null) {
@@ -383,7 +402,6 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
                     + "\". Please check that the value is one of the Enum MonitoringResult (DISABLED, IN_LIMITS, WATCH, WATCH_LOW, WATCH_HIGH, WARNING, WARNING_LOW, WARNING_HIGH, DISTRESS, DISTRESS_LOW, DISTRESS_HIGH, CRITICAL, CRITICAL_LOW, CRITICAL_HIGH, SEVERE, SEVERE_LOW, SEVERE_HIGH)");
         }
 
-        // set generation and acquisition time
         pv.setGenerationTime(generationTime);
         pv.setAcquisitionTime(acquisitionTime);
         pv.setAcquisitionStatus(AcquisitionStatus.ACQUIRED);

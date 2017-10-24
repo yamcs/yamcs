@@ -13,20 +13,21 @@ import org.yamcs.simulator.ui.SimWindow;
 
 public class Simulator extends Thread {
     
-    private static final Logger log = LoggerFactory.getLogger(Simulator.class);
     
+    protected Queue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<>(100); //no more than 100 pending commands
+  
     private int DEFAULT_MAX_LENGTH=65542;
     private int maxLength = DEFAULT_MAX_LENGTH;
 
     private SimulationConfiguration simConfig;
     private TelemetryLink tmLink;
     
-    protected Queue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<>(100); //no more than 100 pending commands
-    
     private boolean isLos = false;
     private LosStore losStore;
     
     private SimWindow simWindow;
+    
+    private static final Logger log = LoggerFactory.getLogger(Simulator.class);
     
     public Simulator(SimulationConfiguration simConfig) {
         this.simConfig = simConfig;
@@ -79,12 +80,10 @@ public class Simulator extends Thread {
                 CCSDSPacket packet = new CCSDSPacket(ByteBuffer.wrap(b));
                 packetQueue.add(packet);
             }
-            //System.out.println("Packets Stored & Sent = "+ losStored + " : "+  losSent);
         } catch(IOException e) {
-            System.err.println("Connection lost : " + e);
+        	log.error("Connection lost:" + e.getMessage(), e);
         } catch(Exception e) {
-            System.err.println("Error reading command " + e);
-            e.printStackTrace();
+        	log.error("Error reading command " + e.getMessage(), e);
         }
         return packetQueue;
     }

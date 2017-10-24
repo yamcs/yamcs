@@ -7,6 +7,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class CCSDSPacket {
 
     /*
@@ -30,13 +33,6 @@ public class CCSDSPacket {
         	32 bit = packet id
      */
 
-    // Header Attributes 
-    int apid, seq, packetid;
-    int packetType;
-    private long timeMillis;
-    protected ByteBuffer buffer;
-    private short w;
-
     final byte SH_TIME_ID_NO_TIME_FIELD = 0;
     final byte SH_TIME_ID_TIME_OF_PACKET_GENERATION = 1;
     final byte SH_TIME_ID_TIME_TAG = 2;
@@ -47,7 +43,19 @@ public class CCSDSPacket {
     final static byte SH_PKT_TYPE_CCSDS_PAYLOAD_COMMAND_PACKET = 10;
     final static byte SH_PKT_TYPE_CCSDS_MEMORY_LOAD_PACKET = 11;
     final static byte SH_PKT_TYPE_CCSDS_RESPONSE_PACKET = 12;
+	
+    protected static HashMap<Integer,Integer> seqMap = new HashMap<>(2); // apid -> seq
+    
+    protected ByteBuffer buffer;
+    
+    // Header Attributes 
+    private int apid, seq, packetid, packetType;
+    private long timeMillis;
+    private short w;
+    
+    private Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
+    
     public CCSDSPacket(ByteBuffer buffer) {
         this.buffer = buffer;
         apid = buffer.getShort(0) & 0x07ff;
@@ -74,22 +82,6 @@ public class CCSDSPacket {
         putHeader();
     }
 
-    private void putHeader() {
-        // primary
-
-        w = (short) ((1 << 11) | apid); // 2nd header present
-        buffer.putShort(0, w);
-        seq = getSeq(apid);
-        buffer.putShort(2, (short) (seq & 0x3fff));
-        buffer.putShort(4, (short) (buffer.capacity() - 7)); // secondary
-        buffer.putInt(6, (int) (timeMillis / 1000 - 315964800L)); // epoch  starts a 06-Jan-1980 00:00:00
-        buffer.put(10, (byte) ((timeMillis % 1000) * 256 / 1000));
-        //buffer.put(11, (byte)((SH_TIME_ID_TIME_OF_PACKET_GENERATION<<6)|SH_PKT_TYPE_CCSDS_CCSDS_PAYLOAD_HK_PACKET)); // original version with no checksum;
-        buffer.put(11, (byte) ((SH_TIME_ID_TIME_OF_PACKET_GENERATION << 6) | packetType)); // no checksum id		   // modified to allow for packet type assignment 
-        buffer.putInt(12, packetid);
-        //describePacketHeader();
-        
-    }
 
     public ByteBuffer getUserDataBuffer() {
         buffer.position(16);
@@ -107,36 +99,6 @@ public class CCSDSPacket {
         updatePacketSize();
     }
 
-    private void updatePacketSize() {
-        // update the packet size information in the secondary header
-        this.buffer.putShort(4, (short) (this.buffer.capacity() - 7));
-    }
-
-    public void writeTo(OutputStream os) throws IOException {
-        try {
-            if (buffer.hasArray()) {
-                os.write(buffer.array());
-                //	System.out.println(HexDump.dumpHexString(buffer.array()));
-                //	System.out.println("sent " + this + " " + payload);
-            }
-        } catch (BufferOverflowException e) {
-            System.out.println("overflow while sending "+this);
-        }
-    }
-
-    static HashMap<Integer,Integer> seqMap = new HashMap<>(2); // apid -> seq
-
-    private static int getSeq(int apid) {
-        int seq = seqMap.containsKey(apid) ? seqMap.get(apid) : 0;
-        seqMap.put(apid, seq);
-        return seq;
-    }
-
-    public void describePacketHeader(int byteToRead){
-        String s1 = String.format("%8s", Integer.toBinaryString(byteToRead & 0xFF)).replace(' ', '0');
-        System.out.println("::" + s1);
-    }
-
     public int getPacketId() {
         return packetid;
     }
@@ -147,6 +109,23 @@ public class CCSDSPacket {
 
     public int getPacketType() {
         return packetType;
+    }
+    
+    public void describePacketHeader(int byteToRead){
+        String s1 = String.format("%8s", Integer.toBinaryString(byteToRead & 0xFF)).replace(' ', '0');
+        System.out.println("::" + s1);
+    }
+    
+    public void writeTo(OutputStream os) throws IOException {
+        try {
+            if (buffer.hasArray()) {
+                os.write(buffer.array());
+                //	System.out.println(HexDump.dumpHexString(buffer.array()));
+                //	System.out.println("sent " + this + " " + payload);
+            }
+        } catch (BufferOverflowException e) {
+        	log.error("overflow while sending "+this, e);
+        }
     }
 
     @Override
@@ -160,5 +139,32 @@ public class CCSDSPacket {
         sb.append("\n");
 
         return sb.toString();
+    }
+    
+    private void updatePacketSize() {
+        // update the packet size information in the secondary header
+        this.buffer.putShort(4, (short) (this.buffer.capacity() - 7));
+    }
+    
+    private void putHeader() {
+        // primary
+        w = (short) ((1 << 11) | apid); // 2nd header present
+        buffer.putShort(0, w);
+        seq = getSeq(apid);
+        buffer.putShort(2, (short) (seq & 0x3fff));
+        buffer.putShort(4, (short) (buffer.capacity() - 7)); // secondary
+        buffer.putInt(6, (int) (timeMillis / 1000 - 315964800L)); // epoch  starts a 06-Jan-1980 00:00:00
+        buffer.put(10, (byte) ((timeMillis % 1000) * 256 / 1000));
+        //buffer.put(11, (byte)((SH_TIME_ID_TIME_OF_PACKET_GENERATION<<6)|SH_PKT_TYPE_CCSDS_CCSDS_PAYLOAD_HK_PACKET)); // original version with no checksum;
+        buffer.put(11, (byte) ((SH_TIME_ID_TIME_OF_PACKET_GENERATION << 6) | packetType)); // no checksum id		   // modified to allow for packet type assignment 
+        buffer.putInt(12, packetid);
+        //describePacketHeader();
+        
+    }
+    
+    private static int getSeq(int apid) {
+        int seq = seqMap.containsKey(apid) ? seqMap.get(apid) : 0;
+        seqMap.put(apid, seq);
+        return seq;
     }
 }
