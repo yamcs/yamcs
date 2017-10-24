@@ -4,7 +4,7 @@ package org.yamcs.xtce;
  * Keeps track of current whereabouts of the spreadsheet loader. For better
  * contextual error messages.
  * 
- * Careful when using this in lambda expressions -> make sure to use the copy() method to create a new one for each lambda.
+ * Careful when using this in lambda expressions: make sure to use the copy() method to create a new one for each lambda.
  * How to automate this??
  * 
  */

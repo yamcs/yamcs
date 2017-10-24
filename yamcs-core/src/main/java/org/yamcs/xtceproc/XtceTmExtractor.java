@@ -84,7 +84,7 @@ public class XtceTmExtractor {
 
     /**
      * Extract one packet, starting at the specified container.
-     * @param bb 
+     * @param b 
      * @param generationTime 
      * @param aquisitionTime 
      * @param startContainer 
