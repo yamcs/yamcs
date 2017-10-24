@@ -1,4 +1,4 @@
-Version 3.3.0 Released 
+Version 3.3.0 Released 24-Oct-2017
 - Support index requests with parameters encoded in the HTTP request body in order to allow a large number of packets to be specified (otherwise, the request would exceed maximum URI size).
 - Allow alias parameter name  references in the MDB SpreadSheets (including in the Alarm sheet which didn't allow any reference at all)
 - Fixed the reading of ranges (inclusive vs exlcusive) from XTCE XML files
@@ -6,6 +6,7 @@ Version 3.3.0 Released
   - send an update when parameters are expiring (by default false)
   - send the first value from cache if available (by default true)
 - Change the expirationTime (absolute time) to expireMillis (relative time) in the ParameterValue.
+- Implemented parameter expiration in the USS web displays
 - Allow to specify custom decoders to be used in container(packet) processing
 - Added binary data encoding with leading size specified (similar to string)
 - Changed the spreadsheet to make it clerarer the difference between raw value, encoding (how to decode the raw value from the binary) and engineering value (raw value passed through a calibration function)
