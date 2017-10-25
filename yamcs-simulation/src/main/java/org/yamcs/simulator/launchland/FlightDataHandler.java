@@ -5,13 +5,17 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.simulator.CCSDSPacket;
 
 class FlightDataHandler {
 	private final static String csvName = "test_data/Flight parameters.csv";
 
 	private Vector<FlightData> entries;
-    private int currentEntry = 0;
+	private int currentEntry = 0;
+
+	private Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
 	public FlightDataHandler() {
 		entries = new Vector<>(1000, 500);
@@ -26,17 +30,17 @@ class FlightDataHandler {
 
 				// old "FlightData.csv"
 
-//				entry.timestamp = new Float(parts[0]).floatValue();
-//				entry.latitude = new Double(parts[1]).doubleValue();
-//				entry.longitude = new Double(parts[2]).doubleValue();
-//				entry.altitude = new Double(parts[3]).doubleValue();
-//				entry.heading = new Float(parts[4]).floatValue();
-//				entry.groundSpeed = new Float(parts[9]).floatValue();
-//				entry.mach = new Float(parts[10]).floatValue();
-//				entry.verticalSpeed = new Float(parts[14]).floatValue();
-//				entry.phi = new Float(parts[15]).floatValue();
-//				entry.theta = new Float(parts[16]).floatValue();
-//				entry.psi = new Float(parts[17]).floatValue();
+				//				entry.timestamp = new Float(parts[0]).floatValue();
+				//				entry.latitude = new Double(parts[1]).doubleValue();
+				//				entry.longitude = new Double(parts[2]).doubleValue();
+				//				entry.altitude = new Double(parts[3]).doubleValue();
+				//				entry.heading = new Float(parts[4]).floatValue();
+				//				entry.groundSpeed = new Float(parts[9]).floatValue();
+				//				entry.mach = new Float(parts[10]).floatValue();
+				//				entry.verticalSpeed = new Float(parts[14]).floatValue();
+				//				entry.phi = new Float(parts[15]).floatValue();
+				//				entry.theta = new Float(parts[16]).floatValue();
+				//				entry.psi = new Float(parts[17]).floatValue();
 
 				// new "Datasheet_test_data.csv"
 
@@ -59,22 +63,24 @@ class FlightDataHandler {
 				entries.add(entry);
 			}
 		} catch (IOException e) {
-			System.out.println(e);
+			log.warn(e.getMessage(), e);
 		}
-		System.out.println("have "+entries.size()+" flight data records");
+		log.info("have "+entries.size()+" flight data records");
+
 	}
-	
-    public void fillPacket(CCSDSPacket packet) {
-        if (entries.isEmpty())
-            return;
 
-        for (int i = 0; i < 1; ++i) {
-            if (currentEntry >= entries.size()) {
-                currentEntry = 0;
-            }
+	public void fillPacket(CCSDSPacket packet) {
+		if (entries.isEmpty())
+			return;
 
-            FlightData entry = entries.elementAt(currentEntry++);
-            entry.fillPacket(packet, i * 60);
-        }
-    }
+
+		if (currentEntry >= entries.size()) {
+			currentEntry = 0;
+		}
+
+		FlightData entry = entries.elementAt(currentEntry++);
+		entry.fillPacket(packet, 0);
+	}
+
+
 }

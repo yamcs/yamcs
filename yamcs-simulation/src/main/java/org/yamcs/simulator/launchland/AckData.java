@@ -6,18 +6,18 @@ import org.yamcs.simulator.CCSDSPacket;
 
 public class AckData {
 
-    float timestamp;
-    int commandReceived;
+//    private float timestamp; //TODO not used?
+//    private int commandReceived;
 
-    AckData(CCSDSPacket packet) {
+    public AckData(CCSDSPacket packet) {
         ByteBuffer buffer = packet.getUserDataBuffer();
-        commandReceived = (int) buffer.get(0);
+//        commandReceived = (int) buffer.get(0);
     }
 
-    AckData() {
+    public AckData() {
     }
 
-    void fillPacket(CCSDSPacket packet, int bufferOffset, int commandReceived) {
+    public void fillPacket(CCSDSPacket packet, int bufferOffset, int commandReceived) {
         ByteBuffer buffer = packet.getUserDataBuffer();
         buffer.position(bufferOffset);
         buffer.put((byte) commandReceived);

@@ -5,14 +5,14 @@ import java.nio.ByteBuffer;
 import org.yamcs.simulator.CCSDSPacket;
 
 class PowerData {
-    float timestamp;
-    int busStatus;
-    float busVoltage, busCurrent, systemCurrent;
-    float batteryVoltage1, batteryTemp1, batteryCapacity1;
-    float batteryVoltage2, batteryTemp2, batteryCapacity2;
-    float batteryVoltage3, batteryTemp3, batteryCapacity3;
+    public float timestamp;
+    public int busStatus;
+    public float busVoltage, busCurrent, systemCurrent;
+    public float batteryVoltage1, batteryTemp1, batteryCapacity1;
+    public float batteryVoltage2, batteryTemp2, batteryCapacity2;
+    public float batteryVoltage3, batteryTemp3, batteryCapacity3;
 
-    PowerData(CCSDSPacket packet) {
+    public PowerData(CCSDSPacket packet) {
         ByteBuffer buffer = packet.getUserDataBuffer();
 
         busStatus = buffer.get(0);
@@ -34,15 +34,11 @@ class PowerData {
         batteryCapacity3 = (float)buffer.getShort(14);
     }
 
-    PowerData() {
+    public PowerData() {
+    
     }
 
-    @Override
-    public String toString() {
-        return String.format("[PowerData]");
-    }
-
-    void fillPacket(CCSDSPacket packet, int bufferOffset) {
+    public void fillPacket(CCSDSPacket packet, int bufferOffset) {
         ByteBuffer buffer = packet.getUserDataBuffer();
         buffer.position(bufferOffset);
         buffer.put((byte)busStatus);
@@ -58,5 +54,10 @@ class PowerData {
         buffer.put((byte)batteryVoltage3);
         buffer.put((byte)batteryTemp3);
         buffer.putShort((short)batteryCapacity3);
+    }
+    
+    @Override
+    public String toString() {
+        return String.format("[PowerData]");
     }
 }
