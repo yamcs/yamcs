@@ -15,7 +15,7 @@
 
     <management-notification-address>activemq.notifications</management-notification-address>
     <!-- set these even when no clustering is activated to avoid warnings about security settings -->
-    <cluster-user>HORNETQ.CLUSTER.ADMIN.USER</cluster-user>
+    <cluster-user>ACTIVEMQ.CLUSTER.ADMIN.USER</cluster-user>
     <cluster-password>uhchmPeLAcGdo</cluster-password>
 
     <!-- Connectors -->
