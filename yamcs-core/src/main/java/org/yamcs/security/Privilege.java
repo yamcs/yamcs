@@ -6,12 +6,10 @@ import java.util.Collection;
 import java.util.Hashtable;
 import java.util.concurrent.CompletableFuture;
 
-import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.artemis.YamcsSession;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.MdbMappings;
 import org.yamcs.xtce.SequenceContainer;
@@ -54,8 +52,6 @@ public class Privilege {
     private static String defaultUser; // Only if !usePrivileges. Could eventually replace usePrivileges i guess
 
     private static AuthModule authModule;
-    private static ActiveMQSecurityManager artemisAuthModule;
-    
     static final Hashtable<String, String> contextEnv = new Hashtable<>();
 
     public static int maxNoSessions;
@@ -84,10 +80,6 @@ public class Privilege {
                 if(usePrivileges) {
                     authModule = YObjectLoader.loadObject(conf.getMap("authModule"));
                     authModuleName = authModule.getClass().getName();
-                    
-                    if(conf.containsKey("artemisAuthModule")) {
-                        artemisAuthModule = YObjectLoader.loadObject(conf.getMap("artemisAuthModule"));
-                    }
                     
                 } else {
                     if (conf.containsKey("defaultUser")) {
@@ -170,7 +162,7 @@ public class Privilege {
     }
 
     private boolean isSystemToken(final AuthenticationToken authenticationToken) {
-        return authenticationToken.getPrincipal().equals(YamcsSession.hornetqInvmUser) || (authenticationToken instanceof SystemToken);
+        return authenticationToken instanceof SystemToken;
     }
 
     /**
@@ -362,11 +354,6 @@ public class Privilege {
     public AuthModule getAuthModule() {
         return authModule;
     }
-
-    public ActiveMQSecurityManager getArtemisAuthModule() {
-        return artemisAuthModule;
-    }
-
 
     public CompletableFuture<AuthenticationToken> authenticateHttp(ChannelHandlerContext ctx, HttpRequest req) {       
         return authModule.authenticateHttp(ctx, req);

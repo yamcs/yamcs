@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.api.YamcsConnectionProperties.Protocol;
-import org.yamcs.api.artemis.ArtemisEventProducer;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yaml.snakeyaml.Yaml;
 
@@ -108,7 +107,14 @@ public class EventProducerFactory {
         EventProducer producer;
         if(ycd.getProtocol()==Protocol.artemis) { 
             log.debug("Creating an Artemis  Yamcs event producer connected to {}", ycd.getUrl());
-            producer = new  ArtemisEventProducer(ycd);
+            try {
+            @SuppressWarnings("unchecked")
+            Class<EventProducer> c = (Class<EventProducer>) Class.forName("org.yamcs.api.artemis.ArtemisEventProducer");
+            Constructor<EventProducer> constr = c.getConstructor(ycd.getClass());
+            producer = constr.newInstance(ycd);
+            } catch (Exception e) {
+                throw new ConfigurationException("Cannot instantiate an artemis event producer", e);
+            }
         } else {
             log.debug("Creating a REST Yamcs event producer connected to {}", ycd.getUrl());
             producer = new RestEventProducer(ycd);

@@ -208,11 +208,6 @@
       <version>4.1.9.Final</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.activemq</groupId>
-      <artifactId>artemis-core-client</artifactId>
-      <version>${artemisVersion}</version>
-    </dependency>
-    <dependency>
       <groupId>org.yaml</groupId>
       <artifactId>snakeyaml</artifactId>
       <version>1.9</version>

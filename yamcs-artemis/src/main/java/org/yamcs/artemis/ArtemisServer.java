@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.security.Privilege;
+import org.yamcs.utils.YObjectLoader;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -45,10 +46,14 @@ public class ArtemisServer extends AbstractService {
         EmbeddedActiveMQ artemisServer = new EmbeddedActiveMQ();
         Privilege priv = Privilege.getInstance();
         if (priv.isEnabled()) {
-            ActiveMQSecurityManager secmgr = priv.getArtemisAuthModule();
-            
-            if(secmgr==null) throw new ConfigurationException("Privileges are enabled but there is no artemisAuthModule configured in privileges.yaml");
-            artemisServer.setSecurityManager( secmgr);
+            YConfiguration conf = YConfiguration.getConfiguration("privileges");
+            if(conf.containsKey("artemisAuthModule")) {
+                ActiveMQSecurityManager secmgr = YObjectLoader.loadObject(conf.getMap("artemisAuthModule"));
+                artemisServer.setSecurityManager( secmgr);
+            } else {
+                throw new ConfigurationException("Privileges are enabled but there is no artemisAuthModule configured in privileges.yaml");
+            }
+           
         }
         if(artemisConfigFile != null) {
             artemisServer.setConfigResourcePath(artemisConfigFile);

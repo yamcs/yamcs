@@ -4,7 +4,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.activemq.artemis.api.core.SimpleString;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 
@@ -13,8 +12,6 @@ import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
  * sending message of different severity types.
  */
 public abstract class AbstractEventProducer implements EventProducer {
-
-    SimpleString address;
     String source;
     AtomicInteger seqNo = new AtomicInteger();
 
