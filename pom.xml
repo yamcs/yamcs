@@ -72,11 +72,6 @@
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.9.1</version>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
         <artifactId>cobertura-maven-plugin</artifactId>
         <version>2.7</version>
       </plugin>
@@ -113,8 +108,14 @@
         </executions>
       </plugin>
     </plugins>
+
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
         <plugin>
           <groupId>org.sonarsource.scanner.maven</groupId>
           <artifactId>sonar-maven-plugin</artifactId>
@@ -162,7 +163,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
-          <version>3.0.4</version>
+        <version>3.0.4</version>
         <configuration>
           <threshold>Normal</threshold>
           <effort>Default</effort>
