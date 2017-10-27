@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# DO NOT MODIFY
+# Instead use a script in YAMCS_HOME/bin/setenv.sh
+
 # resolve links - $0 may be a softlink
 PRG="$0"
 
@@ -17,11 +20,12 @@ done
 PRGDIR=`dirname "$PRG"`
 YAMCS_HOME=`cd "$PRGDIR/.." ; pwd`
 
+if [ -r "$YAMCS_HOME/bin/setenv.sh" ]; then
+  . "$YAMCS_HOME/bin/setenv.sh"
+fi
+
 # set classpath
 . "$YAMCS_HOME"/bin/setclasspath.sh
-
-#set library path (for tokyocabinet)
-. "$YAMCS_HOME"/bin/setlibrarypath.sh
 
 #To allow remote JMX (jconsole) connections, attach this to the java command
 #Only temporarily for debugging!!!
@@ -29,7 +33,7 @@ JMX_REMOTE="-Dcom.sun.management.jmxremote.port=9999  -Dcom.sun.management.jmxre
 
 
 # run the program
-exec "$_RUNJAVA" $JAVA_LIBRARY_PATH\
+exec "$_RUNJAVA" $JAVA_OPTS\
     -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/\
     -Djxl.nowarnings=true \
     -Djava.util.logging.config.file=$YAMCS_HOME/etc/logging.yamcs-server.properties \
