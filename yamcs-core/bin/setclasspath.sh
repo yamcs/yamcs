@@ -21,20 +21,8 @@ done
 PRGDIR=`dirname "$PRG"`
 YAMCS_HOME=`cd "$PRGDIR/.." ; pwd`
 
-# First clear out the user classpath
-CLASSPATH=
-
 # Add all necessary jars
-CLASSPATH=`echo $YAMCS_HOME/lib/*.jar | sed s/\ /:/g`
-CLASSPATH=$CLASSPATH:`echo $YAMCS_HOME/lib/ext/*.jar | sed s/\ /:/g`
-
-# Add target/*.jar in development environments
-if [ -d $YAMCS_HOME/target ]; then
-    # Get the latest jar, based on modification time, 
-    # in case there are multiple ones
-	DEVEL=`ls $YAMCS_HOME/target/yamcs*.jar -t -1 | head -n 1`
-	CLASSPATH=$CLASSPATH:$DEVEL
-fi
+CLASSPATH="$YAMCS_HOME/lib/*:$YAMCS_HOME/lib/ext/*"
 
 # Add etc directory to load config resources
 CLASSPATH=$YAMCS_HOME/etc:$CLASSPATH:$YAMCS_HOME
