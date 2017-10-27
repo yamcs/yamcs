@@ -30,6 +30,8 @@ cp -an $YAMCS_HOME/yamcs-core/bin/* $TARGET/bin
 ln -fs $YAMCS_HOME/yamcs-core/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-core/lib/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-core/mdb/* $TARGET/mdb
+
+rm -f $TARGET/web/base
 ln -fs $YAMCS_HOME/yamcs-web/build $TARGET/web/base
 
 if [ -f make-live-devel-local.sh ] ; then

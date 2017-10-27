@@ -10,6 +10,8 @@ ln -fs $YAMCS_HOME/yamcs-simulation/bin/* $TARGET/bin
 
 ln -fs $YAMCS_HOME/yamcs-simulation/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-simulation/mdb/* $TARGET/mdb
+
+rm -f $TARGET/web/yss
 ln -fs $YAMCS_HOME/yamcs-simulation/web $TARGET/web/yss
 
 ln -fs $YAMCS_HOME/yamcs-simulation/bin/simulator.sh $TARGET/bin
