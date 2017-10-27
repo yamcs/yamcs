@@ -117,6 +117,24 @@
           <version>3.0.0</version>
         </plugin>
         <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>cobertura-maven-plugin</artifactId>
+          <version>2.7</version>
+          <configuration>
+            <formats>
+              <format>xml</format>
+            </formats>
+          </configuration>
+          <executions>
+            <execution>
+              <phase>package</phase>
+              <goals>
+                <goal>cobertura</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
           <groupId>org.sonarsource.scanner.maven</groupId>
           <artifactId>sonar-maven-plugin</artifactId>
           <version>3.2</version>
@@ -201,38 +219,6 @@
   </distributionManagement>
 
   <profiles>
-    <profile>
-      <id>jenkins</id>
-      <activation>
-        <property>
-          <name>env.BUILD_NUMBER</name>
-        </property>
-      </activation>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>cobertura-maven-plugin</artifactId>
-              <version>2.7</version>
-              <configuration>
-                <formats>
-                  <format>xml</format>
-                </formats>
-              </configuration>
-              <executions>
-                <execution>
-                  <phase>package</phase>
-                  <goals>
-                    <goal>cobertura</goal>
-                  </goals>
-                </execution>
-              </executions>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
-    </profile>
     <profile>
       <id>yamcs-release</id>
       <activation>
