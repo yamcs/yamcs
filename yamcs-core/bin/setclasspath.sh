@@ -15,8 +15,8 @@ CLASSPATH=$CLASSPATH:$YAMCS_HOME/lib
 
 export CLASSPATH
 
-# Set standard command for invoking Java.
-_RUNJAVA=java
-for j in /cdmcs/spaceapps/jre/bin/java ; do
-	if [ -x $j ]; then _RUNJAVA=$j; break; fi
-done
+if [ -d "$JAVA_HOME" ]; then
+  _RUNJAVA="$JAVA_HOME/bin/java"
+else
+  _RUNJAVA=java
+fi

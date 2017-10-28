@@ -27,4 +27,4 @@ if [ ! -w "$YAMCS_DATA/simulator/profiles" ]; then
     exit 2
 fi
 
-echo "Example created at `ls -d -1 $PWD/example`"
+echo "Example installed to `ls -d -1 $PWD/example`"
