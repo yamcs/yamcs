@@ -257,9 +257,11 @@ public class LaunchAndLandingSimulator extends Simulator {
     }
     
     private void listRecordings() {
+
         // send ack
     	CCSDSPacket ackPacket = new CCSDSPacket(1, 2, 7);
     	ackDataHandler.fillAckPacket(ackPacket, 1);
+
         transmitTM(ackPacket);
 
         CCSDSPacket losNamePacket = getLosStore().getLosNames();

@@ -185,14 +185,15 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             bb.put(pc.getBinary());
             bb.putShort(4, (short)(minimumTcPacketLength - 7)); // fix packet length
         } else {
+
         	int checksumIndicator = pc.getBinary()[2] & 0x04;
         	if(checksumIndicator ==1) {
         		bb=ByteBuffer.allocate(pc.getBinary().length +2); //extra slots for check sum
         	} else {
         		bb=ByteBuffer.wrap(pc.getBinary());
         	}
-            bb.putShort(4, (short)(pc.getBinary().length - 7));
-            
+            bb.putShort(4, (short)(pc.getBinary().length - 7));          
+
         }
 
         int retries=5;
@@ -209,7 +210,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
                 try {
                     socketChannel.write(bb);
                     tcCount++;
-                    sent=true;
+                    sent=true;                
                 } catch (IOException e) {
                     log.warn("Error writing to TC socket to {}:{} : {}", host, port, e.getMessage());
                     try {
@@ -248,10 +249,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         timer.schedule(new TcAckStatus(cmdId,"Acknowledge_FRC","ACK: OK"), 800, TimeUnit.MILLISECONDS);
         timer.schedule(new TcAckStatus(cmdId,"Acknowledge_DASS","ACK: OK"), 1200, TimeUnit.MILLISECONDS);
         timer.schedule(new TcAckStatus(cmdId,"Acknowledge_MCS","ACK: OK"), 1600, TimeUnit.MILLISECONDS);
-        timer.schedule(new TcAckStatus(cmdId,"Acknowledge_A","ACK A: OK"), 2000, TimeUnit.MILLISECONDS);
-        timer.schedule(new TcAckStatus(cmdId,"Acknowledge_B","ACK B: OK"), 3000, TimeUnit.MILLISECONDS);
-        timer.schedule(new TcAckStatus(cmdId,"Acknowledge_C","ACK C: OK"), 4000, TimeUnit.MILLISECONDS);
-        timer.schedule(new TcAckStatus(cmdId,"Acknowledge_D","ACK D: OK"), 10000, TimeUnit.MILLISECONDS);
+
     }
 
     @Override
