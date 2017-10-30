@@ -2,7 +2,6 @@ package org.yamcs.artemis;
 
 import static org.junit.Assert.*;
 
-import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.apache.activemq.artemis.core.client.impl.ClientSessionImpl;

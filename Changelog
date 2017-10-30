@@ -1,3 +1,7 @@
+Version 3.4.0 
+- moved artemis into a separate source project which yamcs-core does not depend on. 
+  Allow to connect to an external Artemis server by specifying artemisUrl: "tcp://..." into yamcs.<instance>.yaml or yamcs.yaml
+
 Version 3.3.0 Released 24-Oct-2017
 - Support index requests with parameters encoded in the HTTP request body in order to allow a large number of packets to be specified (otherwise, the request would exceed maximum URI size).
 - Allow alias parameter name  references in the MDB SpreadSheets (including in the Alarm sheet which didn't allow any reference at all)

@@ -34,7 +34,7 @@ import org.yamcs.security.HqClientMessageToken;
 import org.yamcs.utils.LoggingUtils;
 
 /**
- * Provides realtime parameter subscription via hornetq.  
+ * Provides realtime parameter subscription via artemis.  
  * 
  * Each connected client has one queue.
  * 
