@@ -57,7 +57,7 @@ public class LosStore {
         CCSDSPacket losNamePacket = new CCSDSPacket(0, 2, 9);
         try {
             File folder = new File(System.getProperty("user.dir") + "/losData/");
-            File[] listOfFiles = folder.listFiles();
+            File[] listOfFiles = folder.listFiles() == null? new File[0] : folder.listFiles(); //To avoid a null pointer in case of the folder not existing
             log.debug("Los files list size: " + listOfFiles.length);
 
             for (int i = 0; i < listOfFiles.length; i++) {
@@ -75,7 +75,7 @@ public class LosStore {
             losNamePacket.appendUserDataBuffer(new byte[1]);
         }
         catch (Exception e) {
-            log.error("Unable to get los recordings: " + e.getMessage());
+            log.warn("Unable to get los recordings: " + e.getMessage(), e);
         }
         return losNamePacket;
     }
