@@ -4,15 +4,35 @@
 
 # the script has to be run each time the version number is changed, and has to run when everything is properly compiled from the command line
 
-
-
-#set this to where you want the live "installation" to be performed
+# Where the live environment is installed
 TARGET="live"
-#Allow overriding default from the command line
-if [ -n "$1" ] ; then
-    TARGET="$1"
-fi
 
+# Whether to install the YSS example configuration
+YSS_CONFIGURATION=0
+
+usage() {
+    echo "usage: $0 [-h | --help] [--yss] [directory]"
+}
+
+for arg in "$@"; do
+    case "$arg" in
+        "-h" | "--help")
+            usage
+            exit 0
+            ;;
+        "--yss")
+            YSS_CONFIGURATION=1
+            ;;
+        "-"*)
+            echo "Unknown option: $arg"
+            usage
+            exit 1
+            ;;
+        *)
+            TARGET="$arg"
+            ;;
+    esac
+done
 
 PRG_DIR=`dirname $0`
 YAMCS_HOME=`cd "$PRG_DIR"; pwd`
@@ -34,6 +54,31 @@ ln -fs $YAMCS_HOME/yamcs-core/mdb/* $TARGET/mdb
 rm -f $TARGET/web/base
 ln -fs $YAMCS_HOME/yamcs-web/build $TARGET/web/base
 
+# Sets up a development environment for an example Yamcs configuration
+if [ $YSS_CONFIGURATION -eq "1" ]; then
+    YAMCS_DATA=/storage/yamcs-data/
+
+    cp -an $YAMCS_HOME/yamcs-simulation/bin/* $TARGET/bin
+
+    ln -fs $YAMCS_HOME/yamcs-simulation/target/*.jar $TARGET/lib
+    cp -an $YAMCS_HOME/yamcs-simulation/etc/* $TARGET/etc
+    ln -fs $YAMCS_HOME/yamcs-simulation/mdb/* $TARGET/mdb
+    ln -fs $YAMCS_HOME/yamcs-simulation/test_data $TARGET/
+
+    rm -f $TARGET/web/yss
+    ln -fs $YAMCS_HOME/yamcs-simulation/web $TARGET/web/yss
+
+    ln -fs $YAMCS_HOME/yamcs-simulation/profiles $YAMCS_DATA/simulator
+    if [ $? -ne 0 ]; then
+        echo "ERROR: could not create $YAMCS_DATA/simulator/profiles - please create it and make sure this script has write permissions in it!"
+        exit 1
+    fi
+    if [ ! -w "$YAMCS_DATA/simulator/profiles" ]; then
+        echo "ERROR: please make sure this script has write permissions in the $YAMCS_DATA/simulator/profiles folder!"
+        exit 2
+    fi
+fi
+
 if [ -f make-live-devel-local.sh ] ; then
     sh make-live-devel-local.sh $TARGET
 fi
@@ -50,3 +95,5 @@ for f in $YAMCS_HOME/yamcs-core/etc/* ; do
             ;;
     esac
 done
+
+echo "Development environment installed to `cd $TARGET; pwd`"
