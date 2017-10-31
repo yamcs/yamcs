@@ -96,6 +96,7 @@
           <autoVersionSubmodules>true</autoVersionSubmodules>
           <useReleaseProfile>false</useReleaseProfile>
           <releaseProfiles>yamcs-release</releaseProfiles>
+          <pushChanges>false</pushChanges>
           <goals>deploy</goals>
         </configuration>
       </plugin>
