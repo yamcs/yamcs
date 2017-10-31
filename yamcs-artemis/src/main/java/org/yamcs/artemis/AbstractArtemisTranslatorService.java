@@ -85,7 +85,7 @@ public class AbstractArtemisTranslatorService extends AbstractService {
 
     @Override
     public String toString() {
-        return "ActiveMQTmService";
+        return "ArtemisTmService";
     }
 
 
@@ -134,7 +134,7 @@ public class AbstractArtemisTranslatorService extends AbstractService {
     }
     
     public static ServerLocator getServerLocator(String instance) {
-        String artemisUrl = "invm:///"; //for compatibility with old yamcs
+        String artemisUrl = "vm:///"; //for compatibility with old yamcs
         
         YConfiguration yc = YConfiguration.getConfiguration("yamcs."+instance);
         if(yc.containsKey(ARTEMIS_URL_KEY)) {
