@@ -21,7 +21,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.ThreadPerTaskExecutor;
 
 /**
  * Server wide HTTP server based on Netty that provides a number of
@@ -65,9 +67,9 @@ public class HttpServer extends AbstractService {
         int port = config.getPort();
         bossGroup = new NioEventLoopGroup(1);
 
-        //Note that while the thread pools created with this method are unbounded, netty will limit the number
-        //of workers to 2*number of CPU cores
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        //Note that by default (i.e. with nThreads = 0), Netty will limit the number
+        //of worker threads to 2*number of CPU cores
+        EventLoopGroup workerGroup = new NioEventLoopGroup(0, new ThreadPerTaskExecutor(new DefaultThreadFactory("YamcsHttpServer")));
 
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workerGroup)
