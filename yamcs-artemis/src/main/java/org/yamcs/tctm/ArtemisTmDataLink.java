@@ -1,17 +1,17 @@
 package org.yamcs.tctm;
 
 import org.apache.activemq.artemis.api.core.ActiveMQException;
-import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientConsumer;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.ClientSession;
 import org.apache.activemq.artemis.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.Protocol;
-import org.yamcs.api.artemis.YamcsClient;
-import org.yamcs.api.artemis.YamcsSession;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.artemis.AbstractArtemisTranslatorService;
 
@@ -33,15 +33,16 @@ public class ArtemisTmDataLink extends  AbstractService implements TmPacketDataL
    
     protected Logger log=LoggerFactory.getLogger(this.getClass().getName());
     private TmSink tmSink;
-    YamcsSession yamcsSession; 
-    private YamcsClient msgClient;
     final TimeService timeService;
     final String artemisAddress;
+    ClientSession artemisSession;
+    ServerLocator locator;
     
 
     public ArtemisTmDataLink(String instance, String name, String artemisAddress) throws ConfigurationException  {
         this.artemisAddress = artemisAddress;
         timeService = YamcsServer.getTimeService(instance);
+        locator = AbstractArtemisTranslatorService.getServerLocator(instance);
     }
 
 
@@ -91,11 +92,12 @@ public class ArtemisTmDataLink extends  AbstractService implements TmPacketDataL
 
     @Override
     public void onMessage(ClientMessage msg) {
-        if(disabled) return;
+        if(disabled) {
+            return;
+        }
         try {
             TmPacketData tm=(TmPacketData)Protocol.decode(msg, TmPacketData.newBuilder());
             packetcount++;
-            //System.out.println("mark 1: message received: "+msg);
             PacketWithTime pwt =  new PacketWithTime(timeService.getMissionTime(), tm.getGenerationTime(), tm.getPacket().toByteArray());
             tmSink.processPacket(pwt);
         } catch(YamcsApiException e){
@@ -106,15 +108,13 @@ public class ArtemisTmDataLink extends  AbstractService implements TmPacketDataL
     @Override
     protected void doStart() {
         try {
-            SimpleString queue = new SimpleString(artemisAddress+"-ActiveMQTmProvider");
-                yamcsSession = YamcsSession.newBuilder().build();
-                msgClient = yamcsSession.newClientBuilder().setDataProducer(false).setDataConsumer(new SimpleString(artemisAddress), queue).
-                        setFilter(new SimpleString(AbstractArtemisTranslatorService.UNIQUEID_HDR_NAME+"<>"+AbstractArtemisTranslatorService.UNIQUEID)).
-                        build();
-
-            msgClient.dataConsumer.setMessageHandler(this);
+            artemisSession = locator.createSessionFactory().createSession();
+            String queue = artemisAddress+"-ActiveMQTmProvider";
+            artemisSession.createTemporaryQueue(artemisAddress, queue);
+            ClientConsumer client = artemisSession.createConsumer(queue, AbstractArtemisTranslatorService.UNIQUEID_HDR_NAME+"<>"+AbstractArtemisTranslatorService.UNIQUEID);
+            client.setMessageHandler(this);
             notifyStarted();
-        } catch (ActiveMQException | YamcsApiException e) {
+        } catch (Exception e) {
             log.error("Failed to set connect to artemis");
             notifyFailed(e);
         }
@@ -123,7 +123,7 @@ public class ArtemisTmDataLink extends  AbstractService implements TmPacketDataL
     @Override
     protected void doStop() {
         try {
-            msgClient.close();
+            artemisSession.close();
             notifyStopped();
         } catch (ActiveMQException e) {
             log.error("Got exception when quiting:", e);

@@ -95,17 +95,18 @@ public class YamcsConnector implements SessionFailureListener {
     }
 
     private FutureTask<String> doConnect() {
-        if(connected) disconnect();
+        if(connected) {
+            disconnect();
+        }
         final String url=connectionParams.getUrl();
 
-        FutureTask<String> future=new FutureTask<String>(new Runnable() {
+        FutureTask<String> future=new FutureTask<>(new Runnable() {
             @Override
             public void run() {
 
                 //connect to yamcs
                 try {
-                    if(reconnecting && !retry)
-                    {
+                    if(reconnecting && !retry) {
                         log.warn("Retries are disabled, cancelling reconnection");
                         reconnecting = false;
                         return;

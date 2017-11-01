@@ -42,6 +42,10 @@ cp -a yamcs-core/etc %{buildroot}/%{prefix}/
 cp -a yamcs-core/bin %{buildroot}/%{prefix}/
 rm yamcs-core/target/yamcs-*-sources.jar
 cp yamcs-core/target/yamcs*.jar %{buildroot}/%{prefix}/lib
+
+cp yamcs-artemis/lib/*.jar %{buildroot}/%{prefix}/lib
+cp yamcs-artemis/target/yamcs-artemis*.jar %{buildroot}/%{prefix}/lib
+
 cp -a yamcs-core/misc/init.d %{buildroot}/etc/
 cp -a yamcs-api/src/main/*.proto %{buildroot}/%{prefix}/lib/
 

@@ -4,7 +4,7 @@ import java.util.List;
 import org.yamcs.ConfigurationException;
 
 /**
- * takes TM data from yarch streams and publishes it to ActiveMQ artemis address (reverse of ActiveMQTmProvider)
+ * takes TM data from yamcs streams and publishes it to ActiveMQ Artemis address (reverse of {@link org.yamcs.tctm.ArtemisTmDataLink})
  *
  */
 public class ArtemisTmService extends AbstractArtemisTranslatorService {

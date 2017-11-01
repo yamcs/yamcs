@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>3.3.1-SNAPSHOT</version>
+    <version>3.4.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
@@ -16,12 +16,6 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>yamcs-api</artifactId>
       <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.activemq</groupId>
-          <artifactId>artemis-core-client</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -67,11 +61,6 @@
       <groupId>net.sourceforge.jexcelapi</groupId>
       <artifactId>jxl</artifactId>
       <version>2.6.10</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.activemq</groupId>
-      <artifactId>artemis-server</artifactId>
-      <version>${artemisVersion}</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -151,7 +140,6 @@
               <outputDirectory>${basedir}/lib</outputDirectory>
               <overWriteIfNewer>true</overWriteIfNewer>
               <includeScope>runtime</includeScope>
-              <!-- <excludeGroupIds>com.spaceapplications.yamcs</excludeGroupIds> -->
             </configuration>
           </execution>
         </executions>

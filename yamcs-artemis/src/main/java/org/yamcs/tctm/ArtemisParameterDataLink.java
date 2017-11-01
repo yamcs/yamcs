@@ -2,16 +2,15 @@ package org.yamcs.tctm;
 
 
 import org.apache.activemq.artemis.api.core.ActiveMQException;
-import org.apache.activemq.artemis.api.core.SimpleString;
+import org.apache.activemq.artemis.api.core.client.ClientConsumer;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
+import org.apache.activemq.artemis.api.core.client.ClientSession;
 import org.apache.activemq.artemis.api.core.client.MessageHandler;
+import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.Protocol;
-import org.yamcs.api.artemis.YamcsClient;
-import org.yamcs.api.artemis.YamcsSession;
 import org.yamcs.artemis.AbstractArtemisTranslatorService;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.xtce.XtceDb;
@@ -31,13 +30,15 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
 
     protected Logger log=LoggerFactory.getLogger(this.getClass().getName());
     private ParameterSink ppListener;
-    private YamcsSession yamcsSession; 
     final XtceDb ppdb;
-    final String hornetAddress; 
+    final String artemisAddress; 
+    ClientSession artemisSession;
+    ServerLocator locator;
     
-    public ArtemisParameterDataLink(String instance, String name, String hornetAddress) throws ConfigurationException  {
+    public ArtemisParameterDataLink(String instance, String name, String artemisAddress) throws ConfigurationException  {
         ppdb = XtceDbFactory.getInstance(instance);
-        this.hornetAddress = hornetAddress;
+        this.artemisAddress = artemisAddress;
+        locator = AbstractArtemisTranslatorService.getServerLocator(instance);
     }
 
 
@@ -125,15 +126,13 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
     @Override
     protected void doStart() {
         try {
-            SimpleString queue=new SimpleString(hornetAddress+"-ActiveMQPpProvider");
-            yamcsSession = YamcsSession.newBuilder().build();
-            YamcsClient yclient = yamcsSession.newClientBuilder().setDataProducer(false).setDataConsumer(new SimpleString(hornetAddress), queue).
-                    setFilter(new SimpleString(AbstractArtemisTranslatorService.UNIQUEID_HDR_NAME+"<>"+AbstractArtemisTranslatorService.UNIQUEID)).
-                    build();
-
-            yclient.dataConsumer.setMessageHandler(this);
+            artemisSession = locator.createSessionFactory().createSession();
+            String queue = artemisAddress+"-ArtemisPpProvider";
+            artemisSession.createTemporaryQueue(artemisAddress, queue);
+            ClientConsumer client = artemisSession.createConsumer(queue, AbstractArtemisTranslatorService.UNIQUEID_HDR_NAME+"<>"+AbstractArtemisTranslatorService.UNIQUEID);
+            client.setMessageHandler(this);
             notifyStarted();
-        } catch (ActiveMQException|YamcsApiException e) {
+        } catch (Exception e) {
             log.error("Failed connect to artemis");
             notifyFailed(e);
         }
@@ -142,7 +141,7 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
     @Override
     protected void doStop() {
         try {
-            yamcsSession.close();
+            artemisSession.close();
             notifyStopped();
         } catch (ActiveMQException e) {
             log.error("Got exception when quiting:", e);

@@ -40,15 +40,6 @@ public class YamcsSession {
         System.setProperty("org.jboss.logging.provider", "slf4j");
     }
 
-    /* used for debugging not properly closed sessions
-    public static List<YamcsSession> sessionList = Collections.synchronizedList(new ArrayList<YamcsSession>());    
-    public Exception creatorContext; 
-    private YamcsSession() {   
-	sessionList.add(this);
-	creatorContext = new Exception();
-    }
-     */
-
     private YamcsSession() {}
     public ClientSessionFactory getSessionFactory() {
         return sessionFactory;
@@ -76,8 +67,6 @@ public class YamcsSession {
             if (locator != null)
                 locator.close();
         }
-        /*sessionList.remove(this);*/
-
     }
 
     private void init() throws YamcsApiException {
@@ -91,7 +80,7 @@ public class YamcsSession {
                 password = hornetqInvmPass;
             } else {
                 if(ycd.getHost()!=null) {
-                    Map<String, Object> tcpConfig =new HashMap<String,Object>();
+                    Map<String, Object> tcpConfig =new HashMap<>();
                     tcpConfig.put(TransportConstants.HOST_PROP_NAME, ycd.getHost());
                     tcpConfig.put(TransportConstants.PORT_PROP_NAME, ycd.getPort());
                     locator = ActiveMQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName(),tcpConfig));
