@@ -125,6 +125,7 @@ public class AbstractArtemisTranslatorService extends AbstractService {
         for(Stream s:streams) {
             s.removeSubscriber(streamSubscribers.get(s));
         }
+        notifyStopped();
     }
     
     
