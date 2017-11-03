@@ -32,7 +32,6 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
-import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.BitBuffer;
@@ -50,7 +49,6 @@ public class XtceTmExtractorTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setup("refmdb");
-        ManagementService.setup(false);
         XtceDbFactory.reset();
         xtcedb=XtceDbFactory.createInstanceByConfig("refmdb");
         //xtcedb.print(System.out);

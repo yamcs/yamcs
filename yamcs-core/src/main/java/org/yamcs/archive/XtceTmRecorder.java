@@ -1,7 +1,6 @@
 package org.yamcs.archive;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -170,6 +169,7 @@ public class XtceTmRecorder extends AbstractService {
     protected void doStop() {
         for(StreamRecorder sr: recorders) {
             sr.quit();
+            sr.inputStream.removeSubscriber(sr);
         }
         YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
         Stream s = ydb.getStream("tm_is");

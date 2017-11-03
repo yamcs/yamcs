@@ -37,7 +37,6 @@ public class CreateStreamStatement extends StreamSqlStatement {
                 stream=new InternalStream(dict, streamName, tupleDefinition);
             }
             try {
-              //  System.out.println("adding stream "+stream+" to the dictionary");
                 dict.addStream(stream);
             } catch (YarchException e) {
                 throw new GenericStreamSqlException(e.getMessage());

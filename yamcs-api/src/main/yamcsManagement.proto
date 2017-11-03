@@ -1,3 +1,5 @@
+syntax="proto2";
+
 package yamcsManagement;
 option java_package = "org.yamcs.protobuf";
 
@@ -24,6 +26,7 @@ message YamcsInstance {
   optional string url = 5;
   optional string clientsUrl = 6;
   optional string eventsUrl = 7;
+  optional ServiceState state = 8;
 }
 
 message HistoryInfo {

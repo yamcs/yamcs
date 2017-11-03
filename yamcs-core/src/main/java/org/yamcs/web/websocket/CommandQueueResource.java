@@ -31,6 +31,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
     public static final String OP_subscribe = "subscribe";
     public static final String OP_unsubscribe = "unsubscribe";
 
+    private volatile boolean subscribed = false;
     public CommandQueueResource(WebSocketProcessorClient client) {
         super(client);
     }
@@ -70,6 +71,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
     }
 
     private void doSubscribe() {
+        subscribed = true;
         ManagementService mservice = ManagementService.getInstance();
         CommandQueueManager cqueueManager = mservice.getCommandQueueManager(processor);
         if (cqueueManager != null) {
@@ -86,13 +88,18 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
         if (cqueueManager != null) {
             cqueueManager.removeListener(this);
         }
+        subscribed = false;
     }
 
     @Override
     public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
-        doUnsubscribe();
-        super.switchProcessor(oldProcessor, newProcessor);
-        doSubscribe();
+        if(subscribed) {
+            doUnsubscribe();
+            super.switchProcessor(oldProcessor, newProcessor);
+            doSubscribe();    
+        } else {
+            super.switchProcessor(oldProcessor, newProcessor);
+        }
     }
 
     /**

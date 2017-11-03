@@ -7,8 +7,6 @@ package org.yamcs.tctm;
 public interface Link {
     /**
      * Returns one of "OK" or "UNAVAIL". 
-     * It's sure what the difference between uplink status and forward link status is.
-     * @return
      */
     public abstract String getLinkStatus();
 

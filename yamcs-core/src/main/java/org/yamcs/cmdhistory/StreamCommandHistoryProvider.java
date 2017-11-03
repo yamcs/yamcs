@@ -7,7 +7,7 @@ import org.yamcs.commanding.InvalidCommandId;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.tctm.TcUplinkerAdapter;
+import org.yamcs.tctm.TcDataLinkInitialiser;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.Stream;
@@ -41,7 +41,7 @@ public class StreamCommandHistoryProvider  extends AbstractService implements Co
             PreparedCommand pc=PreparedCommand.fromTuple(tuple);
             chrm.addCommand(pc);
         } else {
-            int i=TcUplinkerAdapter.TC_TUPLE_DEFINITION.getColumnDefinitions().size();
+            int i=TcDataLinkInitialiser.TC_TUPLE_DEFINITION.getColumnDefinitions().size();
             CommandId cmdId=PreparedCommand.getCommandId(tuple);
             List<ColumnDefinition> columns=tuple.getDefinition().getColumnDefinitions();
             while(i<columns.size()) {

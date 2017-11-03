@@ -56,11 +56,15 @@ public class EventResource extends AbstractWebSocketResource {
 
     @Override
     public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
-        doUnsubscribe();
-        super.switchProcessor(oldProcessor, newProcessor);
-        YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
-        stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
-        doSubscribe();
+        if(streamSubscriber==null) {
+            super.switchProcessor(oldProcessor, newProcessor);
+        } else {
+            doUnsubscribe();
+            super.switchProcessor(oldProcessor, newProcessor);
+            YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
+            stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
+            doSubscribe();
+        }
     }
 
     private WebSocketReplyData unsubscribe(int requestId) throws WebSocketException {

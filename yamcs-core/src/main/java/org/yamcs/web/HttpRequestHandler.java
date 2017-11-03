@@ -19,6 +19,7 @@ import org.yamcs.api.MediaType;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.AuthenticationPendingException;
 import org.yamcs.security.Privilege;
+import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.web.rest.Router;
 import org.yamcs.web.websocket.WebSocketFrameHandler;
 
@@ -164,7 +165,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                 
                 handleRequest(authToken, ctx, req);
             } catch (Exception e) {
-               Throwable t = unwindThrowable(e);
+               Throwable t = ExceptionUtil.unwind(e);
                 if (t instanceof AuthenticationPendingException) {
                     return;
                 } else {
@@ -176,13 +177,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-    private Throwable unwindThrowable(Throwable t) {
-        while (((t instanceof ExecutionException) || (t instanceof CompletionException) || (t instanceof UncheckedExecutionException))
-                && t.getCause() != null) {
-            t = t.getCause();
-        }
-        return t;
-    }
 
     private void handleRequest(AuthenticationToken authToken, ChannelHandlerContext ctx, HttpRequest req) {
         try {
@@ -292,10 +286,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         } catch (IOException e) {
             return sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.toString());
         }
-        byte[] dst = new byte[body.readableBytes()];
-        body.markReaderIndex();
-        body.readBytes(dst);
-        body.resetReaderIndex();
         HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, body);
         HttpUtils.setContentTypeHeader(response, contentType);
 

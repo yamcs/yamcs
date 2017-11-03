@@ -200,10 +200,10 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
     /**
      * Sends actual data over the web socket. If the channel is not or no longer
-     * writable, the message is dropped. TODO A better approach could be to await the
-     * write for a little while, like we do for chunked writes, but doing so
-     * in-thread would currently cause other yamcs-level subscribers to block as
-     * well for certain types of requests. Needs work.
+     * writable, the message is dropped.  We do not want to block the calling thread (because that will be a processor thread). 
+     * 
+     * The websocket clients will know when the messages have been dropped from the squence count.
+     * 
      */
     public <S> void sendData(ProtoDataType dataType, S data, Schema<S> schema) throws IOException {
         dataSeqCount++;

@@ -329,7 +329,7 @@ public class Privilege {
     }
 
 
-    public String getUsername(AuthenticationToken authToken) {
+    public static String getUsername(AuthenticationToken authToken) {
         if(!usePrivileges){
             return defaultUser;
         }

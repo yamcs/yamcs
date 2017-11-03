@@ -1,6 +1,7 @@
 Version 3.4.0 
 - moved artemis into a separate source project which yamcs-core does not depend on. 
   Allow to connect to an external Artemis server by specifying artemisUrl: "tcp://..." into yamcs.<instance>.yaml or yamcs.yaml
+- added the possibility to restart instances and send information about current connected instance/processor via websocket
 
 Version 3.3.0 Released 24-Oct-2017
 - Support index requests with parameters encoded in the HTTP request body in order to allow a large number of packets to be specified (otherwise, the request would exceed maximum URI size).

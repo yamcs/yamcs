@@ -7,10 +7,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.RestClient;
-import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 import org.yamcs.security.AuthModule;
 import org.yamcs.security.AuthenticationToken;
@@ -18,7 +16,6 @@ import org.yamcs.security.InvalidAuthenticationToken;
 import org.yamcs.security.Privilege.Type;
 import org.yamcs.security.User;
 import org.yamcs.web.HttpServer;
-import org.yamcs.yarch.management.JMXService;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
@@ -30,7 +27,6 @@ public class AuthModuleTest {
         YConfiguration.setup("AuthModuleTest");
         new HttpServer().startServer();
         
-        ManagementService.setup(false);
         YamcsServer.setupYamcsServer();
     }
     

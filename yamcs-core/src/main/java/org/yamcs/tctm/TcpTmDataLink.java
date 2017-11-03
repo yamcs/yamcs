@@ -184,6 +184,9 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
             }
             tmSocket=null;
         }
+        if(sysParamCollector!=null) {
+            sysParamCollector.unregisterProducer(this);
+        }
     }
 
     @Override
@@ -229,7 +232,7 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
     protected void setupSysVariables() {
         this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
         if(sysParamCollector!=null) {
-            sysParamCollector.registerProvider(this, null);
+            sysParamCollector.registerProvider(this);
             spLinkStatus = sysParamCollector.getNamespace()+"/"+name+"/linkStatus";
             spDataCount = sysParamCollector.getNamespace()+"/"+name+"/dataCount";
         

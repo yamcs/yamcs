@@ -42,7 +42,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     protected CommandHistoryPublisher commandHistoryListener;
     protected Selector selector; 
     SelectionKey selectionKey;
-    protected CcsdsSeqAndChecksumFiller seqAndChecksumFiller=new CcsdsSeqAndChecksumFiller();
+    protected CcsdsSeqAndChecksumFiller seqAndChecksumFiller = new CcsdsSeqAndChecksumFiller();
     protected ScheduledThreadPoolExecutor timer;
     protected volatile boolean disabled=false;
     protected int minimumTcPacketLength = -1; //the minimum size of the CCSDS packets uplinked
@@ -91,7 +91,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     @Override
     protected void doStart() {
         setupSysVariables();
-        this.timer=new ScheduledThreadPoolExecutor(1);
+        this.timer = new ScheduledThreadPoolExecutor(1);
         timer.scheduleWithFixedDelay(this, 0, 10, TimeUnit.SECONDS);
         notifyStarted();
     }
@@ -302,7 +302,11 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
 
     @Override
     public void doStop() {
+        timer.shutdown();
         disconnect();
+        if(sysParamCollector!=null) {
+            sysParamCollector.unregisterProducer(this);
+        }
         notifyStopped();
     }
 
@@ -338,12 +342,13 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     public long getDataCount() {
         return tcCount;
     }
-
+    
+    
 
     protected void setupSysVariables() {
         this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
         if(sysParamCollector!=null) {
-            sysParamCollector.registerProvider(this, null);
+            sysParamCollector.registerProducer(this);
             sv_linkStatus_id = sysParamCollector.getNamespace()+"/"+name+"/linkStatus";
             sp_dataCount_id = sysParamCollector.getNamespace()+"/"+name+"/dataCount";
 

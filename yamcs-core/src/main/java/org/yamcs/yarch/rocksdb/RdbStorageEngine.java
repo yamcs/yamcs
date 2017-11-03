@@ -28,7 +28,6 @@ import org.yamcs.yarch.YarchException;
  * Storage Engine based on RocksDB.
  * 
  * Tables are mapped to multiple RocksDB databases - one for each time based partition.
- * Value based partitions are mapped to column families.
  * 
  * 
  */

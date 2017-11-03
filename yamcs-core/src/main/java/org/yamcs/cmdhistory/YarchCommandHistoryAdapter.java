@@ -1,6 +1,6 @@
 package org.yamcs.cmdhistory;
 
-import org.yamcs.tctm.TcUplinkerAdapter;
+import org.yamcs.tctm.TcDataLinkInitialiser;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -31,7 +31,7 @@ public class YarchCommandHistoryAdapter implements CommandHistoryPublisher {
 
     @Override
     public void updateStringKey(CommandId cmdId, String key, String value) {
-        TupleDefinition td=TcUplinkerAdapter.TC_TUPLE_DEFINITION.copy();
+        TupleDefinition td=TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
         td.addColumn(key, DataType.STRING);
         
         Tuple t = new Tuple(td, new Object[] {
@@ -46,7 +46,7 @@ public class YarchCommandHistoryAdapter implements CommandHistoryPublisher {
 
     @Override
     public void updateTimeKey(CommandId cmdId, String key, long instant) {
-        TupleDefinition td=TcUplinkerAdapter.TC_TUPLE_DEFINITION.copy();
+        TupleDefinition td=TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
         td.addColumn(key, DataType.TIMESTAMP);
         
         Tuple t=new Tuple(td, new Object[] {
@@ -65,7 +65,7 @@ public class YarchCommandHistoryAdapter implements CommandHistoryPublisher {
     }
     
     public void publish(CommandId cmdId, String key, DataType dt, Object value) {
-        TupleDefinition td=TcUplinkerAdapter.TC_TUPLE_DEFINITION.copy();
+        TupleDefinition td=TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
         td.addColumn(key, dt);
         
         Tuple t=new Tuple(td, new Object[] {

@@ -29,7 +29,6 @@ public class AlarmTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setup("refmdb");
-        ManagementService.setup(false);
         XtceDbFactory.reset();
     }
     

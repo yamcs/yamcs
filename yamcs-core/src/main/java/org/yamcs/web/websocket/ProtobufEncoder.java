@@ -8,6 +8,7 @@ import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueEvent;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Web.ConnectionInfo;
 import org.yamcs.protobuf.Web.WebSocketExtensionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType;
@@ -88,6 +89,8 @@ public class ProtobufEncoder implements WebSocketEncoder {
             responseb.setCommandQueueEvent((CommandQueueEvent) message);
         } else if (dataType == ProtoDataType.TM_PACKET) {
             responseb.setTmPacket((TmPacketData) message);
+        } else if (dataType == ProtoDataType.CONNECTION_INFO) {
+            responseb.setConnectionInfo((ConnectionInfo) message);
         } else if (dataType == ProtoDataType.EXTENSION_DATA) {
             responseb.setExtensionData((WebSocketExtensionData) message);
         } else {

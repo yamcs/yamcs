@@ -133,7 +133,6 @@ public abstract class AbstractIntegrationTest {
         FileUtils.deleteRecursively(dataDir.toPath());
 
         YConfiguration.setup("IntegrationTest");
-        ManagementService.setup(false);
         new HttpServer().startServer();
         //     artemisServer = ArtemisServer.setupArtemis();
         //   ArtemisManagement.setupYamcsServerControl();

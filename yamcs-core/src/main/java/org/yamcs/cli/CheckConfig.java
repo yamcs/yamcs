@@ -73,8 +73,7 @@ public class CheckConfig extends Command {
         File tmpDir = Files.createTempDir();
         hackDataDir(tmpDir.getAbsolutePath());
             
-        YamcsServer.setupManagement();
-        YamcsServer.createServices();
+        YamcsServer.createGlobalServicesAndInstances();
         FileUtils.deleteRecursively(tmpDir);
         console.println("The configuration appears to be valid.");
     }

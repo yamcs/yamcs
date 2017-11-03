@@ -10,14 +10,12 @@ import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 
 public class CommandQueueControlImpl extends StandardMBean  implements CommandQueueControl {
     CommandQueue queue;
-    CommandQueueManager cqm;
     CommandQueueInfo cqi;
     
-    public CommandQueueControlImpl(String instance, String yprocName, CommandQueueManager cqm, CommandQueue queue)  throws NotCompliantMBeanException {
+    public CommandQueueControlImpl(String instance, String procName, CommandQueue queue)  throws NotCompliantMBeanException {
         super(CommandQueueControl.class);
         this.queue=queue;
-        this.cqm=cqm;
-        cqi=CommandQueueInfo.newBuilder().setInstance(instance).setProcessorName(yprocName)
+        cqi=CommandQueueInfo.newBuilder().setInstance(instance).setProcessorName(procName)
             .setName(queue.getName()).setState(queue.getState()).setNbSentCommands(queue.getNbSentCommands())
                 .setNbRejectedCommands(queue.getNbRejectedCommands()).build();
     }

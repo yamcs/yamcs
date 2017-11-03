@@ -12,7 +12,6 @@ import io.netty.channel.Channel;
  * Instances of this class are created for every client session separately.
  */
 public abstract class AbstractWebSocketResource {
-
     protected Processor processor;
     protected WebSocketProcessorClient client;
     protected WebSocketFrameHandler wsHandler;

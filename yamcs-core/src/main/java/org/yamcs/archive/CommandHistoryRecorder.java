@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
-import org.yamcs.tctm.TcUplinkerAdapter;
+import org.yamcs.tctm.TcDataLinkInitialiser;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
@@ -37,7 +37,7 @@ public class CommandHistoryRecorder extends AbstractService {
     protected void doStart() {
         YarchDatabase ydb=YarchDatabase.getInstance(instance);
 
-        String keycols=TcUplinkerAdapter.TC_TUPLE_DEFINITION.getStringDefinition1();
+        String keycols=TcDataLinkInitialiser.TC_TUPLE_DEFINITION.getStringDefinition1();
         try {
             if(ydb.getTable("cmdhist")==null) {
                 String q="create table cmdhist ("+keycols+", PRIMARY KEY(gentime, origin, seqNum)) histogram(cmdName) partition by time(gentime) table_format=compressed";

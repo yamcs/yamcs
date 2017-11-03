@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -43,10 +44,9 @@ import org.yaml.snakeyaml.Yaml;
  *
  */
 public class YarchDatabase {
-
     Map<String,TableDefinition> tables;
-    transient Map<String,AbstractStream> streams;
-    static Logger log=LoggerFactory.getLogger(YarchDatabase.class.getName());
+    transient Map<String, AbstractStream> streams;
+    static Logger log = LoggerFactory.getLogger(YarchDatabase.class.getName());
     static YConfiguration config;
     
     //note that this home variable is currently changed in the org.yamcs.cli.CheckConfig
@@ -115,9 +115,8 @@ public class YarchDatabase {
      * @param yamcsInstance
      * @param ignoreVersionIncompatibility - if set to true, the created StorageEngines will load old data (as far as possible). Used only when upgrading from old data formats to new ones.
      * 
-     * @return
      */
-    static synchronized public YarchDatabase getInstance(String yamcsInstance, boolean ignoreVersionIncompatibility) {
+    public static synchronized YarchDatabase getInstance(String yamcsInstance, boolean ignoreVersionIncompatibility) {
         YarchDatabase instance = databases.get(yamcsInstance);
         if(instance==null) {
             try {
@@ -414,6 +413,14 @@ public class YarchDatabase {
             return s.execute(context);
         } catch (TokenMgrError e) {
             throw new ParseException(e.getMessage());
+        }
+    }
+
+    public void close() {
+        //make a copy such that we don't get ConcurrentModificationException when stream.close will cause it to be removed from the map
+        List<Stream> l = new ArrayList<>(streams.values());
+        for(Stream s: l) {
+            s.close();
         }
     }
 }

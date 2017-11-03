@@ -19,7 +19,6 @@ import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.cmdhistory.StreamCommandHistoryProvider;
 import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
-import org.yamcs.commanding.CommandQueueManager;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.CommandingManager;
 import org.yamcs.container.ContainerRequestManager;
@@ -316,9 +315,6 @@ public class Processor extends AbstractService {
                 commandReleaser.awaitRunning();
                 commandingManager.startAsync();
                 commandingManager.awaitRunning();
-                CommandQueueManager cqm = commandingManager.getCommandQueueManager();
-                cqm.startAsync();
-                cqm.awaitRunning();
             }
 
             if(commandHistoryRequestManager!=null) {
@@ -333,7 +329,6 @@ public class Processor extends AbstractService {
             for(ParameterProvider pprov: parameterProviders) {
                 pprov.startAsync();
             }
-
 
 
             parameterRequestManager.start();
@@ -519,7 +514,7 @@ public class Processor extends AbstractService {
 
         log.info("Processor {} quitting", name);
         quitting = true;
-        
+        timer.shutdown();
         //first send a STOPPING event
         listeners.forEach(l -> l.processorStateChanged(this));
         
@@ -533,6 +528,7 @@ public class Processor extends AbstractService {
         }
         if(commandReleaser!=null) {
             commandReleaser.stopAsync();
+            commandingManager.stopAsync();
         }
         if(tmProcessor!=null) {
             tmProcessor.stopAsync();
