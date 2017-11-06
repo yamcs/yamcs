@@ -9,6 +9,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.simulator.ui.SimWindow;
+import org.yamcs.utils.StringConverter;
 
 
 public class Simulator extends Thread {
@@ -78,6 +79,7 @@ public class Simulator extends Thread {
                 System.arraycopy(hdr, 0, b, 0, 6);
                 dIn.readFully(b, 6, remaining);
                 CCSDSPacket packet = new CCSDSPacket(ByteBuffer.wrap(b));
+                transmitTM(ackPacket(packet, 0, 0)); 
                 packetQueue.add(packet);
             }
         } catch(IOException e) {
@@ -110,6 +112,7 @@ public class Simulator extends Thread {
     
     protected void transmitTM(CCSDSPacket packet) {
         tmLink.tmTransmit(packet);
+
     }
 
     public void dumpLosDataFile(String filename) {
@@ -172,5 +175,23 @@ public class Simulator extends Thread {
 
     public void stopTriggeringLos() {
         losStore.stopTriggeringLos();
+    }
+    
+    protected CCSDSPacket ackPacket(CCSDSPacket commandPacket, int stage, int result) {
+    	CCSDSPacket ackPacket = new CCSDSPacket(0, commandPacket.getPacketType(), 2000);
+    	ackPacket.setApid(101);
+    	int batNum = commandPacket.getPacketId();
+    	
+    	ByteBuffer bb = ByteBuffer.allocate(10);
+
+    	bb.putInt(0,batNum);
+    	bb.putInt(4,commandPacket.getSeq());
+    	bb.put(8,(byte)stage);
+    	bb.put(9,(byte)result);
+    	
+    	ackPacket.appendUserDataBuffer(bb.array());
+    
+    	return ackPacket;
+    	
     }
 }

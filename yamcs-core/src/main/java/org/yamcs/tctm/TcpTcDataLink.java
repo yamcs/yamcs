@@ -235,7 +235,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
                 }
             }
         }
-
+        commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
         if(sent) {
             handleAcks(pc.getCommandId(), seqCount);
         } else {

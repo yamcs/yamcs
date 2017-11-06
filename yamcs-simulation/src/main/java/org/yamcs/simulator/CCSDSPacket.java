@@ -48,8 +48,9 @@ public class CCSDSPacket {
     
     protected ByteBuffer buffer;
     
-    // Header Attributes 
-    private int apid, seq, packetid, packetType;
+    // Header Attributes
+    
+    private int apid, packetid, packetType, seq; 
     private long timeMillis;
     private short w;
     
@@ -83,7 +84,12 @@ public class CCSDSPacket {
     }
 
 
-    public ByteBuffer getUserDataBuffer() {
+    public void setApid(int apid) {
+		this.apid = apid;
+		putHeader();
+	}
+
+	public ByteBuffer getUserDataBuffer() {
         buffer.position(16);
         return buffer.slice();
     }
@@ -110,6 +116,10 @@ public class CCSDSPacket {
     public int getPacketType() {
         return packetType;
     }
+
+    public int getSeq() {
+		return seq;
+	}
     
     public void describePacketHeader(int byteToRead){
         String s1 = String.format("%8s", Integer.toBinaryString(byteToRead & 0xFF)).replace(' ', '0');
