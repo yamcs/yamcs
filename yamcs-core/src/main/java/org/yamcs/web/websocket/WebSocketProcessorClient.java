@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.yamcs.ProcessorClient;
 import org.yamcs.ProcessorException;
 import org.yamcs.YamcsException;
+import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.Processor;
 import org.yamcs.management.ManagementGpbHelper;
@@ -77,6 +78,7 @@ public class WebSocketProcessorClient implements ProcessorClient, ManagementList
         for (AbstractWebSocketResource resource : resources) {
             resource.switchProcessor(oldProcessor, newProcessor);
         }
+        sendConnectionInfo();
         // Note: We're not updating log and clientId in case of instance change. Maybe that's something we should do though
     }
 
@@ -149,10 +151,13 @@ public class WebSocketProcessorClient implements ProcessorClient, ManagementList
                 } 
             }
         }
-        sendConnectionInfo(ysi.getName(), ysi.state());
+        sendConnectionInfo();
     }
     
-    private void sendConnectionInfo(String instanceName, Service.State instanceState) {
+    private void sendConnectionInfo() {
+        String instanceName = processor.getInstance();
+        YamcsServerInstance ysi = YamcsServer.getInstance(instanceName);
+        Service.State instanceState = ysi.state();
         YamcsInstance yi = YamcsInstance.newBuilder().setName(instanceName)
                 .setState(ServiceState.valueOf(instanceState.name())).build();
         ConnectionInfo.Builder conninf = ConnectionInfo.newBuilder().setInstance(yi);

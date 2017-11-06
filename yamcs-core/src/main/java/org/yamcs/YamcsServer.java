@@ -23,6 +23,7 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.YObjectLoader;
+import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -239,6 +240,7 @@ public class YamcsServer {
         ManagementService.getInstance().registerYamcsInstance(ysi);
         ysi.init();
         
+        
         return ysi;
     }
 
@@ -259,8 +261,13 @@ public class YamcsServer {
         if (!hasInstance(name)) {
             return null;
         }
-        YamcsInstance.Builder aib=YamcsInstance.newBuilder();
-        aib.setName(name);
+        YamcsInstance.Builder aib=YamcsInstance.newBuilder().setName(name);
+        YamcsServerInstance ysi = getInstance(name);
+        Service.State state = ysi.state();
+        aib.setState(ServiceState.valueOf(state.name()));
+        if(state==State.FAILED) {
+            aib.setFailureCause(ysi.failureCause().toString());
+        }
         try {
             MissionDatabase.Builder mdb = MissionDatabase.newBuilder();
             YConfiguration c = YConfiguration.getConfiguration("yamcs."+name);
@@ -268,14 +275,14 @@ public class YamcsServer {
                 String configName = c.getString("mdb");
                 mdb.setConfigName(configName);
             }
-            XtceDb xtcedb=XtceDbFactory.getInstance(name);
+            XtceDb xtcedb = XtceDbFactory.getInstance(name);
             mdb.setName(xtcedb.getRootSpaceSystem().getName());
             Header h =xtcedb.getRootSpaceSystem().getHeader();
             if((h!=null) && (h.getVersion()!=null)) {
                 mdb.setVersion(h.getVersion());
             }
             aib.setMissionDatabase(mdb.build());
-        } catch (ConfigurationException e) {
+        } catch (ConfigurationException|DatabaseLoadException e) {
             staticlog.warn("Got error when finding the mission database for instance {}", name, e);
         }
         return aib.build();
