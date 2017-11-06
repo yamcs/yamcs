@@ -40,6 +40,7 @@ import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.tctm.Link;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtceproc.ProcessingStatistics;
+import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 
@@ -490,6 +491,7 @@ public class ManagementService implements ProcessorListener {
             } catch (IllegalStateException e) {
                 log.error("Instance did not terminate normally", e);
             }
+            XtceDbFactory.remove(instanceName);
             YamcsServerInstance ysi1;
             try {
                 log.info("Creating new instance {}", instanceName);
