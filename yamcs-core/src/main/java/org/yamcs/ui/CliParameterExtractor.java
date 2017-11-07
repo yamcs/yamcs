@@ -18,6 +18,7 @@ import org.yamcs.api.rest.BulkRestDataReceiver;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Rest.BulkDownloadParameterValueRequest;
+import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.utils.TimeEncoding;
@@ -156,21 +157,34 @@ public class CliParameterExtractor {
             @Override
             public void receiveData(byte[] data) throws YamcsApiException {
                 ParameterData pd;
-
                 try {
                     pd = ParameterData.parseFrom(data);
                     pf.writeParameters(pd.getParameterList());
                 } catch (InvalidProtocolBufferException e) {
-                    System.err.println("cannot decode parameter message"+e);
+                    System.err.println("Cannot decode parameter message: " + e);
                 } catch (IOException e) {
-                    System.err.println("Error when saving parameters: "+e);
+                    System.err.println("Error when saving parameters: " + e);
                 }
             }
         });
 
-        completableFuture.get();
-        pf.close();
-        restClient.close();
-        System.err.println("finished");
+        try {
+            completableFuture.get();
+        } catch (ExecutionException e) {
+            Throwable t = (e.getCause() != null ? e.getCause() : e);
+            if (t instanceof YamcsApiException) {
+                RestExceptionMessage msg = ((YamcsApiException) t).getRestExceptionMessage();
+                if (msg != null) {
+                    System.err.println(msg.getType() + ": " + msg.getMsg());
+                } else {
+                    System.err.println(t.getMessage());
+                }
+            } else {
+                System.err.println(t);
+            }
+        } finally {
+            pf.close();
+            restClient.close();
+        }
     }
 }
