@@ -25,7 +25,6 @@ import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.archive.PacketWithTime;
-import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Archive.StreamData;
@@ -34,6 +33,7 @@ import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
+import org.yamcs.protobuf.Web.ConnectionInfo;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
@@ -224,6 +224,7 @@ public abstract class AbstractIntegrationTest {
         LinkedBlockingQueue<TimeInfo> timeInfoList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<LinkEvent> linkEventList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<CommandQueueInfo> cmdQueueInfoList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<ConnectionInfo> connInfoList = new LinkedBlockingQueue<>();
 
         int count =0;
         @Override
@@ -279,6 +280,8 @@ public abstract class AbstractIntegrationTest {
             case COMMAND_QUEUE_INFO:
                 cmdQueueInfoList.add(data.getCommandQueueInfo());
                 break;
+            case CONNECTION_INFO:
+                connInfoList.add(data.getConnectionInfo());
             default:
                 throw new IllegalArgumentException("Unexpected type " + data.getType());
             }
