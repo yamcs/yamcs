@@ -22,18 +22,26 @@ import io.netty.buffer.ByteBufOutputStream;
 public class ParameterReplayToChunkedCSVEncoder extends ParameterReplayToChunkedTransferEncoder {
     
     private ParameterFormatter formatter;
+    private boolean addRaw;
+    private boolean addMonitoring;
     
-    public ParameterReplayToChunkedCSVEncoder(RestRequest req, List<NamedObjectId> idList) throws HttpException {
+    public ParameterReplayToChunkedCSVEncoder(RestRequest req, List<NamedObjectId> idList, boolean addRaw, boolean addMonitoring) throws HttpException {
         super(req, MediaType.CSV, idList);
+        this.addRaw = addRaw;
+        this.addMonitoring = addMonitoring;
+
+        resetBuffer();
         formatter.setWriteHeader(true);
     }
     
     @Override
     protected void resetBuffer() {
         super.resetBuffer();
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(bufOut));
-        formatter = new ParameterFormatter(bw, idList, '\t');
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(bufOut));
+        formatter = new ParameterFormatter(writer, idList, '\t');
         formatter.setWriteHeader(false);
+        formatter.setPrintRaw(addRaw);
+        formatter.setPrintMonitoring(addMonitoring);
     }
     
     @Override

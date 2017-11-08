@@ -9,6 +9,7 @@ bin/
 *.iml
 
 target/
+yamcs-artemis/lib/
 yamcs-core/lib/
 live/
 server.lock
