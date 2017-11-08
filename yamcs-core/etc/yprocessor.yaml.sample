@@ -6,12 +6,6 @@
 #
 # Note that when you are adding a telemetryProvider, you are implicitly adding also a XtceTmProcessor that provides parameters
 
-
-# all the supported processor types
-types: [realtime, Archive]
-
-
-
 realtime:
     telemetryProvider: 
        class: org.yamcs.StreamTmPacketProvider
