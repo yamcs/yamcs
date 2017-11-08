@@ -158,8 +158,8 @@ public class MulticastTmDataLink extends AbstractExecutionThreadService implemen
     }
 
     @Override
-    public String getLinkStatus() {
-        return disabled?"DISABLED":"OK";
+    public Status getLinkStatus() {
+        return disabled?Status.DISABLED:Status.OK;
     }
 
     /**

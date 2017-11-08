@@ -293,8 +293,8 @@ public abstract class AbstractIntegrationTest {
             instance = this;
         }
         @Override
-        public String getLinkStatus() {
-            return "OK";
+        public Status getLinkStatus() {
+            return Status.OK;
         }
         @Override
         public String getDetailedStatus() {
@@ -357,8 +357,8 @@ public abstract class AbstractIntegrationTest {
         }
         
         @Override
-        public String getLinkStatus() {
-            return "OK";
+        public Status getLinkStatus() {
+            return Status.OK;
         }
 
         @Override

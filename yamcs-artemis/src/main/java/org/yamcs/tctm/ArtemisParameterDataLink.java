@@ -49,11 +49,11 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
 
 
     @Override
-    public String getLinkStatus() {
+    public Status getLinkStatus() {
         if (disabled) {
-            return "DISABLED";
+            return Status.DISABLED;
         } else {
-            return "OK";
+            return Status.OK;
         }
     }
 

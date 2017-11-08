@@ -95,8 +95,8 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
     }
 
     @Override
-    public String getLinkStatus() {
-        return disabled?"DISABLED":"OK";
+    public Status getLinkStatus() {
+        return disabled?Status.DISABLED:Status.OK;
     }
 
     /**

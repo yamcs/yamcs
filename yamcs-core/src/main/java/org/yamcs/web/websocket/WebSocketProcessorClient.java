@@ -17,7 +17,6 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.SchemaWeb;
 import org.yamcs.protobuf.Web.ConnectionInfo;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.security.AuthenticationToken;

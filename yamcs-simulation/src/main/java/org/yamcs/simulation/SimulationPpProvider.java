@@ -62,17 +62,17 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
     }
 
     @Override
-    public String getLinkStatus() {
+    public Status getLinkStatus() {
         if (disabled) {
-            return "DISABLED";
+            return Status.DISABLED;
         } else {
-            return "OK";
+            return Status.OK;
         }
     }
 
     @Override
     public String getDetailedStatus() {
-        return getLinkStatus();
+        return getLinkStatus().name();
     }
 
     @Override

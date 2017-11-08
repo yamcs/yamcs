@@ -52,11 +52,11 @@ public class ArtemisTmDataLink extends  AbstractService implements TmPacketDataL
     }
 
     @Override
-    public String getLinkStatus() {
+    public Status getLinkStatus() {
         if (disabled) {
-            return "DISABLED";
+            return Status.DISABLED;
         } else {
-            return "OK";
+            return Status.OK;
         }
     }
 

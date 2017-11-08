@@ -5,10 +5,25 @@ package org.yamcs.tctm;
  *
  */
 public interface Link {
+    public enum Status {
+        /**
+         * the link is up ready to receive data. 
+         */
+        OK, 
+        /**
+         * the link is down although it should be up;
+         * for instance a TCP client that cannot connect to the remote server. 
+         */
+        UNAVAIL, 
+        /**
+         * the link has been disabled by the user (so it's implicitly unavailable)
+         */
+        DISABLED;
+    }
     /**
-     * Returns one of "OK" or "UNAVAIL". 
+     * Returns the current link status. 
      */
-    public abstract String getLinkStatus();
+    public abstract Status getLinkStatus();
 
     /**
      * @return more detailed status information

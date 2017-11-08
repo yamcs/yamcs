@@ -106,7 +106,7 @@ public class ManagementService implements ProcessorListener {
         LinkInfo.Builder linkb = LinkInfo.newBuilder().setInstance(instance)
                 .setName(linkName).setStream(streamName)
                 .setDisabled(link.isDisabled())
-                .setStatus(link.getLinkStatus())
+                .setStatus(link.getLinkStatus().name())
                 .setType(link.getClass().getSimpleName()).setSpec(spec)
                 .setDataCount(link.getDataCount());
         if(link.getDetailedStatus()!=null) {
@@ -546,7 +546,7 @@ public class ManagementService implements ProcessorListener {
                     || !linkInfo.getDetailedStatus().equals(link.getDetailedStatus())) {
 
                 linkInfo = LinkInfo.newBuilder(linkInfo).setDisabled(link.isDisabled())
-                        .setStatus(link.getLinkStatus()).setDetailedStatus(link.getDetailedStatus())
+                        .setStatus(link.getLinkStatus().name()).setDetailedStatus(link.getDetailedStatus())
                         .setDataCount(link.getDataCount()).build();
                 return true;
             } else {

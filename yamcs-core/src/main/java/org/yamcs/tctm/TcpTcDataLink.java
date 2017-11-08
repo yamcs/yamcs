@@ -250,14 +250,14 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     }
 
     @Override
-    public String getLinkStatus() {
+    public Status getLinkStatus() {
         if (disabled) {
-            return "DISABLED";
+            return Status.DISABLED;
         }
         if(isSocketOpen()) {
-            return "OK";
+            return Status.OK;
         } else {
-            return "UNAVAIL";
+            return Status.UNAVAIL;
         }
     }
 
@@ -361,7 +361,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     @Override
     public Collection<ParameterValue> getSystemParameters() {
         long time = getCurrentTime();
-        ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus());
+        ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus().name());
         ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataCount());
         return Arrays.asList(linkStatus, dataCount);
     }
