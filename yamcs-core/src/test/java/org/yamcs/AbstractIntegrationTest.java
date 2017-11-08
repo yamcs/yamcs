@@ -282,6 +282,7 @@ public abstract class AbstractIntegrationTest {
                 break;
             case CONNECTION_INFO:
                 connInfoList.add(data.getConnectionInfo());
+                break;
             default:
                 throw new IllegalArgumentException("Unexpected type " + data.getType());
             }
