@@ -23,7 +23,7 @@ Yet another Mission Control System
 %build
 
 %if %{_buildweb}
-  cd yamcs-web && npm install && gulp && cd ..
+  cd yamcs-web && npm install && npm run build && cd ..
 %endif
 
 mvn clean compile package -Dmaven.test.skip=true -Dmaven.buildNumber.doUpdate=false
@@ -47,6 +47,7 @@ cp yamcs-artemis/lib/*.jar %{buildroot}/%{prefix}/lib
 cp yamcs-artemis/target/yamcs-artemis*.jar %{buildroot}/%{prefix}/lib
 
 cp -a yamcs-core/misc/init.d %{buildroot}/etc/
+cp -a contrib/sysvinit/* %{buildroot}/etc/init.d
 cp -a yamcs-api/src/main/*.proto %{buildroot}/%{prefix}/lib/
 
 %if %{_buildweb}

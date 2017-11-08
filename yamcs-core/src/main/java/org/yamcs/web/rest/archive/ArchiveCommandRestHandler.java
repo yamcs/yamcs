@@ -20,14 +20,15 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 
 public class ArchiveCommandRestHandler extends RestHandler {
-    
+
+    @Route(path = "/api/archive/:instance/commands")
     @Route(path = "/api/archive/:instance/commands/:name*")
     public void listCommands(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        
+
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
-        
+
         SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
         if (ir.hasInterval()) {
@@ -39,7 +40,7 @@ public class ArchiveCommandRestHandler extends RestHandler {
             sqlb.where("cmdName = '" + cmd.getQualifiedName() + "'");
         }
         sqlb.descend(req.asksDescending(true));
-        
+
         ListCommandsResponse.Builder responseb = ListCommandsResponse.newBuilder();
         RestStreams.stream(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
 
@@ -53,6 +54,5 @@ public class ArchiveCommandRestHandler extends RestHandler {
                 completeOK(req, responseb.build(), SchemaRest.ListCommandsResponse.WRITE);
             }
         });
-        
     }
 }

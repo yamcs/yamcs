@@ -10,12 +10,9 @@ bin/
 
 target/
 yamcs-core/lib/
-live
-doc/yamcs-manual.fo
-doc/yamcs-manual.pdf
+live/
 server.lock
 make-live-devel-local.sh
 *.xtce.consistency_date
 *.xtce.serialized
 *.log
-

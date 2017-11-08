@@ -934,7 +934,7 @@ public final class YamcsManagement {
      *
      * <pre>
      *in case the state=FAILED, this field will indicate the cause of the failure
-     * the missionDatabase and other fields will probably not be filled when this happens
+     * the missionDatabase and other fields may not be filled when this happens
      * </pre>
      */
     boolean hasFailureCause();
@@ -943,7 +943,7 @@ public final class YamcsManagement {
      *
      * <pre>
      *in case the state=FAILED, this field will indicate the cause of the failure
-     * the missionDatabase and other fields will probably not be filled when this happens
+     * the missionDatabase and other fields may not be filled when this happens
      * </pre>
      */
     java.lang.String getFailureCause();
@@ -952,7 +952,7 @@ public final class YamcsManagement {
      *
      * <pre>
      *in case the state=FAILED, this field will indicate the cause of the failure
-     * the missionDatabase and other fields will probably not be filled when this happens
+     * the missionDatabase and other fields may not be filled when this happens
      * </pre>
      */
     com.google.protobuf.ByteString
@@ -1363,7 +1363,7 @@ public final class YamcsManagement {
      *
      * <pre>
      *in case the state=FAILED, this field will indicate the cause of the failure
-     * the missionDatabase and other fields will probably not be filled when this happens
+     * the missionDatabase and other fields may not be filled when this happens
      * </pre>
      */
     public boolean hasFailureCause() {
@@ -1374,7 +1374,7 @@ public final class YamcsManagement {
      *
      * <pre>
      *in case the state=FAILED, this field will indicate the cause of the failure
-     * the missionDatabase and other fields will probably not be filled when this happens
+     * the missionDatabase and other fields may not be filled when this happens
      * </pre>
      */
     public java.lang.String getFailureCause() {
@@ -1396,7 +1396,7 @@ public final class YamcsManagement {
      *
      * <pre>
      *in case the state=FAILED, this field will indicate the cause of the failure
-     * the missionDatabase and other fields will probably not be filled when this happens
+     * the missionDatabase and other fields may not be filled when this happens
      * </pre>
      */
     public com.google.protobuf.ByteString
@@ -2527,7 +2527,7 @@ public final class YamcsManagement {
        *
        * <pre>
        *in case the state=FAILED, this field will indicate the cause of the failure
-       * the missionDatabase and other fields will probably not be filled when this happens
+       * the missionDatabase and other fields may not be filled when this happens
        * </pre>
        */
       public boolean hasFailureCause() {
@@ -2538,7 +2538,7 @@ public final class YamcsManagement {
        *
        * <pre>
        *in case the state=FAILED, this field will indicate the cause of the failure
-       * the missionDatabase and other fields will probably not be filled when this happens
+       * the missionDatabase and other fields may not be filled when this happens
        * </pre>
        */
       public java.lang.String getFailureCause() {
@@ -2557,7 +2557,7 @@ public final class YamcsManagement {
        *
        * <pre>
        *in case the state=FAILED, this field will indicate the cause of the failure
-       * the missionDatabase and other fields will probably not be filled when this happens
+       * the missionDatabase and other fields may not be filled when this happens
        * </pre>
        */
       public com.google.protobuf.ByteString
@@ -2578,7 +2578,7 @@ public final class YamcsManagement {
        *
        * <pre>
        *in case the state=FAILED, this field will indicate the cause of the failure
-       * the missionDatabase and other fields will probably not be filled when this happens
+       * the missionDatabase and other fields may not be filled when this happens
        * </pre>
        */
       public Builder setFailureCause(
@@ -2596,7 +2596,7 @@ public final class YamcsManagement {
        *
        * <pre>
        *in case the state=FAILED, this field will indicate the cause of the failure
-       * the missionDatabase and other fields will probably not be filled when this happens
+       * the missionDatabase and other fields may not be filled when this happens
        * </pre>
        */
       public Builder clearFailureCause() {
@@ -2610,7 +2610,7 @@ public final class YamcsManagement {
        *
        * <pre>
        *in case the state=FAILED, this field will indicate the cause of the failure
-       * the missionDatabase and other fields will probably not be filled when this happens
+       * the missionDatabase and other fields may not be filled when this happens
        * </pre>
        */
       public Builder setFailureCauseBytes(
@@ -2682,6 +2682,21 @@ public final class YamcsManagement {
      */
     com.google.protobuf.ByteString
         getMessageBytes();
+
+    // optional string author = 4;
+    /**
+     * <code>optional string author = 4;</code>
+     */
+    boolean hasAuthor();
+    /**
+     * <code>optional string author = 4;</code>
+     */
+    java.lang.String getAuthor();
+    /**
+     * <code>optional string author = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getAuthorBytes();
   }
   /**
    * Protobuf type {@code yamcsManagement.HistoryInfo}
@@ -2747,6 +2762,11 @@ public final class YamcsManagement {
             case 26: {
               bitField0_ |= 0x00000004;
               message_ = input.readBytes();
+              break;
+            }
+            case 34: {
+              bitField0_ |= 0x00000008;
+              author_ = input.readBytes();
               break;
             }
           }
@@ -2918,10 +2938,54 @@ public final class YamcsManagement {
       }
     }
 
+    // optional string author = 4;
+    public static final int AUTHOR_FIELD_NUMBER = 4;
+    private java.lang.Object author_;
+    /**
+     * <code>optional string author = 4;</code>
+     */
+    public boolean hasAuthor() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional string author = 4;</code>
+     */
+    public java.lang.String getAuthor() {
+      java.lang.Object ref = author_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          author_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string author = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getAuthorBytes() {
+      java.lang.Object ref = author_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        author_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       version_ = "";
       date_ = "";
       message_ = "";
+      author_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -2944,6 +3008,9 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeBytes(3, getMessageBytes());
       }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(4, getAuthorBytes());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -2964,6 +3031,10 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(3, getMessageBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(4, getAuthorBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -3087,6 +3158,8 @@ public final class YamcsManagement {
         bitField0_ = (bitField0_ & ~0x00000002);
         message_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
+        author_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -3127,6 +3200,10 @@ public final class YamcsManagement {
           to_bitField0_ |= 0x00000004;
         }
         result.message_ = message_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.author_ = author_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -3156,6 +3233,11 @@ public final class YamcsManagement {
         if (other.hasMessage()) {
           bitField0_ |= 0x00000004;
           message_ = other.message_;
+          onChanged();
+        }
+        if (other.hasAuthor()) {
+          bitField0_ |= 0x00000008;
+          author_ = other.author_;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -3403,6 +3485,80 @@ public final class YamcsManagement {
   }
   bitField0_ |= 0x00000004;
         message_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string author = 4;
+      private java.lang.Object author_ = "";
+      /**
+       * <code>optional string author = 4;</code>
+       */
+      public boolean hasAuthor() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional string author = 4;</code>
+       */
+      public java.lang.String getAuthor() {
+        java.lang.Object ref = author_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          author_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string author = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getAuthorBytes() {
+        java.lang.Object ref = author_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          author_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string author = 4;</code>
+       */
+      public Builder setAuthor(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        author_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string author = 4;</code>
+       */
+      public Builder clearAuthor() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        author_ = getDefaultInstance().getAuthor();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string author = 4;</code>
+       */
+      public Builder setAuthorBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        author_ = value;
         onChanged();
         return this;
       }
@@ -23863,85 +24019,85 @@ public final class YamcsManagement {
       "anagement.ProcessorInfo\022\013\n\003url\030\005 \001(\t\022\022\n\n" +
       "clientsUrl\030\006 \001(\t\022\021\n\teventsUrl\030\007 \001(\t\022,\n\005s" +
       "tate\030\010 \001(\0162\035.yamcsManagement.ServiceStat" +
-      "e\022\024\n\014failureCause\030\t \001(\t\"=\n\013HistoryInfo\022\017",
+      "e\022\024\n\014failureCause\030\t \001(\t\"M\n\013HistoryInfo\022\017",
       "\n\007version\030\001 \001(\t\022\014\n\004date\030\002 \001(\t\022\017\n\007message" +
-      "\030\003 \001(\t\"\220\003\n\017SpaceSystemInfo\022\014\n\004name\030\001 \001(\t" +
-      "\022\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020shortDescript" +
-      "ion\030\003 \001(\t\022\027\n\017longDescription\030\004 \001(\t\022\017\n\007ve" +
-      "rsion\030\005 \001(\t\022\026\n\016parameterCount\030\006 \001(\005\022\026\n\016c" +
-      "ontainerCount\030\007 \001(\005\022\024\n\014commandCount\030\010 \001(" +
-      "\005\022\026\n\016algorithmCount\030\t \001(\005\022\025\n\rparametersU" +
-      "rl\030\n \001(\t\022\025\n\rcontainersUrl\030\013 \001(\t\022\023\n\013comma" +
-      "ndsUrl\030\014 \001(\t\022\025\n\ralgorithmsUrl\030\r \001(\t\022-\n\007h" +
-      "istory\030\016 \003(\0132\034.yamcsManagement.HistoryIn",
-      "fo\022-\n\003sub\030\017 \003(\0132 .yamcsManagement.SpaceS" +
-      "ystemInfo\"\342\001\n\017MissionDatabase\022\022\n\nconfigN" +
-      "ame\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\017\n\007version\030\003 \001(\t" +
-      "\0225\n\013spaceSystem\030\004 \003(\0132 .yamcsManagement." +
-      "SpaceSystemInfo\022\013\n\003url\030\005 \001(\t\022\025\n\rparamete" +
-      "rsUrl\030\006 \001(\t\022\025\n\rcontainersUrl\030\007 \001(\t\022\023\n\013co" +
-      "mmandsUrl\030\010 \001(\t\022\025\n\ralgorithmsUrl\030\t \001(\t\"@" +
-      "\n\026MissionDatabaseRequest\022\024\n\014dbConfigName" +
-      "\030\001 \001(\t\022\020\n\010instance\030\002 \001(\t\"\376\002\n\rProcessorIn" +
-      "fo\022\020\n\010instance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\014\n\004ty",
-      "pe\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\017\n\007creator\030\005 \001(\t\022" +
-      "\021\n\thasAlarms\030\006 \001(\010\022\025\n\rhasCommanding\030\007 \001(" +
-      "\010\022,\n\005state\030\010 \001(\0162\035.yamcsManagement.Servi" +
-      "ceState\022+\n\rreplayRequest\030\t \001(\0132\024.yamcs.R" +
-      "eplayRequest\0224\n\013replayState\030\n \001(\0162\037.yamc" +
-      "s.ReplayStatus.ReplayState\022\013\n\003url\030\013 \001(\t\022" +
-      "\022\n\nclientsUrl\030\014 \001(\t\022\025\n\rparametersUrl\030\r \001" +
-      "(\t\022\023\n\013commandsUrl\030\016 \001(\t\022\030\n\020commandQueues" +
-      "Url\030\017 \001(\t\"\224\002\n\nClientInfo\022\020\n\010instance\030\001 \002" +
-      "(\t\022\n\n\002id\030\002 \002(\005\022\020\n\010username\030\003 \001(\t\022\027\n\017appl",
-      "icationName\030\004 \001(\t\022\025\n\rprocessorName\030\005 \001(\t" +
-      "\0226\n\005state\030\006 \001(\0162\'.yamcsManagement.Client" +
-      "Info.ClientState\022\025\n\rcurrentClient\030\007 \001(\010\022" +
-      "\021\n\tloginTime\030\010 \001(\003\022\024\n\014loginTimeUTC\030\t \001(\t" +
-      "\".\n\013ClientState\022\r\n\tCONNECTED\020\000\022\020\n\014DISCON" +
-      "NECTED\020\001\"\334\001\n\010UserInfo\022\r\n\005login\030\001 \001(\t\022/\n\n" +
-      "clientInfo\030\002 \003(\0132\033.yamcsManagement.Clien" +
-      "tInfo\022\r\n\005roles\030\003 \003(\t\022\030\n\020tmParaPrivileges" +
-      "\030\004 \003(\t\022\033\n\023tmParaSetPrivileges\030\005 \003(\t\022\032\n\022t" +
-      "mPacketPrivileges\030\006 \003(\t\022\024\n\014tcPrivileges\030",
-      "\007 \003(\t\022\030\n\020systemPrivileges\030\010 \003(\t\"\277\001\n\014TmSt" +
-      "atistics\022\022\n\npacketName\030\001 \002(\t\022\027\n\017received" +
-      "Packets\030\002 \001(\003\022\024\n\014lastReceived\030\003 \001(\003\022\027\n\017l" +
-      "astReceivedUTC\030\010 \001(\t\022\026\n\016lastPacketTime\030\004" +
-      " \001(\003\022\031\n\021lastPacketTimeUTC\030\007 \001(\t\022 \n\030subsc" +
-      "ribedParameterCount\030\006 \001(\005\"\223\001\n\nStatistics" +
-      "\022\020\n\010instance\030\001 \002(\t\022\026\n\016yProcessorName\030\002 \002" +
-      "(\t\022.\n\007tmstats\030\003 \003(\0132\035.yamcsManagement.Tm" +
-      "Statistics\022\023\n\013lastUpdated\030\004 \001(\003\022\026\n\016lastU" +
-      "pdatedUTC\030\005 \001(\t\"\274\002\n\032ProcessorManagementR",
-      "equest\022H\n\toperation\030\001 \001(\01625.yamcsManagem" +
-      "ent.ProcessorManagementRequest.Operation" +
-      "\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\014\n\004type" +
-      "\030\004 \001(\t\022\016\n\006config\030\005 \001(\t\022\020\n\010clientId\030\006 \003(\005" +
-      "\022\031\n\npersistent\030\007 \001(\010:\005false\022,\n\nreplaySpe" +
-      "c\030\010 \001(\0132\024.yamcs.ReplayRequestB\002\030\001\";\n\tOpe" +
-      "ration\022\024\n\020CREATE_PROCESSOR\020\000\022\030\n\024CONNECT_" +
-      "TO_PROCESSOR\020\001\"\355\001\n\020ProcessorRequest\022>\n\to" +
-      "peration\030\001 \001(\0162+.yamcsManagement.Process" +
-      "orRequest.Operation\022\020\n\010instance\030\002 \001(\t\022\014\n",
-      "\004name\030\003 \001(\t\022\020\n\010seekTime\030\004 \001(\003\022\'\n\013replayS" +
-      "peed\030\005 \001(\0132\022.yamcs.ReplaySpeed\">\n\tOperat" +
-      "ion\022\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\022\020\n\014" +
-      "CHANGE_SPEED\020\005\"\243\001\n\010LinkInfo\022\020\n\010instance\030" +
-      "\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004spe" +
-      "c\030\004 \001(\t\022\016\n\006stream\030\005 \001(\t\022\020\n\010disabled\030\006 \001(" +
-      "\010\022\016\n\006status\030\007 \001(\t\022\021\n\tdataCount\030\010 \001(\003\022\026\n\016" +
-      "detailedStatus\030\t \001(\t\"\236\001\n\tLinkEvent\022-\n\004ty" +
-      "pe\030\001 \001(\0162\037.yamcsManagement.LinkEvent.Typ" +
-      "e\022+\n\010linkInfo\030\002 \001(\0132\031.yamcsManagement.Li",
-      "nkInfo\"5\n\004Type\022\016\n\nREGISTERED\020\001\022\020\n\014UNREGI" +
-      "STERED\020\002\022\013\n\007UPDATED\020\003\"n\n\013ServiceInfo\022\020\n\010" +
-      "instance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022,\n\005state\030\003 " +
-      "\001(\0162\035.yamcsManagement.ServiceState\022\021\n\tcl" +
-      "assName\030\004 \001(\t*\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014" +
-      "\n\010STARTING\020\001\022\013\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022" +
-      "\016\n\nTERMINATED\020\004\022\n\n\006FAILED\020\005B\024\n\022org.yamcs" +
-      ".protobuf"
+      "\030\003 \001(\t\022\016\n\006author\030\004 \001(\t\"\220\003\n\017SpaceSystemIn" +
+      "fo\022\014\n\004name\030\001 \001(\t\022\025\n\rqualifiedName\030\002 \001(\t\022" +
+      "\030\n\020shortDescription\030\003 \001(\t\022\027\n\017longDescrip" +
+      "tion\030\004 \001(\t\022\017\n\007version\030\005 \001(\t\022\026\n\016parameter" +
+      "Count\030\006 \001(\005\022\026\n\016containerCount\030\007 \001(\005\022\024\n\014c" +
+      "ommandCount\030\010 \001(\005\022\026\n\016algorithmCount\030\t \001(" +
+      "\005\022\025\n\rparametersUrl\030\n \001(\t\022\025\n\rcontainersUr" +
+      "l\030\013 \001(\t\022\023\n\013commandsUrl\030\014 \001(\t\022\025\n\ralgorith" +
+      "msUrl\030\r \001(\t\022-\n\007history\030\016 \003(\0132\034.yamcsMana",
+      "gement.HistoryInfo\022-\n\003sub\030\017 \003(\0132 .yamcsM" +
+      "anagement.SpaceSystemInfo\"\342\001\n\017MissionDat" +
+      "abase\022\022\n\nconfigName\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022" +
+      "\017\n\007version\030\003 \001(\t\0225\n\013spaceSystem\030\004 \003(\0132 ." +
+      "yamcsManagement.SpaceSystemInfo\022\013\n\003url\030\005" +
+      " \001(\t\022\025\n\rparametersUrl\030\006 \001(\t\022\025\n\rcontainer" +
+      "sUrl\030\007 \001(\t\022\023\n\013commandsUrl\030\010 \001(\t\022\025\n\ralgor" +
+      "ithmsUrl\030\t \001(\t\"@\n\026MissionDatabaseRequest" +
+      "\022\024\n\014dbConfigName\030\001 \001(\t\022\020\n\010instance\030\002 \001(\t" +
+      "\"\376\002\n\rProcessorInfo\022\020\n\010instance\030\001 \001(\t\022\014\n\004",
+      "name\030\002 \001(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\017" +
+      "\n\007creator\030\005 \001(\t\022\021\n\thasAlarms\030\006 \001(\010\022\025\n\rha" +
+      "sCommanding\030\007 \001(\010\022,\n\005state\030\010 \001(\0162\035.yamcs" +
+      "Management.ServiceState\022+\n\rreplayRequest" +
+      "\030\t \001(\0132\024.yamcs.ReplayRequest\0224\n\013replaySt" +
+      "ate\030\n \001(\0162\037.yamcs.ReplayStatus.ReplaySta" +
+      "te\022\013\n\003url\030\013 \001(\t\022\022\n\nclientsUrl\030\014 \001(\t\022\025\n\rp" +
+      "arametersUrl\030\r \001(\t\022\023\n\013commandsUrl\030\016 \001(\t\022" +
+      "\030\n\020commandQueuesUrl\030\017 \001(\t\"\224\002\n\nClientInfo" +
+      "\022\020\n\010instance\030\001 \002(\t\022\n\n\002id\030\002 \002(\005\022\020\n\010userna",
+      "me\030\003 \001(\t\022\027\n\017applicationName\030\004 \001(\t\022\025\n\rpro" +
+      "cessorName\030\005 \001(\t\0226\n\005state\030\006 \001(\0162\'.yamcsM" +
+      "anagement.ClientInfo.ClientState\022\025\n\rcurr" +
+      "entClient\030\007 \001(\010\022\021\n\tloginTime\030\010 \001(\003\022\024\n\014lo" +
+      "ginTimeUTC\030\t \001(\t\".\n\013ClientState\022\r\n\tCONNE" +
+      "CTED\020\000\022\020\n\014DISCONNECTED\020\001\"\334\001\n\010UserInfo\022\r\n" +
+      "\005login\030\001 \001(\t\022/\n\nclientInfo\030\002 \003(\0132\033.yamcs" +
+      "Management.ClientInfo\022\r\n\005roles\030\003 \003(\t\022\030\n\020" +
+      "tmParaPrivileges\030\004 \003(\t\022\033\n\023tmParaSetPrivi" +
+      "leges\030\005 \003(\t\022\032\n\022tmPacketPrivileges\030\006 \003(\t\022",
+      "\024\n\014tcPrivileges\030\007 \003(\t\022\030\n\020systemPrivilege" +
+      "s\030\010 \003(\t\"\277\001\n\014TmStatistics\022\022\n\npacketName\030\001" +
+      " \002(\t\022\027\n\017receivedPackets\030\002 \001(\003\022\024\n\014lastRec" +
+      "eived\030\003 \001(\003\022\027\n\017lastReceivedUTC\030\010 \001(\t\022\026\n\016" +
+      "lastPacketTime\030\004 \001(\003\022\031\n\021lastPacketTimeUT" +
+      "C\030\007 \001(\t\022 \n\030subscribedParameterCount\030\006 \001(" +
+      "\005\"\223\001\n\nStatistics\022\020\n\010instance\030\001 \002(\t\022\026\n\016yP" +
+      "rocessorName\030\002 \002(\t\022.\n\007tmstats\030\003 \003(\0132\035.ya" +
+      "mcsManagement.TmStatistics\022\023\n\013lastUpdate" +
+      "d\030\004 \001(\003\022\026\n\016lastUpdatedUTC\030\005 \001(\t\"\274\002\n\032Proc",
+      "essorManagementRequest\022H\n\toperation\030\001 \001(" +
+      "\01625.yamcsManagement.ProcessorManagementR" +
+      "equest.Operation\022\020\n\010instance\030\002 \001(\t\022\014\n\004na" +
+      "me\030\003 \001(\t\022\014\n\004type\030\004 \001(\t\022\016\n\006config\030\005 \001(\t\022\020" +
+      "\n\010clientId\030\006 \003(\005\022\031\n\npersistent\030\007 \001(\010:\005fa" +
+      "lse\022,\n\nreplaySpec\030\010 \001(\0132\024.yamcs.ReplayRe" +
+      "questB\002\030\001\";\n\tOperation\022\024\n\020CREATE_PROCESS" +
+      "OR\020\000\022\030\n\024CONNECT_TO_PROCESSOR\020\001\"\355\001\n\020Proce" +
+      "ssorRequest\022>\n\toperation\030\001 \001(\0162+.yamcsMa" +
+      "nagement.ProcessorRequest.Operation\022\020\n\010i",
+      "nstance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\020\n\010seekTime\030" +
+      "\004 \001(\003\022\'\n\013replaySpeed\030\005 \001(\0132\022.yamcs.Repla" +
+      "ySpeed\">\n\tOperation\022\t\n\005PAUSE\020\002\022\n\n\006RESUME" +
+      "\020\003\022\010\n\004SEEK\020\004\022\020\n\014CHANGE_SPEED\020\005\"\243\001\n\010LinkI" +
+      "nfo\022\020\n\010instance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004t" +
+      "ype\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005 \001(\t\022" +
+      "\020\n\010disabled\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021\n\tdat" +
+      "aCount\030\010 \001(\003\022\026\n\016detailedStatus\030\t \001(\t\"\236\001\n" +
+      "\tLinkEvent\022-\n\004type\030\001 \001(\0162\037.yamcsManageme" +
+      "nt.LinkEvent.Type\022+\n\010linkInfo\030\002 \001(\0132\031.ya",
+      "mcsManagement.LinkInfo\"5\n\004Type\022\016\n\nREGIST" +
+      "ERED\020\001\022\020\n\014UNREGISTERED\020\002\022\013\n\007UPDATED\020\003\"n\n" +
+      "\013ServiceInfo\022\020\n\010instance\030\001 \001(\t\022\014\n\004name\030\002" +
+      " \001(\t\022,\n\005state\030\003 \001(\0162\035.yamcsManagement.Se" +
+      "rviceState\022\021\n\tclassName\030\004 \001(\t*\\\n\014Service" +
+      "State\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013\n\007RUNNING\020" +
+      "\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED\020\004\022\n\n\006FAILE" +
+      "D\020\005B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -23965,7 +24121,7 @@ public final class YamcsManagement {
           internal_static_yamcsManagement_HistoryInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_yamcsManagement_HistoryInfo_descriptor,
-              new java.lang.String[] { "Version", "Date", "Message", });
+              new java.lang.String[] { "Version", "Date", "Message", "Author", });
           internal_static_yamcsManagement_SpaceSystemInfo_descriptor =
             getDescriptor().getMessageTypes().get(3);
           internal_static_yamcsManagement_SpaceSystemInfo_fieldAccessorTable = new
