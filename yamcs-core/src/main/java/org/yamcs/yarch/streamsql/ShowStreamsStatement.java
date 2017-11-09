@@ -2,6 +2,7 @@ package org.yamcs.yarch.streamsql;
 
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.StreamSqlException;
@@ -16,7 +17,7 @@ public class ShowStreamsStatement extends StreamSqlStatement{
 
     @Override
     public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
-        YarchDatabase dict=YarchDatabase.getInstance(c.getDbName());
+        YarchDatabaseInstance dict = YarchDatabase.getInstance(c.getDbName());
         final StringBuffer sb=new StringBuffer();
         synchronized(dict) {
             for(Stream stream:dict.getStreams()) {

@@ -13,9 +13,9 @@ public abstract class TableWriter implements StreamSubscriber {
     
     final protected TableDefinition tableDefinition;
     final protected InsertMode mode;
-    final protected YarchDatabase ydb;
+    final protected YarchDatabaseInstance ydb;
     
-    public TableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode) throws FileNotFoundException {
+    public TableWriter(YarchDatabaseInstance ydb, TableDefinition tableDefinition, InsertMode mode) throws FileNotFoundException {
         this.tableDefinition=tableDefinition;
         this.mode=mode;
         this.ydb=ydb;

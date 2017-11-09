@@ -26,7 +26,7 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.YarchTestCase;
 import org.yamcs.yarch.TableWriter.InsertMode;
@@ -143,7 +143,7 @@ public class RdbSelectPerfTest extends YarchTestCase {
         pspec.setValueColumnType(DataType.ENUM);
         tblDef.setPartitioningSpec(pspec);
 
-        tblDef.setStorageEngineName(YarchDatabase.RDB_ENGINE_NAME);
+        tblDef.setStorageEngineName(YarchDatabaseInstance.RDB_ENGINE_NAME);
 
         ydb.createTable(tblDef);
         populateAndRead(tblDef, true);
@@ -165,7 +165,7 @@ public class RdbSelectPerfTest extends YarchTestCase {
         pspec.setTimePartitioningSchema("YYYY");
         tblDef.setPartitioningSpec(pspec);
 
-        tblDef.setStorageEngineName(YarchDatabase.RDB_ENGINE_NAME);
+        tblDef.setStorageEngineName(YarchDatabaseInstance.RDB_ENGINE_NAME);
 
         ydb.createTable(tblDef);
 
@@ -188,7 +188,7 @@ public class RdbSelectPerfTest extends YarchTestCase {
         PartitioningSpec pspec = PartitioningSpec.noneSpec();
         tblDef.setPartitioningSpec(pspec);
 
-        tblDef.setStorageEngineName(YarchDatabase.RDB_ENGINE_NAME);
+        tblDef.setStorageEngineName(YarchDatabaseInstance.RDB_ENGINE_NAME);
 
         ydb.createTable(tblDef);
 

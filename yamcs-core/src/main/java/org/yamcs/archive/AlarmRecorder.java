@@ -10,6 +10,7 @@ import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
@@ -24,7 +25,7 @@ public class AlarmRecorder extends AbstractService {
     public static final String TABLE_NAME = "alarms";
     
     public AlarmRecorder(String yamcsInstance) throws ConfigurationException, StreamSqlException, ParseException {
-        YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
 
         String cols = ALARM_TUPLE_DEFINITION.getStringDefinition1();
         if (ydb.getTable(TABLE_NAME) == null) {

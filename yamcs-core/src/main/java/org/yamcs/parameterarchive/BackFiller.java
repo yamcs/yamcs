@@ -33,6 +33,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 /**
  * Back-fills the parameter archive by triggering replays:
@@ -130,7 +131,7 @@ public class BackFiller implements StreamSubscriber {
         if(!monitoredStreams.isEmpty()) {
             streamUpdates = new HashSet<>();
             subscribedStreams = new ArrayList<>(monitoredStreams.size());
-            YarchDatabase ydb = YarchDatabase.getInstance(parchive.getYamcsInstance());
+            YarchDatabaseInstance ydb = YarchDatabase.getInstance(parchive.getYamcsInstance());
             for(String streamName: monitoredStreams) {
                 Stream s = ydb.getStream(streamName);
                 if(s==null) {

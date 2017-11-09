@@ -23,6 +23,7 @@ import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 /**
  * Capable of producing and consuming yarch Stream data (Tuples) over web socket
@@ -54,7 +55,7 @@ public class StreamResource extends AbstractWebSocketResource {
     }
 
     private WebSocketReplyData processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
-        YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
 
         // Optionally read body. If it's not provided, suppose the subscription concerns
         // the stream of the current processor (TODO currently doesn't work with JSON).
@@ -149,7 +150,7 @@ public class StreamResource extends AbstractWebSocketResource {
     }
 
     private WebSocketReplyData processPublishRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
-        YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
 
         StreamData req = decoder.decodeMessageData(ctx, SchemaArchive.StreamData.MERGE).build();
         Stream stream = ydb.getStream(req.getStream());

@@ -45,6 +45,7 @@ import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -346,7 +347,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     
     
     private void createTable(String tblName) throws Exception{
-        YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         TupleDefinition td = new TupleDefinition();
         td.addColumn("a1", DataType.INT);
         td.addColumn("a2", DataType.STRING);

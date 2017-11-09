@@ -34,7 +34,7 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -238,7 +238,7 @@ public abstract class RestHandler extends RouteHandler {
         }
     }
 
-    protected static Stream verifyStream(RestRequest req, YarchDatabase ydb, String streamName) throws NotFoundException {
+    protected static Stream verifyStream(RestRequest req, YarchDatabaseInstance ydb, String streamName) throws NotFoundException {
         Stream stream = ydb.getStream(streamName);
         if (stream == null) {
             throw new NotFoundException(req, "No stream named '" + streamName + "' (instance: '" + ydb.getName() + "')");
@@ -247,7 +247,7 @@ public abstract class RestHandler extends RouteHandler {
         }
     }
 
-    protected static TableDefinition verifyTable(RestRequest req, YarchDatabase ydb, String tableName) throws NotFoundException {
+    protected static TableDefinition verifyTable(RestRequest req, YarchDatabaseInstance ydb, String tableName) throws NotFoundException {
         TableDefinition table = ydb.getTable(tableName);
         if (table == null) {
             throw new NotFoundException(req, "No table named '" + tableName + "' (instance: '" + ydb.getName() + "')");

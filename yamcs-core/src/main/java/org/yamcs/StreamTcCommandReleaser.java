@@ -8,6 +8,7 @@ import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 /**
@@ -38,7 +39,7 @@ public class StreamTcCommandReleaser extends AbstractService implements CommandR
 
     @Override
     protected void doStart() {
-	YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+	YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
 	stream = ydb.getStream(streamName);
 	if(stream==null) {
 	    ConfigurationException e = new ConfigurationException("Cannot find stream '"+streamName+"'");

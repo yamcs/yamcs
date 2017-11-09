@@ -11,13 +11,13 @@ import org.yamcs.yarch.HistogramSegment;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.Tuple;
-import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 public abstract class AbstractTableWriter extends TableWriter {
     static final byte[] zerobytes = new byte[0];
     
     
-    public AbstractTableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode)  throws FileNotFoundException {
+    public AbstractTableWriter(YarchDatabaseInstance ydb, TableDefinition tableDefinition, InsertMode mode)  throws FileNotFoundException {
         super(ydb, tableDefinition, mode);
     }
 

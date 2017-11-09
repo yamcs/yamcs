@@ -13,6 +13,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.protobuf.ByteString;
 
@@ -52,7 +53,7 @@ public class PacketResource extends AbstractWebSocketResource {
                throw new WebSocketException(ctx.getRequestId(), "Invalid request. Use 'subscribe <stream_name>'");
            }
            this.streamName = a[1];
-           YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
+           YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
            stream = ydb.getStream(streamName);
            if(stream==null) {
                throw new WebSocketException(ctx.getRequestId(), "Invalid request. No stream named '"+streamName+"'");
@@ -74,7 +75,7 @@ public class PacketResource extends AbstractWebSocketResource {
     public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
         doUnsubscribe();
         super.switchProcessor(oldProcessor, newProcessor);
-        YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
         stream = ydb.getStream(streamName);
         doSubscribe();
     }

@@ -14,7 +14,7 @@ import org.yamcs.YamcsException;
 import org.yamcs.archive.TagDb;
 import org.yamcs.archive.TagReceiver;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
-import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 public class RdbTagDb implements TagDb {
 
@@ -25,7 +25,7 @@ public class RdbTagDb implements TagDb {
     AtomicInteger idgenerator=new AtomicInteger(0);
     final byte[] firstkey=new byte[12];
 
-    RdbTagDb(YarchDatabase ydb) throws RocksDBException {
+    RdbTagDb(YarchDatabaseInstance ydb) throws RocksDBException {
         this(ydb.getRoot()+"/tags");
     }
     

@@ -35,6 +35,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.csvreader.CsvWriter;
 
@@ -155,7 +156,7 @@ public class ArchiveEventRestHandler extends RestHandler {
      * </ol>
      */
     public static void verifyEventArchiveSupport(String instance) throws BadRequestException {
-        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         TableDefinition table = ydb.getTable(EventRecorder.TABLE_NAME);
         if (table == null) {
             throw new BadRequestException("No event archive support for instance '" + instance + "'");

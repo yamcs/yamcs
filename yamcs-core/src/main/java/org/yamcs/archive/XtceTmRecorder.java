@@ -30,6 +30,7 @@ import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
@@ -87,7 +88,7 @@ public class XtceTmRecorder extends AbstractService {
         this.yamcsInstance = yamcsInstance;
         log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
 
-        YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
        
         if(ydb.getTable(TABLE_NAME)==null) {
             String query="create table "+TABLE_NAME+"("+RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()+", primary key(gentime, seqNum)) histogram(pname) partition by time_and_value(gentime"+getTimePartitioningSchemaSql()+", pname) table_format=compressed";
@@ -128,7 +129,7 @@ public class XtceTmRecorder extends AbstractService {
         return partSchema;
     }
     private void createRecorder(StreamConfigEntry streamConf) {       
-        YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         SequenceContainer rootsc = streamConf.getRootContainer() ;
         if(rootsc == null) {
             rootsc=xtceDb.getRootSequenceContainer();
@@ -171,7 +172,7 @@ public class XtceTmRecorder extends AbstractService {
             sr.quit();
             sr.inputStream.removeSubscriber(sr);
         }
-        YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         Stream s = ydb.getStream("tm_is");
         Collection<StreamSubscriber> subscribers = s.getSubscribers();
         s.close();

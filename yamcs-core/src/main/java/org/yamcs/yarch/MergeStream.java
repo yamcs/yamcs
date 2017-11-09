@@ -21,7 +21,7 @@ public class MergeStream extends AbstractStream implements StreamSubscriber, Run
     private volatile boolean quitting=false;
     private final String mergeColumn;
 
-    public MergeStream(YarchDatabase ydb, AbstractStream[] streams, String mergeColumn, boolean ascending) throws StreamSqlException {
+    public MergeStream(YarchDatabaseInstance ydb, AbstractStream[] streams, String mergeColumn, boolean ascending) throws StreamSqlException {
         //TODO check that the streams columns have compatible names and types
         super(ydb, getStreamName(streams), streams[0].getDefinition());
         this.streams=streams;

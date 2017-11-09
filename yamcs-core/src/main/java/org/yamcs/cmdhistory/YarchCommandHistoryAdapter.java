@@ -7,6 +7,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -25,7 +26,7 @@ public class YarchCommandHistoryAdapter implements CommandHistoryPublisher {
     
     public YarchCommandHistoryAdapter(String archiveInstance) throws StreamSqlException, ParseException {
         this.instance = archiveInstance;
-        YarchDatabase ydb = YarchDatabase.getInstance(archiveInstance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(archiveInstance);
         stream = ydb.getStream(REALTIME_CMDHIST_STREAM_NAME);
     }
 

@@ -1,6 +1,7 @@
 package org.yamcs.yarch.streamsql;
 
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
 
@@ -15,7 +16,7 @@ public class DropTableStatement extends StreamSqlStatement {
 
     @Override
     public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
-        YarchDatabase ydb=YarchDatabase.getInstance(c.getDbName());
+        YarchDatabaseInstance ydb=YarchDatabase.getInstance(c.getDbName());
         try {
             synchronized(ydb) {
                 if (!ifExists || ydb.getTable(tblName)!=null) {

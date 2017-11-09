@@ -22,6 +22,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -54,7 +55,7 @@ public class SystemParametersProvider extends AbstractService implements StreamS
     public void init(Processor yproc) throws ConfigurationException {
         String instance = yproc.getInstance();
         log = LoggingUtils.getLogger(this.getClass(), yproc);
-        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         stream = ydb.getStream(SystemParametersCollector.STREAM_NAME);
         if(stream==null) {
             throw new ConfigurationException("Cannot find a stream named "+SystemParametersCollector.STREAM_NAME);

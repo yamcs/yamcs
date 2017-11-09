@@ -14,7 +14,7 @@ public class InputStream extends AbstractStream implements Runnable {
 
 
 
-    public InputStream(YarchDatabase dict, String name, TupleDefinition def) throws YarchException {
+    public InputStream(YarchDatabaseInstance dict, String name, TupleDefinition def) throws YarchException {
 
         super(dict, name, def);
         if(true) throw new YarchException("TO reimplement");

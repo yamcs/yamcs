@@ -14,7 +14,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 
 /**
@@ -30,7 +30,7 @@ public class InKeyTableWriter extends AbstractTableWriter {
     RDBFactory rdbFactory; 
    
     
-    public InKeyTableWriter(YarchDatabase ydb, TableDefinition tableDefinition, InsertMode mode, RdbPartitionManager pm) throws IOException {
+    public InKeyTableWriter(YarchDatabaseInstance ydb, TableDefinition tableDefinition, InsertMode mode, RdbPartitionManager pm) throws IOException {
         super(ydb, tableDefinition, mode);
         this.partitioningSpec = tableDefinition.getPartitioningSpec();
         this.partitionManager = pm;

@@ -14,6 +14,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
@@ -65,7 +66,7 @@ public class AbstractArtemisTranslatorService extends AbstractService {
     public AbstractArtemisTranslatorService(String instance, List<String> streamNames, TupleTranslator translator) throws ConfigurationException {
         this.locator = getServerLocator(instance);
         this.instance = instance;
-        YarchDatabase db = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance db = YarchDatabase.getInstance(instance);
 
         for(String sn: streamNames) {
             Stream s = db.getStream(sn);

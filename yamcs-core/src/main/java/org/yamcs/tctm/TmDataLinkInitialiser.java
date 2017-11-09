@@ -16,6 +16,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -46,7 +47,7 @@ public class TmDataLinkInitialiser extends AbstractService {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public TmDataLinkInitialiser(String yamcsInstance) throws ConfigurationException, IOException {
         this.yamcsInstance = yamcsInstance;
-        YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         
         YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
         

@@ -23,6 +23,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 /**
  * Performs histogram and completeness index retrievals.
@@ -114,7 +115,7 @@ class IndexRequestProcessor implements Runnable {
 
     boolean sendHistogramData(final String tblName, String columnName, long mergeTime, final Map<String, NamedObjectId> name2id) {
         try {
-        	YarchDatabase ydb=YarchDatabase.getInstance(req.getInstance());
+        	YarchDatabaseInstance ydb=YarchDatabase.getInstance(req.getInstance());
         	if( ydb.getTable( tblName ) == null ) {
         		log.warn( "Histogram from table '{}' requested, but table does not exist.", tblName );
         		return true;

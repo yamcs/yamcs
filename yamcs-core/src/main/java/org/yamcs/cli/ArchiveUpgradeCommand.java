@@ -11,6 +11,7 @@ import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.rocksdb.HistogramRebuilder;
 
@@ -51,7 +52,7 @@ public class ArchiveUpgradeCommand extends Command {
     }
 
     private void upgradeYarchTables(String instance) throws Exception {
-        YarchDatabase ydb = YarchDatabase.getInstance(instance, true);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance, true);
         for(TableDefinition tblDef: ydb.getTableDefinitions()) {
             if(tblDef.getFormatVersion()==0) {
                 upgrade0_1(ydb, tblDef);
@@ -66,7 +67,7 @@ public class ArchiveUpgradeCommand extends Command {
         }
     }
 
-    private void upgrade0_1(YarchDatabase ydb, TableDefinition tblDef) throws Exception  {
+    private void upgrade0_1(YarchDatabaseInstance ydb, TableDefinition tblDef) throws Exception  {
         log.info("upgrading table {}/{} from version 0 to version 1", ydb.getName(), tblDef.getName());
         if("pp".equals(tblDef.getName())) {
             changePpGroup(ydb, tblDef);
@@ -77,7 +78,7 @@ public class ArchiveUpgradeCommand extends Command {
         }
     }
     
-    private void upgrade1_2(YarchDatabase ydb, TableDefinition tblDef) {
+    private void upgrade1_2(YarchDatabaseInstance ydb, TableDefinition tblDef) {
         log.info("upgrading table {}/{} from version 1 to version 2", ydb.getName(), tblDef.getName());
         if("pp".equals(tblDef.getName())) {
             changeParaValueType(tblDef);
@@ -96,7 +97,7 @@ public class ArchiveUpgradeCommand extends Command {
         }
     }
     
-    private void changePpGroup(YarchDatabase ydb, TableDefinition tblDef) {
+    private void changePpGroup(YarchDatabaseInstance ydb, TableDefinition tblDef) {
         if(tblDef.getColumnDefinition("ppgroup") == null) {
             log.info("Table {}/{} has no ppgroup column", ydb.getName(), tblDef.getName());
             return;
@@ -105,7 +106,7 @@ public class ArchiveUpgradeCommand extends Command {
         tblDef.renameColumn("ppgroup", "group");
     }
 
-    private void rebuildHistogram(YarchDatabase ydb, TableDefinition tblDef) throws InterruptedException, ExecutionException, YarchException {
+    private void rebuildHistogram(YarchDatabaseInstance ydb, TableDefinition tblDef) throws InterruptedException, ExecutionException, YarchException {
         HistogramRebuilder hrb = new HistogramRebuilder(ydb, tblDef.getName());
         hrb.rebuild(new TimeInterval()).get();
     }

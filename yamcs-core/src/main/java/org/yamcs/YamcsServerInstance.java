@@ -17,6 +17,7 @@ import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.Service;
@@ -139,7 +140,7 @@ public class YamcsServerInstance extends AbstractService {
                 log.error("Service {} was in a bad state: {}", s.getClass().getName(), e.getMessage());
             }
         }
-        YarchDatabase ydb = YarchDatabase.getInstance(instanceName);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instanceName);
         ydb.close();
         YarchDatabase.removeInstance(instanceName);
         notifyStopped();

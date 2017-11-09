@@ -11,6 +11,7 @@ import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -35,7 +36,7 @@ public class ArtemisEventDataLink extends AbstractService {
         try {
             session = locator.createSessionFactory().createSession();
             EventTupleTranslator translator = new EventTupleTranslator();
-            YarchDatabase ydb = YarchDatabase.getInstance(instance);
+            YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
             StreamConfig sc = StreamConfig.getInstance(instance);
             for(StreamConfigEntry sce: sc.getEntries()) {
                 if(sce.getType() == StreamConfig.StandardStreamType.event) {

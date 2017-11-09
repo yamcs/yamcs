@@ -25,6 +25,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -74,7 +75,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         log = LoggingUtils.getLogger(this.getClass(), instance);
         processArgs(args);
 
-        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         Stream s = ydb.getStream(STREAM_NAME);
         if(s==null) {
             throw new ConfigurationException("Stream '"+STREAM_NAME+"' does not exist");

@@ -17,6 +17,7 @@ import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
@@ -50,7 +51,7 @@ public class TcDataLinkInitialiser extends AbstractService {
     @SuppressWarnings({ "rawtypes", "static-access", "unchecked" })
     public TcDataLinkInitialiser(String yamcsInstance) throws StreamSqlException, ParseException, YamcsApiException, IOException {
 	this.yamcsInstance=yamcsInstance;
-	YarchDatabase ydb=YarchDatabase.getInstance(yamcsInstance);
+	YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
 
 
 	YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);

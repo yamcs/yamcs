@@ -37,7 +37,7 @@ public class SelectStream extends AbstractStream implements StreamSubscriber {
      * @param outputDef //output definition containing the expanded stars
      * @param minOutputDef //output definition where stars are not included
      */
-    public SelectStream(YarchDatabase ydb, AbstractStream input, CompiledExpression cWhereClause, List<CompiledExpression> caggInputList, WindowProcessor wp,
+    public SelectStream(YarchDatabaseInstance ydb, AbstractStream input, CompiledExpression cWhereClause, List<CompiledExpression> caggInputList, WindowProcessor wp,
             List<CompiledExpression> cselectList, TupleDefinition outputDef, TupleDefinition minOutputDef) {
 
         super(ydb, input.getName()+"_select", outputDef);

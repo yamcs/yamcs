@@ -21,7 +21,7 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableDefinition.PartitionStorage;
 import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.TableWriter.InsertMode;
-import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
 /**
@@ -33,8 +33,8 @@ import org.yamcs.yarch.YarchException;
  */
 public class RdbStorageEngine implements StorageEngine {
     Map<TableDefinition, RdbPartitionManager> partitionManagers = new HashMap<>();
-    final YarchDatabase ydb;
-    static Map<YarchDatabase, RdbStorageEngine> instances = new HashMap<>();
+    final YarchDatabaseInstance ydb;
+    static Map<YarchDatabaseInstance, RdbStorageEngine> instances = new HashMap<>();
     static {
         RocksDB.loadLibrary();
     }
@@ -42,13 +42,13 @@ public class RdbStorageEngine implements StorageEngine {
     RdbTagDb rdbTagDb = null;
     boolean ignoreVersionIncompatibility = false;
 
-    public RdbStorageEngine(YarchDatabase ydb, boolean ignoreVersionIncompatibility) throws YarchException {
+    public RdbStorageEngine(YarchDatabaseInstance ydb, boolean ignoreVersionIncompatibility) throws YarchException {
         this.ydb = ydb;
         instances.put(ydb, this);
         this.ignoreVersionIncompatibility = ignoreVersionIncompatibility;
     }
 
-    public RdbStorageEngine(YarchDatabase ydb) throws YarchException {
+    public RdbStorageEngine(YarchDatabaseInstance ydb) throws YarchException {
         this(ydb, false);
     }
 
@@ -131,7 +131,7 @@ public class RdbStorageEngine implements StorageEngine {
         partitionManagers.put(def, pm);
     }
 
-    public static synchronized RdbStorageEngine getInstance(YarchDatabase ydb) {
+    public static synchronized RdbStorageEngine getInstance(YarchDatabaseInstance ydb) {
         return instances.get(ydb);
     }
 
@@ -166,7 +166,7 @@ public class RdbStorageEngine implements StorageEngine {
      * Called from unit tests to cleanup before the next test
      * @param ydb
      */
-    public static synchronized void removeInstance(YarchDatabase ydb) {
+    public static synchronized void removeInstance(YarchDatabaseInstance ydb) {
         RdbStorageEngine rse = instances.remove(ydb);
         if(rse!=null) {
             rse.shutdown();

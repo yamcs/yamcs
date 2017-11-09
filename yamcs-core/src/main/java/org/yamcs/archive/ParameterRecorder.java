@@ -15,6 +15,7 @@ import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.tctm.ParameterDataLinkInitialiser;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -45,7 +46,7 @@ public class ParameterRecorder extends AbstractService {
     
     public ParameterRecorder(String yamcsInstance, Map<String, Object> config) {
         this.yamcsInstance=yamcsInstance;
-        YarchDatabase ydb=YarchDatabase.getInstance(yamcsInstance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         try {
             String cols = PARAMETER_TUPLE_DEFINITION.getStringDefinition1();
             if(ydb.getTable(TABLE_NAME)==null) {
@@ -83,7 +84,7 @@ public class ParameterRecorder extends AbstractService {
 
     @Override
     protected void doStop() {
-        YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         Utils.closeTableWriters(ydb, streams);
         notifyStopped();
     }

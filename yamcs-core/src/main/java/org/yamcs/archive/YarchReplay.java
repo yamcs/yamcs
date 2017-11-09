@@ -27,6 +27,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
@@ -219,7 +220,7 @@ public class YarchReplay implements StreamSubscriber {
 
         String query=sb.toString();
         log.debug("running query {}", query);
-        YarchDatabase ydb=YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb=YarchDatabase.getInstance(instance);
         ydb.execute(query);
         Stream s=ydb.getStream(streamName);
         s.addSubscriber(this);
@@ -237,7 +238,7 @@ public class YarchReplay implements StreamSubscriber {
             String query="CLOSE STREAM "+streamName;
             ignoreClose=true;
             try {
-                YarchDatabase db=YarchDatabase.getInstance(instance);
+                YarchDatabaseInstance db = YarchDatabase.getInstance(instance);
                 if(db.getStream(streamName)!=null) {
                     log.debug("running query: {}", query);
                     db.execute(query);
@@ -260,7 +261,7 @@ public class YarchReplay implements StreamSubscriber {
     public void changeSpeed(ReplaySpeed newSpeed) {
         log.debug("Changing speed to {}", newSpeed);
         
-        YarchDatabase ydb=YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb=YarchDatabase.getInstance(instance);
         Stream s=ydb.getStream(streamName);
         if(!(s instanceof SpeedLimitStream)) {
             throw new IllegalStateException("Cannot change speed on a "+s.getClass()+" stream");
@@ -304,7 +305,7 @@ public class YarchReplay implements StreamSubscriber {
         
         this.notify();
         try {
-            YarchDatabase db=YarchDatabase.getInstance(instance);
+            YarchDatabaseInstance db=YarchDatabase.getInstance(instance);
             if(db.getStream(streamName)!=null){
                 db.execute("close stream "+streamName);
             }

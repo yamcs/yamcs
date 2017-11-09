@@ -51,6 +51,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.csvreader.CsvWriter;
 
@@ -255,7 +256,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
     @Route(path = "/api/archive/:instance/downloads/tables/:name", method = "GET")
     public void downloadTableData(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
         TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
 

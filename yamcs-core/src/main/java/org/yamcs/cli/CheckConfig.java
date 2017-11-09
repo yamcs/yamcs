@@ -1,7 +1,6 @@
 package org.yamcs.cli;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.util.List;
 
 import org.yamcs.YConfiguration;
@@ -71,19 +70,11 @@ public class CheckConfig extends Command {
             }
         }
         File tmpDir = Files.createTempDir();
-        hackDataDir(tmpDir.getAbsolutePath());
+        // change the data directory, otherwise we will get RocksDB LOCK errors if a yamcs server is running
+        YarchDatabase.setHome(tmpDir.getAbsolutePath());
             
         YamcsServer.createGlobalServicesAndInstances();
         FileUtils.deleteRecursively(tmpDir);
         console.println("The configuration appears to be valid.");
-    }
-
-
-    // change the data directory, otherwise we will get RocksDB LOCK errors if a yamcs server is running
-    private void hackDataDir(String dir) throws NoSuchFieldException, IllegalAccessException {  
-        Field f = YarchDatabase.class.getDeclaredField("home");
-        f.setAccessible(true);
-        
-        f.set(YarchDatabase.class, dir);
     }
 }

@@ -23,6 +23,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -62,7 +63,7 @@ public class ParameterDataLinkInitialiser extends AbstractService {
     
     public ParameterDataLinkInitialiser(String yamcsInstance) throws IOException, ConfigurationException {
         this.yamcsInstance = yamcsInstance;
-        YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
 
         YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);

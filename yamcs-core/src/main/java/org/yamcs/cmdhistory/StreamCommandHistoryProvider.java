@@ -14,6 +14,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -66,7 +67,7 @@ public class StreamCommandHistoryProvider  extends AbstractService implements Co
     @Override
     protected void doStart() {
         String instance = chrm.getInstance();
-        YarchDatabase ydb = YarchDatabase.getInstance(chrm.getInstance());
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(chrm.getInstance());
         Stream realtimeCmdHistoryStream = ydb.getStream(YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME);
         if(realtimeCmdHistoryStream == null) {
             String msg ="Cannot find stream '"+YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME+" in instance "+instance; 

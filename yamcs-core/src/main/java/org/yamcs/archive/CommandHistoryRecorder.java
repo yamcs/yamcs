@@ -9,6 +9,7 @@ import org.yamcs.utils.LoggingUtils;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -35,7 +36,7 @@ public class CommandHistoryRecorder extends AbstractService {
 
     @Override
     protected void doStart() {
-        YarchDatabase ydb=YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb=YarchDatabase.getInstance(instance);
 
         String keycols=TcDataLinkInitialiser.TC_TUPLE_DEFINITION.getStringDefinition1();
         try {
@@ -73,7 +74,7 @@ public class CommandHistoryRecorder extends AbstractService {
 
     @Override
     protected void doStop() {
-        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         Utils.closeTableWriters(ydb, Arrays.asList(YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME, YarchCommandHistoryAdapter.DUMP_CMDHIST_STREAM_NAME));
         notifyStopped();
     }
