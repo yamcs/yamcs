@@ -1,3 +1,7 @@
+Version 3.3.1 Released 13-Nov-2017
+- Moved the MulticastTmDataLink out of the yamcs-core (into yamcs-dass) because it's DaSS specific
+- Added a new UdpTmDataLink to replace the removed multiacst functionality. Contrary to the multicast service, the UDP one receives packets as CCSDS packets without any extra header
+
 Version 3.3.0 Released 24-Oct-2017
 - Support index requests with parameters encoded in the HTTP request body in order to allow a large number of packets to be specified (otherwise, the request would exceed maximum URI size).
 - Allow alias parameter name  references in the MDB SpreadSheets (including in the Alarm sheet which didn't allow any reference at all)

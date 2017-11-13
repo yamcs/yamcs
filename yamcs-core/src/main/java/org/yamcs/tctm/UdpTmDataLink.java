@@ -2,15 +2,17 @@ package org.yamcs.tctm;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
+import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.archive.PacketWithTime;
+import org.yamcs.tctm.TmPacketDataLink;
+import org.yamcs.tctm.TmSink;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
@@ -19,20 +21,20 @@ import org.yamcs.utils.TimeEncoding;
 
 
 /**
- * Receives telemetry packets via multicast from TMR. The nice thing about multicast is that there is no 
- * 	connection required so the code can be fairly simple.
+ * Receives telemetry packets via UDP.
+ * One UDP datagram = one TM packet.
+ * 
  * Keeps simple statistics about the number of datagram received and the number of too short datagrams
  * @author nm
  *
  */
-public class MulticastTmDataLink extends AbstractExecutionThreadService implements TmPacketDataLink {
+public class UdpTmDataLink extends AbstractExecutionThreadService implements TmPacketDataLink {
     private volatile int validDatagramCount = 0;
     private volatile int invalidDatagramCount = 0;
     private volatile boolean disabled=false;
 
     private volatile boolean quitting=false;
-    private MulticastSocket tmSocket;
-    private String group="239.192.0.1";
+    private DatagramSocket tmSocket;
     private int port=31002;
 
     private TmSink tmSink;
@@ -42,39 +44,19 @@ public class MulticastTmDataLink extends AbstractExecutionThreadService implemen
     DatagramPacket datagram = new DatagramPacket(new byte[maxLength], maxLength);
 
     /**
-     * Creates a 
-     * @param spec
-     * @throws ConfigurationException if tmGroup or tmPort are not defined in the configuration files 
+     * Creates a new UDP TM Data Link
+     * @throws ConfigurationException if port is not defined in the configuration 
      */
-    public MulticastTmDataLink(String instance, String name, String spec) throws ConfigurationException  {
-        YConfiguration c=YConfiguration.getConfiguration("multicast");
-        group=c.getString(spec, "tmGroup");
-        port=c.getInt(spec, "tmPort");
-        try {
-            openSocket();
-        } catch (IOException e) {
-            throw new ConfigurationException("IOException caught when opening the multicast socket: "+e);
-        }
+    public UdpTmDataLink(String instance, String name, Map<String, Object> config) throws ConfigurationException  {
+       port = YConfiguration.getInt(config, "port");
+    }
+    
+    
+    @Override
+    public void startUp() throws IOException {
+        tmSocket = new DatagramSocket(port);
     }
 
-    /**
-     * Creates a simple multicast receiver listening to the given group and port
-     * @param group
-     * @param port
-     * @throws IOException if there was an exception opening the port (happends when there is alredy another process bound 
-     * to that port and the option REUSE_ADDR is not set on its socket)
-     */
-    public MulticastTmDataLink(String group, int port) throws IOException {
-        this.group=group;
-        this.port=port;
-        openSocket();
-    }
-
-
-    private void openSocket() throws IOException {
-        tmSocket=new MulticastSocket(port);
-        tmSocket.joinGroup(InetAddress.getByName(group));
-    }
 
     @Override
     public void setTmSink(TmSink tmSink) {
@@ -107,15 +89,7 @@ public class MulticastTmDataLink extends AbstractExecutionThreadService implemen
         while (isRunning()) {
             try {
                 tmSocket.receive(datagram);
-                /*the packet received from TMR has a 10 bytes header followed by the CCSDS packet:
-                 *  some kind of identification always 0x0B for TM and 06 for PP - 1 byte - the list with all the packet types can be found in the DaSS_C_Packet_Decoder.java part of the DaSS API
-                 *  ccsds time                                                 - 5 bytes
-                 *  requestId (always set to 0 (I guess only for multicast)    - 4 bytes
-                 *   ccsds packet
-                 *  
-                 *  The time in the "TMR header" is the reception time. It looks like the CCSDS GPS but is generated locally so it's UNIX time in fact
-                 */
-                if(datagram.getLength()<26) { //10 for the TMR header plus 6 for the primary CCSDS header plus 10 for secondary CCSDS header
+                if(datagram.getLength()<16) { //6 for the primary CCSDS header plus 10 for secondary CCSDS header
                     log.warn("Incomplete packet received on the multicast, discarded: {}", datagram);
                     continue;
                 }
@@ -123,29 +97,24 @@ public class MulticastTmDataLink extends AbstractExecutionThreadService implemen
                 byte[] data = datagram.getData();                
                 int offset = datagram.getOffset();
                 
-                ByteBuffer  bb = ByteBuffer.wrap(data);
-
                 //the time sent by TMR is not really GPS, it's the unix local computer time shifted to GPS epoch
-                long unixTimesec=(0xFFFFFFFFL & (long)bb.getInt(offset+1))+315964800L;
-                int unixTimeMicrosec=(0xFF&bb.get(offset+5))*(1000000/256);
-                rectime = TimeEncoding.fromUnixTime(unixTimesec, unixTimeMicrosec);
-                int pktLength = 7+((data[14+offset]&0xFF)<<8)+(data[15+offset]&0xFF);
+                int pktLength = 7+((data[4+offset]&0xFF)<<8)+(data[5+offset]&0xFF);
                 if(pktLength<16) {
                     invalidDatagramCount++;
                     log.warn("Invalid packet received on the multicast, pktLength: {}. Expecting minimum 16 bytes", pktLength);
                     continue;
                 }
-                if(datagram.getLength()<10+pktLength) {
+                if(datagram.getLength()<pktLength) {
                     invalidDatagramCount++;
-                    log.warn("Incomplete packet received on the multicast. expected {}, received: {}", pktLength, (datagram.getLength()-10));
+                    log.warn("Incomplete packet received on the multicast. expected {}, received: {}", pktLength, (datagram.getLength()));
                     continue;
                 }
                 validDatagramCount++;
                 packet = ByteBuffer.allocate(pktLength);
-                packet.put(data, offset+10, pktLength);
+                packet.put(data, offset, pktLength);
                 break;
             } catch (IOException e) {
-                log.warn("exception {} thrown when reading from the multicast socket {}:{}", group, port, e);
+                log.warn("exception {} thrown when reading from the UDP socket at port {}", port, e);
             }
         }
         
@@ -170,8 +139,8 @@ public class MulticastTmDataLink extends AbstractExecutionThreadService implemen
         if(disabled) {
             return "DISABLED";
         } else {
-            return String.format("OK (%s:%d)%nValid datagrams received: %d%nInvalid datagrams received: %d",
-                    group, port, validDatagramCount, invalidDatagramCount);
+            return String.format("OK (%s) %nValid datagrams received: %d%nInvalid datagrams received: %d",
+                     port, validDatagramCount, invalidDatagramCount);
         }
     }
 

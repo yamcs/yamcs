@@ -29,7 +29,6 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
     private volatile boolean disabled=false;
 
     private DatagramSocket udpSocket;
-    private String group="239.192.0.1";
     private int port=31002;
 
     ParameterSink ppListener;
@@ -107,8 +106,8 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
         if(disabled) {
             return "DISABLED";
         } else {
-            return String.format("OK (%s:%d)\nValid datagrams received: %d\nInvalid datagrams received: %d",
-                    group, port, validDatagramCount, invalidDatagramCount);
+            return String.format("OK (%d)\nValid datagrams received: %d\nInvalid datagrams received: %d",
+                     port, validDatagramCount, invalidDatagramCount);
         }
     }
 
