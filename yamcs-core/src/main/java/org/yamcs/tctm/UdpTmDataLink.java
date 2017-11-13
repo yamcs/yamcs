@@ -40,15 +40,18 @@ public class UdpTmDataLink extends AbstractExecutionThreadService implements TmP
     private TmSink tmSink;
 
     private Logger log=LoggerFactory.getLogger(this.getClass().getName());
-    final int maxLength=1500; //maximum length of tm packets in columbus is 1472
-    DatagramPacket datagram = new DatagramPacket(new byte[maxLength], maxLength);
-
+    final static int MAX_LENGTH = 1500; 
+    final DatagramPacket datagram;
+    final int maxLength;
+    
     /**
      * Creates a new UDP TM Data Link
      * @throws ConfigurationException if port is not defined in the configuration 
      */
     public UdpTmDataLink(String instance, String name, Map<String, Object> config) throws ConfigurationException  {
        port = YConfiguration.getInt(config, "port");
+       maxLength = YConfiguration.getInt(config, "maxLength", MAX_LENGTH);
+       datagram = new DatagramPacket(new byte[maxLength], maxLength);
     }
     
     
@@ -99,14 +102,15 @@ public class UdpTmDataLink extends AbstractExecutionThreadService implements TmP
                 
                 //the time sent by TMR is not really GPS, it's the unix local computer time shifted to GPS epoch
                 int pktLength = 7+((data[4+offset]&0xFF)<<8)+(data[5+offset]&0xFF);
-                if(pktLength<16) {
+                if((pktLength<16) || pktLength>maxLength) {
                     invalidDatagramCount++;
-                    log.warn("Invalid packet received on the multicast, pktLength: {}. Expecting minimum 16 bytes", pktLength);
+                    log.warn("Invalid packet received on the multicast, pktLength: {}. Expecting minimum 16 bytes and maximum {} bytes", pktLength, maxLength);
                     continue;
                 }
+                
                 if(datagram.getLength()<pktLength) {
                     invalidDatagramCount++;
-                    log.warn("Incomplete packet received on the multicast. expected {}, received: {}", pktLength, (datagram.getLength()));
+                    log.warn("Incomplete packet received on the multicast. expected {}, received: {}", pktLength, datagram.getLength());
                     continue;
                 }
                 validDatagramCount++;
