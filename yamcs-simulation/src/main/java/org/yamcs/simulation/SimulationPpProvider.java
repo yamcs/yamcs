@@ -34,31 +34,29 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
 // Command line to generate xml classes:
 //[...]/yamcs/yamcs-simulation/src/main/resources/org/yamcs/xsd$ xjc simulation_data.xsd -p org.yamcs.simulation.generated -d [...]/yamcs/yamcs-simulation/src/main/java/
 public class SimulationPpProvider extends AbstractExecutionThreadService implements ParameterDataLink, Runnable {
-    
-	
+
+
     public Date simulationStartTime;
     public Date simulationRealStartTime;
     public int simulationStepLengthMs;
     public long simutationStep;
     public boolean loopSimulation;
-	
-	protected volatile long datacount = 0;
-	protected volatile boolean disabled = false;
-    
-	private ParameterSink ppListener;
-    
+
+    protected volatile long datacount = 0;
+    protected volatile boolean disabled = false;
+
+    private ParameterSink ppListener;
+
     private PpSimulation simulationData;
-    // static String SIMULATION_DATA =
-    // "/home/msc/development/git/yamcs/live/etc/simulation.xml";
     private static String simulationDataPath = "";
-    
+
     private XtceDb xtceDb;
 
     private Random rand = new Random();
-    
+
     private Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
-    
+
     public SimulationPpProvider(String yamcsInstance, String name, LinkedHashMap<String,String> args) throws ConfigurationException {
         xtceDb = XtceDbFactory.getInstance(yamcsInstance);
         setSimulationData((String) args.get("simulationDataPath"));
@@ -67,7 +65,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
 
     public SimulationPpProvider() {}
 
-    
+
 
     @Override
     public Status getLinkStatus() {
@@ -138,15 +136,15 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
             }
         }
     }
-    
 
-    
+
+
     public void setSimulationData(String xmlFilePath) {
         simulationDataPath = xmlFilePath;
         simulationData = loadSimulationData(simulationDataPath);
     }
 
-    
+
     /**
      * Processes the specified simulation scenario
      */
@@ -193,7 +191,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
         try {
             final JAXBContext jc = JAXBContext.newInstance(PpSimulation.class);
             final Unmarshaller unmarshaller = jc.createUnmarshaller();
-            
+
             final PpSimulation ppSimulation = (PpSimulation) unmarshaller
                     .unmarshal(new FileReader(fileName));
             return ppSimulation;
@@ -204,7 +202,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
             throw new ConfigurationException("Unable to load Simulation Data. Check the XML file is correct. Details:\n"+ e.toString());
         }
     }
-    
+
     /**
      * Processes a sequence of the simulation scenario
      * @param ps - sequence
@@ -284,7 +282,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
             log.error(e.toString());
         }
     }
-    
+
 
     /**
      * Create a specified parameter and insert it in the Yamcs PP Listener
@@ -343,7 +341,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
     }
 
 
-    
+
     /**
      * Creates parameter value
      * @param spaceSystem
