@@ -5,6 +5,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.simulator.CCSDSPacket;
 
 
@@ -14,6 +16,8 @@ public class EpsLvpduHandler {
 
 	private Vector<EpsLvpduData> entries;
     private int currentEntry = 0;
+    
+    private Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
 	public EpsLvpduHandler() {
 		entries = new Vector<>(100, 100);
@@ -35,9 +39,9 @@ public class EpsLvpduHandler {
 				entries.add(entry);
 			}
 		} catch (IOException e) {
-			System.out.println(e);
+			log.warn(e.getMessage(), e);
 		}
-		System.out.println("have "+entries.size()+" EPS LVPDU data records");
+		log.info("have "+entries.size()+" EPS LVPDU data records");
 	}
 	
     public void fillPacket(CCSDSPacket packet) {

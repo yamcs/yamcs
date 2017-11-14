@@ -9,24 +9,26 @@ import java.util.concurrent.ArrayBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.simulator.ui.SimWindow;
+import org.yamcs.utils.StringConverter;
 
 
 public class Simulator extends Thread {
     
-    private static final Logger log = LoggerFactory.getLogger(Simulator.class);
     
+    protected Queue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<>(100); //no more than 100 pending commands
+  
     private int DEFAULT_MAX_LENGTH=65542;
     private int maxLength = DEFAULT_MAX_LENGTH;
 
     private SimulationConfiguration simConfig;
     private TelemetryLink tmLink;
     
-    protected Queue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<>(100); //no more than 100 pending commands
-    
     private boolean isLos = false;
     private LosStore losStore;
     
     private SimWindow simWindow;
+    
+    private static final Logger log = LoggerFactory.getLogger(Simulator.class);
     
     public Simulator(SimulationConfiguration simConfig) {
         this.simConfig = simConfig;
@@ -77,14 +79,13 @@ public class Simulator extends Thread {
                 System.arraycopy(hdr, 0, b, 0, 6);
                 dIn.readFully(b, 6, remaining);
                 CCSDSPacket packet = new CCSDSPacket(ByteBuffer.wrap(b));
+                transmitTM(ackPacket(packet, 0, 0)); 
                 packetQueue.add(packet);
             }
-            //System.out.println("Packets Stored & Sent = "+ losStored + " : "+  losSent);
         } catch(IOException e) {
-            System.err.println("Connection lost : " + e);
+        	log.error("Connection lost:" + e.getMessage(), e);
         } catch(Exception e) {
-            System.err.println("Error reading command " + e);
-            e.printStackTrace();
+        	log.error("Error reading command " + e.getMessage(), e);
         }
         return packetQueue;
     }
@@ -111,6 +112,7 @@ public class Simulator extends Thread {
     
     protected void transmitTM(CCSDSPacket packet) {
         tmLink.tmTransmit(packet);
+
     }
 
     public void dumpLosDataFile(String filename) {
@@ -173,5 +175,23 @@ public class Simulator extends Thread {
 
     public void stopTriggeringLos() {
         losStore.stopTriggeringLos();
+    }
+    
+    protected CCSDSPacket ackPacket(CCSDSPacket commandPacket, int stage, int result) {
+    	CCSDSPacket ackPacket = new CCSDSPacket(0, commandPacket.getPacketType(), 2000);
+    	ackPacket.setApid(101);
+    	int batNum = commandPacket.getPacketId();
+    	
+    	ByteBuffer bb = ByteBuffer.allocate(10);
+
+    	bb.putInt(0,batNum);
+    	bb.putInt(4,commandPacket.getSeq());
+    	bb.put(8,(byte)stage);
+    	bb.put(9,(byte)result);
+    	
+    	ackPacket.appendUserDataBuffer(bb.array());
+    
+    	return ackPacket;
+    	
     }
 }

@@ -6,13 +6,14 @@ import org.yamcs.simulator.CCSDSPacket;
 import org.yamcs.simulator.Vector3d;
 
 class FlightData {
-	double latitude, longitude, altitude;
-	double heading, timestamp, phi, theta, psi;
-	double groundSpeed, verticalSpeed, mach, sinkRate, tas, cas, alpha, beta, loadFactor;
+	
+	public final static double MACH_ONE = 340.3; // m/s
+	
+	public double latitude, longitude, altitude;
+	public double heading, timestamp, phi, theta, psi;
+	public double groundSpeed, verticalSpeed, mach, sinkRate, tas, cas, alpha, beta, loadFactor;
 
-	final static double MACH_ONE = 340.3; // m/s
-
-	FlightData(CCSDSPacket packet) {
+	public FlightData(CCSDSPacket packet) {
 		ByteBuffer buffer = packet.getUserDataBuffer();
 		timestamp = buffer.getFloat(0);
 		longitude = buffer.getFloat(4);
@@ -34,17 +35,12 @@ class FlightData {
 		verticalSpeed = -1;
 	}
 
-	FlightData() {
+	public FlightData() {
 		groundSpeed = -1;
 		verticalSpeed = -1;
 	}
 
-	@Override
-    public String toString() {
-		return String.format("[CSVEntry lat=%.6f lon=%.6f alt=%.2fm time=%.3fs]", latitude, longitude, altitude, timestamp);
-	}
-
-	void fillPacket(CCSDSPacket packet, int bufferOffset) {
+	public void fillPacket(CCSDSPacket packet, int bufferOffset) {
 		ByteBuffer buffer = packet.getUserDataBuffer();
 		buffer.position(bufferOffset);
 
@@ -65,7 +61,7 @@ class FlightData {
 		buffer.putFloat((float)psi);
 	}
 
-	Vector3d getVelocity() {
+	public Vector3d getVelocity() {
 		if (groundSpeed < 0) {
 			Vector3d v = new Vector3d(heading + 90, mach*MACH_ONE);
 			return v;
@@ -76,7 +72,20 @@ class FlightData {
 		return v;
 	}
 
-	double getYaw() { return Math.toRadians(psi); } // left/right turn
-	double getPitch() { return Math.toRadians(theta); } // nose up/down
-	double getRoll() { return Math.toRadians(phi); }
+	public double getYaw() {
+		return Math.toRadians(psi); // left/right turn
+	} 
+	
+	public double getPitch() { 
+		return Math.toRadians(theta); // nose up/down
+	} 
+	
+	public double getRoll() { 
+		return Math.toRadians(phi); 
+	}
+	
+	@Override
+    public String toString() {
+		return String.format("[CSVEntry lat=%.6f lon=%.6f alt=%.2fm time=%.3fs]", latitude, longitude, altitude, timestamp);
+	}
 }

@@ -5,6 +5,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.simulator.CCSDSPacket;
 
 class RCSHandler {
@@ -12,8 +14,10 @@ class RCSHandler {
 
 	private Vector<RCSData> entries;
 	private int currentEntry = 0;
+	
+	private Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
-	RCSHandler() {
+	public RCSHandler() {
 		entries = new Vector<>(100, 100);
 		try (BufferedReader in = new BufferedReader(new FileReader(csvName))) {
 			String line;
@@ -45,9 +49,9 @@ class RCSHandler {
 				entries.add(entry);
 			}
 		} catch (IOException e) {
-			System.out.println(e);
+			log.warn(e.getMessage(), e);
 		}
-		System.out.println("have "+entries.size()+" RHS data records");
+		log.info("have "+entries.size()+" RHS data records");
 	}
 	
     public void fillPacket(CCSDSPacket packet) {

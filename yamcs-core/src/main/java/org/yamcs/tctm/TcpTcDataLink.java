@@ -26,6 +26,7 @@ import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -173,6 +174,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
      */
     @Override
     public void sendTc(PreparedCommand pc) {
+    	System.out.println("sendtc0 "+StringConverter.arrayToHexString(pc.getBinary()));
         if(disabled) {
             log.warn("TC disabled, ignoring command "+pc.getCommandId());
             return;
@@ -183,12 +185,21 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             bb.put(pc.getBinary());
             bb.putShort(4, (short)(minimumTcPacketLength - 7)); // fix packet length
         } else {
-            bb=ByteBuffer.wrap(pc.getBinary());
+
+        	int checksumIndicator = pc.getBinary()[2] & 0x04;
+        	if(checksumIndicator ==1) {
+        		bb=ByteBuffer.allocate(pc.getBinary().length +2); //extra slots for check sum
+        	} else {
+        		bb=ByteBuffer.wrap(pc.getBinary());
+        	}
+            bb.putShort(4, (short)(pc.getBinary().length - 7));          
+
         }
 
         int retries=5;
         boolean sent=false;
         int seqCount=seqAndChecksumFiller.fill(bb, pc.getCommandId().getGenerationTime());
+    	System.out.println("sendtc1 "+StringConverter.arrayToHexString(pc.getBinary()));
         bb.rewind();
         while (!sent&&(retries>0)) {
             if (!isSocketOpen()) {
@@ -199,7 +210,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
                 try {
                     socketChannel.write(bb);
                     tcCount++;
-                    sent=true;
+                    sent=true;                
                 } catch (IOException e) {
                     log.warn("Error writing to TC socket to {}:{} : {}", host, port, e.getMessage());
                     try {
@@ -224,7 +235,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
                 }
             }
         }
-
+        commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
         if(sent) {
             handleAcks(pc.getCommandId(), seqCount);
         } else {
@@ -238,10 +249,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         timer.schedule(new TcAckStatus(cmdId,"Acknowledge_FRC","ACK: OK"), 800, TimeUnit.MILLISECONDS);
         timer.schedule(new TcAckStatus(cmdId,"Acknowledge_DASS","ACK: OK"), 1200, TimeUnit.MILLISECONDS);
         timer.schedule(new TcAckStatus(cmdId,"Acknowledge_MCS","ACK: OK"), 1600, TimeUnit.MILLISECONDS);
-        timer.schedule(new TcAckStatus(cmdId,"Acknowledge_A","ACK A: OK"), 2000, TimeUnit.MILLISECONDS);
-        timer.schedule(new TcAckStatus(cmdId,"Acknowledge_B","ACK B: OK"), 3000, TimeUnit.MILLISECONDS);
-        timer.schedule(new TcAckStatus(cmdId,"Acknowledge_C","ACK C: OK"), 4000, TimeUnit.MILLISECONDS);
-        timer.schedule(new TcAckStatus(cmdId,"Acknowledge_D","ACK D: OK"), 10000, TimeUnit.MILLISECONDS);
+
     }
 
     @Override
