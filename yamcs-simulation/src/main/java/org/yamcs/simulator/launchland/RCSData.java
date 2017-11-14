@@ -5,12 +5,12 @@ import java.nio.ByteBuffer;
 import org.yamcs.simulator.CCSDSPacket;
 
 class RCSData {
-	float timestamp;
-	float H2TankFill, H2TankTemp, H2TankPressure, H2ValveTemp, H2ValvePressure;
-	float O2TankFill, O2TankTemp, O2TankPressure, O2ValveTemp, O2ValvePressure;
-	float TurbineTemp, TurbinePressure;
+	public float timestamp;
+	public float H2TankFill, H2TankTemp, H2TankPressure, H2ValveTemp, H2ValvePressure;
+	public float O2TankFill, O2TankTemp, O2TankPressure, O2ValveTemp, O2ValvePressure;
+	public float TurbineTemp, TurbinePressure;
 
-	RCSData(CCSDSPacket packet) {
+	public RCSData(CCSDSPacket packet) {
 		ByteBuffer buffer = packet.getUserDataBuffer();
 
 		H2TankFill = buffer.getFloat(0);
@@ -27,15 +27,10 @@ class RCSData {
 		O2ValvePressure = buffer.getFloat(28);
 	}
 
-	RCSData() {
+	public RCSData() {
 	}
 
-	@Override
-    public String toString() {
-		return String.format("[RCSData]");
-	}
-
-	void fillPacket(CCSDSPacket packet, int bufferOffset) {
+	public void fillPacket(CCSDSPacket packet, int bufferOffset) {
 		ByteBuffer buffer = packet.getUserDataBuffer();
 		buffer.position(bufferOffset);
 
@@ -51,5 +46,10 @@ class RCSData {
 		buffer.putFloat(O2ValvePressure);
 		buffer.putShort((short)0);
 		buffer.putShort((short)0);
+	}
+	
+	@Override
+    public String toString() {
+		return String.format("[RCSData]");
 	}
 }

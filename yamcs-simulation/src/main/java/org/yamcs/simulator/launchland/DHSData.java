@@ -11,7 +11,7 @@ class DHSData {
 	float secBusVoltage2, secBusCurrent2;
 	float secBusVoltage3, secBusCurrent3;
 
-	DHSData(CCSDSPacket packet) {
+	public DHSData(CCSDSPacket packet) {
 		ByteBuffer buffer = packet.getUserDataBuffer();
 		primBusVoltage1 = (float)buffer.get(0);
 		primBusCurrent1 = (float)buffer.get(1);
@@ -23,15 +23,11 @@ class DHSData {
 		secBusCurrent3 = (float)buffer.get(7);
 	}
 
-	DHSData() {
+	public DHSData() {
 	}
 
-	@Override
-    public String toString() {
-		return String.format("[DHSData]");
-	}
 
-	void fillPacket(CCSDSPacket packet, int bufferOffset) {
+	public void fillPacket(CCSDSPacket packet, int bufferOffset) {
 		ByteBuffer buffer = packet.getUserDataBuffer();
 		buffer.position(bufferOffset);
 
@@ -44,5 +40,10 @@ class DHSData {
 		buffer.put((byte)secBusVoltage3);
 		buffer.put((byte)secBusCurrent3);
 		buffer.put((byte)0);
+	}
+	
+	@Override
+    public String toString() {
+		return String.format("[DHSData]");
 	}
 }

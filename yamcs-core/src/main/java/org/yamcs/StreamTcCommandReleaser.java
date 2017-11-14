@@ -24,31 +24,30 @@ public class StreamTcCommandReleaser extends AbstractService implements CommandR
     volatile long sentTcCount;
 
     public StreamTcCommandReleaser(String yamcsInstance, Map<String, String> config) throws ConfigurationException {
-	this.yamcsInstance = yamcsInstance;
-	if(!config.containsKey("stream")) {
-	    throw new ConfigurationException("Please specify the stream in the config (args)");
-	}
-	this.streamName = config.get("stream");
+        this.yamcsInstance = yamcsInstance;
+        if(!config.containsKey("stream")) {
+            throw new ConfigurationException("Please specify the stream in the config (args)");
+        }
+        this.streamName = config.get("stream");
     }
 
     @Override
     public void releaseCommand(PreparedCommand pc) {
-	stream.emitTuple(pc.toTuple());
-	sentTcCount++;
+        stream.emitTuple(pc.toTuple());
+        sentTcCount++;
     }
 
     @Override
     protected void doStart() {
-	YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-	stream = ydb.getStream(streamName);
-	if(stream==null) {
-	    ConfigurationException e = new ConfigurationException("Cannot find stream '"+streamName+"'");
-	    notifyFailed(e);
-	} else {
-	    notifyStarted();
-	}
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        stream = ydb.getStream(streamName);
+        if(stream==null) {
+            ConfigurationException e = new ConfigurationException("Cannot find stream '"+streamName+"'");
+            notifyFailed(e);
+        } else {
+            notifyStarted();
+        }
     }
-
 
     @Override
     public void setCommandHistory(CommandHistoryPublisher commandHistoryListener) {
@@ -57,8 +56,6 @@ public class StreamTcCommandReleaser extends AbstractService implements CommandR
 
     @Override
     protected void doStop() {
-	notifyStopped();
+        notifyStopped();
     }
-
-
 }

@@ -47,38 +47,6 @@ public class TelemetryLink {
         }
     }
 
-    private void tmPacketSend(ServerConnection conn) {
-        if (conn.isConnected() && !conn.isTmQueueEmpty()) {
-            try {
-                conn.getTmPacket().writeTo(conn.getTmSocket().getOutputStream());
-            } catch (IOException e1) {
-                log.error("Error while sending TM packet", e1);
-                yamcsServerConnect(conn);
-            }
-        }
-    }
-
-    private void tmPacketDump(ServerConnection conn) {
-        if (conn.isConnected() && !conn.isTmDumpQueueEmpty()) {
-            try {
-                conn.getTmDumpPacket().writeTo(conn.getLosSocket().getOutputStream());
-            } catch (IOException e1) {
-                log.error("Error while sending TM dump packet", e1);
-                yamcsServerConnect(conn);
-            }
-        }
-    }
-
-    private void tmPacketStore(ServerConnection conn) {
-        if (conn.isConnected() && !conn.isTmQueueEmpty()) {
-            // Not the best solution, the if condition stop the LOS file from having double instances
-            // Might rework the logic at a later date
-            if (conn.getId() == 0) {
-                CCSDSPacket packet = conn.getTmPacket();
-                simulator.getLosStore().tmPacketStore(packet);
-            }
-        }
-    }
 
     public void yamcsServerConnect(ServerConnection conn) {
 
@@ -158,6 +126,40 @@ public class TelemetryLink {
                 simulator.getSimWindow().setServerStatus(conn.getId(), ServerConnection.ConnectionStatus.CONNECTED);
         }
     }
+    
+    private void tmPacketSend(ServerConnection conn) {
+        if (conn.isConnected() && !conn.isTmQueueEmpty()) {
+            try {
+                conn.getTmPacket().writeTo(conn.getTmSocket().getOutputStream());
+            } catch (IOException e1) {
+                log.error("Error while sending TM packet", e1);
+                yamcsServerConnect(conn);
+            }
+        }
+    }
+
+    private void tmPacketDump(ServerConnection conn) {
+        if (conn.isConnected() && !conn.isTmDumpQueueEmpty()) {
+            try {
+                conn.getTmDumpPacket().writeTo(conn.getLosSocket().getOutputStream());
+            } catch (IOException e1) {
+                log.error("Error while sending TM dump packet", e1);
+                yamcsServerConnect(conn);
+            }
+        }
+    }
+
+    private void tmPacketStore(ServerConnection conn) {
+        if (conn.isConnected() && !conn.isTmQueueEmpty()) {
+            // Not the best solution, the if condition stop the LOS file from having double instances
+            // Might rework the logic at a later date
+            if (conn.getId() == 0) {
+                CCSDSPacket packet = conn.getTmPacket();
+                simulator.getLosStore().tmPacketStore(packet);
+            }
+        }
+    }
+
     
     private void logMessage(int serverId, String message) {
         log.info(message);
