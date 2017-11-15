@@ -13,10 +13,10 @@ import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingResult;
 
 /**
- * 
+ *
  * Extracts parameters out of packets based on the XTCE description
  *
- * 
+ *
  */
 public class XtceTmExtractor {
     private static final Logger log = LoggerFactory.getLogger(XtceTmExtractor.class);
@@ -24,11 +24,12 @@ public class XtceTmExtractor {
     private ProcessingStatistics stats=new ProcessingStatistics();
 
     private ContainerProcessingResult result;
-    
+
     public final XtceDb xtcedb;
     final SequenceContainer rootContainer;
     ContainerProcessingOptions options = new ContainerProcessingOptions();
     final ProcessorData pcontext;
+
     /**
      * Creates a TmExtractor extracting data according to the XtceDb
      * @param xtcedb
@@ -36,9 +37,10 @@ public class XtceTmExtractor {
     public XtceTmExtractor(XtceDb xtcedb) {
         this(xtcedb, new ProcessorData(xtcedb));
     }
+
     /**
      * Create a new TM extractor with the given context
-     * 
+     *
      * @param xtcedb
      * @param pcontext
      */
@@ -48,12 +50,12 @@ public class XtceTmExtractor {
         rootContainer = xtcedb.getRootSequenceContainer();
         this.pcontext = pcontext;
     }
-    
+
     /**
-     * Adds a parameter to the current subscription list: 
+     * Adds a parameter to the current subscription list:
      *  finds all the SequenceContainers in which this parameter may appear and adds them to the list.
      *  also for each sequence container adds the parameter needed to instantiate the sequence container.
-     * @param param parameter to be added to the current subscription list 
+     * @param param parameter to be added to the current subscription list
      */
     public void startProviding(Parameter param) {
         synchronized(subscription) {
@@ -79,21 +81,30 @@ public class XtceTmExtractor {
      * Extract one packet, starting at the root sequence container
      */
     public void processPacket(byte[] b, long generationTime, long acquisitionTime) {
-        processPacket(b, generationTime, acquisitionTime, rootContainer);
+        processPacket(new BitBuffer(b), generationTime, acquisitionTime, rootContainer);
+    }
+
+    /**
+     * Extract one packet, starting at the root sequence container
+     */
+    public void processPacket(BitBuffer buf, long generationTime, long acquisitionTime) {
+        processPacket(buf, generationTime, acquisitionTime, rootContainer);
     }
 
     /**
      * Extract one packet, starting at the specified container.
-     * @param bb 
-     * @param generationTime 
-     * @param aquisitionTime 
-     * @param startContainer 
      */
-    public void processPacket(byte[] b, long generationTime, long aquisitionTime, SequenceContainer startContainer) {
-        result = new ContainerProcessingResult(aquisitionTime, generationTime, stats);
+    public void processPacket(byte[] b, long generationTime, long acquisitionTime, SequenceContainer startContainer) {
+        processPacket(new BitBuffer(b), generationTime, acquisitionTime, startContainer);
+    }
+
+    /**
+     * Extract one packet, starting at the specified container.
+     */
+    public void processPacket(BitBuffer buf, long generationTime, long acquisitionTime, SequenceContainer startContainer) {
+        result = new ContainerProcessingResult(acquisitionTime, generationTime, stats);
         try {
-             synchronized(subscription) {
-                BitBuffer buf = new BitBuffer(b);
+            synchronized(subscription) {
                 ContainerProcessingContext cpc = new ContainerProcessingContext(pcontext, buf, result, subscription, options);
                 cpc.sequenceContainerProcessor.extract(startContainer);
             }
@@ -109,7 +120,7 @@ public class XtceTmExtractor {
     public ProcessingStatistics getStatistics(){
         return stats;
     }
-    
+
     public void startProviding(SequenceContainer sequenceContainer) {
         synchronized(subscription) {
             subscription.addSequenceContainer(sequenceContainer);
@@ -118,7 +129,7 @@ public class XtceTmExtractor {
 
     public void stopProviding(SequenceContainer sequenceContainer) {
     }
-    
+
 
     public ParameterValueList getParameterResult() {
         return result.params;

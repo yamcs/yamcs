@@ -6,6 +6,7 @@ import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
@@ -25,7 +26,7 @@ public class EventRecorder extends AbstractService {
     static final public String REALTIME_EVENT_STREAM_NAME = "events_realtime";
     
     public EventRecorder(String instance) throws StreamSqlException, ParseException {
-        YarchDatabase ydb=YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb=YarchDatabase.getInstance(instance);
         this.yamcsInstance = instance;
         
         if(ydb.getTable(TABLE_NAME)==null) {
@@ -49,7 +50,7 @@ public class EventRecorder extends AbstractService {
 
     @Override
     protected void doStop() {
-        YarchDatabase ydb=YarchDatabase.getInstance(yamcsInstance);
+        YarchDatabaseInstance ydb=YarchDatabase.getInstance(yamcsInstance);
         StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
             
         Utils.closeTableWriters(ydb,  sc.getEntries().stream().map(sce -> sce.getName()).collect(Collectors.toList()));

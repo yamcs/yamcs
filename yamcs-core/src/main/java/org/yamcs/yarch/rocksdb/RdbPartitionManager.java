@@ -19,7 +19,7 @@ import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TimePartitionSchema.PartitionInfo;
 
-import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableDefinition.PartitionStorage;
 import org.yamcs.utils.TimeEncoding;
@@ -33,10 +33,10 @@ import org.yamcs.utils.TimeEncoding;
  */
 public class RdbPartitionManager extends PartitionManager {
 
-    final YarchDatabase ydb;
+    final YarchDatabaseInstance ydb;
     static Logger log=LoggerFactory.getLogger(RdbPartitionManager.class.getName());
 
-    public RdbPartitionManager(YarchDatabase ydb, TableDefinition tableDefinition) {
+    public RdbPartitionManager(YarchDatabaseInstance ydb, TableDefinition tableDefinition) {
         super(tableDefinition);
         this.ydb = ydb;
     }

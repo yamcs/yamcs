@@ -2,6 +2,7 @@ package org.yamcs.yarch.streamsql;
 
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.ResourceNotFoundException;
@@ -19,7 +20,7 @@ public class CloseStreamStatement extends StreamSqlStatement {
 
     @Override
     public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
-        YarchDatabase dict=YarchDatabase.getInstance(c.getDbName());
+        YarchDatabaseInstance dict=YarchDatabase.getInstance(c.getDbName());
         //locking of the dictionary is performed inside the close
         Stream s=dict.getStream(name);
         if(s==null) throw new ResourceNotFoundException(name);

@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Vector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.simulator.CCSDSPacket;
 
 class PowerHandler {
@@ -13,6 +15,8 @@ class PowerHandler {
 
 	private Vector<PowerData> entries;
 	private int currentEntry = 0;
+	
+	private Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
 	public PowerHandler() {
 		entries = new Vector<>(100, 100);
@@ -47,9 +51,10 @@ class PowerHandler {
 				entries.add(entry);
 			}
 		} catch (IOException e) {
-			System.out.println(e);
+			log.warn(e.getMessage(), e);
 		}
-		System.out.println("have "+entries.size()+" power data records");
+		log.info("have "+entries.size()+" power data records");
+
 	}
 
     public void fillPacket(CCSDSPacket packet) {

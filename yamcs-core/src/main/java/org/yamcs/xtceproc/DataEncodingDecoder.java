@@ -1,7 +1,5 @@
 package org.yamcs.xtceproc;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 
 import org.slf4j.Logger;
@@ -9,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.BitBuffer;
-import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BooleanDataEncoding;
 import org.yamcs.xtce.DataEncoding;
@@ -21,28 +18,34 @@ import org.yamcs.xtce.StringDataEncoding.SizeType;
 
 /**
  * Decodes TM data according to the specification of the DataEncoding
- * This is a generic catch all decoder, relies on specific custom decoders implementing 
+ * This is a generic catch all decoder, relies on specific custom decoders implementing
  * the DataDecoder interface when necessary.
- * @see  org.yamcs.xtceproc.DataDecoder 
- * 
+ * @see  org.yamcs.xtceproc.DataDecoder
+ *
  * @author nm
  *
  */
 public class DataEncodingDecoder {
-    ContainerProcessingContext pcontext;
+    ProcessorData pdata;
+    BitBuffer buffer;
     Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
     public DataEncodingDecoder(ContainerProcessingContext pcontext) {
-        this.pcontext = pcontext;
+        this(pcontext.pdata, pcontext.buffer);
+    }
+
+    public DataEncodingDecoder(ProcessorData pdata, BitBuffer buffer) {
+        this.pdata = pdata;
+        this.buffer = buffer;
     }
 
     /**
-     *  Extracts the raw uncalibrated parameter value from the packet.
+     *  Extracts the raw uncalibrated parameter value from the buffer.
      */
-    void extractRaw(DataEncoding de, ParameterValue pv) {
+    public void extractRaw(DataEncoding de, ParameterValue pv) {
         if(de.getFromBinaryTransformAlgorithm()!=null) { //custom algorithm
-            DataDecoder dd = pcontext.pdata.getDataDecoder(de);
-            dd.extractRaw(de, pcontext.buffer, pv);
+            DataDecoder dd = pdata.getDataDecoder(de);
+            dd.extractRaw(de, buffer, pv);
         } else {
             if(de instanceof IntegerDataEncoding) {
                 extractRawInteger((IntegerDataEncoding) de, pv);
@@ -68,40 +71,39 @@ public class DataEncodingDecoder {
             return;
         }
 
-        BitBuffer buf = pcontext.buffer;
-        buf.setByteOrder(ide.getByteOrder());
+        buffer.setByteOrder(ide.getByteOrder());
         int numBits = ide.getSizeInBits();
-        
-        long rv = pcontext.buffer.getBits(numBits);
+
+        long rv = buffer.getBits(numBits);
         switch(ide.getEncoding()) {
         case UNSIGNED:
-            //nothing to do            
-            break;        
+            //nothing to do
+            break;
         case TWOS_COMPLEMENT:
             int n = 64-numBits;
             //shift left to get the sign and back again
             rv = (rv <<n)>>n;
             break;
-       
-        case SIGN_MAGNITUDE:
-            boolean negative = ((rv>>>(numBits-1) & 1L) == 1L);
 
-            if (negative) {
-                rv = rv&((1<<(numBits-1))-1); //remove the sign bit
-                rv = -rv;
-            }
-            break;
-        case ONES_COMPLEMENT:
-            negative = ((rv>>>(numBits-1) & 1L) == 1L);
-            if (negative) {
-                n = 64-numBits;
-                rv = (rv <<n)>>n;
-                rv = ~rv;
-                rv = -rv;
-                    
-            }
-            break;
-        }        
+            case SIGN_MAGNITUDE:
+                boolean negative = ((rv>>>(numBits-1) & 1L) == 1L);
+
+                if (negative) {
+                    rv = rv&((1<<(numBits-1))-1); //remove the sign bit
+                    rv = -rv;
+                }
+                break;
+            case ONES_COMPLEMENT:
+                negative = ((rv>>>(numBits-1) & 1L) == 1L);
+                if (negative) {
+                    n = 64-numBits;
+                    rv = (rv <<n)>>n;
+                    rv = ~rv;
+                    rv = -rv;
+
+                }
+                break;
+        }
         setRawValue(ide, pv, rv);
     }
 
@@ -122,9 +124,8 @@ public class DataEncodingDecoder {
     }
 
     private void extractRawString(StringDataEncoding sde, ParameterValue pv) {
-        BitBuffer buf = pcontext.buffer;
-        if(buf.getPosition()%8!=0) {
-            log.warn("Binary data that does not start at byte boundary not supported. bitPosition: {}", pcontext.buffer);
+        if(buffer.getPosition()%8!=0) {
+            log.warn("Binary data that does not start at byte boundary not supported. bitPosition: {}", buffer);
             pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
             return;
         }
@@ -135,21 +136,21 @@ public class DataEncodingDecoder {
             sizeInBytes = sde.getSizeInBits()>>3;
         break;
         case LEADING_SIZE:
-            sizeInBytes = (int) buf.getBits(sde.getSizeInBitsOfSizeTag());
+            sizeInBytes = (int) buffer.getBits(sde.getSizeInBitsOfSizeTag());
             break;
         case TERMINATION_CHAR:
-            int p = buf.getPosition();
-            while(buf.getByte()!=sde.getTerminationChar()){ 
+            int p = buffer.getPosition();
+            while(buffer.getByte()!=sde.getTerminationChar()){
                 sizeInBytes++;
             }
-            buf.setPosition(p);
+            buffer.setPosition(p);
             break;
         }
-        byte[] b = new byte[sizeInBytes];        
-        buf.getByteArray(b);
-       
+        byte[] b = new byte[sizeInBytes];
+        buffer.getByteArray(b);
+
         if(sde.getSizeType()==SizeType.TERMINATION_CHAR) {
-            buf.getByte();//the termination char
+            buffer.getByte();//the termination char
         }
         pv.setRawValue(new String(b, Charset.forName(sde.getEncoding())));
         pv.setBitSize(b.length<<3);
@@ -170,25 +171,22 @@ public class DataEncodingDecoder {
     }
 
     private void extractRawIEEE754_1985(FloatDataEncoding de, ParameterValue pv) {
-        BitBuffer buf = pcontext.buffer;
-        buf.setByteOrder(de.getByteOrder());
-        
+        buffer.setByteOrder(de.getByteOrder());
+
         if(de.getSizeInBits()==32) {
-            pv.setRawFloatValue(Float.intBitsToFloat((int)buf.getBits(32)));
+            pv.setRawFloatValue(Float.intBitsToFloat((int) buffer.getBits(32)));
         } else {
-            pv.setRawDoubleValue(Double.longBitsToDouble(buf.getBits(64)));
+            pv.setRawDoubleValue(Double.longBitsToDouble(buffer.getBits(64)));
         }
     }
 
     private void extractRawBoolean(BooleanDataEncoding bde, ParameterValue pv) {
-        BitBuffer buf = pcontext.buffer;
-        pv.setRawValue(buf.getBits(1)!=0);
+        pv.setRawValue(buffer.getBits(1) != 0);
     }
 
     private void extractRawBinary(BinaryDataEncoding bde, ParameterValue pv) {
-        BitBuffer buf = pcontext.buffer;
-        if(buf.getPosition()%8!=0) {
-            log.warn("Binary Parameter that does not start at byte boundary not supported. bitPosition: {}", pcontext.buffer);
+        if(buffer.getPosition() % 8 != 0) {
+            log.warn("Binary Parameter that does not start at byte boundary not supported. bitPosition: {}", buffer);
             pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
             return;
         }
@@ -199,16 +197,16 @@ public class DataEncodingDecoder {
             sizeInBytes = bde.getSizeInBits()/8;
             break;
         case LEADING_SIZE:
-            sizeInBytes = (int) buf.getBits(bde.getSizeInBitsOfSizeTag());
+            sizeInBytes = (int) buffer.getBits(bde.getSizeInBitsOfSizeTag());
             break;
         default: //shouldn't happen
-           throw new IllegalStateException();
+            throw new IllegalStateException();
         }
-        if(sizeInBytes>buf.remainingBytes()) {
-            throw new IndexOutOfBoundsException("Cannot extract binary parameter of size "+sizeInBytes+". Remaining in the buffer: "+buf.remainingBytes());
+        if(sizeInBytes > buffer.remainingBytes()) {
+            throw new IndexOutOfBoundsException("Cannot extract binary parameter of size "+sizeInBytes+". Remaining in the buffer: "+buffer.remainingBytes());
         }
         byte[] b = new byte[sizeInBytes];
-        buf.getByteArray(b);
+        buffer.getByteArray(b);
         pv.setRawValue(b);
         pv.setBitSize(sizeInBytes<<3);
     }

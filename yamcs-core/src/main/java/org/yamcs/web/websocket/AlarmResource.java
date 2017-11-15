@@ -22,9 +22,9 @@ import org.yamcs.utils.TimeEncoding;
  * Provides realtime alarm subscription via web.
  */
 public class AlarmResource extends AbstractWebSocketResource implements AlarmListener {
-
     private static final Logger log = LoggerFactory.getLogger(AlarmResource.class);
     public static final String RESOURCE_NAME = "alarms";
+    private volatile boolean subscribed = false;
 
     public AlarmResource(WebSocketProcessorClient client) {
         super(client);
@@ -66,12 +66,18 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
 
     @Override
     public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
-        doUnsubscribe();
-        super.switchProcessor(oldProcessor, newProcessor);
-        doSubscribe();
+        if(subscribed) {
+            doUnsubscribe();
+            super.switchProcessor(oldProcessor, newProcessor);
+            doSubscribe();
+        } else {
+            super.switchProcessor(oldProcessor, newProcessor);
+
+        }
     }
 
     private void doSubscribe() {
+        subscribed = true;
         if (processor.hasAlarmServer()) {
             AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
             for (ActiveAlarm activeAlarm : alarmServer.getActiveAlarms().values()) {
@@ -86,6 +92,7 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
             AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
             alarmServer.unsubscribe(this);
         }
+        subscribed = false;
     }
 
     @Override

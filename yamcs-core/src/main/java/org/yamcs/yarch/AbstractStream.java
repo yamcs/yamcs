@@ -18,11 +18,11 @@ public abstract class AbstractStream implements Stream {
 
     protected Logger log;
 
-    protected YarchDatabase ydb;
+    protected YarchDatabaseInstance ydb;
     private volatile AtomicLong emitedTuples=new AtomicLong();
     private volatile AtomicInteger subscriberCount=new AtomicInteger();
     
-    protected AbstractStream(YarchDatabase ydb, String name, TupleDefinition definition) {
+    protected AbstractStream(YarchDatabaseInstance ydb, String name, TupleDefinition definition) {
         this.name = name;
         this.outputDefinition = definition;
         this.ydb = ydb;

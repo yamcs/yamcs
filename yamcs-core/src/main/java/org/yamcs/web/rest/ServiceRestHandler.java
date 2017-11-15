@@ -3,6 +3,7 @@ package org.yamcs.web.rest;
 import java.util.List;
 
 import org.yamcs.YamcsServer;
+import org.yamcs.YamcsServerInstance;
 import org.yamcs.protobuf.Rest.EditServiceRequest;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
 import org.yamcs.protobuf.SchemaRest;
@@ -27,7 +28,9 @@ public class ServiceRestHandler extends RestHandler {
     public void listServices(RestRequest req) throws HttpException {        
         checkPrivileges(req);
         String instance = req.getRouteParam("instance");
-        if(instance==null) throw new BadRequestException("No instance specified");
+        if(instance==null) {
+            throw new BadRequestException("No instance specified");
+        }
         boolean global = false;
         if(GLOBAL_INSTANCE.equals(instance)) {
             global = true;
@@ -41,8 +44,8 @@ public class ServiceRestHandler extends RestHandler {
         if(global) {
             slist = YamcsServer.getGlobalServices();
         } else {
-            YamcsServer ys = YamcsServer.getInstance(instance);
-            slist = ys.getServices();
+            YamcsServerInstance ysi = YamcsServer.getInstance(instance);
+            slist = ysi.getServices();
         }
 
         ListServiceInfoResponse.Builder responseb = ListServiceInfoResponse.newBuilder();
@@ -57,7 +60,9 @@ public class ServiceRestHandler extends RestHandler {
     public void editService(RestRequest req) throws HttpException {
         checkPrivileges(req);
         String instance = req.getRouteParam("instance");
-        if(instance==null) throw new BadRequestException("No instance specified");
+        if(instance==null) {
+            throw new BadRequestException("No instance specified");
+        }
         boolean global = false;
         if(GLOBAL_INSTANCE.equals(instance)) {
             global = true;
@@ -68,10 +73,16 @@ public class ServiceRestHandler extends RestHandler {
 
         EditServiceRequest request = req.bodyAsMessage(SchemaRest.EditServiceRequest.MERGE).build();
         String state = null;
-        if (request.hasState()) state = request.getState();
-        if (req.hasQueryParameter("state")) state = req.getQueryParameter("state");
+        if (request.hasState()) {
+            state = request.getState();
+        }
+        if (req.hasQueryParameter("state")) {
+            state = req.getQueryParameter("state");
+        }
 
-        if(serviceName==null) throw new BadRequestException("No service name specified");
+        if(serviceName==null) {
+            throw new BadRequestException("No service name specified");
+        }
 
         if (state != null) {
             switch (state.toLowerCase()) {
@@ -83,7 +94,9 @@ public class ServiceRestHandler extends RestHandler {
                 } else {
                     s = YamcsServer.getInstance(instance).getService(serviceName);
                 }
-                if(s==null) throw new NotFoundException(req, "No service by name '"+serviceName+"'");
+                if(s==null) {
+                    throw new NotFoundException(req, "No service by name '"+serviceName+"'");
+                }
 
                 s.stopAsync();
                 completeOK(req);

@@ -21,7 +21,7 @@ import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.Tuple;
-import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
@@ -32,12 +32,12 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  *
  */
 public class HistogramRebuilder {
-    final YarchDatabase ydb;
+    final YarchDatabaseInstance ydb;
     final TableDefinition tblDef;
     private static AtomicInteger streamCounter = new AtomicInteger();
     static Logger log = LoggerFactory.getLogger(HistogramRebuilder.class);
 
-    public HistogramRebuilder(YarchDatabase ydb, String tableName) {
+    public HistogramRebuilder(YarchDatabaseInstance ydb, String tableName) {
         this.ydb = ydb;
         tblDef = ydb.getTable(tableName);
         if(tblDef==null) {

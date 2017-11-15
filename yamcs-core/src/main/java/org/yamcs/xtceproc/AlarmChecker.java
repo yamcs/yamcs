@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.InvalidIdentification;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.alarms.AlarmReporter;
 import org.yamcs.alarms.AlarmServer;
@@ -67,11 +66,7 @@ public class AlarmChecker {
         Set<Parameter> params = ptype.getDependentParameters();
         if(params!=null) {
             for(Parameter p1:params) {
-                try {
-                    prm.addItemsToRequest(subscriptionId, p1);
-                } catch (InvalidIdentification e) {
-                    log.warn("Got exception when subscribing for {} which is a dependency for {}", p1, p.getName());
-                }
+                prm.addItemsToRequest(subscriptionId, p1);
             }
         }
     }

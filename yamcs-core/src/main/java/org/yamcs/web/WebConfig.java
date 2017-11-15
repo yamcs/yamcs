@@ -6,8 +6,10 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 
+import io.netty.channel.WriteBufferWaterMark;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.cors.CorsConfig;
@@ -19,7 +21,7 @@ import io.netty.handler.codec.http.cors.CorsConfigBuilder;
 public class WebConfig {
 
     private static final Logger log = LoggerFactory.getLogger(WebConfig.class);
-    private static WebConfig INSTANCE;
+    private static WebConfig INSTANCE = new WebConfig();
 
     private int port;
     private List<String> webRoots = new ArrayList<>(2);
@@ -29,7 +31,13 @@ public class WebConfig {
     // Cross-origin Resource Sharing (CORS) enables ajaxified use of the REST api by
     // remote web applications.
     private CorsConfig corsConfig;
-
+    
+    //used for the websockets write buffer:
+    // the bigger the values, the more memory it might consume but it will be more resilient against unstable networks
+    private WriteBufferWaterMark webSocketWriteBufferWaterMark;
+    //after how many dropped messages close the connection
+    private int webSocketConnectionCloseNumDroppedMsg = 5;
+    
     private WebConfig() {
         YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
 
@@ -83,6 +91,8 @@ public class WebConfig {
                     }
                 }
             }
+            
+           
         } else {
             // Allow CORS requests for unprotected Yamcs instances
             // (Browsers would anyway strip Authorization header)
@@ -94,11 +104,24 @@ public class WebConfig {
             corsb.allowedRequestHeaders(HttpHeaderNames.CONTENT_TYPE, HttpHeaderNames.ACCEPT, HttpHeaderNames.AUTHORIZATION, HttpHeaderNames.ORIGIN);
             corsConfig = corsb.build();
         }
+        if (yconf.containsKey("webConfig", "webSocket")) {
+            Map<String, Object> ws = yconf.getMap("webConfig", "webSocket");
+            if (ws.containsKey("writeBufferWaterMark")) {
+                Map<String, Object> wswm = YConfiguration.getMap(ws, "writeBufferWaterMark");
+                webSocketWriteBufferWaterMark = new WriteBufferWaterMark(YConfiguration.getInt(wswm, "low"),
+                        YConfiguration.getInt(wswm, "high"));
+            }            
+            webSocketConnectionCloseNumDroppedMsg = YConfiguration.getInt(ws, "connectionCloseNumDroppedMsg", webSocketConnectionCloseNumDroppedMsg);
+            if(webSocketConnectionCloseNumDroppedMsg<1) {
+                throw new ConfigurationException("Error in yamcs.yaml: webSocket->connectionCloseNumDroppedMsg has to be greater than 0. Provided value: "+webSocketConnectionCloseNumDroppedMsg);
+            }
+        }
+        if(webSocketWriteBufferWaterMark==null) {
+            webSocketWriteBufferWaterMark = new WriteBufferWaterMark(32*1024, 64*1024); //these are also default netty values
+        }
     }
 
-    public static synchronized WebConfig getInstance() {
-        if (INSTANCE != null) return INSTANCE;
-        INSTANCE = new WebConfig();
+    public static WebConfig getInstance() {
         return INSTANCE;
     }
 
@@ -106,6 +129,15 @@ public class WebConfig {
         return port;
     }
 
+    /**
+     * returns the write buffer water mark that shall be used for web sockets 
+     * @return
+     */
+    public WriteBufferWaterMark getWebSocketWriteBufferWaterMark() {
+        return webSocketWriteBufferWaterMark;
+    }
+    
+    
     public boolean isZeroCopyEnabled() {
         return zeroCopyEnabled;
     }
@@ -116,5 +148,9 @@ public class WebConfig {
 
     public CorsConfig getCorsConfig() {
         return corsConfig;
+    }
+
+    public int getWebSocketConnectionCloseNumDroppedMsg() {
+        return webSocketConnectionCloseNumDroppedMsg;
     }
 }

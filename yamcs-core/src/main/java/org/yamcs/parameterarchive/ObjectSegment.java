@@ -1,6 +1,7 @@
 package org.yamcs.parameterarchive;
 
 import java.lang.reflect.Array;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -131,20 +132,22 @@ public class ObjectSegment<E> extends BaseSegment {
 
     @Override
     public void writeTo(ByteBuffer bb) {
-        if(!consolidated) throw new IllegalStateException("The segment has to be consolidated before serialization can take place");
+        if(!consolidated) {
+            throw new IllegalStateException("The segment has to be consolidated before serialization can take place");
+        }
 
         boolean encoded = false;
         int position = bb.position();
-        try {
+        try { //first try to encode them as Rle or EnuFprof
             if(enumRleSize<=enumRawSize && enumRleSize<=rawSize) {
                 encoded = writeEnumRle(bb);
             } else if(enumRawSize<enumRleSize && enumRawSize<=rawSize) {
                 encoded = writeEnumFprof(bb);
             } 
-        } catch (IndexOutOfBoundsException e) {
+        } catch (IndexOutOfBoundsException|BufferOverflowException e) {
             encoded = false;
         }
-
+        //if the resulted size is bigger than raw encoding, then encode it raw
         if(!encoded) {
             bb.position(position);
             writeRaw(bb);

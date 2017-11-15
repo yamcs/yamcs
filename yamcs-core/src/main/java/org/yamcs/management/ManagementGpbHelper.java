@@ -3,10 +3,12 @@ package org.yamcs.management;
 import java.util.Collection;
 
 import org.yamcs.Processor;
+import org.yamcs.ProcessorClient;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandQueueEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
+import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.protobuf.YamcsManagement.TmStatistics;
@@ -85,5 +87,14 @@ public final class ManagementGpbHelper {
             }
         }
         return b.build();
+    }
+
+    public static ClientInfo toClientInfo(String instance, String procName, int id, long loginTime, ProcessorClient client) {
+        return ClientInfo.newBuilder().setInstance(instance)
+                .setApplicationName(client.getApplicationName())
+                .setProcessorName(procName).setUsername(client.getUsername())
+                .setLoginTime(loginTime)
+                .setLoginTimeUTC(TimeEncoding.toString(loginTime))
+                .setId(id).build();
     }
 }

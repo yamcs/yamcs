@@ -3,6 +3,7 @@ package org.yamcs.tctm;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +23,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -42,7 +44,7 @@ public class ParameterDataLinkInitialiser extends AbstractService {
     public static final String PARAMETER_TUPLE_COL_GROUP = "group";
     public static final String PARAMETER_TUPLE_COL_GENTIME = "gentime";
     String yamcsInstance;
-    private Collection<ParameterDataLink> parameterDataLinks = new ArrayList<ParameterDataLink>();
+    private Map<String, ParameterDataLink> parameterDataLinks = new  HashMap<>();
     final private Logger log;
 
     static public final TupleDefinition PARAMETER_TUPLE_DEFINITION = new TupleDefinition();
@@ -61,7 +63,7 @@ public class ParameterDataLinkInitialiser extends AbstractService {
     
     public ParameterDataLinkInitialiser(String yamcsInstance) throws IOException, ConfigurationException {
         this.yamcsInstance = yamcsInstance;
-        YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
 
         YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
@@ -85,7 +87,10 @@ public class ParameterDataLinkInitialiser extends AbstractService {
                 args=m.get("spec");
             }
             String streamName = YConfiguration.getString(m, "stream");
-            String providerName="pp"+count;
+            String linkName="pp"+count;
+            if(parameterDataLinks.containsKey(linkName)) {
+                throw new ConfigurationException("Instance "+yamcsInstance+": there is already a Parameter Link by name '"+linkName+"'");
+            }
             boolean enabledAtStartup=true;
             if(m.containsKey("enabledAtStartup")) {
                 enabledAtStartup=YConfiguration.getBoolean(m, "enabledAtStartup"); 
@@ -96,23 +101,23 @@ public class ParameterDataLinkInitialiser extends AbstractService {
                 throw new ConfigurationException("Cannot find stream '"+streamName+"'");
             }
 
-            ParameterDataLink prov = YObjectLoader.loadObject(m, yamcsInstance, providerName);
+            ParameterDataLink prov = YObjectLoader.loadObject(m, yamcsInstance, linkName);
 
             if(!enabledAtStartup) {
                 prov.disable();
             }
 
             prov.setParameterSink(new MyPpListener(stream));
-
-            ManagementService.getInstance().registerLink(yamcsInstance, providerName, streamName, args!=null?args.toString():"", prov);
-            parameterDataLinks .add(prov);
+            
+            ManagementService.getInstance().registerLink(yamcsInstance, linkName, streamName, args!=null?args.toString():"", prov);
+            parameterDataLinks.put(linkName, prov);
             count++;
         }
     }
 
     @Override
     protected void doStart() {
-        for(ParameterDataLink prov:parameterDataLinks ) {
+        for(ParameterDataLink prov:parameterDataLinks.values()) {
             prov.startAsync();
         }
         notifyStarted();
@@ -125,11 +130,12 @@ public class ParameterDataLinkInitialiser extends AbstractService {
 
     @Override
     protected void doStop() {
-        for(ParameterDataLink prov:parameterDataLinks ) {
-            prov.stopAsync();
+        ManagementService mgrsrv =  ManagementService.getInstance();
+        for(Map.Entry<String, ParameterDataLink> me: parameterDataLinks.entrySet()) {
+            mgrsrv.unregisterLink(yamcsInstance, me.getKey());
+            me.getValue().stopAsync();
         }
         notifyStopped();
-
     }
 
 

@@ -34,7 +34,7 @@ public class HistogramReaderStream extends AbstractStream implements Runnable, D
     volatile boolean quit=false;
     private ColumnDefinition histoColumnDefinition;
 
-    public HistogramReaderStream(YarchDatabase ydb, TableDefinition tblDef, String histoColumnName, TupleDefinition tupleDef) throws YarchException {
+    public HistogramReaderStream(YarchDatabaseInstance ydb, TableDefinition tblDef, String histoColumnName, TupleDefinition tupleDef) throws YarchException {
         super(ydb, tblDef.getName()+"_histo_"+count.getAndIncrement(), tupleDef);
         this.histoColumnSerializer = tblDef.getColumnSerializer(histoColumnName);
         this.histoColumnDefinition = tblDef.getColumnDefinition(histoColumnName);

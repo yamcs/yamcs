@@ -11,7 +11,7 @@ public class OutputStream extends AbstractStream implements StreamSubscriber {
 	Stream subscribedStream;
 	java.io.DataOutputStream dos;
 	
-	public OutputStream(YarchDatabase dict, String name, TupleDefinition def) throws YarchException {
+	public OutputStream(YarchDatabaseInstance dict, String name, TupleDefinition def) throws YarchException {
 		super(dict, name, def);
 		try {
 			serverSocket=new ServerSocket(0);

@@ -6,7 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import java.util.List;
 
 import org.junit.Test;
-import org.yamcs.tctm.TcUplinkerAdapter;
+import org.yamcs.tctm.TcDataLinkInitialiser;
 import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -26,7 +26,7 @@ public class CmdHistoryRecordingTest extends YarchTestCase {
     @Test
     public void testRecording() throws Exception {
         final int n=100;
-        ydb.execute("create stream "+YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME+TcUplinkerAdapter.TC_TUPLE_DEFINITION.getStringDefinition());
+        ydb.execute("create stream "+YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME+TcDataLinkInitialiser.TC_TUPLE_DEFINITION.getStringDefinition());
         CommandHistoryRecorder cmdHistRecorder =new CommandHistoryRecorder(ydb.getName()); 
         cmdHistRecorder.startAsync();
        

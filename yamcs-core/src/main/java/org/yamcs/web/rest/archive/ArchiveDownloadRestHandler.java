@@ -51,6 +51,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.csvreader.CsvWriter;
 
@@ -119,7 +120,23 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         rr.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids));
 
         if (req.asksFor(MediaType.CSV)) {
-            RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, ids);
+            // Added on-demand for CSV (for Protobuf this is always added)
+            boolean addRaw = false;
+            boolean addMonitoring = false;
+            if (req.hasQueryParameter("extra")) {
+                for (String para : req.getQueryParameterList("extra")) {
+                    for (String option : para.split(",")) {
+                        if (option.equals("raw")) {
+                            addRaw = true;
+                        } else if (option.equals("monitoring")) {
+                            addMonitoring = true;
+                        } else {
+                            throw new BadRequestException("Unexpected option for parameter 'extra': " + option);
+                        }
+                    }
+                }
+            }
+            RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, ids, addRaw, addMonitoring);
             RestReplays.replay(instance, req.getAuthToken(), rr.build(), l);
         } else {
             RestParameterReplayListener l = new ParameterReplayToChunkedProtobufEncoder(req);
@@ -137,9 +154,26 @@ public class ArchiveDownloadRestHandler extends RestHandler {
 
         ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, p, false);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
+        
         if (req.asksFor(MediaType.CSV)) {
+            // Added on-demand for CSV (for Protobuf this is always added)
+            boolean addRaw = false;
+            boolean addMonitoring = false;
+            if (req.hasQueryParameter("extra")) {
+                for (String para : req.getQueryParameterList("extra")) {
+                    for (String option : para.split(",")) {
+                        if (option.equals("raw")) {
+                            addRaw = true;
+                        } else if (option.equals("monitoring")) {
+                            addMonitoring = true;
+                        } else {
+                            throw new BadRequestException("Unexpected option for parameter 'extra': " + option);
+                        }
+                    }
+                }
+            }
             List<NamedObjectId> idList = Arrays.asList(requestedId);
-            RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, idList);
+            RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, idList, addRaw, addMonitoring);
             l.setNoRepeat(noRepeat);
             RestReplays.replay(instance, req.getAuthToken(), rr, l);
         } else {
@@ -222,7 +256,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
     @Route(path = "/api/archive/:instance/downloads/tables/:name", method = "GET")
     public void downloadTableData(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
         TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
 

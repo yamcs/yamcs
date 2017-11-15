@@ -22,6 +22,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -40,19 +41,21 @@ public class IndexServer extends AbstractService {
     ThreadPoolExecutor executor=new ThreadPoolExecutor(10,10,10,TimeUnit.SECONDS,new ArrayBlockingQueue<>(10));
 
     final TagDb tagDb;
-
+    boolean readonly = false;
     /**
      * Maps instance names to archive directories
      */
     final HashSet<String> instances=new HashSet<>();
-
+    final Map<String, Object> config;
+    
     public IndexServer(String instance) throws IOException, YarchException {
         this(instance, null);
     }
 
     public IndexServer(String yamcsInstance, Map<String, Object> config) throws YarchException, IOException {
-        boolean readonly = false;
         this.yamcsInstance = yamcsInstance;
+        this.config = config;
+        
         YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
 
         if(c.containsKey("tmIndexer")) {
@@ -61,6 +64,13 @@ public class IndexServer extends AbstractService {
         } else {
             tmIndexer = new CccsdsTmIndex(yamcsInstance, readonly);
         }
+       
+        tagDb = YarchDatabase.getInstance(yamcsInstance).getDefaultStorageEngine().getTagDb();
+        executor.allowCoreThreadTimeOut(true);
+    }
+
+    @Override
+    protected void doStart() {
         if(!readonly) {
             StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
             if(config==null) {
@@ -80,12 +90,6 @@ public class IndexServer extends AbstractService {
             }
         }
 
-        tagDb = YarchDatabase.getInstance(yamcsInstance).getDefaultStorageEngine().getTagDb();
-        executor.allowCoreThreadTimeOut(true);
-    }
-
-    @Override
-    protected void doStart() {
         notifyStarted();
     }
 
@@ -126,7 +130,7 @@ public class IndexServer extends AbstractService {
     }
 
     private void subscribe(StreamConfigEntry sce) {
-        YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         Stream tmStream = ydb.getStream(sce.getName());
         if(tmStream==null) {
             throw new ConfigurationException("There is no stream named "+sce.getName());

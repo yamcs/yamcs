@@ -3,6 +3,7 @@ package org.yamcs.yarch.streamsql;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.MergeStatement;
@@ -22,7 +23,7 @@ public class MergeStatement extends StreamSqlStatement {
 
     @Override
     public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
-        YarchDatabase dict=YarchDatabase.getInstance(c.getDbName());
+        YarchDatabaseInstance dict=YarchDatabase.getInstance(c.getDbName());
         synchronized(dict) {
             log.warn("Merge statement not yet implemented");
             throw new NotImplementedException("Merge statement");

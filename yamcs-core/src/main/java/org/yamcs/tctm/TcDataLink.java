@@ -11,6 +11,6 @@ import com.google.common.util.concurrent.Service;
  *
  */
 public interface TcDataLink extends Link, Service {
-	void sendTc(PreparedCommand preparedCommand);
-	void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryListener);
+    void sendTc(PreparedCommand preparedCommand);
+    void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryListener);
 }

@@ -19,7 +19,6 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
     }
     /**
      * Creates a shallow copy. 
-     * @param name
      */
     public FloatParameterType(FloatParameterType t) {
         super(t);

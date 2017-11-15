@@ -73,7 +73,7 @@ public class TableDefinition {
     private volatile TupleDefinition tupleDef; 
 
 
-    private YarchDatabase ydb; 
+    private YarchDatabaseInstance ydb; 
 
     private boolean customDataDir=false; //if not null, dataDir represents a directory different than the YarchDatabase root. 
     //It will not be discarded after serialisation.
@@ -82,7 +82,7 @@ public class TableDefinition {
     private boolean compressed;
     private PartitioningSpec partitioningSpec = PartitioningSpec.noneSpec();
 
-    private String storageEngineName = YarchDatabase.RDB_ENGINE_NAME;
+    private String storageEngineName = YarchDatabaseInstance.RDB_ENGINE_NAME;
 
     transient private String name; //we make this transient such that tables names can be changed by changing the filename
     private List<String> histoColumns;
@@ -151,7 +151,7 @@ public class TableDefinition {
         }
     }
 
-    public void setDb(YarchDatabase ydb) {
+    public void setDb(YarchDatabaseInstance ydb) {
         this.ydb=ydb;
     }
 

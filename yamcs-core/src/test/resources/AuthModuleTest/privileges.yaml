@@ -1,0 +1,6 @@
+# Test configuration for privileges
+enabled: true
+
+
+authModule: 
+    class: org.yamcs.AuthModuleTest$MyAuthModule       

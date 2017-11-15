@@ -569,8 +569,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                 boolean isPacts=false;
                 long r;
 
-                try {
-                    FileInputStream reader = new FileInputStream(lastFile);
+                try ( FileInputStream reader = new FileInputStream(lastFile)){
                     byte[] fourb = new byte[4];
                     TmPacketData packet;
                     ByteBuffer buf;
@@ -579,101 +578,102 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
 
                     clearWindow();
                     int progressMax = (maxLines == -1) ? (int)(lastFile.length()>>10) : maxLines;
-                progress = new ProgressMonitor(theApp, String.format("Loading %s", lastFile.getName()),  null, 0, progressMax);
+                    progress = new ProgressMonitor(theApp, String.format("Loading %s", lastFile.getName()),  null, 0, progressMax);
 
-                int packetCount = 0;
-                while (!progress.isCanceled()) {
-                    res = reader.read(fourb, 0, 4);
-                    if (res != 4) {
-                        break;
-                    }
-                    buf = ByteBuffer.allocate(16);
-                    long gentime = TimeEncoding.INVALID_INSTANT;
-                    int seqcount = -1;
-                    if ((fourb[0] & 0xe8) == 0x08) {// CCSDS packet
-                        buf.put(fourb, 0, 4);
-                        if((r=reader.read(buf.array(), 4, 12))!=12) {
-                            throw new ShortReadException(16, r, offset);
+                    int packetCount = 0;
+                    while (!progress.isCanceled()) {
+                        res = reader.read(fourb, 0, 4);
+                        if (res != 4) {
+                            break;
                         }
-                        gentime = CcsdsPacket.getInstant(buf);
-                        seqcount = CcsdsPacket.getSequenceCount(buf);
-                    } else if((fourb[2]==0) && (fourb[3]==0)) { //hrdp packet - first 4 bytes are packet size in little endian
-                        if((r=reader.skip(6))!=6) {
-                            throw new ShortReadException(6, r, offset);
-                        }
-                        offset+=10;
-                        if((r=reader.read(buf.array()))!=16) {
-                            throw new ShortReadException(16, r, offset);
-                        }
-                    } else {//pacts packet
-                        isPacts=true;
-                        //System.out.println("pacts packet");
-                        // read ASCII header up to the second blank
-                        int i, j;
-                        StringBuffer hdr = new StringBuffer();
-                        j = 0;
-                        for(i=0;i<4;i++) {
-                            hdr.append((char)fourb[i]);
-                            if ( fourb[i] == 32 ) {
-                                ++j;
+                        buf = ByteBuffer.allocate(16);
+                        long gentime = TimeEncoding.INVALID_INSTANT;
+                        int seqcount = -1;
+                        if ((fourb[0] & 0xe8) == 0x08) {// CCSDS packet
+                            buf.put(fourb, 0, 4);
+                            if((r=reader.read(buf.array(), 4, 12))!=12) {
+                                throw new ShortReadException(16, r, offset);
+                            }
+                            gentime = CcsdsPacket.getInstant(buf);
+                            seqcount = CcsdsPacket.getSequenceCount(buf);
+                        } else if((fourb[2]==0) && (fourb[3]==0)) { //hrdp packet - first 4 bytes are packet size in little endian
+                            if((r=reader.skip(6))!=6) {
+                                throw new ShortReadException(6, r, offset);
+                            }
+                            offset+=10;
+                            if((r=reader.read(buf.array()))!=16) {
+                                throw new ShortReadException(16, r, offset);
+                            }
+                            gentime = CcsdsPacket.getInstant(buf);
+                            seqcount = CcsdsPacket.getSequenceCount(buf);
+                        } else {//pacts packet
+                            isPacts=true;
+                            // read ASCII header up to the second blank
+                            int i, j;
+                            StringBuffer hdr = new StringBuffer();
+                            j = 0;
+                            for(i=0;i<4;i++) {
+                                hdr.append((char)fourb[i]);
+                                if ( fourb[i] == 32 ) {
+                                    ++j;
+                                }
+                            }
+                            offset+=4;
+                            while((j < 2) && (i < 20)) {
+                                int c = reader.read();
+                                if(c==-1) {
+                                    throw new ShortReadException(1, 0, offset);
+                                }
+                                offset++;
+                                hdr.append((char)c);
+                                if ( c == 32 ) {
+                                    ++j;
+                                }
+                                i++;
+                            }
+                            if((r=reader.read(buf.array()))!=16) {
+                                throw new ShortReadException(16,r,offset);
                             }
                         }
-                        offset+=4;
-                        while((j < 2) && (i < 20)) {
-                            int c = reader.read();
-                            if(c==-1) {
+                        len = CcsdsPacket.getCccsdsPacketLength(buf) + 7;
+                        if(len<16) {
+                            log("Short packet read: length: "+len);
+                            break;
+                        }
+                        byte[] bufn = new byte[len];
+                        System.arraycopy(buf.array(), 0, bufn, 0, 16);
+                        r=reader.read(bufn, 16, len-16);
+                        if (r != len - 16) {
+                            throw new ShortReadException(len-16, r, offset);
+                        }
+
+                        TmPacketData.Builder packetb = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(bufn))
+                                .setReceptionTime(TimeEncoding.getWallclockTime());
+                        if (gentime != TimeEncoding.INVALID_INSTANT) {
+                            packetb.setGenerationTime(gentime);
+                        }
+                        if (seqcount >= 0) {
+                            packetb.setSequenceNumber(seqcount);
+                        }
+                        packet = packetb.build();
+
+
+                        offset += len;
+                        if(isPacts) {
+                            if(reader.skip(1)!=1) {
                                 throw new ShortReadException(1, 0, offset);
                             }
-                            offset++;
-                            hdr.append((char)c);
-                            if ( c == 32 ) {
-                                ++j;
-                            }
-                            i++;
+                            offset+=1;
                         }
-                        if((r=reader.read(buf.array()))!=16) {
-                            throw new ShortReadException(16,r,offset);
+                        publish(packet);
+
+                        packetCount++;
+                        if (packetCount == maxLines) {
+                            break;
                         }
+                        progress.setProgress((maxLines == -1) ? (int)(offset>>10) : packetCount);
                     }
-                    len = CcsdsPacket.getCccsdsPacketLength(buf) + 7;
-                    if(len<16) {
-                        log("Short packet read: length: "+len);
-                        break;
-                    }
-                    byte[] bufn = new byte[len];
-                    System.arraycopy(buf.array(), 0, bufn, 0, 16);
-                    r=reader.read(bufn, 16, len-16);
-                    if (r != len - 16) {
-                        throw new ShortReadException(len-16, r, offset);
-                    }
-
-                    TmPacketData.Builder packetb = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(bufn))
-                            .setReceptionTime(TimeEncoding.getWallclockTime());
-                    if (gentime != TimeEncoding.INVALID_INSTANT) {
-                        packetb.setGenerationTime(gentime);
-                    }
-                    if (seqcount >= 0) {
-                        packetb.setSequenceNumber(seqcount);
-                    }
-                    packet = packetb.build();
-
-
-                    offset += len;
-                    if(isPacts) {
-                        if(reader.skip(1)!=1) {
-                            throw new ShortReadException(1, 0, offset);
-                        }
-                        offset+=1;
-                    }
-                    publish(packet);
-
-                    packetCount++;
-                    if (packetCount == maxLines) {
-                        break;
-                    }
-                    progress.setProgress((maxLines == -1) ? (int)(offset>>10) : packetCount);
-                }
-                reader.close();
+                    reader.close();
                 } catch (Exception x) {
                     x.printStackTrace();
                     final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
@@ -843,7 +843,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                     // add new row for parameter table
 
                     vec[0] = value.getParameter();
-                    
+
                     vec[1] = (value.getEngValue()!=null)?value.getEngValue().toString():null;
                     vec[2] = (value.getRawValue()!=null)?value.getRawValue().toString():null;
 
@@ -959,14 +959,14 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
             }
             WebSocketRequest wsr = new WebSocketRequest(PacketResource.RESOURCE_NAME, CommandQueueResource.OP_subscribe+" "+streamName);
             yconnector.performSubscription(wsr,
-                data -> {
-                    if(data.hasTmPacket()) {
-                        TmPacketData tm = data.getTmPacket();
-                        packetsTable.packetReceived(tm);
-                    }
-                }, e-> {
-                    showError("Error subscribing to "+streamName+": "+e.getMessage());
-                });
+                    data -> {
+                        if(data.hasTmPacket()) {
+                            TmPacketData tm = data.getTmPacket();
+                            packetsTable.packetReceived(tm);
+                        }
+                    }, e-> {
+                        showError("Error subscribing to "+streamName+": "+e.getMessage());
+                    });
         } catch(Exception e) {
             log(e.toString());
             e.printStackTrace();

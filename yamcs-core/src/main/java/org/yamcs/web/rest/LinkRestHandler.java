@@ -2,7 +2,6 @@ package org.yamcs.web.rest;
 
 import java.util.List;
 
-import org.yamcs.YamcsException;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Rest.EditLinkRequest;
 import org.yamcs.protobuf.Rest.ListLinkInfoResponse;
@@ -11,7 +10,7 @@ import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
-import org.yamcs.web.InternalServerErrorException;
+import org.yamcs.web.NotFoundException;
 
 /**
  * Gives information on data links
@@ -50,8 +49,12 @@ public class LinkRestHandler extends RestHandler {
         
         EditLinkRequest request = req.bodyAsMessage(SchemaRest.EditLinkRequest.MERGE).build();
         String state = null;
-        if (request.hasState()) state = request.getState();
-        if (req.hasQueryParameter("state")) state = req.getQueryParameter("state");
+        if (request.hasState()) {
+            state = request.getState();
+        }
+        if (req.hasQueryParameter("state")) {
+            state = req.getQueryParameter("state");
+        }
         
         if (state != null) {
             ManagementService mservice = ManagementService.getInstance();
@@ -61,16 +64,16 @@ public class LinkRestHandler extends RestHandler {
                     mservice.enableLink(linkInfo.getInstance(), linkInfo.getName());
                     completeOK(req);
                     return;
-                } catch (YamcsException e) {
-                    throw new InternalServerErrorException(e);
+                } catch (IllegalArgumentException e) {
+                    throw new NotFoundException(e);
                 }
             case "disabled":
                 try {
                     mservice.disableLink(linkInfo.getInstance(), linkInfo.getName());
                     completeOK(req);                    
                     return;
-                } catch (YamcsException e) {
-                    throw new InternalServerErrorException(e);
+                } catch (IllegalArgumentException e) {
+                    throw new NotFoundException(e);
                 }
             default:
                 throw new BadRequestException("Unsupported link state '" + state + "'");

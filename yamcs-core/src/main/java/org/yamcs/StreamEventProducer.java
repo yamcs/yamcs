@@ -9,6 +9,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 /**
  * Event producer used from inside Yamcs to report events.
@@ -25,7 +26,9 @@ public class StreamEventProducer extends AbstractEventProducer {
     
     public StreamEventProducer(String yamcsInstance) {
         realtimeEventStream = YarchDatabase.getInstance(yamcsInstance).getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);                
-        if(realtimeEventStream==null) throw new ConfigurationException("Cannot find a stream named '"+EventRecorder.REALTIME_EVENT_STREAM_NAME+"' in instance "+yamcsInstance);
+        if(realtimeEventStream==null) {
+            throw new ConfigurationException("Cannot find a stream named '"+EventRecorder.REALTIME_EVENT_STREAM_NAME+"' in instance "+yamcsInstance);
+        }
         
         tdef=realtimeEventStream.getDefinition();       
         timeService = YamcsServer.getTimeService(yamcsInstance);

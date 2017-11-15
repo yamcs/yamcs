@@ -13,7 +13,7 @@ public class SpeedLimitStream extends AbstractStream implements StreamSubscriber
      */
     public final static long MAX_WAIT_TIME=60000;
 
-    public SpeedLimitStream(YarchDatabase dict, String name, TupleDefinition definition, SpeedSpec speedSpec){
+    public SpeedLimitStream(YarchDatabaseInstance dict, String name, TupleDefinition definition, SpeedSpec speedSpec){
         super(dict, name, definition);
         this.speedSpec = speedSpec;
     }

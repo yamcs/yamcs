@@ -9,12 +9,10 @@ public class BooleanParameterType extends BooleanDataType implements ParameterTy
     public BooleanParameterType(String name) {
         super(name);
     }
-    
 
     /**
      * Creates a shallow copy of the parameter type
      * 
-     * @param newName
      */
     public BooleanParameterType(BooleanParameterType t) {
         super(t);

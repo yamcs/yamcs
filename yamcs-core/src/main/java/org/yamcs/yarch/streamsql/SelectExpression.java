@@ -12,6 +12,7 @@ import org.yamcs.yarch.SelectStream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.WindowProcessor;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
 /**
@@ -241,7 +242,9 @@ public class SelectExpression implements StreamExpression {
 		    }
 		}
 		WindowProcessor windowProc=null;
-		if(windowSpec!=null) windowProc=WindowProcessor.getInstance(windowSpec, aggInputDef, caggList, aggOutputDef);
+		if(windowSpec!=null) {
+		    windowProc=WindowProcessor.getInstance(windowSpec, aggInputDef, caggList, aggOutputDef);
+		}
 	
 		if(cWhereClause!=null || caggInputList!=null || windowProc!=null || cselectList!=null) {
 		    stream=new SelectStream(YarchDatabase.getInstance(c.getDbName()), stream, cWhereClause, 

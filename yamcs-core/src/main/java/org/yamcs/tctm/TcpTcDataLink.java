@@ -26,6 +26,7 @@ import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -42,7 +43,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     protected CommandHistoryPublisher commandHistoryListener;
     protected Selector selector; 
     SelectionKey selectionKey;
-    protected CcsdsSeqAndChecksumFiller seqAndChecksumFiller=new CcsdsSeqAndChecksumFiller();
+    protected CcsdsSeqAndChecksumFiller seqAndChecksumFiller = new CcsdsSeqAndChecksumFiller();
     protected ScheduledThreadPoolExecutor timer;
     protected volatile boolean disabled=false;
     protected int minimumTcPacketLength = -1; //the minimum size of the CCSDS packets uplinked
@@ -91,7 +92,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     @Override
     protected void doStart() {
         setupSysVariables();
-        this.timer=new ScheduledThreadPoolExecutor(1);
+        this.timer = new ScheduledThreadPoolExecutor(1);
         timer.scheduleWithFixedDelay(this, 0, 10, TimeUnit.SECONDS);
         notifyStarted();
     }
@@ -173,6 +174,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
      */
     @Override
     public void sendTc(PreparedCommand pc) {
+    	System.out.println("sendtc0 "+StringConverter.arrayToHexString(pc.getBinary()));
         if(disabled) {
             log.warn("TC disabled, ignoring command "+pc.getCommandId());
             return;
@@ -183,12 +185,21 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             bb.put(pc.getBinary());
             bb.putShort(4, (short)(minimumTcPacketLength - 7)); // fix packet length
         } else {
-            bb=ByteBuffer.wrap(pc.getBinary());
+
+        	int checksumIndicator = pc.getBinary()[2] & 0x04;
+        	if(checksumIndicator ==1) {
+        		bb=ByteBuffer.allocate(pc.getBinary().length +2); //extra slots for check sum
+        	} else {
+        		bb=ByteBuffer.wrap(pc.getBinary());
+        	}
+            bb.putShort(4, (short)(pc.getBinary().length - 7));          
+
         }
 
         int retries=5;
         boolean sent=false;
         int seqCount=seqAndChecksumFiller.fill(bb, pc.getCommandId().getGenerationTime());
+    	System.out.println("sendtc1 "+StringConverter.arrayToHexString(pc.getBinary()));
         bb.rewind();
         while (!sent&&(retries>0)) {
             if (!isSocketOpen()) {
@@ -199,7 +210,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
                 try {
                     socketChannel.write(bb);
                     tcCount++;
-                    sent=true;
+                    sent=true;                
                 } catch (IOException e) {
                     log.warn("Error writing to TC socket to {}:{} : {}", host, port, e.getMessage());
                     try {
@@ -224,7 +235,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
                 }
             }
         }
-
+        commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
         if(sent) {
             handleAcks(pc.getCommandId(), seqCount);
         } else {
@@ -238,10 +249,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         timer.schedule(new TcAckStatus(cmdId,"Acknowledge_FRC","ACK: OK"), 800, TimeUnit.MILLISECONDS);
         timer.schedule(new TcAckStatus(cmdId,"Acknowledge_DASS","ACK: OK"), 1200, TimeUnit.MILLISECONDS);
         timer.schedule(new TcAckStatus(cmdId,"Acknowledge_MCS","ACK: OK"), 1600, TimeUnit.MILLISECONDS);
-        timer.schedule(new TcAckStatus(cmdId,"Acknowledge_A","ACK A: OK"), 2000, TimeUnit.MILLISECONDS);
-        timer.schedule(new TcAckStatus(cmdId,"Acknowledge_B","ACK B: OK"), 3000, TimeUnit.MILLISECONDS);
-        timer.schedule(new TcAckStatus(cmdId,"Acknowledge_C","ACK C: OK"), 4000, TimeUnit.MILLISECONDS);
-        timer.schedule(new TcAckStatus(cmdId,"Acknowledge_D","ACK D: OK"), 10000, TimeUnit.MILLISECONDS);
+
     }
 
     @Override
@@ -250,14 +258,14 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     }
 
     @Override
-    public String getLinkStatus() {
+    public Status getLinkStatus() {
         if (disabled) {
-            return "DISABLED";
+            return Status.DISABLED;
         }
         if(isSocketOpen()) {
-            return "OK";
+            return Status.OK;
         } else {
-            return "UNAVAIL";
+            return Status.UNAVAIL;
         }
     }
 
@@ -302,7 +310,11 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
 
     @Override
     public void doStop() {
+        timer.shutdown();
         disconnect();
+        if(sysParamCollector!=null) {
+            sysParamCollector.unregisterProducer(this);
+        }
         notifyStopped();
     }
 
@@ -338,12 +350,13 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     public long getDataCount() {
         return tcCount;
     }
-
+    
+    
 
     protected void setupSysVariables() {
         this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
         if(sysParamCollector!=null) {
-            sysParamCollector.registerProvider(this, null);
+            sysParamCollector.registerProducer(this);
             sv_linkStatus_id = sysParamCollector.getNamespace()+"/"+name+"/linkStatus";
             sp_dataCount_id = sysParamCollector.getNamespace()+"/"+name+"/dataCount";
 
@@ -356,7 +369,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     @Override
     public Collection<ParameterValue> getSystemParameters() {
         long time = getCurrentTime();
-        ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus());
+        ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus().name());
         ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataCount());
         return Arrays.asList(linkStatus, dataCount);
     }

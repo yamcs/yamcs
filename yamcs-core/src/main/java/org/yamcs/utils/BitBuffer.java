@@ -53,7 +53,6 @@ public class BitBuffer {
     /**
      * Creates a new bit buffer that wraps array b starting at offset 0
      * @param b
-     * @param offset
      */
     public BitBuffer(byte[] b) {
         this(b,0);

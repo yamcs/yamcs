@@ -22,7 +22,6 @@ import org.yamcs.ProcessorException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementService;
-import org.yamcs.security.AuthenticationToken;
 import org.yamcs.ui.ProcessorControlClient;
 import org.yamcs.ui.ProcessorListener;
 import org.yamcs.ui.YamcsConnector;
@@ -43,7 +42,6 @@ public class ProcessorsTest {
   // static EmbeddedActiveMQ artemisServer;
     @BeforeClass
     public static void setupHornetAndManagement() throws Exception {
-        ManagementService.setup(false);
         YConfiguration.setup("ProcessorsTest");
         YamcsServer.setupYamcsServer();
         Logger.getLogger("org.yamcs").setLevel(Level.ALL);
@@ -228,7 +226,7 @@ public class ProcessorsTest {
         Processor proc;
 
         @Override
-        public void switchProcessor(Processor c, AuthenticationToken authToken) throws ProcessorException {
+        public void switchProcessor(Processor c) throws ProcessorException {
             c.connect(this);
             proc = c;
         }

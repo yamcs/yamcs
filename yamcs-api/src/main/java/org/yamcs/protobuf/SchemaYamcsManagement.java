@@ -145,6 +145,10 @@ public final class SchemaYamcsManagement
                     output.writeString(6, message.getClientsUrl(), false);
                 if(message.hasEventsUrl())
                     output.writeString(7, message.getEventsUrl(), false);
+                if(message.hasState())
+                    output.writeString(8, message.getState().name(), false);
+                if(message.hasFailureCause())
+                    output.writeString(9, message.getFailureCause(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.YamcsInstance message)
             {
@@ -204,6 +208,12 @@ public final class SchemaYamcsManagement
                         case 7:
                             builder.setEventsUrl(input.readString());
                             break;
+                        case 8:
+                            builder.setState(org.yamcs.protobuf.YamcsManagement.ServiceState.valueOf(input.readString()));
+                            break;
+                        case 9:
+                            builder.setFailureCause(input.readString());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -250,6 +260,8 @@ public final class SchemaYamcsManagement
                 case 5: return "url";
                 case 6: return "clientsUrl";
                 case 7: return "eventsUrl";
+                case 8: return "state";
+                case 9: return "failureCause";
                 default: return null;
             }
         }
@@ -267,6 +279,8 @@ public final class SchemaYamcsManagement
             fieldMap.put("url", 5);
             fieldMap.put("clientsUrl", 6);
             fieldMap.put("eventsUrl", 7);
+            fieldMap.put("state", 8);
+            fieldMap.put("failureCause", 9);
         }
     }
 
@@ -287,6 +301,8 @@ public final class SchemaYamcsManagement
                     output.writeString(2, message.getDate(), false);
                 if(message.hasMessage())
                     output.writeString(3, message.getMessage(), false);
+                if(message.hasAuthor())
+                    output.writeString(4, message.getAuthor(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.YamcsManagement.HistoryInfo message)
             {
@@ -335,6 +351,9 @@ public final class SchemaYamcsManagement
                         case 3:
                             builder.setMessage(input.readString());
                             break;
+                        case 4:
+                            builder.setAuthor(input.readString());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -378,6 +397,7 @@ public final class SchemaYamcsManagement
                 case 1: return "version";
                 case 2: return "date";
                 case 3: return "message";
+                case 4: return "author";
                 default: return null;
             }
         }
@@ -392,6 +412,7 @@ public final class SchemaYamcsManagement
             fieldMap.put("version", 1);
             fieldMap.put("date", 2);
             fieldMap.put("message", 3);
+            fieldMap.put("author", 4);
         }
     }
 

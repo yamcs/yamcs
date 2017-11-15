@@ -11,7 +11,7 @@ import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.parameter.Value;
-import org.yamcs.tctm.TcUplinkerAdapter;
+import org.yamcs.tctm.TcDataLinkInitialiser;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.MetaCommand;
@@ -117,7 +117,7 @@ public class PreparedCommand {
 
 
     public Tuple toTuple() {
-        TupleDefinition td=TcUplinkerAdapter.TC_TUPLE_DEFINITION.copy();
+        TupleDefinition td=TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
         ArrayList<Object> al=new ArrayList<Object>();
         al.add(id.getGenerationTime());
         al.add(id.getOrigin());

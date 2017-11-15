@@ -11,7 +11,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 
@@ -23,7 +23,7 @@ public class StreamSelect1Test extends YarchTestCase {
 
     public void createFeeder1() throws YarchException {
         AbstractStream s;
-        YarchDatabase ydb=YarchDatabase.getInstance(context.getDbName());
+        YarchDatabaseInstance ydb=YarchDatabase.getInstance(context.getDbName());
         final TupleDefinition tpdef=new TupleDefinition();
         tpdef.addColumn("x", DataType.INT);
         tpdef.addColumn("y", DataType.STRING);
@@ -53,7 +53,7 @@ public class StreamSelect1Test extends YarchTestCase {
         createFeeder1();
 
         res=execute("create stream stream_out1 as select * from stream_in where y like \'s1%\'");
-        YarchDatabase ydb=YarchDatabase.getInstance(context.getDbName());
+        YarchDatabaseInstance ydb=YarchDatabase.getInstance(context.getDbName());
         Stream s = ydb.getStream("stream_out1");
         final Semaphore finished=new Semaphore(0);
         final AtomicInteger counter = new AtomicInteger(0);
@@ -86,7 +86,7 @@ public class StreamSelect1Test extends YarchTestCase {
         createFeeder1();
 
         res=execute("create stream stream_out1 as select * from stream_in where y NOT LIKE \'s1%\'");
-        YarchDatabase ydb=YarchDatabase.getInstance(context.getDbName());
+        YarchDatabaseInstance ydb=YarchDatabase.getInstance(context.getDbName());
         Stream s = ydb.getStream("stream_out1");
         final Semaphore finished=new Semaphore(0);
         final AtomicInteger counter = new AtomicInteger(0);

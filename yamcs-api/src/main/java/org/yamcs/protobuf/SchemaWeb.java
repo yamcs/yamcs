@@ -484,6 +484,9 @@ public final class SchemaWeb
                     if(message.hasTmPacket())
                         output.writeObject(15, message.getTmPacket(), org.yamcs.protobuf.SchemaYamcs.TmPacketData.WRITE, false);
 
+                    if(message.hasConnectionInfo())
+                        output.writeObject(16, message.getConnectionInfo(), org.yamcs.protobuf.SchemaWeb.ConnectionInfo.WRITE, false);
+
                     if(message.hasExtensionData())
                         output.writeObject(100, message.getExtensionData(), org.yamcs.protobuf.SchemaWeb.WebSocketExtensionData.WRITE, false);
 
@@ -584,6 +587,10 @@ public final class SchemaWeb
                                 builder.setTmPacket(input.mergeObject(org.yamcs.protobuf.Yamcs.TmPacketData.newBuilder(), org.yamcs.protobuf.SchemaYamcs.TmPacketData.MERGE));
 
                                 break;
+                            case 16:
+                                builder.setConnectionInfo(input.mergeObject(org.yamcs.protobuf.Web.ConnectionInfo.newBuilder(), org.yamcs.protobuf.SchemaWeb.ConnectionInfo.MERGE));
+
+                                break;
                             case 100:
                                 builder.setExtensionData(input.mergeObject(org.yamcs.protobuf.Web.WebSocketExtensionData.newBuilder(), org.yamcs.protobuf.SchemaWeb.WebSocketExtensionData.MERGE));
 
@@ -643,6 +650,7 @@ public final class SchemaWeb
                     case 13: return "commandQueueInfo";
                     case 14: return "commandQueueEvent";
                     case 15: return "tmPacket";
+                    case 16: return "connectionInfo";
                     case 100: return "extensionData";
                     default: return null;
                 }
@@ -670,6 +678,7 @@ public final class SchemaWeb
                 fieldMap.put("commandQueueInfo", 13);
                 fieldMap.put("commandQueueEvent", 14);
                 fieldMap.put("tmPacket", 15);
+                fieldMap.put("connectionInfo", 16);
                 fieldMap.put("extensionData", 100);
             }
         }
@@ -1309,6 +1318,135 @@ public final class SchemaWeb
         {
             fieldMap.put("valid", 1);
             fieldMap.put("invalid", 2);
+        }
+    }
+
+    public static final class ConnectionInfo
+    {
+        public static final org.yamcs.protobuf.SchemaWeb.ConnectionInfo.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaWeb.ConnectionInfo.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaWeb.ConnectionInfo.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaWeb.ConnectionInfo.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Web.ConnectionInfo>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Web.ConnectionInfo message) throws java.io.IOException
+            {
+                if(message.hasClientId())
+                    output.writeInt32(1, message.getClientId(), false);
+                if(message.hasInstance())
+                    output.writeObject(2, message.getInstance(), org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstance.WRITE, false);
+
+                if(message.hasProcessor())
+                    output.writeObject(3, message.getProcessor(), org.yamcs.protobuf.SchemaYamcsManagement.ProcessorInfo.WRITE, false);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Web.ConnectionInfo message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaWeb.ConnectionInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaWeb.ConnectionInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Web.ConnectionInfo> typeClass()
+            {
+                return org.yamcs.protobuf.Web.ConnectionInfo.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Web.ConnectionInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Web.ConnectionInfo.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Web.ConnectionInfo message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Web.ConnectionInfo newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Web.ConnectionInfo.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Web.ConnectionInfo.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setClientId(input.readInt32());
+                            break;
+                        case 2:
+                            builder.setInstance(input.mergeObject(org.yamcs.protobuf.YamcsManagement.YamcsInstance.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.YamcsInstance.MERGE));
+
+                            break;
+                        case 3:
+                            builder.setProcessor(input.mergeObject(org.yamcs.protobuf.YamcsManagement.ProcessorInfo.newBuilder(), org.yamcs.protobuf.SchemaYamcsManagement.ProcessorInfo.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Web.ConnectionInfo.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Web.ConnectionInfo.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Web.ConnectionInfo.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaWeb.ConnectionInfo.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaWeb.ConnectionInfo.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Web.ConnectionInfo.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Web.ConnectionInfo.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Web.ConnectionInfo.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Web.ConnectionInfo.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Web.ConnectionInfo.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "clientId";
+                case 2: return "instance";
+                case 3: return "processor";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("clientId", 1);
+            fieldMap.put("instance", 2);
+            fieldMap.put("processor", 3);
         }
     }
 

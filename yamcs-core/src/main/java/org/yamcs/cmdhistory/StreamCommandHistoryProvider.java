@@ -7,13 +7,14 @@ import org.yamcs.commanding.InvalidCommandId;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.tctm.TcUplinkerAdapter;
+import org.yamcs.tctm.TcDataLinkInitialiser;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -41,7 +42,7 @@ public class StreamCommandHistoryProvider  extends AbstractService implements Co
             PreparedCommand pc=PreparedCommand.fromTuple(tuple);
             chrm.addCommand(pc);
         } else {
-            int i=TcUplinkerAdapter.TC_TUPLE_DEFINITION.getColumnDefinitions().size();
+            int i=TcDataLinkInitialiser.TC_TUPLE_DEFINITION.getColumnDefinitions().size();
             CommandId cmdId=PreparedCommand.getCommandId(tuple);
             List<ColumnDefinition> columns=tuple.getDefinition().getColumnDefinitions();
             while(i<columns.size()) {
@@ -66,7 +67,7 @@ public class StreamCommandHistoryProvider  extends AbstractService implements Co
     @Override
     protected void doStart() {
         String instance = chrm.getInstance();
-        YarchDatabase ydb = YarchDatabase.getInstance(chrm.getInstance());
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(chrm.getInstance());
         Stream realtimeCmdHistoryStream = ydb.getStream(YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME);
         if(realtimeCmdHistoryStream == null) {
             String msg ="Cannot find stream '"+YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME+" in instance "+instance; 

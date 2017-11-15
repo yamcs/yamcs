@@ -17,6 +17,7 @@ import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -87,7 +88,7 @@ public class AlarmServer extends AbstractService {
     @Override
     public void doStart() {
         if(streamName!=null) {
-            YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+            YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
             Stream s = ydb.getStream(streamName);
             if(s==null) {
                 notifyFailed(new ConfigurationException("Cannot find a stream named '"+streamName+"'"));

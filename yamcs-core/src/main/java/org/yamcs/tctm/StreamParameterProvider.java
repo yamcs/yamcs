@@ -21,6 +21,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -39,7 +40,7 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
     ParameterTypeProcessor ptypeProcessor;
     
     public StreamParameterProvider(String archiveInstance, Map<String, String> config) throws ConfigurationException {
-        YarchDatabase ydb=YarchDatabase.getInstance(archiveInstance);
+        YarchDatabaseInstance ydb=YarchDatabase.getInstance(archiveInstance);
 
         if(!config.containsKey("stream")) {
             throw new ConfigurationException("the config(args) for StreamPpProvider has to contain a parameter 'stream' - stream name for retrieving parameters from");

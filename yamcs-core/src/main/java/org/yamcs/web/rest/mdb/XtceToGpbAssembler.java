@@ -37,7 +37,6 @@ import org.yamcs.protobuf.Mdb.UnitInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.YamcsManagement.HistoryInfo;
 import org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo;
-import org.yamcs.utils.DoubleRange;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.xtce.AlarmRanges;
@@ -790,6 +789,7 @@ public class XtceToGpbAssembler {
                 if (history.getVersion() != null) historyb.setVersion(history.getVersion());
                 if (history.getDate() != null) historyb.setDate(history.getDate());
                 if (history.getMessage() != null) historyb.setMessage(history.getMessage());
+                if (history.getAuthor() != null) historyb.setAuthor(history.getAuthor());
                 b.addHistory(historyb);
             }
         }

@@ -1,0 +1,11 @@
+instances:
+ - AuthModuleTest
+
+incomingDir: /tmp/yamcs-incoming
+dataDir: /tmp/yamcs-AuthModuleTest-data
+
+webConfig: 
+    webRoot: "/tmp/yamcs-web"
+    port: 9190
+
+

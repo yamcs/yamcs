@@ -22,6 +22,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 /**
  * Completeness index of CCSDS telemetry. There is one rocksdb table:
@@ -55,7 +56,7 @@ public class CccsdsTmIndex implements TmIndex {
     public CccsdsTmIndex(String instance, boolean readonly) throws IOException {
         log = LoggingUtils.getLogger(this.getClass(), instance);
 
-        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
         String filename=ydb.getRoot()+"/tmindex";
         try {

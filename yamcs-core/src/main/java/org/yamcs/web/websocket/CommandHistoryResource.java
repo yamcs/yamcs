@@ -66,6 +66,7 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
     @Override
     public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
         if(subscriptionId == -1) {
+            super.switchProcessor(oldProcessor, newProcessor);
             return;
         }
 

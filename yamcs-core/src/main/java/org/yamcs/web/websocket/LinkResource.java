@@ -70,12 +70,12 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
     }
 
     @Override
-    public void registerLink(LinkInfo linkInfo) {
+    public void linkRegistered(LinkInfo linkInfo) {
         sendLinkInfo(LinkEvent.Type.REGISTERED, linkInfo);
     }
 
     @Override
-    public void unregisterLink(String instance, String name) {
+    public void linkUnregistered(LinkInfo linkInfo) {
         // TODO Currently not handled correctly by ManagementService
 
     }

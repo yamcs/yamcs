@@ -16,6 +16,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -37,7 +38,7 @@ public class StreamTmPacketProvider extends AbstractService implements TmPacketP
     List<StreamReader> readers = new ArrayList<StreamReader>();
 
     public StreamTmPacketProvider(String yamcsInstance, Map<String, Object> config) throws ConfigurationException {
-        YarchDatabase ydb=YarchDatabase.getInstance(yamcsInstance);
+        YarchDatabaseInstance ydb=YarchDatabase.getInstance(yamcsInstance);
         XtceDb xtcedb=XtceDbFactory.getInstance(yamcsInstance);
 
         if(!config.containsKey("streams")) throw new ConfigurationException("Cannot find key 'streams' in StreamTmPacketProvider");

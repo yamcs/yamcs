@@ -7,6 +7,7 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableDefinition.PartitionStorage;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
 public class CreateTableStatement extends StreamSqlStatement {
@@ -53,7 +54,7 @@ public class CreateTableStatement extends StreamSqlStatement {
 
     @Override
     public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
-        YarchDatabase ydb=YarchDatabase.getInstance(c.getDbName());
+        YarchDatabaseInstance ydb=YarchDatabase.getInstance(c.getDbName());
         synchronized(ydb) {
             TableDefinition tableDefinition=new TableDefinition(tableName, tupleDefinition, primaryKey);
             tableDefinition.validate();

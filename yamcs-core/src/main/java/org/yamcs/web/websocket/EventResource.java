@@ -14,6 +14,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 /**
  * Provides realtime event subscription via web.
@@ -32,7 +33,7 @@ public class EventResource extends AbstractWebSocketResource {
 
     public EventResource(WebSocketProcessorClient client) {
         super(client);
-        YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
         stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
     }
 
@@ -56,11 +57,15 @@ public class EventResource extends AbstractWebSocketResource {
 
     @Override
     public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
-        doUnsubscribe();
-        super.switchProcessor(oldProcessor, newProcessor);
-        YarchDatabase ydb = YarchDatabase.getInstance(processor.getInstance());
-        stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
-        doSubscribe();
+        if(streamSubscriber==null) {
+            super.switchProcessor(oldProcessor, newProcessor);
+        } else {
+            doUnsubscribe();
+            super.switchProcessor(oldProcessor, newProcessor);
+            YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
+            stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
+            doSubscribe();
+        }
     }
 
     private WebSocketReplyData unsubscribe(int requestId) throws WebSocketException {

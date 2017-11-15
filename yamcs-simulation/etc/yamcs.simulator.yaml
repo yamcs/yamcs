@@ -37,10 +37,10 @@ tmDataLinks:
       spec: localDump
       stream: tm_dump
 
-parameterDataLinks:
-    - class: org.yamcs.simulation.SimulationPpProvider
-      stream: pp_realtime
-      args: {simulationDataPath: "etc/gs-simulation.xml"}
+#parameterDataLinks:
+#    - class: org.yamcs.simulation.SimulationPpProvider
+#      stream: pp_realtime
+#      args: {simulationDataPath: "etc/gs-simulation.xml"}
 
 
 # config the tc uplinkers

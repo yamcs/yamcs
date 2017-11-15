@@ -7,9 +7,9 @@ import org.yamcs.protobuf.YamcsManagement.LinkInfo;
  */
 public interface LinkListener {
     
-    void registerLink(LinkInfo linkInfo);
+    void linkRegistered(LinkInfo linkInfo);
     
-    void unregisterLink(String instance, String name);
+    void linkUnregistered(LinkInfo linkInfo);
     
     void linkChanged(LinkInfo linkInfo);
 }

@@ -177,7 +177,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
     }
 
     @Override
-    public void statisticsUpdated(Processor processor, Statistics stats) {
+    public void statisticsUpdated(Processor processor, Statistics stats){
         try {
             wsHandler.sendData(ProtoDataType.PROCESSING_STATISTICS, stats, SchemaYamcsManagement.Statistics.WRITE);
         } catch (IOException e) {

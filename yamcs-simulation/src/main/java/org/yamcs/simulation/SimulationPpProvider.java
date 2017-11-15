@@ -35,7 +35,6 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
 //[...]/yamcs/yamcs-simulation/src/main/resources/org/yamcs/xsd$ xjc simulation_data.xsd -p org.yamcs.simulation.generated -d [...]/yamcs/yamcs-simulation/src/main/java/
 public class SimulationPpProvider extends AbstractExecutionThreadService implements ParameterDataLink, Runnable {
 
-
 	public Date simulationStartTime;
 	public Date simulationRealStartTime;
 	public int simulationStepLengthMs;

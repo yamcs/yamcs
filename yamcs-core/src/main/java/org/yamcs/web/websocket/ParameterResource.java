@@ -14,7 +14,7 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.ProcessorException;
-import org.yamcs.api.ws.WSConstants;
+import org.yamcs.YamcsServer;
 import org.yamcs.Processor;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValue;
@@ -23,6 +23,7 @@ import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.protobuf.Comp.ComputationDef;
 import org.yamcs.protobuf.Comp.ComputationDefList;
+import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.SchemaComp;
 import org.yamcs.protobuf.SchemaPvalue;
@@ -41,8 +42,6 @@ import org.yamcs.web.ComputationFactory;
 
 /**
  * Provides realtime parameter subscription via web.
- *
- * TODO better deal with exceptions
  *
  * @author nm
  *
@@ -214,6 +213,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                     computations = new ArrayList<>();
                     allArguments = new ArrayList<>();
                     ListIterator<ComputationDef> it = computations.listIterator();
+                    NamedObjectList.Builder invalidList = NamedObjectList.newBuilder();
                     while (it.hasNext()) {
                         ComputationDef computation = it.next();
                         boolean remove = false;
@@ -295,12 +295,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
             ParameterValue pv=pvwi.getParameterValue();
             pd.addParameter(pv.toGpb(pvwi.getId()));
         }
-        try {
-            wsHandler.sendData(ProtoDataType.PARAMETER, pd.build(), SchemaPvalue.ParameterData.WRITE);
-        } catch (Exception e) {
-            log.warn("got error when sending parameter updates, quitting", e);
-            quit();
-        }
+        sendParameterUpdate(pd.build());
     }
 
     private void updateComputations(List<ParameterValueWithId> paramList) {
@@ -318,15 +313,17 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         if(pd.getParameterCount()==0) {
             return;
         }
+        sendParameterUpdate(pd.build());
+    }
 
+    private void sendParameterUpdate(ParameterData pd) {
         try {
-            wsHandler.sendData(ProtoDataType.PARAMETER, pd.build(), SchemaPvalue.ParameterData.WRITE);
+            wsHandler.sendData(ProtoDataType.PARAMETER, pd, SchemaPvalue.ParameterData.WRITE);
         } catch (Exception e) {
             log.warn("got error when sending parameter updates, quitting", e);
             quit();
         }
     }
-
     /**
      * called when the socket is closed.
      * unsubscribe all parameters
@@ -345,10 +342,19 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
     @Override
     public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
         try {
-            pidrm.switchPrm(newProcessor.getParameterRequestManager(), client.getAuthToken());
+            List<NamedObjectId> invalid = pidrm.switchPrm(newProcessor.getParameterRequestManager(), client.getAuthToken());
             super.switchProcessor(oldProcessor, newProcessor);
-        } catch (InvalidIdentification e) {
-            log.warn("got InvalidIdentification when resubscribing", e);
+            if(!invalid.isEmpty()) {
+                //send notification for invalid parameters
+                ParameterData.Builder pd=ParameterData.newBuilder();
+                long now = newProcessor.getCurrentTime();
+                for(NamedObjectId id:invalid) {
+                    pd.addParameter(org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder().setId(id)
+                            .setAcquisitionTime(now)
+                            .setAcquisitionStatus(AcquisitionStatus.INVALID).build());
+                }
+                sendParameterUpdate(pd.build());
+            }
         } catch (NoPermissionException e) {
             throw new ProcessorException("No permission", e);
         }

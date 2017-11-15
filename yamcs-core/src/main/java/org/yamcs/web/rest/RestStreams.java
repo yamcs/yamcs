@@ -8,6 +8,7 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
@@ -17,7 +18,7 @@ public class RestStreams {
     
     
     public static void stream(String instance, String selectSql, RestStreamSubscriber s) throws HttpException {
-        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         
         String streamName = "rest_archive" + streamCounter.incrementAndGet();
         String sql = new StringBuilder("create stream ")

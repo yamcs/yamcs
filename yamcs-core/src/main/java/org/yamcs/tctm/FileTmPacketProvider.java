@@ -113,14 +113,14 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
     }
 
     @Override
-    public String getLinkStatus() {
+    public Status getLinkStatus() {
         if (disabled) {
-            return "DISABLED";
+            return Status.DISABLED;
         }
         if(quitting) {
-            return "UNAVAIL";
+            return Status.UNAVAIL;
         } else {
-            return "OK";
+            return Status.OK;
         }
     }
 

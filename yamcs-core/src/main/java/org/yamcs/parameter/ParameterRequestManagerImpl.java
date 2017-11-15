@@ -212,9 +212,8 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
      * @param subscriptionId - subscription id
      * @param paraList
      * @param tpc
-     * @throws InvalidIdentification
      */
-    public void addRequest(int subscriptionId, List<Parameter> paraList, ParameterConsumer tpc) throws InvalidIdentification {
+    public void addRequest(int subscriptionId, List<Parameter> paraList, ParameterConsumer tpc) {
         List<ParameterProvider> providers=getProviders(paraList);
         for(int i=0;i<paraList.size();i++) {
             log.trace("creating subscriptionID:{} with item:{}",subscriptionId, paraList.get(i));
@@ -227,9 +226,8 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
      * Add items to an request id. 
      * @param subscriptionId
      * @param para
-     * @throws InvalidIdentification
      */
-    public void addItemsToRequest(final int subscriptionId, final Parameter para) throws InvalidIdentification, InvalidRequestIdentification {
+    public void addItemsToRequest(final int subscriptionId, final Parameter para) throws InvalidRequestIdentification {
         log.debug("adding to subscriptionID {}: items: {} ", subscriptionId, para);
         final ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
         if((consumer==null) && !request2DVParameterConsumerMap.containsKey(subscriptionId)
@@ -580,5 +578,9 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
 
     public ParameterCache getParameterCache() {
         return parameterCache;
+    }
+
+    public Object getXtceDb() {
+        return yproc.getXtceDb();
     }
 }

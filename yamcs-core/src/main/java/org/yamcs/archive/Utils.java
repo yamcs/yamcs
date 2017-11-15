@@ -5,7 +5,7 @@ import java.util.Collection;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableWriter;
-import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 public class Utils {
     /**
@@ -14,7 +14,7 @@ public class Utils {
      * @param ydb
      * @param streamNames
      */
-    static public void closeTableWriters(YarchDatabase ydb, Collection<String> streamNames) {
+    static public void closeTableWriters(YarchDatabaseInstance ydb, Collection<String> streamNames) {
         for(String streamName: streamNames) {
             Stream s = ydb.getStream(streamName);
             if(s!=null) {

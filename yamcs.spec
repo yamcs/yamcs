@@ -23,7 +23,7 @@ Yet another Mission Control System
 %build
 
 %if %{_buildweb}
-  cd yamcs-web && npm install && gulp && cd ..
+  cd yamcs-web && npm install && npm run build && cd ..
 %endif
 
 mvn clean compile package -Dmaven.test.skip=true -Dmaven.buildNumber.doUpdate=false
@@ -33,6 +33,7 @@ mkdir -p %{buildroot}/%{prefix}/mdb
 mkdir -p %{buildroot}/%{prefix}/log
 mkdir -p %{buildroot}/%{prefix}/cache
 mkdir -p %{buildroot}/etc # For system /etc
+mkdir -p ${buildroot}/etc/init.d
 mkdir -p %{buildroot}/%{prefix}/lib/xtce
 mkdir -p %{buildroot}/%{prefix}/lib/ext
 mkdir -p %{buildroot}/%{prefix}/web/
@@ -42,7 +43,11 @@ cp -a yamcs-core/etc %{buildroot}/%{prefix}/
 cp -a yamcs-core/bin %{buildroot}/%{prefix}/
 rm yamcs-core/target/yamcs-*-sources.jar
 cp yamcs-core/target/yamcs*.jar %{buildroot}/%{prefix}/lib
-cp -a yamcs-core/misc/init.d %{buildroot}/etc/
+
+cp yamcs-artemis/lib/*.jar %{buildroot}/%{prefix}/lib
+cp yamcs-artemis/target/yamcs-artemis*.jar %{buildroot}/%{prefix}/lib
+
+cp -a contrib/sysvinit/* %{buildroot}/etc/init.d
 cp -a yamcs-api/src/main/*.proto %{buildroot}/%{prefix}/lib/
 
 %if %{_buildweb}

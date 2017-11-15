@@ -6,12 +6,10 @@ import java.util.Collection;
 import java.util.Hashtable;
 import java.util.concurrent.CompletableFuture;
 
-import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.artemis.YamcsSession;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.MdbMappings;
 import org.yamcs.xtce.SequenceContainer;
@@ -54,8 +52,6 @@ public class Privilege {
     private static String defaultUser; // Only if !usePrivileges. Could eventually replace usePrivileges i guess
 
     private static AuthModule authModule;
-    private static ActiveMQSecurityManager artemisAuthModule;
-    
     static final Hashtable<String, String> contextEnv = new Hashtable<>();
 
     public static int maxNoSessions;
@@ -84,10 +80,6 @@ public class Privilege {
                 if(usePrivileges) {
                     authModule = YObjectLoader.loadObject(conf.getMap("authModule"));
                     authModuleName = authModule.getClass().getName();
-                    
-                    if(conf.containsKey("artemisAuthModule")) {
-                        artemisAuthModule = YObjectLoader.loadObject(conf.getMap("artemisAuthModule"));
-                    }
                     
                 } else {
                     if (conf.containsKey("defaultUser")) {
@@ -170,7 +162,7 @@ public class Privilege {
     }
 
     private boolean isSystemToken(final AuthenticationToken authenticationToken) {
-        return authenticationToken.getPrincipal().equals(YamcsSession.hornetqInvmUser) || (authenticationToken instanceof SystemToken);
+        return authenticationToken instanceof SystemToken;
     }
 
     /**
@@ -223,10 +215,16 @@ public class Privilege {
      * @throws InvalidAuthenticationToken
      */
     public boolean hasPrivilege(final AuthenticationToken authenticationToken, SystemPrivilege privilege) throws InvalidAuthenticationToken {
-        if (!usePrivileges)     return true;
-        if(authenticationToken == null || authenticationToken.getPrincipal() == null) return false;
+        if (!usePrivileges) {
+            return true;
+        }
+        if(authenticationToken == null || authenticationToken.getPrincipal() == null) {
+            return false;
+        }
 
-        if (isSystemToken(authenticationToken)) return true;
+        if (isSystemToken(authenticationToken)) {
+            return true;
+        }
     
         return hasPrivilege(authenticationToken, Type.SYSTEM, privilege.name());
     }
@@ -278,7 +276,7 @@ public class Privilege {
             namespace = MdbMappings.MDB_OPSNAME;
         }
         Collection<String> tl= getTmPacketNames(XtceDbFactory.getInstance(yamcsInstance), namespace);
-        ArrayList<String> l=new ArrayList<String>();
+        ArrayList<String> l=new ArrayList<>();
         for(String name:tl) {
             if(!hasPrivilege(authToken, Privilege.Type.TM_PACKET, name)){
                 continue;
@@ -289,7 +287,7 @@ public class Privilege {
     }
     
     private Collection<String> getTmPacketNames(XtceDb xtcedb, String namespace) {
-        ArrayList<String> pn=new ArrayList<String>();
+        ArrayList<String> pn=new ArrayList<>();
         for(SequenceContainer sc:xtcedb.getSequenceContainers()){
             String alias=sc.getAlias(namespace);
             if(alias!=null){
@@ -314,7 +312,7 @@ public class Privilege {
             namespace = MdbMappings.MDB_OPSNAME;
         }
         XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
-        ArrayList<String> l=new ArrayList<String>();
+        ArrayList<String> l=new ArrayList<>();
         for(String name: xtcedb.getParameterNames() ) {
             if(!hasPrivilege(authToken, Privilege.Type.TM_PARAMETER, name)) {
                 log.trace( "User '{}' does not have privilege '{}' for parameter '{}'", authToken, Privilege.Type.TM_PARAMETER, name );
@@ -331,7 +329,7 @@ public class Privilege {
     }
 
 
-    public String getUsername(AuthenticationToken authToken) {
+    public static String getUsername(AuthenticationToken authToken) {
         if(!usePrivileges){
             return defaultUser;
         }
@@ -345,7 +343,9 @@ public class Privilege {
     }
 
     public User getUser(AuthenticationToken authToken) {
-        if(!usePrivileges) return null;
+        if(!usePrivileges) {
+            return null;
+        }
         
         return authModule.getUser(authToken);
     }
@@ -354,11 +354,6 @@ public class Privilege {
     public AuthModule getAuthModule() {
         return authModule;
     }
-
-    public ActiveMQSecurityManager getArtemisAuthModule() {
-        return artemisAuthModule;
-    }
-
 
     public CompletableFuture<AuthenticationToken> authenticateHttp(ChannelHandlerContext ctx, HttpRequest req) {       
         return authModule.authenticateHttp(ctx, req);

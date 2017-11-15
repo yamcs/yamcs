@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "init": "npm install",
-    "install": "bower install --config.interactive=false"
+    "install": "bower install --config.interactive=false",
+    "build": "gulp"
   },
   "devDependencies": {
+    "bower": "^1.8.2",
     "del": "^2.0.2",
     "gulp": "^3.8.10",
     "gulp-angular-filesort": "^1.1.1",

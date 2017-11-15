@@ -1,6 +1,6 @@
 import websocket
 ws = websocket.WebSocket()
-wsaddr = "ws://localhost:8090/simulator/_websocket"
+wsaddr = "ws://localhost:8090/aces-sim/_websocket"
 print "Connecting to "+wsaddr + "...",
 ws.connect(wsaddr, header=['Authorization: Basic YXN0cm9uYXV0MTpwYXNzd29yZA=='])
 #ws.connect(wsaddr, header=['Authorization: Basic b3BlcmF0b3I6cGFzc3dvcmQ='])

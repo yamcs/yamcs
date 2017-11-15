@@ -3,27 +3,14 @@ package org.yamcs.management;
 import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
 
-import org.yamcs.tctm.Link;
-
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 
 public class LinkControlImpl extends StandardMBean implements LinkControl {
-    Link link;
     LinkInfo linkInfo;
 
-    public LinkControlImpl(String archiveInstance, String name, String streamName, String spec, Link link) throws NotCompliantMBeanException {
+    public LinkControlImpl(LinkInfo linkInfo) throws NotCompliantMBeanException {
         super(LinkControl.class);
-        this.link = link;
-        LinkInfo.Builder linkb = LinkInfo.newBuilder().setInstance(archiveInstance)
-                .setName(name).setStream(streamName)
-                .setDisabled(link.isDisabled())
-                .setStatus(link.getLinkStatus())
-                .setType(link.getClass().getSimpleName()).setSpec(spec)
-                .setDataCount(link.getDataCount());
-        if(link.getDetailedStatus()!=null) {
-            linkb.setDetailedStatus(link.getDetailedStatus());
-        }
-        linkInfo = linkb.build();
+        this.linkInfo = linkInfo;
     }
 
     LinkInfo getLinkInfo(){
@@ -32,41 +19,22 @@ public class LinkControlImpl extends StandardMBean implements LinkControl {
 
     @Override
     public String getDetailedStatus() {
-        return link.getDetailedStatus();
+        return linkInfo.getDetailedStatus();
     }
 
     @Override
     public void disable() {
-        link.disable();
+        ManagementService.getInstance().disableLink(linkInfo.getInstance(), linkInfo.getName());
     }
 
     @Override
     public void enable() {
-        link.enable();
+        ManagementService.getInstance().enableLink(linkInfo.getInstance(), linkInfo.getName());
     }
 
     @Override
     public boolean isDisabled() {
-        return link.isDisabled();
-    }
-
-    /**
-     * @return true if the link status or datacount has changed since the creation or since the previous call of this method
-     *  
-     **/
-    public boolean hasChanged() {
-        if(!linkInfo.getStatus().equals(link.getLinkStatus())
-                || linkInfo.getDisabled()!=link.isDisabled()
-                || linkInfo.getDataCount()!=link.getDataCount()
-                || !linkInfo.getDetailedStatus().equals(link.getDetailedStatus())) {
-
-            linkInfo=LinkInfo.newBuilder(linkInfo).setDisabled(link.isDisabled())
-                    .setStatus(link.getLinkStatus()).setDetailedStatus(link.getDetailedStatus())
-                    .setDataCount(link.getDataCount()).build();
-            return true;
-        } else {
-            return false;
-        }
+        return linkInfo.getDisabled();
     }
 
     @Override
