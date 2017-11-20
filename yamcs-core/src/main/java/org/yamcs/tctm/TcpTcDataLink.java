@@ -304,9 +304,8 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         try {
           pc = commandQueue.take();
         } catch (InterruptedException e2) {
-          // TODO Auto-generated catch block
           e2.printStackTrace();
-          continue;
+          continue; //TODO look is this is the right action
         }
 
         ByteBuffer bb = null;
@@ -374,7 +373,6 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         try {
           Thread.sleep(tcDelay);
         } catch (InterruptedException e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         }
       }
