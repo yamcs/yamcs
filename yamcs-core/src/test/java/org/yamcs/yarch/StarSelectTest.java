@@ -10,7 +10,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 
@@ -27,7 +27,7 @@ public class StarSelectTest extends YarchTestCase {
         int isport;
         AbstractStream s;
         InputStreamFeeder() throws Exception {
-            YarchDatabase dict=YarchDatabase.getInstance(context.getDbName());
+            YarchDatabaseInstance dict=YarchDatabase.getInstance(context.getDbName());
             final TupleDefinition tpdef=new TupleDefinition();
             tpdef.addColumn("time", DataType.TIMESTAMP);
             tpdef.addColumn("id", DataType.INT);
@@ -62,7 +62,7 @@ public class StarSelectTest extends YarchTestCase {
     public void testStar1() throws Exception {
         Thread t=new Thread(new InputStreamFeeder());
         res=execute("create stream tm_out1 as select 3,* from tm_in");
-        YarchDatabase dict=YarchDatabase.getInstance(context.getDbName());
+        YarchDatabaseInstance dict=YarchDatabase.getInstance(context.getDbName());
         Stream s=dict.getStream("tm_out1");
         final Semaphore finished=new Semaphore(0);
         s.addSubscriber(new StreamSubscriber() {

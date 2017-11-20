@@ -7,6 +7,7 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.YarchException;
 
@@ -34,7 +35,7 @@ public class InsertStatement extends StreamSqlStatement {
 
     @Override
     public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
-        YarchDatabase ydb=YarchDatabase.getInstance(c.getDbName());
+        YarchDatabaseInstance ydb=YarchDatabase.getInstance(c.getDbName());
         synchronized(ydb) {
             TableDefinition outputTableDef=null;
             TupleDefinition outputTuple;

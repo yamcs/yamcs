@@ -30,7 +30,7 @@ public class LdapRealm implements Realm {
     public static String rolePath;
     public static String userPath;
 
-    static final Hashtable<String, String> contextEnv = new Hashtable<String, String>();
+    static final Hashtable<String, String> contextEnv = new Hashtable<>();
     static Logger log = LoggerFactory.getLogger(LdapRealm.class);
 
     static {
@@ -62,11 +62,9 @@ public class LdapRealm implements Realm {
      * @param authenticationToken
      * @return true if the authenticationToken is supported by this realm, false otherwise
      */
-    public boolean supports(AuthenticationToken authenticationToken)
-    {
+    public boolean supports(AuthenticationToken authenticationToken) {
         return authenticationToken.getClass() == UsernamePasswordToken.class
-                || authenticationToken.getClass() == CertificateToken.class
-                || authenticationToken.getClass() == HqClientMessageToken.class;
+                || authenticationToken.getClass() == CertificateToken.class;
     }
 
 
@@ -77,8 +75,7 @@ public class LdapRealm implements Realm {
                 || authenticationToken.getPrincipal() == null) {
             return false;
         }
-        if(authenticationToken.getClass() == UsernamePasswordToken.class
-                || authenticationToken.getClass() == HqClientMessageToken.class)
+        if(authenticationToken.getClass() == UsernamePasswordToken.class)
             return authenticateUsernamePassword((UsernamePasswordToken)authenticationToken);
         else if(authenticationToken.getClass() == CertificateToken.class)
             return authenticateCertificate((CertificateToken) authenticationToken);
@@ -277,8 +274,8 @@ public class LdapRealm implements Realm {
     }
 
     Set<String> loadPrivileges(DirContext context, Set<String> roles, String privPath, String objectClass, String attribute) throws NamingException {
-        Set<String> privs = new HashSet<String>();
-        StringBuffer sb = new StringBuffer();
+        Set<String> privs = new HashSet<>();
+        StringBuilder sb = new StringBuilder();
         SearchControls cons = new SearchControls();
         cons.setSearchScope(SearchControls.SUBTREE_SCOPE);
         cons.setReturningAttributes(new String[] { attribute });

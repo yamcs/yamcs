@@ -9,9 +9,10 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.tctm.ParameterDataLinkInitialiser;
-import org.yamcs.tctm.TcUplinkerAdapter;
+import org.yamcs.tctm.TcDataLinkInitialiser;
 import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
@@ -33,7 +34,7 @@ import org.yamcs.yarch.streamsql.TokenMgrError;
 public class StreamInitializer {
     private static final Logger log = LoggerFactory.getLogger(StreamInitializer.class);
     final String yamcsInstance;
-    YarchDatabase ydb;
+    YarchDatabaseInstance ydb;
   
     public static void createStreams(String yamcsInstance) throws IOException {
         StreamInitializer si = new StreamInitializer(yamcsInstance);
@@ -80,7 +81,7 @@ public class StreamInitializer {
 
 
     private void createTcStream(String streamName) throws StreamSqlException, ParseException {
-        ydb.execute("create stream "+streamName+TcUplinkerAdapter.TC_TUPLE_DEFINITION.getStringDefinition());
+        ydb.execute("create stream "+streamName+TcDataLinkInitialiser.TC_TUPLE_DEFINITION.getStringDefinition());
     }
 
 
@@ -93,7 +94,7 @@ public class StreamInitializer {
     }
 
     private void createCmdHistoryStream(String streamName) throws StreamSqlException, ParseException {
-        ydb.execute("create stream "+streamName+TcUplinkerAdapter.TC_TUPLE_DEFINITION.getStringDefinition());
+        ydb.execute("create stream "+streamName+TcDataLinkInitialiser.TC_TUPLE_DEFINITION.getStringDefinition());
 
     }
 

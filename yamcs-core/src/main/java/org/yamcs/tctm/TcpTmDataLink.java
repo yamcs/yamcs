@@ -163,14 +163,14 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
     }
 
     @Override
-    public String getLinkStatus() {
+    public Status getLinkStatus() {
         if (disabled) {
-            return "DISABLED";
+            return Status.DISABLED;
         }
         if (tmSocket==null) {
-            return "UNAVAIL";
+            return Status.UNAVAIL;
         } else {
-            return "OK";
+            return Status.OK;
         }
     }
 
@@ -183,6 +183,9 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
                 log.warn("Exception got when closing the tm socket:", e);
             }
             tmSocket=null;
+        }
+        if(sysParamCollector!=null) {
+            sysParamCollector.unregisterProducer(this);
         }
     }
 
@@ -229,7 +232,7 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
     protected void setupSysVariables() {
         this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
         if(sysParamCollector!=null) {
-            sysParamCollector.registerProvider(this, null);
+            sysParamCollector.registerProducer(this);
             spLinkStatus = sysParamCollector.getNamespace()+"/"+name+"/linkStatus";
             spDataCount = sysParamCollector.getNamespace()+"/"+name+"/dataCount";
         
@@ -241,7 +244,7 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
     @Override
     public Collection<ParameterValue> getSystemParameters() {
         long time = timeService.getMissionTime();
-        ParameterValue linkStatus = SystemParametersCollector.getPV(spLinkStatus, time, getLinkStatus());
+        ParameterValue linkStatus = SystemParametersCollector.getPV(spLinkStatus, time, getLinkStatus().name());
         ParameterValue dataCount = SystemParametersCollector.getPV(spDataCount, time, getDataCount());
         return Arrays.asList(linkStatus, dataCount);
     }

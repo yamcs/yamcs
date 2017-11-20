@@ -14,7 +14,7 @@ import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.ParameterDataLinkInitialiser;
-import org.yamcs.tctm.TcUplinkerAdapter;
+import org.yamcs.tctm.TcDataLinkInitialiser;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -23,6 +23,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 /**
  * Performs histogram and completeness index retrievals.
@@ -91,7 +92,7 @@ class IndexRequestProcessor implements Runnable {
             }
             
             if(req.getSendAllCmd()) {
-                ok = sendHistogramData(CommandHistoryRecorder.TABLE_NAME, TcUplinkerAdapter.CMDHIST_TUPLE_COL_CMDNAME, 2000, null);
+                ok = sendHistogramData(CommandHistoryRecorder.TABLE_NAME, TcDataLinkInitialiser.CMDHIST_TUPLE_COL_CMDNAME, 2000, null);
             }
             if(req.getSendAllEvent()) {
                 ok = sendHistogramData(EventRecorder.TABLE_NAME, "source", 2000, null);
@@ -114,7 +115,7 @@ class IndexRequestProcessor implements Runnable {
 
     boolean sendHistogramData(final String tblName, String columnName, long mergeTime, final Map<String, NamedObjectId> name2id) {
         try {
-        	YarchDatabase ydb=YarchDatabase.getInstance(req.getInstance());
+        	YarchDatabaseInstance ydb=YarchDatabase.getInstance(req.getInstance());
         	if( ydb.getTable( tblName ) == null ) {
         		log.warn( "Histogram from table '{}' requested, but table does not exist.", tblName );
         		return true;

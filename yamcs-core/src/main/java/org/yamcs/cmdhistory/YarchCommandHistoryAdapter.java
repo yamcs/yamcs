@@ -1,12 +1,13 @@
 package org.yamcs.cmdhistory;
 
-import org.yamcs.tctm.TcUplinkerAdapter;
+import org.yamcs.tctm.TcDataLinkInitialiser;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -25,13 +26,13 @@ public class YarchCommandHistoryAdapter implements CommandHistoryPublisher {
     
     public YarchCommandHistoryAdapter(String archiveInstance) throws StreamSqlException, ParseException {
         this.instance = archiveInstance;
-        YarchDatabase ydb = YarchDatabase.getInstance(archiveInstance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(archiveInstance);
         stream = ydb.getStream(REALTIME_CMDHIST_STREAM_NAME);
     }
 
     @Override
     public void updateStringKey(CommandId cmdId, String key, String value) {
-        TupleDefinition td=TcUplinkerAdapter.TC_TUPLE_DEFINITION.copy();
+        TupleDefinition td=TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
         td.addColumn(key, DataType.STRING);
         
         Tuple t = new Tuple(td, new Object[] {
@@ -46,7 +47,7 @@ public class YarchCommandHistoryAdapter implements CommandHistoryPublisher {
 
     @Override
     public void updateTimeKey(CommandId cmdId, String key, long instant) {
-        TupleDefinition td=TcUplinkerAdapter.TC_TUPLE_DEFINITION.copy();
+        TupleDefinition td=TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
         td.addColumn(key, DataType.TIMESTAMP);
         
         Tuple t=new Tuple(td, new Object[] {
@@ -65,7 +66,7 @@ public class YarchCommandHistoryAdapter implements CommandHistoryPublisher {
     }
     
     public void publish(CommandId cmdId, String key, DataType dt, Object value) {
-        TupleDefinition td=TcUplinkerAdapter.TC_TUPLE_DEFINITION.copy();
+        TupleDefinition td=TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
         td.addColumn(key, dt);
         
         Tuple t=new Tuple(td, new Object[] {

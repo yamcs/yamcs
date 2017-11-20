@@ -1,3 +1,5 @@
+syntax="proto2";
+
 package alarms;
 option java_package = "org.yamcs.protobuf";
 

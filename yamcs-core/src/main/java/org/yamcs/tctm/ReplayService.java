@@ -264,7 +264,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         try {
             createRawSubscription();
             createReplay();
-        } catch (YamcsException | ProcessorException e){
+        } catch (YamcsException e){
             notifyFailed(e);
             return;
         }

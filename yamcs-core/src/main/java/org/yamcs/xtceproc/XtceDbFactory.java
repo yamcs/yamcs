@@ -553,6 +553,16 @@ public class XtceDbFactory {
         }
         return db;
     }
+    
+    /**
+     * 
+     * Removes the Xtcedb corresponding to yamcsInstance from memory
+     */
+    public static synchronized void remove(String yamcsInstance) {
+        log.info("Removing the XtceDB for instance {}", yamcsInstance);
+        instance2DbConfigs.remove(yamcsInstance);
+        instance2Db.remove(yamcsInstance);
+    }
 
     /**
      * forgets any singleton

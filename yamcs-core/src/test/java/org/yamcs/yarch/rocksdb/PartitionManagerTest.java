@@ -19,6 +19,7 @@ import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.TableDefinition.PartitionStorage;
 
 import com.google.common.io.Files;
@@ -125,7 +126,7 @@ public class PartitionManagerTest {
 	new File(tmpdir+"/2011/032").mkdirs();
 	new File(tmpdir+"/2011/060").mkdirs();
 
-	YarchDatabase ydb = YarchDatabase.getInstance("test");
+	YarchDatabaseInstance ydb = YarchDatabase.getInstance("test");
 	RDBFactory rdbFactory = RDBFactory.getInstance("test");
 	ColumnValueSerializer cvs =  new ColumnValueSerializer(tblDef);
 	YRDB rdb = rdbFactory.getRdb(tmpdir+"/2011/001/tbltest",false);
@@ -177,7 +178,7 @@ public class PartitionManagerTest {
         tblDef.setDataDir(tmpdir);
 
 
-        YarchDatabase ydb = YarchDatabase.getInstance("test");
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance("test");
         RDBFactory rdbFactory = RDBFactory.getInstance("test");
         ColumnValueSerializer cvs =  new ColumnValueSerializer(tblDef);
         YRDB rdb = rdbFactory.getRdb(tmpdir+"/tbltest", false);
@@ -227,7 +228,7 @@ public class PartitionManagerTest {
         new File(tmpdir+"/2011/060").mkdirs();
         ColumnValueSerializer cvs =  new ColumnValueSerializer(tblDef);
         
-        YarchDatabase ydb = YarchDatabase.getInstance("test");
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance("test");
         RDBFactory rdbFactory = RDBFactory.getInstance("test");
         YRDB rdb = rdbFactory.getRdb(tmpdir+"/2011/001/tbltest", false);
         rdbFactory.dispose(rdb);        
@@ -274,7 +275,7 @@ public class PartitionManagerTest {
         tblDef.setDataDir(tmpdir);
 
 
-        YarchDatabase ydb = YarchDatabase.getInstance("test");
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance("test");
         RDBFactory rdbFactory = RDBFactory.getInstance("test");
         YRDB rdb = rdbFactory.getRdb(tmpdir+"/tblnp", false);
         rdbFactory.dispose(rdb);        

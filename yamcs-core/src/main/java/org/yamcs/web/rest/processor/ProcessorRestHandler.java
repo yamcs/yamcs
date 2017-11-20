@@ -2,11 +2,14 @@ package org.yamcs.web.rest.processor;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.YamcsException;
 import org.yamcs.management.ManagementGpbHelper;
@@ -28,10 +31,13 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
+import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.Privilege;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
+import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
@@ -43,7 +49,8 @@ import org.yamcs.xtceproc.XtceDbFactory;
 
 
 public class ProcessorRestHandler extends RestHandler {
-
+    private static final Logger log = LoggerFactory.getLogger(ProcessorRestHandler.class);
+    
     @Route(path = "/api/processors/:instance/:processor/clients", method = "GET")
     public void listClientsForProcessor(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
@@ -170,21 +177,21 @@ public class ProcessorRestHandler extends RestHandler {
     }
 
     @Route(path = "/api/processors/:instance", method = "POST")
-    public void createProcessorForInstance(RestRequest req) throws HttpException {
-        CreateProcessorRequest request = req.bodyAsMessage(SchemaRest.CreateProcessorRequest.MERGE).build();
+    public void createProcessorForInstance(RestRequest restReq) throws HttpException {
+        CreateProcessorRequest request = restReq.bodyAsMessage(SchemaRest.CreateProcessorRequest.MERGE).build();
         if(request.hasStart()) {
             //the old create processor only allowed creating archive processors
-            createProcessorForInstanceOld(req, request);
+            createProcessorForInstanceOld(restReq, request);
             return;
         }
         //the new one just passes on the config to the processor factory
 
-        String yamcsInstance = verifyInstance(req, req.getRouteParam("instance"));
+        String yamcsInstance = verifyInstance(restReq, restReq.getRouteParam("instance"));
         String processorName;
         if (request.hasName()) {
             processorName = request.getName();
-        } else  if (req.hasQueryParameter("name")) { 
-            processorName = req.getQueryParameter("name");
+        } else  if (restReq.hasQueryParameter("name")) { 
+            processorName = restReq.getQueryParameter("name");
         } else {
             throw new BadRequestException("No processor name was specified");
         }
@@ -192,8 +199,8 @@ public class ProcessorRestHandler extends RestHandler {
         String processorType = null;
         if (request.hasType()) {
             processorType = request.getType();
-        } else  if (req.hasQueryParameter("type")) { 
-            processorName = req.getQueryParameter("type");
+        } else  if (restReq.hasQueryParameter("type")) { 
+            processorName = restReq.getQueryParameter("type");
         } else {
             throw new BadRequestException("No processor type was specified");
         }
@@ -204,17 +211,19 @@ public class ProcessorRestHandler extends RestHandler {
         if(request.hasPersistent()) {
             reqb.setPersistent(request.getPersistent());
         }
-
-        reqb.addAllClientId(request.getClientIdList());
+        Set<Integer> clientIds = new HashSet<>(request.getClientIdList());
+        //this will remove any invalid clientIds from the set
+        verifyPermissions(reqb.getPersistent(), processorType, clientIds, restReq.getAuthToken());
 
         if(request.hasConfig()) {
             reqb.setConfig(request.getConfig());
         }
-
+        
+        reqb.addAllClientId(clientIds);
         ManagementService mservice = ManagementService.getInstance();
         try {
-            mservice.createProcessor(reqb.build(), req.getAuthToken());
-            completeOK(req);
+            mservice.createProcessor(reqb.build(), restReq.getUsername());
+            completeOK(restReq);
         } catch (YamcsException e) {
             throw new BadRequestException(e.getMessage());
         }
@@ -311,6 +320,8 @@ public class ProcessorRestHandler extends RestHandler {
             throw new BadRequestException("No start time was specified");
         }
 
+        verifyPermissions(persistent, type, clientIds, req.getAuthToken());
+        
         // Make internal processor request
         ProcessorManagementRequest.Builder reqb = ProcessorManagementRequest.newBuilder();
         reqb.setInstance(instance);
@@ -421,13 +432,49 @@ public class ProcessorRestHandler extends RestHandler {
         reqb.setReplaySpec(rrb);
         ManagementService mservice = ManagementService.getInstance();
         try {
-            mservice.createProcessor(reqb.build(), req.getAuthToken());
+            mservice.createProcessor(reqb.build(), req.getUsername());
             completeOK(req);
         } catch (YamcsException e) {
             throw new BadRequestException(e.getMessage());
         }
     }
 
+    private void verifyPermissions(boolean persistent, String processorType, Set<Integer> clientIds, AuthenticationToken authToken) throws ForbiddenException {
+        String username  = Privilege.getUsername(authToken);
+        if(!Privilege.getInstance().hasPrivilege1(authToken, Privilege.SystemPrivilege.MayControlProcessor)) {
+            if(persistent) {
+                log.warn("User {} is not allowed to create persistent processors", username);
+                throw new ForbiddenException("No permission to create persistent processors");
+            }
+            if(!"Archive".equals(processorType)) {
+                log.warn("User {} is not allowed to create processors of type {}", processorType, username);
+                throw new ForbiddenException("No permission to create processors of type "+processorType);
+            }
+            verifyClientsBelongToUser(username, clientIds);
+        }
+    }
+
+    /**
+     * verifies that clients with ids are all belonging to this username. 
+     * If not, throw a ForbiddenException 
+     * If there is any invalid id (maybe client disconnected), remove it from the set 
+     */
+    public static void verifyClientsBelongToUser(String username, Set<Integer> clientIds) throws ForbiddenException {
+        ManagementService mgrsrv = ManagementService.getInstance();
+        for( Iterator<Integer> it = clientIds.iterator(); it.hasNext(); ) {
+            int id = it.next();
+            ClientInfo ci =  mgrsrv.getClientInfo(id);
+            if(ci==null) {
+                log.warn("Invalid client id {} specified, ignoring", id);
+                it.remove();
+            } else {
+                if(!username.equals(ci.getUsername())) {
+                    log.warn("User {} is not allowed to connect {} to new processor", username, ci.getUsername());
+                    throw new ForbiddenException("Not allowed to connect other client than your own");
+                }
+            }
+        }
+    }
     public static ProcessorInfo toProcessorInfo(Processor processor, RestRequest req, boolean detail) {
         ProcessorInfo.Builder b;
         if (detail) {

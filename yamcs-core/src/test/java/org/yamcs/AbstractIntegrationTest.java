@@ -25,7 +25,6 @@ import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.archive.PacketWithTime;
-import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Archive.StreamData;
@@ -34,6 +33,7 @@ import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
+import org.yamcs.protobuf.Web.ConnectionInfo;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
@@ -57,7 +57,6 @@ import org.yamcs.web.websocket.ManagementResource;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.yarch.management.JMXService;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -134,8 +133,6 @@ public abstract class AbstractIntegrationTest {
         FileUtils.deleteRecursively(dataDir.toPath());
 
         YConfiguration.setup("IntegrationTest");
-        ManagementService.setup(false);
-        JMXService.setup(false);
         new HttpServer().startServer();
         //     artemisServer = ArtemisServer.setupArtemis();
         //   ArtemisManagement.setupYamcsServerControl();
@@ -227,6 +224,7 @@ public abstract class AbstractIntegrationTest {
         LinkedBlockingQueue<TimeInfo> timeInfoList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<LinkEvent> linkEventList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<CommandQueueInfo> cmdQueueInfoList = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<ConnectionInfo> connInfoList = new LinkedBlockingQueue<>();
 
         int count =0;
         @Override
@@ -282,6 +280,9 @@ public abstract class AbstractIntegrationTest {
             case COMMAND_QUEUE_INFO:
                 cmdQueueInfoList.add(data.getCommandQueueInfo());
                 break;
+            case CONNECTION_INFO:
+                connInfoList.add(data.getConnectionInfo());
+                break;
             default:
                 throw new IllegalArgumentException("Unexpected type " + data.getType());
             }
@@ -296,8 +297,8 @@ public abstract class AbstractIntegrationTest {
             instance = this;
         }
         @Override
-        public String getLinkStatus() {
-            return "OK";
+        public Status getLinkStatus() {
+            return Status.OK;
         }
         @Override
         public String getDetailedStatus() {
@@ -360,8 +361,8 @@ public abstract class AbstractIntegrationTest {
         }
         
         @Override
-        public String getLinkStatus() {
-            return "OK";
+        public Status getLinkStatus() {
+            return Status.OK;
         }
 
         @Override

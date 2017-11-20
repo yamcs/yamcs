@@ -4,6 +4,7 @@ import org.yamcs.yarch.InputStream;
 import org.yamcs.yarch.OutputStream;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.NotAStreamException;
@@ -25,12 +26,14 @@ public class ShowStreamStatement extends StreamSqlStatement{
     @Override
     public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
 
-        YarchDatabase dict=YarchDatabase.getInstance(c.getDbName());
+        YarchDatabaseInstance dict=YarchDatabase.getInstance(c.getDbName());
         Stream s=null;
         synchronized(dict) {
             s=dict.getStream(name);
         }
-        if(s==null) throw new ResourceNotFoundException(name);
+        if(s==null) {
+            throw new ResourceNotFoundException(name);
+        }
 
         if(showPort) {
             final int port;

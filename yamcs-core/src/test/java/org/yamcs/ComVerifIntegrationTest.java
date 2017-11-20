@@ -152,8 +152,8 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Override
-        public String getLinkStatus() {
-            return "OK";
+        public Status getLinkStatus() {
+            return Status.OK;
         }
 
         @Override

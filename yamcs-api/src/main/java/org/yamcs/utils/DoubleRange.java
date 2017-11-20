@@ -76,7 +76,7 @@ public class DoubleRange implements Serializable {
      * Checks if the value is in range.
      * 
      * @param v
-     * @return <0 =0 or >0 if the value v is lower than min, between min and max or greater than max respectively.
+     * @return &lt;0 =0 or &gt;0 if the value v is lower than min, between min and max or greater than max respectively.
      */
     public int inRange(double v) {
         if(!Double.isNaN(min) && ((minIncl && v<min) || (!minIncl && v<=min))) {

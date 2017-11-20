@@ -204,11 +204,15 @@ public class RestClient {
             writeOffset+=length;
             ByteBuffer bb = ByteBuffer.wrap(buffer);
 
-            while(readOffset < writeOffset) {
+            while(readOffset+5 < writeOffset) {
                 bb.position(readOffset);
                 int msgLength = readVarInt32(bb);
-                if(msgLength>MAX_MESSAGE_LENGTH) throw new YamcsApiException("Message too long: decodedMessagLength: "+msgLength+" max length: "+MAX_MESSAGE_LENGTH);
-                if(msgLength > writeOffset-bb.position()) break; 
+                if(msgLength>MAX_MESSAGE_LENGTH) {
+                    throw new YamcsApiException("Message too long: decodedMessagLength: "+msgLength+" max length: "+MAX_MESSAGE_LENGTH);
+                }
+                if(msgLength > writeOffset-bb.position()) {
+                    break; 
+                }
 
                 readOffset = bb.position();
                 byte[] b = new byte[msgLength];

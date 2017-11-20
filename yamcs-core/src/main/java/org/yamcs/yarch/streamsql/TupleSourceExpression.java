@@ -12,6 +12,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 /**
@@ -55,7 +56,7 @@ public class TupleSourceExpression {
             streamExpression.bind(c);
             definition=streamExpression.getOutputDefinition();
         } else {
-            YarchDatabase dict=YarchDatabase.getInstance(c.getDbName());
+            YarchDatabaseInstance dict=YarchDatabase.getInstance(c.getDbName());
             TableDefinition tbl=dict.getTable(objectName);
             if(tbl!=null) {
                 if(histoColumn==null) {
@@ -98,7 +99,7 @@ public class TupleSourceExpression {
         if(streamExpression!=null) {
             stream=streamExpression.execute(c);
         } else if (objectName!=null) {
-            YarchDatabase ydb=YarchDatabase.getInstance(c.getDbName());
+            YarchDatabaseInstance ydb = YarchDatabase.getInstance(c.getDbName());
             if(!ascending) follow = false;
             TableDefinition tbl=ydb.getTable(objectName);
             if(tbl!=null) {

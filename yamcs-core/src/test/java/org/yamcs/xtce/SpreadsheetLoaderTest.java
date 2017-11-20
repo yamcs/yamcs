@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.junit.Test;
 import org.yamcs.YConfiguration;
-import org.yamcs.management.ManagementService;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 public class SpreadsheetLoaderTest {
@@ -14,7 +13,6 @@ public class SpreadsheetLoaderTest {
     @Test
     public void testParameterAliases() throws Exception {
         YConfiguration.setup("refmdb");
-        ManagementService.setup(false);
         XtceDbFactory.reset();
 
         XtceDb db = XtceDbFactory.getInstance("refmdb");
@@ -32,7 +30,6 @@ public class SpreadsheetLoaderTest {
     @Test
     public void testCommandAliases() throws Exception {
         YConfiguration.setup("refmdb");
-        ManagementService.setup(false);
         XtceDbFactory.reset();
 
         XtceDb db = XtceDbFactory.getInstance("refmdb");
@@ -52,7 +49,6 @@ public class SpreadsheetLoaderTest {
     @Test
     public void testCommandVerifiers() throws Exception {
         YConfiguration.setup("refmdb");
-        ManagementService.setup(false);
         XtceDbFactory.reset();
 
         XtceDb db = XtceDbFactory.getInstance("refmdb");
@@ -67,7 +63,6 @@ public class SpreadsheetLoaderTest {
     @Test
     public void testAlgorithmAliases() throws Exception {
         YConfiguration.setup("refmdb");
-        ManagementService.setup(false);
         XtceDbFactory.reset();
 
         XtceDb db = XtceDbFactory.getInstance("refmdb");
@@ -86,7 +81,6 @@ public class SpreadsheetLoaderTest {
     @Test
     public void testContainerAliases() throws Exception {
         YConfiguration.setup("refmdb");
-        ManagementService.setup(false);
         XtceDbFactory.reset();
 
         XtceDb db = XtceDbFactory.getInstance("refmdb");
@@ -100,7 +94,6 @@ public class SpreadsheetLoaderTest {
     @Test
     public void testReferenceAliases() throws Exception {
         YConfiguration.setup("refmdb");
-        ManagementService.setup(false);
         XtceDbFactory.reset();
 
         XtceDb db = XtceDbFactory.getInstance("refmdb");

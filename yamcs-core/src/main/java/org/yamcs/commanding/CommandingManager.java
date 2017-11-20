@@ -26,7 +26,7 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class CommandingManager extends AbstractService {
-    Logger log=LoggerFactory.getLogger(this.getClass().getName());
+    Logger log = LoggerFactory.getLogger(this.getClass().getName());
     private Processor processor;
     private CommandQueueManager commandQueueManager;
     final MetaCommandProcessor metaCommandProcessor;
@@ -37,7 +37,7 @@ public class CommandingManager extends AbstractService {
      */
     public CommandingManager(Processor proc) {
         this.processor = proc;
-        this.commandQueueManager=new CommandQueueManager(this);
+        this.commandQueueManager = new CommandQueueManager(this);
         ManagementService.getInstance().registerCommandQueueManager(proc.getInstance(), proc.getName(), commandQueueManager);
         metaCommandProcessor = new MetaCommandProcessor(proc.getProcessorData());
     }
@@ -105,11 +105,15 @@ public class CommandingManager extends AbstractService {
 
     @Override
     protected void doStart() {
+        commandQueueManager.startAsync();
+        commandQueueManager.awaitRunning();
         notifyStarted();
     }
 
     @Override
     protected void doStop() {
+        ManagementService.getInstance().unregisterCommandQueueManager(processor.getInstance(), processor.getName(), commandQueueManager);
+        commandQueueManager.stopAsync();
         notifyStopped();
     }
 }

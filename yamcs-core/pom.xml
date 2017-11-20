@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>3.3.0-SNAPSHOT</version>
+    <version>3.4.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
@@ -16,12 +16,6 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>yamcs-api</artifactId>
       <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.activemq</groupId>
-          <artifactId>artemis-core-client</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -69,11 +63,6 @@
       <version>2.6.10</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.activemq</groupId>
-      <artifactId>artemis-server</artifactId>
-      <version>${artemisVersion}</version>
-    </dependency>
-    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>18.0</version>
@@ -109,8 +98,13 @@
             <phase>process-sources</phase>
             <configuration>
               <tasks>
-                <filter token="version" value="${project.version}" />
-                <copy file="misc/YamcsVersion.java" tofile="target/generated-sources/version/org/yamcs/YamcsVersion.java" filtering="true" />
+                <mkdir dir="target/generated-sources/version/org/yamcs" />
+                <echo file="target/generated-sources/version/org/yamcs/YamcsVersion.java">
+                  package org.yamcs;
+                  public class YamcsVersion {
+	                  public static final String version = "${project.version}";
+                  }
+                </echo>
               </tasks>
             </configuration>
             <goals>
@@ -151,7 +145,6 @@
               <outputDirectory>${basedir}/lib</outputDirectory>
               <overWriteIfNewer>true</overWriteIfNewer>
               <includeScope>runtime</includeScope>
-              <!-- <excludeGroupIds>com.spaceapplications.yamcs</excludeGroupIds> -->
             </configuration>
           </execution>
         </executions>
@@ -174,7 +167,6 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.0.0</version>
         <executions>
           <execution>
             <id>add-source</id>
@@ -192,40 +184,4 @@
       </plugin>
     </plugins>
   </build>
-
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.7</version>
-        <configuration>
-          <author>true</author>
-          <version>true</version>
-          <show>private</show>
-        </configuration>
-      </plugin>
-    </plugins>
-  </reporting>
-
-
-  <!-- If we are running in Jenkins use cobertura. -->
-  <profiles>
-    <profile>
-      <id>jenkins</id>
-      <activation>
-        <property>
-          <name>env.BUILD_NUMBER</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>cobertura-maven-plugin</artifactId>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>

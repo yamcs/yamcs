@@ -4,11 +4,12 @@ import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
-import org.yamcs.tctm.TcUplinkerAdapter;
+import org.yamcs.tctm.TcDataLinkInitialiser;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -35,9 +36,9 @@ public class CommandHistoryRecorder extends AbstractService {
 
     @Override
     protected void doStart() {
-        YarchDatabase ydb=YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb=YarchDatabase.getInstance(instance);
 
-        String keycols=TcUplinkerAdapter.TC_TUPLE_DEFINITION.getStringDefinition1();
+        String keycols=TcDataLinkInitialiser.TC_TUPLE_DEFINITION.getStringDefinition1();
         try {
             if(ydb.getTable("cmdhist")==null) {
                 String q="create table cmdhist ("+keycols+", PRIMARY KEY(gentime, origin, seqNum)) histogram(cmdName) partition by time(gentime) table_format=compressed";
@@ -73,7 +74,7 @@ public class CommandHistoryRecorder extends AbstractService {
 
     @Override
     protected void doStop() {
-        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         Utils.closeTableWriters(ydb, Arrays.asList(YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME, YarchCommandHistoryAdapter.DUMP_CMDHIST_STREAM_NAME));
         notifyStopped();
     }

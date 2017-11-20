@@ -9,8 +9,7 @@ import java.util.concurrent.Semaphore;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.FileUtils;
-import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.management.JMXService;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
@@ -24,21 +23,19 @@ import org.yamcs.yarch.streamsql.StreamSqlResult;
 public abstract class YarchTestCase {
     protected StreamSqlParser parser;
     protected ExecutionContext context;
-    protected YarchDatabase ydb;
+    protected YarchDatabaseInstance ydb;
     static boolean littleEndian;
     protected String instance;
     Random random = new Random();
     @BeforeClass 
     public static void setUpYarch() throws Exception {
 	YConfiguration.setup(); //reset the prefix if maven runs multiple tests in the same java 
-
 	YConfiguration config=YConfiguration.getConfiguration("yamcs");
 	if(config.containsKey("littleEndian")) {
 	    littleEndian=config.getBoolean("littleEndian");
 	} else {
 	    littleEndian=false;
 	}
-	JMXService.setup(false);
     }
 
     @Before
@@ -55,7 +52,7 @@ public abstract class YarchTestCase {
 	if(!ytdir.mkdirs()) throw new IOException("Cannot create directory "+ytdir);
 	
 	if(YarchDatabase.hasInstance(instance)) {	
-	    YarchDatabase ydb = YarchDatabase.getInstance(instance);
+	    YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 	    RdbStorageEngine.removeInstance(ydb);
 	    YarchDatabase.removeInstance(instance);		
 	}

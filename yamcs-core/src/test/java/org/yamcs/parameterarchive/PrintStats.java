@@ -6,6 +6,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 public class PrintStats {
     @Ignore

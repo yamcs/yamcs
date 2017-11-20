@@ -18,10 +18,10 @@ import org.yamcs.api.rest.BulkRestDataReceiver;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Rest.BulkDownloadParameterValueRequest;
+import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.MdbMappings;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -40,21 +40,26 @@ public class CliParameterExtractor {
         System.err.println("Usage: parameter-extractor.sh [OPTIONS] yamcs-url startTime stopTime [parameter_opsnames | -f file_with_parameters]");
         System.err.println("The yamcs-url has to contain the archive instance");
         System.err.println("OPTIONS:");
-        System.err.println("         \t-a      print only those lines where all parameters are set");
-        System.err.println("         \t-h      print this help");
-        System.err.println("         \t-k      keep previous parameters");
-        System.err.println("         \t-r      print raw values in addition to engineering values");
-        System.err.println("         \t-t      print the generation time on the first column");
-        System.err.println("         \t-u      print unique lines only");
-        System.err.println("         \t-w <ms> join multiple lines with timestamps within the given time window");
-        System.err.println("Example:\n parameter-extractor.sh http://localhost:8090/yops 2007-08-01T12:34:00 2007-08-23T18:34:00 IntegerPara11 FloatPara11_1");
+        System.err.println("         \t-a           print only those lines where all parameters are set");
+        System.err.println("         \t-h           print this help");
+        System.err.println("         \t-k           keep previous parameters");
+        System.err.println("         \t-r           print raw values in addition to engineering values");
+        System.err.println("         \t-t           print the generation time on the first column");
+        System.err.println("         \t-u           print unique lines only");
+        System.err.println("         \t-n NAMESPACE alternative parameter namespace (e.g. \"MDB:OPS Name\")");
+        System.err.println("         \t-w MILLIS    join multiple lines with timestamps within the given time window");
+        System.err.println("Example:\n parameter-extractor.sh http://localhost:8090/yops 2007-08-01T12:34:00 2007-08-23T18:34:00 /SUBSYS1/IntegerPara11 /SUBSYS1/FloatPara11_1");
         System.exit(1);
     }
 
-    public static BulkDownloadParameterValueRequest.Builder getRequest(String... params) {
+    public static BulkDownloadParameterValueRequest.Builder getRequest(String namespace, String... params) {
         BulkDownloadParameterValueRequest.Builder prr=BulkDownloadParameterValueRequest.newBuilder();
         for(String p:params) {
-            prr.addId(NamedObjectId.newBuilder().setName(p).setNamespace(MdbMappings.MDB_OPSNAME));
+            if (namespace != null) {
+                prr.addId(NamedObjectId.newBuilder().setName(p).setNamespace(namespace));
+            } else {
+                prr.addId(NamedObjectId.newBuilder().setName(p));
+            }
         }
         return prr;
     }
@@ -83,6 +88,7 @@ public class CliParameterExtractor {
         boolean printTime = false;
         boolean allParametersPresent = false;
         boolean keepValues = false;
+        String namespace = null;
 
         while(args[k].startsWith("-")) {
             if(args[k].equals("-t")) {
@@ -95,6 +101,8 @@ public class CliParameterExtractor {
                 allParametersPresent=true;
             } else if(args[k].equals("-k")) {
                 keepValues=true;
+            } else if(args[k].equals("-n")) {
+                namespace=args[++k];
             } else if(args[k].equals("-h")) {
                 printUsageAndExit(null);
             } else if(args[k].equals("-w")) {
@@ -138,7 +146,7 @@ public class CliParameterExtractor {
             prr=BulkDownloadParameterValueRequest.newBuilder()
                     .addAllId(ParameterRetrievalGui.loadParameters(new BufferedReader(new FileReader(args[k+1]))));
         } else {
-            prr=getRequest(Arrays.copyOfRange(args, k, args.length));
+            prr=getRequest(namespace, Arrays.copyOfRange(args, k, args.length));
         }
 
         prr.setStart(start).setStop(stop);
@@ -156,21 +164,34 @@ public class CliParameterExtractor {
             @Override
             public void receiveData(byte[] data) throws YamcsApiException {
                 ParameterData pd;
-
                 try {
                     pd = ParameterData.parseFrom(data);
                     pf.writeParameters(pd.getParameterList());
                 } catch (InvalidProtocolBufferException e) {
-                    System.err.println("cannot decode parameter message"+e);
+                    System.err.println("Cannot decode parameter message: " + e);
                 } catch (IOException e) {
-                    System.err.println("Error when saving parameters: "+e);
+                    System.err.println("Error when saving parameters: " + e);
                 }
             }
         });
 
-        completableFuture.get();
-        pf.close();
-        restClient.close();
-        System.err.println("finished");
+        try {
+            completableFuture.get();
+        } catch (ExecutionException e) {
+            Throwable t = (e.getCause() != null ? e.getCause() : e);
+            if (t instanceof YamcsApiException) {
+                RestExceptionMessage msg = ((YamcsApiException) t).getRestExceptionMessage();
+                if (msg != null) {
+                    System.err.println(msg.getType() + ": " + msg.getMsg());
+                } else {
+                    System.err.println(t.getMessage());
+                }
+            } else {
+                System.err.println(t);
+            }
+        } finally {
+            pf.close();
+            restClient.close();
+        }
     }
 }

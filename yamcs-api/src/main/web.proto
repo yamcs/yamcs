@@ -1,3 +1,5 @@
+syntax="proto2";
+
 package web;
 option java_package = "org.yamcs.protobuf";
 
@@ -56,6 +58,7 @@ message WebSocketServerMessage {
     optional commanding.CommandQueueInfo commandQueueInfo = 13;
     optional commanding.CommandQueueEvent commandQueueEvent = 14;
     optional yamcs.TmPacketData tmPacket = 15;
+    optional ConnectionInfo connectionInfo = 16;
     
     optional WebSocketExtensionData extensionData = 100;
   }
@@ -104,3 +107,13 @@ message ParameterSubscriptionResponse {
   repeated yamcs.NamedObjectId valid = 1;
   repeated yamcs.NamedObjectId invalid = 2;
 }
+
+
+
+//sent via the websocket with information about connected client
+message ConnectionInfo {
+   optional int32 clientId = 1;   
+   optional yamcsManagement.YamcsInstance instance = 2;
+   optional yamcsManagement.ProcessorInfo processor = 3;
+}
+

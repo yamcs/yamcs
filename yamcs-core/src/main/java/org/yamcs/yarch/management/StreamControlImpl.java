@@ -1,7 +1,6 @@
 package org.yamcs.yarch.management;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.management.NotCompliantMBeanException;
@@ -13,7 +12,7 @@ import org.yamcs.yarch.StreamSubscriber;
 
 public class StreamControlImpl  extends StandardMBean implements StreamControl{
     Stream stream;
-    StreamControlImpl(Stream stream) throws NotCompliantMBeanException {
+    public StreamControlImpl(Stream stream) throws NotCompliantMBeanException {
         super(StreamControl.class);
         this.stream=stream;
     }

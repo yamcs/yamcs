@@ -1,13 +1,15 @@
 package org.yamcs.management;
 
-import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -15,13 +17,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +27,8 @@ import org.yamcs.ProcessorClient;
 import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorListener;
 import org.yamcs.YamcsException;
+import org.yamcs.YamcsServer;
+import org.yamcs.YamcsServerInstance;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;
@@ -40,64 +37,53 @@ import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.Privilege;
 import org.yamcs.tctm.Link;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtceproc.ProcessingStatistics;
+import org.yamcs.xtceproc.XtceDbFactory;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.TableDefinition;
 
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.Service.Listener;
+import com.google.common.util.concurrent.Service.State;
 
 /**
- * Responsible for integrating with core yamcs classes, encoding to protobuf,
- * and forwarding aggregated info downstream.
- * <p>
- * Notable examples of downstream listeners are the MBeanServer, the ActiveMQ-business,
- * and subscribed websocket clients.
+ * Responsible for providing to interested listeners info related to creation/removal/update of:
+ *  - instances, processors and clients - see {@link ManagementListener}  
+ *  - links - see {@link LinkListener}  
+ *  - streams and tables - see {@link TableStreamListener}
+ *  - command queues - see {@link CommandQueueListener}
  */
 public class ManagementService implements ProcessorListener {
-    
-    final MBeanServer mbeanServer;
-
-    final boolean jmxEnabled;
     static Logger log = LoggerFactory.getLogger(ManagementService.class.getName());
-    final String tld = "yamcs";
-    static ManagementService managementService;
+    static ManagementService managementService = new ManagementService();
 
-    Map<Integer, ClientControlImpl> clients = Collections.synchronizedMap(new HashMap<Integer, ClientControlImpl>());
-    AtomicInteger clientId=new AtomicInteger();
-    
-    List<LinkControlImpl> links=new CopyOnWriteArrayList<LinkControlImpl>();
-    List<CommandQueueManager> qmanagers=new CopyOnWriteArrayList<>();
-    
+    Map<Integer, ClientWithInfo> clients = Collections.synchronizedMap(new HashMap<Integer, ClientWithInfo>());
+    private AtomicInteger clientIdGenerator = new AtomicInteger();
+
+    List<LinkWithInfo> links = new CopyOnWriteArrayList<>();
+    List<CommandQueueManager> qmanagers = new CopyOnWriteArrayList<>();
+
     // Used to update TM-statistics, and Link State
-    ScheduledThreadPoolExecutor timer=new ScheduledThreadPoolExecutor(1);
-    
+    ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
+
     Set<ManagementListener> managementListeners = new CopyOnWriteArraySet<>(); // Processors & Clients. Should maybe split up
     Set<LinkListener> linkListeners = new CopyOnWriteArraySet<>();
     Set<CommandQueueListener> commandQueueListeners = new CopyOnWriteArraySet<>();
+    Set<TableStreamListener> tableStreamListeners = new CopyOnWriteArraySet<>();
 
-    // keep track of registered services
-    Map<String, Integer> servicesCount = new HashMap<>();
 
-    Map<Processor, Statistics> yprocs=new ConcurrentHashMap<Processor, Statistics>();
+    Map<Processor, Statistics> yprocs=new ConcurrentHashMap<>();
+
     static final Statistics STATS_NULL=Statistics.newBuilder().setInstance("null").setYProcessorName("null").build();//we use this one because ConcurrentHashMap does not support null values
-
-    static public void setup(boolean jmxEnabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
-        managementService = new ManagementService(jmxEnabled);
-    }
 
     static public ManagementService getInstance() {
         return managementService;
     }
 
-    private ManagementService(boolean jmxEnabled) throws NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, MalformedObjectNameException, NullPointerException {
-        this.jmxEnabled=jmxEnabled;
-
-        if(jmxEnabled)
-            mbeanServer=ManagementFactory.getPlatformMBeanServer();
-        else
-            mbeanServer=null;
-
+    private ManagementService() {
         Processor.addProcessorListener(this);
         timer.scheduleAtFixedRate(() -> updateStatistics(), 1, 1, TimeUnit.SECONDS);
         timer.scheduleAtFixedRate(() -> checkLinkUpdate(), 1, 1, TimeUnit.SECONDS);
@@ -108,77 +94,43 @@ public class ManagementService implements ProcessorListener {
     }
 
     public void registerService(String instance, String serviceName, Service service) {
-        if(jmxEnabled) {
-            ServiceControlImpl sci;
-            try {
-                sci = new ServiceControlImpl(service);
-
-                // if a service with the same name has already been registered, suffix the service name with an index
-                int serviceCount = 0;
-                if(servicesCount.containsKey(serviceName)) {
-                    serviceCount = servicesCount.get(serviceName);
-                    servicesCount.remove(serviceName);
-                }
-                servicesCount.put(serviceName, ++serviceCount);
-                if(serviceCount > 1)
-                    serviceName=serviceName + "_" + serviceCount;
-
-                // register service
-                mbeanServer.registerMBean(sci, ObjectName.getInstance(tld+"."+instance+":type=services,name="+serviceName));
-
-            } catch (Exception e) {
-                log.warn("Got exception when registering a service", e);
-            }
-        }
+        managementListeners.forEach(l -> l.serviceRegistered(instance, serviceName, service));
     }
 
     public void unregisterService(String instance, String serviceName) {
-        if(jmxEnabled) {
-            try {
-
-                // check if this serviceName has been registered several time
-                int serviceCount = 0;
-                String serviceName_  = serviceName;
-                if(servicesCount.containsKey(serviceName) && (serviceCount = servicesCount.get(serviceName)) > 0) {
-                    if(serviceCount > 1)
-                        serviceName_ = serviceName + "_" + serviceCount;
-                    serviceCount--;
-                    servicesCount.replace(serviceName, serviceCount);
-                }
-
-                // unregister service
-                mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+instance+":type=services,name="+serviceName_));
-            } catch (Exception e) {
-                log.warn("Got exception when unregistering a service", e);
-            }
-        }
+        managementListeners.forEach(l -> l.serviceUnregistered(instance, serviceName));
     }
 
 
-    public void registerLink(String instance, String name, String streamName, String spec, Link link) {
-        try {
-            LinkControlImpl lci = new LinkControlImpl(instance, name, streamName, spec, link);
-            if(jmxEnabled) {
-                mbeanServer.registerMBean(lci, ObjectName.getInstance(tld+"."+instance+":type=links,name="+name));
-            }
-            links.add(lci);
-            linkListeners.forEach(l -> l.registerLink(lci.getLinkInfo()));
-        } catch (Exception e) {
-            log.warn("Got exception when registering a link: ", e);
+    public void registerLink(String instance, String linkName, String streamName, String spec, Link link) {
+        LinkInfo.Builder linkb = LinkInfo.newBuilder().setInstance(instance)
+                .setName(linkName).setStream(streamName)
+                .setDisabled(link.isDisabled())
+                .setStatus(link.getLinkStatus().name())
+                .setType(link.getClass().getSimpleName()).setSpec(spec)
+                .setDataCount(link.getDataCount());
+        if(link.getDetailedStatus()!=null) {
+            linkb.setDetailedStatus(link.getDetailedStatus());
+        }
+        LinkInfo linkInfo = linkb.build();
+        links.add(new LinkWithInfo(link, linkInfo));
+        linkListeners.forEach(l->l.linkRegistered(linkInfo));
+    }
+
+    public void unregisterLink(String instance, String linkName) {
+        Optional<LinkWithInfo> o = getLink(instance, linkName);
+        if(o.isPresent()) {
+            LinkWithInfo lwi = o.get();
+            links.remove(lwi);
+            linkListeners.forEach(l -> l.linkUnregistered(lwi.linkInfo));
         }
     }
 
-    public void unregisterLink(String instance, String name) {
-        if(jmxEnabled) {
-            try {
-                mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+instance+":type=links,name="+name));
-            } catch (Exception e) {
-                log.warn("Got exception when unregistering a link", e);
-            }
-        }
-        linkListeners.forEach(l -> l.unregisterLink(instance, name));
+    private Optional<LinkWithInfo> getLink(String instance, String linkName) {
+        return links.stream()
+                .filter(lwi->instance.equals(lwi.linkInfo.getInstance()) && linkName.equals(lwi.linkInfo.getName()))
+                .findFirst();
     }
-    
     public CommandQueueManager getQueueManager(String instance, String processorName) throws YamcsException {
         for(int i=0;i<qmanagers.size();i++) {
             CommandQueueManager cqm=qmanagers.get(i);
@@ -189,45 +141,22 @@ public class ManagementService implements ProcessorListener {
 
         throw new YamcsException("Cannot find a command queue manager for "+instance+"/"+processorName);
     }
-    
+
     public List<CommandQueueManager> getQueueManagers() {
         return qmanagers;
     }
 
-    public void registerYProcessor(Processor yproc) {
+    public int registerClient(String instance, String procName,  ProcessorClient client) {
+        int id = clientIdGenerator.incrementAndGet();
         try {
-            ProcessorControlImpl cci = new ProcessorControlImpl(yproc);
-            if(jmxEnabled) {
-                mbeanServer.registerMBean(cci, ObjectName.getInstance(tld+"."+yproc.getInstance()+":type=processors,name="+yproc.getName()));
-            }
-        } catch (Exception e) {
-            log.warn("Got exception when registering a processor", e);
-        }
-    }
-
-    public void unregisterYProcessor(Processor yproc) {
-        if(jmxEnabled) {
-            try {
-                mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+yproc.getInstance()+":type=processors,name="+yproc.getName()));
-            } catch (Exception e) {
-                log.warn("Got exception when unregistering a processor", e);
-            }
-        }
-    }
-
-    public int registerClient(String instance, String yprocName,  ProcessorClient client) {
-        int id=clientId.incrementAndGet();
-        try {
-            Processor c=Processor.getInstance(instance, yprocName);
+            Processor c=Processor.getInstance(instance, procName);
             if(c==null) {
-                throw new YamcsException("Unexisting yprocessor ("+instance+", "+yprocName+") specified");
+                throw new YamcsException("Unexisting processor ("+instance+", "+procName+") specified");
             }
-            ClientControlImpl cci = new ClientControlImpl(instance, id, client.getUsername(), client.getApplicationName(), yprocName, client);
-            clients.put(cci.getClientInfo().getId(), cci);
-            if(jmxEnabled) {
-                mbeanServer.registerMBean(cci, ObjectName.getInstance(tld+"."+instance+":type=clients,processor="+yprocName+",id="+id));
-            }
-            managementListeners.forEach(l -> l.clientRegistered(cci.getClientInfo()));
+            long now = TimeEncoding.getWallclockTime();
+            ClientInfo clientInfo = ManagementGpbHelper.toClientInfo(instance, procName, id, now, client);
+            clients.put(id, new ClientWithInfo(client, clientInfo));
+            managementListeners.forEach(l -> l.clientRegistered(clientInfo));
         } catch (Exception e) {
             log.warn("Got exception when registering a client", e);
         }
@@ -235,87 +164,59 @@ public class ManagementService implements ProcessorListener {
     }
 
     public void unregisterClient(int id) {
-        ClientControlImpl cci=clients.remove(id);
-        if(cci==null) {
+        ClientWithInfo cwi = clients.remove(id);
+        if(cwi==null) {
             return;
         }
-        ClientInfo ci=cci.getClientInfo();
+        ClientInfo ci = cwi.clientInfo;
         try {
-            if(jmxEnabled) {
-                mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+ci.getInstance()+":type=clients,processor="+ci.getProcessorName()+",id="+id));
-            }
             managementListeners.forEach(l -> l.clientUnregistered(ci));
         } catch (Exception e) {
-            log.warn("Got exception when registering a client", e);
+            log.warn("Got exception when unregistering a client", e);
         }
     }
 
-    private void switchProcessor(ClientControlImpl cci, Processor yproc, AuthenticationToken authToken) throws ProcessorException {
-        ClientInfo oldci = cci.getClientInfo();
-        cci.switchProcessor(yproc, authToken);
-        ClientInfo ci = cci.getClientInfo();
-        
+    private void switchProcessor(ClientWithInfo cwi, Processor newProc) throws ProcessorException {
+        ProcessorClient client = cwi.client;
+        Processor oldProc = client.getProcessor();
+        oldProc.disconnect(client);
+        client.switchProcessor(newProc);
+        newProc.connect(client);
+        ClientInfo oldCi = cwi.clientInfo;
+        cwi.clientInfo = ManagementGpbHelper.toClientInfo(newProc.getInstance(), newProc.getName(), oldCi.getId(), oldCi.getLoginTime(), client);
         try {
-            if(jmxEnabled) {
-                mbeanServer.unregisterMBean(ObjectName.getInstance(tld+"."+oldci.getInstance()+":type=clients,processor="+oldci.getProcessorName()+",id="+ci.getId()));
-                mbeanServer.registerMBean(cci, ObjectName.getInstance(tld+"."+ci.getInstance()+":type=clients,processor="+ci.getProcessorName()+",id="+ci.getId()));
-            }
-            managementListeners.forEach(l -> l.clientInfoChanged(ci));
+            managementListeners.forEach(l -> l.clientInfoChanged(cwi.clientInfo));
         } catch (Exception e) {
             log.warn("Got exception when switching processor", e);
         }
 
     }
 
-    public void createProcessor(ProcessorManagementRequest cr, AuthenticationToken authToken) throws YamcsException{
-        log.info("Creating new processor instance: {}, name: {}, type: {}, config: {}, persistent: {}",cr.getInstance(), cr.getName(), cr.getType(), cr.getConfig(), cr.getPersistent());
-        
-        String username;
-        if (authToken != null && authToken.getPrincipal() != null) {
-            username = authToken.getPrincipal().toString();
-        } else {
-            username = Privilege.getDefaultUser();
-        }
-        if(!Privilege.getInstance().hasPrivilege1(authToken, Privilege.SystemPrivilege.MayControlProcessor)) {
-            if(cr.getPersistent()) {
-                log.warn("User {} is not allowed to create persistent processors", username);
-                throw new YamcsException("Permission denied");
-            }
-            if(!"Archive".equals(cr.getType())) {
-                log.warn("User {} is not allowed to create processors of type {}", cr.getType(), username);
-                throw new YamcsException("Permission denied");
-            }
-            for(int i=0;i<cr.getClientIdCount();i++) {
-                ClientInfo si=clients.get(cr.getClientId(i)).getClientInfo();
-                if(!username.equals(si.getUsername())) {
-                    log.warn("User {} is not allowed to connect {} to new processor {}", username, si.getUsername(), cr.getName());
-                    throw new YamcsException("Permission denied");
-                }
-            }
-        }
+    public void createProcessor(ProcessorManagementRequest pmr, String username) throws YamcsException{
+        log.info("Creating new processor instance: {}, name: {}, type: {}, config: {}, persistent: {}",pmr.getInstance(), pmr.getName(), pmr.getType(), pmr.getConfig(), pmr.getPersistent());
 
         Processor yproc;
         try {
             int n=0;
-            
+
             Object config = null;
-            if(cr.hasReplaySpec()) {
-                config = cr.getReplaySpec();
-            } else if (cr.hasConfig()){
-                config = cr.getConfig();
+            if(pmr.hasReplaySpec()) {
+                config = pmr.getReplaySpec();
+            } else if (pmr.hasConfig()){
+                config = pmr.getConfig();
             }
-            yproc = ProcessorFactory.create(cr.getInstance(), cr.getName(), cr.getType(), username, config);
-            yproc.setPersistent(cr.getPersistent());
-            for(int i=0; i<cr.getClientIdCount(); i++) {
-                ClientControlImpl cci = clients.get(cr.getClientId(i));
-                if(cci!=null) {
-                    switchProcessor(cci, yproc, authToken);
+            yproc = ProcessorFactory.create(pmr.getInstance(), pmr.getName(), pmr.getType(), username, config);
+            yproc.setPersistent(pmr.getPersistent());
+            for(int i=0; i<pmr.getClientIdCount(); i++) {
+                ClientWithInfo cwi = clients.get(pmr.getClientId(i));
+                if(cwi!=null) {
+                    switchProcessor(cwi, yproc);
                     n++;
                 } else {
-                    log.warn("createProcessor called with invalid client id:"+cr.getClientId(i)+"; ignored.");
+                    log.warn("createProcessor called with invalid client id:"+pmr.getClientId(i)+"; ignored.");
                 }
             }
-            if(n>0 || cr.getPersistent()) {
+            if(n>0 || pmr.getPersistent()) {
                 log.info("Starting new processor '" + yproc.getName() + "' with " + yproc.getConnectedClients() + " clients");
                 yproc.startAsync();
                 yproc.awaitRunning();
@@ -335,73 +236,62 @@ public class ManagementService implements ProcessorListener {
         }
     }
 
+    public void connectToProcessor(Processor processor, int clientId) throws YamcsException, ProcessorException {
+        ClientWithInfo cwi = clients.get(clientId);
+        if(cwi==null) {
+            throw new YamcsException("Invalid client id "+clientId);
+        }
+        switchProcessor(cwi, processor);
+    }
 
-    public void connectToProcessor(ProcessorManagementRequest cr, AuthenticationToken usertoken) throws YamcsException {
-        Processor chan=Processor.getInstance(cr.getInstance(), cr.getName());
-        if(chan==null) {
+    public void connectToProcessor(ProcessorManagementRequest cr) throws YamcsException {
+        Processor processor = Processor.getInstance(cr.getInstance(), cr.getName());
+        if(processor==null) {
             throw new YamcsException("Unexisting processor "+cr.getInstance()+"/"+cr.getName()+" specified");
         }
 
-
-        String username;
-        if  (usertoken != null && usertoken.getPrincipal() != null) {
-            username = usertoken.getPrincipal().toString();
-        } else {
-            username = Privilege.getDefaultUser();
-        }
-        log.debug("User {} wants to connect clients {} to processor {}", username, cr.getClientIdList(), cr.getName());
-
-
-        if(!Privilege.getInstance().hasPrivilege1(usertoken, Privilege.SystemPrivilege.MayControlProcessor) &&
-                !((chan.isPersistent() || chan.getCreator().equals(username)))) {
-            log.warn("User {} is not allowed to connect users to processor {}", username, cr.getName() );
-            throw new YamcsException("permission denied");
-        }
-        if(!Privilege.getInstance().hasPrivilege1(usertoken, Privilege.SystemPrivilege.MayControlProcessor)) {
-            for(int i=0; i<cr.getClientIdCount(); i++) {
-                ClientInfo si=clients.get(cr.getClientId(i)).getClientInfo();
-                if(!username.equals(si.getUsername())) {
-                    log.warn("User {} is not allowed to connect {} to processor {}", username, si.getUsername(), cr.getName());
-                    throw new YamcsException("Permission denied");
-                }
-            }
-        }
+        log.debug("Connecting clients {} to processor {}", cr.getClientIdList(), cr.getName());
 
         try {
             for(int i=0;i<cr.getClientIdCount();i++) {
                 int id=cr.getClientId(i);
-                ClientControlImpl cci=clients.get(id);
-                switchProcessor(cci, chan, usertoken);
+                ClientWithInfo cwi = clients.get(id);
+                switchProcessor(cwi, processor);
             }
         } catch(ProcessorException e) {
             throw new YamcsException(e.toString());
         }
     }
 
-    public void registerCommandQueueManager(String instance, String yprocName, CommandQueueManager cqm) {
+    public void registerCommandQueueManager(String instance, String processorName, CommandQueueManager cqm) {
+        for(CommandQueue cq:cqm.getQueues()) {
+            commandQueueListeners.forEach(l->l.commandQueueRegistered(instance, processorName, cq));
+        }
+        qmanagers.add(cqm);
+        for (CommandQueueListener l : commandQueueListeners) {
+            cqm.registerListener(l);
+            for(CommandQueue q:cqm.getQueues()) {
+                l.updateQueue(q);
+            }
+        }
+
+    }
+
+    public void unregisterCommandQueueManager(String instance, String processorName, CommandQueueManager cqm) {
         try {
             for(CommandQueue cq:cqm.getQueues()) {
-                if(jmxEnabled) {
-                    CommandQueueControlImpl cqci = new CommandQueueControlImpl(instance, yprocName, cqm, cq);
-                    mbeanServer.registerMBean(cqci, ObjectName.getInstance(tld+"."+instance+":type=commandQueues,processor="+yprocName+",name="+cq.getName()));
-                }
+                commandQueueListeners.forEach(l->l.commandQueueUnregistered(instance, processorName, cq));
             }
-            qmanagers.add(cqm);
-            for (CommandQueueListener l : commandQueueListeners) {
-                cqm.registerListener(l);
-                for(CommandQueue q:cqm.getQueues()) {
-                    l.updateQueue(q);
-                }
-            }
+            qmanagers.remove(cqm);
         } catch (Exception e) {
-            log.warn("Got exception when registering a command queue", e);
+            log.warn("Got exception when unregistering a command queue", e);
         }
     }
-    
+
     public List<CommandQueueManager> getCommandQueueManagers() {
         return qmanagers;
     }
-    
+
     public CommandQueueManager getCommandQueueManager(Processor processor) {
         for (CommandQueueManager mgr : qmanagers) {
             if (mgr.getInstance().equals(processor.getInstance())
@@ -411,41 +301,29 @@ public class ManagementService implements ProcessorListener {
         }
         return null;
     }
-    
-    public void enableLink(String instance, String name) throws YamcsException {
-        log.debug("received enableLink for "+instance+"/"+name);
-        boolean found=false;
-        for(int i=0;i<links.size();i++) {
-            LinkControlImpl lci=links.get(i);
-            LinkInfo li2=lci.getLinkInfo();
-            if(li2.getInstance().equals(instance) && li2.getName().equals(name)) {
-                found=true;
-                lci.enable();
-                break;
-            }
-        }
-        if(!found) {
-            throw new YamcsException("There is no link named '"+name+"' in instance "+instance);
+
+    public void enableLink(String instance, String linkName) {
+        log.debug("received enableLink for "+instance+"/"+linkName);
+        Optional<LinkWithInfo> o = getLink(instance, linkName);
+        if(o.isPresent()) {
+            LinkWithInfo lci = o.get();
+            lci.link.enable();
+        } else {
+            throw new IllegalArgumentException("There is no link named '"+linkName+"' in instance "+instance);
         }
     }
-    
-    public void disableLink(String instance, String name) throws YamcsException {
-        log.debug("received disableLink for "+instance+"/"+name);
-        boolean found=false;
-        for(int i=0;i<links.size();i++) {
-            LinkControlImpl lci=links.get(i);
-            LinkInfo li2=lci.getLinkInfo();
-            if(li2.getInstance().equals(instance) && li2.getName().equals(name)) {
-                found=true;
-                lci.disable();
-                break;
-            }
-        }
-        if(!found) {
-            throw new YamcsException("There is no link named '"+name+"' in instance "+instance);
+
+    public void disableLink(String instance, String linkName) {
+        log.debug("received disableLink for "+instance+"/"+linkName);
+        Optional<LinkWithInfo> o = getLink(instance, linkName);
+        if(o.isPresent()) {
+            LinkWithInfo lci = o.get();
+            lci.link.disable();
+        } else {
+            throw new IllegalArgumentException("There is no link named '"+linkName+"' in instance "+instance);
         }
     }
-    
+
     /**
      * Adds a listener that is to be notified when any processor, or any client
      * is updated. Calling this multiple times has no extra effects. Either you
@@ -454,7 +332,7 @@ public class ManagementService implements ProcessorListener {
     public boolean addManagementListener(ManagementListener l) {
         return managementListeners.add(l);
     }
-    
+
     /**
      * Adds a listener that is to be notified when any processor, or any client
      * is updated. Calling this multiple times has no extra effects. Either you
@@ -463,69 +341,74 @@ public class ManagementService implements ProcessorListener {
     public boolean addLinkListener(LinkListener l) {
         return linkListeners.add(l);
     }
-    
+
     public boolean removeManagementListener(ManagementListener l) {
         return managementListeners.remove(l);
     }
-    
+
     public boolean addCommandQueueListener(CommandQueueListener l) {
         return commandQueueListeners.add(l);
     }
-    
+
+    public boolean addTableStreamListener(TableStreamListener l) {
+        return tableStreamListeners.add(l);
+    }
+
+    public boolean removeTableStreamListener(TableStreamListener l) {
+        return tableStreamListeners.remove(l);
+    }
+
     public boolean removeCommandQueueListener(CommandQueueListener l) {
         boolean removed = commandQueueListeners.remove(l);
         qmanagers.forEach(m -> m.removeListener(l));
         return removed;
     }
-    
+
     public boolean removeLinkListener(LinkListener l) {
         return linkListeners.remove(l);
     }
-    
+
     public List<LinkInfo> getLinkInfo() {
-        List<LinkInfo> l = new ArrayList<>();
-        for (LinkControlImpl li : links) {
-            l.add(li.getLinkInfo());
-        }
-        return l;
+        return links.stream().map(lwi->lwi.linkInfo).collect(Collectors.toList());
     }
-    
+
     public LinkInfo getLinkInfo(String instance, String name) {
-        for(int i=0;i<links.size();i++) {
-            LinkControlImpl lci=links.get(i);
-            LinkInfo li=lci.getLinkInfo();
-            if(li.getInstance().equals(instance) && li.getName().equals(name)) {
-                return li;
-            }
+        Optional<LinkInfo> o = links.stream()
+                .map(lwi -> lwi.linkInfo)
+                .filter(li->li.getInstance().equals(instance) && li.getName().equals(name))
+                .findFirst();
+        if(o.isPresent()) {
+            return o.get();
+        } else {
+            return null;
         }
-        return null;
     }
 
     public Set<ClientInfo> getClientInfo() {
         synchronized(clients) {
             return clients.values().stream()
-                    .map(v -> v.getClientInfo())
+                    .map(cwi -> cwi.clientInfo)
                     .collect(Collectors.toSet());
         }
     }
-    
+
     public Set<ClientInfo> getClientInfo(String username) {
         synchronized(clients) {
             return clients.values().stream()
-                    .map(v -> v.getClientInfo())
-                    .filter(c -> c.getUsername().equals(username))
+                    .map(cwi -> cwi.clientInfo)
+                    .filter(ci -> ci.getUsername().equals(username))
                     .collect(Collectors.toSet());
         }
     }
-    
+
     public ClientInfo getClientInfo(int clientId) {
-        ClientControlImpl cci = clients.get(clientId);
-        if(cci==null) {
+        ClientWithInfo cwi = clients.get(clientId);
+        if(cwi==null) {
             return null;
         }
-        return cci.getClientInfo();
+        return cwi.clientInfo;
     }
-    
+
     private void updateStatistics() {
         try {
             for(Entry<Processor,Statistics> entry:yprocs.entrySet()) {
@@ -543,15 +426,15 @@ public class ManagementService implements ProcessorListener {
                 }
             }
         } catch (Exception e) {
-           log.warn("Error updating statistics ", e);
+            log.warn("Error updating statistics ", e);
         }
     }
-    
+
     private void checkLinkUpdate() {
         // see if any link has changed
-        for(LinkControlImpl lci:links) {
-            if(lci.hasChanged()) {
-                LinkInfo li = lci.getLinkInfo();
+        for(LinkWithInfo lwi:links) {
+            if(lwi.hasChanged()) {
+                LinkInfo li = lwi.linkInfo;
                 linkListeners.forEach(l -> l.linkChanged(li));
             }
         }
@@ -575,5 +458,110 @@ public class ManagementService implements ProcessorListener {
     public void processorStateChanged(Processor processor) {
         ProcessorInfo pi = ManagementGpbHelper.toProcessorInfo(processor);
         managementListeners.forEach(l -> l.processorStateChanged(pi));
+    }
+
+    public void registerYamcsInstance(YamcsServerInstance ys) {
+        ys.addListener(new Listener() {
+            public void running() {notifyInstanceStateChanged(ys);}
+            public void terminated(State from) {notifyInstanceStateChanged(ys);}
+            public void failed(State from, Throwable failure) {notifyInstanceStateChanged(ys);}
+        }, MoreExecutors.directExecutor());
+    }
+
+    private void notifyInstanceStateChanged(YamcsServerInstance ysi) {
+        managementListeners.forEach(l -> l.instanceStateChanged(ysi));
+    }
+    /**
+     * Restarts a yamcs instance. 
+     * It is not possible to restart an instance - so the old one is stopped and a new one is created and started.
+     * 
+     * @param instanceName the name of the instance to be restarted
+     * @return completable that will complete after the instance has been restarted
+     */
+    public CompletableFuture<Void>  restartInstance(String instanceName) {
+        YamcsServerInstance ysi = YamcsServer.getInstance(instanceName);
+        if(ysi==null) {
+            throw new IllegalArgumentException("No instance named '"+instanceName+"'");
+        }
+
+        return CompletableFuture.runAsync(() ->{
+            ysi.stopAsync();
+            try {
+                ysi.awaitTerminated();
+            } catch (IllegalStateException e) {
+                log.error("Instance did not terminate normally", e);
+            }
+            XtceDbFactory.remove(instanceName);
+            YamcsServerInstance ysi1;
+            try {
+                log.info("Creating new instance {}", instanceName);
+                ysi1 = YamcsServer.createYamcsInstance(instanceName);
+            } catch (IOException e) {
+                throw new CompletionException(e);
+            }
+            log.info("Starting new instance {}", instanceName);
+            ysi1.startAsync();
+        });
+
+    }
+    public CompletableFuture<Void>  stopInstance(String instanceName) {
+        YamcsServerInstance ys = YamcsServer.getInstance(instanceName);
+        if(ys==null) {
+            throw new IllegalArgumentException("No instance named '"+instanceName+"'");
+        }
+        return CompletableFuture.runAsync(() ->{
+            ys.stopAsync();
+            ys.awaitTerminated();
+        });
+    }
+
+    public void registerTable(String instance, TableDefinition tblDef) {
+        tableStreamListeners.forEach(l->l.tableRegistered(instance, tblDef));
+    }
+
+    public void registerStream(String instance, Stream stream) {
+        tableStreamListeners.forEach(l->l.streamRegistered(instance, stream));
+    }
+
+    public void unregisterTable(String instance, String tblName) {
+        tableStreamListeners.forEach(l->l.tableUnregistered(instance, tblName));
+    }
+
+    public void unregisterStream(String instance, String name) {
+        tableStreamListeners.forEach(l->l.tableUnregistered(instance, name));
+    }
+
+    static class LinkWithInfo {
+        final Link link;
+        LinkInfo linkInfo;
+        public LinkWithInfo(Link link, LinkInfo linkInfo) {
+            this.link = link;
+            this.linkInfo = linkInfo;
+        }
+
+        boolean hasChanged() {
+            if(!linkInfo.getStatus().equals(link.getLinkStatus())
+                    || linkInfo.getDisabled()!=link.isDisabled()
+                    || linkInfo.getDataCount()!=link.getDataCount()
+                    || !linkInfo.getDetailedStatus().equals(link.getDetailedStatus())) {
+
+                linkInfo = LinkInfo.newBuilder(linkInfo).setDisabled(link.isDisabled())
+                        .setStatus(link.getLinkStatus().name()).setDetailedStatus(link.getDetailedStatus())
+                        .setDataCount(link.getDataCount()).build();
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+    }
+
+    static class ClientWithInfo {
+        final ProcessorClient client;
+        ClientInfo clientInfo;
+        public ClientWithInfo(ProcessorClient client, ClientInfo clientInfo) {
+            this.client = client;
+            this.clientInfo = clientInfo;
+        }
     }
 }

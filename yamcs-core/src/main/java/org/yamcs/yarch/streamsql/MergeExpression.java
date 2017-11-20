@@ -8,6 +8,7 @@ import org.yamcs.yarch.AbstractStream;
 import org.yamcs.yarch.MergeStream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 class MergeExpression implements StreamExpression {
     ArrayList<TupleSourceExpression> sources=new ArrayList<TupleSourceExpression> ();
@@ -32,13 +33,14 @@ class MergeExpression implements StreamExpression {
     
     @Override
     public AbstractStream execute(ExecutionContext c) throws StreamSqlException {
-        YarchDatabase dict=YarchDatabase.getInstance(c.getDbName());
+        YarchDatabaseInstance dict=YarchDatabase.getInstance(c.getDbName());
         AbstractStream[] streams=new AbstractStream[sources.size()];
         for(int i=0;i<streams.length;i++) {
             streams[i]=sources.get(i).execute(c);
         }
-        if(streams.length==1) return streams[0];
-        else {
+        if(streams.length==1) {
+            return streams[0];
+        } else {
             AbstractStream ms=new MergeStream(dict,streams,mergeColumn, ascending);
             return ms;
         }

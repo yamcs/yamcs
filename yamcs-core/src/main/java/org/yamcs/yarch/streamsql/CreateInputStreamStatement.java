@@ -3,6 +3,7 @@ package org.yamcs.yarch.streamsql;
 import org.yamcs.yarch.InputStream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
 import org.yamcs.yarch.streamsql.ExecutionContext;
@@ -23,7 +24,7 @@ public class CreateInputStreamStatement extends StreamSqlStatement {
 
     @Override
     public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
-        YarchDatabase dict=YarchDatabase.getInstance(c.getDbName());
+        YarchDatabaseInstance dict=YarchDatabase.getInstance(c.getDbName());
         synchronized(dict) {
             InputStream stream=null;
             if(dict.streamOrTableExists(streamName)) {
@@ -35,7 +36,9 @@ public class CreateInputStreamStatement extends StreamSqlStatement {
                 stream.start();
                 return new StreamSqlResult("port",stream.getPort());
             } catch (YarchException e) {
-                if(stream!=null) stream.close();
+                if(stream!=null) {
+                    stream.close();
+                }
                 throw new GenericStreamSqlException("Cannot create input stream: "+e.getMessage());
             }
         }

@@ -30,8 +30,7 @@ public class YamlRealm implements Realm {
     @Override
     public boolean supports(AuthenticationToken authenticationToken) {
         // supports only username/password authentication
-        return authenticationToken.getClass() == UsernamePasswordToken.class
-                || authenticationToken.getClass() == HqClientMessageToken.class;
+        return authenticationToken.getClass() == UsernamePasswordToken.class;
     }
 
     @Override

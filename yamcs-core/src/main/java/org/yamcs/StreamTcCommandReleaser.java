@@ -8,6 +8,7 @@ import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 /**
@@ -16,48 +17,45 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class StreamTcCommandReleaser extends AbstractService implements CommandReleaser {
-	Stream stream;
-	String streamName;
-	String yamcsInstance; 
+    Stream stream;
+    String streamName;
+    String yamcsInstance; 
 
-	volatile long sentTcCount;
+    volatile long sentTcCount;
 
-	public StreamTcCommandReleaser(String yamcsInstance, Map<String, String> config) throws ConfigurationException {
-		this.yamcsInstance = yamcsInstance;
-		if(!config.containsKey("stream")) {
-			throw new ConfigurationException("Please specify the stream in the config (args)");
-		}
-		this.streamName = config.get("stream");
-	}
+    public StreamTcCommandReleaser(String yamcsInstance, Map<String, String> config) throws ConfigurationException {
+        this.yamcsInstance = yamcsInstance;
+        if(!config.containsKey("stream")) {
+            throw new ConfigurationException("Please specify the stream in the config (args)");
+        }
+        this.streamName = config.get("stream");
+    }
 
-	@Override
-	public void releaseCommand(PreparedCommand pc) {
-		stream.emitTuple(pc.toTuple());
-		sentTcCount++;
-	}
+    @Override
+    public void releaseCommand(PreparedCommand pc) {
+        stream.emitTuple(pc.toTuple());
+        sentTcCount++;
+    }
 
-	@Override
-	protected void doStart() {
-		YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
-		stream = ydb.getStream(streamName);
-		if(stream==null) {
-			ConfigurationException e = new ConfigurationException("Cannot find stream '"+streamName+"'");
-			notifyFailed(e);
-		} else {
-			notifyStarted();
-		}
-	}
+    @Override
+    protected void doStart() {
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        stream = ydb.getStream(streamName);
+        if(stream==null) {
+            ConfigurationException e = new ConfigurationException("Cannot find stream '"+streamName+"'");
+            notifyFailed(e);
+        } else {
+            notifyStarted();
+        }
+    }
 
+    @Override
+    public void setCommandHistory(CommandHistoryPublisher commandHistoryListener) {
 
-	@Override
-	public void setCommandHistory(CommandHistoryPublisher commandHistoryListener) {
+    }
 
-	}
-
-	@Override
-	protected void doStop() {
-		notifyStopped();
-	}
-
-
+    @Override
+    protected void doStop() {
+        notifyStopped();
+    }
 }

@@ -2,14 +2,12 @@ package org.yamcs.tctm;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.management.ManagementService;
 import org.yamcs.utils.YObjectLoader;
@@ -18,8 +16,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.streamsql.ParseException;
-import org.yamcs.yarch.streamsql.StreamSqlException;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -32,7 +29,7 @@ public class TmDataLinkInitialiser extends AbstractService {
     final static public String KEY_tmProviders = "tmProviders";
     final static public String KEY_tmDataLinks = "tmDataLinks";
     
-    private Collection<TmPacketDataLink> tmproviders=new ArrayList<TmPacketDataLink>();
+    private Map<String, TmPacketDataLink> tmproviders=new HashMap<>();
     final String yamcsInstance;
     final static public String GENTIME_COLUMN = "gentime";
     final static public String SEQNUM_COLUMN = "seqNum";
@@ -50,14 +47,17 @@ public class TmDataLinkInitialiser extends AbstractService {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public TmDataLinkInitialiser(String yamcsInstance) throws ConfigurationException, IOException {
         this.yamcsInstance = yamcsInstance;
-        YarchDatabase ydb = YarchDatabase.getInstance(yamcsInstance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         
         YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
         
         List providers = c.containsKey(KEY_tmDataLinks)?c.getList(KEY_tmDataLinks):c.getList(KEY_tmProviders);
         int count=1;
+        ManagementService mgrsrv =  ManagementService.getInstance();
         for(Object o:providers) {
-            if(!(o instanceof Map<?, ?>)) throw new ConfigurationException("tmProvider has to be a Map and not a "+o.getClass());
+            if(!(o instanceof Map<?, ?>)) {
+                throw new ConfigurationException("tmProvider has to be a Map and not a "+o.getClass());
+            }
             Map<String, Object> m=(Map<String, Object>)o;
             String className=YConfiguration.getString(m, "class");
             Object args=null;
@@ -66,9 +66,12 @@ public class TmDataLinkInitialiser extends AbstractService {
             } else if(m.containsKey("spec")) {
                 args=m.get("spec");
             }
-            String name="tm"+count;
+            String name = "tm"+count;
             if(m.containsKey("name")) {
-                name=m.get("name").toString();
+                name = m.get("name").toString();
+            }
+            if(tmproviders.containsKey(name)) {
+                throw new ConfigurationException("Instance "+yamcsInstance+": there is already a TM Link by name '"+name+"'");
             }
             boolean enabledAtStartup=true;
             if(m.containsKey("enabledAtStartup")) {
@@ -80,16 +83,17 @@ public class TmDataLinkInitialiser extends AbstractService {
                 throw new ConfigurationException("Cannot find stream '"+streamName+"'");
             }
             final Stream stream=s;
-            YObjectLoader<TmPacketDataLink> objloader=new YObjectLoader<TmPacketDataLink>();
         
             TmPacketDataLink prov= null;
             if(args!=null) {
-                prov = objloader.loadObject(className, yamcsInstance, name, args);
+                prov = YObjectLoader.loadObject(className, yamcsInstance, name, args);
             } else {
-                prov = objloader.loadObject(className, yamcsInstance, name);
+                prov = YObjectLoader.loadObject(className, yamcsInstance, name);
             }
         
-            if(!enabledAtStartup) prov.disable();
+            if(!enabledAtStartup) {
+                prov.disable();
+            }
         
             prov.setTmSink(new TmSink() {
                 @Override
@@ -102,8 +106,8 @@ public class TmDataLinkInitialiser extends AbstractService {
                 }
             });
         
-            tmproviders.add(prov);
-            ManagementService.getInstance().registerLink(yamcsInstance, name, streamName, args!=null?args.toString():"",  prov);
+            tmproviders.put(name, prov);
+            mgrsrv.registerLink(yamcsInstance, name, streamName, args!=null?args.toString():"",  prov);
             count++;
         }
     }
@@ -111,7 +115,7 @@ public class TmDataLinkInitialiser extends AbstractService {
     
     @Override
     protected void doStart() {
-        for(TmPacketDataLink prov:tmproviders) {
+        for(TmPacketDataLink prov:tmproviders.values()) {
             prov.startAsync();
         }
         notifyStarted();
@@ -119,8 +123,10 @@ public class TmDataLinkInitialiser extends AbstractService {
 
     @Override
     protected void doStop() {
-        for(TmPacketDataLink prov:tmproviders) {
-            prov.stopAsync();
+        ManagementService mgrsrv =  ManagementService.getInstance();
+        for(Map.Entry<String, TmPacketDataLink> me: tmproviders.entrySet()) {
+            mgrsrv.unregisterLink(yamcsInstance, me.getKey());
+            me.getValue().stopAsync();
         }
         notifyStopped();
     }

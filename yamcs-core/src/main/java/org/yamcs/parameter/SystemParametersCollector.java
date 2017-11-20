@@ -25,6 +25,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -37,9 +38,9 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class SystemParametersCollector extends AbstractService implements Runnable {
-    static Map<String,SystemParametersCollector> instances=new HashMap<String,SystemParametersCollector>();
+    static Map<String,SystemParametersCollector> instances=new HashMap<>();
     static long frequencyMillisec=1000;
-    List<SystemParametersProducer> providers = new CopyOnWriteArrayList<SystemParametersProducer>();
+    List<SystemParametersProducer> providers = new CopyOnWriteArrayList<>();
 
     static final String STREAM_NAME = "sys_param";
     private String spJvmTotalMemory;
@@ -63,11 +64,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     TimeService timeService;
 
 
-    static public SystemParametersCollector getInstance(String instance) {
-        synchronized(instances) {
-            return instances.get(instance);
-        }
-    }
+   
 
     public SystemParametersCollector(String instance) throws ConfigurationException {
         this(instance, null);
@@ -78,7 +75,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         log = LoggingUtils.getLogger(this.getClass(), instance);
         processArgs(args);
 
-        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         Stream s = ydb.getStream(STREAM_NAME);
         if(s==null) {
             throw new ConfigurationException("Stream '"+STREAM_NAME+"' does not exist");
@@ -103,6 +100,12 @@ public class SystemParametersCollector extends AbstractService implements Runnab
             instances.put(instance, this);
         }
     }
+    
+    public static SystemParametersCollector getInstance(String instance) {
+        synchronized(instances) {
+            return instances.get(instance);
+        }
+    }
 
     private void processArgs(Map<String, Object> args) {
         if(args==null) {
@@ -124,7 +127,11 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     @Override
     public void doStop() {
         timer.shutdown();
+        synchronized(instances) {
+            instances.remove(instance);
+        }
         notifyStopped();
+        System.out.println("======= timer.isShutdown(): "+timer.isShutdown());
     }
 
     /**
@@ -132,7 +139,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
      */
     @Override
     public void run() {
-        List<ParameterValue> params = new ArrayList<ParameterValue>();
+        List<ParameterValue> params = new ArrayList<>();
         if(provideJvmVariables) {
             jvmCollectionCountdown--;
             if(jvmCollectionCountdown<=0) {
@@ -186,11 +193,44 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         params.add(jvmMemoryUsed);
         params.add(jvmThreadCount);
     }
-
-
+    
+    /**
+     * Register a parameter producer to be called each time the parameters are collected
+     *
+     * @deprecated use {@link #registerProvider(SystemParametersProducer p)} instead. 
+     * There is no need to specify which paramameters will be provided 
+     * and in addition they don't even need to be part of the Xtcedb (i.e. the provider can make them up on the fly)
+     * 
+     */
+    @Deprecated  
     public void registerProvider(SystemParametersProducer p, Collection<Parameter> params) {
-        log.debug("Registering system variables provider {}", p);
+        registerProvider(p);
+    }
+    
+    /**
+     * @deprecated old name for {@link #registerProducer}
+     */
+    @Deprecated
+    public void registerProvider(SystemParametersProducer p) {
+        registerProducer(p);
+    }
+    /**
+     * Register a parameter producer to be called each time the parameters are collected
+     */
+    public void registerProducer(SystemParametersProducer p) {
+        log.debug("Registering system variables producer {}", p);
         providers.add(p);
+    }
+    /**
+     * Unregister producer - from now on it will not be invoked.
+     * Note that the collector collects parameters into a different thread taking all producer in turns,
+     * and there might be one collection already started when this method is called.
+     *  
+     */
+    public void unregisterProducer(SystemParametersProducer p) {
+        log.debug("Unregistering system variables producer {}", p);
+        providers.remove(p);
+        
     }
 
     /**
@@ -238,4 +278,6 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         pv.setEngValue(ValueUtility.getUint64Value(v));
         return pv;
     }
+
+   
 }

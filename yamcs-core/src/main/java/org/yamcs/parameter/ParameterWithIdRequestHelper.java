@@ -46,15 +46,60 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     final ParameterWithIdConsumer listener;
     Logger log = LoggerFactory.getLogger(this.getClass().getName());
     Map<Integer, Subscription> subscriptions = new ConcurrentHashMap<>();
-    
+
     //how often to check expiration
     private static long CHECK_EXPIRATION_INTERVAL = 1000;
-    final static ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1); 
+    final static ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
     
     public ParameterWithIdRequestHelper(ParameterRequestManagerImpl prm, ParameterWithIdConsumer listener) {
         this.prm = prm;
         this.listener = listener;
         schedulePeriodicExpirationChecking(this);
+    }
+
+    public int addRequest(List<NamedObjectId> idList, AuthenticationToken authToken) throws InvalidIdentification, NoPermissionException {
+        return addRequest(idList, false, authToken);
+    }
+
+    public int addRequest(List<NamedObjectId> idList, boolean checkExpiration, AuthenticationToken authToken) throws InvalidIdentification, NoPermissionException {
+        ListMultimap<Parameter, NamedObjectId> lm = ArrayListMultimap.create();
+
+        List<Parameter> plist = checkNames(idList);
+        for(int i =0; i<idList.size() ; i++) {
+            Parameter p = plist.get(i);
+            checkParameterPrivilege(authToken, p.getQualifiedName());
+            NamedObjectId id = idList.get(i);
+            lm.put(p, id);
+        }
+        int subscriptionId = prm.addRequest(plist, this);
+
+        Subscription subscr = new Subscription(lm, checkExpiration);
+        subscr.checkExpiration = checkExpiration;
+        subscriptions.put(subscriptionId, subscr);
+
+        return subscriptionId;
+    }
+
+    public void addItemsToRequest(int subscriptionId,  List<NamedObjectId> idList, AuthenticationToken authToken) throws InvalidIdentification, NoPermissionException {
+        Subscription subscr = subscriptions.get(subscriptionId);
+        if(subscr==null) {
+            log.warn("add item requested for an invalid subscription id {}", subscriptionId);
+            return;
+        }
+        List<Parameter> plist = checkNames(idList);
+        synchronized(subscr) {
+            for(int i =0; i<idList.size() ; i++) {
+                Parameter p = plist.get(i);
+                checkParameterPrivilege(authToken, p.getQualifiedName());
+                NamedObjectId id = idList.get(i);
+                if(subscr.containsEntry(p, id)) {
+                    log.info("Ignoring duplicate subscription for '{}', id: {}", p.getName(), StringConverter.idToString(id));
+                    continue;
+                }
+                subscr.put(p, id);
+            }
+        }
+        prm.addItemsToRequest(subscriptionId, plist);
     }
 
     private static void schedulePeriodicExpirationChecking(ParameterWithIdRequestHelper x) {
@@ -72,54 +117,12 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         }, CHECK_EXPIRATION_INTERVAL, CHECK_EXPIRATION_INTERVAL, TimeUnit.MILLISECONDS);
         futureRef.set(future);
     }
+
     
-    public int addRequest(List<NamedObjectId> idList, AuthenticationToken authToken) throws InvalidIdentification, NoPermissionException {
-        return addRequest(idList, false, authToken);
-    }
-
-    public int addRequest(List<NamedObjectId> idList, boolean checkExpiration, AuthenticationToken authToken) throws InvalidIdentification, NoPermissionException {
-        ListMultimap<Parameter, NamedObjectId> lm = ArrayListMultimap.create();
-        List<Parameter> plist = checkNames(idList);
-        for(int i =0; i<idList.size() ; i++) {
-            Parameter p = plist.get(i);
-            checkParameterPrivilege(authToken, p.getQualifiedName());
-            NamedObjectId id = idList.get(i);
-            lm.put(p, id);
-        }
-        int subscriptionId = prm.addRequest(plist, this);
-        Subscription subscr = new Subscription(lm, checkExpiration);
-        subscr.checkExpiration = checkExpiration;
-        subscriptions.put(subscriptionId, subscr);
-
-        return subscriptionId;
-    }
-
-    public void addItemsToRequest(int subscriptionId,  List<NamedObjectId> idList, AuthenticationToken authToken) throws InvalidIdentification, NoPermissionException {
-        Subscription subscr = subscriptions.get(subscriptionId);
-        if(subscr==null) {
-            log.warn("add item requested for an invalid subscription id {}", subscriptionId);
-            return;
-        }
-
-        List<Parameter> plist = checkNames(idList);
-        synchronized(subscr) {
-            for(int i =0; i<idList.size() ; i++) {
-                Parameter p = plist.get(i);
-                checkParameterPrivilege(authToken, p.getQualifiedName());
-                NamedObjectId id = idList.get(i);
-                if(subscr.containsEntry(p, id)) {
-                    log.info("Ignoring duplicate subscription for '{}', id: {}", p.getName(), StringConverter.idToString(id));
-                    continue;
-                }
-                subscr.put(p, id);
-            }
-        }
-        prm.addItemsToRequest(subscriptionId, plist);
-    }
-
+    //turn NamedObjectId to Parameter references
     private List<Parameter> checkNames(List<NamedObjectId> plist) throws InvalidIdentification {
-        List<NamedObjectId> invalid = new ArrayList<>();
         List<Parameter> result = new ArrayList<>();
+        List<NamedObjectId> invalid = new ArrayList<>(0);
         for(NamedObjectId id:plist) {
             try {
                 Parameter p = prm.getParameter(id);
@@ -131,7 +134,6 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         if(!invalid.isEmpty()) {
             throw new InvalidIdentification(invalid);
         }
-
         return result;
     }
 
@@ -144,7 +146,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         prm.removeRequest(subscriptionId);
     }
 
-    
+
     public void removeItemsFromRequest(int subscriptionId,   List<NamedObjectId> parameterIds, AuthenticationToken authToken) throws NoPermissionException {
         Subscription subscr = subscriptions.get(subscriptionId);
         if(subscr==null) {
@@ -179,6 +181,41 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     }
 
 
+    public List<ParameterValueWithId> getValuesFromCache(List<NamedObjectId> idList, AuthenticationToken authToken) throws InvalidIdentification, NoPermissionException {
+        List<NamedObjectId> invalid = new ArrayList<>();
+        List<Parameter> params = checkNames(idList);
+        
+        ListMultimap<Parameter, NamedObjectId> lm = ArrayListMultimap.create();
+        for(int i =0; i<idList.size() ; i++) {
+            Parameter p = params.get(i);
+            checkParameterPrivilege(authToken, p.getQualifiedName());
+            NamedObjectId id = idList.get(i);
+            lm.put(p, id);
+        }
+
+        List<ParameterValue> values = prm.getValuesFromCache(params);
+        List<ParameterValueWithId> plist = new ArrayList<>(values.size());
+
+
+        for(ParameterValue pv: values) {
+            List<NamedObjectId> l = lm.get(pv.getParameter());
+            if(l==null) {
+                log.warn("Received values for a parameter not requested: {}", pv.getParameter());
+                continue;
+            }
+
+            for(NamedObjectId id:l) {
+                ParameterValueWithId pvwi = new ParameterValueWithId(pv, id);
+                plist.add(pvwi);
+            }       
+        }
+        
+        return plist;
+    }
+
+    /**
+     * Called from {@link ParameterRequestManager when new parameters are available to be sent to clients}
+     */
     @Override
     public void updateItems(int subscriptionId, List<ParameterValue> items) {
         Subscription subscription = subscriptions.get(subscriptionId);
@@ -186,18 +223,17 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             log.debug("Received an updateItems for an unknown subscription {}", subscriptionId);
             return;
         }
-        
+
         List<ParameterValueWithId> plist = new ArrayList<>(items.size());
         synchronized(subscription) {
             if(subscription.checkExpiration) {
                 long now = getAquisitionTime(items);
-                
+
                 List<ParameterValueWithId> expired  = updateAndCheckExpiration(subscription, items, now);
                 if(!expired.isEmpty()) {
                     log.debug("Updating {} parameters due to expiration");
                     listener.update(subscriptionId, expired);
                 }
-                
             }
 
             for(ParameterValue pv: items) {
@@ -205,6 +241,67 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             }
         }
         listener.update(subscriptionId, plist);
+    }
+
+    /**
+     * Change processor and return the list of parameters that were valid in the old processor and are not anymore
+     */
+    public List<NamedObjectId> switchPrm(ParameterRequestManagerImpl newPrm, AuthenticationToken authToken) throws  NoPermissionException {
+        List<NamedObjectId> invalid = new ArrayList<>();
+        if(prm.getXtceDb() == newPrm.getXtceDb()) {
+            for(int subscriptionId: subscriptions.keySet()) {
+                List<Parameter> plist = prm.removeRequest(subscriptionId);
+                // checking permission
+                for(Parameter p : plist)
+                    checkParameterPrivilege(authToken, p.getQualifiedName());
+                newPrm.addRequest(subscriptionId, plist, this);
+            }
+            prm = newPrm;
+        } else {
+            //this is the tricky case: the XtceDB has changed so all Parameter references are invalid for the new processor
+            // we have to re-create the subscriptions starting from the original subscribed names
+            //and take care that some  names may have become invalid
+            log.info("XtceDB has changed, recreating the parameter subscriptions");
+            subscriptions.keySet().forEach(id->prm.removeRequest(id));
+            prm = newPrm;
+            for(int subscriptionId: subscriptions.keySet()) {
+                Subscription subscr = subscriptions.get(subscriptionId);
+                synchronized(subscr) {
+                    List<NamedObjectId> idList = new ArrayList<>(subscr.params.values());
+                    List<Parameter> plist;
+                    try {
+                        plist = checkNames(idList);
+                    } catch (InvalidIdentification e) {
+                        log.warn("Got invalid identification when moving parameters to a new processor: {}", e.getInvalidParameters());
+                        idList.removeAll(e.getInvalidParameters());
+                        invalid.addAll(e.getInvalidParameters());
+                        try {
+                            plist = checkNames(idList);
+                        } catch (InvalidIdentification e1) { //shouldn'd happen again
+                            throw new IllegalStateException(e1);
+                        }
+                    }
+                    assert(idList.size()==plist.size());
+                    ListMultimap<Parameter, NamedObjectId> lm = ArrayListMultimap.create();
+                    for(int i =0; i<plist.size() ; i++) {
+                        Parameter p = plist.get(i);
+                        checkParameterPrivilege(authToken, p.getQualifiedName());
+                        NamedObjectId id = idList.get(i);
+                        lm.put(p, id);
+                    }
+                    newPrm.addRequest(subscriptionId, plist, this);
+                    subscr.params = lm;
+                    if(subscr.checkExpiration) { //clear out any parameters that may have an expiration waiting to be triggered
+                        subscr.pvexp = new HashMap<>();
+                    }
+                }
+            }
+        }
+        return invalid;
+    }
+    
+    public boolean hasParameterCache() {
+        return prm.hasParameterCache();
     }
 
 
@@ -231,7 +328,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             plist.add(pvwi);
         }
     }
-    
+
 
     private void checkPeriodicExpiration() {
         for(Map.Entry<Integer,Subscription>me: subscriptions.entrySet()) {
@@ -248,7 +345,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             }
         }
     }
-    
+
 
     //update the expiration list with new values and check expiration of parameters that are just updating
     // in case the expiration is shorter than the check interval - this method would detect and send the parameters that have just expired
@@ -258,7 +355,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             Parameter p = pv.getParameter();
             ParameterValue oldPv = subscription.pvexp.put(p, pv);
             if((oldPv!=null) && oldPv.getAcquisitionStatus()==AcquisitionStatus.ACQUIRED && oldPv.isExpired(now)) {
-                
+
                 ParameterValue tmp = new ParameterValue(oldPv); //make a copy because this is shared by other subscribers
                 tmp.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
                 addValueForAllIds(expired, subscription, tmp);
@@ -276,58 +373,12 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
                 tmp.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
                 subscription.pvexp.put(pv.getParameter(), tmp);
                 addValueForAllIds(expired, subscription, tmp);
-             } 
+            } 
         }
         subscription.lastExpirationCheck = now;
         return expired;
     }
 
-
-    public List<ParameterValueWithId> getValuesFromCache(List<NamedObjectId> idList, AuthenticationToken authToken) throws InvalidIdentification, NoPermissionException {
-        List<Parameter> params = checkNames(idList);
-
-        ListMultimap<Parameter, NamedObjectId> lm = ArrayListMultimap.create();
-        for(int i =0; i<idList.size() ; i++) {
-            Parameter p = params.get(i);
-            checkParameterPrivilege(authToken, p.getQualifiedName());
-            NamedObjectId id = idList.get(i);
-            lm.put(p, id);
-        }
-
-        List<ParameterValue> values = prm.getValuesFromCache(params);
-        List<ParameterValueWithId> plist = new ArrayList<>(values.size());
-
-
-        for(ParameterValue pv: values) {
-            List<NamedObjectId> l = lm.get(pv.getParameter());
-            if(l==null) {
-                log.warn("Received values for a parameter not requested: {}", pv.getParameter());
-                continue;
-            }
-
-            for(NamedObjectId id:l) {
-                ParameterValueWithId pvwi = new ParameterValueWithId(pv, id);
-                plist.add(pvwi);
-            }	    
-        }
-        return plist;
-    }
-
-    public void switchPrm(ParameterRequestManagerImpl newPrm, AuthenticationToken authToken)
-            throws InvalidIdentification, NoPermissionException {
-        for(int subscriptionId: subscriptions.keySet()) {
-            List<Parameter> plist = prm.removeRequest(subscriptionId);
-            // checking permission
-            for(Parameter p : plist)
-                checkParameterPrivilege(authToken, p.getQualifiedName());
-            newPrm.addRequest(subscriptionId, plist, this);
-        }
-        prm=newPrm;
-    }
-
-    public boolean hasParameterCache() {
-        return prm.hasParameterCache();
-    }
 
     /**
      * Check if the user has a privilege for the specified parameter name
@@ -340,6 +391,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             throw  new NoPermissionException("User " + authToken + " has no permission for parameter "  + parameterName);
         }
     }
+
 
 
     static class Subscription {

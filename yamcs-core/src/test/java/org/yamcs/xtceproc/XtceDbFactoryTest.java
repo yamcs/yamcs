@@ -26,7 +26,6 @@ public class XtceDbFactoryTest {
     @Test
     public void testNamespaces() throws Exception {
         YConfiguration.setup("refmdb");
-        ManagementService.setup(false);
         XtceDbFactory.reset();
         
         XtceDb db = XtceDbFactory.getInstance("refmdb");

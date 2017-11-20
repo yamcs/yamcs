@@ -3,6 +3,9 @@ package org.yamcs.web.rest;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
@@ -31,19 +34,24 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.protobuf.MessageLite;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.LastHttpContent;
+import io.protostuff.JsonIOUtil;
 import io.protostuff.Schema;
 
 /**
@@ -60,7 +68,7 @@ public abstract class RestHandler extends RouteHandler {
     }
 
     protected static <T extends MessageLite> void completeOK(RestRequest restRequest, T responseMsg, Schema<T> responseSchema) {
-        HttpRequestHandler.sendMessageResponse(restRequest.getChannelHandlerContext(), restRequest.getHttpRequest(), OK, responseMsg, responseSchema).addListener(l -> {
+        sendMessageResponse(restRequest, OK, responseMsg, responseSchema).addListener(l -> {
             restRequest.getCompletableFuture().complete(null);
         });
     }
@@ -84,6 +92,32 @@ public abstract class RestHandler extends RouteHandler {
         cf.addListener(l -> {
             restRequest.getCompletableFuture().complete(null);
         });
+    }
+    public static <T extends MessageLite> ChannelFuture sendMessageResponse(RestRequest restRequest, HttpResponseStatus status, T responseMsg, Schema<T> responseSchema) {
+        HttpRequest req = restRequest.getHttpRequest();
+        ChannelHandlerContext ctx = restRequest.getChannelHandlerContext();
+        ByteBuf body = restRequest.getChannelHandlerContext().alloc().buffer();
+        MediaType contentType = restRequest.deriveTargetContentType();
+        if(contentType!=MediaType.JSON) {
+            return HttpRequestHandler.sendMessageResponse(ctx, req, status, responseMsg, responseSchema);
+        } else {
+            try (ByteBufOutputStream channelOut = new ByteBufOutputStream(body)){
+                    contentType = MediaType.JSON;
+                    JsonGenerator generator = restRequest.createJsonGenerator(channelOut);
+                    JsonIOUtil.writeTo(generator, responseMsg, responseSchema, false);
+                    generator.close();
+                    body.writeBytes(HttpRequestHandler.NEWLINE_BYTES); // For curl comfort
+            } catch (IOException e) {
+                return HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.toString());
+            }
+            HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, body);
+            HttpUtils.setContentTypeHeader(response, contentType);
+
+            int txSize =  body.readableBytes();
+            HttpUtil.setContentLength(response, txSize);
+            return HttpRequestHandler.sendResponse(ctx, req, response, true);
+        }
+        
     }
 
     protected static ChannelFuture sendRestError(RestRequest req, HttpResponseStatus status, Throwable t) {
@@ -204,7 +238,7 @@ public abstract class RestHandler extends RouteHandler {
         }
     }
 
-    protected static Stream verifyStream(RestRequest req, YarchDatabase ydb, String streamName) throws NotFoundException {
+    protected static Stream verifyStream(RestRequest req, YarchDatabaseInstance ydb, String streamName) throws NotFoundException {
         Stream stream = ydb.getStream(streamName);
         if (stream == null) {
             throw new NotFoundException(req, "No stream named '" + streamName + "' (instance: '" + ydb.getName() + "')");
@@ -213,7 +247,7 @@ public abstract class RestHandler extends RouteHandler {
         }
     }
 
-    protected static TableDefinition verifyTable(RestRequest req, YarchDatabase ydb, String tableName) throws NotFoundException {
+    protected static TableDefinition verifyTable(RestRequest req, YarchDatabaseInstance ydb, String tableName) throws NotFoundException {
         TableDefinition table = ydb.getTable(tableName);
         if (table == null) {
             throw new NotFoundException(req, "No table named '" + tableName + "' (instance: '" + ydb.getName() + "')");

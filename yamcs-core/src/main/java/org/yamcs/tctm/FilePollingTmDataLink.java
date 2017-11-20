@@ -103,14 +103,14 @@ public class FilePollingTmDataLink extends AbstractExecutionThreadService implem
     }
 
     @Override
-    public String getLinkStatus() {
+    public Status getLinkStatus() {
         if (disabled) {
-            return "DISABLED";
+            return Status.DISABLED;
         }
         if(isRunning()) {
-            return "OK";
+            return Status.OK;
         } else {
-            return "UNAVAIL";
+            return Status.UNAVAIL;
         }
     }
 

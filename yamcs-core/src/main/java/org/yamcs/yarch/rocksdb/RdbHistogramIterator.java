@@ -18,7 +18,7 @@ import org.yamcs.yarch.HistogramSegment;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import static org.yamcs.yarch.rocksdb.CfTableWriter.zerobytes;
 
@@ -37,7 +37,7 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
     private final TimeInterval interval;
     private final long mergeTime;
 
-    YarchDatabase ydb;
+    YarchDatabaseInstance ydb;
     TableDefinition tblDef;
     YRDB rdb;
 
@@ -46,7 +46,7 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
     boolean stopReached = false;
 
     //FIXME: mergeTime does not merge records across partitions or segments
-    public RdbHistogramIterator(YarchDatabase ydb, TableDefinition tblDef, String colName, TimeInterval interval, long mergeTime) throws RocksDBException {
+    public RdbHistogramIterator(YarchDatabaseInstance ydb, TableDefinition tblDef, String colName, TimeInterval interval, long mergeTime) throws RocksDBException {
         this.interval = interval;
         this.mergeTime = mergeTime;
         this.ydb = ydb;

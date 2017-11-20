@@ -9,7 +9,7 @@ import org.yamcs.yarch.TableDefinition;
 
 public class TableControlImpl extends StandardMBean implements TableControl{
    TableDefinition table;
-    TableControlImpl(TableDefinition table) throws NotCompliantMBeanException {
+    public TableControlImpl(TableDefinition table) throws NotCompliantMBeanException {
         super(TableControl.class);
         this.table=table;
     }

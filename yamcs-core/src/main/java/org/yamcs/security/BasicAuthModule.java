@@ -34,6 +34,13 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
 
+/**
+ * Basic authentication module that checks username/password eihter in LDAP or a password file
+ * 
+ * 
+ * @author nm
+ *
+ */
 public class BasicAuthModule implements AuthModule {
   private static final Logger log = LoggerFactory.getLogger(BasicAuthModule.class);
   private final Realm realm; 
@@ -82,7 +89,7 @@ public class BasicAuthModule implements AuthModule {
     public CompletableFuture<AuthenticationToken> authenticateHttp(ChannelHandlerContext ctx, HttpRequest req) {
         if (!req.headers().contains(HttpHeaderNames.AUTHORIZATION)) {
             sendUnauthorized(ctx, req, "No "+HttpHeaderNames.AUTHORIZATION+" header present");
-            return completedExceptionally(new AuthorizationPendingException());
+            return completedExceptionally(new AuthenticationPendingException());
         }
 
         String authorizationHeader = req.headers().get(HttpHeaderNames.AUTHORIZATION);
@@ -106,7 +113,7 @@ public class BasicAuthModule implements AuthModule {
         AuthenticationToken token = new UsernamePasswordToken(parts[0], parts[1]);
         if (!realm.authenticates(token)) {
             sendUnauthorized(ctx, req, "the realm could not authenticate the provided token");
-            return completedExceptionally( new AuthorizationPendingException());
+            return completedExceptionally( new AuthenticationPendingException());
         }
         
         return CompletableFuture.completedFuture(token);

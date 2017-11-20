@@ -14,24 +14,24 @@ import org.yamcs.xtce.CriteriaEvaluator;
  * @author nm
  *
  */
-public class ContainerProcessingContext {	
+public class ContainerProcessingContext {
     final ProcessorData pdata;
     final BitBuffer buffer;
-    
-    //Keeps track of the absolute offset of the container where the processing takes place. 
-    //Normally 0, but if the processing takes place inside a subcontainer, it reflects the offset of that container with respect to the primary container where the processing started 
-    int containerAbsoluteByteOffset; 	
+
+    //Keeps track of the absolute offset of the container where the processing takes place.
+    //Normally 0, but if the processing takes place inside a subcontainer, it reflects the offset of that container with respect to the primary container where the processing started
+    int containerAbsoluteByteOffset;
 
     Subscription subscription;
     ContainerProcessingResult result;
     ContainerProcessingOptions options;
-    
+
     //if set to true, out of packet parameters will be silently ignored, otherwise an exception will be thrown
 
-    public final SequenceContainerProcessor sequenceContainerProcessor = new SequenceContainerProcessor(this);
-    public final SequenceEntryProcessor sequenceEntryProcessor=new SequenceEntryProcessor(this);
-    public final DataEncodingDecoder dataEncodingProcessor=new DataEncodingDecoder(this);
-    public final ValueProcessor valueProcessor=new ValueProcessor(this);
+    public final SequenceContainerProcessor sequenceContainerProcessor;
+    public final SequenceEntryProcessor sequenceEntryProcessor;
+    public final DataEncodingDecoder dataEncodingProcessor;
+    public final ValueProcessor valueProcessor;
     public final CriteriaEvaluator criteriaEvaluator;
 
     public ContainerProcessingContext(ProcessorData pdata, BitBuffer buffer, ContainerProcessingResult result, Subscription subscription, ContainerProcessingOptions options) {
@@ -41,20 +41,26 @@ public class ContainerProcessingContext {
         this.criteriaEvaluator = new CriteriaEvaluatorImpl(result.params);
         this.result = result;
         this.options = options;
+
+        sequenceContainerProcessor = new SequenceContainerProcessor(this);
+        sequenceEntryProcessor = new SequenceEntryProcessor(this);
+        dataEncodingProcessor = new DataEncodingDecoder(this);
+        valueProcessor = new ValueProcessor(this);
     }
-    
+
     static class ContainerProcessingResult {
         ParameterValueList params = new ParameterValueList();
         List<ContainerExtractionResult> containers = new ArrayList<>();
         long acquisitionTime;
         long generationTime;
         ProcessingStatistics stats;
-        long expireMillis = -1;//-1 means not defined
+        long expireMillis = -1; //-1 means not defined
+
         public ContainerProcessingResult(long aquisitionTime, long generationTime, ProcessingStatistics stats) {
             this.acquisitionTime = aquisitionTime;
             this.generationTime = generationTime;
             this.stats = stats;
         }
-      
+
     }
 }

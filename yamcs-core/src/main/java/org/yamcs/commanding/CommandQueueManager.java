@@ -27,7 +27,6 @@ import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.QueueState;
-import org.yamcs.protobuf.Pvalue;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.InvalidAuthenticationToken;
 import org.yamcs.security.Privilege;
@@ -67,7 +66,8 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
     private Set<TransmissionConstraintChecker> pendingTcCheckers = new HashSet<>();
 
-    private final String instance,yprocName;
+    private final String instance;
+    private final String processorName;
 
     ParameterValueList pvList = new ParameterValueList();
 
@@ -92,7 +92,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         this.commandHistoryListener = yproc.getCommandHistoryPublisher();
         this.commandReleaser = yproc.getCommandReleaser();
         this.instance = yproc.getInstance();
-        this.yprocName = yproc.getName();
+        this.processorName = yproc.getName();
         this.timer = yproc.getTimer();
 
         CommandQueue cq=new CommandQueue(yproc, "default");
@@ -107,7 +107,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 }
                 CommandQueue q=queues.get(qn);
                 String state=config.getString(qn, "state");
-                q.state=CommandQueueManager.stringToQueueState(state);
+                q.state = CommandQueueManager.stringToQueueState(state);
                 q.defaultState = q.state;
                 if(config.containsKey(qn, "stateExpirationTimeS"))
                 {
@@ -172,13 +172,17 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             for(CommandQueue cq:queues.values()) {
                 cq.setupSysParameters();
             }
-            sysParamCollector.registerProvider(this, null);
+            sysParamCollector.registerProducer(this);
         }
         notifyStarted();
     }
 
     @Override
     public void doStop() {
+        SystemParametersCollector sysParamCollector = SystemParametersCollector.getInstance(yproc.getInstance());
+        if(sysParamCollector!=null) {
+            sysParamCollector.unregisterProducer(this);
+        }
         if(paramSubscriptionRequestId!=-1) {
             ParameterRequestManagerImpl prm = yproc.getParameterRequestManager();
             prm.removeRequest(paramSubscriptionRequestId);
@@ -576,7 +580,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     public String getChannelName() {
-        return yprocName;
+        return processorName;
     }
 
     private void doUpdateItems(final List<ParameterValue> items) {

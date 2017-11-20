@@ -51,6 +51,7 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
@@ -68,7 +69,7 @@ public class ArchiveTableRestHandler extends RestHandler {
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayReadTables);
         
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         
         ListTablesResponse.Builder responseb = ListTablesResponse.newBuilder();
         for (TableDefinition def : ydb.getTableDefinitions()) {
@@ -84,7 +85,7 @@ public class ArchiveTableRestHandler extends RestHandler {
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayReadTables);
         
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
         
         TableInfo response = ArchiveHelper.toTableInfo(table);
@@ -96,7 +97,7 @@ public class ArchiveTableRestHandler extends RestHandler {
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayReadTables);
         
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
         
         List<String> cols = null;        
@@ -153,7 +154,7 @@ public class ArchiveTableRestHandler extends RestHandler {
         if (!YamcsServer.hasInstance(instance)) {
             throw new NotFoundException(req, "No instance named '" + instance + "'");
         }
-        YarchDatabase ydb = YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         
         String tableName = match.getRouteParam("name");
         

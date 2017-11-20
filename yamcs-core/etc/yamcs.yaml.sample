@@ -62,3 +62,23 @@ webConfig:
       enabled: true
       allowOrigin: "*"
       allowCredentials: false
+
+   #WebSocket configurations
+   webSocket:
+
+      # Configure netty write buffers for the websockets. 
+      # If the buffer is full, then websocket messages will be dropped and you see log messages:
+      #    Dropping {} message for client [id={}, username={}] because channel is not or no longer writable
+      # After a few consecutive dropped messages (the number can be configured below), the connection will be closed.
+      # The clients can see that they lost a message from the sequence count in each received websocket data frame.
+      #
+      # The higher the values, the more memory may be consumed but the connections will be more resilient 
+      # against unstable networks (i.e. high jitter).
+      # Increasing the values also helps if a large number of messages(events, alarms, parameters, etc)
+      # are generated in bursts.
+      writeBufferWaterMark:
+         low: 32768
+         high: 65536
+   
+      # after how many consecutive lost messages the connection will be closed.
+      connectionCloseNumDroppedMsg: 5

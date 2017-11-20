@@ -3,6 +3,7 @@ package org.yamcs.yarch.streamsql;
 import org.yamcs.yarch.OutputStream;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
 import org.yamcs.yarch.streamsql.ExecutionContext;
@@ -23,7 +24,7 @@ public class CreateOutputStreamStatement extends StreamSqlStatement {
 
     @Override
     public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
-        YarchDatabase dict=YarchDatabase.getInstance(c.getDbName());
+        YarchDatabaseInstance dict=YarchDatabase.getInstance(c.getDbName());
         expression.bind(c);
 
         Stream s=expression.execute(c);

@@ -20,6 +20,7 @@ import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
 import org.yamcs.simulation.generated.PpSimulation;
 import org.yamcs.simulation.generated.PpSimulation.ParameterSequence;
+import org.yamcs.tctm.Link;
 import org.yamcs.tctm.ParameterDataLink;
 import org.yamcs.tctm.ParameterSink;
 import org.yamcs.utils.TimeEncoding;
@@ -34,379 +35,374 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
 // Command line to generate xml classes:
 //[...]/yamcs/yamcs-simulation/src/main/resources/org/yamcs/xsd$ xjc simulation_data.xsd -p org.yamcs.simulation.generated -d [...]/yamcs/yamcs-simulation/src/main/java/
 public class SimulationPpProvider extends AbstractExecutionThreadService implements ParameterDataLink, Runnable {
-    
-	
-    public Date simulationStartTime;
-    public Date simulationRealStartTime;
-    public int simulationStepLengthMs;
-    public long simutationStep;
-    public boolean loopSimulation;
-	
+
+	public Date simulationStartTime;
+	public Date simulationRealStartTime;
+	public int simulationStepLengthMs;
+	public long simutationStep;
+	public boolean loopSimulation;
+
 	protected volatile long datacount = 0;
 	protected volatile boolean disabled = false;
-    
+
 	private ParameterSink ppListener;
-    
-    private PpSimulation simulationData;
-    // static String SIMULATION_DATA =
-    // "/home/msc/development/git/yamcs/live/etc/simulation.xml";
-    private static String simulationDataPath = "";
-    
-    private XtceDb xtceDb;
 
-    private Random rand = new Random();
-    
-    private Logger log = LoggerFactory.getLogger(this.getClass().getName());
+	private PpSimulation simulationData;
+	// static String SIMULATION_DATA =
+	// "/home/msc/development/git/yamcs/live/etc/simulation.xml";
+	private static String simulationDataPath = "";
 
-    
-    public SimulationPpProvider(String yamcsInstance, String name, LinkedHashMap<String,String> args) throws ConfigurationException {
-        xtceDb = XtceDbFactory.getInstance(yamcsInstance);
-        setSimulationData((String) args.get("simulationDataPath"));
-        simulationData = loadSimulationData(simulationDataPath);
-    }
+	private XtceDb xtceDb;
 
-    public SimulationPpProvider() {}
+	private Random rand = new Random();
 
-    
+	private Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
-    @Override
-    public String getLinkStatus() {
-        if (disabled) {
-            return "DISABLED";
-        } else {
-            return "OK";
-        }
-    }
 
-    @Override
-    public String getDetailedStatus() {
-        return getLinkStatus();
-    }
+	public SimulationPpProvider(String yamcsInstance, String name, LinkedHashMap<String,String> args) throws ConfigurationException {
+		xtceDb = XtceDbFactory.getInstance(yamcsInstance);
+		setSimulationData((String) args.get("simulationDataPath"));
+		simulationData = loadSimulationData(simulationDataPath);
+	}
 
-    @Override
-    public void enable() {
-        // reload simulation data and reset simulation parameters
-        if (disabled) {
-            simulationData = loadSimulationData(simulationDataPath);
-        }
-        disabled = false;
+	public SimulationPpProvider() {}
 
-    }
 
-    @Override
-    public void disable() {
-        disabled = true;
-    }
 
-    @Override
-    public boolean isDisabled() {
-        return disabled;
-    }
+	@Override
+	public Status getLinkStatus() {
+		if (disabled) {
+			return Status.DISABLED;
+		} else {
+			return Status.OK;
+		}
+	}
 
-    @Override
-    public long getDataCount() {
-        return datacount;
-    }
+	@Override
+	public String getDetailedStatus() {
+		return getLinkStatus().toString();
+	}
 
-    @Override
-    public void setParameterSink(ParameterSink ppListener) {
-        this.ppListener = ppListener;
+	@Override
+	public void enable() {
+		// reload simulation data and reset simulation parameters
+		if (disabled) {
+			simulationData = loadSimulationData(simulationDataPath);
+		}
+		disabled = false;
 
-    }
+	}
 
-    /**
-     * Entry point to run the simulation
-     */
-    @Override
-    public void run() {
-        while (isRunning()) {
-            try {
-                if (!disabled) {
-                    // run simulation
-                    processSimulationData();
-                } else {
-                    Thread.sleep(1000);
-                }
-            } catch (Exception e) {
-                log.warn("exception thrown when processing a parameter. Details:\n"
-                        + e.toString());
-                e.printStackTrace();
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e1) {
-                }
-            }
-        }
-    }
-    
+	@Override
+	public void disable() {
+		disabled = true;
+	}
 
-    
-    public void setSimulationData(String xmlFilePath) {
-        simulationDataPath = xmlFilePath;
-        simulationData = loadSimulationData(simulationDataPath);
-    }
+	@Override
+	public boolean isDisabled() {
+		return disabled;
+	}
 
-    
-    /**
-     * Processes the specified simulation scenario
-     */
-    public void processSimulationData() {
+	@Override
+	public long getDataCount() {
+		return datacount;
+	}
 
-        // get simulation starting date
-        if (simulationData.getStartDate() != null)
-            simulationStartTime = simulationData.getStartDate()
-            .toGregorianCalendar().getTime();
-        else
-            simulationStartTime = new Date();
-        simulationRealStartTime = new Date();
-        simutationStep = 0;
+	@Override
+	public void setParameterSink(ParameterSink ppListener) {
+		this.ppListener = ppListener;
 
-        // get length of a simulation step
-        simulationStepLengthMs = simulationData.getStepLengthMs();
+	}
 
-        // get loop status
-        loopSimulation = simulationData.isLoop() != null
-                && simulationData.isLoop();
+	/**
+	 * Entry point to run the simulation
+	 */
+	@Override
+	public void run() {
+		while (isRunning()) {
+			try {
+				if (!disabled) {
+					// run simulation
+					processSimulationData();
+				} else {
+					Thread.sleep(1000);
+				}
+			} catch (Exception e) {
+				log.warn("exception thrown when processing a parameter. Details:\n"
+						+ e.toString());
+				e.printStackTrace();
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e1) {
+				}
+			}
+		}
+	}
 
-        // process each sequence
-        do {
-            List<PpSimulation.ParameterSequence> pss = simulationData
-                    .getParameterSequence();
-            for (ParameterSequence ps : pss) {
-                processParameterSequence(ps);
-            }
-            if (!isRunning() || disabled) {
-                break;
-            }
-        } while (loopSimulation);
-    }
+
+
+	public void setSimulationData(String xmlFilePath) {
+		simulationDataPath = xmlFilePath;
+		simulationData = loadSimulationData(simulationDataPath);
+	}
+
+
+	/**
+	 * Processes the specified simulation scenario
+	 */
+	public void processSimulationData() {
+
+		// get simulation starting date
+		if (simulationData.getStartDate() != null)
+			simulationStartTime = simulationData.getStartDate()
+			.toGregorianCalendar().getTime();
+		else
+			simulationStartTime = new Date();
+		simulationRealStartTime = new Date();
+		simutationStep = 0;
+
+		// get length of a simulation step
+		simulationStepLengthMs = simulationData.getStepLengthMs();
+
+
+		List<PpSimulation.ParameterSequence> pss = simulationData
+				.getParameterSequence();
+		for (ParameterSequence ps : pss) {
+			processParameterSequence(ps);
+		}
+
+	}
 
 
 
 
-    /**
-     * Load simulation data from an XML file
-     * @param fileName
-     * @return simulation data
-     */
-    public PpSimulation loadSimulationData(String fileName) {
-        try {
-            final JAXBContext jc = JAXBContext.newInstance(PpSimulation.class);
-            final Unmarshaller unmarshaller = jc.createUnmarshaller();
-            
-            final PpSimulation ppSimulation = (PpSimulation) unmarshaller
-                    .unmarshal(new FileReader(fileName));
-            return ppSimulation;
+	/**
+	 * Load simulation data from an XML file
+	 * @param fileName
+	 * @return simulation data
+	 */
+	public PpSimulation loadSimulationData(String fileName) {
+		try {
+			final JAXBContext jc = JAXBContext.newInstance(PpSimulation.class);
+			final Unmarshaller unmarshaller = jc.createUnmarshaller();
 
-        } catch (Exception e) {
-            log.error("Unable to load Simulation Data. Check the XML file is correct. Details:\n"
-                    + e.toString());
-            throw new ConfigurationException("Unable to load Simulation Data. Check the XML file is correct. Details:\n"+ e.toString());
-        }
-    }
-    
-    /**
-     * Processes a sequence of the simulation scenario
-     * @param ps - sequence
-     */
-    private void processParameterSequence(ParameterSequence ps) {
+			final PpSimulation ppSimulation = (PpSimulation) unmarshaller
+					.unmarshal(new FileReader(fileName));
+			return ppSimulation;
 
-        int repeatCount = 0;
-        int maxRepeat = ps.getRepeat() != null ? ps.getRepeat() : 1;
-        boolean loopSequence = ps.isLoop() != null && ps.isLoop();
+		} catch (Exception e) {
+			log.error("Unable to load Simulation Data. Check the XML file is correct. Details:\n"
+					+ e.toString());
+			throw new ConfigurationException("Unable to load Simulation Data. Check the XML file is correct. Details:\n"+ e.toString());
+		}
+	}
 
-        // repeat the sequence as specified
-        while (loopSequence || repeatCount++ < maxRepeat) {
+	/**
+	 * Processes a sequence of the simulation scenario
+	 * @param ps - sequence
+	 */
+	private void processParameterSequence(ParameterSequence ps) {
 
-            if (!isRunning()|| disabled)
-                break;
+		int repeatCount = 0;
+		int maxRepeat = ps.getRepeat() != null ? ps.getRepeat() : 1;
+		boolean loopSequence = ps.isLoop() != null && ps.isLoop();
 
-            // process step offset
-            int stepOffset = ps.getStepOffset() == null ? 0 : ps
-                    .getStepOffset();
-            processVoidStep(stepOffset);
-            simutationStep += stepOffset;
+		// repeat the sequence as specified
+		while (loopSequence || repeatCount++ < maxRepeat) {
 
-            // initialize step count for this sequence
-            List<ParameterSequence.Parameter> parameters = ps.getParameter();
-            if(parameters.size() == 0)
-                return;
-            int lastSequenceStep = parameters.get(parameters.size() - 1)
-                    .getAquisitionStep();
+			if (stop())
+				break;
 
-            int currentParameterIndex = 0;
+			// process step offset
+			int stepOffset = ps.getStepOffset() == null ? 0 : ps
+					.getStepOffset();
+			processVoidStep(stepOffset);
+			simutationStep += stepOffset;
 
-            // process each step of the sequence
-            for (int sequenceStep = 0; sequenceStep <= lastSequenceStep; sequenceStep++) {
+			// initialize step count for this sequence
+			List<ParameterSequence.Parameter> parameters = ps.getParameter();
+			if(parameters.size() == 0)
+				return;
+			int lastSequenceStep = parameters.get(parameters.size() - 1)
+					.getAquisitionStep();
 
-                if (!isRunning() || disabled)
-                    break;
+			int currentParameterIndex = 0;
 
-                ParameterSequence.Parameter currentParameter = parameters
-                        .get(currentParameterIndex);
+			// process each step of the sequence
+			for (int sequenceStep = 0; sequenceStep <= lastSequenceStep; sequenceStep++) {
 
-                // case where there is no parameter to send at this step
-                if (currentParameter.getAquisitionStep() != sequenceStep) {
-                    assert (currentParameter.getAquisitionStep() > sequenceStep);
-                    processVoidStep(1);
-                } else {
-                    // there is at least 1 parameter to send at this step
-                    List<ParameterSequence.Parameter> stepParameters = new ArrayList<ParameterSequence.Parameter>();
-                    while (currentParameter.getAquisitionStep() == sequenceStep) {
-                        stepParameters.add(currentParameter);
-                        currentParameterIndex++;
-                        // add next parameter if available
-                        if (currentParameterIndex < parameters.size())
-                            currentParameter = parameters
-                            .get(currentParameterIndex);
-                        else
-                            break;
-                    }
-                    processParameters(stepParameters);
-                    stepParameters.clear();
-                }
-                simutationStep++;
-            }
-        }
-    }
+				if (stop())
+					break;
 
+				ParameterSequence.Parameter currentParameter = parameters
+						.get(currentParameterIndex);
 
-    /**
-     * Used when no parameters need to be inserted at a given step of the
-     * simulation scenario
-     * @param nbSteps
-     */
-    private void processVoidStep(int nbSteps) {
-        try {
-            log.trace("Processing " + nbSteps + " void steps");
-            Thread.sleep(simulationStepLengthMs * nbSteps);
-        } catch (InterruptedException e) {
-            log.error(e.toString());
-        }
-    }
-    
-
-    /**
-     * Create a specified parameter and insert it in the Yamcs PP Listener
-     * @param stepParameters
-     */
-    private void processParameters(List<ParameterSequence.Parameter> stepParameters) {
-
-        String groupName = "simulation";
-
-        List<ParameterValue> pvs = new LinkedList<ParameterValue>();
-        for (ParameterSequence.Parameter sParameter : stepParameters) {
-
-            if (!isRunning() || disabled)
-                break;
-
-            // compute value
-            float value;
-            if (sParameter.getValueType().equals("random"))
-                value = rand.nextFloat();
-            else
-                value = sParameter.getValue().floatValue();
-
-            // create generationTime and acquisitionTime
-            long acquisitionTime = simulationStartTime.getTime()
-                    + simutationStep * simulationStepLengthMs;
-            long generationTime = acquisitionTime
-                    - (sParameter.getAquisitionStep() - sParameter
-                            .getGenerationStep()) * simulationStepLengthMs;
-
-            // convert time to 'instant'
-            acquisitionTime = TimeEncoding.fromUnixTime(acquisitionTime);
-            generationTime = TimeEncoding.fromUnixTime(generationTime);
-
-            // get monitoring result
-            String monitoringResult = sParameter.getMonitoringResult();
-
-            ParameterValue pv = createPv(sParameter.getSpaceSystem(),
-                    sParameter.getParaName(), generationTime, acquisitionTime,
-                    value, monitoringResult);
-            if (pv != null)
-                pvs.add(pv);
-        }
-
-        datacount += stepParameters.size();
-        ppListener.updateParameters(new Date().getTime(), groupName, (int) datacount, pvs);
+				// case where there is no parameter to send at this step
+				if (currentParameter.getAquisitionStep() != sequenceStep) {
+					assert (currentParameter.getAquisitionStep() > sequenceStep);
+					processVoidStep(1);
+				} else {
+					// there is at least 1 parameter to send at this step
+					List<ParameterSequence.Parameter> stepParameters = new ArrayList<ParameterSequence.Parameter>();
+					while (currentParameter.getAquisitionStep() == sequenceStep) {
+						stepParameters.add(currentParameter);
+						currentParameterIndex++;
+						// add next parameter if available
+						if (currentParameterIndex < parameters.size())
+							currentParameter = parameters
+							.get(currentParameterIndex);
+						else
+							break;
+					}
+					processParameters(stepParameters);
+					stepParameters.clear();
+				}
+				simutationStep++;
+			}
+		}
+	}
 
 
-        Long nextStepDate = simulationRealStartTime.getTime() + simulationStepLengthMs * simutationStep;
-        Long delayBeforeNextStep = nextStepDate - new Date().getTime();
-        try {
-            if(delayBeforeNextStep > 0)
-                Thread.sleep(delayBeforeNextStep);
-        } catch (Exception e) {
-            log.error("", e);
-        }
-    }
+	/**
+	 * Used when no parameters need to be inserted at a given step of the
+	 * simulation scenario
+	 * @param nbSteps
+	 */
+	private void processVoidStep(int nbSteps) {
+		try {
+			log.trace("Processing " + nbSteps + " void steps");
+			Thread.sleep(simulationStepLengthMs * nbSteps);
+		} catch (InterruptedException e) {
+			log.error(e.toString());
+		}
+	}
 
 
-    
-    /**
-     * Creates parameter value
-     * @param spaceSystem
-     * @param paramName
-     * @param generationTime
-     * @param acquisitionTime
-     * @param value
-     * @param monitoringResult
-     * @return parameter value object
-     */
-    private ParameterValue createPv(String spaceSystem, String paramName,
-            long generationTime, long acquisitionTime, float value,
-            String monitoringResult) {
-        // create parameter definition
-        String parameterName = spaceSystem + paramName;
-        Parameter param;
-        if (xtceDb != null) {
-            param = xtceDb.getParameter(parameterName);
-            if (param == null) {
-                log.warn("Unable to get parameter " + parameterName
-                        + " from xtceDb.");
-                param = new Parameter(parameterName);
-            }
-        } else {
-            param = new Parameter(parameterName);
-        }
+	/**
+	 * Create a specified parameter and insert it in the Yamcs PP Listener
+	 * @param stepParameters
+	 */
+	private void processParameters(List<ParameterSequence.Parameter> stepParameters) {
 
-        // set float type by default
-        ParameterType ptype = new FloatParameterType(paramName);
-        param.setParameterType(ptype);
+		String groupName = "simulation";
 
-        // create parameter value
-        ParameterValue pv = new ParameterValue(param);
-        pv.setFloatValue((float) value);
+		List<ParameterValue> pvs = new LinkedList<ParameterValue>();
+		for (ParameterSequence.Parameter sParameter : stepParameters) {
 
-        // set monitoring result as specified in xml data (regardless of the
-        // alarms ranges)
-        String rangeCondition = null;
-        if (monitoringResult != null && monitoringResult.contains("_")) {
-            String[] parts = monitoringResult.split("_");
-            monitoringResult = parts[0];
-            rangeCondition = parts[1];
-        }
-        try {
-            if (monitoringResult != null) {
-                MonitoringResult mr = MonitoringResult
-                        .valueOf(monitoringResult);
-                pv.setMonitoringResult(mr);
-            } else
-                pv.setMonitoringResult(MonitoringResult.DISABLED);
-            if (rangeCondition != null)
-                pv.setRangeCondition(RangeCondition.valueOf(rangeCondition));
-        } catch (Exception e) {
-            log.error("Unable to set the specified monitoring result (\""
-                    + monitoringResult
-                    + "\". Please check that the value is one of the Enum MonitoringResult (DISABLED, IN_LIMITS, WATCH, WATCH_LOW, WATCH_HIGH, WARNING, WARNING_LOW, WARNING_HIGH, DISTRESS, DISTRESS_LOW, DISTRESS_HIGH, CRITICAL, CRITICAL_LOW, CRITICAL_HIGH, SEVERE, SEVERE_LOW, SEVERE_HIGH)");
-        }
+			if (stop())
+				break;
 
-        pv.setGenerationTime(generationTime);
-        pv.setAcquisitionTime(acquisitionTime);
-        pv.setAcquisitionStatus(AcquisitionStatus.ACQUIRED);
+			// compute value
+			float value;
+			if (sParameter.getValueType().equals("random"))
+				value = rand.nextFloat();
+			else
+				value = sParameter.getValue().floatValue();
 
-        return pv;
-    }
+			// create generationTime and acquisitionTime
+			long acquisitionTime = simulationStartTime.getTime()
+					+ simutationStep * simulationStepLengthMs;
+			long generationTime = acquisitionTime
+					- (sParameter.getAquisitionStep() - sParameter
+							.getGenerationStep()) * simulationStepLengthMs;
+
+			// convert time to 'instant'
+			acquisitionTime = TimeEncoding.fromUnixTime(acquisitionTime);
+			generationTime = TimeEncoding.fromUnixTime(generationTime);
+
+			// get monitoring result
+			String monitoringResult = sParameter.getMonitoringResult();
+
+			ParameterValue pv = createPv(sParameter.getSpaceSystem(),
+					sParameter.getParaName(), generationTime, acquisitionTime,
+					value, monitoringResult);
+			if (pv != null)
+				pvs.add(pv);
+		}
+
+		datacount += stepParameters.size();
+		ppListener.updateParameters(new Date().getTime(), groupName, (int) datacount, pvs);
+
+
+		Long nextStepDate = simulationRealStartTime.getTime() + simulationStepLengthMs * simutationStep;
+		Long delayBeforeNextStep = nextStepDate - new Date().getTime();
+		try {
+			if(delayBeforeNextStep > 0)
+				Thread.sleep(delayBeforeNextStep);
+		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
+
+
+
+	/**
+	 * Creates parameter value
+	 * @param spaceSystem
+	 * @param paramName
+	 * @param generationTime
+	 * @param acquisitionTime
+	 * @param value
+	 * @param monitoringResult
+	 * @return parameter value object
+	 */
+	private ParameterValue createPv(String spaceSystem, String paramName,
+			long generationTime, long acquisitionTime, float value,
+			String monitoringResult) {
+		// create parameter definition
+		String parameterName = spaceSystem + paramName;
+		Parameter param;
+		if (xtceDb != null) {
+			param = xtceDb.getParameter(parameterName);
+			if (param == null) {
+				log.warn("Unable to get parameter " + parameterName
+						+ " from xtceDb.");
+				param = new Parameter(parameterName);
+			}
+		} else {
+			param = new Parameter(parameterName);
+		}
+
+		// set float type by default
+		ParameterType ptype = new FloatParameterType(paramName);
+		param.setParameterType(ptype);
+
+		// create parameter value
+		ParameterValue pv = new ParameterValue(param);
+		pv.setFloatValue((float) value);
+
+		// set monitoring result as specified in xml data (regardless of the
+		// alarms ranges)
+		String rangeCondition = null;
+		if (monitoringResult != null && monitoringResult.contains("_")) {
+			String[] parts = monitoringResult.split("_");
+			monitoringResult = parts[0];
+			rangeCondition = parts[1];
+		}
+		try {
+			if (monitoringResult != null) {
+				MonitoringResult mr = MonitoringResult
+						.valueOf(monitoringResult);
+				pv.setMonitoringResult(mr);
+			} else
+				pv.setMonitoringResult(MonitoringResult.DISABLED);
+			if (rangeCondition != null)
+				pv.setRangeCondition(RangeCondition.valueOf(rangeCondition));
+		} catch (Exception e) {
+			log.error("Unable to set the specified monitoring result (\""
+					+ monitoringResult
+					+ "\". Please check that the value is one of the Enum MonitoringResult (DISABLED, IN_LIMITS, WATCH, WATCH_LOW, WATCH_HIGH, WARNING, WARNING_LOW, WARNING_HIGH, DISTRESS, DISTRESS_LOW, DISTRESS_HIGH, CRITICAL, CRITICAL_LOW, CRITICAL_HIGH, SEVERE, SEVERE_LOW, SEVERE_HIGH)");
+		}
+
+		pv.setGenerationTime(generationTime);
+		pv.setAcquisitionTime(acquisitionTime);
+		pv.setAcquisitionStatus(AcquisitionStatus.ACQUIRED);
+
+		return pv;
+	}
+
+	protected boolean stop() {
+		return  !isRunning() || disabled;
+	}
 
 }

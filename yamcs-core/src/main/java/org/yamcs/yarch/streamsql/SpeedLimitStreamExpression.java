@@ -10,6 +10,7 @@ import org.yamcs.yarch.SpeedSpec;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 
 public class SpeedLimitStreamExpression implements StreamExpression {
@@ -36,8 +37,10 @@ public class SpeedLimitStreamExpression implements StreamExpression {
 
     @Override
     public AbstractStream execute(ExecutionContext c) throws StreamSqlException {
-        YarchDatabase dict=YarchDatabase.getInstance(c.getDbName());
-        if(speedSpec==null || speedSpec.getType()==SpeedSpec.Type.AFAP) return expression.execute(c);
+        YarchDatabaseInstance dict=YarchDatabase.getInstance(c.getDbName());
+        if(speedSpec==null || speedSpec.getType()==SpeedSpec.Type.AFAP) {
+            return expression.execute(c);
+        }
         else {
             Stream s=expression.execute(c);
             SpeedLimitStream sls=new SpeedLimitStream(dict, "speed_limit_"+count.incrementAndGet(), s.getDefinition(), speedSpec);

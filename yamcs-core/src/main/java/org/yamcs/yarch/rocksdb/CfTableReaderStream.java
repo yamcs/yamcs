@@ -18,7 +18,7 @@ import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.RawTuple;
 import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 /**
  * reader for tables where each partition is a different column family
@@ -35,7 +35,7 @@ public class CfTableReaderStream extends AbstractTableReaderStream implements Ru
     final TableDefinition tableDefinition;
     private long numRecordsRead = 0;
 
-    protected CfTableReaderStream(YarchDatabase ydb, TableDefinition tblDef, RdbPartitionManager partitionManager, boolean ascending, boolean follow) {
+    protected CfTableReaderStream(YarchDatabaseInstance ydb, TableDefinition tblDef, RdbPartitionManager partitionManager, boolean ascending, boolean follow) {
         super(ydb, tblDef, partitionManager, ascending, follow);
         this.tableDefinition = tblDef;
         partitioningSpec = tblDef.getPartitioningSpec();
