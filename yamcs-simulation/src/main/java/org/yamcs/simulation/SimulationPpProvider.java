@@ -20,6 +20,7 @@ import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
 import org.yamcs.simulation.generated.PpSimulation;
 import org.yamcs.simulation.generated.PpSimulation.ParameterSequence;
+import org.yamcs.tctm.Link;
 import org.yamcs.tctm.ParameterDataLink;
 import org.yamcs.tctm.ParameterSink;
 import org.yamcs.utils.TimeEncoding;
@@ -69,17 +70,17 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
 
 
 	@Override
-	public String getLinkStatus() {
+	public Status getLinkStatus() {
 		if (disabled) {
-			return "DISABLED";
+			return Status.DISABLED;
 		} else {
-			return "OK";
+			return Status.OK;
 		}
 	}
 
 	@Override
 	public String getDetailedStatus() {
-		return getLinkStatus();
+		return getLinkStatus().toString();
 	}
 
 	@Override
