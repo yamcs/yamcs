@@ -82,8 +82,8 @@ public class SimulationPpProviderTest {
     public void ProcessSimulationData_Scenario1() {
         // Arrange
         SimulationPpProvider target = new SimulationPpProvider() {
-            public boolean IsRunning() {
-                return true;
+            protected boolean stop() {
+                return false;
             }
         };
         target.setSimulationData(DATA_SCENARIO1);
@@ -137,8 +137,8 @@ public class SimulationPpProviderTest {
 
         // Arrange
         SimulationPpProvider target = new SimulationPpProvider() {
-            public boolean IsRunning() {
-                return true;
+            protected boolean stop() {
+                return false;
             }
         };
         target.setSimulationData(DATA_SCENARIO2);
@@ -150,7 +150,7 @@ public class SimulationPpProviderTest {
         target.processSimulationData();
 
         // Assert
-        assertTrue(ppListener.receivedValue.size() == 52);
+        assertEquals(52, ppListener.receivedValue.size());
     }
 
     @Test
@@ -158,8 +158,8 @@ public class SimulationPpProviderTest {
 
         // Arrange
         SimulationPpProvider target = new SimulationPpProvider() {
-            public boolean IsRunning() {
-                return true;
+            protected boolean stop() {
+                return false;
             }
         };
         target.setSimulationData(DATA_SCENARIO_DATE);
@@ -173,7 +173,7 @@ public class SimulationPpProviderTest {
         long dateEnd = TimeEncoding.getWallclockTime();
 
         // Assert
-        assertTrue(ppListener.receivedValue.size() == 2);
+        assertEquals(2, ppListener.receivedValue.size());
         assertTrue(ppListener.receivedValue.get(1).getGenerationTime() == ppListener.receivedValue.get(1).getAcquisitionTime() - 1500);
 
         long elapsedTimeGen0 = ppListener.receivedValue.get(0).getGenerationTime() - dateStart;
