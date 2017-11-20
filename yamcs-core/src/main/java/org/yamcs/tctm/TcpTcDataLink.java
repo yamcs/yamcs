@@ -11,13 +11,9 @@ import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
@@ -53,7 +49,6 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
   protected BlockingQueue<PreparedCommand> commandQueue;
   protected long tcDelay;
   protected volatile long tcCount;
-  public final ReentrantLock lock =  new ReentrantLock();
 
   private String sv_linkStatus_id, sp_dataCount_id;
 
@@ -83,7 +78,6 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     }
     if(c.containsKey(spec, "tcMaxRate")) {
       tcDelay = 1000/c.getInt(spec, "tcMaxRate"); //in milliseconds
-      System.out.println("DELAY: " + tcDelay);
     }
     timeService = YamcsServer.getTimeService(yamcsInstance);
   }
@@ -111,6 +105,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     setupSysVariables();
     this.timer=new ScheduledThreadPoolExecutor(2);
     timer.scheduleWithFixedDelay(this, 0, 10, TimeUnit.SECONDS);
+    timer.execute(new TcDequeue());
     notifyStarted();
   }
 
@@ -195,11 +190,9 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
       log.warn("TC disabled, ignoring command "+pc.getCommandId());
       return;
     }
-
     if(!commandQueue.offer(pc)) {
-      timer.schedule(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent_Status","NACK"), 100, TimeUnit.MILLISECONDS);
+      timer.schedule(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent_Status","NACK"), 10, TimeUnit.MILLISECONDS);
     }
-    timer.execute(new TcDequeue());
   }
 
   @Override
@@ -291,7 +284,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     }       
   }
 
-  public class TcDequeue implements Runnable {
+  private class TcDequeue implements Runnable {
     PreparedCommand pc;
 
     @Override
@@ -303,13 +296,11 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
 
           Thread.sleep(tcDelay);
 
-        } catch (InterruptedException e2) {
-          e2.printStackTrace();
-
+        } catch (InterruptedException e) {
+          log.warn("Send command interrupted while waiting for the queue." , e);
         }
       }
     }
-
   }
 
   private class TcSend implements Runnable {
