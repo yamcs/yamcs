@@ -11,9 +11,13 @@ import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
@@ -49,6 +53,8 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
   protected BlockingQueue<PreparedCommand> commandQueue;
   protected long tcDelay;
   protected volatile long tcCount;
+  public final ReentrantLock lock =  new ReentrantLock();
+
   private String sv_linkStatus_id, sp_dataCount_id;
 
   private SystemParametersCollector sysParamCollector;
@@ -77,7 +83,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     }
     if(c.containsKey(spec, "tcMaxRate")) {
       tcDelay = 1000/c.getInt(spec, "tcMaxRate"); //in milliseconds
-      System.out.println(tcDelay);
+      System.out.println("DELAY: " + tcDelay);
     }
     timeService = YamcsServer.getTimeService(yamcsInstance);
   }
@@ -106,7 +112,6 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     this.timer=new ScheduledThreadPoolExecutor(2);
     timer.scheduleWithFixedDelay(this, 0, 10, TimeUnit.SECONDS);
     notifyStarted();
-    new Thread(new TcSend()).start();
   }
 
   protected void openSocket() {
@@ -192,18 +197,9 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     }
 
     if(!commandQueue.offer(pc)) {
-      timer.schedule(new TcAckStatus(pc.getCommandId(), "Acknowledge_FSC_Status","NACK"), 100, TimeUnit.MILLISECONDS);
+      timer.schedule(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent_Status","NACK"), 100, TimeUnit.MILLISECONDS);
     }
-  }
-
-
-  protected void handleAcks(CommandId cmdId, int seqCount ) {
-    timer.schedule(new TcAck(cmdId,"Final_Sequence_Count", Integer.toString(seqCount)), 200, TimeUnit.MILLISECONDS);
-    timer.schedule(new TcAckStatus(cmdId,"Acknowledge_FSC","ACK: OK"), 400, TimeUnit.MILLISECONDS);
-    timer.schedule(new TcAckStatus(cmdId,"Acknowledge_FRC","ACK: OK"), 800, TimeUnit.MILLISECONDS);
-    timer.schedule(new TcAckStatus(cmdId,"Acknowledge_DASS","ACK: OK"), 1200, TimeUnit.MILLISECONDS);
-    timer.schedule(new TcAckStatus(cmdId,"Acknowledge_MCS","ACK: OK"), 1600, TimeUnit.MILLISECONDS);
-
+    timer.execute(new TcDequeue());
   }
 
   @Override
@@ -295,90 +291,102 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     }       
   }
 
-  public class TcSend implements Runnable {
+  public class TcDequeue implements Runnable {
+    PreparedCommand pc;
 
     @Override
     public void run() {
-      PreparedCommand pc;
       while(true) {
         try {
           pc = commandQueue.take();
+          timer.execute(new TcSend(pc));
+
+          Thread.sleep(tcDelay);
+
         } catch (InterruptedException e2) {
           e2.printStackTrace();
-          continue; //TODO look is this is the right action
-        }
 
-        ByteBuffer bb = null;
-        if(pc.getBinary().length<minimumTcPacketLength) { //enforce the minimum packet length
-          bb=ByteBuffer.allocate(minimumTcPacketLength);
-          bb.put(pc.getBinary());
-          bb.putShort(4, (short)(minimumTcPacketLength - 7)); // fix packet length
-        } else {
-
-          int checksumIndicator = pc.getBinary()[2] & 0x04;
-          if(checksumIndicator ==1) {
-            bb=ByteBuffer.allocate(pc.getBinary().length +2); //extra slots for check sum
-          } else {
-            bb=ByteBuffer.wrap(pc.getBinary());
-          }
-          bb.putShort(4, (short)(pc.getBinary().length - 7));          
-
-        }
-
-        int retries=5;
-        boolean sent=false;
-        int seqCount=seqAndChecksumFiller.fill(bb, pc.getCommandId().getGenerationTime());
-        bb.rewind();
-        while (!sent&&(retries>0)) {
-          if (!isSocketOpen()) {
-            openSocket();
-          }
-
-          if(isSocketOpen()) {
-            try {
-              socketChannel.write(bb);
-              tcCount++;
-              sent=true;                
-            } catch (IOException e) {
-              log.warn("Error writing to TC socket to {}:{} : {}", host, port, e.getMessage());
-              try {
-                if(socketChannel.isOpen()) {
-                  socketChannel.close();
-                }
-                selector.close();
-                socketChannel = null;
-              } catch (IOException e1) {
-                e1.printStackTrace();
-              }
-            }
-          }
-          retries--;
-          if(!sent && (retries>0)) {
-            try {
-              log.warn("Command not sent, retrying in 2 seconds");
-              Thread.sleep(2000);
-            } catch (InterruptedException e) {
-              log.warn("exception {} thrown when sleeping 2 sec", e.toString());
-              Thread.currentThread().interrupt();
-            }
-          }
-        }
-        commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
-        if(sent) {
-          handleAcks(pc.getCommandId(), seqCount);
-        } else {
-          timer.schedule(new TcAckStatus(pc.getCommandId(), "Acknowledge_FSC_Status","NACK"), 100, TimeUnit.MILLISECONDS);
-        }
-        
-        try {
-          Thread.sleep(tcDelay);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
         }
       }
-      
+    }
 
-    }       
+  }
+
+  private class TcSend implements Runnable {
+
+    private PreparedCommand pc;
+
+    public TcSend(PreparedCommand pc) {
+      this.pc = pc;
+    }
+
+    @Override
+    public void run() {
+      ByteBuffer bb = null;
+      if(pc.getBinary().length<minimumTcPacketLength) { //enforce the minimum packet length
+        bb=ByteBuffer.allocate(minimumTcPacketLength);
+        bb.put(pc.getBinary());
+        bb.putShort(4, (short)(minimumTcPacketLength - 7)); // fix packet length
+      } else {
+
+        int checksumIndicator = pc.getBinary()[2] & 0x04;
+        if(checksumIndicator ==1) {
+          bb=ByteBuffer.allocate(pc.getBinary().length +2); //extra slots for check sum
+        } else {
+          bb=ByteBuffer.wrap(pc.getBinary());
+        }
+        bb.putShort(4, (short)(pc.getBinary().length - 7));          
+
+      }
+
+      int retries=5;
+      boolean sent=false;
+      int seqCount=seqAndChecksumFiller.fill(bb, pc.getCommandId().getGenerationTime());
+      bb.rewind();
+      while (!sent&&(retries>0)) {
+        if (!isSocketOpen()) {
+          openSocket();
+        }
+
+        if(isSocketOpen()) {
+          try {
+            socketChannel.write(bb);
+            tcCount++;
+            sent=true;                
+          } catch (IOException e) {
+            log.warn("Error writing to TC socket to {}:{} : {}", host, port, e.getMessage());
+            try {
+              if(socketChannel.isOpen()) {
+                socketChannel.close();
+              }
+              selector.close();
+              socketChannel = null;
+            } catch (IOException e1) {
+              e1.printStackTrace();
+            }
+          }
+        }
+        retries--;
+        if(!sent && (retries>0)) {
+          try {
+            log.warn("Command not sent, retrying in 2 seconds");
+            Thread.sleep(2000);
+          } catch (InterruptedException e) {
+            log.warn("exception {} thrown when sleeping 2 sec", e.toString());
+            Thread.currentThread().interrupt();
+          }
+        }
+      }
+      commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
+      if(sent) {
+        timer.schedule(new TcAck(pc.getCommandId(),"Final_Sequence_Count", Integer.toString(seqCount)), 200, TimeUnit.MILLISECONDS);
+        timer.schedule(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent_Status","ACK: OK"), 100, TimeUnit.MILLISECONDS);
+      } else {
+        timer.schedule(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent_Status","NACK"), 100, TimeUnit.MILLISECONDS);
+      }
+
+    }
+
   }
 
 
