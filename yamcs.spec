@@ -33,7 +33,7 @@ mkdir -p %{buildroot}/%{prefix}/mdb
 mkdir -p %{buildroot}/%{prefix}/log
 mkdir -p %{buildroot}/%{prefix}/cache
 mkdir -p %{buildroot}/etc # For system /etc
-mkdir -p ${buildroot}/etc/init.d
+mkdir -p %{buildroot}/etc/init.d
 mkdir -p %{buildroot}/%{prefix}/lib/xtce
 mkdir -p %{buildroot}/%{prefix}/lib/ext
 mkdir -p %{buildroot}/%{prefix}/web/
@@ -53,10 +53,6 @@ cp -a yamcs-api/src/main/*.proto %{buildroot}/%{prefix}/lib/
 %if %{_buildweb}
 cp -a yamcs-web/build/*  %{buildroot}/%{prefix}/web/
 %endif
-
-rm yamcs-simulation/target/yamcs-*-sources.jar
-cp -a yamcs-simulation/target/*jar %{buildroot}/%{prefix}/lib/
-cp -a yamcs-simulation/bin %{buildroot}/%{prefix}/
 
 
 %clean

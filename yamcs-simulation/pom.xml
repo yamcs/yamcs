@@ -12,7 +12,108 @@
   <artifactId>yamcs-simulation</artifactId>
   <packaging>jar</packaging>
   <name>Yamcs Simulation</name>
+  
+  <build>
+  <plugins>
+    <plugin>
+   <groupId>org.codehaus.mojo</groupId>
+        <artifactId>rpm-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>attached-rpm</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <copyright>2011, Space Applications Services NV/SA</copyright>
+          <distribution>yamcs-simulator</distribution>
+          <group>Application/Yamcs/Yamcs Simulator</group>
+          <packager>SpaceApps</packager>
+          <projversion>${project.version}</projversion>
 
+          <defineStatements>
+            <defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
+          </defineStatements>
+          <defaultDirmode>0755</defaultDirmode>
+          <defaultFilemode>0644</defaultFilemode>
+
+          <prefix>/opt/yamcs</prefix>
+          <!-- <changelogFile>src/changelog</changelogFile> -->
+          <mappings>
+          
+            <mapping>
+              <directory>/opt/yamcs/lib/</directory>
+              <directoryIncluded>false</directoryIncluded>
+              <username>root</username>
+              <groupname>root</groupname>
+              <artifact />
+              <dependency>
+                <includes/>
+              </dependency>
+            </mapping>
+            <mapping>
+              <directory>/opt/yamcs/etc</directory>
+              <configuration>true</configuration>
+              <directoryIncluded>false</directoryIncluded>
+              <username>root</username>
+              <groupname>root</groupname>
+               <sources>
+                <source> <location>etc/mdb.yaml</location> </source>
+                <source> <location>etc/command-queue.yaml</location> </source>
+                <source> <location>etc/privileges.yaml</location> </source>
+                <source> <location>etc/gs-simulation.xml</location> </source>
+                <source> <location>etc/simulator.yaml</location> </source>
+                <source> <location>etc/tcp.yaml</location> </source>
+                <source> <location>etc/yamcs.simulator.yaml</location> </source>
+                <source> <location>etc/yamcs-ui.yaml</location> </source>
+                <source> <location>etc/yamcs.yaml</location> </source>
+                <source> <location>etc/logging.yamcs-server.properties</location> </source>
+                <source> <location>etc/yprocessor.yaml</location> </source>
+              </sources>
+            </mapping>
+            <mapping>
+              <directory>/opt/yamcs/mdb/</directory>
+              <configuration>true</configuration>
+              <directoryIncluded>false</directoryIncluded>
+              <username>root</username>
+              <groupname>root</groupname>
+               <sources>
+                <source> <location>mdb/GS-tmtc.xls</location> </source>
+                <source> <location>mdb/landing.xls</location> </source>                
+                 <source> <location>mdb/leo-spacecraft.xls</location> </source>
+                 <source> <location>mdb/simulator-ccsds.xls</location> </source>
+               </sources>
+            </mapping>
+            <mapping>
+              <directory>/opt/yamcs/web/simulator/</directory>
+              <configuration>true</configuration>
+              <directoryIncluded>true</directoryIncluded>
+              <username>root</username>
+              <groupname>root</groupname>
+               <sources>
+                <source> <location>web/simulator</location> </source>
+               </sources>
+            </mapping>
+            <mapping>
+              <directory>/storage/yamcs-data</directory>
+              <directoryIncluded>true</directoryIncluded>
+              <username>yamcs</username>
+              <groupname>yamcs</groupname>
+              <filemode>700</filemode>
+             </mapping>
+            <mapping>
+              <directory>/storage/yamcs-incoming</directory>
+              <directoryIncluded>true</directoryIncluded>
+              <username>yamcs</username>
+              <groupname>yamcs</groupname>
+              <filemode>700</filemode>
+             </mapping>
+          </mappings>
+        </configuration>
+      </plugin>
+      </plugins>
+   </build>
   <!-- commented out for now - because yamcs-simulation is the last one in the list, this config will cause skipping all the nexus uploads
   See https://issues.sonatype.org/browse/NEXUS-9138
   <properties>

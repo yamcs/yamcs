@@ -8,6 +8,8 @@ services:
     - org.yamcs.archive.ReplayServer
     - org.yamcs.archive.IndexServer
     - org.yamcs.parameter.SystemParametersCollector
+    - org.yamcs.parameter.SystemParametersCollector
+    - org.yamcs.artemis.ArtemisEventService
     # create a realtime channel
     - class: org.yamcs.ProcessorCreatorService
       args: 
