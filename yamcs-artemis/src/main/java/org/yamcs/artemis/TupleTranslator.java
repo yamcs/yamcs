@@ -20,5 +20,5 @@ public interface TupleTranslator {
      * @param message
      * @return
      */
-    Tuple buildTuple(TupleDefinition tdef, ClientMessage message);
+    Tuple buildTuple(ClientMessage message);
 }

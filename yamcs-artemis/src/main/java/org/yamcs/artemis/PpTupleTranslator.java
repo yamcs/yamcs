@@ -47,11 +47,11 @@ public class PpTupleTranslator implements TupleTranslator {
     }
 
     @Override
-    public Tuple buildTuple( TupleDefinition tdef, ClientMessage message ) {
+    public Tuple buildTuple(ClientMessage message ) {
         Tuple t = null;
         try {
             ParameterData pd = (ParameterData)Protocol.decode(message, ParameterData.newBuilder());
-            TupleDefinition tupleDef = tdef.copy();
+            TupleDefinition tupleDef = ParameterDataLinkInitialiser.PARAMETER_TUPLE_DEFINITION.copy();
 
             ArrayList<Object> columns = new ArrayList<Object>( 4 + pd.getParameterCount() );
             columns.add(message.getLongProperty( ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GENTIME ));

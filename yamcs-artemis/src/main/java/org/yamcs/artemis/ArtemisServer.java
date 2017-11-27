@@ -20,21 +20,19 @@ import com.google.common.util.concurrent.AbstractService;
  */
 public class ArtemisServer extends AbstractService {
     static Logger log = LoggerFactory.getLogger(ArtemisServer.class.getName());
-    static Logger staticlog = LoggerFactory.getLogger(ArtemisServer.class);
-    
 
-    EmbeddedActiveMQ artemisServer;
+    static EmbeddedActiveMQ artemisServer;
     
     public ArtemisServer() throws ConfigurationException {
-        if(artemisServer!=null) {
-            throw new ConfigurationException("This service cannot be instantiated more than once");
-        }
+        //divert artemis logging
+        System.setProperty("org.jboss.logging.provider", "slf4j");
+        System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.Jdk14Logger");
     }
 
     public static EmbeddedActiveMQ setupArtemis() throws Exception {
-        //divert artemis logging
-        System.setProperty("org.jboss.logging.provider", "slf4j");
-
+        if(artemisServer!=null) {
+            throw new ConfigurationException("This service cannot be instantiated more than once");
+        }
         // load optional configuration file name for ActiveMQ Artemis,
         // otherwise default will be artemis.xml
         String artemisConfigFile = "artemis.xml";
@@ -65,11 +63,9 @@ public class ArtemisServer extends AbstractService {
 
     @Override
     protected void doStart() {
-
         try {
-            this.artemisServer = ArtemisServer.setupArtemis();
+            artemisServer = ArtemisServer.setupArtemis();
             notifyStarted();
-
         }
         catch (Exception e) {
             notifyFailed(e);
@@ -80,7 +76,6 @@ public class ArtemisServer extends AbstractService {
     protected void doStop() {
         try {
             artemisServer.stop();
-            
             notifyStopped();
         } catch (Exception e) {
             log.error("Failed to close the yamcs session",e);
