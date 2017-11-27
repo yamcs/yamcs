@@ -13,4 +13,10 @@ abstract class Verifier {
     }
     
     abstract void start();
+
+    /**
+     * Called to cancel the verification in case it didn't finish in the expected time.
+     * 
+     */
+    abstract void cancel();
 }

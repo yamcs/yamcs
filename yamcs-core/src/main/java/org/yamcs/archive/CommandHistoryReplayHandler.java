@@ -16,12 +16,13 @@ import com.google.protobuf.MessageLite;
 
 /**
  * Performs replays for command history
+ * 
  * @author nm
  *
  */
 public class CommandHistoryReplayHandler implements ReplayHandler {
     private ReplayRequest request;
-    
+
     public CommandHistoryReplayHandler(String instance) {
     }
 
@@ -32,23 +33,25 @@ public class CommandHistoryReplayHandler implements ReplayHandler {
 
     @Override
     public String getSelectCmd() {
-        StringBuilder sb=new StringBuilder();
-        sb.append("SELECT ").append(ProtoDataType.CMD_HISTORY.getNumber()).
-           append(",* from "+CommandHistoryRecorder.TABLE_NAME);
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT ").append(ProtoDataType.CMD_HISTORY.getNumber())
+                .append(",* from " + CommandHistoryRecorder.TABLE_NAME);
         appendTimeClause(sb, request);
-        
+
         CommandHistoryReplayRequest cmdHistReq = request.getCommandHistoryRequest();
-        if(cmdHistReq.getNameFilterCount()>0) {
-            if(request.hasStart() || (request.hasStop())) {
+        if (cmdHistReq.getNameFilterCount() > 0) {
+            if (request.hasStart() || (request.hasStop())) {
                 sb.append(" AND ");
             } else {
                 sb.append(" WHERE ");
             }
             sb.append("cmdName IN (");
             boolean first = true;
-            for(NamedObjectId id: cmdHistReq.getNameFilterList()) { //TODO - do something with the namespace
-                if(first) {
-                   first = false; 
+
+            for (NamedObjectId id : cmdHistReq.getNameFilterList()) {
+                // TODO - do something with the namespace
+                if (first) {
+                    first = false;
                 } else {
                     sb.append(", ");
                 }
@@ -57,8 +60,8 @@ public class CommandHistoryReplayHandler implements ReplayHandler {
             }
             sb.append(")");
         }
-        
-        if(request.hasReverse() && request.getReverse()) {
+
+        if (request.hasReverse() && request.getReverse()) {
             sb.append(" ORDER DESC");
         }
         return sb.toString();
@@ -70,16 +73,18 @@ public class CommandHistoryReplayHandler implements ReplayHandler {
 
     @Override
     public MessageLite transform(Tuple t) {
-        CommandHistoryEntry.Builder che=CommandHistoryEntry.newBuilder();
+        CommandHistoryEntry.Builder che = CommandHistoryEntry.newBuilder();
         che.setCommandId(PreparedCommand.getCommandId(t));
-        
-        for(int i=1;i<t.size(); i++) { //first column is constant ProtoDataType.CMD_HISTORY.getNumber()
-            ColumnDefinition cd=t.getColumnDefinition(i);
-            String name=cd.getName();
-            if(PreparedCommand.CNAME_GENTIME.equals(name)
-                ||PreparedCommand.CNAME_ORIGIN.equals(name)
-                ||PreparedCommand.CNAME_SEQNUM.equals(name)
-                ||PreparedCommand.CNAME_CMDNAME.equals(name)) continue;
+
+        for (int i = 1; i < t.size(); i++) { // first column is constant
+                                             // ProtoDataType.CMD_HISTORY.getNumber()
+            ColumnDefinition cd = t.getColumnDefinition(i);
+            String name = cd.getName();
+            if (PreparedCommand.CNAME_GENTIME.equals(name)
+                    || PreparedCommand.CNAME_ORIGIN.equals(name)
+                    || PreparedCommand.CNAME_SEQNUM.equals(name)
+                    || PreparedCommand.CNAME_CMDNAME.equals(name))
+                continue;
             che.addAttr(CommandHistoryAttribute.newBuilder()
                     .setName(name)
                     .setValue(ValueUtility.toGbp(ValueUtility.getColumnValue(cd, t.getColumn(i))))
@@ -91,17 +96,17 @@ public class CommandHistoryReplayHandler implements ReplayHandler {
     @Override
     public void reset() {
         // TODO Auto-generated method stub
-
     }
-    
+
     static void appendTimeClause(StringBuilder sb, ReplayRequest request) {
-        if(request.hasStart() || (request.hasStop())) {
+        if (request.hasStart() || (request.hasStop())) {
             sb.append(" where ");
-            if(request.hasStart()) {
-                sb.append(" gentime>="+request.getStart());
-                if(request.hasStop()) sb.append(" and gentime<"+request.getStop());
+            if (request.hasStart()) {
+                sb.append(" gentime>=" + request.getStart());
+                if (request.hasStop())
+                    sb.append(" and gentime<" + request.getStop());
             } else {
-                sb.append(" gentime<"+request.getStop());
+                sb.append(" gentime<" + request.getStop());
             }
         }
     }

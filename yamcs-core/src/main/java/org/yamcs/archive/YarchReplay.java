@@ -1,6 +1,5 @@
 package org.yamcs.archive;
 
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,13 +31,13 @@ import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 /**
- * Performs a replay from Yarch So far supported are: TM packets, PP groups, Events, Parameters and Command History.
+ * Performs a replay from Yarch So far supported are: TM packets, PP groups,
+ * Events, Parameters and Command History.
  * 
- * It relies on handlers for each data type. 
- * Each handler creates a stream, the streams are merged and the output is sent to the listener 
- * This class can also handle
- *   pause/resume: simply stop sending data 
- *   seek: closes the streams and creates new ones with a different starting time.
+ * It relies on handlers for each data type. Each handler creates a stream, the
+ * streams are merged and the output is sent to the listener This class can also
+ * handle pause/resume: simply stop sending data seek: closes the streams and
+ * creates new ones with a different starting time.
  * 
  * @author nm
  *
@@ -49,73 +48,66 @@ public class YarchReplay implements StreamSubscriber {
     volatile boolean quitting = false;
     private volatile ReplayState state = ReplayState.INITIALIZATION;
     static Logger log = LoggerFactory.getLogger(YarchReplay.class.getName());
-    private volatile String errorString="";
+    private volatile String errorString = "";
     int numPacketsSent;
     final String instance;
     static AtomicInteger counter = new AtomicInteger();
     XtceDb xtceDb;
-   
+
     volatile ReplayRequest currentRequest;
 
-    Map<ProtoDataType,ReplayHandler> handlers;
-    
-    private Semaphore pausedSemaphore=new Semaphore(0);
-    boolean dropTuple=false; //set to true when jumping to a different time
+    Map<ProtoDataType, ReplayHandler> handlers;
+
+    private Semaphore pausedSemaphore = new Semaphore(0);
+    boolean dropTuple = false; // set to true when jumping to a different time
     volatile boolean ignoreClose;
     ReplayListener listener;
-    public YarchReplay(ReplayServer replayServer, ReplayRequest rr, ReplayListener listener,  XtceDb xtceDb, AuthenticationToken authToken)
-            throws IOException,  YamcsException, YamcsApiException {
-        this.listener = listener;
-        this.replayServer=replayServer;
-        this.xtceDb=xtceDb;
-        this.instance=replayServer.instance;
 
-        if (!rr.hasPacketRequest() && !rr.hasParameterRequest()
-                        && !rr.hasEventRequest() && !rr.hasPpRequest()
-                        && !rr.hasCommandHistoryRequest()) {
-            throw new YamcsException("Empty replay request");
-        }
+    public YarchReplay(ReplayServer replayServer, ReplayRequest rr, ReplayListener listener, XtceDb xtceDb,
+            AuthenticationToken authToken)
+            throws IOException, YamcsException, YamcsApiException {
+        this.listener = listener;
+        this.replayServer = replayServer;
+        this.xtceDb = xtceDb;
+        this.instance = replayServer.instance;
 
         setRequest(rr, authToken);
-      
+
     }
 
-
-   
-
-    public void setRequest(ReplayRequest newRequest, AuthenticationToken authToken) throws YamcsException {
-        if(state!=ReplayState.INITIALIZATION && state!=ReplayState.STOPPED) {
+    private void setRequest(ReplayRequest newRequest, AuthenticationToken authToken) throws YamcsException {
+        if (state != ReplayState.INITIALIZATION && state != ReplayState.STOPPED) {
             throw new YamcsException("changing the request only supported in the INITIALIZATION and STOPPED states");
         }
-        
-        //get the start/stop from utcStart/utcStop
+
+        // get the start/stop from utcStart/utcStop
         ReplayRequest.Builder b = ReplayRequest.newBuilder(newRequest);
-        
-        if(!newRequest.hasStart() && newRequest.hasUtcStart()) {
+
+        if (!newRequest.hasStart() && newRequest.hasUtcStart()) {
             b.setStart(TimeEncoding.parse(newRequest.getUtcStart()));
         }
-        if(!newRequest.hasStop() && newRequest.hasUtcStop()) {
+        if (!newRequest.hasStop() && newRequest.hasUtcStop()) {
             b.setStop(TimeEncoding.parse(newRequest.getUtcStop()));
         }
-        newRequest  = b.build();
+        newRequest = b.build();
 
         log.debug("Replay request for time: [{}, {}]",
                 (newRequest.hasStart() ? TimeEncoding.toString(newRequest.getStart()) : null),
                 (newRequest.hasStop() ? TimeEncoding.toString(newRequest.getStop()) : null));
-        
-        if (newRequest.hasStart() && newRequest.hasStop() && newRequest.getStart()>newRequest.getStop()) {
+
+        if (newRequest.hasStart() && newRequest.hasStop() && newRequest.getStart() > newRequest.getStop()) {
             log.warn("throwing new packetexception: stop time has to be greater than start time");
             throw new YamcsException("stop has to be greater than start");
         }
 
         currentRequest = newRequest;
         handlers = new HashMap<>();
-        
+
         if (currentRequest.hasParameterRequest()) {
-            throw new YamcsException("The replay cannot handle directly parameters. Please create a replay processor for that");
+            throw new YamcsException(
+                    "The replay cannot handle directly parameters. Please create a replay processor for that");
         }
-        
-        
+
         if (currentRequest.hasEventRequest())
             handlers.put(ProtoDataType.EVENT, new EventReplayHandler());
         if (currentRequest.hasPacketRequest())
@@ -124,8 +116,8 @@ public class YarchReplay implements StreamSubscriber {
             handlers.put(ProtoDataType.PP, new ParameterReplayHandler(xtceDb));
         if (currentRequest.hasCommandHistoryRequest())
             handlers.put(ProtoDataType.CMD_HISTORY, new CommandHistoryReplayHandler(instance));
-        
-        for(ReplayHandler rh:handlers.values()) {
+
+        for (ReplayHandler rh : handlers.values()) {
             rh.setRequest(newRequest);
         }
     }
@@ -135,7 +127,7 @@ public class YarchReplay implements StreamSubscriber {
     }
 
     public synchronized void start() {
-        switch(state) {
+        switch (state) {
         case RUNNING:
             log.warn("start called when already running, call ignored");
             return;
@@ -143,103 +135,103 @@ public class YarchReplay implements StreamSubscriber {
         case STOPPED:
             try {
                 initReplay();
-                state=ReplayState.RUNNING;
+                state = ReplayState.RUNNING;
             } catch (Exception e) {
                 log.error("Got exception when creating the stream: ", e);
-                errorString=e.toString();
-                state=ReplayState.ERROR;
+                errorString = e.toString();
+                state = ReplayState.ERROR;
             }
             break;
         case PAUSED:
-            state=ReplayState.RUNNING;
+            state = ReplayState.RUNNING;
             pausedSemaphore.release();
             break;
         case ERROR:
         case CLOSED:
-            //do nothing?
+            // do nothing?
         }
     }
 
     private void initReplay() throws StreamSqlException, ParseException {
-        streamName="replay_stream"+counter.incrementAndGet();
+        streamName = "replay_stream" + counter.incrementAndGet();
 
-        StringBuilder sb=new StringBuilder();
-        sb.append("CREATE STREAM "+streamName+" AS ");
-        
-        if(handlers.size()>1){
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE STREAM " + streamName + " AS ");
+
+        if (handlers.size() > 1) {
             sb.append("MERGE ");
         }
 
-        boolean first=true;
-        for(ReplayHandler rh:handlers.values()) {
-            String selectCmd=rh.getSelectCmd();
-            if(selectCmd!=null) {
-                if(first) {
-                    first=false;
-                }
-                else sb.append(", ");
-                if(handlers.size()>1) {
+        boolean first = true;
+        for (ReplayHandler rh : handlers.values()) {
+            String selectCmd = rh.getSelectCmd();
+            if (selectCmd != null) {
+                if (first) {
+                    first = false;
+                } else
+                    sb.append(", ");
+                if (handlers.size() > 1) {
                     sb.append("(");
                 }
                 sb.append(selectCmd);
-                if(handlers.size()>1) {
+                if (handlers.size() > 1) {
                     sb.append(")");
                 }
             }
         }
-        
-        if(first) {
-            if(currentRequest.getEndAction()==EndAction.QUIT) {
+
+        if (first) {
+            if (currentRequest.getEndAction() == EndAction.QUIT) {
                 signalStateChange();
             }
             return;
         }
 
-        if(handlers.size()>1){
+        if (handlers.size() > 1) {
             sb.append(" USING gentime");
         }
         ReplaySpeed rs;
-        if(currentRequest.hasSpeed()) {
+        if (currentRequest.hasSpeed()) {
             rs = currentRequest.getSpeed();
         } else {
             rs = ReplaySpeed.newBuilder().setType(ReplaySpeedType.REALTIME).setParam(1).build();
         }
-        switch(rs.getType()) {
+        switch (rs.getType()) {
         case AFAP:
             sb.append(" SPEED AFAP");
             break;
         case FIXED_DELAY:
-            sb.append(" SPEED FIXED_DELAY "+(long)rs.getParam());
+            sb.append(" SPEED FIXED_DELAY " + (long) rs.getParam());
             break;
         case REALTIME:
-            sb.append(" SPEED ORIGINAL gentime,"+(long)rs.getParam());
+            sb.append(" SPEED ORIGINAL gentime," + (long) rs.getParam());
         }
-        if(handlers.size()>1 && currentRequest.hasReverse() && currentRequest.getReverse()) {
+        if (handlers.size() > 1 && currentRequest.hasReverse() && currentRequest.getReverse()) {
             sb.append(" ORDER DESC");
         }
 
-        String query=sb.toString();
+        String query = sb.toString();
         log.debug("running query {}", query);
-        YarchDatabaseInstance ydb=YarchDatabase.getInstance(instance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         ydb.execute(query);
-        Stream s=ydb.getStream(streamName);
+        Stream s = ydb.getStream(streamName);
         s.addSubscriber(this);
-        numPacketsSent=0;
+        numPacketsSent = 0;
         s.start();
     }
-    
+
     public void seek(long newReplayTime) throws YamcsException {
-        if(state!=ReplayState.INITIALIZATION) {
-            if(state==ReplayState.PAUSED) {
-                dropTuple=true;
+        if (state != ReplayState.INITIALIZATION) {
+            if (state == ReplayState.PAUSED) {
+                dropTuple = true;
                 pausedSemaphore.release();
             }
-            state=ReplayState.INITIALIZATION;
-            String query="CLOSE STREAM "+streamName;
-            ignoreClose=true;
+            state = ReplayState.INITIALIZATION;
+            String query = "CLOSE STREAM " + streamName;
+            ignoreClose = true;
             try {
                 YarchDatabaseInstance db = YarchDatabase.getInstance(instance);
-                if(db.getStream(streamName)!=null) {
+                if (db.getStream(streamName) != null) {
                     log.debug("running query: {}", query);
                     db.execute(query);
                 } else {
@@ -247,97 +239,97 @@ public class YarchReplay implements StreamSubscriber {
                 }
             } catch (Exception e) {
                 log.error("Got exception when closing the stream: ", e);
-                errorString=e.toString();
-                state=ReplayState.ERROR;
+                errorString = e.toString();
+                state = ReplayState.ERROR;
                 signalStateChange();
             }
         }
         currentRequest = ReplayRequest.newBuilder(currentRequest).setStart(newReplayTime).build();
-        for(ReplayHandler rh:handlers.values()) {
+        for (ReplayHandler rh : handlers.values()) {
             rh.setRequest(currentRequest);
         }
         start();
     }
+
     public void changeSpeed(ReplaySpeed newSpeed) {
         log.debug("Changing speed to {}", newSpeed);
-        
-        YarchDatabaseInstance ydb=YarchDatabase.getInstance(instance);
-        Stream s=ydb.getStream(streamName);
-        if(!(s instanceof SpeedLimitStream)) {
-            throw new IllegalStateException("Cannot change speed on a "+s.getClass()+" stream");
+
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+        Stream s = ydb.getStream(streamName);
+        if (!(s instanceof SpeedLimitStream)) {
+            throw new IllegalStateException("Cannot change speed on a " + s.getClass() + " stream");
         } else {
-            ((SpeedLimitStream)s).setSpeedSpec(toSpeedSpec(newSpeed));
+            ((SpeedLimitStream) s).setSpeedSpec(toSpeedSpec(newSpeed));
         }
         ReplayRequest.Builder b = ReplayRequest.newBuilder(currentRequest);
         b.setSpeed(newSpeed);
-        currentRequest = b.build(); 
-        
+        currentRequest = b.build();
+
     }
 
     private SpeedSpec toSpeedSpec(ReplaySpeed speed) {
         SpeedSpec ss;
-        switch(speed.getType()) {
-        case  AFAP: 
-            ss=new SpeedSpec(SpeedSpec.Type.AFAP);
+        switch (speed.getType()) {
+        case AFAP:
+            ss = new SpeedSpec(SpeedSpec.Type.AFAP);
             break;
-        case FIXED_DELAY:            
-            ss=new SpeedSpec(SpeedSpec.Type.FIXED_DELAY, (int) speed.getParam());
+        case FIXED_DELAY:
+            ss = new SpeedSpec(SpeedSpec.Type.FIXED_DELAY, (int) speed.getParam());
             break;
         case REALTIME:
-            ss=new SpeedSpec(SpeedSpec.Type.ORIGINAL, "gentime", speed.getParam());
+            ss = new SpeedSpec(SpeedSpec.Type.ORIGINAL, "gentime", speed.getParam());
             break;
         default:
-            throw new IllegalArgumentException("Unkown speed type "+speed.getType());                
+            throw new IllegalArgumentException("Unkown speed type " + speed.getType());
         }
         return ss;
     }
-    
+
     public void pause() {
-        state=ReplayState.PAUSED;
+        state = ReplayState.PAUSED;
     }
 
     public synchronized void quit() {
-        if(quitting) {
+        if (quitting) {
             return;
         }
-        quitting=true;
+        quitting = true;
         log.debug("Replay quitting");
-        
+
         this.notify();
         try {
-            YarchDatabaseInstance db=YarchDatabase.getInstance(instance);
-            if(db.getStream(streamName)!=null){
-                db.execute("close stream "+streamName);
+            YarchDatabaseInstance db = YarchDatabase.getInstance(instance);
+            if (db.getStream(streamName) != null) {
+                db.execute("close stream " + streamName);
             }
         } catch (Exception e) {
-            log.error( "Exception whilst quitting", e );
+            log.error("Exception whilst quitting", e);
         }
         replayServer.replayFinished();
     }
 
-
     @Override
     public void onTuple(Stream s, Tuple t) {
-        if(quitting) {
+        if (quitting) {
             return;
         }
         try {
-            while(state==ReplayState.PAUSED) {
+            while (state == ReplayState.PAUSED) {
                 pausedSemaphore.acquire();
             }
-            if(dropTuple) {
-                dropTuple=false;
+            if (dropTuple) {
+                dropTuple = false;
                 return;
             }
-            ProtoDataType type=ProtoDataType.valueOf((Integer)t.getColumn(0));
+            ProtoDataType type = ProtoDataType.valueOf((Integer) t.getColumn(0));
             Object data = handlers.get(type).transform(t);
-            
-            if(data!=null) {
+
+            if (data != null) {
                 listener.newData(type, data);
             }
-                
+
         } catch (Exception e) {
-            if(!quitting) {
+            if (!quitting) {
                 log.warn("Exception received: ", e);
                 quit();
             }
@@ -346,45 +338,46 @@ public class YarchReplay implements StreamSubscriber {
 
     @Override
     public synchronized void streamClosed(Stream stream) {
-        for(ReplayHandler rh:handlers.values()) {
+        for (ReplayHandler rh : handlers.values()) {
             rh.reset();
         }
-        
-        if(ignoreClose) { //this happens when we close the stream to reopen another one
-            ignoreClose=false;
+
+        if (ignoreClose) { // this happens when we close the stream to reopen
+                           // another one
+            ignoreClose = false;
             return;
         }
-        
-        if(currentRequest.getEndAction()==EndAction.QUIT) {
-        	state=ReplayState.CLOSED;
-        	signalStateChange();
-        	quit();
-        } else if(currentRequest.getEndAction()==EndAction.STOP) {
-        	state=ReplayState.STOPPED;
-        	signalStateChange();
-        } else if(currentRequest.getEndAction()==EndAction.LOOP) {
-        	if(numPacketsSent==0) {
-        		state=ReplayState.STOPPED; //there is no data in this stream
-        		signalStateChange();
-        	} else {
-        		state=ReplayState.INITIALIZATION;
-        		start();
-        	}
+
+        if (currentRequest.getEndAction() == EndAction.QUIT) {
+            state = ReplayState.CLOSED;
+            signalStateChange();
+            quit();
+        } else if (currentRequest.getEndAction() == EndAction.STOP) {
+            state = ReplayState.STOPPED;
+            signalStateChange();
+        } else if (currentRequest.getEndAction() == EndAction.LOOP) {
+            if (numPacketsSent == 0) {
+                state = ReplayState.STOPPED; // there is no data in this stream
+                signalStateChange();
+            } else {
+                state = ReplayState.INITIALIZATION;
+                start();
+            }
         }
     }
 
     private void signalStateChange() {
         try {
-            if(quitting) {
+            if (quitting) {
                 return;
             }
-            ReplayStatus.Builder rsb=ReplayStatus.newBuilder().setState(state);
-            if(state==ReplayState.ERROR) {
+            ReplayStatus.Builder rsb = ReplayStatus.newBuilder().setState(state);
+            if (state == ReplayState.ERROR) {
                 rsb.setErrorMessage(errorString);
             }
-            ReplayStatus rs=rsb.build();
+            ReplayStatus rs = rsb.build();
             listener.stateChanged(rs);
-            
+
         } catch (Exception e) {
             log.warn("got exception while signaling the state change: ", e);
         }

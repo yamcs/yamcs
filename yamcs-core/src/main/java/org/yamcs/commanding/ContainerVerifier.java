@@ -32,4 +32,11 @@ class ContainerVerifier extends Verifier implements ContainerConsumer {
         ContainerRequestManager crm = yproc.getContainerRequestManager();
         crm.subscribe(this, container);
     }
+
+
+    @Override
+    void cancel() {
+        ContainerRequestManager crm = yproc.getContainerRequestManager();
+        crm.unsubscribe(this, container);
+    }
 }

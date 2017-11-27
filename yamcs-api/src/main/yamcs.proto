@@ -198,9 +198,11 @@ message ReplayRequest {
 
   // Reverse the direction of the replay
   optional bool reverse = 15;
-
-  // At least one of the following request types should be added
+  
   optional ParameterReplayRequest parameterRequest = 8;
+
+  // By default all Packets, Events, CommandHistory are part of the replay
+  // Unless one or more of the below requests are specified.
   optional PacketReplayRequest packetRequest = 9;
   optional EventReplayRequest eventRequest = 10;
   optional CommandHistoryReplayRequest commandHistoryRequest = 11;
@@ -222,12 +224,13 @@ message EventReplayRequest {
 }
 
 message CommandHistoryReplayRequest {
-  // No filter, means all commands are sent
+  // No filter, means all command history entries are sent
   repeated NamedObjectId nameFilter = 1;
 }
 
 message PpReplayRequest {
-  repeated string groupNameFilter = 1; // At least 1 filter is required
+  // No filter, means all pp groups are sent
+  repeated string groupNameFilter = 1;
 }
 
 message ReplayStatus {

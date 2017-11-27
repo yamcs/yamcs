@@ -17,6 +17,7 @@ import org.yamcs.cmdhistory.CommandHistoryConsumer;
 import org.yamcs.commanding.CommandVerificationHandler.VerifResult;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Argument;
@@ -39,12 +40,13 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
         pc = cvh.getPreparedCommand();
         yproc = cvh.getProcessor();
         xtcedb = yproc.getXtceDb();
-        log=LoggerFactory.getLogger(AlgorithmVerifier.class);
+        log = LoggerFactory.getLogger(AlgorithmVerifier.class);
     }
 
     @Override
     void start() {
-        log.debug("Starting verifier "+cv.getStage()+" with the algorithm "+alg.getName());
+        log.debug("Starting verifier for command {} alg: {} stage: {} ", 
+                StringConverter.toString(pc.getCommandId()), alg.getName(), cv.getStage());
         //push all the command information as parameters
         List<ParameterValue> pvList = new ArrayList<>();
 
@@ -52,7 +54,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
             String fqn = XtceDb.YAMCS_CMD_SPACESYSTEM_NAME+"/"+cha.getName();
             if(xtcedb.getParameter(fqn)==null) {
               //if it was required in the algorithm, it would be already in the system parameter db  
-                log.debug("Not adding {} to the context parameter list because it is not defined in the XtceDb", fqn);
+                log.trace("Not adding {} to the context parameter list because it is not defined in the XtceDb", fqn);
                 continue;
             }
             Parameter p = xtcedb.getParameter(fqn);
@@ -66,7 +68,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
             String fqn = XtceDb.YAMCS_CMD_SPACESYSTEM_NAME+"/arg/"+e.getKey().getName();
             if(xtcedb.getParameter(fqn)==null) {
                 //if it was required in the algorithm, it would be already in the SystemParameterdb  
-                log.debug("Not adding {} to the context parameter list because it is not defined in the XtceDb", fqn);
+                log.trace("Not adding {} to the context parameter list because it is not defined in the XtceDb", fqn);
                 continue;
             }
             Parameter p =  xtcedb.getParameter(fqn);
@@ -90,9 +92,21 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
             log.error("Got invalidCommand id while subscribing for command history", e);
         }
     }
-
+    
+    @Override
+    void cancel() {
+        AlgorithmManager algMgr = cvh.getAlgorithmManager();
+        algMgr.deactivateAlgorithm(alg, algCtx);
+        yproc.getCommandHistoryManager().unsubscribeCommand(pc.getCommandId(), this);
+    }
+    
     @Override
     public void algorithmRun(Object returnValue, List<ParameterValue> outputValues) {
+        if(log.isTraceEnabled()) {
+            CommandId cmdId = pc.getCommandId();
+            log.trace("command: {} algorithm {} stage{} executed: returnValue: {} , outputValues: {}", 
+                    StringConverter.toString(cmdId), alg.getName(), cv.getStage(), returnValue, outputValues);
+        }
         if(returnValue==null) {
             log.trace("Algorithm {} run but did not return a result.", alg.getName());
             return;
@@ -111,7 +125,8 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
 
     @Override
     public void addedCommand(PreparedCommand pc) {} //this will not be called because we subscribe to only one command
-
+    
+   
     
     //called from the command history when things are added in the stream
     @Override
@@ -128,4 +143,6 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
             algMgr.updateParameters(Arrays.asList(pv), algCtx);
         }
     }
+
+    
 }
