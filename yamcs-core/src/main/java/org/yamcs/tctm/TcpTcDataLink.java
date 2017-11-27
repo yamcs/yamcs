@@ -191,7 +191,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
       return;
     }
     if(!commandQueue.offer(pc)) {
-      timer.schedule(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent_Status","NACK"), 10, TimeUnit.MILLISECONDS);
+      timer.schedule(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent","NACK"), 10, TimeUnit.MILLISECONDS);
     }
   }
 
@@ -371,9 +371,9 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
       commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
       if(sent) {
         timer.schedule(new TcAck(pc.getCommandId(),"Final_Sequence_Count", Integer.toString(seqCount)), 200, TimeUnit.MILLISECONDS);
-        timer.schedule(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent_Status","ACK: OK"), 100, TimeUnit.MILLISECONDS);
+        timer.schedule(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent","ACK: OK"), 100, TimeUnit.MILLISECONDS);
       } else {
-        timer.schedule(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent_Status","NACK"), 100, TimeUnit.MILLISECONDS);
+        timer.schedule(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent","NACK"), 100, TimeUnit.MILLISECONDS);
       }
 
     }
