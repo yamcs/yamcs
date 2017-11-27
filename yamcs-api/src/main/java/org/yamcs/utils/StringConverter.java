@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 
@@ -118,7 +119,9 @@ public class StringConverter {
      * better formatting than the default protobuf-generated toString.
      */
     public static String idToString(NamedObjectId id) {
-        if (id == null) return "null";
+        if (id == null) {
+            return "null";
+        }
         if (id.hasNamespace()) {
             return "'" + id.getName() + "' (namespace: '" + id.getNamespace() + "')";
         } else {
@@ -131,7 +134,9 @@ public class StringConverter {
      * better formatting than the default protobuf-generated toString.
      */
     public static String idListToString(List<NamedObjectId> idList) {
-        if (idList == null) return "null";
+        if (idList == null) {
+            return "null";
+        }
         StringBuilder buf = new StringBuilder("[");
         boolean first = true;
         for (NamedObjectId id : idList) {
@@ -143,5 +148,9 @@ public class StringConverter {
             buf.append(idToString(id));
         }
         return buf.append("]").toString();
+    }
+    
+    public static String toString(CommandId cmdId) {
+        return cmdId.getOrigin()+":"+cmdId.getSequenceNumber();
     }
 }

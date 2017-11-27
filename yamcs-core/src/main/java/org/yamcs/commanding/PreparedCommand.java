@@ -31,15 +31,15 @@ public class PreparedCommand {
     private CommandId id;
     private MetaCommand metaCommand;
     private final UUID uuid; // Used in REST API as an easier single-field ID. Not persisted.
-    
+
     //used when a command has a transmissionConstraint with timeout
     // when the command is ready to go, but is waiting for a transmission constraint, this is set to true
     private boolean pendingTransmissionConstraint;    
-     
+
     // this is the time when the clock starts ticking for fullfilling the transmission constraint
     // -1 means it has not been set yet
     private long transmissionContraintCheckStart = -1;
-    
+
     List<CommandHistoryAttribute> attributes=new ArrayList<>();
     private Map<Argument, Value> argAssignment;
 
@@ -85,13 +85,15 @@ public class PreparedCommand {
     public String getStringAttribute(String attrname) {
         CommandHistoryAttribute a=getAttribute(attrname);
         Value v = ValueUtility.fromGpb(a.getValue());
-        if((a!=null) && (v.getType()==Type.STRING)) return v.getStringValue();
+        if((a!=null) && (v.getType()==Type.STRING))
+            return v.getStringValue();
         return null;
     }
 
     public CommandHistoryAttribute getAttribute(String name) {
         for(CommandHistoryAttribute a:attributes) {
-            if(name.equals(a.getName())) return a;
+            if(name.equals(a.getName())) 
+                return a;
         }
         return null;
     }
@@ -99,7 +101,7 @@ public class PreparedCommand {
     public CommandId getCommandId() {
         return id;
     }
-    
+
     public UUID getUUID() {
         return uuid;
     }
@@ -123,13 +125,13 @@ public class PreparedCommand {
         al.add(id.getOrigin());
         al.add(id.getSequenceNumber());
         al.add(id.getCommandName());
-        
-        
+
+
         if(getBinary()!=null) {
             td.addColumn(CNAME_BINARY, DataType.BINARY);
             al.add(getBinary());
         }
-        
+
         for(CommandHistoryAttribute a:attributes) {
             td.addColumn(a.getName(), ValueUtility.getYarchType(a.getValue().getType()));
             al.add(ValueUtility.getYarchValue(a.getValue()));
@@ -137,7 +139,7 @@ public class PreparedCommand {
         Tuple t =  new Tuple(td, al.toArray());
         return t;
     }
-    
+
     public void setBinary(byte[] b) {
         this.binary =b;
     }
@@ -168,24 +170,24 @@ public class PreparedCommand {
             pc.attributes.add(a);
         }
         pc.setBinary((byte[])t.getColumn(CNAME_BINARY));
-        
+
         return pc;
     }
     public static PreparedCommand fromCommandHistoryEntry(CommandHistoryEntry che) {
         CommandId cmdId = che.getCommandId();
         PreparedCommand pc = new PreparedCommand(cmdId);
-        
+
         pc.attributes = che.getAttrList();
-        
+
         return pc;
     }
-    
+
     public CommandHistoryEntry toCommandHistoryEntry() {
         CommandHistoryEntry.Builder cheb = CommandHistoryEntry.newBuilder().setCommandId(id);
         cheb.addAllAttr(attributes);
         return cheb.build();
     }
-    
+
     public void setStringAttribute(String name, String value) {
         int i;
         for(i =0; i<attributes.size(); i++) {
@@ -214,7 +216,7 @@ public class PreparedCommand {
     public void addAttribute(CommandHistoryAttribute cha) {
         attributes.add(cha);
     }
-    
+
     public byte[] getBinary() {
         return binary;
     }
@@ -250,7 +252,7 @@ public class PreparedCommand {
     public void setArgAssignment(Map<Argument, Value> argAssignment) {
         this.argAssignment = argAssignment;
     }
-    
+
     public Map<Argument, Value> getArgAssignment() {
         return argAssignment;
     }

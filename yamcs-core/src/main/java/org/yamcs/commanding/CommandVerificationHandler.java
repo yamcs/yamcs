@@ -11,6 +11,7 @@ import org.yamcs.Processor;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.algorithms.AlgorithmManager;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.CheckWindow;
 import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.CommandVerifier;
@@ -127,19 +128,24 @@ public class CommandVerificationHandler {
             throw new IllegalArgumentException("The window stop has to be greater than 0");
         }
 
-        timer.schedule(() -> onVerifierFinished(verifier, VerifResult.TIMEOUT)
+        timer.schedule(() -> {
+            verifier.cancel();
+            onVerifierFinished(verifier, VerifResult.TIMEOUT);
+            
+        }
                 ,windowStop, TimeUnit.MILLISECONDS);
     }
 
     void onVerifierFinished(Verifier v, VerifResult result) {
         if(!pendingVerifiers.remove(v)) {
             if(result!=VerifResult.TIMEOUT) {
-                log.warn("Got verifier finished for a verifier not in the pending list. cmd: {} verifier:", preparedCommand.getCmdName(), v.cv);
+                log.warn("Got verifier finished for a verifier not in the pending list. cmd: {} verifier:", 
+                        StringConverter.toString(preparedCommand.getCommandId()), v.cv);
             }
             return;
         }
         
-        log.debug("Command {} verifier finished: {} result: {}", preparedCommand.getCmdName(), v.cv, result);
+        log.debug("Command {} verifier finished: {} result: {}", StringConverter.toString(preparedCommand.getCommandId()), v.cv, result);
         CommandVerifier cv = v.cv;
         CommandHistoryPublisher cmdHistPublisher = yproc.getCommandHistoryPublisher();
         String histKey= CommandHistoryPublisher.Verifier_KEY_PREFIX+"_"+cv.getStage();
