@@ -53,7 +53,8 @@ public class Simulator extends Thread {
             serverConnection.setConnected(false);
             tmLink.yamcsServerConnect(serverConnection);
           } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.warn("Read packets interrupted.", e);
+            Thread.currentThread().interrupt();
           }
         }
       }).start();

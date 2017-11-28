@@ -40,9 +40,9 @@ public class LaunchAndLandingSimulator extends Simulator {
       while(true) {
         try {
           executePendingCommands();
-        } catch (IOException | InterruptedException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
+        } catch (InterruptedException e) {
+          log.warn("Execute pending commands interrupted.", e);
+          Thread.currentThread().interrupt();
         }
       }
     }).start();
@@ -169,7 +169,7 @@ public class LaunchAndLandingSimulator extends Simulator {
    * runs in the main TM thread, executes commands from the queue (if any)
    * @throws InterruptedException 
    */
-  private void executePendingCommands() throws IOException, InterruptedException {
+  private void executePendingCommands() throws InterruptedException {
 
     CCSDSPacket commandPacket = pendingCommands.take();
     if (commandPacket.getPacketType() == 10) {
