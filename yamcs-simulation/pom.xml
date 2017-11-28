@@ -16,15 +16,8 @@
   <build>
   <plugins>
     <plugin>
-   <groupId>org.codehaus.mojo</groupId>
+      <groupId>org.codehaus.mojo</groupId>
         <artifactId>rpm-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>attached-rpm</goal>
-            </goals>
-          </execution>
-        </executions>
         <configuration>
           <copyright>2011, Space Applications Services NV/SA</copyright>
           <distribution>yamcs-simulator</distribution>
