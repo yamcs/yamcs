@@ -343,7 +343,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
           try {
             socketChannel.write(bb);
             tcCount++;
-            sent=true;                
+            sent=true;
           } catch (IOException e) {
             log.warn("Error writing to TC socket to {}:{} : {}", host, port, e.getMessage());
             try {
@@ -368,12 +368,14 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
           }
         }
       }
-      commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
+      
       if(sent) {
-        timer.schedule(new TcAck(pc.getCommandId(),"Final_Sequence_Count", Integer.toString(seqCount)), 200, TimeUnit.MILLISECONDS);
-        timer.schedule(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent","ACK: OK"), 100, TimeUnit.MILLISECONDS);
+        timer.execute(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent","ACK: OK"));
+        timer.execute(new TcAck(pc.getCommandId(),"Final_Sequence_Count", Integer.toString(seqCount)));
+        commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
       } else {
         timer.schedule(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent","NACK"), 100, TimeUnit.MILLISECONDS);
+        
       }
 
     }
