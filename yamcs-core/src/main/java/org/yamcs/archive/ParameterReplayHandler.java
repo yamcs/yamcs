@@ -46,10 +46,10 @@ public class ParameterReplayHandler implements ReplayHandler {
      * <pre>
      *  select n,* from pp
      *  where group in (grp1, grp2,...)
-     *  and gentime>x and gentime<y
+     *  and gentime&gt;x and gentime&lt;y
      * </pre>
      * 
-     * The definition of the PP table is in {@link PpRecorder}
+     * The definition of the PP table is in {@link ParameterRecorder}
      */
     @Override
     public String getSelectCmd() {

@@ -4,7 +4,7 @@ import java.util.Collection;
 
 /**
  * Interface implemented by classes that want to provide system parameters.
- * These are collected regularely by the {@link SystemParameterCollector}
+ * These are collected regularly by the {@link SystemParametersCollector}
  * 
  * @author nm
  *
