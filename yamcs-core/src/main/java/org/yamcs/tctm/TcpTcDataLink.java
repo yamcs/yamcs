@@ -29,389 +29,399 @@ import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.TimeEncoding;
 import com.google.common.util.concurrent.AbstractService;
+import com.google.common.util.concurrent.RateLimiter;
 
 /**
  * Sends raw packets on Tcp socket.
+ * 
  * @author nm
  *
  */
-public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLink,  SystemParametersProducer {
-  protected SocketChannel socketChannel=null;
-  protected String host="whirl";
-  protected int port=10003;
-  protected CommandHistoryPublisher commandHistoryListener;
-  protected Selector selector; 
-  SelectionKey selectionKey;
-  protected CcsdsSeqAndChecksumFiller seqAndChecksumFiller=new CcsdsSeqAndChecksumFiller();
-  protected ScheduledThreadPoolExecutor timer;
-  protected volatile boolean disabled=false;
-  protected int minimumTcPacketLength = -1; //the minimum size of the CCSDS packets uplinked
-  protected BlockingQueue<PreparedCommand> commandQueue;
-  protected long tcDelay;
-  protected volatile long tcCount;
+public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLink, SystemParametersProducer {
+    protected SocketChannel socketChannel = null;
+    protected String host = "whirl";
+    protected int port = 10003;
+    protected CommandHistoryPublisher commandHistoryListener;
+    protected Selector selector;
+    SelectionKey selectionKey;
+    protected CcsdsSeqAndChecksumFiller seqAndChecksumFiller = new CcsdsSeqAndChecksumFiller();
+    protected ScheduledThreadPoolExecutor timer;
+    protected volatile boolean disabled = false;
+    protected int minimumTcPacketLength = -1; // the minimum size of the CCSDS packets uplinked
+    protected BlockingQueue<PreparedCommand> commandQueue;
+    RateLimiter rateLimiter;
+    
+    protected volatile long tcCount;
 
-  private String sv_linkStatus_id, sp_dataCount_id;
+    private String sv_linkStatus_id, sp_dataCount_id;
 
-  private SystemParametersCollector sysParamCollector;
-  protected final Logger log;
-  private String yamcsInstance;
-  private String name;
-  TimeService timeService;
-
-
-  public TcpTcDataLink(String yamcsInstance, String name, String spec) throws ConfigurationException {
-    log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
-    YConfiguration c = YConfiguration.getConfiguration("tcp");
-    this.yamcsInstance = yamcsInstance;
-    host = c.getString(spec, "tcHost");
-    port = c.getInt(spec, "tcPort");
-    this.name = name;
-    if(c.containsKey(spec, "minimumTcPacketLength")) {
-      minimumTcPacketLength = c.getInt(spec, "minimumTcPacketLength");
-    } else {
-      log.debug("minimumTcPacketLength not defined, using the default value {}", minimumTcPacketLength);
-    }
-    if(c.containsKey(spec, "tcQueueSize")) {
-      commandQueue = new LinkedBlockingQueue<>(c.getInt(spec, "tcQueueSize"));
-    } else {
-      commandQueue = new LinkedBlockingQueue<>();
-    }
-    if(c.containsKey(spec, "tcMaxRate")) {
-      tcDelay = 1000/c.getInt(spec, "tcMaxRate"); //in milliseconds
-    }
-    timeService = YamcsServer.getTimeService(yamcsInstance);
-  }
-
-  protected TcpTcDataLink() {
-    log=LoggerFactory.getLogger(this.getClass().getName());
-  } // dummy constructor which is automatically invoked by subclass constructors
-
-  public TcpTcDataLink(String host, int port) {
-    this.host=host;
-    this.port=port;
-    openSocket();
-    log=LoggerFactory.getLogger(this.getClass().getName());
-  }
-
-  protected long getCurrentTime() {
-    if(timeService!=null) {
-      return timeService.getMissionTime();
-    } else {
-      return TimeEncoding.fromUnixTime(System.currentTimeMillis());
-    }
-  }
-  @Override
-  protected void doStart() {
-    setupSysVariables();
-    this.timer=new ScheduledThreadPoolExecutor(2);
-    timer.scheduleWithFixedDelay(this, 0, 10, TimeUnit.SECONDS);
-    timer.execute(new TcDequeue());
-    notifyStarted();
-  }
-
-  protected void openSocket() {
-    try {
-      InetAddress address=InetAddress.getByName(host);
-      socketChannel=SocketChannel.open(new InetSocketAddress(address,port));
-      socketChannel.configureBlocking(false);
-      socketChannel.socket().setKeepAlive(true);
-      selector = Selector.open();
-      selectionKey = socketChannel.register(selector,SelectionKey.OP_WRITE|SelectionKey.OP_READ);
-      log.info("TC connection established to {}:{}", host, port);
-    } catch (IOException e) {
-      String exc = (e instanceof ConnectException) ? ((ConnectException) e).getMessage() : e.toString();
-      log.info("Cannot open TC connection to {}:{} '{}'. Retrying in 10s", host, port, exc.toString());
-      try {
-        socketChannel.close();
-      } catch (Exception e1) {}
-      try {
-        selector.close();
-      } catch (Exception e1) {}
-      socketChannel=null;
-    }
-  }
-
-  protected void disconnect() {
-    if(socketChannel==null) {
-      return;
-    }
-    try {
-      socketChannel.close();
-      selector.close();
-      socketChannel=null;
-    } catch (IOException e) {
-      log.warn("Exception caught when checking if the socket to {}:{} is open", host, port, e);
-    }
-  }
-  /**
-   * we check if the socket is open by trying a select on the read part of it
-   * @return
-   */
-  protected boolean isSocketOpen() {
-    final ByteBuffer bb=ByteBuffer.allocate(16);
-    if(socketChannel==null) {
-      return false;
-    }
-
-    boolean connected=false;
-    try {
-      selector.select();
-      if(selectionKey.isReadable()) {
-        int read = socketChannel.read(bb);
-        if(read>0) {
-          log.info("Data read on the TC socket to {}:{}!! : {}",host, port, bb);
-          connected=true;
-        } else if(read<0) {
-          log.warn("TC socket to "+host+":"+port+" has been closed");
-          socketChannel.close();
-          selector.close();
-          socketChannel=null;
-          connected=false;
+    private SystemParametersCollector sysParamCollector;
+    protected final Logger log;
+    private String yamcsInstance;
+    private String name;
+    TimeService timeService;
+    static final PreparedCommand SIGNAL_QUIT = new PreparedCommand(new byte[0]);
+    TcDequeueAndSend tcSender;
+    
+    public TcpTcDataLink(String yamcsInstance, String name, String spec) throws ConfigurationException {
+        log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
+        YConfiguration c = YConfiguration.getConfiguration("tcp");
+        this.yamcsInstance = yamcsInstance;
+        host = c.getString(spec, "tcHost");
+        port = c.getInt(spec, "tcPort");
+        this.name = name;
+        if (c.containsKey(spec, "minimumTcPacketLength")) {
+            minimumTcPacketLength = c.getInt(spec, "minimumTcPacketLength");
+        } else {
+            log.debug("minimumTcPacketLength not defined, using the default value {}", minimumTcPacketLength);
         }
-      } else if(selectionKey.isWritable()){
-        connected=true;
-      } else {
-        log.warn("The TC socket to "+host+":"+port+" is neither writable nor readable");
-        connected=false;
-      }
-    } catch (IOException e) {
-      log.warn("Exception caught when checking if the socket to {}:{} is open:",host, port, e);
-      connected=false;
+        if (c.containsKey(spec, "tcQueueSize")) {
+            commandQueue = new LinkedBlockingQueue<>(c.getInt(spec, "tcQueueSize"));
+        } else {
+            commandQueue = new LinkedBlockingQueue<>();
+        }
+        if (c.containsKey(spec, "tcMaxRate")) {
+            rateLimiter = RateLimiter.create(c.getInt(spec, "tcMaxRate"));
+        }
+        timeService = YamcsServer.getTimeService(yamcsInstance);
     }
-    return connected;
-  }
 
-  /**
-   * Sends 
-   */
-  @Override
-  public void sendTc(PreparedCommand pc) {
-    if(disabled) {
-      log.warn("TC disabled, ignoring command "+pc.getCommandId());
-      return;
-    }
-    if(!commandQueue.offer(pc)) {
-      timer.schedule(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent","NACK"), 10, TimeUnit.MILLISECONDS);
-    }
-  }
+    protected TcpTcDataLink() {
+        log = LoggerFactory.getLogger(this.getClass().getName());
+    } // dummy constructor which is automatically invoked by subclass constructors
 
-  @Override
-  public void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryListener) {
-    this.commandHistoryListener=commandHistoryListener;
-  }
+    public TcpTcDataLink(String host, int port) {
+        this.host = host;
+        this.port = port;
+        openSocket();
+        log = LoggerFactory.getLogger(this.getClass().getName());
+    }
+
+    protected long getCurrentTime() {
+        if (timeService != null) {
+            return timeService.getMissionTime();
+        } else {
+            return TimeEncoding.fromUnixTime(System.currentTimeMillis());
+        }
+    }
+
+    @Override
+    protected void doStart() {
+        setupSysVariables();
+        this.timer = new ScheduledThreadPoolExecutor(2);
+        timer.scheduleWithFixedDelay(this, 0, 10, TimeUnit.SECONDS);
+        tcSender = new TcDequeueAndSend();
+        timer.execute(tcSender);
+        notifyStarted();
+    }
+
+    protected void openSocket() {
+        try {
+            InetAddress address = InetAddress.getByName(host);
+            socketChannel = SocketChannel.open(new InetSocketAddress(address, port));
+            socketChannel.configureBlocking(false);
+            socketChannel.socket().setKeepAlive(true);
+            selector = Selector.open();
+            selectionKey = socketChannel.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ);
+            log.info("TC connection established to {}:{}", host, port);
+        } catch (IOException e) {
+            String exc = (e instanceof ConnectException) ? ((ConnectException) e).getMessage() : e.toString();
+            log.info("Cannot open TC connection to {}:{} '{}'. Retrying in 10s", host, port, exc.toString());
+            try {
+                socketChannel.close();
+            } catch (Exception e1) {
+            }
+            try {
+                selector.close();
+            } catch (Exception e1) {
+            }
+            socketChannel = null;
+        }
+    }
+
+    protected void disconnect() {
+        if (socketChannel == null) {
+            return;
+        }
+        try {
+            socketChannel.close();
+            selector.close();
+            socketChannel = null;
+        } catch (IOException e) {
+            log.warn("Exception caught when checking if the socket to {}:{} is open", host, port, e);
+        }
+    }
+
+    /**
+     * we check if the socket is open by trying a select on the read part of it
+     * 
+     * @return
+     */
+    protected boolean isSocketOpen() {
+        final ByteBuffer bb = ByteBuffer.allocate(16);
+        if (socketChannel == null) {
+            return false;
+        }
+
+        boolean connected = false;
+        try {
+            selector.select();
+            if (selectionKey.isReadable()) {
+                int read = socketChannel.read(bb);
+                if (read > 0) {
+                    log.info("Data read on the TC socket to {}:{}!! : {}", host, port, bb);
+                    connected = true;
+                } else if (read < 0) {
+                    log.warn("TC socket to " + host + ":" + port + " has been closed");
+                    socketChannel.close();
+                    selector.close();
+                    socketChannel = null;
+                    connected = false;
+                }
+            } else if (selectionKey.isWritable()) {
+                connected = true;
+            } else {
+                log.warn("The TC socket to " + host + ":" + port + " is neither writable nor readable");
+                connected = false;
+            }
+        } catch (IOException e) {
+            log.warn("Exception caught when checking if the socket to {}:{} is open:", host, port, e);
+            connected = false;
+        }
+        return connected;
+    }
+
+    /**
+     * Sends
+     */
+    @Override
+    public void sendTc(PreparedCommand pc) {
+        if (disabled) {
+            log.warn("TC disabled, ignoring command " + pc.getCommandId());
+            return;
+        }
+        if (!commandQueue.offer(pc)) {
+            timer.schedule(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent", "NACK"), 10, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    @Override
+    public void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryListener) {
+        this.commandHistoryListener = commandHistoryListener;
+    }
 
     @Override
     public Status getLinkStatus() {
         if (disabled) {
             return Status.DISABLED;
         }
-        if(isSocketOpen()) {
+        if (isSocketOpen()) {
             return Status.OK;
         } else {
             return Status.UNAVAIL;
         }
     }
 
-  @Override
-  public String getDetailedStatus() {
-    if(disabled) 
-      return String.format("DISABLED (should connect to %s:%d)", host, port);
-    if(isSocketOpen()) {
-      return String.format("OK, connected to %s:%d", host, port);
-    } else {
-      return String.format("Not connected to %s:%d", host, port);
-    }
-  }
-
-  @Override
-  public void disable() {
-    disabled=true;
-    if(isRunning()) {
-      disconnect();
-    }
-  }
-
-  @Override
-  public void enable() {
-    disabled=false;
-  }     
-
-  @Override
-  public boolean isDisabled() {
-    return disabled;
-  }
-
-  @Override
-  public void run() {
-    if(!isRunning() || disabled) {
-      return;
-    }
-    if (!isSocketOpen()) {
-      openSocket();
-    }
-  }
-
-  @Override
-  public void doStop() {
-    disconnect();
-    notifyStopped();
-  }
-
-  class TcAck implements Runnable {
-    CommandId cmdId;
-    String name;
-    String value;
-    TcAck(CommandId cmdId, String name, String value) {
-      this.cmdId=cmdId;
-      this.name=name;
-      this.value=value;
-    }
     @Override
-    public void run() {
-      commandHistoryListener.updateStringKey(cmdId,name,value);
-    }       
-  }
-
-  public class TcAckStatus extends TcAck {
-    public TcAckStatus(CommandId cmdId, String name, String value) {
-      super(cmdId, name, value);
-    }
-    @Override
-    public void run() {
-      long instant = getCurrentTime();
-      commandHistoryListener.updateStringKey(cmdId,name+"_Status",value);
-      commandHistoryListener.updateTimeKey(cmdId,name+"_Time", instant);
-    }       
-  }
-
-  private class TcDequeue implements Runnable {
-    PreparedCommand pc;
-
-    @Override
-    public void run() {
-      while(true) {
-        try {
-          pc = commandQueue.take();
-          timer.execute(new TcSend(pc));
-
-          Thread.sleep(tcDelay);
-
-        } catch (InterruptedException e) {
-          log.warn("Send command interrupted while waiting for the queue." , e);
-        }
-      }
-    }
-  }
-
-  private class TcSend implements Runnable {
-
-    private PreparedCommand pc;
-
-    public TcSend(PreparedCommand pc) {
-      this.pc = pc;
-    }
-
-    @Override
-    public void run() {
-      ByteBuffer bb = null;
-      if(pc.getBinary().length<minimumTcPacketLength) { //enforce the minimum packet length
-        bb=ByteBuffer.allocate(minimumTcPacketLength);
-        bb.put(pc.getBinary());
-        bb.putShort(4, (short)(minimumTcPacketLength - 7)); // fix packet length
-      } else {
-
-        int checksumIndicator = pc.getBinary()[2] & 0x04;
-        if(checksumIndicator ==1) {
-          bb=ByteBuffer.allocate(pc.getBinary().length +2); //extra slots for check sum
+    public String getDetailedStatus() {
+        if (disabled)
+            return String.format("DISABLED (should connect to %s:%d)", host, port);
+        if (isSocketOpen()) {
+            return String.format("OK, connected to %s:%d", host, port);
         } else {
-          bb=ByteBuffer.wrap(pc.getBinary());
+            return String.format("Not connected to %s:%d", host, port);
         }
-        bb.putShort(4, (short)(pc.getBinary().length - 7));          
+    }
 
-      }
+    @Override
+    public void disable() {
+        disabled = true;
+        if (isRunning()) {
+            disconnect();
+        }
+    }
 
-      int retries=5;
-      boolean sent=false;
-      int seqCount=seqAndChecksumFiller.fill(bb, pc.getCommandId().getGenerationTime());
-      bb.rewind();
-      while (!sent&&(retries>0)) {
+    @Override
+    public void enable() {
+        disabled = false;
+    }
+
+    @Override
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    @Override
+    public void run() {
+        if (!isRunning() || disabled) {
+            return;
+        }
         if (!isSocketOpen()) {
-          openSocket();
+            openSocket();
+        }
+    }
+
+    @Override
+    public void doStop() {
+        disconnect();
+        commandQueue.clear();
+        commandQueue.offer(SIGNAL_QUIT);
+        timer.shutdownNow();
+        notifyStopped();
+    }
+
+    class TcAck implements Runnable {
+        CommandId cmdId;
+        String name;
+        String value;
+
+        TcAck(CommandId cmdId, String name, String value) {
+            this.cmdId = cmdId;
+            this.name = name;
+            this.value = value;
         }
 
-        if(isSocketOpen()) {
-          try {
-            socketChannel.write(bb);
-            tcCount++;
-            sent=true;
-          } catch (IOException e) {
-            log.warn("Error writing to TC socket to {}:{} : {}", host, port, e.getMessage());
-            try {
-              if(socketChannel.isOpen()) {
-                socketChannel.close();
-              }
-              selector.close();
-              socketChannel = null;
-            } catch (IOException e1) {
-              e1.printStackTrace();
-            }
-          }
+        @Override
+        public void run() {
+            commandHistoryListener.updateStringKey(cmdId, name, value);
         }
-        retries--;
-        if(!sent && (retries>0)) {
-          try {
-            log.warn("Command not sent, retrying in 2 seconds");
-            Thread.sleep(2000);
-          } catch (InterruptedException e) {
-            log.warn("exception {} thrown when sleeping 2 sec", e.toString());
-            Thread.currentThread().interrupt();
-          }
+    }
+
+    public class TcAckStatus extends TcAck {
+        public TcAckStatus(CommandId cmdId, String name, String value) {
+            super(cmdId, name, value);
         }
-      }
+
+        @Override
+        public void run() {
+            long instant = getCurrentTime();
+            commandHistoryListener.updateStringKey(cmdId, name + "_Status", value);
+            commandHistoryListener.updateTimeKey(cmdId, name + "_Time", instant);
+        }
+    }
+
+    private class TcDequeueAndSend implements Runnable {
+        PreparedCommand pc;
       
-      if(sent) {
-        timer.execute(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent","ACK: OK"));
-        timer.execute(new TcAck(pc.getCommandId(),"Final_Sequence_Count", Integer.toString(seqCount)));
-        commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
-      } else {
-        timer.schedule(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent","NACK"), 100, TimeUnit.MILLISECONDS);
-        
-      }
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    pc = commandQueue.take();
+                    if(pc==SIGNAL_QUIT) { 
+                        break;
+                    }
+                    
+                    if(rateLimiter!=null) {
+                        rateLimiter.acquire();
+                    }
+                   send();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    log.warn("Send command interrupted while waiting for the queue.", e);
+                    return;
+                }
+            }
+        }
+
+        public void send() {
+            ByteBuffer bb = null;
+            if (pc.getBinary().length < minimumTcPacketLength) { // enforce the minimum packet length
+                bb = ByteBuffer.allocate(minimumTcPacketLength);
+                bb.put(pc.getBinary());
+                bb.putShort(4, (short) (minimumTcPacketLength - 7)); // fix packet length
+            } else {
+
+                int checksumIndicator = pc.getBinary()[2] & 0x04;
+                if (checksumIndicator == 1) {
+                    bb = ByteBuffer.allocate(pc.getBinary().length + 2); // extra slots for check sum
+                } else {
+                    bb = ByteBuffer.wrap(pc.getBinary());
+                }
+                bb.putShort(4, (short) (pc.getBinary().length - 7));
+
+            }
+
+            int retries = 5;
+            boolean sent = false;
+            int seqCount = seqAndChecksumFiller.fill(bb, pc.getCommandId().getGenerationTime());
+            bb.rewind();
+            while (!sent && (retries > 0)) {
+                if (!isSocketOpen()) {
+                    openSocket();
+                }
+
+                if (isSocketOpen()) {
+                    try {
+                        socketChannel.write(bb);
+                        tcCount++;
+                        sent = true;
+                    } catch (IOException e) {
+                        log.warn("Error writing to TC socket to {}:{} : {}", host, port, e.getMessage());
+                        try {
+                            if (socketChannel.isOpen()) {
+                                socketChannel.close();
+                            }
+                            selector.close();
+                            socketChannel = null;
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                }
+                retries--;
+                if (!sent && (retries > 0)) {
+                    try {
+                        log.warn("Command not sent, retrying in 2 seconds");
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        log.warn("exception {} thrown when sleeping 2 sec", e.toString());
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+
+            if (sent) {
+                timer.execute(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent", "ACK: OK"));
+                timer.execute(new TcAck(pc.getCommandId(), "Final_Sequence_Count", Integer.toString(seqCount)));
+                commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
+            } else {
+                timer.schedule(new TcAckStatus(pc.getCommandId(), "Acknowledge_Sent", "NACK"), 100,
+                        TimeUnit.MILLISECONDS);
+
+            }
+
+        }
 
     }
 
-  }
-
-
-  @Override
-  public long getDataCount() {
-    return tcCount;
-  }
-
-
-  protected void setupSysVariables() {
-    this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
-    if(sysParamCollector!=null) {
-      sysParamCollector.registerProvider(this, null);
-      sv_linkStatus_id = sysParamCollector.getNamespace()+"/"+name+"/linkStatus";
-      sp_dataCount_id = sysParamCollector.getNamespace()+"/"+name+"/dataCount";
-
-
-    } else {
-      log.info("System variables collector not defined for instance {} ", yamcsInstance);
+    @Override
+    public long getDataCount() {
+        return tcCount;
     }
 
-  }
-  @Override
-  public Collection<ParameterValue> getSystemParameters() {
-    long time = getCurrentTime();
-    ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus().name());
-    ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataCount());
-    return Arrays.asList(linkStatus, dataCount);
-  }
+    protected void setupSysVariables() {
+        this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
+        if (sysParamCollector != null) {
+            sysParamCollector.registerProducer(this);
+            sv_linkStatus_id = sysParamCollector.getNamespace() + "/" + name + "/linkStatus";
+            sp_dataCount_id = sysParamCollector.getNamespace() + "/" + name + "/dataCount";
 
-  public int getMiniminimumTcPacketLength() {
-    return minimumTcPacketLength;
-  }
+        } else {
+            log.info("System variables collector not defined for instance {} ", yamcsInstance);
+        }
+
+    }
+
+    @Override
+    public Collection<ParameterValue> getSystemParameters() {
+        long time = getCurrentTime();
+        ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus().name());
+        ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataCount());
+        return Arrays.asList(linkStatus, dataCount);
+    }
+
+    public int getMiniminimumTcPacketLength() {
+        return minimumTcPacketLength;
+    }
 }
-
