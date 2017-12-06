@@ -67,6 +67,7 @@ fi
 %postun
 if [ "$1" = 0 -o "$1" = remove ] ; then
     userdel yamcs >/dev/null 2>&1 || :
+    groupdel yamcs >/dev/null 2>&1 || :
 fi
 
 %files
