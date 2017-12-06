@@ -1,6 +1,5 @@
 package org.yamcs.simulator.launchland;
 
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.simulator.CCSDSPacket;
@@ -11,12 +10,12 @@ public class LaunchAndLandingSimulator extends Simulator {
 
     private static final Logger log = LoggerFactory.getLogger(LaunchAndLandingSimulator.class);
 
-    private FlightDataHandler flightDataHandler = new FlightDataHandler();
-    private DHSHandler dhsHandler = new DHSHandler();
-    private PowerHandler powerDataHandler = new PowerHandler();
-    private RCSHandler rcsHandler = new RCSHandler();
-    private EpsLvpduHandler epslvpduHandler = new EpsLvpduHandler();
-    private AckHandler ackDataHandler = new AckHandler();
+    final private FlightDataHandler flightDataHandler;
+    final private DHSHandler dhsHandler;
+    final private PowerHandler powerDataHandler;
+    final private RCSHandler rcsHandler;
+    final private EpsLvpduHandler epslvpduHandler;
+    final private AckHandler ackDataHandler = new AckHandler();
 
     private boolean engageHoldOneCycle = false;
     private boolean unengageHoldOneCycle = false;
@@ -31,6 +30,11 @@ public class LaunchAndLandingSimulator extends Simulator {
 
     public LaunchAndLandingSimulator(SimulationConfiguration simConfig) {
         super(simConfig);
+        powerDataHandler = new PowerHandler(simConfig);
+        rcsHandler = new RCSHandler(simConfig);
+        epslvpduHandler = new EpsLvpduHandler(simConfig);
+        flightDataHandler = new FlightDataHandler(simConfig);
+        dhsHandler = new DHSHandler(simConfig);
     }
 
     @Override

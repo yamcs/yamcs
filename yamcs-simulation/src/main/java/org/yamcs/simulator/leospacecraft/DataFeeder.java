@@ -9,6 +9,7 @@ import java.util.zip.GZIPInputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.simulator.SimulationConfiguration;
 import org.yamcs.simulator.SimulationData;
 
 import com.csvreader.CsvReader;
@@ -19,17 +20,17 @@ import com.csvreader.CsvReader;
 public class DataFeeder {
     
     private static final Logger log = LoggerFactory.getLogger(DataFeeder.class);
-    private final static String sourceFile = "test_data/leo_spacecraft.csv.gz";
+    private final static String sourceFile = "leo_spacecraft.csv.gz";
     private List<SimulationData> entries = new ArrayList<>();
     
     private int cursor = 0;
     private boolean loop;
     
-    public DataFeeder(boolean loop) {
+    public DataFeeder(SimulationConfiguration simconf, boolean loop) {
         this.loop = loop;
         CsvReader reader = null;
         try {
-            reader = new CsvReader(new GZIPInputStream(new FileInputStream(sourceFile)),
+            reader = new CsvReader(new GZIPInputStream(new FileInputStream(simconf.getTestDataDir()+"/"+sourceFile)),
                     ',', Charset.forName("UTF-8"));
             reader.readHeaders();
             String[] headers = reader.getHeaders();

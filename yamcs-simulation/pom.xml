@@ -56,14 +56,31 @@
                 <source> <location>etc/command-queue.yaml</location> </source>
                 <source> <location>etc/privileges.yaml</location> </source>
                 <source> <location>etc/gs-simulation.xml</location> </source>
-                <source> <location>etc/simulator.yaml</location> </source>
+                <source> 
+                    <location>etc/simulator.yaml.rpm</location> 
+                    <destination>simulator.yaml</destination> 
+                </source>
                 <source> <location>etc/tcp.yaml</location> </source>
                 <source> <location>etc/yamcs.simulator.yaml</location> </source>
                 <source> <location>etc/yamcs-ui.yaml</location> </source>
-                <source> <location>etc/yamcs.yaml</location> </source>
+                <source> 
+                   <location>etc/yamcs.yaml.rpm</location> 
+                   <destination>yamcs.yaml</destination> 
+                </source>
                 <source> <location>etc/logging.yamcs-server.properties</location> </source>
                 <source> <location>etc/yprocessor.yaml</location> </source>
               </sources>
+            </mapping>
+            <mapping>
+              <directory>/opt/yamcs/bin/</directory>
+              <configuration>true</configuration>
+              <directoryIncluded>false</directoryIncluded>
+              <username>root</username>
+              <groupname>root</groupname>
+              <filemode>0755</filemode>
+               <sources>
+                 <source> <location>bin/simulator.sh</location> </source>
+               </sources>
             </mapping>
             <mapping>
               <directory>/opt/yamcs/mdb/</directory>
@@ -82,10 +99,15 @@
               <directory>/opt/yamcs/web/simulator/</directory>
               <configuration>true</configuration>
               <directoryIncluded>true</directoryIncluded>
-              <username>root</username>
-              <groupname>root</groupname>
                <sources>
                 <source> <location>web/simulator</location> </source>
+               </sources>
+            </mapping>
+            <mapping>
+              <directory>/opt/yamcs/simulation_test_data/</directory>
+              <configuration>true</configuration>
+               <sources>
+                <source> <location>test_data</location> </source>
                </sources>
             </mapping>
             <mapping>

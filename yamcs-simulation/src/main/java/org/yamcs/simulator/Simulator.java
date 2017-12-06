@@ -10,13 +10,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.simulator.ui.SimWindow;
 
-
 public class Simulator extends Thread {
 
+    protected BlockingQueue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<>(100); // no more than 100 pending
+                                                                                          // commands
 
-    protected BlockingQueue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<>(100); //no more than 100 pending commands
-
-    private int DEFAULT_MAX_LENGTH=65542;
+    private int DEFAULT_MAX_LENGTH = 65542;
     private int maxLength = DEFAULT_MAX_LENGTH;
 
     private SimulationConfiguration simConfig;
@@ -37,16 +36,17 @@ public class Simulator extends Thread {
 
     @Override
     public void run() {
-        for(ServerConnection serverConnection : simConfig.getServerConnections()) {
+        for (ServerConnection serverConnection : simConfig.getServerConnections()) {
             tmLink.yamcsServerConnect(serverConnection);
 
-            //start the TC reception thread;
+            // start the TC reception thread;
             new Thread(() -> {
-                while(true) {
+                while (true) {
                     try {
                         // read commands
-                        CCSDSPacket packet = readPacket(new DataInputStream(serverConnection.getTcSocket().getInputStream()));
-                        if(packet != null)
+                        CCSDSPacket packet = readPacket(
+                                new DataInputStream(serverConnection.getTcSocket().getInputStream()));
+                        if (packet != null)
                             pendingCommands.put(packet);
 
                     } catch (IOException e) {
@@ -70,25 +70,21 @@ public class Simulator extends Thread {
      */
     protected CCSDSPacket readPacket(DataInputStream dIn) {
         try {
-            while(dIn.available() <= 0) {
-                ; //TODO blocking
-            }
-
             byte hdr[] = new byte[6];
             dIn.readFully(hdr);
-            int remaining=((hdr[4]&0xFF)<<8)+(hdr[5]&0xFF)+1;
-            if(remaining>maxLength-6) throw new IOException("Remaining packet length too big: "+remaining+" maximum allowed is "+(maxLength-6));
-            byte[] b = new byte[6+remaining];
+            int remaining = ((hdr[4] & 0xFF) << 8) + (hdr[5] & 0xFF) + 1;
+            if (remaining > maxLength - 6)
+                throw new IOException("Remaining packet length too big: " + remaining + " maximum allowed is " + (maxLength - 6));
+            byte[] b = new byte[6 + remaining];
             System.arraycopy(hdr, 0, b, 0, 6);
             dIn.readFully(b, 6, remaining);
             CCSDSPacket packet = new CCSDSPacket(ByteBuffer.wrap(b));
-            tmLink.ackPacketSend(ackPacket(packet, 0, 0)); 
+            tmLink.ackPacketSend(ackPacket(packet, 0, 0));
             return packet;
 
-
-        } catch(IOException e) {
+        } catch (IOException e) {
             log.error("Connection lost:" + e.getMessage(), e);
-        } catch(Exception e) {
+        } catch (Exception e) {
             log.error("Error reading command " + e.getMessage(), e);
         }
         return null;
@@ -127,20 +123,20 @@ public class Simulator extends Thread {
 
     public void dumpLosDataFile(String filename) {
         // read data from los storage
-        if(filename == null) {
+        if (filename == null) {
             filename = losStore.getCurrentFileName();
         }
         DataInputStream dataStream = losStore.readLosFile(filename);
-        if(dataStream == null)
+        if (dataStream == null)
             return;
 
-        //TODO
+        // TODO
         // extract packets from the data stream and put them in queue for downlink
         Queue<CCSDSPacket> qLosData = new ArrayBlockingQueue<>(1000);
         try {
-            while(dataStream.available() > 0) {
+            while (dataStream.available() > 0) {
                 CCSDSPacket packet = readPacket(dataStream);
-                if(packet != null) {
+                if (packet != null) {
                     qLosData.add(packet);
                 }
             }
@@ -149,15 +145,14 @@ public class Simulator extends Thread {
             e.printStackTrace();
         }
 
-
-        for(CCSDSPacket ccsdsPacket : qLosData) {
+        for (CCSDSPacket ccsdsPacket : qLosData) {
             for (ServerConnection serverConnection : simConfig.getServerConnections())
                 serverConnection.setTmDumpPacket(ccsdsPacket);
         }
 
         // add packet notifying that the file has been downloaded entirely
         CCSDSPacket confirmationPacket = buildLosTransmittedRecordingPacket(filename);
-        for(ServerConnection serverConnection : simConfig.getServerConnections())
+        for (ServerConnection serverConnection : simConfig.getServerConnections())
             serverConnection.setTmDumpPacket(confirmationPacket);
     }
 
@@ -173,7 +168,7 @@ public class Simulator extends Thread {
         losStore.deleteFile(filename);
         // add packet notifying that the file has been deleted
         CCSDSPacket confirmationPacket = buildLosDeletedRecordingPacket(filename);
-        for(ServerConnection serverConnection : simConfig.getServerConnections())
+        for (ServerConnection serverConnection : simConfig.getServerConnections())
             serverConnection.setTmDumpPacket(confirmationPacket);
     }
 
@@ -208,10 +203,10 @@ public class Simulator extends Thread {
 
         ByteBuffer bb = ByteBuffer.allocate(10);
 
-        bb.putInt(0,batNum);
-        bb.putInt(4,commandPacket.getSeq());
-        bb.put(8,(byte)stage);
-        bb.put(9,(byte)result);
+        bb.putInt(0, batNum);
+        bb.putInt(4, commandPacket.getSeq());
+        bb.put(8, (byte) stage);
+        bb.put(9, (byte) result);
 
         ackPacket.appendUserDataBuffer(bb.array());
 

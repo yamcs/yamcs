@@ -15,7 +15,7 @@ public class Main {
         System.out.println("  ╩ └─┘└─┘");
         System.out.println(" Yamcs Simulation System");
         System.out.println("_______________________");
-
+        
         YConfiguration.setup(System.getProperty("user.dir"));
         SimulationConfiguration simConfig = SimulationConfiguration.loadFromFile();
         

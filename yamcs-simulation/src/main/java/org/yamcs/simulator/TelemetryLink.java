@@ -32,7 +32,6 @@ public class TelemetryLink {
     public void packetSend(ServerConnection conn) {
         while (true) {
             if (!simulator.isLOS()) {
-                //System.out.print("packet Send");
                 tmPacketSend(conn);
                 tmPacketDump(conn);
             } else {

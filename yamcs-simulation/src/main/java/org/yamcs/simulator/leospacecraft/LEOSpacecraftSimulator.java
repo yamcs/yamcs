@@ -17,7 +17,7 @@ public class LEOSpacecraftSimulator extends Simulator {
     private static final int OFF = 0;
     private static final int ON = 1;
     
-    private DataFeeder packetFeeder = new DataFeeder(true);
+    final private DataFeeder packetFeeder;
     private LEOSpacecraftModel model = new LEOSpacecraftModel();
     private long t = 0;
     
@@ -34,6 +34,7 @@ public class LEOSpacecraftSimulator extends Simulator {
     
     public LEOSpacecraftSimulator(SimulationConfiguration simConfig) {
         super(simConfig);
+        packetFeeder = new DataFeeder(simConfig, true);
     }
     
     @Override

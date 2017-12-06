@@ -8,17 +8,18 @@ import java.util.Vector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.simulator.CCSDSPacket;
+import org.yamcs.simulator.SimulationConfiguration;
 
 class DHSHandler {
-    final static String csvName = "test_data/DHS.csv";
+    final static String csvName = "DHS.csv";
     private static final Logger log = LoggerFactory.getLogger(DHSHandler.class);
 
     private Vector<DHSData> entries;
     private int currentEntry = 0;
 
-    DHSHandler() {
+    DHSHandler(SimulationConfiguration simconf) {
         entries = new Vector<>(100, 100);
-        try (BufferedReader in = new BufferedReader(new FileReader(csvName))) {
+        try (BufferedReader in = new BufferedReader(new FileReader(simconf.getTestDataDir() + "/" + csvName))) {
             String line;
             in.readLine(); // skip column titles
 

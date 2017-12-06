@@ -1,15 +1,16 @@
 model: org.yamcs.simulator.launchland.LaunchAndLandingSimulator
 
 # Should the User Interface be used
-ui: true
+ui: false
 
 # Alternance of AOS and LOS periods
-losAos: true 
+losAos: false 
 los_period_s: 60
 aos_period_s: 120
 
 #directory where the test data is located
-test_data: test_data
+test_data: /opt/yamcs/simulation_test_data
+
 
 # Listening ports, several Yamcs server are supported, telemetry is sent to both of them
 servers:

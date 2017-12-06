@@ -8,52 +8,53 @@ import java.util.Vector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.simulator.CCSDSPacket;
+import org.yamcs.simulator.SimulationConfiguration;
 
 class RCSHandler {
-	private final static String csvName = "test_data/RCS.csv";
+    private final static String csvName = "RCS.csv";
 
-	private Vector<RCSData> entries;
-	private int currentEntry = 0;
-	
-	private Logger log = LoggerFactory.getLogger(this.getClass().getName());
+    private Vector<RCSData> entries;
+    private int currentEntry = 0;
 
-	public RCSHandler() {
-		entries = new Vector<>(100, 100);
-		try (BufferedReader in = new BufferedReader(new FileReader(csvName))) {
-			String line;
-			in.readLine(); // skip column titles
+    private Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
-			while ((line = in.readLine()) != null) {
+    public RCSHandler(SimulationConfiguration simconf) {
+        entries = new Vector<>(100, 100);
+        try (BufferedReader in = new BufferedReader(new FileReader(simconf.getTestDataDir() + "/" + csvName))) {
+            String line;
+            in.readLine(); // skip column titles
 
-				line = line.replace(',', '.'); // compatible to decimals with comma (e.g. 1,23)
-				String[] parts = line.split(";");
-				RCSData entry = new RCSData();
+            while ((line = in.readLine()) != null) {
 
-				entry.timestamp = new Float(parts[0]).floatValue();
+                line = line.replace(',', '.'); // compatible to decimals with comma (e.g. 1,23)
+                String[] parts = line.split(";");
+                RCSData entry = new RCSData();
 
-				entry.H2TankFill      = new Float(parts[1]).floatValue();
-				entry.H2TankTemp      = new Float(parts[2]).floatValue();
-				entry.H2TankPressure  = new Float(parts[3]).floatValue();
-				entry.H2ValveTemp     = new Float(parts[4]).floatValue();
-				entry.H2ValvePressure = new Float(parts[5]).floatValue();
+                entry.timestamp = new Float(parts[0]).floatValue();
 
-				entry.O2TankFill      = new Float(parts[6]).floatValue();
-				entry.O2TankTemp      = new Float(parts[7]).floatValue();
-				entry.O2TankPressure  = new Float(parts[8]).floatValue();
-				entry.O2ValveTemp     = new Float(parts[9]).floatValue();
-				entry.O2ValvePressure = new Float(parts[10]).floatValue();
+                entry.H2TankFill = new Float(parts[1]).floatValue();
+                entry.H2TankTemp = new Float(parts[2]).floatValue();
+                entry.H2TankPressure = new Float(parts[3]).floatValue();
+                entry.H2ValveTemp = new Float(parts[4]).floatValue();
+                entry.H2ValvePressure = new Float(parts[5]).floatValue();
 
-				entry.TurbineTemp     = new Float(parts[11]).floatValue();
-				entry.TurbinePressure = new Float(parts[12]).floatValue();
+                entry.O2TankFill = new Float(parts[6]).floatValue();
+                entry.O2TankTemp = new Float(parts[7]).floatValue();
+                entry.O2TankPressure = new Float(parts[8]).floatValue();
+                entry.O2ValveTemp = new Float(parts[9]).floatValue();
+                entry.O2ValvePressure = new Float(parts[10]).floatValue();
 
-				entries.add(entry);
-			}
-		} catch (IOException e) {
-			log.warn(e.getMessage(), e);
-		}
-		log.info("have "+entries.size()+" RHS data records");
-	}
-	
+                entry.TurbineTemp = new Float(parts[11]).floatValue();
+                entry.TurbinePressure = new Float(parts[12]).floatValue();
+
+                entries.add(entry);
+            }
+        } catch (IOException e) {
+            log.warn(e.getMessage(), e);
+        }
+        log.info("have " + entries.size() + " RHS data records");
+    }
+
     public void fillPacket(CCSDSPacket packet) {
         if (entries.isEmpty())
             return;

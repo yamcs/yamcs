@@ -17,6 +17,8 @@ public class SimulationConfiguration {
     
     private List<ServerConnection> serverConnections;
 
+    private String testDataDir;
+    
     private SimulationConfiguration() {
     }
     
@@ -41,7 +43,8 @@ public class SimulationConfiguration {
         conf.losEnabled = yconfig.getBoolean("losAos");
         conf.losPeriodS = yconfig.getInt("los_period_s");
         conf.aosPeriodS = yconfig.getInt("aos_period_s");
-
+        conf.testDataDir = yconfig.getString("test_data");
+        
         int i = 0;
         conf.serverConnections = new LinkedList<>();
         Map<String, Object> servers = yconfig.getMap("servers");
@@ -77,5 +80,9 @@ public class SimulationConfiguration {
     
     public List<ServerConnection> getServerConnections() {
         return serverConnections;
+    }
+    
+    public String getTestDataDir() {
+        return testDataDir;
     }
 }
