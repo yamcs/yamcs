@@ -25,22 +25,24 @@ import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.utils.TimeEncoding;
 
 public class TcpTcDataLinkTest {
-
+    static int port;
     @BeforeClass
     public static void setup() throws IOException {
         TimeEncoding.setUp();
-        int port = 10025;
-        MyTcpServer mtc = (new TcpTcDataLinkTest()).new MyTcpServer(port);
+        MyTcpServer mtc = new MyTcpServer();
+        port = mtc.port;
         mtc.start();
     }
 
-    public class MyTcpServer extends Thread {
+    static public class MyTcpServer extends Thread {
         int port;
         ServerSocket serverSocket;
 
-        public MyTcpServer(int port) throws IOException {
-            this.port = port;
-            serverSocket = new ServerSocket(port);
+        public MyTcpServer() throws IOException {
+            serverSocket = new ServerSocket();
+            serverSocket.bind(null);
+            port = serverSocket.getLocalPort();
+            System.out.println("port: "+port);
             serverSocket.setSoTimeout(100000);
 
         }
@@ -87,9 +89,14 @@ public class TcpTcDataLinkTest {
         List<Integer> successful = new ArrayList<>();
         List<Integer> failed = new ArrayList<>();
         int ncommands = 1000;
-        // tcMaxRate = 25
-        // tcQueueSize = 100
-        TcpTcDataLink dataLink = new TcpTcDataLink("testinst", "test1", "testMaxRate");
+        
+        Map<String, Object> config = new HashMap<>();
+        config.put("tcMaxRate", 25);
+        config.put("tcQueueSize", 100);
+        config.put("tcHost", "localhost");
+        config.put("tcPort", port);
+        
+        TcpTcDataLink dataLink = new TcpTcDataLink("testinst", "test1", config);
         Semaphore semaphore = new Semaphore(0);
         
         dataLink.setCommandHistoryPublisher(new CommandHistoryPublisher() {
@@ -148,8 +155,12 @@ public class TcpTcDataLinkTest {
     public void testTcpTcDefault() throws ConfigurationException,   InterruptedException, IOException {
         Map<Integer, Long> sentTime = new HashMap<>();
         Map<Integer, String> sentStatus = new HashMap<>();
+        
+        Map<String, Object> config = new HashMap<>();
+        config.put("tcHost", "localhost");
+        config.put("tcPort", port);
 
-        TcpTcDataLink dataLink = new TcpTcDataLink("testinst", "test1", "test_default");
+        TcpTcDataLink dataLink = new TcpTcDataLink("testinst", "test1", config);
         Semaphore semaphore = new Semaphore(0);
         
         dataLink.setCommandHistoryPublisher(new CommandHistoryPublisher() {

@@ -10,6 +10,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -63,29 +64,37 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     static final PreparedCommand SIGNAL_QUIT = new PreparedCommand(new byte[0]);
     TcDequeueAndSend tcSender;
     
-    public TcpTcDataLink(String yamcsInstance, String name, String spec) throws ConfigurationException {
+    public TcpTcDataLink(String yamcsInstance, String name, Map<String, Object> config) throws ConfigurationException {
         log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
-        YConfiguration c = YConfiguration.getConfiguration("tcp");
         this.yamcsInstance = yamcsInstance;
-        host = c.getString(spec, "tcHost");
-        port = c.getInt(spec, "tcPort");
         this.name = name;
-        if (c.containsKey(spec, "minimumTcPacketLength")) {
-            minimumTcPacketLength = c.getInt(spec, "minimumTcPacketLength");
-        } else {
-            log.debug("minimumTcPacketLength not defined, using the default value {}", minimumTcPacketLength);
-        }
-        if (c.containsKey(spec, "tcQueueSize")) {
-            commandQueue = new LinkedBlockingQueue<>(c.getInt(spec, "tcQueueSize"));
-        } else {
-            commandQueue = new LinkedBlockingQueue<>();
-        }
-        if (c.containsKey(spec, "tcMaxRate")) {
-            rateLimiter = RateLimiter.create(c.getInt(spec, "tcMaxRate"));
-        }
+        
+        configure(config);
         timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
+    public TcpTcDataLink(String yamcsInstance, String name, String spec) throws ConfigurationException {
+        this(yamcsInstance, name, YConfiguration.getConfiguration("tcp").getMap(spec));
+    }
+
+    private void configure(Map<String, Object> config) {
+        host = YConfiguration.getString(config, "tcHost");
+        port = YConfiguration.getInt(config, "tcPort");
+        
+        minimumTcPacketLength = YConfiguration.getInt(config, "minimumTcPacketLength", -1);
+       
+        
+        if (config.containsKey("tcQueueSize")) {
+            commandQueue = new LinkedBlockingQueue<>(YConfiguration.getInt(config, "tcQueueSize"));
+        } else {
+            commandQueue = new LinkedBlockingQueue<>();
+        }
+        if (config.containsKey("tcMaxRate")) {
+            rateLimiter = RateLimiter.create( YConfiguration.getInt(config, "tcMaxRate"));
+        }
+        
+    }
+    
     protected TcpTcDataLink() {
         log = LoggerFactory.getLogger(this.getClass().getName());
     } // dummy constructor which is automatically invoked by subclass constructors
