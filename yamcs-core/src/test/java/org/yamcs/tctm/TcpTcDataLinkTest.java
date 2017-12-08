@@ -42,9 +42,7 @@ public class TcpTcDataLinkTest {
             serverSocket = new ServerSocket();
             serverSocket.bind(null);
             port = serverSocket.getLocalPort();
-            System.out.println("port: "+port);
             serverSocket.setSoTimeout(100000);
-
         }
 
         public void run() {
@@ -85,10 +83,8 @@ public class TcpTcDataLinkTest {
 
     @Test
     public void testTcpTcMaxRate() throws ConfigurationException, InterruptedException, IOException {
-        Map<Integer, Long> sentTime = new HashMap<>();
-        List<Integer> successful = new ArrayList<>();
-        List<Integer> failed = new ArrayList<>();
-        int ncommands = 1000;
+      
+        int ncommands = 100;
         
         Map<String, Object> config = new HashMap<>();
         config.put("tcMaxRate", 25);
@@ -98,39 +94,10 @@ public class TcpTcDataLinkTest {
         
         TcpTcDataLink dataLink = new TcpTcDataLink("testinst", "test1", config);
         Semaphore semaphore = new Semaphore(0);
+        MyPublisher mypub = new MyPublisher(semaphore);
+        dataLink.setCommandHistoryPublisher(mypub) ;
         
-        dataLink.setCommandHistoryPublisher(new CommandHistoryPublisher() {
-            
-            @Override
-            public void updateTimeKey(CommandId cmdId, String key, long value) {
-                sentTime.put(cmdId.getSequenceNumber(), value);
-            }
-
-            @Override
-            public void updateStringKey(CommandId cmdId, String key, String value) {
-                if (key.equals("Acknowledge_Sent_Status")) {
-                    if(value.equals("ACK: OK")) {
-                        successful.add(cmdId.getSequenceNumber());
-                    } else if(value.equals("NACK")) {
-                        failed.add(cmdId.getSequenceNumber());
-                    } else {
-                        fail("Unexpected ack '"+value+"'");
-                    }
-                    semaphore.release();
-                }
-            }
-
-            @Override
-            public void publish(CommandId cmdId, String key, int value) {
-                ;
-            }
-
-            @Override
-            public void addCommand(PreparedCommand pc) {
-                ;
-
-            }
-        });
+        
         dataLink.startAsync();
         dataLink.awaitRunning();
 
@@ -139,11 +106,11 @@ public class TcpTcDataLinkTest {
         }
 
         assertTrue(semaphore.tryAcquire(ncommands, 10, TimeUnit.SECONDS));
-        assertTrue("Number of commands sent is smaller than queue size: ", successful.size() >= 100);
-        for (int i = 5; i<successful.size()-25; i++) {
-            int seq1 = successful.get(i);
-            int seq2 = successful.get(i+25);
-            long gap = sentTime.get(seq2) - sentTime.get(seq1);
+        assertTrue("Number of commands sent is smaller than queue size: ", mypub.successful.size() >= 100);
+        for (int i = 5; i<mypub.successful.size()-25; i++) {
+            int seq1 = mypub.successful.get(i);
+            int seq2 = mypub.successful.get(i+25);
+            long gap = mypub.sentTime.get(seq2) - mypub.sentTime.get(seq1);
             assertTrue("gap is not right: "+gap, gap>=990 && gap<1010);
         }
 //     
@@ -153,41 +120,15 @@ public class TcpTcDataLinkTest {
 
     @Test
     public void testTcpTcDefault() throws ConfigurationException,   InterruptedException, IOException {
-        Map<Integer, Long> sentTime = new HashMap<>();
-        Map<Integer, String> sentStatus = new HashMap<>();
-        
         Map<String, Object> config = new HashMap<>();
         config.put("tcHost", "localhost");
         config.put("tcPort", port);
 
         TcpTcDataLink dataLink = new TcpTcDataLink("testinst", "test1", config);
         Semaphore semaphore = new Semaphore(0);
-        
-        dataLink.setCommandHistoryPublisher(new CommandHistoryPublisher() {
-
-            @Override
-            public void updateTimeKey(CommandId cmdId, String key, long value) {
-                sentTime.put(cmdId.getSequenceNumber(), value);
-            }
-
-            @Override
-            public void updateStringKey(CommandId cmdId, String key, String value) {
-                if (key.equals("Acknowledge_Sent_Status")) {
-                    sentStatus.put(cmdId.getSequenceNumber(), value);
-                    semaphore.release();
-                }
-            }
-
-            @Override
-            public void publish(CommandId cmdId, String key, int value) {
-                ;
-            }
-
-            @Override
-            public void addCommand(PreparedCommand pc) {
-                ;
-            }
-        });
+        MyPublisher mypub = new MyPublisher(semaphore);
+        dataLink.setCommandHistoryPublisher(mypub) ;
+       
         dataLink.startAsync();
         dataLink.awaitRunning();
         
@@ -196,9 +137,7 @@ public class TcpTcDataLinkTest {
             dataLink.sendTc(getCommand(i));
         }
         assertTrue(semaphore.tryAcquire(1000, 10, TimeUnit.SECONDS));
-        for (int i = 1; i <= 1000; i++) {
-            assertEquals("ACK: OK", sentStatus.get(i));
-        }
+        assertEquals(1000, mypub.successful.size());
     }
 
     private PreparedCommand getCommand(int seq) {
@@ -211,5 +150,45 @@ public class TcpTcDataLinkTest {
                 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
         pc.setBinary(b);
         return pc;
+    }
+    
+    
+    static class MyPublisher implements CommandHistoryPublisher {
+        Map<Integer, Long> sentTime = new HashMap<>();
+        List<Integer> successful = new ArrayList<>();
+        List<Integer> failed = new ArrayList<>();
+        Semaphore semaphore;
+        
+        MyPublisher(Semaphore semaphore) {
+            this.semaphore = semaphore;
+        }
+        @Override
+        public void publish(CommandId cmdId, String key, long value) {
+            sentTime.put(cmdId.getSequenceNumber(), value);
+        }
+
+        @Override
+        public void publish(CommandId cmdId, String key, String value) {
+            if (key.equals("Acknowledge_Sent_Status")) {
+                if(value.equals("OK")) {
+                    successful.add(cmdId.getSequenceNumber());
+                } else if(value.equals("NOK")) {
+                    failed.add(cmdId.getSequenceNumber());
+                } else {
+                    fail("Unexpected ack '"+value+"'");
+                }
+                semaphore.release();
+            }
+        }
+
+        @Override
+        public void publish(CommandId cmdId, String key, int value) {
+            ;
+        }
+
+        @Override
+        public void addCommand(PreparedCommand pc) {
+            ;
+        }
     }
 }
