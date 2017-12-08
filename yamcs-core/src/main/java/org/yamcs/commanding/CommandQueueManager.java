@@ -329,7 +329,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     public void addToCommandHistory(CommandId commandId, String key, String value) {
-        commandHistoryListener.updateStringKey(commandId, key, value);
+        commandHistoryListener.publish(commandId, key, value);
     }
     /**
      * send a negative ack for a command.
@@ -338,6 +338,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      */
     private void failedCommand(CommandQueue cq, PreparedCommand pc, String reason, boolean notify) {
         addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.CommandFailed_KEY, reason);
+        addToCommandHistory(pc.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY, "NOK");
         //Notify the monitoring clients
         if(notify) {
             for(CommandQueueListener m:monitoringClients) {

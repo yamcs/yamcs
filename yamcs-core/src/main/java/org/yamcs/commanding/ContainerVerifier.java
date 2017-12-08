@@ -2,7 +2,6 @@ package org.yamcs.commanding;
 
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.Processor;
-import org.yamcs.commanding.CommandVerificationHandler.VerifResult;
 import org.yamcs.container.ContainerConsumer;
 import org.yamcs.container.ContainerRequestManager;
 import org.yamcs.xtce.CommandVerifier;
@@ -23,19 +22,19 @@ class ContainerVerifier extends Verifier implements ContainerConsumer {
     public void processContainer(ContainerExtractionResult cer) {
         ContainerRequestManager crm = yproc.getContainerRequestManager();
         crm.unsubscribe(this, container);
-        cvh.onVerifierFinished(this, VerifResult.OK);
+        finished(true);
     }
 
 
     @Override
-    void start() {
+    void doStart() {
         ContainerRequestManager crm = yproc.getContainerRequestManager();
         crm.subscribe(this, container);
     }
 
 
     @Override
-    void cancel() {
+    void doCancel() {
         ContainerRequestManager crm = yproc.getContainerRequestManager();
         crm.unsubscribe(this, container);
     }

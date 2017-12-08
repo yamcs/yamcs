@@ -41,11 +41,32 @@ public abstract class Algorithm extends NameDescription {
         outputSet.add(outputParameter);
     }
     
+    /**
+     * same as {@link getInputList}, although it's a list this method calls it Set due to XTCE terminology. 
+     * @return ordered list of input parameters
+     */
     public List<InputParameter> getInputSet() {
         return inputSet;
     }
-
+    /**
+     * Returns the list of input parameters
+     * @return
+     */
+    public List<InputParameter> getInputList() {
+        return inputSet;
+    }
+    /**
+     * same as {@link getOutputList}, although it's a list this method calls it Set due to XTCE terminology. 
+     * @return
+     */
     public List<OutputParameter> getOutputSet() {
+        return outputSet;
+    }
+    /**
+     * 
+     * @return ordered list of output parameters
+     */
+    public List<OutputParameter> getOutputList() {
         return outputSet;
     }
     

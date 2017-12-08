@@ -12,6 +12,7 @@ import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.parameter.Value;
 import org.yamcs.tctm.TcDataLinkInitialiser;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.MetaCommand;
@@ -249,5 +250,9 @@ public class PreparedCommand {
 
     public Map<Argument, Value> getArgAssignment() {
         return argAssignment;
+    }
+    
+    public String toString () {
+        return "PreparedCommand("+uuid+", "+StringConverter.toString(id)+")";
     }
 }

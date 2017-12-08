@@ -14,16 +14,17 @@ import org.yamcs.protobuf.Commanding.CommandId;
 
 /**
  * Injects the command history updates in the command history stream
+ * 
  * @author nm
  *
  */
 public class YarchCommandHistoryAdapter implements CommandHistoryPublisher {
-    static public final String REALTIME_CMDHIST_STREAM_NAME="cmdhist_realtime";
-    static public final String DUMP_CMDHIST_STREAM_NAME="cmdhist_dump";
-    
+    static public final String REALTIME_CMDHIST_STREAM_NAME = "cmdhist_realtime";
+    static public final String DUMP_CMDHIST_STREAM_NAME = "cmdhist_dump";
+
     Stream stream;
     final String instance;
-    
+
     public YarchCommandHistoryAdapter(String archiveInstance) throws StreamSqlException, ParseException {
         this.instance = archiveInstance;
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(archiveInstance);
@@ -31,10 +32,10 @@ public class YarchCommandHistoryAdapter implements CommandHistoryPublisher {
     }
 
     @Override
-    public void updateStringKey(CommandId cmdId, String key, String value) {
-        TupleDefinition td=TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
+    public void publish(CommandId cmdId, String key, String value) {
+        TupleDefinition td = TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
         td.addColumn(key, DataType.STRING);
-        
+
         Tuple t = new Tuple(td, new Object[] {
                 cmdId.getGenerationTime(),
                 cmdId.getOrigin(),
@@ -46,11 +47,11 @@ public class YarchCommandHistoryAdapter implements CommandHistoryPublisher {
     }
 
     @Override
-    public void updateTimeKey(CommandId cmdId, String key, long instant) {
-        TupleDefinition td=TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
+    public void publish(CommandId cmdId, String key, long instant) {
+        TupleDefinition td = TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
         td.addColumn(key, DataType.TIMESTAMP);
-        
-        Tuple t=new Tuple(td, new Object[] {
+
+        Tuple t = new Tuple(td, new Object[] {
                 cmdId.getGenerationTime(),
                 cmdId.getOrigin(),
                 cmdId.getSequenceNumber(),
@@ -59,17 +60,17 @@ public class YarchCommandHistoryAdapter implements CommandHistoryPublisher {
         });
         stream.emitTuple(t);
     }
-    
+
     @Override
     public void publish(CommandId cmdId, String key, int value) {
         publish(cmdId, key, DataType.INT, value);
     }
-    
+
     public void publish(CommandId cmdId, String key, DataType dt, Object value) {
-        TupleDefinition td=TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
+        TupleDefinition td = TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
         td.addColumn(key, dt);
-        
-        Tuple t=new Tuple(td, new Object[] {
+
+        Tuple t = new Tuple(td, new Object[] {
                 cmdId.getGenerationTime(),
                 cmdId.getOrigin(),
                 cmdId.getSequenceNumber(),
@@ -78,15 +79,33 @@ public class YarchCommandHistoryAdapter implements CommandHistoryPublisher {
         });
         stream.emitTuple(t);
     }
-    
+
+    @Override
+    public void publishWithTime(CommandId cmdId, String key, long time, String value) {
+        TupleDefinition td = TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
+        td.addColumn(key+"_Status", DataType.STRING);
+        td.addColumn(key+"_Time", DataType.TIMESTAMP);
+
+        Tuple t = new Tuple(td, new Object[] {
+                cmdId.getGenerationTime(),
+                cmdId.getOrigin(),
+                cmdId.getSequenceNumber(),
+                cmdId.getCommandName(),
+                value,
+                time
+        });
+        stream.emitTuple(t);
+    }
+
     @Override
     public void addCommand(PreparedCommand pc) {
         stream.emitTuple(pc.toTuple());
     }
-    
+
     public String getInstance() {
         return instance;
     }
+
     public Stream getStream() {
         return stream;
     }

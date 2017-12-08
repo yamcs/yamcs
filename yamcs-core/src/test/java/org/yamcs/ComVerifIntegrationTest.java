@@ -24,6 +24,7 @@ import io.netty.handler.codec.http.HttpMethod;
 public class ComVerifIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCommandVerificationContainter() throws Exception {
+        LoggingUtils.enableLogging();
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
 
@@ -57,8 +58,13 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         assertEquals(1, cmdhist.getAttrCount());
 
         cha = cmdhist.getAttr(0);
-        assertEquals("Verifier_Execution", cha.getName());
+        assertEquals("Verifier_Execution_Status", cha.getName());
         assertEquals("OK", cha.getValue().getStringValue());
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        cha = cmdhist.getAttr(0);
+        assertEquals("Verifier_Execution_Time", cha.getName());
+        
+        
         
         packetGenerator.generateContVerifCmdAck((short)1001, (byte)5, 0);
 
@@ -66,9 +72,13 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         assertNotNull(cmdhist);
         assertEquals(1, cmdhist.getAttrCount());
         cha = cmdhist.getAttr(0);
-        assertEquals("Verifier_Complete", cha.getName());
+        assertEquals("Verifier_Complete_Status", cha.getName());
         assertEquals("OK", cha.getValue().getStringValue());
-
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        cha = cmdhist.getAttr(0);
+        assertEquals("Verifier_Complete_Time", cha.getName());
+        
+        
 
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
@@ -124,22 +134,31 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         assertNotNull(cmdhist);
         assertEquals(1, cmdhist.getAttrCount());
         cha = cmdhist.getAttr(0);
-        assertEquals("Verifier_Execution", cha.getName());
+        assertEquals("Verifier_Execution_Status", cha.getName());
         assertEquals("OK", cha.getValue().getStringValue());
-
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertEquals("Verifier_Execution_Time", cmdhist.getAttr(0).getName());
 
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
         assertEquals(1, cmdhist.getAttrCount());
         cha = cmdhist.getAttr(0);
-        assertEquals("Verifier_Complete", cha.getName());
+        assertEquals("Verifier_Complete_Status", cha.getName());
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
+        assertEquals("Verifier_Complete_Time", cmdhist.getAttr(0).getName());
 
+        
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
         assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.CommandComplete_KEY, cha.getName());
+        assertEquals("NOK", cha.getValue().getStringValue());
+        
+        cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         cha = cmdhist.getAttr(0);
         assertEquals(CommandHistoryPublisher.CommandFailed_KEY, cha.getName());
-        assertEquals("NOK", cha.getValue().getStringValue());
+        assertEquals("Verifier Complete result: NOK", cha.getValue().getStringValue());
     }
 
 

@@ -1,14 +1,12 @@
 package org.yamcs.algorithms;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -16,15 +14,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.script.Bindings;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
+import org.yamcs.api.EventProducer;
+import org.yamcs.api.EventProducerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
@@ -87,7 +83,11 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);
     Processor yproc;
     AlgorithmExecutionContext globalCtx;
-
+    
+    Map<String, ScriptAlgorithmManager> scriptAlgManagerByLanguage = new HashMap<>();
+    
+    Map<String, List<String>> libraries = null;
+    final EventProducer eventProducer;
     public AlgorithmManager(String yamcsInstance) throws ConfigurationException {
         this(yamcsInstance, (Map<String, Object>) null);
     }
@@ -95,60 +95,19 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     @SuppressWarnings("unchecked")
     public AlgorithmManager(String yamcsInstance, Map<String, Object> config) throws ConfigurationException {
         this.yamcsInstance = yamcsInstance;
-
-        Map<String, List<String>> libraries = null;
+        this.eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
+        eventProducer.setSource("AlgorithmManager");
+        eventProducer.setRepeatedEventReduction(true, 10000);
+        
         if (config != null) {
             if (config.containsKey("libraries")) {
                 libraries = (Map<String, List<String>>) config.get("libraries");
             }
         }
-
         scriptEngineManager = new ScriptEngineManager();
-        if (libraries != null) {
-            for (Map.Entry<String, List<String>> me : libraries.entrySet()) {
-                String language = me.getKey();
-                List<String> libraryNames = me.getValue();
-                // Disposable ScriptEngine, just to eval libraries and put them in global scope
-                ScriptEngine scriptEngine = scriptEngineManager.getEngineByName(language);
-                if (scriptEngine == null) {
-                    throw new ConfigurationException("Cannot get a script engine for language " + language);
-                }
-                try {
-                    for (String lib : libraryNames) {
-                        log.debug("Loading library {}", lib);
-                        File f = new File(lib);
-                        if (!f.exists()) {
-                            throw new ConfigurationException("Algorithm library file '" + f + "' does not exist");
-                        }
-
-                        scriptEngine.put(ScriptEngine.FILENAME, f.getPath()); // Improves error msgs
-                        if (f.isFile()) {
-                            scriptEngine.eval(new FileReader(f));
-                        } else {
-                            throw new ConfigurationException("Specified library is not a file: " + f);
-                        }
-                    }
-                } catch (IOException e) { // Force exit. User should fix this before continuing
-                    throw new ConfigurationException("Cannot read from library file", e);
-                } catch (ScriptException e) { // Force exit. User should fix this before continuing
-                    throw new ConfigurationException("Script error found in library file: " + e.getMessage(), e);
-                }
-
-                // Put engine bindings in shared global scope - we want the variables in the libraries to be global
-                Bindings commonBindings = scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
-                Set<String> existingBindings = new HashSet<>(scriptEngineManager.getBindings().keySet());
-
-                existingBindings.retainAll(commonBindings.keySet());
-                if (!existingBindings.isEmpty()) {
-                    throw new ConfigurationException(
-                            "Overlapping definitions found while loading libraries for language " + language + ": "
-                                    + existingBindings);
-                }
-                commonBindings.putAll(scriptEngineManager.getBindings());
-                scriptEngineManager.setBindings(commonBindings);
-            }
-        }
     }
+
+   
 
     // these two constructors are invoked when part of a replay - we don't do anything with the replay request
     public AlgorithmManager(String yamcsInstance, ReplayRequest rr) throws ConfigurationException {
@@ -165,6 +124,9 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         this.yproc = yproc;
         this.parameterRequestManager = yproc.getParameterRequestManager();
         xtcedb = yproc.getXtceDb();
+
+        scriptEngineManager.put("Yamcs", new AlgorithmUtils(yproc.getInstance(), yproc.getProcessorData(), yproc, xtcedb));
+
         globalCtx = new AlgorithmExecutionContext("global", null, yproc.getProcessorData());
         try {
             subscriptionId = parameterRequestManager.addRequest(new ArrayList<Parameter>(0), this);
@@ -180,6 +142,22 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             }
         }
 
+    }
+    
+    private ScriptAlgorithmManager getScriptManagerByLanguage(String language) {
+        ScriptAlgorithmManager sam = scriptAlgManagerByLanguage.get(language);
+        if (sam == null) {
+            sam = new ScriptAlgorithmManager(scriptEngineManager, language, getLibraries(language), eventProducer);
+            scriptAlgManagerByLanguage.put(language, sam);
+        }
+        return sam;
+    }
+    
+    private List<String> getLibraries(String language) {
+        if (libraries==null) {
+            return null;
+        }
+        return libraries.get(language);
     }
 
     private void loadAlgorithm(Algorithm algo, AlgorithmExecutionContext ctx) {
@@ -265,16 +243,8 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             if (algLang.equalsIgnoreCase("java")) {
                 executor = loadJavaExecutor(calg, execCtx);
             } else {
-                ScriptEngine scriptEngine = scriptEngineManager.getEngineByName(calg.getLanguage());
-                if (scriptEngine == null) {
-                    throw new IllegalArgumentException(
-                            "Cannot created a script engine for language '" + calg.getLanguage() + "'");
-                }
-
-                scriptEngine.put("Yamcs", new AlgorithmUtils(yproc.getInstance(), yproc.getProcessorData(), yproc,
-                        xtcedb, algorithm.getName()));
-
-                executor = new ScriptAlgorithmExecutor(calg, scriptEngine, execCtx);
+                ScriptAlgorithmManager sam = getScriptManagerByLanguage(calg.getLanguage());
+                executor = sam.createExecutor(calg, execCtx);
             }
         } else {
             throw new UnsupportedOperationException(
@@ -302,7 +272,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
                             }
                         }
                     } else { // Don't ask items to PRM that we can provide ourselves or command verifier context
-                             // parameters that PRM cannot provide
+                        // parameters that PRM cannot provide
                         if ((param.getDataSource() != DataSource.COMMAND)
                                 && param.getDataSource() != DataSource.COMMAND_HISTORY) {
                             newItems.add(param);
@@ -345,7 +315,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
             String s = m.group(2); // this includes the parentheses
             Object arg = null;
             if (s != null && s.length() > 2) {// s.length>2 is to make sure there is something in between the
-                                              // parentheses
+                // parentheses
                 Yaml yaml = new Yaml();
                 arg = yaml.load(s.substring(1, s.length() - 1));
             }

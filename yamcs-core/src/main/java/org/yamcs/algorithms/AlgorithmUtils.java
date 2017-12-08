@@ -22,20 +22,18 @@ import org.yamcs.xtceproc.ProcessorData;
 public class AlgorithmUtils {
     private static final Logger log = LoggerFactory.getLogger(AlgorithmUtils.class);
     private XtceDb xtcedb;
-    private String algorithmName;
     private EventProducer eventProducer;
     private final String yamcsInstance;
     private final ProcessorData processorData;
 
     //can be null if the algorithms are not running inside a processor
     private final Processor processor;
-    public AlgorithmUtils(String yamcsInstance, ProcessorData processorData, Processor processor, XtceDb xtcedb, String algorithmName) {
+    public AlgorithmUtils(String yamcsInstance, ProcessorData processorData, Processor processor, XtceDb xtcedb) {
         this.yamcsInstance = yamcsInstance;
         
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
         eventProducer.setSource("CustomAlgorithm");
         this.xtcedb = xtcedb;
-        this.algorithmName = algorithmName;
         this.processorData = processorData;
         this.processor = processor;
     }
@@ -67,15 +65,19 @@ public class AlgorithmUtils {
     }
     
     public void info(String msg) {
-        info(algorithmName, msg);
+        info(getAlgoName(), msg);
     }
     
+    private String getAlgoName() {
+        return new Throwable().getStackTrace()[2].getFileName();
+    }
     public void info(String type, String msg) {
+        
         eventProducer.sendInfo(type, msg);
     }
     
     public void warning(String msg) {
-        warning(algorithmName, msg);
+        warning(getAlgoName(), msg);
     }
     
     public void warning(String type, String msg) {
@@ -83,7 +85,7 @@ public class AlgorithmUtils {
     }
     
     public void error(String msg) {
-        error(algorithmName, msg);
+        error(getAlgoName(), msg);
     }
     
     public void error(String type, String msg) {

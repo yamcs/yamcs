@@ -15,8 +15,13 @@ public interface CommandHistoryPublisher {
     public static String TransmissionContraints_KEY = "TransmissionConstraints";
     public static String Verifier_KEY_PREFIX = "Verifier";
     
-    public abstract void updateStringKey(CommandId cmdId, String key, String value);
+    public abstract void publish(CommandId cmdId, String key, String value);
     public abstract void publish(CommandId cmdId, String key, int value);
-    public abstract void updateTimeKey(CommandId cmdId, String key, long value);	
+    public abstract void publish(CommandId cmdId, String key, long value);	
     public abstract void addCommand(PreparedCommand pc);
+    
+    default void publishWithTime(CommandId cmdId, String key, long time, String value) {
+        publish(cmdId, key+"_Time", time);
+        publish(cmdId, key+"_Status", value);
+    }
 }

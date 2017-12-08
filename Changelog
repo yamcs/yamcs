@@ -1,6 +1,7 @@
-Version 3.4.1 released 08-Dec-2017
+Version 3.5.0 
 - fixed the version 6.0 in refmdb.xls and the changelog (it was mistakenly written as version 5.7 not matching the SpreadsheetLoader)
 - TcpTcDataLink: the configuration can be made in the service declaration in yamcs.<instance>.yaml, not necessary to have the tcp.yaml anymore
+- changed algorithms to work as functions such that they can coexist in the same scriptEngine (to improve performance)
 
 Version 3.4.0 released 06-Dec-2017
 - moved artemis into a separate source project which yamcs-core does not depend on. 

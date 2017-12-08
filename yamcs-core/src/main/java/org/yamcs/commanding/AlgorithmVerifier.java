@@ -1,31 +1,22 @@
 package org.yamcs.commanding;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.Value;
 import org.yamcs.Processor;
 import org.yamcs.algorithms.AlgorithmExecListener;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.algorithms.AlgorithmManager;
-import org.yamcs.cmdhistory.CommandHistoryConsumer;
-import org.yamcs.commanding.CommandVerificationHandler.VerifResult;
-import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.utils.StringConverter;
-import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
-import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.CommandVerifier;
-import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 
-public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener, CommandHistoryConsumer {
+public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener {
     final Algorithm alg;
     final AlgorithmExecutionContext algCtx;
     final PreparedCommand pc;
@@ -36,7 +27,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
     AlgorithmVerifier(CommandVerificationHandler cvh, CommandVerifier cv) {
         super(cvh, cv);
         alg = cv.getAlgorithm();
-        algCtx= cvh.getAlgorithmExecutionContext();
+        algCtx = cvh.getAlgorithmExecutionContext();
         pc = cvh.getPreparedCommand();
         yproc = cvh.getProcessor();
         xtcedb = yproc.getXtceDb();
@@ -44,40 +35,12 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
     }
 
     @Override
-    void start() {
+    void doStart() {
         log.debug("Starting verifier for command {} alg: {} stage: {} ", 
                 StringConverter.toString(pc.getCommandId()), alg.getName(), cv.getStage());
-        //push all the command information as parameters
-        List<ParameterValue> pvList = new ArrayList<>();
-
-        for(CommandHistoryAttribute cha: pc.getAttributes()) {
-            String fqn = XtceDb.YAMCS_CMD_SPACESYSTEM_NAME+"/"+cha.getName();
-            if(xtcedb.getParameter(fqn)==null) {
-              //if it was required in the algorithm, it would be already in the system parameter db  
-                log.trace("Not adding {} to the context parameter list because it is not defined in the XtceDb", fqn);
-                continue;
-            }
-            Parameter p = xtcedb.getParameter(fqn);
-
-            ParameterValue pv = new ParameterValue(p);
-            pv.setEngineeringValue(ValueUtility.fromGpb(cha.getValue()));
-            pvList.add(pv);
-        }
-        Map<Argument, Value> argAssignment = pc.getArgAssignment();
-        for(Map.Entry<Argument, Value> e: argAssignment.entrySet()) {
-            String fqn = XtceDb.YAMCS_CMD_SPACESYSTEM_NAME+"/arg/"+e.getKey().getName();
-            if(xtcedb.getParameter(fqn)==null) {
-                //if it was required in the algorithm, it would be already in the SystemParameterdb  
-                log.trace("Not adding {} to the context parameter list because it is not defined in the XtceDb", fqn);
-                continue;
-            }
-            Parameter p =  xtcedb.getParameter(fqn);
-
-            ParameterValue pv = new ParameterValue(p);
-            pv.setEngineeringValue(e.getValue());
-            pvList.add(pv);
-        }
-
+      
+        //push all the command parameters
+        List<ParameterValue> pvList = cvh.getCommandParameters(); 
 
         if(pvList.isEmpty()) {
             log.debug("No CMD information PV to be sent to the Algorithm");
@@ -86,18 +49,12 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
             algMgr.activateAlgorithm(alg, algCtx, this);
             algMgr.updateParameters(pvList, algCtx);
         }
-        try {
-            yproc.getCommandHistoryManager().subscribeCommand(pc.getCommandId(), this);
-        } catch (InvalidCommandId e) {
-            log.error("Got invalidCommand id while subscribing for command history", e);
-        }
     }
     
     @Override
-    void cancel() {
+    void doCancel() {
         AlgorithmManager algMgr = cvh.getAlgorithmManager();
         algMgr.deactivateAlgorithm(alg, algCtx);
-        yproc.getCommandHistoryManager().unsubscribeCommand(pc.getCommandId(), this);
     }
     
     @Override
@@ -118,31 +75,13 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
         boolean r = (Boolean) returnValue;
         AlgorithmManager algMgr = cvh.getAlgorithmManager();
         algMgr.deactivateAlgorithm(alg, algCtx);
-        yproc.getCommandHistoryManager().unsubscribeCommand(pc.getCommandId(), this);
-        
-        cvh.onVerifierFinished(this, r?VerifResult.OK:VerifResult.NOK);
+        finished(r);
     }
 
-    @Override
-    public void addedCommand(PreparedCommand pc) {} //this will not be called because we subscribe to only one command
-    
    
-    
-    //called from the command history when things are added in the stream
     @Override
-    public void updatedCommand(CommandId cmdId, long changeDate, String key, Value value) {
-        String fqn = XtceDb.YAMCS_CMDHIST_SPACESYSTEM_NAME+"/"+key;
-        if(xtcedb.getParameter(fqn)==null) {
-            //if it was required in the algorithm, it would be in the SystemParameterDb  
-            log.debug("Not adding {} to the context parameter list because it is not defined in the XtceDb", fqn);
-        } else {            
-            Parameter p = xtcedb.getParameter(fqn);
-            ParameterValue pv = new ParameterValue(p);
-            pv.setEngineeringValue(value);
-            AlgorithmManager algMgr = cvh.getAlgorithmManager();
-            algMgr.updateParameters(Arrays.asList(pv), algCtx);
-        }
+    public void updatedCommandHistoryParam(ParameterValue pv) {
+        AlgorithmManager algMgr = cvh.getAlgorithmManager();
+        algMgr.updateParameters(Arrays.asList(pv), algCtx);
     }
-
-    
 }

@@ -26,7 +26,6 @@ import org.yamcs.YConfiguration;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.api.EventProducerFactory;
-import org.yamcs.management.ManagementService;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
@@ -44,10 +43,11 @@ public class AlgorithmManagerTest {
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setup("refmdb");
         XtceDbFactory.reset();
+     //   org.yamcs.LoggingUtils.enableLogging();
     }
     
     private XtceDb db;
-    private Processor c;
+    private Processor proc;
     private RefMdbPacketGenerator tmGenerator;
     private ParameterRequestManagerImpl prm;
     private Queue<Event> q;
@@ -71,13 +71,14 @@ public class AlgorithmManagerTest {
         paramProviderList.add(new AlgorithmManager("refmdb", config));
         SimpleTcTmService tmtcs = new SimpleTcTmService(tmGenerator, paramProviderList, null);
         
-        c=ProcessorFactory.create("refmdb", "AlgorithmManagerTest", "refmdb", tmtcs, "junit");
-        prm=c.getParameterRequestManager();
+        proc=ProcessorFactory.create("refmdb", "AlgorithmManagerTest", "refmdb", tmtcs, "junit");
+        prm=proc.getParameterRequestManager();
+    
     }
     
     @After
     public void afterEachTest() { // Prevents us from wrapping our code in try-finally
-        c.quit();
+        proc.quit();
     }
 
     @Test
@@ -93,7 +94,7 @@ public class AlgorithmManagerTest {
             }
         });
 
-        c.start();
+        proc.start();
         tmGenerator.generate_PKT1_1();
         assertEquals(2, params.size());
         for(ParameterValue pvwi:params) {
@@ -124,7 +125,7 @@ public class AlgorithmManagerTest {
             }
         });
 
-        c.start();
+        proc.start();
         long t0 = System.currentTimeMillis();
         int n = 100000;
         for(int i = 0 ; i<n; i++)  {
@@ -145,7 +146,7 @@ public class AlgorithmManagerTest {
             }
         });
 
-        c.start();
+        proc.start();
         long startTime=TimeEncoding.getWallclockTime();
         tmGenerator.generate_PKT1_6(1, 2, startTime, startTime);
         assertEquals(0, params.size()); // Windows:  [*  *  *  1]  &&  [*  2]
@@ -172,12 +173,12 @@ public class AlgorithmManagerTest {
         // No need to subscribe. This algorithm doesn't have any outputs
         // and is therefore auto-activated (will only trigger if an input changes)
 
-        c.start();
+        proc.start();
         tmGenerator.generate_PKT1_6(1, 0);
         assertEquals(1, q.size());
         Event evt = q.poll();
         assertEquals("CustomAlgorithm", evt.getSource());
-        assertEquals("script_events", evt.getType());
+        assertEquals("/REFMDB/SUBSYS1/script_events", evt.getType());
         assertEquals("low", evt.getMessage());
         assertEquals(EventSeverity.INFO, evt.getSeverity());
         
@@ -185,7 +186,7 @@ public class AlgorithmManagerTest {
         assertEquals(1, q.size());
         evt = q.poll();
         assertEquals("CustomAlgorithm", evt.getSource());
-        assertEquals("script_events", evt.getType());
+        assertEquals("/REFMDB/SUBSYS1/script_events", evt.getType());
         assertEquals("med", evt.getMessage());
         assertEquals(EventSeverity.WARNING, evt.getSeverity());
         
@@ -193,7 +194,7 @@ public class AlgorithmManagerTest {
         assertEquals(1, q.size());
         evt = q.poll();
         assertEquals("CustomAlgorithm", evt.getSource());
-        assertEquals("script_events", evt.getType());
+        assertEquals("/REFMDB/SUBSYS1/script_events", evt.getType());
         assertEquals("high", evt.getMessage());
         assertEquals(EventSeverity.ERROR, evt.getSeverity());
     }
@@ -209,7 +210,7 @@ public class AlgorithmManagerTest {
             }
         });
 
-        c.start();
+        proc.start();
         tmGenerator.generate_PKT1_1();
         assertEquals(1, params.size());
         assertEquals(tmGenerator.pIntegerPara1_1_1, params.get(0).getEngValue().getFloatValue()*3, 0.001);
@@ -226,7 +227,7 @@ public class AlgorithmManagerTest {
             }
         });
 
-        c.start();
+        proc.start();
         tmGenerator.generate_PKT1_1();
         assertEquals(1, params.size());
         assertEquals(tmGenerator.pIntegerPara1_1_1, params.get(0).getEngValue().getFloatValue(), 0.001);
@@ -258,7 +259,7 @@ public class AlgorithmManagerTest {
             }
         });
 
-        c.start();
+        proc.start();
         tmGenerator.generate_PKT1_1();
         assertEquals(1, params.size());
         assertEquals(tmGenerator.pIntegerPara1_1_1, params.get(0).getEngValue().getUint32Value());
@@ -302,7 +303,7 @@ public class AlgorithmManagerTest {
             }
         });
 
-        c.start();
+        proc.start();
         tmGenerator.generate_PKT1_6(1, 1);
         assertEquals(1, params.size());
         assertEquals(1, params.get(0).getRawValue().getUint32Value());
@@ -322,7 +323,7 @@ public class AlgorithmManagerTest {
             }
         });
 
-        c.start();
+        proc.start();
         tmGenerator.generate_PKT1_9();
         assertEquals(2, params.size());
         assertEquals(true, params.get(0).getEngValue().getBooleanValue());
@@ -339,7 +340,7 @@ public class AlgorithmManagerTest {
             }
         });
 
-        c.start();
+        proc.start();
         tmGenerator.generate_PKT1_6(1, 1);
         assertEquals(1, params.size());
         assertEquals(1, params.get(0).getRawValue().getUint32Value());
@@ -356,7 +357,7 @@ public class AlgorithmManagerTest {
             }
         });
 
-        c.start();
+        proc.start();
         tmGenerator.generate_PKT1_1();
         assertEquals(1, params.size());
         assertEquals(0.1672918, params.get(0).getEngValue().getFloatValue(), 1e-8);
@@ -384,7 +385,7 @@ public class AlgorithmManagerTest {
             }
         });
 
-        c.start();
+        proc.start();
         int pIntegerPara16_1 = 5;
         tmGenerator.generate_PKT1_6(pIntegerPara16_1, 0);
         assertEquals(1, params.size());
@@ -404,7 +405,7 @@ public class AlgorithmManagerTest {
                     }
         });
 
-        c.start();
+        proc.start();
         int pIntegerPara16_1 = 5;
         tmGenerator.generate_PKT1_6(pIntegerPara16_1, 0);
         assertEquals(1, params.size());
@@ -432,7 +433,7 @@ public class AlgorithmManagerTest {
                     }
         });
 
-        c.start();
+        proc.start();
         Thread.sleep(10000);
     }
 }
