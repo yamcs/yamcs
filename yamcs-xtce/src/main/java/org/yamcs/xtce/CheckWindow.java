@@ -9,10 +9,10 @@ import java.io.Serializable;
  *
  */
 public class CheckWindow implements Serializable{
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
     
     
-    public enum TimeWindowIsRelativeToType {commandRelease, timeLastVerifierPassed};
+    public enum TimeWindowIsRelativeToType {CommandRelease, LastVerifier};
     
    
     final private long timeToStartChecking; //time to start checking in milliseconds (if -1 - it means not defined)

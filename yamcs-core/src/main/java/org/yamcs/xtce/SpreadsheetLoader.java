@@ -1351,14 +1351,14 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     if(stop<start) {
                         throw new  SpreadsheetLoadException(ctx, "Invalid checkwindow specified. Stop cannot be smaller than start");
                     }
-                    CheckWindow.TimeWindowIsRelativeToType cwr = TimeWindowIsRelativeToType.timeLastVerifierPassed;
+                    CheckWindow.TimeWindowIsRelativeToType cwr = TimeWindowIsRelativeToType.LastVerifier;
 
                     if(hasColumn(cells, IDX_CMDVERIF_CHECKWINDOW_RELATIVETO)) {
                         String s = cells[IDX_CMDVERIF_CHECKWINDOW_RELATIVETO].getContents();
                         try {
-                            cwr =   TimeWindowIsRelativeToType.valueOf(s);
+                            cwr = TimeWindowIsRelativeToType.valueOf(s);
                         } catch (IllegalArgumentException  e) {
-                            throw new  SpreadsheetLoadException(ctx, "Invalid value '"+s+"' specified for CheckWindow relative to parameter. Use one of "+TimeWindowIsRelativeToType.values());
+                            throw new  SpreadsheetLoadException(ctx, "Invalid value '"+s+"' specified for CheckWindow relative to parameter. Use one of "+Arrays.toString(TimeWindowIsRelativeToType.values()));
                         }
                     }
                     CheckWindow cw = new CheckWindow(start, stop, cwr);
