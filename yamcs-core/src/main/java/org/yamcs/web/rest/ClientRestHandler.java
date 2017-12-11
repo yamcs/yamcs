@@ -10,6 +10,7 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Rest.EditClientRequest;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
 import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
@@ -25,8 +26,8 @@ import org.yamcs.web.HttpException;
  */
 public class ClientRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(ClientRestHandler.class);
-    
-    @Route(path="/api/clients", method="GET")
+
+    @Route(path = "/api/clients", method = "GET")
     public void listClients(RestRequest req) throws HttpException {
         Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
         ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
@@ -36,7 +37,14 @@ public class ClientRestHandler extends RestHandler {
         completeOK(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
     }
 
-    @Route(path="/api/clients/:id", method={ "PATCH", "PUT", "POST" })
+    @Route(path = "/api/clients/:id", method = "GET")
+    public void getClient(RestRequest req) throws HttpException {
+        ClientInfo ci = verifyClient(req, req.getIntegerRouteParam("id"));
+        ClientInfo.Builder responseb = ClientInfo.newBuilder(ci).setState(ClientState.CONNECTED);
+        completeOK(req, responseb.build(), SchemaYamcsManagement.ClientInfo.WRITE);
+    }
+
+    @Route(path = "/api/clients/:id", method = { "PATCH", "PUT", "POST" })
     public void patchClient(RestRequest restReq) throws HttpException {
         ClientInfo ci = verifyClient(restReq, restReq.getIntegerRouteParam("id"));
 
@@ -59,10 +67,11 @@ public class ClientRestHandler extends RestHandler {
         if (newProcessorName != null) {
             Processor newProcessor = Processor.getInstance(newInstance, newProcessorName);
             if (newProcessor == null) {
-                throw new BadRequestException("Cannot switch user to non-existing processor '" + newProcessorName + "' (instance: '" + newInstance + "')");
+                throw new BadRequestException("Cannot switch user to non-existing processor '" + newProcessorName
+                        + "' (instance: '" + newInstance + "')");
             } else {
                 verifyPermission(newProcessor, ci.getId(), restReq.getAuthToken());
-                
+
                 ManagementService mservice = ManagementService.getInstance();
                 ProcessorManagementRequest.Builder procReq = ProcessorManagementRequest.newBuilder();
                 procReq.setInstance(newInstance);
@@ -81,29 +90,30 @@ public class ClientRestHandler extends RestHandler {
 
         completeOK(restReq);
     }
-    
-    private void verifyPermission(Processor processor, int clientId, AuthenticationToken authToken) throws HttpException {
+
+    private void verifyPermission(Processor processor, int clientId, AuthenticationToken authToken)
+            throws HttpException {
         String username = Privilege.getUsername(authToken);
-        if(Privilege.getInstance().hasPrivilege1(authToken, Privilege.SystemPrivilege.MayControlProcessor)) {
-            //MayControlProcesor can do whatever they want
+        if (Privilege.getInstance().hasPrivilege1(authToken, Privilege.SystemPrivilege.MayControlProcessor)) {
+            // MayControlProcesor can do whatever they want
             return;
         }
-        
-        //other users can only connect clients to the processor they own
-        if(!(processor.isPersistent() || processor.getCreator().equals(username))) {
-            log.warn("User {} is not allowed to connect users to processor {}", username, processor.getName() );
+
+        // other users can only connect clients to the processor they own
+        if (!(processor.isPersistent() || processor.getCreator().equals(username))) {
+            log.warn("User {} is not allowed to connect users to processor {}", username, processor.getName());
             throw new ForbiddenException("not allowed to connect clients other than yours");
         }
-        
-        //and finally they can only connect their own clients 
-        ClientInfo ci =  ManagementService.getInstance().getClientInfo(clientId);
-        if(ci==null) {
-            throw new BadRequestException("Invalid client id "+clientId);
+
+        // and finally they can only connect their own clients
+        ClientInfo ci = ManagementService.getInstance().getClientInfo(clientId);
+        if (ci == null) {
+            throw new BadRequestException("Invalid client id " + clientId);
         }
-        if(!ci.getUsername().equals(username)) {
+        if (!ci.getUsername().equals(username)) {
             log.warn("User {} is not allowed to connect {} to new processor", username, ci.getUsername());
             throw new ForbiddenException("Not allowed to connect other client than your own");
         }
     }
-    
+
 }
