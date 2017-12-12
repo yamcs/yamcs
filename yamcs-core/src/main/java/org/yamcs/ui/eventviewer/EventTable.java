@@ -37,6 +37,8 @@ public class EventTable extends JTable {
         if (columnOrder != null) {
         	setColumnOrder((int[]) columnOrder);
         }
+        setColumnSelectionAllowed(true);
+        setRowSelectionAllowed(true);
     }
 
     @Override

@@ -183,11 +183,11 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent arg0) {
-				eventTable.storePreferences();
-				dispose();
-			}
+                        @Override
+                        public void windowClosing(WindowEvent arg0) {
+                                eventTable.storePreferences();
+                                dispose();
+                        }
         });
         
         setIconImage(getIcon("yamcs-event-32.png").getImage());
@@ -550,7 +550,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         if (cmd.equals("connect")) {
             YamcsConnectDialogResult r = YamcsConnectDialog.showDialog(this, true, authenticationEnabled);
             if( r.isOk() ) {
-            	yconnector.connect(r.getConnectionProperties());
+                yconnector.connect(r.getConnectionProperties());
             }
         } else if (cmd.equals("retrieve_past")) {
             eventReceiver.retrievePastEvents();
