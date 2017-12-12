@@ -455,7 +455,8 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             if (e.getClickCount() == 2) {
                 JTable target = (JTable) e.getSource();
                 int row = target.getSelectedRow();
-                showEventInDetailDialog(((EventTableModel)target.getModel()).getEvent(row));
+                showEventInDetailDialog(((EventTableModel)target.getModel()).getEvent(
+                        tableSorter.convertRowIndexToModel(row)));
             }
         }
 
@@ -581,7 +582,8 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
             getPreferencesDialog().setVisible(true);
         } else if (cmd.equals("show_event_details")) {
-            showEventInDetailDialog(((EventTableModel)eventTable.getModel()).getEvent(eventTable.getSelectedRow()));
+            showEventInDetailDialog(((EventTableModel)eventTable.getModel()).getEvent(
+                    tableSorter.convertRowIndexToModel(eventTable.getSelectedRow())));
         }
     }
 
