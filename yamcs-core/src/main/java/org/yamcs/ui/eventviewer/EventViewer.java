@@ -707,31 +707,41 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             CsvWriter writer=null;
             try {
                 writer=new CsvWriter(new FileOutputStream(file), '\t', Charset.forName("UTF-8"));
-                int cols = tableModel.getColumnCount();
-                String[] colNames = new String[cols];
-                colNames[0] = "Source";
-                colNames[1] = "Generation Time";
-                colNames[2] = "Reception Time";
-                colNames[3] = "Event Type";
-                colNames[4] = "Event Text";
-                for (int i = 5; i < cols; i++) {
-                    colNames[i] = tableModel.getColumnName(i);
+                
+                int[] selectedColumns = eventTable.getSelectedColumns();
+                if(selectedColumns.length == 0) {
+                    selectedColumns = new int[eventTable.getColumnCount()];
+                    for(int i = 0; i< selectedColumns.length; i++)
+                        selectedColumns[i] = i;
                 }
+                int[] selectedRows = eventTable.getSelectedRows();
+                if(selectedRows.length == 0) {
+                    selectedRows = new int[eventTable.getRowCount()];
+                    for(int i = 0; i< selectedRows.length; i++)
+                        selectedRows[i] = i;
+                }
+                
+                String[] colNames = new String[selectedColumns.length];
+                
+                int i = 0;
+                for(int col : selectedColumns) {
+                    colNames[i] = getColumnName(col);
+                    i++;
+                }
+
                 writer.writeRecord(colNames);
                 writer.setForceQualifier(true);
-                int iend = tableModel.getRowCount();
-                for (int i = 0; i < iend; i++) {
-                    String[] rec = new String[cols];
-                    rec[0] = (String) tableModel.getValueAt(i, 0);
-                    rec[1] = (String) tableModel.getValueAt(i, 1);
-                    rec[2] = (String) tableModel.getValueAt(i, 2);
-                    rec[3] = (String) tableModel.getValueAt(i, 3);
-                    rec[4] = ((Event) tableModel.getValueAt(i, 4)).getMessage();
-                    for (int j = 5; j < cols; j++) {
-                        rec[j] = (String) tableModel.getValueAt(i, j);
+                
+                for(int row: selectedRows) {
+                    i = 0;
+                    String[] rec = new String[selectedColumns.length];
+                    for(int col: selectedColumns) {
+                        rec[i] = getColumnValue(col, row);
+                        i++;
                     }
                     writer.writeRecord(rec);
                 }
+                
             } catch (IOException e) {
                 e.printStackTrace();
                 showMessage("Could not export events to file '" + file.getPath() + "': " + e.getMessage());
@@ -741,6 +751,35 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             log("Saved table to " + file.getAbsolutePath());
         }
     }
+    
+    private String getColumnName(int col) {
+        switch (col) {
+        case 0:
+            return "Source";
+        case 1:
+            return "Generation Time";
+        case 2:
+            return "Reception Time";
+        case 3:
+            return "Event Type";
+        case 4:
+            return "Event Text";
+        default:
+            return tableModel.getColumnName(col);
+        }
+    }
+    
+    private String getColumnValue(int col, int row) {
+        row = tableSorter.convertRowIndexToModel(row);
+        switch (col) {
+        case 4:
+            return ((Event) tableModel.getValueAt(row, col)).getMessage();
+        default:
+            return (String) tableModel.getValueAt(row, col);
+        }
+        
+    }
+    
 
     public void addEvents(final List<Event> events) {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
