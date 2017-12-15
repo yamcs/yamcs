@@ -35,7 +35,7 @@ public class ServerConnection {
     private int id;
 
     BlockingQueue<CCSDSPacket> tmQueue = new LinkedBlockingQueue<>();//no more than 100 pending commands
-    Queue<CCSDSPacket> tmDumpQueue = new ArrayBlockingQueue<>(1000);
+    BlockingQueue<CCSDSPacket> tmDumpQueue = new ArrayBlockingQueue<>(1000);
 
     public ServerConnection(int id, int tmPort, int tcPort, int losPort) {
         this.id = id;
@@ -130,8 +130,8 @@ public class ServerConnection {
         return tmDumpQueue.remove();
     }
 
-    public void setTmDumpPacket(CCSDSPacket packet) {
-        this.tmDumpQueue.add(packet);
+    public void addTmDumpPacket(CCSDSPacket packet) throws InterruptedException {
+        this.tmDumpQueue.put(packet);
     }
 
     public boolean isTmDumpQueueEmpty() {

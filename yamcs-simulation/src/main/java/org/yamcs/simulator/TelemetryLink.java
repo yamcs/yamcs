@@ -33,7 +33,9 @@ public class TelemetryLink {
         while (true) {
             if (!simulator.isLOS()) {
                 tmPacketSend(conn);
-                tmPacketDump(conn);
+                for (int i=0; i<5; i++) {
+                    tmPacketDump(conn);
+                }
             } else {
                 //System.out.print("packet store");
                 tmPacketStore(conn);

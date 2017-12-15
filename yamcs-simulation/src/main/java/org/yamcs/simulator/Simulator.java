@@ -13,7 +13,7 @@ import org.yamcs.simulator.ui.SimWindow;
 public class Simulator extends Thread {
 
     protected BlockingQueue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<>(100); // no more than 100 pending
-                                                                                          // commands
+    // commands
 
     private int DEFAULT_MAX_LENGTH = 65542;
     private int maxLength = DEFAULT_MAX_LENGTH;
@@ -129,31 +129,25 @@ public class Simulator extends Thread {
         DataInputStream dataStream = losStore.readLosFile(filename);
         if (dataStream == null)
             return;
-
-        // TODO
-        // extract packets from the data stream and put them in queue for downlink
-        Queue<CCSDSPacket> qLosData = new ArrayBlockingQueue<>(1000);
         try {
             while (dataStream.available() > 0) {
                 CCSDSPacket packet = readPacket(dataStream);
                 if (packet != null) {
-                    qLosData.add(packet);
+                    for (ServerConnection serverConnection : simConfig.getServerConnections())
+                        serverConnection.addTmDumpPacket(packet);
                 }
             }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
+
+            // add packet notifying that the file has been downloaded entirely
+            CCSDSPacket confirmationPacket = buildLosTransmittedRecordingPacket(filename);
+            for (ServerConnection serverConnection : simConfig.getServerConnections()) {
+                serverConnection.addTmDumpPacket(confirmationPacket);
+            }
+            
+            dataStream.close();
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-
-        for (CCSDSPacket ccsdsPacket : qLosData) {
-            for (ServerConnection serverConnection : simConfig.getServerConnections())
-                serverConnection.setTmDumpPacket(ccsdsPacket);
-        }
-
-        // add packet notifying that the file has been downloaded entirely
-        CCSDSPacket confirmationPacket = buildLosTransmittedRecordingPacket(filename);
-        for (ServerConnection serverConnection : simConfig.getServerConnections())
-            serverConnection.setTmDumpPacket(confirmationPacket);
     }
 
     private static CCSDSPacket buildLosTransmittedRecordingPacket(String transmittedRecordName) {
@@ -168,8 +162,14 @@ public class Simulator extends Thread {
         losStore.deleteFile(filename);
         // add packet notifying that the file has been deleted
         CCSDSPacket confirmationPacket = buildLosDeletedRecordingPacket(filename);
-        for (ServerConnection serverConnection : simConfig.getServerConnections())
-            serverConnection.setTmDumpPacket(confirmationPacket);
+        for (ServerConnection serverConnection : simConfig.getServerConnections()) {
+            try {
+                serverConnection.addTmDumpPacket(confirmationPacket);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
     }
 
     private static CCSDSPacket buildLosDeletedRecordingPacket(String deletedRecordName) {
