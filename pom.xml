@@ -16,8 +16,7 @@
       <name>GNU Affero General Public License (AGPL)</name>
       <url>http://www.gnu.org/licenses/agpl-3.0.html</url>
     </license>
-  </licenses>
-  
+  </licenses>  
   
   <scm>
     <connection>scm:git:git@github.com:yamcs/yamcs.git</connection>
@@ -49,6 +48,8 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <artemisVersion>1.5.4</artemisVersion>
+    <nettyVersion>4.1.9.Final</nettyVersion>
+    <protostuffVersion>1.5.3</protostuffVersion>
     <sonar.exclusions>
       **/me/lemire/integercompression/**,**/org/yamcs/protobuf/**,**/org/yamcs/ui/**,**/org/yamcs/yarch/streamsql/**
     </sonar.exclusions>
