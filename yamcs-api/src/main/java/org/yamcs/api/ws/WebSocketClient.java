@@ -51,21 +51,20 @@ public class WebSocketClient {
     private EventLoopGroup group = new NioEventLoopGroup(1);
     private Channel nettyChannel;
     private String userAgent;
-    private Integer timeoutMs=null;
+    private Integer timeoutMs = null;
     private AtomicBoolean enableReconnection = new AtomicBoolean(true);
-    private AtomicInteger seqId = new AtomicInteger(1);
+    private AtomicInteger idSequence = new AtomicInteger(1);
     YamcsConnectionProperties yprops;
     final boolean useProtobuf = true;
 
     private boolean tcpKeepAlive = false;
-    
-    //if reconnection is enabled, how often to attempt to reconnect in case of failure
+
+    // if reconnection is enabled, how often to attempt to reconnect in case of failure
     long reconnectionInterval = 1000;
 
     // Keeps track of sent subscriptions, so that we can do a resend when we get
     // an InvalidException on some of them :-(
     private Map<Integer, RequestResponsePair> requestResponsePairBySeqId = new ConcurrentHashMap<>();
-
 
     public WebSocketClient(WebSocketClientCallback callback) {
         this(null, callback);
@@ -81,8 +80,9 @@ public class WebSocketClient {
     }
 
     public void setConnectionProperties(YamcsConnectionProperties yprops) {
-        this.yprops=yprops;
+        this.yprops = yprops;
     }
+
     public void setUserAgent(String userAgent) {
         this.userAgent = userAgent;
     }
@@ -100,15 +100,16 @@ public class WebSocketClient {
         this.enableReconnection.set(enableReconnection);
     }
 
-    public ChannelFuture connect() {    
+    public ChannelFuture connect() {
+        callback.connecting();
         return createBootstrap();
     }
 
     /**
      * set the reconnection interval in milliseconds.
      * 
-     * This value is used when the connection fails and after the client is disconnected.
-     * Make sure to use the {@link #enableReconnection(boolean)} to enable the recconnection. 
+     * This value is used when the connection fails and after the client is disconnected. Make sure to use the
+     * {@link #enableReconnection(boolean)} to enable the recconnection.
      * 
      * @param reconnectionIntervalMillisec
      */
@@ -123,10 +124,10 @@ public class WebSocketClient {
         }
 
         AuthenticationToken authToken = yprops.getAuthenticationToken();
-        if(authToken!=null) {
-            if(authToken instanceof UsernamePasswordToken) {
-                String username = ((UsernamePasswordToken)authToken).getUsername();
-                String password = ((UsernamePasswordToken)authToken).getPasswordS();
+        if (authToken != null) {
+            if (authToken instanceof UsernamePasswordToken) {
+                String username = ((UsernamePasswordToken) authToken).getUsername();
+                String password = ((UsernamePasswordToken) authToken).getPasswordS();
                 if (username != null) {
                     String credentialsClear = username;
                     if (password != null)
@@ -136,10 +137,10 @@ public class WebSocketClient {
                     header.add(HttpHeaderNames.AUTHORIZATION, authorization);
                 }
             } else {
-                throw new RuntimeException("authentication token of type "+authToken.getClass()+" not supported");
+                throw new RuntimeException("authentication token of type " + authToken.getClass() + " not supported");
             }
         }
-        if(useProtobuf) {
+        if (useProtobuf) {
             header.add(HttpHeaderNames.ACCEPT, MediaType.PROTOBUF);
         }
         URI uri = yprops.webSocketURI();
@@ -154,10 +155,10 @@ public class WebSocketClient {
                 .channel(NioSocketChannel.class)
                 .option(ChannelOption.SO_KEEPALIVE, tcpKeepAlive);
 
-        if(timeoutMs!=null) {
+        if (timeoutMs != null) {
             bootstrap = bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeoutMs);
         }
-        
+
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
@@ -179,9 +180,8 @@ public class WebSocketClient {
                 } else {
                     callback.connectionFailed(future.cause());
                     if (enableReconnection.get()) {
-                        // Set-up reconnection attempts every second
-                        // during initial set-up.
-                        log.info("reconnect..");
+                        log.info("Attempting reconnect..");
+                        callback.connecting();
                         group.schedule(() -> createBootstrap(), reconnectionInterval, TimeUnit.MILLISECONDS);
                     }
                 }
@@ -195,7 +195,7 @@ public class WebSocketClient {
     /**
      * Performs the request in a different thread
      * 
-     * @param request 
+     * @param request
      * @return future that completes when the request is anwsered
      */
     public CompletableFuture<Void> sendRequest(WebSocketRequest request) {
@@ -223,7 +223,7 @@ public class WebSocketClient {
      * Really does send the request upstream
      */
     private void doSendRequest(WebSocketRequest request, WebSocketResponseHandler responseHandler) {
-        int id = seqId.incrementAndGet();
+        int id = idSequence.incrementAndGet();
         requestResponsePairBySeqId.put(id, new RequestResponsePair(request, responseHandler));
         log.debug("Sending request {}", request);
         nettyChannel.writeAndFlush(request.toWebSocketFrame(id));
@@ -256,15 +256,18 @@ public class WebSocketClient {
     }
 
     /**
-     * Enable/disable the TCP Keep-Alive on websocket sockets. By default it is disabled. It has to be enabled before the connection is estabilished. 
-     * @param enableTcpKeepAlive - if true the TCP SO_KEEPALIVE option is set 
+     * Enable/disable the TCP Keep-Alive on websocket sockets. By default it is disabled. It has to be enabled before
+     * the connection is estabilished.
+     * 
+     * @param enableTcpKeepAlive
+     *            if true the TCP SO_KEEPALIVE option is set
      */
     public void enableTcpKeepAlive(boolean enableTcpKeepAlive) {
         tcpKeepAlive = enableTcpKeepAlive;
     }
+
     /**
-     * @return the Future which is notified when the executor has been
-     *         terminated.
+     * @return the Future which is notified when the executor has been terminated.
      */
     public Future<?> shutdown() {
         return group.shutdownGracefully();
@@ -273,6 +276,7 @@ public class WebSocketClient {
     static class RequestResponsePair {
         WebSocketRequest request;
         WebSocketResponseHandler responseHandler;
+
         RequestResponsePair(WebSocketRequest request, WebSocketResponseHandler responseHandler) {
             this.request = request;
             this.responseHandler = responseHandler;
@@ -282,6 +286,4 @@ public class WebSocketClient {
     public boolean isConnected() {
         return nettyChannel.isOpen();
     }
-    
-   
 }
