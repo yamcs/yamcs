@@ -87,9 +87,9 @@ public class XtceCommandEncodingTest {
 
         byte[] expectedResult = {
                 97, 97, 97, 97, 0,              // aaaa
-                97, 98, 99, 100, 101, 102, 0,   // abcdef
-                98, 98, 98, 98, 0x2C,           // aaaa
-                0, 4, 99, 99, 99, 99,           // bbbb
+                97, 98, 99, 100, 101, 102, 0,   // abcdef - string2_arg default value
+                98, 98, 98, 98, 0x2C,           // bbbb
+                0, 4, 99, 99, 99, 99,           // cccc
                 100, 100, 100, 100, 0, 0     // dddd
         };
         assertEquals(StringConverter.arrayToHexString(expectedResult), StringConverter.arrayToHexString(b));

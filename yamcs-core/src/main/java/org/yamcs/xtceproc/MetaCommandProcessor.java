@@ -1,12 +1,12 @@
 package org.yamcs.xtceproc;
 
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.yamcs.ErrorInCommand;
 import org.yamcs.parameter.Value;
+import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentType;
@@ -15,6 +15,8 @@ import org.yamcs.xtce.MetaCommandContainer;
 
 public class MetaCommandProcessor {
     final ProcessorData pdata;
+    final static int MAX_CMD_SIZE = 4096;//should make this configurable
+    
     public MetaCommandProcessor(ProcessorData pdata) {
         this.pdata = pdata;
     }
@@ -39,15 +41,14 @@ public class MetaCommandProcessor {
         }
 
         collectAndCheckArguments(mc, args, argAssignment);
-
-        TcProcessingContext pcontext = new TcProcessingContext(pdata, ByteBuffer.allocate(1000), 0);
+        BitBuffer bitbuf = new BitBuffer(new byte[MAX_CMD_SIZE]);
+        TcProcessingContext pcontext = new TcProcessingContext(pdata, bitbuf, 0);
         pcontext.argValues = args;
         pcontext.mccProcessor.encode(mc);
 
-
-        byte[] b = new byte[pcontext.size];
-        pcontext.bb.position(0);
-        pcontext.bb.get(b, 0, pcontext.size);
+        int length = (bitbuf.getPosition()+7)/8;
+        byte[] b = new byte[length];
+        System.arraycopy(bitbuf.array(), 0, b, 0, length);
         return new CommandBuildResult(b, args);
     }
 
