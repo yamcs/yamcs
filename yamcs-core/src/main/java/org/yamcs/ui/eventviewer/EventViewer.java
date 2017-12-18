@@ -66,8 +66,8 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsConnectDialog;
-import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.YamcsConnectDialog.YamcsConnectDialogResult;
+import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
@@ -103,12 +103,8 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     JLabel                                      upLabel                = null;
     JLabel                                      dnLabel                = null;
 
-    Icon                                        fwOKIcon               = null;
-    Icon                                        fwNOKIcon              = null;
     Icon                                        upOKIcon               = null;
     Icon                                        upNOKIcon              = null;
-    Icon                                        dnOKIcon               = null;
-    Icon                                        dnNOKIcon              = null;
 
     int                                         eventCount             = 0;
     int                                         warningCount           = 0;
@@ -315,26 +311,14 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
         panel.add(Box.createHorizontalGlue());
 
-        fwOKIcon = getIcon("fwLinkActive.gif");
-        fwNOKIcon = getIcon("fwLinkInactive.gif");
+
         upOKIcon = getIcon("upLinkActive.gif");
         upNOKIcon = getIcon("upLinkInactive.gif");
-        dnOKIcon = getIcon("dnLinkActive.gif");
-        dnNOKIcon = getIcon("dnLinkInactive.gif");
 
-        fwLabel = new JLabel(fwNOKIcon);
-        fwLabel.setOpaque(true);
-        fwLabel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-        panel.add(fwLabel);
-        iconColorGrey = fwLabel.getBackground();
         upLabel = new JLabel(upNOKIcon);
         upLabel.setOpaque(true);
         upLabel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         panel.add(upLabel);
-        dnLabel = new JLabel(dnNOKIcon);
-        dnLabel.setOpaque(true);
-        dnLabel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-        panel.add(dnLabel);
 
         // event table
 
@@ -388,7 +372,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         
         // prepare model names
 
-        updateStatus();
+//        updateStatus();
         pack();
         setLocation(30, 30);
         setVisible(true);
@@ -486,7 +470,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         return new ImageIcon(getClass().getResource("/org/yamcs/images/" + imagename));
     }
 
-    public void updateStatus()  {
+    public void updateStatus(String status)  {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -495,27 +479,23 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
                 if (yconnector.isConnected()) {
                     if (miRetrievePast != null) miRetrievePast.setEnabled(true);
                     title.append(" (connected)");
-                    fwLabel.setBackground(iconColorGreen);
-                    fwLabel.setIcon(fwOKIcon);
-                    upLabel.setBackground(iconColorGreen);
-                    upLabel.setIcon(upOKIcon);
-                    dnLabel.setBackground(iconColorGreen);
-                    dnLabel.setIcon(dnOKIcon);
-
+                    if(status.equals("OK")) {
+                        upLabel.setBackground(iconColorGreen);
+                        upLabel.setIcon(upOKIcon);
+                    } else {
+                        title.append(" (not connected)");
+                        upLabel.setBackground(iconColorGrey);
+                    }
                 } else if (yconnector.isConnecting()) {
                     if (miRetrievePast != null)
                         miRetrievePast.setEnabled(false);
                     title.append(" (connecting)");
-                    fwLabel.setBackground(iconColorGrey);
                     upLabel.setBackground(iconColorGrey);
-                    dnLabel.setBackground(iconColorGrey);
                 } else {
                     if (miRetrievePast != null)
                         miRetrievePast.setEnabled(false);
                     title.append(" (not connected)");
-                    fwLabel.setBackground(iconColorGrey);
                     upLabel.setBackground(iconColorGrey);
-                    dnLabel.setBackground(iconColorGrey);
                 }
                 setTitle(title.toString());
             }
@@ -524,25 +504,25 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     @Override
     public void connected(String url) {
         log("Connected to "+url);
-        updateStatus();
+       // updateStatus();
     }
 
     @Override
     public void connecting(String url) {
         log("Connecting to "+url);
-        updateStatus();
+       // updateStatus();
     }
 
     @Override
     public void disconnected() {
         log("Disconnected");
-        updateStatus();
+        //updateStatus();
     }
 
     @Override
     public void connectionFailed(String url, YamcsException exception) {
         log("Connection to "+url+" failed: "+exception);
-        updateStatus();
+       // updateStatus();
     }
 
     @Override
@@ -553,6 +533,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             if( r.isOk() ) {
                 yconnector.connect(r.getConnectionProperties());
             }
+
         } else if (cmd.equals("retrieve_past")) {
             eventReceiver.retrievePastEvents();
         } else if (cmd.equals("switch_rule_status")) {
@@ -1001,36 +982,36 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     }
     
     //Not used for the moment. TODO
-    public void setStatusTm(String opsname, String value) {
-        if (opsname.equals("CDMCS_FWLINK_STATUS")) {
-            if (value.equalsIgnoreCase("OK")) {
-                fwLabel.setBackground(iconColorGreen);
-                fwLabel.setIcon(fwOKIcon);
-            } else {
-                fwLabel.setBackground(iconColorRed);
-                fwLabel.setIcon(fwNOKIcon);
-            }
-            fwLabel.setToolTipText(opsname + " = " + value);
-        } else if (opsname.equals("CDMCS_UPLINK_STATUS")) {
-            if (value.equalsIgnoreCase("OK")) {
-                upLabel.setIcon(upOKIcon);
-                upLabel.setBackground(iconColorGreen);
-            } else {
-                upLabel.setIcon(upNOKIcon);
-                upLabel.setBackground(iconColorRed);
-            }
-            upLabel.setToolTipText(opsname + " = " + value);
-        } else if (opsname.equals("CDMCS_DOWNLINK_STATUS")) {
-            if (value.equalsIgnoreCase("OK")) {
-                dnLabel.setIcon(dnOKIcon);
-                dnLabel.setBackground(iconColorGreen);
-            } else {
-                dnLabel.setIcon(dnNOKIcon);
-                dnLabel.setBackground(iconColorRed);
-            }
-            dnLabel.setToolTipText(opsname + " = " + value);
-        }
-    }
+//    public void setStatusTm(String opsname, String value) {
+//        if (opsname.equals("CDMCS_FWLINK_STATUS")) {
+//            if (value.equalsIgnoreCase("OK")) {
+//                fwLabel.setBackground(iconColorGreen);
+//                fwLabel.setIcon(fwOKIcon);
+//            } else {
+//                fwLabel.setBackground(iconColorRed);
+//                fwLabel.setIcon(fwNOKIcon);
+//            }
+//            fwLabel.setToolTipText(opsname + " = " + value);
+//        } else if (opsname.equals("CDMCS_UPLINK_STATUS")) {
+//            if (value.equalsIgnoreCase("OK")) {
+//                upLabel.setIcon(upOKIcon);
+//                upLabel.setBackground(iconColorGreen);
+//            } else {
+//                upLabel.setIcon(upNOKIcon);
+//                upLabel.setBackground(iconColorRed);
+//            }
+//            upLabel.setToolTipText(opsname + " = " + value);
+//        } else if (opsname.equals("CDMCS_DOWNLINK_STATUS")) {
+//            if (value.equalsIgnoreCase("OK")) {
+//                dnLabel.setIcon(dnOKIcon);
+//                dnLabel.setBackground(iconColorGreen);
+//            } else {
+//                dnLabel.setIcon(dnNOKIcon);
+//                dnLabel.setBackground(iconColorRed);
+//            }
+//            dnLabel.setToolTipText(opsname + " = " + value);
+//        }
+//    }
 
     /**
      * Application entry point.
@@ -1056,8 +1037,11 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         } 
         YamcsConnector yconnector=new YamcsConnector("EventViewer");
         YamcsEventReceiver eventReceiver = new YamcsEventReceiver(yconnector);
+        
         EventViewer ev = new EventViewer(yconnector, eventReceiver);
         if(ycd!=null) yconnector.connect(ycd);
+        
+        
     }
 
     @Override
