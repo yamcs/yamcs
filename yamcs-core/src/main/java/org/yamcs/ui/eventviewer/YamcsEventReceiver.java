@@ -29,6 +29,7 @@ import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.api.ws.WebSocketResponseHandler;
+import org.yamcs.protobuf.YamcsManagement.LinkEvent;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
@@ -36,6 +37,7 @@ import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.EventResource;
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 public class YamcsEventReceiver implements ConnectionListener, EventReceiver, WebSocketClientCallback, WebSocketResponseHandler {
@@ -59,12 +61,19 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
             Event ev = data.getEvent();
             eventViewer.addEvent(ev);
         }
+        if(data.hasLinkEvent()) {
+            LinkEvent lev = data.getLinkEvent();
+            if(lev.getLinkInfo().getName().equals("tm_realtime"))
+                eventViewer.updateStatus(lev.getLinkInfo().getStatus());
+        }
     }
 
     @Override
     public void connected(String url) {
         WebSocketRequest wsr = new WebSocketRequest(EventResource.RESOURCE_NAME, EventResource.OP_subscribe);
         yconnector.performSubscription(wsr, this, this);
+        WebSocketRequest wsrLink = new WebSocketRequest("links", EventResource.OP_subscribe);
+        yconnector.performSubscription(wsrLink, this, this);
     }
 
     @Override

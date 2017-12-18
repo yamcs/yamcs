@@ -66,8 +66,8 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsConnectDialog;
-import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.YamcsConnectDialog.YamcsConnectDialogResult;
+import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
@@ -103,12 +103,8 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     JLabel                                      upLabel                = null;
     JLabel                                      dnLabel                = null;
 
-    Icon                                        fwOKIcon               = null;
-    Icon                                        fwNOKIcon              = null;
     Icon                                        upOKIcon               = null;
     Icon                                        upNOKIcon              = null;
-    Icon                                        dnOKIcon               = null;
-    Icon                                        dnNOKIcon              = null;
 
     int                                         eventCount             = 0;
     int                                         warningCount           = 0;
@@ -183,11 +179,11 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent arg0) {
-				eventTable.storePreferences();
-				dispose();
-			}
+                        @Override
+                        public void windowClosing(WindowEvent arg0) {
+                                eventTable.storePreferences();
+                                dispose();
+                        }
         });
         
         setIconImage(getIcon("yamcs-event-32.png").getImage());
@@ -315,26 +311,14 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
         panel.add(Box.createHorizontalGlue());
 
-        fwOKIcon = getIcon("fwLinkActive.gif");
-        fwNOKIcon = getIcon("fwLinkInactive.gif");
+
         upOKIcon = getIcon("upLinkActive.gif");
         upNOKIcon = getIcon("upLinkInactive.gif");
-        dnOKIcon = getIcon("dnLinkActive.gif");
-        dnNOKIcon = getIcon("dnLinkInactive.gif");
 
-        fwLabel = new JLabel(fwNOKIcon);
-        fwLabel.setOpaque(true);
-        fwLabel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-        panel.add(fwLabel);
-        iconColorGrey = fwLabel.getBackground();
         upLabel = new JLabel(upNOKIcon);
         upLabel.setOpaque(true);
         upLabel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         panel.add(upLabel);
-        dnLabel = new JLabel(dnNOKIcon);
-        dnLabel.setOpaque(true);
-        dnLabel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-        panel.add(dnLabel);
 
         // event table
 
@@ -388,7 +372,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         
         // prepare model names
 
-        updateStatus();
+//        updateStatus();
         pack();
         setLocation(30, 30);
         setVisible(true);
@@ -455,7 +439,8 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             if (e.getClickCount() == 2) {
                 JTable target = (JTable) e.getSource();
                 int row = target.getSelectedRow();
-                showEventInDetailDialog(((EventTableModel)target.getModel()).getEvent(row));
+                showEventInDetailDialog(((EventTableModel)target.getModel()).getEvent(
+                        tableSorter.convertRowIndexToModel(row)));
             }
         }
 
@@ -485,7 +470,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         return new ImageIcon(getClass().getResource("/org/yamcs/images/" + imagename));
     }
 
-    public void updateStatus()  {
+    public void updateStatus(String status)  {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -494,27 +479,23 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
                 if (yconnector.isConnected()) {
                     if (miRetrievePast != null) miRetrievePast.setEnabled(true);
                     title.append(" (connected)");
-                    fwLabel.setBackground(iconColorGreen);
-                    fwLabel.setIcon(fwOKIcon);
-                    upLabel.setBackground(iconColorGreen);
-                    upLabel.setIcon(upOKIcon);
-                    dnLabel.setBackground(iconColorGreen);
-                    dnLabel.setIcon(dnOKIcon);
-
+                    if(status.equals("OK")) {
+                        upLabel.setBackground(iconColorGreen);
+                        upLabel.setIcon(upOKIcon);
+                    } else {
+                        title.append(" (not connected)");
+                        upLabel.setBackground(iconColorGrey);
+                    }
                 } else if (yconnector.isConnecting()) {
                     if (miRetrievePast != null)
                         miRetrievePast.setEnabled(false);
                     title.append(" (connecting)");
-                    fwLabel.setBackground(iconColorGrey);
                     upLabel.setBackground(iconColorGrey);
-                    dnLabel.setBackground(iconColorGrey);
                 } else {
                     if (miRetrievePast != null)
                         miRetrievePast.setEnabled(false);
                     title.append(" (not connected)");
-                    fwLabel.setBackground(iconColorGrey);
                     upLabel.setBackground(iconColorGrey);
-                    dnLabel.setBackground(iconColorGrey);
                 }
                 setTitle(title.toString());
             }
@@ -523,25 +504,25 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     @Override
     public void connected(String url) {
         log("Connected to "+url);
-        updateStatus();
+       // updateStatus();
     }
 
     @Override
     public void connecting(String url) {
         log("Connecting to "+url);
-        updateStatus();
+       // updateStatus();
     }
 
     @Override
     public void disconnected() {
         log("Disconnected");
-        updateStatus();
+        //updateStatus();
     }
 
     @Override
     public void connectionFailed(String url, YamcsException exception) {
         log("Connection to "+url+" failed: "+exception);
-        updateStatus();
+       // updateStatus();
     }
 
     @Override
@@ -550,8 +531,9 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         if (cmd.equals("connect")) {
             YamcsConnectDialogResult r = YamcsConnectDialog.showDialog(this, true, authenticationEnabled);
             if( r.isOk() ) {
-            	yconnector.connect(r.getConnectionProperties());
+                yconnector.connect(r.getConnectionProperties());
             }
+
         } else if (cmd.equals("retrieve_past")) {
             eventReceiver.retrievePastEvents();
         } else if (cmd.equals("switch_rule_status")) {
@@ -581,7 +563,8 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
             getPreferencesDialog().setVisible(true);
         } else if (cmd.equals("show_event_details")) {
-            showEventInDetailDialog(((EventTableModel)eventTable.getModel()).getEvent(eventTable.getSelectedRow()));
+            showEventInDetailDialog(((EventTableModel)eventTable.getModel()).getEvent(
+                    tableSorter.convertRowIndexToModel(eventTable.getSelectedRow())));
         }
     }
 
@@ -707,31 +690,41 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             CsvWriter writer=null;
             try {
                 writer=new CsvWriter(new FileOutputStream(file), '\t', Charset.forName("UTF-8"));
-                int cols = tableModel.getColumnCount();
-                String[] colNames = new String[cols];
-                colNames[0] = "Source";
-                colNames[1] = "Generation Time";
-                colNames[2] = "Reception Time";
-                colNames[3] = "Event Type";
-                colNames[4] = "Event Text";
-                for (int i = 5; i < cols; i++) {
-                    colNames[i] = tableModel.getColumnName(i);
+                
+                int[] selectedColumns = eventTable.getSelectedColumns();
+                if(selectedColumns.length == 0) {
+                    selectedColumns = new int[eventTable.getColumnCount()];
+                    for(int i = 0; i< selectedColumns.length; i++)
+                        selectedColumns[i] = i;
                 }
+                int[] selectedRows = eventTable.getSelectedRows();
+                if(selectedRows.length == 0) {
+                    selectedRows = new int[eventTable.getRowCount()];
+                    for(int i = 0; i< selectedRows.length; i++)
+                        selectedRows[i] = i;
+                }
+                
+                String[] colNames = new String[selectedColumns.length];
+                
+                int i = 0;
+                for(int col : selectedColumns) {
+                    colNames[i] = getColumnName(col);
+                    i++;
+                }
+
                 writer.writeRecord(colNames);
                 writer.setForceQualifier(true);
-                int iend = tableModel.getRowCount();
-                for (int i = 0; i < iend; i++) {
-                    String[] rec = new String[cols];
-                    rec[0] = (String) tableModel.getValueAt(i, 0);
-                    rec[1] = (String) tableModel.getValueAt(i, 1);
-                    rec[2] = (String) tableModel.getValueAt(i, 2);
-                    rec[3] = (String) tableModel.getValueAt(i, 3);
-                    rec[4] = ((Event) tableModel.getValueAt(i, 4)).getMessage();
-                    for (int j = 5; j < cols; j++) {
-                        rec[j] = (String) tableModel.getValueAt(i, j);
+                
+                for(int row: selectedRows) {
+                    i = 0;
+                    String[] rec = new String[selectedColumns.length];
+                    for(int col: selectedColumns) {
+                        rec[i] = getColumnValue(col, row);
+                        i++;
                     }
                     writer.writeRecord(rec);
                 }
+                
             } catch (IOException e) {
                 e.printStackTrace();
                 showMessage("Could not export events to file '" + file.getPath() + "': " + e.getMessage());
@@ -741,6 +734,35 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             log("Saved table to " + file.getAbsolutePath());
         }
     }
+    
+    private String getColumnName(int col) {
+        switch (col) {
+        case 0:
+            return "Source";
+        case 1:
+            return "Generation Time";
+        case 2:
+            return "Reception Time";
+        case 3:
+            return "Event Type";
+        case 4:
+            return "Event Text";
+        default:
+            return tableModel.getColumnName(col);
+        }
+    }
+    
+    private String getColumnValue(int col, int row) {
+        row = tableSorter.convertRowIndexToModel(row);
+        switch (col) {
+        case 4:
+            return ((Event) tableModel.getValueAt(row, col)).getMessage();
+        default:
+            return (String) tableModel.getValueAt(row, col);
+        }
+        
+    }
+    
 
     public void addEvents(final List<Event> events) {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -960,36 +982,36 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     }
     
     //Not used for the moment. TODO
-    public void setStatusTm(String opsname, String value) {
-        if (opsname.equals("CDMCS_FWLINK_STATUS")) {
-            if (value.equalsIgnoreCase("OK")) {
-                fwLabel.setBackground(iconColorGreen);
-                fwLabel.setIcon(fwOKIcon);
-            } else {
-                fwLabel.setBackground(iconColorRed);
-                fwLabel.setIcon(fwNOKIcon);
-            }
-            fwLabel.setToolTipText(opsname + " = " + value);
-        } else if (opsname.equals("CDMCS_UPLINK_STATUS")) {
-            if (value.equalsIgnoreCase("OK")) {
-                upLabel.setIcon(upOKIcon);
-                upLabel.setBackground(iconColorGreen);
-            } else {
-                upLabel.setIcon(upNOKIcon);
-                upLabel.setBackground(iconColorRed);
-            }
-            upLabel.setToolTipText(opsname + " = " + value);
-        } else if (opsname.equals("CDMCS_DOWNLINK_STATUS")) {
-            if (value.equalsIgnoreCase("OK")) {
-                dnLabel.setIcon(dnOKIcon);
-                dnLabel.setBackground(iconColorGreen);
-            } else {
-                dnLabel.setIcon(dnNOKIcon);
-                dnLabel.setBackground(iconColorRed);
-            }
-            dnLabel.setToolTipText(opsname + " = " + value);
-        }
-    }
+//    public void setStatusTm(String opsname, String value) {
+//        if (opsname.equals("CDMCS_FWLINK_STATUS")) {
+//            if (value.equalsIgnoreCase("OK")) {
+//                fwLabel.setBackground(iconColorGreen);
+//                fwLabel.setIcon(fwOKIcon);
+//            } else {
+//                fwLabel.setBackground(iconColorRed);
+//                fwLabel.setIcon(fwNOKIcon);
+//            }
+//            fwLabel.setToolTipText(opsname + " = " + value);
+//        } else if (opsname.equals("CDMCS_UPLINK_STATUS")) {
+//            if (value.equalsIgnoreCase("OK")) {
+//                upLabel.setIcon(upOKIcon);
+//                upLabel.setBackground(iconColorGreen);
+//            } else {
+//                upLabel.setIcon(upNOKIcon);
+//                upLabel.setBackground(iconColorRed);
+//            }
+//            upLabel.setToolTipText(opsname + " = " + value);
+//        } else if (opsname.equals("CDMCS_DOWNLINK_STATUS")) {
+//            if (value.equalsIgnoreCase("OK")) {
+//                dnLabel.setIcon(dnOKIcon);
+//                dnLabel.setBackground(iconColorGreen);
+//            } else {
+//                dnLabel.setIcon(dnNOKIcon);
+//                dnLabel.setBackground(iconColorRed);
+//            }
+//            dnLabel.setToolTipText(opsname + " = " + value);
+//        }
+//    }
 
     /**
      * Application entry point.
@@ -1015,8 +1037,11 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         } 
         YamcsConnector yconnector=new YamcsConnector("EventViewer");
         YamcsEventReceiver eventReceiver = new YamcsEventReceiver(yconnector);
+        
         EventViewer ev = new EventViewer(yconnector, eventReceiver);
         if(ycd!=null) yconnector.connect(ycd);
+        
+        
     }
 
     @Override
