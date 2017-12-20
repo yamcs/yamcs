@@ -47,6 +47,7 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
 
     public YamcsEventReceiver(YamcsConnector yconnector) {
         this.yconnector = yconnector;
+        
         yconnector.addConnectionListener(this);
     }
 
