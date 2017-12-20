@@ -1,7 +1,6 @@
 package org.yamcs.xtceproc;
 
 
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 
@@ -261,16 +260,6 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
         }
         return c;
     }
-
-    /*
-    public void subscribePackets(List<ItemIdPacketConsumerStruct> iipcs) {
-        synchronized(subscription) {
-            for(ItemIdPacketConsumerStruct i:iipcs) {
-                subscription.addSequenceContainer(i.def);
-            }
-        }
-    }
-     */
 
     public Subscription getSubscription() {
         return tmExtractor.getSubscription();

@@ -271,7 +271,6 @@ public class XtceCommandEncodingTest {
         assertNotNull(mc);
         byte[] b= metaCommandProcessor.buildCommand(mc, new ArrayList<ArgumentAssignment>()).getCmdPacket();
         assertEquals("ABCD901408081808", StringConverter.arrayToHexString(b));
-
     }
     @Test
     public void testIntegerArg() throws Exception {

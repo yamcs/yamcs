@@ -131,7 +131,6 @@ public class SystemParametersCollector extends AbstractService implements Runnab
             instances.remove(instance);
         }
         notifyStopped();
-        System.out.println("======= timer.isShutdown(): "+timer.isShutdown());
     }
 
     /**

@@ -1,5 +1,4 @@
 package org.yamcs.container;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +26,6 @@ public class ContainerWithIdRequestHelper implements ContainerConsumer {
     final ContainerWithIdConsumer listener;
     Logger log=LoggerFactory.getLogger(this.getClass().getName());
     List<ContainerWithId> subscription = new  ArrayList<ContainerWithId>();
-    
     
 
     public ContainerWithIdRequestHelper(ContainerRequestManager crm, ContainerWithIdConsumer listener) {

@@ -18,7 +18,7 @@ import org.yamcs.xtceproc.XtceTmProcessor;
 
 
 /**
- * Keeps track of the subscribers to the containers of a Yamcs Channel.
+ * Keeps track of the subscribers to the containers of a processor.
  */
 public class ContainerRequestManager implements ContainerListener {
 
