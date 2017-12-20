@@ -29,15 +29,16 @@ import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.api.ws.WebSocketResponseHandler;
-import org.yamcs.protobuf.YamcsManagement.LinkEvent;
+import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.EventResource;
 
-import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 public class YamcsEventReceiver implements ConnectionListener, EventReceiver, WebSocketClientCallback, WebSocketResponseHandler {
@@ -61,10 +62,9 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
             Event ev = data.getEvent();
             eventViewer.addEvent(ev);
         }
-        if(data.hasLinkEvent()) {
-            LinkEvent lev = data.getLinkEvent();
-            if(lev.getLinkInfo().getName().equals("tm_realtime"))
-                eventViewer.updateStatus(lev.getLinkInfo().getStatus());
+        if(data.hasParameterData()) {
+            ParameterData par = data.getParameterData();
+            eventViewer.updateStatus(par.getParameter(0).getEngValue().getStringValue());
         }
     }
 
@@ -72,7 +72,11 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
     public void connected(String url) {
         WebSocketRequest wsr = new WebSocketRequest(EventResource.RESOURCE_NAME, EventResource.OP_subscribe);
         yconnector.performSubscription(wsr, this, this);
-        WebSocketRequest wsrLink = new WebSocketRequest("links", EventResource.OP_subscribe);
+        ParameterSubscriptionRequest.Builder b = ParameterSubscriptionRequest.newBuilder();        
+        b.addId(NamedObjectId.newBuilder().setName("/" + yconnector.getConnectionParams().getHost() + 
+                "/" + yconnector.getConnectionParams().getInstance() + "/tm_realtime/linkStatus").build());
+        b.setAbortOnInvalid(false);        
+        WebSocketRequest wsrLink = new WebSocketRequest("parameter", EventResource.OP_subscribe, b.build());
         yconnector.performSubscription(wsrLink, this, this);
     }
 
