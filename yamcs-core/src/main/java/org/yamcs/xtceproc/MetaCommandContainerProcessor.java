@@ -29,6 +29,7 @@ public class MetaCommandContainerProcessor {
         }
 
         for(SequenceEntry se: container.getEntryList()) {
+            
             int size=0;
             BitBuffer bitbuf = pcontext.bitbuf;
             switch(se.getReferenceLocation()) {
@@ -69,15 +70,15 @@ public class MetaCommandContainerProcessor {
         int sizeInBits = fve.getSizeInBits();
         final byte[] v = fve.getBinaryValue();
 
-        //shift v1 into v2 to be byte aligned with the pcontext.bitPostion	
         int fb = sizeInBits&0x07; //number of bits in the leftmost byte in v
         int n = (sizeInBits+7)>>>3;
         BitBuffer bitbuf = pcontext.bitbuf;
-        bitbuf.putBits(v[n], fb);
-        n--;
-        while(n>0) {
-            bitbuf.putBits(v[n], fb);
-            n--;
+        int i = v.length-n;
+        if(fb>0) {
+            bitbuf.putBits(v[i++], fb);
+        }
+        while(i<n) {
+            bitbuf.putBits(v[i++], 8);
         }
     }
 }

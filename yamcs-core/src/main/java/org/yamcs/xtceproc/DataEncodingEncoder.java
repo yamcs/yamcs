@@ -215,12 +215,11 @@ public class DataEncodingEncoder {
             throw new IllegalArgumentException("Float encoding for data of type "+rawValue.getType()+" not supported");
         }
         BitBuffer bitbuf = pcontext.bitbuf;
-        
         bitbuf.setByteOrder(de.getByteOrder());
         if(de.getSizeInBits()==32) {
             bitbuf.putBits(Float.floatToIntBits((float)v), 32);
         } else {
-            bitbuf.putBits(Double.doubleToLongBits((float)v), 64);
+            bitbuf.putBits(Double.doubleToLongBits(v), 64);
         }
     }
 
