@@ -15,17 +15,29 @@ import java.nio.ByteOrder;
  * Note on the Little Endian: it is designed to work on x86 architecture which uses internally little endian byte _and_
  * bit ordering but when accessing memory, full bytes are transferred in big endian order.
  * 
- * For example when in C you have a 32 bit structure: struct S { unsigned int a: 3; unsigned int b: 12; unsigned int c:
- * 17; } and you pack that in a packet by just reading the corresponding 4 bytes memory, you will get the following
+ * For example when in C you have a 32 bit structure: 
+ * struct S { 
+ *    unsigned int a: 3; 
+ *    unsigned int b: 12; 
+ *    unsigned int c: 17; 
+ * } 
+ * 
+ * and you pack that in a packet by just reading the corresponding 4 bytes memory, you will get the following
  * representation (0 is the most significant bit):
  * 
- * b7 b8 b9 b10 b11 a0 a1 a2 c16 b0 b1 b2 b3 b4 b5 b6 c8 c9 c10 c11 c12 c13 c14 c15 c0 c1 c2 c3 c4 c5 c6 c7
+ * b7  b8 b9  b10 b11 a0  a1  a2 
+ * c16 b0 b1  b2  b3  b4  b5  b6 
+ * c8  c9 c10 c11 c12 c13 c14 c15
+ * c0 c1  c2  c3  c4  c5  c6  c7
  * 
  * To read this with this BitBuffer you would naturally do like this:
  * 
- * BitBuffer bb = new BitBuffer(..., 0); bb.setOrder(LITTLE_ENDIAN);
+ * BitBuffer bb = new BitBuffer(..., 0); 
+ * bb.setOrder(LITTLE_ENDIAN);
  * 
- * a = bb.getBits(3); b = bb.getBits(12); c = bb.getBits(17);
+ * a = bb.getBits(3); 
+ * b = bb.getBits(12); 
+ * c = bb.getBits(17);
  * 
  * Note how the first call (when the bb.position=0) reads the 3 bits at position 5 instead of those at position 0
  * 

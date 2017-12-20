@@ -36,6 +36,27 @@ public class XtceCommandEncodingTest {
         xtcedb = XtceDbFactory.createInstanceByConfig("refmdb");
         metaCommandProcessor = new MetaCommandProcessor(new ProcessorData(xtcedb));
     }
+    
+    @Test
+    public void intArgTc() throws ErrorInCommand {
+        // encode command
+        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/INT_ARG_TC");
+        List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>() ;
+        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+
+        assertEquals("ABCD901408081808", StringConverter.arrayToHexString(b));
+    }
+    
+    @Test
+    public void intArgTcAbs() throws ErrorInCommand {
+        // encode command
+        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/INT_ARG_TC_ABS");
+        List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>() ;
+        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+
+        assertEquals("ABCD901408081808", StringConverter.arrayToHexString(b));
+    }
+
             
     @Test
     public void floatCommand() throws ErrorInCommand {
@@ -139,7 +160,6 @@ public class XtceCommandEncodingTest {
         byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
         ByteBuffer bb = ByteBuffer.wrap(b);
         bb.order(ByteOrder.LITTLE_ENDIAN);
-        System.out.println("command buffer: "+StringConverter.arrayToHexString(b));
         assertEquals(0x0A0B, bb.getShort());
         assertEquals(0x12, bb.getShort());
     }
@@ -228,7 +248,15 @@ public class XtceCommandEncodingTest {
 
         assertEquals(expected, result);
     }
-
+    @Test
+    public void testCustomCalibTc() throws Exception {
+        MetaCommand mc = XtceDbFactory.createInstanceByConfig("refmdb").getMetaCommand("/REFMDB/SUBSYS1/CUSTOM_CALIB_TC");
+        List<ArgumentAssignment> arguments = Arrays.asList(
+                new ArgumentAssignment("p1", "10"),
+                new ArgumentAssignment("p2", "20.08553692318766774092"));
+        byte[] b = metaCommandProcessor.buildCommand(mc, arguments).getCmdPacket();
+        assertEquals("0000000D0003", StringConverter.arrayToHexString(b));
+    }
     private List<ArgumentAssignment> getArgAssignment(String ...v) {
         if((v.length&0x1)!=0) throw new IllegalArgumentException("Please pass an even number of arguments: arg1,value1,arg2,value2...");
         List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>() ;

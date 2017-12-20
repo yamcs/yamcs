@@ -17,7 +17,7 @@ public class JavaExpressionCalibratorFactory {
         StringBuilder sb = new StringBuilder();
         sb.append("package org.yamcs.xtceproc.jecf;\n")
         .append("public class ").append(className).append(" implements org.yamcs.xtceproc.CalibratorProc {\n")
-        .append("   public double calibrate(double rv) {\n")
+        .append("   public double calibrate(double v) {\n")
         .append("return ").append(c.getFormula()).append(";\n")
         .append("   }\n")
         .append("}\n");

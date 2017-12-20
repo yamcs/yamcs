@@ -4,6 +4,8 @@ package org.yamcs.xtce;
 import java.nio.ByteOrder;
 import java.util.regex.Pattern;
 
+import org.yamcs.xtce.SpreadsheetLoaderBits.Position;
+
 
 /**
  * static fields and methods to reduce the size of the SpreadsheetLoader
@@ -77,7 +79,7 @@ public class SpreadsheetLoaderBits {
     protected static final int IDX_CMD_FLAGS = 3;
     protected static final int IDX_CMD_ARGNAME = 4;
     protected static final int IDX_CMD_RELPOS = 5;
-    protected static final int IDX_CMD_SIZEINBITS = 6;
+    protected static final int IDX_CMD_ENCODING = 6;
     protected static final int IDX_CMD_ENGTYPE = 7;
     protected static final int IDX_CMD_RAWTYPE = 8;
     protected static final int IDX_CMD_DEFVALUE = 9;
@@ -211,7 +213,11 @@ public class SpreadsheetLoaderBits {
                     }
                 }
             }
-            rte = new RawTypeEncoding("string", "Terminated("+termChar+", UTF-8)");
+            if(bitsize!=-1) {
+                rte = new RawTypeEncoding("string", "Terminated("+termChar+", UTF-8, "+bitsize+")");
+            } else {
+                rte = new RawTypeEncoding("string", "Terminated("+termChar+", UTF-8)");
+            }
         } else if ( rawtype.toLowerCase().startsWith( PARAM_RAWTYPE_STRING_PREPENDED) ) {
             // v1.7 String type
             // PREPENDEDSIZESTRING
@@ -228,7 +234,11 @@ public class SpreadsheetLoaderBits {
                         throw new SpreadsheetLoadException(ctx, "Could not parse integer size from "+rawtype);
                     }
                 }
-                rte = new RawTypeEncoding("string", "PrependedSize("+sizeInBitsOfSizeTag+", UTF-8)");
+                if(bitsize!=-1) {
+                    rte = new RawTypeEncoding("string", "PrependedSize("+sizeInBitsOfSizeTag+", UTF-8, "+bitsize+")");
+                } else {
+                    rte = new RawTypeEncoding("string", "PrependedSize("+sizeInBitsOfSizeTag+", UTF-8)");
+                }
             } else {
                 rte = new RawTypeEncoding("string", "fixed("+bitsize+", UTF-8)");
             }
@@ -238,7 +248,7 @@ public class SpreadsheetLoaderBits {
             if(bitsize!=-1) {
                 throw new SpreadsheetLoadException(ctx, "Bit length is not allowed for boolean parameters (defaults to 1). Use any other raw type if you want to specify the bitlength");
             }
-            rte = new RawTypeEncoding("boolean", "");
+            rte = new RawTypeEncoding("boolean", null);
         } else {
             throw new SpreadsheetLoadException(ctx, "Invalid raw type '"+rawtype+"'");
         }
@@ -286,13 +296,69 @@ public class SpreadsheetLoaderBits {
             throw new SpreadsheetLoadException(ctx, "Unsupported byte order '"+bo+"'. Supported values: LE|BE");
         }
     }
+    static int parseInt(SpreadsheetLoadContext ctx, String s) {
+        try {
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            throw new SpreadsheetLoadException(ctx, "Could not parse integer from '"+s+"'");
+        }
+    }
+    
+    static double parseDouble(SpreadsheetLoadContext ctx, String s) {
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            throw new SpreadsheetLoadException(ctx, "Could not parse double from '"+s+"'");
+        }
+    }
+    static byte parseByte(SpreadsheetLoadContext ctx, String s) {
+        try {
+            return Byte.decode(s);
+        } catch (NumberFormatException e) {
+            throw new SpreadsheetLoadException(ctx, "Could not parse byte from '"+s+"'");
+        }
+    }
 
+    static Position getPosition(SpreadsheetLoadContext ctx, String pos) {
+        if(!pos.contains(":")) {
+            return new Position(parseInt(ctx, pos), true);
+        } else {
+            String[] a = pos.split("\\s*:\\s*");
+            if(a.length!=2) {
+                throw new SpreadsheetLoadException(ctx, getInvalidPositionMsg(pos));
+            }
+            int p = parseInt(ctx, a[1]);
+            if("r".equalsIgnoreCase(a[0])) {
+                return new Position(p, true);
+            } else if("a".equalsIgnoreCase(a[0])) {
+                return new Position(p, false);
+            } else {
+                throw new SpreadsheetLoadException(ctx, getInvalidPositionMsg(pos));
+            }
+        }
+    }
+    
+    static String getInvalidPositionMsg(String pos) {
+        return "Invalid position '"+pos+"' specified. "
+                + "Use 'r:<d>' or 'a:<d>' for relative respectively absolute position. '<d>' can be used as a shortcut for 'r:<d>'";
+    }
     static class RawTypeEncoding {
         String rawType;
         String encoding;
         public RawTypeEncoding(String rawType, String encoding) {
             this.rawType = rawType;
             this.encoding = encoding;
+        }
+    }
+    
+    static class Position {
+        public static final Position RELATIVE_ZERO = new Position(0, true);
+        final int pos;
+        final boolean relative;//or absolute
+        
+        public Position(int pos, boolean relative) {
+            this.pos = pos;
+            this.relative = relative;
         }
     }
 }

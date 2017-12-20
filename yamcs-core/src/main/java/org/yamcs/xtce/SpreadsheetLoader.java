@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,9 +86,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
 
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
-    final static String FORMAT_VERSION="6.0";
+    final static String FORMAT_VERSION="6.1";
     // Explicitly support these versions (i.e. load without warning)
-    final static String[] FORMAT_VERSIONS_SUPPORTED = new String[]{FORMAT_VERSION, "5.3", "5.4", "5.5", "5.6"};
+    final static String[] FORMAT_VERSIONS_SUPPORTED = new String[]{FORMAT_VERSION, "5.3", "5.4", "5.5", "5.6", "6.0"};
     String fileFormatVersion;
 
 
@@ -381,7 +382,10 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             if("DerivedValue".equalsIgnoreCase(rawtype)) {
                 continue;
             }
-            String encodings = cells[IDX_PARAM_ENCODING].getContents();
+            String encodings = null;
+            if(hasColumn(cells, IDX_PARAM_ENCODING)) {
+                encodings = cells[IDX_PARAM_ENCODING].getContents();
+            }
 
             String engtype = cells[IDX_PARAM_ENGTYPE].getContents();
             String calib=null;
@@ -456,7 +460,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 ((BaseDataType) ptype).addUnit(unitType);
             }
 
-            DataEncoding encoding = getDataEncoding(spaceSystem, ctx, param, rawtype, engtype, encodings, calib);
+            DataEncoding encoding = getDataEncoding(spaceSystem, ctx, "Parameter "+param.getName(), rawtype, engtype, encodings, calib);
 
             if (ptype instanceof IntegerParameterType) {
                 // Integers can be encoded as strings
@@ -522,14 +526,13 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     }
 
 
-    DataEncoding getDataEncoding(SpaceSystem spaceSystem, SpreadsheetLoadContext ctx, Parameter param, String rawtype, String engtype, String encodings, String calib) {
-        String name = param.getName();
+    DataEncoding getDataEncoding(SpaceSystem spaceSystem, SpreadsheetLoadContext ctx, String paraArgDescr, String rawtype, String engtype, String encodings, String calib) {
 
         if((rawtype==null) || rawtype.isEmpty()) {
             // Raw type is optional if the parameter is not part of a container
             // However a calibration is associated to a raw type
             if(calib != null) {
-                throw new SpreadsheetLoadException(ctx, "Parameter " + name+ ": calibration specified without raw type");
+                throw new SpreadsheetLoadException(ctx, paraArgDescr + ": calibration specified without raw type");
             }
             return null;
         }
@@ -538,9 +541,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             rawtype = PARAM_RAWTYPE_BINARY;
         }
 
-        if(encodings.isEmpty() || PARAM_ENCODING_PATTERN_old.matcher(encodings).matches()) {
+        if(encodings==null || PARAM_ENCODING_PATTERN_old.matcher(encodings).matches()) {
             int bitsize = -1;
-            if(!encodings.isEmpty() ) {
+            if(encodings!=null ) {
                 bitsize = Integer.parseInt(encodings);
             }
             SpreadsheetLoaderBits.RawTypeEncoding rte =  SpreadsheetLoaderBits.oldToNewEncoding(ctx, bitsize, rawtype);
@@ -550,13 +553,13 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         String encodingType = "";
         String[] encodingArgs = {};
 
-        if(!encodings.isEmpty()) {
+        if(encodings!=null) {
             Matcher m = PARAM_ENCODING_PATTERN.matcher(encodings);
             if(!m.matches()) {
                 throw new SpreadsheetLoadException(ctx, "Invalid encoding '"+encodings+"' has to match pattern: "+PARAM_ENCODING_PATTERN);
             }
             encodingType = m.group(1);
-            encodingArgs = m.group(2).split(",");
+            encodingArgs = m.group(2).split("\\s*,\\s*");
         }
         int customBitLength = -1;
         NameReference customFromBinaryTransform = null;
@@ -601,14 +604,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             }
 
             if ((!PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)) && (calib!=null)) {
-                Calibrator c = calibrators.get(calib);
-                if (c == null) {
-                    String msg = "Parameter " + name + " is supposed to have a calibrator '" + calib + "' but the calibrator does not exist.";
-                    if(enumerations.containsKey(calib)) {
-                        msg+=" Instead an enumeration with this name exists.";
-                    }
-                    throw new SpreadsheetLoadException(ctx, msg);
-                }
+                Calibrator c = getNumberCalibrator(paraArgDescr, calib);
                 ((IntegerDataEncoding)encoding).defaultCalibrator = c;
             }
         } else if (PARAM_RAWTYPE_FLOAT.equalsIgnoreCase(rawtype)) {
@@ -632,7 +628,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 }
             }
             if((!PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)) && calib!=null) {
-                Calibrator c = getFloatCalibrator(name, calib);
+                Calibrator c = getNumberCalibrator(paraArgDescr, calib);
                 ((FloatDataEncoding)encoding).defaultCalibrator = c;
             }
         } else if (PARAM_RAWTYPE_BOOLEAN.equalsIgnoreCase(rawtype)) {
@@ -645,7 +641,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 });
                 encoding = e ;
             } else {
-                if(!encodings.trim().isEmpty()) {
+                if(encodings!=null) {
                     throw new SpreadsheetLoadException(ctx, "Encoding is not allowed for boolean parameters. Use any other raw type if you want to specify the bitlength");
                 }
                 encoding=new BooleanDataEncoding();
@@ -682,13 +678,19 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     throw new SpreadsheetLoadException(ctx, "Encodings for terminated strings need to specify termination char");
                 }
                 encoding = new StringDataEncoding(SizeType.TERMINATION_CHAR);
-                ((StringDataEncoding)encoding).setTerminationChar(parseByte(ctx, encodingArgs[0]));;
+                ((StringDataEncoding)encoding).setTerminationChar(parseByte(ctx, encodingArgs[0]));
+                if(encodingArgs.length>=3) {
+                    encoding.setSizeInBits(parseInt(ctx, encodingArgs[2]));
+                }
             } else if("PrependedSize".equalsIgnoreCase(encodingType)){
                 if(encodingArgs.length==0) {
                     throw new SpreadsheetLoadException(ctx, "Encodings for PrependedSize strings need to specify the size in bits of the size tag.");
                 }
                 encoding = new StringDataEncoding(SizeType.LEADING_SIZE);
                 ((StringDataEncoding)encoding).setSizeInBitsOfSizeTag(parseInt(ctx, encodingArgs[0]));
+                if(encodingArgs.length>=3) {
+                    encoding.setSizeInBits(parseInt(ctx, encodingArgs[2]));
+                }
             } else  {
                 throw new SpreadsheetLoadException(ctx, "Unsupported encoding type "+encodingType+" Use one of 'fixed', 'terminated', 'PrependedSize' or 'custom'");
             }
@@ -724,29 +726,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         return encoding;
     }
 
-    private static int parseInt(SpreadsheetLoadContext ctx, String s) {
-        try {
-            return Integer.parseInt(s);
-        } catch (NumberFormatException e) {
-            throw new SpreadsheetLoadException(ctx, "Could not parse integer from '"+s+"'");
-        }
-    }
-
-    private static double parseDouble(SpreadsheetLoadContext ctx, String s) {
-        try {
-            return Double.parseDouble(s);
-        } catch (NumberFormatException e) {
-            throw new SpreadsheetLoadException(ctx, "Could not parse double from '"+s+"'");
-        }
-    }
-    private byte parseByte(SpreadsheetLoadContext ctx, String s) {
-        try {
-            return Byte.decode(s);
-        } catch (NumberFormatException e) {
-            throw new SpreadsheetLoadException(ctx, "Could not parse byte from '"+s+"'");
-        }
-    }
-    private Calibrator getFloatCalibrator(String paraName, String calibName) {
+   
+    private Calibrator getNumberCalibrator(String paraArgDescr, String calibName) {
         Calibrator c = calibrators.get(calibName);
         if (c != null) {
             return c;
@@ -762,7 +743,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             return jec;
         }
 
-        throw new SpreadsheetLoadException(ctx, "Parameter " + paraName + " is supposed to have a calibrator '" + calibName + "' but the calibrator does not exist.");
+        throw new SpreadsheetLoadException(ctx, paraArgDescr + " is supposed to have a calibrator '" + calibName + "' but the calibrator does not exist.");
     }
     /**
      * Searches firstRow for all cells that start with "namespace:" and adds corresponding aliases
@@ -1083,20 +1064,17 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
 
 
-            // absoluteOffset is the absolute offset of the first argument or FixedValue in the container
-            int absoluteOffset=-1;
-            if(parent==null) {
-                absoluteOffset=0;
-            } else {
-                int x=parent.indexOf(":");
+            // extraOffset is the absolute offset of the first argument or FixedValue in the container
+            // it will be added also to all absolute offsets specified
+            int extraOffset = -1;
+            if(parent!=null) {
+                int x = parent.indexOf(":");
                 if(x!=-1) {
-                    absoluteOffset=Integer.decode(parent.substring(x+1));
-                    parent=parent.substring(0, x);
+                    extraOffset = Integer.decode(parent.substring(x+1));
+                    parent = parent.substring(0, x);
                 }
             }
 
-            // create a new SequenceContainer that will hold the parameters (i.e. SequenceEntries) for the ORDINARY/SUB/AGGREGATE packets,
-            //and register that new SequenceContainer in the containers hashmap
             MetaCommandContainer container = new MetaCommandContainer(name);
             MetaCommand cmd = new MetaCommand(name);
             cmd.setMetaCommandContainer(container);
@@ -1137,22 +1115,20 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     continue;
                 }
 
-
                 String argname = cells[IDX_CMD_ARGNAME].getContents();
-                int relpos = 0;
+                Position pos = Position.RELATIVE_ZERO;
                 if (hasColumn(cells,  IDX_CMD_RELPOS)) {
-                    relpos = Integer.decode(cells[IDX_CMD_RELPOS].getContents());
+                    pos = getPosition(ctx, cells[IDX_CMD_RELPOS].getContents());
                 }
 
+                if(pos.relative && counter==0 && extraOffset!=-1) {
+                    pos = new Position(pos.pos, false);
+                }
+                
                 if(!hasColumn(cells, IDX_CMD_ENGTYPE)) {
                     throw new SpreadsheetLoadException(ctx, "engtype is not specified for "+argname+" on line "+(i+1));
                 }
                 String engType = cells[IDX_CMD_ENGTYPE].getContents();
-                // we add the relative position to the absoluteOffset, to specify the location of the new parameter.
-                // We only do this if the absoluteOffset is not equal to -1, because that would mean that we cannot and should not use absolute positions anymore
-                if (absoluteOffset != -1) {
-                    absoluteOffset += relpos;
-                }
 
 
                 if(engType.equalsIgnoreCase("FixedValue")) {
@@ -1162,20 +1138,20 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     String hexValue = cells[IDX_CMD_DEFVALUE].getContents();
                     byte[] binaryValue = StringConverter.hexStringToArray(hexValue);
 
-                    if(!hasColumn(cells, IDX_CMD_SIZEINBITS)) {
+                    if(!hasColumn(cells, IDX_CMD_ENCODING)) {
                         throw new SpreadsheetLoadException(ctx, "sizeInBits is not specified for "+argname+" which is a FixedValue on line "+(i+1));
                     }
-                    int sizeInBits = parseInt(ctx, cells[IDX_CMD_SIZEINBITS].getContents());
+                    int sizeInBits = parseInt(ctx, cells[IDX_CMD_ENCODING].getContents());
                     FixedValueEntry fve;
-                    if (absoluteOffset == -1) {
-                        fve = new FixedValueEntry(counter, container, relpos, ReferenceLocationType.previousEntry, argname, binaryValue, sizeInBits);
+                    if (pos.relative) {
+                        fve = new FixedValueEntry(counter, container, pos.pos, ReferenceLocationType.previousEntry, argname, binaryValue, sizeInBits);
                     } else {
-                        fve = new FixedValueEntry(counter, container, absoluteOffset, ReferenceLocationType.containerStart, argname, binaryValue, sizeInBits);
+                        fve = new FixedValueEntry(counter, container, pos.pos + ((extraOffset!=-1)?extraOffset:0), 
+                                ReferenceLocationType.containerStart, argname, binaryValue, sizeInBits);
                     }
-                    absoluteOffset += sizeInBits;
                     container.entryList.add(fve);
                 } else {
-                    absoluteOffset = loadArgument(cells, cmd, container, absoluteOffset, counter);
+                    loadArgument(spaceSystem, cells, cmd, container, extraOffset, counter);
                 }
 
                 i++;
@@ -1441,11 +1417,19 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         return new ArgumentAssignment(aname, value);
     }
 
-    private int loadArgument(Cell[] cells, MetaCommand cmd, MetaCommandContainer container, int absoluteOffset, int counter) {
+    private void loadArgument(SpaceSystem spaceSystem, Cell[] cells, MetaCommand cmd, MetaCommandContainer container, int extraOffset, int counter) {
         String engType = cells[IDX_CMD_ENGTYPE].getContents();
         String name = cells[IDX_CMD_ARGNAME].getContents();
 
-        int relpos = hasColumn(cells,  IDX_CMD_RELPOS)?Integer.decode(cells[IDX_CMD_RELPOS].getContents()):0;
+        Position pos = Position.RELATIVE_ZERO;
+        
+        if(hasColumn(cells,  IDX_CMD_RELPOS)) {
+            pos = getPosition(ctx, cells[IDX_CMD_RELPOS].getContents());
+        }
+        if(pos.relative && counter==0 && extraOffset!=-1) {
+            pos = new Position(pos.pos, false);
+        }
+        
 
         String calib = null;
         if(hasColumn(cells, IDX_CMD_CALIBRATION)) {
@@ -1455,14 +1439,18 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         if(hasColumn(cells, IDX_CMD_FLAGS)) {
             flags = cells[IDX_CMD_FLAGS].getContents();
         }
-        int sizeInBits = -1;
-        if(hasColumn(cells, IDX_CMD_SIZEINBITS)) {
-            sizeInBits = Integer.parseInt(cells[IDX_CMD_SIZEINBITS].getContents());
+        
+        String encodings = null;
+        if(hasColumn(cells, IDX_CMD_ENCODING)) {
+             encodings = cells[IDX_CMD_ENCODING].getContents();
         }
 
         String rawType = engType;
         if(hasColumn(cells, IDX_CMD_RAWTYPE)) {
             rawType = cells[IDX_CMD_RAWTYPE].getContents();
+            if("double".equals(rawType)) {
+                rawType = "float";
+            }
         }
 
         if("n".equals(calib) || "".equals(calib)){
@@ -1476,13 +1464,13 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         if ("uint".equalsIgnoreCase(engType)) {
             atype = new IntegerArgumentType(name);
             ((IntegerArgumentType)atype).signed = false;
-        } else if ("uint64".equalsIgnoreCase(engType)) {
+        } else if (PARAM_ENGTYPE_UINT64.equalsIgnoreCase(engType)) {
             atype = new IntegerArgumentType(name);
             ((IntegerArgumentType)atype).signed = false;
             ((IntegerArgumentType)atype).setSizeInBits(64);
         } else if ("int".equalsIgnoreCase(engType)) {
             atype = new IntegerArgumentType(name);
-        } else if("int64".equalsIgnoreCase(engType)) {
+        } else if(PARAM_ENGTYPE_INT64.equalsIgnoreCase(engType)) {
             atype = new IntegerArgumentType(name);
             ((IntegerArgumentType)atype).setSizeInBits(64);
         } else if (PARAM_ENGTYPE_FLOAT.equalsIgnoreCase(engType)) {
@@ -1586,27 +1574,18 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
         ArgumentEntry ae;
         // if absoluteoffset is -1, somewhere along the line we came across a measurement or aggregate that had as a result that the absoluteoffset could not be determined anymore; hence, a relative position is added
-        if (absoluteOffset == -1) {
-            ae = new ArgumentEntry(counter, container, relpos, ReferenceLocationType.previousEntry, arg);
+        if (pos.relative) {
+            ae = new ArgumentEntry(counter, container, pos.pos, ReferenceLocationType.previousEntry, arg);
         } else {
-            ae = new ArgumentEntry(counter, container, absoluteOffset, ReferenceLocationType.containerStart, arg);
+            ae = new ArgumentEntry(counter, container, pos.pos+((extraOffset!=-1)?extraOffset:0), ReferenceLocationType.containerStart, arg);
         }
 
         container.entryList.add(ae);
         ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
         if((flags!=null) && (flags.contains("L") || flags.contains("l"))) {
-            byteOrder = ByteOrder.LITTLE_ENDIAN;
+            throw new SpreadsheetLoadException(ctx, "Specifying little endian using argument flags is not anymore supported. Please use the encoding column");
         }
 
-        // after adding this argument, we need to update the absoluteOffset for the next one.
-        // For this, we add the size of the current ArgumentEntry to the absoluteOffset
-
-        if ((sizeInBits != -1) && (absoluteOffset != -1)) {
-            absoluteOffset += sizeInBits;
-        } else {
-            // from this moment on, absoluteOffset is set to -1, meaning that all subsequent SequenceEntries must be relative
-            absoluteOffset = -1;
-        }
         String units=null;
         if(hasColumn(cells, IDX_CMD_ENGUNIT)) {
             units = cells[IDX_CMD_ENGUNIT].getContents();
@@ -1616,126 +1595,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             }
         }
 
-        //loadParameterLimits(ptype,cells);
-
-        //calibrations
-        DataEncoding encoding = null;
-        if (("uint".equalsIgnoreCase(rawType)) || rawType.toLowerCase().startsWith("int")) {
-            if(sizeInBits==-1) {
-                throw new SpreadsheetLoadException(ctx, "Size in bits length is mandatory for integer arguments");
-            }
-            encoding = new IntegerDataEncoding(sizeInBits, byteOrder);
-            if (rawType.toLowerCase().startsWith("int")) {
-                if ("int".equals(rawType)) {
-                    ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.TWOS_COMPLEMENT;
-                } else {
-                    int startBracket = rawType.indexOf('(');
-                    if (startBracket != -1) {
-                        int endBracket = rawType.indexOf(')', startBracket);
-                        if (endBracket != -1) {
-                            String intRepresentation = rawType.substring(startBracket+1, endBracket).trim().toLowerCase();
-                            if ("2c".equals(intRepresentation)) {
-                                ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.TWOS_COMPLEMENT;
-                            } else if ("si".equals(intRepresentation)) {
-                                ((IntegerDataEncoding)encoding).encoding = IntegerDataEncoding.Encoding.SIGN_MAGNITUDE;
-                            } else {
-                                throw new SpreadsheetLoadException(ctx, "Unsupported signed integer representation: "+intRepresentation);
-                            }
-                        }
-                    }
-                }
-            }
-            if ((!"enumerated".equalsIgnoreCase(engType)) && (calib!=null)) {
-                Calibrator c = calibrators.get(calib);
-                if (c == null) {
-                    throw new SpreadsheetLoadException(ctx, "Argument " + name + " is supposed to have a calibrator '" + calib + "' but the calibrator does not exist");
-                }
-                ((IntegerDataEncoding)encoding).defaultCalibrator = c;
-            }
-        } else if ("binary".equalsIgnoreCase(rawType) || "bytestream".equalsIgnoreCase(rawType)) {
-            if(sizeInBits==-1) {
-                throw new SpreadsheetLoadException(ctx, "Bit length is mandatory for binary parameters");
-            }
-            encoding=new BinaryDataEncoding(sizeInBits);
-        } else if ("boolean".equalsIgnoreCase(rawType)) {
-            if(sizeInBits!=-1) {
-                throw new SpreadsheetLoadException(ctx, "Bit length is not allowed for boolean parameters (defaults to 1). Use any other raw type if you want to specify the bitlength");
-            }
-            encoding = new BooleanDataEncoding();
-        } else if ("string".equalsIgnoreCase(rawType)) {
-            // Version <= 1.6 String type
-            // STRING
-            if(sizeInBits==-1) {
-                // Assume null-terminated if no length specified
-                encoding=new StringDataEncoding(SizeType.TERMINATION_CHAR);
-            } else {
-                encoding=new StringDataEncoding(SizeType.FIXED);
-                encoding.setSizeInBits(sizeInBits);
-            }
-        } else if ( "fixedstring".equalsIgnoreCase( rawType ) ) {
-            // v1.7 String type
-            // FIXEDSTRING
-            if(sizeInBits==-1) {
-                throw new SpreadsheetLoadException(ctx, "SizeInBits is mandatory for fixedstring raw type");
-            }
-            encoding=new StringDataEncoding(SizeType.FIXED);
-            if((sizeInBits&0x7)!=0) {
-                throw new SpreadsheetLoadException(ctx, "SizeInBits has to be multiple of 8 for fixedstring raw type");
-            }
-            encoding.setSizeInBits(sizeInBits);
-        } else if ( rawType.toLowerCase().startsWith( "terminatedstring" ) ) {
-            // v1.7 String type
-            // TERMINATEDSTRING
-            encoding=new StringDataEncoding(SizeType.TERMINATION_CHAR);
-            encoding.setSizeInBits(sizeInBits);
-            // Use specified byte if found, otherwise accept class default.
-            int startBracket = rawType.indexOf( '(' );
-            if( startBracket != -1 ) {
-                int endBracket = rawType.indexOf( ')', startBracket );
-                if( endBracket != -1 ) {
-                    try {
-                        byte terminationChar = Byte.parseByte(rawType.substring( rawType.indexOf('x', startBracket)+1, endBracket ).trim(), 16 );
-                        ((StringDataEncoding)encoding).setTerminationChar(terminationChar);
-                    } catch (NumberFormatException e) {
-                        throw new SpreadsheetLoadException(ctx, "Could not parse specified base 16 terminator from "+rawType);
-                    }
-                }
-            }
-        } else if ( rawType.toLowerCase().startsWith( "prependedsizestring" ) ) {
-            // v1.7 String type
-            // PREPENDEDSIZESTRING
-            encoding=new StringDataEncoding(SizeType.LEADING_SIZE );
-            encoding.setSizeInBits(sizeInBits);
-            // Use specified size if found, otherwise accept class default.
-            int startBracket = rawType.indexOf( '(' );
-            if( startBracket != -1 ) {
-                int endBracket = rawType.indexOf( ')', startBracket );
-                if( endBracket != -1 ) {
-                    try {
-                        int sizeInBitsOfSizeTag = Integer.parseInt( rawType.substring(startBracket+1, endBracket).trim() );
-                        ((StringDataEncoding)encoding).setSizeInBitsOfSizeTag( sizeInBitsOfSizeTag );
-                    } catch (NumberFormatException e) {
-                        throw new SpreadsheetLoadException(ctx, "Could not parse integer size from "+rawType);
-                    }
-                }
-            }
-        } else if (PARAM_RAWTYPE_FLOAT.equalsIgnoreCase(rawType) || PARAM_RAWTYPE_DOUBLE.equalsIgnoreCase(rawType)) {
-            if(sizeInBits==-1) {
-                throw new SpreadsheetLoadException(ctx, "Size in bits is mandatory for integer arguments");
-            }
-            encoding=new FloatDataEncoding(sizeInBits, byteOrder);
-            if((!"enumerated".equalsIgnoreCase(engType)) && (calib!=null)) {
-                Calibrator c = calibrators.get(calib);
-                if (c == null) {
-                    throw new SpreadsheetLoadException(ctx, "Parameter " + name + " is supposed to have a calibrator '" + calib + "' but the calibrator does not exist.");
-                } else {
-                    ((FloatDataEncoding)encoding).defaultCalibrator = c;
-                }
-            }
-        } else {
-            throw new SpreadsheetLoadException(ctx, "Unknown raw type " + rawType);
-        }
-
+        DataEncoding encoding = getDataEncoding(spaceSystem, ctx, "Argument "+arg.getName(), rawType, engType, encodings, calib);
+        
         if (atype instanceof IntegerArgumentType) {
             // Integers can be encoded as strings
             if( encoding instanceof StringDataEncoding ) {
@@ -1798,8 +1659,6 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             throw new RuntimeException("Don't know what to do with "+atype);
         }
         arg.setArgumentType(atype);
-
-        return absoluteOffset;
     }
 
     protected void loadChangelogSheet(boolean required) {
@@ -2221,7 +2080,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     }
 
     protected boolean hasColumn(Cell[] cells, int idx) {
-        return (cells!=null) && (cells.length>idx) && (cells[idx].getContents()!=null) && (!cells[idx].getContents().equals(""));
+        return (cells!=null) && (cells.length>idx) && (cells[idx].getContents()!=null) && (!cells[idx].getContents().isEmpty());
     }
 
     private int getSize(Parameter param, SequenceContainer sc) {
