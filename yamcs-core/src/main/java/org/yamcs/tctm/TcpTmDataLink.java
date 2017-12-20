@@ -233,9 +233,8 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
         this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
         if(sysParamCollector!=null) {
             sysParamCollector.registerProducer(this);
-            spLinkStatus = sysParamCollector.getNamespace()+"/"+name+"/linkStatus";
-            spDataCount = sysParamCollector.getNamespace()+"/"+name+"/dataCount";
-        
+            spLinkStatus = "/" + host + "/" + yamcsInstance + "/"+name+"/linkStatus";
+            spDataCount =  "/" + host + "/" + yamcsInstance + "/"+name+"/dataCount";
         } else {
             log.info("System variables collector not defined for instance {} ", yamcsInstance);
         }
