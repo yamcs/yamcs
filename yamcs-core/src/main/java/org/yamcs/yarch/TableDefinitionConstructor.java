@@ -94,8 +94,6 @@ public class TableDefinitionConstructor  extends Constructor {
             
             if(m.containsKey(K_PARTITION_STORAGE)) {
                 tdef.setPartitionStorage((PartitionStorage)m.get(K_PARTITION_STORAGE));
-            } else {//before the partitionStorage has been invented, we only had column_family
-                tdef.setPartitionStorage(PartitionStorage.COLUMN_FAMILY);
             }
 
             return tdef;
