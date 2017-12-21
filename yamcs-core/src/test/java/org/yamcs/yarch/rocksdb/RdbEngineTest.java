@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotNull;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
