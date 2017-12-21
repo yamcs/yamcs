@@ -126,7 +126,7 @@ public class TablesCli extends Command {
         private void loadTable(String tableName) throws Exception {
             String fileName = tableName+".dump";
             if(dir!=null) {
-                tableName = dir+"/"+tableName+".dump";
+                fileName = dir+"/"+tableName+".dump";
             }
             InputStream is = new GZIPInputStream(new FileInputStream(fileName));
             System.out.println("Loading "+fileName+" into table "+tableName);
