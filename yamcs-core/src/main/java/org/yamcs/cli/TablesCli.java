@@ -88,7 +88,7 @@ public class TablesCli extends Command {
                     tr.writeDelimitedTo(outputs);
                     int x = count.incrementAndGet();
                     if(x%100==0) {
-                        System.out.print("\r"+count);
+                        System.out.print("\r"+x+" rows saved");
                         System.out.flush();
                     }
                 } catch (IOException e) {
@@ -152,7 +152,7 @@ public class TablesCli extends Command {
                         bufstream = new ByteBufOutputStream(buf);
                     }
                     if(c%100==0) {
-                        System.out.print("\r"+c);
+                        System.out.print("\r"+c+" rows loaded");
                         System.out.flush();
                     }
                 }  
@@ -163,7 +163,7 @@ public class TablesCli extends Command {
                 
                 is.close();
                 String resp = new String(bds.completeRequest().get());
-                System.out.println("\r "+resp);
+                System.out.println("\n "+resp);
             } finally {
                 restClient.close();
             }

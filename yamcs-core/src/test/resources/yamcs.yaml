@@ -25,7 +25,8 @@ rdbConfig:
               writeBufferSize: 50240        #in KB
               maxWriteBufferNumber: 2
           tableFormatConfig:
-              blockSize: 512 #KB
+              blockSize: 256 #KB
+              blockCacheSize: 50000 #KB
               
      
 webConfig:

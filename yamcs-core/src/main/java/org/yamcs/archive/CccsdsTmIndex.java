@@ -30,9 +30,11 @@ import org.yamcs.yarch.YarchDatabaseInstance;
  *   value: end time[8bytes], end seq count[2 bytes], num packets [4 bytes]
  *   
  *   
- *  FIXME: because the sequence count wraps around, there is a bug in case packets with the same timestamp and wrapped around sequence counts are received 
- *          - see testApidIndexSameTimeAndWraparound for failing test.
- *         the old TokyoCabinet based indexer didn't use the sequence count as part of the key but allowed multiple records with the same key. To replicate this in RocksDB, one would need 
+ *  FIXME: because the sequence count wraps around, there is a bug in case packets with the same 
+ *  timestamp and wrapped around sequence counts are received 
+ *   - see testApidIndexSameTimeAndWraparound for failing test.
+ *         the old TokyoCabinet based indexer didn't use the sequence count as part of the key but allowed multiple records with the same key.
+ *         To replicate this in RocksDB, one would need 
  *         to have the RocksDB entries composed of all records with the same startime
  *  
  * @author nm
@@ -42,8 +44,10 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 public class CccsdsTmIndex implements TmIndex {
 
     final protected Logger log;
-
-    static long maxApidInterval=3600*1000; //if time between two packets with the same apid is more than one hour, make two records even if they packets are in sequence (because maybe there is a wrap around involved)
+    
+    //if time between two packets with the same apid is more than one hour, 
+    //make two records even if they packets are in sequence (because maybe there is a wrap around involved)
+    static long maxApidInterval=3600*1000; 
     private boolean closed=false;
     private RocksDB db;
 

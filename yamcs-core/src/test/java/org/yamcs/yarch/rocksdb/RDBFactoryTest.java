@@ -77,25 +77,24 @@ public class RDBFactoryTest {
     public void testBackup() throws Exception {
         String dir = "/tmp/rdb_backup_test/";
         FileUtils.deleteRecursively(dir);
-        RDBFactory rdbf = new RDBFactory("testBackup");
-        new File(dir).mkdirs();
+        RDBFactory rdbf = new RDBFactory(dir);
         
-        YRDB db1 = rdbf.getRdb(dir+"/db1", false);
+        YRDB db1 = rdbf.getRdb("db1", false);
         ColumnFamilyHandle cfh = db1.createColumnFamily("c1");
         db1.put(cfh, "aaa".getBytes(), "bbb".getBytes());
         
         db1.createColumnFamily("c2");
 
         new File(dir+"/db1_back").mkdirs();
-        rdbf.doBackup(dir+"/db1", dir+"/db1_back").get();
+        rdbf.doBackup("db1", dir+"/db1_back").get();
         
         db1.createColumnFamily("c3");
-        rdbf.doBackup(dir+"/db1", dir+"/db1_back").get();
+        rdbf.doBackup("db1", dir+"/db1_back").get();
         
         //try to backup on top of existing non backup directory -> should throw an exception
         Throwable e = null;
         try {
-            rdbf.doBackup(dir+"/db1", dir+"/db1").get();
+            rdbf.doBackup("db1", dir+"/db1").get();
         } catch (ExecutionException e1) {
             e = e1.getCause();
         }
@@ -107,8 +106,8 @@ public class RDBFactoryTest {
         assertNotNull(b);
         rdbf.close(db1);
         
-        rdbf.restoreBackup(1, dir+"/db1_back", dir+"/db2").get();
-        YRDB db2 = rdbf.getRdb(dir+"/db2", false);
+        rdbf.restoreBackup(1, dir+"/db1_back", "db2").get();
+        YRDB db2 = rdbf.getRdb("db2", false);
         
         assertNotNull(db2.getColumnFamilyHandle("c2"));
         assertNull(db2.getColumnFamilyHandle("c3"));
@@ -122,8 +121,8 @@ public class RDBFactoryTest {
         assertNull(b);
         
         
-        rdbf.restoreBackup(-1, dir+"/db1_back", dir+"/db3").get();
-        YRDB db3 = rdbf.getRdb(dir+"/db3", false);
+        rdbf.restoreBackup(-1, dir+"/db1_back", "db3").get();
+        YRDB db3 = rdbf.getRdb("db3", false);
         
         assertNotNull(db3.getColumnFamilyHandle("c2"));
         assertNotNull(db3.getColumnFamilyHandle("c3"));

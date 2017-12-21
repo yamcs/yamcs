@@ -1,0 +1,73 @@
+syntax = "proto2";
+
+option java_package = "org.yamcs.yarch.rocksdb.protobuf";
+
+message TimeBasedPartition {
+  optional string partitionDir = 1;
+  optional int64 partitionStart = 2;
+  optional int64 partitionEnd = 3;
+}
+/**
+*  This is used to encode values in the tablespace metadata database .
+*/
+message TablespaceRecord {
+  enum Type {
+     //used to store table (partition) data
+     //relevant information: instanceName, tableName and optionally partitionValue, partitionDir, partitionStart and partitionEnd
+     TABLE_PARTITION = 1;
+
+     //used to store table histogram data
+     //relevant information: instanceName, tableName, columnName
+     HISTOGRAM = 2;
+
+     //used as part of the ParameterArchive to keep the parameter group id -> parameter group (list of parameter ids) mapping
+     //relevant information: instanceName
+     //there is only one record of this type for each instance and ParameterArchive
+     PARCHIVE_PGID2PG = 4;
+
+     //used to store ParameterArchive data. There is one record for each separate parameter 
+     //(taking into account that a different type represents a different parameter in the ParameterArchive even if it has the same name)
+     //relevant information: instanceName, parameterFqn, parameterType
+     PARCHIVE_DATA = 5;
+
+     //used to store information about the partitions of the ParameterArchive in case they are partitioned by time
+     // relevant information: instanceName, partitioningSchema
+     //there is only one record of this type for each instance and ParameterArchive
+     PARCHIVE_PINFO = 6;
+     
+     //used by the tag database
+     // relevant information: instanceName
+     TAGDB = 7;
+  }
+  optional uint32 tbsIndex = 1;
+  optional Type type = 2;
+
+  // used for all record types
+  //if not specified then instanceName = tablespaceName
+  optional string instanceName = 3;
+
+  //used for TABLE_PARTITION and HISTOGRAM
+  optional string tableName = 4;
+
+  //used for HISTOGRAM 
+  optional string histogramColumnName = 5;
+
+  // used for TABLE_PARTITION: if partitioned by value - the value
+  optional bytes partitionValue = 6;
+
+  // used for TABLE_PARTITION, HISTOGRAM: if partition by time 
+  //  - partitionDir is subdirectory name (usually something like 2017/11)
+  //  - partitionStart/End are the times representing partition start(inclusive) and end (exclusive)
+  optional TimeBasedPartition partition = 7;
+
+  //used by the PARCHIVE_DATA to associate parameter ids to (parameter qualified  name, parameterType)
+  //tbsIndex is the parameter id 
+  //parameterType is a number assigned to (rawType,engType) combination
+  //parameterFqn is the parameter fully qualified name (something like /system/subsystem1/subsystem2/paraName)
+  optional string parameterFqn = 8;
+  optional uint32 parameterType = 9;
+
+  //partitioning schema used currently for parameter archive (for tables is stored in the .def file)
+  optional string partitioningSchema = 10;
+}
+

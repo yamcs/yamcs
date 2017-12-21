@@ -49,7 +49,9 @@ public class TableDefinitionRepresenter extends Representer {
             m.put(K_KEY_DEF, td.getKeyDefinition());
             m.put(K_VALUE_DEF, td.serializedValueDef);
             m.put(K_STORAGE_ENGINE, td.getStorageEngineName());
-            m.put(K_PARTITION_STORAGE, td.getPartitionStorage());
+            if(td.getPartitionStorage()!=null) {
+                m.put(K_PARTITION_STORAGE, td.getPartitionStorage());
+            }
             m.put(K_FORMAT_VERSION, td.getFormatVersion());
 
             if(td.hasHistogram()) {

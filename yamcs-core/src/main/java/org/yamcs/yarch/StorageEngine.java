@@ -2,8 +2,8 @@ package org.yamcs.yarch;
 
 import java.util.Iterator;
 
-import org.yamcs.TimeInterval;
 import org.yamcs.archive.TagDb;
+import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.TableWriter.InsertMode;
 
 public interface StorageEngine {
@@ -12,21 +12,21 @@ public interface StorageEngine {
      * @param def
      * @throws YarchException 
      */
-    public void createTable(TableDefinition def) throws YarchException;
+    public void createTable(YarchDatabaseInstance ydb, TableDefinition def) throws YarchException;
 
     /**
      * Drop the table (removing all files)
      * @param tbldef
      * @throws YarchException
      */
-    public void dropTable(TableDefinition tbldef) throws YarchException;
+    public void dropTable(YarchDatabaseInstance ydb, TableDefinition tbldef) throws YarchException;
 
     /**
      * Loads a table from the disk - called at startup.
      * @param tbl
      * @throws YarchException
      */
-    public void loadTable(TableDefinition tbl) throws YarchException;
+    public void loadTable(YarchDatabaseInstance ydb, TableDefinition tbl) throws YarchException;
 
     /**
      * 
@@ -37,18 +37,17 @@ public interface StorageEngine {
      * @return
      * @throws YarchException
      */
-    public TableWriter newTableWriter(TableDefinition tbl, InsertMode insertMode) throws YarchException;
+    public TableWriter newTableWriter(YarchDatabaseInstance ydb, TableDefinition tbl, InsertMode insertMode) throws YarchException;
 
     /**
      * 
      * Creates a new table reader
      * @param tbl
-     * @return
      */
-    public AbstractStream newTableReaderStream(TableDefinition tbl, boolean ascending, boolean follow);
+    public AbstractStream newTableReaderStream(YarchDatabaseInstance ydb, TableDefinition tbl, boolean ascending, boolean follow);
 
 
-    public TagDb getTagDb() throws YarchException;
+    public TagDb getTagDb(YarchDatabaseInstance ydb) throws YarchException;
 
-    public Iterator<HistogramRecord> getHistogramIterator(TableDefinition tblDef, String columnName, TimeInterval interval, long mergeTime) throws YarchException;
+    public Iterator<HistogramRecord> getHistogramIterator(YarchDatabaseInstance ydb, TableDefinition tblDef, String columnName, TimeInterval interval, long mergeTime) throws YarchException;
 }

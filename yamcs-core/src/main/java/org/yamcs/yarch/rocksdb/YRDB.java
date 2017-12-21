@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.rocksdb.BlockBasedTableConfig;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
@@ -21,9 +22,11 @@ import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 import org.yamcs.utils.ByteArrayWrapper;
 import org.yamcs.utils.StringConverter;
-import org.yamcs.yarch.rocksdb.RdbConfig.TableConfig;
+import org.yamcs.yarch.rocksdb.RdbConfig.TablespaceConfig;
 /**
- * wrapper around RocksDB that keeps track of column families
+ * wrapper around RocksDB that keeps track of column families.
+ * It also maintains a reference count and last access timeused by the RdbFactory to close the database if
+ * not used for a while 
  * 
  * @author nm
  *
@@ -32,13 +35,15 @@ public class YRDB {
     //keep mapping from raw byte array and the object that is used by some applications
     Map<ByteArrayWrapper, ColumnFamilyHandle> columnFamilies = new HashMap<>();
  
-    
-
     private final RocksDB db;
     private boolean isClosed = false;
     private final String path;
     private final ColumnFamilyOptions cfoptions;
-
+    static final String ROCKS_PROP_NUM_KEYS = "rocksdb.estimate-num-keys";
+    //keep track
+    int refcount = 0;
+    long lastAccessTime;
+    
     private final DBOptions dbOptions;
     /**
      * Create or open a new RocksDb.
@@ -48,30 +53,38 @@ public class YRDB {
      * @throws RocksDBException
      * @throws IOException 
      */
-    YRDB(String dir) throws RocksDBException, IOException {
+    YRDB(String dir, boolean readonly) throws RocksDBException, IOException {
         File f = new File(dir);
-        if(f.exists() && !f.isDirectory()) {
+        if(f.exists()) {
+          if(!f.isDirectory()) {
             throw new IOException("'"+dir+"' exists and it is not a directory");
+          }
+        } else {
+            if(readonly) {
+                throw new IllegalArgumentException("The database does not exist but readonly is requested; cannot create a database when readonly is true");
+            }
+            if(!f.mkdirs()) {
+                throw new IOException("Cannot create directory '"+dir+"'");
+            }
         }
         RdbConfig rdbConfig = RdbConfig.getInstance();
-        TableConfig tc = rdbConfig.getTableConfig(f.getName());
-
+        TablespaceConfig tc = rdbConfig.getTablespaceConfig(f.getName());
         cfoptions = (tc==null)? rdbConfig.getDefaultColumnFamilyOptions():tc.getColumnFamilyOptions();
         Options opt = (tc==null)? rdbConfig.getDefaultOptions():tc.getOptions();
         dbOptions = (tc==null)? rdbConfig.getDefaultDBOptions():tc.getDBOptions();
-
+        BlockBasedTableConfig bbtc = (BlockBasedTableConfig) opt.tableFormatConfig();
         this.path = dir;
         File current = new File(dir+File.separatorChar+"CURRENT");
         if(current.exists()) {
             List<byte[]> cfl = RocksDB.listColumnFamilies(opt, dir);
 
             if(cfl!=null) {
-                List<ColumnFamilyDescriptor> cfdList = new ArrayList<ColumnFamilyDescriptor>(cfl.size());
+                List<ColumnFamilyDescriptor> cfdList = new ArrayList<>(cfl.size());
 
                 for(byte[] b: cfl) {
                     cfdList.add(new ColumnFamilyDescriptor(b, cfoptions));					
                 }
-                List<ColumnFamilyHandle> cfhList = new ArrayList<ColumnFamilyHandle>(cfl.size());
+                List<ColumnFamilyHandle> cfhList = new ArrayList<>(cfl.size());
                 db = RocksDB.open(dbOptions, dir, cfdList, cfhList);
                 for(int i=0;i<cfl.size();i++) {
                     byte[] b = cfl.get(i);
@@ -109,32 +122,19 @@ public class YRDB {
         return db.newIterators(cfhList, ro);
     }
 
+    public RocksIterator newIterator() throws RocksDBException {
+        return db.newIterator();
+    }
 
     public RocksIterator newIterator(ColumnFamilyHandle cfh) throws RocksDBException {
         return db.newIterator(cfh);
     }
 
     public synchronized ColumnFamilyHandle getColumnFamilyHandle(byte[] cfname) {
-        ColumnFamilyHandle cfh = columnFamilies.get(new ByteArrayWrapper(cfname));
-        
-        //in yamcs 0.29.3 and older we used to create a column family for null values (i.e. when not partitioning on a value)
-        //starting with yamcs 0.29.4 we use the default column family for this
-        // the old tables are still supported because at startup the columnFamilies map will be populated with the null key
-        if((cfname==null) && (cfh==null)) { 
-            return db.getDefaultColumnFamily(); 
-        }
-        return cfh;
+        return columnFamilies.get(new ByteArrayWrapper(cfname));
     }
     public synchronized ColumnFamilyHandle getColumnFamilyHandle(String cfname) {
-        ColumnFamilyHandle cfh = columnFamilies.get(new ByteArrayWrapper(cfname.getBytes(StandardCharsets.UTF_8)));
-        
-        //in yamcs 0.29.3 and older we used to create a column family for null values (i.e. when not partitioning on a value)
-        //starting with yamcs 0.29.4 we use the default column family for this
-        // the old tables are still supported because at startup the columnFamilies map will be populated with the null key
-        if((cfname==null) && (cfh==null)) { 
-            return db.getDefaultColumnFamily(); 
-        }
-        return cfh;
+       return columnFamilies.get(new ByteArrayWrapper(cfname.getBytes(StandardCharsets.UTF_8)));
     }
 
     public byte[] get(ColumnFamilyHandle cfh, byte[] key) throws RocksDBException {
@@ -161,7 +161,7 @@ public class YRDB {
         db.put(cfh, k, v);
     }
 
-    public void put(byte[] k, byte[] v) throws RocksDBException {               
+    public void put(byte[] k, byte[] v) throws RocksDBException {        
         db.put(k, v);
     }
     public List<byte[]> getColumnFamilies() {
@@ -196,7 +196,7 @@ public class YRDB {
         final List<String> slprops = Arrays.asList("rocksdb.num-immutable-mem-table",  "rocksdb.num-immutable-mem-table-flushed"
                 , "rocksdb.mem-table-flush-pending",  "rocksdb.num-running-flushes" , "rocksdb.compaction-pending", "rocksdb.num-running-compactions", "rocksdb.background-errors",  "rocksdb.cur-size-active-mem-table"
                 , "rocksdb.cur-size-all-mem-tables", "rocksdb.size-all-mem-tables", "rocksdb.num-entries-active-mem-table",  "rocksdb.num-entries-imm-mem-tables"
-                , "rocksdb.num-deletes-active-mem-table",  "rocksdb.num-deletes-imm-mem-tables", "rocksdb.estimate-num-keys", "rocksdb.estimate-table-readers-mem"
+                , "rocksdb.num-deletes-active-mem-table",  "rocksdb.num-deletes-imm-mem-tables", ROCKS_PROP_NUM_KEYS, "rocksdb.estimate-table-readers-mem"
                 , "rocksdb.is-file-deletions-enabled" ,  "rocksdb.num-snapshots","rocksdb.oldest-snapshot-time" ,  "rocksdb.num-live-versions"
                 , "rocksdb.current-super-version-number", "rocksdb.estimate-live-data-size", "rocksdb.base-level");
         
@@ -282,4 +282,10 @@ public class YRDB {
         } 
     }
 
+    public long getApproxNumRecords() throws RocksDBException {
+        return db.getLongProperty(ROCKS_PROP_NUM_KEYS);
+    }
+    public long getApproxNumRecords(ColumnFamilyHandle cfh) throws RocksDBException {
+        return db.getLongProperty(cfh, ROCKS_PROP_NUM_KEYS);
+    }
 }

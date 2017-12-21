@@ -2,12 +2,12 @@ package org.yamcs.parameterarchive;
 
 
 import java.util.Arrays;
-import java.util.NavigableMap;
+import java.util.List;
 
 import org.rocksdb.RocksDBException;
 import org.yamcs.YamcsServer;
-import org.yamcs.parameterarchive.ParameterArchive;
-import org.yamcs.parameterarchive.ParameterArchive.Partition;
+import org.yamcs.parameterarchive.ParameterArchiveV2;
+import org.yamcs.parameterarchive.ParameterArchiveV2.Partition;
 import org.yamcs.parameterarchive.ParameterIdDb.ParameterId;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.security.Privilege;
@@ -47,7 +47,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
         long stop = req.getQueryParameterAsDate("stop");
         
         
-        ParameterArchive parchive = getParameterArchive(instance);
+        ParameterArchiveV2 parchive = getParameterArchive(instance);
         try {
             parchive.reprocess(start, stop);
         } catch (IllegalArgumentException e){
@@ -72,14 +72,18 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
         long stop = req.getQueryParameterAsDate("stop");
         
         
-        ParameterArchive parchive = getParameterArchive(instance);
+        ParameterArchiveV2 parchive = getParameterArchive(instance);
         try {
-            NavigableMap<Long, Partition> removed = parchive.deletePartitions(start, stop);
+            List<Partition> removed = parchive.deletePartitions(start, stop);
             StringBuilder sb = new StringBuilder();
             sb.append("removed the following partitions: ");
             boolean first = true;
-            for(Partition p: removed.values()) {
-                if(first) first= false; else sb.append(", ");
+            for(Partition p: removed) {
+                if(first) {
+                    first= false;
+                } else {
+                   sb.append(", ");
+                }
                 sb.append(p.toString());
             }
             StringMessage sm = StringMessage.newBuilder().setMessage(sb.toString()).build();
@@ -99,7 +103,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
         checkPrivileges(req);
         
         String fqn = req.getRouteParam("name");
-        ParameterArchive parchive = getParameterArchive(instance);
+        ParameterArchiveV2 parchive = getParameterArchive(instance);
         ParameterIdDb pdb = parchive.getParameterIdDb();
         ParameterId[] pids = pdb.get(fqn);
         StringMessage sm = StringMessage.newBuilder().setMessage(Arrays.toString(pids)).build();
@@ -107,8 +111,8 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
     }
    
     
-    private static ParameterArchive getParameterArchive(String instance) throws BadRequestException {
-        ParameterArchive parameterArchive = YamcsServer.getService(instance, ParameterArchive.class);
+    private static ParameterArchiveV2 getParameterArchive(String instance) throws BadRequestException {
+        ParameterArchiveV2 parameterArchive = YamcsServer.getService(instance, ParameterArchiveV2.class);
         if (parameterArchive == null) {
             throw new BadRequestException("ParameterArchive not configured for this instance");
         }

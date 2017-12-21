@@ -1,4 +1,4 @@
-package org.yamcs.yarch.rocksdb;
+package org.yamcs.yarch.oldrocksdb;
 
 import java.io.IOException;
 import java.util.ArrayList;

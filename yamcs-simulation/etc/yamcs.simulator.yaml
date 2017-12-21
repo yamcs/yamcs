@@ -8,8 +8,7 @@ services:
     - org.yamcs.archive.ReplayServer
     - org.yamcs.archive.IndexServer
     - org.yamcs.parameter.SystemParametersCollector
-    - org.yamcs.parameter.SystemParametersCollector
-    # create a realtime channel
+    # create a realtime processor
     - class: org.yamcs.ProcessorCreatorService
       args: 
          name: "realtime"

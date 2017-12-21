@@ -10,11 +10,11 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.yamcs.TimeInterval;
 import org.yamcs.api.MediaType;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.TimeInterval;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.Router.RouteMatch;
@@ -501,7 +501,7 @@ public class RestRequest {
                 intv.setStart(start);
             }
             if (hasStop()) {
-                intv.setStop(stop);
+                intv.setEnd(stop);
             }
             return intv;
         }

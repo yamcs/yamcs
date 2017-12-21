@@ -1,8 +1,8 @@
 package org.yamcs.ui.archivebrowser;
 
-import org.yamcs.TimeInterval;
 import org.yamcs.ui.datepicker.DatePicker;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.TimeInterval;
 
 import javax.swing.*;
 import java.awt.*;

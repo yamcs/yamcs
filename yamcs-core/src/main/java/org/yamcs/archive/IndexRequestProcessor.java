@@ -40,9 +40,10 @@ class IndexRequestProcessor implements Runnable {
     IndexRequestListener indexRequestListener;
 
     //these maps contains the names with which the records will be sent to the client
-    final Map<String, NamedObjectId> tmpackets=new HashMap<>();
+   Map<String, NamedObjectId> tmpackets = null;
     
     boolean sendParams;
+    boolean sendTms;
 
     IndexRequestProcessor(TmIndex tmIndexer, IndexRequest req, IndexRequestListener l) {
         log.debug("new index request: {}", req);
@@ -50,21 +51,25 @@ class IndexRequestProcessor implements Runnable {
         this.req=req;
         this.tmIndexer=tmIndexer;
         this.indexRequestListener=l;
-
+       
+        
         if(req.getSendAllTm() || req.getTmPacketCount()>0) {
+            sendTms = true;
             XtceDb db=XtceDbFactory.getInstance(archiveInstance);
-            String defaultns=req.getDefaultNamespace();
 
             if(req.getSendAllTm()) {
-                for(SequenceContainer sc:db.getSequenceContainers()) {
-                    if(req.hasDefaultNamespace() && (sc.getAlias(defaultns)!=null)) {
-                        tmpackets.put(sc.getQualifiedName(),  NamedObjectId.newBuilder()
-                                .setName(sc.getAlias(defaultns)).setNamespace(defaultns).build());
-                    } else {
-                        tmpackets.put(sc.getQualifiedName(), NamedObjectId.newBuilder().setName(sc.getQualifiedName()).build());
+                if(req.hasDefaultNamespace()) {
+                    String defaultns= req.getDefaultNamespace();
+                    tmpackets = new HashMap<>();
+                    for(SequenceContainer sc:db.getSequenceContainers()) {
+                        if(req.hasDefaultNamespace() && (sc.getAlias(defaultns)!=null)) {
+                            tmpackets.put(sc.getQualifiedName(),  NamedObjectId.newBuilder()
+                                    .setName(sc.getAlias(defaultns)).setNamespace(defaultns).build());
+                        } 
                     }
-                }
+                } 
             } else {
+                tmpackets = new HashMap<>();
                 for(NamedObjectId id:req.getTmPacketList()) {
                     SequenceContainer sc=db.getSequenceContainer(id);
                     if(sc!=null) {
@@ -84,7 +89,7 @@ class IndexRequestProcessor implements Runnable {
     public void run() {
         boolean ok=true;
         try {
-            if(tmpackets.size()>0) {
+            if(sendTms) {
                 ok = sendHistogramData(XtceTmRecorder.TABLE_NAME, XtceTmRecorder.PNAME_COLUMN, 2000, tmpackets);
             }
             if(ok && sendParams) {

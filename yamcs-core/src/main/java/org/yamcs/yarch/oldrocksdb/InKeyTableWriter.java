@@ -1,4 +1,4 @@
-package org.yamcs.yarch.rocksdb;
+package org.yamcs.yarch.oldrocksdb;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,6 +50,7 @@ public class InKeyTableWriter extends AbstractTableWriter {
 
             switch (mode) {
             case INSERT:
+            case LOAD:
                 inserted = insert(db, partition, t);
                 break;
             case UPSERT:

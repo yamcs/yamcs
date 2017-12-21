@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.yamcs.TimeInterval;
+import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.streamsql.ColumnExpression;
 import org.yamcs.yarch.streamsql.RelOp;
 import org.yamcs.yarch.streamsql.StreamSqlException;
@@ -49,9 +49,11 @@ public class HistogramReaderStream extends AbstractStream implements Runnable, D
 
     @Override
     public void run() {
-        log.debug("starting a histogram stream for interval {}, mergeTime: {})", interval, mergeTime);
+        if(log.isDebugEnabled()) {
+            log.debug("starting a histogram stream for interval {}, mergeTime: {})", interval.toStringEncoded(), mergeTime);
+        }
         try {
-            iter = ydb.getStorageEngine(tblDef).getHistogramIterator(tblDef,histoColumnName, interval, mergeTime);
+            iter = ydb.getStorageEngine(tblDef).getHistogramIterator(ydb, tblDef,histoColumnName, interval, mergeTime);
             HistogramRecord r;
             while (!quit && iter.hasNext()) {
                 r = iter.next();
@@ -90,11 +92,11 @@ public class HistogramReaderStream extends AbstractStream implements Runnable, D
                 return true;
             case LESS:
             case LESS_OR_EQUAL:
-                interval.setStop(time);
+                interval.setEnd(time);
                 return true;
             case EQUAL:
                 interval.setStart(time);
-                interval.setStop(time);
+                interval.setEnd(time);
                 return true;
             case NOT_EQUAL:
                 //TODO - two ranges have to be created

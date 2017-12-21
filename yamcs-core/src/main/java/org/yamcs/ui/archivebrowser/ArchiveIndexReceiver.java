@@ -2,9 +2,9 @@ package org.yamcs.ui.archivebrowser;
 
 
 
-import org.yamcs.TimeInterval;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
+import org.yamcs.utils.TimeInterval;
 
 public interface ArchiveIndexReceiver {
     public void setIndexListener(ArchiveIndexListener indexListener);

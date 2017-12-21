@@ -3,23 +3,27 @@ package org.yamcs.parameterarchive;
 import static org.junit.Assert.*;
 import static org.yamcs.parameterarchive.TestUtils.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 import org.rocksdb.RocksDBException;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.YamcsServer;
-import org.yamcs.parameter.ParameterValueWithId;
-import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.parameter.Value;
+import org.yamcs.parameterarchive.ParameterArchiveV2.Partition;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.FileUtils;
@@ -28,14 +32,23 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 
+@RunWith(Parameterized.class)
 public class ParameterArchiveTest {
     String instance = "ParameterArchiveTest";
-
+    
+    @org.junit.runners.Parameterized.Parameter
+    public String partitioningSchema; 
+    
+    @Parameters
+    public static List<String> getPartitioningSchemas() {
+        return Arrays.asList("none", "YYYY", "YYYY/MM");
+    }
+    
     static MockupTimeService timeService;
     static Parameter p1, p2,p3,p4,p5;
-    ParameterArchive parchive;
+    ParameterArchiveV2 parchive;
     ParameterIdDb pidMap;
     ParameterGroupIdDb pgidMap;
     @BeforeClass
@@ -51,17 +64,27 @@ public class ParameterArchiveTest {
         p4.setQualifiedName("/test/p4");
         p5.setQualifiedName("/test/p5");
         TimeEncoding.setUp();
-
+      
         timeService = new MockupTimeService();
         YamcsServer.setMockupTimeService(timeService);
+        //org.yamcs.LoggingUtils.enableLogging();
     }
 
     @Before
     public void openDb() throws Exception {
+        java.util.logging.Logger.getLogger("org.yamcs").setLevel(java.util.logging.Level.ALL);
         String dbroot = YarchDatabase.getInstance(instance).getRoot();
-
-        FileUtils.deleteRecursively(dbroot+"/ParameterArchive");
-        parchive = new ParameterArchive(instance);
+        FileUtils.deleteRecursively(dbroot);
+        FileUtils.deleteRecursively(dbroot+".rdb");
+        FileUtils.deleteRecursively(dbroot+".tbs");
+        RdbStorageEngine rse = RdbStorageEngine.getInstance();
+        rse.createTablespace(instance);
+        Map<String, Object> conf = new HashMap<>();
+        
+        if(partitioningSchema!=null) {
+            conf.put("partitioningSchema", partitioningSchema);
+        }
+        parchive = new ParameterArchiveV2(instance, conf);
         pidMap = parchive.getParameterIdDb();
         ParameterGroupIdDb pgidMap= parchive.getParameterGroupIdDb();
         assertNotNull(pidMap);
@@ -70,7 +93,8 @@ public class ParameterArchiveTest {
 
     @After
     public void closeDb() throws Exception {
-        parchive.closeDb();
+        RdbStorageEngine rse = RdbStorageEngine.getInstance();
+        rse.dropTablespace(instance);
     }
     
     
@@ -80,9 +104,8 @@ public class ParameterArchiveTest {
         int p1id = pidMap.createAndGet("/test/p1", Type.BINARY);
 
         //close and reopen the archive to check that the parameter is still there
-        parchive.closeDb();
 
-        parchive = new ParameterArchive(instance);
+        parchive = new ParameterArchiveV2(instance);
         pidMap = parchive.getParameterIdDb();
         pgidMap = parchive.getParameterGroupIdDb();
         assertNotNull(pidMap);
@@ -118,7 +141,7 @@ public class ParameterArchiveTest {
         assertEquals(0, l0d.size());
 
         pgSegment1.consolidate();
-        parchive.writeToArchive(Arrays.asList(pgSegment1));
+        parchive.writeToArchive(pgSegment1);
 
         //ascending request on two value
         List<ParameterValueArray> l4a = retrieveSingleParamSingleGroup(0, TimeEncoding.MAX_INSTANT, p1id, pg1id , true);
@@ -153,15 +176,15 @@ public class ParameterArchiveTest {
         
         pgSegment2.addRecord(t2, Arrays.asList(pv1_2));
         pgSegment2.consolidate();
-        parchive.writeToArchive(Arrays.asList(pgSegment2));
+        parchive.writeToArchive(pgSegment2);
 
         //new value in a different partition
-        long t3 = ParameterArchive.Partition.getPartitionEnd(0)+100;
+        long t3 = TimeEncoding.parse("2017-01-01T00:00:51");
         PGSegment pgSegment3 = new PGSegment(pg1id, SortedTimeSegment.getSegmentStart(t3), new SortedIntArray(new int[] {p1id}));
         ParameterValue pv1_3 = getParameterValue(p1, t3, "pv1_3");
         pgSegment3.addRecord(t3, Arrays.asList(pv1_3));
         pgSegment3.consolidate();
-        parchive.writeToArchive(Arrays.asList(pgSegment3));
+        parchive.writeToArchive(pgSegment3);
 
 
         //ascending request on four values
@@ -196,7 +219,6 @@ public class ParameterArchiveTest {
         assertNotNull(l9a.get(2).paramStatus);
         assertEquals(AcquisitionStatus.EXPIRED, l9a.get(1).paramStatus[0].getAcquisitionStatus());
         assertEquals(AcquisitionStatus.ACQUIRED, l9a.get(2).paramStatus[0].getAcquisitionStatus());
-
     }
 
     
@@ -217,11 +239,12 @@ public class ParameterArchiveTest {
         
         pgSegment1.consolidate();
         
-        parchive.writeToArchive(Arrays.asList(pgSegment1));
-        long segmentStart = SortedTimeSegment.getSegmentStart(100); 
-        Partition p = parchive.getPartitions(Partition.getPartitionId(100));
-        assertNotNull(parchive.yrdb.get(p.dataCfh, new SegmentKey(p1id, pg1id, segmentStart, SegmentKey.TYPE_ENG_VALUE).encode()));
-        assertNull(parchive.yrdb.get(p.dataCfh, new SegmentKey(p1id, pg1id, segmentStart, SegmentKey.TYPE_RAW_VALUE).encode()));
+        parchive.writeToArchive(pgSegment1);
+        long segmentStart = SortedTimeSegment.getSegmentStart(100);
+        
+        Partition p = parchive.getPartitions(100);
+        assertNotNull(parchive.getTablespace().getRdb(p.partitionDir).get(new SegmentKey(p1id, pg1id, segmentStart, SegmentKey.TYPE_ENG_VALUE).encode()));
+        assertNull(parchive.getTablespace().getRdb().get(new SegmentKey(p1id, pg1id, segmentStart, SegmentKey.TYPE_RAW_VALUE).encode()));
         
         List<ParameterValueArray> l1a = retrieveSingleParamSingleGroup(0, TimeEncoding.MAX_INSTANT, p1id, pg1id , true, false, true, false);
         checkEquals(false, true, false, l1a.get(0), pv1_0, pv1_1);
@@ -317,7 +340,7 @@ public class ParameterArchiveTest {
         pgSegment2.addRecord(300, Arrays.asList(pv1_2));
         pgSegment2.consolidate();
 
-        parchive.writeToArchive(Arrays.asList(pgSegment1, pgSegment2));
+        parchive.writeToArchive(0, Arrays.asList(pgSegment1, pgSegment2));
 
         //ascending on 3 values from same segment
         List<ParameterValueArray> l1a = retrieveSingleValueMultigroup(0, TimeEncoding.MAX_INSTANT, p1id, new int[]{pg1id, pg2id}, true); 
@@ -337,16 +360,16 @@ public class ParameterArchiveTest {
         ParameterValue pv2_1 = getParameterValue(p1, t2, "pv2_1");
         pgSegment3.addRecord(t2, Arrays.asList(pv1_3, pv2_1));
         pgSegment3.consolidate();
-        parchive.writeToArchive(Arrays.asList(pgSegment3));
+        parchive.writeToArchive(pgSegment3);
 
         //new value in a different partition
-        long t3 = ParameterArchive.Partition.getPartitionEnd(0)+100;
+        long t3 = TimeEncoding.parse("2017-01-01T00:00:00");
         PGSegment pgSegment4 = new PGSegment(pg1id, SortedTimeSegment.getSegmentStart(t3), new SortedIntArray(new int[] {p1id, p2id}));
         ParameterValue pv1_4 = getParameterValue(p1, t3, "pv1_4");
         ParameterValue pv2_2 = getParameterValue(p1, t3, "pv2_2");
         pgSegment4.addRecord(t3, Arrays.asList(pv1_4, pv2_2));
         pgSegment4.consolidate();
-        parchive.writeToArchive(Arrays.asList(pgSegment4));
+        parchive.writeToArchive(pgSegment4);
 
 
         //ascending on 5 values from three segments ascending
@@ -399,7 +422,7 @@ public class ParameterArchiveTest {
         
     }
 
-    private List<ParameterValueArray> retrieveSingleValueMultigroup(long start, long stop, int parameterId, int[] parameterGroupIds, boolean ascending, boolean retrieveEng, boolean retrieveRaw, boolean retrieveStatus) throws RocksDBException, DecodingException {
+    private List<ParameterValueArray> retrieveSingleValueMultigroup(long start, long stop, int parameterId, int[] parameterGroupIds, boolean ascending, boolean retrieveEng, boolean retrieveRaw, boolean retrieveStatus) throws RocksDBException, DecodingException, IOException {
         SingleParameterValueRequest spvr = new SingleParameterValueRequest(start, stop, parameterId, parameterGroupIds, ascending);
         spvr.setRetrieveParameterStatus(retrieveStatus);
         spvr.setRetrieveEngineeringValues(retrieveEng);
@@ -411,13 +434,12 @@ public class ParameterArchiveTest {
         return svc.list;
     }
 
-    private List<ParameterValueArray> retrieveSingleValueMultigroup(long start, long stop, int parameterId, int[] parameterGroupIds, boolean ascending) throws RocksDBException, DecodingException {
+    private List<ParameterValueArray> retrieveSingleValueMultigroup(long start, long stop, int parameterId, int[] parameterGroupIds, boolean ascending) throws RocksDBException, DecodingException, IOException {
         return retrieveSingleValueMultigroup(start, stop, parameterId, parameterGroupIds, ascending, true, true, true);
     }
 
     @Test
     public void testMultipleParameters() throws Exception{
-
         ParameterValue pv1_0 = getParameterValue(p1, 100, "pv1_0");
         ParameterValue pv2_0 = getParameterValue(p2, 100, "pv2_0");
         ParameterValue pv1_1 = getParameterValue(p1, 200, "pv1_1");
@@ -449,7 +471,7 @@ public class ParameterArchiveTest {
         pgSegment2.addRecord(300, Arrays.asList(pv1_2));
         pgSegment2.consolidate();
 
-        parchive.writeToArchive(Arrays.asList(pgSegment1, pgSegment2));
+        parchive.writeToArchive(0, Arrays.asList(pgSegment1, pgSegment2));
 
         //ascending, retrieving one parameter from he group of two
         List<ParameterIdValueList> l1a = retrieveMultipleParameters(0, TimeEncoding.MAX_INSTANT, new int[]{p1id}, new int[]{pg1id}, true);
@@ -492,16 +514,16 @@ public class ParameterArchiveTest {
         ParameterValue pv2_1 = getParameterValue(p1, t2, "pv2_1");
         pgSegment3.addRecord(t2, Arrays.asList(pv1_3, pv2_1));
         pgSegment3.consolidate();
-        parchive.writeToArchive(Arrays.asList(pgSegment3));
+        parchive.writeToArchive(pgSegment3);
 
         //new value in a different partition
-        long t3 = ParameterArchive.Partition.getPartitionEnd(0)+100;
+        long t3 = TimeEncoding.parse("2017-01-01T00:00:00");
         PGSegment pgSegment4 = new PGSegment(pg1id, SortedTimeSegment.getSegmentStart(t3), new SortedIntArray(new int[] {p1id, p2id}));
         ParameterValue pv1_4 = getParameterValue(p1, t3, "pv1_4");
         ParameterValue pv2_2 = getParameterValue(p1, t3, "pv2_2");
         pgSegment4.addRecord(t3, Arrays.asList(pv1_4, pv2_2));
         pgSegment4.consolidate();
-        parchive.writeToArchive(Arrays.asList(pgSegment4));
+        parchive.writeToArchive(pgSegment4);
 
         //ascending retrieving two para
         List<ParameterIdValueList> l4a = retrieveMultipleParameters(0, TimeEncoding.MAX_INSTANT, new int[]{p1id, p2id}, new int[]{pg1id, pg1id}, true);
@@ -545,7 +567,6 @@ public class ParameterArchiveTest {
         checkEquals(l7a.get(0), 100, pv1_0, pv2_0);
         checkEquals(l7a.get(1), t2, pv1_3, pv2_1);
         
-        parchive.closeDb();
     }
 
 

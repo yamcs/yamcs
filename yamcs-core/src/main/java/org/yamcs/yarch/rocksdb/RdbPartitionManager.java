@@ -1,132 +1,69 @@
 package org.yamcs.yarch.rocksdb;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
-import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.yarch.HistogramInfo;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitionManager;
-import org.yamcs.yarch.PartitioningSpec;
-import org.yamcs.yarch.TimePartitionSchema.PartitionInfo;
-
+import org.yamcs.yarch.oldrocksdb.ColumnValueSerializer;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
+import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
+import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition;
+
+import com.google.protobuf.ByteString;
+
 import org.yamcs.yarch.TableDefinition;
-import org.yamcs.yarch.TableDefinition.PartitionStorage;
-import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.TimePartitionInfo;
 
 /**
- * Keeps track of table partitions in rocksdb storage. 
- * Types of partitions that are supported:
- *  time and time,value     - creates directories of shape yyyy/ddd/tblname
- *  value                   - creates column families with a binary encoded version of value
- * @author nm
+ * Handles partitions for one table. All partitions are stored as records in the tablespace.
+ *  
  */
 public class RdbPartitionManager extends PartitionManager {
+    final Tablespace tablespace;
+    static Logger log = LoggerFactory.getLogger(RdbPartitionManager.class.getName());
+    YarchDatabaseInstance ydb;
 
-    final YarchDatabaseInstance ydb;
-    static Logger log=LoggerFactory.getLogger(RdbPartitionManager.class.getName());
-
-    public RdbPartitionManager(YarchDatabaseInstance ydb, TableDefinition tableDefinition) {
+    public RdbPartitionManager(Tablespace tablespace, YarchDatabaseInstance ydb, TableDefinition tableDefinition) {
         super(tableDefinition);
+        this.tablespace = tablespace;
         this.ydb = ydb;
     }
 
     /** 
-     * Called at startup to read existing partitions from disk
+     * Called at startup to read existing partitions
+     * @throws IOException 
+     * @throws RocksDBException 
      */
-    public void readPartitionsFromDisk() {
-        readDir("");
-    }
-
-    private void readDir(String dir) {
-        String tblName = tableDefinition.getName();
-        String dataDir = tableDefinition.getDataDir();
-        String[] files=new File(dataDir+"/"+dir).list();
-        for(String s:files) {
-            File f = new File(dataDir +"/"+dir+"/"+s);
-
-            if(!f.isDirectory()) continue;
-            if(s.equals(tblName)) {
-                File currentf = new File(dataDir+"/"+dir+"/"+s+"/CURRENT");
-                if(currentf.exists()) {
-                    PartitionInfo pinfo = partitioningSpec.getTimePartitioningSchema().parseDir(dir);
-                    try {
-                        readDb(partitioningSpec, pinfo, dir);
-                    } catch (Exception e) {
-                        log.error("cannot open database partition for table "+tableDefinition.getName()+" at '"+dir, e );
-                        continue;
-                    }
-                }	
-            }
-            if(dir.isEmpty()) {
-                readDir(s);
+    public void readPartitions() throws RocksDBException, IOException {
+        ColumnValueSerializer cvs = new ColumnValueSerializer(tableDefinition);
+        for(TablespaceRecord tr: tablespace.getTablePartitions(ydb.getName(), tableDefinition.getName())) {
+            if(tr.hasPartitionValue()) {                
+                if(tr.hasPartition()) {
+                    TimePartitionInfo pinfo = partitioningSpec.getTimePartitioningSchema().parseDir(tr.getPartition().getPartitionDir());
+                    addPartitionByTimeAndValue(tr.getTbsIndex(), pinfo, cvs.byteArrayToObject(tr.getPartitionValue().toByteArray()));
+                } else {
+                    addPartitionByValue(tr.getTbsIndex(), cvs.byteArrayToObject(tr.getPartitionValue().toByteArray()));
+                }
             } else {
-                readDir(dir+"/"+s);
+                if(tr.hasPartition()) {
+                    addPartitionByTime(tr.getTbsIndex(), tr.getPartition());
+                } else {
+                    addPartitionByNone(tr.getTbsIndex());
+                }
             }
         }
-    }
 
-    /** 
-     * Called at startup to read existing partitions from disk
-     * @param partitioningSpec 
-     */
-    private void readDb(PartitioningSpec partitioningSpec, PartitionInfo pinfo, String dir) throws RocksDBException, IOException {
-        log.trace("reading partition from {} pinfo: {}", dir, pinfo);
-        RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
-        String tblName = tableDefinition.getName();
-        String dataDir = tableDefinition.getDataDir();
-        String absolutePath = dir.isEmpty()?dataDir+"/"+tblName:dataDir+"/"+dir+"/"+tblName;
-        YRDB rdb = rdbFactory.getRdb(absolutePath, false);
-        ColumnValueSerializer cvs = new ColumnValueSerializer(tableDefinition);
-
-        try {
-            if((partitioningSpec.type==PartitioningSpec._type.TIME_AND_VALUE) ||  (partitioningSpec.type==PartitioningSpec._type.VALUE)) {
-                List<byte[]> partitionList;
-                int size = ColumnValueSerializer.getSerializedSize(partitioningSpec.getValueColumnType());
-                
-                if(tableDefinition.getPartitionStorage()==PartitionStorage.COLUMN_FAMILY) {
-                    partitionList = rdb.getColumnFamilies();
-                    Iterator<byte[]> it = partitionList.iterator(); 
-                    while(it.hasNext()) { //filter out the partitions that are not the correct size or histograms or default rocksdb CF
-                                          //perhaps we should have a better mechanism for this - like some metadata stored in its own CF
-                        byte[] b = it.next();
-                        if((b.length==size) && !Arrays.equals(b,  RocksDB.DEFAULT_COLUMN_FAMILY)) {
-                            String s = new String(b, StandardCharsets.UTF_8);
-                            if(s.startsWith("histo")) it.remove();
-                        } else {
-                            it.remove();
-                        }
-                    }
-                } else {
-                    
-                    partitionList = rdb.scanPartitions(size);
-                }
-
-                for(byte[] b: partitionList) {
-                    Object value = cvs.byteArrayToObject(b);
-                    if(pinfo!=null) {
-                        addPartitionByTimeAndValue(pinfo, value, b);
-                    } else {
-                        addPartitionByValue(value, b);
-                    }
-                }
-            } else if(partitioningSpec.type==PartitioningSpec._type.TIME) {
-                addPartitionByTime(pinfo);
+        for(TablespaceRecord tr: tablespace.getTableHistograms(ydb.getName(), tableDefinition.getName())) {
+            if(tr.hasPartition()) {                
+                addHistogramByTime(tr);
             } else {
-                addPartitionByNone();
+                addHistogramByNone(tr);
             }
-        } finally {
-            rdbFactory.dispose(rdb);
         }
     }
 
@@ -134,120 +71,137 @@ public class RdbPartitionManager extends PartitionManager {
     /** 
      * Called at startup when reading existing partitions from disk
      */
-    private void addPartitionByTime(PartitionInfo pinfo) {               
-        Interval intv = intervals.get(pinfo.partitionStart);      
+    private void addPartitionByTime(int tbsIndex, TimeBasedPartition tbp) {               
+        Interval intv = intervals.getFit(tbp.getPartitionStart());      
 
         if(intv==null) {            
-            intv=new Interval(pinfo.partitionStart, pinfo.partitionEnd);
-            intervals.put(pinfo.partitionStart, intv);
+            intv = new Interval(tbp.getPartitionStart(), tbp.getPartitionEnd());
+            intv = intervals.insert(intv);
         }
-        Partition p = new RdbPartition(pinfo.partitionStart, pinfo.partitionEnd, null, null, pinfo.dir+"/"+tableDefinition.getName());
+        Partition p = new RdbPartition(tbsIndex, tbp.getPartitionStart(), tbp.getPartitionEnd(), null, tbp.getPartitionDir());
         intv.addTimePartition(p);
-    }   
+    }
+    /**
+     * Called at startup when reading existing histograms
+     */
+    private void addHistogramByTime(TablespaceRecord tr) {
+        TimeBasedPartition tbp = tr.getPartition();
+        Interval intv = intervals.getFit(tbp.getPartitionStart());      
+
+        if(intv==null) {            
+            intv = new Interval(tbp.getPartitionStart(), tbp.getPartitionEnd());
+            intv = intervals.insert(intv);
+        }
+        RdbHistogramInfo hinfo = new RdbHistogramInfo(tr.getTbsIndex(), tr.getHistogramColumnName(), tbp.getPartitionDir());
+        intv.addHistogram(tr.getHistogramColumnName(), hinfo);
+    }
+
+    /**
+     * Called at startup when reading existing histograms
+     */
+    private void addHistogramByNone(TablespaceRecord tr) {
+        RdbHistogramInfo hinfo = new RdbHistogramInfo(tr.getTbsIndex(), tr.getHistogramColumnName(), null);
+        pcache.addHistogram(tr.getHistogramColumnName(), hinfo);
+    }
 
     /** 
      * Called at startup when reading existing partitions from disk
      */
-    private void addPartitionByTimeAndValue(PartitionInfo pinfo, Object value, byte[] binaryValue) {	   	   
-        Interval intv = intervals.get(pinfo.partitionStart);	  
+    private void addPartitionByTimeAndValue(int tbsIndex, TimePartitionInfo pinfo, Object value) {	   	   
+        Interval intv = intervals.getFit(pinfo.getStart());	  
 
         if(intv==null) {	    
-            intv = new Interval(pinfo.partitionStart, pinfo.partitionEnd);
-            intervals.put(pinfo.partitionStart, intv);
+            intv = new Interval(pinfo.getStart(), pinfo.getEnd());
+            intv = intervals.insert(intv);
         }
-        Partition p=new RdbPartition(pinfo.partitionStart, pinfo.partitionEnd, value, binaryValue, pinfo.dir+"/"+tableDefinition.getName());
+        Partition p = new RdbPartition(tbsIndex, pinfo.getStart(), pinfo.getEnd(), value, pinfo.getDir());
         intv.add(value, p);
     }	
 
     /** 
      * Called at startup when reading existing partitions from disk
      */
-    private void addPartitionByValue(Object value, byte[] binaryValue) {
-        Partition p = new RdbPartition(Long.MIN_VALUE, Long.MAX_VALUE, value,  binaryValue,tableDefinition.getName());             
+    private void addPartitionByValue(int tbsIndex, Object value) {
+        Partition p = new RdbPartition(tbsIndex, Long.MIN_VALUE, Long.MAX_VALUE, value,  null);             
         pcache.add(value, p);
     }   
 
     /** 
      * Called at startup when reading existing partitions from disk
      */
-    private void addPartitionByNone() {
-        Partition p = new RdbPartition(Long.MIN_VALUE, Long.MAX_VALUE, null, null, tableDefinition.getName());             
+    private void addPartitionByNone(int tbsIndex) {
+        Partition p = new RdbPartition(tbsIndex, Long.MIN_VALUE, Long.MAX_VALUE, null, null);             
         pcache.add(null, p);
     }   
 
     @Override
-    protected Partition createPartitionByTime(PartitionInfo pinfo, Object value) throws IOException {
-        try {
-            String tblName = tableDefinition.getName();
-            String dataDir = tableDefinition.getDataDir();
-            RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
-            File f= new File(dataDir+"/"+pinfo.dir+"/"+tblName);
-
-            if(!f.exists()) {
-                f.mkdirs();
-            }
-
-            YRDB rdb = rdbFactory.getRdb(f.getAbsolutePath(), true);
-            byte[] bvalue = null;
-            if(value!=null) {
-                ColumnValueSerializer cvs = new ColumnValueSerializer(tableDefinition);
-                bvalue = cvs.objectToByteArray(value);
-                if(tableDefinition.getPartitionStorage()==PartitionStorage.COLUMN_FAMILY) {
-                    rdb.createColumnFamily(bvalue);
-                }
-            }
-
-            rdbFactory.dispose(rdb);
-            return new RdbPartition(pinfo.partitionStart, pinfo.partitionEnd, value, bvalue, pinfo.dir+"/"+tableDefinition.getName());			
-        } catch (RocksDBException e) {
-            log.error("Error when creating partition "+pinfo+" for value "+value+": ", e);
-            throw new IOException(e);
-
+    protected Partition createPartitionByTime(TimePartitionInfo pinfo, Object value) throws IOException {
+        byte[] bvalue = null;
+        if(value!=null) {
+            ColumnValueSerializer cvs = new ColumnValueSerializer(tableDefinition);
+            bvalue = cvs.objectToByteArray(value);               
         }
+        TablespaceRecord.Builder trb = TablespaceRecord.newBuilder().setType(TablespaceRecord.Type.TABLE_PARTITION)
+                .setTableName(tableDefinition.getName()).setPartition(TimeBasedPartition.newBuilder()
+                        .setPartitionDir(pinfo.getDir()).setPartitionStart(pinfo.getStart()).setPartitionEnd(pinfo.getEnd())
+                        .build());
+        if(bvalue!=null) {
+            trb.setPartitionValue(ByteString.copyFrom(bvalue));
+        }
+        try {
+            TablespaceRecord tr = tablespace.createMetadataRecord(ydb.getName(), trb);
+            return new  RdbPartition(tr.getTbsIndex(), pinfo.getStart(), pinfo.getEnd(), value, pinfo.getDir());
+        } catch (RocksDBException e) {
+            throw new IOException(e);
+        }
+
     }
 
     @Override
     protected Partition createPartition(Object value) throws IOException {
+        String tblName = tableDefinition.getName();
+        byte[] bvalue = null;
+        if(value!=null) {
+            ColumnValueSerializer cvs = new ColumnValueSerializer(tableDefinition);
+            bvalue = cvs.objectToByteArray(value);
+        }
+        TablespaceRecord.Builder trb = TablespaceRecord.newBuilder()
+                .setType(Type.TABLE_PARTITION).setTableName(tblName);
+        if(bvalue!=null) {
+            trb.setPartitionValue(ByteString.copyFrom(bvalue));
+        }
         try {
-            String tblName = tableDefinition.getName();
-            String dataDir = tableDefinition.getDataDir();
-            RDBFactory rdbFactory = RDBFactory.getInstance(ydb.getName());
-
-            File f= new File(dataDir+"/"+tblName);
-
-            if(!f.exists()) {
-                f.mkdirs();
-            }
-            YRDB rdb = rdbFactory.getRdb(f.getAbsolutePath(), true);
-            byte[] bvalue = null;
-            if(value!=null) {
-                ColumnValueSerializer cvs = new ColumnValueSerializer(tableDefinition);
-                bvalue = cvs.objectToByteArray(value);
-                if(tableDefinition.getPartitionStorage()==PartitionStorage.COLUMN_FAMILY) {
-                    rdb.createColumnFamily(bvalue);
-                }
-            }
-            rdbFactory.dispose(rdb);
-            return new RdbPartition(Long.MIN_VALUE, Long.MAX_VALUE, value, bvalue, tableDefinition.getName());			
+            TablespaceRecord tr = tablespace.createMetadataRecord(ydb.getName(), trb);
+            return new RdbPartition(tr.getTbsIndex(), Long.MIN_VALUE, Long.MAX_VALUE, value, null);
         } catch (RocksDBException e) {
-            log.error("failed to create partition for table "+tableDefinition.getName()+" and value '"+value+"': ", e);
             throw new IOException(e);
         }
-    }
-}
 
-class Interval {
-    long start,  end;
-    String dir;
-    Set<Object> values=Collections.newSetFromMap(new ConcurrentHashMap<Object, Boolean>());
-
-    public Interval(long start, long end) {
-        this.start=start;
-        this.end=end;
     }
 
     @Override
-    public String toString() {
-        return "["+TimeEncoding.toString(start)+" - "+TimeEncoding.toString(end)+"] dir:"+dir+" values: "+values;
+    protected HistogramInfo createHistogramByTime(TimePartitionInfo pinfo, String columnName) throws IOException {
+        try {
+            TablespaceRecord.Builder trb = TablespaceRecord.newBuilder().setType(Type.HISTOGRAM).setTableName(tableDefinition.getName())
+                    .setHistogramColumnName(columnName).setPartition(TimeBasedPartition.newBuilder().setPartitionDir(pinfo.getDir())
+                            .setPartitionStart(pinfo.getStart()).setPartitionEnd(pinfo.getEnd()).build());
+
+            TablespaceRecord tr = tablespace.createMetadataRecord(ydb.getName(), trb);
+            return new RdbHistogramInfo(tr.getTbsIndex(), columnName, pinfo.getDir());                       
+        } catch (RocksDBException e) {
+            throw new IOException(e);
+        }       
+    }
+
+    @Override
+    protected HistogramInfo createHistogram(String columnName)  throws IOException {
+        try {
+            TablespaceRecord.Builder trb = TablespaceRecord.newBuilder().setType(Type.HISTOGRAM).setTableName(tableDefinition.getName())
+                    .setHistogramColumnName(columnName);
+            TablespaceRecord tr = tablespace.createMetadataRecord(ydb.getName(), trb);
+            return new RdbHistogramInfo(tr.getTbsIndex(), columnName, null);                       
+        } catch (RocksDBException e) {
+            throw new IOException(e);
+        }      
     }
 }

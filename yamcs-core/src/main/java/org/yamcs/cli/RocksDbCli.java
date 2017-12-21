@@ -15,7 +15,6 @@ import org.yamcs.yarch.rocksdb.YRDB;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
-
 /**
  * Command line utility for doing rocksdb operations
  * 
@@ -29,8 +28,8 @@ public class RocksDbCli extends Command {
     public RocksDbCli(YamcsCli yamcsCli) {
         super("rocksdb", yamcsCli);
         addSubCommand(new RocksdbCompact());
+        addSubCommand(new RocksdbBenchmark(this));
     }
-
 
     @Override
     public void execute() throws Exception {
@@ -40,10 +39,10 @@ public class RocksDbCli extends Command {
 
     @Parameters(commandDescription = "Compact rocksdb database")
     private class RocksdbCompact extends Command {
-        @Parameter(names="--dbDir", description="database directory", required=true)
+        @Parameter(names = "--dbDir", description = "database directory", required = true)
         String dbDir;
 
-        @Parameter(names="--sizeMB", description="target size of each SST files in MB (by default 256 MB)", required=false)
+        @Parameter(names = "--sizeMB", description = "target size of each SST files in MB (by default 256 MB)", required = false)
         int sizeMB = 256;
 
         public RocksdbCompact() {
@@ -57,17 +56,17 @@ public class RocksDbCli extends Command {
             List<ColumnFamilyDescriptor> cfdList = new ArrayList<>(cfl.size());
             ColumnFamilyOptions cfoptions = new ColumnFamilyOptions();
             cfoptions.setCompactionStyle(CompactionStyle.UNIVERSAL);
-            cfoptions.setTargetFileSizeBase(1024L*1024*sizeMB);
-            for(byte[] b: cfl) {
-                cfdList.add(new ColumnFamilyDescriptor(b, cfoptions));                                      
+            cfoptions.setTargetFileSizeBase(1024L * 1024 * sizeMB);
+            for (byte[] b : cfl) {
+                cfdList.add(new ColumnFamilyDescriptor(b, cfoptions));
             }
             List<ColumnFamilyHandle> cfhList = new ArrayList<>(cfl.size());
             DBOptions dbOptions = new DBOptions();
 
             RocksDB db = RocksDB.open(dbOptions, dbDir, cfdList, cfhList);
-            for(int i=0;i<cfhList.size(); i++) {
+            for (int i = 0; i < cfhList.size(); i++) {
                 ColumnFamilyHandle cfh = cfhList.get(i);
-                console.println("Compacting Column Family "+YRDB.cfNameToString(cfl.get(i)));
+                console.println("Compacting Column Family " + YRDB.cfNameToString(cfl.get(i)));
                 db.compactRange(cfh);
             }
             db.close();

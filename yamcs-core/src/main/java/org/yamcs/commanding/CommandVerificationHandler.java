@@ -98,7 +98,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
             if(scheduleNow) {
                 scheduleVerifier(verifier, checkWindow.getTimeToStartChecking(), checkWindow.getTimeToStopChecking());
             }
-
+            prevVerifier = verifier;
         }
     }
 

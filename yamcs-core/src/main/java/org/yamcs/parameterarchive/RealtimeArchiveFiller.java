@@ -22,7 +22,7 @@ public class RealtimeArchiveFiller extends ArchiveFillerTask {
     Processor realtimeProcessor; 
     int subscriptionId;
     
-    public RealtimeArchiveFiller(ParameterArchive parameterArchive, Map<String, Object> config) {
+    public RealtimeArchiveFiller(ParameterArchiveV2 parameterArchive, Map<String, Object> config) {
         super(parameterArchive);
         this.yamcsInstance = parameterArchive.getYamcsInstance();
         log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
@@ -57,7 +57,7 @@ public class RealtimeArchiveFiller extends ArchiveFillerTask {
                 Map <Integer, PGSegment> m = k.getValue();
                 long sstart = k.getKey();
                 log.debug("Writing to archive the segment: [{} - {})", TimeEncoding.toString(sstart), TimeEncoding.toString(SortedTimeSegment.getNextSegmentStart(sstart)));
-                consolidateAndWriteToArchive(m.values());
+                consolidateAndWriteToArchive(sstart, m.values());
             }
         } catch(Exception e) {
             log.error("Error when flusing data to parameter archive ", e);

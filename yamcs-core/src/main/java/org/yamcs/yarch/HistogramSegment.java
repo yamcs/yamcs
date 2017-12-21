@@ -3,15 +3,17 @@ package org.yamcs.yarch;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
+import org.yamcs.utils.ByteArrayUtils;
+
 /* 
- * keeps all the records in a {@link groupFactor} millisec interval
+ * keeps all the records in a {@value #GROUPING_FACTOR} millisec interval
  * 
  * */
 public class HistogramSegment {
     byte[] columnv;
     long sstart; //segment start 
     ArrayList<HistogramSegment.SegRecord> pps;
-    public final static long GROUPING_FACTOR = 3600*1000; //has to be less than 2^16 *1000
+    public static final long GROUPING_FACTOR = 3600*1000; //has to be less than 2^16 *1000
     static final int REC_SIZE = 10; //4 bytes for start and stop, 2 bytes for num
     static final int MAX_INTERVAL = 120000; //make two records if the time between packets is more than 2 minutes (because the packets are not very related)
     private static long LOSS_TIME = 1000; //time in milliseconds above which we consider a packet loss
@@ -24,14 +26,14 @@ public class HistogramSegment {
     public HistogramSegment(byte[] columnv, long sstart) {
         this.columnv = columnv;
         this.sstart = sstart;
-        pps=new ArrayList<HistogramSegment.SegRecord>();
+        pps=new ArrayList<>();
     }
 
     public HistogramSegment(byte[] columnv, long sstart, byte[] val) {
         ByteBuffer v = ByteBuffer.wrap(val);
         this.columnv = columnv;
         this.sstart = sstart;
-        pps = new ArrayList<HistogramSegment.SegRecord>();
+        pps = new ArrayList<>();
         while(v.hasRemaining()) {
             pps.add(new SegRecord(v.getInt(),v.getInt(),v.getShort()));
         }
@@ -43,7 +45,7 @@ public class HistogramSegment {
         this.sstart = k.getLong(0);
         columnv = new byte[k.remaining()];
         k.get(columnv);
-        pps = new ArrayList<HistogramSegment.SegRecord>();
+        pps = new ArrayList<>();
         while(v.hasRemaining()) {
             pps.add(new SegRecord(v.getInt(),v.getInt(),v.getShort()));
         }
@@ -57,10 +59,9 @@ public class HistogramSegment {
     }
 
     public static byte[] key(long sstart, byte[] columnv) {
-        ByteBuffer bbk = ByteBuffer.allocate(8+columnv.length);
-        bbk.putLong(sstart);
-        bbk.put(columnv);
-        return bbk.array();
+        byte[] b = ByteArrayUtils.encodeLong(sstart, new byte[8+columnv.length], 0);
+        System.arraycopy(columnv, 0, b, 8, columnv.length);
+        return b;
     }
 
     public byte[] val() {
@@ -73,13 +74,20 @@ public class HistogramSegment {
         return bbv.array();
     }
 
+    public static long segmentStart(long instant) {
+        return instant/HistogramSegment.GROUPING_FACTOR;
+    }
 
-
-    //used for merging - all these should be put into a PpMerger class
+    //used for merging
     //actions
-    private boolean mergeLeft=false, mergeRight=false;
+    private boolean mergeLeft=false;
+    private boolean mergeRight=false;
     //results
-    boolean duplicate=false, leftUpdated=false, centerAdded=false,  rightUpdated=false, rightDeleted=false;
+    boolean duplicate=false;
+    boolean leftUpdated=false;
+    boolean centerAdded=false;
+    boolean rightUpdated=false;
+    boolean rightDeleted=false;
 
     int leftIndex=-1, rightIndex=-1;
     HistogramSegment.SegRecord left, right;

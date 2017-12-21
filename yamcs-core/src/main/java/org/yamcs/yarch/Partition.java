@@ -1,5 +1,7 @@
 package org.yamcs.yarch;
 
+import org.yamcs.utils.TimeEncoding;
+
 /**
  *  stores information about Partition of a table
  *  It is subclassed by storage engines to store additional information 
@@ -28,6 +30,6 @@ public class Partition {
 
     @Override
     public String toString() {
-        return "Partition [start=" + start + ", end=" + end + ", value=" + value + "]";
+        return "Partition [start=" + TimeEncoding.toString(start) + ", end=" + TimeEncoding.toString(end) + ", value=" + value + "]";
     }
 }

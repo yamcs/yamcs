@@ -24,19 +24,19 @@ public class SortedTimeSegment extends BaseSegment implements ValueSegment {
     public static final int TIMESTAMP_MASK = (0xFFFFFFFF>>>(32-NUMBITS_MASK));
     public static final long SEGMENT_MASK = ~TIMESTAMP_MASK;
     
-    final static byte SUBFORMAT_ID_DELTAZG_FPF128_VB = 1; //compressed with DeltaZigzag and then FastPFOR128 plus VarInt32 for remaining
-    final static byte SUBFORMAT_ID_DELTAZG_VB = 2; //compressed with DeltaZigzag plus VarInt32
-
+    static final byte SUBFORMAT_ID_DELTAZG_FPF128_VB = 1; //compressed with DeltaZigzag and then FastPFOR128 plus VarInt32 for remaining
+    static final byte SUBFORMAT_ID_DELTAZG_VB = 2; //compressed with DeltaZigzag plus VarInt32
 
     public static final int VERSION = 0;
-
-    final private long segmentStart;    
+    private final long segmentStart;    
     private SortedIntArray tsarray;
 
 
     public SortedTimeSegment(long segmentStart) {
         super(FORMAT_ID_SortedTimeValueSegment);
-        if((segmentStart & TIMESTAMP_MASK) !=0) throw new IllegalArgumentException("t0 must be 0 in last "+NUMBITS_MASK+" bits");
+        if((segmentStart & TIMESTAMP_MASK) !=0) {
+            throw new IllegalArgumentException("t0 must be 0 in last "+NUMBITS_MASK+" bits");
+        }
 
         tsarray = new SortedIntArray();
         this.segmentStart = segmentStart;
@@ -191,7 +191,9 @@ public class SortedTimeSegment extends BaseSegment implements ValueSegment {
      */
     @Override
     public void writeTo(ByteBuffer bb) {
-        if(tsarray.size()==0) throw new IllegalStateException(" the time segment has no data");
+        if(tsarray.size()==0) {
+            throw new IllegalStateException(" the time segment has no data");
+        }
         int[] ddz = VarIntUtil.encodeDeltaDeltaZigZag(tsarray);
         int position = bb.position();
         bb.put(SUBFORMAT_ID_DELTAZG_FPF128_VB);

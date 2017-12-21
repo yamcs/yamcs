@@ -3,6 +3,7 @@ package org.yamcs.utils;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.PrimitiveIterator;
+import java.util.function.IntConsumer;
 
 /**
  * sorted int array
@@ -178,6 +179,12 @@ public class SortedIntArray implements Serializable {
         };
     }
     
+    public void forEach(IntConsumer action) {
+        for(int i=0; i<length; i++) {
+            action.accept(a[i]);
+        }
+    }
+    
     public String toString() {        
         StringBuilder b = new StringBuilder();
         int n = length-1;
@@ -259,15 +266,19 @@ public class SortedIntArray implements Serializable {
             return true;
         }
         
-        if (obj == null) return false;
+        if (obj == null) 
+            return false;
         
-        if (getClass() != obj.getClass()) return false;
+        if (getClass() != obj.getClass()) 
+            return false;
         
         SortedIntArray other = (SortedIntArray) obj;
-        if (length != other.length) return false;
+        if (length != other.length) 
+            return false;
         
         for(int i=0; i<length; i++) {
-            if(a[i]!=other.a[i])    return false;
+            if(a[i]!=other.a[i])
+                return false;
         }
        
         return true;

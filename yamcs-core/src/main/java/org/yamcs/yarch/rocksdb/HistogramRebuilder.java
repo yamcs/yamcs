@@ -13,9 +13,14 @@ import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.TimeInterval;
+import org.yamcs.utils.IntArray;
+import org.yamcs.utils.TimeInterval;
+import org.yamcs.yarch.HistogramInfo;
+import org.yamcs.yarch.HistogramRecord;
 import org.yamcs.yarch.HistogramSegment;
 import org.yamcs.yarch.Partition;
+import org.yamcs.yarch.PartitionManager;
+import org.yamcs.yarch.PartitionManager.Interval;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableDefinition;
@@ -23,9 +28,11 @@ import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
+import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
+import static org.yamcs.yarch.rocksdb.RdbStorageEngine.dbKey;
 /**
  * rebuilds the histogram for a table
  * @author nm
@@ -36,9 +43,11 @@ public class HistogramRebuilder {
     final TableDefinition tblDef;
     private static AtomicInteger streamCounter = new AtomicInteger();
     static Logger log = LoggerFactory.getLogger(HistogramRebuilder.class);
-
-    public HistogramRebuilder(YarchDatabaseInstance ydb, String tableName) {
+    Tablespace tablespace;
+    
+    public HistogramRebuilder(Tablespace tablespace, YarchDatabaseInstance ydb, String tableName) {
         this.ydb = ydb;
+        this.tablespace = tablespace;
         tblDef = ydb.getTable(tableName);
         if(tblDef==null) {
             throw new IllegalArgumentException("No table named '"+tableName+"' in instance "+ydb.getName());
@@ -50,7 +59,7 @@ public class HistogramRebuilder {
     }
 
     public CompletableFuture<Void> rebuild(TimeInterval interval) throws YarchException {
-        if(interval.hasStart()||interval.hasStop()) {
+        if(interval.hasStart()||interval.hasEnd()) {
             log.info("Rebuilding histogram for table {}/{} time interval: {}", ydb.getName(), tblDef.getName(), interval.toStringEncoded());
         } else {
             log.info("Rebuilding histogram for table {}/{}", ydb.getName(), tblDef.getName());
@@ -69,8 +78,8 @@ public class HistogramRebuilder {
         String timeColumnName = tblDef.getTupleDefinition().getColumn(0).getName();
         String streamName = "histo_rebuild_" + streamCounter.incrementAndGet();
         
-        RdbStorageEngine rdbsr = RdbStorageEngine.getInstance(ydb);
-        AbstractTableWriter tw = (AbstractTableWriter) rdbsr.newTableWriter(tblDef, InsertMode.INSERT); 
+        RdbStorageEngine rdbsr = RdbStorageEngine.getInstance();
+        RdbTableWriter tw = (RdbTableWriter) rdbsr.newTableWriter(ydb, tblDef, InsertMode.INSERT); 
         try {
             ydb.execute("create stream "+streamName+" as select * from "+tblDef.getName() + getWhereCondition(timeColumnName, interval));
         } catch (StreamSqlException|ParseException e) {
@@ -89,7 +98,7 @@ public class HistogramRebuilder {
             public void onTuple(Stream stream, Tuple tuple) {
                 try {
                     RdbPartition partition = tw.getDbPartition(tuple);
-                    YRDB db = rdbFactory.getRdb(tblDef.getDataDir()+"/"+partition.dir, false);
+                    YRDB db = tablespace.getRdb(partition.dir, false);
                     tw.addHistogram(db, tuple);
                 } catch (Exception e) {
                     cf.completeExceptionally(e);
@@ -104,7 +113,7 @@ public class HistogramRebuilder {
     
 
     private String getWhereCondition(String timeColumnName,  TimeInterval interval) {
-        if(!interval.hasStart() && !interval.hasStop()){
+        if(!interval.hasStart() && !interval.hasEnd()){
             return "";
         }
         StringBuilder whereCnd = new StringBuilder();
@@ -112,12 +121,12 @@ public class HistogramRebuilder {
         if(interval.hasStart()) {
             long start = HistogramSegment.GROUPING_FACTOR*(interval.getStart()/HistogramSegment.GROUPING_FACTOR);
             whereCnd.append(timeColumnName+" >= "+ start);
-            if(interval.hasStop()) {
+            if(interval.hasEnd()) {
                 whereCnd.append(" and ");
             }
         }
-        if(interval.hasStop()) {
-            long stop = HistogramSegment.GROUPING_FACTOR*(1+interval.getStop()/HistogramSegment.GROUPING_FACTOR);
+        if(interval.hasEnd()) {
+            long stop = HistogramSegment.GROUPING_FACTOR*(1+interval.getEnd()/HistogramSegment.GROUPING_FACTOR);
             whereCnd.append(timeColumnName+" < "+ stop);
         }
         
@@ -125,62 +134,21 @@ public class HistogramRebuilder {
     }
 
 
-    void deleteHistograms(TimeInterval interval) throws RocksDBException, IOException {
-        RdbStorageEngine rdbsr = RdbStorageEngine.getInstance(ydb);
-        RDBFactory rdbf = RDBFactory.getInstance(ydb.getName());
-        Iterator<List<Partition>> partitionIterator;
-        if(interval.hasStart()) {
-            partitionIterator = rdbsr.getPartitionManager(tblDef).iterator(interval.getStart(), null);
-        } else {
-            partitionIterator = rdbsr.getPartitionManager(tblDef).iterator(null);
-        }
+    void deleteHistograms(TimeInterval timeInterval) throws RocksDBException, IOException {
+        RdbStorageEngine rse = RdbStorageEngine.getInstance();
+        PartitionManager partMgr = rse.getPartitionManager(tblDef);
+        IntArray a = new IntArray();
+        Iterator<Interval> intervalIterator = partMgr.intervalIterator(timeInterval);
         
-        byte[] empty = new  byte[0];
-        
-        while(partitionIterator.hasNext()) {
-            RdbPartition p0 = (RdbPartition)partitionIterator.next().get(0);
-            if(interval.hasStop()&& p0.getStart()>interval.getStop()) {
-                break;
-            }
-            log.debug("Removing existing histogram for partition {}", p0.dir);
-          
-            long pstart = p0.getStart()/HistogramSegment.GROUPING_FACTOR;
-            long pend = p0.getEnd()/HistogramSegment.GROUPING_FACTOR;
-            
-            long kstart = interval.hasStart()? Math.max(interval.getStart()/HistogramSegment.GROUPING_FACTOR,pstart):pstart;
-            long kend = interval.hasStop()? Math.min(interval.getStop()/HistogramSegment.GROUPING_FACTOR, pend):pend;
-            
-            YRDB rdb = rdbf.getRdb(tblDef.getDataDir()+"/"+p0.dir, false);
-            for(String colName: tblDef.getHistogramColumns()) {
-                String cfHistoName = AbstractTableWriter.getHistogramColumnFamilyName(colName);
-                ColumnFamilyHandle cfh = rdb.getColumnFamilyHandle(cfHistoName);
-                if(cfh==null) {
-                    log.debug("No existing histogram column family for {}", colName);
-                    continue;
-                }
-                if((kstart==pstart) && (kend==pend)) {
-                    log.debug("Dropping column family {}", colName);
-                    rdb.dropColumnFamily(cfh);
-                } else {
-                    WriteBatch writeBatch = new WriteBatch();
-                    RocksIterator it = rdb.getDb().newIterator(cfh);
-                    it.seek(HistogramSegment.key(kstart, empty));
-                    while(it.isValid()) {
-                        long k = HistogramSegment.getSstart(it.key());
-                        if(k>kend) {
-                            break;
-                        }
-                        writeBatch.remove(cfh, it.key());
-                        it.next();
-                    }
-                    WriteOptions wo = new WriteOptions();
-                    rdb.getDb().write(wo, writeBatch);
-                    wo.close();
-                    writeBatch.close();
-                    it.close();
-                }
+        while(intervalIterator.hasNext()) {
+            Interval intv = intervalIterator.next();
+            for(HistogramInfo hi: intv.removeHistograms()) {
+                RdbHistogramInfo histo = (RdbHistogramInfo)hi;
+                YRDB db = tablespace.getRdb(histo.partitionDir, false);
+                db.getDb().deleteRange(dbKey(histo.tbsIndex), dbKey(histo.tbsIndex + 1));
+                a.add(((RdbHistogramInfo)hi).tbsIndex);
             }
         }
-
+        tablespace.removeTbsIndices(Type.HISTOGRAM, a);
     }
 }

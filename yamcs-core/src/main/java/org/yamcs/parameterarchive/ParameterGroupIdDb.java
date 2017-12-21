@@ -1,24 +1,27 @@
 package org.yamcs.parameterarchive;
 
 import java.io.PrintStream;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.rocksdb.ColumnFamilyHandle;
-import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
-import org.rocksdb.RocksIterator;
+import org.yamcs.utils.ByteArrayUtils;
+import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.SortedIntArray;
+import org.yamcs.yarch.rocksdb.AscendingRangeIterator;
+import org.yamcs.yarch.rocksdb.Tablespace;
+import org.yamcs.yarch.rocksdb.YRDB;
+import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
 
+import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
 /**
  * Stores a map between 
  * List&lt;parameter_id&gt; and ParameterGroup_id.
  * 
- * Stores data one column family:
- * pgid2pg 
- *     key = ParameterGroup_id
+ * Stores data in the main tablespace database
+ *     key = tbsIndex,ParameterGroup_id
  *     value = SortedVarArray of parameter_id
  *           
  * 
@@ -27,15 +30,17 @@ import org.yamcs.utils.SortedIntArray;
  *
  */
 public class ParameterGroupIdDb {
-    final RocksDB db;
-    final ColumnFamilyHandle pgid2pg_cfh;
-    int highestPgId=0;
+    final Tablespace tablespace;
+    final String yamcsInstance;
+    int highestPgId = 0;
+    
+    int tbsIndex;
     Map<SortedIntArray, Integer> pg2pgidCache = new HashMap<>();
 
 
-    ParameterGroupIdDb(RocksDB db, ColumnFamilyHandle pgid2pg_cfh) {
-        this.db = db;
-        this.pgid2pg_cfh = pgid2pg_cfh;
+    ParameterGroupIdDb(String yamcsInstance, Tablespace tablespace) throws RocksDBException {
+        this.tablespace = tablespace;
+        this.yamcsInstance = yamcsInstance;
         readDb();
     }
 
@@ -51,10 +56,12 @@ public class ParameterGroupIdDb {
         if(pgid == null) {
             int x = ++highestPgId;
             pgid = x;
-            db.put(pgid2pg_cfh, encodeInt(x), s.encodeToVarIntArray());
+            byte[] key = new byte[TBS_INDEX_SIZE+4];
+            ByteArrayUtils.encodeInt(tbsIndex, key, 0);
+            ByteArrayUtils.encodeInt(x, key, TBS_INDEX_SIZE);
+            tablespace.putData(key, s.encodeToVarIntArray());
             pg2pgidCache.put(s, pgid);
         }
-
         return pgid;
     }
 
@@ -70,16 +77,28 @@ public class ParameterGroupIdDb {
         return createAndGet(new SortedIntArray(parameterIdArray));
     }
 
-    private byte[] encodeInt(int x) {
-        return ByteBuffer.allocate(4).putInt(x).array();
-    }
 
-    private void readDb() {
-        try(RocksIterator it = db.newIterator(pgid2pg_cfh)) {
-            it.seekToFirst();
+    private void readDb() throws RocksDBException {
+        List<TablespaceRecord> trl = tablespace.filter(TablespaceRecord.Type.PARCHIVE_PGID2PG, yamcsInstance, trb->true);
+        if(trl.size()>1) {
+            throw new DatabaseCorruptionException("Multiple records of type "+TablespaceRecord.Type.PARCHIVE_PGID2PG.name()+" found for instance "+yamcsInstance);
+        }
+        TablespaceRecord tr;
+        if(trl.isEmpty()) {
+            TablespaceRecord.Builder trb = TablespaceRecord.newBuilder().setType(TablespaceRecord.Type.PARCHIVE_PGID2PG);
+            tr = tablespace.createMetadataRecord(yamcsInstance, trb);
+        } else {
+            tr = trl.get(0);
+        }
+        this.tbsIndex = tr.getTbsIndex(); 
+        YRDB db = tablespace.getRdb();
+        byte[] range = new byte[TBS_INDEX_SIZE];
+        ByteArrayUtils.encodeInt(tr.getTbsIndex(), range, 0);
+        
+        try (AscendingRangeIterator it = new AscendingRangeIterator(db.newIterator(), range, false, range, false)) {
             while(it.isValid()) {
-
-                int pgid = ByteBuffer.wrap(it.key()).getInt();
+                byte[] key = it.key();
+                int pgid = ByteArrayUtils.decodeInt(key, TBS_INDEX_SIZE);
 
                 if(highestPgId < pgid) {
                     highestPgId = pgid;

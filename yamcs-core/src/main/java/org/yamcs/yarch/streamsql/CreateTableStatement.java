@@ -47,7 +47,7 @@ public class CreateTableStatement extends StreamSqlStatement {
 
     public void addHistogramColumn(String columnName) {
         if(histoColumns==null) {
-            histoColumns=new ArrayList<String>();
+            histoColumns=new ArrayList<>();
         }
         histoColumns.add(columnName);
     }
@@ -69,7 +69,7 @@ public class CreateTableStatement extends StreamSqlStatement {
             if(engine!=null) {
                 tableDefinition.setStorageEngineName(engine);
             } else {
-                tableDefinition.setStorageEngineName(ydb.getDefaultStorageEngineName());
+                tableDefinition.setStorageEngineName(YarchDatabase.getDefaultStorageEngineName());
             }
 
             tableDefinition.setCompressed(compressed);

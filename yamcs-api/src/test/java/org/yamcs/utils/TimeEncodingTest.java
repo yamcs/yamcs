@@ -26,7 +26,7 @@ public class TimeEncodingTest {
     public void testCurrentInstant() {
        
         TimeEncoding.getWallclockTime();
-        long time=System.currentTimeMillis();
+        long time = System.currentTimeMillis();
         long instant=TimeEncoding.getWallclockTime();
         long correction=Math.abs(instant-time)%1000;
         
@@ -127,10 +127,8 @@ public class TimeEncodingTest {
         utc="2010-12-31T23:59:59.000";
         d=sdf.parse(utc);
         cal.setTime(d);
-        System.out.println("sdf,format:"+sdf.format(d)+"\nd="+d+"\ncal="+cal.getTime()+"\nhod="+cal.get(Calendar.HOUR_OF_DAY));
         instant=TimeEncoding.fromCalendar(cal);
         s=TimeEncoding.toString(instant);
-        System.out.println("s="+s);
         assertEquals(utc,s);
         
     }

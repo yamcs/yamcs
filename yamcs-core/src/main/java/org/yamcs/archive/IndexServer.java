@@ -65,7 +65,7 @@ public class IndexServer extends AbstractService {
             tmIndexer = new CccsdsTmIndex(yamcsInstance, readonly);
         }
        
-        tagDb = YarchDatabase.getInstance(yamcsInstance).getDefaultStorageEngine().getTagDb();
+        tagDb = YarchDatabase.getInstance(yamcsInstance).getTagDb();
         executor.allowCoreThreadTimeOut(true);
     }
 

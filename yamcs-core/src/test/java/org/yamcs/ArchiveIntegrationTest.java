@@ -35,7 +35,6 @@ import org.yamcs.protobuf.Table.TableLoadResponse;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
-import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ParameterResource;

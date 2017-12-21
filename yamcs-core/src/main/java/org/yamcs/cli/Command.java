@@ -215,14 +215,27 @@ public abstract class Command {
 
             out.append("Options:\n");
             for (ParameterDescription pd : sorted) {
-                out.append(String.format("    %-"+maxLength+"s    %s\n",pd.getNames(), pd.getDescription()));
+                String descr = pd.getDescription();
+                String [] descrArray = descr.split("\\n");
+                out.append(String.format("    %-"+maxLength+"s    %s\n",pd.getNames(), descrArray[0]));
+                for(int i=1; i<descrArray.length; i++) {
+                    String format = "%-"+(maxLength+pd.getNames().length()+1)+"s%s\n";
+                    out.append(String.format(format, "", descrArray[i]));
+                }
             }
         }
+        
         if(!subCommands.isEmpty()) {
             out.append("Commands:\n");
             int maxLength = subCommands.values().stream().mapToInt(c -> c.getName().length()).max().getAsInt();
             for(Command c: subCommands.values()) {
-                out.append(String.format("    %-"+maxLength+"s    %s\n",c.getName(), jc.getCommandDescription(c.getName())));
+                String descr = jc.getCommandDescription(c.getName());
+                String [] descrArray = descr.split("\\n");
+                out.append(String.format("    %-"+maxLength+"s    %s\n", c.getName(), descrArray[0]));
+                for(int i=1; i<descrArray.length; i++) {
+                    String format = "%-"+(maxLength+c.getName().length()+3)+"s%s\n";
+                    out.append(String.format(format, "", descrArray[i]));
+                }
             }
         }
         return out.toString();

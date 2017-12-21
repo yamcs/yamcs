@@ -21,6 +21,7 @@ import org.yamcs.parameterarchive.ConsumerAbortException;
 import org.yamcs.parameterarchive.MultiParameterDataRetrieval;
 import org.yamcs.parameterarchive.MultipleParameterValueRequest;
 import org.yamcs.parameterarchive.ParameterArchive;
+import org.yamcs.parameterarchive.ParameterArchiveV2;
 import org.yamcs.parameterarchive.ParameterGroupIdDb;
 import org.yamcs.parameterarchive.ParameterIdDb;
 import org.yamcs.parameterarchive.ParameterIdDb.ParameterId;
@@ -63,6 +64,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
     private static final String DEFAULT_PROCESSOR = "realtime";
     private static final Logger log = LoggerFactory.getLogger(ArchiveParameterRestHandler.class);
     private ArchiveParameterReplayRestHandler aprh = new ArchiveParameterReplayRestHandler();
+    private OldArchiveParameterRestHandler oldaprh = new OldArchiveParameterRestHandler();
     
     /**
      * A series is a list of samples that are determined in one-pass while processing a stream result.
@@ -78,8 +80,13 @@ public class ArchiveParameterRestHandler extends RestHandler {
             aprh.getParameterSamples(req);
             return;
         }
-            
+        
         String instance = verifyInstance(req, req.getRouteParam("instance"));
+        if(isOldParameterArchive(instance)) {
+            oldaprh.getParameterSamples(req);
+            return;
+        }
+        
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
@@ -100,7 +107,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         long stop = req.getQueryParameterAsDate("stop", TimeEncoding.getWallclockTime());
 
         RestDownsampler sampler = new RestDownsampler(stop);
-        ParameterArchive parchive = getParameterArchive(instance);
+        ParameterArchiveV2 parchive = getParameterArchive(instance);
         ParameterIdDb piddb = parchive.getParameterIdDb();
 
         ParameterCache pcache = null;
@@ -164,7 +171,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         }
     }
 
-    private void sampleDataForParameterId(ParameterArchive parchive, Value.Type engType, SingleParameterValueRequest spvr, RestDownsampler sampler) throws HttpException {
+    private void sampleDataForParameterId(ParameterArchiveV2 parchive, Value.Type engType, SingleParameterValueRequest spvr, RestDownsampler sampler) throws HttpException {
         spvr.setRetrieveEngineeringValues(true);
         spvr.setRetrieveParameterStatus(false);
         spvr.setRetrieveRawValues(false);
@@ -211,18 +218,27 @@ public class ArchiveParameterRestHandler extends RestHandler {
 
                 }
             });
-        } catch (RocksDBException e) {
+        } catch (RocksDBException|IOException e) {
             log.warn("Received exception during parmaeter retrieval ", e);
             throw new InternalServerErrorException(e.getMessage());
         }
 
     }
-    private static ParameterArchive getParameterArchive(String instance) throws BadRequestException {
+    private boolean isOldParameterArchive(String instance) throws BadRequestException {
+        ParameterArchive parameterArchive = YamcsServer.getService(instance, ParameterArchive.class);
+        
+        if (parameterArchive == null) {
+            throw new BadRequestException("ParameterArchive not configured for this instance");
+        }
+        return parameterArchive.getParchive() instanceof org.yamcs.oldparchive.ParameterArchive;
+    }
+    
+    private static ParameterArchiveV2 getParameterArchive(String instance) throws BadRequestException {
         ParameterArchive parameterArchive = YamcsServer.getService(instance, ParameterArchive.class);
         if (parameterArchive == null) {
             throw new BadRequestException("ParameterArchive not configured for this instance");
         }
-        return parameterArchive;
+        return (ParameterArchiveV2) parameterArchive.getParchive();
     }
 
     /**copied from guava*/
@@ -242,7 +258,11 @@ public class ArchiveParameterRestHandler extends RestHandler {
         }
         
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-
+        if(isOldParameterArchive(instance)) {
+            oldaprh.listParameterHistory(req);
+            return;
+        }
+        
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         NameDescriptionWithId<Parameter> requestedParamWithId = verifyParameterWithId(req, mdb, req.getRouteParam("name"));
         
@@ -259,7 +279,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
 
         boolean ascending = !req.asksDescending(true);
 
-        ParameterArchive parchive = getParameterArchive(instance);
+        ParameterArchiveV2 parchive = getParameterArchive(instance);
         ParameterIdDb piddb = parchive.getParameterIdDb();
         IntArray pidArray = new IntArray();
         IntArray pgidArray = new IntArray();
@@ -343,7 +363,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
                 replayListener.setNoRepeat(noRepeat);
               //FIXME - make async
                 retrieveParameterData(parchive, pcache, p, requestedId, mpvr, replayListener);
-            } catch (DecodingException|RocksDBException e) {
+            } catch (DecodingException|RocksDBException|IOException e) {
                 throw new InternalServerErrorException(e);
             }
             completeOK(req, resultb.build(), SchemaPvalue.ParameterData.WRITE);
@@ -351,8 +371,8 @@ public class ArchiveParameterRestHandler extends RestHandler {
     }
 
 
-    private void retrieveParameterData(ParameterArchive parchive,  ParameterCache pcache, Parameter p, NamedObjectId id,
-            MultipleParameterValueRequest mpvr, RestParameterReplayListener replayListener) throws RocksDBException, DecodingException {
+    private void retrieveParameterData(ParameterArchiveV2 parchive,  ParameterCache pcache, Parameter p, NamedObjectId id,
+            MultipleParameterValueRequest mpvr, RestParameterReplayListener replayListener) throws RocksDBException, DecodingException, IOException {
 
 
         MutableLong lastParameterTime = new MutableLong(TimeEncoding.INVALID_INSTANT);

@@ -3,16 +3,18 @@ package org.yamcs.parameterarchive;
 import org.rocksdb.RocksIterator;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.DecodingException;
+import org.yamcs.yarch.rocksdb.DescendingRangeIterator;
+import org.yamcs.yarch.rocksdb.AscendingRangeIterator;
+import org.yamcs.yarch.rocksdb.DbIterator;
 
 /**
- * Iterates over the segments of one partition for a parameter_id, ParameterGroup_id, between a start and stop
+ * Iterates over the segments of one partition for a parameter_id,
+ * ParameterGroup_id, between a start and stop
  * 
  * @author nm
  *
  */
 public class PartitionIterator {
-    private final RocksIterator iterator;
-    private boolean valid=false;
     private SegmentKey currentKey;
     private final int parameterId, parameterGroupId;
     private final long start, stop;
@@ -24,9 +26,11 @@ public class PartitionIterator {
     final boolean retrieveEngValue;
     final boolean retrieveRawValue;
     final boolean retrieveParameterStatus;
+    DbIterator dbIterator;
+    boolean valid;
 
-
-    public PartitionIterator(RocksIterator iterator, int parameterId, int parameterGroupId, long start, long stop, boolean ascending, boolean retrieveEngValue, boolean retrieveRawValue, boolean retrieveParameterStatus) {
+    public PartitionIterator(RocksIterator iterator, int parameterId, int parameterGroupId, long start, long stop,
+            boolean ascending, boolean retrieveEngValue, boolean retrieveRawValue, boolean retrieveParameterStatus) {
         this.parameterId = parameterId;
         this.parameterGroupId = parameterGroupId;
         this.start = start;
@@ -35,49 +39,25 @@ public class PartitionIterator {
         this.retrieveEngValue = retrieveEngValue;
         this.retrieveRawValue = retrieveRawValue;
         this.retrieveParameterStatus = retrieveParameterStatus;
-        
-        this.iterator = iterator;
-        if(ascending) {
-            goToFirstAscending();
-        } else {
-            goToFirstDescending();
-        }
 
-    }
-
-    private void goToFirstDescending() {
-        iterator.seek(new SegmentKey(parameterId, parameterGroupId, SortedTimeSegment.getSegmentStart(stop), Byte.MAX_VALUE).encode());
-        if(!iterator.isValid()) {
-            iterator.seekToLast();
+        byte[] rangeStart = new SegmentKey(parameterId, parameterGroupId, SortedTimeSegment.getSegmentStart(start),
+                (byte) 0).encode();
+        byte[] rangeStop = new SegmentKey(parameterId, parameterGroupId, SortedTimeSegment.getSegmentStart(stop),
+                Byte.MAX_VALUE).encode();
+        if (ascending) {
+            dbIterator = new AscendingRangeIterator(iterator, rangeStart, false, rangeStop, false);
         } else {
-            currentKey = SegmentKey.decode(iterator.key());
-            if((currentKey.parameterGroupId != parameterGroupId) || (currentKey.parameterId!=parameterId) || currentKey.segmentStart>SortedTimeSegment.getSegmentStart(stop)) {
-                iterator.prev();
-            }
+            dbIterator = new DescendingRangeIterator(iterator, rangeStart, false, rangeStop, false);
         }
-
-        if(!iterator.isValid()) {
-            valid = false;
-        } else {
-            nextDescending();
-        }
-    }
-
-    private void goToFirstAscending() {
-        iterator.seek(new SegmentKey(parameterId, parameterGroupId, SortedTimeSegment.getSegmentStart(start), (byte)0).encode());
-        if(!iterator.isValid()) {
-            valid = false;
-        } else {
-            nextAscending();
-        }
+        next();
     }
 
     public void next() {
-        if(!iterator.isValid()) {
+        if (!dbIterator.isValid()) {
             valid = false;
             return;
         }
-        if(ascending) {
+        if (ascending) {
             nextAscending();
         } else {
             nextDescending();
@@ -85,19 +65,15 @@ public class PartitionIterator {
     }
 
     void nextAscending() {
-        currentKey = SegmentKey.decode(iterator.key());
-        if((currentKey.parameterGroupId != parameterGroupId) || (currentKey.parameterId != parameterId) || (currentKey.segmentStart>stop)) {
-            valid = false;
-            return;
-        } 
+        currentKey = SegmentKey.decode(dbIterator.key());
         valid = true;
 
         SegmentKey key = currentKey;
-        while((key.segmentStart == currentKey.segmentStart) && (key.parameterGroupId==parameterGroupId) && (key.parameterId==parameterId)) {
+        while (key.segmentStart == currentKey.segmentStart) {
             loadSegment(key.type);
-            iterator.next();
-            if(iterator.isValid()) {
-                key = SegmentKey.decode(iterator.key());
+            dbIterator.next();
+            if (dbIterator.isValid()) {
+                key = SegmentKey.decode(dbIterator.key());
             } else {
                 break;
             }
@@ -105,19 +81,15 @@ public class PartitionIterator {
     }
 
     void nextDescending() {
-        currentKey = SegmentKey.decode(iterator.key());
-        if((currentKey.parameterGroupId!=parameterGroupId) || (currentKey.parameterId!=parameterId) || (currentKey.segmentStart < SortedTimeSegment.getSegmentStart(start))) {
-            valid = false;
-            return;
-        }
+        currentKey = SegmentKey.decode(dbIterator.key());
         valid = true;
         SegmentKey key = currentKey;
 
-        while((key.segmentStart == currentKey.segmentStart) && (key.parameterGroupId==parameterGroupId) && (key.parameterId==parameterId)) {
+        while (key.segmentStart == currentKey.segmentStart) {
             loadSegment(key.type);
-            iterator.prev();
-            if(iterator.isValid()) {
-                key = SegmentKey.decode(iterator.key());
+            dbIterator.prev();
+            if (dbIterator.isValid()) {
+                key = SegmentKey.decode(dbIterator.key());
             } else {
                 break;
             }
@@ -125,14 +97,14 @@ public class PartitionIterator {
     }
 
     private void loadSegment(byte type) {
-        if((type==SegmentKey.TYPE_ENG_VALUE) && retrieveEngValue) {
-            currentEngValueSegment = iterator.value();
+        if ((type == SegmentKey.TYPE_ENG_VALUE) && retrieveEngValue) {
+            currentEngValueSegment = dbIterator.value();
         }
-        if((type==SegmentKey.TYPE_RAW_VALUE) && retrieveRawValue) {
-            currentRawValueSegment = iterator.value();
+        if ((type == SegmentKey.TYPE_RAW_VALUE) && retrieveRawValue) {
+            currentRawValueSegment = dbIterator.value();
         }
-        if((type==SegmentKey.TYPE_PARAMETER_STATUS) && retrieveParameterStatus) {
-            currentStatusSegment = iterator.value();
+        if ((type == SegmentKey.TYPE_PARAMETER_STATUS) && retrieveParameterStatus) {
+            currentStatusSegment = dbIterator.value();
         }
     }
 
@@ -141,7 +113,7 @@ public class PartitionIterator {
     }
 
     BaseSegment engValue() {
-        if(currentEngValueSegment ==null) {
+        if (currentEngValueSegment == null) {
             return null;
         }
         try {
@@ -149,10 +121,10 @@ public class PartitionIterator {
         } catch (DecodingException e) {
             throw new DatabaseCorruptionException(e);
         }
-    } 
+    }
 
     BaseSegment rawValue() {
-        if(currentRawValueSegment ==null) {
+        if (currentRawValueSegment == null) {
             return null;
         }
         try {
@@ -163,7 +135,7 @@ public class PartitionIterator {
     }
 
     ParameterStatusSegment parameterStatus() {
-        if(currentStatusSegment==null) {
+        if (currentStatusSegment == null) {
             return null;
         }
         try {

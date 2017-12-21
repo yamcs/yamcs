@@ -10,9 +10,7 @@ import org.yamcs.utils.StringConverter;
  * @author nm
  *
  */
-class SegmentKey {
-  
-
+public class SegmentKey {
     final int parameterId;
     final int parameterGroupId;
     final long segmentStart;

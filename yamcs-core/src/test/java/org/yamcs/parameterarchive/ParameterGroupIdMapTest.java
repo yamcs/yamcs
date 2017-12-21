@@ -5,22 +5,22 @@ import static org.junit.Assert.*;
 import java.io.File;
 
 import org.junit.Test;
-import org.rocksdb.ColumnFamilyHandle;
-import org.rocksdb.RocksDB;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.IntArray;
+import org.yamcs.yarch.rocksdb.Tablespace;
 
 
 public class ParameterGroupIdMapTest {
-
     @Test
     public void test1() throws Exception {
-        File f = new File("/tmp/TestParameterIdMap_test1");
+        File f = new File("/tmp/TestParameterGroupIdMap_test1");
         FileUtils.deleteRecursively(f.toPath());
-        RocksDB db = RocksDB.open(f.getAbsolutePath());
-        ColumnFamilyHandle cfh =  db.getDefaultColumnFamily();
         
-        ParameterGroupIdDb pgidMap = new ParameterGroupIdDb(db, cfh);
+        Tablespace tablespace = new Tablespace("test1", (byte) 0);
+        tablespace.setCustomDataDir(f.getAbsolutePath());
+        tablespace.loadDb(false);
+        
+        ParameterGroupIdDb pgidMap = new ParameterGroupIdDb("test1", tablespace);
         int[] p1 = new int[] {1,3,4};
         int[] p2 = new int[] {1,3,4};
         int[] p3 = new int[] {1,4,5};
@@ -35,11 +35,10 @@ public class ParameterGroupIdMapTest {
         assertEquals(pg1, pg2);
         assertTrue(pg3 > pg1);
         
-        db.close();
+        tablespace.close();
         
-        db = RocksDB.open(f.getAbsolutePath());
-        cfh =  db.getDefaultColumnFamily();
-        pgidMap = new ParameterGroupIdDb(db, cfh);
+        tablespace.loadDb(false);
+        pgidMap = new ParameterGroupIdDb("test1", tablespace);
         
         int pg4 = pgidMap.createAndGet(p1);
         assertEquals(pg1, pg4);

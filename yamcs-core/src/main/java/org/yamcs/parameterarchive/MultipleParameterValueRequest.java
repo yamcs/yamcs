@@ -16,8 +16,12 @@ public class MultipleParameterValueRequest {
     int limit = -1;
     
     public MultipleParameterValueRequest(long start, long stop, String[] parameterNames, int[] parameterIds, int[] parameterGroupIds,  boolean ascending) {
-        if(parameterGroupIds.length != parameterIds.length) throw new IllegalArgumentException("Different number of parameter ids than parameter group ids");
-        if(parameterNames.length != parameterIds.length) throw new IllegalArgumentException("Different number of parameter names than parameter ids");
+        if(parameterGroupIds.length != parameterIds.length) {
+            throw new IllegalArgumentException("Different number of parameter ids than parameter group ids");
+        }
+        if(parameterNames.length != parameterIds.length) {
+            throw new IllegalArgumentException("Different number of parameter names than parameter ids");
+        }
         
         this.parameterNames = parameterNames;
         this.parameterIds = parameterIds;
@@ -26,8 +30,6 @@ public class MultipleParameterValueRequest {
         this.stop = stop;
         this.ascending = ascending;
     }
-    
-  
     
     public boolean isRetrieveRawValues() {
         return retrieveRawValues;
@@ -82,8 +84,6 @@ public class MultipleParameterValueRequest {
         return limit;
     }
 
-   
-    
     
     /**
      * retrieve a limited number of "lines"

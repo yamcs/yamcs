@@ -1,7 +1,5 @@
 package org.yamcs.utils;
 
-import org.yamcs.utils.DecodingException;
-
 /**
  * used to signal inconsistencies found in the database
  * @author nm
@@ -16,7 +14,7 @@ public class DatabaseCorruptionException extends RuntimeException {
         super(message, cause);
     }
 
-    public DatabaseCorruptionException(DecodingException e) {
-        super(e);
+    public DatabaseCorruptionException(Throwable cause) {
+        super(cause);
     }
 }

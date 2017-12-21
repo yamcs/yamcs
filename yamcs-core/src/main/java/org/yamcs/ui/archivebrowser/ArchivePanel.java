@@ -1,10 +1,10 @@
 package org.yamcs.ui.archivebrowser;
 
-import org.yamcs.TimeInterval;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.ui.UiColors;
+import org.yamcs.utils.TimeInterval;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -482,8 +482,8 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
             if ((!receivedDataInterval.hasStart()) || (start<receivedDataInterval.getStart())) {
                 receivedDataInterval.setStart(start);
             }
-            if ((!receivedDataInterval.hasStop()) || (stop>receivedDataInterval.getStop())) {
-                receivedDataInterval.setStop(stop);
+            if ((!receivedDataInterval.hasEnd()) || (stop>receivedDataInterval.getEnd())) {
+                receivedDataInterval.setEnd(stop);
             }
 
             recCount++;
@@ -512,7 +512,7 @@ public class ArchivePanel extends JPanel implements PropertyChangeListener {
 
     public synchronized void archiveLoadFinished() {
         loadCount = 0;
-        if (receivedDataInterval.hasStart() && receivedDataInterval.hasStop()) {
+        if (receivedDataInterval.hasStart() && receivedDataInterval.hasEnd()) {
             for(NavigatorItem item:itemsByName.values()) {
                 item.archiveLoadFinished();
             }

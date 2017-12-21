@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.parameterarchive.ParameterArchive;
+import org.yamcs.parameterarchive.ParameterArchiveV2;
 import org.yamcs.parameterarchive.ParameterGroupIdDb;
 import org.yamcs.parameterarchive.ParameterIdDb;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
@@ -39,7 +40,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         Logger.getLogger("org.yamcs").setLevel(Level.INFO);
         Logger.getLogger("org.yamcs.parameterarchive").setLevel(Level.ALL);
         generateData("2015-01-02T10:00:00", 30*24*3600);
-        ParameterArchive parameterArchive = YamcsServer.getService(yamcsInstance, ParameterArchive.class);
+        ParameterArchiveV2 parameterArchive = YamcsServer.getService(yamcsInstance, ParameterArchiveV2.class);
         Future<?> f = parameterArchive.reprocess(TimeEncoding.parse("2015-01-02T10:00:00"), TimeEncoding.parse("2016-02-03T11:00:00"));
         f.get();
         ParameterIdDb pdb = parameterArchive.getParameterIdDb();
@@ -78,7 +79,8 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(0.167291805148, s0.getAvg(), 1e-5);
 
 
-        ParameterArchive parameterArchive = YamcsServer.getService(yamcsInstance, ParameterArchive.class);
+        ParameterArchive parameterArchiveWrapper = YamcsServer.getService(yamcsInstance, ParameterArchive.class);
+        ParameterArchiveV2 parameterArchive = (ParameterArchiveV2) parameterArchiveWrapper.getParchive();
         Future<?> f = parameterArchive.reprocess(TimeEncoding.parse("2015-01-02T10:00:00"), TimeEncoding.parse("2016-01-02T11:00:00"));
         f.get();
         //parameterArchive.printKeys(System.out);

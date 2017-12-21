@@ -1,7 +1,6 @@
 package org.yamcs.ui.archivebrowser;
 
 import org.yamcs.ConfigurationException;
-import org.yamcs.TimeInterval;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsConnectDialog;
@@ -13,6 +12,7 @@ import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.ui.YamcsArchiveIndexReceiver;
 import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.TimeInterval;
 import org.yamcs.utils.YObjectLoader;
 
 import javax.swing.*;

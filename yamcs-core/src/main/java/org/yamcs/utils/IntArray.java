@@ -15,9 +15,8 @@ public class IntArray {
     private int[] a;
     private int length;
 
-    //caches the hashCode
+    // caches the hashCode
     private int hash;
-
 
     /**
      * Creates a sorted int array with a default initial capacity
@@ -44,26 +43,29 @@ public class IntArray {
      * Creates the IntArray with the backing array
      * 
      * @param array
-     * @return a new object containing all the values from the passed array 
+     * @return a new object containing all the values from the passed array
      */
     public static IntArray wrap(int... array) {
         return new IntArray(array);
     }
 
     /**
-     * add value to the array 
+     * add value to the array
      * 
-     * @param x - value to be added
+     * @param x
+     *            - value to be added
      */
     public void add(int x) {
-        ensureCapacity(length+1);
+        ensureCapacity(length + 1);
         a[length] = x;
         length++;
     }
 
     public void add(int pos, int x) {
-        if(pos>length) throw new IndexOutOfBoundsException("Index: "+pos+" length: "+length);
-        ensureCapacity(length+1);
+        if (pos > length) {
+            throw new IndexOutOfBoundsException("Index: " + pos + " length: " + length);
+        }
+        ensureCapacity(length + 1);
         System.arraycopy(a, pos, a, pos + 1, length - pos);
         a[pos] = x;
         length++;
@@ -71,6 +73,7 @@ public class IntArray {
 
     /**
      * get element at position
+     * 
      * @param pos
      * @return the element at the specified position
      */
@@ -81,18 +84,21 @@ public class IntArray {
     }
 
     private void ensureCapacity(int minCapacity) {
-        if(minCapacity<=a.length) return;
+        if (minCapacity <= a.length) {
+            return;
+        }
 
         int capacity = a.length;
         int newCapacity = capacity + (capacity >> 1);
-        if(newCapacity<minCapacity) newCapacity = minCapacity;
+        if (newCapacity < minCapacity) {
+            newCapacity = minCapacity;
+        }
 
         a = Arrays.copyOf(a, newCapacity);
     }
 
-
-    public boolean isEmpty() {	
-        return a.length==0;
+    public boolean isEmpty() {
+        return a.length == 0;
     }
 
     public int[] toArray() {
@@ -108,40 +114,31 @@ public class IntArray {
         a[pos] = x;
     }
 
-
-
     private void rangeCheck(int pos) {
-        if(pos >= length) throw new IndexOutOfBoundsException("Index: "+pos+" length: "+length);
+        if (pos >= length) {
+            throw new IndexOutOfBoundsException("Index: " + pos + " length: " + length);
+        }
     }
 
     /**
-     * Returns the index of the first occurrence of the specified element
-     * in the array, or -1 if the array does not contain the element.
+     * Returns the index of the first occurrence of the specified element in the
+     * array, or -1 if the array does not contain the element.
      * 
-     * @param x element which is searched for 
+     * @param x
+     *            element which is searched for
      * 
-     * @return the index of the first occurrence of the specified element
-     * in this list, or -1 if this list does not contain the element.
+     * @return the index of the first occurrence of the specified element in
+     *         this list, or -1 if this list does not contain the element.
      */
     public int indexOf(int x) {
         for (int i = 0; i < length; i++) {
-            if (a[i]==x) return i;
+            if (a[i] == x)
+                return i;
         }
         return -1;
     }
 
-    public String toString() {        
-        StringBuilder b = new StringBuilder();
-        int n = length-1;
-
-        b.append('[');
-        for (int i = 0;; i++) {
-            b.append(a[i]);
-            if(i==n)
-                return b.append(']').toString();
-            b.append(", ");
-        }
-    }
+   
 
     @Override
     public int hashCode() {
@@ -159,17 +156,22 @@ public class IntArray {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
+        if (this == obj)
+            return true;
 
-        if (obj == null) return false;
+        if (obj == null)
+            return false;
 
-        if (getClass() != obj.getClass()) return false;
+        if (getClass() != obj.getClass())
+            return false;
 
         IntArray other = (IntArray) obj;
-        if (length != other.length) return false;
+        if (length != other.length)
+            return false;
 
-        for(int i=0; i<length; i++) {
-            if(a[i]!=other.a[i])    return false;
+        for (int i = 0; i < length; i++) {
+            if (a[i] != other.a[i])
+                return false;
         }
 
         return true;
@@ -177,12 +179,25 @@ public class IntArray {
 
     /**
      * get the backing array
+     * 
      * @return the backing array
      */
     public int[] array() {
         return a;
     }
-
-
-
+    public String toString() {
+        System.out.println("n: "+length+" a.length: "+a.length);
+        StringBuilder b = new StringBuilder();
+        int n = length - 1;
+        if(n==-1) {
+            return "[]";
+        }
+        b.append('[');
+        for (int i = 0;; i++) {
+            b.append(a[i]);
+            if (i == n)
+                return b.append(']').toString();
+            b.append(", ");
+        }
+    }
 }

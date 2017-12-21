@@ -57,7 +57,7 @@ public class InsertStatement extends StreamSqlStatement {
             if(outputTableDef!=null) {
                 try {
                     //writing into a table
-                    TableWriter tableWriter=ydb.getStorageEngine(outputTableDef).newTableWriter(outputTableDef, insertMode);
+                    TableWriter tableWriter=ydb.getStorageEngine(outputTableDef).newTableWriter(ydb, outputTableDef, insertMode);
                     inputStream.addSubscriber(tableWriter);
                     return new StreamSqlResult();
                 } catch(YarchException e) {

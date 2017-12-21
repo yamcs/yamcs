@@ -2,9 +2,9 @@ package org.yamcs.archive;
 
 import java.io.IOException;
 
-import org.yamcs.TimeInterval;
 import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
+import org.yamcs.utils.TimeInterval;
 
 public interface TagDb {
 

@@ -6,11 +6,13 @@ package org.yamcs.yarch.rocksdb;
  * @author nm
  *
  */
-public interface DbIterator {
+public interface DbIterator extends AutoCloseable {
     boolean isValid();
     void next();
     void prev();
-    void close();
     byte[] key();
     byte[] value();
+    
+    @Override 
+    public void close();
 }

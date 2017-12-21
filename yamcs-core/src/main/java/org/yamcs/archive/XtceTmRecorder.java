@@ -40,7 +40,6 @@ import com.google.common.util.concurrent.AbstractService;
  * Records XTCE TM sequence containers.
  * 
  * It creates a stream for each sequence container under the root. 
- * TODO: make it more configurable
  * 
  * @author nm
  *
@@ -58,7 +57,7 @@ public class XtceTmRecorder extends AbstractService {
     static public final String PNAME_COLUMN = "pname";
     XtceDb xtceDb;
     
-    private final List<StreamRecorder> recorders = new ArrayList<StreamRecorder>();
+    private final List<StreamRecorder> recorders = new ArrayList<>();
 
     static public final TupleDefinition RECORDED_TM_TUPLE_DEFINITION=new TupleDefinition();
     static {
@@ -69,7 +68,7 @@ public class XtceTmRecorder extends AbstractService {
         RECORDED_TM_TUPLE_DEFINITION.addColumn(PNAME_COLUMN, DataType.ENUM); //container name (XTCE qualified name) 
     }
 
-    public XtceTmRecorder(String yamcsInstance) throws IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {
+    public XtceTmRecorder(String yamcsInstance) throws IOException, StreamSqlException, ParseException, YamcsApiException {
         this(yamcsInstance, null);
     }
     final TimeService timeService;

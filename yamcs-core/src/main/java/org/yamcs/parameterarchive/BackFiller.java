@@ -49,7 +49,7 @@ public class BackFiller implements StreamSubscriber {
     long t0;
     int runCount;
     ScheduledThreadPoolExecutor executor=new ScheduledThreadPoolExecutor(1);
-    final ParameterArchive parchive;
+    final ParameterArchiveV2 parchive;
     long warmupTime;
     final TimeService timeService;
     static AtomicInteger count = new AtomicInteger();
@@ -62,7 +62,7 @@ public class BackFiller implements StreamSubscriber {
     //how often (in seconds) the fillup based on the stream monitoring is started
     long streamUpdateFillFrequency;
 
-    BackFiller(ParameterArchive parchive, Map<String, Object> config) {
+    BackFiller(ParameterArchiveV2 parchive, Map<String, Object> config) {
         this.parchive = parchive;
         if(config!=null) {
             parseConfig(config);

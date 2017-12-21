@@ -1,8 +1,8 @@
 package org.yamcs.ui.archivebrowser;
 
-import org.yamcs.TimeInterval;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.TimeInterval;
 
 import javax.swing.*;
 import java.awt.*;
@@ -223,8 +223,8 @@ public class DataView extends JScrollPane {
             zstart=Math.max(zstart, requestedInterval.getStart());
         }
         long zstop=stopInstant + range * 2;
-        if(requestedInterval.hasStop()) {
-            zstop=Math.min(zstop, requestedInterval.getStop());
+        if(requestedInterval.hasEnd()) {
+            zstop=Math.min(zstop, requestedInterval.getEnd());
         }
         zoom = new ZoomSpec(zstart, zstop, vp.getExtentSize().width, range);
         zoom.viewLocation = startInstant;
@@ -270,10 +270,10 @@ public class DataView extends JScrollPane {
                 zstart=Math.min(requestedDataInterval.getStart(), zstart);
             }
 
-            long zstop = receivedDataInterval.getStop();
+            long zstop = receivedDataInterval.getEnd();
 
-            if(requestedDataInterval.hasStop()) {
-                zstop=Math.max(requestedDataInterval.getStop(), zstop);
+            if(requestedDataInterval.hasEnd()) {
+                zstop=Math.max(requestedDataInterval.getEnd(), zstop);
             }
             long range=zstop - zstart;
             zstart-=range/100;

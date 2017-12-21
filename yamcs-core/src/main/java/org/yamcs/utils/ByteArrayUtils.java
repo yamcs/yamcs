@@ -4,7 +4,6 @@ import java.util.Arrays;
 
 public class ByteArrayUtils {
     
-    
     /**
      * returns true if a starts with b
      * @param a
@@ -14,10 +13,14 @@ public class ByteArrayUtils {
      */
     static public boolean startsWith(byte[] a, byte[] b) {
         
-        if(a.length<b.length) return false;
+        if(a.length<b.length) {
+            return false;
+        }
         
         for(int i=0; i<b.length; i++) {
-            if(a[i]!=b[i]) return false;
+            if(a[i]!=b[i]) {
+                return false;
+            }
         }
         return true;
     }
@@ -33,10 +36,14 @@ public class ByteArrayUtils {
      * @throws NullPointerException if any of them is null
      */
     static public boolean equalsPrefix(byte[] a, byte b[], int n) {
-        if(a.length<n || b.length<n) return false;
+        if(a.length<n || b.length<n) {
+            return false;
+        }
         
         for(int i=0;i<n; i++) {
-            if(a[i]!=b[i]) return false;
+            if(a[i]!=b[i]) {
+                return false;
+            }
         }
         return true;
     }
@@ -69,14 +76,49 @@ public class ByteArrayUtils {
 
      * @param a1
      * @param a2
-     * @return
      */
     static public int compare(byte[] a1, byte[] a2) {
         for(int i=0;i<a1.length && i<a2.length;i++) {
             int d=(a1[i]&0xFF)-(a2[i]&0xFF);
-            if(d!=0)return d;
+            if(d!=0){
+                return d;
+            }
         }
         return 0;
     }
-
+    
+    /**
+     * write an int into a byte array at offset and returns the array
+     */
+    public static byte[] encodeInt(int x, byte[] a, int offset) {
+        a[offset] = (byte)(x >> 24);
+        a[offset+1] = (byte)(x >> 16);
+        a[offset+2] = (byte)(x >> 8);
+        a[offset+3] = (byte)(x);
+                
+        return a;
+    }
+    
+    /**
+     * write an long into a byte array at offset and returns the array
+     */
+    public static byte[] encodeLong(long x, byte[] a, int offset) {
+        a[offset] = (byte)(x >> 56);
+        a[offset+1] = (byte)(x >> 48);
+        a[offset+2] = (byte)(x >> 40);
+        a[offset+3] = (byte)(x >> 32);
+        a[offset+4] = (byte)(x >> 24);
+        a[offset+5] = (byte)(x >> 16);
+        a[offset+6] = (byte)(x >> 8);
+        a[offset+7] = (byte)(x);
+                
+        return a;
+    }
+    
+    public static int decodeInt(byte[] a, int offset) {
+        return ((a[offset]   & 0xFF) <<24) +
+               ((a[offset+1] & 0xFF) <<16) +
+               ((a[offset+2] & 0xFF) <<8 ) +
+               ((a[offset+3] & 0xFF)     );
+    }
 }

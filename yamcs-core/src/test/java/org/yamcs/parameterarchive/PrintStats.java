@@ -15,13 +15,12 @@ public class PrintStats {
         TimeEncoding.setUp();
         YarchDatabase.setHome("/storage/yamcs-data");
         
-        ParameterArchive parchive = new ParameterArchive("aces-ops");
+        ParameterArchiveV2 parchive = new ParameterArchiveV2("aces-ops");
         PrintStream ps = new PrintStream("/tmp/aces-ops6-stats.txt");
         PrintStream ps1 = new PrintStream("/storage/aces-ops-stats/aces-ops6-paraid.txt");
         parchive.printKeys(ps);
         parchive.getParameterIdDb().print(ps1);
         ps1.close();
         ps.close();
-        parchive.closeDb();
     }
 }

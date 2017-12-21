@@ -3,7 +3,6 @@ package org.yamcs.yarch;
 import static org.junit.Assert.*;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.concurrent.Semaphore;
@@ -13,7 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 
 
 /**
@@ -34,12 +32,8 @@ public class ConcurrencyTest extends YarchTestCase {
     //int n=10;
 
     @Parameter
-    public String partitionStorage; 
-    @Parameters
-    public static Iterable<String> data() {
-        return Arrays.asList("IN_KEY", "COLUMN_FAMILY");
-    }
-
+    public String seconf;
+    
 
     class InputStreamFeeder implements Runnable {
 	volatile int psent;
@@ -48,7 +42,7 @@ public class ConcurrencyTest extends YarchTestCase {
 	Stream stream1, stream2, stream3;
 
 	InputStreamFeeder() throws Exception {
-	    ydb.execute("create table testcrw (gentime timestamp, apidSeqCount int, packet binary, primary key(gentime,apidSeqCount)) partition by time(gentime('YYYY/MM')) partition_storage="+partitionStorage);
+	    ydb.execute("create table testcrw (gentime timestamp, apidSeqCount int, packet binary, primary key(gentime,apidSeqCount)) partition by time(gentime('YYYY/MM')) "+seconf);
 
 	    ydb.execute("create stream testcrw_in1(gentime timestamp, apidSeqCount int, packet binary)");
 	    ydb.execute("insert into testcrw select * from testcrw_in1");

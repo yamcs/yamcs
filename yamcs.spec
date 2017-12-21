@@ -47,7 +47,7 @@ cp yamcs-core/target/yamcs*.jar %{buildroot}/%{prefix}/lib
 cp yamcs-artemis/lib/*.jar %{buildroot}/%{prefix}/lib
 cp yamcs-artemis/target/yamcs-artemis*.jar %{buildroot}/%{prefix}/lib
 
-cp -a contrib/sysvinit/* %{buildroot}/etc/init.d
+cp -a contrib/sysvinit/* %{buildroot}/etc/init.d/
 cp -a yamcs-api/src/main/*.proto %{buildroot}/%{prefix}/lib/
 
 %if %{_buildweb}

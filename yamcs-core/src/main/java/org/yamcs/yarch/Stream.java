@@ -2,6 +2,10 @@ package org.yamcs.yarch;
 
 import java.util.Collection;
 
+/**
+ * Streams are means to transport tuples.
+ *
+ */
 public interface Stream {
 
     //states
@@ -41,5 +45,11 @@ public interface Stream {
     public abstract int getSubscriberCount();
 
     public abstract Collection<StreamSubscriber> getSubscribers();
+    
+    public void exceptionHandler(ExceptionHandler h);
+
+    public static interface ExceptionHandler {
+        public void handle(Tuple tuple, StreamSubscriber s, Throwable t);
+    }
 
 }

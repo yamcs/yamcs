@@ -97,7 +97,9 @@ public class DescendingRangeIterator implements DbIterator {
 
     @Override
     public void prev() {
-        if(!valid) throw new IllegalStateException("iterator is not valid");
+        if(!valid) {
+            throw new IllegalStateException("iterator is not valid");
+        }
 
         iterator.prev();
         if(iterator.isValid()) {

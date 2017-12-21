@@ -1,4 +1,4 @@
-package org.yamcs.yarch.rocksdb;
+package org.yamcs.yarch.oldrocksdb;
 
 /**
  * use this as a default column family serializer in case we don't have a better one (e.g. when performing backups)
