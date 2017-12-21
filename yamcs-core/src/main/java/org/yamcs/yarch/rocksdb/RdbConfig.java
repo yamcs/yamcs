@@ -79,6 +79,7 @@ public class RdbConfig {
         defaultOptions.setTableFormatConfig(tableFormatConfig);
         defaultOptions.useFixedLengthPrefixExtractor(4);
         
+        defaultColumnFamilyOptions.setTableFormatConfig(tableFormatConfig);
         
         defaultDBOptions = new DBOptions().setCreateIfMissing(true);
         

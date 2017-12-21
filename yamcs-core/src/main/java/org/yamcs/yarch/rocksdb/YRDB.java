@@ -72,7 +72,6 @@ public class YRDB {
         cfoptions = (tc==null)? rdbConfig.getDefaultColumnFamilyOptions():tc.getColumnFamilyOptions();
         Options opt = (tc==null)? rdbConfig.getDefaultOptions():tc.getOptions();
         dbOptions = (tc==null)? rdbConfig.getDefaultDBOptions():tc.getDBOptions();
-        BlockBasedTableConfig bbtc = (BlockBasedTableConfig) opt.tableFormatConfig();
         this.path = dir;
         File current = new File(dir+File.separatorChar+"CURRENT");
         if(current.exists()) {
