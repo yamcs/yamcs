@@ -9,6 +9,7 @@ import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.TableDefinition.PartitionStorage;
 import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.Tuple;
@@ -28,6 +29,7 @@ public class RdbEngineTest extends YarchTestCase {
         tdef.addColumn(new ColumnDefinition("gentime", DataType.TIMESTAMP));
         tdef.addColumn(new ColumnDefinition("packetid", DataType.INT));	        	       
         TableDefinition tblDef = new TableDefinition("RdbEngineTest", tdef, Arrays.asList("gentime"));
+        tblDef.setPartitionStorage(PartitionStorage.COLUMN_FAMILY);
 
 
         String tmpdir=Files.createTempDir().getAbsolutePath();
