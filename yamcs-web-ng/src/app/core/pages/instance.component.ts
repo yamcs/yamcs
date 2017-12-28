@@ -1,8 +1,9 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { YamcsClient, Instance } from '../../../yamcs-client';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs/Observable';
 import { ActivatedRoute } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { State } from '../../app.reducers';
+import { SelectInstanceAction } from '../store/instances.actions';
 
 @Component({
   template: '<router-outlet></router-outlet>',
@@ -10,16 +11,10 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class InstancePageComponent {
 
-  instance$: Observable<Instance>;
-
-  constructor(route: ActivatedRoute, http: HttpClient) {
-    const parentRoute = route.parent;
-    if (parentRoute !== null) {
-      const instanceName = parentRoute.snapshot.paramMap.get('instance');
-      if (instanceName !== null) {
-        const client = new YamcsClient(http);
-        this.instance$ = client.getInstance(instanceName);
-      }
+  constructor(route: ActivatedRoute, http: HttpClient, store: Store<State>) {
+    const instanceName = route.snapshot.paramMap.get('instance');
+    if (instanceName !== null) {
+      store.dispatch(new SelectInstanceAction(instanceName));
     }
   }
 }

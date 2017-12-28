@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { MdbComponent } from './mdb.component';
 import { OverviewPageComponent } from './pages/overview.component';
 
 const routes = [
@@ -17,6 +16,5 @@ const routes = [
 export class MdbRoutingModule { }
 
 export const routingComponents = [
-  MdbComponent,
   OverviewPageComponent,
 ];
