@@ -24,7 +24,6 @@ import io.netty.handler.codec.http.HttpMethod;
 public class ComVerifIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCommandVerificationContainter() throws Exception {
-        LoggingUtils.enableLogging();
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
 

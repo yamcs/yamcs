@@ -24,7 +24,7 @@ public interface ProcessorService extends Service {
 
     /**
      * @param proc
-     * @param spec - passed by the user
+     * @param spec - passed by the user when creating the processor (for instance via the REST API)
      */
     default void init(Processor proc, Object spec) {
         init(proc);

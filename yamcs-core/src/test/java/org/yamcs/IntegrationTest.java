@@ -357,7 +357,6 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         cmdhist = wsListener.cmdHistoryDataList.poll(2, TimeUnit.SECONDS);
         assertNull(cmdhist);
-        LoggingUtils.enableLogging();
         Value v = ValueHelper.newValue(true);
         restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/AllowCriticalTC2", HttpMethod.POST, toJson(v, SchemaYamcs.Value.WRITE)).get();
         cmdhist = wsListener.cmdHistoryDataList.poll(2, TimeUnit.SECONDS);
