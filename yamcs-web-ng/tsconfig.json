@@ -1,19 +1,29 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "lib": [
+      "es2017",
+      "dom"
+    ],
+    "target": "es5",
+
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "declaration": false,
     "moduleResolution": "node",
+
+    // Needed by angular
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "target": "es5",
+
+    "strict": true,
+
+    // This mainly to detect unused imports
+    // (tslint has terrible support for this)
+    "noUnusedLocals": true,
+
     "typeRoots": [
       "node_modules/@types"
-    ],
-    "lib": [
-      "es2017",
-      "dom"
     ]
   }
 }

@@ -4,7 +4,6 @@ import { HttpClientModule } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CdkTableModule } from '@angular/cdk/table';
 import {
   MatButtonModule,
@@ -35,7 +34,6 @@ import {
 } from '@angular/material';
 
 const materialModules = [
-  BrowserAnimationsModule,
   CdkTableModule,
   MatButtonModule,
   MatButtonToggleModule,

@@ -1,0 +1,3 @@
+This folder has minimal dependencies on angular (http client + rxjs).
+The intention is to eventually make it completely independent so that
+it could be reused in other contexts.

@@ -1,0 +1,8 @@
+<ng-container *ngIf="instances$ | async as instances">
+  <h2>Instances:</h2>
+  <ul>
+    <li *ngFor="let instance of instances">
+      <h2><a [routerLink]="['/' + instance.name, 'mdb']">{{ instance.name }}</a></h2>
+    </li>
+  </ul>
+</ng-container>
