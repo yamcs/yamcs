@@ -1,0 +1,11 @@
+version: '2'
+services:
+   yamcs:
+      build: "."
+      ports:
+         - "8090:8090"
+      volumes:
+      - "/home/nfi/Documents/yamcs/yamcs-web:/opt/yamcs/web/base_2"
+   simulator:
+      image: "yamcs/simulator:3.0.0"
+      restart: always

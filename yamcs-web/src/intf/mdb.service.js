@@ -15,11 +15,15 @@
             getParameterInfo: getParameterInfo,
 
             listContainers: listContainers,
+            getContainerInfo: getContainerInfo,
 
             listCommands: listCommands,
+            getCommandInfo: getCommandInfo,
 
             listAlgorithms: listAlgorithms,
-            getAlgorithmInfo: getAlgorithmInfo
+            getAlgorithmInfo: getAlgorithmInfo,
+            
+            sendCommand: sendCommand
         };
 
         function getSummary() {
@@ -51,6 +55,7 @@
 
         function listParameters(options) {
             var targetUrl = '/api/mdb/' + yamcsInstance + '/parameters';
+
             targetUrl += toQueryString(options);
 
             return $http.get(targetUrl).then(function (response) {
@@ -73,6 +78,14 @@
             });
         }
 
+        function getContainerInfo(urlInfo,options){
+            var targetUrl = '/api/mdb/'+yamcsInstance+'/containers/'+urlInfo;
+            targetUrl+=toQueryString(options);
+            return $http.get(targetUrl).then( function(response){
+                return response;
+            })
+        }
+
         function listCommands(options) {
             var targetUrl = '/api/mdb/' + yamcsInstance + '/commands';
             targetUrl += toQueryString(options);
@@ -80,6 +93,18 @@
             return $http.get(targetUrl).then(function (response) {
                 return response.data['command'];
             }).catch(function (message) {
+                $log.error('XHR failed', message);
+                throw messageToException(message);
+            });
+        }
+
+        function getCommandInfo(urlname, options){
+            var targetUrl = '/api/mdb/'+yamcsInstance+'/commands'+urlname;
+            targetUrl += toQueryString(options);
+            return $http.get(targetUrl).then(function (response){
+                $log.log('DATA FOR COMMAND', response.data);
+                return response.data;
+            }).catch(function(message){
                 $log.error('XHR failed', message);
                 throw messageToException(message);
             });
@@ -119,6 +144,23 @@
             });
         }
 
+        function sendCommand(urlname, assignements){
+            var targetUrl= '/api/processors/'+yamcsInstance+'/realtime/commands'+urlname;
+            
+            var query = {
+                "sequenceNumber" : 1,
+                "origin" : "user@my-machine",
+                "assignment" : assignements,
+                "dryRun" : false
+            }
+            $log.log('TRIGGER COMMAND', targetUrl, query);
+            return $http.post(targetUrl, query).then( function(response){
+                return response;
+            }).catch(function (msg){
+                $log.error("XHR failed", msg);
+                throw messageToException(msg);
+            });
+        }
         /*
             Returns an array of a space system and all of its nested children
          */

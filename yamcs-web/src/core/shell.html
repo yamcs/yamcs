@@ -14,8 +14,8 @@
       <a class="navbar-brand" href="/{{ yamcsInstance }}" ng-if="!shell.brandImage">
         {{ shell.appTitle }}
       </a>
-    </div>
 
+    </div>
     <div class="navbar-header pull-right">
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -29,6 +29,13 @@
           </a>
         </li>
 
+        <li>
+          <a href="/{{yamcsInstance}}/history" role="button" class="btn btn-link">
+            <span class="glyphicon glyphicon-th-list"></span>
+            History
+          </a>
+        </li>
+        
         <li ng-class="{ active: headerVM.isActive('/alarms')}">
           <a href="/{{ yamcsInstance }}/alarms" role="button" class="btn btn-link">
             <span class="glyphicon glyphicon-bell"></span>
@@ -47,6 +54,7 @@
             <span ng-if="!shell.socketOpen">
               no live connection
             </span>
+
             <span ng-if="shell.socketOpen && shell.timeData.currentTimeUTC">
               {{ shell.timeData.currentTimeUTC | parseUTC | formatDate:'with_offset' }}
             </span>
@@ -80,6 +88,8 @@
 
         <li ng-class="{ active: headerVM.isActive('/displays')}"><a href="/{{ yamcsInstance }}/displays">Displays</a></li>
         <li ng-class="{ active: headerVM.isActive('/mdb')}"><a href="/{{ yamcsInstance }}/mdb">MDB</a></li>
+        <li ng-class="{ active: headerVM.isActive('/services')}"><a href="/{{ yamcsInstance }}/services">Services</a></li>
+        <li ng-class="{ active: headerVM.isActive('/links')}"> <a href="/{{ yamcsInstance }}/links">Links</a></li>
       </ul>
     </div>
   </div>

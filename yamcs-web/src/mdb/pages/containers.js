@@ -8,7 +8,6 @@
         var vm = this;
 
         var qname = '/' + $routeParams['ss'];
-
         vm.qname = qname;
         vm.title = qname;
         vm.mdbType = 'containers';

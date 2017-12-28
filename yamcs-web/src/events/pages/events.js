@@ -13,7 +13,8 @@
         $rootScope.pageTitle = 'Events | Yamcs';
 
         $scope.ctx = {
-            loadingMoreData: false
+            loadingMoreData: false,
+            stopBrowser: true
         };
 
         $scope.loadMoreEvents = function() {
