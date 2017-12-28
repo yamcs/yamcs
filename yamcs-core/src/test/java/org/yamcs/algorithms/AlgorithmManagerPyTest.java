@@ -22,10 +22,8 @@ import org.yamcs.YConfiguration;
 import org.yamcs.Processor;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
-import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.tctm.SimpleTcTmService;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -56,7 +54,6 @@ public class AlgorithmManagerPyTest {
         assertNotNull(db.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
 
         tmGenerator = new RefMdbPacketGenerator();
-        List<ParameterProvider> paramProviderList = new ArrayList<ParameterProvider>();
 
         Map<String, Object> jslib = new HashMap<String, Object>();
         Map<String, Object> config = new HashMap<String, Object>();
@@ -65,16 +62,13 @@ public class AlgorithmManagerPyTest {
 
         config.put("libraries", jslib);
         AlgorithmManager am = new AlgorithmManager(instance, config);
-        paramProviderList.add(am);
 
-        SimpleTcTmService tmtcs = new SimpleTcTmService(tmGenerator, paramProviderList, null);
-        processor = ProcessorFactory.create(instance, "AlgorithmManagerPyTest", "refmdb", tmtcs, "junit");
+        processor = ProcessorFactory.create(instance, "AlgorithmManagerPyTest", tmGenerator, am);
         prm = processor.getParameterRequestManager();
     }
 
     @After
     public void afterEachTest() { // Prevents us from wrapping our code in try-finally
-        System.out.println("stoping processor");
         processor.quit();
     }
 

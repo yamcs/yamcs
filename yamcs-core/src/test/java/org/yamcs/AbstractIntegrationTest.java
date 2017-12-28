@@ -79,7 +79,7 @@ public abstract class AbstractIntegrationTest {
     protected UsernamePasswordToken adminToken = new UsernamePasswordToken("admin", "rootpassword");
     RefMdbPacketGenerator packetGenerator;
     static {  
-      // Logger.getLogger("org.yamcs").setLevel(Level.ALL);
+     //   LoggingUtils.enableLogging();
     }
 
     @BeforeClass
@@ -327,7 +327,7 @@ public abstract class AbstractIntegrationTest {
 
         @Override
         protected void doStart() {
-            mdbPacketGenerator.init(null, this);
+            mdbPacketGenerator.setTmProcessor(this);
             notifyStarted();
         }
         @Override

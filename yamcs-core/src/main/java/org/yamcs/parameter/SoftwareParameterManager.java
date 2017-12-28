@@ -40,7 +40,7 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
     Set<Parameter> subscribedParams = new HashSet<>();
     private static final Logger log=LoggerFactory.getLogger(SoftwareParameterManager.class);
     final String yamcsInstance;
-    Processor yproc;
+    Processor proc;
 
     public SoftwareParameterManager(String yamcsInstance) {
         this.yamcsInstance = yamcsInstance;
@@ -56,9 +56,10 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
     }
 
     @Override
-    public void init(Processor yproc) throws ConfigurationException {
-        init(yproc.getXtceDb());
-        this.yproc = yproc;
+    public void init(Processor proc) throws ConfigurationException {
+        init(proc.getXtceDb());
+        this.proc = proc;
+        proc.getParameterRequestManager().addParameterProvider(this);
     }
 
     @Override
@@ -75,8 +76,8 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
             if(subscribedParams.contains(p)) {
                 org.yamcs.parameter.ParameterValue pv =  org.yamcs.parameter.ParameterValue.fromGpb(p, gpv);
                 long t;
-                if(yproc!=null) {
-                    t=yproc.getCurrentTime();
+                if(proc!=null) {
+                    t=proc.getCurrentTime();
                 } else {
                     t = TimeEncoding.getWallclockTime();
                 }
@@ -130,7 +131,7 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
         public void run() {
             ParameterValue pv = new ParameterValue(p);
             pv.setEngineeringValue(engValue);
-            long t = yproc.getCurrentTime();
+            long t = proc.getCurrentTime();
             pv.setAcquisitionTime(t);
             pv.setGenerationTime(t);
             prm.update(Arrays.asList(pv));

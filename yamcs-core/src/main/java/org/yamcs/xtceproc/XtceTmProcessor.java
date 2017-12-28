@@ -218,10 +218,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 
     @Override
     public void finished() {
-        notifyStopped();
-        if(processor!=null) {
-            processor.quit();
-        }
+        stopAsync();
     }
 
     public void resetStatistics() {
@@ -265,8 +262,6 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
         return tmExtractor.getSubscription();
     }
 
-
-
     @Override
     protected void doStart() {
         notifyStarted();
@@ -276,8 +271,6 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     protected void doStop() {
         notifyStopped();
     }
-
-
 
     public XtceDb getXtceDb() {
         return xtcedb;

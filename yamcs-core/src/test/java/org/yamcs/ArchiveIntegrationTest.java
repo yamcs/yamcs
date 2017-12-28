@@ -149,7 +149,6 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         
         pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
         assertNotNull(pdata);
-        System.out.println("pdata: "+pdata);
         assertEquals(1, pdata.getParameterCount());
         pp_para_uint = pdata.getParameter(0);
         assertEquals("/REFMDB/SUBSYS1/processed_para_uint", pp_para_uint.getId().getName());

@@ -59,7 +59,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     @GuardedBy("this")
     private HashMap<String, CommandQueue> queues = new HashMap<>();
     CommandReleaser commandReleaser;
-    CommandHistoryPublisher commandHistoryListener;
+    CommandHistoryPublisher commandHistoryPublisher;
     CommandingManager commandingManager;
     ConcurrentLinkedQueue<CommandQueueListener> monitoringClients = new ConcurrentLinkedQueue<>();
     private final Logger log;
@@ -89,7 +89,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
 
         yproc=commandingManager.getChannel();
         log = LoggingUtils.getLogger(this.getClass(), yproc);
-        this.commandHistoryListener = yproc.getCommandHistoryPublisher();
+        this.commandHistoryPublisher = yproc.getCommandHistoryPublisher();
         this.commandReleaser = yproc.getCommandReleaser();
         this.instance = yproc.getInstance();
         this.processorName = yproc.getName();
@@ -109,8 +109,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 String state=config.getString(qn, "state");
                 q.state = CommandQueueManager.stringToQueueState(state);
                 q.defaultState = q.state;
-                if(config.containsKey(qn, "stateExpirationTimeS"))
-                {
+                if(config.containsKey(qn, "stateExpirationTimeS")) {
                     q.stateExpirationTimeS = config.getInt(qn, "stateExpirationTimeS");
                 }
                 q.roles=config.getList(qn, "roles");
@@ -124,13 +123,10 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         timer.scheduleAtFixedRate(()->{
             for(CommandQueue q : queues.values())
             {
-                if(q.state == q.defaultState && q.stateExpirationRemainingS > 0)
-                {
+                if(q.state == q.defaultState && q.stateExpirationRemainingS > 0)  {
                     q.stateExpirationRemainingS = 0;
                     notifyUpdateQueue(q);
-                }
-                else if(q.stateExpirationRemainingS >= 0)
-                {
+                } else if(q.stateExpirationRemainingS >= 0) {
                     log.trace("notifying update queue with new remaining seconds: {}", q.stateExpirationRemainingS);
                     q.stateExpirationRemainingS--;
                     notifyUpdateQueue(q);
@@ -215,7 +211,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      * Called from the CommandingImpl to add a command to the queue
      * First the command is added to the command history
      * Depending on the status of the queue, the command is rejected by setting the CommandFailed in the command history
-     *  added to the queue or directly sent using the uplinker
+     *  added to the queue or directly sent using the command releaser
      *  
      * @param authToken      
      * @param pc
@@ -223,7 +219,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      * @throws InvalidAuthenticationToken 
      */
     public synchronized CommandQueue addCommand(AuthenticationToken authToken, PreparedCommand pc) throws InvalidAuthenticationToken {
-        commandHistoryListener.addCommand(pc);
+        commandHistoryPublisher.addCommand(pc);
 
         CommandQueue q = getQueue(authToken, pc);
         q.add(pc);
@@ -329,7 +325,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     }
 
     public void addToCommandHistory(CommandId commandId, String key, String value) {
-        commandHistoryListener.publish(commandId, key, value);
+        commandHistoryPublisher.publish(commandId, key, value);
     }
     /**
      * send a negative ack for a command.
@@ -544,8 +540,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         return queue;
     }
 
-    private void scheduleStateExpiration(final CommandQueue queue)
-    {
+    private void scheduleStateExpiration(final CommandQueue queue) {
 
         if(queue.stateExpirationJob != null) {
             log.debug("expiration job existing, removing...");
@@ -619,7 +614,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         List<TransmissionConstraintStatus> tcsList = new ArrayList<>();
         final PreparedCommand pc;
         final CommandQueue queue;
-        TCStatus aggregateStatus=TCStatus.INIT;
+        TCStatus aggregateStatus = TCStatus.INIT;
 
         public TransmissionConstraintChecker(CommandQueue queue, PreparedCommand pc) {
             this.pc = pc;

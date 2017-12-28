@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.yamcs.tctm.TcDataLinkInitialiser;
-import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
+import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.yarch.Stream;
@@ -26,11 +26,11 @@ public class CmdHistoryRecordingTest extends YarchTestCase {
     @Test
     public void testRecording() throws Exception {
         final int n=100;
-        ydb.execute("create stream "+YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME+TcDataLinkInitialiser.TC_TUPLE_DEFINITION.getStringDefinition());
+        ydb.execute("create stream "+StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME+TcDataLinkInitialiser.TC_TUPLE_DEFINITION.getStringDefinition());
         CommandHistoryRecorder cmdHistRecorder =new CommandHistoryRecorder(ydb.getName()); 
         cmdHistRecorder.startAsync();
        
-        Stream rtstream=ydb.getStream(YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME);
+        Stream rtstream=ydb.getStream(StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME);
         assertNotNull(rtstream);
         
         for(int i=0;i<n;i++) {

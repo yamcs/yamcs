@@ -56,7 +56,7 @@ public final class ManagementGpbHelper {
         if(yproc.isReplay()) {
             cib.setReplayRequest(yproc.getReplayRequest());
             cib.setReplayState(yproc.getReplayState());
-        }
+        } 
         return cib.build();
     }
 

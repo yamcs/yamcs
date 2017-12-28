@@ -9,9 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.script.Invocable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 
 import org.junit.After;
 import org.junit.Before;
@@ -26,10 +23,8 @@ import org.yamcs.YConfiguration;
 import org.yamcs.Processor;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
-import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.tctm.SimpleTcTmService;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.InputParameter;
@@ -60,7 +55,6 @@ public class AlgorithmManagerJavaTest {
         assertNotNull(db.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
 
         tmGenerator=new RefMdbPacketGenerator();
-        List<ParameterProvider> paramProviderList = new ArrayList<ParameterProvider>();
 
         Map<String, Object> jslib = new HashMap<String, Object>();
         Map<String, Object> config = new HashMap<String, Object>();
@@ -69,11 +63,8 @@ public class AlgorithmManagerJavaTest {
 
         config.put("libraries", jslib);
         AlgorithmManager am = new AlgorithmManager(instance, config);
-        paramProviderList.add(am);
 
-
-        SimpleTcTmService tmtcs = new SimpleTcTmService(tmGenerator, paramProviderList, null);
-        c=ProcessorFactory.create(instance, "AlgorithmManagerJavaTest", "refmdb", tmtcs, "junit");
+        c=ProcessorFactory.create(instance, "AlgorithmManagerJavaTest", tmGenerator, am);
         prm=c.getParameterRequestManager();
     }
 

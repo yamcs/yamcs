@@ -52,7 +52,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testRestRetrieval() throws Exception {
         //  Logger.getLogger("org.yamcs").setLevel(Level.INFO);
-        //Logger.getLogger("org.yamcs.parameterarchive").setLevel(Level.ALL);
+        Logger.getLogger("org.yamcs.parameterarchive").setLevel(Level.ALL);
         generateData("2015-01-02T10:00:00", 2*3600);
 
         String resp;

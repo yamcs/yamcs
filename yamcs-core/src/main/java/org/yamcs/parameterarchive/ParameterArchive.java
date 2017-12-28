@@ -50,7 +50,7 @@ public class ParameterArchive extends AbstractService {
     @Override
     protected void doStop() {
         parchive.stopAsync();
-        parchive.awaitRunning();
+        parchive.awaitTerminated();
         notifyStopped();
     }
 

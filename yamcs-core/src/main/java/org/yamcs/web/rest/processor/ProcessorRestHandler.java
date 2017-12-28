@@ -225,6 +225,7 @@ public class ProcessorRestHandler extends RestHandler {
             mservice.createProcessor(reqb.build(), restReq.getUsername());
             completeOK(restReq);
         } catch (YamcsException e) {
+            e.printStackTrace();
             throw new BadRequestException(e.getMessage());
         }
     }

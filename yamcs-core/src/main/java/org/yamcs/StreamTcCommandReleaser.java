@@ -30,7 +30,12 @@ public class StreamTcCommandReleaser extends AbstractService implements CommandR
         }
         this.streamName = config.get("stream");
     }
-
+    
+    @Override
+    public void init(Processor proc) {
+        proc.setCommandReleaser(this);
+    }
+    
     @Override
     public void releaseCommand(PreparedCommand pc) {
         stream.emitTuple(pc.toTuple());
@@ -50,7 +55,7 @@ public class StreamTcCommandReleaser extends AbstractService implements CommandR
     }
 
     @Override
-    public void setCommandHistory(CommandHistoryPublisher commandHistoryListener) {
+    public void setCommandHistory(CommandHistoryPublisher commandHistoryPublisher) {
 
     }
 
@@ -58,4 +63,6 @@ public class StreamTcCommandReleaser extends AbstractService implements CommandR
     protected void doStop() {
         notifyStopped();
     }
+
+    
 }

@@ -18,20 +18,18 @@ import org.yamcs.cmdhistory.CommandHistoryProvider;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.cmdhistory.StreamCommandHistoryProvider;
-import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
+import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.CommandingManager;
 import org.yamcs.container.ContainerRequestManager;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterCacheConfig;
-import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.tctm.ArchiveTmPacketProvider;
-import org.yamcs.tctm.TcTmService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.XtceDb;
@@ -40,36 +38,44 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
 import com.google.common.util.concurrent.AbstractService;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.Service.Listener;
+import com.google.common.util.concurrent.Service.State;
+
 /**
  * 
- * This class helps keeping track of the different objects used in a Yamcs Processor - i.e. all the 
- *  objects required to have a TM/TC processing chain (either realtime or playback).
+ * This class helps keeping track of the different objects used in a Yamcs Processor - i.e. all the
+ * objects required to have a TM/TC processing chain (either realtime or playback).
  *
  *
  */
 public class Processor extends AbstractService {
-    private static final String CONFIG_KEY_TM_PROCESSOR ="tmProcessor";
-    private static final String CONFIG_KEY_PARAMETER_CACHE ="parameterCache";
-    private static final String CONFIG_KEY_ALARM ="alarm";
+    private static final String CONFIG_KEY_TM_PROCESSOR = "tmProcessor";
+    private static final String CONFIG_KEY_PARAMETER_CACHE = "parameterCache";
+    private static final String CONFIG_KEY_ALARM = "alarm";
 
-
-    private static Map<String,Processor>instances=Collections.synchronizedMap(new LinkedHashMap<>());
+    //handles subscriptions to parameters
     private ParameterRequestManagerImpl parameterRequestManager;
+    //handles subscriptions to containers
     private ContainerRequestManager containerRequestManager;
-    private CommandHistoryPublisher commandHistoryPublisher;
-
+    //handles subscriptions to command history
     private CommandHistoryRequestManager commandHistoryRequestManager;
 
+    //handles command building and queues
     private CommandingManager commandingManager;
 
-   
-    private CommandHistoryProvider commandHistoryProvider;
+    //publishes events to command history
+    private CommandHistoryPublisher commandHistoryPublisher;
 
-
+    //these are services defined in the processor.yaml. 
+    //They have to register themselves to the processor in their init method
     private TmPacketProvider tmPacketProvider;
+    private CommandHistoryProvider commandHistoryProvider;
     private CommandReleaser commandReleaser;
-    private List<ParameterProvider> parameterProviders = new ArrayList<>();
+
+
+    private static Map<String, Processor> instances = Collections.synchronizedMap(new LinkedHashMap<>());
 
     private XtceDb xtcedb;
 
@@ -80,20 +86,21 @@ public class Processor extends AbstractService {
     private boolean checkAlarms = true;
     private boolean alarmServerEnabled = false;
 
-    private String creator="system";
-    private boolean persistent=false;
+    private String creator = "system";
+    private boolean persistent = false;
 
     ParameterCacheConfig parameterCacheConfig = new ParameterCacheConfig(false, false, 0, 0);
 
     final Logger log;
-    static Set<ProcessorListener> listeners=new CopyOnWriteArraySet<>(); //send notifications for added and removed processors to this
+    static Set<ProcessorListener> listeners = new CopyOnWriteArraySet<>(); // send notifications for added and removed
+    // processors to this
 
     private boolean quitting;
-    //a synchronous processor waits for all the clients to deliver tm packets and parameters
-    private boolean synchronous=false;
+    // a synchronous processor waits for all the clients to deliver tm packets and parameters
+    private boolean synchronous = false;
     XtceTmProcessor tmProcessor;
 
-    //unless very good performance reasons, we should try to serialize all the processing in this thread
+    // unless very good performance reasons, we should try to serialize all the processing in this thread
     private final ExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
     private final ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
@@ -102,10 +109,11 @@ public class Processor extends AbstractService {
 
     ProcessorData processorData;
     @GuardedBy("this")
-    HashSet<ProcessorClient> connectedClients= new HashSet<>();
+    HashSet<ProcessorClient> connectedClients = new HashSet<>();
+    List<ServiceWithConfig> serviceList;
 
     public Processor(String yamcsInstance, String name, String type, String creator) throws ProcessorException {
-        if((name==null) || "".equals(name)) {
+        if ((name == null) || "".equals(name)) {
             throw new ProcessorException("The processor name must not be empty");
         }
         this.yamcsInstance = yamcsInstance;
@@ -116,38 +124,41 @@ public class Processor extends AbstractService {
         log.info("Creating new processor '{}' of type '{}'", name, type);
     }
 
-
-
     @SuppressWarnings("unchecked")
-    void init(TcTmService tctms, Map<String, Object> config) throws ProcessorException, ConfigurationException {
+    void init(List<ServiceWithConfig> serviceList, Map<String, Object> config, Object spec)
+            throws ProcessorException, ConfigurationException {
         xtcedb = XtceDbFactory.getInstance(yamcsInstance);
         processorData = new ProcessorData(xtcedb);
-        
+        this.serviceList = serviceList;
+
         timeService = YamcsServer.getTimeService(yamcsInstance);
         Map<String, Object> tmProcessorConfig = null;
 
-        synchronized(instances) {
-            if(instances.containsKey(key(yamcsInstance,name))) {
-                throw new ProcessorException("A processor named '"+name+"' already exists in instance "+yamcsInstance);
+        synchronized (instances) {
+            if (instances.containsKey(key(yamcsInstance, name))) {
+                throw new ProcessorException(
+                        "A processor named '" + name + "' already exists in instance " + yamcsInstance);
             }
-            if(config!=null) {
-                for(String c: config.keySet()) {
-                    if(CONFIG_KEY_ALARM.equals(c)) {
+            if (config != null) {
+                for (String c : config.keySet()) {
+                    if (CONFIG_KEY_ALARM.equals(c)) {
                         Object o = config.get(c);
-                        if(!(o instanceof Map)) {
-                            throw new ConfigurationException(CONFIG_KEY_ALARM+" configuration should be a map");
+                        if (!(o instanceof Map)) {
+                            throw new ConfigurationException(CONFIG_KEY_ALARM + " configuration should be a map");
                         }
                         configureAlarms((Map<String, Object>) o);
-                    } else if(CONFIG_KEY_PARAMETER_CACHE.equals(c)) {
+                    } else if (CONFIG_KEY_PARAMETER_CACHE.equals(c)) {
                         Object o = config.get(c);
-                        if(!(o instanceof Map)) {
-                            throw new ConfigurationException(CONFIG_KEY_PARAMETER_CACHE + " configuration should be a map");
+                        if (!(o instanceof Map)) {
+                            throw new ConfigurationException(
+                                    CONFIG_KEY_PARAMETER_CACHE + " configuration should be a map");
                         }
                         configureParameterCache((Map<String, Object>) o);
-                    } else if(CONFIG_KEY_TM_PROCESSOR.equals(c)) {
+                    } else if (CONFIG_KEY_TM_PROCESSOR.equals(c)) {
                         Object o = config.get(c);
-                        if(!(o instanceof Map)) {
-                            throw new ConfigurationException(CONFIG_KEY_TM_PROCESSOR+ " configuration should be a map");
+                        if (!(o instanceof Map)) {
+                            throw new ConfigurationException(
+                                    CONFIG_KEY_TM_PROCESSOR + " configuration should be a map");
                         }
                         tmProcessorConfig = (Map<String, Object>) o;
                     } else {
@@ -156,63 +167,58 @@ public class Processor extends AbstractService {
                 }
             }
 
-
-            this.tmPacketProvider=tctms.getTmPacketProvider();
-            this.commandReleaser=tctms.getCommandReleaser();
-            List<ParameterProvider> providers = tctms.getParameterProviders();
-            if(providers!=null) {
-                this.parameterProviders.addAll(providers);
-            }
-
-            synchronous = tctms.isSynchronous();
-
-
             // Shared between prm and crm
             tmProcessor = new XtceTmProcessor(this, tmProcessorConfig);
-            if(tmPacketProvider!=null) {
-                tmPacketProvider.init(this, tmProcessor);
-            }
             containerRequestManager = new ContainerRequestManager(this, tmProcessor);
             parameterRequestManager = new ParameterRequestManagerImpl(this, tmProcessor);
 
-            for(ParameterProvider pprov: parameterProviders) {
-                pprov.init(this);
-                parameterRequestManager.addParameterProvider(pprov);
-            }
-
-            if((tmPacketProvider!=null) && (tmPacketProvider instanceof ParameterProvider) ) {
-                parameterRequestManager.addParameterProvider((ParameterProvider)tmPacketProvider);
+            for (ServiceWithConfig swc : serviceList) {
+                ProcessorService service = (ProcessorService) swc.service;
+                if(spec==null) {
+                    service.init(this);
+                } else {
+                    service.init(this, spec);
+                }
             }
 
             parameterRequestManager.init();
 
-
-            if(commandReleaser!=null) {
-                try {
-                    this.commandHistoryPublisher=new YarchCommandHistoryAdapter(yamcsInstance);
-                } catch (Exception e) {
-                    throw new ConfigurationException("Cannot create command history" , e);
-                }
-                commandingManager=new CommandingManager(this);
-                commandReleaser.setCommandHistory(commandHistoryPublisher);
-                commandHistoryRequestManager = new CommandHistoryRequestManager(this);
-                commandHistoryProvider = new StreamCommandHistoryProvider();
-                commandHistoryProvider.setCommandHistoryRequestManager(commandHistoryRequestManager);
-
-            } else {
-                commandingManager=null;
-                if((tmPacketProvider!=null) && (tmPacketProvider instanceof CommandHistoryProvider) ) {
-                    commandHistoryProvider = (CommandHistoryProvider) tmPacketProvider;
-                    commandHistoryRequestManager = new CommandHistoryRequestManager(this);
-                    commandHistoryProvider.setCommandHistoryRequestManager(commandHistoryRequestManager);
-                }
-            }
-
-
-            instances.put(key(yamcsInstance,name),this);
+            instances.put(key(yamcsInstance, name), this);
             listeners.forEach(l -> l.processorAdded(this));
         }
     }
+
+    public void setPacketProvider(TmPacketProvider tpp) {
+        if (tmPacketProvider != null) {
+            throw new IllegalStateException("There is already a packet provider");
+        }
+        tmPacketProvider = tpp;
+    }
+
+    public void setCommandReleaser(CommandReleaser cr) {
+        if (commandReleaser != null) {
+            throw new IllegalStateException("There is already a command releaser");
+        }
+        commandReleaser = cr;
+        //maybe we should un-hardcode these two and make them services
+        commandHistoryPublisher = new StreamCommandHistoryPublisher(yamcsInstance);
+        setCommandHistoryProvider(new StreamCommandHistoryProvider(yamcsInstance));
+
+
+        commandingManager = new CommandingManager(this);
+        commandReleaser.setCommandHistory(commandHistoryPublisher);
+
+    }
+
+    public void setCommandHistoryProvider(CommandHistoryProvider chp) {
+        if (commandHistoryProvider != null) {
+            throw new IllegalStateException("There is already a command history provider");
+        }
+        commandHistoryProvider = chp;
+        commandHistoryRequestManager = new CommandHistoryRequestManager(this);
+        commandHistoryProvider.setCommandHistoryRequestManager(commandHistoryRequestManager);
+    }
+
 
     public ExecutorService getExecutor() {
         return executor;
@@ -220,22 +226,24 @@ public class Processor extends AbstractService {
 
     private void configureAlarms(Map<String, Object> alarmConfig) {
         Object v = alarmConfig.get("check");
-        if(v!=null) {
-            if(!(v instanceof Boolean)) {
-                throw new ConfigurationException("Unknown value '"+v+"' for alarmConfig -> check. Boolean expected.");
+        if (v != null) {
+            if (!(v instanceof Boolean)) {
+                throw new ConfigurationException(
+                        "Unknown value '" + v + "' for alarmConfig -> check. Boolean expected.");
             }
-            checkAlarms = (Boolean)v;
+            checkAlarms = (Boolean) v;
         }
 
         v = alarmConfig.get("server");
-        if(v!=null) {
-            if(!(v instanceof String)) {
-                throw new ConfigurationException("Unknown value '"+v+"' for alarmConfig -> server. String expected.");
+        if (v != null) {
+            if (!(v instanceof String)) {
+                throw new ConfigurationException(
+                        "Unknown value '" + v + "' for alarmConfig -> server. String expected.");
 
             }
-            alarmServerEnabled = "enabled".equalsIgnoreCase((String)v);
-            if(alarmServerEnabled) {
-                checkAlarms=true;
+            alarmServerEnabled = "enabled".equalsIgnoreCase((String) v);
+            if (alarmServerEnabled) {
+                checkAlarms = true;
             }
         }
     }
@@ -245,29 +253,33 @@ public class Processor extends AbstractService {
         boolean cacheAll = false;
 
         Object v = cacheConfig.get("enabled");
-        if(v!=null) {
-            if(!(v instanceof Boolean)) {
-                throw new ConfigurationException("Unknown value '"+v+"' for parameterCache -> enabled. Boolean expected.");
+        if (v != null) {
+            if (!(v instanceof Boolean)) {
+                throw new ConfigurationException(
+                        "Unknown value '" + v + "' for parameterCache -> enabled. Boolean expected.");
             }
-            enabled = (Boolean)v;
+            enabled = (Boolean) v;
         }
-        if(!enabled) { //this is the default but print a warning if there are some things configured
+        if (!enabled) { // this is the default but print a warning if there are some things configured
             Set<String> keySet = cacheConfig.keySet();
             keySet.remove("enabled");
-            if(!keySet.isEmpty()) {
-                log.warn("Parmeter cache is disabled, the following keys are ignored: {}, use enable: true to enable the parameter cache", keySet);
+            if (!keySet.isEmpty()) {
+                log.warn(
+                        "Parmeter cache is disabled, the following keys are ignored: {}, use enable: true to enable the parameter cache",
+                        keySet);
             }
             return;
         }
 
         v = cacheConfig.get("cacheAll");
-        if(v!=null) {
-            if(!(v instanceof Boolean)) {
-                throw new ConfigurationException("Unknown value '"+v+"' for parameterCache -> cacheAll. Boolean expected.");
+        if (v != null) {
+            if (!(v instanceof Boolean)) {
+                throw new ConfigurationException(
+                        "Unknown value '" + v + "' for parameterCache -> cacheAll. Boolean expected.");
             }
-            cacheAll = (Boolean)v;
-            if(cacheAll) {
-                enabled=true;
+            cacheAll = (Boolean) v;
+            if (cacheAll) {
+                enabled = true;
             }
         }
         long duration = 1000L * YConfiguration.getInt(cacheConfig, "duration", 300);
@@ -277,7 +289,7 @@ public class Processor extends AbstractService {
     }
 
     private static String key(String instance, String name) {
-        return instance+"."+name;
+        return instance + "." + name;
     }
 
     public CommandHistoryPublisher getCommandHistoryPublisher() {
@@ -296,7 +308,6 @@ public class Processor extends AbstractService {
         return tmProcessor;
     }
 
-
     /**
      * starts processing by invoking the start method for all the associated components
      *
@@ -304,60 +315,60 @@ public class Processor extends AbstractService {
     @Override
     public void doStart() {
         try {
-            if(tmPacketProvider!=null) {
-                tmPacketProvider.startAsync();
+            tmProcessor.startAsync();
+            tmProcessor.addListener(new Listener() {
+                public void terminated(State from) {stopAsync();}
+            }, MoreExecutors.directExecutor());
+            startIfNecessary(commandHistoryRequestManager);
+            startIfNecessary(commandHistoryProvider);
+            startIfNecessary(parameterRequestManager);
+            startIfNecessary(tmPacketProvider);
+            startIfNecessary(commandingManager);
+            
+            for (ServiceWithConfig swc : serviceList) {
+                startIfNecessary(swc.service);
             }
-            if(tmProcessor!=null) {
-                tmProcessor.startAsync();
-            }
-            if(commandReleaser!=null) {
-                commandReleaser.startAsync();
-                commandReleaser.awaitRunning();
-                commandingManager.startAsync();
-                commandingManager.awaitRunning();
+            
+            tmProcessor.awaitRunning();;
+            awaitIfNecessary(commandHistoryRequestManager);
+            awaitIfNecessary(commandHistoryProvider);
+            awaitIfNecessary(parameterRequestManager);
+            awaitIfNecessary(tmPacketProvider);
+            awaitIfNecessary(commandingManager);
+            
+            
+            for (ServiceWithConfig swc : serviceList) {
+                swc.service.awaitRunning();
             }
 
-            if(commandHistoryRequestManager!=null) {
-                commandHistoryRequestManager.startAsync();
-                startIfNecessary(commandHistoryProvider);
-
-                commandHistoryRequestManager.awaitRunning();
-                commandHistoryProvider.awaitRunning();
-            }
-
-
-            for(ParameterProvider pprov: parameterProviders) {
-                pprov.startAsync();
-            }
-
-
-            parameterRequestManager.start();
-            if(tmPacketProvider!=null) {
-                tmPacketProvider.awaitRunning();
-            }
-            if(tmProcessor!=null) {
-                tmProcessor.awaitRunning();
-            }
+            
             notifyStarted();
         } catch (Exception e) {
             notifyFailed(e);
         }
-        propagateProcessorStateChange();        
+        propagateProcessorStateChange();
     }
 
     private void startIfNecessary(Service service) {
-        if(service.state()==State.NEW) {
-            service.startAsync();
+        if(service!=null) {
+            if (service.state() == State.NEW) {
+                service.startAsync();
+            }
+        }
+    }
+    private void awaitIfNecessary(Service service) {
+        if(service!=null) {
+            service.awaitRunning();
         }
     }
 
     public void pause() {
-        ((ArchiveTmPacketProvider)tmPacketProvider).pause();
+        ((ArchiveTmPacketProvider) tmPacketProvider).pause();
         propagateProcessorStateChange();
     }
 
     public void resume() {
-        ((ArchiveTmPacketProvider)tmPacketProvider).resume();
+        ((ArchiveTmPacketProvider) tmPacketProvider).resume();
         propagateProcessorStateChange();
     }
 
@@ -367,12 +378,12 @@ public class Processor extends AbstractService {
 
     public void seek(long instant) {
         getTmProcessor().resetStatistics();
-        ((ArchiveTmPacketProvider)tmPacketProvider).seek(instant);
+        ((ArchiveTmPacketProvider) tmPacketProvider).seek(instant);
         propagateProcessorStateChange();
     }
 
-    public void changeSpeed(ReplaySpeed speed) {        
-        ((ArchiveTmPacketProvider)tmPacketProvider).changeSpeed(speed);
+    public void changeSpeed(ReplaySpeed speed) {
+        ((ArchiveTmPacketProvider) tmPacketProvider).changeSpeed(speed);
         propagateProcessorStateChange();
     }
 
@@ -405,11 +416,9 @@ public class Processor extends AbstractService {
         return creator;
     }
 
-
     public void setCreator(String creator) {
         this.creator = creator;
     }
-
 
     public int getConnectedClients() {
         return connectedClients.size();
@@ -422,30 +431,32 @@ public class Processor extends AbstractService {
     /**
      * Returns the first register processor for the given instance or null if there is no processor registered.
      * 
-     * @param yamcsInstance - instance name for which the processor has to be returned.
-     * @return the first registered processor for the given instance 
+     * @param yamcsInstance
+     *            - instance name for which the processor has to be returned.
+     * @return the first registered processor for the given instance
      */
     public static Processor getFirstProcessor(String yamcsInstance) {
-        for(String k: instances.keySet()) {
-            if(k.startsWith(yamcsInstance+".")) {
+        for (String k : instances.keySet()) {
+            if (k.startsWith(yamcsInstance + ".")) {
                 return instances.get(k);
             }
         }
         return null;
     }
+
     /**
      * Increase with one the number of connected clients to the named processor and return the processor.
      * 
-     * @param yamcsInstance 
+     * @param yamcsInstance
      * @param name
-     * @param s 
+     * @param s
      * @return the processor with the given name
      * @throws ProcessorException
      */
     public static Processor connect(String yamcsInstance, String name, ProcessorClient s) throws ProcessorException {
         Processor ds = instances.get(key(yamcsInstance, name));
-        if(ds==null) {
-            throw new ProcessorException("There is no processor named '"+name+"'");
+        if (ds == null) {
+            throw new ProcessorException("There is no processor named '" + name + "'");
         }
         ds.connect(s);
         return ds;
@@ -456,7 +467,7 @@ public class Processor extends AbstractService {
      */
     public synchronized void connect(ProcessorClient s) throws ProcessorException {
         log.debug("Processor {} has one more user: {}", name, s);
-        if(quitting) {
+        if (quitting) {
             throw new ProcessorException("This processor has been closed");
         }
         connectedClients.add(s);
@@ -467,22 +478,21 @@ public class Processor extends AbstractService {
      *
      */
     public void disconnect(ProcessorClient s) {
-        if(quitting) {
+        if (quitting) {
             return;
         }
-        boolean hasToQuit=false;
-        synchronized(this) {
+        boolean hasToQuit = false;
+        synchronized (this) {
             connectedClients.remove(s);
             log.info("Processor {} has one less user: connectedUsers: {}", name, connectedClients.size());
-            if((connectedClients.isEmpty())&&(!persistent)) {
-                hasToQuit=true;
+            if ((connectedClients.isEmpty()) && (!persistent)) {
+                hasToQuit = true;
             }
         }
-        if(hasToQuit) {
+        if (hasToQuit) {
             stopAsync();
         }
     }
-
 
     public static Collection<Processor> getProcessors() {
         return instances.values();
@@ -498,63 +508,62 @@ public class Processor extends AbstractService {
         return instances.values();
     }
 
-
     /**
      * Closes the processor by stoping the tm/pp and tc
-     * It can be that there are still clients connected, but they will not get any data and new clients can not connect to
-     * these processors anymore. Once it is closed, you can create a processor with the same name which will make it maybe a bit 
+     * It can be that there are still clients connected, but they will not get any data and new clients can not connect
+     * to
+     * these processors anymore. Once it is closed, you can create a processor with the same name which will make it
+     * maybe a bit
      * confusing :(
      *
      */
     @Override
     public void doStop() {
-        if(quitting) {
+        if (quitting) {
             return;
         }
 
         log.info("Processor {} quitting", name);
         quitting = true;
         timer.shutdown();
-        //first send a STOPPING event
+        // first send a STOPPING event
         listeners.forEach(l -> l.processorStateChanged(this));
-        
-        
-        
-        
-        instances.remove(key(yamcsInstance,name));
-        
-        for(ParameterProvider p:parameterProviders) {
-            p.stopAsync();
+
+        for (ServiceWithConfig swc : serviceList) {
+            swc.service.stopAsync();
         }
-        if(commandReleaser!=null) {
+
+        instances.remove(key(yamcsInstance, name));
+
+        if (commandReleaser != null) {
             commandReleaser.stopAsync();
             commandingManager.stopAsync();
         }
-        if(tmProcessor!=null) {
+        if (tmProcessor != null) {
             tmProcessor.stopAsync();
         }
-        if(tmPacketProvider!=null) {
+        if (tmPacketProvider != null) {
             tmPacketProvider.stopAsync();
         }
-        
+
         log.info("Processor {} is out of business", name);
-        
-        if(getState() == ServiceState.RUNNING || getState() == ServiceState.STOPPING) {
+
+        if (getState() == ServiceState.RUNNING || getState() == ServiceState.STOPPING) {
             notifyStopped();
         }
-        //and now a CLOSED event
+        // and now a CLOSED event
         listeners.forEach(l -> l.processorClosed(this));
-        synchronized(this) {
-            for(ProcessorClient s:connectedClients) {
+        synchronized (this) {
+            for (ProcessorClient s : connectedClients) {
                 s.processorQuit();
             }
         }
     }
 
-
     public static void addProcessorListener(ProcessorListener processorListener) {
         listeners.add(processorListener);
     }
+
     public static void removeProcessorListener(ProcessorListener processorListener) {
         listeners.remove(processorListener);
     }
@@ -572,7 +581,7 @@ public class Processor extends AbstractService {
     }
 
     public boolean hasCommanding() {
-        return commandingManager!=null;
+        return commandingManager != null;
     }
 
     public void setSynchronous(boolean synchronous) {
@@ -580,27 +589,29 @@ public class Processor extends AbstractService {
     }
 
     public boolean isReplay() {
-        if(tmPacketProvider==null){
+        if (tmPacketProvider == null) {
             return false;
         }
-
+        
         return tmPacketProvider.isArchiveReplay();
     }
 
     /**
      * valid only if isArchiveReplay returns true
+     * 
      * @return
      */
     public ReplayRequest getReplayRequest() {
-        return ((ArchiveTmPacketProvider)tmPacketProvider).getReplayRequest();
+        return ((ArchiveTmPacketProvider) tmPacketProvider).getReplayRequest();
     }
 
     /**
      * valid only if isArchiveReplay returns true
+     * 
      * @return
      */
     public ReplayState getReplayState() {
-        return ((ArchiveTmPacketProvider)tmPacketProvider).getReplayState();
+        return ((ArchiveTmPacketProvider) tmPacketProvider).getReplayState();
     }
 
     public ServiceState getState() {
@@ -613,7 +624,7 @@ public class Processor extends AbstractService {
 
     @Override
     public String toString() {
-        return "name: "+name+" type: "+type+" connectedClients:"+connectedClients.size();
+        return "name: " + name + " type: " + type + " connectedClients:" + connectedClients.size();
     }
 
     /**
@@ -647,13 +658,14 @@ public class Processor extends AbstractService {
     /**
      * Returns the processor time
      * 
-     *  for realtime processors it is the mission time or simulation time
-     *  for replay processors it is the replay time
-     * @return 
+     * for realtime processors it is the mission time or simulation time
+     * for replay processors it is the replay time
+     * 
+     * @return
      */
-    public long getCurrentTime() {        
-        if(isReplay()) {
-            return ((ArchiveTmPacketProvider)tmPacketProvider).getReplayTime();
+    public long getCurrentTime() {
+        if (isReplay()) {
+            return ((ArchiveTmPacketProvider) tmPacketProvider).getReplayTime();
         } else {
             return timeService.getMissionTime();
         }
@@ -670,20 +682,20 @@ public class Processor extends AbstractService {
     }
 
     public void notifyStateChange() {
-        propagateProcessorStateChange();        
+        propagateProcessorStateChange();
     }
 
     /**
      * returns a list of all processors names
      * 
-     * @return all processors names as a list of instance.processorName 
+     * @return all processors names as a list of instance.processorName
      */
     public static List<String> getAllProcessors() {
         List<String> l = new ArrayList<String>(instances.size());
         l.addAll(instances.keySet());
         return l;
     }
-    
+
     public ParameterCacheConfig getPameterCacheConfig() {
         return parameterCacheConfig;
     }
@@ -693,7 +705,7 @@ public class Processor extends AbstractService {
     }
 
     /**
-     * Returns the processor data used to store processor specific calibration, alarms 
+     * Returns the processor data used to store processor specific calibration, alarms
      * 
      * @return processor specific data
      */

@@ -7,11 +7,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.commanding.CommandReleaser;
-import org.yamcs.parameter.ParameterProvider;
-import org.yamcs.tctm.SimpleTcTmService;
-import org.yamcs.tctm.TcTmService;
-import org.yamcs.utils.YObjectLoader;
 
 /**
  * Used to create processors as defined in yprocessor.yaml
@@ -39,84 +34,58 @@ public class ProcessorFactory {
      * @throws ConfigurationException
      */
     static public Processor create(String yamcsInstance, String name, String type, String creator, Object spec) throws ProcessorException,  ConfigurationException {
-        boolean initialized = false;
-        TcTmService tctms=null;
         Map<String,Object> processorConfig = null;
+        YConfiguration conf;
+        
+        if(!YConfiguration.isDefined("processor")) {
+            if(YConfiguration.isDefined("yprocessor")) {
+                log.warn("yprocessor.yaml is deprecated. Please rename it to processor.yaml.");
+                conf = YConfiguration.getConfiguration("yprocessor");
+            } else {
+                throw new ConfigurationException("Cannot find processor.yaml in the class path");
+            }
+        } else {
+            conf=YConfiguration.getConfiguration("processor");
+        }
+        List<ServiceWithConfig> serviceList = new ArrayList<>(); 
 
-        YConfiguration conf=YConfiguration.getConfiguration("yprocessor");
         try {
             if(!conf.containsKey(type)) {
-                throw new ConfigurationException("No processor type '"+type+"' found in yprocessor.yaml");
+                throw new ConfigurationException("No processor type '"+type+"' found in "+conf.getFilename());
             }
             
-            if(conf.containsKey(type,"tmtcpp")) {
-                Map<String, Object> m = (Map<String, Object>) conf.getMap(type, "tmtcpp");
-                String clsName = YConfiguration.getString(m, "class");
-                Object args = m.get("args");
-                tctms= loadObject(clsName, yamcsInstance, args, spec);
+            if(conf.containsKey(type, "services")) {
+                serviceList =  YamcsServer.createServices(yamcsInstance, conf.getList(type, "services"));
             } else {
-                TmPacketProvider tm=null;
-                List<ParameterProvider> pps = new ArrayList<>();
-                CommandReleaser tc=null;
-
+                log.warn("Deprecated configuration in "+conf.getFilename()+". Please use services");
                 if(conf.containsKey(type,"telemetryProvider")) {
                     Map<String, Object> m = (Map<String, Object>) conf.getMap(type, "telemetryProvider");
                     String tmClass = YConfiguration.getString(m, "class");
                     Object tmArgs = m.get("args");
-                    tm = loadObject(tmClass, yamcsInstance, tmArgs, spec);
-                    initialized = true;
+                    serviceList.add(YamcsServer.createService(yamcsInstance, tmClass, tmClass, tmArgs));
                 }
 
                 if(conf.containsKey(type,"parameterProviders")) {
                     List<Map<String, Object>> l = conf.getList(type, "parameterProviders");
-                    for(Map<String, Object> m:l) {
-                        String paramClass = YConfiguration.getString(m, "class");
-                        Object paramArgs = m.get("args");
-                        ParameterProvider pp = loadObject(paramClass, yamcsInstance, paramArgs, spec);
-                        pps.add(pp);
-                    }
-                    initialized = true;
+                    serviceList.addAll(YamcsServer.createServices(yamcsInstance, conf.getList(type, "parameterProviders")));
                 }
                 if(conf.containsKey(type, "commandReleaser")) {
                     Map<String, Object> m = (Map<String, Object>) conf.getMap(type, "commandReleaser");
                     String commandClass = YConfiguration.getString(m, "class");
                     Object commandArgs = m.get("args");
-                    tc =  loadObject(commandClass, yamcsInstance, commandArgs, spec);
-                    initialized = true;
+                    serviceList.add(YamcsServer.createService(yamcsInstance, commandClass, commandClass, commandArgs));
                 }
-                if(conf.containsKey(type, "config")) {
-                    processorConfig = (Map<String, Object>) conf.getMap(type, "config");
-                }
-                tctms=new SimpleTcTmService(tm, pps, tc);
-                if(!initialized) {
-                    throw new ConfigurationException("For channel type '"+type+"', none of  telemetryProvider, parameterProviders or commandReleaser specified");
-                }
+            }
+            if(conf.containsKey(type, "config")) {
+                processorConfig = (Map<String, Object>) conf.getMap(type, "config");
             }
         } catch (IOException e) {
             throw new ConfigurationException("Cannot load service",e);
         }
-
-        return create(yamcsInstance, name, type, tctms, creator, processorConfig);
+        return create(yamcsInstance, name, type, serviceList, creator, processorConfig, spec);
     }
-    /**
-     * loads objects but passes only non null parameters
-     */
-    private static <T> T loadObject(String className, String yamcsInstance, Object args, Object spec) throws ConfigurationException, IOException {
-        List<Object> newargs = new ArrayList<Object>();
-        newargs.add(yamcsInstance);
+   
 
-        if(args!=null) {
-            newargs.add(args);
-        }
-        if(spec!=null) {
-            newargs.add(spec);
-        }
-        return YObjectLoader.loadObject(className, newargs.toArray());
-    }
-
-    public static Processor create(String instance, String name, String type, TcTmService tctms, String creator) throws ProcessorException, ConfigurationException {
-        return create(instance, name, type, tctms, creator, null);
-    }
     /**
      *  Create a Processor by specifying the service.
      *  
@@ -131,10 +100,25 @@ public class ProcessorFactory {
      * @throws ProcessorException 
      * @throws ConfigurationException 
      **/
-    public static Processor create(String instance, String name, String type, TcTmService tctms, String creator, Map<String, Object> config) throws ProcessorException, ConfigurationException {
-        Processor yproc = new Processor(instance, name, type, creator);
+    public static Processor create(String instance, String name, String type, List<ServiceWithConfig> serviceList, String creator
+            , Map<String, Object> config, Object spec) throws ProcessorException, ConfigurationException {
+        Processor proc = new Processor(instance, name, type, creator);
 
-        yproc.init(tctms, config);
-        return yproc;
+        proc.init(serviceList, config, spec);
+        return proc;
     }
+
+    /**
+     * creates a processor with the services already instantiated.
+     * used from unit tests
+     */
+    public static Processor create(String yamcsInstance, String name, ProcessorService... services) throws ProcessorException, ConfigurationException {
+        List<ServiceWithConfig> serviceList = new ArrayList<>();
+        for(ProcessorService service: services) {
+            serviceList.add(new ServiceWithConfig(service, service.getClass().getName(), service.getClass().getName(), null));
+        }
+        return create(yamcsInstance, name, "test", serviceList, "test", null, null);
+    }
+   
+    
 }

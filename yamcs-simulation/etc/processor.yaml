@@ -7,15 +7,13 @@
 # Note that when you are adding a telemetryProvider, you are implicitly adding also a XtceTmProcessor that provides parameters
 
 realtime:
-    telemetryProvider: 
-       class: org.yamcs.StreamTmPacketProvider
-       args: 
-           streams: ["tm_realtime"]
-    commandReleaser:
-       class: org.yamcs.StreamTcCommandReleaser
-       args:
-           stream: "tc_realtime"
-    parameterProviders:
+    services: 
+       - class: org.yamcs.StreamTmPacketProvider
+         args: 
+           streams: ["tm_realtime"]    
+       - class: org.yamcs.StreamTcCommandReleaser
+         args:
+           stream: "tc_realtime"    
        - class: org.yamcs.tctm.StreamParameterProvider
          args:
            stream: "pp_realtime"
@@ -46,8 +44,8 @@ realtime:
 # initiated from Yamcs Monitor, Yamcs Studio.
 # should be renamed to ArchiveReplay
 Archive:
-    telemetryProvider: 
-        class: org.yamcs.tctm.ReplayService
+    services: 
+        - class: org.yamcs.tctm.ReplayService
     config:
         #keep a small cache in case new displays are open while the replay is paused, to have the parameters readily available
         parameterCache:
@@ -59,8 +57,8 @@ Archive:
 #used by the ParameterArchive when rebuilding the parameter archive
 # no need for parameter cache
 ParameterArchive:
-    telemetryProvider: 
-        class: org.yamcs.tctm.ReplayService
+    services: 
+        - class: org.yamcs.tctm.ReplayService
     config:
         parameterCache:
             enabled: false
@@ -68,9 +66,8 @@ ParameterArchive:
 #used for performing archive retrievals via replays (e.g. parameter-extractor.sh)
 # we do not want cache in order to extract the minimum data necessary
 ArchiveRetrieval:
-    telemetryProvider:
-        class: org.yamcs.tctm.ReplayService
+    services:
+        - class: org.yamcs.tctm.ReplayService
     config:
         parameterCache:
             enabled: false
-

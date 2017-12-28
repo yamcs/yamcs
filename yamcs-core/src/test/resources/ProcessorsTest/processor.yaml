@@ -1,0 +1,10 @@
+      
+dummy:
+    services: 
+        - class: org.yamcs.management.ProcessorsTest$DummyTmProvider
+
+
+Archive:
+    services:
+        - class: org.yamcs.tctm.ReplayService
+

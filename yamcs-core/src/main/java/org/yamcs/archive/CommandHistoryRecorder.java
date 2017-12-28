@@ -3,7 +3,7 @@ package org.yamcs.archive;
 import java.util.Arrays;
 
 import org.slf4j.Logger;
-import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
+import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.tctm.TcDataLinkInitialiser;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.yarch.Stream;
@@ -45,21 +45,21 @@ public class CommandHistoryRecorder extends AbstractService {
                 ydb.execute(q);
             }
             
-            Stream stream=ydb.getStream(YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME);
+            Stream stream=ydb.getStream(StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME);
             if(stream==null) {
-                log.warn("The stream {} has not been found", YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME);
-                notifyFailed(new Exception("The stream "+YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME+" has not been found"));
+                log.warn("The stream {} has not been found", StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME);
+                notifyFailed(new Exception("The stream "+StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME+" has not been found"));
                 return;
             }
-            ydb.execute("upsert_append into "+TABLE_NAME+" select * from "+YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME);
+            ydb.execute("upsert_append into "+TABLE_NAME+" select * from "+StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME);
             
-            stream=ydb.getStream(YarchCommandHistoryAdapter.DUMP_CMDHIST_STREAM_NAME);
+            stream=ydb.getStream(StreamCommandHistoryPublisher.DUMP_CMDHIST_STREAM_NAME);
             if(stream==null) {
-                log.warn("The stream {} has not been found", YarchCommandHistoryAdapter.DUMP_CMDHIST_STREAM_NAME);
-                notifyFailed(new Exception("The stream "+YarchCommandHistoryAdapter.DUMP_CMDHIST_STREAM_NAME+" has not been found"));
+                log.warn("The stream {} has not been found", StreamCommandHistoryPublisher.DUMP_CMDHIST_STREAM_NAME);
+                notifyFailed(new Exception("The stream "+StreamCommandHistoryPublisher.DUMP_CMDHIST_STREAM_NAME+" has not been found"));
                 return;
             }
-            ydb.execute("upsert_append into "+TABLE_NAME+" select * from "+YarchCommandHistoryAdapter.DUMP_CMDHIST_STREAM_NAME);
+            ydb.execute("upsert_append into "+TABLE_NAME+" select * from "+StreamCommandHistoryPublisher.DUMP_CMDHIST_STREAM_NAME);
             
             
         } catch (Exception e) {
@@ -75,7 +75,7 @@ public class CommandHistoryRecorder extends AbstractService {
     @Override
     protected void doStop() {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-        Utils.closeTableWriters(ydb, Arrays.asList(YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME, YarchCommandHistoryAdapter.DUMP_CMDHIST_STREAM_NAME));
+        Utils.closeTableWriters(ydb, Arrays.asList(StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME, StreamCommandHistoryPublisher.DUMP_CMDHIST_STREAM_NAME));
         notifyStopped();
     }
 }

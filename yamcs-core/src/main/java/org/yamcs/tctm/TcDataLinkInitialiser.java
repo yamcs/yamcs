@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.cmdhistory.YarchCommandHistoryAdapter;
+import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.management.ManagementService;
 import org.yamcs.utils.YObjectLoader;
@@ -111,7 +111,7 @@ public class TcDataLinkInitialiser extends AbstractService {
 		}
 	    });
 
-	    tcuplinker.setCommandHistoryPublisher(new YarchCommandHistoryAdapter(yamcsInstance));
+	    tcuplinker.setCommandHistoryPublisher(new StreamCommandHistoryPublisher(yamcsInstance));
 	    tclinks.put(name, tcuplinker);
 	    ManagementService.getInstance().registerLink(yamcsInstance, name, streamName, args!=null?args.toString():"", tcuplinker);
 	    count++;

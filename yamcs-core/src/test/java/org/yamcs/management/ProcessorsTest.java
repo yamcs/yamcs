@@ -276,8 +276,9 @@ public class ProcessorsTest {
         }
 
         @Override
-        public void init(Processor proc, TmProcessor tmProcessor) {
-            this.tmProcessor = tmProcessor;
+        public void init(Processor proc) {
+            this.tmProcessor = proc.getTmProcessor();
+            proc.setPacketProvider(this);
         }
     }
     
