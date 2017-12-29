@@ -1,7 +1,9 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { YamcsClient, Instance } from '../../../yamcs-client';
-import { HttpClient } from '@angular/common/http';
+import { Instance } from '../../../yamcs-client';
 import { Observable } from 'rxjs/Observable';
+import { Store } from '@ngrx/store';
+import { selectInstances } from '../store/instance.selectors';
+import { State } from '../../app.reducers';
 
 @Component({
   templateUrl: './instances.component.html',
@@ -11,8 +13,7 @@ export class InstancesPageComponent {
 
   instances$: Observable<Instance[]>;
 
-  constructor(http: HttpClient) {
-    const client = new YamcsClient(http);
-    this.instances$ = client.getInstances();
+  constructor(store: Store<State>) {
+    this.instances$ = store.select(selectInstances);
   }
 }

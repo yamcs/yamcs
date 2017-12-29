@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 
-import { StoreModule } from '@ngrx/store';
+import { StoreModule, Store } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreRouterConnectingModule, RouterStateSerializer } from '@ngrx/router-store';
 
@@ -15,6 +15,9 @@ import { InstancePageComponent } from './core/pages/instance.component';
 
 import { CustomRouterStateSerializer } from './shared/utils';
 import { reducers, metaReducers } from './app.reducers';
+
+import { InstanceEffects } from './core/store/instance.effects';
+import { LoadInstancesAction } from './core/store/instance.actions';
 
 @NgModule({
   declarations: [
@@ -51,7 +54,9 @@ import { reducers, metaReducers } from './app.reducers';
      *
      * See: https://github.com/ngrx/platform/blob/master/docs/effects/api.md#forroot
      */
-    EffectsModule.forRoot([]),
+    EffectsModule.forRoot([
+      InstanceEffects,
+    ]),
   ],
   providers: [
     /**
@@ -63,4 +68,9 @@ import { reducers, metaReducers } from './app.reducers';
   ],
   bootstrap: [ AppComponent ]
 })
-export class AppModule { }
+export class AppModule {
+
+  constructor(store: Store<any>) {
+    store.dispatch(new LoadInstancesAction());
+  }
+}

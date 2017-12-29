@@ -4,20 +4,26 @@ import {
   MetaReducer,
 } from '@ngrx/store';
 
-import * as fromRouter from '@ngrx/router-store';
+import {
+  RouterReducerState,
+  routerReducer,
+} from '@ngrx/router-store';
 
 import { environment } from '../environments/environment';
 import { RouterStateUrl } from './shared/utils';
 
-import * as instancesReducer from './core/store/instances.reducers';
+import {
+  InstanceState,
+  instanceReducer,
+} from './core/store/instance.reducers';
 
 /*
  * As mentioned, we treat each reducer like a table in a database. This means
  * our top level state interface is just a map of keys to inner state types.
  */
 export interface State {
-  instances: instancesReducer.State;
-  routerReducer: fromRouter.RouterReducerState<RouterStateUrl>;
+  instances: InstanceState;
+  routerReducer: RouterReducerState<RouterStateUrl>;
 }
 
 /*
@@ -26,15 +32,14 @@ export interface State {
  * and the current or initial state and return a new immutable state.
  */
 export const reducers: ActionReducerMap<State> = {
-  instances: instancesReducer.reducer,
-  routerReducer: fromRouter.routerReducer,
+  instances: instanceReducer,
+  routerReducer: routerReducer,
 };
 
 export function logger(reducer: ActionReducer<State>): ActionReducer<State> {
   return function (state: State, action: any): State {
-    console.log('action', action);
     const newState = reducer(state, action);
-    console.log('state', newState);
+    console.log('Action ⇒ State', action, newState);
     return newState;
   };
 }
