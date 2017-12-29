@@ -18,12 +18,14 @@ import { reducers, metaReducers } from './app.reducers';
 
 import { InstanceEffects } from './core/store/instance.effects';
 import { LoadInstancesAction } from './core/store/instance.actions';
+import { NotFoundPageComponent } from './core/pages/not-found.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     InstancesPageComponent,
     InstancePageComponent,
+    NotFoundPageComponent,
   ],
   imports: [
     BrowserModule,

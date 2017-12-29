@@ -10,6 +10,10 @@ export const selectInstancesById = defaultSelectors.selectEntities;
 export const selectTotalInstances = defaultSelectors.selectTotal;
 export const selectInstances = defaultSelectors.selectAll;
 
+export const selectInstancesLoaded = createSelector(
+  selectInstanceState,
+  state => state.loaded,
+);
 
 export const selectCurrentInstanceId = createSelector(
   selectInstanceState,
