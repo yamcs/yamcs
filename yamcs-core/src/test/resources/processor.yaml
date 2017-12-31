@@ -6,26 +6,18 @@
 #
 # Note that when you are adding a telemetryProvider, you are implicitly adding also a XtceTmProcessor that provides parameters
 #
-#
-#all the supported channel types
-# 
-types: [realtime, Archive]
 
 
 
 realtime:
-    telemetryProvider: 
-       class: org.yamcs.StreamTmPacketProvider
-       args: 
-           streams: ["tm_realtime"]
-    commandReleaser:
-       class: org.yamcs.StreamTcCommandReleaser
-       args:
-           stream: "tc_realtime"
-    parameterProviders:
-#       - class: org.yamcs.tctm.StreamPpProvider
-#         args:
-#           stream: "pp_realtime"
+    services: 
+       - class: org.yamcs.StreamTmPacketProvider
+         args: 
+           streams: ["tm_realtime"]    
+       - class: org.yamcs.StreamTcCommandReleaser
+         args:
+           stream: "tc_realtime"    
+
        # implements XTCE algorithms
        - class: org.yamcs.algorithms.AlgorithmManager
        # implements provider of parameters from sys_var stream (these are collected and sent on this stream by SystemParametersCollector service)
@@ -43,8 +35,8 @@ realtime:
 
 
 Archive:
-    telemetryProvider: 
-        class: org.yamcs.tctm.ReplayService
+    services: 
+        - class: org.yamcs.tctm.ReplayService
     config:
         parameterCache:
             enabled: true
@@ -53,8 +45,8 @@ Archive:
 #used for performing archive retrievals (e.g. parameter-extractor.sh)
 # we do not want cache in order to extract the minimum data necessary
 ArchiveRetrieval:
-    telemetryProvider:
-        class: org.yamcs.tctm.ReplayService
+    services:
+        - class: org.yamcs.tctm.ReplayService
     config:
         parameterCache:
             enabled: false

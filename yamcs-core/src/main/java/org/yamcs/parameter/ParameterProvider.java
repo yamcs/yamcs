@@ -1,9 +1,7 @@
 package org.yamcs.parameter;
 
-
-import com.google.common.util.concurrent.Service;
-
 import org.yamcs.Processor;
+import org.yamcs.ProcessorService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -22,13 +20,13 @@ import org.yamcs.xtce.Parameter;
  * @author nm
  *
  */
-public interface ParameterProvider extends Service {
+public interface ParameterProvider extends ProcessorService {
     /**
      * Called before the startup to pass on the processor and initialize whatever needed
      * @param processor
      * @throws ConfigurationException 
      */
-    public abstract void init(Processor processor) throws ConfigurationException;
+    public abstract void init(Processor processor);
 
     /**
      * Send parameters to this listener.

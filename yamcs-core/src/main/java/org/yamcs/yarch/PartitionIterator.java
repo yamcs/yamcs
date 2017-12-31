@@ -45,7 +45,8 @@ public class PartitionIterator implements Iterator<List<Partition>> {
                 jumpToStart=false;
             }
             if(partitioningSpec.type==_type.TIME) { 
-                next.add(intv.partitions.values().iterator().next());
+                //there will be max one partition in this time interval
+                next.addAll(intv.partitions.values());
             } else {
                 for(Partition p:intv.partitions.values()) {
                     if((partitionValueFilter==null) || (partitionValueFilter.contains(p.getValue()))) {

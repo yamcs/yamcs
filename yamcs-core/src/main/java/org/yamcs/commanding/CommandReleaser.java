@@ -1,8 +1,7 @@
 package org.yamcs.commanding;
 
+import org.yamcs.ProcessorService;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
-
-import com.google.common.util.concurrent.Service;
 
 /**
  * This is responsible for "releasing" a prepared command.
@@ -15,7 +14,7 @@ import com.google.common.util.concurrent.Service;
  * @author nm
  *
  */
-public interface CommandReleaser extends Service {
+public interface CommandReleaser extends ProcessorService {
     /**
      * release a command. 
      * @param preparedCommand

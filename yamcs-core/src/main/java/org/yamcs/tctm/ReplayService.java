@@ -87,36 +87,40 @@ public class ReplayService extends AbstractService
     ReplayRequest.Builder rawDataRequest;
     CommandHistoryRequestManager commandHistoryRequestManager;
 
-    public ReplayService(String instance, ReplayRequest spec) throws ConfigurationException {
+    
+    public ReplayService(String instance) throws ConfigurationException {
         this.yamcsInstance = instance;
-        this.originalReplayRequest = spec;
         xtceDb = XtceDbFactory.getInstance(instance);
     }
-
-    public ReplayService(String instance, String config) throws ConfigurationException {
-        this.yamcsInstance = instance;
-        ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
-        try {
-            JsonIOUtil.mergeFrom(config.getBytes(), rrb, org.yamcs.protobuf.SchemaYamcs.ReplayRequest.MERGE, false);
-        } catch (IOException e) {
-            throw new ConfigurationException("Cannot parse config into a replay request: " + e.getMessage(), e);
-        }
-        if (!rrb.hasSpeed()) {
-            rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.REALTIME).setParam(1));
-        }
-        this.originalReplayRequest = rrb.build();
-        xtceDb = XtceDbFactory.getInstance(instance);
+    
+    @Override
+    public void init(Processor proc) {
+        throw new IllegalArgumentException("Please provide the spec");
     }
 
     @Override
-    public void init(Processor proc) throws ConfigurationException {
+    public void init(Processor proc, Object spec) {
         this.yprocessor = proc;
-    }
-
-    @Override
-    public void init(Processor proc, TmProcessor tmProcessor) {
-        this.tmProcessor = tmProcessor;
-        this.yprocessor = proc;
+        this.tmProcessor = proc.getTmProcessor();
+        proc.setCommandHistoryProvider(this);
+        parameterRequestManager = proc.getParameterRequestManager();
+        proc.setPacketProvider(this);
+        parameterRequestManager.addParameterProvider(this);
+        
+        if(spec instanceof ReplayRequest) {
+            this.originalReplayRequest = (ReplayRequest)spec;
+        } else if(spec instanceof String) {
+            ReplayRequest.Builder rrb = ReplayRequest.newBuilder(); 
+            try {
+                JsonIOUtil.mergeFrom(((String)spec).getBytes(), rrb, org.yamcs.protobuf.SchemaYamcs.ReplayRequest.MERGE, false);
+            } catch (IOException e) {
+               throw new ConfigurationException("Cannot parse config into a replay request: "+e.getMessage(), e);
+            }
+            if(!rrb.hasSpeed()) {
+                rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.REALTIME).setParam(1));
+            }
+            this.originalReplayRequest = rrb.build();
+        }
     }
 
     @Override

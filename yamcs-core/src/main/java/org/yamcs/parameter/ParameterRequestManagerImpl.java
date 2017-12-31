@@ -24,6 +24,8 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.AlarmChecker;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
+import com.google.common.util.concurrent.AbstractService;
+
 /**
  * Keeps track of which parameters are part of which subscriptions.
  * 
@@ -33,7 +35,7 @@ import org.yamcs.xtceproc.XtceTmProcessor;
  * Both types have an unique id associated but different methods work with them
  * 
  */
-public class ParameterRequestManagerImpl implements ParameterRequestManager {
+public class ParameterRequestManagerImpl extends AbstractService implements ParameterRequestManager {
     Logger log;
     //Maps the parameters to the request(subscription id) in which they have been asked
     private ConcurrentHashMap<Parameter, SubscriptionArray> param2RequestMap = new ConcurrentHashMap<>();
@@ -570,17 +572,27 @@ public class ParameterRequestManagerImpl implements ParameterRequestManager {
         return parameterCache.getAllValues(param);
     }
 
-    public void start() {
-        if(alarmServer!=null) {
-            alarmServer.startAsync();
-        }
-    }
-
     public ParameterCache getParameterCache() {
         return parameterCache;
     }
 
     public Object getXtceDb() {
         return yproc.getXtceDb();
+    }
+
+    @Override
+    protected void doStart() {
+        if(alarmServer!=null) {
+            alarmServer.startAsync();
+        }
+        notifyStarted();
+    }
+
+    @Override
+    protected void doStop() {
+        if(alarmServer!=null) {
+            alarmServer.stopAsync();
+        }
+        notifyStopped();
     }
 }

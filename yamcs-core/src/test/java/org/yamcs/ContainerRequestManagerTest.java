@@ -11,7 +11,6 @@ import org.junit.Test;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.container.ContainerConsumer;
 import org.yamcs.container.ContainerRequestManager;
-import org.yamcs.management.ManagementService;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -28,7 +27,7 @@ public class ContainerRequestManagerTest {
     @Test
     public void testSubscriptions() throws Exception {
         RefMdbPacketGenerator packetGenerator = new RefMdbPacketGenerator();
-        Processor c = ProcessorFactory.create("refmdb", "ContainerRequestManagerTest", "refmdb", new RefMdbTmService(packetGenerator), "refmdb");
+        Processor c = ProcessorFactory.create("refmdb", "ContainerRequestManagerTest", packetGenerator);
         ContainerRequestManager rm = c.getContainerRequestManager();
         XtceDb xtceDb = c.getXtceDb();
 

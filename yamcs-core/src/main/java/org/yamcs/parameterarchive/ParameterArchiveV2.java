@@ -160,7 +160,6 @@ public class ParameterArchiveV2 extends AbstractService {
         try (AscendingRangeIterator it = new AscendingRangeIterator(db.newIterator(), range, false, range, false)) {
             while (it.isValid()) {
                 TimeBasedPartition tbp = TimeBasedPartition.parseFrom(it.value());
-                System.out.println("tbp :"+tbp);
                 Partition p = new Partition(tbp.getPartitionStart(), tbp.getPartitionEnd(), tbp.getPartitionDir());
                 Partition p1 = partitions.insert(p, 0);
                 if (p1 == null) {

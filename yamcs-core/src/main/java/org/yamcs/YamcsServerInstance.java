@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
-import org.yamcs.YamcsServer.ServiceWithConfig;
 import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;

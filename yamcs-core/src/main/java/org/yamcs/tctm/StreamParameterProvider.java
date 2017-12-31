@@ -53,7 +53,11 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
         }
         xtceDb=XtceDbFactory.getInstance(archiveInstance);
     }
-
+    @Override
+    public void init(Processor processor) {
+        ptypeProcessor = processor.getProcessorData().getParameterTypeProcessor();
+        processor.getParameterRequestManager().addParameterProvider(this);
+    }
 
     @Override
     protected void doStart() {
@@ -126,8 +130,9 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
     public boolean canProvide(NamedObjectId id) {
         if(xtceDb.getParameter(id)!=null) {
             return true;
+        } else {
+            return false;
         }
-        else return false;
     }
 
     @Override
@@ -157,8 +162,5 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
     }
 
 
-    @Override
-    public void init(Processor processor) {
-        ptypeProcessor = processor.getProcessorData().getParameterTypeProcessor();
-    }
+   
 }

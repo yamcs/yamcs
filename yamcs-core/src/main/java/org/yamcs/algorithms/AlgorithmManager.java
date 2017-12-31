@@ -19,6 +19,7 @@ import javax.script.ScriptEngineManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
+import org.yamcs.ProcessorService;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.ConfigurationException;
@@ -60,7 +61,8 @@ import com.google.common.util.concurrent.AbstractService;
  * included in the classpath. As a design choice all algorithms within the same AlgorithmManager, share the same
  * language.
  */
-public class AlgorithmManager extends AbstractService implements ParameterProvider, DVParameterConsumer {
+public class AlgorithmManager extends AbstractService
+        implements ParameterProvider, DVParameterConsumer, ProcessorService {
     private static final Logger log = LoggerFactory.getLogger(AlgorithmManager.class);
     static final String KEY_ALGO_NAME = "algoName";
 
@@ -83,11 +85,12 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);
     Processor yproc;
     AlgorithmExecutionContext globalCtx;
-    
+
     Map<String, ScriptAlgorithmManager> scriptAlgManagerByLanguage = new HashMap<>();
-    
+
     Map<String, List<String>> libraries = null;
     final EventProducer eventProducer;
+
     public AlgorithmManager(String yamcsInstance) throws ConfigurationException {
         this(yamcsInstance, (Map<String, Object>) null);
     }
@@ -98,7 +101,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         this.eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
         eventProducer.setSource("AlgorithmManager");
         eventProducer.setRepeatedEventReduction(true, 10000);
-        
+
         if (config != null) {
             if (config.containsKey("libraries")) {
                 libraries = (Map<String, List<String>>) config.get("libraries");
@@ -106,8 +109,6 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         }
         scriptEngineManager = new ScriptEngineManager();
     }
-
-   
 
     // these two constructors are invoked when part of a replay - we don't do anything with the replay request
     public AlgorithmManager(String yamcsInstance, ReplayRequest rr) throws ConfigurationException {
@@ -123,17 +124,18 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
     public void init(Processor yproc) {
         this.yproc = yproc;
         this.parameterRequestManager = yproc.getParameterRequestManager();
+        this.parameterRequestManager.addParameterProvider(this);
         xtcedb = yproc.getXtceDb();
 
-        scriptEngineManager.put("Yamcs", new AlgorithmUtils(yproc.getInstance(), yproc.getProcessorData(), yproc, xtcedb));
+        scriptEngineManager.put("Yamcs",
+                new AlgorithmUtils(yproc.getInstance(), yproc.getProcessorData(), yproc, xtcedb));
 
         globalCtx = new AlgorithmExecutionContext("global", null, yproc.getProcessorData());
         try {
             subscriptionId = parameterRequestManager.addRequest(new ArrayList<Parameter>(0), this);
         } catch (InvalidIdentification e) {
-            log.error(
-                    "InvalidIdentification while subscribing to the parameterRequestManager with an empty subscription list",
-                    e);
+            log.error("InvalidIdentification while subscribing to the parameterRequestManager with an empty "
+                    + "subscription list", e);
         }
 
         for (Algorithm algo : xtcedb.getAlgorithms()) {
@@ -143,7 +145,7 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         }
 
     }
-    
+
     private ScriptAlgorithmManager getScriptManagerByLanguage(String language) {
         ScriptAlgorithmManager sam = scriptAlgManagerByLanguage.get(language);
         if (sam == null) {
@@ -152,9 +154,9 @@ public class AlgorithmManager extends AbstractService implements ParameterProvid
         }
         return sam;
     }
-    
+
     private List<String> getLibraries(String language) {
-        if (libraries==null) {
+        if (libraries == null) {
             return null;
         }
         return libraries.get(language);

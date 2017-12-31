@@ -390,7 +390,7 @@ public class YamcsServer {
         return (T) getGlobalService(serviceClass.getName());
     }
 
-    private static ServiceWithConfig createService(String instance, String serviceClass, String serviceName, Object args) throws ConfigurationException, IOException {
+    static ServiceWithConfig createService(String instance, String serviceClass, String serviceName, Object args) throws ConfigurationException, IOException {
         Service serv;
         if(instance!=null) {
             if(args == null){
@@ -463,22 +463,6 @@ public class YamcsServer {
             System.exit(-1);
         }
     } 
-
-    public static class ServiceWithConfig {
-        final Service service;
-        final String serviceClass;
-        final String name;
-        final Object args;
-
-        public ServiceWithConfig(Service service, String serviceClass, String name,  Object args) {
-            super();
-            this.service = service;
-            this.serviceClass = serviceClass;
-            this.name = name;
-            this.args = args;
-        }
-
-    }
 
     public static CrashHandler getCrashHandler(String yamcsInstance) {
         YamcsServerInstance ys = getInstance(yamcsInstance);

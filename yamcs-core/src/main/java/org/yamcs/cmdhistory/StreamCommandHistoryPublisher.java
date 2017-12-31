@@ -8,8 +8,6 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-import org.yamcs.yarch.streamsql.ParseException;
-import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.protobuf.Commanding.CommandId;
 
 /**
@@ -18,14 +16,14 @@ import org.yamcs.protobuf.Commanding.CommandId;
  * @author nm
  *
  */
-public class YarchCommandHistoryAdapter implements CommandHistoryPublisher {
+public class StreamCommandHistoryPublisher implements CommandHistoryPublisher {
     static public final String REALTIME_CMDHIST_STREAM_NAME = "cmdhist_realtime";
     static public final String DUMP_CMDHIST_STREAM_NAME = "cmdhist_dump";
 
     Stream stream;
     final String instance;
 
-    public YarchCommandHistoryAdapter(String archiveInstance) throws StreamSqlException, ParseException {
+    public StreamCommandHistoryPublisher(String archiveInstance) {
         this.instance = archiveInstance;
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(archiveInstance);
         stream = ydb.getStream(REALTIME_CMDHIST_STREAM_NAME);

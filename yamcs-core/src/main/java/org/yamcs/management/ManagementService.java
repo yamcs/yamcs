@@ -194,18 +194,17 @@ public class ManagementService implements ProcessorListener {
 
     public void createProcessor(ProcessorManagementRequest pmr, String username) throws YamcsException{
         log.info("Creating new processor instance: {}, name: {}, type: {}, config: {}, persistent: {}",pmr.getInstance(), pmr.getName(), pmr.getType(), pmr.getConfig(), pmr.getPersistent());
-
         Processor yproc;
         try {
             int n=0;
 
-            Object config = null;
+            Object spec = null;
             if(pmr.hasReplaySpec()) {
-                config = pmr.getReplaySpec();
+                spec = pmr.getReplaySpec();
             } else if (pmr.hasConfig()){
-                config = pmr.getConfig();
+                spec = pmr.getConfig();
             }
-            yproc = ProcessorFactory.create(pmr.getInstance(), pmr.getName(), pmr.getType(), username, config);
+            yproc = ProcessorFactory.create(pmr.getInstance(), pmr.getName(), pmr.getType(), username, spec);
             yproc.setPersistent(pmr.getPersistent());
             for(int i=0; i<pmr.getClientIdCount(); i++) {
                 ClientWithInfo cwi = clients.get(pmr.getClientId(i));

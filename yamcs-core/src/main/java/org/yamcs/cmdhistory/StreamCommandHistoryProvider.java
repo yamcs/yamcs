@@ -24,17 +24,19 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class StreamCommandHistoryProvider  extends AbstractService implements CommandHistoryProvider, StreamSubscriber {
-
+public class StreamCommandHistoryProvider extends AbstractService implements  CommandHistoryProvider, StreamSubscriber {
     CommandHistoryRequestManager chrm;
     Stream realtimeCmdHistoryStream; 
-
+    String yamcsInstance;
+    
+    public StreamCommandHistoryProvider(String yamcsInstance) {
+        this.yamcsInstance = yamcsInstance;
+    }
     
     @Override
     public void setCommandHistoryRequestManager(CommandHistoryRequestManager chrm) {
         this.chrm = chrm;
     }
-    
 
     @Override
     public void onTuple(Stream s, Tuple tuple) {
@@ -68,9 +70,9 @@ public class StreamCommandHistoryProvider  extends AbstractService implements Co
     protected void doStart() {
         String instance = chrm.getInstance();
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(chrm.getInstance());
-        Stream realtimeCmdHistoryStream = ydb.getStream(YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME);
+        Stream realtimeCmdHistoryStream = ydb.getStream(StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME);
         if(realtimeCmdHistoryStream == null) {
-            String msg ="Cannot find stream '"+YarchCommandHistoryAdapter.REALTIME_CMDHIST_STREAM_NAME+" in instance "+instance; 
+            String msg ="Cannot find stream '"+StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME+" in instance "+instance; 
             notifyFailed(new ConfigurationException(msg));
         } else {
             realtimeCmdHistoryStream.addSubscriber(this);
@@ -85,4 +87,6 @@ public class StreamCommandHistoryProvider  extends AbstractService implements Co
         notifyStopped();
     }
 
+
+   
 }

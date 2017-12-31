@@ -42,7 +42,7 @@ public class SystemParametersProvider extends AbstractService implements StreamS
     Logger log;
     Stream stream;
     XtceDb xtceDb;
-    Processor yproc;
+    Processor proc;
     ArrayList<ParameterValue> procParams = new ArrayList<>();
     ScheduledThreadPoolExecutor timer=new ScheduledThreadPoolExecutor(1);
     ParameterValue procModePv;
@@ -52,17 +52,18 @@ public class SystemParametersProvider extends AbstractService implements StreamS
     }
     
     @Override
-    public void init(Processor yproc) throws ConfigurationException {
-        String instance = yproc.getInstance();
-        log = LoggingUtils.getLogger(this.getClass(), yproc);
+    public void init(Processor proc) throws ConfigurationException {
+        String instance = proc.getInstance();
+        log = LoggingUtils.getLogger(this.getClass(), proc);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         stream = ydb.getStream(SystemParametersCollector.STREAM_NAME);
         if(stream==null) {
             throw new ConfigurationException("Cannot find a stream named "+SystemParametersCollector.STREAM_NAME);
         }
 
-        this.yproc = yproc;
-        setupYProcParameters();
+        this.proc = proc;
+        proc.getParameterRequestManager().addParameterProvider(this);
+        setupProcessorParameters();
     }
 
     
@@ -183,25 +184,25 @@ public class SystemParametersProvider extends AbstractService implements StreamS
     
     private ParameterValue getYProcPV(String name, String value) {
         ParameterValue pv = new ParameterValue(getSystemParameter(XtceDb.YAMCS_SPACESYSTEM_NAME+"/yprocessor/"+name));
-        pv.setAcquisitionTime(yproc.getCurrentTime());
-        pv.setGenerationTime(yproc.getCurrentTime());
+        pv.setAcquisitionTime(proc.getCurrentTime());
+        pv.setGenerationTime(proc.getCurrentTime());
         pv.setStringValue(value);
         return pv;
     }
-    private void setupYProcParameters() {
-        ParameterValue yprocNamePv = getYProcPV("name", yproc.getName());
+    private void setupProcessorParameters() {
+        ParameterValue yprocNamePv = getYProcPV("name", proc.getName());
         procParams.add(yprocNamePv);
         
-        ParameterValue yprocCreatorPv = getYProcPV("creator", yproc.getCreator());
+        ParameterValue yprocCreatorPv = getYProcPV("creator", proc.getCreator());
         procParams.add(yprocCreatorPv);
         
-        String mode =  yproc.isReplay()? "replay":"realtime";            
+        String mode =  proc.isReplay()? "replay":"realtime";            
         procModePv = getYProcPV("mode", mode);
         procParams.add(procModePv); 
     }
     
     private void updateProcParameters() {
-        procModePv.setGenerationTime(yproc.getCurrentTime());
+        procModePv.setGenerationTime(proc.getCurrentTime());
         parameterListener.update(procParams);
     }
 }

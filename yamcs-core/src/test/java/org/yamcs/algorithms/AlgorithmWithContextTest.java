@@ -21,9 +21,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.api.EventProducerFactory;
-import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManagerImpl;
-import org.yamcs.tctm.SimpleTcTmService;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
@@ -51,16 +49,13 @@ public class AlgorithmWithContextTest {
 
         tmGenerator = new RefMdbPacketGenerator();
         tmGenerator = new RefMdbPacketGenerator();
-        List<ParameterProvider> paramProviderList = new ArrayList<ParameterProvider>();
         Map<String, Object> jslib = new HashMap<String, Object>();
         Map<String, Object> config = new HashMap<String, Object>();
         jslib.put("JavaScript", Arrays.asList("mdb/algolib.js"));
         jslib.put("python", Arrays.asList("mdb/algolib.py"));
         config.put("libraries", jslib);
-        paramProviderList.add(new AlgorithmManager("refmdb", config));
-        SimpleTcTmService tmtcs = new SimpleTcTmService(tmGenerator, paramProviderList, null);
 
-        c = ProcessorFactory.create("refmdb", "AlgorithmManagerTest", "refmdb", tmtcs, "junit");
+        c = ProcessorFactory.create("refmdb", "AlgorithmManagerTest", tmGenerator, new AlgorithmManager("refmdb", config));
         prm = c.getParameterRequestManager();
     }
 
