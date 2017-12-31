@@ -35271,6 +35271,2864 @@ public final class Rest {
     // @@protoc_insertion_point(class_scope:parameters.BulkGetIndexRequest)
   }
 
+  public interface ListDisplaysResponseOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // repeated .parameters.DisplayFolder folder = 1;
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Rest.DisplayFolder> 
+        getFolderList();
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+     */
+    org.yamcs.protobuf.Rest.DisplayFolder getFolder(int index);
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+     */
+    int getFolderCount();
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Rest.DisplayFolderOrBuilder> 
+        getFolderOrBuilderList();
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+     */
+    org.yamcs.protobuf.Rest.DisplayFolderOrBuilder getFolderOrBuilder(
+        int index);
+
+    // repeated .parameters.DisplayFile file = 2;
+    /**
+     * <code>repeated .parameters.DisplayFile file = 2;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Rest.DisplayFile> 
+        getFileList();
+    /**
+     * <code>repeated .parameters.DisplayFile file = 2;</code>
+     */
+    org.yamcs.protobuf.Rest.DisplayFile getFile(int index);
+    /**
+     * <code>repeated .parameters.DisplayFile file = 2;</code>
+     */
+    int getFileCount();
+    /**
+     * <code>repeated .parameters.DisplayFile file = 2;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Rest.DisplayFileOrBuilder> 
+        getFileOrBuilderList();
+    /**
+     * <code>repeated .parameters.DisplayFile file = 2;</code>
+     */
+    org.yamcs.protobuf.Rest.DisplayFileOrBuilder getFileOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code parameters.ListDisplaysResponse}
+   */
+  public static final class ListDisplaysResponse extends
+      com.google.protobuf.GeneratedMessage
+      implements ListDisplaysResponseOrBuilder {
+    // Use ListDisplaysResponse.newBuilder() to construct.
+    private ListDisplaysResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private ListDisplaysResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final ListDisplaysResponse defaultInstance;
+    public static ListDisplaysResponse getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public ListDisplaysResponse getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ListDisplaysResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                folder_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.DisplayFolder>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              folder_.add(input.readMessage(org.yamcs.protobuf.Rest.DisplayFolder.PARSER, extensionRegistry));
+              break;
+            }
+            case 18: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                file_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.DisplayFile>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              file_.add(input.readMessage(org.yamcs.protobuf.Rest.DisplayFile.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          folder_ = java.util.Collections.unmodifiableList(folder_);
+        }
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          file_ = java.util.Collections.unmodifiableList(file_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Rest.internal_static_parameters_ListDisplaysResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Rest.internal_static_parameters_ListDisplaysResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Rest.ListDisplaysResponse.class, org.yamcs.protobuf.Rest.ListDisplaysResponse.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<ListDisplaysResponse> PARSER =
+        new com.google.protobuf.AbstractParser<ListDisplaysResponse>() {
+      public ListDisplaysResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ListDisplaysResponse(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ListDisplaysResponse> getParserForType() {
+      return PARSER;
+    }
+
+    // repeated .parameters.DisplayFolder folder = 1;
+    public static final int FOLDER_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Rest.DisplayFolder> folder_;
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Rest.DisplayFolder> getFolderList() {
+      return folder_;
+    }
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Rest.DisplayFolderOrBuilder> 
+        getFolderOrBuilderList() {
+      return folder_;
+    }
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+     */
+    public int getFolderCount() {
+      return folder_.size();
+    }
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+     */
+    public org.yamcs.protobuf.Rest.DisplayFolder getFolder(int index) {
+      return folder_.get(index);
+    }
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+     */
+    public org.yamcs.protobuf.Rest.DisplayFolderOrBuilder getFolderOrBuilder(
+        int index) {
+      return folder_.get(index);
+    }
+
+    // repeated .parameters.DisplayFile file = 2;
+    public static final int FILE_FIELD_NUMBER = 2;
+    private java.util.List<org.yamcs.protobuf.Rest.DisplayFile> file_;
+    /**
+     * <code>repeated .parameters.DisplayFile file = 2;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Rest.DisplayFile> getFileList() {
+      return file_;
+    }
+    /**
+     * <code>repeated .parameters.DisplayFile file = 2;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Rest.DisplayFileOrBuilder> 
+        getFileOrBuilderList() {
+      return file_;
+    }
+    /**
+     * <code>repeated .parameters.DisplayFile file = 2;</code>
+     */
+    public int getFileCount() {
+      return file_.size();
+    }
+    /**
+     * <code>repeated .parameters.DisplayFile file = 2;</code>
+     */
+    public org.yamcs.protobuf.Rest.DisplayFile getFile(int index) {
+      return file_.get(index);
+    }
+    /**
+     * <code>repeated .parameters.DisplayFile file = 2;</code>
+     */
+    public org.yamcs.protobuf.Rest.DisplayFileOrBuilder getFileOrBuilder(
+        int index) {
+      return file_.get(index);
+    }
+
+    private void initFields() {
+      folder_ = java.util.Collections.emptyList();
+      file_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < folder_.size(); i++) {
+        output.writeMessage(1, folder_.get(i));
+      }
+      for (int i = 0; i < file_.size(); i++) {
+        output.writeMessage(2, file_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < folder_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, folder_.get(i));
+      }
+      for (int i = 0; i < file_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, file_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Rest.ListDisplaysResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.ListDisplaysResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.ListDisplaysResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.ListDisplaysResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.ListDisplaysResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.ListDisplaysResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.ListDisplaysResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.ListDisplaysResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.ListDisplaysResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.ListDisplaysResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Rest.ListDisplaysResponse prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code parameters.ListDisplaysResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Rest.ListDisplaysResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_ListDisplaysResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_ListDisplaysResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Rest.ListDisplaysResponse.class, org.yamcs.protobuf.Rest.ListDisplaysResponse.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Rest.ListDisplaysResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getFolderFieldBuilder();
+          getFileFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (folderBuilder_ == null) {
+          folder_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          folderBuilder_.clear();
+        }
+        if (fileBuilder_ == null) {
+          file_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+        } else {
+          fileBuilder_.clear();
+        }
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_ListDisplaysResponse_descriptor;
+      }
+
+      public org.yamcs.protobuf.Rest.ListDisplaysResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Rest.ListDisplaysResponse.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Rest.ListDisplaysResponse build() {
+        org.yamcs.protobuf.Rest.ListDisplaysResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Rest.ListDisplaysResponse buildPartial() {
+        org.yamcs.protobuf.Rest.ListDisplaysResponse result = new org.yamcs.protobuf.Rest.ListDisplaysResponse(this);
+        int from_bitField0_ = bitField0_;
+        if (folderBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            folder_ = java.util.Collections.unmodifiableList(folder_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.folder_ = folder_;
+        } else {
+          result.folder_ = folderBuilder_.build();
+        }
+        if (fileBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            file_ = java.util.Collections.unmodifiableList(file_);
+            bitField0_ = (bitField0_ & ~0x00000002);
+          }
+          result.file_ = file_;
+        } else {
+          result.file_ = fileBuilder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Rest.ListDisplaysResponse) {
+          return mergeFrom((org.yamcs.protobuf.Rest.ListDisplaysResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Rest.ListDisplaysResponse other) {
+        if (other == org.yamcs.protobuf.Rest.ListDisplaysResponse.getDefaultInstance()) return this;
+        if (folderBuilder_ == null) {
+          if (!other.folder_.isEmpty()) {
+            if (folder_.isEmpty()) {
+              folder_ = other.folder_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureFolderIsMutable();
+              folder_.addAll(other.folder_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.folder_.isEmpty()) {
+            if (folderBuilder_.isEmpty()) {
+              folderBuilder_.dispose();
+              folderBuilder_ = null;
+              folder_ = other.folder_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              folderBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getFolderFieldBuilder() : null;
+            } else {
+              folderBuilder_.addAllMessages(other.folder_);
+            }
+          }
+        }
+        if (fileBuilder_ == null) {
+          if (!other.file_.isEmpty()) {
+            if (file_.isEmpty()) {
+              file_ = other.file_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+            } else {
+              ensureFileIsMutable();
+              file_.addAll(other.file_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.file_.isEmpty()) {
+            if (fileBuilder_.isEmpty()) {
+              fileBuilder_.dispose();
+              fileBuilder_ = null;
+              file_ = other.file_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+              fileBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getFileFieldBuilder() : null;
+            } else {
+              fileBuilder_.addAllMessages(other.file_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Rest.ListDisplaysResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Rest.ListDisplaysResponse) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // repeated .parameters.DisplayFolder folder = 1;
+      private java.util.List<org.yamcs.protobuf.Rest.DisplayFolder> folder_ =
+        java.util.Collections.emptyList();
+      private void ensureFolderIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          folder_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.DisplayFolder>(folder_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Rest.DisplayFolder, org.yamcs.protobuf.Rest.DisplayFolder.Builder, org.yamcs.protobuf.Rest.DisplayFolderOrBuilder> folderBuilder_;
+
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Rest.DisplayFolder> getFolderList() {
+        if (folderBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(folder_);
+        } else {
+          return folderBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+       */
+      public int getFolderCount() {
+        if (folderBuilder_ == null) {
+          return folder_.size();
+        } else {
+          return folderBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFolder getFolder(int index) {
+        if (folderBuilder_ == null) {
+          return folder_.get(index);
+        } else {
+          return folderBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+       */
+      public Builder setFolder(
+          int index, org.yamcs.protobuf.Rest.DisplayFolder value) {
+        if (folderBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFolderIsMutable();
+          folder_.set(index, value);
+          onChanged();
+        } else {
+          folderBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+       */
+      public Builder setFolder(
+          int index, org.yamcs.protobuf.Rest.DisplayFolder.Builder builderForValue) {
+        if (folderBuilder_ == null) {
+          ensureFolderIsMutable();
+          folder_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          folderBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+       */
+      public Builder addFolder(org.yamcs.protobuf.Rest.DisplayFolder value) {
+        if (folderBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFolderIsMutable();
+          folder_.add(value);
+          onChanged();
+        } else {
+          folderBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+       */
+      public Builder addFolder(
+          int index, org.yamcs.protobuf.Rest.DisplayFolder value) {
+        if (folderBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFolderIsMutable();
+          folder_.add(index, value);
+          onChanged();
+        } else {
+          folderBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+       */
+      public Builder addFolder(
+          org.yamcs.protobuf.Rest.DisplayFolder.Builder builderForValue) {
+        if (folderBuilder_ == null) {
+          ensureFolderIsMutable();
+          folder_.add(builderForValue.build());
+          onChanged();
+        } else {
+          folderBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+       */
+      public Builder addFolder(
+          int index, org.yamcs.protobuf.Rest.DisplayFolder.Builder builderForValue) {
+        if (folderBuilder_ == null) {
+          ensureFolderIsMutable();
+          folder_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          folderBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+       */
+      public Builder addAllFolder(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Rest.DisplayFolder> values) {
+        if (folderBuilder_ == null) {
+          ensureFolderIsMutable();
+          super.addAll(values, folder_);
+          onChanged();
+        } else {
+          folderBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+       */
+      public Builder clearFolder() {
+        if (folderBuilder_ == null) {
+          folder_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          folderBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+       */
+      public Builder removeFolder(int index) {
+        if (folderBuilder_ == null) {
+          ensureFolderIsMutable();
+          folder_.remove(index);
+          onChanged();
+        } else {
+          folderBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFolder.Builder getFolderBuilder(
+          int index) {
+        return getFolderFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFolderOrBuilder getFolderOrBuilder(
+          int index) {
+        if (folderBuilder_ == null) {
+          return folder_.get(index);  } else {
+          return folderBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Rest.DisplayFolderOrBuilder> 
+           getFolderOrBuilderList() {
+        if (folderBuilder_ != null) {
+          return folderBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(folder_);
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFolder.Builder addFolderBuilder() {
+        return getFolderFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Rest.DisplayFolder.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFolder.Builder addFolderBuilder(
+          int index) {
+        return getFolderFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Rest.DisplayFolder.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Rest.DisplayFolder.Builder> 
+           getFolderBuilderList() {
+        return getFolderFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Rest.DisplayFolder, org.yamcs.protobuf.Rest.DisplayFolder.Builder, org.yamcs.protobuf.Rest.DisplayFolderOrBuilder> 
+          getFolderFieldBuilder() {
+        if (folderBuilder_ == null) {
+          folderBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.yamcs.protobuf.Rest.DisplayFolder, org.yamcs.protobuf.Rest.DisplayFolder.Builder, org.yamcs.protobuf.Rest.DisplayFolderOrBuilder>(
+                  folder_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          folder_ = null;
+        }
+        return folderBuilder_;
+      }
+
+      // repeated .parameters.DisplayFile file = 2;
+      private java.util.List<org.yamcs.protobuf.Rest.DisplayFile> file_ =
+        java.util.Collections.emptyList();
+      private void ensureFileIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          file_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.DisplayFile>(file_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Rest.DisplayFile, org.yamcs.protobuf.Rest.DisplayFile.Builder, org.yamcs.protobuf.Rest.DisplayFileOrBuilder> fileBuilder_;
+
+      /**
+       * <code>repeated .parameters.DisplayFile file = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Rest.DisplayFile> getFileList() {
+        if (fileBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(file_);
+        } else {
+          return fileBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 2;</code>
+       */
+      public int getFileCount() {
+        if (fileBuilder_ == null) {
+          return file_.size();
+        } else {
+          return fileBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 2;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFile getFile(int index) {
+        if (fileBuilder_ == null) {
+          return file_.get(index);
+        } else {
+          return fileBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 2;</code>
+       */
+      public Builder setFile(
+          int index, org.yamcs.protobuf.Rest.DisplayFile value) {
+        if (fileBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFileIsMutable();
+          file_.set(index, value);
+          onChanged();
+        } else {
+          fileBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 2;</code>
+       */
+      public Builder setFile(
+          int index, org.yamcs.protobuf.Rest.DisplayFile.Builder builderForValue) {
+        if (fileBuilder_ == null) {
+          ensureFileIsMutable();
+          file_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          fileBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 2;</code>
+       */
+      public Builder addFile(org.yamcs.protobuf.Rest.DisplayFile value) {
+        if (fileBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFileIsMutable();
+          file_.add(value);
+          onChanged();
+        } else {
+          fileBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 2;</code>
+       */
+      public Builder addFile(
+          int index, org.yamcs.protobuf.Rest.DisplayFile value) {
+        if (fileBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFileIsMutable();
+          file_.add(index, value);
+          onChanged();
+        } else {
+          fileBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 2;</code>
+       */
+      public Builder addFile(
+          org.yamcs.protobuf.Rest.DisplayFile.Builder builderForValue) {
+        if (fileBuilder_ == null) {
+          ensureFileIsMutable();
+          file_.add(builderForValue.build());
+          onChanged();
+        } else {
+          fileBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 2;</code>
+       */
+      public Builder addFile(
+          int index, org.yamcs.protobuf.Rest.DisplayFile.Builder builderForValue) {
+        if (fileBuilder_ == null) {
+          ensureFileIsMutable();
+          file_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          fileBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 2;</code>
+       */
+      public Builder addAllFile(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Rest.DisplayFile> values) {
+        if (fileBuilder_ == null) {
+          ensureFileIsMutable();
+          super.addAll(values, file_);
+          onChanged();
+        } else {
+          fileBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 2;</code>
+       */
+      public Builder clearFile() {
+        if (fileBuilder_ == null) {
+          file_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+          onChanged();
+        } else {
+          fileBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 2;</code>
+       */
+      public Builder removeFile(int index) {
+        if (fileBuilder_ == null) {
+          ensureFileIsMutable();
+          file_.remove(index);
+          onChanged();
+        } else {
+          fileBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 2;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFile.Builder getFileBuilder(
+          int index) {
+        return getFileFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 2;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFileOrBuilder getFileOrBuilder(
+          int index) {
+        if (fileBuilder_ == null) {
+          return file_.get(index);  } else {
+          return fileBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 2;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Rest.DisplayFileOrBuilder> 
+           getFileOrBuilderList() {
+        if (fileBuilder_ != null) {
+          return fileBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(file_);
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 2;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFile.Builder addFileBuilder() {
+        return getFileFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Rest.DisplayFile.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 2;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFile.Builder addFileBuilder(
+          int index) {
+        return getFileFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Rest.DisplayFile.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Rest.DisplayFile.Builder> 
+           getFileBuilderList() {
+        return getFileFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Rest.DisplayFile, org.yamcs.protobuf.Rest.DisplayFile.Builder, org.yamcs.protobuf.Rest.DisplayFileOrBuilder> 
+          getFileFieldBuilder() {
+        if (fileBuilder_ == null) {
+          fileBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.yamcs.protobuf.Rest.DisplayFile, org.yamcs.protobuf.Rest.DisplayFile.Builder, org.yamcs.protobuf.Rest.DisplayFileOrBuilder>(
+                  file_,
+                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  getParentForChildren(),
+                  isClean());
+          file_ = null;
+        }
+        return fileBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:parameters.ListDisplaysResponse)
+    }
+
+    static {
+      defaultInstance = new ListDisplaysResponse(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:parameters.ListDisplaysResponse)
+  }
+
+  public interface DisplayFolderOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional string filename = 1;
+    /**
+     * <code>optional string filename = 1;</code>
+     */
+    boolean hasFilename();
+    /**
+     * <code>optional string filename = 1;</code>
+     */
+    java.lang.String getFilename();
+    /**
+     * <code>optional string filename = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getFilenameBytes();
+
+    // repeated .parameters.DisplayFolder folder = 2;
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Rest.DisplayFolder> 
+        getFolderList();
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+     */
+    org.yamcs.protobuf.Rest.DisplayFolder getFolder(int index);
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+     */
+    int getFolderCount();
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Rest.DisplayFolderOrBuilder> 
+        getFolderOrBuilderList();
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+     */
+    org.yamcs.protobuf.Rest.DisplayFolderOrBuilder getFolderOrBuilder(
+        int index);
+
+    // repeated .parameters.DisplayFile file = 3;
+    /**
+     * <code>repeated .parameters.DisplayFile file = 3;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Rest.DisplayFile> 
+        getFileList();
+    /**
+     * <code>repeated .parameters.DisplayFile file = 3;</code>
+     */
+    org.yamcs.protobuf.Rest.DisplayFile getFile(int index);
+    /**
+     * <code>repeated .parameters.DisplayFile file = 3;</code>
+     */
+    int getFileCount();
+    /**
+     * <code>repeated .parameters.DisplayFile file = 3;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Rest.DisplayFileOrBuilder> 
+        getFileOrBuilderList();
+    /**
+     * <code>repeated .parameters.DisplayFile file = 3;</code>
+     */
+    org.yamcs.protobuf.Rest.DisplayFileOrBuilder getFileOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code parameters.DisplayFolder}
+   */
+  public static final class DisplayFolder extends
+      com.google.protobuf.GeneratedMessage
+      implements DisplayFolderOrBuilder {
+    // Use DisplayFolder.newBuilder() to construct.
+    private DisplayFolder(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private DisplayFolder(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final DisplayFolder defaultInstance;
+    public static DisplayFolder getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public DisplayFolder getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private DisplayFolder(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              filename_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                folder_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.DisplayFolder>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              folder_.add(input.readMessage(org.yamcs.protobuf.Rest.DisplayFolder.PARSER, extensionRegistry));
+              break;
+            }
+            case 26: {
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+                file_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.DisplayFile>();
+                mutable_bitField0_ |= 0x00000004;
+              }
+              file_.add(input.readMessage(org.yamcs.protobuf.Rest.DisplayFile.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          folder_ = java.util.Collections.unmodifiableList(folder_);
+        }
+        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+          file_ = java.util.Collections.unmodifiableList(file_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Rest.internal_static_parameters_DisplayFolder_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Rest.internal_static_parameters_DisplayFolder_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Rest.DisplayFolder.class, org.yamcs.protobuf.Rest.DisplayFolder.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<DisplayFolder> PARSER =
+        new com.google.protobuf.AbstractParser<DisplayFolder>() {
+      public DisplayFolder parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new DisplayFolder(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<DisplayFolder> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional string filename = 1;
+    public static final int FILENAME_FIELD_NUMBER = 1;
+    private java.lang.Object filename_;
+    /**
+     * <code>optional string filename = 1;</code>
+     */
+    public boolean hasFilename() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string filename = 1;</code>
+     */
+    public java.lang.String getFilename() {
+      java.lang.Object ref = filename_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          filename_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string filename = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getFilenameBytes() {
+      java.lang.Object ref = filename_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        filename_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // repeated .parameters.DisplayFolder folder = 2;
+    public static final int FOLDER_FIELD_NUMBER = 2;
+    private java.util.List<org.yamcs.protobuf.Rest.DisplayFolder> folder_;
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Rest.DisplayFolder> getFolderList() {
+      return folder_;
+    }
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Rest.DisplayFolderOrBuilder> 
+        getFolderOrBuilderList() {
+      return folder_;
+    }
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+     */
+    public int getFolderCount() {
+      return folder_.size();
+    }
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+     */
+    public org.yamcs.protobuf.Rest.DisplayFolder getFolder(int index) {
+      return folder_.get(index);
+    }
+    /**
+     * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+     */
+    public org.yamcs.protobuf.Rest.DisplayFolderOrBuilder getFolderOrBuilder(
+        int index) {
+      return folder_.get(index);
+    }
+
+    // repeated .parameters.DisplayFile file = 3;
+    public static final int FILE_FIELD_NUMBER = 3;
+    private java.util.List<org.yamcs.protobuf.Rest.DisplayFile> file_;
+    /**
+     * <code>repeated .parameters.DisplayFile file = 3;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Rest.DisplayFile> getFileList() {
+      return file_;
+    }
+    /**
+     * <code>repeated .parameters.DisplayFile file = 3;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Rest.DisplayFileOrBuilder> 
+        getFileOrBuilderList() {
+      return file_;
+    }
+    /**
+     * <code>repeated .parameters.DisplayFile file = 3;</code>
+     */
+    public int getFileCount() {
+      return file_.size();
+    }
+    /**
+     * <code>repeated .parameters.DisplayFile file = 3;</code>
+     */
+    public org.yamcs.protobuf.Rest.DisplayFile getFile(int index) {
+      return file_.get(index);
+    }
+    /**
+     * <code>repeated .parameters.DisplayFile file = 3;</code>
+     */
+    public org.yamcs.protobuf.Rest.DisplayFileOrBuilder getFileOrBuilder(
+        int index) {
+      return file_.get(index);
+    }
+
+    private void initFields() {
+      filename_ = "";
+      folder_ = java.util.Collections.emptyList();
+      file_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getFilenameBytes());
+      }
+      for (int i = 0; i < folder_.size(); i++) {
+        output.writeMessage(2, folder_.get(i));
+      }
+      for (int i = 0; i < file_.size(); i++) {
+        output.writeMessage(3, file_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getFilenameBytes());
+      }
+      for (int i = 0; i < folder_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, folder_.get(i));
+      }
+      for (int i = 0; i < file_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(3, file_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Rest.DisplayFolder parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.DisplayFolder parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.DisplayFolder parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.DisplayFolder parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.DisplayFolder parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.DisplayFolder parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.DisplayFolder parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.DisplayFolder parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.DisplayFolder parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.DisplayFolder parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Rest.DisplayFolder prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code parameters.DisplayFolder}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Rest.DisplayFolderOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_DisplayFolder_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_DisplayFolder_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Rest.DisplayFolder.class, org.yamcs.protobuf.Rest.DisplayFolder.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Rest.DisplayFolder.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getFolderFieldBuilder();
+          getFileFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        filename_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (folderBuilder_ == null) {
+          folder_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+        } else {
+          folderBuilder_.clear();
+        }
+        if (fileBuilder_ == null) {
+          file_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000004);
+        } else {
+          fileBuilder_.clear();
+        }
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_DisplayFolder_descriptor;
+      }
+
+      public org.yamcs.protobuf.Rest.DisplayFolder getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Rest.DisplayFolder.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Rest.DisplayFolder build() {
+        org.yamcs.protobuf.Rest.DisplayFolder result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Rest.DisplayFolder buildPartial() {
+        org.yamcs.protobuf.Rest.DisplayFolder result = new org.yamcs.protobuf.Rest.DisplayFolder(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.filename_ = filename_;
+        if (folderBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            folder_ = java.util.Collections.unmodifiableList(folder_);
+            bitField0_ = (bitField0_ & ~0x00000002);
+          }
+          result.folder_ = folder_;
+        } else {
+          result.folder_ = folderBuilder_.build();
+        }
+        if (fileBuilder_ == null) {
+          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+            file_ = java.util.Collections.unmodifiableList(file_);
+            bitField0_ = (bitField0_ & ~0x00000004);
+          }
+          result.file_ = file_;
+        } else {
+          result.file_ = fileBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Rest.DisplayFolder) {
+          return mergeFrom((org.yamcs.protobuf.Rest.DisplayFolder)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Rest.DisplayFolder other) {
+        if (other == org.yamcs.protobuf.Rest.DisplayFolder.getDefaultInstance()) return this;
+        if (other.hasFilename()) {
+          bitField0_ |= 0x00000001;
+          filename_ = other.filename_;
+          onChanged();
+        }
+        if (folderBuilder_ == null) {
+          if (!other.folder_.isEmpty()) {
+            if (folder_.isEmpty()) {
+              folder_ = other.folder_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+            } else {
+              ensureFolderIsMutable();
+              folder_.addAll(other.folder_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.folder_.isEmpty()) {
+            if (folderBuilder_.isEmpty()) {
+              folderBuilder_.dispose();
+              folderBuilder_ = null;
+              folder_ = other.folder_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+              folderBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getFolderFieldBuilder() : null;
+            } else {
+              folderBuilder_.addAllMessages(other.folder_);
+            }
+          }
+        }
+        if (fileBuilder_ == null) {
+          if (!other.file_.isEmpty()) {
+            if (file_.isEmpty()) {
+              file_ = other.file_;
+              bitField0_ = (bitField0_ & ~0x00000004);
+            } else {
+              ensureFileIsMutable();
+              file_.addAll(other.file_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.file_.isEmpty()) {
+            if (fileBuilder_.isEmpty()) {
+              fileBuilder_.dispose();
+              fileBuilder_ = null;
+              file_ = other.file_;
+              bitField0_ = (bitField0_ & ~0x00000004);
+              fileBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getFileFieldBuilder() : null;
+            } else {
+              fileBuilder_.addAllMessages(other.file_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Rest.DisplayFolder parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Rest.DisplayFolder) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional string filename = 1;
+      private java.lang.Object filename_ = "";
+      /**
+       * <code>optional string filename = 1;</code>
+       */
+      public boolean hasFilename() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string filename = 1;</code>
+       */
+      public java.lang.String getFilename() {
+        java.lang.Object ref = filename_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          filename_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string filename = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getFilenameBytes() {
+        java.lang.Object ref = filename_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          filename_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string filename = 1;</code>
+       */
+      public Builder setFilename(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        filename_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string filename = 1;</code>
+       */
+      public Builder clearFilename() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        filename_ = getDefaultInstance().getFilename();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string filename = 1;</code>
+       */
+      public Builder setFilenameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        filename_ = value;
+        onChanged();
+        return this;
+      }
+
+      // repeated .parameters.DisplayFolder folder = 2;
+      private java.util.List<org.yamcs.protobuf.Rest.DisplayFolder> folder_ =
+        java.util.Collections.emptyList();
+      private void ensureFolderIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          folder_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.DisplayFolder>(folder_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Rest.DisplayFolder, org.yamcs.protobuf.Rest.DisplayFolder.Builder, org.yamcs.protobuf.Rest.DisplayFolderOrBuilder> folderBuilder_;
+
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Rest.DisplayFolder> getFolderList() {
+        if (folderBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(folder_);
+        } else {
+          return folderBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+       */
+      public int getFolderCount() {
+        if (folderBuilder_ == null) {
+          return folder_.size();
+        } else {
+          return folderBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFolder getFolder(int index) {
+        if (folderBuilder_ == null) {
+          return folder_.get(index);
+        } else {
+          return folderBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+       */
+      public Builder setFolder(
+          int index, org.yamcs.protobuf.Rest.DisplayFolder value) {
+        if (folderBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFolderIsMutable();
+          folder_.set(index, value);
+          onChanged();
+        } else {
+          folderBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+       */
+      public Builder setFolder(
+          int index, org.yamcs.protobuf.Rest.DisplayFolder.Builder builderForValue) {
+        if (folderBuilder_ == null) {
+          ensureFolderIsMutable();
+          folder_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          folderBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+       */
+      public Builder addFolder(org.yamcs.protobuf.Rest.DisplayFolder value) {
+        if (folderBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFolderIsMutable();
+          folder_.add(value);
+          onChanged();
+        } else {
+          folderBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+       */
+      public Builder addFolder(
+          int index, org.yamcs.protobuf.Rest.DisplayFolder value) {
+        if (folderBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFolderIsMutable();
+          folder_.add(index, value);
+          onChanged();
+        } else {
+          folderBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+       */
+      public Builder addFolder(
+          org.yamcs.protobuf.Rest.DisplayFolder.Builder builderForValue) {
+        if (folderBuilder_ == null) {
+          ensureFolderIsMutable();
+          folder_.add(builderForValue.build());
+          onChanged();
+        } else {
+          folderBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+       */
+      public Builder addFolder(
+          int index, org.yamcs.protobuf.Rest.DisplayFolder.Builder builderForValue) {
+        if (folderBuilder_ == null) {
+          ensureFolderIsMutable();
+          folder_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          folderBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+       */
+      public Builder addAllFolder(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Rest.DisplayFolder> values) {
+        if (folderBuilder_ == null) {
+          ensureFolderIsMutable();
+          super.addAll(values, folder_);
+          onChanged();
+        } else {
+          folderBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+       */
+      public Builder clearFolder() {
+        if (folderBuilder_ == null) {
+          folder_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+          onChanged();
+        } else {
+          folderBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+       */
+      public Builder removeFolder(int index) {
+        if (folderBuilder_ == null) {
+          ensureFolderIsMutable();
+          folder_.remove(index);
+          onChanged();
+        } else {
+          folderBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFolder.Builder getFolderBuilder(
+          int index) {
+        return getFolderFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFolderOrBuilder getFolderOrBuilder(
+          int index) {
+        if (folderBuilder_ == null) {
+          return folder_.get(index);  } else {
+          return folderBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Rest.DisplayFolderOrBuilder> 
+           getFolderOrBuilderList() {
+        if (folderBuilder_ != null) {
+          return folderBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(folder_);
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFolder.Builder addFolderBuilder() {
+        return getFolderFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Rest.DisplayFolder.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFolder.Builder addFolderBuilder(
+          int index) {
+        return getFolderFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Rest.DisplayFolder.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .parameters.DisplayFolder folder = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Rest.DisplayFolder.Builder> 
+           getFolderBuilderList() {
+        return getFolderFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Rest.DisplayFolder, org.yamcs.protobuf.Rest.DisplayFolder.Builder, org.yamcs.protobuf.Rest.DisplayFolderOrBuilder> 
+          getFolderFieldBuilder() {
+        if (folderBuilder_ == null) {
+          folderBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.yamcs.protobuf.Rest.DisplayFolder, org.yamcs.protobuf.Rest.DisplayFolder.Builder, org.yamcs.protobuf.Rest.DisplayFolderOrBuilder>(
+                  folder_,
+                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  getParentForChildren(),
+                  isClean());
+          folder_ = null;
+        }
+        return folderBuilder_;
+      }
+
+      // repeated .parameters.DisplayFile file = 3;
+      private java.util.List<org.yamcs.protobuf.Rest.DisplayFile> file_ =
+        java.util.Collections.emptyList();
+      private void ensureFileIsMutable() {
+        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+          file_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.DisplayFile>(file_);
+          bitField0_ |= 0x00000004;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Rest.DisplayFile, org.yamcs.protobuf.Rest.DisplayFile.Builder, org.yamcs.protobuf.Rest.DisplayFileOrBuilder> fileBuilder_;
+
+      /**
+       * <code>repeated .parameters.DisplayFile file = 3;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Rest.DisplayFile> getFileList() {
+        if (fileBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(file_);
+        } else {
+          return fileBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 3;</code>
+       */
+      public int getFileCount() {
+        if (fileBuilder_ == null) {
+          return file_.size();
+        } else {
+          return fileBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 3;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFile getFile(int index) {
+        if (fileBuilder_ == null) {
+          return file_.get(index);
+        } else {
+          return fileBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 3;</code>
+       */
+      public Builder setFile(
+          int index, org.yamcs.protobuf.Rest.DisplayFile value) {
+        if (fileBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFileIsMutable();
+          file_.set(index, value);
+          onChanged();
+        } else {
+          fileBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 3;</code>
+       */
+      public Builder setFile(
+          int index, org.yamcs.protobuf.Rest.DisplayFile.Builder builderForValue) {
+        if (fileBuilder_ == null) {
+          ensureFileIsMutable();
+          file_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          fileBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 3;</code>
+       */
+      public Builder addFile(org.yamcs.protobuf.Rest.DisplayFile value) {
+        if (fileBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFileIsMutable();
+          file_.add(value);
+          onChanged();
+        } else {
+          fileBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 3;</code>
+       */
+      public Builder addFile(
+          int index, org.yamcs.protobuf.Rest.DisplayFile value) {
+        if (fileBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFileIsMutable();
+          file_.add(index, value);
+          onChanged();
+        } else {
+          fileBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 3;</code>
+       */
+      public Builder addFile(
+          org.yamcs.protobuf.Rest.DisplayFile.Builder builderForValue) {
+        if (fileBuilder_ == null) {
+          ensureFileIsMutable();
+          file_.add(builderForValue.build());
+          onChanged();
+        } else {
+          fileBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 3;</code>
+       */
+      public Builder addFile(
+          int index, org.yamcs.protobuf.Rest.DisplayFile.Builder builderForValue) {
+        if (fileBuilder_ == null) {
+          ensureFileIsMutable();
+          file_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          fileBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 3;</code>
+       */
+      public Builder addAllFile(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Rest.DisplayFile> values) {
+        if (fileBuilder_ == null) {
+          ensureFileIsMutable();
+          super.addAll(values, file_);
+          onChanged();
+        } else {
+          fileBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 3;</code>
+       */
+      public Builder clearFile() {
+        if (fileBuilder_ == null) {
+          file_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000004);
+          onChanged();
+        } else {
+          fileBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 3;</code>
+       */
+      public Builder removeFile(int index) {
+        if (fileBuilder_ == null) {
+          ensureFileIsMutable();
+          file_.remove(index);
+          onChanged();
+        } else {
+          fileBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 3;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFile.Builder getFileBuilder(
+          int index) {
+        return getFileFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 3;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFileOrBuilder getFileOrBuilder(
+          int index) {
+        if (fileBuilder_ == null) {
+          return file_.get(index);  } else {
+          return fileBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 3;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Rest.DisplayFileOrBuilder> 
+           getFileOrBuilderList() {
+        if (fileBuilder_ != null) {
+          return fileBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(file_);
+        }
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 3;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFile.Builder addFileBuilder() {
+        return getFileFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Rest.DisplayFile.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 3;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFile.Builder addFileBuilder(
+          int index) {
+        return getFileFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Rest.DisplayFile.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .parameters.DisplayFile file = 3;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Rest.DisplayFile.Builder> 
+           getFileBuilderList() {
+        return getFileFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Rest.DisplayFile, org.yamcs.protobuf.Rest.DisplayFile.Builder, org.yamcs.protobuf.Rest.DisplayFileOrBuilder> 
+          getFileFieldBuilder() {
+        if (fileBuilder_ == null) {
+          fileBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.yamcs.protobuf.Rest.DisplayFile, org.yamcs.protobuf.Rest.DisplayFile.Builder, org.yamcs.protobuf.Rest.DisplayFileOrBuilder>(
+                  file_,
+                  ((bitField0_ & 0x00000004) == 0x00000004),
+                  getParentForChildren(),
+                  isClean());
+          file_ = null;
+        }
+        return fileBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:parameters.DisplayFolder)
+    }
+
+    static {
+      defaultInstance = new DisplayFolder(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:parameters.DisplayFolder)
+  }
+
+  public interface DisplayFileOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional string filename = 1;
+    /**
+     * <code>optional string filename = 1;</code>
+     */
+    boolean hasFilename();
+    /**
+     * <code>optional string filename = 1;</code>
+     */
+    java.lang.String getFilename();
+    /**
+     * <code>optional string filename = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getFilenameBytes();
+
+    // optional string url = 2;
+    /**
+     * <code>optional string url = 2;</code>
+     */
+    boolean hasUrl();
+    /**
+     * <code>optional string url = 2;</code>
+     */
+    java.lang.String getUrl();
+    /**
+     * <code>optional string url = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getUrlBytes();
+  }
+  /**
+   * Protobuf type {@code parameters.DisplayFile}
+   */
+  public static final class DisplayFile extends
+      com.google.protobuf.GeneratedMessage
+      implements DisplayFileOrBuilder {
+    // Use DisplayFile.newBuilder() to construct.
+    private DisplayFile(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private DisplayFile(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final DisplayFile defaultInstance;
+    public static DisplayFile getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public DisplayFile getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private DisplayFile(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              filename_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              url_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Rest.internal_static_parameters_DisplayFile_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Rest.internal_static_parameters_DisplayFile_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Rest.DisplayFile.class, org.yamcs.protobuf.Rest.DisplayFile.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<DisplayFile> PARSER =
+        new com.google.protobuf.AbstractParser<DisplayFile>() {
+      public DisplayFile parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new DisplayFile(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<DisplayFile> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional string filename = 1;
+    public static final int FILENAME_FIELD_NUMBER = 1;
+    private java.lang.Object filename_;
+    /**
+     * <code>optional string filename = 1;</code>
+     */
+    public boolean hasFilename() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string filename = 1;</code>
+     */
+    public java.lang.String getFilename() {
+      java.lang.Object ref = filename_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          filename_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string filename = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getFilenameBytes() {
+      java.lang.Object ref = filename_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        filename_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional string url = 2;
+    public static final int URL_FIELD_NUMBER = 2;
+    private java.lang.Object url_;
+    /**
+     * <code>optional string url = 2;</code>
+     */
+    public boolean hasUrl() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string url = 2;</code>
+     */
+    public java.lang.String getUrl() {
+      java.lang.Object ref = url_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          url_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string url = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getUrlBytes() {
+      java.lang.Object ref = url_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        url_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      filename_ = "";
+      url_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getFilenameBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getUrlBytes());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getFilenameBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getUrlBytes());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Rest.DisplayFile parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.DisplayFile parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.DisplayFile parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.DisplayFile parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.DisplayFile parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.DisplayFile parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.DisplayFile parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.DisplayFile parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.DisplayFile parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.DisplayFile parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Rest.DisplayFile prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code parameters.DisplayFile}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.yamcs.protobuf.Rest.DisplayFileOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_DisplayFile_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_DisplayFile_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Rest.DisplayFile.class, org.yamcs.protobuf.Rest.DisplayFile.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Rest.DisplayFile.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        filename_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        url_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_DisplayFile_descriptor;
+      }
+
+      public org.yamcs.protobuf.Rest.DisplayFile getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Rest.DisplayFile.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Rest.DisplayFile build() {
+        org.yamcs.protobuf.Rest.DisplayFile result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Rest.DisplayFile buildPartial() {
+        org.yamcs.protobuf.Rest.DisplayFile result = new org.yamcs.protobuf.Rest.DisplayFile(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.filename_ = filename_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.url_ = url_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Rest.DisplayFile) {
+          return mergeFrom((org.yamcs.protobuf.Rest.DisplayFile)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Rest.DisplayFile other) {
+        if (other == org.yamcs.protobuf.Rest.DisplayFile.getDefaultInstance()) return this;
+        if (other.hasFilename()) {
+          bitField0_ |= 0x00000001;
+          filename_ = other.filename_;
+          onChanged();
+        }
+        if (other.hasUrl()) {
+          bitField0_ |= 0x00000002;
+          url_ = other.url_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Rest.DisplayFile parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Rest.DisplayFile) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional string filename = 1;
+      private java.lang.Object filename_ = "";
+      /**
+       * <code>optional string filename = 1;</code>
+       */
+      public boolean hasFilename() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string filename = 1;</code>
+       */
+      public java.lang.String getFilename() {
+        java.lang.Object ref = filename_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          filename_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string filename = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getFilenameBytes() {
+        java.lang.Object ref = filename_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          filename_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string filename = 1;</code>
+       */
+      public Builder setFilename(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        filename_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string filename = 1;</code>
+       */
+      public Builder clearFilename() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        filename_ = getDefaultInstance().getFilename();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string filename = 1;</code>
+       */
+      public Builder setFilenameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        filename_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional string url = 2;
+      private java.lang.Object url_ = "";
+      /**
+       * <code>optional string url = 2;</code>
+       */
+      public boolean hasUrl() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string url = 2;</code>
+       */
+      public java.lang.String getUrl() {
+        java.lang.Object ref = url_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          url_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string url = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getUrlBytes() {
+        java.lang.Object ref = url_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          url_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string url = 2;</code>
+       */
+      public Builder setUrl(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        url_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string url = 2;</code>
+       */
+      public Builder clearUrl() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        url_ = getDefaultInstance().getUrl();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string url = 2;</code>
+       */
+      public Builder setUrlBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        url_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:parameters.DisplayFile)
+    }
+
+    static {
+      defaultInstance = new DisplayFile(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:parameters.DisplayFile)
+  }
+
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_parameters_GetApiOverviewResponse_descriptor;
   private static
@@ -35501,6 +38359,21 @@ public final class Rest {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_parameters_BulkGetIndexRequest_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_parameters_ListDisplaysResponse_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_parameters_ListDisplaysResponse_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_parameters_DisplayFolder_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_parameters_DisplayFolder_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_parameters_DisplayFile_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_parameters_DisplayFile_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -35606,7 +38479,14 @@ public final class Rest {
       "nfo\"#\n\022EditServiceRequest\022\r\n\005state\030\001 \001(\t" +
       "\"V\n\023BulkGetIndexRequest\022\r\n\005start\030\001 \001(\t\022\014" +
       "\n\004stop\030\002 \001(\t\022\016\n\006filter\030\003 \003(\t\022\022\n\npacketna" +
-      "me\030\004 \003(\tB\024\n\022org.yamcs.protobuf"
+      "me\030\004 \003(\t\"h\n\024ListDisplaysResponse\022)\n\006fold" +
+      "er\030\001 \003(\0132\031.parameters.DisplayFolder\022%\n\004f" +
+      "ile\030\002 \003(\0132\027.parameters.DisplayFile\"s\n\rDi" +
+      "splayFolder\022\020\n\010filename\030\001 \001(\t\022)\n\006folder\030",
+      "\002 \003(\0132\031.parameters.DisplayFolder\022%\n\004file" +
+      "\030\003 \003(\0132\027.parameters.DisplayFile\",\n\013Displ" +
+      "ayFile\022\020\n\010filename\030\001 \001(\t\022\013\n\003url\030\002 \001(\tB\024\n" +
+      "\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -35889,6 +38769,24 @@ public final class Rest {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_parameters_BulkGetIndexRequest_descriptor,
               new java.lang.String[] { "Start", "Stop", "Filter", "Packetname", });
+          internal_static_parameters_ListDisplaysResponse_descriptor =
+            getDescriptor().getMessageTypes().get(41);
+          internal_static_parameters_ListDisplaysResponse_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_parameters_ListDisplaysResponse_descriptor,
+              new java.lang.String[] { "Folder", "File", });
+          internal_static_parameters_DisplayFolder_descriptor =
+            getDescriptor().getMessageTypes().get(42);
+          internal_static_parameters_DisplayFolder_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_parameters_DisplayFolder_descriptor,
+              new java.lang.String[] { "Filename", "Folder", "File", });
+          internal_static_parameters_DisplayFile_descriptor =
+            getDescriptor().getMessageTypes().get(43);
+          internal_static_parameters_DisplayFile_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_parameters_DisplayFile_descriptor,
+              new java.lang.String[] { "Filename", "Url", });
           return null;
         }
       };

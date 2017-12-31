@@ -112,3 +112,18 @@ export interface Command {
   baseCommand?: Command;
   abstract: boolean;
 }
+
+export interface DisplayInfo {
+  folder: DisplayFolder[];
+  file: DisplayFile[];
+}
+
+export interface DisplayFolder {
+  filename: string;
+  folder: DisplayFolder[];
+  file: DisplayFile[];
+}
+
+export interface DisplayFile {
+  filename: string;
+}

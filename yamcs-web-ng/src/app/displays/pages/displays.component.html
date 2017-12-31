@@ -1,0 +1,10 @@
+<ng-container *ngIf="displayInfo$ | async as displayInfo">
+  <table yaTable>
+    <tr *ngFor="let folder of displayInfo.folder">
+      <td>{{ folder.filename }}/</td>
+    </tr>
+    <tr *ngFor="let file of displayInfo.file">
+      <td><a [routerLink]="file.filename">{{ file.filename }}</a></td>
+    </tr>
+  </table>
+</ng-container>

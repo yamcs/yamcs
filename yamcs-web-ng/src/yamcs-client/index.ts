@@ -2,6 +2,7 @@ export { default as YamcsClient } from './YamcsClient';
 
 export {
   Command,
+  DisplayInfo,
   Instance,
   Parameter,
   Record,

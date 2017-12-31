@@ -5542,4 +5542,373 @@ public final class SchemaRest
         }
     }
 
+    public static final class ListDisplaysResponse
+    {
+        public static final org.yamcs.protobuf.SchemaRest.ListDisplaysResponse.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.ListDisplaysResponse.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.ListDisplaysResponse.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.ListDisplaysResponse.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.ListDisplaysResponse>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.ListDisplaysResponse message) throws java.io.IOException
+            {
+                for(org.yamcs.protobuf.Rest.DisplayFolder folder : message.getFolderList())
+                    output.writeObject(1, folder, org.yamcs.protobuf.SchemaRest.DisplayFolder.WRITE, true);
+
+                for(org.yamcs.protobuf.Rest.DisplayFile file : message.getFileList())
+                    output.writeObject(2, file, org.yamcs.protobuf.SchemaRest.DisplayFile.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.ListDisplaysResponse message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListDisplaysResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListDisplaysResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.ListDisplaysResponse> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.ListDisplaysResponse.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.ListDisplaysResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.ListDisplaysResponse.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.ListDisplaysResponse message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.ListDisplaysResponse newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.ListDisplaysResponse.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.ListDisplaysResponse.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.addFolder(input.mergeObject(org.yamcs.protobuf.Rest.DisplayFolder.newBuilder(), org.yamcs.protobuf.SchemaRest.DisplayFolder.MERGE));
+
+                            break;
+                        case 2:
+                            builder.addFile(input.mergeObject(org.yamcs.protobuf.Rest.DisplayFile.newBuilder(), org.yamcs.protobuf.SchemaRest.DisplayFile.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.ListDisplaysResponse.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.ListDisplaysResponse.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.ListDisplaysResponse.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListDisplaysResponse.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.ListDisplaysResponse.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.ListDisplaysResponse.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.ListDisplaysResponse.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.ListDisplaysResponse.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.ListDisplaysResponse.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.ListDisplaysResponse.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "folder";
+                case 2: return "file";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("folder", 1);
+            fieldMap.put("file", 2);
+        }
+    }
+
+    public static final class DisplayFolder
+    {
+        public static final org.yamcs.protobuf.SchemaRest.DisplayFolder.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.DisplayFolder.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.DisplayFolder.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.DisplayFolder.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.DisplayFolder>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.DisplayFolder message) throws java.io.IOException
+            {
+                if(message.hasFilename())
+                    output.writeString(1, message.getFilename(), false);
+                for(org.yamcs.protobuf.Rest.DisplayFolder folder : message.getFolderList())
+                    output.writeObject(2, folder, org.yamcs.protobuf.SchemaRest.DisplayFolder.WRITE, true);
+
+                for(org.yamcs.protobuf.Rest.DisplayFile file : message.getFileList())
+                    output.writeObject(3, file, org.yamcs.protobuf.SchemaRest.DisplayFile.WRITE, true);
+
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.DisplayFolder message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.DisplayFolder.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.DisplayFolder.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.DisplayFolder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.DisplayFolder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.DisplayFolder.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.DisplayFolder.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.DisplayFolder message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.DisplayFolder newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.DisplayFolder.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.DisplayFolder.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setFilename(input.readString());
+                            break;
+                        case 2:
+                            builder.addFolder(input.mergeObject(org.yamcs.protobuf.Rest.DisplayFolder.newBuilder(), org.yamcs.protobuf.SchemaRest.DisplayFolder.MERGE));
+
+                            break;
+                        case 3:
+                            builder.addFile(input.mergeObject(org.yamcs.protobuf.Rest.DisplayFile.newBuilder(), org.yamcs.protobuf.SchemaRest.DisplayFile.MERGE));
+
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.DisplayFolder.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.DisplayFolder.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.DisplayFolder.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.DisplayFolder.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.DisplayFolder.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.DisplayFolder.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.DisplayFolder.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.DisplayFolder.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.DisplayFolder.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.DisplayFolder.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "filename";
+                case 2: return "folder";
+                case 3: return "file";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("filename", 1);
+            fieldMap.put("folder", 2);
+            fieldMap.put("file", 3);
+        }
+    }
+
+    public static final class DisplayFile
+    {
+        public static final org.yamcs.protobuf.SchemaRest.DisplayFile.MessageSchema WRITE =
+            new org.yamcs.protobuf.SchemaRest.DisplayFile.MessageSchema();
+        public static final org.yamcs.protobuf.SchemaRest.DisplayFile.BuilderSchema MERGE =
+            new org.yamcs.protobuf.SchemaRest.DisplayFile.BuilderSchema();
+        
+        public static class MessageSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.DisplayFile>
+        {
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.DisplayFile message) throws java.io.IOException
+            {
+                if(message.hasFilename())
+                    output.writeString(1, message.getFilename(), false);
+                if(message.hasUrl())
+                    output.writeString(2, message.getUrl(), false);
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.DisplayFile message)
+            {
+                return message.isInitialized();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.DisplayFile.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.DisplayFile.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.DisplayFile> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.DisplayFile.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.DisplayFile.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.DisplayFile.class.getName();
+            }
+            //unused
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.DisplayFile message) throws java.io.IOException {}
+            public org.yamcs.protobuf.Rest.DisplayFile newMessage() { return null; }
+        }
+        public static class BuilderSchema implements io.protostuff.Schema<org.yamcs.protobuf.Rest.DisplayFile.Builder>
+        {
+            public void mergeFrom(io.protostuff.Input input, org.yamcs.protobuf.Rest.DisplayFile.Builder builder) throws java.io.IOException
+            {
+                for(int number = input.readFieldNumber(this);; number = input.readFieldNumber(this))
+                {
+                    switch(number)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            builder.setFilename(input.readString());
+                            break;
+                        case 2:
+                            builder.setUrl(input.readString());
+                            break;
+                        default:
+                            input.handleUnknownField(number, this);
+                    }
+                }
+            }
+            public boolean isInitialized(org.yamcs.protobuf.Rest.DisplayFile.Builder builder)
+            {
+                return builder.isInitialized();
+            }
+            public org.yamcs.protobuf.Rest.DisplayFile.Builder newMessage()
+            {
+                return org.yamcs.protobuf.Rest.DisplayFile.newBuilder();
+            }
+            public java.lang.String getFieldName(int number)
+            {
+                return org.yamcs.protobuf.SchemaRest.DisplayFile.getFieldName(number);
+            }
+            public int getFieldNumber(java.lang.String name)
+            {
+                return org.yamcs.protobuf.SchemaRest.DisplayFile.getFieldNumber(name);
+            }
+            public java.lang.Class<org.yamcs.protobuf.Rest.DisplayFile.Builder> typeClass()
+            {
+                return org.yamcs.protobuf.Rest.DisplayFile.Builder.class;
+            }
+            public java.lang.String messageName()
+            {
+                return org.yamcs.protobuf.Rest.DisplayFile.class.getSimpleName();
+            }
+            public java.lang.String messageFullName()
+            {
+                return org.yamcs.protobuf.Rest.DisplayFile.class.getName();
+            }
+            //unused
+            public void writeTo(io.protostuff.Output output, org.yamcs.protobuf.Rest.DisplayFile.Builder builder) throws java.io.IOException {}
+        }
+        public static java.lang.String getFieldName(int number)
+        {
+            switch(number)
+            {
+                case 1: return "filename";
+                case 2: return "url";
+                default: return null;
+            }
+        }
+        public static int getFieldNumber(java.lang.String name)
+        {
+            java.lang.Integer number = fieldMap.get(name);
+            return number == null ? 0 : number.intValue();
+        }
+        private static final java.util.HashMap<java.lang.String,java.lang.Integer> fieldMap = new java.util.HashMap<java.lang.String,java.lang.Integer>();
+        static
+        {
+            fieldMap.put("filename", 1);
+            fieldMap.put("url", 2);
+        }
+    }
+
 }

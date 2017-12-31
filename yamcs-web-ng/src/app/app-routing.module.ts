@@ -21,6 +21,7 @@ const routes: Routes = [
     canActivate: [ InstanceExistsGuard ],
     component: InstancePageComponent,
     children: [
+      { path: 'displays', loadChildren: 'app/displays/displays.module#DisplaysModule' },
       { path: 'mdb', loadChildren: 'app/mdb/mdb.module#MdbModule' },
       { path: 'schema', loadChildren: 'app/schema/schema.module#SchemaModule' },
       { path: 'services', loadChildren: 'app/services/services.module#ServicesModule' },

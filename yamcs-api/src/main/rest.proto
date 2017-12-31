@@ -247,3 +247,19 @@ message BulkGetIndexRequest {
   repeated string filter = 3;
   repeated string packetname = 4;
 }
+
+message ListDisplaysResponse {
+  repeated DisplayFolder folder = 1;
+  repeated DisplayFile file = 2;
+}
+
+message DisplayFolder {
+  optional string filename = 1;
+  repeated DisplayFolder folder = 2;
+  repeated DisplayFile file = 3;
+}
+
+message DisplayFile {
+  optional string filename = 1;
+  optional string url = 2;
+}

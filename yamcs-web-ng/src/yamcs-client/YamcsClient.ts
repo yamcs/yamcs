@@ -15,6 +15,7 @@ import {
 
 import {
   Command,
+  DisplayInfo,
   Instance,
   Parameter,
   Record,
@@ -100,6 +101,23 @@ export default class YamcsClient {
     return this.http.get<CommandsWrapper>(`${this.baseUrl}/api/mdb/${instance}/commands`).pipe(
       map(msg => msg.command),
       catchError(this.handleError<Command[]>([]))
+    );
+  }
+
+  getDisplayInfo(instance: string) {
+    return this.http.get<DisplayInfo>(`${this.baseUrl}/api/displays/${instance}`).pipe(
+      catchError(this.handleError<DisplayInfo>())
+    );
+  }
+
+  /**
+   * Returns a string representation of the display definition file
+   */
+  getDisplay(instance: string, path: string) {
+    return this.http.get(`${this.baseUrl}/_static/${instance}/displays/${path}`, {
+      responseType: 'text',
+    }).pipe(
+      catchError(this.handleError<string>())
     );
   }
 
