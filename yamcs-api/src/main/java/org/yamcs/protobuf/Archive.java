@@ -3594,6 +3594,21 @@ public final class Archive {
      */
     org.yamcs.protobuf.Archive.ColumnInfoOrBuilder getValueColumnOrBuilder(
         int index);
+
+    // optional string script = 4;
+    /**
+     * <code>optional string script = 4;</code>
+     */
+    boolean hasScript();
+    /**
+     * <code>optional string script = 4;</code>
+     */
+    java.lang.String getScript();
+    /**
+     * <code>optional string script = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getScriptBytes();
   }
   /**
    * Protobuf type {@code archive.TableInfo}
@@ -3665,6 +3680,11 @@ public final class Archive {
                 mutable_bitField0_ |= 0x00000004;
               }
               valueColumn_.add(input.readMessage(org.yamcs.protobuf.Archive.ColumnInfo.PARSER, extensionRegistry));
+              break;
+            }
+            case 34: {
+              bitField0_ |= 0x00000002;
+              script_ = input.readBytes();
               break;
             }
           }
@@ -3828,10 +3848,54 @@ public final class Archive {
       return valueColumn_.get(index);
     }
 
+    // optional string script = 4;
+    public static final int SCRIPT_FIELD_NUMBER = 4;
+    private java.lang.Object script_;
+    /**
+     * <code>optional string script = 4;</code>
+     */
+    public boolean hasScript() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string script = 4;</code>
+     */
+    public java.lang.String getScript() {
+      java.lang.Object ref = script_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          script_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string script = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getScriptBytes() {
+      java.lang.Object ref = script_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        script_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       name_ = "";
       keyColumn_ = java.util.Collections.emptyList();
       valueColumn_ = java.util.Collections.emptyList();
+      script_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -3854,6 +3918,9 @@ public final class Archive {
       for (int i = 0; i < valueColumn_.size(); i++) {
         output.writeMessage(3, valueColumn_.get(i));
       }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(4, getScriptBytes());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -3874,6 +3941,10 @@ public final class Archive {
       for (int i = 0; i < valueColumn_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, valueColumn_.get(i));
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(4, getScriptBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -4007,6 +4078,8 @@ public final class Archive {
         } else {
           valueColumnBuilder_.clear();
         }
+        script_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -4057,6 +4130,10 @@ public final class Archive {
         } else {
           result.valueColumn_ = valueColumnBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.script_ = script_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -4129,6 +4206,11 @@ public final class Archive {
               valueColumnBuilder_.addAllMessages(other.valueColumn_);
             }
           }
+        }
+        if (other.hasScript()) {
+          bitField0_ |= 0x00000008;
+          script_ = other.script_;
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -4711,6 +4793,80 @@ public final class Archive {
         return valueColumnBuilder_;
       }
 
+      // optional string script = 4;
+      private java.lang.Object script_ = "";
+      /**
+       * <code>optional string script = 4;</code>
+       */
+      public boolean hasScript() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional string script = 4;</code>
+       */
+      public java.lang.String getScript() {
+        java.lang.Object ref = script_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          script_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string script = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getScriptBytes() {
+        java.lang.Object ref = script_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          script_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string script = 4;</code>
+       */
+      public Builder setScript(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        script_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string script = 4;</code>
+       */
+      public Builder clearScript() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        script_ = getDefaultInstance().getScript();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string script = 4;</code>
+       */
+      public Builder setScriptBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        script_ = value;
+        onChanged();
+        return this;
+      }
+
       // @@protoc_insertion_point(builder_scope:archive.TableInfo)
     }
 
@@ -4764,6 +4920,21 @@ public final class Archive {
      */
     org.yamcs.protobuf.Archive.ColumnInfoOrBuilder getColumnOrBuilder(
         int index);
+
+    // optional string script = 3;
+    /**
+     * <code>optional string script = 3;</code>
+     */
+    boolean hasScript();
+    /**
+     * <code>optional string script = 3;</code>
+     */
+    java.lang.String getScript();
+    /**
+     * <code>optional string script = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getScriptBytes();
   }
   /**
    * Protobuf type {@code archive.StreamInfo}
@@ -4827,6 +4998,11 @@ public final class Archive {
                 mutable_bitField0_ |= 0x00000002;
               }
               column_.add(input.readMessage(org.yamcs.protobuf.Archive.ColumnInfo.PARSER, extensionRegistry));
+              break;
+            }
+            case 26: {
+              bitField0_ |= 0x00000002;
+              script_ = input.readBytes();
               break;
             }
           }
@@ -4951,9 +5127,53 @@ public final class Archive {
       return column_.get(index);
     }
 
+    // optional string script = 3;
+    public static final int SCRIPT_FIELD_NUMBER = 3;
+    private java.lang.Object script_;
+    /**
+     * <code>optional string script = 3;</code>
+     */
+    public boolean hasScript() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string script = 3;</code>
+     */
+    public java.lang.String getScript() {
+      java.lang.Object ref = script_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          script_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string script = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getScriptBytes() {
+      java.lang.Object ref = script_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        script_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       name_ = "";
       column_ = java.util.Collections.emptyList();
+      script_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -4973,6 +5193,9 @@ public final class Archive {
       for (int i = 0; i < column_.size(); i++) {
         output.writeMessage(2, column_.get(i));
       }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(3, getScriptBytes());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -4989,6 +5212,10 @@ public final class Archive {
       for (int i = 0; i < column_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, column_.get(i));
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, getScriptBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -5115,6 +5342,8 @@ public final class Archive {
         } else {
           columnBuilder_.clear();
         }
+        script_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -5156,6 +5385,10 @@ public final class Archive {
         } else {
           result.column_ = columnBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.script_ = script_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -5202,6 +5435,11 @@ public final class Archive {
               columnBuilder_.addAllMessages(other.column_);
             }
           }
+        }
+        if (other.hasScript()) {
+          bitField0_ |= 0x00000004;
+          script_ = other.script_;
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -5544,6 +5782,80 @@ public final class Archive {
         return columnBuilder_;
       }
 
+      // optional string script = 3;
+      private java.lang.Object script_ = "";
+      /**
+       * <code>optional string script = 3;</code>
+       */
+      public boolean hasScript() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional string script = 3;</code>
+       */
+      public java.lang.String getScript() {
+        java.lang.Object ref = script_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          script_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string script = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getScriptBytes() {
+        java.lang.Object ref = script_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          script_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string script = 3;</code>
+       */
+      public Builder setScript(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        script_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string script = 3;</code>
+       */
+      public Builder clearScript() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        script_ = getDefaultInstance().getScript();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string script = 3;</code>
+       */
+      public Builder setScriptBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        script_ = value;
+        onChanged();
+        return this;
+      }
+
       // @@protoc_insertion_point(builder_scope:archive.StreamInfo)
     }
 
@@ -5606,12 +5918,13 @@ public final class Archive {
       "a\"o\n\tTableData\022.\n\006record\030\001 \003(\0132\036.archive" +
       ".TableData.TableRecord\0322\n\013TableRecord\022#\n" +
       "\006column\030\001 \003(\0132\023.archive.ColumnData\"(\n\nCo" +
-      "lumnInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004type\030\002 \001(\t\"k\n\t" +
+      "lumnInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004type\030\002 \001(\t\"{\n\t" +
       "TableInfo\022\014\n\004name\030\001 \001(\t\022&\n\tkeyColumn\030\002 \003" +
       "(\0132\023.archive.ColumnInfo\022(\n\013valueColumn\030\003",
-      " \003(\0132\023.archive.ColumnInfo\"?\n\nStreamInfo\022" +
-      "\014\n\004name\030\001 \001(\t\022#\n\006column\030\002 \003(\0132\023.archive." +
-      "ColumnInfoB\024\n\022org.yamcs.protobuf"
+      " \003(\0132\023.archive.ColumnInfo\022\016\n\006script\030\004 \001(" +
+      "\t\"O\n\nStreamInfo\022\014\n\004name\030\001 \001(\t\022#\n\006column\030" +
+      "\002 \003(\0132\023.archive.ColumnInfo\022\016\n\006script\030\003 \001" +
+      "(\tB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -5653,13 +5966,13 @@ public final class Archive {
           internal_static_archive_TableInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_archive_TableInfo_descriptor,
-              new java.lang.String[] { "Name", "KeyColumn", "ValueColumn", });
+              new java.lang.String[] { "Name", "KeyColumn", "ValueColumn", "Script", });
           internal_static_archive_StreamInfo_descriptor =
             getDescriptor().getMessageTypes().get(5);
           internal_static_archive_StreamInfo_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_archive_StreamInfo_descriptor,
-              new java.lang.String[] { "Name", "Column", });
+              new java.lang.String[] { "Name", "Column", "Script", });
           return null;
         }
       };

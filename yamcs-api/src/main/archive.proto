@@ -31,9 +31,11 @@ message TableInfo {
   optional string name = 1;
   repeated ColumnInfo keyColumn = 2;
   repeated ColumnInfo valueColumn = 3;
+  optional string script = 4;
 }
 
 message StreamInfo {
   optional string name = 1;
   repeated ColumnInfo column = 2;
+  optional string script = 3;
 }

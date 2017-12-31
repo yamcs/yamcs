@@ -10,8 +10,11 @@ import { switchMap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 
+import * as utils from '../utils';
+
 @Component({
   templateUrl: './table.component.html',
+  styleUrls: ['./streamsql.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TablePageComponent {
@@ -45,5 +48,9 @@ export class TablePageComponent {
       }
     }
     return null;
+  }
+
+  formatSQL(sql: string) {
+    return utils.formatSQL(sql);
   }
 }

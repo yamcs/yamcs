@@ -611,6 +611,8 @@ public final class SchemaArchive
                 for(org.yamcs.protobuf.Archive.ColumnInfo valueColumn : message.getValueColumnList())
                     output.writeObject(3, valueColumn, org.yamcs.protobuf.SchemaArchive.ColumnInfo.WRITE, true);
 
+                if(message.hasScript())
+                    output.writeString(4, message.getScript(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Archive.TableInfo message)
             {
@@ -661,6 +663,9 @@ public final class SchemaArchive
                             builder.addValueColumn(input.mergeObject(org.yamcs.protobuf.Archive.ColumnInfo.newBuilder(), org.yamcs.protobuf.SchemaArchive.ColumnInfo.MERGE));
 
                             break;
+                        case 4:
+                            builder.setScript(input.readString());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -704,6 +709,7 @@ public final class SchemaArchive
                 case 1: return "name";
                 case 2: return "keyColumn";
                 case 3: return "valueColumn";
+                case 4: return "script";
                 default: return null;
             }
         }
@@ -718,6 +724,7 @@ public final class SchemaArchive
             fieldMap.put("name", 1);
             fieldMap.put("keyColumn", 2);
             fieldMap.put("valueColumn", 3);
+            fieldMap.put("script", 4);
         }
     }
 
@@ -737,6 +744,8 @@ public final class SchemaArchive
                 for(org.yamcs.protobuf.Archive.ColumnInfo column : message.getColumnList())
                     output.writeObject(2, column, org.yamcs.protobuf.SchemaArchive.ColumnInfo.WRITE, true);
 
+                if(message.hasScript())
+                    output.writeString(3, message.getScript(), false);
             }
             public boolean isInitialized(org.yamcs.protobuf.Archive.StreamInfo message)
             {
@@ -783,6 +792,9 @@ public final class SchemaArchive
                             builder.addColumn(input.mergeObject(org.yamcs.protobuf.Archive.ColumnInfo.newBuilder(), org.yamcs.protobuf.SchemaArchive.ColumnInfo.MERGE));
 
                             break;
+                        case 3:
+                            builder.setScript(input.readString());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -825,6 +837,7 @@ public final class SchemaArchive
             {
                 case 1: return "name";
                 case 2: return "column";
+                case 3: return "script";
                 default: return null;
             }
         }
@@ -838,6 +851,7 @@ public final class SchemaArchive
         {
             fieldMap.put("name", 1);
             fieldMap.put("column", 2);
+            fieldMap.put("script", 3);
         }
     }
 

@@ -39,14 +39,14 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 
 /**
- * Collects all archive-related conversions performed in the web api (x towards
- * archive.proto)
+ * Collects all archive-related conversions performed in the web api (x towards archive.proto)
  */
 public final class ArchiveHelper {
 
     final static TableInfo toTableInfo(TableDefinition def) {
         TableInfo.Builder infob = TableInfo.newBuilder();
         infob.setName(def.getName());
+        infob.setScript("create table " + def.toString());
         for (ColumnDefinition cdef : def.getKeyDefinition().getColumnDefinitions()) {
             infob.addKeyColumn(toColumnInfo(cdef));
         }
@@ -59,6 +59,7 @@ public final class ArchiveHelper {
     final static StreamInfo toStreamInfo(Stream stream) {
         StreamInfo.Builder infob = StreamInfo.newBuilder();
         infob.setName(stream.getName());
+        infob.setScript("create stream " + stream.getName() + stream.getDefinition().getStringDefinition());
         for (ColumnDefinition cdef : stream.getDefinition().getColumnDefinitions()) {
             infob.addColumn(toColumnInfo(cdef));
         }
@@ -113,11 +114,11 @@ public final class ArchiveHelper {
                 v.setStringValue((String) column);
                 break;
             case PARAMETER_VALUE:
-                org.yamcs.parameter.ParameterValue pv = (org.yamcs.parameter.ParameterValue)column;
+                org.yamcs.parameter.ParameterValue pv = (org.yamcs.parameter.ParameterValue) column;
                 v = ValueUtility.toGbp(pv.getEngValue()).toBuilder();
                 break;
             case PROTOBUF:
-           
+
                 // Perhaps we could be a bit smarter here. Proto3 will have an
                 // any-type
                 // String messageClassname = protoType.substring(9,
@@ -144,15 +145,15 @@ public final class ArchiveHelper {
     }
 
     final static Tuple toTuple(TableDefinition tblDef, List<ColumnData> columnList) {
-        List<Object>  cvalues = new ArrayList<>();
+        List<Object> cvalues = new ArrayList<>();
         TupleDefinition tdef = new TupleDefinition();
-        
+
         for (ColumnData cdata : columnList) {
             String cname = cdata.getName();
             ColumnDefinition cdef = tblDef.getColumnDefinition(cname);
             Object v = ValueUtility.getYarchValue(cdata.getValue());
-            
-            if(cdef==null) {
+
+            if (cdef == null) {
                 cdef = new ColumnDefinition(cname, DataType.typeOf(v));
             } else {
                 v = DataType.castAs(cdef.getType(), v);
@@ -161,7 +162,7 @@ public final class ArchiveHelper {
             cvalues.add(v);
         }
         Tuple tuple = new Tuple(tdef, cvalues);
-        
+
         return tuple;
     }
 
@@ -187,13 +188,13 @@ public final class ArchiveHelper {
         TimeSeries.Sample.Builder b = TimeSeries.Sample.newBuilder();
         b.setTime(TimeEncoding.toString(sample.avgt));
         b.setN(sample.n);
-        
-        if(sample.n>0) {
+
+        if (sample.n > 0) {
             b.setAvg(sample.avg);
             b.setMin(sample.min);
             b.setMax(sample.max);
         }
-        
+
         return b.build();
     }
 

@@ -14502,40 +14502,43 @@ public final class Yamcs {
     // optional .yamcs.ParameterReplayRequest parameterRequest = 8;
     /**
      * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 8;</code>
-     *
-     * <pre>
-     * At least one of the following request types should be added
-     * </pre>
      */
     boolean hasParameterRequest();
     /**
      * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 8;</code>
-     *
-     * <pre>
-     * At least one of the following request types should be added
-     * </pre>
      */
     org.yamcs.protobuf.Yamcs.ParameterReplayRequest getParameterRequest();
     /**
      * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 8;</code>
-     *
-     * <pre>
-     * At least one of the following request types should be added
-     * </pre>
      */
     org.yamcs.protobuf.Yamcs.ParameterReplayRequestOrBuilder getParameterRequestOrBuilder();
 
     // optional .yamcs.PacketReplayRequest packetRequest = 9;
     /**
      * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
+     *
+     * <pre>
+     * By default all Packets, Events, CommandHistory are part of the replay
+     * Unless one or more of the below requests are specified.
+     * </pre>
      */
     boolean hasPacketRequest();
     /**
      * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
+     *
+     * <pre>
+     * By default all Packets, Events, CommandHistory are part of the replay
+     * Unless one or more of the below requests are specified.
+     * </pre>
      */
     org.yamcs.protobuf.Yamcs.PacketReplayRequest getPacketRequest();
     /**
      * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
+     *
+     * <pre>
+     * By default all Packets, Events, CommandHistory are part of the replay
+     * Unless one or more of the below requests are specified.
+     * </pre>
      */
     org.yamcs.protobuf.Yamcs.PacketReplayRequestOrBuilder getPacketRequestOrBuilder();
 
@@ -15015,30 +15018,18 @@ public final class Yamcs {
     private org.yamcs.protobuf.Yamcs.ParameterReplayRequest parameterRequest_;
     /**
      * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 8;</code>
-     *
-     * <pre>
-     * At least one of the following request types should be added
-     * </pre>
      */
     public boolean hasParameterRequest() {
       return ((bitField0_ & 0x00000080) == 0x00000080);
     }
     /**
      * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 8;</code>
-     *
-     * <pre>
-     * At least one of the following request types should be added
-     * </pre>
      */
     public org.yamcs.protobuf.Yamcs.ParameterReplayRequest getParameterRequest() {
       return parameterRequest_;
     }
     /**
      * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 8;</code>
-     *
-     * <pre>
-     * At least one of the following request types should be added
-     * </pre>
      */
     public org.yamcs.protobuf.Yamcs.ParameterReplayRequestOrBuilder getParameterRequestOrBuilder() {
       return parameterRequest_;
@@ -15049,18 +15040,33 @@ public final class Yamcs {
     private org.yamcs.protobuf.Yamcs.PacketReplayRequest packetRequest_;
     /**
      * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
+     *
+     * <pre>
+     * By default all Packets, Events, CommandHistory are part of the replay
+     * Unless one or more of the below requests are specified.
+     * </pre>
      */
     public boolean hasPacketRequest() {
       return ((bitField0_ & 0x00000100) == 0x00000100);
     }
     /**
      * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
+     *
+     * <pre>
+     * By default all Packets, Events, CommandHistory are part of the replay
+     * Unless one or more of the below requests are specified.
+     * </pre>
      */
     public org.yamcs.protobuf.Yamcs.PacketReplayRequest getPacketRequest() {
       return packetRequest_;
     }
     /**
      * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
+     *
+     * <pre>
+     * By default all Packets, Events, CommandHistory are part of the replay
+     * Unless one or more of the below requests are specified.
+     * </pre>
      */
     public org.yamcs.protobuf.Yamcs.PacketReplayRequestOrBuilder getPacketRequestOrBuilder() {
       return packetRequest_;
@@ -16170,20 +16176,12 @@ public final class Yamcs {
           org.yamcs.protobuf.Yamcs.ParameterReplayRequest, org.yamcs.protobuf.Yamcs.ParameterReplayRequest.Builder, org.yamcs.protobuf.Yamcs.ParameterReplayRequestOrBuilder> parameterRequestBuilder_;
       /**
        * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 8;</code>
-       *
-       * <pre>
-       * At least one of the following request types should be added
-       * </pre>
        */
       public boolean hasParameterRequest() {
         return ((bitField0_ & 0x00000080) == 0x00000080);
       }
       /**
        * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 8;</code>
-       *
-       * <pre>
-       * At least one of the following request types should be added
-       * </pre>
        */
       public org.yamcs.protobuf.Yamcs.ParameterReplayRequest getParameterRequest() {
         if (parameterRequestBuilder_ == null) {
@@ -16194,10 +16192,6 @@ public final class Yamcs {
       }
       /**
        * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 8;</code>
-       *
-       * <pre>
-       * At least one of the following request types should be added
-       * </pre>
        */
       public Builder setParameterRequest(org.yamcs.protobuf.Yamcs.ParameterReplayRequest value) {
         if (parameterRequestBuilder_ == null) {
@@ -16214,10 +16208,6 @@ public final class Yamcs {
       }
       /**
        * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 8;</code>
-       *
-       * <pre>
-       * At least one of the following request types should be added
-       * </pre>
        */
       public Builder setParameterRequest(
           org.yamcs.protobuf.Yamcs.ParameterReplayRequest.Builder builderForValue) {
@@ -16232,10 +16222,6 @@ public final class Yamcs {
       }
       /**
        * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 8;</code>
-       *
-       * <pre>
-       * At least one of the following request types should be added
-       * </pre>
        */
       public Builder mergeParameterRequest(org.yamcs.protobuf.Yamcs.ParameterReplayRequest value) {
         if (parameterRequestBuilder_ == null) {
@@ -16255,10 +16241,6 @@ public final class Yamcs {
       }
       /**
        * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 8;</code>
-       *
-       * <pre>
-       * At least one of the following request types should be added
-       * </pre>
        */
       public Builder clearParameterRequest() {
         if (parameterRequestBuilder_ == null) {
@@ -16272,10 +16254,6 @@ public final class Yamcs {
       }
       /**
        * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 8;</code>
-       *
-       * <pre>
-       * At least one of the following request types should be added
-       * </pre>
        */
       public org.yamcs.protobuf.Yamcs.ParameterReplayRequest.Builder getParameterRequestBuilder() {
         bitField0_ |= 0x00000080;
@@ -16284,10 +16262,6 @@ public final class Yamcs {
       }
       /**
        * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 8;</code>
-       *
-       * <pre>
-       * At least one of the following request types should be added
-       * </pre>
        */
       public org.yamcs.protobuf.Yamcs.ParameterReplayRequestOrBuilder getParameterRequestOrBuilder() {
         if (parameterRequestBuilder_ != null) {
@@ -16298,10 +16272,6 @@ public final class Yamcs {
       }
       /**
        * <code>optional .yamcs.ParameterReplayRequest parameterRequest = 8;</code>
-       *
-       * <pre>
-       * At least one of the following request types should be added
-       * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Yamcs.ParameterReplayRequest, org.yamcs.protobuf.Yamcs.ParameterReplayRequest.Builder, org.yamcs.protobuf.Yamcs.ParameterReplayRequestOrBuilder> 
@@ -16323,12 +16293,22 @@ public final class Yamcs {
           org.yamcs.protobuf.Yamcs.PacketReplayRequest, org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder, org.yamcs.protobuf.Yamcs.PacketReplayRequestOrBuilder> packetRequestBuilder_;
       /**
        * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
+       *
+       * <pre>
+       * By default all Packets, Events, CommandHistory are part of the replay
+       * Unless one or more of the below requests are specified.
+       * </pre>
        */
       public boolean hasPacketRequest() {
         return ((bitField0_ & 0x00000100) == 0x00000100);
       }
       /**
        * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
+       *
+       * <pre>
+       * By default all Packets, Events, CommandHistory are part of the replay
+       * Unless one or more of the below requests are specified.
+       * </pre>
        */
       public org.yamcs.protobuf.Yamcs.PacketReplayRequest getPacketRequest() {
         if (packetRequestBuilder_ == null) {
@@ -16339,6 +16319,11 @@ public final class Yamcs {
       }
       /**
        * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
+       *
+       * <pre>
+       * By default all Packets, Events, CommandHistory are part of the replay
+       * Unless one or more of the below requests are specified.
+       * </pre>
        */
       public Builder setPacketRequest(org.yamcs.protobuf.Yamcs.PacketReplayRequest value) {
         if (packetRequestBuilder_ == null) {
@@ -16355,6 +16340,11 @@ public final class Yamcs {
       }
       /**
        * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
+       *
+       * <pre>
+       * By default all Packets, Events, CommandHistory are part of the replay
+       * Unless one or more of the below requests are specified.
+       * </pre>
        */
       public Builder setPacketRequest(
           org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder builderForValue) {
@@ -16369,6 +16359,11 @@ public final class Yamcs {
       }
       /**
        * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
+       *
+       * <pre>
+       * By default all Packets, Events, CommandHistory are part of the replay
+       * Unless one or more of the below requests are specified.
+       * </pre>
        */
       public Builder mergePacketRequest(org.yamcs.protobuf.Yamcs.PacketReplayRequest value) {
         if (packetRequestBuilder_ == null) {
@@ -16388,6 +16383,11 @@ public final class Yamcs {
       }
       /**
        * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
+       *
+       * <pre>
+       * By default all Packets, Events, CommandHistory are part of the replay
+       * Unless one or more of the below requests are specified.
+       * </pre>
        */
       public Builder clearPacketRequest() {
         if (packetRequestBuilder_ == null) {
@@ -16401,6 +16401,11 @@ public final class Yamcs {
       }
       /**
        * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
+       *
+       * <pre>
+       * By default all Packets, Events, CommandHistory are part of the replay
+       * Unless one or more of the below requests are specified.
+       * </pre>
        */
       public org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder getPacketRequestBuilder() {
         bitField0_ |= 0x00000100;
@@ -16409,6 +16414,11 @@ public final class Yamcs {
       }
       /**
        * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
+       *
+       * <pre>
+       * By default all Packets, Events, CommandHistory are part of the replay
+       * Unless one or more of the below requests are specified.
+       * </pre>
        */
       public org.yamcs.protobuf.Yamcs.PacketReplayRequestOrBuilder getPacketRequestOrBuilder() {
         if (packetRequestBuilder_ != null) {
@@ -16419,6 +16429,11 @@ public final class Yamcs {
       }
       /**
        * <code>optional .yamcs.PacketReplayRequest packetRequest = 9;</code>
+       *
+       * <pre>
+       * By default all Packets, Events, CommandHistory are part of the replay
+       * Unless one or more of the below requests are specified.
+       * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Yamcs.PacketReplayRequest, org.yamcs.protobuf.Yamcs.PacketReplayRequest.Builder, org.yamcs.protobuf.Yamcs.PacketReplayRequestOrBuilder> 
@@ -18906,7 +18921,7 @@ public final class Yamcs {
      * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
      *
      * <pre>
-     * No filter, means all commands are sent
+     * No filter, means all command history entries are sent
      * </pre>
      */
     java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> 
@@ -18915,7 +18930,7 @@ public final class Yamcs {
      * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
      *
      * <pre>
-     * No filter, means all commands are sent
+     * No filter, means all command history entries are sent
      * </pre>
      */
     org.yamcs.protobuf.Yamcs.NamedObjectId getNameFilter(int index);
@@ -18923,7 +18938,7 @@ public final class Yamcs {
      * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
      *
      * <pre>
-     * No filter, means all commands are sent
+     * No filter, means all command history entries are sent
      * </pre>
      */
     int getNameFilterCount();
@@ -18931,7 +18946,7 @@ public final class Yamcs {
      * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
      *
      * <pre>
-     * No filter, means all commands are sent
+     * No filter, means all command history entries are sent
      * </pre>
      */
     java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
@@ -18940,7 +18955,7 @@ public final class Yamcs {
      * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
      *
      * <pre>
-     * No filter, means all commands are sent
+     * No filter, means all command history entries are sent
      * </pre>
      */
     org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getNameFilterOrBuilder(
@@ -19054,7 +19069,7 @@ public final class Yamcs {
      * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
      *
      * <pre>
-     * No filter, means all commands are sent
+     * No filter, means all command history entries are sent
      * </pre>
      */
     public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getNameFilterList() {
@@ -19064,7 +19079,7 @@ public final class Yamcs {
      * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
      *
      * <pre>
-     * No filter, means all commands are sent
+     * No filter, means all command history entries are sent
      * </pre>
      */
     public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
@@ -19075,7 +19090,7 @@ public final class Yamcs {
      * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
      *
      * <pre>
-     * No filter, means all commands are sent
+     * No filter, means all command history entries are sent
      * </pre>
      */
     public int getNameFilterCount() {
@@ -19085,7 +19100,7 @@ public final class Yamcs {
      * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
      *
      * <pre>
-     * No filter, means all commands are sent
+     * No filter, means all command history entries are sent
      * </pre>
      */
     public org.yamcs.protobuf.Yamcs.NamedObjectId getNameFilter(int index) {
@@ -19095,7 +19110,7 @@ public final class Yamcs {
      * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
      *
      * <pre>
-     * No filter, means all commands are sent
+     * No filter, means all command history entries are sent
      * </pre>
      */
     public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getNameFilterOrBuilder(
@@ -19390,7 +19405,7 @@ public final class Yamcs {
        * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
        *
        * <pre>
-       * No filter, means all commands are sent
+       * No filter, means all command history entries are sent
        * </pre>
        */
       public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getNameFilterList() {
@@ -19404,7 +19419,7 @@ public final class Yamcs {
        * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
        *
        * <pre>
-       * No filter, means all commands are sent
+       * No filter, means all command history entries are sent
        * </pre>
        */
       public int getNameFilterCount() {
@@ -19418,7 +19433,7 @@ public final class Yamcs {
        * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
        *
        * <pre>
-       * No filter, means all commands are sent
+       * No filter, means all command history entries are sent
        * </pre>
        */
       public org.yamcs.protobuf.Yamcs.NamedObjectId getNameFilter(int index) {
@@ -19432,7 +19447,7 @@ public final class Yamcs {
        * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
        *
        * <pre>
-       * No filter, means all commands are sent
+       * No filter, means all command history entries are sent
        * </pre>
        */
       public Builder setNameFilter(
@@ -19453,7 +19468,7 @@ public final class Yamcs {
        * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
        *
        * <pre>
-       * No filter, means all commands are sent
+       * No filter, means all command history entries are sent
        * </pre>
        */
       public Builder setNameFilter(
@@ -19471,7 +19486,7 @@ public final class Yamcs {
        * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
        *
        * <pre>
-       * No filter, means all commands are sent
+       * No filter, means all command history entries are sent
        * </pre>
        */
       public Builder addNameFilter(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
@@ -19491,7 +19506,7 @@ public final class Yamcs {
        * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
        *
        * <pre>
-       * No filter, means all commands are sent
+       * No filter, means all command history entries are sent
        * </pre>
        */
       public Builder addNameFilter(
@@ -19512,7 +19527,7 @@ public final class Yamcs {
        * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
        *
        * <pre>
-       * No filter, means all commands are sent
+       * No filter, means all command history entries are sent
        * </pre>
        */
       public Builder addNameFilter(
@@ -19530,7 +19545,7 @@ public final class Yamcs {
        * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
        *
        * <pre>
-       * No filter, means all commands are sent
+       * No filter, means all command history entries are sent
        * </pre>
        */
       public Builder addNameFilter(
@@ -19548,7 +19563,7 @@ public final class Yamcs {
        * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
        *
        * <pre>
-       * No filter, means all commands are sent
+       * No filter, means all command history entries are sent
        * </pre>
        */
       public Builder addAllNameFilter(
@@ -19566,7 +19581,7 @@ public final class Yamcs {
        * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
        *
        * <pre>
-       * No filter, means all commands are sent
+       * No filter, means all command history entries are sent
        * </pre>
        */
       public Builder clearNameFilter() {
@@ -19583,7 +19598,7 @@ public final class Yamcs {
        * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
        *
        * <pre>
-       * No filter, means all commands are sent
+       * No filter, means all command history entries are sent
        * </pre>
        */
       public Builder removeNameFilter(int index) {
@@ -19600,7 +19615,7 @@ public final class Yamcs {
        * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
        *
        * <pre>
-       * No filter, means all commands are sent
+       * No filter, means all command history entries are sent
        * </pre>
        */
       public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder getNameFilterBuilder(
@@ -19611,7 +19626,7 @@ public final class Yamcs {
        * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
        *
        * <pre>
-       * No filter, means all commands are sent
+       * No filter, means all command history entries are sent
        * </pre>
        */
       public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getNameFilterOrBuilder(
@@ -19625,7 +19640,7 @@ public final class Yamcs {
        * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
        *
        * <pre>
-       * No filter, means all commands are sent
+       * No filter, means all command history entries are sent
        * </pre>
        */
       public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
@@ -19640,7 +19655,7 @@ public final class Yamcs {
        * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
        *
        * <pre>
-       * No filter, means all commands are sent
+       * No filter, means all command history entries are sent
        * </pre>
        */
       public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addNameFilterBuilder() {
@@ -19651,7 +19666,7 @@ public final class Yamcs {
        * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
        *
        * <pre>
-       * No filter, means all commands are sent
+       * No filter, means all command history entries are sent
        * </pre>
        */
       public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addNameFilterBuilder(
@@ -19663,7 +19678,7 @@ public final class Yamcs {
        * <code>repeated .yamcs.NamedObjectId nameFilter = 1;</code>
        *
        * <pre>
-       * No filter, means all commands are sent
+       * No filter, means all command history entries are sent
        * </pre>
        */
       public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId.Builder> 
@@ -19704,7 +19719,7 @@ public final class Yamcs {
      * <code>repeated string groupNameFilter = 1;</code>
      *
      * <pre>
-     * At least 1 filter is required
+     * No filter, means all pp groups are sent
      * </pre>
      */
     java.util.List<java.lang.String>
@@ -19713,7 +19728,7 @@ public final class Yamcs {
      * <code>repeated string groupNameFilter = 1;</code>
      *
      * <pre>
-     * At least 1 filter is required
+     * No filter, means all pp groups are sent
      * </pre>
      */
     int getGroupNameFilterCount();
@@ -19721,7 +19736,7 @@ public final class Yamcs {
      * <code>repeated string groupNameFilter = 1;</code>
      *
      * <pre>
-     * At least 1 filter is required
+     * No filter, means all pp groups are sent
      * </pre>
      */
     java.lang.String getGroupNameFilter(int index);
@@ -19729,7 +19744,7 @@ public final class Yamcs {
      * <code>repeated string groupNameFilter = 1;</code>
      *
      * <pre>
-     * At least 1 filter is required
+     * No filter, means all pp groups are sent
      * </pre>
      */
     com.google.protobuf.ByteString
@@ -19843,7 +19858,7 @@ public final class Yamcs {
      * <code>repeated string groupNameFilter = 1;</code>
      *
      * <pre>
-     * At least 1 filter is required
+     * No filter, means all pp groups are sent
      * </pre>
      */
     public java.util.List<java.lang.String>
@@ -19854,7 +19869,7 @@ public final class Yamcs {
      * <code>repeated string groupNameFilter = 1;</code>
      *
      * <pre>
-     * At least 1 filter is required
+     * No filter, means all pp groups are sent
      * </pre>
      */
     public int getGroupNameFilterCount() {
@@ -19864,7 +19879,7 @@ public final class Yamcs {
      * <code>repeated string groupNameFilter = 1;</code>
      *
      * <pre>
-     * At least 1 filter is required
+     * No filter, means all pp groups are sent
      * </pre>
      */
     public java.lang.String getGroupNameFilter(int index) {
@@ -19874,7 +19889,7 @@ public final class Yamcs {
      * <code>repeated string groupNameFilter = 1;</code>
      *
      * <pre>
-     * At least 1 filter is required
+     * No filter, means all pp groups are sent
      * </pre>
      */
     public com.google.protobuf.ByteString
@@ -20133,7 +20148,7 @@ public final class Yamcs {
        * <code>repeated string groupNameFilter = 1;</code>
        *
        * <pre>
-       * At least 1 filter is required
+       * No filter, means all pp groups are sent
        * </pre>
        */
       public java.util.List<java.lang.String>
@@ -20144,7 +20159,7 @@ public final class Yamcs {
        * <code>repeated string groupNameFilter = 1;</code>
        *
        * <pre>
-       * At least 1 filter is required
+       * No filter, means all pp groups are sent
        * </pre>
        */
       public int getGroupNameFilterCount() {
@@ -20154,7 +20169,7 @@ public final class Yamcs {
        * <code>repeated string groupNameFilter = 1;</code>
        *
        * <pre>
-       * At least 1 filter is required
+       * No filter, means all pp groups are sent
        * </pre>
        */
       public java.lang.String getGroupNameFilter(int index) {
@@ -20164,7 +20179,7 @@ public final class Yamcs {
        * <code>repeated string groupNameFilter = 1;</code>
        *
        * <pre>
-       * At least 1 filter is required
+       * No filter, means all pp groups are sent
        * </pre>
        */
       public com.google.protobuf.ByteString
@@ -20175,7 +20190,7 @@ public final class Yamcs {
        * <code>repeated string groupNameFilter = 1;</code>
        *
        * <pre>
-       * At least 1 filter is required
+       * No filter, means all pp groups are sent
        * </pre>
        */
       public Builder setGroupNameFilter(
@@ -20192,7 +20207,7 @@ public final class Yamcs {
        * <code>repeated string groupNameFilter = 1;</code>
        *
        * <pre>
-       * At least 1 filter is required
+       * No filter, means all pp groups are sent
        * </pre>
        */
       public Builder addGroupNameFilter(
@@ -20209,7 +20224,7 @@ public final class Yamcs {
        * <code>repeated string groupNameFilter = 1;</code>
        *
        * <pre>
-       * At least 1 filter is required
+       * No filter, means all pp groups are sent
        * </pre>
        */
       public Builder addAllGroupNameFilter(
@@ -20223,7 +20238,7 @@ public final class Yamcs {
        * <code>repeated string groupNameFilter = 1;</code>
        *
        * <pre>
-       * At least 1 filter is required
+       * No filter, means all pp groups are sent
        * </pre>
        */
       public Builder clearGroupNameFilter() {
@@ -20236,7 +20251,7 @@ public final class Yamcs {
        * <code>repeated string groupNameFilter = 1;</code>
        *
        * <pre>
-       * At least 1 filter is required
+       * No filter, means all pp groups are sent
        * </pre>
        */
       public Builder addGroupNameFilterBytes(

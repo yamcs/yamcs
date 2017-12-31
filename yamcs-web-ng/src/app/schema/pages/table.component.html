@@ -45,6 +45,7 @@
     </mat-tab>
 
     <mat-tab label="Script">
+      <code [innerHTML]="formatSQL(table.script)"></code>
     </mat-tab>
   </mat-tab-group>
 </ng-container>
