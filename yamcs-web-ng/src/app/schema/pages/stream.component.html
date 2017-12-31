@@ -1,0 +1,20 @@
+<ng-container *ngIf="stream$ | async as stream">
+  <h1><a routerLink="..">Streams</a> / {{ stream.name }}</h1>
+  <mat-tab-group>
+    <mat-tab label="Columns">
+      <table yaTable>
+        <tr>
+          <th width="150">Column</th>
+          <th>Type</th>
+        </tr>
+        <tr *ngFor="let column of stream.column">
+          <td>{{ column.name }}</td>
+          <td>{{ column.type }}</td>
+        </tr>
+      </table>
+    </mat-tab>
+
+    <mat-tab label="Script">
+    </mat-tab>
+  </mat-tab-group>
+</ng-container>

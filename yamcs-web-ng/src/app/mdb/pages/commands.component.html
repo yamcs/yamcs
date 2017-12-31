@@ -1,0 +1,10 @@
+<table yaTable *ngIf="commands$ | async as commands">
+  <tr>
+    <th>Name</th>
+    <th>Description</th>
+  </tr>
+  <tr *ngFor="let command of commands">
+    <td>{{ command.qualifiedName }}</td>
+    <td>{{ command.shortDescription || '-' }}</td>
+  </tr>
+</table>

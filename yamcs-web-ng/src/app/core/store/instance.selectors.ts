@@ -23,7 +23,7 @@ export const selectCurrentInstanceId = createSelector(
 export const selectCurrentInstance = createSelector(
   selectInstancesById,
   selectCurrentInstanceId,
-  (entities: any, selectedId: any) => {
+  (entities: any, selectedId) => {
     return selectedId && entities[selectedId];
   }
 );

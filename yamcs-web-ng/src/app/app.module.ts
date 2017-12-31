@@ -6,7 +6,7 @@ import { StoreModule, Store } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreRouterConnectingModule, RouterStateSerializer } from '@ngrx/router-store';
 
-import { AppComponent } from './app.component';
+import { AppComponent } from './core/pages/app.component';
 import { SharedModule } from './shared/shared.module';
 import { MdbModule } from './mdb/mdb.module';
 import { AppRoutingModule } from './app-routing.module';
@@ -19,6 +19,7 @@ import { reducers, metaReducers } from './app.reducers';
 import { InstanceEffects } from './core/store/instance.effects';
 import { LoadInstancesAction } from './core/store/instance.actions';
 import { NotFoundPageComponent } from './core/pages/not-found.component';
+import { ServicesModule } from './services/services.module';
 
 @NgModule({
   declarations: [
@@ -34,6 +35,7 @@ import { NotFoundPageComponent } from './core/pages/not-found.component';
     AppRoutingModule, // Keep in front of modules that contribute child routing
     SharedModule,
     MdbModule,
+    ServicesModule,
 
     /**
      * StoreModule.forRoot is imported once in the root module, accepting a reducer

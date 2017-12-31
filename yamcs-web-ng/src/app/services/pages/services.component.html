@@ -1,0 +1,10 @@
+<table yaTable *ngIf="services$ | async as services">
+  <tr>
+    <th>Name</th>
+    <th>State</th>
+  </tr>
+  <tr *ngFor="let service of services">
+    <td>{{ service.name }}</td>
+    <td>{{ service.state | titlecase }}</td>
+  </tr>
+</table>

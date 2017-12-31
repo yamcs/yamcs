@@ -1,0 +1,10 @@
+<table yaTable *ngIf="streams$ | async as streams">
+  <tr>
+    <th>Name</th>
+  </tr>
+  <tr *ngFor="let stream of streams">
+    <td>
+      <a [routerLink]="stream.name">{{ stream.name }}</a>
+    </td>
+  </tr>
+</table>

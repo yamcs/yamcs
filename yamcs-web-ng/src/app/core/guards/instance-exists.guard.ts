@@ -31,7 +31,7 @@ export class InstanceExistsGuard implements CanActivate {
       switchMap(inStore => {
         if (!inStore) {
           this.router.navigate(['/404'], {
-            // Would like the attempted URL to stay in the browser address bar
+            // Would prefer the attempted URL stays in the browser address bar
             // but unfortunately below property does not work. Follow this issue:
             // https://github.com/angular/angular/issues/17004
             //

@@ -1,0 +1,8 @@
+<table yaTable *ngIf="tables$ | async as tables">
+  <tr>
+    <th>Name</th>
+  </tr>
+  <tr *ngFor="let table of tables">
+    <td><a [routerLink]="table.name">{{ table.name }}</a></td>
+  </tr>
+</table>

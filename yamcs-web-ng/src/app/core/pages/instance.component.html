@@ -1,0 +1,31 @@
+<mat-sidenav-container>
+  <mat-sidenav mode="side" opened="true">
+    <a routerLink="/">Home</a> / {{ (instance$ | async).name }}<br><br>
+
+    <h3>System</h3>
+    <a routerLink="services">Services</a><br>
+    Links<br>
+
+    Active Users<br>
+    Events<br>
+
+    <h3>MDB</h3>
+    <a routerLink="mdb/overview">Overview</a><br>
+    <a routerLink="mdb/parameters">Parameters</a><br>
+    <a routerLink="mdb/commands">Commands</a><br>
+
+    <h3>Schema</h3>
+    Overview<br>
+    <a routerLink="schema/tables">Tables</a><br>
+    <a routerLink="schema/streams">Streams</a><br>
+    Shell<br>
+
+    <h3>Processors</h3>
+    realtime<br>
+
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
+</mat-sidenav-container>

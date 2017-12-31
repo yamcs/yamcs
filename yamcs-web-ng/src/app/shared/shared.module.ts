@@ -33,6 +33,10 @@ import {
   MatTooltipModule,
 } from '@angular/material';
 
+import { YaSimpleTableComponent } from './directives/simpleTable.component';
+import { YaTableComponent } from './directives/table.component';
+import { ValuePipe } from './pipes/value.pipe';
+
 const materialModules = [
   CdkTableModule,
   MatButtonModule,
@@ -62,6 +66,15 @@ const materialModules = [
   MatTooltipModule,
 ];
 
+const sharedDirectives = [
+  YaSimpleTableComponent,
+  YaTableComponent,
+];
+
+const pipes = [
+  ValuePipe,
+];
+
 @NgModule({
   imports: [
     CommonModule,
@@ -70,12 +83,18 @@ const materialModules = [
     RouterModule,
     materialModules,
   ],
+  declarations: [
+    sharedDirectives,
+    pipes,
+  ],
   exports: [
     CommonModule,
     HttpClientModule,
     ReactiveFormsModule,
     RouterModule,
     materialModules,
+    sharedDirectives,
+    pipes,
   ],
 })
 export class SharedModule {

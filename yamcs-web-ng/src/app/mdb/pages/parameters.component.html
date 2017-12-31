@@ -1,0 +1,16 @@
+<table yaTable *ngIf="parameters$ | async as parameters">
+  <tr>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Units</th>
+    <th>Data Source</th>
+    <th>Description</th>
+  </tr>
+  <tr *ngFor="let parameter of parameters">
+    <td>{{ parameter.qualifiedName }}</td>
+    <td>{{ (parameter.type?.engType | titlecase) || '-' }}</td>
+    <td>{{ (parameter.type?.unitSet) || '-' }}</td>
+    <td>{{ (parameter.dataSource | titlecase) || '-' }}</td>
+    <td>{{ parameter.shortDescription || '-' }}</td>
+  </tr>
+</table>
