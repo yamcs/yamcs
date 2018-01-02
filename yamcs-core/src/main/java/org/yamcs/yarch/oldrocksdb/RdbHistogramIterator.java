@@ -17,6 +17,7 @@ import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.HistogramRecord;
 import org.yamcs.yarch.HistogramSegment;
+import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.TableDefinition;
@@ -27,7 +28,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
  * @author nm
  *
  */
-class RdbHistogramIterator implements Iterator<HistogramRecord> {
+class RdbHistogramIterator implements HistogramIterator {
 
     private Iterator<List<Partition>> partitionIterator;
     private RocksIterator segmentIterator;

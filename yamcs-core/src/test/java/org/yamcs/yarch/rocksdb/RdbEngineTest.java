@@ -10,6 +10,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.HistogramRecord;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TableDefinition;
@@ -83,8 +84,9 @@ public class RdbEngineTest extends YarchTestCase {
         TableDefinition tblDef = populate();
         RdbStorageEngine rse =  RdbStorageEngine.getInstance();
         TimeInterval interval = new TimeInterval();
-        Iterator<HistogramRecord> iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
+        HistogramIterator iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
         assertNumElementsEqual(iter, 3);
+        iter.close();
 
         rse.shutdown();
 
@@ -92,6 +94,6 @@ public class RdbEngineTest extends YarchTestCase {
         rse.loadTable(ydb, tblDef);
         iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
         assertNumElementsEqual(iter, 3);
-
+        iter.close();
     }
 }

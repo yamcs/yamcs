@@ -1,15 +1,12 @@
 package org.yamcs.yarch.rocksdb;
 
-import static org.junit.Assert.*;
-
-import java.util.Iterator;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
-import org.yamcs.yarch.HistogramRecord;
+import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
 import org.yamcs.yarch.Tuple;
@@ -48,36 +45,41 @@ public class HistogramRebuilderTest  extends YarchTestCase {
     public void testDeleteValues() throws Exception {
         Tablespace tablespace = rse.getTablespace(ydb.getName());
         TimeInterval interval = new TimeInterval();
-        Iterator<HistogramRecord> iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
+        HistogramIterator iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
         assertNumElementsEqual(iter, 3);
+        iter.close();
         
         HistogramRebuilder rebuilder = new HistogramRebuilder(tablespace, ydb, tblName);
         rebuilder.deleteHistograms(new TimeInterval(1000L, 1000L));
         iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
         assertNumElementsEqual(iter, 1);
+        iter.close();
         
         rebuilder.rebuild(new TimeInterval(0, 2000)).get();
         iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
         assertNumElementsEqual(iter, 3);
+        iter.close();
     }
 
     @Test
     public void testRebuildAll() throws Exception {
         Tablespace tablespace = rse.getTablespace(ydb.getName());
         TimeInterval interval = new TimeInterval();
-        Iterator<HistogramRecord> iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
+        HistogramIterator iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
         assertNumElementsEqual(iter, 3);
+        iter.close();
         
         HistogramRebuilder rebuilder = new HistogramRebuilder(tablespace, ydb,  tblName);
         rebuilder.deleteHistograms(new TimeInterval());
         
         iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
         assertNumElementsEqual(iter, 0);
-        
+        iter.close();
 
         rebuilder.rebuild(new TimeInterval()).get();
         iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
         
         assertNumElementsEqual(iter, 3);
+        iter.close();
     }
 }

@@ -20,7 +20,6 @@ public class AscendingRangeIterator implements DbIterator {
     final boolean strictEnd;
     boolean valid = false;
     private byte[] curKey;
-
     /**
      * Constructs an iterator restricted to a range. Unlike the RocksDB standard iterators, 
      * 

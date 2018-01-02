@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.rocksdb.BlockBasedTableConfig;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
@@ -102,7 +101,10 @@ public class YRDB {
     /**
      * Close the database. Shall only be done from the RDBFactory
      */
-    void close() {		
+    void close() {
+        for(ColumnFamilyHandle cfh: columnFamilies.values()) {
+            cfh.close();
+        }
         db.close();
         isClosed = true;
     }

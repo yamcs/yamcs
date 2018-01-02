@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.TimeInterval;
+import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.HistogramRecord;
 import org.yamcs.yarch.HistogramSegment;
 import org.yamcs.yarch.PartitionManager;
@@ -24,7 +25,7 @@ import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
  * @author nm
  *
  */
-class RdbHistogramIterator implements Iterator<HistogramRecord> {
+public class RdbHistogramIterator implements HistogramIterator {
 
     private Iterator<PartitionManager.Interval> intervalIterator;
     private AscendingRangeIterator segmentIterator;

@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.rocksdb.ColumnFamilyHandle;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
-import org.yamcs.yarch.HistogramRecord;
+import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
@@ -50,33 +50,38 @@ public class HistogramRebuilderTest  extends YarchTestCase {
     @Test
     public void testDeleteValues() throws Exception {
         TimeInterval interval = new TimeInterval();
-        Iterator<HistogramRecord> iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
+        HistogramIterator iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
         assertNumElementsEqual(iter, 3);
+        iter.close();
         
         HistogramRebuilder rebuilder = new HistogramRebuilder(ydb,  tblName);
         
         rebuilder.deleteHistograms(new TimeInterval(1000L, 1000L));
         iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
         assertNumElementsEqual(iter, 1);
+        iter.close();
         
         assertNotNull(getHistoCf(1000L, "name"));
         
         rebuilder.rebuild(new TimeInterval(0, 2000)).get();
         iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
         assertNumElementsEqual(iter, 3);
+        iter.close();
     }
 
     
     @Test
     public void testDeleteCfh() throws Exception {
         TimeInterval interval = new TimeInterval();
-        Iterator<HistogramRecord> iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
+        HistogramIterator iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
         assertNumElementsEqual(iter, 3);
+        iter.close();
         
         HistogramRebuilder rebuilder = new HistogramRebuilder(ydb,  tblName);
         rebuilder.deleteHistograms(TimeInterval.openStart(1000L));
         iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
         assertNumElementsEqual(iter, 1);
+        iter.close();
         
         assertNull(getHistoCf(1000L, "name"));
         assertNull(getHistoCf(t1, "name"));
@@ -85,18 +90,21 @@ public class HistogramRebuilderTest  extends YarchTestCase {
         iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
         
         assertNumElementsEqual(iter, 3);
+        iter.close();
     }
     
     @Test
     public void testRebuildAll() throws Exception {
         TimeInterval interval = new TimeInterval();
-        Iterator<HistogramRecord> iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
+        HistogramIterator iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
         assertNumElementsEqual(iter, 3);
+        iter.close();
         
         HistogramRebuilder rebuilder = new HistogramRebuilder(ydb,  tblName);
         rebuilder.deleteHistograms(new TimeInterval());
         iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
         assertNumElementsEqual(iter, 0);
+        iter.close();
         
         assertNull(getHistoCf(1000L, "name"));
         assertNull(getHistoCf(t1, "name"));
@@ -105,6 +113,7 @@ public class HistogramRebuilderTest  extends YarchTestCase {
         iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
         
         assertNumElementsEqual(iter, 3);
+        iter.close();
     }
     
     private ColumnFamilyHandle getHistoCf(long start, String colName) throws Exception {
