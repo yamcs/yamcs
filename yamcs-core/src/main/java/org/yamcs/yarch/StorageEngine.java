@@ -49,5 +49,5 @@ public interface StorageEngine {
 
     public TagDb getTagDb(YarchDatabaseInstance ydb) throws YarchException;
 
-    public Iterator<HistogramRecord> getHistogramIterator(YarchDatabaseInstance ydb, TableDefinition tblDef, String columnName, TimeInterval interval, long mergeTime) throws YarchException;
+    public HistogramIterator getHistogramIterator(YarchDatabaseInstance ydb, TableDefinition tblDef, String columnName, TimeInterval interval, long mergeTime) throws YarchException;
 }

@@ -1,7 +1,6 @@
 package org.yamcs.yarch;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -22,7 +21,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 public class HistogramReaderStream extends AbstractStream implements Runnable, DbReaderStream {
     //this is the table and the column on which we run the histogram
     final private ColumnSerializer<?> histoColumnSerializer;
-    Iterator<HistogramRecord> iter;
+    HistogramIterator iter;
     final TableDefinition tblDef;
     final String histoColumnName;
     //filter conditions
@@ -119,6 +118,7 @@ public class HistogramReaderStream extends AbstractStream implements Runnable, D
     
     @Override
     public void doClose() {
+        iter.close();
         quit=true;
     }
 }

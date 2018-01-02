@@ -19,6 +19,7 @@ import org.yamcs.archive.TagDb;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.AbstractStream;
+import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.HistogramRecord;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.StorageEngine;
@@ -244,7 +245,7 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
     @Override
-    public Iterator<HistogramRecord> getHistogramIterator(YarchDatabaseInstance ydb, TableDefinition tblDef,
+    public HistogramIterator getHistogramIterator(YarchDatabaseInstance ydb, TableDefinition tblDef,
             String columnName, TimeInterval interval, long mergeTime) throws YarchException {
 
         checkFormatVersion(ydb, tblDef);
