@@ -196,7 +196,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     /**
      * Register a parameter producer to be called each time the parameters are collected
      *
-     * @deprecated use {@link #registerProvider(SystemParametersProducer p)} instead. 
+     * @deprecated use {@link #registerProducer(SystemParametersProducer p)} instead. 
      * There is no need to specify which paramameters will be provided 
      * and in addition they don't even need to be part of the Xtcedb (i.e. the provider can make them up on the fly)
      * 
