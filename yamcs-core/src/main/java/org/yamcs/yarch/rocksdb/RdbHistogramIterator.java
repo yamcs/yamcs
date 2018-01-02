@@ -60,25 +60,25 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
     }
 
     private void readNextPartition() throws RocksDBException, IOException {
-        if(!intervalIterator.hasNext()) {
+        if (!intervalIterator.hasNext()) {
             stopReached = true;
             return;
         }
 
         PartitionManager.Interval intv = intervalIterator.next();
-        
+
         if (rdb != null) {
             tablespace.dispose(rdb);
         }
 
         RdbHistogramInfo hist = (RdbHistogramInfo) intv.getHistogram(colName);
 
-        if(hist==null) {
+        if (hist == null) {
             readNextPartition();
             return;
         }
         rdb = tablespace.getRdb(hist.partitionDir, false);
-        
+
         long segStart = interval.hasStart() ? segmentStart(interval.getStart()) : 0;
         byte[] dbKeyStart = ByteArrayUtils.encodeInt(hist.tbsIndex, new byte[12], 0);
         ByteArrayUtils.encodeLong(segStart, dbKeyStart, TBS_INDEX_SIZE);
@@ -94,10 +94,13 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
             dbKeyStop = ByteArrayUtils.encodeInt(hist.tbsIndex + 1, new byte[12], 0);
             strictEnd = true;
         }
-        
+        if (segmentIterator != null) {
+            segmentIterator.close();
+        }
+
         segmentIterator = new AscendingRangeIterator(rdb.newIterator(), dbKeyStart, false, dbKeyStop, strictEnd);
         readNextSegments();
-        tablespace.dispose(rdb);
+
     }
 
     // reads all the segments with the same sstart time
@@ -109,7 +112,7 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
 
         ByteBuffer bb = ByteBuffer.wrap(segmentIterator.key());
         long sstart = bb.getLong(RdbStorageEngine.TBS_INDEX_SIZE);
-        
+
         while (true) {
             boolean beyondStop = addRecords(segmentIterator.key(), segmentIterator.value());
             if (beyondStop) {
@@ -131,6 +134,10 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
 
     public void close() {
         if (rdb != null) {
+            if (segmentIterator != null) {
+                segmentIterator.close();
+                segmentIterator = null;
+            }
             tablespace.dispose(rdb);
             rdb = null;
         }
@@ -139,7 +146,7 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
     // add all records from this segment into the queue
     // if the stop has been reached add only partially the records, return true
     private boolean addRecords(byte[] key, byte[] val) {
-        ByteBuffer kbb = ByteBuffer.wrap(key, TBS_INDEX_SIZE, key.length-TBS_INDEX_SIZE);
+        ByteBuffer kbb = ByteBuffer.wrap(key, TBS_INDEX_SIZE, key.length - TBS_INDEX_SIZE);
         long sstart = kbb.getLong();
         byte[] columnv = new byte[kbb.remaining()];
         kbb.get(columnv);
@@ -147,7 +154,7 @@ class RdbHistogramIterator implements Iterator<HistogramRecord> {
         HistogramRecord r = null;
         while (vbb.hasRemaining()) {
             long start = sstart * HistogramSegment.GROUPING_FACTOR + vbb.getInt();
-            
+
             long stop = sstart * HistogramSegment.GROUPING_FACTOR + vbb.getInt();
             int num = vbb.getShort();
             if ((interval.hasStart()) && (stop < interval.getStart())) {
