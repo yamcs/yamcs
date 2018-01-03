@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.alarms.AlarmReporter;
 import org.yamcs.alarms.AlarmServer;
-import org.yamcs.parameter.ParameterRequestManagerImpl;
+import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
@@ -41,14 +41,14 @@ public class AlarmChecker {
     private AlarmServer alarmServer;
 
     private final int subscriptionId;
-    ParameterRequestManagerImpl prm;
+    ParameterRequestManager prm;
     Logger log = LoggerFactory.getLogger(this.getClass());
 
     //keep the last values of parameters that are needed to check alarms (for alarms that are enabled/disabled based on some other parameters)
     ParameterValueList lastValues = new ParameterValueList();
 
 
-    public AlarmChecker(ParameterRequestManagerImpl prm, int subscriptionId) {
+    public AlarmChecker(ParameterRequestManager prm, int subscriptionId) {
         this.subscriptionId = subscriptionId;
         this.prm = prm;
     }

@@ -13,7 +13,7 @@ import org.yamcs.NoPermissionException;
 import org.yamcs.Processor;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.alarms.CouldNotAcknowledgeAlarmException;
-import org.yamcs.parameter.ParameterRequestManagerImpl;
+import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
@@ -117,7 +117,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         BulkSetParameterValueRequest request = req.bodyAsMessage(SchemaRest.BulkSetParameterValueRequest.MERGE).build();
 
         // check permission
-        ParameterRequestManagerImpl prm = processor.getParameterRequestManager();
+        ParameterRequestManager prm = processor.getParameterRequestManager();
         for(SetParameterValueRequest r : request.getRequestList()) {
             try {
                 String parameterName = prm.getParameter(r.getId()).getQualifiedName();
@@ -222,7 +222,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
             throw new BadRequestException("Invalid timeout specified. Maximum is 60.000 milliseconds");
         }
 
-        ParameterRequestManagerImpl prm = processor.getParameterRequestManager();
+        ParameterRequestManager prm = processor.getParameterRequestManager();
         MyConsumer myConsumer = new MyConsumer();
         ParameterWithIdRequestHelper pwirh = new ParameterWithIdRequestHelper(prm, myConsumer);
         List<ParameterValue> pvals = new ArrayList<>();

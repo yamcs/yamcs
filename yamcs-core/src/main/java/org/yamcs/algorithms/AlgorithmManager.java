@@ -28,8 +28,8 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterProvider;
-import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterListener;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.utils.YObjectLoader;
@@ -79,7 +79,7 @@ public class AlgorithmManager extends AbstractService
     CopyOnWriteArrayList<AlgorithmExecutor> executionOrder = new CopyOnWriteArrayList<>();
     HashSet<Parameter> requiredInParams = new HashSet<>(); // required by this class
     ArrayList<Parameter> requestedOutParams = new ArrayList<>(); // requested by clients
-    ParameterRequestManagerImpl parameterRequestManager;
+    ParameterRequestManager parameterRequestManager;
 
     // For scheduling OnPeriodicRate algorithms
     ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);
@@ -468,7 +468,7 @@ public class AlgorithmManager extends AbstractService
     }
 
     @Override
-    public void setParameterListener(ParameterRequestManager parameterRequestManager) {
+    public void setParameterListener(ParameterListener parameterRequestManager) {
         // do nothing, we're more interested in a ParameterRequestManager, which we're
         // getting from the constructor
     }

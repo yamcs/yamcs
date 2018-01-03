@@ -23,7 +23,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.Processor;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
-import org.yamcs.parameter.ParameterRequestManagerImpl;
+import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
@@ -45,7 +45,7 @@ public class AlgorithmManagerJavaTest {
     private XtceDb db;
     private Processor c;
     private RefMdbPacketGenerator tmGenerator;
-    private ParameterRequestManagerImpl prm;
+    private ParameterRequestManager prm;
 
     @Before
     public void beforeEachTest() throws ConfigurationException, ProcessorException {

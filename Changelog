@@ -8,6 +8,7 @@ Version 4.0.0
     - use less rocksdb databases for one yamcs instance
     - allow to share the same rocksdb databae for multiple instances (useful in case of short lived instances such as simulation/test sessions)
     - improve starting performance - no more need to scan all the databases at startup
+- renamed yprocessor.yaml to processor.yaml and replaced "tmProvider", "commanReleaser", "parameterProviders" with generic "services"
 
 Version 3.4.0 released 06-Dec-2017
 - moved artemis into a separate source project which yamcs-core does not depend on. 

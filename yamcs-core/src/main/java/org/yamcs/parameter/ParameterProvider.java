@@ -34,7 +34,7 @@ public interface ParameterProvider extends ProcessorService {
      * 
      * @param parameterListener
      */
-    public abstract void setParameterListener(ParameterRequestManager parameterListener);
+    public abstract void setParameterListener(ParameterListener parameterListener);
 
     /**
      * Adds a new parameter to the list  of parameters that have to provided 

@@ -42,7 +42,7 @@ import com.google.common.collect.ListMultimap;
  *
  */
 public class ParameterWithIdRequestHelper implements ParameterConsumer {
-    ParameterRequestManagerImpl prm;
+    ParameterRequestManager prm;
     final ParameterWithIdConsumer listener;
     Logger log = LoggerFactory.getLogger(this.getClass().getName());
     Map<Integer, Subscription> subscriptions = new ConcurrentHashMap<>();
@@ -51,7 +51,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     private static long CHECK_EXPIRATION_INTERVAL = 1000;
     final static ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
     
-    public ParameterWithIdRequestHelper(ParameterRequestManagerImpl prm, ParameterWithIdConsumer listener) {
+    public ParameterWithIdRequestHelper(ParameterRequestManager prm, ParameterWithIdConsumer listener) {
         this.prm = prm;
         this.listener = listener;
         schedulePeriodicExpirationChecking(this);
@@ -170,7 +170,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         }
     }
 
-    public ParameterRequestManagerImpl getPrm() {
+    public ParameterRequestManager getPrm() {
         return prm;
     }
 
@@ -214,7 +214,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     }
 
     /**
-     * Called from {@link ParameterRequestManager when new parameters are available to be sent to clients}
+     * Called from {@link ParameterListener when new parameters are available to be sent to clients}
      */
     @Override
     public void updateItems(int subscriptionId, List<ParameterValue> items) {
@@ -246,7 +246,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     /**
      * Change processor and return the list of parameters that were valid in the old processor and are not anymore
      */
-    public List<NamedObjectId> switchPrm(ParameterRequestManagerImpl newPrm, AuthenticationToken authToken) throws  NoPermissionException {
+    public List<NamedObjectId> switchPrm(ParameterRequestManager newPrm, AuthenticationToken authToken) throws  NoPermissionException {
         List<NamedObjectId> invalid = new ArrayList<>();
         if(prm.getXtceDb() == newPrm.getXtceDb()) {
             for(int subscriptionId: subscriptions.keySet()) {

@@ -13,7 +13,7 @@ import org.yamcs.Processor;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
-import org.yamcs.parameter.ParameterRequestManagerImpl;
+import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
@@ -58,7 +58,7 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
     		 notifyFailed(e);
     		 return;
     	 }
-         ParameterRequestManagerImpl prm = yproc.getParameterRequestManager();
+         ParameterRequestManager prm = yproc.getParameterRequestManager();
          prm.getAlarmChecker().enableReporting(this);
          
          // Auto-subscribe to parameters with alarms

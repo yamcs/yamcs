@@ -16,7 +16,7 @@ import org.yamcs.NoPermissionException;
 import org.yamcs.ProcessorException;
 import org.yamcs.YamcsServer;
 import org.yamcs.Processor;
-import org.yamcs.parameter.ParameterRequestManagerImpl;
+import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
@@ -267,7 +267,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         if(subscriptionId==-1) {
             throw new WebSocketException(requestId, "Not subscribed");
         }
-        ParameterRequestManagerImpl prm=processor.getParameterRequestManager();
+        ParameterRequestManager prm=processor.getParameterRequestManager();
         boolean r=prm.unsubscribeAll(subscriptionId);
         if(r) {
             subscriptionId=-1;
@@ -330,7 +330,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
      */
     @Override
     public void quit() {
-        ParameterRequestManagerImpl prm=processor.getParameterRequestManager();
+        ParameterRequestManager prm=processor.getParameterRequestManager();
         if(subscriptionId!=-1) {
             prm.removeRequest(subscriptionId);
         }
