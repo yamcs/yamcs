@@ -63,9 +63,9 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
             Event ev = data.getEvent();
             eventViewer.addEvent(ev);
         }
-        if(data.hasParameterData()) {
+        if(data.hasParameterData()) {        
             ParameterData par = data.getParameterData();
-            eventViewer.updateStatus(par.getParameter(0).getEngValue().getStringValue());
+            eventViewer.updateStatus(par.getParameter(0).getId().getName(), par.getParameter(0).getEngValue().getStringValue());
         }
     }
 
@@ -73,12 +73,14 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
     public void connected(String url) {
         WebSocketRequest wsr = new WebSocketRequest(EventResource.RESOURCE_NAME, EventResource.OP_subscribe);
         yconnector.performSubscription(wsr, this, this);
-        ParameterSubscriptionRequest.Builder b = ParameterSubscriptionRequest.newBuilder();        
-        b.addId(NamedObjectId.newBuilder().setName("/" + yconnector.getConnectionParams().getHost() + 
-                "/" + yconnector.getConnectionParams().getInstance() + "/tm_realtime/linkStatus").build());
-        b.setAbortOnInvalid(false);        
-        WebSocketRequest wsrLink = new WebSocketRequest("parameter", EventResource.OP_subscribe, b.build());
-        yconnector.performSubscription(wsrLink, this, this);
+        
+        for(String parameter: eventViewer.getParameterLinkStatus()) {
+            ParameterSubscriptionRequest.Builder b = ParameterSubscriptionRequest.newBuilder();        
+            b.addId(NamedObjectId.newBuilder().setName(parameter).build());
+            b.setAbortOnInvalid(false);        
+            WebSocketRequest wsrLink = new WebSocketRequest("parameter", EventResource.OP_subscribe, b.build());
+            yconnector.performSubscription(wsrLink, this, this);
+        }
     }
 
     @Override

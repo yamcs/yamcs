@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,12 +100,10 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     JLabel                                      labelEventCount        = null;
     JLabel                                      labelWarnings          = null;
     JLabel                                      labelErrors            = null;
-    JLabel                                      fwLabel                = null;
-    JLabel                                      upLabel                = null;
-    JLabel                                      dnLabel                = null;
+    Map<String,JLabel>                          linkLabel              = null;
 
-    Icon                                        upOKIcon               = null;
-    Icon                                        upNOKIcon              = null;
+    Map<String,Icon>                            linkOKIcon             = null;
+    Map<String,Icon>                            linkNOKIcon            = null;
 
     int                                         eventCount             = 0;
     int                                         warningCount           = 0;
@@ -121,6 +120,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     Thread                                      connectingThread       = null;
     private String                              soundFile              = null;
     List<Map<String,String>>                    extraColumns           = null;
+    List<Map<String,String>>                    linkStatus             = null;
 
     private Clip                                alertClip              = null;
     private JPopupMenu                          popupMenu              = null;
@@ -147,6 +147,9 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         }
         if(cfg.containsKey("extraColumns")) {
             extraColumns=cfg.getList("extraColumns");
+        }
+        if(cfg.containsKey("linkstatus")) {
+            linkStatus = cfg.getList("linkstatus");
         }
     }
 
@@ -310,15 +313,21 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         panel.add(labelErrors);
 
         panel.add(Box.createHorizontalGlue());
-
-
-        upOKIcon = getIcon("upLinkActive.gif");
-        upNOKIcon = getIcon("upLinkInactive.gif");
-
-        upLabel = new JLabel(upNOKIcon);
-        upLabel.setOpaque(true);
-        upLabel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-        panel.add(upLabel);
+        
+        linkOKIcon = new HashMap<>();
+        linkNOKIcon = new HashMap<>();
+        linkLabel = new HashMap<>();
+        
+        for(Map<String,String> link: linkStatus) {
+            linkOKIcon.put(link.get("name"), getIcon(link.get("okicon")));
+            linkNOKIcon.put(link.get("name"), getIcon(link.get("nokicon")));
+            
+            JLabel label = new JLabel(linkNOKIcon.get(link.get("name")));
+            label.setOpaque(true);
+            label.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+            linkLabel.put(link.get("name"), label);
+            panel.add(label);
+        }
 
         // event table
 
@@ -470,32 +479,36 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         return new ImageIcon(getClass().getResource("/org/yamcs/images/" + imagename));
     }
 
-    public void updateStatus(String status)  {
+    public void updateStatus(String name, String status)  {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 StringBuffer title = new StringBuffer("Event Viewer");
-
+                JLabel label = linkLabel.get(name);
                 if (yconnector.isConnected()) {
                     if (miRetrievePast != null) miRetrievePast.setEnabled(true);
                     title.append(" (connected)");
                     if(status.equals("OK")) {
-                        upLabel.setBackground(iconColorGreen);
-                        upLabel.setIcon(upOKIcon);
+                        label.setBackground(iconColorGreen);
+                        label.setIcon(linkOKIcon.get(name));
+                    } else if (status.equals("DISABLED")) {
+                        label.setBackground(iconColorRed);
+                        label.setIcon(linkNOKIcon.get(name));
                     } else {
                         title.append(" (not connected)");
-                        upLabel.setBackground(iconColorGrey);
+                        label.setBackground(iconColorGrey);
+                        label.setIcon(linkOKIcon.get(name));
                     }
                 } else if (yconnector.isConnecting()) {
                     if (miRetrievePast != null)
                         miRetrievePast.setEnabled(false);
                     title.append(" (connecting)");
-                    upLabel.setBackground(iconColorGrey);
+                    label.setBackground(iconColorGrey);
                 } else {
                     if (miRetrievePast != null)
                         miRetrievePast.setEnabled(false);
                     title.append(" (not connected)");
-                    upLabel.setBackground(iconColorGrey);
+                    label.setBackground(iconColorGrey);
                 }
                 setTitle(title.toString());
             }
@@ -980,38 +993,6 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             ev.addEvent(event);
         }
     }
-    
-    //Not used for the moment. TODO
-//    public void setStatusTm(String opsname, String value) {
-//        if (opsname.equals("CDMCS_FWLINK_STATUS")) {
-//            if (value.equalsIgnoreCase("OK")) {
-//                fwLabel.setBackground(iconColorGreen);
-//                fwLabel.setIcon(fwOKIcon);
-//            } else {
-//                fwLabel.setBackground(iconColorRed);
-//                fwLabel.setIcon(fwNOKIcon);
-//            }
-//            fwLabel.setToolTipText(opsname + " = " + value);
-//        } else if (opsname.equals("CDMCS_UPLINK_STATUS")) {
-//            if (value.equalsIgnoreCase("OK")) {
-//                upLabel.setIcon(upOKIcon);
-//                upLabel.setBackground(iconColorGreen);
-//            } else {
-//                upLabel.setIcon(upNOKIcon);
-//                upLabel.setBackground(iconColorRed);
-//            }
-//            upLabel.setToolTipText(opsname + " = " + value);
-//        } else if (opsname.equals("CDMCS_DOWNLINK_STATUS")) {
-//            if (value.equalsIgnoreCase("OK")) {
-//                dnLabel.setIcon(dnOKIcon);
-//                dnLabel.setBackground(iconColorGreen);
-//            } else {
-//                dnLabel.setIcon(dnNOKIcon);
-//                dnLabel.setBackground(iconColorRed);
-//            }
-//            dnLabel.setToolTipText(opsname + " = " + value);
-//        }
-//    }
 
     /**
      * Application entry point.
@@ -1057,5 +1038,14 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     @Override
     public void menuCanceled(MenuEvent e) {
         // do nothing
+    }
+
+    public List<String> getParameterLinkStatus() {
+        List<String> parameterLinks = new ArrayList<>();
+        for(Map<String, String> link: linkStatus) {
+            parameterLinks.add(link.get("name"));
+        }
+        return parameterLinks;
+        
     }
 }
