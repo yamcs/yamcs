@@ -11,7 +11,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterProvider;
-import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterListener;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
@@ -33,7 +33,7 @@ import com.google.common.util.concurrent.AbstractService;
  */
 public class StreamParameterProvider extends AbstractService implements StreamSubscriber, ParameterProvider {
     Stream stream;
-    ParameterRequestManager paraListener;
+    ParameterListener paraListener;
     final XtceDb xtceDb;
     private static final Logger log = LoggerFactory.getLogger(StreamParameterProvider.class);
     
@@ -117,7 +117,7 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
 
 
     @Override
-    public void setParameterListener(ParameterRequestManager paraListener) {
+    public void setParameterListener(ParameterListener paraListener) {
         this.paraListener = paraListener;
     }
 

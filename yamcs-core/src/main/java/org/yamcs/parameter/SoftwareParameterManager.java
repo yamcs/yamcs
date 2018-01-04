@@ -35,7 +35,7 @@ import com.google.common.util.concurrent.AbstractService;
  */
 public class SoftwareParameterManager extends AbstractService implements ParameterProvider {
     ExecutorService executor = Executors.newFixedThreadPool(1);
-    ParameterRequestManager prm;
+    ParameterListener prm;
     private NamedDescriptionIndex<Parameter> params = new NamedDescriptionIndex<>();
     Set<Parameter> subscribedParams = new HashSet<>();
     private static final Logger log=LoggerFactory.getLogger(SoftwareParameterManager.class);
@@ -63,7 +63,7 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
     }
 
     @Override
-    public void setParameterListener(ParameterRequestManager parameterListener) {
+    public void setParameterListener(ParameterListener parameterListener) {
         this.prm = parameterListener;
     }
 

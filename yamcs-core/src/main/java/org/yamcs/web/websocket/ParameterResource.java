@@ -14,9 +14,8 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.ProcessorException;
-import org.yamcs.YamcsServer;
 import org.yamcs.Processor;
-import org.yamcs.parameter.ParameterRequestManagerImpl;
+import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
@@ -57,9 +56,11 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
     public static final String WSR_UNSUBSCRIBE_ALL = "unsubscribeAll";
 
     private int subscriptionId = -1;
-    private int compSubscriptionId = -1; //subscription id used for computations
+    private int allSubscriptionId = -1;
+    
+    private int compSubscriptionId = -1; // subscription id used for computations
 
-    final CopyOnWriteArrayList<Computation> compList=new CopyOnWriteArrayList<>();
+    final CopyOnWriteArrayList<Computation> compList = new CopyOnWriteArrayList<>();
 
     ParameterWithIdRequestHelper pidrm;
 
@@ -69,17 +70,20 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+            throws WebSocketException {
 
         switch (ctx.getOperation()) {
         case WSR_SUBSCRIBE:
-        case "subscribe2":  //TODO: remove subscribe2 after making sure nobody uses it.
+        case "subscribe2": // TODO: remove subscribe2 after making sure nobody uses it.
             ParameterSubscriptionRequest req;
             req = decoder.decodeMessageData(ctx, SchemaWeb.ParameterSubscriptionRequest.MERGE).build();
-            if(req.getIdCount()==0) { //maybe using old method
-                if(req.getListCount()>0) {
-                    log.warn("Client using old parameter subscription method: {}", wsHandler.getChannel().remoteAddress());
-                    req = ParameterSubscriptionRequest.newBuilder().addAllId(req.getListList()).setAbortOnInvalid(true).build();
+            if (req.getIdCount() == 0) { // maybe using old method
+                if (req.getListCount() > 0) {
+                    log.warn("Client using old parameter subscription method: {}",
+                            wsHandler.getChannel().remoteAddress());
+                    req = ParameterSubscriptionRequest.newBuilder().addAllId(req.getListList()).setAbortOnInvalid(true)
+                            .build();
                 }
             }
             return subscribe(ctx.getRequestId(), req, client.getAuthToken());
@@ -99,19 +103,20 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         }
     }
 
-    private WebSocketReplyData subscribe(int requestId, ParameterSubscriptionRequest req, AuthenticationToken authToken) throws WebSocketException {
+    private WebSocketReplyData subscribe(int requestId, ParameterSubscriptionRequest req, AuthenticationToken authToken)
+            throws WebSocketException {
         List<NamedObjectId> idList = req.getIdList();
         try {
             WebSocketReply reply = new WebSocketReply(requestId);
             try {
-                if(subscriptionId!=-1) {
+                if (subscriptionId != -1) {
                     pidrm.addItemsToRequest(subscriptionId, idList, authToken);
                 } else {
                     subscriptionId = pidrm.addRequest(idList, req.getUpdateOnExpiration(), authToken);
                 }
             } catch (InvalidIdentification e) {
                 NamedObjectList invalidList = NamedObjectList.newBuilder().addAllList(e.getInvalidParameters()).build();
-                
+
                 if (!req.hasAbortOnInvalid() || req.getAbortOnInvalid()) {
                     WebSocketException ex = new WebSocketException(requestId, e);
                     ex.attachData("InvalidIdentification", invalidList, SchemaYamcs.NamedObjectList.WRITE);
@@ -122,15 +127,17 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                     if (idList.isEmpty()) {
                         log.warn("Received subscribe attempt will all-invalid parameters");
                     } else {
-                        log.warn("Received subscribe attempt with {} invalid parameters. Subscription will continue with {} remaining valids.",
+                        log.warn(
+                                "Received subscribe attempt with {} invalid parameters. Subscription will continue with {} remaining valids.",
                                 e.getInvalidParameters().size(), idList.size());
                         if (log.isDebugEnabled()) {
-                            log.debug("The invalid IDs are: {}", StringConverter.idListToString(e.getInvalidParameters()));
+                            log.debug("The invalid IDs are: {}",
+                                    StringConverter.idListToString(e.getInvalidParameters()));
                         }
-                        if(subscriptionId!=-1) {
+                        if (subscriptionId != -1) {
                             pidrm.addItemsToRequest(subscriptionId, idList, authToken);
                         } else {
-                            subscriptionId=pidrm.addRequest(idList, req.getUpdateOnExpiration(), authToken);
+                            subscriptionId = pidrm.addRequest(idList, req.getUpdateOnExpiration(), authToken);
                         }
                     }
                     reply.attachData("InvalidIdentification", invalidList, SchemaYamcs.NamedObjectList.WRITE);
@@ -138,9 +145,9 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
             }
 
             wsHandler.sendReply(reply);
-            if(req.hasSendFromCache() && req.getSendFromCache() && pidrm.hasParameterCache()) {
+            if (req.hasSendFromCache() && req.getSendFromCache() && pidrm.hasParameterCache()) {
                 List<ParameterValueWithId> pvlist = pidrm.getValuesFromCache(idList, authToken);
-                if(!pvlist.isEmpty()) {
+                if (!pvlist.isEmpty()) {
                     update(subscriptionId, pvlist);
                 }
             }
@@ -148,21 +155,22 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
             return null;
         } catch (InvalidIdentification e) {
             log.warn("got invalid identification: {}", e.getMessage());
-            throw new WebSocketException(requestId, "internal error: "+e.toString(), e);
+            throw new WebSocketException(requestId, "internal error: " + e.toString(), e);
         } catch (InvalidRequestIdentification e) {
             log.error("got invalid subscription id", e);
-            throw new WebSocketException(requestId, "internal error: "+e.toString(), e);
+            throw new WebSocketException(requestId, "internal error: " + e.toString(), e);
         } catch (NoPermissionException e) {
             log.error("no permission for parameters: {}", e.getMessage());
-            throw new WebSocketException(requestId, "internal error: "+e.toString(), e);
+            throw new WebSocketException(requestId, "internal error: " + e.toString(), e);
         } catch (IOException e) {
             log.error("Exception when sending data", e);
             return null;
         }
     }
 
-    private WebSocketReplyData unsubscribe(int requestId, NamedObjectList paraList, AuthenticationToken authToken) throws WebSocketException {
-        if(subscriptionId!=-1) {
+    private WebSocketReplyData unsubscribe(int requestId, NamedObjectList paraList, AuthenticationToken authToken)
+            throws WebSocketException {
+        if (subscriptionId != -1) {
             try {
                 pidrm.removeItemsFromRequest(subscriptionId, paraList.getListList(), authToken);
             } catch (NoPermissionException e) {
@@ -174,42 +182,44 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         }
     }
 
-    private WebSocketReplyData subscribeAll(int requestId, String namespace, AuthenticationToken authToken) throws WebSocketException {
-        if(subscriptionId!=-1) {
+    private WebSocketReplyData subscribeAll(int requestId, String namespace, AuthenticationToken authToken)
+            throws WebSocketException {
+        if (allSubscriptionId != -1) {
             throw new WebSocketException(requestId, "Already subscribed for this client");
         }
         try {
-            subscriptionId=pidrm.subscribeAll(namespace, authToken);
+            allSubscriptionId = pidrm.subscribeAll(namespace, authToken);
         } catch (NoPermissionException e) {
             throw new WebSocketException(requestId, "No permission", e);
         }
         return toAckReply(requestId);
     }
 
-    private WebSocketReplyData subscribeComputations(int requestId, ComputationDefList cdefList, AuthenticationToken authToken)
+    private WebSocketReplyData subscribeComputations(int requestId, ComputationDefList cdefList,
+            AuthenticationToken authToken)
             throws WebSocketException {
 
         List<ComputationDef> computations = cdefList.getComputationList();
-        List<NamedObjectId> allArguments=new ArrayList<>();
-        for(ComputationDef computation : computations) {
+        List<NamedObjectId> allArguments = new ArrayList<>();
+        for (ComputationDef computation : computations) {
             allArguments.addAll(computation.getArgumentList());
         }
 
         try {
             try {
-                if(compSubscriptionId!=-1) {
+                if (compSubscriptionId != -1) {
                     pidrm.addItemsToRequest(compSubscriptionId, allArguments, authToken);
                 } else {
-                    compSubscriptionId=pidrm.addRequest(allArguments, authToken);
+                    compSubscriptionId = pidrm.addRequest(allArguments, authToken);
                 }
             } catch (InvalidIdentification e) {
                 if (cdefList.hasAbortOnInvalid() && cdefList.getAbortOnInvalid()) {
-                    NamedObjectList nol=NamedObjectList.newBuilder().addAllList(e.getInvalidParameters()).build();
+                    NamedObjectList nol = NamedObjectList.newBuilder().addAllList(e.getInvalidParameters()).build();
                     WebSocketException ex = new WebSocketException(requestId, e);
                     ex.attachData("InvalidIdentification", nol, SchemaYamcs.NamedObjectList.WRITE);
                     throw ex;
                 } else {
-                    //remove computations that have as arguments the invalid parameters
+                    // remove computations that have as arguments the invalid parameters
                     computations = new ArrayList<>();
                     allArguments = new ArrayList<>();
                     ListIterator<ComputationDef> it = computations.listIterator();
@@ -233,26 +243,29 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                     if (computations.isEmpty()) {
                         log.warn("All requested computations have invalid arguments");
                     } else {
-                        log.warn("Got invalid computation arguments, but continuing subscribe attempt with remaining valids: {} ", computations);
-                        if(compSubscriptionId!=-1) {
+                        log.warn(
+                                "Got invalid computation arguments, but continuing subscribe attempt with remaining valids: {} ",
+                                computations);
+                        if (compSubscriptionId != -1) {
                             pidrm.addItemsToRequest(compSubscriptionId, allArguments, authToken);
                         } else {
-                            compSubscriptionId=pidrm.addRequest(allArguments, authToken);
+                            compSubscriptionId = pidrm.addRequest(allArguments, authToken);
                         }
                     }
-                    // TODO send back invalid list as part of nominal response. Requires work in the websocket framework which
+                    // TODO send back invalid list as part of nominal response. Requires work in the websocket framework
+                    // which
                     // currently only supports ACK responses in the reply itself
                 }
             }
         } catch (InvalidIdentification e) {
             log.error("got invalid identification. Should not happen, because checked before", e);
-            throw new WebSocketException(requestId, "internal error: "+e.toString(), e);
+            throw new WebSocketException(requestId, "internal error: " + e.toString(), e);
         } catch (NoPermissionException e) {
             throw new WebSocketException(requestId, "No permission", e);
         }
 
         try {
-            for(ComputationDef cdef : computations) {
+            for (ComputationDef cdef : computations) {
                 Computation c = ComputationFactory.getComputation(cdef);
                 compList.add(c);
             }
@@ -264,53 +277,57 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
     }
 
     private WebSocketReplyData unsubscribeAll(int requestId) throws WebSocketException {
-        if(subscriptionId==-1) {
+        if ((allSubscriptionId == -1) && (subscriptionId==-1)) {
             throw new WebSocketException(requestId, "Not subscribed");
         }
-        ParameterRequestManagerImpl prm=processor.getParameterRequestManager();
-        boolean r=prm.unsubscribeAll(subscriptionId);
-        if(r) {
-            subscriptionId=-1;
-            return toAckReply(requestId);
-        } else {
-            throw new WebSocketException(requestId, "There is no subscribeAll subscription for this client");
+        ParameterRequestManager prm = processor.getParameterRequestManager();
+        if(allSubscriptionId != -1) {
+            prm.unsubscribeAll(subscriptionId);
         }
+        if(subscriptionId != -1) {
+            prm.removeRequest(subscriptionId);
+        }
+        if (compSubscriptionId != -1) {
+            prm.removeRequest(compSubscriptionId);
+        }
+        
+        return toAckReply(requestId);
     }
 
     @Override
     public void update(int subscrId, List<ParameterValueWithId> paramList) {
-        if(wsHandler==null) {
+        if (wsHandler == null) {
             return;
         }
-        if(paramList == null || paramList.isEmpty()) {
+        if (paramList == null || paramList.isEmpty()) {
             return;
         }
 
-        if(subscrId==compSubscriptionId) {
+        if (subscrId == compSubscriptionId) {
             updateComputations(paramList);
             return;
         }
-        ParameterData.Builder pd=ParameterData.newBuilder();
-        for(ParameterValueWithId pvwi:paramList) {
-            ParameterValue pv=pvwi.getParameterValue();
+        ParameterData.Builder pd = ParameterData.newBuilder();
+        for (ParameterValueWithId pvwi : paramList) {
+            ParameterValue pv = pvwi.getParameterValue();
             pd.addParameter(pv.toGpb(pvwi.getId()));
         }
         sendParameterUpdate(pd.build());
     }
 
     private void updateComputations(List<ParameterValueWithId> paramList) {
-        Map<NamedObjectId, ParameterValue> parameters=new HashMap<>();
-        for(ParameterValueWithId pvwi:paramList) {
+        Map<NamedObjectId, ParameterValue> parameters = new HashMap<>();
+        for (ParameterValueWithId pvwi : paramList) {
             parameters.put(pvwi.getId(), pvwi.getParameterValue());
         }
-        ParameterData.Builder pd=ParameterData.newBuilder();
-        for(Computation c:compList) {
-            org.yamcs.protobuf.Pvalue.ParameterValue pv=c.evaluate(parameters);
-            if(pv!=null) {
+        ParameterData.Builder pd = ParameterData.newBuilder();
+        for (Computation c : compList) {
+            org.yamcs.protobuf.Pvalue.ParameterValue pv = c.evaluate(parameters);
+            if (pv != null) {
                 pd.addParameter(pv);
             }
         }
-        if(pd.getParameterCount()==0) {
+        if (pd.getParameterCount() == 0) {
             return;
         }
         sendParameterUpdate(pd.build());
@@ -324,17 +341,18 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
             quit();
         }
     }
+
     /**
      * called when the socket is closed.
      * unsubscribe all parameters
      */
     @Override
     public void quit() {
-        ParameterRequestManagerImpl prm=processor.getParameterRequestManager();
-        if(subscriptionId!=-1) {
+        ParameterRequestManager prm = processor.getParameterRequestManager();
+        if (subscriptionId != -1) {
             prm.removeRequest(subscriptionId);
         }
-        if(compSubscriptionId!=-1) {
+        if (compSubscriptionId != -1) {
             prm.removeRequest(compSubscriptionId);
         }
     }
@@ -342,13 +360,14 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
     @Override
     public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
         try {
-            List<NamedObjectId> invalid = pidrm.switchPrm(newProcessor.getParameterRequestManager(), client.getAuthToken());
+            List<NamedObjectId> invalid = pidrm.switchPrm(newProcessor.getParameterRequestManager(),
+                    client.getAuthToken());
             super.switchProcessor(oldProcessor, newProcessor);
-            if(!invalid.isEmpty()) {
-                //send notification for invalid parameters
-                ParameterData.Builder pd=ParameterData.newBuilder();
+            if (!invalid.isEmpty()) {
+                // send notification for invalid parameters
+                ParameterData.Builder pd = ParameterData.newBuilder();
                 long now = newProcessor.getCurrentTime();
-                for(NamedObjectId id:invalid) {
+                for (NamedObjectId id : invalid) {
                     pd.addParameter(org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder().setId(id)
                             .setAcquisitionTime(now)
                             .setAcquisitionStatus(AcquisitionStatus.INVALID).build());

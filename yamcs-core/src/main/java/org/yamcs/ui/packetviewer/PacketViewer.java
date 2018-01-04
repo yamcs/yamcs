@@ -75,9 +75,8 @@ import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.archive.PacketWithTime;
-import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.ui.PrefsObject;
@@ -104,7 +103,7 @@ import com.google.protobuf.ByteString;
 import io.netty.handler.codec.http.HttpMethod;
 
 public class PacketViewer extends JFrame implements ActionListener,
-TreeSelectionListener, ParameterRequestManager, ConnectionListener {
+TreeSelectionListener, ParameterListener, ConnectionListener {
     private static final long serialVersionUID = 1L;
     private static final Logger log=LoggerFactory.getLogger(PacketViewer.class);
     static PacketViewer theApp;

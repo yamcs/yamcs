@@ -13,7 +13,7 @@ import org.junit.Test;
 import org.yamcs.alarms.AlarmReporter;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
-import org.yamcs.parameter.ParameterRequestManagerImpl;
+import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
@@ -33,7 +33,7 @@ public class AlarmTest {
     private XtceDb db;
     private Processor c;
     private RefMdbPacketGenerator tmGenerator;
-    private ParameterRequestManagerImpl prm;
+    private ParameterRequestManager prm;
     private Queue<Event> q;
     private AlarmReporter alarmReporter;
 

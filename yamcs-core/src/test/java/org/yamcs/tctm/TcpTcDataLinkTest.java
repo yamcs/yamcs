@@ -83,12 +83,12 @@ public class TcpTcDataLinkTest {
 
     @Test
     public void testTcpTcMaxRate() throws ConfigurationException, InterruptedException, IOException {
-      
-        int ncommands = 100;
+        int ncommands = 20;
+        int tcMaxRate = 2;
         
         Map<String, Object> config = new HashMap<>();
-        config.put("tcMaxRate", 25);
-        config.put("tcQueueSize", 100);
+        config.put("tcMaxRate", tcMaxRate);
+        config.put("tcQueueSize", ncommands);
         config.put("tcHost", "localhost");
         config.put("tcPort", port);
         
@@ -106,16 +106,13 @@ public class TcpTcDataLinkTest {
         }
 
         assertTrue(semaphore.tryAcquire(ncommands, 10, TimeUnit.SECONDS));
-        assertTrue("Number of commands sent is smaller than queue size: ", mypub.successful.size() >= 100);
-        for (int i = 5; i<mypub.successful.size()-25; i++) {
+        assertTrue("Number of commands sent is smaller than queue size: ", mypub.successful.size() >= ncommands);
+        for (int i = 5; i<mypub.successful.size()-tcMaxRate; i++) {
             int seq1 = mypub.successful.get(i);
-            int seq2 = mypub.successful.get(i+25);
+            int seq2 = mypub.successful.get(i+tcMaxRate);
             long gap = mypub.sentTime.get(seq2) - mypub.sentTime.get(seq1);
             assertTrue("gap is not right: "+gap, gap>=990 && gap<1010);
         }
-//     
- //       assertTrue("Number of commands sent is much bigger than queue size: ", sentCount < 120);
-
     }
 
     @Test

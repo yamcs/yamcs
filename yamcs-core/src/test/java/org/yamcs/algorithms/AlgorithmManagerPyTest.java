@@ -22,7 +22,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.Processor;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
-import org.yamcs.parameter.ParameterRequestManagerImpl;
+import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
@@ -44,7 +44,7 @@ public class AlgorithmManagerPyTest {
     private XtceDb db;
     private Processor processor;
     private RefMdbPacketGenerator tmGenerator;
-    private ParameterRequestManagerImpl prm;
+    private ParameterRequestManager prm;
 
     @Before
     public void beforeEachTest() throws ConfigurationException, ProcessorException {

@@ -15,7 +15,7 @@ import org.yamcs.xtce.Parameter;
 /**
  * 
  * 
- * Used by the {@link org.yamcs.parameter.ParameterRequestManagerImpl} to cache last values of parameters.
+ * Used by the {@link org.yamcs.parameter.ParameterRequestManager} to cache last values of parameters.
  * 
  * The cache will contain the parameters for a predefined time period but can exceed that period if space is available in the CacheEntry.
  * 

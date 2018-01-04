@@ -24,8 +24,8 @@ import org.yamcs.cmdhistory.CommandHistoryProvider;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.ParameterProvider;
+import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterRequestManager;
-import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
@@ -72,7 +72,7 @@ public class ReplayService extends AbstractService
 
     ReplayRequest originalReplayRequest;
     private HashSet<Parameter> subscribedParameters = new HashSet<>();
-    private ParameterRequestManagerImpl parameterRequestManager;
+    private ParameterRequestManager parameterRequestManager;
     TmProcessor tmProcessor;
     volatile long dataCount = 0;
     final XtceDb xtceDb;
@@ -305,8 +305,8 @@ public class ReplayService extends AbstractService
     }
 
     @Override
-    public void setParameterListener(ParameterRequestManager parameterRequestManager) {
-        this.parameterRequestManager = (ParameterRequestManagerImpl) parameterRequestManager;
+    public void setParameterListener(ParameterListener parameterRequestManager) {
+        this.parameterRequestManager = (ParameterRequestManager)parameterRequestManager;
     }
 
     @Override

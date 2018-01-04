@@ -24,7 +24,7 @@ import org.yamcs.commanding.CommandingManager;
 import org.yamcs.container.ContainerRequestManager;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterCacheConfig;
-import org.yamcs.parameter.ParameterRequestManagerImpl;
+import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
@@ -56,7 +56,7 @@ public class Processor extends AbstractService {
     private static final String CONFIG_KEY_ALARM = "alarm";
 
     //handles subscriptions to parameters
-    private ParameterRequestManagerImpl parameterRequestManager;
+    private ParameterRequestManager parameterRequestManager;
     //handles subscriptions to containers
     private ContainerRequestManager containerRequestManager;
     //handles subscriptions to command history
@@ -170,7 +170,7 @@ public class Processor extends AbstractService {
             // Shared between prm and crm
             tmProcessor = new XtceTmProcessor(this, tmProcessorConfig);
             containerRequestManager = new ContainerRequestManager(this, tmProcessor);
-            parameterRequestManager = new ParameterRequestManagerImpl(this, tmProcessor);
+            parameterRequestManager = new ParameterRequestManager(this, tmProcessor);
 
             for (ServiceWithConfig swc : serviceList) {
                 ProcessorService service = (ProcessorService) swc.service;
@@ -296,7 +296,7 @@ public class Processor extends AbstractService {
         return commandHistoryPublisher;
     }
 
-    public ParameterRequestManagerImpl getParameterRequestManager() {
+    public ParameterRequestManager getParameterRequestManager() {
         return parameterRequestManager;
     }
 

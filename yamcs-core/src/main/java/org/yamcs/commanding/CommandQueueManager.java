@@ -20,7 +20,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.Processor;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.parameter.ParameterConsumer;
-import org.yamcs.parameter.ParameterRequestManagerImpl;
+import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.SystemParametersCollector;
@@ -151,7 +151,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             }
         }
         if(!paramsToSubscribe.isEmpty()) {
-            ParameterRequestManagerImpl prm = yproc.getParameterRequestManager();
+            ParameterRequestManager prm = yproc.getParameterRequestManager();
             try {
                 paramSubscriptionRequestId = prm.addRequest(new ArrayList<>(paramsToSubscribe), this);
             } catch (InvalidIdentification e) {
@@ -180,7 +180,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
             sysParamCollector.unregisterProducer(this);
         }
         if(paramSubscriptionRequestId!=-1) {
-            ParameterRequestManagerImpl prm = yproc.getParameterRequestManager();
+            ParameterRequestManager prm = yproc.getParameterRequestManager();
             prm.removeRequest(paramSubscriptionRequestId);
         }
         notifyStopped();

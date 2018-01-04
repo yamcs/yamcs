@@ -19,7 +19,7 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
 import org.yamcs.api.artemis.YamcsSession;
-import org.yamcs.parameter.ParameterRequestManagerImpl;
+import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
@@ -192,7 +192,7 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
             yclient.sendErrorReply(replyto, "not subscribed for this address");
             return;
         }
-        ParameterRequestManagerImpl prm=channel.getParameterRequestManager();
+        ParameterRequestManager prm=channel.getParameterRequestManager();
         int subscriptionId=subscriptions.inverse().get(dataAddress);
         boolean r=prm.unsubscribeAll(subscriptionId);
         if(r) {

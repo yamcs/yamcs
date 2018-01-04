@@ -36,7 +36,7 @@ import com.google.common.util.concurrent.AbstractService;
  * 
  */
 public class SystemParametersProvider extends AbstractService implements StreamSubscriber, ParameterProvider {
-    private ParameterRequestManager parameterListener;
+    private ParameterListener parameterListener;
 
     volatile private Map<String, SystemParameter> variables = new HashMap<>(); 
     Logger log;
@@ -162,7 +162,7 @@ public class SystemParametersProvider extends AbstractService implements StreamS
     }
 
     @Override
-    public void setParameterListener(ParameterRequestManager parameterRequestManager) {
+    public void setParameterListener(ParameterListener parameterRequestManager) {
         this.parameterListener = parameterRequestManager; 
     }
 
