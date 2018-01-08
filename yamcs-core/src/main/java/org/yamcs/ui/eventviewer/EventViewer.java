@@ -37,6 +37,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -105,6 +106,8 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     Map<String,Icon>                            linkOKIcon             = null;
     Map<String,Icon>                            linkNOKIcon            = null;
 
+    List<JCheckBox>                             columnCheckbox         = null;     
+    
     int                                         eventCount             = 0;
     int                                         warningCount           = 0;
     int                                         errorCount             = 0;
@@ -557,7 +560,8 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         } else if (cmd.equals("clear")) {
             clearTable();
         } else if (cmd.equals("save")) {
-            saveTableAs();
+            if(getColumnsCheckBox() ==0)
+                saveTableAs();
         } else if (cmd.equals("exit")) {
             processWindowEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
         } else if (cmd.equals("preferences")) {
@@ -663,6 +667,30 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             return accept(f) ? f : new File(f.getPath() + "." + ext);
         }
     }
+    
+    private int getColumnsCheckBox() {
+        
+        String[] colNames = new String[eventTable.getColumnCount()];
+        
+        int i = 0;
+        for(int col =0; col < eventTable.getColumnCount(); col ++) {
+            colNames[i] = getColumnName(col);
+            i++;
+        }
+        Object[] obj = new Object[eventTable.getColumnCount() + 1];
+        obj[0] = "Select columns to be saved:";
+        columnCheckbox = new ArrayList<JCheckBox>();
+        i = 1;
+        for (String  mc : colNames){
+            JCheckBox box = new JCheckBox(mc);
+            box.setSelected(true);
+            columnCheckbox.add(box);
+            obj[i] = box;
+            i++;
+        }
+        return JOptionPane.showConfirmDialog(this, obj, "Save", JOptionPane.OK_CANCEL_OPTION);
+        
+    }
 
     void saveTableAs() {
         if (filechooser == null) {
@@ -704,20 +732,14 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             try {
                 writer=new CsvWriter(new FileOutputStream(file), '\t', Charset.forName("UTF-8"));
                 
-                int[] selectedColumns = eventTable.getSelectedColumns();
-                if(selectedColumns.length == 0) {
-                    selectedColumns = new int[eventTable.getColumnCount()];
-                    for(int i = 0; i< selectedColumns.length; i++)
-                        selectedColumns[i] = i;
+                List<Integer> selectedColumns = new ArrayList<>();
+                for(int i = 0; i < columnCheckbox.size(); i ++) {
+                    if(columnCheckbox.get(i).isSelected()) {
+                        selectedColumns.add(i);
+                    }
                 }
-                int[] selectedRows = eventTable.getSelectedRows();
-                if(selectedRows.length == 0) {
-                    selectedRows = new int[eventTable.getRowCount()];
-                    for(int i = 0; i< selectedRows.length; i++)
-                        selectedRows[i] = i;
-                }
-                
-                String[] colNames = new String[selectedColumns.length];
+     
+                String[] colNames = new String[selectedColumns.size()];
                 
                 int i = 0;
                 for(int col : selectedColumns) {
@@ -728,12 +750,13 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
                 writer.writeRecord(colNames);
                 writer.setForceQualifier(true);
                 
-                for(int row: selectedRows) {
+                for(int row = 0; row < eventTable.getRowCount(); row++) {
+                    String[] rec = new String[selectedColumns.size()];
                     i = 0;
-                    String[] rec = new String[selectedColumns.length];
                     for(int col: selectedColumns) {
                         rec[i] = getColumnValue(col, row);
                         i++;
+                       
                     }
                     writer.writeRecord(rec);
                 }
