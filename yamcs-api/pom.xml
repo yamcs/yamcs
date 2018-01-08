@@ -15,10 +15,6 @@
   <name>Yamcs API</name>
   <description>Used by external clients to communicate with Yamcs</description>
 
-  <properties>
-    <protostuffVersion>1.5.3</protostuffVersion>
-  </properties>
-
   <build>
     <finalName>${project.artifactId}-${project.version}</finalName>
     <plugins>
@@ -205,8 +201,8 @@
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
-      <artifactId>netty-all</artifactId>
-      <version>4.1.9.Final</version>
+      <artifactId>netty-codec-http</artifactId>
+      <version>${nettyVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.yaml</groupId>
