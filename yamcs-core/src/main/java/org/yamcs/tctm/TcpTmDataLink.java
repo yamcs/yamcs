@@ -230,8 +230,8 @@ public class TcpTmDataLink extends AbstractTmDataLink {
         this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
         if (sysParamCollector != null) {
             sysParamCollector.registerProducer(this);
-            spLinkStatus = sysParamCollector.getNamespace() + "/" + name + "/linkStatus";
-            spDataCount = sysParamCollector.getNamespace() + "/" + name + "/dataCount";
+            spLinkStatus = sysParamCollector.getNamespace()+"/"+name+"/linkStatus";
+            spDataCount = sysParamCollector.getNamespace()+"/"+name+"/dataCount";
 
         } else {
             log.info("System variables collector not defined for instance {} ", yamcsInstance);

@@ -5,3 +5,8 @@
 
 # Path to [ACES-EXCEL-DB] spreadsheet
 #aces.spreadsheet: /absolute/path/to/aces/spreadsheet.xls
+
+#linkstatus:
+#	- name: /yamcs/<host>/tm_realtime/linkStatus
+#	  okicon: upLinkActive.gif
+#	  nokicon: upLinkInactive.gif

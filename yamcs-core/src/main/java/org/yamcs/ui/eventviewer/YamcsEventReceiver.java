@@ -29,9 +29,12 @@ import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.api.ws.WebSocketResponseHandler;
+import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.EventResource;
@@ -44,6 +47,7 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
 
     public YamcsEventReceiver(YamcsConnector yconnector) {
         this.yconnector = yconnector;
+        
         yconnector.addConnectionListener(this);
     }
 
@@ -59,12 +63,24 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
             Event ev = data.getEvent();
             eventViewer.addEvent(ev);
         }
+        if(data.hasParameterData()) {        
+            ParameterData par = data.getParameterData();
+            eventViewer.updateStatus(par.getParameter(0).getId().getName(), par.getParameter(0).getEngValue().getStringValue());
+        }
     }
 
     @Override
     public void connected(String url) {
         WebSocketRequest wsr = new WebSocketRequest(EventResource.RESOURCE_NAME, EventResource.OP_subscribe);
         yconnector.performSubscription(wsr, this, this);
+        
+        for(String parameter: eventViewer.getParameterLinkStatus()) {
+            ParameterSubscriptionRequest.Builder b = ParameterSubscriptionRequest.newBuilder();        
+            b.addId(NamedObjectId.newBuilder().setName(parameter).build());
+            b.setAbortOnInvalid(false);        
+            WebSocketRequest wsrLink = new WebSocketRequest("parameter", EventResource.OP_subscribe, b.build());
+            yconnector.performSubscription(wsrLink, this, this);
+        }
     }
 
     @Override
