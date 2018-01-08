@@ -133,7 +133,7 @@ public class TcpTcDataLinkTest {
         for (int i = 1; i <= 1000; i++) {
             dataLink.sendTc(getCommand(i));
         }
-        assertTrue(semaphore.tryAcquire(1000, 10, TimeUnit.SECONDS));
+        assertTrue(semaphore.tryAcquire(1000, 30, TimeUnit.SECONDS));
         assertEquals(1000, mypub.successful.size());
     }
 
