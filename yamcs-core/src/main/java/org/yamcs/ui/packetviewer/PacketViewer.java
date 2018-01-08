@@ -79,6 +79,8 @@ import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
+import org.yamcs.tctm.ColumbusPacketPreprocessor;
+import org.yamcs.tctm.PacketPreprocessor;
 import org.yamcs.ui.PrefsObject;
 import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.CcsdsPacket;
@@ -144,7 +146,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
     boolean authenticationEnabled = false;
     String streamName;
     private String defaultNamespace;
-
+    PacketPreprocessor packetPreprocessor;
 
     public PacketViewer(int maxLines) throws ConfigurationException {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -158,8 +160,9 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         if(config.containsKey("defaultNamespace")) {
             defaultNamespace = config.getString("defaultNamespace");
         }
+        
+        packetPreprocessor = new ColumbusPacketPreprocessor(null);
         // table to the left which shows one row per packet
-
         packetsTable = new PacketsTable(this);
         packetsTable.setMaxLines(maxLines);
         JScrollPane packetScrollpane = new JScrollPane(packetsTable);
@@ -896,7 +899,7 @@ TreeSelectionListener, ParameterListener, ConnectionListener {
         try {
             currentPacket.load(lastFile);
             byte[] b = currentPacket.getBuffer();
-            tmProcessor.processPacket(new PacketWithTime(TimeEncoding.currentInstant(), currentPacket.getGenerationTime(), b));
+            tmProcessor.processPacket(packetPreprocessor.process(b));
         } catch (IOException x) {
             final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
             log(msg);

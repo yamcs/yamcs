@@ -106,8 +106,9 @@ public class StreamTmPacketProvider extends AbstractService implements TmPacketP
         public void onTuple(Stream s, Tuple tuple) {
             long rectime = (Long) tuple.getColumn(TmDataLinkInitialiser.RECTIME_COLUMN);
             long gentime = (Long) tuple.getColumn(TmDataLinkInitialiser.GENTIME_COLUMN);
+            int seqCount = (Integer) tuple.getColumn(TmDataLinkInitialiser.SEQNUM_COLUMN);
             byte[] packet = (byte[]) tuple.getColumn(TmDataLinkInitialiser.PACKET_COLUMN);
-            PacketWithTime pwrt = new PacketWithTime(rectime, gentime, packet);
+            PacketWithTime pwrt = new PacketWithTime(rectime, gentime, seqCount, packet);
             lastPacketTime = gentime;
             tmProcessor.processPacket(pwrt);
         }

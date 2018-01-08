@@ -4,12 +4,15 @@ Version 4.0.0
 - changed algorithms to work as functions such that they can coexist in the same scriptEngine (to improve performance)
 - allow java-expressions to be used for command argument reverse calibrations (eng->raw value conversion)
 - Spreadsheet Loader: allow to better specify the encoding in the command arguments
-- Introducing tablespaces to
+- Introduced tablespaces to
     - use less rocksdb databases for one yamcs instance
     - allow to share the same rocksdb databae for multiple instances (useful in case of short lived instances such as simulation/test sessions)
     - improve starting performance - no more need to scan all the databases at startup
 - renamed yprocessor.yaml to processor.yaml and replaced "tmProvider", "commanReleaser", "parameterProviders" with generic "services"
 - changed WebSocket parameter unsubscribe all to unsubscribe both the "all" subscription as well as the individual subscriptions (if any). Fixes issue #210 in github.
+- Introduced two components part of the TM Packet Data Link:
+  - packet input stream - responsible for chopping up a stream into packets
+  - packet preprocessor - responsible for extracting basic information (time, seq count) from a packet
 
 
 Version 3.4.0 released 06-Dec-2017

@@ -135,8 +135,7 @@ public class ReplayService extends AbstractService
             dataCount++;
             TmPacketData tpd = (TmPacketData) data;
             replayTime = tpd.getGenerationTime();
-            tmProcessor.processPacket(
-                    new PacketWithTime(tpd.getReceptionTime(), tpd.getGenerationTime(), tpd.getPacket().toByteArray()));
+            tmProcessor.processPacket(new PacketWithTime(tpd.getReceptionTime(), tpd.getGenerationTime(), tpd.getSequenceNumber(), tpd.getPacket().toByteArray()));
             break;
         case PP:
             parameterRequestManager.update(calibrate((List<ParameterValue>) data));

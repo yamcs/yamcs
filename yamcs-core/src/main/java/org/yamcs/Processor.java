@@ -40,8 +40,6 @@ import org.yamcs.xtceproc.XtceTmProcessor;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Service;
-import com.google.common.util.concurrent.Service.Listener;
-import com.google.common.util.concurrent.Service.State;
 
 /**
  * 

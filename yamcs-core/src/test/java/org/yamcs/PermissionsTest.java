@@ -58,7 +58,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
         assertNotNull(pdata);
         assertEquals(2, pdata.getParameterCount());
         ParameterValue pv0 = pdata.getParameter(0);
-        assertEquals("2015-03-02T10:10:00.000", pv0.getGenerationTimeUTC());
+        assertEquals("2015-03-02T10:10:00.000Z", pv0.getGenerationTimeUTC());
 
         // Check that string parameter replay is denied
         boolean gotException = false;
@@ -78,7 +78,6 @@ public class PermissionsTest extends AbstractIntegrationTest {
         }
         assertTrue("Permission should be denied for String parameter", gotException);
         restClient1.close();
-        
     }
 
 
