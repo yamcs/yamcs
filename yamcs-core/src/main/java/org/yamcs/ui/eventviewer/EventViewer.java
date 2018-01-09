@@ -153,6 +153,8 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         }
         if(cfg.containsKey("linkstatus")) {
             linkStatus = cfg.getList("linkstatus");
+        } else {
+            linkStatus = new ArrayList<>();
         }
     }
 
