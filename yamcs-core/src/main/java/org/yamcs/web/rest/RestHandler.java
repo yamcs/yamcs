@@ -20,6 +20,7 @@ import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.security.Privilege;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.web.BadRequestException;
+import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpRequestHandler;
 import org.yamcs.web.HttpUtils;
@@ -35,7 +36,6 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
-import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.protobuf.MessageLite;
 
@@ -373,5 +373,11 @@ public abstract class RestHandler extends RouteHandler {
         req.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
         .addListener(ChannelFutureListener.CLOSE)
         .addListener(l-> req.getCompletableFuture().complete(null));
+    }
+    
+    protected static void checkSystemPrivilege(RestRequest req, Privilege.SystemPrivilege priv) throws HttpException {
+        if(!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), priv))  {
+            throw new ForbiddenException("Need "+priv+" privilege for this operation");
+        }
     }
 }
