@@ -13,6 +13,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
+import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.yarch.DataType._type;
 
 import com.google.common.collect.BiMap;
@@ -289,19 +290,23 @@ public class ColumnSerializerFactory {
 
         @Override
         public void serialize(DataOutputStream stream, byte[] v) throws IOException {
-            byte[]va=(byte[])v;
-            stream.writeInt(va.length);
-            stream.write(va);
+            stream.writeInt(v.length);
+            stream.write(v);
         }
 
         @Override
         public byte[] toByteArray(byte[] v) {
-            return v;
+            byte[] r = new byte[4+v.length];
+            ByteArrayUtils.encodeInt(v.length, r, 0);
+            System.arraycopy(v, 0, r, 4, v.length);
+            return r;
         }
 
         @Override
         public byte[] fromByteArray(byte[] b, ColumnDefinition cd) throws IOException {
-            return b;
+            byte[] r = new byte[b.length-4];
+            System.arraycopy(b, 4, r, 0, r.length);
+            return r;
         }
     }
 
