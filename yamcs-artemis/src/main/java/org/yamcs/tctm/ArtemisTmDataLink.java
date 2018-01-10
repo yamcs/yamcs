@@ -113,6 +113,7 @@ public class ArtemisTmDataLink extends  AbstractService implements TmPacketDataL
             artemisSession.createTemporaryQueue(artemisAddress, queue);
             ClientConsumer client = artemisSession.createConsumer(queue, AbstractArtemisTranslatorService.UNIQUEID_HDR_NAME+"<>"+AbstractArtemisTranslatorService.UNIQUEID);
             client.setMessageHandler(this);
+            artemisSession.start();
             notifyStarted();
         } catch (Exception e) {
             log.error("Failed to set connect to artemis");

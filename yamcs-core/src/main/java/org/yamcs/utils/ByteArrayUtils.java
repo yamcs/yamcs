@@ -78,5 +78,40 @@ public class ByteArrayUtils {
         }
         return 0;
     }
+    
+    /**
+     * write an int into a byte array at offset and returns the array
+     */
+    public static byte[] encodeInt(int x, byte[] a, int offset) {
+        a[offset] = (byte)(x >> 24);
+        a[offset+1] = (byte)(x >> 16);
+        a[offset+2] = (byte)(x >> 8);
+        a[offset+3] = (byte)(x);
+                
+        return a;
+    }
+    
+    /**
+     * write an long into a byte array at offset and returns the array
+     */
+    public static byte[] encodeLong(long x, byte[] a, int offset) {
+        a[offset] = (byte)(x >> 56);
+        a[offset+1] = (byte)(x >> 48);
+        a[offset+2] = (byte)(x >> 40);
+        a[offset+3] = (byte)(x >> 32);
+        a[offset+4] = (byte)(x >> 24);
+        a[offset+5] = (byte)(x >> 16);
+        a[offset+6] = (byte)(x >> 8);
+        a[offset+7] = (byte)(x);
+                
+        return a;
+    }
+    
+    public static int decodeInt(byte[] a, int offset) {
+        return ((a[offset]   & 0xFF) <<24) +
+               ((a[offset+1] & 0xFF) <<16) +
+               ((a[offset+2] & 0xFF) <<8 ) +
+               ((a[offset+3] & 0xFF)     );
+    }
 
 }
