@@ -47,7 +47,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink {
     /**
      * used when no spec is specified, the incomingDir is based on the property with the same name from the yamcs.yaml
      * 
-     * @param archiveInstance
+     * @param instance
      * @throws ConfigurationException
      */
     public FilePollingTmDataLink(String instance, String name) throws ConfigurationException {

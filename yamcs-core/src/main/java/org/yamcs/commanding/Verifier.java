@@ -49,7 +49,7 @@ abstract class Verifier {
 
     /**
      * Called when a command history parameter (an entry in the command history) is received
-     * The parameter name is set to /yamcs/cdmHist/<key> where the key is the command history key. 
+     * The parameter name is set to /yamcs/cdmHist/&lt;key&gt; where the key is the command history key. 
      * 
      * 
      * @param pv
