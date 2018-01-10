@@ -68,7 +68,7 @@
                    <destination>yamcs.yaml</destination> 
                 </source>
                 <source> <location>etc/logging.yamcs-server.properties</location> </source>
-                <source> <location>etc/yprocessor.yaml</location> </source>
+                <source> <location>etc/processor.yaml</location> </source>
               </sources>
             </mapping>
             <mapping>
