@@ -131,7 +131,8 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
             artemisSession.createTemporaryQueue(artemisAddress, queue);
             ClientConsumer client = artemisSession.createConsumer(queue, AbstractArtemisTranslatorService.UNIQUEID_HDR_NAME+"<>"+AbstractArtemisTranslatorService.UNIQUEID);
             client.setMessageHandler(this);
-            notifyStarted();
+            artemisSession.start();
+            notifyStarted();            
         } catch (Exception e) {
             log.error("Failed connect to artemis");
             notifyFailed(e);
