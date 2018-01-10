@@ -27,10 +27,10 @@ import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
 /**
  * 
  * Tablespaces are rocksdb databases normally stored in the yamcs data directory (/storage/yamcs-data). Each corresponds
- * to a directory <tablespace-name>.rdb and has a definition file tablespace-name.tbs.
+ * to a directory &lt;tablespace-name&gt;.rdb and has a definition file tablespace-name.tbs.
  * 
  * Tablespaces can also have time based partitions in different RocksDB databases in sub-directories such as
- * <tablespace-name>.rdb/YYYY/
+ * &lt;tablespace-name&gt;.rdb/YYYY/
  * 
  * There are two column families in the main database: - the _metadata_ column family - contains metadata. - the default
  * column family - contains data.
@@ -231,7 +231,7 @@ public class Tablespace {
      * (Creates) and returns a database in the given partition directory. If the directory is null, return then main
      * tablespace db
      * 
-     * @param dir
+     * @param partitionDir 
      * @param readOnly
      * @throws IOException
      */

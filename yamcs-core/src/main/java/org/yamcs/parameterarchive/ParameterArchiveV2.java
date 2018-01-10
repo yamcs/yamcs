@@ -276,7 +276,7 @@ public class ParameterArchiveV2 extends AbstractService {
     /**
      * get partition for segment, creating it if it doesn't exist
      * 
-     * @param partitionId
+     * @param segStart
      * @throws RocksDBException
      */
     public Partition createAndGetPartition(long segStart) throws RocksDBException {
@@ -311,8 +311,8 @@ public class ParameterArchiveV2 extends AbstractService {
     /**
      * a copy of the partitions from start to stop inclusive
      * 
-     * @param startPartitionId
-     * @param stopPartitionId
+     * @param start
+     * @param stop
      * @return a sorted list of partitions
      */
     public List<Partition> getPartitions(long start, long stop, boolean ascending) {

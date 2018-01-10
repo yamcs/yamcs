@@ -120,7 +120,6 @@ class ArchiveFillerTask implements ParameterConsumer {
     /**
      * writes data into the archive
      * @param pgList
-     * @throws IOException 
      */
     protected void consolidateAndWriteToArchive(long segStart, Collection<PGSegment> pgList) {
         for(PGSegment pgs: pgList) {

@@ -13,7 +13,7 @@ import org.yamcs.archive.PacketWithTime;
  ** The implementing classes need to have a constructor with one or two arguments:
  * MyPackerPreprocessor (String yamcsInstance)
  * or
- * MyPackerPreprocessor (String yamcsInstance, Map<String, Object> args)
+ * MyPackerPreprocessor (String yamcsInstance, Map&lt;String, Object&gt; args)
  * 
  * The second one will be called if the preprocessor is declared with "args". 
  *

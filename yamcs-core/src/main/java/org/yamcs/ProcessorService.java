@@ -8,7 +8,7 @@ import com.google.common.util.concurrent.Service;
  * The implementing classes need to have a constructor with one or two arguments:
  * MyProcessorService (String yamcsInstance)
  * or
- * MyProcessorService (String yamcsInstance, Map<String, Object> config)
+ * MyProcessorService (String yamcsInstance, Map&lt;String, Object&gt; config)
  * 
  * The second one will be called if the service is declared in the processor.yaml with "args". For example:
  *  services:
