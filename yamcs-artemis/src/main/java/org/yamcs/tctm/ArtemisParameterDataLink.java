@@ -88,11 +88,12 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
 
 
     @Override
-    public void onMessage(ClientMessage msg) {
-        if(disabled) {
-            return;
-        }
+    public void onMessage(ClientMessage msg) {      
         try {
+            msg.acknowledge();
+            if(disabled) {
+                return;
+            }
             ParameterData pd = (ParameterData)Protocol.decode(msg, ParameterData.newBuilder());
             long genTime;
             if(pd.hasGenerationTime()) {

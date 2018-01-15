@@ -46,9 +46,10 @@ public class ArtemisEventDataLink extends AbstractService {
                 ClientConsumer client = session.createConsumer(queue);
                 client.setMessageHandler((msg) -> {
                     try {
+                        msg.acknowledge();
                         Tuple tuple = translator.buildTuple(msg);
                         stream.emitTuple(tuple);
-                    } catch (IllegalArgumentException e) {
+                    } catch (Exception e) {
                         log.warn("{} for message: {}", e.getMessage(), msg);
                     }
                 });

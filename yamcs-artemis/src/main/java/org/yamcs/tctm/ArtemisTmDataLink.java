@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.artemis.AbstractArtemisTranslatorService;
@@ -92,24 +91,30 @@ public class ArtemisTmDataLink extends  AbstractService implements TmPacketDataL
 
     @Override
     public void onMessage(ClientMessage msg) {
-        if(disabled) {
-            return;
-        }
         try {
-            TmPacketData tm=(TmPacketData)Protocol.decode(msg, TmPacketData.newBuilder());
+            msg.acknowledge();
+            if (disabled) {
+                return;
+            }                 
+            TmPacketData tm = (TmPacketData) Protocol.decode(msg, TmPacketData.newBuilder());
             packetcount++;
             PacketWithTime pwt =  new PacketWithTime(timeService.getMissionTime(), tm.getGenerationTime(), tm.getPacket().toByteArray());
             tmSink.processPacket(pwt);
-        } catch(YamcsApiException e){
-            log.warn( "{} for message: {}", e.getMessage(), msg);
+        } catch (Exception e) {
+            log.warn("{} for message: {}", e.getMessage(), msg);
         }
     }
 
     @Override
     protected void doStart() {
         try {
+<<<<<<< HEAD
             artemisSession = locator.createSessionFactory().createSession();
             String queue = artemisAddress+"-ActiveMQTmProvider";
+=======
+            artemisSession = locator.createSessionFactory().createSession(false, true, true, true);
+            String queue = artemisAddress + "-ActiveMQTmProvider";
+>>>>>>> 037f7db... acknowledge the messages because they are not by default and if not acknowledged they will accumulate on the server
             artemisSession.createTemporaryQueue(artemisAddress, queue);
             ClientConsumer client = artemisSession.createConsumer(queue, AbstractArtemisTranslatorService.UNIQUEID_HDR_NAME+"<>"+AbstractArtemisTranslatorService.UNIQUEID);
             client.setMessageHandler(this);
