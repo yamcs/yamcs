@@ -346,7 +346,7 @@ public class BitBuffer {
      */
     public BitBuffer slice() {
         ensureByteBoundary();
-        return new BitBuffer(b, position >> 3);
+        return new BitBuffer(b, idx(position >> 3));
     }
 
     public byte[] array() {

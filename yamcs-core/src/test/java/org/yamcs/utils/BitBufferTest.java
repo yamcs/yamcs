@@ -174,5 +174,15 @@ public class BitBufferTest {
         assertEquals("0380FFFF", StringConverter.arrayToHexString(bitbuf.array()));
     }
     
-    
+    @Test
+    public void testDoubleSlice() {
+        BitBuffer bitbuf = new BitBuffer(new byte[] {(byte)0x01, (byte)0x02, (byte)0x03, (byte)0x04});
+        assertEquals(1, bitbuf.getBits(8));
+        
+        BitBuffer bitbuf1 = bitbuf.slice();        
+        assertEquals(2, bitbuf1.getBits(8));
+        
+        BitBuffer bitbuf2 = bitbuf1.slice();
+        assertEquals(3, bitbuf2.getBits(8));
+    }
 }
