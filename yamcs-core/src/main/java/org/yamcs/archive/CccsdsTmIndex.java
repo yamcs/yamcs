@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -14,29 +16,46 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.NotThreadSafe;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.security.Privilege.SystemPrivilege;
+import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.LoggingUtils;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.TimeInterval;
+import org.yamcs.web.HttpException;
+import org.yamcs.web.HttpServer;
+import org.yamcs.web.InternalServerErrorException;
+import org.yamcs.web.rest.RestHandler;
+import org.yamcs.web.rest.RestRequest;
+import org.yamcs.web.rest.Route;
 import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.YarchException;
+import org.yamcs.yarch.rocksdb.HistogramRebuilder;
+import org.yamcs.yarch.streamsql.ParseException;
+import org.yamcs.yarch.streamsql.StreamSqlException;
 
 /**
  * Completeness index of CCSDS telemetry. There is one rocksdb table:
- *   key: apid[2bytes], start time[8 bytes], start seq count[2 bytes]
- *   value: end time[8bytes], end seq count[2 bytes], num packets [4 bytes]
- *   
- *   
- *  FIXME: because the sequence count wraps around, there is a bug in case packets with the same 
- *  timestamp and wrapped around sequence counts are received 
- *   - see testApidIndexSameTimeAndWraparound for failing test.
- *         the old TokyoCabinet based indexer didn't use the sequence count as part of the key but allowed multiple records with the same key.
- *         To replicate this in RocksDB, one would need 
- *         to have the RocksDB entries composed of all records with the same startime
- *  
+ * key: apid[2bytes], start time[8 bytes], start seq count[2 bytes]
+ * value: end time[8bytes], end seq count[2 bytes], num packets [4 bytes]
+ * 
+ * 
+ * FIXME: because the sequence count wraps around, there is a bug in case packets with the same
+ * timestamp and wrapped around sequence counts are received
+ * - see testApidIndexSameTimeAndWraparound for failing test.
+ * the old TokyoCabinet based indexer didn't use the sequence count as part of the key but allowed multiple records with
+ * the same key.
+ * To replicate this in RocksDB, one would need
+ * to have the RocksDB entries composed of all records with the same startime
+ * 
  * @author nm
  *
  */
@@ -44,35 +63,43 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 public class CccsdsTmIndex implements TmIndex {
 
     final protected Logger log;
-    
-    //if time between two packets with the same apid is more than one hour, 
-    //make two records even if they packets are in sequence (because maybe there is a wrap around involved)
-    static long maxApidInterval=3600*1000; 
-    private boolean closed=false;
-    private RocksDB db;
 
+    // if time between two packets with the same apid is more than one hour,
+    // make two records even if they packets are in sequence (because maybe there is a wrap around involved)
+    static long maxApidInterval = 3600 * 1000;
+    private boolean closed = false;
+    private RocksDB db;
+    String yamcsInstance;
+    private static AtomicInteger streamCounter = new AtomicInteger();
 
     /**
-     * if readonly is specified, it is open only for reading 
+     * if readonly is specified, it is open only for reading
      * 
      * @throws IOException
      */
     public CccsdsTmIndex(String instance, boolean readonly) throws IOException {
         log = LoggingUtils.getLogger(this.getClass(), instance);
-
+        this.yamcsInstance = instance;
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
-        String filename=ydb.getRoot()+"/tmindex";
+        String filename = ydb.getRoot() + "/tmindex";
         try {
             openDb(filename);
         } catch (RocksDBException e) {
-            throw new IOException("Failed to open rocksdb",e);
+            throw new IOException("Failed to open rocksdb", e);
+        }
+        HttpServer httpServer = (HttpServer) YamcsServer.getGlobalService(HttpServer.class.getName());
+        if (httpServer != null) {
+            httpServer.registerRouteHandler(instance, new CcsdsTmIndexRestHandler());
         }
     }
 
-    /**Used when started standalone
-     * @throws RocksDBException */
-    public CccsdsTmIndex(String filename) throws  RocksDBException {
+    /**
+     * Used when started standalone
+     * 
+     * @throws RocksDBException
+     */
+    public CccsdsTmIndex(String filename) throws RocksDBException {
         log = LoggerFactory.getLogger(this.getClass().getName());
         openDb(filename);
     }
@@ -81,27 +108,28 @@ public class CccsdsTmIndex implements TmIndex {
         db = RocksDB.open(filename);
         long numKeys = db.getLongProperty("rocksdb.estimate-num-keys");
         log.info("Opened {} with {} records", filename, numKeys);
-        if(numKeys==0) {
+        if (numKeys == 0) {
             initDbs();
         }
 
     }
+
     private void initDbs() throws RocksDBException {
-        //add a record at the beginning and end to make sure the cursor doesn't run out
+        // add a record at the beginning and end to make sure the cursor doesn't run out
         writeHeader();
         db.put(Record.key(Short.MAX_VALUE, Long.MAX_VALUE, Short.MAX_VALUE), new byte[Record.__val_size]);
     }
 
     @Override
     public void onTuple(Stream stream, Tuple tuple) {
-        byte[] packet=(byte[])tuple.getColumn("packet");
-        ByteBuffer bbpacket=ByteBuffer.wrap(packet);
+        byte[] packet = (byte[]) tuple.getColumn("packet");
+        ByteBuffer bbpacket = ByteBuffer.wrap(packet);
 
-        short apid= CcsdsPacket.getAPID(bbpacket);
-        long time=CcsdsPacket.getInstant(bbpacket);
-        short seq=CcsdsPacket.getSequenceCount(bbpacket);
+        short apid = CcsdsPacket.getAPID(bbpacket);
+        long time = CcsdsPacket.getInstant(bbpacket);
+        short seq = CcsdsPacket.getSequenceCount(bbpacket);
         try {
-            addPacket(apid, time , seq);
+            addPacket(apid, time, seq);
         } catch (RocksDBException e) {
             log.error("got exception while saving the packet into index", e);
             e.printStackTrace();
@@ -112,18 +140,19 @@ public class CccsdsTmIndex implements TmIndex {
         RocksIterator it = db.newIterator();
         try {
             it.seek(Record.key(apid, instant, seq));
-            //go to the right till we find a record bigger than the packet
-            int cright,cleft;
-            Record rright,rleft;
-            while(true) {
-                rright = new Record(it.key(),it.value());
-                cright = compare(apid,instant, seq, rright);
-                if(cright==0) { //duplicate packet
-                    if(log.isTraceEnabled()) {
-                        log.trace("ignored duplicate packet: apid={} time={} seq={}", apid, TimeEncoding.toOrdinalDateTime(instant), seq);
+            // go to the right till we find a record bigger than the packet
+            int cright, cleft;
+            Record rright, rleft;
+            while (true) {
+                rright = new Record(it.key(), it.value());
+                cright = compare(apid, instant, seq, rright);
+                if (cright == 0) { // duplicate packet
+                    if (log.isTraceEnabled()) {
+                        log.trace("ignored duplicate packet: apid={} time={} seq={}", apid,
+                                TimeEncoding.toOrdinalDateTime(instant), seq);
                     }
                     return;
-                } else if(cright<0) {
+                } else if (cright < 0) {
                     break;
                 } else {
                     it.next();
@@ -131,67 +160,71 @@ public class CccsdsTmIndex implements TmIndex {
             }
 
             it.prev();
-            rleft = new Record(it.key(),it.value());
+            rleft = new Record(it.key(), it.value());
 
-            cleft = compare(apid,instant,seq,rleft);
-            if(cleft==0) {//duplicate packet
-                if(log.isTraceEnabled()) {
-                    log.trace("ignored duplicate packet: apid={} time={} seq={}", apid, TimeEncoding.toOrdinalDateTime(instant), seq);
+            cleft = compare(apid, instant, seq, rleft);
+            if (cleft == 0) {// duplicate packet
+                if (log.isTraceEnabled()) {
+                    log.trace("ignored duplicate packet: apid={} time={} seq={}", apid,
+                            TimeEncoding.toOrdinalDateTime(instant), seq);
                 }
                 return;
             }
-            //the cursor is located on the left record and we have a few cases to examine
-            if ((cleft==1) && (cright==-1)) { //left and right have to be merged
+            // the cursor is located on the left record and we have a few cases to examine
+            if ((cleft == 1) && (cright == -1)) { // left and right have to be merged
                 rleft.seqLast = rright.seqLast;
                 rleft.lastTime = rright.lastTime;
-                rleft.numPackets += rright.numPackets+1;
+                rleft.numPackets += rright.numPackets + 1;
                 db.put(rleft.key(), rleft.val());
-                db.delete(rright.key()); //remove the right record
-            } else if(cleft==1) {//attach to left
-                rleft.seqLast=seq;
-                rleft.lastTime=instant;
+                db.delete(rright.key()); // remove the right record
+            } else if (cleft == 1) {// attach to left
+                rleft.seqLast = seq;
+                rleft.lastTime = instant;
                 rleft.numPackets++;
                 db.put(rleft.key(), rleft.val());
-            } else if(cright==-1) {//attach to right
+            } else if (cright == -1) {// attach to right
                 db.delete(rright.key());
                 rright.seqFirst = seq;
                 rright.firstTime = instant;
                 rright.numPackets++;
-                db.put(rright.key(),  rright.val());
-            } else { //create a new record
-
-                Record r=new Record(apid, instant, seq, 1);
+                db.put(rright.key(), rright.val());
+            } else { // create a new record
+                Record r = new Record(apid, instant, seq, 1);
                 db.put(r.key(), r.val());
-            } 
+            }
         } finally {
             it.close();
         }
     }
-    /**compare the packet with the record. 
+
+    /**
+     * compare the packet with the record.
      * returns:
-     *  <-1 packet fits at the right and is not attached
-     *  -1 packet fits at the right and is attached
-     *  0 packet fits inside
-     *  1 packet fits at the left and is attached
-     *  >1 packet fits at the right and is not attached
-     */  
+     * <-1 packet fits at the right and is not attached
+     * -1 packet fits at the right and is attached
+     * 0 packet fits inside
+     * 1 packet fits at the left and is attached
+     * >1 packet fits at the right and is not attached
+     */
     private static int compare(short apid, long time, short seq, Record ar) {
-        short arapid=ar.apid();
-        if(apid!=arapid) {
-            return 0x3FFF*Integer.signum(apid-arapid);
-        } 
-        int c=compare(time,seq ,ar.firstTime(),ar.firstSeq());
-        if(c<=0){
+        short arapid = ar.apid();
+        if (apid != arapid) {
+            return 0x3FFF * Integer.signum(apid - arapid);
+        }
+        int c = compare(time, seq, ar.firstTime(), ar.firstSeq());
+        if (c <= 0) {
             return c;
         }
-        c=compare(time,seq,ar.lastTime(),ar.lastSeq()) ;
-        if(c>=0){
+        c = compare(time, seq, ar.lastTime(), ar.lastSeq());
+        if (c >= 0) {
             return c;
         }
         return 0;
     }
+
     /**
      * Compares two packets (assuming apid is the same) and returns the same thing like the function above
+     * 
      * @param time1
      * @param seq1
      * @param time2
@@ -199,140 +232,152 @@ public class CccsdsTmIndex implements TmIndex {
      * @return
      */
     static int compare(long time1, short seq1, long time2, short seq2) {
-        if(time1<time2) {
-            if(((time2-time1)<=maxApidInterval) && (((seq2-seq1) & 0x3FFF)==1)){
+        if (time1 < time2) {
+            if (((time2 - time1) <= maxApidInterval) && (((seq2 - seq1) & 0x3FFF) == 1)) {
                 return -1;
-            }
-            else return -0x3FFF;
-        } else if(time1==time2) {
-            int d=(seq1-seq2)&0x3FFF;
-            if(d<0x2000) {
+            } else
+                return -0x3FFF;
+        } else if (time1 == time2) {
+            int d = (seq1 - seq2) & 0x3FFF;
+            if (d < 0x2000) {
                 return d;
             }
-            return d-0x4000;
+            return d - 0x4000;
         } else {
-            if(((time1-time2)<=maxApidInterval) && (((seq1-seq2) & 0x3FFF)==1)) {
+            if (((time1 - time2) <= maxApidInterval) && (((seq1 - seq2) & 0x3FFF) == 1)) {
                 return 1;
-            }
-            else return 0x3FFF;
+            } else
+                return 0x3FFF;
         }
     }
+
     /**
-     * add a record at the beginning in order to make sure the cursor doesn't run out. 
-     * @throws RocksDBException 
+     * add a record at the beginning in order to make sure the cursor doesn't run out.
+     * 
+     * @throws RocksDBException
      */
     private void writeHeader() throws RocksDBException {
-        db.put(Record.key((short)0, (long)0, (short)0), new byte[Record.__val_size]);
+        db.put(Record.key((short) 0, (long) 0, (short) 0), new byte[Record.__val_size]);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.yamcs.yarch.usoc.TmIndex#close()
      */
     @Override
     public synchronized void close() throws IOException {
-        if(closed){
+        if (closed) {
             return;
         }
-        
+
         log.info("Closing the tmindexdb");
         db.close();
-        closed=true;
+        closed = true;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.yamcs.yarch.usoc.TmIndex#deleteRecords(long, long)
      */
     @Override
     public synchronized void deleteRecords(long start, long stop) {
-        //TODO
+        try {
+            deleteRecords(new TimeInterval(start, stop));
+        } catch (RocksDBException e) {
+           log.error("Error when deleting records from the ccsdstmindex", e);
+        }
     }
 
     public void printApidDb() {
-        printApidDb((short)-1,-1L,-1L);
+        printApidDb((short) -1, -1L, -1L);
     }
 
-
     private void printApidDb(short apid, long start, long stop, RocksIterator cur) {
-        String format="%-10d  %-30s - %-30s  %12d - %12d";
+        String format = "%-10d  %-30s - %-30s  %12d - %12d";
         Record ar;
-        if(start!=-1) {
-            cur.seek(Record.key(apid, start, (short)0));
+        if (start != -1) {
+            cur.seek(Record.key(apid, start, (short) 0));
             cur.prev();
-            ar=new Record(cur.key(), cur.value());
-            if((ar.apid()!=apid)||(ar.lastTime()<start)) {
+            ar = new Record(cur.key(), cur.value());
+            if ((ar.apid() != apid) || (ar.lastTime() < start)) {
                 cur.next();
             }
         } else {
-            cur.seek(Record.key(apid, 0L, (short)0));
+            cur.seek(Record.key(apid, 0L, (short) 0));
         }
 
-        while(true) {
-            ar=new Record(cur.key(), cur.value());
-            if(ar.apid()!=apid) {
+        while (true) {
+            ar = new Record(cur.key(), cur.value());
+            if (ar.apid() != apid) {
                 break;
             }
-            if((stop!=-1)&& (ar.firstTime()>stop)) {
+            if ((stop != -1) && (ar.firstTime() > stop)) {
                 break;
             }
-            System.out.println(String.format(format, ar.apid(),TimeEncoding.toOrdinalDateTime(ar.firstTime()), TimeEncoding.toOrdinalDateTime(ar.lastTime()),ar.firstSeq(),ar.lastSeq()));
+            System.out.println(String.format(format, ar.apid(), TimeEncoding.toOrdinalDateTime(ar.firstTime()),
+                    TimeEncoding.toOrdinalDateTime(ar.lastTime()), ar.firstSeq(), ar.lastSeq()));
             cur.next();
         }
     }
 
     public void printApidDb(short apid, long start, long stop) {
-        String formatt="%-10s  %-30s - %-30s  %12s - %12s";
-        System.out.println(String.format(formatt,"apid","start","stop","startseq", "stopseq"));
-        RocksIterator cur=db.newIterator();
+        String formatt = "%-10s  %-30s - %-30s  %12s - %12s";
+        System.out.println(String.format(formatt, "apid", "start", "stop", "startseq", "stopseq"));
+        RocksIterator cur = db.newIterator();
         Record ar;
-        if(apid!=-1) {
+        if (apid != -1) {
             printApidDb(apid, start, stop, cur);
         } else {
-            apid=0;
-            while(true) {//loop through apids
+            apid = 0;
+            while (true) {// loop through apids
                 cur.seek(Record.key(apid, Long.MAX_VALUE, Short.MAX_VALUE));
-                ar=new Record(cur.key(),cur.value());
-                apid=ar.apid();
-                if(apid==Short.MAX_VALUE) {
+                ar = new Record(cur.key(), cur.value());
+                apid = ar.apid();
+                if (apid == Short.MAX_VALUE) {
                     break;
                 }
-                printApidDb(ar.apid(),start,stop,cur);
+                printApidDb(ar.apid(), start, stop, cur);
             }
-        } 
+        }
+        cur.close();
     }
 
     /**
      * Print the content of the index files
+     * 
      * @param args
      * @throws Exception
      */
-    public static void main(String[] args) throws Exception{
-        if(args.length<1) {
+    public static void main(String[] args) throws Exception {
+        if (args.length < 1) {
             printUsageAndExit();
         }
         YConfiguration.setup();
 
-        long start=-1;
-        long stop=-1;
-        short apid=-1;
-        String filename=null;
-        for(int i=0;i<args.length;i++) {
-            if("-s".equals(args[i])) {
-                start=TimeEncoding.parse(args[++i]);
-            } else 	if("-e".equals(args[i])) {
-                stop=TimeEncoding.parse(args[++i]);
-            } else if("-a".equals(args[i])) {
-                apid=Short.parseShort(args[++i]);
+        long start = -1;
+        long stop = -1;
+        short apid = -1;
+        String filename = null;
+        for (int i = 0; i < args.length; i++) {
+            if ("-s".equals(args[i])) {
+                start = TimeEncoding.parse(args[++i]);
+            } else if ("-e".equals(args[i])) {
+                stop = TimeEncoding.parse(args[++i]);
+            } else if ("-a".equals(args[i])) {
+                apid = Short.parseShort(args[++i]);
             } else {
-                filename=args[i];
+                filename = args[i];
             }
         }
 
-        File f=(new File(filename));
-        if(!f.exists()) { 
-            System.err.println("File does not exist: "+f);
+        File f = (new File(filename));
+        if (!f.exists()) {
+            System.err.println("File does not exist: " + f);
             System.exit(-1);
         }
-        CccsdsTmIndex index=new CccsdsTmIndex(filename);
+        CccsdsTmIndex index = new CccsdsTmIndex(filename);
         index.printApidDb(apid, start, stop);
     }
 
@@ -342,14 +387,13 @@ public class CccsdsTmIndex implements TmIndex {
         System.exit(-1);
     }
 
-
     class CcsdsIndexIteratorAdapter implements IndexIterator {
         CcsdsIndexIterator iterator;
         final Set<Integer> apids;
 
         CcsdsIndexIteratorAdapter(long start, long stop) {
-            apids=null;
-            iterator=new CcsdsIndexIterator((short)-1, start, stop);
+            apids = null;
+            iterator = new CcsdsIndexIterator((short) -1, start, stop);
         }
 
         @Override
@@ -359,140 +403,145 @@ public class CccsdsTmIndex implements TmIndex {
 
         @Override
         public ArchiveRecord getNextRecord() {
-            while(true) {
-                Record r=iterator.getNextRecord();
-                if(r==null) {
+            while (true) {
+                Record r = iterator.getNextRecord();
+                if (r == null) {
                     return null;
                 }
 
-                int apid=r.apid;
-                if((apids==null) || (apids.contains(apid))) {
-                    String pn="apid_"+apid;
-                    NamedObjectId id=NamedObjectId.newBuilder().setName(pn).build();
-                    ArchiveRecord.Builder arb=ArchiveRecord.newBuilder().setId(id).setNum(r.numPackets)
+                int apid = r.apid;
+                if ((apids == null) || (apids.contains(apid))) {
+                    String pn = "apid_" + apid;
+                    NamedObjectId id = NamedObjectId.newBuilder().setName(pn).build();
+                    ArchiveRecord.Builder arb = ArchiveRecord.newBuilder().setId(id).setNum(r.numPackets)
                             .setFirst(r.firstTime()).setLast(r.lastTime());
-                    //WARN: this string is parsed in the CompletenessGUI 
-                    //TODO: make it smarter
-                    arb.setInfo("seqFirst: "+r.seqFirst+" seqLast: "+r.seqLast);
+                    // WARN: this string is parsed in the CompletenessGUI
+                    // TODO: make it smarter
+                    arb.setInfo("seqFirst: " + r.seqFirst + " seqLast: " + r.seqLast);
                     return arb.build();
                 }
             }
         }
 
     }
+
     @NotThreadSafe
     class CcsdsIndexIterator {
-        long start,stop;
+        long start, stop;
         RocksIterator cur;
         short apid, curApid;
         Record curr;
 
         public CcsdsIndexIterator(short apid, long start, long stop) {
-            if(start<0)start=-1;
-            if(stop<0)stop=-1;
-            this.apid=apid;
-            this.start=start;
-            this.stop=stop;
-            cur=db.newIterator();
-            curApid=-1;
-            curr=null;
+            if (start < 0)
+                start = -1;
+            if (stop < 0)
+                stop = -1;
+            this.apid = apid;
+            this.start = start;
+            this.stop = stop;
+            cur = db.newIterator();
+            curApid = -1;
+            curr = null;
 
         }
 
-
-
-        //jumps to the beginning of the curApid returning true if there is any record matching the start criteria
+        // jumps to the beginning of the curApid returning true if there is any record matching the start criteria
         // and false otherwise
         boolean jumpAtApid() {
             Record r;
-            if(start!=-1) {
-                cur.seek(Record.key(curApid, start, (short)0));
+            if (start != -1) {
+                cur.seek(Record.key(curApid, start, (short) 0));
                 cur.prev();
                 r = new Record(cur.key(), cur.value());
-                if((r.apid()!=curApid) || r.lastTime()<start) {
+                if ((r.apid() != curApid) || r.lastTime() < start) {
                     cur.next();
                 }
-                r=new Record(cur.key(),cur.value());
-                if(r.apid()!=curApid) {
+                r = new Record(cur.key(), cur.value());
+                if (r.apid() != curApid) {
                     return false;
                 }
             } else {
                 cur.seek(Record.key(curApid, 0, (short) 0));
-                r=new Record(cur.key(), cur.value());
-                if(r.apid()!=curApid) {
+                r = new Record(cur.key(), cur.value());
+                if (r.apid() != curApid) {
                     return false;
                 }
             }
             return true;
         }
 
-        //sets the position of the acur at the beginning of the next apid which matches the start criteria
+        // sets the position of the acur at the beginning of the next apid which matches the start criteria
         boolean nextApid() {
-            if(curApid==-1) { //init
-                if(apid!=-1) {
-                    curApid=apid;
+            if (curApid == -1) { // init
+                if (apid != -1) {
+                    curApid = apid;
                     return jumpAtApid();
                 } else {
-                    curApid=0;
+                    curApid = 0;
                 }
             }
-            if(apid!=-1) {
+            if (apid != -1) {
                 return false;
             }
 
-            while(true) {
+            while (true) {
                 cur.seek(Record.key(curApid, Long.MAX_VALUE, Short.MAX_VALUE));
-                Record ar=new Record(cur.key(), cur.value());
-                curApid=ar.apid();
-                if(curApid==Short.MAX_VALUE) {
+                Record ar = new Record(cur.key(), cur.value());
+                curApid = ar.apid();
+                if (curApid == Short.MAX_VALUE) {
                     return false;
                 }
 
-                if(jumpAtApid()) {
+                if (jumpAtApid()) {
                     return true;
                 }
             }
         }
 
-        //sets the position of the acur to the next id checking for the stop criteria
+        // sets the position of the acur to the next id checking for the stop criteria
         private boolean nextId() {
-            if(curr==null) { //init
-                if(!nextApid()) {
+            if (curr == null) { // init
+                if (!nextApid()) {
                     return false;
                 }
-            }  else {
+            } else {
                 cur.next();
             }
-            while(true) {
-                Record r=new Record(cur.key(), cur.value());
-                if(r.apid()!=curApid) {
-                    if(!nextApid()) {
+            while (true) {
+                Record r = new Record(cur.key(), cur.value());
+                if (r.apid() != curApid) {
+                    if (!nextApid()) {
                         return false;
                     }
                     continue;
                 }
-                if((stop!=-1)&&(r.firstTime()>stop)) {
-                    if(!nextApid()) {
+                if ((stop != -1) && (r.firstTime() > stop)) {
+                    if (!nextApid()) {
                         return false;
                     }
                     continue;
                 }
-                curr=r;
+                curr = r;
                 return true;
             }
         }
 
-        /* (non-Javadoc)
+        /*
+         * (non-Javadoc)
+         * 
          * @see org.yamcs.yarch.usoc.IndexIterator#getNextRecord()
          */
         public Record getNextRecord() {
-            if(!nextId()) {
+            if (!nextId()) {
                 return null;
             }
-            return curr;	
+            return curr;
         }
 
-        /* (non-Javadoc)
+        /*
+         * (non-Javadoc)
+         * 
          * @see org.yamcs.yarch.usoc.IndexIterator#close()
          */
         public void close() {
@@ -500,7 +549,9 @@ public class CccsdsTmIndex implements TmIndex {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.yamcs.yarch.usoc.TmIndex#getIterator(short, long, long)
      * names is ignored for the moment
      */
@@ -509,10 +560,100 @@ public class CccsdsTmIndex implements TmIndex {
         return new CcsdsIndexIteratorAdapter(start, stop);
     }
 
-
-
     @Override
     public void streamClosed(Stream stream) {
+    }
+
+    public synchronized CompletableFuture<Void> rebuild(TimeInterval interval) throws YarchException {
+        if (interval.hasStart() || interval.hasEnd()) {
+            log.info("{}: Rebuilding ccsds tm index for time interval: {}", yamcsInstance, interval.toStringEncoded());
+        } else {
+            log.info("{} Rebuilding ccsds tm index", yamcsInstance);
+        }
+
+        CompletableFuture<Void> cf = new CompletableFuture<Void>();
+
+        try {
+            deleteRecords(interval);
+        } catch (Exception e) {
+            log.error("Error when removing existing histograms", e);
+            cf.completeExceptionally(e);
+            return cf;
+        }
+
+        String timeColumnName = TmDataLinkInitialiser.GENTIME_COLUMN;
+        String streamName = "histo_rebuild_" + streamCounter.incrementAndGet();
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        try {
+            ydb.execute("create stream " + streamName + " as select * from tm "
+                            + HistogramRebuilder.getWhereCondition(timeColumnName, interval));
+        } catch (StreamSqlException | ParseException e) {
+            throw new RuntimeException(e);
+        }
+
+        Stream stream = ydb.getStream(streamName);
+        stream.addSubscriber(new StreamSubscriber() {
+            @Override
+            public void streamClosed(Stream stream) {
+                cf.complete(null);
+            }
+
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                CccsdsTmIndex.this.onTuple(stream, tuple);
+            }
+        });
+        stream.start();
+
+        return cf;
+    }
+
+    private synchronized void deleteRecords(TimeInterval interval) throws RocksDBException {
+       RocksIterator it = db.newIterator();
+        try {
+            it.seekToFirst(); //header
+            it.next();
+            while(it.isValid()) {
+                Record r = new Record(it.key(), it.value());
+                if(r.apid==Short.MAX_VALUE) {
+                    break;
+                }
+                byte[] keyStart = Record.key(r.apid, interval.hasStart()?interval.getStart():0, (short)0);
+                byte[] keyEnd;
+                if(interval.hasEnd()) {
+                    keyEnd = Record.key(r.apid, interval.getEnd(), (short)0);    
+                } else {
+                    keyEnd = Record.key(r.apid, Long.MAX_VALUE, (short)0);
+                }
+                
+                it.seek(keyEnd);
+                db.deleteRange(keyStart, keyEnd);
+            }
+        } finally {
+            it.close();
+        }
+    }
+
+    public class CcsdsTmIndexRestHandler extends RestHandler {
+        @Route(path = "/api/ccsdstmindex/:instance/rebuild", method = { "PUT", "POST" })
+        public void rebuildIndex(RestRequest req) throws HttpException {
+            checkSystemPrivilege(req, SystemPrivilege.MayControlArchiving);
+            
+            TimeInterval interval = req.scanForInterval().asTimeInterval();
+            try {
+                rebuild(interval).whenComplete((r,t) -> {
+                    if(t!=null) {
+                        log.error("Error rebuilding ccsds tm index", t);
+                        completeWithError(req, new InternalServerErrorException(t));
+                    } else {
+                        completeOK(req);
+                    }
+                });
+            } catch (YarchException e) {
+                log.error("Error rebuilding ccsds tm index", e);
+                completeWithError(req, new InternalServerErrorException(e));
+            }
+        }
     }
 }
 
@@ -521,34 +662,32 @@ class Record {
     short apid;
     short seqFirst, seqLast;
     int numPackets;
-    static final int __key_size=12;
-    static final int __val_size=14;
+    static final int __key_size = 12;
+    static final int __val_size = 14;
 
     public Record(byte[] key, byte[] val) {
-        ByteBuffer keyb=ByteBuffer.wrap(key);
-        ByteBuffer valb=ByteBuffer.wrap(val);
-        apid=keyb.getShort();
-        firstTime=keyb.getLong();
-        seqFirst=keyb.getShort();
+        ByteBuffer keyb = ByteBuffer.wrap(key);
+        ByteBuffer valb = ByteBuffer.wrap(val);
+        apid = keyb.getShort();
+        firstTime = keyb.getLong();
+        seqFirst = keyb.getShort();
 
-        lastTime=valb.getLong();
-        seqLast=valb.getShort();
-        numPackets=valb.getInt();
+        lastTime = valb.getLong();
+        seqLast = valb.getShort();
+        numPackets = valb.getInt();
     }
-
 
     public Record(short apid, long time, short seq, int numPackets) {
-        this.apid=apid;
-        this.firstTime=time;
-        this.lastTime=time;
-        this.seqFirst=seq;
-        this.seqLast=seq;
-        this.numPackets=numPackets;
+        this.apid = apid;
+        this.firstTime = time;
+        this.lastTime = time;
+        this.seqFirst = seq;
+        this.seqLast = seq;
+        this.numPackets = numPackets;
     }
 
-
     static byte[] key(short apid, long start, short seqFirst) {
-        ByteBuffer bbk=ByteBuffer.allocate(__key_size);
+        ByteBuffer bbk = ByteBuffer.allocate(__key_size);
         bbk.putShort(apid);
         bbk.putLong(start);
         bbk.putShort(seqFirst);
@@ -556,32 +695,36 @@ class Record {
         return bbk.array();
     }
 
-
     public long firstTime() {
         return firstTime;
     }
+
     public long lastTime() {
         return lastTime;
     }
+
     public short apid() {
         return apid;
     }
+
     public short firstSeq() {
         return seqFirst;
     }
+
     public short lastSeq() {
         return seqLast;
     }
 
     byte[] key() {
-        ByteBuffer bbk=ByteBuffer.allocate(__key_size);
+        ByteBuffer bbk = ByteBuffer.allocate(__key_size);
         bbk.putShort(apid);
         bbk.putLong(firstTime);
         bbk.putShort(seqFirst);
         return bbk.array();
     }
+
     byte[] val() {
-        ByteBuffer bbv=ByteBuffer.allocate(__val_size);
+        ByteBuffer bbv = ByteBuffer.allocate(__val_size);
         bbv.putLong(lastTime);
         bbv.putShort(seqLast);
         bbv.putInt(numPackets);
@@ -590,11 +733,11 @@ class Record {
 
     @Override
     public String toString() {
-        return "apid="+apid()+" time: ("+firstTime+","+lastTime+") seq:("+firstSeq()+","+lastSeq()+")";
+        return "apid=" + apid() + " time: (" + firstTime + "," + lastTime + ") seq:(" + firstSeq() + "," + lastSeq()
+                + ")";
     }
-
 
     public int numPackets() {
         return numPackets;
-    }	
+    }
 }

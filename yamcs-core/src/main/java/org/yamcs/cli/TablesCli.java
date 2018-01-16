@@ -16,6 +16,7 @@ import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.BulkRestDataSender;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.protobuf.Table.Row;
+import org.yamcs.protobuf.Table.TableLoadResponse;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -162,8 +163,8 @@ public class TablesCli extends Command {
                 }
                 
                 is.close();
-                String resp = new String(bds.completeRequest().get());
-                System.out.println("\n "+resp);
+                TableLoadResponse tlr = TableLoadResponse.parseFrom(bds.completeRequest().get());
+                System.out.println("\nTable load finished successfully: "+tlr.getRowsLoaded()+" rows loaded");
             } finally {
                 restClient.close();
             }

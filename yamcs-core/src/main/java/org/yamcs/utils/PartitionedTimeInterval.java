@@ -178,7 +178,7 @@ public class PartitionedTimeInterval<T extends TimeInterval> implements Iterable
      * returns an interval where t would fit or null if there is no such
      * interval
      * 
-     * @return ti such that ti.getStart() <= t < ti.getEnd()
+     * @return ti such that ti.getStart() &lt;= t &lt; ti.getEnd()
      */
     @SuppressWarnings("unchecked")
     public T getFit(long t) {

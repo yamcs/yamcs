@@ -23,8 +23,8 @@ import org.yamcs.archive.YarchReplay;
 import org.yamcs.cmdhistory.CommandHistoryProvider;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterListener;
+import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
@@ -87,12 +87,11 @@ public class ReplayService extends AbstractService
     ReplayRequest.Builder rawDataRequest;
     CommandHistoryRequestManager commandHistoryRequestManager;
 
-    
     public ReplayService(String instance) throws ConfigurationException {
         this.yamcsInstance = instance;
         xtceDb = XtceDbFactory.getInstance(instance);
     }
-    
+
     @Override
     public void init(Processor proc) {
         throw new IllegalArgumentException("Please provide the spec");
@@ -106,17 +105,18 @@ public class ReplayService extends AbstractService
         parameterRequestManager = proc.getParameterRequestManager();
         proc.setPacketProvider(this);
         parameterRequestManager.addParameterProvider(this);
-        
-        if(spec instanceof ReplayRequest) {
-            this.originalReplayRequest = (ReplayRequest)spec;
-        } else if(spec instanceof String) {
-            ReplayRequest.Builder rrb = ReplayRequest.newBuilder(); 
+
+        if (spec instanceof ReplayRequest) {
+            this.originalReplayRequest = (ReplayRequest) spec;
+        } else if (spec instanceof String) {
+            ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
             try {
-                JsonIOUtil.mergeFrom(((String)spec).getBytes(), rrb, org.yamcs.protobuf.SchemaYamcs.ReplayRequest.MERGE, false);
+                JsonIOUtil.mergeFrom(((String) spec).getBytes(), rrb,
+                        org.yamcs.protobuf.SchemaYamcs.ReplayRequest.MERGE, false);
             } catch (IOException e) {
-               throw new ConfigurationException("Cannot parse config into a replay request: "+e.getMessage(), e);
+                throw new ConfigurationException("Cannot parse config into a replay request: " + e.getMessage(), e);
             }
-            if(!rrb.hasSpeed()) {
+            if (!rrb.hasSpeed()) {
                 rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.REALTIME).setParam(1));
             }
             this.originalReplayRequest = rrb.build();
@@ -135,8 +135,7 @@ public class ReplayService extends AbstractService
             dataCount++;
             TmPacketData tpd = (TmPacketData) data;
             replayTime = tpd.getGenerationTime();
-            tmProcessor.processPacket(
-                    new PacketWithTime(tpd.getReceptionTime(), tpd.getGenerationTime(), tpd.getPacket().toByteArray()));
+            tmProcessor.processPacket(new PacketWithTime(tpd.getReceptionTime(), tpd.getGenerationTime(), tpd.getSequenceNumber(), tpd.getPacket().toByteArray()));
             break;
         case PP:
             parameterRequestManager.update(calibrate((List<ParameterValue>) data));
@@ -183,8 +182,7 @@ public class ReplayService extends AbstractService
 
     // finds out all raw data (TM and PP) required to provide the needed parameters.
     // in order to do this, subscribe to all parameters from the list, then check in the tmProcessor subscription which
-    // containers are needed
-    // and in the subscribedParameters which PPs may be required
+    // containers are needed and in the subscribedParameters which PPs may be required
     private void createRawSubscription() throws YamcsException {
         rawDataRequest = originalReplayRequest.toBuilder().clearParameterRequest();
 
@@ -196,11 +194,9 @@ public class ReplayService extends AbstractService
         ParameterWithIdRequestHelper pidrm = new ParameterWithIdRequestHelper(parameterRequestManager,
                 new ParameterWithIdConsumer() {
                     @Override
-                    public void update(int subscriptionId, List<ParameterValueWithId> params) {// ignore data, we create
-                                                                                               // this subscription just
-                                                                                               // to get the list of
-                                                                                               // dependent containers
-                                                                                               // and PPs
+                    public void update(int subscriptionId, List<ParameterValueWithId> params) {
+                        // ignore data, we create this subscription just to get the list of
+                        // dependent containers and PPs
                     }
                 });
         int subscriptionId;
@@ -306,7 +302,7 @@ public class ReplayService extends AbstractService
 
     @Override
     public void setParameterListener(ParameterListener parameterRequestManager) {
-        this.parameterRequestManager = (ParameterRequestManager)parameterRequestManager;
+        this.parameterRequestManager = (ParameterRequestManager) parameterRequestManager;
     }
 
     @Override

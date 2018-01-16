@@ -1,16 +1,16 @@
 package org.yamcs.tctm;
 
+import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
@@ -21,64 +21,91 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.time.TimeService;
-import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.LoggingUtils;
+import org.yamcs.utils.YObjectLoader;
 
-import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
-
-public class TcpTmDataLink extends AbstractExecutionThreadService implements TmPacketDataLink,  SystemParametersProducer {
+public class TcpTmDataLink extends AbstractTmDataLink {
     protected volatile long packetcount = 0;
     protected Socket tmSocket;
-    protected String host="localhost";
-    protected int port=10031;
-    protected volatile boolean disabled=false;
+    protected String host = "localhost";
+    protected int port = 10031;
+    protected volatile boolean disabled = false;
 
     protected final Logger log;
     private TmSink tmSink;
-    
 
     private SystemParametersCollector sysParamCollector;
     ParameterValue svConnectionStatus;
-    List<ParameterValue> sysVariables= new ArrayList<>();
+    List<ParameterValue> sysVariables = new ArrayList<>();
     private String spLinkStatus, spDataCount;
     final String yamcsInstance;
     final String name;
     final protected TimeService timeService;
+    String packetInputStreamClassName;
+    Object packetInputStreamArgs;
+    PacketInputStream packetInputStream;
     
+
     protected TcpTmDataLink(String instance, String name) {// dummy constructor needed by subclass constructors
         this.yamcsInstance = instance;
         this.name = name;
         this.timeService = YamcsServer.getTimeService(instance);
+        this.packetInputStreamClassName = CcsdsPacketInputStream.class.getName();
+        this.packetInputStreamArgs = null;
         log = LoggingUtils.getLogger(this.getClass(), instance);
+        initPreprocessor(instance, null);
     }
 
-    public TcpTmDataLink(String instance, String name, String spec) throws ConfigurationException  {
+    public TcpTmDataLink(String instance, String name, String spec) throws ConfigurationException {
         this(instance, name);
-        
-        YConfiguration c=YConfiguration.getConfiguration("tcp");
-        host=c.getString(spec, "tmHost");
-        port=c.getInt(spec, "tmPort");
+        YConfiguration c = YConfiguration.getConfiguration("tcp");
+        host = c.getString(spec, "tmHost");
+        port = c.getInt(spec, "tmPort");
     }
+
+    public TcpTmDataLink(String instance, String name, Map<String, Object> args) throws ConfigurationException {
+        this(instance, name);
+        host = YConfiguration.getString(args, "host");
+        port = YConfiguration.getInt(args, "port");
+        this.packetInputStreamClassName = YConfiguration.getString(args, "packetInputStreamClassName",
+                CcsdsPacketInputStream.class.getName());
+        this.packetInputStreamArgs = args.get("packetInputStreamArgs");
+
+        initPreprocessor(instance, args);
+    }
+
+   
 
     protected void openSocket() throws IOException {
-        InetAddress address=InetAddress.getByName(host);
-        tmSocket=new Socket();
+        InetAddress address = InetAddress.getByName(host);
+        tmSocket = new Socket();
         tmSocket.setKeepAlive(true);
-        tmSocket.connect(new InetSocketAddress(address,port),1000);
+        tmSocket.connect(new InetSocketAddress(address, port), 1000);
+        try {
+            if (packetInputStreamArgs != null) {
+                packetInputStream = YObjectLoader.loadObject(packetInputStreamClassName, tmSocket.getInputStream(),
+                        packetInputStreamArgs);
+            } else {
+                packetInputStream = YObjectLoader.loadObject(packetInputStreamClassName, tmSocket.getInputStream());
+            }
+        } catch (ConfigurationException e) {
+            log.error("Cannot instantiate the packetInput stream", e);
+            throw e;
+        }
     }
 
     @Override
     public void setTmSink(TmSink tmSink) {
-        this.tmSink=tmSink;
+        this.tmSink = tmSink;
     }
 
     @Override
     public void run() {
         setupSysVariables();
-        while(isRunning()) {
-            PacketWithTime pwrt=getNextPacket();
-            if(pwrt==null) {
+        while (isRunning()) {
+            PacketWithTime pwrt = getNextPacket();
+            if (pwrt == null) {
                 break;
             }
             tmSink.processPacket(pwrt);
@@ -86,10 +113,10 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
     }
 
     public PacketWithTime getNextPacket() {
-        ByteBuffer bb=null;
+        byte[] packet = null;
         while (isRunning()) {
-            while(disabled) {
-                if(!isRunning()) {
+            while (disabled) {
+                if (!isRunning()) {
                     return null;
                 }
                 try {
@@ -100,66 +127,36 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
                 }
             }
             try {
-                if (tmSocket==null) {
+                if (tmSocket == null) {
                     openSocket();
                     log.info("TM connection established to {}:{}", host, port);
-                } 
-                byte hdr[] = new byte[6];
-                if(!readWithBlocking(hdr,0,6))
-                    continue;
-                int remaining=((hdr[4]&0xFF)<<8)+(hdr[5]&0xFF)+1;
-                bb=ByteBuffer.allocate(6+remaining).put(hdr);
-                if(!readWithBlocking(bb.array(), 6, remaining)) 
-                    continue;
-                bb.rewind();
+                }
+                packet = packetInputStream.readPacket();
                 packetcount++;
                 break;
+            } catch (EOFException e) {
+                log.warn("Tm Connection closed");
+                tmSocket = null;
             } catch (IOException e) {
                 String exc = (e instanceof ConnectException) ? ((ConnectException) e).getMessage() : e.toString();
                 log.info("Cannot open or read TM socket {}:{} {}'. Retrying in 10s", host, port, exc);
                 try {
                     tmSocket.close();
-                    } catch (Exception e2) {}
-                tmSocket=null;
+                } catch (Exception e2) {
+                }
+                tmSocket = null;
                 try {
                     Thread.sleep(10000);
                 } catch (InterruptedException e1) {
-                    log.warn("Exception {} while sleeping for 10s", e1.toString());
+                    Thread.currentThread().interrupt();
                     return null;
                 }
             }
         }
-        if(bb!=null) {
-            return new PacketWithTime(timeService.getMissionTime(), CcsdsPacket.getInstant(bb), bb.array());
-        } 
-        return null;
-    }
-    
-    /**
-     * Read n bytes from the tmSocket, blocking if necessary till all bytes are available.
-     * Returns true if all the bytes have been read and false if the stream has closed before all the bytes have been read.
-     * @param b
-     * @param n
-     * @return
-     * @throws IOException 
-     */
-    protected boolean readWithBlocking(byte[] b, int pos, int n) throws IOException {
-        InputStream in=tmSocket.getInputStream();
-        int remaining=n;
-        while(remaining>0) {
-            int read=in.read(b,pos,remaining);
-            if(read==-1) {
-                log.warn("Tm Connection closed");
-                if(remaining!=n) {
-                    log.warn("Discarding incomplete TM packet read: expected "+n+", read"+(n-remaining)+". Packet discarded.");
-                }
-                tmSocket=null;
-                return false;
-            }
-            remaining-=read;
-            pos+=read;
+        if (packet != null) {
+            return packetPreprocessor.process(packet);
         }
-        return true;
+        return null;
     }
 
     @Override
@@ -167,7 +164,7 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
         if (disabled) {
             return Status.DISABLED;
         }
-        if (tmSocket==null) {
+        if (tmSocket == null) {
             return Status.UNAVAIL;
         } else {
             return Status.OK;
@@ -176,35 +173,35 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
 
     @Override
     public void triggerShutdown() {
-        if(tmSocket!=null) {
+        if (tmSocket != null) {
             try {
                 tmSocket.close();
             } catch (IOException e) {
                 log.warn("Exception got when closing the tm socket:", e);
             }
-            tmSocket=null;
+            tmSocket = null;
         }
-        if(sysParamCollector!=null) {
+        if (sysParamCollector != null) {
             sysParamCollector.unregisterProducer(this);
         }
     }
 
     @Override
     public void disable() {
-        disabled=true;
-        if(tmSocket!=null) {
+        disabled = true;
+        if (tmSocket != null) {
             try {
                 tmSocket.close();
             } catch (IOException e) {
                 log.warn("Exception got when closing the tm socket:", e);
             }
-            tmSocket=null;
+            tmSocket = null;
         }
     }
 
     @Override
     public void enable() {
-        disabled=false;
+        disabled = false;
     }
 
     @Override
@@ -214,10 +211,10 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
 
     @Override
     public String getDetailedStatus() {
-        if(disabled) {
+        if (disabled) {
             return String.format("DISABLED (should connect to %s:%d)", host, port);
         }
-        if (tmSocket==null) {
+        if (tmSocket == null) {
             return String.format("Not connected to %s:%d", host, port);
         } else {
             return String.format("OK, connected to %s:%d, received %d packets", host, port, packetcount);
@@ -231,11 +228,11 @@ public class TcpTmDataLink extends AbstractExecutionThreadService implements TmP
 
     protected void setupSysVariables() {
         this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
-        if(sysParamCollector!=null) {
+        if (sysParamCollector != null) {
             sysParamCollector.registerProducer(this);
             spLinkStatus = sysParamCollector.getNamespace()+"/"+name+"/linkStatus";
             spDataCount = sysParamCollector.getNamespace()+"/"+name+"/dataCount";
-        
+
         } else {
             log.info("System variables collector not defined for instance {} ", yamcsInstance);
         }

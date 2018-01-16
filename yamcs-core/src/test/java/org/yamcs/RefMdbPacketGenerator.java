@@ -622,7 +622,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 
     private void sendToTmProcessor(ByteBuffer bb, long rectime, long gentime) {
         if(tmProcessor!=null) {
-            tmProcessor.processPacket(new PacketWithTime(rectime, gentime, bb.array()));
+            tmProcessor.processPacket(new PacketWithTime(rectime, gentime, bb.getInt(0), bb.array()));
         }
     }
 

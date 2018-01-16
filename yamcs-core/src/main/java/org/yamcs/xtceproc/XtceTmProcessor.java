@@ -1,6 +1,5 @@
 package org.yamcs.xtceproc;
 
-
 import java.util.List;
 import java.util.Map;
 
@@ -28,18 +27,18 @@ import com.google.common.util.concurrent.AbstractService;
 
 /**
  * 
- * Does the job of getting containers and transforming them into parameters which are then sent to the 
- *  parameter request manager for the distribution to the requesters.
+ * Does the job of getting containers and transforming them into parameters which are then sent to the
+ * parameter request manager for the distribution to the requesters.
  * 
  * Relies on {@link XtceTmExtractor} for extracting the parameters out of containers
  * 
- *  @author mache
+ * @author mache
  * 
  */
 
 public class XtceTmProcessor extends AbstractService implements TmProcessor, ParameterProvider, ContainerProvider {
 
-    Logger log=LoggerFactory.getLogger(this.getClass().getName());
+    Logger log = LoggerFactory.getLogger(this.getClass().getName());
     private ParameterListener parameterRequestManager;
     private ContainerListener containerRequestManager;
 
@@ -48,41 +47,40 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     final XtceTmExtractor tmExtractor;
     final String CONFIG_KEY_ignoreOutOfContainerEntries = "ignoreOutOfContainerEntries";
     final String CONFIG_KEY_expirationTolerance = "expirationTolerance";
-    
+
     public XtceTmProcessor(Processor proc, Map<String, Object> tmProcessorConfig) {
-	log = LoggingUtils.getLogger(this.getClass(), proc);
-	this.processor=proc;
-	this.xtcedb=proc.getXtceDb();
-	tmExtractor = new XtceTmExtractor(xtcedb, proc.getProcessorData());
-	
-	if(tmProcessorConfig != null) {
-	    ContainerProcessingOptions opts = new ContainerProcessingOptions();
-	    if(tmProcessorConfig.containsKey(CONFIG_KEY_ignoreOutOfContainerEntries)) {
-	        Object o = tmProcessorConfig.get(CONFIG_KEY_ignoreOutOfContainerEntries);
-	        if(!(o instanceof Boolean)) {
-	            throw new ConfigurationException(CONFIG_KEY_ignoreOutOfContainerEntries+" has to be a boolean");
-	        }
-	        opts.setIgnoreOutOfContainerEntries((Boolean) o);
-	    }
-	    
-	    if(tmProcessorConfig.containsKey(CONFIG_KEY_expirationTolerance)) {
-	        Object o = tmProcessorConfig.get(CONFIG_KEY_ignoreOutOfContainerEntries);
-                if(!(o instanceof Number)) {
-                    throw new ConfigurationException(CONFIG_KEY_expirationTolerance+" has to be a number");
+        log = LoggingUtils.getLogger(this.getClass(), proc);
+        this.processor = proc;
+        this.xtcedb = proc.getXtceDb();
+        tmExtractor = new XtceTmExtractor(xtcedb, proc.getProcessorData());
+
+        if (tmProcessorConfig != null) {
+            ContainerProcessingOptions opts = new ContainerProcessingOptions();
+            if (tmProcessorConfig.containsKey(CONFIG_KEY_ignoreOutOfContainerEntries)) {
+                Object o = tmProcessorConfig.get(CONFIG_KEY_ignoreOutOfContainerEntries);
+                if (!(o instanceof Boolean)) {
+                    throw new ConfigurationException(CONFIG_KEY_ignoreOutOfContainerEntries + " has to be a boolean");
                 }
-                opts.setExpirationTolerance(((Number)o).doubleValue());
-	    }
-	    tmExtractor.setOptions(opts);
-	}
-    } 
+                opts.setIgnoreOutOfContainerEntries((Boolean) o);
+            }
+
+            if (tmProcessorConfig.containsKey(CONFIG_KEY_expirationTolerance)) {
+                Object o = tmProcessorConfig.get(CONFIG_KEY_ignoreOutOfContainerEntries);
+                if (!(o instanceof Number)) {
+                    throw new ConfigurationException(CONFIG_KEY_expirationTolerance + " has to be a number");
+                }
+                opts.setExpirationTolerance(((Number) o).doubleValue());
+            }
+            tmExtractor.setOptions(opts);
+        }
+    }
+
     public XtceTmProcessor(Processor proc) {
         log = LoggingUtils.getLogger(this.getClass(), proc);
         this.processor = proc;
         this.xtcedb = proc.getXtceDb();
         tmExtractor = new XtceTmExtractor(xtcedb, proc.getProcessorData());
     }
-
-
 
     /**
      * Creates a TmProcessor to be used in "standalone" mode, outside of any processor
@@ -96,27 +94,29 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 
     @Override
     public void init(Processor processor) throws ConfigurationException {
-       //do nothing, we already know the processor
+        // do nothing, we already know the processor
     }
 
     @Override
     public void setParameterListener(ParameterListener p) {
-        this.parameterRequestManager=p;
+        this.parameterRequestManager = p;
     }
 
     @Override
     public void setContainerListener(ContainerListener c) {
-        this.containerRequestManager=c;
+        this.containerRequestManager = c;
     }
 
     /**
-     * Adds a parameter to the current subscription list: 
-     *  finds all the SequenceContainers in which this parameter may appear and adds them to the list.
-     *  also for each sequence container adds the parameter needed to instantiate the sequence container.
-     * @param param parameter to be added to the current subscription list 
+     * Adds a parameter to the current subscription list:
+     * finds all the SequenceContainers in which this parameter may appear and adds them to the list.
+     * also for each sequence container adds the parameter needed to instantiate the sequence container.
+     * 
+     * @param param
+     *            parameter to be added to the current subscription list
      */
     @Override
-    public void startProviding(Parameter param) { 
+    public void startProviding(Parameter param) {
         tmExtractor.startProviding(param);
     }
 
@@ -136,78 +136,79 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     @Override
     public boolean canProvide(NamedObjectId paraId) {
         Parameter p = xtcedb.getParameter(paraId);
-        if(p==null) {
+        if (p == null) {
             return false;
         }
-        
-        return xtcedb.getParameterEntries(p)!=null;
+
+        return xtcedb.getParameterEntries(p) != null;
     }
-    
+
     @Override
     public boolean canProvide(Parameter para) {
-        return xtcedb.getParameterEntries(para)!=null;
+        return xtcedb.getParameterEntries(para) != null;
     }
 
     @Override
     public Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification {
         Parameter p = xtcedb.getParameter(paraId);
-        if(p==null) {
+        if (p == null) {
             throw new InvalidIdentification(paraId);
         }
         return p;
     }
-    
+
     private long getCurrentTime() {
-        if(processor!=null) {
+        if (processor != null) {
             return processor.getCurrentTime();
         } else {
             return TimeEncoding.getWallclockTime();
         }
     }
+
     /**
      * Process telemetry packets
      *
      */
     @Override
-    public void processPacket(PacketWithTime pwrt){
+    public void processPacket(PacketWithTime pwrt) {
         try {
             tmExtractor.processPacket(pwrt.getPacket(), pwrt.getGenerationTime(), getCurrentTime());
-        
-            ParameterValueList paramResult=tmExtractor.getParameterResult();
-            List<ContainerExtractionResult> containerResult=tmExtractor.getContainerResult();
-            
-            if((parameterRequestManager!=null) &&( paramResult.size()>0)) {
-                //careful out of the synchronized block in order to avoid dead locks 
-                //  with the parameterRequestManager trying to add/remove parameters 
-                //  while we are sending updates
+
+            ParameterValueList paramResult = tmExtractor.getParameterResult();
+            List<ContainerExtractionResult> containerResult = tmExtractor.getContainerResult();
+
+            if ((parameterRequestManager != null) && (paramResult.size() > 0)) {
+                // careful out of the synchronized block in order to avoid dead locks
+                // with the parameterRequestManager trying to add/remove parameters
+                // while we are sending updates
                 parameterRequestManager.update(paramResult);
             }
-        
-            if((containerRequestManager!=null) && (containerResult.size()>0)) {
+
+            if ((containerRequestManager != null) && (containerResult.size() > 0)) {
                 containerRequestManager.update(containerResult);
             }
-        
+
         } catch (Exception e) {
             log.error("got exception in tmprocessor ", e);
         }
     }
-    
+
     @Override
-    public void processPacket(PacketWithTime pwrt, SequenceContainer sc){
+    public void processPacket(PacketWithTime pwrt, SequenceContainer sc) {
         try {
             tmExtractor.processPacket(pwrt.getPacket(), pwrt.getGenerationTime(), TimeEncoding.getWallclockTime(), sc);
 
-            ParameterValueList paramResult=tmExtractor.getParameterResult();
+            ParameterValueList paramResult = tmExtractor.getParameterResult();
             List<ContainerExtractionResult> containerResult = tmExtractor.getContainerResult();
-            
-            if((parameterRequestManager!=null) &&( paramResult.size()>0)) {
-                //careful out of the synchronized block in order to avoid dead locks 
-                //  with the parameterRequestManager trying to add/remove parameters 
-                //  while we are sending updates
+
+            if ((parameterRequestManager != null) && (paramResult.size() > 0)) {
+                // careful out of the synchronized block in order to avoid dead locks
+                // with the parameterRequestManager trying to add/remove parameters
+                // while we are sending updates
                 parameterRequestManager.update(paramResult);
             }
 
-            if((containerRequestManager!=null) && (containerResult.size()>0)) {
+            if ((containerRequestManager != null) && (containerResult.size() > 0)) {
                 containerRequestManager.update(containerResult);
             }
 
@@ -225,7 +226,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
         tmExtractor.resetStatistics();
     }
 
-    public ProcessingStatistics getStatistics(){
+    public ProcessingStatistics getStatistics() {
         return tmExtractor.getStatistics();
     }
 
@@ -252,7 +253,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     @Override
     public Container getContainer(NamedObjectId containerId) throws InvalidIdentification {
         SequenceContainer c = xtcedb.getSequenceContainer(containerId);
-        if(c==null) {
+        if (c == null) {
             throw new InvalidIdentification(containerId);
         }
         return c;

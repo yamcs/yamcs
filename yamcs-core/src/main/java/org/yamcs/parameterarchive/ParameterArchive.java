@@ -15,7 +15,7 @@ import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.Service;
 
 /**
- * Wrapper around the old ParameterArchive or the new one that looks if the <instance-data-dir>/ParameterArchive 
+ * Wrapper around the old ParameterArchive or the new one that looks if the &lt;instance-data-dir&gt;/ParameterArchive 
  * exists and if it does it starts the old ParameterArchive (with a big deprecation warning), if it doesn't it starts the new one.
  * 
  *

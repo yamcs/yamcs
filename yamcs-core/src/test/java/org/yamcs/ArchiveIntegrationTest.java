@@ -124,7 +124,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(2, pdata.getParameterCount());
         p1_1_6 = pdata.getParameter(0);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
-        assertEquals("2015-01-01T10:01:00.000", p1_1_6.getGenerationTimeUTC());
+        assertEquals("2015-01-01T10:01:00.000Z", p1_1_6.getGenerationTimeUTC());
 
         
         pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
@@ -132,18 +132,18 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(3, pdata.getParameterCount());
         ParameterValue pp_para_uint = pdata.getParameter(0);
         assertEquals("/REFMDB/SUBSYS1/processed_para_uint", pp_para_uint.getId().getName());
-        assertEquals("2015-01-01T10:01:00.010", pp_para_uint.getGenerationTimeUTC());
+        assertEquals("2015-01-01T10:01:00.010Z", pp_para_uint.getGenerationTimeUTC());
         
 
         ParameterValue pp_para_enum_nc = pdata.getParameter(1);
         assertEquals("/REFMDB/SUBSYS1/processed_para_enum_nc", pp_para_enum_nc.getId().getName());
-        assertEquals("2015-01-01T10:01:00.010", pp_para_uint.getGenerationTimeUTC());
+        assertEquals("2015-01-01T10:01:00.010Z", pp_para_uint.getGenerationTimeUTC());
         assertEquals(1, pp_para_enum_nc.getRawValue().getUint32Value());
         assertEquals("one_why not", pp_para_enum_nc.getEngValue().getStringValue());
         
         ParameterValue pp_para_double = pdata.getParameter(2);
         assertEquals("/REFMDB/SUBSYS1/processed_para_double", pp_para_double.getId().getName());
-        assertEquals("2015-01-01T10:01:00.010", pp_para_uint.getGenerationTimeUTC());
+        assertEquals("2015-01-01T10:01:00.010Z", pp_para_uint.getGenerationTimeUTC());
 
         
         
@@ -152,7 +152,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(1, pdata.getParameterCount());
         pp_para_uint = pdata.getParameter(0);
         assertEquals("/REFMDB/SUBSYS1/processed_para_uint", pp_para_uint.getId().getName());
-        assertEquals("2015-01-01T10:01:00.030", pp_para_uint.getGenerationTimeUTC());
+        assertEquals("2015-01-01T10:01:00.030Z", pp_para_uint.getGenerationTimeUTC());
         
         
         pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
@@ -161,7 +161,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(2, pdata.getParameterCount());
         p1_1_6 = pdata.getParameter(0);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
-        assertEquals("2015-01-01T10:01:01.000", p1_1_6.getGenerationTimeUTC());
+        assertEquals("2015-01-01T10:01:01.000Z", p1_1_6.getGenerationTimeUTC());
 
         //go back to realtime
         EditClientRequest pcrequest = EditClientRequest.newBuilder().setProcessor("realtime").build();

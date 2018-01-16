@@ -38,7 +38,6 @@ public class DescendingRangeIterator implements DbIterator {
 
 
     public DescendingRangeIterator(RocksIterator it, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
-        System.out.println("new descending iterator");
         this.iterator = it;
         this.rangeStart = rangeStart;
         this.rangeEnd = rangeEnd;

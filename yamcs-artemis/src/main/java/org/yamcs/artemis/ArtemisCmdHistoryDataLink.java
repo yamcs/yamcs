@@ -1,6 +1,5 @@
 package org.yamcs.artemis;
 
-import java.util.List;
 
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.client.ClientConsumer;
@@ -58,11 +57,11 @@ public class ArtemisCmdHistoryDataLink extends AbstractService {
                 });
             }
             session.start();
+            notifyStarted();
         } catch (Exception e) {
             log.error("Error creating the subcription to artemis", e);
             notifyFailed(e);
         }
-        notifyFailed(new Exception());
     }
 
     @Override

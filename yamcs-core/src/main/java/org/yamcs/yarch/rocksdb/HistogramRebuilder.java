@@ -2,23 +2,16 @@ package org.yamcs.yarch.rocksdb;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
-import org.rocksdb.RocksIterator;
-import org.rocksdb.WriteBatch;
-import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.HistogramInfo;
-import org.yamcs.yarch.HistogramRecord;
 import org.yamcs.yarch.HistogramSegment;
-import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.PartitionManager.Interval;
 import org.yamcs.yarch.Stream;
@@ -110,9 +103,7 @@ public class HistogramRebuilder {
         return cf;
     }
 
-    
-
-    private String getWhereCondition(String timeColumnName,  TimeInterval interval) {
+    public static String getWhereCondition(String timeColumnName,  TimeInterval interval) {
         if(!interval.hasStart() && !interval.hasEnd()){
             return "";
         }

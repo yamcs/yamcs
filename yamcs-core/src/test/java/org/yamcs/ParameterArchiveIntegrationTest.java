@@ -113,7 +113,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(1, pdata.getParameterCount());
         pv = pdata.getParameter(0);
 
-        assertEquals("2015-01-02T11:00:00.000", TimeEncoding.toString(pv.getGenerationTime()));
+        assertEquals("2015-01-02T11:00:00.000Z", TimeEncoding.toString(pv.getGenerationTime()));
         assertEquals(0.167291805148, pv.getEngValue().getFloatValue(), 1e-5);
         AcquisitionStatus acqs = pdata.getParameter(0).getAcquisitionStatus();
         assertEquals(AcquisitionStatus.ACQUIRED, acqs);
