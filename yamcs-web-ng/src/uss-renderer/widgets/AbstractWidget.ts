@@ -48,6 +48,13 @@ export abstract class AbstractWidget {
 
   abstract parseAndDraw(): Tag;
 
+  /**
+   * Hook to perform logic after this widget (or any other widget) was added to the DOM.
+   */
+  afterDomAttachment() {
+    // NOP
+  }
+
   private parseDataBinding(e: Node) {
     const db = new DataBinding();
     db.dynamicProperty = utils.parseStringChild(e, 'DynamicProperty');

@@ -10,6 +10,9 @@ import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { AfterViewInit } from '@angular/core/src/metadata/lifecycle_hooks';
 import { Display } from '../../../uss-renderer/Display';
+import { ResourceResolver } from '../../../uss-renderer/ResourceResolver';
+
+import { take } from 'rxjs/operators';
 
 @Component({
   templateUrl: './display.component.html',
@@ -21,10 +24,14 @@ export class DisplayPageComponent implements AfterViewInit {
   @ViewChild('displayContainer')
   displayContainerRef: ElementRef;
 
+  resourceResolver: ResourceResolver;
+
   constructor(
     private route: ActivatedRoute,
     private store: Store<State>,
     private http: HttpClient) {
+
+    this.resourceResolver = new UssResourceResolver(http);
   }
 
   ngAfterViewInit() {
@@ -53,7 +60,27 @@ export class DisplayPageComponent implements AfterViewInit {
   }
 
   private renderDisplay(doc: XMLDocument, targetEl: HTMLDivElement) {
-    const display = new Display(targetEl);
+    const display = new Display(targetEl, this.resourceResolver);
     display.parseAndDraw(doc);
+  }
+}
+
+/**
+ * Resolves USS resources by fetching them from the server as
+ * a static file.
+ */
+class UssResourceResolver implements ResourceResolver {
+
+  constructor(private http: HttpClient) {
+  }
+
+  resolvePath(path: string) {
+    const yamcs = new YamcsClient(this.http);
+    return `${yamcs.staticUrl}/${path}`;
+  }
+
+  resolve(path: string) {
+    const yamcs = new YamcsClient(this.http);
+    return yamcs.getStaticText(path).pipe(take(1)).toPromise();
   }
 }

@@ -27,6 +27,7 @@ import {
 export default class YamcsClient {
 
   public baseUrl = 'http://localhost:8090';
+  public staticUrl = 'http://localhost:8090/_static';
 
   constructor(private http: HttpClient) {
   }
@@ -114,7 +115,15 @@ export default class YamcsClient {
    * Returns a string representation of the display definition file
    */
   getDisplay(instance: string, path: string) {
-    return this.http.get(`${this.baseUrl}/_static/${instance}/displays/${path}`, {
+    return this.http.get(`${this.staticUrl}/${instance}/displays/${path}`, {
+      responseType: 'text',
+    }).pipe(
+      catchError(this.handleError<string>())
+    );
+  }
+
+  getStaticText(path: string) {
+    return this.http.get(`${this.staticUrl}/${path}`, {
       responseType: 'text',
     }).pipe(
       catchError(this.handleError<string>())

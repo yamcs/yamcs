@@ -8,13 +8,14 @@ import { LinearTickMeter } from './widgets/LinearTickMeter';
 import { NavigationButton } from './widgets/NavigationButton';
 import { Polyline } from './widgets/Polyline';
 import { Rectangle } from './widgets/Rectangle';
-// TODO import { Symbol } from './widgets/Symbol';
+import { Symbol } from './widgets/Symbol';
 import { AbstractWidget } from './widgets/AbstractWidget';
 import { Parameter } from './Parameter';
 import { ParameterBinding } from './ParameterBinding';
 import { Svg, Rect, Tag, Defs, Marker, Path, Pattern } from './tags';
 import { Compound } from './widgets/Compound';
 import { Color } from './Color';
+import { ResourceResolver } from './ResourceResolver';
 
 let widgetSequence = 0;
 
@@ -29,7 +30,7 @@ export class Display {
 
   measurerSvg: SVGSVGElement;
 
-  constructor(private targetEl: HTMLDivElement) {
+  constructor(private targetEl: HTMLDivElement, public resourceResolver: ResourceResolver) {
     // Invisible SVG used to measure font metrics before drawing
     this.measurerSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     this.measurerSvg.setAttribute('height', '0');
@@ -77,6 +78,15 @@ export class Display {
 
     const svg = rootEl.toDomElement() as SVGSVGElement;
     this.targetEl.appendChild(svg);
+
+    // Call widget-specific lifecycle hooks
+    for (const key in this.widgets) {
+      if (this.widgets.hasOwnProperty(key)) {
+        const widget = this.widgets[key];
+        widget.svg = svg;
+        widget.afterDomAttachment();
+      }
+    }
   }
 
   /**
@@ -182,8 +192,8 @@ export class Display {
         return new Polyline(widgetSequence, node, this);
       case 'Rectangle':
         return new Rectangle(widgetSequence, node, this);
-      /// case 'Symbol':
-      /// TODO return new Symbol(widgetSequence, node, this);
+      case 'Symbol':
+        return new Symbol(widgetSequence, node, this);
       case 'LabelFor':
         const widgetClass = utils.parseStringAttribute(node, 'class');
         return this.parseAndDrawWidgetByName(node, widgetClass);

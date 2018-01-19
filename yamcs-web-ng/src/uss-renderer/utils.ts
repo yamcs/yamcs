@@ -203,11 +203,20 @@ export function parseTextStyle(e: Node) {
 }
 
 export function parseStringAttribute(node: Node, attributeName: string) {
-  const value = node.attributes.getNamedItem(attributeName).textContent;
-  if (value === null) {
+  const attr = node.attributes.getNamedItem(attributeName);
+  if (attr === null) {
     throw new Error(`No attribute named ${attributeName}`);
   } else {
-    return value;
+    return attr.textContent || '';
+  }
+}
+
+export function parseBooleanAttribute(node: Node, attributeName: string) {
+  const attr = node.attributes.getNamedItem(attributeName);
+  if (attr === null) {
+    throw new Error(`No attribute named ${attributeName}`);
+  } else {
+    return attr.textContent === 'true';
   }
 }
 
