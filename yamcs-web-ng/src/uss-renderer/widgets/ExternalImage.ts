@@ -1,10 +1,20 @@
 import { AbstractWidget } from './AbstractWidget';
 import * as utils from '../utils';
+import { Image } from '../tags';
 
 export class ExternalImage extends AbstractWidget {
 
-  parseAndDraw(svg: any, parent: any, e: Node) {
-    const pathname = utils.parseStringChild(e, 'Pathname');
-    svg.image(parent, this.x, this.y, this.width, this.height, '/_static/' + pathname);
+  parseAndDraw() {
+    const pathname = utils.parseStringChild(this.node, 'Pathname');
+
+    return new Image({
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height,
+      class: 'external-image',
+      'data-name': this.name,
+      'xlink:href': `/_static/${pathname}`
+    });
   }
 }

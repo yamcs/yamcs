@@ -4,209 +4,233 @@ import { ExternalImage } from './widgets/ExternalImage';
 import { Field } from './widgets/Field';
 import { Label } from './widgets/Label';
 import { LinearTickMeter } from './widgets/LinearTickMeter';
-import { LineGraph } from './widgets/LineGraph';
+// TODO import { LineGraph } from './widgets/LineGraph';
 import { NavigationButton } from './widgets/NavigationButton';
 import { Polyline } from './widgets/Polyline';
 import { Rectangle } from './widgets/Rectangle';
-import { Symbol } from './widgets/Symbol';
+// TODO import { Symbol } from './widgets/Symbol';
 import { AbstractWidget } from './widgets/AbstractWidget';
 import { Parameter } from './Parameter';
+import { ParameterBinding } from './ParameterBinding';
+import { Svg, Rect, Tag, Defs, Marker, Path, Pattern } from './tags';
+import { Compound } from './widgets/Compound';
+import { Color } from './Color';
 
 let widgetSequence = 0;
 
 export class Display {
-  widgets: {[key: string]: AbstractWidget} = {};
-  parameters: {[key: string]: Parameter} = {};
 
-  bgcolor: string;
+  private widgets: { [key: string]: AbstractWidget } = {};
+  parameters: { [key: string]: Parameter } = {};
+
+  bgcolor: Color;
   width: number;
   height: number;
 
-  constructor(private div: HTMLDivElement) {
+  measurerSvg: SVGSVGElement;
+
+  constructor(private targetEl: HTMLDivElement) {
+    // Invisible SVG used to measure font metrics before drawing
+    this.measurerSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    this.measurerSvg.setAttribute('height', '0');
+    this.measurerSvg.setAttribute('width', '0');
+    this.measurerSvg.setAttribute('style', 'visibility: hidden');
+    targetEl.appendChild(this.measurerSvg);
   }
 
   parseAndDraw(xmlDoc: XMLDocument) {
     const displayEl = xmlDoc.getElementsByTagName('Display')[0];
 
-    this.width = utils.parseIntChild(displayEl, 'Width');
-    this.height = utils.parseIntChild(displayEl, 'Height');
+    this.width = utils.parseFloatChild(displayEl, 'Width');
+    this.height = utils.parseFloatChild(displayEl, 'Height');
 
-    const svg = $(this.div).svg('get');
-    svg.configure({
-        height: this.height,
-        width: this.width,
-        class: 'canvas',
-        'xmlns': 'http://www.w3.org/2000/svg',
-        'xmlns:xlink': 'http://www.w3.org/1999/xlink'
+    const rootEl = new Svg({
+      width: this.width,
+      height: this.height,
     });
 
-    utils.addArrowMarkers(svg);
+    this.addDefinitions(rootEl);
 
     // draw background
-    this.bgcolor = utils.parseColorChild(displayEl, 'BackgroundColor', '#D4D4D4');
+    this.bgcolor = utils.parseColorChild(displayEl, 'BackgroundColor', new Color(212, 212, 212, 0));
 
-    svg.rect(0, 0, this.width, this.height, { fill: this.bgcolor });
+    rootEl.addChild(new Rect({
+      x: 0,
+      y: 0,
+      width: this.width,
+      height: this.height,
+      fill: this.bgcolor
+    }));
+
+    rootEl.addChild(new Rect({
+      x: 0,
+      y: 0,
+      width: this.width,
+      height: this.height,
+      class: 'uss-grid',
+      style: 'fill: url(#uss-grid)',
+    }));
 
     const elementsNode = utils.findChild(displayEl, 'Elements');
     const elementNodes = utils.findChildren(elementsNode);
-    this.drawElements(svg, null, elementNodes);
+    this.drawElements(rootEl, elementNodes);
+
+    const svg = rootEl.toDomElement() as SVGSVGElement;
+    this.targetEl.appendChild(svg);
   }
 
-  drawElements(svg: any, parent: any, elementNodes: Node[]) {
-    // sort element such that they are drawn in order of their Depth
-    // TODO: those that have the same Depth have to still be sorted according to some TBD behaviour
+  /**
+   * Creates a definition section in the SVG and adds the markers that will
+   * be used for polylines arrows.
+   *
+   * TODO: It is broken currently because the markers will show all in black,
+   * instead of the color of the line
+   */
+  private addDefinitions(svg: Svg) {
+    const defs = new Defs().addChild(
+      new Marker({
+        id: 'uss-arrowStart',
+        refX: 0,
+        refY: 0,
+        markerWidth: 20,
+        markerHeight: 20,
+        orient: 'auto',
+        style: 'overflow: visible; fill: currentColor; stroke: none',
+      }).addChild(new Path({
+        d: 'M0,-15 l-20,0 l0,15',
+        transform: 'scale(0.2, 0.2) translate(20, 0)',
+        'fill-rule': 'evenodd',
+        'fill-opacity': '1.0',
+      })),
+      new Marker({
+        id: 'uss-arrowEnd',
+        refX: 0,
+        refY: 0,
+        markerWidth: 20,
+        markerHeight: 20,
+        orient: 'auto',
+        style: 'overflow: visible; fill: currentColor; stroke: none',
+      }).addChild(new Path({
+        d: 'M0,-15 l-20,0 l0,15',
+        transform: 'scale(0.2, 0.2) rotate(180) translate(20, 0)',
+        'fill-rule': 'evenodd',
+        'fill-opacity': '1.0',
+      })),
+      new Pattern({
+        id: 'uss-grid',
+        patternUnits: 'userSpaceOnUse',
+        width: 10,
+        height: 10,
+      }).addChild(
+        new Rect({ x: 0, y: 0, width: 1, height: 1, fill: 'white' })
+      )
+    );
+
+    svg.addChild(defs);
+  }
+
+  drawElements(parent: Tag, elementNodes: Node[]) {
     for (let i = 0; i < elementNodes.length; i++) {
-      const e = elementNodes[i];
-      if (e.hasAttribute('reference')) {
-        elementNodes[i] = utils.getReferencedElement(e);
+      const node = elementNodes[i];
+      if (node.attributes.getNamedItem('reference')) {
+        elementNodes[i] = utils.getReferencedElement(node);
+        console.log('resolved a reference ', elementNodes[i]);
       }
     }
-    elementNodes.sort((a, b) => {
-      const da = utils.parseIntChild(a, 'Depth');
-      const db = utils.parseIntChild(b, 'Depth');
-      return da - db;
-    });
+
+    const widgets = [];
     for (const node of elementNodes) {
-      this.drawWidget(svg, parent, node);
+      const widget = this.parseAndDrawWidget(node);
+      if (widget) {
+        widgets.push(widget);
+      }
+    }
+
+    // Widgets are added by depth first, and by definition order second.
+    widgets.sort((a, b) => {
+      const cmp = a.depth - b.depth;
+      return cmp || (a.sequenceNumber - b.sequenceNumber);
+    });
+
+    for (const widget of widgets) {
+      this.addWidget(widget, parent);
     }
   }
 
-  drawWidget(svg: any, parent: any, e: Node) {
-    const opts = this.parseStandardOptions(e);
+  parseAndDrawWidget(node: Node) {
+    return this.parseAndDrawWidgetByName(node, node.nodeName);
+  }
 
-    if (e.nodeName === 'Compound') {
-      // this corresponds to the group feature of USS. We make a SVG group.
-      const g = svg.group(parent, opts.id);
-      const elementsNode = utils.findChild(e, 'Elements');
-      const elementNodes = utils.findChildren(elementsNode);
-      this.drawElements(svg, g, elementNodes);
-    } else {
-      let w: AbstractWidget;
-      switch (e.nodeName) {
-        case 'ExternalImage':
-          w = new ExternalImage();
-          break;
-        case 'Field':
-          w = new Field();
-          break;
-        case 'Label':
-          w = new Label();
-          break;
-        case 'LinearTickMeter':
-          w = new LinearTickMeter();
-          break;
-        case 'LineGraph':
-          w = new LineGraph();
-          break;
-        case 'NavigationButton':
-          w = new NavigationButton();
-          break;
-        case 'Polyline':
-          w = new Polyline();
-          break;
-        case 'Rectangle':
-          w = new Rectangle();
-          break;
-        case 'Symbol':
-          w = new Symbol();
-          break;
-        default:
-          console.warn('Unsupported widget type: ' + e.nodeName);
-          return;
-      }
+  private parseAndDrawWidgetByName(node: Node, widgetName: string): AbstractWidget | undefined {
+    widgetSequence += 1;
+    switch (widgetName) {
+      case 'Compound':
+        return new Compound(widgetSequence, node, this);
+      case 'ExternalImage':
+        return new ExternalImage(widgetSequence, node, this);
+      case 'Field':
+        return new Field(widgetSequence, node, this);
+      case 'Label':
+        return new Label(widgetSequence, node, this);
+      case 'LinearTickMeter':
+        return new LinearTickMeter(widgetSequence, node, this);
+      /// case 'LineGraph':
+      /// TODO return new LineGraph(widgetSequence, node, this);
+      case 'NavigationButton':
+        return new NavigationButton(widgetSequence, node, this);
+      case 'Polyline':
+        return new Polyline(widgetSequence, node, this);
+      case 'Rectangle':
+        return new Rectangle(widgetSequence, node, this);
+      /// case 'Symbol':
+      /// TODO return new Symbol(widgetSequence, node, this);
+      case 'LabelFor':
+        const widgetClass = utils.parseStringAttribute(node, 'class');
+        return this.parseAndDrawWidgetByName(node, widgetClass);
+      default:
+        console.warn(`Unsupported widget type: ${widgetName}`);
+        return;
+    }
+  }
 
-      // make the standard properties part of the object
-      w.id = 'w' + widgetSequence;
-      widgetSequence += 1;
-      w.x = opts.x;
-      w.y = opts.y;
-      w.width = opts.width;
-      w.height = opts.height;
-      w.dataBindings = opts.dataBindings;
-      w.svg = svg;
+  addWidget(widget: AbstractWidget, parent: Tag) {
+    parent.addChild(widget.tag);
+    this.widgets[widget.id] = widget;
+    this.registerDataBindings(widget);
+  }
 
-      w.parseAndDraw(svg, parent, e);
-      const len = opts.dataBindings.length;
-      if (len > 0) {
-        this.widgets[w.id] = w; // only remember widgets with dynamic properties
-        for (const dataBinding of opts.dataBindings) {
-          let para = this.parameters[dataBinding.parameterName];
-          if (!para) {
-            para = new Parameter();
-            para.namespace = dataBinding.parameterNamespace;
-            para.name = dataBinding.parameterName;
-            para.type = dataBinding.type;
+  private registerDataBindings(w: AbstractWidget) {
+    if (w.dataBindings.length > 0) {
+      for (const dataBinding of w.dataBindings) {
+        let para = this.parameters[dataBinding.opsname];
+        if (!para) {
+          para = new Parameter();
+          para.name = dataBinding.opsname;
+          para.type = dataBinding.type;
 
-            if (para.type === 'Computation') {
-              para.expression = dataBinding.expression;
-              para.args = dataBinding.args;
-            }
-            this.parameters[dataBinding.parameterName] = para;
+          if (para.type === 'Computation') {
+            para.expression = dataBinding.expression;
+            para.args = dataBinding.args;
           }
-          const binding = {
-            dynamicProperty: dataBinding.dynamicProperty,
-            widget: w,
-            updateWidget: function(para: Parameter) {
-              switch (this.dynamicProperty) {
-                case 'VALUE':
-                  if (this.widget.updateValue === undefined) {
-                    return;
-                  }
-                  this.widget.updateValue(para, this.usingRaw);
-                  break;
-                case 'X':
-                  this.widget.updatePosition(para, 'x', this.usingRaw);
-                  break;
-                case 'Y':
-                  this.widget.updatePosition(para, 'y', this.usingRaw);
-                  break;
-                case 'FILL_COLOR':
-                  this.widget.updateFillColor(para, this.usingRaw);
-                  break;
-                default:
-                  console.warn('Unsupported dynamic property: ' + this.dynamicProperty);
-              }
-            }
-          };
-
-          if (dataBinding.usingRaw !== undefined) {
-            binding.usingRaw = dataBinding.usingRaw;
-          }
-
-          para.bindings.push(binding);
+          this.parameters[dataBinding.opsname] = para;
         }
+
+        const dynamicProperty = dataBinding.dynamicProperty;
+        const usingRaw = dataBinding.usingRaw || false;
+        para.bindings.push(new ParameterBinding(w, dynamicProperty, usingRaw));
       }
     }
-  }
-
-  private parseStandardOptions(node: Node) {
-    const x = utils.parseIntChild(node, 'X');
-    const y = utils.parseIntChild(node, 'Y');
-    const width = utils.parseIntChild(node, 'Width');
-    const height = utils.parseIntChild(node, 'Height');
-    const id = utils.parseStringChild(node, 'Name');
-
-    const dataBindings = [];
-    const dataBindingsNode = utils.findChild(node, 'DataBindings');
-    for (const childNode of utils.findChildren(dataBindingsNode, 'DataBinding')) {
-      const dataBinding = utils.parseDataBinding(childNode);
-      if (dataBinding) {
-        dataBindings.push(dataBinding);
-      }
-    }
-
-    return { x, y, width, height, id, dataBindings };
   }
 
   getParameters() {
-    const paraList = [];
-    for (const paraname of this.parameters) {
-      const p = this.parameters[paraname];
-      if (p.type === 'ExternalDataSource') {
-        paraList.push({name: p.name, namespace: p.namespace});
+    const result = [];
+    for (const paraname of Object.keys(this.parameters)) {
+      const parameter = this.parameters[paraname];
+      if (parameter.type === 'ExternalDataSource') {
+        result.push(parameter);
       }
     }
-    return paraList;
+    return result;
   }
 
   updateBindings(pvals: any) {
@@ -221,25 +245,13 @@ export class Display {
   }
 
   getComputations() {
-    const compDefList = [];
-    for (const paraname of this.parameters) {
-      const p = this.parameters[paraname];
-      if (p.type === 'Computation') {
-        const cdef = {
-          name: paraname,
-          expression: p.expression,
-          argument: [],
-          language: 'jformula'
-        };
-        for (const arg of p.args) {
-          cdef.argument.push({
-            name: arg.Opsname,
-            namespace: 'MDB:OPS Name'
-          });
-        }
-        compDefList.push(cdef);
+    const result = [];
+    for (const paraname of Object.keys(this.parameters)) {
+      const parameter = this.parameters[paraname];
+      if (parameter.type === 'Computation') {
+        result.push(parameter);
       }
     }
-    return compDefList;
+    return result;
   }
 }

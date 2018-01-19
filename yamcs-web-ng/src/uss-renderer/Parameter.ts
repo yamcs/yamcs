@@ -1,13 +1,21 @@
-import { DataBinding } from './DataBinding';
+import { ParameterBinding } from './ParameterBinding';
 
 export class Parameter {
 
-  namespace: string;
+  type: string; // 'ExternalDataSource' | 'Computation';
+
   name: string;
-  type: string;
-  bindings: DataBinding[] = [];
+
+  bindings: ParameterBinding[] = [];
+
+  // TODO Should these not be in another (value) object?
+  generationTime: any;
+  acquisitionStatus: any;
+  monitoringResult: any;
+  rawValue: any;
+  engValue: any;
 
   // Computation
-  expression: any;
-  args: any;
+  expression: string;
+  args: { [key: string]: string } = {};
 }

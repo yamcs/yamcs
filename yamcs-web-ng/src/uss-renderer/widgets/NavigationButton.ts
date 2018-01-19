@@ -1,11 +1,12 @@
 import * as utils from '../utils';
 
 import { AbstractWidget } from './AbstractWidget';
+import { G, Rect } from '../tags';
 
 export class NavigationButton extends AbstractWidget {
 
-  parseAndDraw(svg: any, parent: any, e: Node) {
-    const pressCmd = utils.findChild(e, 'PressCommand');
+  parseAndDraw() {
+    const pressCmd = utils.findChild(this.node, 'PressCommand');
     const cmdClass = utils.parseStringAttribute(pressCmd, 'class');
     let cmd;
     if (cmdClass === 'OpenDisplayCommand') {
@@ -14,31 +15,69 @@ export class NavigationButton extends AbstractWidget {
     } else if (cmdClass === 'CloseDisplayCommand') {
       cmd = 'USS.closeDisplay()';
     } else {
-      console.warn('Unsupported command class ' + cmdClass);
-      return;
+      throw new Error(`Unsupported command class ${cmdClass}`);
     }
 
+    const fillStyleNode = utils.findChild(this.node, 'FillStyle');
+    const fillColor = utils.parseColorChild(fillStyleNode, 'Color');
+
+    const strokeWidth = 3;
+
+    // In SVG, Strokes are positioned on the center of the boundary
+    const strokeOffset = strokeWidth / 2.0;
 
     const settings = {
-      ...utils.parseFillStyle(e),
-      strokeOpacity: 1,
-      stroke: 'rgba(0,0,0,255)',
-      strokeWidth: '1.0',
+      ...utils.parseFillStyle(this.node),
+      stroke: fillColor.brighter().brighter(),
+      'stroke-opacity': 1,
+      'stroke-width': strokeWidth,
     };
 
-    if ('strokeWidth' in settings) {
+    /*if ('stroke-width' in settings) { // TODO always true??
         this.x += 0.5;
         this.y += 0.5;
-    }
-    parent = svg.group(parent, this.id + '-group', {cursor: 'pointer', onmouseup: cmd});
-    svg.rect(parent, this.x, this.y, this.width, this.height, settings);
+    }*/
 
-    const releasedCompoundNode = utils.findChild(e, 'ReleasedCompound');
+    const boxWidth = this.width - (2 * strokeOffset);
+    const boxHeight = this.height - (2 * strokeOffset);
+
+    const g = new G({
+      id: `${this.id}-group`,
+      cursor: 'pointer',
+      /// onmouseup: cmd,
+      class: 'navigation-button',
+      'data-name': this.name,
+    }).addChild(
+      new Rect({
+        x: this.x + strokeOffset,
+        y: this.y + strokeOffset,
+        width: boxWidth,
+        height: boxHeight,
+        ...settings,
+      }),
+      // Cheap shade effect
+      new Rect({
+        x: this.x + strokeOffset,
+        y: this.y + strokeOffset,
+        width: boxWidth,
+        height: boxHeight,
+        fill: 'transparent',
+        stroke: fillColor.darker(),
+        'stroke-opacity': 1,
+        'stroke-width': strokeWidth,
+        'stroke-dasharray': `0,${boxWidth},${boxWidth + boxHeight},${boxHeight}`,
+      }),
+    );
+
+    const releasedCompoundNode = utils.findChild(this.node, 'ReleasedCompound');
     const elementsNode = utils.findChild(releasedCompoundNode, 'Elements');
     const labelNode = utils.findChild(elementsNode, 'Label');
 
-    const textStyle = utils.findChild(labelNode, 'TextStyle');
-    const text = utils.parseStringChild(labelNode, 'Text');
-    utils.writeText(svg, parent, this, textStyle, text);
+    const labelWidget = this.display.parseAndDrawWidget(labelNode);
+    if (labelWidget) {
+      this.display.addWidget(labelWidget, g);
+    }
+
+    return g;
   }
 }

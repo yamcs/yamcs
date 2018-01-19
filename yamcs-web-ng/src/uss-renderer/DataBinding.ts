@@ -1,14 +1,20 @@
+export const ARG_OPSNAME = 'Opsname';
+export const ARG_PATHNAME = 'Pathname';
+export const ARG_SID = 'SID';
+
 export class DataBinding {
 
-  dynamicProperty: 'X' | 'Y' | 'FILL_COLOR' | 'VALUE';
+  dynamicProperty: string;
   type: string;
 
-  parameterName: string;
-  parameterNamespace: string;
+  opsname: string;
+  pathname: string;
+  sid: string;
 
   usingRaw: boolean;
 
   // For computations
   expression: string;
-  args: any[];
+  args: { [key: string]: string } = {};
+  DEFAULT: string;
 }

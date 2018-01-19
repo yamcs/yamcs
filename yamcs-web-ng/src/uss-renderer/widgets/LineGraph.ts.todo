@@ -10,7 +10,7 @@ export class LineGraph extends AbstractWidget {
   private xAutoRange: boolean;
   private xRange: number;
 
-  parseAndDraw(svg: any, parent: any, e: Node) {
+  parseAndDraw(svg: any, parent: any) {
     svg.group(parent, this.id, {transform: `translate(${this.x},${this.y})`});
     const type = utils.parseStringChild(e, 'Type');
     const title = utils.parseStringChild(e, 'Title');
@@ -47,17 +47,27 @@ export class LineGraph extends AbstractWidget {
     settings.yAxis = this.parseRangeAxis(utils.findChild(e, 'DefaultRangeAxis'));
     settings.series = [{
       id: 'series-1',
-      name: this.dataBindings[0].parameterName,
+      name: this.dataBindings[0].opsname,
       data: []
     }];
     this.chart = new Highcharts.Chart(settings);
   }
 
   parseRangeAxis(e: Node) {
-    const titleStyle = {fontFamily: 'sans-serif', fontSize: '12px', fontWeight: 'normal'};
-    const labelStyle = {fontFamily: 'sans-serif', fontSize: '10px', fontWeight: 'normal'};
+    const axisColor = utils.parseColorChild(e, 'AxisColor', 'black');
+    const titleStyle = {
+      fontFamily: 'sans-serif',
+      fontSize: '12px',
+      fontWeight: 'normal',
+      color: axisColor,
+    };
+    const labelStyle = {
+      fontFamily: 'sans-serif',
+      fontSize: '10px',
+      fontWeight: 'normal',
+      color: axisColor,
+    };
 
-    labelStyle.color = titleStyle.color = utils.parseColorChild(e, 'AxisColor', 'black');
     const yaxis: any = {
       lineWidth: 1,
       lineColor: labelStyle.color,
@@ -84,16 +94,28 @@ export class LineGraph extends AbstractWidget {
   }
 
   parseDomainAxis(e: Node) {
-    const titleStyle = {fontFamily: 'sans-serif', fontSize: '12px', fontWeight: 'normal'};
-    const labelStyle = {fontFamily: 'sans-serif', fontSize: '12px', fontWeight: 'normal'};
+    const axisColor = utils.parseColorChild(e, 'AxisColor', 'black');
+
+    const titleStyle: { [key: string]: string } = {
+      fontFamily: 'sans-serif',
+      fontSize: '12px',
+      fontWeight: 'normal',
+      color: axisColor,
+    };
+    const labelStyle: { [key: string]: string } = {
+      fontFamily: 'sans-serif',
+      fontSize: '12px',
+      fontWeight: 'normal',
+      color: axisColor,
+    };
 
     const type = utils.parseStringChild(e, 'AxisMode').toLowerCase();
     if (type !== 'time_based_absolute') {
-        console.log('TODO xaxis of type', type);
+        console.warn('TODO xaxis of type', type);
         return null;
     }
-    labelStyle.color = titleStyle.color = utils.parseColorChild(e, 'AxisColor', 'black');
-    const xaxis: any = {
+
+    const xaxis: {[key: string]: any} = {
       type: 'datetime',
       gridLineDashStyle: 'dash',
       labels: { style: labelStyle },

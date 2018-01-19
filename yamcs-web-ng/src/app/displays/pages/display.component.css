@@ -1,0 +1,18 @@
+/*
+ * DQI Colors match with defaults in mcs_dqistyle.xml
+ */
+/*/deep/ .uss-grid { display: none; }*/
+/deep/ .dead-fg { fill: black; }
+/deep/ .dead-bg { fill: #912CEE; }
+/deep/ .disabled-fg { fill: white; }
+/deep/ .disabled-bg { fill: black; }
+/deep/ .undefined-fg { fill: white; }
+/deep/ .undefined-bg { fill: black; }
+/deep/ .in_limits-fg { fill: black; }
+/deep/ .in_limits-bg { fill: #00FF00; }
+/deep/ .nominal_limit_violation-fg { fill: black; }
+/deep/ .nominal_limit_violation-bg { fill: yellow; }
+/deep/ .danger_limit_violation-fg { fill: black; }
+/deep/ .danger_limit_violation-bg { fill: red; }
+/deep/ .expired-fg { fill: black; }
+/deep/ .expired-bg { fill: cyan; }

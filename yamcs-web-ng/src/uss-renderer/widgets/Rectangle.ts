@@ -1,18 +1,28 @@
 import * as utils from '../utils';
 
 import { AbstractWidget } from './AbstractWidget';
+import { Rect } from '../tags';
 
 export class Rectangle extends AbstractWidget {
 
-  parseAndDraw(svg: any, parent: any, node: Node) {
+  parseAndDraw() {
     const settings = {
-      ...utils.parseFillStyle(node),
-      ...utils.parseDrawStyle(node)
+      ...utils.parseFillStyle(this.node),
+      ...utils.parseDrawStyle(this.node),
     };
-    if ('strokeWidth' in settings) {
+
+    if ('stroke-width' in settings) {
       this.x += 0.5;
       this.y += 0.5;
     }
-    svg.rect(parent, this.x, this.y, this.width, this.height, settings);
+    return new Rect({
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height,
+      ...settings,
+      class: 'rectangle',
+      'data-name': this.name,
+    });
   }
 }

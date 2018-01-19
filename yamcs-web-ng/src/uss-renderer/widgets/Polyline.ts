@@ -1,30 +1,34 @@
 import * as utils from '../utils';
 
 import { AbstractWidget } from './AbstractWidget';
+import { Tag } from '../tags';
 
 export class Polyline extends AbstractWidget {
 
-  parseAndDraw(svg: any, parent: any, e: Node) {
-    const points: any[] = [];
-    for (const child of utils.findChildren(e, 'Point')) {
-      points.push([
-        utils.parseStringChild(child, 'x'),
-        utils.parseStringChild(child, 'y'),
-      ]);
+  parseAndDraw() {
+    const points: string[] = [];
+    const pointsEl = utils.findChild(this.node, 'Points');
+    for (const child of utils.findChildren(pointsEl)) {
+      const x = utils.parseFloatChild(child, 'x');
+      const y = utils.parseFloatChild(child, 'y');
+      points.push(`${x - 0.5},${y + 0.5}`);
     }
 
-    const settings: {[key: string]: any} = {
+    const line = new Tag('polyline', {
       fill: 'none',
-      ...utils.parseDrawStyle(e),
-    };
+      points: points.join(' '),
+      ...utils.parseDrawStyle(this.node),
+      class: 'polyline',
+      'data-name': this.name,
+    });
 
-    if (utils.parseBooleanChild(e, 'ArrowStart')) {
-      settings.markerStart = 'url(#uss-arrowStart)';
+    if (utils.parseBooleanChild(this.node, 'ArrowStart')) {
+      line.setAttribute('marker-start', 'url(#uss-arrowStart)');
     }
-    if (utils.parseBooleanChild(e, 'ArrowEnd')) {
-      settings.markerEnd = 'url(#uss-arrowEnd)';
+    if (utils.parseBooleanChild(this.node, 'ArrowEnd')) {
+      line.setAttribute('marker-end', 'url(#uss-arrowEnd)');
     }
 
-    svg.polyline(parent, points, settings);
+    return line;
   }
 }

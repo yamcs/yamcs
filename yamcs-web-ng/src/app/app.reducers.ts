@@ -39,7 +39,7 @@ export const reducers: ActionReducerMap<State> = {
 export function logger(reducer: ActionReducer<State>): ActionReducer<State> {
   return function (state: State, action: any): State {
     const newState = reducer(state, action);
-    console.log('Action ⇒ State', action, newState);
+    // console.log('Action ⇒ State', action, newState);
     return newState;
   };
 }

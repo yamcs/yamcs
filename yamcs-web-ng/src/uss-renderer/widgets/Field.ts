@@ -5,80 +5,141 @@ const sprintf = require('sprintf-js').sprintf;
 
 import { AbstractWidget } from './AbstractWidget';
 import { Parameter } from '../Parameter';
+import { G, Rect, Text, ClipPath } from '../tags';
 
 export class Field extends AbstractWidget {
 
   decimals: number;
-  format: string;
-
-  // the values are CSS classes defined in uss.dqi.css
-  alldqi: [
-    'dead',
-    'disabled',
-    'in_limits',
-    'nominal_limit_violation',
-    'danger_limit_violation',
-    'static',
-    'undefined'
-  ];
+  format: string | null;
 
   overrideDqi: boolean;
 
-  parseAndDraw(svg: any, parent: any, e: Node) {
+  parseAndDraw() {
     // make a group to put the text and the bounding box together
-    let settings: {[key: string]: any} = {
+    const g = new G({
+      id: `${this.id}-group`,
       transform: `translate(${this.x},${this.y})`,
-      class: 'context-menu-field'
-    };
+      class: 'field',
+      'data-name': this.name,
+    });
 
-    parent = svg.group(parent, this.id + '-group', settings);
-    parent.ussWidget = this;
+    this.decimals = utils.parseIntChild(this.node, 'Decimals', 0);
+    if (utils.hasChild(this.node, 'Format')) {
+      this.format = utils.parseStringChild(this.node, 'Format');
+    }
+    this.overrideDqi = utils.parseBooleanChild(this.node, 'OverrideDQI', false);
 
-    this.decimals = utils.parseIntChild(e, 'Decimals', 0);
-    this.format = utils.parseStringChild(e, 'Format');
-    this.overrideDqi = utils.parseBooleanChild(e, 'OverrideDQI', false);
-
-    let unitWidth = 0;
-    const unit = utils.parseStringChild(e, 'Unit');
-    if (unit && utils.parseBooleanChild(e, 'ShowUnit')) {
-      const unitTextStyleNode = utils.findChild(e, 'UnitTextStyle');
+    if (utils.hasChild(this.node, 'Unit') && utils.parseBooleanChild(this.node, 'ShowUnit')) {
+      const unitWidth = 0;
+      const unit = utils.parseStringChild(this.node, 'Unit');
+      const unitTextStyleNode = utils.findChild(this.node, 'UnitTextStyle');
       const unitTextStyle = utils.parseTextStyle(unitTextStyleNode);
-      const ut = svg.text(parent, 0, 0, unit, unitTextStyle);
+      const ut = new Text({
+        x: 0,
+        y: 0,
+        value: unit,
+        ...unitTextStyle,
+      });
+      g.addChild(ut);
 
+      /* TODO
       const bbox = ut.getBBox();
       ut.setAttribute('dx', this.width - bbox.width);
 
-
       const unitVertAlignment = utils.parseStringChild(unitTextStyleNode, 'VerticalAlignment').toLowerCase();
       if (unitVertAlignment === 'center') {
-        ut.setAttribute('dy',  -bbox.y + (this.height - bbox.height) / 2);
+        ut.setAttribute('dy', -bbox.y + (this.height - bbox.height) / 2);
       } else if (unitVertAlignment === 'top') {
-        ut.setAttribute('dy',  -bbox.y);
+        ut.setAttribute('dy', -bbox.y);
       } else if (unitVertAlignment === 'bottom') {
         ut.setAttribute('dy', -bbox.y + (this.height - bbox.height));
       }
       unitWidth = bbox.width + 2;
+      */
+      this.width -= unitWidth;
     }
-    this.width -= unitWidth;
-    settings = { id: this.id + '-background' };
+
+    // Don't know why, but box widths in USS appear to grow per 6 pixels only
+    const boxWidth = this.width - (this.width % 6);
+
+    const rect = new Rect({
+      id: `${this.id}-bg`,
+      x: 0,
+      y: 0,
+      width: boxWidth,
+      height: this.height,
+      ...utils.parseFillStyle(this.node),
+    });
+
+    const opsname = this.getWidgetParameter();
+    if (opsname) {
+      const yamcsInstance = 'dev'; // TODO window.location.pathname.match(/\/([^\/]*)\/?/)[1];
+      rect.setAttribute('xlink:href', `/${yamcsInstance}/mdb/MDB:OPS Name/${opsname}`);
+    }
     if (!this.overrideDqi) {
-      settings.class = 'dead-background';
+      rect.setAttribute('class', 'dead-bg');
+    }
+    g.addChild(rect);
+
+    const textStyleNode = utils.findChild(this.node, 'TextStyle');
+
+    // Clip text within the defined boundary.
+    // TODO clip-path (nor -webkit-clip-path) does not work on Safari
+    const clipId = this.generateChildId();
+    g.addChild(new ClipPath({ id: clipId }).addChild(
+      new Rect({
+        x: 0,
+        y: 0,
+        width: boxWidth,
+        height: this.height,
+      })
+    ));
+
+    const text = new Text({
+      id: this.id,
+      y: 0,
+      ...utils.parseTextStyle(textStyleNode),
+      'clip-path': `url(#${clipId})`,
+    });
+    g.addChild(text);
+
+    let x;
+    const horizAlignment = utils.parseStringChild(textStyleNode, 'HorizontalAlignment');
+    if (horizAlignment === 'CENTER') {
+      x = 0 + boxWidth / 2;
+      text.setAttribute('text-anchor', 'middle');
+    } else if (horizAlignment === 'LEFT') {
+      x = 0;
+      text.setAttribute('text-anchor', 'start');
+    } else if (horizAlignment === 'RIGHT') {
+      x = 0 + boxWidth;
+      text.setAttribute('text-anchor', 'end');
+    }
+    text.setAttribute('x', String(x));
+
+    // TODO move to update
+    // Prefer FontMetrics over baseline tricks to account for
+    // ascends and descends.
+    const fontSize = Number(text.attributes['font-size']);
+    const fm = this.getFontMetrics(/*innerText*/ '', fontSize);
+
+    const vertAlignment = utils.parseStringChild(textStyleNode, 'VerticalAlignment');
+    if (vertAlignment === 'CENTER') {
+      text.setAttribute('dominant-baseline', 'middle');
+      text.setAttribute('y', String(0 + (this.height / 2)));
+    } else if (vertAlignment === 'TOP') {
+      text.setAttribute('dominant-baseline', 'middle');
+      text.setAttribute('y', String(0 + (fm.height / 2)));
+    } else if (vertAlignment === 'BOTTOM') {
+      text.setAttribute('dominant-baseline', 'middle');
+      text.setAttribute('y', String(0 + + this.height - (fm.height / 2)));
     }
 
-    const id = this.getWidgetParameter();
-    if (id) {
-      const yamcsInstance = location.pathname.match(/\/([^\/]*)\/?/)[1];
-      const rectLink = svg.link(parent, '/' + yamcsInstance + '/mdb/' + id.namespace + '/' + id.name, {});
-      svg.rect(rectLink, 0, 0, this.width, this.height, settings);
-    } else {
-      svg.rect(parent, 0, 0, this.width, this.height, settings);
-    }
-
-    utils.writeText(svg, parent, {id: this.id, x: 0, y: 0, width: this.width, height: this.height}, utils.findChild(e, 'TextStyle'), ' ');
+    return g;
   }
 
-  updateValue(para: Parameter) {
-    let v = this.getParameterValue(para, this.usingRaw);
+  updateValue(para: Parameter, usingRaw: boolean) {
+    let v = this.getParameterValue(para, usingRaw);
     if (typeof v === 'number') {
       if (this.format) {
         v = sprintf(this.format, v);
@@ -93,15 +154,60 @@ export class Field extends AbstractWidget {
     }
     ftxt.textContent = v;
     if (!this.overrideDqi) {
-      const dqi = this.getDqi(para);
-      svg.configure(ftxt, {class: dqi + '-foreground'});
-      const fbg = svg.getElementById(this.id + '-background');
-      svg.configure(fbg, {class: dqi + '-background'});
+      const fbg = svg.getElementById(`${this.id}-bg`);
+      switch (para.acquisitionStatus) {
+        case 'ACQUIRED':
+          switch (para.monitoringResult) {
+            case 'DISABLED':
+              fbg.setAttribute('class', 'disabled-bg');
+              ftxt.setAttribute('class', 'disabled-fg');
+              break;
+
+            case 'IN_LIMITS':
+              fbg.setAttribute('class', 'in_limits-bg');
+              ftxt.setAttribute('class', 'in_limits-fg');
+              break;
+
+            case 'WATCH':
+            case 'WARNING':
+            case 'DISTRESS':
+              fbg.setAttribute('class', 'nominal_limit_violation-bg');
+              ftxt.setAttribute('class', 'nominal_limit_violation-fg');
+              break;
+
+            case 'CRITICAL':
+            case 'SEVERE':
+              fbg.setAttribute('class', 'danger_limit_violation-bg');
+              ftxt.setAttribute('class', 'danger_limit_violation-fg');
+              break;
+
+            default:
+              fbg.setAttribute('class', 'undefined-bg');
+              ftxt.setAttribute('class', 'undefined-fg');
+              break;
+          }
+          break;
+
+        case 'NOT_RECEIVED':
+          fbg.setAttribute('class', 'dead-bg');
+          ftxt.setAttribute('class', 'dead-fg');
+          break;
+
+        case 'INVALID':
+          fbg.setAttribute('class', 'dead-bg');
+          ftxt.setAttribute('class', 'dead-fg');
+          break;
+
+        case 'EXPIRED':
+          fbg.setAttribute('class', 'expired-bg');
+          ftxt.setAttribute('class', 'expired-fg');
+          break;
+      }
     }
   }
 
   updatePosition(para: Parameter, attribute: 'x' | 'y', usingRaw: boolean) {
-    this.updatePositionByTranslation(this.id + '-group', para, attribute, usingRaw);
+    this.updatePositionByTranslation(`${this.id}-group`, para, attribute, usingRaw);
   }
 
   updateFillColor(para: Parameter, usingRaw: boolean) {
@@ -109,37 +215,7 @@ export class Field extends AbstractWidget {
       return;
     }
     const newcolor = this.getParameterValue(para, usingRaw);
-    const svg = this.svg;
-    const fbg = svg.getElementById(this.id + '-background');
-    svg.configure(fbg, {fill: newcolor});
-  }
-
-  // implements based on the mcs_dqistyle.xml
-  getDqi(para: any) {
-    switch (para.acquisitionStatus) {
-      case 'ACQUIRED':
-        switch (para.monitoringResult) {
-          case 'DISABLED':
-            return 'disabled';
-          case 'IN_LIMITS':
-            return 'in_limits';
-          case 'WATCH':
-          case 'WARNING':
-          case 'DISTRESS':
-            return 'nominal_limit_violation';
-          case 'CRITICAL':
-          case 'SEVERE':
-            return 'danger_limit_violation';
-          case undefined:
-            return 'undefined';
-        }
-        break;
-      case 'NOT_RECEIVED':
-        return 'dead';
-      case 'INVALID':
-        return 'dead';
-      case 'EXPIRED':
-        return 'expired';
-    }
+    const fbg = this.svg.getElementById(`${this.id}-bg`);
+    fbg.setAttribute('fill', newcolor);
   }
 }
