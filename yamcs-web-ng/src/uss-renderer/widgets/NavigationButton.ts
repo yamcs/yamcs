@@ -22,24 +22,8 @@ export class NavigationButton extends AbstractWidget {
     const fillColor = utils.parseColorChild(fillStyleNode, 'Color');
 
     const strokeWidth = 3;
-
-    // In SVG, Strokes are positioned on the center of the boundary
-    const strokeOffset = strokeWidth / 2.0;
-
-    const settings = {
-      ...utils.parseFillStyle(this.node),
-      stroke: fillColor.brighter().brighter(),
-      'stroke-opacity': 1,
-      'stroke-width': strokeWidth,
-    };
-
-    /*if ('stroke-width' in settings) { // TODO always true??
-        this.x += 0.5;
-        this.y += 0.5;
-    }*/
-
-    const boxWidth = this.width - (2 * strokeOffset);
-    const boxHeight = this.height - (2 * strokeOffset);
+    const boxWidth = this.width - strokeWidth;
+    const boxHeight = this.height - strokeWidth;
 
     const g = new G({
       id: `${this.id}-group`,
@@ -49,24 +33,21 @@ export class NavigationButton extends AbstractWidget {
       'data-name': this.name,
     }).addChild(
       new Rect({
-        x: this.x + strokeOffset,
-        y: this.y + strokeOffset,
-        width: boxWidth,
-        height: boxHeight,
-        ...settings,
-      }),
+        ...utils.parseFillStyle(this.node),
+        stroke: fillColor.brighter().brighter(),
+        'stroke-width': strokeWidth,
+        'stroke-opacity': 1,
+        'shape-rendering': 'crispEdges',
+      }).withBorderBox(this.x, this.y, this.width, this.height),
       // Cheap shade effect
       new Rect({
-        x: this.x + strokeOffset,
-        y: this.y + strokeOffset,
-        width: boxWidth,
-        height: boxHeight,
         fill: 'transparent',
+        'shape-rendering': 'crispEdges',
         stroke: fillColor.darker(),
-        'stroke-opacity': 1,
         'stroke-width': strokeWidth,
+        'stroke-opacity': 1,
         'stroke-dasharray': `0,${boxWidth},${boxWidth + boxHeight},${boxHeight}`,
-      }),
+      }).withBorderBox(this.x, this.y, this.width, this.height),
     );
 
     const releasedCompoundNode = utils.findChild(this.node, 'ReleasedCompound');

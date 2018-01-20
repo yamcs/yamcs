@@ -6,20 +6,24 @@ import { Tag } from '../tags';
 export class Polyline extends AbstractWidget {
 
   parseAndDraw() {
+    const drawStyle = utils.parseDrawStyle(this.node);
+    const strokeWidth = drawStyle['stroke-width'];
+
     const points: string[] = [];
     const pointsEl = utils.findChild(this.node, 'Points');
     for (const child of utils.findChildren(pointsEl)) {
       const x = utils.parseFloatChild(child, 'x');
       const y = utils.parseFloatChild(child, 'y');
-      points.push(`${x - 0.5},${y + 0.5}`);
+      points.push(`${x + (strokeWidth / 2.0)},${y + (strokeWidth / 2.0)}`);
     }
 
     const line = new Tag('polyline', {
       fill: 'none',
       points: points.join(' '),
-      ...utils.parseDrawStyle(this.node),
+      ...drawStyle,
       class: 'polyline',
       'data-name': this.name,
+      'shape-rendering': 'crispEdges',
     });
 
     if (utils.parseBooleanChild(this.node, 'ArrowStart')) {

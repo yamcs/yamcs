@@ -11,18 +11,11 @@ export class Rectangle extends AbstractWidget {
       ...utils.parseDrawStyle(this.node),
     };
 
-    if ('stroke-width' in settings) {
-      this.x += 0.5;
-      this.y += 0.5;
-    }
     return new Rect({
-      x: this.x,
-      y: this.y,
-      width: this.width,
-      height: this.height,
       ...settings,
       class: 'rectangle',
       'data-name': this.name,
-    });
+      'shape-rendering': 'crispEdges',
+    }).withBorderBox(this.x, this.y, this.width, this.height);
   }
 }

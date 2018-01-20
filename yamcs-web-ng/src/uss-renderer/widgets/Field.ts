@@ -69,6 +69,7 @@ export class Field extends AbstractWidget {
       width: boxWidth,
       height: this.height,
       ...utils.parseFillStyle(this.node),
+      'shape-rendering': 'crispEdges',
     });
 
     const opsname = this.getWidgetParameter();

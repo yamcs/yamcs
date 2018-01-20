@@ -173,7 +173,7 @@ export function parseDrawStyle(node: Node) {
   return {
     stroke: parseColorChild(drawStyleNode, 'Color'),
     'stroke-opacity': (pattern.toLowerCase() === 'solid') ? 1 : 0,
-    'stroke-width': parseStringChild(drawStyleNode, 'Width'),
+    'stroke-width': parseFloatChild(drawStyleNode, 'Width'),
   };
 }
 

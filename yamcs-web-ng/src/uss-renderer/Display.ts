@@ -137,7 +137,7 @@ export class Display {
         width: 10,
         height: 10,
       }).addChild(
-        new Rect({ x: 0, y: 0, width: 1, height: 1, fill: 'white' })
+        new Rect({ x: 0, y: 0, width: 2, height: 1, fill: '#c0c0c0', 'shape-rendering': 'crispEdges' })
       )
     );
 

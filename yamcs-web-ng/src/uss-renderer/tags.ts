@@ -168,9 +168,47 @@ export class Polyline extends Tag {
   }
 }
 
+export interface RectBorderBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  'stroke-width': number;
+}
+
+/**
+ * A standard SVG Rect where strokes are rendered
+ * on the center of the boundary.
+ */
 export class Rect extends Tag {
   constructor(attributes?: {}, innerText?: string) {
     super('rect', attributes, innerText);
+  }
+
+  /**
+   * Sets the specified attributes assuming they use border-box
+   * coordinates. They will automatically be converted to content-box
+   * based on the border thickness.
+   *
+   * Attention: stroke-width must already be set, or this method will
+   * have no effect.
+   */
+  withBorderBox(x: number, y: number, width: number, height: number) {
+    if ('stroke-width' in this.attributes) {
+      const strokeWidth = Number(this.attributes['stroke-width']);
+      if (strokeWidth) {
+        x = x + (strokeWidth / 2.0);
+        y = y + (strokeWidth / 2.0);
+        width = width - strokeWidth;
+        height = height - strokeWidth;
+      }
+    }
+
+    this.attributes['x'] = String(x);
+    this.attributes['y'] = String(y);
+    this.attributes['width'] = String(width);
+    this.attributes['height'] = String(height);
+    return this;
   }
 }
 
