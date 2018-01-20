@@ -179,7 +179,7 @@ export function parseDrawStyle(node: Node) {
 
 export function parseTextStyle(e: Node) {
   const style: { [key: string]: any } = {
-    fill: parseColorChild(e, 'Color'),
+    fill: parseColorChild(e, 'Color').toString(),
     'font-size': parseStringChild(e, 'Fontsize'),
     'font-family': parseStringChild(e, 'Fontname'),
   };

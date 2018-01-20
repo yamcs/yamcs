@@ -4,7 +4,7 @@ import { ExternalImage } from './widgets/ExternalImage';
 import { Field } from './widgets/Field';
 import { Label } from './widgets/Label';
 import { LinearTickMeter } from './widgets/LinearTickMeter';
-// TODO import { LineGraph } from './widgets/LineGraph';
+import { LineGraph } from './widgets/LineGraph';
 import { NavigationButton } from './widgets/NavigationButton';
 import { Polyline } from './widgets/Polyline';
 import { Rectangle } from './widgets/Rectangle';
@@ -28,9 +28,14 @@ export class Display {
   width: number;
   height: number;
 
+  container: HTMLDivElement;
   measurerSvg: SVGSVGElement;
 
   constructor(private targetEl: HTMLDivElement, public resourceResolver: ResourceResolver) {
+    this.container = document.createElement('div');
+    this.container.setAttribute('style', 'position: relative');
+    this.targetEl.appendChild(this.container);
+
     // Invisible SVG used to measure font metrics before drawing
     this.measurerSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     this.measurerSvg.setAttribute('height', '0');
@@ -184,8 +189,8 @@ export class Display {
         return new Label(widgetSequence, node, this);
       case 'LinearTickMeter':
         return new LinearTickMeter(widgetSequence, node, this);
-      /// case 'LineGraph':
-      /// TODO return new LineGraph(widgetSequence, node, this);
+      case 'LineGraph':
+        return new LineGraph(widgetSequence, node, this);
       case 'NavigationButton':
         return new NavigationButton(widgetSequence, node, this);
       case 'Polyline':

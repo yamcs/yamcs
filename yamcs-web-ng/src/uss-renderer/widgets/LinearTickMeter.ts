@@ -17,6 +17,8 @@ export class LinearTickMeter extends AbstractWidget {
   tickMajorFreq: number;
   tickColor: Color;
 
+  orientation: string;
+
   parseAndDraw() {
     // const cx = this.width / 2;
     const cy = this.height / 2;
@@ -25,15 +27,15 @@ export class LinearTickMeter extends AbstractWidget {
     this.meterMax = utils.parseFloatChild(this.node, 'Maximum');
     this.meterRange = this.meterMax - this.meterMin;
 
-    const orientation = utils.parseStringChild(this.node, 'Orientation').toLowerCase();
+    this.orientation = utils.parseStringChild(this.node, 'Orientation').toLowerCase();
 
     let meterHeight;
     let transform;
-    if (orientation === 'vertical') {
+    if (this.orientation === 'vertical') {
       transform = `translate(${this.x + 15},${this.y + 10})`;
       meterHeight = this.height - 20;
     } else {
-      transform = `translate(${this.width - 10} ${cy}) rotate(90)`;
+      transform = `translate(${this.width - 10},${cy}) rotate(90)`;
       meterHeight = this.width - 20;
     }
     this.meterHeight = meterHeight;
@@ -150,7 +152,7 @@ export class LinearTickMeter extends AbstractWidget {
         }
 
         let posY;
-        if (orientation === 'horizontal') {
+        if (this.orientation === 'horizontal') {
           posX = -posX;
           if (posX === 14) {
             posX = posX + 5;
