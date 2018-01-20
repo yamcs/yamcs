@@ -154,8 +154,9 @@ export abstract class AbstractWidget {
     el.setAttribute('stroke', this.getParameterValue(para, usingRaw));
   }
 
-  protected getFontMetrics(textString: string, textSize: number) {
+  protected getFontMetrics(textString: string, fontFamily: string, textSize: number) {
     const el = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    el.setAttribute('font-family', fontFamily);
     el.setAttribute('font-size', String(textSize));
     el.appendChild(document.createTextNode(textString));
     this.display.measurerSvg.appendChild(el);

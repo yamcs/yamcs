@@ -121,8 +121,9 @@ export class Field extends AbstractWidget {
     // TODO move to update
     // Prefer FontMetrics over baseline tricks to account for
     // ascends and descends.
+    const fontFamily = text.attributes['font-family'];
     const fontSize = Number(text.attributes['font-size']);
-    const fm = this.getFontMetrics(/*innerText*/ '', fontSize);
+    const fm = this.getFontMetrics(/*innerText*/ '', fontFamily, fontSize);
 
     const vertAlignment = utils.parseStringChild(textStyleNode, 'VerticalAlignment');
     if (vertAlignment === 'CENTER') {

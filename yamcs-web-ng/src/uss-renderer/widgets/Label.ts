@@ -3,13 +3,6 @@ import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 import { Text, Rect, ClipPath, G } from '../tags';
 
-export class BoundingBox {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
 export class Label extends AbstractWidget {
 
   parseAndDraw() {
@@ -60,8 +53,14 @@ export class Label extends AbstractWidget {
 
     // Prefer FontMetrics over baseline tricks to account for
     // ascends and descends.
-    const fontSize = Number(text.attributes['font-size']);
-    const fm = this.getFontMetrics(innerText, fontSize);
+    let fontSize = Number(text.attributes['font-size']);
+    const fontFamily = text.attributes['font-family'];
+    if (utils.parseBooleanChild(this.node, 'AutoSize')) {
+      fontSize = this.autoscale(innerText, fontFamily, fontSize);
+      text.setAttribute('font-size', String(fontSize));
+    }
+
+    const fm = this.getFontMetrics(innerText, fontFamily, fontSize);
 
     const vertAlignment = utils.parseStringChild(textStyleNode, 'VerticalAlignment');
     if (vertAlignment === 'CENTER') {
@@ -76,5 +75,40 @@ export class Label extends AbstractWidget {
     }
 
     return g;
+  }
+
+  private autoscale(text: string, fontFamily: string, fontSizeStart: number) {
+    const fm = this.getFontMetrics(text, fontFamily, fontSizeStart);
+    if (fm.width > this.width || fm.height > this.height) {
+      return this.scaleDown(text, fontFamily, fontSizeStart - 1);
+    } else {
+      return this.scaleUp(text, fontFamily, fontSizeStart);
+    }
+  }
+
+  private scaleUp(text: string, fontFamily: string, fontSize: number) {
+    let fm;
+    let size = fontSize;
+    while (true) {
+      fm = this.getFontMetrics(text, fontFamily, size);
+      if (fm.width > this.width || fm.height > this.height) {
+        return size - 1;
+      } else {
+        size++;
+      }
+    }
+  }
+
+  private scaleDown(text: string, fontFamily: string, fontSize: number) {
+    let fm;
+    let size = fontSize;
+    while (true) {
+      fm = this.getFontMetrics(text, fontFamily, size);
+      if (fm.width <= this.width && fm.height <= this.height) {
+        return size;
+      } else {
+        size--;
+      }
+    }
   }
 }
