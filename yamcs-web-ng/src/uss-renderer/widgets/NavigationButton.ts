@@ -2,8 +2,13 @@ import * as utils from '../utils';
 
 import { AbstractWidget } from './AbstractWidget';
 import { G, Rect } from '../tags';
+import { Color } from '../Color';
+import { Label } from './Label';
 
 export class NavigationButton extends AbstractWidget {
+
+  brightStroke: Color;
+  darkStroke: Color;
 
   parseAndDraw() {
     const pressCmd = utils.findChild(this.node, 'PressCommand');
@@ -25,8 +30,11 @@ export class NavigationButton extends AbstractWidget {
     const boxWidth = this.width - strokeWidth;
     const boxHeight = this.height - strokeWidth;
 
+    this.brightStroke = fillColor.brighter().brighter();
+    this.darkStroke = fillColor.darker();
+
     const g = new G({
-      id: `${this.id}-group`,
+      id: this.id,
       cursor: 'pointer',
       /// onmouseup: cmd,
       class: 'navigation-button',
@@ -34,7 +42,7 @@ export class NavigationButton extends AbstractWidget {
     }).addChild(
       new Rect({
         ...utils.parseFillStyle(this.node),
-        stroke: fillColor.brighter().brighter(),
+        stroke: this.brightStroke,
         'stroke-width': strokeWidth,
         'stroke-opacity': 1,
         'shape-rendering': 'crispEdges',
@@ -43,7 +51,7 @@ export class NavigationButton extends AbstractWidget {
       new Rect({
         fill: 'transparent',
         'shape-rendering': 'crispEdges',
-        stroke: fillColor.darker(),
+        stroke: this.darkStroke,
         'stroke-width': strokeWidth,
         'stroke-opacity': 1,
         'stroke-dasharray': `0,${boxWidth},${boxWidth + boxHeight},${boxHeight}`,
@@ -54,11 +62,28 @@ export class NavigationButton extends AbstractWidget {
     const elementsNode = utils.findChild(releasedCompoundNode, 'Elements');
     const labelNode = utils.findChild(elementsNode, 'Label');
 
-    const labelWidget = this.display.parseAndDrawWidget(labelNode);
-    if (labelWidget) {
-      this.display.addWidget(labelWidget, g);
-    }
+    const labelWidget = new Label(labelNode, this.display, false);
+    labelWidget.tag = labelWidget.parseAndDraw();
+    this.display.addWidget(labelWidget, g);
 
     return g;
+  }
+
+  afterDomAttachment() {
+    const buttonEl = this.svg.getElementById(this.id);
+    const topStroke = buttonEl.children[0];
+    const bottomStroke = buttonEl.children[1];
+    buttonEl.addEventListener('mousedown', () => {
+      topStroke.setAttribute('stroke', this.darkStroke.toString());
+      bottomStroke.setAttribute('stroke', this.brightStroke.toString());
+    });
+    buttonEl.addEventListener('mouseup', () => {
+      topStroke.setAttribute('stroke', this.brightStroke.toString());
+      bottomStroke.setAttribute('stroke', this.darkStroke.toString());
+    });
+    buttonEl.addEventListener('mouseout', () => {
+      topStroke.setAttribute('stroke', this.brightStroke.toString());
+      bottomStroke.setAttribute('stroke', this.darkStroke.toString());
+    });
   }
 }

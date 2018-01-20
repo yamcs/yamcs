@@ -4,7 +4,11 @@ import * as utils from '../utils';
 import { DataBinding, ARG_OPSNAME, ARG_PATHNAME, ARG_SID } from '../DataBinding';
 import { Display } from '../Display';
 
+let widgetSequence = 0;
+
 export abstract class AbstractWidget {
+
+  sequenceNumber: number;
 
   id: string;
   x: number;
@@ -22,11 +26,11 @@ export abstract class AbstractWidget {
   tag: Tag;
 
   constructor(
-    public sequenceNumber: number,
     protected node: Node,
     protected display: Display) {
 
-    this.id = `w${sequenceNumber}`;
+    this.sequenceNumber = widgetSequence++;
+    this.id = `w${this.sequenceNumber}`;
     this.x = utils.parseFloatChild(node, 'X');
     this.y = utils.parseFloatChild(node, 'Y');
     this.width = utils.parseFloatChild(node, 'Width');
@@ -42,8 +46,6 @@ export abstract class AbstractWidget {
         this.dataBindings.push(dataBinding);
       }
     }
-
-    this.tag = this.parseAndDraw();
   }
 
   abstract parseAndDraw(): Tag;

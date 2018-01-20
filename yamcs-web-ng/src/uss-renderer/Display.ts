@@ -17,8 +17,6 @@ import { Compound } from './widgets/Compound';
 import { Color } from './Color';
 import { ResourceResolver } from './ResourceResolver';
 
-let widgetSequence = 0;
-
 export class Display {
 
   private widgets: { [key: string]: AbstractWidget } = {};
@@ -155,8 +153,9 @@ export class Display {
 
     const widgets = [];
     for (const node of elementNodes) {
-      const widget = this.parseAndDrawWidget(node);
+      const widget = this.createWidget(node);
       if (widget) {
+        widget.tag = widget.parseAndDraw();
         widgets.push(widget);
       }
     }
@@ -172,36 +171,35 @@ export class Display {
     }
   }
 
-  parseAndDrawWidget(node: Node) {
-    return this.parseAndDrawWidgetByName(node, node.nodeName);
+  createWidget(node: Node) {
+    return this.createWidgetByName(node, node.nodeName);
   }
 
-  private parseAndDrawWidgetByName(node: Node, widgetName: string): AbstractWidget | undefined {
-    widgetSequence += 1;
+  private createWidgetByName(node: Node, widgetName: string): AbstractWidget | undefined {
     switch (widgetName) {
       case 'Compound':
-        return new Compound(widgetSequence, node, this);
+        return new Compound(node, this);
       case 'ExternalImage':
-        return new ExternalImage(widgetSequence, node, this);
+        return new ExternalImage(node, this);
       case 'Field':
-        return new Field(widgetSequence, node, this);
+        return new Field(node, this);
       case 'Label':
-        return new Label(widgetSequence, node, this);
+        return new Label(node, this);
       case 'LinearTickMeter':
-        return new LinearTickMeter(widgetSequence, node, this);
+        return new LinearTickMeter(node, this);
       case 'LineGraph':
-        return new LineGraph(widgetSequence, node, this);
+        return new LineGraph(node, this);
       case 'NavigationButton':
-        return new NavigationButton(widgetSequence, node, this);
+        return new NavigationButton(node, this);
       case 'Polyline':
-        return new Polyline(widgetSequence, node, this);
+        return new Polyline(node, this);
       case 'Rectangle':
-        return new Rectangle(widgetSequence, node, this);
+        return new Rectangle(node, this);
       case 'Symbol':
-        return new Symbol(widgetSequence, node, this);
+        return new Symbol(node, this);
       case 'LabelFor':
         const widgetClass = utils.parseStringAttribute(node, 'class');
-        return this.parseAndDrawWidgetByName(node, widgetClass);
+        return this.createWidgetByName(node, widgetClass);
       default:
         console.warn(`Unsupported widget type: ${widgetName}`);
         return;

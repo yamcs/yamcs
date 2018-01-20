@@ -2,8 +2,13 @@ import * as utils from '../utils';
 
 import { AbstractWidget } from './AbstractWidget';
 import { Text, Rect, ClipPath, G } from '../tags';
+import { Display } from '../Display';
 
 export class Label extends AbstractWidget {
+
+  constructor(node: Node, display: Display, protected pointerEvents = true) {
+    super(node, display);
+  }
 
   parseAndDraw() {
     const g = new G({
@@ -35,6 +40,9 @@ export class Label extends AbstractWidget {
       ...utils.parseTextStyle(textStyleNode),
       'clip-path': `url(#${clipId})`,
     }, innerText);
+    if (!this.pointerEvents) {
+      text.setAttribute('pointer-events', 'none');
+    }
     g.addChild(text);
 
     let x;
