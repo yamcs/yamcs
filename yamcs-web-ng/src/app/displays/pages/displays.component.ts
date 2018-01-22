@@ -7,7 +7,6 @@ import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { State } from '../../app.reducers';
 
 import { switchMap } from 'rxjs/operators';
-import { HttpClient } from '@angular/common/http';
 
 @Component({
   templateUrl: './displays.component.html',
@@ -17,10 +16,9 @@ export class DisplaysPageComponent {
 
   displayInfo$: Observable<DisplayInfo>;
 
-  constructor(store: Store<State>, http: HttpClient) {
+  constructor(store: Store<State>, yamcs: YamcsClient) {
     this.displayInfo$ = store.select(selectCurrentInstance).pipe(
       switchMap(instance => {
-        const yamcs = new YamcsClient(http);
         return yamcs.getDisplayInfo(instance.name);
       }),
     );

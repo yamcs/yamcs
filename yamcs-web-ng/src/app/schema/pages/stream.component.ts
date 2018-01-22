@@ -7,7 +7,6 @@ import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { State } from '../../app.reducers';
 
 import { switchMap } from 'rxjs/operators';
-import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 
 import * as utils from '../utils';
@@ -21,14 +20,11 @@ export class StreamPageComponent {
 
   stream$: Observable<Stream>;
 
-  constructor(route: ActivatedRoute, store: Store<State>, http: HttpClient) {
+  constructor(route: ActivatedRoute, store: Store<State>, yamcs: YamcsClient) {
     const name = route.snapshot.paramMap.get('name');
     if (name != null) {
       this.stream$ = store.select(selectCurrentInstance).pipe(
-        switchMap(instance => {
-          const yamcs = new YamcsClient(http);
-          return yamcs.getStream(instance.name, name);
-        }),
+        switchMap(instance => yamcs.getStream(instance.name, name)),
       );
     }
   }

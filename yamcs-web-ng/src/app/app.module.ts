@@ -20,6 +20,8 @@ import { InstanceEffects } from './core/store/instance.effects';
 import { LoadInstancesAction } from './core/store/instance.actions';
 import { NotFoundPageComponent } from './core/pages/not-found.component';
 import { ServicesModule } from './services/services.module';
+import YamcsClient from '../yamcs-client/YamcsClient';
+import { HttpClient } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -68,7 +70,16 @@ import { ServicesModule } from './services/services.module';
      * A custom RouterStateSerializer is used to parse the `RouterStateSnapshot` provided
      * by `@ngrx/router-store` to include only the desired pieces of the snapshot.
      */
-    { provide: RouterStateSerializer, useClass: CustomRouterStateSerializer },
+    {
+      provide: RouterStateSerializer,
+      useClass: CustomRouterStateSerializer,
+    }, {
+      provide: YamcsClient,
+      useFactory: (http: HttpClient) => {
+        return new YamcsClient(http);
+      },
+      deps: [HttpClient],
+    }
   ],
   bootstrap: [ AppComponent ]
 })

@@ -6,15 +6,12 @@ import {
   LoadInstancesSuccessAction, LoadInstancesFailAction
 } from './instance.actions';
 
-import { HttpClient } from '@angular/common/http';
 import YamcsClient from '../../../yamcs-client/YamcsClient';
 import { catchError, switchMap, map } from 'rxjs/operators';
 import { of } from 'rxjs/observable/of';
 
 @Injectable()
 export class InstanceEffects {
-
-  private yamcs: YamcsClient;
 
   @Effect()
   loadInstances$ = this.actions$.ofType(instanceActions.LOAD).pipe(
@@ -26,7 +23,6 @@ export class InstanceEffects {
     })
   );
 
-  constructor(private actions$: Actions, http: HttpClient) {
-    this.yamcs = new YamcsClient(http);
+  constructor(private actions$: Actions, private yamcs: YamcsClient) {
   }
 }

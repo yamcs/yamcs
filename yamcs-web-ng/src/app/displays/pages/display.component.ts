@@ -6,7 +6,6 @@ import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { State } from '../../app.reducers';
 
 import { map, switchMap } from 'rxjs/operators';
-import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { AfterViewInit } from '@angular/core/src/metadata/lifecycle_hooks';
 import { Display } from '../../../uss-renderer/Display';
@@ -29,9 +28,9 @@ export class DisplayPageComponent implements AfterViewInit {
   constructor(
     private route: ActivatedRoute,
     private store: Store<State>,
-    private http: HttpClient) {
+    private yamcs: YamcsClient) {
 
-    this.resourceResolver = new UssResourceResolver(http);
+    this.resourceResolver = new UssResourceResolver(yamcs);
   }
 
   ngAfterViewInit() {
@@ -48,8 +47,7 @@ export class DisplayPageComponent implements AfterViewInit {
   private loadDisplaySource$(displayName: string) {
     return this.store.select(selectCurrentInstance).pipe(
       switchMap(instance => {
-        const yamcs = new YamcsClient(this.http);
-        return yamcs.getDisplay(instance.name, displayName);
+        return this.yamcs.getDisplay(instance.name, displayName);
       }),
       map(text => {
         const xmlParser = new DOMParser();
@@ -71,16 +69,14 @@ export class DisplayPageComponent implements AfterViewInit {
  */
 class UssResourceResolver implements ResourceResolver {
 
-  constructor(private http: HttpClient) {
+  constructor(private yamcs: YamcsClient) {
   }
 
   resolvePath(path: string) {
-    const yamcs = new YamcsClient(this.http);
-    return `${yamcs.staticUrl}/${path}`;
+    return `${this.yamcs.staticUrl}/${path}`;
   }
 
   resolve(path: string) {
-    const yamcs = new YamcsClient(this.http);
-    return yamcs.getStaticText(path).pipe(take(1)).toPromise();
+    return this.yamcs.getStaticText(path).pipe(take(1)).toPromise();
   }
 }
