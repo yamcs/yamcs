@@ -108,13 +108,8 @@ public class ArtemisTmDataLink extends  AbstractService implements TmPacketDataL
     @Override
     protected void doStart() {
         try {
-<<<<<<< HEAD
             artemisSession = locator.createSessionFactory().createSession();
-            String queue = artemisAddress+"-ActiveMQTmProvider";
-=======
-            artemisSession = locator.createSessionFactory().createSession(false, true, true, true);
             String queue = artemisAddress + "-ActiveMQTmProvider";
->>>>>>> 037f7db... acknowledge the messages because they are not by default and if not acknowledged they will accumulate on the server
             artemisSession.createTemporaryQueue(artemisAddress, queue);
             ClientConsumer client = artemisSession.createConsumer(queue, AbstractArtemisTranslatorService.UNIQUEID_HDR_NAME+"<>"+AbstractArtemisTranslatorService.UNIQUEID);
             client.setMessageHandler(this);
