@@ -10,7 +10,7 @@ import {
 } from '@ngrx/router-store';
 
 import { environment } from '../environments/environment';
-import { RouterStateUrl } from './shared/utils';
+import { RouterStateUrl } from './shared/routing';
 
 import {
   InstanceState,

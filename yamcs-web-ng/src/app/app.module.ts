@@ -13,15 +13,33 @@ import { AppRoutingModule } from './app-routing.module';
 import { InstancesPageComponent } from './core/pages/instances.component';
 import { InstancePageComponent } from './core/pages/instance.component';
 
-import { CustomRouterStateSerializer } from './shared/utils';
+import { RouterStateSnapshot } from '@angular/router';
 import { reducers, metaReducers } from './app.reducers';
 
 import { InstanceEffects } from './core/store/instance.effects';
 import { LoadInstancesAction } from './core/store/instance.actions';
 import { NotFoundPageComponent } from './core/pages/not-found.component';
+import { LinksModule } from './links/links.module';
 import { ServicesModule } from './services/services.module';
-import YamcsClient from '../yamcs-client/YamcsClient';
-import { HttpClient } from '@angular/common/http';
+import { RouterStateUrl } from './shared/routing';
+import { YamcsService } from './core/services/yamcs.service';
+
+/**
+ * The RouterStateSerializer takes the current RouterStateSnapshot
+ * and returns any pertinent information needed. The snapshot contains
+ * all information about the state of the router at the given point in time.
+ * The entire snapshot is complex and not always needed. In this case, you only
+ * need the URL and query parameters from the snapshot in the store. Other items could be
+ * returned such as route parameters and static route data.
+ */
+class CustomRouterStateSerializer implements RouterStateSerializer<RouterStateUrl> {
+  serialize(routerState: RouterStateSnapshot): RouterStateUrl {
+    return {
+      url: routerState.url,
+      queryParams: routerState.root.queryParams,
+    };
+  }
+}
 
 @NgModule({
   declarations: [
@@ -37,6 +55,7 @@ import { HttpClient } from '@angular/common/http';
     AppRoutingModule, // Keep in front of modules that contribute child routing
     SharedModule,
     MdbModule,
+    LinksModule,
     ServicesModule,
 
     /**
@@ -65,20 +84,10 @@ import { HttpClient } from '@angular/common/http';
     ]),
   ],
   providers: [
-    /**
-     * The `RouterStateSnapshot` provided by the `Router` is a large complex structure.
-     * A custom RouterStateSerializer is used to parse the `RouterStateSnapshot` provided
-     * by `@ngrx/router-store` to include only the desired pieces of the snapshot.
-     */
+    YamcsService,
     {
       provide: RouterStateSerializer,
       useClass: CustomRouterStateSerializer,
-    }, {
-      provide: YamcsClient,
-      useFactory: (http: HttpClient) => {
-        return new YamcsClient(http);
-      },
-      deps: [HttpClient],
     }
   ],
   bootstrap: [ AppComponent ]

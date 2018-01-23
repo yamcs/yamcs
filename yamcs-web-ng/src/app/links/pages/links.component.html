@@ -1,0 +1,18 @@
+<table yaTable *ngIf="links$ | async as links">
+  <tr>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Spec</th>
+    <th>Stream</th>
+    <th>Status</th>
+    <th>Data Count</th>
+  </tr>
+  <tr *ngFor="let link of links">
+    <td>{{ link.name }}</td>
+    <td>{{ link.type }}</td>
+    <td>{{ link.spec }}</td>
+    <td>{{ link.stream }}</td>
+    <td>{{ link.status }}</td>
+    <td>{{ link.dataCount }}</td>
+  </tr>
+</table>

@@ -1,12 +1,9 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
 
-import { Instance, Command, YamcsClient } from '../../../yamcs-client';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
-import { State } from '../../app.reducers';
+import { Command } from '../../../yamcs-client';
 
-import { switchMap } from 'rxjs/operators';
+import { YamcsService } from '../../core/services/yamcs.service';
 
 @Component({
   templateUrl: './commands.component.html',
@@ -14,14 +11,9 @@ import { switchMap } from 'rxjs/operators';
 })
 export class CommandsPageComponent {
 
-  instance$: Observable<Instance>;
   commands$: Observable<Command[]>;
 
-  constructor(store: Store<State>, yamcs: YamcsClient) {
-    this.instance$ = store.select(selectCurrentInstance);
-
-    this.commands$ = store.select(selectCurrentInstance).pipe(
-      switchMap(instance => yamcs.getCommands(instance.name)),
-    );
+  constructor(yamcs: YamcsService) {
+    this.commands$ = yamcs.getSelectedInstance().getCommands();
   }
 }

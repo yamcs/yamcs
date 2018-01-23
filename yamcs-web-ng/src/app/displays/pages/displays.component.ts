@@ -1,12 +1,8 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
 
-import { YamcsClient, DisplayInfo } from '../../../yamcs-client';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
-import { State } from '../../app.reducers';
-
-import { switchMap } from 'rxjs/operators';
+import { DisplayInfo } from '../../../yamcs-client';
+import { YamcsService } from '../../core/services/yamcs.service';
 
 @Component({
   templateUrl: './displays.component.html',
@@ -16,11 +12,7 @@ export class DisplaysPageComponent {
 
   displayInfo$: Observable<DisplayInfo>;
 
-  constructor(store: Store<State>, yamcs: YamcsClient) {
-    this.displayInfo$ = store.select(selectCurrentInstance).pipe(
-      switchMap(instance => {
-        return yamcs.getDisplayInfo(instance.name);
-      }),
-    );
+  constructor(yamcs: YamcsService) {
+    this.displayInfo$ = yamcs.getSelectedInstance().getDisplayInfo();
   }
 }

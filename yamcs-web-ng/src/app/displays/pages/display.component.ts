@@ -1,17 +1,15 @@
 import { Component, ChangeDetectionStrategy, ElementRef, ViewChild } from '@angular/core';
-import { Store } from '@ngrx/store';
 
 import { YamcsClient } from '../../../yamcs-client';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
-import { State } from '../../app.reducers';
 
-import { map, switchMap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { AfterViewInit } from '@angular/core/src/metadata/lifecycle_hooks';
 import { Display } from '../../../uss-renderer/Display';
 import { ResourceResolver } from '../../../uss-renderer/ResourceResolver';
 
 import { take } from 'rxjs/operators';
+import { YamcsService } from '../../core/services/yamcs.service';
 
 @Component({
   templateUrl: './display.component.html',
@@ -27,10 +25,9 @@ export class DisplayPageComponent implements AfterViewInit {
 
   constructor(
     private route: ActivatedRoute,
-    private store: Store<State>,
-    private yamcs: YamcsClient) {
+    private yamcs: YamcsService) {
 
-    this.resourceResolver = new UssResourceResolver(yamcs);
+    this.resourceResolver = new UssResourceResolver(yamcs.yamcsClient);
   }
 
   ngAfterViewInit() {
@@ -45,10 +42,7 @@ export class DisplayPageComponent implements AfterViewInit {
   }
 
   private loadDisplaySource$(displayName: string) {
-    return this.store.select(selectCurrentInstance).pipe(
-      switchMap(instance => {
-        return this.yamcs.getDisplay(instance.name, displayName);
-      }),
+    return this.yamcs.getSelectedInstance().getDisplay(displayName).pipe(
       map(text => {
         const xmlParser = new DOMParser();
         const doc = xmlParser.parseFromString(text, 'text/xml');

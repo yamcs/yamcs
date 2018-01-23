@@ -1,12 +1,9 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
 
-import { Instance, Parameter, YamcsClient } from '../../../yamcs-client';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
-import { State } from '../../app.reducers';
+import { Instance, Parameter } from '../../../yamcs-client';
 
-import { switchMap } from 'rxjs/operators';
+import { YamcsService } from '../../core/services/yamcs.service';
 
 @Component({
   templateUrl: './parameters.component.html',
@@ -17,11 +14,7 @@ export class ParametersPageComponent {
   instance$: Observable<Instance>;
   parameters$: Observable<Parameter[]>;
 
-  constructor(store: Store<State>, yamcs: YamcsClient) {
-    this.instance$ = store.select(selectCurrentInstance);
-
-    this.parameters$ = store.select(selectCurrentInstance).pipe(
-      switchMap(instance => yamcs.getParameters(instance.name)),
-    );
+  constructor(yamcs: YamcsService) {
+    this.parameters$ = yamcs.getSelectedInstance().getParameters();
   }
 }

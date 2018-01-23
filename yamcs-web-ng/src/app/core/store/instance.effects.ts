@@ -3,12 +3,14 @@ import { Effect, Actions } from '@ngrx/effects';
 
 import * as instanceActions from './instance.actions';
 import {
-  LoadInstancesSuccessAction, LoadInstancesFailAction
+  LoadInstancesSuccessAction,
+  LoadInstancesFailAction,
+  SelectInstanceAction,
 } from './instance.actions';
 
-import YamcsClient from '../../../yamcs-client/YamcsClient';
-import { catchError, switchMap, map } from 'rxjs/operators';
+import { catchError, switchMap, map, tap } from 'rxjs/operators';
 import { of } from 'rxjs/observable/of';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable()
 export class InstanceEffects {
@@ -16,13 +18,24 @@ export class InstanceEffects {
   @Effect()
   loadInstances$ = this.actions$.ofType(instanceActions.LOAD).pipe(
     switchMap(() => {
-      return this.yamcs.getInstances().pipe(
+      return this.http.get<any>(`http://localhost:8090/api/instances`).pipe(
+        map(msg => msg.instance),
         map(instances => new LoadInstancesSuccessAction(instances)),
         catchError(err => of(new LoadInstancesFailAction(err))),
       );
     })
   );
 
-  constructor(private actions$: Actions, private yamcs: YamcsClient) {
+  @Effect({ dispatch: false })
+  connectInstance$ = this.actions$.ofType(instanceActions.SELECT).pipe(
+    tap((action: SelectInstanceAction) => {
+      // const instance = action.payload;
+      // this.yamcs.connectTo(instance);
+    })
+  );
+
+  constructor(
+    private actions$: Actions,
+    private http: HttpClient) {
   }
 }

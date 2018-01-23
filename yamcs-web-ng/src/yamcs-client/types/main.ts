@@ -11,6 +11,18 @@ export interface Service {
   className: string;
 }
 
+export interface Link {
+  instance: string;
+  name: string;
+  type: string;
+  spec: string;
+  stream: string;
+  disabled: boolean;
+  dataCount: number;
+  status: string;
+  detailedStatus: string;
+}
+
 export interface Stream {
   name: string;
   column: Column[];
@@ -126,4 +138,14 @@ export interface DisplayFolder {
 
 export interface DisplayFile {
   filename: string;
+}
+
+export interface TimeInfo {
+  currentTime: number;
+  currentTimeUTC: string;
+}
+
+export interface LinkEvent {
+  type: string;
+  linkInfo: Link;
 }

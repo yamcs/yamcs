@@ -2,14 +2,18 @@ import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, Router } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
-import { filter, map, take, switchMap } from 'rxjs/operators';
+import { filter, map, take, tap, switchMap } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { selectInstancesLoaded, selectInstancesById } from '../store/instance.selectors';
+import { YamcsService } from '../services/yamcs.service';
 
 @Injectable()
 export class InstanceExistsGuard implements CanActivate {
 
-  constructor(private store: Store<any>, private router: Router) {
+  constructor(
+    private store: Store<any>,
+    private router: Router,
+    private yamcsService: YamcsService) {
   }
 
   canActivate(route: ActivatedRouteSnapshot): Observable<boolean> {
@@ -21,6 +25,11 @@ export class InstanceExistsGuard implements CanActivate {
       filter(loaded => loaded),
       take(1),
       switchMap(() => this.storeContainsInstance(instanceId)),
+      tap(inStore => {
+        if (inStore) {
+          this.yamcsService.switchInstance(instanceId);
+        }
+      }),
     );
   }
 

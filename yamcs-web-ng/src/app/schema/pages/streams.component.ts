@@ -1,12 +1,9 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
 
-import { Stream, YamcsClient } from '../../../yamcs-client';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
-import { State } from '../../app.reducers';
+import { Stream } from '../../../yamcs-client';
 
-import { switchMap } from 'rxjs/operators';
+import { YamcsService } from '../../core/services/yamcs.service';
 
 @Component({
   templateUrl: './streams.component.html',
@@ -16,9 +13,7 @@ export class StreamsPageComponent {
 
   streams$: Observable<Stream[]>;
 
-  constructor(store: Store<State>, yamcs: YamcsClient) {
-    this.streams$ = store.select(selectCurrentInstance).pipe(
-      switchMap(instance => yamcs.getStreams(instance.name)),
-    );
+  constructor(yamcs: YamcsService) {
+    this.streams$ = yamcs.getSelectedInstance().getStreams();
   }
 }
