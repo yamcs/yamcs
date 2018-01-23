@@ -1,3 +1,8 @@
+Version 4.0.1  released 23-Jan-2017
+ - fixed Artemis data links
+ - the parameter select dialog from the Archive Browser will show now also parameters that are not part of containers
+
+
 Version 4.0.0 released 10-Jan-2018
 - fixed the version 6.0 in refmdb.xls and the changelog (it was mistakenly written as version 5.7 not matching the SpreadsheetLoader)
 - TcpTcDataLink: the configuration can be made in the service declaration in yamcs.<instance>.yaml, not necessary to have the tcp.yaml anymore
@@ -15,7 +20,8 @@ Version 4.0.0 released 10-Jan-2018
   - packet preprocessor - responsible for extracting basic information (time, seq count) from a packet
 
 
-Version 3.4.0 released 06-Dec-2017
+
+Version 3.4.0  released 6-Dec-2017
 - moved artemis into a separate source project which yamcs-core does not depend on. 
   Allow to connect to an external Artemis server by specifying artemisUrl: "tcp://..." into yamcs.<instance>.yaml or yamcs.yaml
 - added the possibility to restart instances and send information about current connected instance/processor via websocket
