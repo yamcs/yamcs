@@ -8,13 +8,6 @@ export class Parameter {
 
   bindings: ParameterBinding[] = [];
 
-  // TODO Should these not be in another (value) object?
-  generationTime: any;
-  acquisitionStatus: any;
-  monitoringResult: any;
-  rawValue: any;
-  engValue: any;
-
   // Computation
   expression: string;
   args: { [key: string]: string } = {};

@@ -10,6 +10,7 @@ import { ResourceResolver } from '../../../uss-renderer/ResourceResolver';
 
 import { take } from 'rxjs/operators';
 import { YamcsService } from '../../core/services/yamcs.service';
+import { ParameterUpdate } from '../../../uss-renderer/ParameterUpdate';
 
 @Component({
   templateUrl: './display.component.html',
@@ -54,6 +55,35 @@ export class DisplayPageComponent implements AfterViewInit {
   private renderDisplay(doc: XMLDocument, targetEl: HTMLDivElement) {
     const display = new Display(targetEl, this.resourceResolver);
     display.parseAndDraw(doc);
+    const opsNames = display.getOpsNames();
+    console.log('ops', opsNames);
+    if (opsNames.length) {
+      const ids = [];
+      for (const opsName of opsNames) {
+        ids.push({ namespace: 'MDB:OPS Name', name: opsName });
+      }
+      this.yamcs.getSelectedInstance().getParameterValueUpdates({
+        id: ids,
+        abortOnInvalid: false,
+        sendFromCache: true,
+        updateOnExpiration: true,
+      }).subscribe(evt => {
+        // console.log('got ', evt);
+        const updates: ParameterUpdate[] = [];
+        for (const pval of evt.parameter) {
+          updates.push({
+            opsName: pval.id.name,
+            generationTime: pval.generationTimeUTC,
+            acquisitionStatus: pval.acquisitionStatus,
+            monitoringResult: pval.monitoringResult,
+            rawValue: pval.rawValue,
+            engValue: pval.engValue,
+          });
+        }
+        // console.log('updd', updates);
+        display.updateWidgets(updates);
+      });
+    }
   }
 }
 

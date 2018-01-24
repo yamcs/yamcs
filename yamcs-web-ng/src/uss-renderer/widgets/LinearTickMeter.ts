@@ -1,9 +1,9 @@
 import * as utils from '../utils';
 
 import { AbstractWidget } from './AbstractWidget';
-import { Parameter } from '../Parameter';
 import { G, Rect, Line, Text } from '../tags';
 import { Color } from '../Color';
+import { ParameterUpdate } from '../ParameterUpdate';
 
 export class LinearTickMeter extends AbstractWidget {
 
@@ -233,8 +233,8 @@ export class LinearTickMeter extends AbstractWidget {
     }
   }
 
-  updateValue(para: Parameter, usingRaw: boolean) {
-    const value = this.getParameterValue(para, usingRaw);
+  updateValue(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
+    const value = this.getParameterValue(parameterUpdate, usingRaw);
     let pos = this.getIndicatorHeight(value);
     if (pos > this.meterHeight) {
       pos = this.meterHeight;

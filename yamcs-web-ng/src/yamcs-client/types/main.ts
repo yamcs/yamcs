@@ -149,3 +149,30 @@ export interface LinkEvent {
   type: string;
   linkInfo: Link;
 }
+
+export interface ParameterData {
+  parameter: ParameterValue[];
+}
+
+export interface ParameterValue {
+  id: Alias;
+  rawValue: any;
+  engValue: any;
+  acquisitionTimeUTC: string;
+  generationTimeUTC: string;
+  expirationTimeUTC: string;
+
+  acquisitionStatus: any;
+  processingStatus: boolean;
+  monitoringResult: any;
+  rangeCondition: any;
+  alarmRange: any;
+  expireMillis: number;
+}
+
+export interface ParameterSubscriptionRequest {
+  id: Alias[];
+  abortOnInvalid: boolean;
+  updateOnExpiration: boolean;
+  sendFromCache: boolean;
+}

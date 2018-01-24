@@ -7,6 +7,7 @@ export {
   Instance,
   Link,
   Parameter,
+  ParameterData,
   Record,
   Service,
   Stream,

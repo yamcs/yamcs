@@ -9,16 +9,25 @@ import {
   Table,
 } from './main';
 
-// Protocol, Message Type, Request Sequence, payload
-export type WebSocketClientMessage = [number, number, number, {
-  [key: string]: string
-}];
+export type WebSocketClientMessage = [
+  number, // Protocol
+  number, // Message Type
+  number, // Request Sequence
+  { [key: string]: string } // payload
+];
 
-// Protocol, Message Type, Response Sequence, payload
-export type WebSocketServerMessage = [number, number, number, {
-  dt: string
-  data: {[key: string]: any}
-}];
+export type WebSocketServerMessage = [
+  number, // Protocol
+  number, // Message Type
+  number, // Response Sequence
+  {
+    dt?: string
+    data?: { [key: string]: any }
+
+    et?: string
+    msg?: string
+  }
+];
 
 export interface InstancesWrapper {
   instance: Instance[];

@@ -1,8 +1,8 @@
-import { Parameter } from '../Parameter';
 import { Tag } from '../tags';
 import * as utils from '../utils';
 import { DataBinding, ARG_OPSNAME, ARG_PATHNAME, ARG_SID } from '../DataBinding';
 import { Display } from '../Display';
+import { ParameterUpdate } from '../ParameterUpdate';
 
 let widgetSequence = 0;
 
@@ -121,7 +121,7 @@ export abstract class AbstractWidget {
       const stringNodes = utils.findChildren(entryNode, 'string');
       if (stringNodes.length === 2) {
         const entryType = stringNodes[0].textContent || '';
-        const entryValue = stringNodes[0].textContent || '';
+        const entryValue = stringNodes[1].textContent || '';
         pairs[entryType] = entryValue;
       } else {
         console.warn(`Unexpected entry length ${stringNodes.length}`);
@@ -130,19 +130,19 @@ export abstract class AbstractWidget {
     return pairs;
   }
 
-  updateValue(para: Parameter, usingRaw: boolean) {
+  updateValue(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
     console.log('updateValue called on AbstractWidget', this);
   }
 
-  updatePosition(para: Parameter, attribute: 'x' | 'y', usingRaw: boolean) {
+  updatePosition(parameterUpdate: ParameterUpdate, attribute: 'x' | 'y', usingRaw: boolean) {
     const e = this.svg.getElementById(this.id);
-    const newpos = this.getParameterValue(para, usingRaw);
+    const newpos = this.getParameterValue(parameterUpdate, usingRaw);
     e.setAttribute(attribute, newpos);
   }
 
-  protected updatePositionByTranslation(svgid: string, para: Parameter, attribute: 'x' | 'y', usingRaw: boolean) {
+  protected updatePositionByTranslation(svgid: string, parameterUpdate: ParameterUpdate, attribute: 'x' | 'y', usingRaw: boolean) {
     const e = this.svg.getElementById(svgid);
-    const newpos = this.getParameterValue(para, usingRaw);
+    const newpos = this.getParameterValue(parameterUpdate, usingRaw);
     if (attribute === 'x') {
       this.x = newpos;
     } else if (attribute === 'y') {
@@ -151,9 +151,9 @@ export abstract class AbstractWidget {
     e.setAttribute('transform', `translate(${this.x},${this.y})`);
   }
 
-  updateFillColor(para: Parameter, usingRaw: boolean) {
+  updateFillColor(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
     const el = this.svg.getElementById(this.id);
-    el.setAttribute('stroke', this.getParameterValue(para, usingRaw));
+    el.setAttribute('stroke', this.getParameterValue(parameterUpdate, usingRaw));
   }
 
   protected getFontMetrics(textString: string, fontFamily: string, textSize: number) {
@@ -175,33 +175,34 @@ export abstract class AbstractWidget {
     }
   }
 
-  protected getParameterValue(param: Parameter, usingRaw: boolean) {
-    if (usingRaw) {
-      const rv = param.rawValue;
-      for (const idx of rv) {
-        if (idx !== 'type') {
-          return rv[idx];
-        }
-      }
-    } else {
-      const ev = param.engValue;
-      if (ev === undefined) {
-        console.log('got parameter without engValue: ', param);
-        return null;
-      }
-      switch (ev.type) {
-        case 'FLOAT':
-          return ev.floatValue;
-        case 'DOUBLE':
-          return ev.doubleValue;
-        case 'BINARY':
-          return window.atob(ev.binaryValue);
-      }
-      for (const idx of ev) {
-        if (idx !== 'type') {
-          return ev[idx];
-        }
-      }
+  protected getParameterValue(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
+    const val = (usingRaw ? parameterUpdate.rawValue : parameterUpdate.engValue);
+    if (!val) {
+      console.log('got parameter without value: ', parameterUpdate);
+      return null;
+    }
+
+    switch (val.type) {
+      case 'FLOAT':
+        return val.floatValue;
+      case 'DOUBLE':
+        return val.doubleValue;
+      case 'UINT32':
+        return val.uint32Value;
+      case 'SINT32':
+        return val.sint32Value;
+      case 'UINT64':
+        return val.uint64Value;
+      case 'SINT64':
+        return val.sint64Value;
+      case 'BOOLEAN':
+        return val.booleanValue;
+      case 'TIMESTAMP':
+        return val.timestampValue;
+      case 'BINARY':
+        return window.atob(val.binaryValue);
+      case 'STRING':
+        return val.stringValue;
     }
   }
 

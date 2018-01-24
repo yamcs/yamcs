@@ -3,13 +3,18 @@ import { webSocket } from 'rxjs/observable/dom/webSocket';
 import { delay, filter, map, retryWhen } from 'rxjs/operators';
 import { WebSocketSubject } from 'rxjs/observable/dom/WebSocketSubject';
 import { WebSocketServerMessage } from './types/internal';
-import { TimeInfo, LinkEvent } from './types/main';
+import {
+  LinkEvent,
+  ParameterData,
+  TimeInfo,
+  ParameterSubscriptionRequest,
+} from './types/main';
 import { Observable } from 'rxjs/Observable';
 
 const PROTOCOL_VERSION = 1;
 const MESSAGE_TYPE_REQUEST = 1;
 // const MESSAGE_TYPE_REPLY = 2;
-// const MESSAGE_TYPE_EXCEPTION = 3;
+const MESSAGE_TYPE_EXCEPTION = 3;
 const MESSAGE_TYPE_DATA = 4;
 
 /**
@@ -49,8 +54,11 @@ export class WebSocketClient {
         return errors.pipe(delay(1000));
       }),
     );
-    this.webSocketObservable.subscribe(
-      (msg) => undefined, // console.log('message received: ', msg),
+    this.webSocketObservable.subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          console.error('Server reported error: ', msg[3].msg);
+        }
+      },
       (err) => console.log(err),
       () => console.log('complete'),
     );
@@ -76,12 +84,25 @@ export class WebSocketClient {
     );
   }
 
-  private emit(instruction: {[key: string]: any}) {
+  getParameterValueUpdates(options: ParameterSubscriptionRequest) {
+    this.subscriptionModel.parameters = options;
+    this.emit({
+      parameter: 'subscribe',
+      data: options,
+    });
+    return this.webSocketObservable.pipe(
+      filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+      filter((msg: WebSocketServerMessage) => msg[3].dt === 'PARAMETER'),
+      map(msg => msg[3].data as ParameterData),
+    );
+  }
+
+  private emit(payload: { [key: string]: any, data?: {} }) {
     this.webSocket.next(JSON.stringify([
       PROTOCOL_VERSION,
       MESSAGE_TYPE_REQUEST,
       this.requestSequence,
-      instruction,
+      payload,
     ]));
   }
 
@@ -91,6 +112,9 @@ export class WebSocketClient {
     }
     if (this.subscriptionModel.links) {
       this.emit({ links: 'subscribe' });
+    }
+    if (this.subscriptionModel.parameters) {
+      this.emit({ parameters: 'subscribe', data: this.subscriptionModel.parameters });
     }
   }
 }

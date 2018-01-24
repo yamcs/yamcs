@@ -228,7 +228,7 @@ export class LineGraph extends AbstractWidget {
     );
   }
 
-  /*updateValue(para: Parameter, usingRaw: boolean) {
+  /*updateValue(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
     const series = this.chart.get('series-1');
     const value = this.getParameterValue(para, usingRaw);
     const t = para.generationTime;

@@ -16,6 +16,7 @@ import { Svg, Rect, Tag, Defs, Marker, Path, Pattern } from './tags';
 import { Compound } from './widgets/Compound';
 import { Color } from './Color';
 import { ResourceResolver } from './ResourceResolver';
+import { ParameterUpdate } from './ParameterUpdate';
 
 export class Display {
 
@@ -215,6 +216,7 @@ export class Display {
   private registerDataBindings(w: AbstractWidget) {
     if (w.dataBindings.length > 0) {
       for (const dataBinding of w.dataBindings) {
+        console.log('binding to ', dataBinding.opsname);
         let para = this.parameters[dataBinding.opsname];
         if (!para) {
           para = new Parameter();
@@ -235,23 +237,23 @@ export class Display {
     }
   }
 
-  getParameters() {
+  getOpsNames() {
     const result = [];
-    for (const paraname of Object.keys(this.parameters)) {
-      const parameter = this.parameters[paraname];
+    for (const opsname of Object.keys(this.parameters)) {
+      const parameter = this.parameters[opsname];
       if (parameter.type === 'ExternalDataSource') {
-        result.push(parameter);
+        result.push(opsname);
       }
     }
     return result;
   }
 
-  updateBindings(pvals: any) {
-    for (const pval of pvals) {
-      const dbs = this.parameters[pval.id.name];
+  updateWidgets(parameterUpdates: ParameterUpdate[]) {
+    for (const parameterUpdate of parameterUpdates) {
+      const dbs = this.parameters[parameterUpdate.opsName];
       if (dbs && dbs.bindings) {
         for (const binding of dbs.bindings) {
-          binding.updateWidget(pval);
+          binding.updateWidget(parameterUpdate);
         }
       }
     }

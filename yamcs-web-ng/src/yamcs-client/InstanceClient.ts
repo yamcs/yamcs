@@ -23,6 +23,7 @@ import {
   Service,
   Stream,
   Table,
+  ParameterSubscriptionRequest,
 } from './types/main';
 
 export class InstanceClient {
@@ -101,6 +102,11 @@ export class InstanceClient {
       map(msg => msg.parameter),
       catchError(this.yamcs.handleError<Parameter[]>([]))
     );
+  }
+
+  getParameterValueUpdates(options: ParameterSubscriptionRequest) {
+    this.prepareWebSocketClient();
+    return this.webSocketClient.getParameterValueUpdates(options);
   }
 
   getCommands() {

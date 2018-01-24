@@ -4,8 +4,8 @@ const sprintf = require('sprintf-js').sprintf;
 
 
 import { AbstractWidget } from './AbstractWidget';
-import { Parameter } from '../Parameter';
 import { G, Rect, Text, ClipPath } from '../tags';
+import { ParameterUpdate } from '../ParameterUpdate';
 
 export class Field extends AbstractWidget {
 
@@ -140,8 +140,10 @@ export class Field extends AbstractWidget {
     return g;
   }
 
-  updateValue(para: Parameter, usingRaw: boolean) {
-    let v = this.getParameterValue(para, usingRaw);
+  updateValue(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
+    // console.log('update ', parameterUpdate);
+
+    let v = this.getParameterValue(parameterUpdate, usingRaw);
     if (typeof v === 'number') {
       if (this.format) {
         v = sprintf(this.format, v);
@@ -157,9 +159,9 @@ export class Field extends AbstractWidget {
     ftxt.textContent = v;
     if (!this.overrideDqi) {
       const fbg = svg.getElementById(`${this.id}-bg`);
-      switch (para.acquisitionStatus) {
+      switch (parameterUpdate.acquisitionStatus) {
         case 'ACQUIRED':
-          switch (para.monitoringResult) {
+          switch (parameterUpdate.monitoringResult) {
             case 'DISABLED':
               fbg.setAttribute('class', 'disabled-bg');
               ftxt.setAttribute('class', 'disabled-fg');
@@ -208,15 +210,15 @@ export class Field extends AbstractWidget {
     }
   }
 
-  updatePosition(para: Parameter, attribute: 'x' | 'y', usingRaw: boolean) {
-    this.updatePositionByTranslation(`${this.id}-group`, para, attribute, usingRaw);
+  updatePosition(parameterUpdate: ParameterUpdate, attribute: 'x' | 'y', usingRaw: boolean) {
+    this.updatePositionByTranslation(`${this.id}-group`, parameterUpdate, attribute, usingRaw);
   }
 
-  updateFillColor(para: Parameter, usingRaw: boolean) {
+  updateFillColor(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
     if (!this.overrideDqi) {
       return;
     }
-    const newcolor = this.getParameterValue(para, usingRaw);
+    const newcolor = this.getParameterValue(parameterUpdate, usingRaw);
     const fbg = this.svg.getElementById(`${this.id}-bg`);
     fbg.setAttribute('fill', newcolor);
   }

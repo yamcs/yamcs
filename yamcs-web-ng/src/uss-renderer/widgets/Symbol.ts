@@ -2,8 +2,8 @@ import * as utils from '../utils';
 
 import { AbstractWidget } from './AbstractWidget';
 import { Image } from '../tags';
-import { Parameter } from '../Parameter';
 import { ResourceResolver } from '../ResourceResolver';
+import { ParameterUpdate } from '../ParameterUpdate';
 
 export class Symbol extends AbstractWidget {
 
@@ -64,8 +64,8 @@ export class Symbol extends AbstractWidget {
     }
   }
 
-  updateValue(para: Parameter, usingRaw: boolean) {
-    const value = this.getParameterValue(para, usingRaw);
+  updateValue(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
+    const value = this.getParameterValue(parameterUpdate, usingRaw);
     const file = this.symbol.states[value] || this.symbol.defaultImage;
     this.symbolEl.setAttribute('href', this.resolver.resolvePath(`symlib/images/${file}`));
   }
