@@ -11,6 +11,7 @@ import { ResourceResolver } from '../../../uss-renderer/ResourceResolver';
 import { take } from 'rxjs/operators';
 import { YamcsService } from '../../core/services/yamcs.service';
 import { ParameterUpdate } from '../../../uss-renderer/ParameterUpdate';
+import { Alias } from '../../../yamcs-client/types/main';
 
 @Component({
   templateUrl: './display.component.html',
@@ -55,13 +56,15 @@ export class DisplayPageComponent implements AfterViewInit {
   private renderDisplay(doc: XMLDocument, targetEl: HTMLDivElement) {
     const display = new Display(targetEl, this.resourceResolver);
     display.parseAndDraw(doc);
+
     const opsNames = display.getOpsNames();
     console.log('ops', opsNames);
-    if (opsNames.length) {
-      const ids = [];
-      for (const opsName of opsNames) {
-        ids.push({ namespace: 'MDB:OPS Name', name: opsName });
-      }
+    if (opsNames.size) {
+      const ids: Alias[] = [];
+      opsNames.forEach(opsName => ids.push({
+        namespace: 'MDB:OPS Name', name: opsName
+      }));
+
       this.yamcs.getSelectedInstance().getParameterValueUpdates({
         id: ids,
         abortOnInvalid: false,

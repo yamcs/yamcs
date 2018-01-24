@@ -14,6 +14,10 @@ export class Field extends AbstractWidget {
 
   overrideDqi: boolean;
 
+  private fieldEl: Element;
+  private fieldBackgroundEl: Element;
+  private fieldTextEl: Element;
+
   parseAndDraw() {
     // make a group to put the text and the bounding box together
     const g = new G({
@@ -72,10 +76,11 @@ export class Field extends AbstractWidget {
       'shape-rendering': 'crispEdges',
     });
 
-    const opsname = this.getWidgetParameter();
-    if (opsname) {
-      const yamcsInstance = 'dev'; // TODO window.location.pathname.match(/\/([^\/]*)\/?/)[1];
-      rect.setAttribute('xlink:href', `/${yamcsInstance}/mdb/MDB:OPS Name/${opsname}`);
+    for (const binding of this.parameterBindings) {
+      if (binding.dynamicProperty === 'VALUE' && binding.opsName) {
+          const yamcsInstance = 'dev'; // TODO window.location.pathname.match(/\/([^\/]*)\/?/)[1];
+          rect.setAttribute('xlink:href', `/${yamcsInstance}/mdb/MDB:OPS Name/${binding.opsName}`);
+      }
     }
     if (!this.overrideDqi) {
       rect.setAttribute('class', 'dead-bg');
@@ -140,9 +145,13 @@ export class Field extends AbstractWidget {
     return g;
   }
 
-  updateValue(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
-    // console.log('update ', parameterUpdate);
+  afterDomAttachment() {
+    this.fieldEl = this.svg.getElementById(`${this.id}-group`);
+    this.fieldBackgroundEl = this.svg.getElementById(`${this.id}-bg`);
+    this.fieldTextEl = this.svg.getElementById(this.id);
+  }
 
+  updateValue(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
     let v = this.getParameterValue(parameterUpdate, usingRaw);
     if (typeof v === 'number') {
       if (this.format) {
@@ -151,75 +160,73 @@ export class Field extends AbstractWidget {
         v = v.toFixed(this.decimals);
       }
     }
-    const svg = this.svg;
-    const ftxt = svg.getElementById(this.id);
-    if (!ftxt) {
-      return; // TODO temp until we unregister bindings upon window close
-    }
-    ftxt.textContent = v;
+    this.fieldTextEl.textContent = v;
     if (!this.overrideDqi) {
-      const fbg = svg.getElementById(`${this.id}-bg`);
       switch (parameterUpdate.acquisitionStatus) {
         case 'ACQUIRED':
           switch (parameterUpdate.monitoringResult) {
             case 'DISABLED':
-              fbg.setAttribute('class', 'disabled-bg');
-              ftxt.setAttribute('class', 'disabled-fg');
+              this.fieldBackgroundEl.setAttribute('class', 'disabled-bg');
+              this.fieldTextEl.setAttribute('class', 'disabled-fg');
               break;
 
             case 'IN_LIMITS':
-              fbg.setAttribute('class', 'in_limits-bg');
-              ftxt.setAttribute('class', 'in_limits-fg');
+              this.fieldBackgroundEl.setAttribute('class', 'in_limits-bg');
+              this.fieldTextEl.setAttribute('class', 'in_limits-fg');
               break;
 
             case 'WATCH':
             case 'WARNING':
             case 'DISTRESS':
-              fbg.setAttribute('class', 'nominal_limit_violation-bg');
-              ftxt.setAttribute('class', 'nominal_limit_violation-fg');
+              this.fieldBackgroundEl.setAttribute('class', 'nominal_limit_violation-bg');
+              this.fieldTextEl.setAttribute('class', 'nominal_limit_violation-fg');
               break;
 
             case 'CRITICAL':
             case 'SEVERE':
-              fbg.setAttribute('class', 'danger_limit_violation-bg');
-              ftxt.setAttribute('class', 'danger_limit_violation-fg');
+              this.fieldBackgroundEl.setAttribute('class', 'danger_limit_violation-bg');
+              this.fieldTextEl.setAttribute('class', 'danger_limit_violation-fg');
               break;
 
             default:
-              fbg.setAttribute('class', 'undefined-bg');
-              ftxt.setAttribute('class', 'undefined-fg');
+              this.fieldBackgroundEl.setAttribute('class', 'undefined-bg');
+              this.fieldTextEl.setAttribute('class', 'undefined-fg');
               break;
           }
           break;
 
         case 'NOT_RECEIVED':
-          fbg.setAttribute('class', 'dead-bg');
-          ftxt.setAttribute('class', 'dead-fg');
+          this.fieldBackgroundEl.setAttribute('class', 'dead-bg');
+          this.fieldTextEl.setAttribute('class', 'dead-fg');
           break;
 
         case 'INVALID':
-          fbg.setAttribute('class', 'dead-bg');
-          ftxt.setAttribute('class', 'dead-fg');
+          this.fieldBackgroundEl.setAttribute('class', 'dead-bg');
+          this.fieldTextEl.setAttribute('class', 'dead-fg');
           break;
 
         case 'EXPIRED':
-          fbg.setAttribute('class', 'expired-bg');
-          ftxt.setAttribute('class', 'expired-fg');
+          this.fieldBackgroundEl.setAttribute('class', 'expired-bg');
+          this.fieldTextEl.setAttribute('class', 'expired-fg');
           break;
       }
     }
   }
 
   updatePosition(parameterUpdate: ParameterUpdate, attribute: 'x' | 'y', usingRaw: boolean) {
-    this.updatePositionByTranslation(`${this.id}-group`, parameterUpdate, attribute, usingRaw);
+    if (attribute === 'x') {
+      this.x = this.getParameterValue(parameterUpdate, usingRaw);
+    } else if (attribute === 'y') {
+      this.y = this.getParameterValue(parameterUpdate, usingRaw);
+    }
+    this.fieldEl.setAttribute('transform', `translate(${this.x},${this.y})`);
   }
 
   updateFillColor(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
     if (!this.overrideDqi) {
       return;
     }
-    const newcolor = this.getParameterValue(parameterUpdate, usingRaw);
-    const fbg = this.svg.getElementById(`${this.id}-bg`);
-    fbg.setAttribute('fill', newcolor);
+    const newColor = this.getParameterValue(parameterUpdate, usingRaw);
+    this.fieldBackgroundEl.setAttribute('fill', newColor);
   }
 }

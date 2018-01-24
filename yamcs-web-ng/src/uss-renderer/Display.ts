@@ -10,8 +10,6 @@ import { Polyline } from './widgets/Polyline';
 import { Rectangle } from './widgets/Rectangle';
 import { Symbol } from './widgets/Symbol';
 import { AbstractWidget } from './widgets/AbstractWidget';
-import { Parameter } from './Parameter';
-import { ParameterBinding } from './ParameterBinding';
 import { Svg, Rect, Tag, Defs, Marker, Path, Pattern } from './tags';
 import { Compound } from './widgets/Compound';
 import { Color } from './Color';
@@ -20,8 +18,9 @@ import { ParameterUpdate } from './ParameterUpdate';
 
 export class Display {
 
-  private widgets: { [key: string]: AbstractWidget } = {};
-  parameters: { [key: string]: Parameter } = {};
+  private widgets: AbstractWidget[] = [];
+  private opsNames = new Set<string>();
+  private widgetsByTrigger = new Map<string, AbstractWidget[]>();
 
   bgcolor: Color;
   width: number;
@@ -84,12 +83,9 @@ export class Display {
     this.targetEl.appendChild(svg);
 
     // Call widget-specific lifecycle hooks
-    for (const key in this.widgets) {
-      if (this.widgets.hasOwnProperty(key)) {
-        const widget = this.widgets[key];
-        widget.svg = svg;
-        widget.afterDomAttachment();
-      }
+    for (const widget of this.widgets) {
+      widget.svg = svg;
+      widget.afterDomAttachment();
     }
   }
 
@@ -209,64 +205,33 @@ export class Display {
 
   addWidget(widget: AbstractWidget, parent: Tag) {
     parent.addChild(widget.tag);
-    this.widgets[widget.id] = widget;
-    this.registerDataBindings(widget);
-  }
+    this.widgets.push(widget);
 
-  private registerDataBindings(w: AbstractWidget) {
-    if (w.dataBindings.length > 0) {
-      for (const dataBinding of w.dataBindings) {
-        console.log('binding to ', dataBinding.opsname);
-        let para = this.parameters[dataBinding.opsname];
-        if (!para) {
-          para = new Parameter();
-          para.name = dataBinding.opsname;
-          para.type = dataBinding.type;
-
-          if (para.type === 'Computation') {
-            para.expression = dataBinding.expression;
-            para.args = dataBinding.args;
-          }
-          this.parameters[dataBinding.opsname] = para;
-        }
-
-        const dynamicProperty = dataBinding.dynamicProperty;
-        const usingRaw = dataBinding.usingRaw || false;
-        para.bindings.push(new ParameterBinding(w, dynamicProperty, usingRaw));
+    for (const binding of widget.parameterBindings) {
+      const widgets = this.widgetsByTrigger.get(binding.opsName);
+      if (widgets) {
+        widgets.push(widget);
+      } else {
+        this.widgetsByTrigger.set(binding.opsName, [widget]);
+        this.opsNames.add(binding.opsName);
       }
     }
+
+    // TODO add triggers based on computation args
   }
 
   getOpsNames() {
-    const result = [];
-    for (const opsname of Object.keys(this.parameters)) {
-      const parameter = this.parameters[opsname];
-      if (parameter.type === 'ExternalDataSource') {
-        result.push(opsname);
-      }
-    }
-    return result;
+    return this.opsNames;
   }
 
   updateWidgets(parameterUpdates: ParameterUpdate[]) {
     for (const parameterUpdate of parameterUpdates) {
-      const dbs = this.parameters[parameterUpdate.opsName];
-      if (dbs && dbs.bindings) {
-        for (const binding of dbs.bindings) {
-          binding.updateWidget(parameterUpdate);
+      const widgets = this.widgetsByTrigger.get(parameterUpdate.opsName);
+      if (widgets) {
+        for (const widget of widgets) {
+          widget.updateBindings(parameterUpdate);
         }
       }
     }
-  }
-
-  getComputations() {
-    const result = [];
-    for (const paraname of Object.keys(this.parameters)) {
-      const parameter = this.parameters[paraname];
-      if (parameter.type === 'Computation') {
-        result.push(parameter);
-      }
-    }
-    return result;
   }
 }

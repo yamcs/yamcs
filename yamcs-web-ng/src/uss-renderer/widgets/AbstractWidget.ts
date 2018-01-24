@@ -1,8 +1,9 @@
 import { Tag } from '../tags';
 import * as utils from '../utils';
-import { DataBinding, ARG_OPSNAME, ARG_PATHNAME, ARG_SID } from '../DataBinding';
 import { Display } from '../Display';
 import { ParameterUpdate } from '../ParameterUpdate';
+import { ParameterBinding, ARG_OPSNAME, ARG_PATHNAME, ARG_SID } from '../ParameterBinding';
+import { ComputationBinding } from '../ComputationBinding';
 
 let widgetSequence = 0;
 
@@ -17,11 +18,12 @@ export abstract class AbstractWidget {
   height: number;
   depth: number;
   name: string;
-  dataBindings: DataBinding[];
+
+  parameterBindings: ParameterBinding[];
+  computationBindings: ComputationBinding[];
 
   svg: SVGSVGElement;
   childSequence = 0;
-  computationSequence = 0;
 
   tag: Tag;
 
@@ -38,13 +40,11 @@ export abstract class AbstractWidget {
     this.depth = utils.parseIntChild(node, 'Depth');
     this.name = utils.parseStringChild(node, 'Name');
 
-    this.dataBindings = [];
+    this.parameterBindings = [];
+    this.computationBindings = [];
     const dataBindingsNode = utils.findChild(node, 'DataBindings');
     for (const childNode of utils.findChildren(dataBindingsNode, 'DataBinding')) {
-      const dataBinding = this.parseDataBinding(childNode);
-      if (dataBinding) {
-        this.dataBindings.push(dataBinding);
-      }
+      this.parseDataBinding(childNode);
     }
   }
 
@@ -57,46 +57,53 @@ export abstract class AbstractWidget {
     // NOP
   }
 
-  private parseDataBinding(e: Node) {
-    const db = new DataBinding();
-    db.dynamicProperty = utils.parseStringChild(e, 'DynamicProperty');
-    let ds = utils.findChild(e, 'DataSource');
+  private parseDataBinding(node: Node) {
+    let ds = utils.findChild(node, 'DataSource');
     if (ds.attributes.getNamedItem('reference')) {
       ds = utils.getReferencedElement(ds);
     }
-    db.type = utils.parseStringAttribute(ds, 'class');
-    if (db.type === 'ExternalDataSource') {
+
+    let binding;
+    const bindingClass = utils.parseStringAttribute(ds, 'class');
+    if (bindingClass === 'ExternalDataSource') {
+      binding = new ParameterBinding();
       const namesNode = utils.findChild(ds, 'Names');
       const entries = this.parseEntries(namesNode);
       if (ARG_OPSNAME in entries) {
-        db.opsname = entries[ARG_OPSNAME];
+        binding.opsName = entries[ARG_OPSNAME];
       } else {
         console.warn('External Data source without Opsname', ds);
         return;
       }
       if (ARG_PATHNAME in entries) {
-        db.pathname = entries[ARG_PATHNAME];
+        binding.pathName = entries[ARG_PATHNAME];
       }
       if (ARG_SID in entries) {
-        db.sid = entries[ARG_SID];
+        binding.sid = entries[ARG_SID];
       }
-      db.usingRaw = utils.parseBooleanChild(ds, 'UsingRaw');
-    } else if (db.type === 'Computation') {
-      db.opsname = this.generateComputationId();
-      db.expression = utils.parseStringChild(ds, 'Expression');
+      this.parameterBindings.push(binding);
+    } else if (bindingClass === 'Computation') {
+      binding = new ComputationBinding();
+      binding.expression = utils.parseStringChild(ds, 'Expression');
 
       const argumentsNode = utils.findChild(ds, 'Arguments');
       for (const externalDataSourceNode of utils.findChildren(argumentsNode, 'ExternalDataSource')) {
-        db.args = this.parseEntries(utils.findChild(externalDataSourceNode, 'Names'));
+        binding.args = this.parseEntries(utils.findChild(externalDataSourceNode, 'Names'));
       }
 
       const namesNode = utils.findChild(ds, 'Names');
       const entries = this.parseEntries(namesNode);
       if ('DEFAULT' in entries) {
-        db.DEFAULT = entries['DEFAULT'];
+        binding.name = entries['DEFAULT'];
       }
+      this.computationBindings.push(binding);
+    } else {
+      console.warn('Unexpected DataSource of type ' + bindingClass);
+      return;
     }
-    return db;
+
+    binding.usingRaw = utils.parseBooleanChild(ds, 'UsingRaw');
+    binding.dynamicProperty = utils.parseStringChild(node, 'DynamicProperty');
   }
 
   /**
@@ -130,30 +137,39 @@ export abstract class AbstractWidget {
     return pairs;
   }
 
-  updateValue(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
+  updateBindings(parameterUpdate: ParameterUpdate) {
+    for (const binding of this.parameterBindings) {
+      if (binding.opsName === parameterUpdate.opsName) {
+        switch (binding.dynamicProperty) {
+          case 'VALUE':
+            this.updateValue(parameterUpdate, binding.usingRaw);
+            break;
+          case 'X':
+            this.updatePosition(parameterUpdate, 'x', binding.usingRaw);
+            break;
+          case 'Y':
+            this.updatePosition(parameterUpdate, 'y', binding.usingRaw);
+            break;
+          case 'FILL_COLOR':
+            this.updateFillColor(parameterUpdate, binding.usingRaw);
+            break;
+          default:
+            console.warn('Unsupported dynamic property: ' + binding.dynamicProperty);
+        }
+      }
+    }
+  }
+
+  protected updateValue(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
     console.log('updateValue called on AbstractWidget', this);
   }
 
-  updatePosition(parameterUpdate: ParameterUpdate, attribute: 'x' | 'y', usingRaw: boolean) {
-    const e = this.svg.getElementById(this.id);
-    const newpos = this.getParameterValue(parameterUpdate, usingRaw);
-    e.setAttribute(attribute, newpos);
+  protected updatePosition(parameterUpdate: ParameterUpdate, attribute: 'x' | 'y', usingRaw: boolean) {
+    console.log('updatePosition called on AbstractWidget', this);
   }
 
-  protected updatePositionByTranslation(svgid: string, parameterUpdate: ParameterUpdate, attribute: 'x' | 'y', usingRaw: boolean) {
-    const e = this.svg.getElementById(svgid);
-    const newpos = this.getParameterValue(parameterUpdate, usingRaw);
-    if (attribute === 'x') {
-      this.x = newpos;
-    } else if (attribute === 'y') {
-      this.y = newpos;
-    }
-    e.setAttribute('transform', `translate(${this.x},${this.y})`);
-  }
-
-  updateFillColor(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
-    const el = this.svg.getElementById(this.id);
-    el.setAttribute('stroke', this.getParameterValue(parameterUpdate, usingRaw));
+  protected updateFillColor(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
+    console.log('updateFillColor called on AbstractWidget', this);
   }
 
   protected getFontMetrics(textString: string, fontFamily: string, textSize: number) {
@@ -165,14 +181,6 @@ export abstract class AbstractWidget {
     const bbox = el.getBBox();
     this.display.measurerSvg.removeChild(el);
     return { height: bbox.height, width: bbox.width };
-  }
-
-  protected getWidgetParameter() {
-    for (const dataBinding of this.dataBindings) {
-      if (dataBinding.dynamicProperty === 'VALUE') {
-        return dataBinding.opsname;
-      }
-    }
   }
 
   protected getParameterValue(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
@@ -209,12 +217,6 @@ export abstract class AbstractWidget {
   protected generateChildId() {
     const id = `${this.id}c${this.childSequence}`;
     this.childSequence += 1;
-    return id;
-  }
-
-  protected generateComputationId() {
-    const id = `__uss_computation_${this.id}c${this.computationSequence}`;
-    this.computationSequence += 1;
     return id;
   }
 }

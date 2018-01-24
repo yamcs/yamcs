@@ -1,29 +1,22 @@
-import { AbstractWidget } from './widgets/AbstractWidget';
-import { ParameterUpdate } from './ParameterUpdate';
+import { DataBinding } from './DataBinding';
 
-export class ParameterBinding {
+export const ARG_OPSNAME = 'Opsname';
+export const ARG_PATHNAME = 'Pathname';
+export const ARG_SID = 'SID';
 
-  constructor(
-    private widget: AbstractWidget,
-    private dynamicProperty: string,
-    private usingRaw: boolean) {}
+export class ParameterBinding extends DataBinding {
 
-  updateWidget(parameterUpdate: ParameterUpdate) {
-    switch (this.dynamicProperty) {
-      case 'VALUE':
-        this.widget.updateValue(parameterUpdate, this.usingRaw);
-        break;
-      case 'X':
-        this.widget.updatePosition(parameterUpdate, 'x', this.usingRaw);
-        break;
-      case 'Y':
-        this.widget.updatePosition(parameterUpdate, 'y', this.usingRaw);
-        break;
-      case 'FILL_COLOR':
-        this.widget.updateFillColor(parameterUpdate, this.usingRaw);
-        break;
-      default:
-        console.warn('Unsupported dynamic property: ' + this.dynamicProperty);
-    }
+  static readonly TYPE = 'PARAMETER';
+
+  opsName: string;
+  pathName: string;
+  sid: string;
+
+  constructor() {
+    super(ParameterBinding.TYPE);
+  }
+
+  toString() {
+    return `[${this.dynamicProperty}] ${this.opsName}`;
   }
 }
