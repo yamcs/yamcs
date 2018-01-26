@@ -177,25 +177,30 @@ export function parseDrawStyle(node: Node) {
   };
 }
 
-export function parseTextStyle(e: Node) {
+export function parseTextStyle(node: Node) {
   const style: { [key: string]: any } = {
-    fill: parseColorChild(e, 'Color').toString(),
-    'font-size': parseStringChild(e, 'Fontsize'),
-    'font-family': parseStringChild(e, 'Fontname'),
+    fill: parseColorChild(node, 'Color').toString(),
+    'font-family': parseStringChild(node, 'Fontname'),
   };
+
+  // We get a font size in java points (at 72dpi)
+  let fontSize = parseIntChild(node, 'Fontsize');
+  // Best-effort to convert to browser dpi (96dpi on most systems)
+  fontSize = fontSize * (72 / 96);
+  style['font-size'] = `${fontSize}pt`;
 
   // This is the most common Font, however since it is not
   // available on most browsers, default to any other monospace.
   if (style['font-family'] === 'Lucida Sans Typewriter') {
     style['font-family'] = 'Lucida Sans Typewriter, monospace';
   }
-  if (parseBooleanChild(e, 'IsBold', false)) {
+  if (parseBooleanChild(node, 'IsBold', false)) {
     style['font-weight'] = 'bold';
   }
-  if (parseBooleanChild(e, 'IsItalic', false)) {
+  if (parseBooleanChild(node, 'IsItalic', false)) {
     style['font-style'] = 'italic';
   }
-  if (parseBooleanChild(e, 'IsUnderlined', false)) {
+  if (parseBooleanChild(node, 'IsUnderlined', false)) {
     style['text-decoration'] = 'underline';
   }
 

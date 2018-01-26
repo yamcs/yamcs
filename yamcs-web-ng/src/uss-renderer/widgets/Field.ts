@@ -5,7 +5,6 @@ const sprintf = require('sprintf-js').sprintf;
 
 import { AbstractWidget } from './AbstractWidget';
 import { G, Rect, Text, ClipPath } from '../tags';
-import { ParameterUpdate } from '../ParameterUpdate';
 
 export class Field extends AbstractWidget {
 
@@ -151,8 +150,32 @@ export class Field extends AbstractWidget {
     this.fieldTextEl = this.svg.getElementById(this.id);
   }
 
-  updateValue(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
-    let v = this.getParameterValue(parameterUpdate, usingRaw);
+  updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string) {
+    switch (property) {
+      case 'VALUE':
+        this.updateValue(value, acquisitionStatus, monitoringResult);
+        break;
+      case 'X':
+        this.x = value;
+        this.fieldEl.setAttribute('transform', `translate(${this.x},${this.y})`);
+        break;
+      case 'Y':
+        this.y = value;
+        this.fieldEl.setAttribute('transform', `translate(${this.x},${this.y})`);
+        break;
+      case 'FILL_COLOR':
+        if (this.overrideDqi) {
+          const newColor = value.replace(' ', ''); // Convert 'dark green' to 'darkgreen'
+          this.fieldBackgroundEl.setAttribute('fill', newColor);
+        }
+        break;
+      default:
+        console.warn('Unsupported dynamic property: ' + property);
+    }
+  }
+
+  private updateValue(value: any, acquisitionStatus: string, monitoringResult: string) {
+    let v = value;
     if (typeof v === 'number') {
       if (this.format) {
         v = sprintf(this.format, v);
@@ -162,9 +185,9 @@ export class Field extends AbstractWidget {
     }
     this.fieldTextEl.textContent = v;
     if (!this.overrideDqi) {
-      switch (parameterUpdate.acquisitionStatus) {
+      switch (acquisitionStatus) {
         case 'ACQUIRED':
-          switch (parameterUpdate.monitoringResult) {
+          switch (monitoringResult) {
             case 'DISABLED':
               this.fieldBackgroundEl.setAttribute('class', 'disabled-bg');
               this.fieldTextEl.setAttribute('class', 'disabled-fg');
@@ -211,22 +234,5 @@ export class Field extends AbstractWidget {
           break;
       }
     }
-  }
-
-  updatePosition(parameterUpdate: ParameterUpdate, attribute: 'x' | 'y', usingRaw: boolean) {
-    if (attribute === 'x') {
-      this.x = this.getParameterValue(parameterUpdate, usingRaw);
-    } else if (attribute === 'y') {
-      this.y = this.getParameterValue(parameterUpdate, usingRaw);
-    }
-    this.fieldEl.setAttribute('transform', `translate(${this.x},${this.y})`);
-  }
-
-  updateFillColor(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
-    if (!this.overrideDqi) {
-      return;
-    }
-    const newColor = this.getParameterValue(parameterUpdate, usingRaw);
-    this.fieldBackgroundEl.setAttribute('fill', newColor);
   }
 }

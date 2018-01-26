@@ -86,4 +86,8 @@ export class NavigationButton extends AbstractWidget {
       bottomStroke.setAttribute('stroke', this.darkStroke.toString());
     });
   }
+
+  updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string) {
+    console.warn('Unsupported dynamic property: ' + property);
+  }
 }

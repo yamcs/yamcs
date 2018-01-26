@@ -3,7 +3,6 @@ import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 import { G, Rect, Line, Text } from '../tags';
 import { Color } from '../Color';
-import { ParameterUpdate } from '../ParameterUpdate';
 
 export class LinearTickMeter extends AbstractWidget {
 
@@ -233,8 +232,17 @@ export class LinearTickMeter extends AbstractWidget {
     }
   }
 
-  updateValue(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
-    const value = this.getParameterValue(parameterUpdate, usingRaw);
+  updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string) {
+    switch (property) {
+      case 'VALUE':
+        this.updateValue(value);
+        break;
+      default:
+        console.warn('Unsupported dynamic property: ' + property);
+    }
+  }
+
+  private updateValue(value: any) {
     let pos = this.getIndicatorHeight(value);
     if (pos > this.meterHeight) {
       pos = this.meterHeight;

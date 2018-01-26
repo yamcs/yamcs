@@ -108,7 +108,7 @@ ReservedWord
 
 Identifier
   = !ReservedWord symbol:IdentifierSymbol {
-    return { symbol };
+    return symbol;
   };
 
 IdentifierSymbol 'identifier'
@@ -139,10 +139,10 @@ NumericLiteral 'integer'
   = [0-9]+ { return { type: 'NumericLiteral', value: parseInt(text(), 10) }; }
 
 StringLiteral 'string'
-  = '"' chars:[^\n\r\f\\"]* '"' {
+  = '"' chars:[^\n\r\f"]* '"' {
     return { type: 'StringLiteral', value: chars.join('') };
   }
-  / '\'' chars:[^\n\r\f\\']* '\'' {
+  / '\'' chars:[^\n\r\f']* '\'' {
     return { type: 'StringLiteral', value: chars.join('') };
   }
 
@@ -184,12 +184,12 @@ CallExpression
   / UnaryExpression
 
 Arguments
-  = '(' _ args:(ArgumentList _)? ')' {
+  = '(' __ args:(ArgumentList _)? ')' {
     return optionalList(extractOptional(args, 0));
   }
 
 ArgumentList
-  = head:UnaryExpression tail:(_ ',' _ UnaryExpression)* {
+  = head:ConditionalExpression tail:(_ ',' _ ConditionalExpression)* {
     return buildList(head, tail, 3);
   }
 
@@ -208,17 +208,17 @@ PostfixOperator
   / '²'
 
 MultiplicativeExpression
-  = head:PostfixExpression tail:(_ ('*' / '/' / '^' / '%') _ PostfixExpression)* {
+  = head:PostfixExpression tail:(__ ('*' / '/' / '^' / '%') __ PostfixExpression)* {
       return buildBinaryExpression(head, tail);
     }
 
 AdditiveExpression
-  = head:MultiplicativeExpression tail:(_ ('+' / '-') _ MultiplicativeExpression)* {
+  = head:MultiplicativeExpression tail:(__ ('+' / '-') __ MultiplicativeExpression)* {
       return buildBinaryExpression(head, tail);
     }
 
 RelationalExpression
-  = head:AdditiveExpression tail:(_ RelationalOperator _ AdditiveExpression)* {
+  = head:AdditiveExpression tail:(__ RelationalOperator __ AdditiveExpression)* {
     return buildBinaryExpression(head, tail);
   }
 
@@ -229,7 +229,7 @@ RelationalOperator
   / '>'
 
 EqualityExpression
-  = head:RelationalExpression tail:(_ EqualityOperator _ RelationalExpression)* {
+  = head:RelationalExpression tail:(__ EqualityOperator __ RelationalExpression)* {
     return buildBinaryExpression(head, tail);
   }
 
@@ -240,7 +240,7 @@ EqualityOperator
   / '<>'
 
 BitwiseANDExpression
-  = head:EqualityExpression tail:(_ BitwiseANDOperator _ EqualityExpression)* {
+  = head:EqualityExpression tail:(__ BitwiseANDOperator __ EqualityExpression)* {
      return buildBinaryExpression(head, tail);
   }
 
@@ -248,7 +248,7 @@ BitwiseANDOperator
   = $('&' ![&])
 
 BitwiseXORExpression
-  = head:BitwiseANDExpression tail:(_ BitwiseXOROperator _ BitwiseANDExpression)* {
+  = head:BitwiseANDExpression tail:(__ BitwiseXOROperator __ BitwiseANDExpression)* {
      return buildBinaryExpression(head, tail);
   }
 
@@ -257,7 +257,7 @@ BitwiseXOROperator
   / XOR
 
 BitwiseORExpression
-  = head:BitwiseXORExpression tail:(_ BitwiseOROperator _ BitwiseXORExpression)* {
+  = head:BitwiseXORExpression tail:(__ BitwiseOROperator __ BitwiseXORExpression)* {
     return buildBinaryExpression(head, tail);
   }
 
@@ -265,7 +265,7 @@ BitwiseOROperator
   = $('|' ![|])
 
 LogicalANDExpression
-  = head:BitwiseORExpression tail:(_ LogicalANDOperator _ BitwiseORExpression)* {
+  = head:BitwiseORExpression tail:(__ LogicalANDOperator __ BitwiseORExpression)* {
     return buildLogicalExpression(head, tail);
   }
 
@@ -274,7 +274,7 @@ LogicalANDOperator
   / AND
 
 LogicalORExpression
-  = head:LogicalANDExpression tail:(_ LogicalOROperator _ LogicalANDExpression)* {
+  = head:LogicalANDExpression tail:(__ LogicalOROperator __ LogicalANDExpression)* {
     return buildLogicalExpression(head, tail);
   }
 
@@ -283,7 +283,7 @@ LogicalOROperator
   / OR
 
 ConditionalExpression
-  = IF _ test:LogicalORExpression _ THEN _ consequent:AssignmentExpression _ ELSE _ alternate:AssignmentExpression {
+  = IF __ test:LogicalORExpression __ THEN __ consequent:AssignmentExpression __ ELSE __ alternate:AssignmentExpression {
       return {
         type: 'ConditionalExpression',
         test: test,
@@ -291,7 +291,7 @@ ConditionalExpression
         alternate: alternate
       };
   }
-  / IF _ test:LogicalORExpression _ THEN _ consequent:AssignmentExpression {
+  / IF __ test:LogicalORExpression __ THEN __ consequent:AssignmentExpression {
     return {
       type: 'ConditionalExpression',
       test: test,

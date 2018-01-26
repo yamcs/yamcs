@@ -1,12 +1,37 @@
 import * as ast from './ast';
 
+export interface DataSourceStatus {
+  value: any;
+  acquisitionStatus: any;
+}
+
 export class CompiledFormula {
   // 'compiled' here really means 'parsed'.
   // The only reuse optimization is the AST.
 
-  assignments: {[key: string]: any} = {};
+  private assignments = new Map<string, any>();
+
+  // Path names are used as argument to some functions
+  // This table allows converting from an opsname.
+  private pathname2opsname = new Map<string, string>();
+
+  private dataSourceStatusByOpsName = new Map<string, DataSourceStatus>();
 
   constructor(private formula: ast.Formula) {
+  }
+
+  registerDataSourceMapping(pathName: string, opsName: string) {
+    this.pathname2opsname.set(pathName, opsName);
+  }
+
+  updateDataSource(opsName: string, status: DataSourceStatus) {
+    this.assignments.set(opsName, status.value);
+    this.dataSourceStatusByOpsName.set(opsName, status);
+  }
+
+  clearState() {
+    this.assignments.clear();
+    this.dataSourceStatusByOpsName.clear();
   }
 
   execute(): any {
@@ -22,7 +47,7 @@ export class CompiledFormula {
   private executeExpression(expression: ast.Expression): any {
     switch (expression.type) {
       case 'Symbol':
-        return this.assignments[expression.name];
+        return this.assignments.get(expression.name);
       case 'BooleanLiteral':
         return expression.value;
       case 'NumericLiteral':
@@ -35,17 +60,21 @@ export class CompiledFormula {
         return this.executeConditionalExpression(expression);
       case 'BinaryExpression':
         return this.executeBinaryExpression(expression);
+      case 'LogicalExpression':
+        return this.executeLogicalExpression(expression);
       case 'UnaryExpression':
         return this.executeUnaryExpression(expression);
+      case 'CallExpression':
+        return this.executeCallExpression(expression);
       default:
-        throw new Error(`Unexpected expression type ${expression.type}`);
+        throw new Error('Unexpected expression type');
     }
   }
 
   private executeAssignmentExpression(expression: ast.AssignmentExpression): any {
     const identifier = expression.left.name;
     const right = this.executeExpression(expression.right);
-    this.assignments[identifier] = right;
+    this.assignments.set(identifier, right);
     return right;
   }
 
@@ -84,6 +113,21 @@ export class CompiledFormula {
     }
   }
 
+  private executeLogicalExpression(expression: ast.LogicalExpression): any {
+    const left = this.executeExpression(expression.left);
+    const right = this.executeExpression(expression.right);
+    switch (expression.operator) {
+      case '&&':
+      case 'and':
+        return left && right;
+      case '||':
+      case 'or':
+        return left || right;
+      default:
+        throw new Error(`Unexpected logical operator ${expression.operator}`);
+    }
+  }
+
   private executeConditionalExpression(expression: ast.ConditionalExpression): any {
     const test = this.executeExpression(expression.test);
     const consequent = this.executeExpression(expression.consequent);
@@ -110,6 +154,42 @@ export class CompiledFormula {
         return argument * argument;
       default:
         throw new Error(`Unexpected unary operator ${expression.operator}`);
+    }
+  }
+
+  private executeCallExpression(expression: ast.CallExpression): any {
+    const symbol = expression.callee.name;
+    const args = [];
+    for (const a of expression.arguments) {
+      args.push(this.executeExpression(a));
+    }
+    switch (symbol) {
+      case 'print':
+        console.log(...args);
+        break;
+      case 'parameterValue':
+        return this.callParameterValue(args[0]);
+      case 'parameterAcquisitionStatus':
+        return this.callParameterAcquisitionStatus(args[0]);
+      default:
+        throw new Error(`Unsupported function '${symbol}'`);
+    }
+  }
+
+  private callParameterValue(pathName: string) {
+    const opsName = this.pathname2opsname.get(pathName);
+    if (opsName) {
+      return this.assignments.get(opsName);
+    }
+  }
+
+  private callParameterAcquisitionStatus(pathName: string) {
+    const opsName = this.pathname2opsname.get(pathName);
+    if (opsName) {
+      const status = this.dataSourceStatusByOpsName.get(opsName);
+      if (status) {
+        return status.acquisitionStatus;
+      }
     }
   }
 }

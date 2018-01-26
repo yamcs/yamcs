@@ -35,4 +35,8 @@ export class Polyline extends AbstractWidget {
 
     return line;
   }
+
+  updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string) {
+    console.warn('Unsupported dynamic property: ' + property);
+  }
 }

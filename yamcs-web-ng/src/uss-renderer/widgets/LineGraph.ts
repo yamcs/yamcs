@@ -228,9 +228,18 @@ export class LineGraph extends AbstractWidget {
     );
   }
 
-  /*updateValue(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
+  updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string) {
+    switch (property) {
+      case 'VALUE':
+        // this.updateValue(value);
+        break;
+      default:
+        console.warn('Unsupported dynamic property: ' + property);
+    }
+  }
+
+  /*private updateValue(value: any) {
     const series = this.chart.get('series-1');
-    const value = this.getParameterValue(para, usingRaw);
     const t = para.generationTime;
     const xaxis = series.xAxis;
     if (!this.xAutoRange) {

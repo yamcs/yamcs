@@ -85,6 +85,10 @@ export class Label extends AbstractWidget {
     return g;
   }
 
+  updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string) {
+    console.warn('Unsupported dynamic property: ' + property);
+  }
+
   private autoscale(text: string, fontFamily: string, fontSizeStart: number) {
     const fm = this.getFontMetrics(text, fontFamily, fontSizeStart);
     if (fm.width > this.width || fm.height > this.height) {

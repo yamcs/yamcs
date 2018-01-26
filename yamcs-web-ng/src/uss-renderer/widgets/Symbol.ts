@@ -3,7 +3,6 @@ import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 import { Image } from '../tags';
 import { ResourceResolver } from '../ResourceResolver';
-import { ParameterUpdate } from '../ParameterUpdate';
 
 export class Symbol extends AbstractWidget {
 
@@ -64,10 +63,15 @@ export class Symbol extends AbstractWidget {
     }
   }
 
-  updateValue(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
-    const value = this.getParameterValue(parameterUpdate, usingRaw);
-    const file = this.symbol.states[value] || this.symbol.defaultImage;
-    this.symbolEl.setAttribute('href', this.resolver.resolvePath(`symlib/images/${file}`));
+  updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string) {
+    switch (property) {
+      case 'VALUE':
+        const file = this.symbol.states[value] || this.symbol.defaultImage;
+        this.symbolEl.setAttribute('href', this.resolver.resolvePath(`symlib/images/${file}`));
+        break;
+      default:
+        console.warn('Unsupported dynamic property: ' + property);
+    }
   }
 }
 

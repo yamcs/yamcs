@@ -17,4 +17,8 @@ export class Compound extends AbstractWidget {
 
     return g;
   }
+
+  updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string) {
+    console.warn('Unsupported dynamic property: ' + property);
+  }
 }

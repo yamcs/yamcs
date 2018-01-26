@@ -71,7 +71,6 @@ export class DisplayPageComponent implements AfterViewInit {
         sendFromCache: true,
         updateOnExpiration: true,
       }).subscribe(evt => {
-        // console.log('got ', evt);
         const updates: ParameterUpdate[] = [];
         for (const pval of evt.parameter) {
           updates.push({
@@ -83,7 +82,6 @@ export class DisplayPageComponent implements AfterViewInit {
             engValue: pval.engValue,
           });
         }
-        // console.log('updd', updates);
         display.updateWidgets(updates);
       });
     }

@@ -17,4 +17,8 @@ export class ExternalImage extends AbstractWidget {
       'xlink:href': `/_static/${pathname}`
     });
   }
+
+  updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string) {
+    console.warn('Unsupported dynamic property: ' + property);
+  }
 }

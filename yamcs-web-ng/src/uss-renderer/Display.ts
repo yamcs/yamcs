@@ -23,6 +23,7 @@ export class Display {
   private widgetsByTrigger = new Map<string, AbstractWidget[]>();
 
   bgcolor: Color;
+  title: string;
   width: number;
   height: number;
 
@@ -45,8 +46,10 @@ export class Display {
   parseAndDraw(xmlDoc: XMLDocument) {
     const displayEl = xmlDoc.getElementsByTagName('Display')[0];
 
+    this.title = utils.parseStringChild(displayEl, 'Title');
     this.width = utils.parseFloatChild(displayEl, 'Width');
     this.height = utils.parseFloatChild(displayEl, 'Height');
+    this.bgcolor = utils.parseColorChild(displayEl, 'BackgroundColor', new Color(212, 212, 212, 255));
 
     const rootEl = new Svg({
       width: this.width,
@@ -54,9 +57,6 @@ export class Display {
     });
 
     this.addDefinitions(rootEl);
-
-    // draw background
-    this.bgcolor = utils.parseColorChild(displayEl, 'BackgroundColor', new Color(212, 212, 212, 0));
 
     rootEl.addChild(new Rect({
       x: 0,
@@ -208,16 +208,29 @@ export class Display {
     this.widgets.push(widget);
 
     for (const binding of widget.parameterBindings) {
-      const widgets = this.widgetsByTrigger.get(binding.opsName);
-      if (widgets) {
-        widgets.push(widget);
-      } else {
-        this.widgetsByTrigger.set(binding.opsName, [widget]);
+      if (binding.opsName) {
+        this.registerWidgetTriggers(binding.opsName, widget);
         this.opsNames.add(binding.opsName);
       }
     }
+    for (const binding of widget.computationBindings) {
+      for (const arg of binding.args) {
+        if (arg.opsName) {
+          this.registerWidgetTriggers(arg.opsName, widget);
+          this.opsNames.add(arg.opsName);
+        }
+      }
+    }
+  }
 
-    // TODO add triggers based on computation args
+  private registerWidgetTriggers(opsName: string, widget: AbstractWidget) {
+    const widgets = this.widgetsByTrigger.get(opsName);
+    if (widgets) {
+      widgets.push(widget);
+    } else {
+      this.widgetsByTrigger.set(opsName, [widget]);
+      this.opsNames.add(opsName);
+    }
   }
 
   getOpsNames() {

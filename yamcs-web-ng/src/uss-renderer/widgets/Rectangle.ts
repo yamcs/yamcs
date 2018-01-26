@@ -18,4 +18,8 @@ export class Rectangle extends AbstractWidget {
       'shape-rendering': 'crispEdges',
     }).withBorderBox(this.x, this.y, this.width, this.height);
   }
+
+  updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string) {
+    console.warn('Unsupported dynamic property: ' + property);
+  }
 }
