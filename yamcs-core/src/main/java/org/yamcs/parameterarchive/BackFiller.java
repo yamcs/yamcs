@@ -28,6 +28,7 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -53,7 +54,7 @@ public class BackFiller implements StreamSubscriber {
     long warmupTime;
     final TimeService timeService;
     static AtomicInteger count = new AtomicInteger();
-    private final Logger log = LoggerFactory.getLogger(BackFiller.class);
+    private final Logger log;
 
     //set of segments that have to be rebuilt following monitoring of streams
     private Set<Long> streamUpdates;
@@ -68,6 +69,7 @@ public class BackFiller implements StreamSubscriber {
             parseConfig(config);
         }
         timeService = YamcsServer.getTimeService(parchive.getYamcsInstance());
+        log = LoggingUtils.getLogger(BackFiller.class, parchive.getYamcsInstance());
     }
 
     void start() {
