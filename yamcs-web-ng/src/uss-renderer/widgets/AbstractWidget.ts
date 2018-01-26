@@ -145,11 +145,11 @@ export abstract class AbstractWidget {
 
   protected abstract updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string): void;
 
-  protected getFontMetrics(textString: string, fontFamily: string, textSize: number) {
+  protected getFontMetrics(text: string, fontFamily: string, fontSize: string) {
     const el = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     el.setAttribute('font-family', fontFamily);
-    el.setAttribute('font-size', String(textSize));
-    el.appendChild(document.createTextNode(textString));
+    el.setAttribute('font-size', fontSize);
+    el.appendChild(document.createTextNode(text));
     this.display.measurerSvg.appendChild(el);
     const bbox = el.getBBox();
     this.display.measurerSvg.removeChild(el);

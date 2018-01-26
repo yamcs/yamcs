@@ -1,7 +1,6 @@
 import * as utils from '../utils';
 
 import { AbstractWidget } from './AbstractWidget';
-// import { Parameter } from '../Parameter';
 import { Color } from '../Color';
 import { G } from '../tags';
 
@@ -20,7 +19,7 @@ export class LineGraph extends AbstractWidget {
   graph: any;
 
   private title: string;
-  private titleHeight: number;
+  private titleHeight: string;
   private graphBackgroundColor: Color;
   private plotBackgroundColor: Color;
   private xLabel: string;
@@ -36,20 +35,20 @@ export class LineGraph extends AbstractWidget {
     this.plotBackgroundColor = utils.parseColorChild(this.node, 'PlotBackgroundColor', Color.WHITE);
 
     const fontFamily = 'sans-serif';
-    let fontSize = 12;
+    let fontSize = '12pt';
     let color = '#000000';
     let underline = false;
     let italic = false;
     let bold = true;
     if (utils.hasChild(this.node, 'TitleTextStyle')) {
       const style = utils.findChild(this.node, 'TitleTextStyle');
-      fontSize = utils.parseFloatChild(style, 'Fontsize');
+      fontSize = (utils.parseIntChild(style, 'Fontsize') * (72 / 86)) + 'pt';
       color = utils.parseColorChild(style, 'Color').toString();
       underline = utils.parseBooleanChild(style, 'IsUnderlined');
       italic = utils.parseBooleanChild(style, 'IsItalic');
       bold = utils.parseBooleanChild(style, 'IsBold');
     }
-    let titleStyle = `font-family: ${fontFamily}; color: ${color}; font-size: ${fontSize}px`;
+    let titleStyle = `font-family: ${fontFamily}; color: ${color}; font-size: ${fontSize}`;
     titleStyle += (italic ? ';font-style: italic' : ';font-style: regular');
     titleStyle += (bold ? ';font-weight: bold' : ';font-weight: normal');
     titleStyle += (underline ? ';text-decoration: underline' : ';text-decoration: none');
@@ -61,7 +60,7 @@ export class LineGraph extends AbstractWidget {
      * X-AXIS (DOMAIN)
      */
     this.xAxisOptions = {
-      axisLabelFontSize: 12,
+      axisLabelFontSize: '12pt',
       axisLabelWidth: 70,
       axisLabelFormatter: (d: Date, gran: any) => {
         const hh = d.getHours() < 9 ? '0' + d.getHours() : d.getHours();
@@ -112,7 +111,7 @@ export class LineGraph extends AbstractWidget {
      * Y-AXIS (RANGE)
      */
     this.yAxisOptions = {
-      axisLabelFontSize: 12,
+      axisLabelFontSize: '12pt',
       pixelsPerLabel: 12,
     };
     const rangeGrid = utils.findChild(this.node, 'RangeGridlineDrawStyle');

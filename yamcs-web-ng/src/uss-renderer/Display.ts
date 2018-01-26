@@ -46,7 +46,7 @@ export class Display {
   parseAndDraw(xmlDoc: XMLDocument) {
     const displayEl = xmlDoc.getElementsByTagName('Display')[0];
 
-    this.title = utils.parseStringChild(displayEl, 'Title');
+    this.title = utils.parseStringChild(displayEl, 'Title', 'Untitled');
     this.width = utils.parseFloatChild(displayEl, 'Width');
     this.height = utils.parseFloatChild(displayEl, 'Height');
     this.bgcolor = utils.parseColorChild(displayEl, 'BackgroundColor', new Color(212, 212, 212, 255));

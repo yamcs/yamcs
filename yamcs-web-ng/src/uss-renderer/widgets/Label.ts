@@ -61,11 +61,11 @@ export class Label extends AbstractWidget {
 
     // Prefer FontMetrics over baseline tricks to account for
     // ascends and descends.
-    let fontSize = Number(text.attributes['font-size']);
+    let fontSize = text.attributes['font-size'];
     const fontFamily = text.attributes['font-family'];
     if (utils.parseBooleanChild(this.node, 'AutoSize')) {
       fontSize = this.autoscale(innerText, fontFamily, fontSize);
-      text.setAttribute('font-size', String(fontSize));
+      text.setAttribute('font-size', fontSize);
     }
 
     const fm = this.getFontMetrics(innerText, fontFamily, fontSize);
@@ -89,35 +89,36 @@ export class Label extends AbstractWidget {
     console.warn('Unsupported dynamic property: ' + property);
   }
 
-  private autoscale(text: string, fontFamily: string, fontSizeStart: number) {
+  private autoscale(text: string, fontFamily: string, fontSizeStart: string) {
     const fm = this.getFontMetrics(text, fontFamily, fontSizeStart);
+    const ptStart = Math.floor(Number(fontSizeStart.replace('pt', '')));
     if (fm.width > this.width || fm.height > this.height) {
-      return this.scaleDown(text, fontFamily, fontSizeStart - 1);
+      return this.scaleDown(text, fontFamily, ptStart - 1) + 'pt';
     } else {
-      return this.scaleUp(text, fontFamily, fontSizeStart);
+      return this.scaleUp(text, fontFamily, ptStart) + 'pt';
     }
   }
 
-  private scaleUp(text: string, fontFamily: string, fontSize: number) {
+  private scaleUp(text: string, fontFamily: string, pt: number) {
     let fm;
-    let size = fontSize;
+    let size = pt;
     while (true) {
-      fm = this.getFontMetrics(text, fontFamily, size);
+      fm = this.getFontMetrics(text, fontFamily, `${size}pt`);
       if (fm.width > this.width || fm.height > this.height) {
-        return size - 1;
+        return `${size - 1}pt`;
       } else {
         size++;
       }
     }
   }
 
-  private scaleDown(text: string, fontFamily: string, fontSize: number) {
+  private scaleDown(text: string, fontFamily: string, pt: number) {
     let fm;
-    let size = fontSize;
+    let size = pt;
     while (true) {
-      fm = this.getFontMetrics(text, fontFamily, size);
+      fm = this.getFontMetrics(text, fontFamily, `${size}pt`);
       if (fm.width <= this.width && fm.height <= this.height) {
-        return size;
+        return `${size}pt`;
       } else {
         size--;
       }

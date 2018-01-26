@@ -6,6 +6,7 @@ const sprintf = require('sprintf-js').sprintf;
 import { AbstractWidget } from './AbstractWidget';
 import { G, Rect, Text, ClipPath } from '../tags';
 
+
 export class Field extends AbstractWidget {
 
   decimals: number;
@@ -62,8 +63,15 @@ export class Field extends AbstractWidget {
       this.width -= unitWidth;
     }
 
-    // Don't know why, but box widths in USS appear to grow per 6 pixels only
-    const boxWidth = this.width - (this.width % 6);
+    const textStyleNode = utils.findChild(this.node, 'TextStyle');
+    const textStyle = utils.parseTextStyle(textStyleNode);
+    const fontFamily = textStyle['font-family'];
+    const fontSize = textStyle['font-size'];
+
+    const colSize = Math.floor(this.getFontMetrics('w', fontFamily, fontSize).width);
+
+    // Boxes grow in function of the col size
+    const boxWidth = this.width - (this.width % colSize);
 
     const rect = new Rect({
       id: `${this.id}-bg`,
@@ -86,7 +94,13 @@ export class Field extends AbstractWidget {
     }
     g.addChild(rect);
 
-    const textStyleNode = utils.findChild(this.node, 'TextStyle');
+    const showIndicators = utils.parseBooleanChild(this.node, 'ShowIndicators');
+
+    const indicatorChars = 2;
+    let textWidth = boxWidth;
+    if (showIndicators) {
+      textWidth -= indicatorChars * colSize;
+    }
 
     // Clip text within the defined boundary.
     // TODO clip-path (nor -webkit-clip-path) does not work on Safari
@@ -95,7 +109,7 @@ export class Field extends AbstractWidget {
       new Rect({
         x: 0,
         y: 0,
-        width: boxWidth,
+        width: textWidth,
         height: this.height,
       })
     ));
@@ -103,7 +117,7 @@ export class Field extends AbstractWidget {
     const text = new Text({
       id: this.id,
       y: 0,
-      ...utils.parseTextStyle(textStyleNode),
+      ...textStyle,
       'clip-path': `url(#${clipId})`,
     });
     g.addChild(text);
@@ -111,22 +125,20 @@ export class Field extends AbstractWidget {
     let x;
     const horizAlignment = utils.parseStringChild(textStyleNode, 'HorizontalAlignment');
     if (horizAlignment === 'CENTER') {
-      x = 0 + boxWidth / 2;
+      x = 0 + textWidth / 2;
       text.setAttribute('text-anchor', 'middle');
     } else if (horizAlignment === 'LEFT') {
       x = 0;
       text.setAttribute('text-anchor', 'start');
     } else if (horizAlignment === 'RIGHT') {
-      x = 0 + boxWidth;
+      x = 0 + textWidth;
       text.setAttribute('text-anchor', 'end');
     }
     text.setAttribute('x', String(x));
 
     // TODO move to update
     // Prefer FontMetrics over baseline tricks to account for
-    // ascends and descends.
-    const fontFamily = text.attributes['font-family'];
-    const fontSize = Number(text.attributes['font-size']);
+    // ascent and descent.
     const fm = this.getFontMetrics(/*innerText*/ '', fontFamily, fontSize);
 
     const vertAlignment = utils.parseStringChild(textStyleNode, 'VerticalAlignment');
