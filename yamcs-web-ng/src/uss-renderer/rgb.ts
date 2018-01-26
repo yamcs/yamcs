@@ -1,5 +1,3 @@
-import { Color } from './Color';
-
 // Adapted from xc/programs/rgb/rgb.txt of the X11R6 X Consortium distribution,
 // and is included here to support the mapping of color names to RGB values.
 //
@@ -34,7 +32,7 @@ import { Color } from './Color';
 // X Window System is a trademark of X Consortium, Inc.
 //
 
-const x11ColorTable: { [key: string]: string } = {
+export const x11ColorTable: { [key: string]: string } = {
   'snow': '255 250 250',
   'ghost white': '248 248 255',
   'GhostWhite': '248 248 255',
@@ -788,18 +786,3 @@ const x11ColorTable: { [key: string]: string } = {
   'light green': '144 238 144',
   'LightGreen': '144 238 144',
 };
-
-export function getX11Color(colorName: string) {
-  if (x11ColorTable.hasOwnProperty(colorName)) {
-    const rgbString = x11ColorTable[colorName];
-    if (rgbString) {
-      const parts = rgbString.split(' ');
-      return new Color(
-        Number(parts[0]),
-        Number(parts[1]),
-        Number(parts[2]),
-        255,
-      );
-    }
-  }
-}

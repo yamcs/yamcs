@@ -4,8 +4,8 @@ import { YamcsClient } from '../../../yamcs-client';
 
 import { map } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
-import { AfterViewInit } from '@angular/core/src/metadata/lifecycle_hooks';
-import { Display } from '../../../uss-renderer/Display';
+import { AfterViewInit } from '@angular/core';
+import { Layout } from '../../../uss-renderer/Layout';
 import { ResourceResolver } from '../../../uss-renderer/ResourceResolver';
 
 import { take } from 'rxjs/operators';
@@ -54,11 +54,10 @@ export class DisplayPageComponent implements AfterViewInit {
   }
 
   private renderDisplay(doc: XMLDocument, targetEl: HTMLDivElement) {
-    const display = new Display(targetEl, this.resourceResolver);
-    display.parseAndDraw(doc);
+    const layout = new Layout(targetEl, this.resourceResolver);
+    const frame = layout.openDisplay(doc);
 
-    const opsNames = display.getOpsNames();
-    console.log('ops', opsNames);
+    const opsNames = frame.getOpsNames();
     if (opsNames.size) {
       const ids: Alias[] = [];
       opsNames.forEach(opsName => ids.push({
@@ -82,7 +81,7 @@ export class DisplayPageComponent implements AfterViewInit {
             engValue: pval.engValue,
           });
         }
-        display.updateWidgets(updates);
+        frame.updateExternalDataSources(updates);
       });
     }
   }

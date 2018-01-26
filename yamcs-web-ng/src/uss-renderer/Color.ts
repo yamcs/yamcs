@@ -1,7 +1,14 @@
-import { getX11Color } from './rgb';
+import { x11ColorTable } from './rgb';
 
 const CACHE = new Map<string, Color>();
 
+/**
+ * USS Colors are defined in either RGBA values or
+ * via a color name (typically as the outcome of
+ * a computation). The color names must be
+ * interpreted via the X11 table, rather than
+ * the W3C table.
+ */
 export class Color {
 
   static BLACK = new Color(0, 0, 0, 255);
@@ -15,18 +22,31 @@ export class Color {
   ) {}
 
   static forName(colorName: string, defaultColor = Color.BLACK) {
-    // console.log('color for ' + colorName);
     let color = CACHE.get(colorName);
     if (color) {
       return color;
     } else {
-      color = getX11Color(colorName);
-      // console.log('colorssss', colorName + ', ' + color);
+      color = Color.getX11Color(colorName);
       if (color) {
         CACHE.set(colorName, color);
         return color;
       } else {
         return defaultColor;
+      }
+    }
+  }
+
+  private static getX11Color(colorName: string) {
+    if (x11ColorTable.hasOwnProperty(colorName)) {
+      const rgbString = x11ColorTable[colorName];
+      if (rgbString) {
+        const parts = rgbString.split(' ');
+        return new Color(
+          Number(parts[0]),
+          Number(parts[1]),
+          Number(parts[2]),
+          255,
+        );
       }
     }
   }

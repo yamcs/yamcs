@@ -142,17 +142,18 @@ export class Field extends AbstractWidget {
     // ascent and descent.
     const fm = this.getFontMetrics(/*innerText*/ '', fontFamily, fontSize);
 
+    let y;
     const vertAlignment = utils.parseStringChild(textStyleNode, 'VerticalAlignment');
     if (vertAlignment === 'CENTER') {
-      text.setAttribute('dominant-baseline', 'middle');
-      text.setAttribute('y', String(0 + (this.height / 2)));
+      y = Math.ceil(this.height / 2);
     } else if (vertAlignment === 'TOP') {
-      text.setAttribute('dominant-baseline', 'middle');
-      text.setAttribute('y', String(0 + (fm.height / 2)));
+      y = Math.ceil(fm.height / 2);
     } else if (vertAlignment === 'BOTTOM') {
-      text.setAttribute('dominant-baseline', 'middle');
-      text.setAttribute('y', String(0 + + this.height - (fm.height / 2)));
+      y = Math.ceil(this.height - (fm.height / 2));
     }
+
+    text.setAttribute('dominant-baseline', 'middle');
+    text.setAttribute('y', String(y));
 
     return g;
   }
