@@ -119,6 +119,15 @@ export abstract class AbstractWidget {
     return { opsName, pathName, sid };
   }
 
+  initializeBindings() {
+    for (const binding of this.computationBindings) {
+      if (binding.args.length === 0) {
+        const value = binding.executeExpression();
+        this.updateProperty(binding.dynamicProperty, value, 'COMPUTATION_OK', 'UNKNOWN');
+      }
+    }
+  }
+
   updateBindings(parameterUpdate: ParameterUpdate) {
     for (const binding of this.parameterBindings) {
       if (binding.opsName === parameterUpdate.opsName) {
@@ -132,14 +141,13 @@ export abstract class AbstractWidget {
         acquisitionStatus: parameterUpdate.acquisitionStatus,
       });
 
-      // We could do a bit better here by passing the acquisitionStatus etc through the expression engine, which
-      // would allow for e.g. calculating the most severe acquisitionStatus for all inputs of a computation.
-      // For now a pass-through of these attributes from the latest binding update seems sufficient.
+      // We could do a bit better here by passing the acquisitionStatus etc
+      // through the expression engine, which would allow for calculating
+      // the most severe acquisitionStatus for all inputs of a computation.
+      // For now a pass-through of these attributes from the latest binding
+      // update seems sufficient.
       const value = binding.executeExpression();
       this.updateProperty(binding.dynamicProperty, value, parameterUpdate.acquisitionStatus, parameterUpdate.monitoringResult);
-
-      // console.log(this.svg.getElementById(this.id));
-      // console.log(this);
     }
   }
 

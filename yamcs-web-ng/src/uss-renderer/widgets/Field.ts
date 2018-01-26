@@ -5,6 +5,7 @@ const sprintf = require('sprintf-js').sprintf;
 
 import { AbstractWidget } from './AbstractWidget';
 import { G, Rect, Text, ClipPath } from '../tags';
+import { Color } from '../Color';
 
 
 export class Field extends AbstractWidget {
@@ -177,8 +178,8 @@ export class Field extends AbstractWidget {
         break;
       case 'FILL_COLOR':
         if (this.overrideDqi) {
-          const newColor = value.replace(' ', ''); // Convert 'dark green' to 'darkgreen'
-          this.fieldBackgroundEl.setAttribute('fill', newColor);
+          const newColor = Color.forName(value);
+          this.fieldBackgroundEl.setAttribute('fill', newColor.toString());
         }
         break;
       default:

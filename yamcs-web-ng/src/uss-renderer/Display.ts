@@ -86,6 +86,7 @@ export class Display {
     for (const widget of this.widgets) {
       widget.svg = svg;
       widget.afterDomAttachment();
+      widget.initializeBindings();
     }
   }
 
@@ -144,7 +145,6 @@ export class Display {
       const node = elementNodes[i];
       if (node.attributes.getNamedItem('reference')) {
         elementNodes[i] = utils.getReferencedElement(node);
-        console.log('resolved a reference ', elementNodes[i]);
       }
     }
 

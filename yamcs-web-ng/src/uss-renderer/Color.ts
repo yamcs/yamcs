@@ -1,3 +1,7 @@
+import { getX11Color } from './rgb';
+
+const CACHE = new Map<string, Color>();
+
 export class Color {
 
   static BLACK = new Color(0, 0, 0, 255);
@@ -8,7 +12,24 @@ export class Color {
     public green: number,
     public blue: number,
     public alpha: number,
-  ) { }
+  ) {}
+
+  static forName(colorName: string, defaultColor = Color.BLACK) {
+    // console.log('color for ' + colorName);
+    let color = CACHE.get(colorName);
+    if (color) {
+      return color;
+    } else {
+      color = getX11Color(colorName);
+      // console.log('colorssss', colorName + ', ' + color);
+      if (color) {
+        CACHE.set(colorName, color);
+        return color;
+      } else {
+        return defaultColor;
+      }
+    }
+  }
 
   brighter() {
     let r = this.red;

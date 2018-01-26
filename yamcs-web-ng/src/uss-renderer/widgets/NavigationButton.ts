@@ -10,6 +10,9 @@ export class NavigationButton extends AbstractWidget {
   brightStroke: Color;
   darkStroke: Color;
 
+  bgEl: Element;
+  shadeEl: Element;
+
   parseAndDraw() {
     const pressCmd = utils.findChild(this.node, 'PressCommand');
     const cmdClass = utils.parseStringAttribute(pressCmd, 'class');
@@ -71,23 +74,35 @@ export class NavigationButton extends AbstractWidget {
 
   afterDomAttachment() {
     const buttonEl = this.svg.getElementById(this.id);
-    const topStroke = buttonEl.children[0];
-    const bottomStroke = buttonEl.children[1];
+    this.bgEl = buttonEl.children[0];
+    this.shadeEl = buttonEl.children[1];
     buttonEl.addEventListener('mousedown', () => {
-      topStroke.setAttribute('stroke', this.darkStroke.toString());
-      bottomStroke.setAttribute('stroke', this.brightStroke.toString());
+      this.bgEl.setAttribute('stroke', this.darkStroke.toString());
+      this.shadeEl.setAttribute('stroke', this.brightStroke.toString());
     });
     buttonEl.addEventListener('mouseup', () => {
-      topStroke.setAttribute('stroke', this.brightStroke.toString());
-      bottomStroke.setAttribute('stroke', this.darkStroke.toString());
+      this.bgEl.setAttribute('stroke', this.brightStroke.toString());
+      this.shadeEl.setAttribute('stroke', this.darkStroke.toString());
     });
     buttonEl.addEventListener('mouseout', () => {
-      topStroke.setAttribute('stroke', this.brightStroke.toString());
-      bottomStroke.setAttribute('stroke', this.darkStroke.toString());
+      this.bgEl.setAttribute('stroke', this.brightStroke.toString());
+      this.shadeEl.setAttribute('stroke', this.darkStroke.toString());
     });
   }
 
   updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string) {
-    console.warn('Unsupported dynamic property: ' + property);
+    switch (property) {
+      case 'FILL_COLOR':
+        const newColor = Color.forName(value);
+        this.brightStroke = newColor.brighter().brighter();
+        this.darkStroke = newColor.darker();
+
+        this.bgEl.setAttribute('fill', newColor.toString());
+        this.bgEl.setAttribute('stroke', this.brightStroke.toString());
+        this.shadeEl.setAttribute('stroke', this.darkStroke.toString());
+        break;
+      default:
+        console.warn('Unsupported dynamic property: ' + property);
+    }
   }
 }
