@@ -35,14 +35,14 @@ export class DisplayPageComponent implements AfterViewInit {
     const name = this.route.snapshot.paramMap.get('name');
     if (name !== null) {
       this.resourceResolver.retrieveXMLDisplayResource(name).then(doc => {
-        this.renderDisplay(doc, targetEl);
+        this.renderDisplay(name, doc, targetEl);
       });
     }
   }
 
-  private renderDisplay(doc: XMLDocument, targetEl: HTMLDivElement) {
+  private renderDisplay(name: string, doc: XMLDocument, targetEl: HTMLDivElement) {
     const layout = new Layout(targetEl, this.resourceResolver);
-    const frame = layout.openDisplay(doc);
+    const frame = layout.createDisplayFrame(name, doc);
 
     const opsNames = frame.getOpsNames();
     if (opsNames.size) {

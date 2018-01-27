@@ -6,12 +6,14 @@ import { Color } from '../Color';
 import { Label } from './Label';
 
 interface OpenDisplayCommandOptions {
-  basename: string;
+  target: string;
   openInNewWindow: boolean;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  coordinates?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
 }
 
 export class NavigationButton extends AbstractWidget {
@@ -30,15 +32,19 @@ export class NavigationButton extends AbstractWidget {
     this.commandClass = utils.parseStringAttribute(pressCmd, 'class');
     switch (this.commandClass) {
       case 'OpenDisplayCommand':
-        const coordinatesNode = utils.findChild(pressCmd, 'Coordinates');
         this.openDisplayCommandOptions = {
-          basename: utils.parseStringChild(pressCmd, 'DisplayBasename'),
+          target: `${utils.parseStringChild(pressCmd, 'DisplayBasename')}.uss`,
           openInNewWindow: utils.parseBooleanChild(pressCmd, 'OpenInNewWindow'),
-          x: utils.parseIntChild(coordinatesNode, 'X'),
-          y: utils.parseIntChild(coordinatesNode, 'Y'),
-          width: utils.parseIntChild(coordinatesNode, 'Width'),
-          height: utils.parseIntChild(coordinatesNode, 'Height'),
         };
+        if (utils.hasChild(pressCmd, 'Coordinates')) {
+          const coordinatesNode = utils.findChild(pressCmd, 'Coordinates');
+          this.openDisplayCommandOptions.coordinates = {
+            x: utils.parseIntChild(coordinatesNode, 'X'),
+            y: utils.parseIntChild(coordinatesNode, 'Y'),
+            width: utils.parseIntChild(coordinatesNode, 'Width'),
+            height: utils.parseIntChild(coordinatesNode, 'Height'),
+          };
+        }
         break;
       case 'CloseDisplayCommand':
         break;
@@ -63,6 +69,7 @@ export class NavigationButton extends AbstractWidget {
       'data-name': this.name,
     }).addChild(
       new Rect({
+        'data-control': true,
         ...utils.parseFillStyle(this.node),
         stroke: this.brightStroke,
         'stroke-width': strokeWidth,
@@ -71,6 +78,7 @@ export class NavigationButton extends AbstractWidget {
       }).withBorderBox(this.x, this.y, this.width, this.height),
       // Cheap shade effect
       new Rect({
+        'data-control': true,
         fill: 'transparent',
         'shape-rendering': 'crispEdges',
         stroke: this.darkStroke,
@@ -107,23 +115,50 @@ export class NavigationButton extends AbstractWidget {
       this.bgEl.setAttribute('stroke', this.brightStroke.toString());
       this.shadeEl.setAttribute('stroke', this.darkStroke.toString());
     });
-    buttonEl.addEventListener('click', () => {
-      if (this.commandClass === 'OpenDisplayCommand') {
-        const opts = this.openDisplayCommandOptions;
-        this.display.resourceResolver.retrieveXMLDisplayResource(`${opts.basename}.uss`).then(doc => {
-          const frame = this.display.frame;
-          if (frame) {
-            const layout = frame.layout;
-            const newFrame = layout.openDisplay(doc);
-            newFrame.setPosition(opts.x, opts.y);
-          }
-        });
-      } else if (this.commandClass === 'CloseDisplayCommand') {
-        // cmd = 'USS.closeDisplay()';
-      } else {
-        throw new Error(`Unsupported command class ${this.commandClass}`);
+    buttonEl.addEventListener('click', evt => {
+      switch (this.commandClass) {
+        case 'OpenDisplayCommand':
+          this.executeOpenDisplayCommand();
+          break;
+        case 'CloseDisplayCommand':
+          this.executeCloseDisplayCommand();
+          break;
+        default:
+          throw new Error(`Unsupported command class ${this.commandClass}`);
       }
     });
+  }
+
+  private executeOpenDisplayCommand() {
+    const frame = this.display.frame;
+    if (frame) {
+      const opts = this.openDisplayCommandOptions;
+      const alreadyOpenFrame = frame.layout.getDisplayFrame(opts.target);
+      if (alreadyOpenFrame) {
+        frame.layout.bringToFront(alreadyOpenFrame);
+      } else {
+        this.display.resourceResolver.retrieveXMLDisplayResource(opts.target).then(doc => {
+          const layout = frame.layout;
+          if (!opts.openInNewWindow) {
+            frame.layout.closeDisplayFrame(frame);
+          }
+
+          const newFrame = layout.createDisplayFrame(opts.target, doc);
+          if (opts.coordinates) {
+            newFrame.setPosition(opts.coordinates.x, opts.coordinates.y);
+            newFrame.setDimension(opts.coordinates.width, opts.coordinates.height);
+          }
+        });
+      }
+    }
+  }
+
+  private executeCloseDisplayCommand() {
+    const frame = this.display.frame;
+    if (frame) {
+      const layout = frame.layout;
+      layout.closeDisplayFrame(frame);
+    }
   }
 
   updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string) {

@@ -8,6 +8,8 @@ export class Layout {
   // Sorted by depth (back -> front)
   frames: DisplayFrame[] = [];
 
+  framesById = new Map<string, DisplayFrame>();
+
   constructor(
     private targetEl: HTMLDivElement,
     readonly resourceResolver: ResourceResolver,
@@ -20,18 +22,38 @@ export class Layout {
     this.targetEl.appendChild(this.scrollPane);
   }
 
-  openDisplay(doc: XMLDocument) {
+  createDisplayFrame(id: string, doc: XMLDocument) {
+    if (this.framesById.has(id)) {
+      throw new Error(`Layout already contains a frame with id ${id}`);
+    }
     const frame = new DisplayFrame(this.scrollPane, this, doc);
     this.frames.push(frame);
+    this.framesById.set(id, frame);
     return frame;
   }
 
+  getDisplayFrame(id: string) {
+    return this.framesById.get(id);
+  }
+
+  closeDisplayFrame(frame: DisplayFrame) {
+    const idx = this.frames.indexOf(frame);
+    this.frames.splice(idx, 1);
+    this.framesById.forEach((other, id) => {
+      if (frame === other) {
+        this.framesById.delete(id);
+      }
+    });
+    const frameEl = this.scrollPane.children[idx];
+    this.scrollPane.removeChild(frameEl);
+  }
+
   bringToFront(frame: DisplayFrame) {
+    console.log('bring to front', frame.display.title);
     const idx = this.frames.indexOf(frame);
     if (idx >= 0) {
       this.frames.push(this.frames.splice(idx, 1)[0]);
       const frameEl = this.scrollPane.children[idx];
-      // this.scrollPane.removeChild(frameEl);
       this.scrollPane.appendChild(frameEl);
     }
   }
