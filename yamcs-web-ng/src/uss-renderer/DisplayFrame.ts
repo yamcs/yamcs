@@ -1,6 +1,6 @@
-import { ResourceResolver } from './ResourceResolver';
 import { Display } from './Display';
 import { ParameterUpdate } from './ParameterUpdate';
+import { Layout } from './Layout';
 
 export class DisplayFrame {
 
@@ -14,7 +14,7 @@ export class DisplayFrame {
 
   constructor(
     private targetEl: HTMLDivElement,
-    private resourceResolver: ResourceResolver,
+    readonly layout: Layout,
     private xmlDoc: XMLDocument) {
 
     this.container = document.createElement('div');
@@ -22,6 +22,8 @@ export class DisplayFrame {
     this.container.style.setProperty('top', '0');
     this.container.style.setProperty('left', '0');
     this.container.style.setProperty('background-color', '#e9e9e9');
+    this.container.style.setProperty('box-sizing', 'content-box');
+    this.container.style.setProperty('box-shadow', '0 2px 4px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12)');
     this.container.style.setProperty('border-top-left-radius', '5px');
     this.container.style.setProperty('border-top-right-radius', '5px');
 
@@ -38,8 +40,9 @@ export class DisplayFrame {
     this.container.appendChild(this.titleBar);
 
     this.frameContent = document.createElement('div');
-    this.frameContent.style.setProperty('position', 'absolute');
-    this.frameContent.style.setProperty('top', this.titleBarHeight);
+    this.frameContent.style.setProperty('line-height', '0');
+    // this.frameContent.style.setProperty('position', 'absolute');
+    // this.frameContent.style.setProperty('top', this.titleBarHeight);
     this.container.appendChild(this.frameContent);
 
     this.setPosition(20, 20);
@@ -70,6 +73,7 @@ export class DisplayFrame {
     let mousedown = false;
 
     const mouseMoveHandler = (evt: MouseEvent) => {
+      evt.preventDefault();
       if (mousedown) {
         const dx = evt.pageX - pageStartX;
         const dy = evt.pageY - pageStartY;
@@ -79,12 +83,15 @@ export class DisplayFrame {
       }
     };
     const mouseUpHandler = (evt: MouseEvent) => {
+      evt.preventDefault();
       document.removeEventListener('mousemove', mouseMoveHandler);
       document.removeEventListener('mouseup', mouseUpHandler);
       mousedown = false;
     };
 
     this.titleBar.addEventListener('mousedown', evt => {
+      evt.preventDefault();
+      this.layout.bringToFront(this);
       startX = parseInt(this.container.style.getPropertyValue('left'), 10);
       startY = parseInt(this.container.style.getPropertyValue('top'), 10);
       pageStartX = evt.pageX;
@@ -93,10 +100,15 @@ export class DisplayFrame {
       document.addEventListener('mousemove', mouseMoveHandler);
       document.addEventListener('mouseup', mouseUpHandler);
     });
+
+    this.frameContent.addEventListener('click', evt => {
+      this.layout.bringToFront(this);
+    });
   }
 
   private renderDisplay() {
-    this.display = new Display(this.frameContent, this.resourceResolver);
+    this.display = new Display(this.frameContent, this.layout.resourceResolver);
+    this.display.frame = this;
     this.display.parseAndDraw(this.xmlDoc);
 
     this.container.style.setProperty('width', `${this.display.width}px`);

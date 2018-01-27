@@ -5,25 +5,45 @@ import { G, Rect } from '../tags';
 import { Color } from '../Color';
 import { Label } from './Label';
 
+interface OpenDisplayCommandOptions {
+  basename: string;
+  openInNewWindow: boolean;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export class NavigationButton extends AbstractWidget {
 
   brightStroke: Color;
   darkStroke: Color;
+
+  commandClass: string;
+  openDisplayCommandOptions: OpenDisplayCommandOptions;
 
   bgEl: Element;
   shadeEl: Element;
 
   parseAndDraw() {
     const pressCmd = utils.findChild(this.node, 'PressCommand');
-    const cmdClass = utils.parseStringAttribute(pressCmd, 'class');
-    let cmd;
-    if (cmdClass === 'OpenDisplayCommand') {
-      const displayBaseName = utils.parseStringChild(pressCmd, 'DisplayBasename');
-      cmd = `USS.openDisplay('${displayBaseName}')`;
-    } else if (cmdClass === 'CloseDisplayCommand') {
-      cmd = 'USS.closeDisplay()';
-    } else {
-      throw new Error(`Unsupported command class ${cmdClass}`);
+    this.commandClass = utils.parseStringAttribute(pressCmd, 'class');
+    switch (this.commandClass) {
+      case 'OpenDisplayCommand':
+        const coordinatesNode = utils.findChild(pressCmd, 'Coordinates');
+        this.openDisplayCommandOptions = {
+          basename: utils.parseStringChild(pressCmd, 'DisplayBasename'),
+          openInNewWindow: utils.parseBooleanChild(pressCmd, 'OpenInNewWindow'),
+          x: utils.parseIntChild(coordinatesNode, 'X'),
+          y: utils.parseIntChild(coordinatesNode, 'Y'),
+          width: utils.parseIntChild(coordinatesNode, 'Width'),
+          height: utils.parseIntChild(coordinatesNode, 'Height'),
+        };
+        break;
+      case 'CloseDisplayCommand':
+        break;
+      default:
+        console.error(`Unsupported command class ${this.commandClass}`);
     }
 
     const fillStyleNode = utils.findChild(this.node, 'FillStyle');
@@ -39,7 +59,6 @@ export class NavigationButton extends AbstractWidget {
     const g = new G({
       id: this.id,
       cursor: 'pointer',
-      /// onmouseup: cmd,
       class: 'navigation-button',
       'data-name': this.name,
     }).addChild(
@@ -87,6 +106,23 @@ export class NavigationButton extends AbstractWidget {
     buttonEl.addEventListener('mouseout', () => {
       this.bgEl.setAttribute('stroke', this.brightStroke.toString());
       this.shadeEl.setAttribute('stroke', this.darkStroke.toString());
+    });
+    buttonEl.addEventListener('click', () => {
+      if (this.commandClass === 'OpenDisplayCommand') {
+        const opts = this.openDisplayCommandOptions;
+        this.display.resourceResolver.retrieveXMLDisplayResource(`${opts.basename}.uss`).then(doc => {
+          const frame = this.display.frame;
+          if (frame) {
+            const layout = frame.layout;
+            const newFrame = layout.openDisplay(doc);
+            newFrame.setPosition(opts.x, opts.y);
+          }
+        });
+      } else if (this.commandClass === 'CloseDisplayCommand') {
+        // cmd = 'USS.closeDisplay()';
+      } else {
+        throw new Error(`Unsupported command class ${this.commandClass}`);
+      }
     });
   }
 

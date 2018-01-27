@@ -1,8 +1,5 @@
 import { Component, ChangeDetectionStrategy, ElementRef, ViewChild } from '@angular/core';
 
-import { YamcsClient } from '../../../yamcs-client';
-
-import { map } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { AfterViewInit } from '@angular/core';
 import { Layout } from '../../../uss-renderer/Layout';
@@ -29,7 +26,7 @@ export class DisplayPageComponent implements AfterViewInit {
     private route: ActivatedRoute,
     private yamcs: YamcsService) {
 
-    this.resourceResolver = new UssResourceResolver(yamcs.yamcsClient);
+    this.resourceResolver = new UssResourceResolver(yamcs);
   }
 
   ngAfterViewInit() {
@@ -37,20 +34,10 @@ export class DisplayPageComponent implements AfterViewInit {
 
     const name = this.route.snapshot.paramMap.get('name');
     if (name !== null) {
-      this.loadDisplaySource$(name).subscribe(doc => {
+      this.resourceResolver.retrieveXMLDisplayResource(name).then(doc => {
         this.renderDisplay(doc, targetEl);
       });
     }
-  }
-
-  private loadDisplaySource$(displayName: string) {
-    return this.yamcs.getSelectedInstance().getDisplay(displayName).pipe(
-      map(text => {
-        const xmlParser = new DOMParser();
-        const doc = xmlParser.parseFromString(text, 'text/xml');
-        return doc as XMLDocument;
-      }),
-    );
   }
 
   private renderDisplay(doc: XMLDocument, targetEl: HTMLDivElement) {
@@ -93,14 +80,24 @@ export class DisplayPageComponent implements AfterViewInit {
  */
 class UssResourceResolver implements ResourceResolver {
 
-  constructor(private yamcs: YamcsClient) {
+  constructor(private yamcsService: YamcsService) {
   }
 
   resolvePath(path: string) {
-    return `${this.yamcs.staticUrl}/${path}`;
+    return `${this.yamcsService.yamcsClient.staticUrl}/${path}`;
   }
 
-  resolve(path: string) {
-    return this.yamcs.getStaticText(path).pipe(take(1)).toPromise();
+  retrieveText(path: string) {
+    return this.yamcsService.yamcsClient.getStaticText(path).pipe(take(1)).toPromise();
+  }
+
+  retrieveXML(path: string) {
+    return this.yamcsService.yamcsClient.getStaticXML(path).pipe(take(1)).toPromise();
+  }
+
+  retrieveXMLDisplayResource(path: string) {
+    const instance = this.yamcsService.getSelectedInstance().instance;
+    const displayPath = `${instance}/displays/${path}`;
+    return this.yamcsService.yamcsClient.getStaticXML(displayPath).pipe(take(1)).toPromise();
   }
 }

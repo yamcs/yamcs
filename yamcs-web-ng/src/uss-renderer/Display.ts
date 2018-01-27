@@ -15,6 +15,7 @@ import { Compound } from './widgets/Compound';
 import { Color } from './Color';
 import { ResourceResolver } from './ResourceResolver';
 import { ParameterUpdate } from './ParameterUpdate';
+import { DisplayFrame } from './DisplayFrame';
 
 export class Display {
 
@@ -26,6 +27,8 @@ export class Display {
   title: string;
   width: number;
   height: number;
+
+  frame: DisplayFrame;
 
   container: HTMLDivElement;
   measurerSvg: SVGSVGElement;

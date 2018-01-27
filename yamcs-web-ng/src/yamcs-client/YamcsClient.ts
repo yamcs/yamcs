@@ -46,6 +46,19 @@ export default class YamcsClient {
     );
   }
 
+  getStaticXML(path: string) {
+    return this.http.get(`${this.staticUrl}/${path}`, {
+      responseType: 'text',
+    }).pipe(
+      map(text => {
+        const xmlParser = new DOMParser();
+        const doc = xmlParser.parseFromString(text, 'text/xml');
+        return doc as XMLDocument;
+      }),
+      catchError(this.handleError<XMLDocument>())
+    );
+  }
+
   handleError<T> (errorReplacement?: T) {
     return (error: any): Observable<T> => {
       console.error(error);

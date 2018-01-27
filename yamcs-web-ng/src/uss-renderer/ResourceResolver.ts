@@ -2,5 +2,9 @@ export interface ResourceResolver {
 
   resolvePath(path: string): string;
 
-  resolve(path: string): Promise<string>;
+  retrieveText(path: string): Promise<string>;
+
+  retrieveXML(path: string): Promise<XMLDocument>;
+
+  retrieveXMLDisplayResource(path: string): Promise<XMLDocument>;
 }

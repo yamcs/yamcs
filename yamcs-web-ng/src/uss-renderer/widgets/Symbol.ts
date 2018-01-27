@@ -37,10 +37,8 @@ export class Symbol extends AbstractWidget {
     const lib = new SymbolLibrary();
     this.libraries[libraryName] = lib;
 
-    return this.resolver.resolve(`symlib/${libraryName}.xml`).then(xmlString => {
-      const xmlParser = new DOMParser();
-      const doc = xmlParser.parseFromString(xmlString, 'text/xml');
-      lib.parse(doc as XMLDocument);
+    return this.resolver.retrieveXML(`symlib/${libraryName}.xml`).then(doc => {
+      lib.parse(doc);
     });
   }
 

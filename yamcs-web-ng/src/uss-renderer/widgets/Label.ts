@@ -42,6 +42,7 @@ export class Label extends AbstractWidget {
     }, innerText);
     if (!this.pointerEvents) {
       text.setAttribute('pointer-events', 'none');
+      text.setAttribute('style', 'user-select:none;-moz-user-select:none;-khtml-user-select:none;-webkit-user-select:none');
     }
     g.addChild(text);
 
