@@ -8,6 +8,7 @@ import Dygraph from 'dygraphs';
 import { DataSourceSample } from '../DataSourceSample';
 import { SampleBuffer } from '../SampleBuffer';
 import { CircularBuffer } from '../CircularBuffer';
+import { ExpirationBuffer } from '../ExpirationBuffer';
 
 /**
  * TODO
@@ -160,7 +161,13 @@ export class LineGraph extends AbstractWidget {
     }
     this.yLabelHTML = `<span style="${yLabelStyle}">${this.yLabel}</span>`;
 
-    this.buffer = new CircularBuffer(200);
+    const expirationPeriod = utils.parseIntChild(this.node, 'ExpirationPeriod');
+    if (expirationPeriod) {
+      this.buffer = new ExpirationBuffer(expirationPeriod);
+    } else {
+      const expirationSamples = utils.parseIntChild(this.node, 'ExpirationSamples');
+      this.buffer = new CircularBuffer(expirationSamples);
+    }
 
     return new G({
       id: this.id,
