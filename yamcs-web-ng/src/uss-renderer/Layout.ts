@@ -10,6 +10,13 @@ export class Layout {
 
   framesById = new Map<string, DisplayFrame>();
 
+  synchronizer: number;
+
+  /**
+   * Limit client-side update to this amount of milliseconds.
+   */
+  private updateRate = 500;
+
   constructor(
     private targetEl: HTMLDivElement,
     readonly resourceResolver: ResourceResolver,
@@ -20,6 +27,12 @@ export class Layout {
     this.scrollPane.style.setProperty('height', '100%');
     this.scrollPane.style.setProperty('overflow', 'scroll');
     this.targetEl.appendChild(this.scrollPane);
+
+    this.synchronizer = window.setInterval(() => {
+      for (const frame of this.frames) {
+        frame.syncDisplay();
+      }
+    }, this.updateRate);
   }
 
   createDisplayFrame(id: string, doc: XMLDocument) {

@@ -20,7 +20,7 @@ import { ExpirationBuffer } from '../ExpirationBuffer';
  */
 export class LineGraph extends AbstractWidget {
 
-  graph: any;
+  private graph: any;
 
   private title: string;
   private titleHeight: number;
@@ -36,6 +36,7 @@ export class LineGraph extends AbstractWidget {
   private yAxisColor: Color;
 
   private buffer: SampleBuffer;
+  private dirty = false;
 
   parseAndDraw() {
     this.title = utils.parseStringChild(this.node, 'Title');
@@ -262,15 +263,22 @@ export class LineGraph extends AbstractWidget {
   updateProperty(property: string, sample: DataSourceSample) {
     switch (property) {
       case 'VALUE':
-        this.buffer.push([ sample.generationTime, sample.value ]);
-        const snapshot = this.buffer.snapshot();
-        this.graph.updateOptions({
-          file: snapshot,
-          drawPoints: snapshot.length < 50,
-        });
+        this.buffer.push([sample.generationTime, sample.value]);
+        this.dirty = true;
         break;
       default:
         console.warn('Unsupported dynamic property: ' + property);
+    }
+  }
+
+  digest() {
+    if (this.dirty) {
+      const snapshot = this.buffer.snapshot();
+      this.graph.updateOptions({
+        file: snapshot.length ? snapshot : 'X\n',
+        drawPoints: snapshot.length < 50,
+      });
+      this.dirty = false;
     }
   }
 }

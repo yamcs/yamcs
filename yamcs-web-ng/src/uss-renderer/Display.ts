@@ -263,4 +263,10 @@ export class Display {
       }
     }
   }
+
+  digest() {
+    for (const widget of this.widgets) {
+      widget.digest();
+    }
+  }
 }

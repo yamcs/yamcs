@@ -77,6 +77,10 @@ export class DisplayFrame {
     return this.display.getOpsNames();
   }
 
+  syncDisplay() {
+    this.display.digest();
+  }
+
   updateExternalDataSources(updates: ParameterUpdate[]) {
     this.display.updateWidgets(updates);
   }

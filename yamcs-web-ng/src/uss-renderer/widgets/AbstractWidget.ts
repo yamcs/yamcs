@@ -167,6 +167,10 @@ export abstract class AbstractWidget {
     }
   }
 
+  digest() {
+    // NOP
+  }
+
   protected abstract updateProperty(property: string, sample: DataSourceSample): void;
 
   protected getFontMetrics(text: string, fontFamily: string, fontSize: string) {
