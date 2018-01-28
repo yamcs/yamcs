@@ -3,6 +3,7 @@ import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 import { Image } from '../tags';
 import { ResourceResolver } from '../ResourceResolver';
+import { DataSourceSample } from '../DataSourceSample';
 
 export class Symbol extends AbstractWidget {
 
@@ -61,10 +62,10 @@ export class Symbol extends AbstractWidget {
     }
   }
 
-  updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string) {
+  updateProperty(property: string, sample: DataSourceSample) {
     switch (property) {
       case 'VALUE':
-        const file = this.symbol.states[value] || this.symbol.defaultImage;
+        const file = this.symbol.states[sample.value] || this.symbol.defaultImage;
         this.symbolEl.setAttribute('href', this.resolver.resolvePath(`symlib/images/${file}`));
         break;
       default:

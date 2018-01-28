@@ -3,10 +3,11 @@ import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 import { Text, Rect, ClipPath, G } from '../tags';
 import { Display } from '../Display';
+import { DataSourceSample } from '../DataSourceSample';
 
 export class Label extends AbstractWidget {
 
-  constructor(node: Node, display: Display, protected pointerEvents = true) {
+  constructor(node: Node, display: Display) {
     super(node, display);
   }
 
@@ -39,11 +40,8 @@ export class Label extends AbstractWidget {
       y: this.y,
       ...utils.parseTextStyle(textStyleNode),
       'clip-path': `url(#${clipId})`,
+      'pointer-events': 'none',
     }, innerText);
-    if (!this.pointerEvents) {
-      text.setAttribute('pointer-events', 'none');
-      text.setAttribute('style', 'user-select:none;-moz-user-select:none;-khtml-user-select:none;-webkit-user-select:none');
-    }
     g.addChild(text);
 
     let x;
@@ -86,7 +84,7 @@ export class Label extends AbstractWidget {
     return g;
   }
 
-  updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string) {
+  updateProperty(property: string, sample: DataSourceSample) {
     console.warn('Unsupported dynamic property: ' + property);
   }
 
@@ -94,9 +92,9 @@ export class Label extends AbstractWidget {
     const fm = this.getFontMetrics(text, fontFamily, fontSizeStart);
     const ptStart = Math.floor(Number(fontSizeStart.replace('pt', '')));
     if (fm.width > this.width || fm.height > this.height) {
-      return this.scaleDown(text, fontFamily, ptStart - 1) + 'pt';
+      return this.scaleDown(text, fontFamily, ptStart - 1);
     } else {
-      return this.scaleUp(text, fontFamily, ptStart) + 'pt';
+      return this.scaleUp(text, fontFamily, ptStart);
     }
   }
 

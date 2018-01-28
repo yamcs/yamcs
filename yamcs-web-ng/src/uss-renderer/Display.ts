@@ -60,6 +60,7 @@ export class Display {
     });
 
     this.addDefinitions(rootEl);
+    this.addStyles(rootEl);
 
     rootEl.addChild(new Rect({
       x: 0,
@@ -136,11 +137,23 @@ export class Display {
         width: 10,
         height: 10,
       }).addChild(
-        new Rect({ x: 0, y: 0, width: 2, height: 1, fill: '#c0c0c0', 'shape-rendering': 'crispEdges' })
+        new Rect({ x: 0, y: 0, width: 2, height: 1, fill: '#c0c0c0' })
       )
     );
 
     svg.addChild(defs);
+  }
+
+  private addStyles(svg: Svg) {
+    const style = new Tag('style', {}, `
+      text {
+        user-select: none;
+        -moz-user-select: none;
+        -khtml-user-select: none;
+        -webkit-user-select: none;
+      }
+    `);
+    svg.addChild(style);
   }
 
   drawElements(parent: Tag, elementNodes: Node[]) {

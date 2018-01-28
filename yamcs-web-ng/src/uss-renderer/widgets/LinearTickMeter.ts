@@ -3,6 +3,7 @@ import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 import { G, Rect, Line, Text } from '../tags';
 import { Color } from '../Color';
+import { DataSourceSample } from '../DataSourceSample';
 
 export class LinearTickMeter extends AbstractWidget {
 
@@ -232,10 +233,10 @@ export class LinearTickMeter extends AbstractWidget {
     }
   }
 
-  updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string) {
+  updateProperty(property: string, sample: DataSourceSample) {
     switch (property) {
       case 'VALUE':
-        this.updateValue(value);
+        this.updateValue(sample.value);
         break;
       default:
         console.warn('Unsupported dynamic property: ' + property);

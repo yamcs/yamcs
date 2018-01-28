@@ -179,7 +179,7 @@ export class DisplayFrame {
       evt.preventDefault();
       this.layout.bringToFront(this);
       startWidth = parseInt(this.container.style.getPropertyValue('width'), 10);
-      startHeight = parseInt(this.container.style.getPropertyValue('height'), 10);
+      startHeight = parseInt(this.container.style.getPropertyValue('height'), 10) - this.titleBarHeight;
       pageStartX = evt.pageX;
       pageStartY = evt.pageY;
       mousedown = true;

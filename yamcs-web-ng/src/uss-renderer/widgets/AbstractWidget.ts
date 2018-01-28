@@ -4,6 +4,7 @@ import { Display } from '../Display';
 import { ParameterUpdate } from '../ParameterUpdate';
 import { ParameterBinding } from '../ParameterBinding';
 import { ComputationBinding } from '../ComputationBinding';
+import { DataSourceSample } from '../DataSourceSample';
 
 let widgetSequence = 0;
 
@@ -123,7 +124,12 @@ export abstract class AbstractWidget {
     for (const binding of this.computationBindings) {
       if (binding.args.length === 0) {
         const value = binding.executeExpression();
-        this.updateProperty(binding.dynamicProperty, value, 'COMPUTATION_OK', 'UNKNOWN');
+        this.updateProperty(binding.dynamicProperty, {
+          generationTime: new Date(0),
+          value,
+          acquisitionStatus: 'COMPUTATION_OK',
+          monitoringResult: 'UNKNOWN',
+        });
       }
     }
   }
@@ -132,7 +138,12 @@ export abstract class AbstractWidget {
     for (const binding of this.parameterBindings) {
       if (binding.opsName === parameterUpdate.opsName) {
         const value = this.getParameterValue(parameterUpdate, binding.usingRaw);
-        this.updateProperty(binding.dynamicProperty, value, parameterUpdate.acquisitionStatus, parameterUpdate.monitoringResult);
+        this.updateProperty(binding.dynamicProperty, {
+          generationTime: new Date(Date.parse(parameterUpdate.generationTime)),
+          value,
+          acquisitionStatus: parameterUpdate.acquisitionStatus,
+          monitoringResult: parameterUpdate.monitoringResult,
+        });
       }
     }
     for (const binding of this.computationBindings) {
@@ -147,11 +158,16 @@ export abstract class AbstractWidget {
       // For now a pass-through of these attributes from the latest binding
       // update seems sufficient.
       const value = binding.executeExpression();
-      this.updateProperty(binding.dynamicProperty, value, parameterUpdate.acquisitionStatus, parameterUpdate.monitoringResult);
+      this.updateProperty(binding.dynamicProperty, {
+        generationTime: new Date(Date.parse(parameterUpdate.generationTime)),
+        value,
+        acquisitionStatus: parameterUpdate.acquisitionStatus,
+        monitoringResult: parameterUpdate.monitoringResult,
+      });
     }
   }
 
-  protected abstract updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string): void;
+  protected abstract updateProperty(property: string, sample: DataSourceSample): void;
 
   protected getFontMetrics(text: string, fontFamily: string, fontSize: string) {
     const el = document.createElementNS('http://www.w3.org/2000/svg', 'text');

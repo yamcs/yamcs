@@ -6,6 +6,7 @@ const sprintf = require('sprintf-js').sprintf;
 import { AbstractWidget } from './AbstractWidget';
 import { G, Rect, Text, ClipPath } from '../tags';
 import { Color } from '../Color';
+import { DataSourceSample } from '../DataSourceSample';
 
 
 export class Field extends AbstractWidget {
@@ -164,22 +165,22 @@ export class Field extends AbstractWidget {
     this.fieldTextEl = this.svg.getElementById(this.id);
   }
 
-  updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string) {
+  updateProperty(property: string, sample: DataSourceSample) {
     switch (property) {
       case 'VALUE':
-        this.updateValue(value, acquisitionStatus, monitoringResult);
+        this.updateValue(sample.value, sample.acquisitionStatus, sample.monitoringResult);
         break;
       case 'X':
-        this.x = value;
+        this.x = sample.value;
         this.fieldEl.setAttribute('transform', `translate(${this.x},${this.y})`);
         break;
       case 'Y':
-        this.y = value;
+        this.y = sample.value;
         this.fieldEl.setAttribute('transform', `translate(${this.x},${this.y})`);
         break;
       case 'FILL_COLOR':
         if (this.overrideDqi) {
-          const newColor = Color.forName(value);
+          const newColor = Color.forName(sample.value);
           this.fieldBackgroundEl.setAttribute('fill', newColor.toString());
         }
         break;

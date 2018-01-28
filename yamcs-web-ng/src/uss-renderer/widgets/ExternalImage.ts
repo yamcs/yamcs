@@ -1,6 +1,7 @@
 import { AbstractWidget } from './AbstractWidget';
 import * as utils from '../utils';
 import { Image } from '../tags';
+import { DataSourceSample } from '../DataSourceSample';
 
 export class ExternalImage extends AbstractWidget {
 
@@ -18,7 +19,7 @@ export class ExternalImage extends AbstractWidget {
     });
   }
 
-  updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string) {
+  updateProperty(property: string, sample: DataSourceSample) {
     console.warn('Unsupported dynamic property: ' + property);
   }
 }

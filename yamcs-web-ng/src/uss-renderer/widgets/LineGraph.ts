@@ -5,6 +5,9 @@ import { Color } from '../Color';
 import { G } from '../tags';
 
 import Dygraph from 'dygraphs';
+import { DataSourceSample } from '../DataSourceSample';
+import { SampleBuffer } from '../SampleBuffer';
+import { CircularBuffer } from '../CircularBuffer';
 
 /**
  * TODO
@@ -23,11 +26,15 @@ export class LineGraph extends AbstractWidget {
   private graphBackgroundColor: Color;
   private plotBackgroundColor: Color;
   private xLabel: string;
+  private xLabelHTML: string;
   private yLabel: string;
+  private yLabelHTML: string;
   private xAxisOptions: any;
   private yAxisOptions: any;
   private xAxisColor: Color;
   private yAxisColor: Color;
+
+  private buffer: SampleBuffer;
 
   parseAndDraw() {
     this.title = utils.parseStringChild(this.node, 'Title');
@@ -50,7 +57,7 @@ export class LineGraph extends AbstractWidget {
       bold = utils.parseBooleanChild(style, 'IsBold');
     }
     let titleStyle = `font-family: ${fontFamily}; color: ${color}; font-size: ${fontSize}px`;
-    titleStyle += (italic ? ';font-style: italic' : ';font-style: regular');
+    titleStyle += (italic ? ';font-style: italic' : ';font-style: normal');
     titleStyle += (bold ? ';font-weight: bold' : ';font-weight: normal');
     titleStyle += (underline ? ';text-decoration: underline' : ';text-decoration: none');
 
@@ -64,9 +71,9 @@ export class LineGraph extends AbstractWidget {
       axisLabelFontSize: 12,
       axisLabelWidth: 70,
       axisLabelFormatter: (d: Date, gran: any) => {
-        const hh = d.getHours() < 9 ? '0' + d.getHours() : d.getHours();
-        const mm = d.getMinutes() < 9 ? '0' + d.getMinutes() : d.getMinutes();
-        const ss = d.getSeconds() < 9 ? '0' + d.getSeconds() : d.getSeconds();
+        const hh = d.getHours() < 10 ? '0' + d.getHours() : d.getHours();
+        const mm = d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes();
+        const ss = d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds();
         return `${hh}:${mm}:${ss}`;
       },
     };
@@ -106,7 +113,7 @@ export class LineGraph extends AbstractWidget {
       this.xAxisOptions['axisLineColor'] = this.xAxisColor.toString();
       xLabelStyle += `;color: ${this.xAxisColor}`;
     }
-    this.xLabel = `<span style="${xLabelStyle}">${this.xLabel}</span>`;
+    this.xLabelHTML = `<span style="${xLabelStyle}">${this.xLabel}</span>`;
 
     /*
      * Y-AXIS (RANGE)
@@ -151,7 +158,9 @@ export class LineGraph extends AbstractWidget {
       this.yAxisOptions['axisLineColor'] = this.yAxisColor.toString();
       yLabelStyle += `;color: ${this.yAxisColor}`;
     }
-    this.yLabel = `<span style="${yLabelStyle}">${this.yLabel}</span>`;
+    this.yLabelHTML = `<span style="${yLabelStyle}">${this.yLabel}</span>`;
+
+    this.buffer = new CircularBuffer(200);
 
     return new G({
       id: this.id,
@@ -167,11 +176,16 @@ export class LineGraph extends AbstractWidget {
     const container = document.createElement('div');
     const containerId = this.generateChildId();
     container.setAttribute('id', containerId);
-    container.setAttribute('style', `position: absolute; left: ${this.x}px; top: ${this.y}px`);
+    container.style.setProperty('position', 'absolute');
+    container.style.setProperty('left', `${this.x}px`);
+    container.style.setProperty('top', `${this.y}px`);
+    container.style.setProperty('line-height', 'normal');
 
     // Second wrapper because Dygraphs will modify its style attributes
     const graphWrapper = document.createElement('div');
-    graphWrapper.setAttribute('style', `background-color: ${this.graphBackgroundColor}; border: 1px solid #a6a6a6`);
+    graphWrapper.style.setProperty('background-color', this.graphBackgroundColor.toString());
+    graphWrapper.style.setProperty('box-sizing', 'border-box');
+    graphWrapper.style.setProperty('border', '1px solid #a6a6a6');
     container.appendChild(graphWrapper);
 
     // Some Dygraphs do not have a programmatic option. Use CSS instead
@@ -179,76 +193,77 @@ export class LineGraph extends AbstractWidget {
     styleEl.innerHTML = `
       #${containerId} .dygraph-axis-label-x { color: ${this.xAxisColor}; font-family: sans-serif; font-weight: 100 }
       #${containerId} .dygraph-axis-label-y { color: ${this.yAxisColor}; font-family: sans-serif; font-weight: 100 }
+      #${containerId} .dygraph-legend {
+        background-color: #eee;
+        font-family: sans-serif;
+        font-weight: 100;
+        text-align: center;
+        font-size: 12px;
+      }
     `;
     container.appendChild(styleEl);
 
     this.display.container.appendChild(container);
 
-    this.graph = new Dygraph(graphWrapper,
-      `Date,A,B
-      2016/01/01,10,20
-      2016/07/01,20,10
-      2016/12/31,40,30
-      `, {
-        title: this.title,
-        titleHeight: this.titleHeight,
-        fillGraph: true,
-        interactionModel: {},
-        width: this.width,
-        height: this.height,
-        xlabel: this.xLabel,
-        ylabel: this.yLabel,
-        axes: {
-          x: this.xAxisOptions,
-          y: this.yAxisOptions,
-        },
-        underlayCallback: (ctx: CanvasRenderingContext2D, area: any, g: any) => {
-          ctx.globalAlpha = 1;
+    this.graph = new Dygraph(graphWrapper, 'X\n', {
+      title: this.title,
+      titleHeight: this.titleHeight,
+      fillGraph: false,
+      drawPoints: false,
+      interactionModel: {},
+      width: this.width,
+      height: this.height,
+      xlabel: this.xLabelHTML,
+      ylabel: this.yLabelHTML,
+      labels: [this.xLabel, this.yLabel],
+      axes: {
+        x: this.xAxisOptions,
+        y: this.yAxisOptions,
+      },
+      underlayCallback: (ctx: CanvasRenderingContext2D, area: any, g: any) => {
+        ctx.globalAlpha = 1;
 
-          // Colorize plot area
-          ctx.fillStyle = this.plotBackgroundColor.toString();
-          ctx.fillRect(area.x, area.y, area.w, area.h);
+        // Colorize plot area
+        ctx.fillStyle = this.plotBackgroundColor.toString();
+        ctx.fillRect(area.x, area.y, area.w, area.h);
 
-          // Add plot area contours
-          ctx.strokeStyle = '#c0c0c0';
+        // Add plot area contours
+        ctx.strokeStyle = '#c0c0c0';
 
-          // Plot Area Top
-          ctx.beginPath();
-          ctx.moveTo(area.x, area.y);
-          ctx.lineTo(area.x + area.w, area.y);
-          ctx.stroke();
+        // Plot Area Top
+        ctx.beginPath();
+        ctx.moveTo(area.x, area.y);
+        ctx.lineTo(area.x + area.w, area.y);
+        ctx.stroke();
 
-          // Plot Area Right
-          ctx.beginPath();
-          ctx.moveTo(area.x + area.w, area.y);
-          ctx.lineTo(area.x + area.w, area.y + area.h);
-          ctx.stroke();
-        },
+        // Plot Area Right
+        ctx.beginPath();
+        ctx.moveTo(area.x + area.w, area.y);
+        ctx.lineTo(area.x + area.w, area.y + area.h);
+        ctx.stroke();
+      },
+      legendFormatter: (data: any) => {
+        let legend = data.xHTML + '<br>';
+        for (const trace of data.series) {
+          legend += `${trace.dashHTML} ${trace.yHTML}`;
+        }
+        return legend;
       }
-    );
+    });
   }
 
-  updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string) {
+  updateProperty(property: string, sample: DataSourceSample) {
     switch (property) {
       case 'VALUE':
-        // this.updateValue(value);
+        this.buffer.push([ sample.generationTime, sample.value ]);
+        const snapshot = this.buffer.snapshot();
+        this.graph.updateOptions({
+          file: snapshot,
+          drawPoints: snapshot.length < 50,
+        });
         break;
       default:
         console.warn('Unsupported dynamic property: ' + property);
     }
   }
-
-  /*private updateValue(value: any) {
-    const series = this.chart.get('series-1');
-    const t = para.generationTime;
-    const xaxis = series.xAxis;
-    if (!this.xAutoRange) {
-      const extr = xaxis.getExtremes();
-      if (extr.max < t) {
-        const s = this.xRange / 3;
-        xaxis.setExtremes(t + s - this.xRange, t + s);
-      }
-    }
-    series.addPoint([t, value]);
-  }*/
 }

@@ -4,6 +4,7 @@ import { AbstractWidget } from './AbstractWidget';
 import { G, Rect } from '../tags';
 import { Color } from '../Color';
 import { Label } from './Label';
+import { DataSourceSample } from '../DataSourceSample';
 
 interface OpenDisplayCommandOptions {
   target: string;
@@ -92,7 +93,7 @@ export class NavigationButton extends AbstractWidget {
     const elementsNode = utils.findChild(releasedCompoundNode, 'Elements');
     const labelNode = utils.findChild(elementsNode, 'Label');
 
-    const labelWidget = new Label(labelNode, this.display, false);
+    const labelWidget = new Label(labelNode, this.display);
     labelWidget.tag = labelWidget.parseAndDraw();
     this.display.addWidget(labelWidget, g);
 
@@ -161,10 +162,10 @@ export class NavigationButton extends AbstractWidget {
     }
   }
 
-  updateProperty(property: string, value: any, acquisitionStatus: string, monitoringResult: string) {
+  updateProperty(property: string, sample: DataSourceSample) {
     switch (property) {
       case 'FILL_COLOR':
-        const newColor = Color.forName(value);
+        const newColor = Color.forName(sample.value);
         this.brightStroke = newColor.brighter().brighter();
         this.darkStroke = newColor.darker();
 
