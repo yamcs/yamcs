@@ -6,9 +6,11 @@ import { G } from '../tags';
 
 import Dygraph from 'dygraphs';
 import { DataSourceSample } from '../DataSourceSample';
-import { SampleBuffer } from '../SampleBuffer';
+import { SampleBuffer, Sample } from '../SampleBuffer';
 import { CircularBuffer } from '../CircularBuffer';
 import { ExpirationBuffer } from '../ExpirationBuffer';
+
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 /**
  * TODO
@@ -22,14 +24,16 @@ export class LineGraph extends AbstractWidget {
 
   private graph: any;
 
+  private utc = true;
+
   private title: string;
   private titleHeight: number;
   private graphBackgroundColor: Color;
   private plotBackgroundColor: Color;
   private xLabel: string;
-  private xLabelHTML: string;
   private yLabel: string;
-  private yLabelHTML: string;
+  private xLabelStyle: string;
+  private yLabelStyle: string;
   private xAxisOptions: any;
   private yAxisOptions: any;
   private xAxisColor: Color;
@@ -72,12 +76,7 @@ export class LineGraph extends AbstractWidget {
     this.xAxisOptions = {
       axisLabelFontSize: 12,
       axisLabelWidth: 70,
-      axisLabelFormatter: (d: Date, gran: any) => {
-        const hh = d.getHours() < 10 ? '0' + d.getHours() : d.getHours();
-        const mm = d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes();
-        const ss = d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds();
-        return `${hh}:${mm}:${ss}`;
-      },
+      axisLabelFormatter: (d: Date, gran: any) => this.formatHour(d),
     };
     const domainGrid = utils.findChild(this.node, 'DomainGridlineDrawStyle');
     this.xAxisOptions['gridLineColor'] = utils.parseColorChild(domainGrid, 'Color');
@@ -108,14 +107,13 @@ export class LineGraph extends AbstractWidget {
         utils.parseFloatChild(axisRange, 'Upper'),
       ];
     }
-    let xLabelStyle = 'font-family: sans-serif; font-weight: normal; font-size: 12px';
+    this.xLabelStyle = 'font-family: sans-serif; font-weight: normal; font-size: 12px';
     this.xAxisColor = Color.BLACK;
     if (utils.hasChild(defaultDomainAxis, 'AxisColor')) {
       this.xAxisColor = utils.parseColorChild(defaultDomainAxis, 'AxisColor');
       this.xAxisOptions['axisLineColor'] = this.xAxisColor.toString();
-      xLabelStyle += `;color: ${this.xAxisColor}`;
+      this.xLabelStyle += `;color: ${this.xAxisColor}`;
     }
-    this.xLabelHTML = `<span style="${xLabelStyle}">${this.xLabel}</span>`;
 
     /*
      * Y-AXIS (RANGE)
@@ -153,14 +151,13 @@ export class LineGraph extends AbstractWidget {
         utils.parseFloatChild(axisRange, 'Upper'),
       ];
     }
-    let yLabelStyle = 'font-family: sans-serif; font-weight: normal; font-size: 12px';
+    this.yLabelStyle = 'font-family: sans-serif; font-weight: normal; font-size: 12px';
     this.yAxisColor = Color.BLACK;
     if (utils.hasChild(defaultRangeAxis, 'AxisColor')) {
       this.yAxisColor = utils.parseColorChild(defaultRangeAxis, 'AxisColor');
       this.yAxisOptions['axisLineColor'] = this.yAxisColor.toString();
-      yLabelStyle += `;color: ${this.yAxisColor}`;
+      this.yLabelStyle += `;color: ${this.yAxisColor}`;
     }
-    this.yLabelHTML = `<span style="${yLabelStyle}">${this.yLabel}</span>`;
 
     const expirationPeriod = utils.parseIntChild(this.node, 'ExpirationPeriod');
     if (expirationPeriod) {
@@ -199,8 +196,18 @@ export class LineGraph extends AbstractWidget {
     // Some Dygraphs do not have a programmatic option. Use CSS instead
     const styleEl = document.createElement('style');
     styleEl.innerHTML = `
-      #${containerId} .dygraph-axis-label-x { color: ${this.xAxisColor}; font-family: sans-serif; font-weight: 100 }
-      #${containerId} .dygraph-axis-label-y { color: ${this.yAxisColor}; font-family: sans-serif; font-weight: 100 }
+      #${containerId} .dygraph-xlabel { ${this.xLabelStyle} }
+      #${containerId} .dygraph-ylabel { ${this.yLabelStyle} }
+      #${containerId} .dygraph-axis-label-x {
+        color: ${this.xAxisColor};
+        font-family: sans-serif;
+        font-weight: 100;
+      }
+      #${containerId} .dygraph-axis-label-y {
+        color: ${this.yAxisColor};
+        font-family: sans-serif;
+        font-weight: 100;
+      }
       #${containerId} .dygraph-legend {
         background-color: #eee;
         font-family: sans-serif;
@@ -221,9 +228,10 @@ export class LineGraph extends AbstractWidget {
       interactionModel: {},
       width: this.width,
       height: this.height,
-      xlabel: this.xLabelHTML,
-      ylabel: this.yLabelHTML,
+      xlabel: this.xLabel,
+      ylabel: this.yLabel,
       labels: [this.xLabel, this.yLabel],
+      labelsUTC: this.utc,
       axes: {
         x: this.xAxisOptions,
         y: this.yAxisOptions,
@@ -274,11 +282,60 @@ export class LineGraph extends AbstractWidget {
   digest() {
     if (this.dirty) {
       const snapshot = this.buffer.snapshot();
-      this.graph.updateOptions({
-        file: snapshot.length ? snapshot : 'X\n',
-        drawPoints: snapshot.length < 50,
-      });
+      this.updateGraph(snapshot);
       this.dirty = false;
+    }
+  }
+
+  /**
+   * The X label shows the day of the year for the visible period.
+   */
+  private updateGraph(samples: Sample[]) {
+    let xlabel = this.xLabel;
+    if (samples.length) {
+      const first = this.formatDate(samples[0][0]);
+      const last = this.formatDate(samples[samples.length - 1][0]);
+      if (first === last) {
+        xlabel = `${this.xLabel} [${first}]`;
+      } else {
+        xlabel = `${this.xLabel} [${first} - ${last}]`;
+      }
+    }
+
+    this.graph.updateOptions({
+      xlabel,
+      file: samples.length ? samples : 'X\n',
+      drawPoints: samples.length < 50,
+    });
+  }
+
+  // Example: 01:02:03
+  private formatHour(d: Date) {
+    if (this.utc) {
+      const hh = d.getUTCHours() < 10 ? '0' + d.getUTCHours() : d.getUTCHours();
+      const mm = d.getUTCMinutes() < 10 ? '0' + d.getUTCMinutes() : d.getUTCMinutes();
+      const ss = d.getUTCSeconds() < 10 ? '0' + d.getUTCSeconds() : d.getUTCSeconds();
+      return `${hh}:${mm}:${ss}`;
+    } else {
+      const hh = d.getHours() < 10 ? '0' + d.getHours() : d.getHours();
+      const mm = d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes();
+      const ss = d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds();
+      return `${hh}:${mm}:${ss}`;
+    }
+  }
+
+  // Example: 27Jan18
+  private formatDate(d: Date) {
+    if (this.utc) {
+      const dd = d.getUTCDate() < 10 ? '0' + d.getUTCDate() : d.getUTCDate();
+      const mmm = MONTH_NAMES[d.getUTCMonth()];
+      const yy = d.getUTCFullYear() % 100;
+      return `${dd}${mmm}${yy}`;
+    } else {
+      const dd = d.getDate() < 10 ? '0' + d.getDate() : d.getDate();
+      const mmm = MONTH_NAMES[d.getMonth()];
+      const yy = d.getFullYear() % 100;
+      return `${dd}${mmm}${yy}`;
     }
   }
 }
