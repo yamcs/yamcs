@@ -1,4 +1,4 @@
-import { ParameterValue } from '../yamcs-client';
+import { ParameterValue, AlarmRange } from '../yamcs-client';
 import { DataSourceSample } from './DataSourceSample';
 
 export class ParameterSample implements DataSourceSample {
@@ -13,7 +13,7 @@ export class ParameterSample implements DataSourceSample {
 
   acquisitionStatus: string;
   monitoringResult: string;
-  alarmRange: any;
+  alarmRanges: AlarmRange[];
   rangeCondition: any;
 
   constructor(pval: ParameterValue) {
@@ -26,7 +26,7 @@ export class ParameterSample implements DataSourceSample {
       this.rawValue = this.getValue(pval.rawValue);
     }
     this.engValue = this.getValue(pval.engValue);
-    this.alarmRange = pval.alarmRange;
+    this.alarmRanges = pval.alarmRange || [];
     this.rangeCondition = pval.rangeCondition;
   }
 

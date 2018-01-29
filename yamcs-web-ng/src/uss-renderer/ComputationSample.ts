@@ -1,8 +1,9 @@
 import { DataSourceSample } from './DataSourceSample';
+import { AlarmRange } from '../yamcs-client';
 
 export class ComputationSample implements DataSourceSample {
 
-  rawValue = null;
+  alarmRanges: AlarmRange[] = [];
 
   constructor(
     readonly generationTime: Date,

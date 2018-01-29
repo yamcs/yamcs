@@ -165,7 +165,7 @@ export interface ParameterValue {
   acquisitionStatus: any;
   processingStatus: boolean;
   monitoringResult: any;
-  alarmRange: AlarmRange;
+  alarmRange: AlarmRange[];
   rangeCondition?: 'LOW' | 'HIGH';
   expireMillis: number;
 }

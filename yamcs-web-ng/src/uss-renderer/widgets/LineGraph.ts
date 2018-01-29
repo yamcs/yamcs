@@ -41,6 +41,7 @@ export class LineGraph extends AbstractWidget {
   private yAxisColor: Color;
 
   private buffer: SampleBuffer;
+  private valueSample: DataSourceSample;
 
   parseAndDraw() {
     this.title = utils.parseStringChild(this.node, 'Title');
@@ -220,17 +221,25 @@ export class LineGraph extends AbstractWidget {
 
     this.display.container.appendChild(container);
 
+    const series: {[key: string]: any} = {};
+    series[this.yLabel] = {
+      color: 'black',
+      drawPoints: false,
+      strokeWidth: 1,
+      pointSize: 3,
+    };
+
     this.graph = new Dygraph(graphWrapper, 'X\n', {
       title: this.title,
       titleHeight: this.titleHeight,
       fillGraph: false,
-      drawPoints: false,
       interactionModel: {},
       width: this.width,
       height: this.height,
       xlabel: this.xLabel,
       ylabel: this.yLabel,
       labels: [this.xLabel, this.yLabel],
+      series,
       labelsUTC: this.utc,
       axes: {
         x: this.xAxisOptions,
@@ -257,6 +266,47 @@ export class LineGraph extends AbstractWidget {
         ctx.moveTo(area.x + area.w, area.y);
         ctx.lineTo(area.x + area.w, area.y + area.h);
         ctx.stroke();
+
+        // Add guidelines
+        if (this.valueSample) {
+          for (const range of this.valueSample.alarmRanges) {
+            switch (range.level) {
+              case 'WATCH':
+              case 'WARNING':
+                ctx.strokeStyle = 'rgba(218,219,0,255)';
+                if (range.minInclusive !== undefined) {
+                  this.drawGuideline(ctx, area, g, range.minInclusive);
+                }
+                if (range.maxInclusive !== undefined) {
+                  this.drawGuideline(ctx, area, g, range.maxInclusive);
+                }
+                if (range.minExclusive !== undefined) {
+                  this.drawGuideline(ctx, area, g, range.minExclusive);
+                }
+                if (range.maxExclusive !== undefined) {
+                  this.drawGuideline(ctx, area, g, range.maxExclusive);
+                }
+                break;
+              case 'DISTRESS':
+              case 'CRITICAL':
+              case 'SEVERE':
+                ctx.strokeStyle = 'red';
+                if (range.minInclusive !== undefined) {
+                  this.drawGuideline(ctx, area, g, range.minInclusive);
+                }
+                if (range.maxInclusive !== undefined) {
+                  this.drawGuideline(ctx, area, g, range.maxInclusive);
+                }
+                if (range.minExclusive !== undefined) {
+                  this.drawGuideline(ctx, area, g, range.minExclusive);
+                }
+                if (range.maxExclusive !== undefined) {
+                  this.drawGuideline(ctx, area, g, range.maxExclusive);
+                }
+                break;
+            }
+          }
+        }
       },
       legendFormatter: (data: any) => {
         let legend = data.xHTML + '<br>';
@@ -266,6 +316,14 @@ export class LineGraph extends AbstractWidget {
         return legend;
       }
     });
+  }
+
+  drawGuideline(ctx: CanvasRenderingContext2D, area: any, g: any, value: number) {
+    ctx.beginPath();
+    const y = g.toDomCoords(0, value)[1];
+    ctx.moveTo(area.x, y);
+    ctx.lineTo(area.x + area.w, y);
+    ctx.stroke();
   }
 
   registerBinding(binding: DataSourceBinding) {
@@ -281,6 +339,7 @@ export class LineGraph extends AbstractWidget {
     const value = binding.usingRaw ? sample.rawValue : sample.engValue;
     switch (binding.dynamicProperty) {
       case 'VALUE':
+        this.valueSample = sample;
         this.buffer.push([sample.generationTime, value]);
         break;
     }
