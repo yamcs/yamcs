@@ -254,6 +254,10 @@ export class Display {
     return this.opsNames;
   }
 
+  getGlobalState() {
+    return 'green';
+  }
+
   processParameterSamples(samples: ParameterSample[]) {
     for (const sample of samples) {
       const widgets = this.widgetsByTrigger.get(sample.opsName);

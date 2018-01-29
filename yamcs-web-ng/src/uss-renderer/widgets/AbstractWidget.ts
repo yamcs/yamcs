@@ -136,13 +136,13 @@ export abstract class AbstractWidget {
   initializeBindings() {
     for (const binding of this.computationBindings) {
       if (binding.args.length === 0) {
-        const value = binding.executeExpression();
-        this.updateBinding(binding, new ComputationSample(
+        binding.sample = new ComputationSample(
           new Date(0),
-          value,
+          binding.executeExpression(),
           'COMPUTATION_OK',
           'UNKNOWN',
-        ));
+        );
+        this.onBindingUpdate(binding, binding.sample);
       }
     }
   }
@@ -150,7 +150,8 @@ export abstract class AbstractWidget {
   updateBindings(sample: ParameterSample) {
     for (const binding of this.parameterBindings) {
       if (binding.opsName === sample.opsName) {
-        this.updateBinding(binding, sample);
+        binding.sample = sample;
+        this.onBindingUpdate(binding, sample);
       }
     }
     for (const binding of this.computationBindings) {
@@ -164,13 +165,13 @@ export abstract class AbstractWidget {
       // the most severe acquisitionStatus for all inputs of a computation.
       // For now a pass-through of these attributes from the latest sample
       // seems sufficient.
-      const value = binding.executeExpression();
-      this.updateBinding(binding, new ComputationSample(
+      binding.sample = new ComputationSample(
         sample.generationTime,
-        value,
+        binding.executeExpression(),
         sample.acquisitionStatus,
         sample.monitoringResult,
-      ));
+      );
+      this.onBindingUpdate(binding, binding.sample);
     }
   }
 
@@ -178,7 +179,8 @@ export abstract class AbstractWidget {
     // NOP
   }
 
-  protected abstract updateBinding(binding: DataSourceBinding, sample: DataSourceSample): void;
+  protected onBindingUpdate(binding: DataSourceBinding, sample: DataSourceSample) {
+  }
 
   protected getFontMetrics(text: string, fontFamily: string, fontSize: string) {
     const el = document.createElementNS('http://www.w3.org/2000/svg', 'text');

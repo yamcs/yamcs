@@ -1,7 +1,6 @@
 import { AbstractWidget } from './AbstractWidget';
 import * as utils from '../utils';
 import { Image } from '../tags';
-import { DataSourceSample } from '../DataSourceSample';
 import { DataSourceBinding } from '../DataSourceBinding';
 
 export class ExternalImage extends AbstractWidget {
@@ -22,8 +21,5 @@ export class ExternalImage extends AbstractWidget {
 
   registerBinding(binding: DataSourceBinding) {
     console.warn('Unsupported binding to property: ' + binding.dynamicProperty);
-  }
-
-  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
   }
 }

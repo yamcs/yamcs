@@ -6,7 +6,6 @@ const sprintf = require('sprintf-js').sprintf;
 import { AbstractWidget } from './AbstractWidget';
 import { G, Rect, Text } from '../tags';
 import { Color } from '../Color';
-import { DataSourceSample } from '../DataSourceSample';
 import { DataSourceBinding } from '../DataSourceBinding';
 import { DEFAULT_STYLE } from '../StyleSet';
 
@@ -18,16 +17,9 @@ export class Field extends AbstractWidget {
   overrideDqi: boolean;
 
   private xBinding: DataSourceBinding;
-  private xSample: DataSourceSample;
-
   private yBinding: DataSourceBinding;
-  private ySample: DataSourceSample;
-
   private valueBinding: DataSourceBinding;
-  private valueSample: DataSourceSample;
-
   private fillColorBinding: DataSourceBinding;
-  private fillColorSample: DataSourceSample;
 
   private fieldEl: Element;
   private fieldBackgroundEl: Element;
@@ -190,41 +182,21 @@ export class Field extends AbstractWidget {
     }
   }
 
-  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
-    switch (binding.dynamicProperty) {
-      case 'VALUE':
-        this.valueSample = sample;
-        break;
-      case 'X':
-        this.xSample = sample;
-        break;
-      case 'Y':
-        this.ySample = sample;
-        break;
-      case 'FILL_COLOR':
-        this.fillColorSample = sample;
-        break;
-      default:
-        console.warn('Unsupported dynamic property: ' + binding.dynamicProperty);
-    }
-  }
-
   digest() {
-    if (this.valueSample) {
-      const value = this.valueBinding.usingRaw ? this.valueSample.rawValue : this.valueSample.engValue;
-      this.updateValue(value, this.valueSample.acquisitionStatus, this.valueSample.monitoringResult);
+    if (this.valueBinding && this.valueBinding.sample) {
+      const value = this.valueBinding.value;
+      this.updateValue(value, this.valueBinding.sample.acquisitionStatus, this.valueBinding.sample.monitoringResult);
     }
-
-    if (this.xSample) {
-      this.x = this.xBinding.usingRaw ? this.xSample.rawValue : this.xSample.engValue;
+    if (this.xBinding && this.xBinding.sample) {
+      this.x = this.xBinding.value;
     }
-    if (this.ySample) {
-      this.y = this.yBinding.usingRaw ? this.ySample.rawValue : this.ySample.engValue;
+    if (this.yBinding && this.yBinding.sample) {
+      this.y = this.yBinding.value;
     }
     this.fieldEl.setAttribute('transform', `translate(${this.x},${this.y})`);
 
-    if (this.fillColorSample && this.overrideDqi) {
-      const value = this.fillColorBinding.usingRaw ? this.fillColorSample.rawValue : this.fillColorSample.engValue;
+    if (this.fillColorBinding && this.fillColorBinding.sample && this.overrideDqi) {
+      const value = this.fillColorBinding.value;
       const color = Color.forName(value);
       this.fieldBackgroundEl.setAttribute('fill', color.toString());
     }

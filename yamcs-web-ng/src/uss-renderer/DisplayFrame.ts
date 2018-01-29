@@ -5,7 +5,12 @@ import { ParameterSample } from './ParameterSample';
 export class DisplayFrame {
 
   container: HTMLDivElement;
+
   titleBar: HTMLDivElement;
+  bubble: HTMLSpanElement;
+  title: HTMLSpanElement;
+  closeButton: Element;
+
   frameContent: HTMLDivElement;
   resizeHandle: HTMLDivElement;
 
@@ -26,9 +31,7 @@ export class DisplayFrame {
     this.container.style.setProperty('box-shadow', '0 2px 4px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12)');
 
     this.titleBar = document.createElement('div');
-    this.titleBar.textContent = 'Loading...';
     this.titleBar.style.setProperty('background-color', '#e9e9e9');
-    this.titleBar.style.setProperty('text-align', 'center');
     this.titleBar.style.setProperty('height', `${this.titleBarHeight}px`);
     this.titleBar.style.setProperty('line-height', `${this.titleBarHeight}px`);
     this.titleBar.style.setProperty('cursor', 'move');
@@ -37,6 +40,34 @@ export class DisplayFrame {
     this.titleBar.style.setProperty('-khtml-user-select', 'none');
     this.titleBar.style.setProperty('-webkit-user-select', 'none');
     this.container.appendChild(this.titleBar);
+
+    this.bubble = document.createElement('span');
+    this.bubble.innerHTML = '&nbsp;&nbsp;●&nbsp;';
+    this.bubble.style.setProperty('color', 'grey');
+    this.titleBar.appendChild(this.bubble);
+
+    this.title = document.createElement('span');
+    this.title.textContent = 'Loading...';
+    this.title.setAttribute('class', 'mat-typography');
+    this.titleBar.appendChild(this.title);
+
+    const frameActions = document.createElement('div');
+    frameActions.style.setProperty('position', 'absolute');
+    frameActions.style.setProperty('top', '0');
+    frameActions.style.setProperty('right', '0.5em');
+    frameActions.style.setProperty('height', `${this.titleBarHeight}px`);
+    frameActions.style.setProperty('line-height', `${this.titleBarHeight}px`);
+    frameActions.style.setProperty('color', 'grey');
+    frameActions.style.setProperty('cursor', 'pointer');
+    frameActions.style.setProperty('user-select', 'none');
+    frameActions.style.setProperty('-moz-user-select', 'none');
+    frameActions.style.setProperty('-khtml-user-select', 'none');
+    frameActions.style.setProperty('-webkit-user-select', 'none');
+    this.container.appendChild(frameActions);
+
+    this.closeButton = document.createElement('span');
+    this.closeButton.textContent = '⨉';
+    frameActions.appendChild(this.closeButton);
 
     this.frameContent = document.createElement('div');
     this.frameContent.style.setProperty('line-height', '0');
@@ -78,6 +109,7 @@ export class DisplayFrame {
   }
 
   syncDisplay() {
+    this.bubble.style.setProperty('color', this.display.getGlobalState());
     this.display.digest();
   }
 
@@ -92,12 +124,16 @@ export class DisplayFrame {
 
     this.container.style.setProperty('background-color', this.display.bgcolor.toString());
     this.setDimension(this.display.width, this.display.height);
-    this.titleBar.textContent = this.display.title;
+    this.title.textContent = this.display.title;
   }
 
   private addEventHandlers() {
     this.addTitleBarEventHandlers();
     this.addResizeEventHandlers();
+
+    this.closeButton.addEventListener('click', evt => {
+      this.layout.closeDisplayFrame(this);
+    });
 
     // Brings the current frame to the front upon click event - with
     // the exception of click that come from controls like NavigationButtons

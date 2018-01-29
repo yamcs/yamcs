@@ -3,7 +3,6 @@ import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 import { G, Rect, Line, Text } from '../tags';
 import { Color } from '../Color';
-import { DataSourceSample } from '../DataSourceSample';
 import { DataSourceBinding } from '../DataSourceBinding';
 
 export class LinearTickMeter extends AbstractWidget {
@@ -22,7 +21,6 @@ export class LinearTickMeter extends AbstractWidget {
   orientation: string;
 
   private valueBinding: DataSourceBinding;
-  private valueSample: DataSourceSample;
 
   parseAndDraw() {
     this.padding = 10;
@@ -247,17 +245,9 @@ export class LinearTickMeter extends AbstractWidget {
     }
   }
 
-  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
-    switch (binding.dynamicProperty) {
-      case 'VALUE':
-        this.valueSample = sample;
-        break;
-    }
-  }
-
   digest() {
-    if (this.valueSample) {
-      const value = this.valueBinding.usingRaw ? this.valueSample.rawValue : this.valueSample.engValue;
+    if (this.valueBinding && this.valueBinding.sample) {
+      const value = this.valueBinding.value;
       this.updateValue(value);
     }
   }

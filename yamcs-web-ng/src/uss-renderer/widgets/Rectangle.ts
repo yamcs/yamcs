@@ -2,7 +2,6 @@ import * as utils from '../utils';
 
 import { AbstractWidget } from './AbstractWidget';
 import { Rect } from '../tags';
-import { DataSourceSample } from '../DataSourceSample';
 import { DataSourceBinding } from '../DataSourceBinding';
 
 export class Rectangle extends AbstractWidget {
@@ -23,8 +22,5 @@ export class Rectangle extends AbstractWidget {
 
   registerBinding(binding: DataSourceBinding) {
     console.warn('Unsupported dynamic property: ' + binding.dynamicProperty);
-  }
-
-  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
   }
 }

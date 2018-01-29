@@ -3,7 +3,6 @@ import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 import { Text, Rect, ClipPath, G } from '../tags';
 import { Display } from '../Display';
-import { DataSourceSample } from '../DataSourceSample';
 import { DataSourceBinding } from '../DataSourceBinding';
 
 export class Label extends AbstractWidget {
@@ -87,9 +86,6 @@ export class Label extends AbstractWidget {
 
   registerBinding(binding: DataSourceBinding) {
     console.warn('Unsupported binding to property: ' + binding.dynamicProperty);
-  }
-
-  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
   }
 
   private autoscale(text: string, fontFamily: string, fontSizeStart: string) {

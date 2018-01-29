@@ -40,8 +40,8 @@ export class LineGraph extends AbstractWidget {
   private xAxisColor: Color;
   private yAxisColor: Color;
 
+  private valueBinding: DataSourceBinding;
   private buffer: SampleBuffer;
-  private valueSample: DataSourceSample;
 
   parseAndDraw() {
     this.title = utils.parseStringChild(this.node, 'Title');
@@ -268,8 +268,8 @@ export class LineGraph extends AbstractWidget {
         ctx.stroke();
 
         // Add guidelines
-        if (this.valueSample) {
-          for (const range of this.valueSample.alarmRanges) {
+        if (this.valueBinding.sample) {
+          for (const range of this.valueBinding.sample.alarmRanges) {
             switch (range.level) {
               case 'WATCH':
               case 'WARNING':
@@ -329,23 +329,20 @@ export class LineGraph extends AbstractWidget {
   registerBinding(binding: DataSourceBinding) {
     switch (binding.dynamicProperty) {
       case 'VALUE':
+        this.valueBinding = binding;
         break;
       default:
         console.warn('Unsupported dynamic property: ' + binding.dynamicProperty);
     }
   }
 
-  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
-    const value = binding.usingRaw ? sample.rawValue : sample.engValue;
-    switch (binding.dynamicProperty) {
-      case 'VALUE':
-        this.valueSample = sample;
-        if (sample.acquisitionStatus === 'EXPIRED') {
-          this.buffer.push([sample.generationTime, null]);
-        } else {
-          this.buffer.push([sample.generationTime, value]);
-        }
-        break;
+  onBindingUpdate(binding: DataSourceBinding, sample: DataSourceSample) {
+    if (binding.dynamicProperty === 'VALUE') {
+      if (sample.acquisitionStatus === 'EXPIRED') {
+        this.buffer.push([sample.generationTime, null]);
+      } else {
+        this.buffer.push([sample.generationTime, binding.value]);
+      }
     }
   }
 

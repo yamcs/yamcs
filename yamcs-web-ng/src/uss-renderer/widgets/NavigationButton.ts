@@ -4,7 +4,6 @@ import { AbstractWidget } from './AbstractWidget';
 import { G, Rect } from '../tags';
 import { Color } from '../Color';
 import { Label } from './Label';
-import { DataSourceSample } from '../DataSourceSample';
 import { DataSourceBinding } from '../DataSourceBinding';
 
 interface OpenDisplayCommandOptions {
@@ -27,7 +26,6 @@ export class NavigationButton extends AbstractWidget {
   openDisplayCommandOptions: OpenDisplayCommandOptions;
 
   fillColorBinding: DataSourceBinding;
-  fillColorSample: DataSourceSample;
 
   bgEl: Element;
   shadeEl: Element;
@@ -176,19 +174,9 @@ export class NavigationButton extends AbstractWidget {
     }
   }
 
-  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
-    switch (binding.dynamicProperty) {
-      case 'FILL_COLOR':
-        this.fillColorSample = sample;
-        break;
-    }
-  }
-
   digest() {
-    if (this.fillColorSample) {
-      const value = this.fillColorBinding.usingRaw ? this.fillColorSample.rawValue : this.fillColorSample.engValue;
-
-      const newColor = Color.forName(value);
+    if (this.fillColorBinding && this.fillColorBinding.sample) {
+      const newColor = Color.forName(this.fillColorBinding.value);
       this.brightStroke = newColor.brighter().brighter();
       this.darkStroke = newColor.darker();
 

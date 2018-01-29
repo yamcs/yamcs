@@ -2,7 +2,6 @@ import * as utils from '../utils';
 
 import { AbstractWidget } from './AbstractWidget';
 import { Tag } from '../tags';
-import { DataSourceSample } from '../DataSourceSample';
 import { DataSourceBinding } from '../DataSourceBinding';
 
 export class Polyline extends AbstractWidget {
@@ -40,8 +39,5 @@ export class Polyline extends AbstractWidget {
 
   registerBinding(binding: DataSourceBinding) {
     console.warn('Unsupported dynamic property: ' + binding.dynamicProperty);
-  }
-
-  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
   }
 }
