@@ -103,10 +103,10 @@ public final class Commanding {
     // @@protoc_insertion_point(enum_scope:commanding.QueueState)
   }
 
-  public interface CommandIdOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface CommandIdOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:commanding.CommandId)
+      com.google.protobuf.MessageOrBuilder {
 
-    // required int64 generationTime = 1;
     /**
      * <code>required int64 generationTime = 1;</code>
      */
@@ -116,7 +116,6 @@ public final class Commanding {
      */
     long getGenerationTime();
 
-    // required string origin = 2;
     /**
      * <code>required string origin = 2;</code>
      */
@@ -131,7 +130,6 @@ public final class Commanding {
     com.google.protobuf.ByteString
         getOriginBytes();
 
-    // required int32 sequenceNumber = 3;
     /**
      * <code>required int32 sequenceNumber = 3;</code>
      *
@@ -149,7 +147,6 @@ public final class Commanding {
      */
     int getSequenceNumber();
 
-    // optional string commandName = 4;
     /**
      * <code>optional string commandName = 4;</code>
      */
@@ -168,8 +165,9 @@ public final class Commanding {
    * Protobuf type {@code commanding.CommandId}
    */
   public static final class CommandId extends
-      com.google.protobuf.GeneratedMessage
-      implements CommandIdOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:commanding.CommandId)
+      CommandIdOrBuilder {
     // Use CommandId.newBuilder() to construct.
     private CommandId(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -221,8 +219,9 @@ public final class Commanding {
               break;
             }
             case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              origin_ = input.readBytes();
+              origin_ = bs;
               break;
             }
             case 24: {
@@ -231,8 +230,9 @@ public final class Commanding {
               break;
             }
             case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000008;
-              commandName_ = input.readBytes();
+              commandName_ = bs;
               break;
             }
           }
@@ -275,7 +275,6 @@ public final class Commanding {
     }
 
     private int bitField0_;
-    // required int64 generationTime = 1;
     public static final int GENERATIONTIME_FIELD_NUMBER = 1;
     private long generationTime_;
     /**
@@ -291,7 +290,6 @@ public final class Commanding {
       return generationTime_;
     }
 
-    // required string origin = 2;
     public static final int ORIGIN_FIELD_NUMBER = 2;
     private java.lang.Object origin_;
     /**
@@ -334,7 +332,6 @@ public final class Commanding {
       }
     }
 
-    // required int32 sequenceNumber = 3;
     public static final int SEQUENCENUMBER_FIELD_NUMBER = 3;
     private int sequenceNumber_;
     /**
@@ -358,7 +355,6 @@ public final class Commanding {
       return sequenceNumber_;
     }
 
-    // optional string commandName = 4;
     public static final int COMMANDNAME_FIELD_NUMBER = 4;
     private java.lang.Object commandName_;
     /**
@@ -410,7 +406,8 @@ public final class Commanding {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       if (!hasGenerationTime()) {
         memoizedIsInitialized = 0;
@@ -550,8 +547,9 @@ public final class Commanding {
      * Protobuf type {@code commanding.CommandId}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Commanding.CommandIdOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:commanding.CommandId)
+        org.yamcs.protobuf.Commanding.CommandIdOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandId_descriptor;
@@ -707,7 +705,6 @@ public final class Commanding {
       }
       private int bitField0_;
 
-      // required int64 generationTime = 1;
       private long generationTime_ ;
       /**
        * <code>required int64 generationTime = 1;</code>
@@ -740,7 +737,6 @@ public final class Commanding {
         return this;
       }
 
-      // required string origin = 2;
       private java.lang.Object origin_ = "";
       /**
        * <code>required string origin = 2;</code>
@@ -754,9 +750,12 @@ public final class Commanding {
       public java.lang.String getOrigin() {
         java.lang.Object ref = origin_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          origin_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            origin_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -814,7 +813,6 @@ public final class Commanding {
         return this;
       }
 
-      // required int32 sequenceNumber = 3;
       private int sequenceNumber_ ;
       /**
        * <code>required int32 sequenceNumber = 3;</code>
@@ -863,7 +861,6 @@ public final class Commanding {
         return this;
       }
 
-      // optional string commandName = 4;
       private java.lang.Object commandName_ = "";
       /**
        * <code>optional string commandName = 4;</code>
@@ -877,9 +874,12 @@ public final class Commanding {
       public java.lang.String getCommandName() {
         java.lang.Object ref = commandName_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          commandName_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            commandName_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -948,10 +948,10 @@ public final class Commanding {
     // @@protoc_insertion_point(class_scope:commanding.CommandId)
   }
 
-  public interface CommandQueueInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface CommandQueueInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:commanding.CommandQueueInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // required string instance = 1;
     /**
      * <code>required string instance = 1;</code>
      */
@@ -966,7 +966,6 @@ public final class Commanding {
     com.google.protobuf.ByteString
         getInstanceBytes();
 
-    // required string processorName = 2;
     /**
      * <code>required string processorName = 2;</code>
      */
@@ -981,7 +980,6 @@ public final class Commanding {
     com.google.protobuf.ByteString
         getProcessorNameBytes();
 
-    // required string name = 3;
     /**
      * <code>required string name = 3;</code>
      */
@@ -996,7 +994,6 @@ public final class Commanding {
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // optional .commanding.QueueState state = 4;
     /**
      * <code>optional .commanding.QueueState state = 4;</code>
      */
@@ -1006,7 +1003,6 @@ public final class Commanding {
      */
     org.yamcs.protobuf.Commanding.QueueState getState();
 
-    // required int32 nbSentCommands = 5;
     /**
      * <code>required int32 nbSentCommands = 5;</code>
      */
@@ -1016,7 +1012,6 @@ public final class Commanding {
      */
     int getNbSentCommands();
 
-    // required int32 nbRejectedCommands = 6;
     /**
      * <code>required int32 nbRejectedCommands = 6;</code>
      */
@@ -1026,7 +1021,6 @@ public final class Commanding {
      */
     int getNbRejectedCommands();
 
-    // optional int32 stateExpirationTimeS = 7;
     /**
      * <code>optional int32 stateExpirationTimeS = 7;</code>
      */
@@ -1036,7 +1030,6 @@ public final class Commanding {
      */
     int getStateExpirationTimeS();
 
-    // repeated .commanding.CommandQueueEntry entry = 8;
     /**
      * <code>repeated .commanding.CommandQueueEntry entry = 8;</code>
      */
@@ -1061,7 +1054,6 @@ public final class Commanding {
     org.yamcs.protobuf.Commanding.CommandQueueEntryOrBuilder getEntryOrBuilder(
         int index);
 
-    // optional string url = 9;
     /**
      * <code>optional string url = 9;</code>
      */
@@ -1080,8 +1072,9 @@ public final class Commanding {
    * Protobuf type {@code commanding.CommandQueueInfo}
    */
   public static final class CommandQueueInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements CommandQueueInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:commanding.CommandQueueInfo)
+      CommandQueueInfoOrBuilder {
     // Use CommandQueueInfo.newBuilder() to construct.
     private CommandQueueInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -1128,18 +1121,21 @@ public final class Commanding {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              instance_ = input.readBytes();
+              instance_ = bs;
               break;
             }
             case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              processorName_ = input.readBytes();
+              processorName_ = bs;
               break;
             }
             case 26: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000004;
-              name_ = input.readBytes();
+              name_ = bs;
               break;
             }
             case 32: {
@@ -1177,8 +1173,9 @@ public final class Commanding {
               break;
             }
             case 74: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000080;
-              url_ = input.readBytes();
+              url_ = bs;
               break;
             }
           }
@@ -1224,7 +1221,6 @@ public final class Commanding {
     }
 
     private int bitField0_;
-    // required string instance = 1;
     public static final int INSTANCE_FIELD_NUMBER = 1;
     private java.lang.Object instance_;
     /**
@@ -1267,7 +1263,6 @@ public final class Commanding {
       }
     }
 
-    // required string processorName = 2;
     public static final int PROCESSORNAME_FIELD_NUMBER = 2;
     private java.lang.Object processorName_;
     /**
@@ -1310,7 +1305,6 @@ public final class Commanding {
       }
     }
 
-    // required string name = 3;
     public static final int NAME_FIELD_NUMBER = 3;
     private java.lang.Object name_;
     /**
@@ -1353,7 +1347,6 @@ public final class Commanding {
       }
     }
 
-    // optional .commanding.QueueState state = 4;
     public static final int STATE_FIELD_NUMBER = 4;
     private org.yamcs.protobuf.Commanding.QueueState state_;
     /**
@@ -1369,7 +1362,6 @@ public final class Commanding {
       return state_;
     }
 
-    // required int32 nbSentCommands = 5;
     public static final int NBSENTCOMMANDS_FIELD_NUMBER = 5;
     private int nbSentCommands_;
     /**
@@ -1385,7 +1377,6 @@ public final class Commanding {
       return nbSentCommands_;
     }
 
-    // required int32 nbRejectedCommands = 6;
     public static final int NBREJECTEDCOMMANDS_FIELD_NUMBER = 6;
     private int nbRejectedCommands_;
     /**
@@ -1401,7 +1392,6 @@ public final class Commanding {
       return nbRejectedCommands_;
     }
 
-    // optional int32 stateExpirationTimeS = 7;
     public static final int STATEEXPIRATIONTIMES_FIELD_NUMBER = 7;
     private int stateExpirationTimeS_;
     /**
@@ -1417,7 +1407,6 @@ public final class Commanding {
       return stateExpirationTimeS_;
     }
 
-    // repeated .commanding.CommandQueueEntry entry = 8;
     public static final int ENTRY_FIELD_NUMBER = 8;
     private java.util.List<org.yamcs.protobuf.Commanding.CommandQueueEntry> entry_;
     /**
@@ -1453,7 +1442,6 @@ public final class Commanding {
       return entry_.get(index);
     }
 
-    // optional string url = 9;
     public static final int URL_FIELD_NUMBER = 9;
     private java.lang.Object url_;
     /**
@@ -1510,7 +1498,8 @@ public final class Commanding {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       if (!hasInstance()) {
         memoizedIsInitialized = 0;
@@ -1699,8 +1688,9 @@ public final class Commanding {
      * Protobuf type {@code commanding.CommandQueueInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Commanding.CommandQueueInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:commanding.CommandQueueInfo)
+        org.yamcs.protobuf.Commanding.CommandQueueInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandQueueInfo_descriptor;
@@ -1952,7 +1942,6 @@ public final class Commanding {
       }
       private int bitField0_;
 
-      // required string instance = 1;
       private java.lang.Object instance_ = "";
       /**
        * <code>required string instance = 1;</code>
@@ -1966,9 +1955,12 @@ public final class Commanding {
       public java.lang.String getInstance() {
         java.lang.Object ref = instance_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          instance_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            instance_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -2026,7 +2018,6 @@ public final class Commanding {
         return this;
       }
 
-      // required string processorName = 2;
       private java.lang.Object processorName_ = "";
       /**
        * <code>required string processorName = 2;</code>
@@ -2040,9 +2031,12 @@ public final class Commanding {
       public java.lang.String getProcessorName() {
         java.lang.Object ref = processorName_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          processorName_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            processorName_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -2100,7 +2094,6 @@ public final class Commanding {
         return this;
       }
 
-      // required string name = 3;
       private java.lang.Object name_ = "";
       /**
        * <code>required string name = 3;</code>
@@ -2114,9 +2107,12 @@ public final class Commanding {
       public java.lang.String getName() {
         java.lang.Object ref = name_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          name_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            name_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -2174,7 +2170,6 @@ public final class Commanding {
         return this;
       }
 
-      // optional .commanding.QueueState state = 4;
       private org.yamcs.protobuf.Commanding.QueueState state_ = org.yamcs.protobuf.Commanding.QueueState.BLOCKED;
       /**
        * <code>optional .commanding.QueueState state = 4;</code>
@@ -2210,7 +2205,6 @@ public final class Commanding {
         return this;
       }
 
-      // required int32 nbSentCommands = 5;
       private int nbSentCommands_ ;
       /**
        * <code>required int32 nbSentCommands = 5;</code>
@@ -2243,7 +2237,6 @@ public final class Commanding {
         return this;
       }
 
-      // required int32 nbRejectedCommands = 6;
       private int nbRejectedCommands_ ;
       /**
        * <code>required int32 nbRejectedCommands = 6;</code>
@@ -2276,7 +2269,6 @@ public final class Commanding {
         return this;
       }
 
-      // optional int32 stateExpirationTimeS = 7;
       private int stateExpirationTimeS_ ;
       /**
        * <code>optional int32 stateExpirationTimeS = 7;</code>
@@ -2309,7 +2301,6 @@ public final class Commanding {
         return this;
       }
 
-      // repeated .commanding.CommandQueueEntry entry = 8;
       private java.util.List<org.yamcs.protobuf.Commanding.CommandQueueEntry> entry_ =
         java.util.Collections.emptyList();
       private void ensureEntryIsMutable() {
@@ -2451,7 +2442,8 @@ public final class Commanding {
           java.lang.Iterable<? extends org.yamcs.protobuf.Commanding.CommandQueueEntry> values) {
         if (entryBuilder_ == null) {
           ensureEntryIsMutable();
-          super.addAll(values, entry_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, entry_);
           onChanged();
         } else {
           entryBuilder_.addAllMessages(values);
@@ -2549,7 +2541,6 @@ public final class Commanding {
         return entryBuilder_;
       }
 
-      // optional string url = 9;
       private java.lang.Object url_ = "";
       /**
        * <code>optional string url = 9;</code>
@@ -2563,9 +2554,12 @@ public final class Commanding {
       public java.lang.String getUrl() {
         java.lang.Object ref = url_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          url_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            url_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -2634,10 +2628,10 @@ public final class Commanding {
     // @@protoc_insertion_point(class_scope:commanding.CommandQueueInfo)
   }
 
-  public interface CommandQueueEntryOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface CommandQueueEntryOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:commanding.CommandQueueEntry)
+      com.google.protobuf.MessageOrBuilder {
 
-    // required string instance = 1;
     /**
      * <code>required string instance = 1;</code>
      */
@@ -2652,7 +2646,6 @@ public final class Commanding {
     com.google.protobuf.ByteString
         getInstanceBytes();
 
-    // required string processorName = 2;
     /**
      * <code>required string processorName = 2;</code>
      */
@@ -2667,7 +2660,6 @@ public final class Commanding {
     com.google.protobuf.ByteString
         getProcessorNameBytes();
 
-    // required string queueName = 3;
     /**
      * <code>required string queueName = 3;</code>
      */
@@ -2682,7 +2674,6 @@ public final class Commanding {
     com.google.protobuf.ByteString
         getQueueNameBytes();
 
-    // required .commanding.CommandId cmdId = 4;
     /**
      * <code>required .commanding.CommandId cmdId = 4;</code>
      */
@@ -2696,7 +2687,6 @@ public final class Commanding {
      */
     org.yamcs.protobuf.Commanding.CommandIdOrBuilder getCmdIdOrBuilder();
 
-    // optional string source = 5;
     /**
      * <code>optional string source = 5;</code>
      */
@@ -2711,7 +2701,6 @@ public final class Commanding {
     com.google.protobuf.ByteString
         getSourceBytes();
 
-    // optional bytes binary = 6;
     /**
      * <code>optional bytes binary = 6;</code>
      */
@@ -2721,7 +2710,6 @@ public final class Commanding {
      */
     com.google.protobuf.ByteString getBinary();
 
-    // optional string username = 7;
     /**
      * <code>optional string username = 7;</code>
      */
@@ -2736,7 +2724,6 @@ public final class Commanding {
     com.google.protobuf.ByteString
         getUsernameBytes();
 
-    // optional int64 generationTime = 8;
     /**
      * <code>optional int64 generationTime = 8;</code>
      */
@@ -2746,7 +2733,6 @@ public final class Commanding {
      */
     long getGenerationTime();
 
-    // optional string uuid = 9;
     /**
      * <code>optional string uuid = 9;</code>
      */
@@ -2769,8 +2755,9 @@ public final class Commanding {
    * </pre>
    */
   public static final class CommandQueueEntry extends
-      com.google.protobuf.GeneratedMessage
-      implements CommandQueueEntryOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:commanding.CommandQueueEntry)
+      CommandQueueEntryOrBuilder {
     // Use CommandQueueEntry.newBuilder() to construct.
     private CommandQueueEntry(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -2817,18 +2804,21 @@ public final class Commanding {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              instance_ = input.readBytes();
+              instance_ = bs;
               break;
             }
             case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              processorName_ = input.readBytes();
+              processorName_ = bs;
               break;
             }
             case 26: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000004;
-              queueName_ = input.readBytes();
+              queueName_ = bs;
               break;
             }
             case 34: {
@@ -2845,8 +2835,9 @@ public final class Commanding {
               break;
             }
             case 42: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000010;
-              source_ = input.readBytes();
+              source_ = bs;
               break;
             }
             case 50: {
@@ -2855,8 +2846,9 @@ public final class Commanding {
               break;
             }
             case 58: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000040;
-              username_ = input.readBytes();
+              username_ = bs;
               break;
             }
             case 64: {
@@ -2865,8 +2857,9 @@ public final class Commanding {
               break;
             }
             case 74: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000100;
-              uuid_ = input.readBytes();
+              uuid_ = bs;
               break;
             }
           }
@@ -2909,7 +2902,6 @@ public final class Commanding {
     }
 
     private int bitField0_;
-    // required string instance = 1;
     public static final int INSTANCE_FIELD_NUMBER = 1;
     private java.lang.Object instance_;
     /**
@@ -2952,7 +2944,6 @@ public final class Commanding {
       }
     }
 
-    // required string processorName = 2;
     public static final int PROCESSORNAME_FIELD_NUMBER = 2;
     private java.lang.Object processorName_;
     /**
@@ -2995,7 +2986,6 @@ public final class Commanding {
       }
     }
 
-    // required string queueName = 3;
     public static final int QUEUENAME_FIELD_NUMBER = 3;
     private java.lang.Object queueName_;
     /**
@@ -3038,7 +3028,6 @@ public final class Commanding {
       }
     }
 
-    // required .commanding.CommandId cmdId = 4;
     public static final int CMDID_FIELD_NUMBER = 4;
     private org.yamcs.protobuf.Commanding.CommandId cmdId_;
     /**
@@ -3060,7 +3049,6 @@ public final class Commanding {
       return cmdId_;
     }
 
-    // optional string source = 5;
     public static final int SOURCE_FIELD_NUMBER = 5;
     private java.lang.Object source_;
     /**
@@ -3103,7 +3091,6 @@ public final class Commanding {
       }
     }
 
-    // optional bytes binary = 6;
     public static final int BINARY_FIELD_NUMBER = 6;
     private com.google.protobuf.ByteString binary_;
     /**
@@ -3119,7 +3106,6 @@ public final class Commanding {
       return binary_;
     }
 
-    // optional string username = 7;
     public static final int USERNAME_FIELD_NUMBER = 7;
     private java.lang.Object username_;
     /**
@@ -3162,7 +3148,6 @@ public final class Commanding {
       }
     }
 
-    // optional int64 generationTime = 8;
     public static final int GENERATIONTIME_FIELD_NUMBER = 8;
     private long generationTime_;
     /**
@@ -3178,7 +3163,6 @@ public final class Commanding {
       return generationTime_;
     }
 
-    // optional string uuid = 9;
     public static final int UUID_FIELD_NUMBER = 9;
     private java.lang.Object uuid_;
     /**
@@ -3235,7 +3219,8 @@ public final class Commanding {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       if (!hasInstance()) {
         memoizedIsInitialized = 0;
@@ -3422,8 +3407,9 @@ public final class Commanding {
      * </pre>
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Commanding.CommandQueueEntryOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:commanding.CommandQueueEntry)
+        org.yamcs.protobuf.Commanding.CommandQueueEntryOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandQueueEntry_descriptor;
@@ -3649,7 +3635,6 @@ public final class Commanding {
       }
       private int bitField0_;
 
-      // required string instance = 1;
       private java.lang.Object instance_ = "";
       /**
        * <code>required string instance = 1;</code>
@@ -3663,9 +3648,12 @@ public final class Commanding {
       public java.lang.String getInstance() {
         java.lang.Object ref = instance_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          instance_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            instance_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -3723,7 +3711,6 @@ public final class Commanding {
         return this;
       }
 
-      // required string processorName = 2;
       private java.lang.Object processorName_ = "";
       /**
        * <code>required string processorName = 2;</code>
@@ -3737,9 +3724,12 @@ public final class Commanding {
       public java.lang.String getProcessorName() {
         java.lang.Object ref = processorName_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          processorName_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            processorName_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -3797,7 +3787,6 @@ public final class Commanding {
         return this;
       }
 
-      // required string queueName = 3;
       private java.lang.Object queueName_ = "";
       /**
        * <code>required string queueName = 3;</code>
@@ -3811,9 +3800,12 @@ public final class Commanding {
       public java.lang.String getQueueName() {
         java.lang.Object ref = queueName_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          queueName_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            queueName_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -3871,7 +3863,6 @@ public final class Commanding {
         return this;
       }
 
-      // required .commanding.CommandId cmdId = 4;
       private org.yamcs.protobuf.Commanding.CommandId cmdId_ = org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Commanding.CommandId, org.yamcs.protobuf.Commanding.CommandId.Builder, org.yamcs.protobuf.Commanding.CommandIdOrBuilder> cmdIdBuilder_;
@@ -3980,7 +3971,7 @@ public final class Commanding {
         if (cmdIdBuilder_ == null) {
           cmdIdBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Commanding.CommandId, org.yamcs.protobuf.Commanding.CommandId.Builder, org.yamcs.protobuf.Commanding.CommandIdOrBuilder>(
-                  cmdId_,
+                  getCmdId(),
                   getParentForChildren(),
                   isClean());
           cmdId_ = null;
@@ -3988,7 +3979,6 @@ public final class Commanding {
         return cmdIdBuilder_;
       }
 
-      // optional string source = 5;
       private java.lang.Object source_ = "";
       /**
        * <code>optional string source = 5;</code>
@@ -4002,9 +3992,12 @@ public final class Commanding {
       public java.lang.String getSource() {
         java.lang.Object ref = source_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          source_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            source_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -4062,7 +4055,6 @@ public final class Commanding {
         return this;
       }
 
-      // optional bytes binary = 6;
       private com.google.protobuf.ByteString binary_ = com.google.protobuf.ByteString.EMPTY;
       /**
        * <code>optional bytes binary = 6;</code>
@@ -4098,7 +4090,6 @@ public final class Commanding {
         return this;
       }
 
-      // optional string username = 7;
       private java.lang.Object username_ = "";
       /**
        * <code>optional string username = 7;</code>
@@ -4112,9 +4103,12 @@ public final class Commanding {
       public java.lang.String getUsername() {
         java.lang.Object ref = username_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          username_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            username_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -4172,7 +4166,6 @@ public final class Commanding {
         return this;
       }
 
-      // optional int64 generationTime = 8;
       private long generationTime_ ;
       /**
        * <code>optional int64 generationTime = 8;</code>
@@ -4205,7 +4198,6 @@ public final class Commanding {
         return this;
       }
 
-      // optional string uuid = 9;
       private java.lang.Object uuid_ = "";
       /**
        * <code>optional string uuid = 9;</code>
@@ -4219,9 +4211,12 @@ public final class Commanding {
       public java.lang.String getUuid() {
         java.lang.Object ref = uuid_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          uuid_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            uuid_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -4290,10 +4285,10 @@ public final class Commanding {
     // @@protoc_insertion_point(class_scope:commanding.CommandQueueEntry)
   }
 
-  public interface CommandQueueEventOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface CommandQueueEventOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:commanding.CommandQueueEvent)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional .commanding.CommandQueueEvent.Type type = 1;
     /**
      * <code>optional .commanding.CommandQueueEvent.Type type = 1;</code>
      */
@@ -4303,7 +4298,6 @@ public final class Commanding {
      */
     org.yamcs.protobuf.Commanding.CommandQueueEvent.Type getType();
 
-    // optional .commanding.CommandQueueEntry data = 2;
     /**
      * <code>optional .commanding.CommandQueueEntry data = 2;</code>
      */
@@ -4321,8 +4315,9 @@ public final class Commanding {
    * Protobuf type {@code commanding.CommandQueueEvent}
    */
   public static final class CommandQueueEvent extends
-      com.google.protobuf.GeneratedMessage
-      implements CommandQueueEventOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:commanding.CommandQueueEvent)
+      CommandQueueEventOrBuilder {
     // Use CommandQueueEvent.newBuilder() to construct.
     private CommandQueueEvent(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -4523,7 +4518,6 @@ public final class Commanding {
     }
 
     private int bitField0_;
-    // optional .commanding.CommandQueueEvent.Type type = 1;
     public static final int TYPE_FIELD_NUMBER = 1;
     private org.yamcs.protobuf.Commanding.CommandQueueEvent.Type type_;
     /**
@@ -4539,7 +4533,6 @@ public final class Commanding {
       return type_;
     }
 
-    // optional .commanding.CommandQueueEntry data = 2;
     public static final int DATA_FIELD_NUMBER = 2;
     private org.yamcs.protobuf.Commanding.CommandQueueEntry data_;
     /**
@@ -4568,7 +4561,8 @@ public final class Commanding {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       if (hasData()) {
         if (!getData().isInitialized()) {
@@ -4688,8 +4682,9 @@ public final class Commanding {
      * Protobuf type {@code commanding.CommandQueueEvent}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Commanding.CommandQueueEventOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:commanding.CommandQueueEvent)
+        org.yamcs.protobuf.Commanding.CommandQueueEventOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandQueueEvent_descriptor;
@@ -4826,7 +4821,6 @@ public final class Commanding {
       }
       private int bitField0_;
 
-      // optional .commanding.CommandQueueEvent.Type type = 1;
       private org.yamcs.protobuf.Commanding.CommandQueueEvent.Type type_ = org.yamcs.protobuf.Commanding.CommandQueueEvent.Type.COMMAND_ADDED;
       /**
        * <code>optional .commanding.CommandQueueEvent.Type type = 1;</code>
@@ -4862,7 +4856,6 @@ public final class Commanding {
         return this;
       }
 
-      // optional .commanding.CommandQueueEntry data = 2;
       private org.yamcs.protobuf.Commanding.CommandQueueEntry data_ = org.yamcs.protobuf.Commanding.CommandQueueEntry.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Commanding.CommandQueueEntry, org.yamcs.protobuf.Commanding.CommandQueueEntry.Builder, org.yamcs.protobuf.Commanding.CommandQueueEntryOrBuilder> dataBuilder_;
@@ -4971,7 +4964,7 @@ public final class Commanding {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Commanding.CommandQueueEntry, org.yamcs.protobuf.Commanding.CommandQueueEntry.Builder, org.yamcs.protobuf.Commanding.CommandQueueEntryOrBuilder>(
-                  data_,
+                  getData(),
                   getParentForChildren(),
                   isClean());
           data_ = null;
@@ -4990,10 +4983,10 @@ public final class Commanding {
     // @@protoc_insertion_point(class_scope:commanding.CommandQueueEvent)
   }
 
-  public interface CommandQueueRequestOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface CommandQueueRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:commanding.CommandQueueRequest)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional .commanding.CommandQueueInfo queueInfo = 1;
     /**
      * <code>optional .commanding.CommandQueueInfo queueInfo = 1;</code>
      *
@@ -5019,7 +5012,6 @@ public final class Commanding {
      */
     org.yamcs.protobuf.Commanding.CommandQueueInfoOrBuilder getQueueInfoOrBuilder();
 
-    // optional .commanding.CommandQueueEntry queueEntry = 2;
     /**
      * <code>optional .commanding.CommandQueueEntry queueEntry = 2;</code>
      *
@@ -5045,7 +5037,6 @@ public final class Commanding {
      */
     org.yamcs.protobuf.Commanding.CommandQueueEntryOrBuilder getQueueEntryOrBuilder();
 
-    // optional bool rebuild = 3 [default = false];
     /**
      * <code>optional bool rebuild = 3 [default = false];</code>
      *
@@ -5067,8 +5058,9 @@ public final class Commanding {
    * Protobuf type {@code commanding.CommandQueueRequest}
    */
   public static final class CommandQueueRequest extends
-      com.google.protobuf.GeneratedMessage
-      implements CommandQueueRequestOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:commanding.CommandQueueRequest)
+      CommandQueueRequestOrBuilder {
     // Use CommandQueueRequest.newBuilder() to construct.
     private CommandQueueRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -5185,7 +5177,6 @@ public final class Commanding {
     }
 
     private int bitField0_;
-    // optional .commanding.CommandQueueInfo queueInfo = 1;
     public static final int QUEUEINFO_FIELD_NUMBER = 1;
     private org.yamcs.protobuf.Commanding.CommandQueueInfo queueInfo_;
     /**
@@ -5219,7 +5210,6 @@ public final class Commanding {
       return queueInfo_;
     }
 
-    // optional .commanding.CommandQueueEntry queueEntry = 2;
     public static final int QUEUEENTRY_FIELD_NUMBER = 2;
     private org.yamcs.protobuf.Commanding.CommandQueueEntry queueEntry_;
     /**
@@ -5253,7 +5243,6 @@ public final class Commanding {
       return queueEntry_;
     }
 
-    // optional bool rebuild = 3 [default = false];
     public static final int REBUILD_FIELD_NUMBER = 3;
     private boolean rebuild_;
     /**
@@ -5285,7 +5274,8 @@ public final class Commanding {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       if (hasQueueInfo()) {
         if (!getQueueInfo().isInitialized()) {
@@ -5418,8 +5408,9 @@ public final class Commanding {
      * Protobuf type {@code commanding.CommandQueueRequest}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Commanding.CommandQueueRequestOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:commanding.CommandQueueRequest)
+        org.yamcs.protobuf.Commanding.CommandQueueRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandQueueRequest_descriptor;
@@ -5580,7 +5571,6 @@ public final class Commanding {
       }
       private int bitField0_;
 
-      // optional .commanding.CommandQueueInfo queueInfo = 1;
       private org.yamcs.protobuf.Commanding.CommandQueueInfo queueInfo_ = org.yamcs.protobuf.Commanding.CommandQueueInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Commanding.CommandQueueInfo, org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder, org.yamcs.protobuf.Commanding.CommandQueueInfoOrBuilder> queueInfoBuilder_;
@@ -5725,7 +5715,7 @@ public final class Commanding {
         if (queueInfoBuilder_ == null) {
           queueInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Commanding.CommandQueueInfo, org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder, org.yamcs.protobuf.Commanding.CommandQueueInfoOrBuilder>(
-                  queueInfo_,
+                  getQueueInfo(),
                   getParentForChildren(),
                   isClean());
           queueInfo_ = null;
@@ -5733,7 +5723,6 @@ public final class Commanding {
         return queueInfoBuilder_;
       }
 
-      // optional .commanding.CommandQueueEntry queueEntry = 2;
       private org.yamcs.protobuf.Commanding.CommandQueueEntry queueEntry_ = org.yamcs.protobuf.Commanding.CommandQueueEntry.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Commanding.CommandQueueEntry, org.yamcs.protobuf.Commanding.CommandQueueEntry.Builder, org.yamcs.protobuf.Commanding.CommandQueueEntryOrBuilder> queueEntryBuilder_;
@@ -5878,7 +5867,7 @@ public final class Commanding {
         if (queueEntryBuilder_ == null) {
           queueEntryBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Commanding.CommandQueueEntry, org.yamcs.protobuf.Commanding.CommandQueueEntry.Builder, org.yamcs.protobuf.Commanding.CommandQueueEntryOrBuilder>(
-                  queueEntry_,
+                  getQueueEntry(),
                   getParentForChildren(),
                   isClean());
           queueEntry_ = null;
@@ -5886,7 +5875,6 @@ public final class Commanding {
         return queueEntryBuilder_;
       }
 
-      // optional bool rebuild = 3 [default = false];
       private boolean rebuild_ ;
       /**
        * <code>optional bool rebuild = 3 [default = false];</code>
@@ -5946,10 +5934,10 @@ public final class Commanding {
     // @@protoc_insertion_point(class_scope:commanding.CommandQueueRequest)
   }
 
-  public interface CommandSignificanceOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface CommandSignificanceOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:commanding.CommandSignificance)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional int32 sequenceNumber = 1;
     /**
      * <code>optional int32 sequenceNumber = 1;</code>
      *
@@ -5967,7 +5955,6 @@ public final class Commanding {
      */
     int getSequenceNumber();
 
-    // optional .mdb.SignificanceInfo significance = 2;
     /**
      * <code>optional .mdb.SignificanceInfo significance = 2;</code>
      */
@@ -5989,8 +5976,9 @@ public final class Commanding {
    * </pre>
    */
   public static final class CommandSignificance extends
-      com.google.protobuf.GeneratedMessage
-      implements CommandSignificanceOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:commanding.CommandSignificance)
+      CommandSignificanceOrBuilder {
     // Use CommandSignificance.newBuilder() to construct.
     private CommandSignificance(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -6094,7 +6082,6 @@ public final class Commanding {
     }
 
     private int bitField0_;
-    // optional int32 sequenceNumber = 1;
     public static final int SEQUENCENUMBER_FIELD_NUMBER = 1;
     private int sequenceNumber_;
     /**
@@ -6118,7 +6105,6 @@ public final class Commanding {
       return sequenceNumber_;
     }
 
-    // optional .mdb.SignificanceInfo significance = 2;
     public static final int SIGNIFICANCE_FIELD_NUMBER = 2;
     private org.yamcs.protobuf.Mdb.SignificanceInfo significance_;
     /**
@@ -6147,7 +6133,8 @@ public final class Commanding {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -6265,8 +6252,9 @@ public final class Commanding {
      * </pre>
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Commanding.CommandSignificanceOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:commanding.CommandSignificance)
+        org.yamcs.protobuf.Commanding.CommandSignificanceOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandSignificance_descriptor;
@@ -6397,7 +6385,6 @@ public final class Commanding {
       }
       private int bitField0_;
 
-      // optional int32 sequenceNumber = 1;
       private int sequenceNumber_ ;
       /**
        * <code>optional int32 sequenceNumber = 1;</code>
@@ -6446,7 +6433,6 @@ public final class Commanding {
         return this;
       }
 
-      // optional .mdb.SignificanceInfo significance = 2;
       private org.yamcs.protobuf.Mdb.SignificanceInfo significance_ = org.yamcs.protobuf.Mdb.SignificanceInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Mdb.SignificanceInfo, org.yamcs.protobuf.Mdb.SignificanceInfo.Builder, org.yamcs.protobuf.Mdb.SignificanceInfoOrBuilder> significanceBuilder_;
@@ -6555,7 +6541,7 @@ public final class Commanding {
         if (significanceBuilder_ == null) {
           significanceBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Mdb.SignificanceInfo, org.yamcs.protobuf.Mdb.SignificanceInfo.Builder, org.yamcs.protobuf.Mdb.SignificanceInfoOrBuilder>(
-                  significance_,
+                  getSignificance(),
                   getParentForChildren(),
                   isClean());
           significance_ = null;
@@ -6574,10 +6560,10 @@ public final class Commanding {
     // @@protoc_insertion_point(class_scope:commanding.CommandSignificance)
   }
 
-  public interface CommandHistoryAttributeOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface CommandHistoryAttributeOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:commanding.CommandHistoryAttribute)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional string name = 1;
     /**
      * <code>optional string name = 1;</code>
      */
@@ -6592,7 +6578,6 @@ public final class Commanding {
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // optional .yamcs.Value value = 2;
     /**
      * <code>optional .yamcs.Value value = 2;</code>
      */
@@ -6606,7 +6591,6 @@ public final class Commanding {
      */
     org.yamcs.protobuf.Yamcs.ValueOrBuilder getValueOrBuilder();
 
-    // optional int64 time = 3;
     /**
      * <code>optional int64 time = 3;</code>
      */
@@ -6620,8 +6604,9 @@ public final class Commanding {
    * Protobuf type {@code commanding.CommandHistoryAttribute}
    */
   public static final class CommandHistoryAttribute extends
-      com.google.protobuf.GeneratedMessage
-      implements CommandHistoryAttributeOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:commanding.CommandHistoryAttribute)
+      CommandHistoryAttributeOrBuilder {
     // Use CommandHistoryAttribute.newBuilder() to construct.
     private CommandHistoryAttribute(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -6668,8 +6653,9 @@ public final class Commanding {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              name_ = input.readBytes();
+              name_ = bs;
               break;
             }
             case 18: {
@@ -6730,7 +6716,6 @@ public final class Commanding {
     }
 
     private int bitField0_;
-    // optional string name = 1;
     public static final int NAME_FIELD_NUMBER = 1;
     private java.lang.Object name_;
     /**
@@ -6773,7 +6758,6 @@ public final class Commanding {
       }
     }
 
-    // optional .yamcs.Value value = 2;
     public static final int VALUE_FIELD_NUMBER = 2;
     private org.yamcs.protobuf.Yamcs.Value value_;
     /**
@@ -6795,7 +6779,6 @@ public final class Commanding {
       return value_;
     }
 
-    // optional int64 time = 3;
     public static final int TIME_FIELD_NUMBER = 3;
     private long time_;
     /**
@@ -6819,7 +6802,8 @@ public final class Commanding {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       if (hasValue()) {
         if (!getValue().isInitialized()) {
@@ -6946,8 +6930,9 @@ public final class Commanding {
      * Protobuf type {@code commanding.CommandHistoryAttribute}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Commanding.CommandHistoryAttributeOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:commanding.CommandHistoryAttribute)
+        org.yamcs.protobuf.Commanding.CommandHistoryAttributeOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandHistoryAttribute_descriptor;
@@ -7095,7 +7080,6 @@ public final class Commanding {
       }
       private int bitField0_;
 
-      // optional string name = 1;
       private java.lang.Object name_ = "";
       /**
        * <code>optional string name = 1;</code>
@@ -7109,9 +7093,12 @@ public final class Commanding {
       public java.lang.String getName() {
         java.lang.Object ref = name_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          name_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            name_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -7169,7 +7156,6 @@ public final class Commanding {
         return this;
       }
 
-      // optional .yamcs.Value value = 2;
       private org.yamcs.protobuf.Yamcs.Value value_ = org.yamcs.protobuf.Yamcs.Value.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder> valueBuilder_;
@@ -7278,7 +7264,7 @@ public final class Commanding {
         if (valueBuilder_ == null) {
           valueBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder>(
-                  value_,
+                  getValue(),
                   getParentForChildren(),
                   isClean());
           value_ = null;
@@ -7286,7 +7272,6 @@ public final class Commanding {
         return valueBuilder_;
       }
 
-      // optional int64 time = 3;
       private long time_ ;
       /**
        * <code>optional int64 time = 3;</code>
@@ -7330,10 +7315,10 @@ public final class Commanding {
     // @@protoc_insertion_point(class_scope:commanding.CommandHistoryAttribute)
   }
 
-  public interface CommandHistoryEntryOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface CommandHistoryEntryOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:commanding.CommandHistoryEntry)
+      com.google.protobuf.MessageOrBuilder {
 
-    // required .commanding.CommandId commandId = 1;
     /**
      * <code>required .commanding.CommandId commandId = 1;</code>
      */
@@ -7347,7 +7332,6 @@ public final class Commanding {
      */
     org.yamcs.protobuf.Commanding.CommandIdOrBuilder getCommandIdOrBuilder();
 
-    // repeated .commanding.CommandHistoryAttribute attr = 3;
     /**
      * <code>repeated .commanding.CommandHistoryAttribute attr = 3;</code>
      *
@@ -7396,8 +7380,9 @@ public final class Commanding {
    * Protobuf type {@code commanding.CommandHistoryEntry}
    */
   public static final class CommandHistoryEntry extends
-      com.google.protobuf.GeneratedMessage
-      implements CommandHistoryEntryOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:commanding.CommandHistoryEntry)
+      CommandHistoryEntryOrBuilder {
     // Use CommandHistoryEntry.newBuilder() to construct.
     private CommandHistoryEntry(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -7507,7 +7492,6 @@ public final class Commanding {
     }
 
     private int bitField0_;
-    // required .commanding.CommandId commandId = 1;
     public static final int COMMANDID_FIELD_NUMBER = 1;
     private org.yamcs.protobuf.Commanding.CommandId commandId_;
     /**
@@ -7529,7 +7513,6 @@ public final class Commanding {
       return commandId_;
     }
 
-    // repeated .commanding.CommandHistoryAttribute attr = 3;
     public static final int ATTR_FIELD_NUMBER = 3;
     private java.util.List<org.yamcs.protobuf.Commanding.CommandHistoryAttribute> attr_;
     /**
@@ -7592,7 +7575,8 @@ public final class Commanding {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       if (!hasCommandId()) {
         memoizedIsInitialized = 0;
@@ -7720,8 +7704,9 @@ public final class Commanding {
      * Protobuf type {@code commanding.CommandHistoryEntry}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Commanding.CommandHistoryEntryOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:commanding.CommandHistoryEntry)
+        org.yamcs.protobuf.Commanding.CommandHistoryEntryOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Commanding.internal_static_commanding_CommandHistoryEntry_descriptor;
@@ -7899,7 +7884,6 @@ public final class Commanding {
       }
       private int bitField0_;
 
-      // required .commanding.CommandId commandId = 1;
       private org.yamcs.protobuf.Commanding.CommandId commandId_ = org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Commanding.CommandId, org.yamcs.protobuf.Commanding.CommandId.Builder, org.yamcs.protobuf.Commanding.CommandIdOrBuilder> commandIdBuilder_;
@@ -8008,7 +7992,7 @@ public final class Commanding {
         if (commandIdBuilder_ == null) {
           commandIdBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Commanding.CommandId, org.yamcs.protobuf.Commanding.CommandId.Builder, org.yamcs.protobuf.Commanding.CommandIdOrBuilder>(
-                  commandId_,
+                  getCommandId(),
                   getParentForChildren(),
                   isClean());
           commandId_ = null;
@@ -8016,7 +8000,6 @@ public final class Commanding {
         return commandIdBuilder_;
       }
 
-      // repeated .commanding.CommandHistoryAttribute attr = 3;
       private java.util.List<org.yamcs.protobuf.Commanding.CommandHistoryAttribute> attr_ =
         java.util.Collections.emptyList();
       private void ensureAttrIsMutable() {
@@ -8198,7 +8181,8 @@ public final class Commanding {
           java.lang.Iterable<? extends org.yamcs.protobuf.Commanding.CommandHistoryAttribute> values) {
         if (attrBuilder_ == null) {
           ensureAttrIsMutable();
-          super.addAll(values, attr_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, attr_);
           onChanged();
         } else {
           attrBuilder_.addAllMessages(values);
@@ -8339,42 +8323,42 @@ public final class Commanding {
     // @@protoc_insertion_point(class_scope:commanding.CommandHistoryEntry)
   }
 
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_commanding_CommandId_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_commanding_CommandId_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_commanding_CommandQueueInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_commanding_CommandQueueInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_commanding_CommandQueueEntry_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_commanding_CommandQueueEntry_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_commanding_CommandQueueEvent_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_commanding_CommandQueueEvent_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_commanding_CommandQueueRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_commanding_CommandQueueRequest_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_commanding_CommandSignificance_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_commanding_CommandSignificance_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_commanding_CommandHistoryAttribute_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_commanding_CommandHistoryAttribute_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_commanding_CommandHistoryEntry_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -8423,67 +8407,69 @@ public final class Commanding {
       "\002\022\013\n\007ENABLED\020\003B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
-      new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
-        public com.google.protobuf.ExtensionRegistry assignDescriptors(
-            com.google.protobuf.Descriptors.FileDescriptor root) {
-          descriptor = root;
-          internal_static_commanding_CommandId_descriptor =
-            getDescriptor().getMessageTypes().get(0);
-          internal_static_commanding_CommandId_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_commanding_CommandId_descriptor,
-              new java.lang.String[] { "GenerationTime", "Origin", "SequenceNumber", "CommandName", });
-          internal_static_commanding_CommandQueueInfo_descriptor =
-            getDescriptor().getMessageTypes().get(1);
-          internal_static_commanding_CommandQueueInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_commanding_CommandQueueInfo_descriptor,
-              new java.lang.String[] { "Instance", "ProcessorName", "Name", "State", "NbSentCommands", "NbRejectedCommands", "StateExpirationTimeS", "Entry", "Url", });
-          internal_static_commanding_CommandQueueEntry_descriptor =
-            getDescriptor().getMessageTypes().get(2);
-          internal_static_commanding_CommandQueueEntry_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_commanding_CommandQueueEntry_descriptor,
-              new java.lang.String[] { "Instance", "ProcessorName", "QueueName", "CmdId", "Source", "Binary", "Username", "GenerationTime", "Uuid", });
-          internal_static_commanding_CommandQueueEvent_descriptor =
-            getDescriptor().getMessageTypes().get(3);
-          internal_static_commanding_CommandQueueEvent_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_commanding_CommandQueueEvent_descriptor,
-              new java.lang.String[] { "Type", "Data", });
-          internal_static_commanding_CommandQueueRequest_descriptor =
-            getDescriptor().getMessageTypes().get(4);
-          internal_static_commanding_CommandQueueRequest_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_commanding_CommandQueueRequest_descriptor,
-              new java.lang.String[] { "QueueInfo", "QueueEntry", "Rebuild", });
-          internal_static_commanding_CommandSignificance_descriptor =
-            getDescriptor().getMessageTypes().get(5);
-          internal_static_commanding_CommandSignificance_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_commanding_CommandSignificance_descriptor,
-              new java.lang.String[] { "SequenceNumber", "Significance", });
-          internal_static_commanding_CommandHistoryAttribute_descriptor =
-            getDescriptor().getMessageTypes().get(6);
-          internal_static_commanding_CommandHistoryAttribute_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_commanding_CommandHistoryAttribute_descriptor,
-              new java.lang.String[] { "Name", "Value", "Time", });
-          internal_static_commanding_CommandHistoryEntry_descriptor =
-            getDescriptor().getMessageTypes().get(7);
-          internal_static_commanding_CommandHistoryEntry_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_commanding_CommandHistoryEntry_descriptor,
-              new java.lang.String[] { "CommandId", "Attr", });
-          return null;
-        }
-      };
+        new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
+          public com.google.protobuf.ExtensionRegistry assignDescriptors(
+              com.google.protobuf.Descriptors.FileDescriptor root) {
+            descriptor = root;
+            return null;
+          }
+        };
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           org.yamcs.protobuf.Yamcs.getDescriptor(),
           org.yamcs.protobuf.Mdb.getDescriptor(),
         }, assigner);
+    internal_static_commanding_CommandId_descriptor =
+      getDescriptor().getMessageTypes().get(0);
+    internal_static_commanding_CommandId_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_commanding_CommandId_descriptor,
+        new java.lang.String[] { "GenerationTime", "Origin", "SequenceNumber", "CommandName", });
+    internal_static_commanding_CommandQueueInfo_descriptor =
+      getDescriptor().getMessageTypes().get(1);
+    internal_static_commanding_CommandQueueInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_commanding_CommandQueueInfo_descriptor,
+        new java.lang.String[] { "Instance", "ProcessorName", "Name", "State", "NbSentCommands", "NbRejectedCommands", "StateExpirationTimeS", "Entry", "Url", });
+    internal_static_commanding_CommandQueueEntry_descriptor =
+      getDescriptor().getMessageTypes().get(2);
+    internal_static_commanding_CommandQueueEntry_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_commanding_CommandQueueEntry_descriptor,
+        new java.lang.String[] { "Instance", "ProcessorName", "QueueName", "CmdId", "Source", "Binary", "Username", "GenerationTime", "Uuid", });
+    internal_static_commanding_CommandQueueEvent_descriptor =
+      getDescriptor().getMessageTypes().get(3);
+    internal_static_commanding_CommandQueueEvent_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_commanding_CommandQueueEvent_descriptor,
+        new java.lang.String[] { "Type", "Data", });
+    internal_static_commanding_CommandQueueRequest_descriptor =
+      getDescriptor().getMessageTypes().get(4);
+    internal_static_commanding_CommandQueueRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_commanding_CommandQueueRequest_descriptor,
+        new java.lang.String[] { "QueueInfo", "QueueEntry", "Rebuild", });
+    internal_static_commanding_CommandSignificance_descriptor =
+      getDescriptor().getMessageTypes().get(5);
+    internal_static_commanding_CommandSignificance_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_commanding_CommandSignificance_descriptor,
+        new java.lang.String[] { "SequenceNumber", "Significance", });
+    internal_static_commanding_CommandHistoryAttribute_descriptor =
+      getDescriptor().getMessageTypes().get(6);
+    internal_static_commanding_CommandHistoryAttribute_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_commanding_CommandHistoryAttribute_descriptor,
+        new java.lang.String[] { "Name", "Value", "Time", });
+    internal_static_commanding_CommandHistoryEntry_descriptor =
+      getDescriptor().getMessageTypes().get(7);
+    internal_static_commanding_CommandHistoryEntry_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_commanding_CommandHistoryEntry_descriptor,
+        new java.lang.String[] { "CommandId", "Attr", });
+    org.yamcs.protobuf.Yamcs.getDescriptor();
+    org.yamcs.protobuf.Mdb.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

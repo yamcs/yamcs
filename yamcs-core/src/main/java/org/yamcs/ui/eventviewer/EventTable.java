@@ -20,9 +20,15 @@ import org.yamcs.ui.UiColors;
 
 public class EventTable extends JTable {
     private static final long serialVersionUID = 1L;
-    private static final ImageIcon INFO_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/blank.png"));
-    private static final ImageIcon WARNING_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/warn.png"));
+    private static final ImageIcon INFO_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/level0s.png"));
+    private static final ImageIcon WATCH_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/level1s.png"));
+    private static final ImageIcon WARNING_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/level2s.png"));
     private static final ImageIcon ERROR_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/error.png"));
+    private static final ImageIcon DISTRESS_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/level3s.png"));
+    private static final ImageIcon CRITICAL_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/level4s.png"));
+    private static final ImageIcon SEVERE_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/level5s.png"));
+    
+    
     private final EventTableRenderer renderer = new EventTableRenderer();
     private boolean inLayout;
     private Preferences uiPrefs;
@@ -53,12 +59,18 @@ public class EventTable extends JTable {
             c.setBackground(getBackground());
             int modelRow = convertRowIndexToModel(row);
             Event event = (Event)getModel().getValueAt(modelRow, EventTableModel.EVENT_TEXT_COL);
-            if(event.getSeverity()==EventSeverity.WARNING) {
-                c.setBackground(UiColors.WARNING_FAINT_BG);
-                //setSelectedTextColor(COLOR_WARNING_BG);
-                //setDisabledTextColor(COLOR_WARNING_BG);
-            } else if(event.getSeverity()==EventSeverity.ERROR) {
+            if(event.getSeverity()==EventSeverity.ERROR) {
                 c.setBackground(UiColors.ERROR_FAINT_BG);
+            } else if(event.getSeverity()==EventSeverity.WARNING) {
+                c.setBackground(UiColors.WARNING_FAINT_BG);
+            } else if(event.getSeverity()==EventSeverity.WATCH) {
+                c.setBackground(UiColors.WARNING_FAINT_BG);
+            }else if(event.getSeverity()==EventSeverity.DISTRESS) {
+                c.setBackground(UiColors.DISTRESS_FAINT_BG);
+            } else if(event.getSeverity()==EventSeverity.CRITICAL) {
+                c.setBackground(UiColors.CRITICAL_FAINT_BG);
+            } else if(event.getSeverity()==EventSeverity.SEVERE) {
+                c.setBackground(UiColors.SEVERE_FAINT_BG);
             }
         }
         ((JComponent) c).setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, UiColors.BORDER_COLOR));
@@ -78,12 +90,20 @@ public class EventTable extends JTable {
                     super.getTableCellRendererComponent(table, value, isSelected, false /* no focus ! */, row, column);
                     int modelRow = convertRowIndexToModel(row);
                     Event event = (Event)getModel().getValueAt(modelRow, EventTableModel.EVENT_TEXT_COL);
-                    if(event.getSeverity()==EventSeverity.WARNING) {
-                        setIcon(WARNING_ICON);
-                    } else if(event.getSeverity()==EventSeverity.ERROR) {
+                    if(event.getSeverity()==EventSeverity.ERROR) {
                         setIcon(ERROR_ICON);
                     } else if(event.getSeverity()==EventSeverity.INFO) {
                         setIcon(INFO_ICON);
+                    } else if(event.getSeverity()==EventSeverity.WATCH) {
+                        setIcon(WATCH_ICON);
+                    } else if(event.getSeverity()==EventSeverity.WARNING) {
+                        setIcon(WARNING_ICON);
+                    } else if(event.getSeverity()==EventSeverity.DISTRESS) {
+                        setIcon(DISTRESS_ICON);
+                    } else if(event.getSeverity()==EventSeverity.CRITICAL) {
+                        setIcon(CRITICAL_ICON);
+                    } else if(event.getSeverity()==EventSeverity.SEVERE) {
+                        setIcon(SEVERE_ICON);
                     }
                     return this;
                 }

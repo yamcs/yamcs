@@ -65,6 +65,19 @@ public abstract class AbstractEventProducer implements EventProducer {
         sendMessage(EventSeverity.INFO, type, msg);
     }
 
+    public synchronized void sendWatch(String type, String msg) {
+        sendMessage(EventSeverity.WATCH, type, msg);
+    }
+    public synchronized void sendDistress(String type, String msg) {
+        sendMessage(EventSeverity.DISTRESS, type, msg);
+    }
+    public synchronized void sendCritical(String type, String msg) {
+        sendMessage(EventSeverity.CRITICAL, type, msg);
+    }
+    public synchronized void sendSevere(String type, String msg) {
+        sendMessage(EventSeverity.SEVERE, type, msg);
+    }
+    
     private void sendMessage(EventSeverity severity, String type, String msg) {
         Event e = newEvent().setSeverity(severity).setType(type).setMessage(msg).build();
         if (!repeatedEventReduction) {
