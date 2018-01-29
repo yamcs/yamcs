@@ -32,7 +32,7 @@ import org.yamcs.xtce.OutputParameter;
  */
 public class ScriptAlgorithmManager {
     final ScriptEngine scriptEngine;
-    static final Logger log = LoggerFactory.getLogger(ScriptAlgorithmExecutor.class);
+    static final Logger log = LoggerFactory.getLogger(ScriptAlgorithmManager.class);
     final EventProducer eventProducer;
     
     public  ScriptAlgorithmManager(ScriptEngineManager scriptEngineManager, String language, List<String> libraryNames, EventProducer eventProducer) {
