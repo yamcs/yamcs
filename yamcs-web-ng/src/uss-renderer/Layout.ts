@@ -62,7 +62,6 @@ export class Layout {
   }
 
   bringToFront(frame: DisplayFrame) {
-    console.log('bring to front', frame.display.title);
     const idx = this.frames.indexOf(frame);
     if (idx >= 0) {
       this.frames.push(this.frames.splice(idx, 1)[0]);

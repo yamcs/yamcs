@@ -340,7 +340,11 @@ export class LineGraph extends AbstractWidget {
     switch (binding.dynamicProperty) {
       case 'VALUE':
         this.valueSample = sample;
-        this.buffer.push([sample.generationTime, value]);
+        if (sample.acquisitionStatus === 'EXPIRED') {
+          this.buffer.push([sample.generationTime, null]);
+        } else {
+          this.buffer.push([sample.generationTime, value]);
+        }
         break;
     }
   }
