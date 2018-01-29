@@ -116,24 +116,17 @@ export class Field extends AbstractWidget {
       textWidth -= indicatorChars * colSize;
     }
 
-    // Clip text within the defined boundary.
-    // TODO clip-path (nor -webkit-clip-path) does not work on Safari
-    const clipId = this.generateChildId();
-    g.addChild(new ClipPath({ id: clipId }).addChild(
-      new Rect({
-        x: 0,
-        y: 0,
-        width: textWidth,
-        height: this.height,
-      })
-    ));
-
     const text = new Text({
       id: this.id,
       y: 0,
       ...textStyle,
-      'clip-path': `url(#${clipId})`,
     });
+
+    const overflowBehavior = utils.parseStringChild(this.node, 'OverflowBehavior');
+    if (overflowBehavior !== 'OVERWRITE') {
+      console.warn('Unsupported overflow behavior ' + overflowBehavior);
+    }
+
     g.addChild(text);
 
     let x;
