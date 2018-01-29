@@ -46,7 +46,7 @@ export class Display {
     targetEl.appendChild(this.measurerSvg);
   }
 
-  parseAndDraw(xmlDoc: XMLDocument) {
+  parseAndDraw(xmlDoc: XMLDocument, grid = false) {
     const displayEl = xmlDoc.getElementsByTagName('Display')[0];
 
     this.title = utils.parseStringChild(displayEl, 'Title', 'Untitled');
@@ -70,14 +70,15 @@ export class Display {
       fill: this.bgcolor
     }));
 
-    rootEl.addChild(new Rect({
-      x: 0,
-      y: 0,
-      width: this.width,
-      height: this.height,
-      class: 'uss-grid',
-      style: 'fill: url(#uss-grid)',
-    }));
+    if (grid) {
+      rootEl.addChild(new Rect({
+        x: 0,
+        y: 0,
+        width: this.width,
+        height: this.height,
+        style: 'fill: url(#uss-grid)',
+      }));
+    }
 
     const elementsNode = utils.findChild(displayEl, 'Elements');
     const elementNodes = utils.findChildren(elementsNode);

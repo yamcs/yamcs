@@ -7,6 +7,7 @@ import { DataSourceSample } from '../DataSourceSample';
 import { ParameterSample } from '../ParameterSample';
 import { ComputationSample } from '../ComputationSample';
 import { DataSourceBinding } from '../DataSourceBinding';
+import { StyleSet } from '../StyleSet';
 
 let widgetSequence = 0;
 
@@ -33,6 +34,8 @@ export abstract class AbstractWidget {
 
   tag: Tag;
 
+  readonly styleSet: StyleSet;
+
   constructor(
     protected node: Node,
     protected display: Display) {
@@ -52,6 +55,8 @@ export abstract class AbstractWidget {
     for (const childNode of utils.findChildren(dataBindingsNode, 'DataBinding')) {
       this.parseDataBinding(childNode);
     }
+
+    this.styleSet = display.frame.layout.styleSet;
   }
 
   abstract parseAndDraw(): Tag;

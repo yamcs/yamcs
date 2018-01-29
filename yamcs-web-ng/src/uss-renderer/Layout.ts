@@ -1,5 +1,6 @@
 import { ResourceResolver } from './ResourceResolver';
 import { DisplayFrame } from './DisplayFrame';
+import { StyleSet } from './StyleSet';
 
 export class Layout {
 
@@ -19,6 +20,7 @@ export class Layout {
 
   constructor(
     private targetEl: HTMLDivElement,
+    readonly styleSet: StyleSet,
     readonly resourceResolver: ResourceResolver,
   ) {
     this.scrollPane = document.createElement('div');

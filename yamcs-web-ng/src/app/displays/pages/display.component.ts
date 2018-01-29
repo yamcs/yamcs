@@ -9,10 +9,10 @@ import { take } from 'rxjs/operators';
 import { YamcsService } from '../../core/services/yamcs.service';
 import { Alias } from '../../../yamcs-client';
 import { ParameterSample } from '../../../uss-renderer/ParameterSample';
+import { StyleSet } from '../../../uss-renderer/StyleSet';
 
 @Component({
   templateUrl: './display.component.html',
-  styleUrls: ['./display.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DisplayPageComponent implements AfterViewInit {
@@ -34,14 +34,18 @@ export class DisplayPageComponent implements AfterViewInit {
 
     const name = this.route.snapshot.paramMap.get('name');
     if (name !== null) {
-      this.resourceResolver.retrieveXMLDisplayResource(name).then(doc => {
-        this.renderDisplay(name, doc, targetEl);
+      Promise.all([
+        this.resourceResolver.retrieveXML('mcs_dqistyle.xml'),
+        this.resourceResolver.retrieveXMLDisplayResource(name),
+      ]).then((docs: XMLDocument[]) => {
+        const styleSet = new StyleSet(docs[0]);
+        this.renderDisplay(name, docs[1], styleSet, targetEl);
       });
     }
   }
 
-  private renderDisplay(name: string, doc: XMLDocument, targetEl: HTMLDivElement) {
-    const layout = new Layout(targetEl, this.resourceResolver);
+  private renderDisplay(name: string, doc: XMLDocument, styleSet: StyleSet, targetEl: HTMLDivElement) {
+    const layout = new Layout(targetEl, styleSet, this.resourceResolver);
     const frame = layout.createDisplayFrame(name, doc);
 
     const opsNames = frame.getOpsNames();

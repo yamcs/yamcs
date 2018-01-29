@@ -273,7 +273,7 @@ export class LineGraph extends AbstractWidget {
             switch (range.level) {
               case 'WATCH':
               case 'WARNING':
-                ctx.strokeStyle = 'rgba(218,219,0,255)';
+                ctx.strokeStyle = Color.forName('yellow').toString();
                 if (range.minInclusive !== undefined) {
                   this.drawGuideline(ctx, area, g, range.minInclusive);
                 }
@@ -290,7 +290,7 @@ export class LineGraph extends AbstractWidget {
               case 'DISTRESS':
               case 'CRITICAL':
               case 'SEVERE':
-                ctx.strokeStyle = 'red';
+                ctx.strokeStyle = Color.forName('red').toString();
                 if (range.minInclusive !== undefined) {
                   this.drawGuideline(ctx, area, g, range.minInclusive);
                 }

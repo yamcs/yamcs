@@ -4,10 +4,11 @@ const sprintf = require('sprintf-js').sprintf;
 
 
 import { AbstractWidget } from './AbstractWidget';
-import { G, Rect, Text, ClipPath } from '../tags';
+import { G, Rect, Text } from '../tags';
 import { Color } from '../Color';
 import { DataSourceSample } from '../DataSourceSample';
 import { DataSourceBinding } from '../DataSourceBinding';
+import { DEFAULT_STYLE } from '../StyleSet';
 
 
 export class Field extends AbstractWidget {
@@ -104,7 +105,7 @@ export class Field extends AbstractWidget {
       }
     }
     if (!this.overrideDqi) {
-      rect.setAttribute('class', 'dead-bg');
+      rect.setAttribute('fill', this.styleSet.getStyle('NOT_RECEIVED').bg.toString());
     }
     g.addChild(rect);
 
@@ -240,54 +241,72 @@ export class Field extends AbstractWidget {
     }
     this.fieldTextEl.textContent = v;
     if (!this.overrideDqi) {
+      let style = DEFAULT_STYLE;
       switch (acquisitionStatus) {
         case 'ACQUIRED':
           switch (monitoringResult) {
             case 'DISABLED':
-              this.fieldBackgroundEl.setAttribute('class', 'disabled-bg');
-              this.fieldTextEl.setAttribute('class', 'disabled-fg');
+              style = this.styleSet.getStyle('ACQUIRED', 'DISABLED');
               break;
 
             case 'IN_LIMITS':
-              this.fieldBackgroundEl.setAttribute('class', 'in_limits-bg');
-              this.fieldTextEl.setAttribute('class', 'in_limits-fg');
+              style = this.styleSet.getStyle('ACQUIRED', 'IN_LIMITS');
               break;
 
             case 'WATCH':
             case 'WARNING':
             case 'DISTRESS':
-              this.fieldBackgroundEl.setAttribute('class', 'nominal_limit_violation-bg');
-              this.fieldTextEl.setAttribute('class', 'nominal_limit_violation-fg');
+              style = this.styleSet.getStyle('ACQUIRED', 'NOMINAL_LIMIT_VIOLATION');
               break;
 
             case 'CRITICAL':
             case 'SEVERE':
-              this.fieldBackgroundEl.setAttribute('class', 'danger_limit_violation-bg');
-              this.fieldTextEl.setAttribute('class', 'danger_limit_violation-fg');
+              style = this.styleSet.getStyle('ACQUIRED', 'DANGER_HIGH_LIMIT_VIOLATION');
               break;
 
             default:
-              this.fieldBackgroundEl.setAttribute('class', 'undefined-bg');
-              this.fieldTextEl.setAttribute('class', 'undefined-fg');
+              style = this.styleSet.getStyle('ACQUIRED', 'UNDEFINED');
               break;
           }
           break;
 
         case 'NOT_RECEIVED':
-          this.fieldBackgroundEl.setAttribute('class', 'dead-bg');
-          this.fieldTextEl.setAttribute('class', 'dead-fg');
+          style = this.styleSet.getStyle('NOT_RECEIVED');
           break;
 
         case 'INVALID':
-          this.fieldBackgroundEl.setAttribute('class', 'dead-bg');
-          this.fieldTextEl.setAttribute('class', 'dead-fg');
+          style = this.styleSet.getStyle('INVALID');
           break;
 
         case 'EXPIRED':
-          this.fieldBackgroundEl.setAttribute('class', 'expired-bg');
-          this.fieldTextEl.setAttribute('class', 'expired-fg');
-          break;
+        switch (monitoringResult) {
+          case 'DISABLED':
+            style = this.styleSet.getStyle('STATIC', 'DISABLED');
+            break;
+
+          case 'IN_LIMITS':
+            style = this.styleSet.getStyle('STATIC', 'IN_LIMITS');
+            break;
+
+          case 'WATCH':
+          case 'WARNING':
+          case 'DISTRESS':
+            style = this.styleSet.getStyle('STATIC', 'NOMINAL_LIMIT_VIOLATION');
+            break;
+
+          case 'CRITICAL':
+          case 'SEVERE':
+            style = this.styleSet.getStyle('STATIC', 'DANGER_HIGH_LIMIT_VIOLATION');
+            break;
+
+          default:
+            style = this.styleSet.getStyle('STATIC', 'UNDEFINED');
+            break;
+        }
+        break;
       }
+      this.fieldBackgroundEl.setAttribute('fill', style.bg.toString());
+      this.fieldTextEl.setAttribute('fill', style.fg.toString());
     }
   }
 }
