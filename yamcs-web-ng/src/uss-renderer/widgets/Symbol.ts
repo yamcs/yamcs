@@ -15,6 +15,9 @@ export class Symbol extends AbstractWidget {
   libraries: { [key: string]: SymbolLibrary };
   resolver: ResourceResolver;
 
+  valueBinding: DataSourceBinding;
+  valueSample: DataSourceSample;
+
   // DOM
   symbolEl: Element;
 
@@ -63,15 +66,31 @@ export class Symbol extends AbstractWidget {
     }
   }
 
-  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
-    const value = binding.usingRaw ? sample.rawValue : sample.engValue;
+  registerBinding(binding: DataSourceBinding) {
     switch (binding.dynamicProperty) {
       case 'VALUE':
-        const file = this.symbol.states[value] || this.symbol.defaultImage;
-        this.symbolEl.setAttribute('href', this.resolver.resolvePath(`symlib/images/${file}`));
+        this.valueBinding = binding;
         break;
       default:
         console.warn('Unsupported dynamic property: ' + binding.dynamicProperty);
+    }
+  }
+
+  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
+    switch (binding.dynamicProperty) {
+      case 'VALUE':
+        this.valueBinding = binding;
+        break;
+      default:
+        console.warn('Unsupported dynamic property: ' + binding.dynamicProperty);
+    }
+  }
+
+  digest() {
+    if (this.valueSample) {
+      const value = this.valueBinding.usingRaw ? this.valueSample.rawValue : this.valueSample.engValue;
+      const file = this.symbol.states[value] || this.symbol.defaultImage;
+      this.symbolEl.setAttribute('href', this.resolver.resolvePath(`symlib/images/${file}`));
     }
   }
 }

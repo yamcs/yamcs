@@ -41,7 +41,6 @@ export class LineGraph extends AbstractWidget {
   private yAxisColor: Color;
 
   private buffer: SampleBuffer;
-  private dirty = false;
 
   parseAndDraw() {
     this.title = utils.parseStringChild(this.node, 'Title');
@@ -269,24 +268,27 @@ export class LineGraph extends AbstractWidget {
     });
   }
 
-  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
-    const value = binding.usingRaw ? sample.rawValue : sample.engValue;
+  registerBinding(binding: DataSourceBinding) {
     switch (binding.dynamicProperty) {
       case 'VALUE':
-        this.buffer.push([sample.generationTime, value]);
-        this.dirty = true;
         break;
       default:
         console.warn('Unsupported dynamic property: ' + binding.dynamicProperty);
     }
   }
 
-  digest() {
-    if (this.dirty) {
-      const snapshot = this.buffer.snapshot();
-      this.updateGraph(snapshot);
-      this.dirty = false;
+  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
+    const value = binding.usingRaw ? sample.rawValue : sample.engValue;
+    switch (binding.dynamicProperty) {
+      case 'VALUE':
+        this.buffer.push([sample.generationTime, value]);
+        break;
     }
+  }
+
+  digest() {
+    const snapshot = this.buffer.snapshot();
+    this.updateGraph(snapshot);
   }
 
   /**

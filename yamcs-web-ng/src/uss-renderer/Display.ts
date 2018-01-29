@@ -259,6 +259,7 @@ export class Display {
       if (widgets) {
         for (const widget of widgets) {
           widget.updateBindings(sample);
+          widget.dirty = true;
         }
       }
     }
@@ -266,7 +267,10 @@ export class Display {
 
   digest() {
     for (const widget of this.widgets) {
-      widget.digest();
+      if (widget.dirty) {
+        widget.digest();
+        widget.dirty = false;
+      }
     }
   }
 }

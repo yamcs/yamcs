@@ -25,6 +25,9 @@ export abstract class AbstractWidget {
   parameterBindings: ParameterBinding[];
   computationBindings: ComputationBinding[];
 
+  // Marks if the models was updated since the last UI render
+  dirty = false;
+
   svg: SVGSVGElement;
   childSequence = 0;
 
@@ -94,7 +97,10 @@ export abstract class AbstractWidget {
 
     binding.usingRaw = utils.parseBooleanChild(ds, 'UsingRaw');
     binding.dynamicProperty = utils.parseStringChild(node, 'DynamicProperty');
+    this.registerBinding(binding);
   }
+
+  protected abstract registerBinding(binding: DataSourceBinding): void;
 
   private parseNames(node: Node) {
     let opsName;
@@ -151,8 +157,8 @@ export abstract class AbstractWidget {
       // We could do a bit better here by passing the acquisitionStatus etc
       // through the expression engine, which would allow for calculating
       // the most severe acquisitionStatus for all inputs of a computation.
-      // For now a pass-through of these attributes from the latest binding
-      // update seems sufficient.
+      // For now a pass-through of these attributes from the latest sample
+      // seems sufficient.
       const value = binding.executeExpression();
       this.updateBinding(binding, new ComputationSample(
         sample.generationTime,

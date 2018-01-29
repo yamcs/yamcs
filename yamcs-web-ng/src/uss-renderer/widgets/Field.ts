@@ -14,8 +14,19 @@ export class Field extends AbstractWidget {
 
   decimals: number;
   format: string | null;
-
   overrideDqi: boolean;
+
+  private xBinding: DataSourceBinding;
+  private xSample: DataSourceSample;
+
+  private yBinding: DataSourceBinding;
+  private ySample: DataSourceSample;
+
+  private valueBinding: DataSourceBinding;
+  private valueSample: DataSourceSample;
+
+  private fillColorBinding: DataSourceBinding;
+  private fillColorSample: DataSourceSample;
 
   private fieldEl: Element;
   private fieldBackgroundEl: Element;
@@ -166,28 +177,62 @@ export class Field extends AbstractWidget {
     this.fieldTextEl = this.svg.getElementById(this.id);
   }
 
-  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
-    const value = binding.usingRaw ? sample.rawValue : sample.engValue;
+  registerBinding(binding: DataSourceBinding) {
     switch (binding.dynamicProperty) {
       case 'VALUE':
-        this.updateValue(value, sample.acquisitionStatus, sample.monitoringResult);
+        this.valueBinding = binding;
         break;
       case 'X':
-        this.x = value;
-        this.fieldEl.setAttribute('transform', `translate(${this.x},${this.y})`);
+        this.xBinding = binding;
         break;
       case 'Y':
-        this.y = value;
-        this.fieldEl.setAttribute('transform', `translate(${this.x},${this.y})`);
+        this.yBinding = binding;
         break;
       case 'FILL_COLOR':
-        if (this.overrideDqi) {
-          const newColor = Color.forName(value);
-          this.fieldBackgroundEl.setAttribute('fill', newColor.toString());
-        }
+        this.fillColorBinding = binding;
         break;
       default:
         console.warn('Unsupported dynamic property: ' + binding.dynamicProperty);
+    }
+  }
+
+  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
+    switch (binding.dynamicProperty) {
+      case 'VALUE':
+        this.valueSample = sample;
+        break;
+      case 'X':
+        this.xSample = sample;
+        break;
+      case 'Y':
+        this.ySample = sample;
+        break;
+      case 'FILL_COLOR':
+        this.fillColorSample = sample;
+        break;
+      default:
+        console.warn('Unsupported dynamic property: ' + binding.dynamicProperty);
+    }
+  }
+
+  digest() {
+    if (this.valueSample) {
+      const value = this.valueBinding.usingRaw ? this.valueSample.rawValue : this.valueSample.engValue;
+      this.updateValue(value, this.valueSample.acquisitionStatus, this.valueSample.monitoringResult);
+    }
+
+    if (this.xSample) {
+      this.x = this.xBinding.usingRaw ? this.xSample.rawValue : this.xSample.engValue;
+    }
+    if (this.ySample) {
+      this.y = this.yBinding.usingRaw ? this.ySample.rawValue : this.ySample.engValue;
+    }
+    this.fieldEl.setAttribute('transform', `translate(${this.x},${this.y})`);
+
+    if (this.fillColorSample && this.overrideDqi) {
+      const value = this.fillColorBinding.usingRaw ? this.fillColorSample.rawValue : this.fillColorSample.engValue;
+      const color = Color.forName(value);
+      this.fieldBackgroundEl.setAttribute('fill', color.toString());
     }
   }
 

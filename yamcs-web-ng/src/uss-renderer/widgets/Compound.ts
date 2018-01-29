@@ -20,7 +20,10 @@ export class Compound extends AbstractWidget {
     return g;
   }
 
+  registerBinding(binding: DataSourceBinding) {
+    console.warn('Unsupported binding to property: ' + binding.dynamicProperty);
+  }
+
   updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
-    console.warn('Unsupported binding update: ', binding);
   }
 }

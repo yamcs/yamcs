@@ -38,7 +38,10 @@ export class Polyline extends AbstractWidget {
     return line;
   }
 
+  registerBinding(binding: DataSourceBinding) {
+    console.warn('Unsupported dynamic property: ' + binding.dynamicProperty);
+  }
+
   updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
-    console.warn('Unsupported binding update: ', binding);
   }
 }

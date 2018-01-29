@@ -21,6 +21,9 @@ export class LinearTickMeter extends AbstractWidget {
 
   orientation: string;
 
+  private valueBinding: DataSourceBinding;
+  private valueSample: DataSourceSample;
+
   parseAndDraw() {
     this.padding = 10;
     this.meterMin = utils.parseFloatChild(this.node, 'Minimum');
@@ -234,13 +237,28 @@ export class LinearTickMeter extends AbstractWidget {
     }
   }
 
+  registerBinding(binding: DataSourceBinding) {
+    switch (binding.dynamicProperty) {
+      case 'VALUE':
+        this.valueBinding = binding;
+        break;
+      default:
+        console.warn('Unsupported binding to property: ' + binding.dynamicProperty);
+    }
+  }
+
   updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
     switch (binding.dynamicProperty) {
       case 'VALUE':
-        this.updateValue(binding.usingRaw ? sample.rawValue : sample.engValue);
+        this.valueSample = sample;
         break;
-      default:
-        console.warn('Unsupported dynamic property: ' + binding.dynamicProperty);
+    }
+  }
+
+  digest() {
+    if (this.valueSample) {
+      const value = this.valueBinding.usingRaw ? this.valueSample.rawValue : this.valueSample.engValue;
+      this.updateValue(value);
     }
   }
 

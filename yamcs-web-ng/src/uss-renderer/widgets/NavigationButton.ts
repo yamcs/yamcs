@@ -26,6 +26,9 @@ export class NavigationButton extends AbstractWidget {
   commandClass: string;
   openDisplayCommandOptions: OpenDisplayCommandOptions;
 
+  fillColorBinding: DataSourceBinding;
+  fillColorSample: DataSourceSample;
+
   bgEl: Element;
   shadeEl: Element;
 
@@ -163,20 +166,35 @@ export class NavigationButton extends AbstractWidget {
     }
   }
 
-  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
-    const value = binding.usingRaw ? sample.rawValue : sample.engValue;
+  registerBinding(binding: DataSourceBinding) {
     switch (binding.dynamicProperty) {
       case 'FILL_COLOR':
-        const newColor = Color.forName(value);
-        this.brightStroke = newColor.brighter().brighter();
-        this.darkStroke = newColor.darker();
-
-        this.bgEl.setAttribute('fill', newColor.toString());
-        this.bgEl.setAttribute('stroke', this.brightStroke.toString());
-        this.shadeEl.setAttribute('stroke', this.darkStroke.toString());
+        this.fillColorBinding = binding;
         break;
       default:
         console.warn('Unsupported dynamic property: ' + binding.dynamicProperty);
+    }
+  }
+
+  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
+    switch (binding.dynamicProperty) {
+      case 'FILL_COLOR':
+        this.fillColorSample = sample;
+        break;
+    }
+  }
+
+  digest() {
+    if (this.fillColorSample) {
+      const value = this.fillColorBinding.usingRaw ? this.fillColorSample.rawValue : this.fillColorSample.engValue;
+
+      const newColor = Color.forName(value);
+      this.brightStroke = newColor.brighter().brighter();
+      this.darkStroke = newColor.darker();
+
+      this.bgEl.setAttribute('fill', newColor.toString());
+      this.bgEl.setAttribute('stroke', this.brightStroke.toString());
+      this.shadeEl.setAttribute('stroke', this.darkStroke.toString());
     }
   }
 }
