@@ -88,7 +88,7 @@ public class TestUtils {
 
 
     private static void checkEquals(ParameterValue parameterValue,    ParameterStatus parameterStatus) {
-        assertEquals(ParameterStatusSegment.getStatus(parameterValue), parameterStatus);
+        assertEquals(ParameterStatusSegment.getStatus(parameterValue, null), parameterStatus);
     }
 
     public static void checkEquals(ParameterIdValueList plist, long expectedTime, ParameterValue... expectedPv) {

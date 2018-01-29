@@ -112,11 +112,15 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
    
     
     private static ParameterArchiveV2 getParameterArchive(String instance) throws BadRequestException {
-        ParameterArchiveV2 parameterArchive = YamcsServer.getService(instance, ParameterArchiveV2.class);
+        ParameterArchive parameterArchive = YamcsServer.getService(instance, ParameterArchive.class);
+        
         if (parameterArchive == null) {
             throw new BadRequestException("ParameterArchive not configured for this instance");
         }
-        return parameterArchive;
+        if(!(parameterArchive.getParchive() instanceof ParameterArchiveV2)) {
+            throw new BadRequestException("instance uses old unsupported ParameterArchive");
+        }
+        return (ParameterArchiveV2)parameterArchive.getParchive();
     }
     
     private void checkPrivileges(RestRequest req) throws HttpException {
