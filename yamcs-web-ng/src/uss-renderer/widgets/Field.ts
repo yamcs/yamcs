@@ -7,6 +7,7 @@ import { AbstractWidget } from './AbstractWidget';
 import { G, Rect, Text, ClipPath } from '../tags';
 import { Color } from '../Color';
 import { DataSourceSample } from '../DataSourceSample';
+import { DataSourceBinding } from '../DataSourceBinding';
 
 
 export class Field extends AbstractWidget {
@@ -165,27 +166,28 @@ export class Field extends AbstractWidget {
     this.fieldTextEl = this.svg.getElementById(this.id);
   }
 
-  updateProperty(property: string, sample: DataSourceSample) {
-    switch (property) {
+  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
+    const value = binding.usingRaw ? sample.rawValue : sample.engValue;
+    switch (binding.dynamicProperty) {
       case 'VALUE':
-        this.updateValue(sample.value, sample.acquisitionStatus, sample.monitoringResult);
+        this.updateValue(value, sample.acquisitionStatus, sample.monitoringResult);
         break;
       case 'X':
-        this.x = sample.value;
+        this.x = value;
         this.fieldEl.setAttribute('transform', `translate(${this.x},${this.y})`);
         break;
       case 'Y':
-        this.y = sample.value;
+        this.y = value;
         this.fieldEl.setAttribute('transform', `translate(${this.x},${this.y})`);
         break;
       case 'FILL_COLOR':
         if (this.overrideDqi) {
-          const newColor = Color.forName(sample.value);
+          const newColor = Color.forName(value);
           this.fieldBackgroundEl.setAttribute('fill', newColor.toString());
         }
         break;
       default:
-        console.warn('Unsupported dynamic property: ' + property);
+        console.warn('Unsupported dynamic property: ' + binding.dynamicProperty);
     }
   }
 

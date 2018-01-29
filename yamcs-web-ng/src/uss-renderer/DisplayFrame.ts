@@ -1,6 +1,6 @@
 import { Display } from './Display';
-import { ParameterUpdate } from './ParameterUpdate';
 import { Layout } from './Layout';
+import { ParameterSample } from './ParameterSample';
 
 export class DisplayFrame {
 
@@ -81,8 +81,8 @@ export class DisplayFrame {
     this.display.digest();
   }
 
-  updateExternalDataSources(updates: ParameterUpdate[]) {
-    this.display.updateWidgets(updates);
+  processParameterSamples(samples: ParameterSample[]) {
+    this.display.processParameterSamples(samples);
   }
 
   private renderDisplay() {

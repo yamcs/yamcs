@@ -3,6 +3,7 @@ import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 import { Tag } from '../tags';
 import { DataSourceSample } from '../DataSourceSample';
+import { DataSourceBinding } from '../DataSourceBinding';
 
 export class Polyline extends AbstractWidget {
 
@@ -37,7 +38,7 @@ export class Polyline extends AbstractWidget {
     return line;
   }
 
-  updateProperty(property: string, sample: DataSourceSample) {
-    console.warn('Unsupported dynamic property: ' + property);
+  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
+    console.warn('Unsupported binding update: ', binding);
   }
 }

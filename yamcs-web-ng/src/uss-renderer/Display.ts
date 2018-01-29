@@ -14,8 +14,8 @@ import { Svg, Rect, Tag, Defs, Marker, Path, Pattern } from './tags';
 import { Compound } from './widgets/Compound';
 import { Color } from './Color';
 import { ResourceResolver } from './ResourceResolver';
-import { ParameterUpdate } from './ParameterUpdate';
 import { DisplayFrame } from './DisplayFrame';
+import { ParameterSample } from './ParameterSample';
 
 export class Display {
 
@@ -253,12 +253,12 @@ export class Display {
     return this.opsNames;
   }
 
-  updateWidgets(parameterUpdates: ParameterUpdate[]) {
-    for (const parameterUpdate of parameterUpdates) {
-      const widgets = this.widgetsByTrigger.get(parameterUpdate.opsName);
+  processParameterSamples(samples: ParameterSample[]) {
+    for (const sample of samples) {
+      const widgets = this.widgetsByTrigger.get(sample.opsName);
       if (widgets) {
         for (const widget of widgets) {
-          widget.updateBindings(parameterUpdate);
+          widget.updateBindings(sample);
         }
       }
     }

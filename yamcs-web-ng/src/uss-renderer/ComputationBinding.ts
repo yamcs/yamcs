@@ -1,6 +1,6 @@
-import { DataBinding } from './DataBinding';
 import { FormulaCompiler } from './expressions/FormulaCompiler';
 import { CompiledFormula, DataSourceStatus } from './expressions/CompiledFormula';
+import { DataSourceBinding } from './DataSourceBinding';
 
 export interface ComputationArgument {
   opsName?: string;
@@ -8,7 +8,7 @@ export interface ComputationArgument {
   sid?: string;
 }
 
-export class ComputationBinding extends DataBinding {
+export class ComputationBinding extends DataSourceBinding {
 
   static readonly TYPE = 'COMPUTATION';
 

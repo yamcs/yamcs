@@ -4,6 +4,7 @@ import { AbstractWidget } from './AbstractWidget';
 import { G, Rect, Line, Text } from '../tags';
 import { Color } from '../Color';
 import { DataSourceSample } from '../DataSourceSample';
+import { DataSourceBinding } from '../DataSourceBinding';
 
 export class LinearTickMeter extends AbstractWidget {
 
@@ -233,13 +234,13 @@ export class LinearTickMeter extends AbstractWidget {
     }
   }
 
-  updateProperty(property: string, sample: DataSourceSample) {
-    switch (property) {
+  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
+    switch (binding.dynamicProperty) {
       case 'VALUE':
-        this.updateValue(sample.value);
+        this.updateValue(binding.usingRaw ? sample.rawValue : sample.engValue);
         break;
       default:
-        console.warn('Unsupported dynamic property: ' + property);
+        console.warn('Unsupported dynamic property: ' + binding.dynamicProperty);
     }
   }
 

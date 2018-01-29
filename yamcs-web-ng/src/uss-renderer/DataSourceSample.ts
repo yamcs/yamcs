@@ -1,6 +1,8 @@
 export interface DataSourceSample {
+
   generationTime: Date;
-  value: any;
+  rawValue: any;
+  engValue: any;
   acquisitionStatus: string;
   monitoringResult: string;
 }

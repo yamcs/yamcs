@@ -165,9 +165,17 @@ export interface ParameterValue {
   acquisitionStatus: any;
   processingStatus: boolean;
   monitoringResult: any;
-  rangeCondition: any;
-  alarmRange: any;
+  alarmRange: AlarmRange;
+  rangeCondition?: 'LOW' | 'HIGH';
   expireMillis: number;
+}
+
+export interface AlarmRange {
+  level: 'NORMAL' | 'WATCH' | 'WARNING' | 'DISTRESS' | 'CRITICAL' | 'SEVERE';
+  minInclusive: number;
+  maxInclusive: number;
+  minExclusive: number;
+  maxExclusive: number;
 }
 
 export interface ParameterSubscriptionRequest {

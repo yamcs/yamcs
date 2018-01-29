@@ -2,12 +2,15 @@ export { default as YamcsClient } from './YamcsClient';
 export { InstanceClient } from './InstanceClient';
 
 export {
+  AlarmRange,
+  Alias,
   Command,
   DisplayInfo,
   Instance,
   Link,
   Parameter,
   ParameterData,
+  ParameterValue,
   Record,
   Service,
   Stream,

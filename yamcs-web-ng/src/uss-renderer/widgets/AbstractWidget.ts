@@ -1,10 +1,12 @@
 import { Tag } from '../tags';
 import * as utils from '../utils';
 import { Display } from '../Display';
-import { ParameterUpdate } from '../ParameterUpdate';
 import { ParameterBinding } from '../ParameterBinding';
 import { ComputationBinding } from '../ComputationBinding';
 import { DataSourceSample } from '../DataSourceSample';
+import { ParameterSample } from '../ParameterSample';
+import { ComputationSample } from '../ComputationSample';
+import { DataSourceBinding } from '../DataSourceBinding';
 
 let widgetSequence = 0;
 
@@ -124,32 +126,26 @@ export abstract class AbstractWidget {
     for (const binding of this.computationBindings) {
       if (binding.args.length === 0) {
         const value = binding.executeExpression();
-        this.updateProperty(binding.dynamicProperty, {
-          generationTime: new Date(0),
+        this.updateBinding(binding, new ComputationSample(
+          new Date(0),
           value,
-          acquisitionStatus: 'COMPUTATION_OK',
-          monitoringResult: 'UNKNOWN',
-        });
+          'COMPUTATION_OK',
+          'UNKNOWN',
+        ));
       }
     }
   }
 
-  updateBindings(parameterUpdate: ParameterUpdate) {
+  updateBindings(sample: ParameterSample) {
     for (const binding of this.parameterBindings) {
-      if (binding.opsName === parameterUpdate.opsName) {
-        const value = this.getParameterValue(parameterUpdate, binding.usingRaw);
-        this.updateProperty(binding.dynamicProperty, {
-          generationTime: new Date(Date.parse(parameterUpdate.generationTime)),
-          value,
-          acquisitionStatus: parameterUpdate.acquisitionStatus,
-          monitoringResult: parameterUpdate.monitoringResult,
-        });
+      if (binding.opsName === sample.opsName) {
+        this.updateBinding(binding, sample);
       }
     }
     for (const binding of this.computationBindings) {
-      binding.updateDataSource(parameterUpdate.opsName, {
-        value: this.getParameterValue(parameterUpdate, binding.usingRaw),
-        acquisitionStatus: parameterUpdate.acquisitionStatus,
+      binding.updateDataSource(sample.opsName, {
+        value: binding.usingRaw ? sample.rawValue : sample.engValue,
+        acquisitionStatus: sample.acquisitionStatus,
       });
 
       // We could do a bit better here by passing the acquisitionStatus etc
@@ -158,12 +154,12 @@ export abstract class AbstractWidget {
       // For now a pass-through of these attributes from the latest binding
       // update seems sufficient.
       const value = binding.executeExpression();
-      this.updateProperty(binding.dynamicProperty, {
-        generationTime: new Date(Date.parse(parameterUpdate.generationTime)),
+      this.updateBinding(binding, new ComputationSample(
+        sample.generationTime,
         value,
-        acquisitionStatus: parameterUpdate.acquisitionStatus,
-        monitoringResult: parameterUpdate.monitoringResult,
-      });
+        sample.acquisitionStatus,
+        sample.monitoringResult,
+      ));
     }
   }
 
@@ -171,7 +167,7 @@ export abstract class AbstractWidget {
     // NOP
   }
 
-  protected abstract updateProperty(property: string, sample: DataSourceSample): void;
+  protected abstract updateBinding(binding: DataSourceBinding, sample: DataSourceSample): void;
 
   protected getFontMetrics(text: string, fontFamily: string, fontSize: string) {
     const el = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -182,37 +178,6 @@ export abstract class AbstractWidget {
     const bbox = el.getBBox();
     this.display.measurerSvg.removeChild(el);
     return { height: bbox.height, width: bbox.width };
-  }
-
-  private getParameterValue(parameterUpdate: ParameterUpdate, usingRaw: boolean) {
-    const val = (usingRaw ? parameterUpdate.rawValue : parameterUpdate.engValue);
-    if (!val) {
-      console.log('got parameter without value: ', parameterUpdate);
-      return null;
-    }
-
-    switch (val.type) {
-      case 'FLOAT':
-        return val.floatValue;
-      case 'DOUBLE':
-        return val.doubleValue;
-      case 'UINT32':
-        return val.uint32Value;
-      case 'SINT32':
-        return val.sint32Value;
-      case 'UINT64':
-        return val.uint64Value;
-      case 'SINT64':
-        return val.sint64Value;
-      case 'BOOLEAN':
-        return val.booleanValue;
-      case 'TIMESTAMP':
-        return val.timestampValue;
-      case 'BINARY':
-        return window.atob(val.binaryValue);
-      case 'STRING':
-        return val.stringValue;
-    }
   }
 
   protected generateChildId() {

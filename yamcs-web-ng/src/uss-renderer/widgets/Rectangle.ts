@@ -3,6 +3,7 @@ import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 import { Rect } from '../tags';
 import { DataSourceSample } from '../DataSourceSample';
+import { DataSourceBinding } from '../DataSourceBinding';
 
 export class Rectangle extends AbstractWidget {
 
@@ -20,7 +21,7 @@ export class Rectangle extends AbstractWidget {
     }).withBorderBox(this.x, this.y, this.width, this.height);
   }
 
-  updateProperty(property: string, sample: DataSourceSample) {
-    console.warn('Unsupported dynamic property: ' + property);
+  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
+    console.warn('Unsupported binding update: ', binding);
   }
 }

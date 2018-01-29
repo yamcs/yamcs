@@ -7,8 +7,8 @@ import { ResourceResolver } from '../../../uss-renderer/ResourceResolver';
 
 import { take } from 'rxjs/operators';
 import { YamcsService } from '../../core/services/yamcs.service';
-import { ParameterUpdate } from '../../../uss-renderer/ParameterUpdate';
-import { Alias } from '../../../yamcs-client/types/main';
+import { Alias } from '../../../yamcs-client';
+import { ParameterSample } from '../../../uss-renderer/ParameterSample';
 
 @Component({
   templateUrl: './display.component.html',
@@ -57,18 +57,11 @@ export class DisplayPageComponent implements AfterViewInit {
         sendFromCache: true,
         updateOnExpiration: true,
       }).subscribe(evt => {
-        const updates: ParameterUpdate[] = [];
+        const samples: ParameterSample[] = [];
         for (const pval of evt.parameter) {
-          updates.push({
-            opsName: pval.id.name,
-            generationTime: pval.generationTimeUTC,
-            acquisitionStatus: pval.acquisitionStatus,
-            monitoringResult: pval.monitoringResult,
-            rawValue: pval.rawValue,
-            engValue: pval.engValue,
-          });
+          samples.push(new ParameterSample(pval));
         }
-        frame.updateExternalDataSources(updates);
+        frame.processParameterSamples(samples);
       });
     }
   }

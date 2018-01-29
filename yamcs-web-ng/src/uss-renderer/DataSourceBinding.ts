@@ -1,4 +1,4 @@
-export abstract class DataBinding {
+export abstract class DataSourceBinding {
 
   dynamicProperty: string;
   usingRaw: boolean;

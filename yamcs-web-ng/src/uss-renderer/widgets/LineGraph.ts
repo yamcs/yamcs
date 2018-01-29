@@ -9,6 +9,7 @@ import { DataSourceSample } from '../DataSourceSample';
 import { SampleBuffer, Sample } from '../SampleBuffer';
 import { CircularBuffer } from '../CircularBuffer';
 import { ExpirationBuffer } from '../ExpirationBuffer';
+import { DataSourceBinding } from '../DataSourceBinding';
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -268,14 +269,15 @@ export class LineGraph extends AbstractWidget {
     });
   }
 
-  updateProperty(property: string, sample: DataSourceSample) {
-    switch (property) {
+  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
+    const value = binding.usingRaw ? sample.rawValue : sample.engValue;
+    switch (binding.dynamicProperty) {
       case 'VALUE':
-        this.buffer.push([sample.generationTime, sample.value]);
+        this.buffer.push([sample.generationTime, value]);
         this.dirty = true;
         break;
       default:
-        console.warn('Unsupported dynamic property: ' + property);
+        console.warn('Unsupported dynamic property: ' + binding.dynamicProperty);
     }
   }
 

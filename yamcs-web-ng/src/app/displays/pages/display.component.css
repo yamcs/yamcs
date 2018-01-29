@@ -1,7 +1,7 @@
 /*
  * DQI Colors match with defaults in mcs_dqistyle.xml
  */
-/*/deep/ .uss-grid { display: none; }*/
+/deep/ .uss-grid { display: none; }
 /deep/ .dead-bg { fill: #912CEE; }
 /deep/ .dead-fg { fill: black; }
 /deep/ .disabled-bg { fill: black; }

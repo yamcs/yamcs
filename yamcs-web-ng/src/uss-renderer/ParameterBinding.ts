@@ -1,6 +1,6 @@
-import { DataBinding } from './DataBinding';
+import { DataSourceBinding } from './DataSourceBinding';
 
-export class ParameterBinding extends DataBinding {
+export class ParameterBinding extends DataSourceBinding {
 
   static readonly TYPE = 'PARAMETER';
 

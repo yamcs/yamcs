@@ -5,6 +5,7 @@ import { G, Rect } from '../tags';
 import { Color } from '../Color';
 import { Label } from './Label';
 import { DataSourceSample } from '../DataSourceSample';
+import { DataSourceBinding } from '../DataSourceBinding';
 
 interface OpenDisplayCommandOptions {
   target: string;
@@ -162,10 +163,11 @@ export class NavigationButton extends AbstractWidget {
     }
   }
 
-  updateProperty(property: string, sample: DataSourceSample) {
-    switch (property) {
+  updateBinding(binding: DataSourceBinding, sample: DataSourceSample) {
+    const value = binding.usingRaw ? sample.rawValue : sample.engValue;
+    switch (binding.dynamicProperty) {
       case 'FILL_COLOR':
-        const newColor = Color.forName(sample.value);
+        const newColor = Color.forName(value);
         this.brightStroke = newColor.brighter().brighter();
         this.darkStroke = newColor.darker();
 
@@ -174,7 +176,7 @@ export class NavigationButton extends AbstractWidget {
         this.shadeEl.setAttribute('stroke', this.darkStroke.toString());
         break;
       default:
-        console.warn('Unsupported dynamic property: ' + property);
+        console.warn('Unsupported dynamic property: ' + binding.dynamicProperty);
     }
   }
 }
