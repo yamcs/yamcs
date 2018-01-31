@@ -44,6 +44,7 @@ mkdir -p $TARGET/web
 
 rm -rf $TARGET/lib
 mkdir -p $TARGET/lib/ext
+mkdir -p $TARGET/lib/yamcs-web
 
 cp -an $YAMCS_HOME/yamcs-core/bin/* $TARGET/bin
 
@@ -52,11 +53,11 @@ ln -fs $YAMCS_HOME/yamcs-core/lib/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-core/mdb/* $TARGET/mdb
 ln -fs $YAMCS_HOME/yamcs-artemis/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-artemis/lib/*.jar $TARGET/lib
-ln -fs $YAMCS_HOME/yamcs-web/build $TARGET/web/base
+ln -fs $YAMCS_HOME/yamcs-web/dist $TARGET/lib/yamcs-web
 
 # Sets up a development environment for an example Yamcs configuration
 if [ $YSS_CONFIGURATION -eq "1" ]; then
-    YAMCS_DATA=/storage/yamcs-data/
+    YAMCS_DATA=/storage/yamcs-data
 
     cp -an $YAMCS_HOME/yamcs-simulation/bin/* $TARGET/bin
 
@@ -68,7 +69,7 @@ if [ $YSS_CONFIGURATION -eq "1" ]; then
     rm -f $TARGET/web/yss
     ln -fs $YAMCS_HOME/yamcs-simulation/web $TARGET/web/yss
 
-    ln -fs $YAMCS_HOME/yamcs-simulation/profiles $YAMCS_DATA/simulator
+    cp -an $YAMCS_HOME/yamcs-simulation/profiles $YAMCS_DATA/simulator/
     if [ $? -ne 0 ]; then
         echo "ERROR: could not create $YAMCS_DATA/simulator/profiles - please create it and make sure this script has write permissions in it!"
         exit 1

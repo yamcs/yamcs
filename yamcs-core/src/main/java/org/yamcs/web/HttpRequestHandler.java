@@ -8,16 +8,14 @@ import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
-import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.AuthenticationPendingException;
+import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.web.rest.Router;
@@ -26,7 +24,6 @@ import org.yamcs.web.websocket.WebSocketFrameHandler;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.protobuf.MessageLite;
 
 import io.netty.buffer.ByteBuf;
@@ -66,22 +63,21 @@ import io.protostuff.Schema;
 /**
  * Handles handshakes and messages.
  *
- * We have following different request types - static requests - sent to the
- * fileRequestHandler - do no go higher in the netty pipeline - websocket
- * requests - the pipeline is modified to add the websocket handshaker. - load
- * data requests - the pipeline is modified by the respective route handler -
- * standard API calls (the vast majority) - the HttpObjectAgreggator is added
- * upstream to collect (and limit) all data from the http request in one object.
+ * We have following different request types - static requests - sent to the fileRequestHandler - do no go higher in the
+ * netty pipeline - websocket requests - the pipeline is modified to add the websocket handshaker. - load data requests
+ * - the pipeline is modified by the respective route handler - standard API calls (the vast majority) - the
+ * HttpObjectAgreggator is added upstream to collect (and limit) all data from the http request in one object.
  *
- * Because we support multiple http requests on one connection (keep-alive), we
- * have to clean the pipeline when the request type changes
+ * Because we support multiple http requests on one connection (keep-alive), we have to clean the pipeline when the
+ * request type changes
  */
 public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     private static final String STATIC_PATH = "_static";
     private static final String API_PATH = "api";
 
-    public static final AttributeKey<ChunkedTransferStats> CTX_CHUNK_STATS = AttributeKey.valueOf("chunkedTransferStats");
+    public static final AttributeKey<ChunkedTransferStats> CTX_CHUNK_STATS = AttributeKey
+            .valueOf("chunkedTransferStats");
     public static final AttributeKey<AuthenticationToken> CTX_AUTH_TOKEN = AttributeKey.valueOf("authToken");
 
     private static final Logger log = LoggerFactory.getLogger(HttpRequestHandler.class);
@@ -104,11 +100,12 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public HttpRequestHandler(Router apiRouter) {
         this.apiRouter = apiRouter;
     }
+
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg)  throws Exception {
-        if(msg instanceof HttpMessage) {
-            DecoderResult dr = ((HttpMessage)msg).decoderResult();
-            if(!dr.isSuccess()) {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        if (msg instanceof HttpMessage) {
+            DecoderResult dr = ((HttpMessage) msg).decoderResult();
+            if (!dr.isSuccess()) {
                 log.warn("{} got exception decoding http message: {}", ctx.channel().id().asShortText(), dr.cause());
                 ctx.writeAndFlush(BAD_REQUEST);
                 return;
@@ -146,26 +143,27 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         if (priv.isEnabled()) {
             ctx.channel().attr(CTX_AUTH_TOKEN).set(null);
-            
+
             CompletableFuture<AuthenticationToken> cf = priv.authenticateHttp(ctx, req);
             try {
-                //TODO: make this non-blocking
-                // but pay attention that as soon as we return the method to netty, 
-                //    it will immediately call the pipeline with the next http message (for example with an EmptyLastHttpContent)
-                //    and those have to be queued somehow while the authentication is being performed
-                //One can use this to make sure no data is read from the client while the authentication is going on:
-                //   ctx.channel().config().setAutoRead(false);
-                //   cf.whenComplete((...) -> {ctx.channel().config().setAutoRead(true)})
-                //  however this doesn't prevent the  EmptyLastHttpContent to come through 
-                //  because that one is generated from the first GET request in case no body or small body is present
-                
+                // TODO: make this non-blocking
+                // but pay attention that as soon as we return the method to netty,
+                // it will immediately call the pipeline with the next http message (for example with an
+                // EmptyLastHttpContent)
+                // and those have to be queued somehow while the authentication is being performed
+                // One can use this to make sure no data is read from the client while the authentication is going on:
+                // ctx.channel().config().setAutoRead(false);
+                // cf.whenComplete((...) -> {ctx.channel().config().setAutoRead(true)})
+                // however this doesn't prevent the EmptyLastHttpContent to come through
+                // because that one is generated from the first GET request in case no body or small body is present
+
                 AuthenticationToken authToken = cf.get(5000, TimeUnit.MILLISECONDS);
-                
+
                 ctx.channel().attr(CTX_AUTH_TOKEN).set(authToken);
-                
+
                 handleRequest(authToken, ctx, req);
             } catch (Exception e) {
-               Throwable t = ExceptionUtil.unwind(e);
+                Throwable t = ExceptionUtil.unwind(e);
                 if (t instanceof AuthenticationPendingException) {
                     return;
                 } else {
@@ -176,7 +174,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             handleRequest(null, ctx, req);
         }
     }
-
 
     private void handleRequest(AuthenticationToken authToken, ChannelHandlerContext ctx, HttpRequest req) {
         try {
@@ -197,7 +194,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                 return;
             case "":
                 // overview of all instances
-                fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/index.html");
+                fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
                 return;
             default:
                 String yamcsInstance = path[1];
@@ -214,10 +211,10 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                     } else {
                         // Everything else is handled by angular's router
                         // (enables deep linking in html5 mode)
-                        fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/instance.html");
+                        fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
                     }
                 } else {
-                    fileRequestHandler.handleStaticFileRequest(ctx, req, "_site/instance.html");
+                    fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
                 }
             }
         } catch (IOException e) {
@@ -226,14 +223,14 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-
     /**
      * Adapts Netty's pipeline for allowing WebSocket upgrade
      *
      * @param ctx
-     *  context for this channel handler
+     *            context for this channel handler
      */
-    private void prepareChannelForWebSocketUpgrade(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance, AuthenticationToken authToken) {
+    private void prepareChannelForWebSocketUpgrade(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance,
+            AuthenticationToken authToken) {
         contentExpected = true;
         ctx.pipeline().addLast(new HttpObjectAggregator(65536));
 
@@ -259,24 +256,27 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public ChannelFuture sendRedirect(ChannelHandlerContext ctx, HttpRequest req, String newUri) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.FOUND);
         response.headers().set(HttpHeaderNames.LOCATION, newUri);
-        log.info("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(), HttpResponseStatus.FOUND.code());
+        log.info("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(),
+                HttpResponseStatus.FOUND.code());
         return ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
-    public static <T extends MessageLite> ChannelFuture sendMessageResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status, T responseMsg, Schema<T> responseSchema) {
+    public static <T extends MessageLite> ChannelFuture sendMessageResponse(ChannelHandlerContext ctx, HttpRequest req,
+            HttpResponseStatus status, T responseMsg, Schema<T> responseSchema) {
         return sendMessageResponse(ctx, req, status, responseMsg, responseSchema, true);
     }
 
-    public static <T extends MessageLite> ChannelFuture sendMessageResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status, T responseMsg, Schema<T> responseSchema, boolean autoCloseOnError) {
+    public static <T extends MessageLite> ChannelFuture sendMessageResponse(ChannelHandlerContext ctx, HttpRequest req,
+            HttpResponseStatus status, T responseMsg, Schema<T> responseSchema, boolean autoCloseOnError) {
         ByteBuf body = ctx.alloc().buffer();
         MediaType contentType = MediaType.getAcceptType(req);
 
-        try (ByteBufOutputStream channelOut = new ByteBufOutputStream(body)){
+        try (ByteBufOutputStream channelOut = new ByteBufOutputStream(body)) {
             if (contentType == MediaType.PROTOBUF) {
                 responseMsg.writeTo(channelOut);
             } else if (contentType == MediaType.PLAIN_TEXT) {
                 channelOut.write(responseMsg.toString().getBytes(StandardCharsets.UTF_8));
-            } else { //JSON by default
+            } else { // JSON by default
                 contentType = MediaType.JSON;
                 JsonGenerator generator = jsonFactory.createGenerator(channelOut, JsonEncoding.UTF8);
                 JsonIOUtil.writeTo(generator, responseMsg, responseSchema, false);
@@ -289,24 +289,29 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, body);
         HttpUtils.setContentTypeHeader(response, contentType);
 
-        int txSize =  body.readableBytes();
+        int txSize = body.readableBytes();
         HttpUtil.setContentLength(response, txSize);
         return sendResponse(ctx, req, response, autoCloseOnError);
     }
 
-    public static ChannelFuture sendPlainTextError(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status) {
+    public static ChannelFuture sendPlainTextError(ChannelHandlerContext ctx, HttpRequest req,
+            HttpResponseStatus status) {
         return sendPlainTextError(ctx, req, status, status.toString());
     }
 
-    public static ChannelFuture sendPlainTextError(ChannelHandlerContext ctx, HttpRequest req, HttpResponseStatus status, String msg) {
-        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, Unpooled.copiedBuffer(msg + "\r\n", CharsetUtil.UTF_8));
+    public static ChannelFuture sendPlainTextError(ChannelHandlerContext ctx, HttpRequest req,
+            HttpResponseStatus status, String msg) {
+        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status,
+                Unpooled.copiedBuffer(msg + "\r\n", CharsetUtil.UTF_8));
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
         return sendResponse(ctx, req, response, true);
     }
 
-    public static ChannelFuture sendResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponse response, boolean autoCloseOnError) {
-        if(response.status()==HttpResponseStatus.OK) {
-            log.info("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(), response.status().code());
+    public static ChannelFuture sendResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponse response,
+            boolean autoCloseOnError) {
+        if (response.status() == HttpResponseStatus.OK) {
+            log.info("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(),
+                    response.status().code());
             ChannelFuture writeFuture = ctx.writeAndFlush(response);
             if (!HttpUtil.isKeepAlive(req)) {
                 writeFuture.addListener(ChannelFutureListener.CLOSE);
@@ -314,12 +319,14 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             return writeFuture;
         } else {
             if (req != null) {
-                log.warn("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(), response.status().code());
+                log.warn("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(),
+                        response.status().code());
             } else {
-                log.warn("{} malformed or illegal request. Sending back {}",  ctx.channel().id().asShortText(), response.status().code());
+                log.warn("{} malformed or illegal request. Sending back {}", ctx.channel().id().asShortText(),
+                        response.status().code());
             }
             ChannelFuture writeFuture = ctx.writeAndFlush(response);
-            if(autoCloseOnError) {
+            if (autoCloseOnError) {
                 writeFuture = writeFuture.addListener(ChannelFutureListener.CLOSE);
             }
             return writeFuture;
@@ -335,7 +342,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     /**
      * Sends base HTTP response indicating the use of chunked transfer encoding
      */
-    public static ChannelFuture startChunkedTransfer(ChannelHandlerContext ctx, HttpRequest req, MediaType contentType, String filename) {
+    public static ChannelFuture startChunkedTransfer(ChannelHandlerContext ctx, HttpRequest req, MediaType contentType,
+            String filename) {
         log.info("{} {} {} 200 starting chunked transfer", ctx.channel().id().asShortText(), req.method(), req.uri());
         ctx.channel().attr(CTX_CHUNK_STATS).set(new ChunkedTransferStats(req.method(), req.uri()));
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);

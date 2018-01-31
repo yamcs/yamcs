@@ -1,32 +1,27 @@
-## Yamcs Web
+# YamcsWebNg
 
-Web-based dashboard application for Yamcs.
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.6.0.
 
-This project is in incubation phase. Embrace change.
+## Development server
 
-### Prerequisites
+Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
-* npm
+## Code scaffolding
 
-If you want to run npm as a non-root user, you might need to
-ensure non-root users have write permission in its temporary folder, like:
+Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
-    sudo chmod go+w ~/tmp/
+## Build
 
-On Debian-based Linux distributions such as Ubuntu, the NodeJS binary is named `nodejs` instead of `node`. To ensure the NodeJS binary can be found by the build scripts, a symlink is required:
+Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `-prod` flag for a production build.
 
-    sudo ln -s /usr/bin/nodejs /usr/bin/node
+## Running unit tests
 
-### First Installation
+Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
 
-Fetch dependencies:
+## Running end-to-end tests
 
-    npm install
+Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
 
-### Build site
+## Further help
 
-    npm run build
-
-The output is in the folder `./build`. Indicate this folder as one of the web roots in your `yamcs.yaml` to let Yamcs serve its content.
-
-Run `npm run build` whenever you changed a source file. A watch functionality will be added at a later time.
+To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).

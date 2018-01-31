@@ -37,15 +37,11 @@ mv $logproperties.tmp $logproperties
 
 
 if [ "$buildweb" = "1" ]; then
-   # Bower and npm use local-scoped dependencies.
+   # npm uses local-scoped dependencies.
    # Setup links before packing, so deps don't get re-downloaded everytime
    ln -s "$yamcshome/yamcs-web/node_modules" yamcs-web
-   ln -s "$yamcshome/yamcs-web/bower_components" yamcs-web
    if [ ! -d yamcs-web/node_modules ]; then
-       echo "[WARNING] No cached npm dependencies. They will be downloaded from the internet."
-   fi
-   if [ ! -d yamcs-web/bower_components ]; then
-       echo "[WARNING] No cached bower dependencies. They will be downloaded from the internet."
+       echo "[WARNING] No cached npm dependencies. They will be downloaded from Internet."
    fi
 fi
 

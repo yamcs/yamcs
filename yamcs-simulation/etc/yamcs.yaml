@@ -21,8 +21,8 @@ webConfig:
    # the displays are also loaded from <webRoot>/displays/<instance> directory
    # This may be a list to indicate multiple webroot locations
    webRoot:
-      - web/base
-      - web/yss
+      - lib/yamcs-web
+      - web
 
    # port used by the webserver
    webPort: 8090
