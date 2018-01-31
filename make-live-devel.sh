@@ -44,7 +44,6 @@ mkdir -p $TARGET/web
 
 rm -rf $TARGET/lib
 mkdir -p $TARGET/lib/ext
-mkdir -p $TARGET/lib/yamcs-web
 
 cp -an $YAMCS_HOME/yamcs-core/bin/* $TARGET/bin
 
@@ -69,7 +68,7 @@ if [ $YSS_CONFIGURATION -eq "1" ]; then
     rm -f $TARGET/web/yss
     ln -fs $YAMCS_HOME/yamcs-simulation/web $TARGET/web/yss
 
-    cp -an $YAMCS_HOME/yamcs-simulation/profiles $YAMCS_DATA/simulator/
+    mkdir -p $YAMCS_DATA/simulator/profiles
     if [ $? -ne 0 ]; then
         echo "ERROR: could not create $YAMCS_DATA/simulator/profiles - please create it and make sure this script has write permissions in it!"
         exit 1
@@ -78,9 +77,10 @@ if [ $YSS_CONFIGURATION -eq "1" ]; then
         echo "ERROR: please make sure this script has write permissions in the $YAMCS_DATA/simulator/profiles folder!"
         exit 2
     fi
+    cp -an $YAMCS_HOME/yamcs-simulation/profiles/* $YAMCS_DATA/simulator/
 fi
 
-if [ -f make-live-devel-local.sh ] ; then
+if [ -f make-live-devel-local.sh ]; then
     sh make-live-devel-local.sh $TARGET
 fi
 
