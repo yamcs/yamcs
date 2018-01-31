@@ -23,6 +23,7 @@ import { LinksModule } from './links/links.module';
 import { ServicesModule } from './services/services.module';
 import { RouterStateUrl } from './shared/routing';
 import { YamcsService } from './core/services/yamcs.service';
+import { APP_BASE_HREF } from '@angular/common';
 
 /**
  * The RouterStateSerializer takes the current RouterStateSnapshot
@@ -32,7 +33,7 @@ import { YamcsService } from './core/services/yamcs.service';
  * need the URL and query parameters from the snapshot in the store. Other items could be
  * returned such as route parameters and static route data.
  */
-class CustomRouterStateSerializer implements RouterStateSerializer<RouterStateUrl> {
+export class CustomRouterStateSerializer implements RouterStateSerializer<RouterStateUrl> {
   serialize(routerState: RouterStateSnapshot): RouterStateUrl {
     return {
       url: routerState.url,
@@ -85,6 +86,10 @@ class CustomRouterStateSerializer implements RouterStateSerializer<RouterStateUr
   ],
   providers: [
     YamcsService,
+    {
+      provide: APP_BASE_HREF,
+      useValue: '/',
+    },
     {
       provide: RouterStateSerializer,
       useClass: CustomRouterStateSerializer,

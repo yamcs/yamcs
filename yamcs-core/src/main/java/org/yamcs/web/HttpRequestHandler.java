@@ -192,28 +192,29 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             case API_PATH:
                 contentExpected = apiRouter.scheduleExecution(ctx, req, qsDecoder);
                 return;
-            case "":
-                // overview of all instances
-                fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
-                return;
-            default:
-                String yamcsInstance = path[1];
-                if (!YamcsServer.hasInstance(yamcsInstance)) {
-                    sendPlainTextError(ctx, req, NOT_FOUND);
+            case WebSocketFrameHandler.WEBSOCKET_PATH:
+                if (path.length == 2) { // An instance should be specified
+                    sendPlainTextError(ctx, req, FORBIDDEN);
                     return;
                 }
-                if (path.length > 2) {
-                    String[] rpath = path[2].split("/", 2);
-                    String handler = rpath[0];
-                    if (WebSocketFrameHandler.WEBSOCKET_PATH.equals(handler)) {
-                        prepareChannelForWebSocketUpgrade(ctx, req, yamcsInstance, authToken);
-                        return;
+                if (YamcsServer.hasInstance(path[1])) {
+                    prepareChannelForWebSocketUpgrade(ctx, req, path[1], authToken);
+                } else {
+                    sendPlainTextError(ctx, req, NOT_FOUND);
+                }
+                return;
+            default:
+                if (path.length >= 3 && WebSocketFrameHandler.WEBSOCKET_PATH.equals(path[2])) {
+                    if (YamcsServer.hasInstance(path[1])) {
+                        log.warn(String.format("Deprecated url request for /%s/%s. Migrate to /%s/%s instead.",
+                                path[1], path[2], path[2], path[1]));
+                        prepareChannelForWebSocketUpgrade(ctx, req, path[1], authToken);
                     } else {
-                        // Everything else is handled by angular's router
-                        // (enables deep linking in html5 mode)
-                        fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
+                        sendPlainTextError(ctx, req, NOT_FOUND);
                     }
                 } else {
+                    // Everything else is handled by angular's router
+                    // (enables deep linking in html5 mode)
                     fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
                 }
             }
