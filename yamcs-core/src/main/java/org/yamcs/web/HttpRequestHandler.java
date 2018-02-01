@@ -197,8 +197,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                     sendPlainTextError(ctx, req, FORBIDDEN);
                     return;
                 }
-                if (YamcsServer.hasInstance(path[1])) {
-                    prepareChannelForWebSocketUpgrade(ctx, req, path[1], authToken);
+                if (YamcsServer.hasInstance(path[2])) {
+                    prepareChannelForWebSocketUpgrade(ctx, req, path[2], authToken);
                 } else {
                     sendPlainTextError(ctx, req, NOT_FOUND);
                 }

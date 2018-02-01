@@ -255,7 +255,40 @@ export class Display {
   }
 
   getGlobalState() {
-    return 'green';
+    let green = false;
+    let orange = false;
+    let red = false;
+    for (const widget of this.widgets) {
+      for (const binding of widget.parameterBindings) {
+        const sample = binding.sample;
+        if (sample) {
+          switch (sample.monitoringResult) {
+            case 'IN_LIMITS':
+              green = true;
+              break;
+            case 'WATCH':
+            case 'WARNING':
+            case 'DISTRESS':
+              orange = true;
+              break;
+            case 'CRITICAL':
+            case 'SEVERE':
+              red = true;
+              break;
+          }
+        }
+      }
+    }
+
+    if (red) {
+      return 'red';
+    } else if (orange) {
+      return 'orange';
+    } else if (green) {
+      return 'green';
+    } else {
+      return 'grey';
+    }
   }
 
   processParameterSamples(samples: ParameterSample[]) {
