@@ -35,7 +35,7 @@ export class WebSocketClient {
   constructor(instance: string) {
     this.subscriptionModel = new SubscriptionModel();
     this.webSocket = webSocket({
-      url: `ws://localhost:8090/${instance}/_websocket`,
+      url: `ws://localhost:8090/_websocket/${instance}`,
       closeObserver: {
         next: () => this.subscribeOnOpen = true
       },
