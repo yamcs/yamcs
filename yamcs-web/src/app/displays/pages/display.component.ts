@@ -10,12 +10,14 @@ import { YamcsService } from '../../core/services/yamcs.service';
 import { Alias } from '../../../yamcs-client';
 import { ParameterSample } from '../../../uss-renderer/ParameterSample';
 import { StyleSet } from '../../../uss-renderer/StyleSet';
+import { LayoutListener } from '../../../uss-renderer/LayoutListener';
+import { DisplayFrame } from '../../../uss-renderer/DisplayFrame';
 
 @Component({
   templateUrl: './display.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DisplayPageComponent implements AfterViewInit {
+export class DisplayPageComponent implements AfterViewInit, LayoutListener {
 
   @ViewChild('displayContainer')
   displayContainerRef: ElementRef;
@@ -46,13 +48,17 @@ export class DisplayPageComponent implements AfterViewInit {
 
   private renderDisplay(name: string, doc: XMLDocument, styleSet: StyleSet, targetEl: HTMLDivElement) {
     const layout = new Layout(targetEl, styleSet, this.resourceResolver);
-    const frame = layout.createDisplayFrame(name, doc);
+    layout.layoutListeners.add(this);
+    layout.createDisplayFrame(name, doc);
+  }
 
+  onDisplayFrameOpen(frame: DisplayFrame) {
     const opsNames = frame.getOpsNames();
     if (opsNames.size) {
       const ids: Alias[] = [];
       opsNames.forEach(opsName => ids.push({
-        namespace: 'MDB:OPS Name', name: opsName
+        namespace: 'MDB:OPS Name',
+        name: opsName,
       }));
 
       this.yamcs.getSelectedInstance().getParameterValueUpdates({
@@ -68,6 +74,10 @@ export class DisplayPageComponent implements AfterViewInit {
         frame.processParameterSamples(samples);
       });
     }
+  }
+
+  onDisplayFrameClose(frame: DisplayFrame) {
+    // TODO unsubscribe
   }
 }
 

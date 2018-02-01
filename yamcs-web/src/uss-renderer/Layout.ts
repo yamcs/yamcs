@@ -1,6 +1,7 @@
 import { ResourceResolver } from './ResourceResolver';
 import { DisplayFrame } from './DisplayFrame';
 import { StyleSet } from './StyleSet';
+import { LayoutListener } from './LayoutListener';
 
 export class Layout {
 
@@ -12,6 +13,8 @@ export class Layout {
   framesById = new Map<string, DisplayFrame>();
 
   synchronizer: number;
+
+  layoutListeners = new Set<LayoutListener>();
 
   /**
    * Limit client-side update to this amount of milliseconds.
@@ -44,6 +47,7 @@ export class Layout {
     const frame = new DisplayFrame(this.scrollPane, this, doc);
     this.frames.push(frame);
     this.framesById.set(id, frame);
+    this.layoutListeners.forEach(l => l.onDisplayFrameOpen(frame));
     return frame;
   }
 
@@ -52,6 +56,7 @@ export class Layout {
   }
 
   closeDisplayFrame(frame: DisplayFrame) {
+    this.layoutListeners.forEach(l => l.onDisplayFrameClose(frame));
     const idx = this.frames.indexOf(frame);
     this.frames.splice(idx, 1);
     this.framesById.forEach((other, id) => {
