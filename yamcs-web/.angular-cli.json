@@ -21,6 +21,7 @@
       "prefix": "app",
       "styles": [
         "styles.css",
+        "./uss-renderer/font.css",
         "../node_modules/dygraphs/dist/dygraph.css"
       ],
       "scripts": [],

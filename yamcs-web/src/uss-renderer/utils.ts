@@ -189,11 +189,6 @@ export function parseTextStyle(node: Node) {
   fontSize = fontSize * (72 / 96);
   style['font-size'] = `${fontSize}pt`;
 
-  // This is the most common Font, however since it is not
-  // available on most browsers, default to any other monospace.
-  if (style['font-family'] === 'Lucida Sans Typewriter') {
-    style['font-family'] = 'Lucida Sans Typewriter, monospace';
-  }
   if (parseBooleanChild(node, 'IsBold', false)) {
     style['font-weight'] = 'bold';
   }
