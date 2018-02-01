@@ -4,7 +4,7 @@ const sprintf = require('sprintf-js').sprintf;
 
 
 import { AbstractWidget } from './AbstractWidget';
-import { G, Rect, Text } from '../tags';
+import { G, Rect, Text, Tag } from '../tags';
 import { Color } from '../Color';
 import { DataSourceBinding } from '../DataSourceBinding';
 import { DEFAULT_STYLE } from '../StyleSet';
@@ -31,7 +31,6 @@ export class Field extends AbstractWidget {
   private fieldTextEl: Element;
 
   parseAndDraw() {
-    // make a group to put the text and the bounding box together
     const g = new G({
       id: `${this.id}-group`,
       transform: `translate(${this.x},${this.y})`,
@@ -44,48 +43,50 @@ export class Field extends AbstractWidget {
       this.format = utils.parseStringChild(this.node, 'Format');
     }
     this.overrideDqi = utils.parseBooleanChild(this.node, 'OverrideDQI', false);
+    this.showIndicators = utils.parseBooleanChild(this.node, 'ShowIndicators');
 
-    if (utils.hasChild(this.node, 'Unit') && utils.parseBooleanChild(this.node, 'ShowUnit')) {
-      const unitWidth = 0;
-      const unit = utils.parseStringChild(this.node, 'Unit');
-      const unitTextStyleNode = utils.findChild(this.node, 'UnitTextStyle');
-      const unitTextStyle = utils.parseTextStyle(unitTextStyleNode);
-      const ut = new Text({
-        x: 0,
-        y: 0,
-        value: unit,
-        ...unitTextStyle,
-      });
-      g.addChild(ut);
-
-      /* TODO
-      const bbox = ut.getBBox();
-      ut.setAttribute('dx', this.width - bbox.width);
-
-      const unitVertAlignment = utils.parseStringChild(unitTextStyleNode, 'VerticalAlignment').toLowerCase();
-      if (unitVertAlignment === 'center') {
-        ut.setAttribute('dy', -bbox.y + (this.height - bbox.height) / 2);
-      } else if (unitVertAlignment === 'top') {
-        ut.setAttribute('dy', -bbox.y);
-      } else if (unitVertAlignment === 'bottom') {
-        ut.setAttribute('dy', -bbox.y + (this.height - bbox.height));
-      }
-      unitWidth = bbox.width + 2;
-      */
-      this.width -= unitWidth;
+    const columns = utils.parseIntChild(this.node, 'Columns');
+    let effectiveColumns = columns;
+    if (this.showIndicators) {
+      effectiveColumns += indicatorChars;
     }
 
     const textStyleNode = utils.findChild(this.node, 'TextStyle');
     const textStyle = utils.parseTextStyle(textStyleNode);
     const fontFamily = textStyle['font-family'];
     const fontSize = textStyle['font-size'];
+    const fm = this.getFontMetrics('', fontFamily, fontSize);
 
     this.colSize = Math.floor(this.getFontMetrics('w', fontFamily, fontSize).width);
 
-    // Boxes grow in function of the col size
-    // TODO instead of module on width, it may be that we should look at DataFieldColumns intead
-    const boxWidth = this.width - (this.width % this.colSize);
+    if (utils.hasChild(this.node, 'Unit') && utils.parseBooleanChild(this.node, 'ShowUnit')) {
+      const unit = utils.parseStringChild(this.node, 'Unit');
+      const unitTextStyleNode = utils.findChild(this.node, 'UnitTextStyle');
+      const unitTextStyle = utils.parseTextStyle(unitTextStyleNode);
+      const unitFontFamily = unitTextStyle['font-family'];
+      const unitFontSize = unitTextStyle['font-size'];
+      const unitFm = this.getFontMetrics('', unitFontFamily, unitFontSize);
 
+      const unitVertAlignment = utils.parseStringChild(unitTextStyleNode, 'VerticalAlignment');
+      let unitY;
+      if (unitVertAlignment === 'CENTER') {
+        unitY = Math.ceil(this.height / 2);
+      } else if (unitVertAlignment === 'TOP') {
+        unitY = Math.ceil(unitFm.height / 2);
+      } else if (unitVertAlignment === 'BOTTOM') {
+        unitY = Math.ceil(this.height - (unitFm.height / 2));
+      }
+
+      g.addChild(new Text({
+        x: (effectiveColumns * this.colSize) + 2,
+        y: unitY,
+        ...unitTextStyle,
+        'dominant-baseline': 'middle',
+        'text-anchor': 'start',
+      }, unit));
+    }
+
+    const boxWidth = effectiveColumns * this.colSize;
     const rect = new Rect({
       id: `${this.id}-bg`,
       x: 0,
@@ -96,18 +97,25 @@ export class Field extends AbstractWidget {
       'shape-rendering': 'crispEdges',
     });
 
-    for (const binding of this.parameterBindings) {
-      if (binding.dynamicProperty === 'VALUE' && binding.opsName) {
-          const yamcsInstance = 'dev'; // TODO window.location.pathname.match(/\/([^\/]*)\/?/)[1];
-          rect.setAttribute('xlink:href', `/${yamcsInstance}/mdb/MDB:OPS Name/${binding.opsName}`);
-      }
-    }
     if (!this.overrideDqi) {
       rect.setAttribute('fill', this.styleSet.getStyle('NOT_RECEIVED').bg.toString());
+      rect.setAttribute('fill-opacity', '1');
     }
-    g.addChild(rect);
 
-    this.showIndicators = utils.parseBooleanChild(this.node, 'ShowIndicators');
+    let rectParent = g;
+    for (const binding of this.parameterBindings) {
+      if (binding.dynamicProperty === 'VALUE' && binding.opsName) {
+        const yamcsInstance = 'dev'; // TODO window.location.pathname.match(/\/([^\/]*)\/?/)[1];
+        const a = new Tag('a', {
+          cursor: 'pointer',
+          'xlink:href': `/${yamcsInstance}/mdb/MDB:OPS Name/${binding.opsName}`,
+        });
+        g.addChild(a);
+        rectParent = a;
+        break;
+      }
+    }
+    rectParent.addChild(rect);
 
     let textWidth = boxWidth;
     if (this.showIndicators) {
@@ -118,6 +126,7 @@ export class Field extends AbstractWidget {
       id: this.id,
       y: 0,
       ...textStyle,
+      'pointer-events': 'none',
     });
 
     const overflowBehavior = utils.parseStringChild(this.node, 'OverflowBehavior');
@@ -140,11 +149,6 @@ export class Field extends AbstractWidget {
       text.setAttribute('text-anchor', 'end');
     }
     text.setAttribute('x', String(x));
-
-    // TODO move to update
-    // Prefer FontMetrics over baseline tricks to account for
-    // ascent and descent.
-    const fm = this.getFontMetrics(/*innerText*/ '', fontFamily, fontSize);
 
     let y;
     const vertAlignment = utils.parseStringChild(textStyleNode, 'VerticalAlignment');
@@ -169,6 +173,7 @@ export class Field extends AbstractWidget {
         'font-family': textStyle['font-family'],
         'dominant-baseline': 'middle',
         'text-anchor': 'end',
+        'pointer-events': 'none',
       });
       g.addChild(indicatorText);
     }

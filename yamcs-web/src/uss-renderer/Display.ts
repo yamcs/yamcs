@@ -57,6 +57,8 @@ export class Display {
     const rootEl = new Svg({
       width: this.width,
       height: this.height,
+      'xmlns': 'http://www.w3.org/2000/svg',
+      'xmlns:xlink': 'http://www.w3.org/1999/xlink',
     });
 
     this.addDefinitions(rootEl);
@@ -152,6 +154,9 @@ export class Display {
         -moz-user-select: none;
         -khtml-user-select: none;
         -webkit-user-select: none;
+      }
+      .field:hover {
+        opacity: 0.7;
       }
     `);
     svg.addChild(style);
