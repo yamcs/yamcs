@@ -10,7 +10,7 @@ import { Polyline } from './widgets/Polyline';
 import { Rectangle } from './widgets/Rectangle';
 import { Symbol } from './widgets/Symbol';
 import { AbstractWidget } from './widgets/AbstractWidget';
-import { Svg, Rect, Tag, Defs, Marker, Path, Pattern } from './tags';
+import { Svg, Rect, Tag, Defs, Pattern } from './tags';
 import { Compound } from './widgets/Compound';
 import { Color } from './Color';
 import { ResourceResolver } from './ResourceResolver';
@@ -97,43 +97,8 @@ export class Display {
     }
   }
 
-  /**
-   * Creates a definition section in the SVG and adds the markers that will
-   * be used for polylines arrows.
-   *
-   * TODO: It is broken currently because the markers will show all in black,
-   * instead of the color of the line
-   */
   private addDefinitions(svg: Svg) {
     const defs = new Defs().addChild(
-      new Marker({
-        id: 'uss-arrowStart',
-        refX: 0,
-        refY: 0,
-        markerWidth: 20,
-        markerHeight: 20,
-        orient: 'auto',
-        style: 'overflow: visible; fill: currentColor; stroke: none',
-      }).addChild(new Path({
-        d: 'M0,-15 l-20,0 l0,15',
-        transform: 'scale(0.2, 0.2) translate(20, 0)',
-        'fill-rule': 'evenodd',
-        'fill-opacity': '1.0',
-      })),
-      new Marker({
-        id: 'uss-arrowEnd',
-        refX: 0,
-        refY: 0,
-        markerWidth: 20,
-        markerHeight: 20,
-        orient: 'auto',
-        style: 'overflow: visible; fill: currentColor; stroke: none',
-      }).addChild(new Path({
-        d: 'M0,-15 l-20,0 l0,15',
-        transform: 'scale(0.2, 0.2) rotate(180) translate(20, 0)',
-        'fill-rule': 'evenodd',
-        'fill-opacity': '1.0',
-      })),
       new Pattern({
         id: 'uss-grid',
         patternUnits: 'userSpaceOnUse',
@@ -143,7 +108,6 @@ export class Display {
         new Rect({ x: 0, y: 0, width: 2, height: 1, fill: '#c0c0c0' })
       )
     );
-
     svg.addChild(defs);
   }
 
