@@ -12,8 +12,8 @@ export interface Style {
 export const DEFAULT_STYLE: Style = {
   acquisitionRules: [],
   monitoringRules: [],
-  fg: Color.WHITE,
-  bg: Color.BLACK,
+  fg: Color.BLACK,
+  bg: Color.WHITE,
   flags: '  ',
 };
 

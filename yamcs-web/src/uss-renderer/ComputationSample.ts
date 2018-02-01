@@ -4,6 +4,7 @@ import { AlarmRange } from '../yamcs-client';
 export class ComputationSample implements DataSourceSample {
 
   alarmRanges: AlarmRange[] = [];
+  rangeCondition: any;
 
   constructor(
     readonly generationTime: Date,

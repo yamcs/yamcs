@@ -8,13 +8,17 @@ import { G, Rect, Text } from '../tags';
 import { Color } from '../Color';
 import { DataSourceBinding } from '../DataSourceBinding';
 import { DEFAULT_STYLE } from '../StyleSet';
+import { DataSourceSample } from '../DataSourceSample';
 
+const indicatorChars = 2;
 
 export class Field extends AbstractWidget {
 
   decimals: number;
   format: string | null;
   overrideDqi: boolean;
+  showIndicators: boolean;
+  colSize: number;
 
   private xBinding: DataSourceBinding;
   private yBinding: DataSourceBinding;
@@ -23,6 +27,7 @@ export class Field extends AbstractWidget {
 
   private fieldEl: Element;
   private fieldBackgroundEl: Element;
+  private fieldIndicatorEl: Element;
   private fieldTextEl: Element;
 
   parseAndDraw() {
@@ -75,10 +80,11 @@ export class Field extends AbstractWidget {
     const fontFamily = textStyle['font-family'];
     const fontSize = textStyle['font-size'];
 
-    const colSize = Math.floor(this.getFontMetrics('w', fontFamily, fontSize).width);
+    this.colSize = Math.floor(this.getFontMetrics('w', fontFamily, fontSize).width);
 
     // Boxes grow in function of the col size
-    const boxWidth = this.width - (this.width % colSize);
+    // TODO instead of module on width, it may be that we should look at DataFieldColumns intead
+    const boxWidth = this.width - (this.width % this.colSize);
 
     const rect = new Rect({
       id: `${this.id}-bg`,
@@ -101,12 +107,11 @@ export class Field extends AbstractWidget {
     }
     g.addChild(rect);
 
-    const showIndicators = utils.parseBooleanChild(this.node, 'ShowIndicators');
+    this.showIndicators = utils.parseBooleanChild(this.node, 'ShowIndicators');
 
-    const indicatorChars = 2;
     let textWidth = boxWidth;
-    if (showIndicators) {
-      textWidth -= indicatorChars * colSize;
+    if (this.showIndicators) {
+      textWidth -= indicatorChars * this.colSize;
     }
 
     const text = new Text({
@@ -154,12 +159,27 @@ export class Field extends AbstractWidget {
     text.setAttribute('dominant-baseline', 'middle');
     text.setAttribute('y', String(y));
 
+    if (this.showIndicators) {
+      const indicatorText = new Text({
+        id: `${this.id}-ind`,
+        x: boxWidth,
+        y: Math.ceil(this.height / 2),
+        fill: textStyle['fill'],
+        'font-size': textStyle['font-size'],
+        'font-family': textStyle['font-family'],
+        'dominant-baseline': 'middle',
+        'text-anchor': 'end',
+      });
+      g.addChild(indicatorText);
+    }
+
     return g;
   }
 
   afterDomAttachment() {
     this.fieldEl = this.svg.getElementById(`${this.id}-group`);
     this.fieldBackgroundEl = this.svg.getElementById(`${this.id}-bg`);
+    this.fieldIndicatorEl = this.svg.getElementById(`${this.id}-ind`);
     this.fieldTextEl = this.svg.getElementById(this.id);
   }
 
@@ -184,8 +204,42 @@ export class Field extends AbstractWidget {
 
   digest() {
     if (this.valueBinding && this.valueBinding.sample) {
-      const value = this.valueBinding.value;
-      this.updateValue(value, this.valueBinding.sample.acquisitionStatus, this.valueBinding.sample.monitoringResult);
+      const sample = this.valueBinding.sample;
+      const cdmcsMonitoringResult = this.convertMonitoringResult(sample);
+      let v = this.valueBinding.value;
+      if (typeof v === 'number') {
+        if (this.format) {
+          v = sprintf(this.format, v);
+        } else {
+          v = v.toFixed(this.decimals);
+        }
+      }
+      this.fieldTextEl.textContent = v;
+      let style = DEFAULT_STYLE;
+      switch (sample.acquisitionStatus) {
+        case 'ACQUIRED':
+          style = this.styleSet.getStyle('ACQUIRED', cdmcsMonitoringResult);
+          break;
+        case 'NOT_RECEIVED':
+          style = this.styleSet.getStyle('NOT_RECEIVED');
+          break;
+        case 'INVALID':
+          style = this.styleSet.getStyle('INVALID');
+          break;
+        case 'EXPIRED':
+          style = this.styleSet.getStyle('STATIC', cdmcsMonitoringResult);
+          break;
+      }
+
+      if (!this.overrideDqi) {
+        this.fieldBackgroundEl.setAttribute('fill', style.bg.toString());
+        this.fieldTextEl.setAttribute('fill', style.fg.toString());
+      }
+
+      if (this.showIndicators) {
+        const flags = style.flags;
+        this.fieldIndicatorEl.textContent = flags.replace(' ', '\u00a0');
+      }
     }
     if (this.xBinding && this.xBinding.sample) {
       this.x = this.xBinding.value;
@@ -202,83 +256,38 @@ export class Field extends AbstractWidget {
     }
   }
 
-  private updateValue(value: any, acquisitionStatus: string, monitoringResult: string) {
-    let v = value;
-    if (typeof v === 'number') {
-      if (this.format) {
-        v = sprintf(this.format, v);
-      } else {
-        v = v.toFixed(this.decimals);
-      }
-    }
-    this.fieldTextEl.textContent = v;
-    if (!this.overrideDqi) {
-      let style = DEFAULT_STYLE;
-      switch (acquisitionStatus) {
-        case 'ACQUIRED':
-          switch (monitoringResult) {
-            case 'DISABLED':
-              style = this.styleSet.getStyle('ACQUIRED', 'DISABLED');
-              break;
-
-            case 'IN_LIMITS':
-              style = this.styleSet.getStyle('ACQUIRED', 'IN_LIMITS');
-              break;
-
-            case 'WATCH':
-            case 'WARNING':
-            case 'DISTRESS':
-              style = this.styleSet.getStyle('ACQUIRED', 'NOMINAL_LIMIT_VIOLATION');
-              break;
-
-            case 'CRITICAL':
-            case 'SEVERE':
-              style = this.styleSet.getStyle('ACQUIRED', 'DANGER_HIGH_LIMIT_VIOLATION');
-              break;
-
-            default:
-              style = this.styleSet.getStyle('ACQUIRED', 'UNDEFINED');
-              break;
-          }
-          break;
-
-        case 'NOT_RECEIVED':
-          style = this.styleSet.getStyle('NOT_RECEIVED');
-          break;
-
-        case 'INVALID':
-          style = this.styleSet.getStyle('INVALID');
-          break;
-
-        case 'EXPIRED':
-        switch (monitoringResult) {
-          case 'DISABLED':
-            style = this.styleSet.getStyle('STATIC', 'DISABLED');
-            break;
-
-          case 'IN_LIMITS':
-            style = this.styleSet.getStyle('STATIC', 'IN_LIMITS');
-            break;
-
-          case 'WATCH':
-          case 'WARNING':
-          case 'DISTRESS':
-            style = this.styleSet.getStyle('STATIC', 'NOMINAL_LIMIT_VIOLATION');
-            break;
-
-          case 'CRITICAL':
-          case 'SEVERE':
-            style = this.styleSet.getStyle('STATIC', 'DANGER_HIGH_LIMIT_VIOLATION');
-            break;
-
-          default:
-            style = this.styleSet.getStyle('STATIC', 'UNDEFINED');
-            break;
+  /**
+   * Converts the monitoring result from Yamcs to CDMCS.
+   */
+  convertMonitoringResult(sample: DataSourceSample) {
+    switch (sample.monitoringResult) {
+      case 'DISABLED':
+        return 'DISABLED';
+      case 'IN_LIMITS':
+        return 'IN_LIMITS';
+      case 'WATCH':
+      case 'WARNING':
+      case 'DISTRESS':
+        if (sample.rangeCondition === 'LOW') {
+          return 'NOMINAL_LOW_LIMIT_VIOLATION';
+        } else if (sample.rangeCondition === 'HIGH') {
+          return 'NOMINAL_HIGH_LIMIT_VIOLATION';
+        } else {
+          return 'NOMINAL_LIMIT_VIOLATION';
         }
-        break;
-      }
-      this.fieldBackgroundEl.setAttribute('fill', style.bg.toString());
-      this.fieldTextEl.setAttribute('fill', style.fg.toString());
+      case 'CRITICAL':
+      case 'SEVERE':
+        if (sample.rangeCondition === 'LOW') {
+          return 'DANGER_LOW_LIMIT_VIOLATION';
+        } else if (sample.rangeCondition === 'HIGH') {
+          return 'DANGER_HIGH_LIMIT_VIOLATION';
+        } else {
+          // Does not exist??
+          // return 'DANGER_LIMIT_VIOLATION'
+          return 'DANGER_HIGH_LIMIT_VIOLATION';
+        }
+      default:
+        return 'UNDEFINED';
     }
   }
 }

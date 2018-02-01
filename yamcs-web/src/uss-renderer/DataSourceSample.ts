@@ -8,4 +8,5 @@ export interface DataSourceSample {
   acquisitionStatus: string;
   monitoringResult: string;
   alarmRanges: AlarmRange[];
+  rangeCondition: any;
 }
