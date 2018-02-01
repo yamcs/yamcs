@@ -96,7 +96,10 @@ export class DisplayFrame {
     this.container.style.setProperty('width', `${width}px`);
     this.container.style.setProperty('height', `${height + this.titleBarHeight}px`);
     this.frameContent.style.setProperty('zoom', String(zoom));
+
+    // Zoom does not work in FF
     this.frameContent.style.setProperty('-moz-transform', `scale(${zoom})`);
+    this.frameContent.style.setProperty('-moz-transform-origin', '0px 0px');
   }
 
   setPosition(x: number, y: number) {

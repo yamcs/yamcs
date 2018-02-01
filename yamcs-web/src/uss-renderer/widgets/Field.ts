@@ -55,9 +55,15 @@ export class Field extends AbstractWidget {
     const textStyle = utils.parseTextStyle(textStyleNode);
     const fontFamily = textStyle['font-family'];
     const fontSize = textStyle['font-size'];
-    const fm = this.getFontMetrics('', fontFamily, fontSize);
+    const fm = this.getFontMetrics('w', fontFamily, fontSize);
 
-    this.colSize = Math.floor(this.getFontMetrics('w', fontFamily, fontSize).width);
+    this.colSize = Math.floor(fm.width);
+
+    // FIXME In firefox the colSize is not correctly calculated
+    // So force to 6 based on the most common font style.
+    if (this.colSize === 8 && fontFamily === 'Lucida Sans Typewriter') {
+      this.colSize = 6;
+    }
 
     if (utils.hasChild(this.node, 'Unit') && utils.parseBooleanChild(this.node, 'ShowUnit')) {
       const unit = utils.parseStringChild(this.node, 'Unit');
@@ -65,7 +71,7 @@ export class Field extends AbstractWidget {
       const unitTextStyle = utils.parseTextStyle(unitTextStyleNode);
       const unitFontFamily = unitTextStyle['font-family'];
       const unitFontSize = unitTextStyle['font-size'];
-      const unitFm = this.getFontMetrics('', unitFontFamily, unitFontSize);
+      const unitFm = this.getFontMetrics('w', unitFontFamily, unitFontSize);
 
       const unitVertAlignment = utils.parseStringChild(unitTextStyleNode, 'VerticalAlignment');
       let unitY;
