@@ -1,29 +1,28 @@
-<mat-sidenav-container>
+<mat-sidenav-container class="mat-typography">
   <mat-sidenav mode="side" opened="true">
     <a routerLink="/">Home</a> / {{ (instance$ | async).name }}<br><br>
 
-    <h3>System</h3>
-    <a routerLink="links">Links</a><br>
-    <a routerLink="services">Services</a><br>
-    <a routerLink="displays">Displays</a><br>
+    <mat-nav-list dense>
+      <h3 matSubheader>Processors</h3>
+      <a mat-list-item routerLink="displays">realtime</a>
 
-    Active Users<br>
-    Events<br>
+      <h3 matSubheader>System</h3>
+      <a mat-list-item routerLink="links">Links</a>
+      <a mat-list-item routerLink="services">Services</a>
+      <a mat-list-item>Active Users</a>
+      <a mat-list-item>Events</a>
 
-    <h3>MDB</h3>
-    <a routerLink="mdb/overview">Overview</a><br>
-    <a routerLink="mdb/parameters">Parameters</a><br>
-    <a routerLink="mdb/commands">Commands</a><br>
+      <h3 matSubheader>MDB</h3>
+      <a mat-list-item routerLink="mdb/overview">Overview</a>
+      <a mat-list-item routerLink="mdb/parameters">Parameters</a>
+      <a mat-list-item routerLink="mdb/commands">Commands</a>
 
-    <h3>Schema</h3>
-    Overview<br>
-    <a routerLink="schema/tables">Tables</a><br>
-    <a routerLink="schema/streams">Streams</a><br>
-    Shell<br>
-
-    <h3>Processors</h3>
-    realtime<br>
-
+      <h3 matSubheader>Schema</h3>
+      <a mat-list-item>Overview</a>
+      <a mat-list-item routerLink="schema/tables">Tables</a>
+      <a mat-list-item routerLink="schema/streams">Streams</a>
+      <a mat-list-item>Shell</a>
+    </mat-nav-list>
   </mat-sidenav>
 
   <mat-sidenav-content>

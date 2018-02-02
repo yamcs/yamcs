@@ -1,1 +1,39 @@
 @import '~@angular/material/prebuilt-themes/indigo-pink.css';
+
+.material-icons.icon12 {
+  font-size: 12px !important;
+  height: 12px !important;
+  width: 12px !important;
+}
+.material-icons.icon16 {
+  font-size: 16px !important;
+  height: 16px !important;
+  width: 16px !important;
+}
+.material-icons.icon18 {
+  font-size: 18px !important;
+  height: 18px !important;
+  width: 18px !important;
+}
+.material-icons.icon24 {
+  font-size: 24px !important;
+  height: 24px !important;
+  width: 24px !important;
+}
+.material-icons.icon36 {
+  font-size: 36px !important;
+  height: 36px !important;
+  width: 36px !important;
+}
+.material-icons.icon48 {
+  font-size: 48px !important;
+  height: 48px !important;
+  width: 48px !important;
+}
+
+.no-select {
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+}

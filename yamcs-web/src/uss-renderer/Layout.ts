@@ -51,6 +51,10 @@ export class Layout {
     return frame;
   }
 
+  hasDisplayFrame(id: string) {
+    return this.framesById.has(id);
+  }
+
   getDisplayFrame(id: string) {
     return this.framesById.get(id);
   }

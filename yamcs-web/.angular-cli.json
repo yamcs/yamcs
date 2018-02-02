@@ -22,7 +22,8 @@
       "styles": [
         "styles.css",
         "./uss-renderer/font.css",
-        "../node_modules/dygraphs/dist/dygraph.css"
+        "../node_modules/dygraphs/dist/dygraph.css",
+        "../node_modules/material-design-icons/iconfont/material-icons.css"
       ],
       "scripts": [],
       "environmentSource": "environments/environment.ts",

@@ -1,0 +1,20 @@
+mat-drawer-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+mat-drawer {
+  width: 200px;
+}
+
+
+tr.action-item td {
+  cursor: pointer;
+}
+
+tr.action-item:hover td {
+  background-color: lightgrey;
+}
