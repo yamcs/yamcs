@@ -6,10 +6,10 @@ import { selectInstances } from '../store/instance.selectors';
 import { State } from '../../app.reducers';
 
 @Component({
-  templateUrl: './instances.component.html',
+  templateUrl: './home.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class InstancesPageComponent {
+export class HomePageComponent {
 
   instances$: Observable<Instance[]>;
 

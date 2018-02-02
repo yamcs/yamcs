@@ -1,15 +1,15 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/shared.module';
-import { DisplaysRoutingModule, routingComponents } from './displays-routing.module';
+import { MonitorRoutingModule, routingComponents } from './monitor-routing.module';
 
 @NgModule({
   imports: [
     SharedModule,
-    DisplaysRoutingModule,
+    MonitorRoutingModule,
   ],
   declarations: [
     routingComponents,
   ]
 })
-export class DisplaysModule {
+export class MonitorModule {
 }

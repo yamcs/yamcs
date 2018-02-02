@@ -15,7 +15,7 @@ const routes = [
   imports: [ RouterModule.forChild(routes) ],
   exports: [ RouterModule ],
 })
-export class DisplaysRoutingModule { }
+export class MonitorRoutingModule { }
 
 export const routingComponents = [
   DisplaysPageComponent,

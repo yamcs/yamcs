@@ -10,7 +10,6 @@ import { AppComponent } from './core/pages/app.component';
 import { SharedModule } from './shared/shared.module';
 import { MdbModule } from './mdb/mdb.module';
 import { AppRoutingModule } from './app-routing.module';
-import { InstancesPageComponent } from './core/pages/instances.component';
 import { InstancePageComponent } from './core/pages/instance.component';
 
 import { RouterStateSnapshot } from '@angular/router';
@@ -24,6 +23,7 @@ import { ServicesModule } from './services/services.module';
 import { RouterStateUrl } from './shared/routing';
 import { YamcsService } from './core/services/yamcs.service';
 import { APP_BASE_HREF } from '@angular/common';
+import { HomePageComponent } from './core/pages/home.component';
 
 /**
  * The RouterStateSerializer takes the current RouterStateSnapshot
@@ -45,7 +45,7 @@ export class CustomRouterStateSerializer implements RouterStateSerializer<Router
 @NgModule({
   declarations: [
     AppComponent,
-    InstancesPageComponent,
+    HomePageComponent,
     InstancePageComponent,
     NotFoundPageComponent,
   ],
