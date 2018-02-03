@@ -115,6 +115,17 @@ export interface DataEncoding {
   encoding: string;
 }
 
+export interface ClientInfo {
+  instance: string;
+  id: number;
+  username: string;
+  applicationName: string;
+  processorName: string;
+  state: 'CONNECTED' | 'DISCONNECTED';
+  currentClient: boolean;
+  loginTimeUTC: string;
+}
+
 export interface Command {
   name: string;
   qualifiedName: string;

@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, filter, map } from 'rxjs/operators';
 import { WebSocketClient } from './WebSocketClient';
 
 import YamcsClient from './YamcsClient';
@@ -51,6 +51,13 @@ export class InstanceClient {
   getLinkUpdates() {
     this.prepareWebSocketClient();
     return this.webSocketClient.getLinkUpdates();
+  }
+
+  getClientUpdates() {
+    this.prepareWebSocketClient();
+    return this.webSocketClient.getClientUpdates().pipe(
+      filter(msg => msg.instance === this.instance)
+    );
   }
 
   getServices() {

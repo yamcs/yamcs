@@ -1,4 +1,4 @@
 an overview
-<ng-container *ngIf="instance$ | async as instance">
-  got {{ instance.name }}
-</ng-container>
+<mat-list *ngIf="instances$ | async as instances">
+  <mat-list-item *ngFor="let instance of instances">{{ instance.name }}</mat-list-item>
+</mat-list>

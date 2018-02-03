@@ -1,0 +1,16 @@
+<table yaTable *ngIf="clients$ | async as clients">
+  <tr>
+    <th>Id</th>
+    <th>User</th>
+    <th>Application</th>
+    <th>Processor</th>
+    <th>Login</th>
+  </tr>
+  <tr *ngFor="let client of clients">
+    <td>{{ client.id }}</td>
+    <td>{{ client.username }}</td>
+    <td>{{ client.applicationName }}</td>
+    <td>{{ client.processorName }}</td>
+    <td>{{ client.loginTimeUTC }}</td>
+  </tr>
+</table>

@@ -4,8 +4,11 @@ export { InstanceClient } from './InstanceClient';
 export {
   AlarmRange,
   Alias,
+  ClientInfo,
   Command,
   DisplayInfo,
+  DisplayFile,
+  DisplayFolder,
   Instance,
   Link,
   Parameter,

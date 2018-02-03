@@ -1,5 +1,5 @@
-<mat-drawer-container class="example-container">
-  <mat-drawer mode="side" opened="true">
+<mat-sidenav-container class="example-container">
+  <mat-sidenav mode="side" opened="true">
     <ng-container *ngIf="displayInfo$ | async as displayInfo">
       <table yaSimpleTable class="mat-typography">
         <tr *ngFor="let folder of displayInfo.folder">
@@ -12,7 +12,7 @@
         </tr>
         <tr class="action-item no-select"
             *ngFor="let file of displayInfo.file"
-            (click)="openDisplay(file)">
+            (click)="openDisplay(file.filename)">
           <td>
             <mat-icon class="icon16">widgets</mat-icon>
           </td>
@@ -22,9 +22,9 @@
         </tr>
       </table>
     </ng-container>
-  </mat-drawer>
+  </mat-sidenav>
 
-  <mat-drawer-content class="example-content">
+  <mat-sidenav-content class="example-content">
     <div #displayContainer></div>
-  </mat-drawer-content>
-</mat-drawer-container>
+  </mat-sidenav-content>
+</mat-sidenav-container>

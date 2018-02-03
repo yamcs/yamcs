@@ -4,6 +4,7 @@ import { delay, filter, map, retryWhen } from 'rxjs/operators';
 import { WebSocketSubject } from 'rxjs/observable/dom/WebSocketSubject';
 import { WebSocketServerMessage } from './types/internal';
 import {
+  ClientInfo,
   LinkEvent,
   ParameterData,
   TimeInfo,
@@ -84,6 +85,16 @@ export class WebSocketClient {
     );
   }
 
+  getClientUpdates() {
+    this.subscriptionModel.management = true;
+    this.emit({ management: 'subscribe' });
+    return this.webSocketObservable.pipe(
+      filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+      filter((msg: WebSocketServerMessage) => msg[3].dt === 'CLIENT_INFO'),
+      map(msg => msg[3].data as ClientInfo),
+    );
+  }
+
   getParameterValueUpdates(options: ParameterSubscriptionRequest) {
     this.subscriptionModel.parameters = options;
     this.emit({
@@ -112,6 +123,9 @@ export class WebSocketClient {
     }
     if (this.subscriptionModel.links) {
       this.emit({ links: 'subscribe' });
+    }
+    if (this.subscriptionModel.management) {
+      this.emit({ management: 'subscribe' });
     }
     if (this.subscriptionModel.parameters) {
       this.emit({ parameters: 'subscribe', data: this.subscriptionModel.parameters });

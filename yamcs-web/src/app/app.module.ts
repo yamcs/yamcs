@@ -24,6 +24,7 @@ import { RouterStateUrl } from './shared/routing';
 import { YamcsService } from './core/services/yamcs.service';
 import { APP_BASE_HREF } from '@angular/common';
 import { HomePageComponent } from './core/pages/home.component';
+import { ClientsModule } from './clients/clients.module';
 
 /**
  * The RouterStateSerializer takes the current RouterStateSnapshot
@@ -55,6 +56,7 @@ export class CustomRouterStateSerializer implements RouterStateSerializer<Router
 
     AppRoutingModule, // Keep in front of modules that contribute child routing
     SharedModule,
+    ClientsModule,
     MdbModule,
     LinksModule,
     ServicesModule,

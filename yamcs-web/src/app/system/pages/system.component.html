@@ -3,19 +3,10 @@
     {{ (instance$ | async).name }}<br><br>
 
     <mat-nav-list dense>
-      <h3 matSubheader>Processors</h3>
-      <a mat-list-item routerLink="/monitor">realtime</a>
-
-      <h3 matSubheader>System</h3>
       <a mat-list-item routerLink="links">Links</a>
       <a mat-list-item routerLink="services">Services</a>
       <a mat-list-item routerLink="clients">Clients</a>
       <a mat-list-item>Events</a>
-
-      <h3 matSubheader>MDB</h3>
-      <a mat-list-item routerLink="mdb/overview">Overview</a>
-      <a mat-list-item routerLink="mdb/parameters">Parameters</a>
-      <a mat-list-item routerLink="mdb/commands">Commands</a>
 
       <h3 matSubheader>Schema</h3>
       <a mat-list-item>Overview</a>

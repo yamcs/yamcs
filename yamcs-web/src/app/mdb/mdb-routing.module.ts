@@ -4,21 +4,30 @@ import { RouterModule } from '@angular/router';
 import { OverviewPageComponent } from './pages/overview.component';
 import { ParametersPageComponent } from './pages/parameters.component';
 import { CommandsPageComponent } from './pages/commands.component';
+import { InstanceExistsGuard } from '../core/guards/instance-exists.guard';
 
 const routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'overview',
+    redirectTo: 'todo',
   }, {
-    path: 'overview',
-    component: OverviewPageComponent,
-  }, {
-    path: 'parameters',
-    component: ParametersPageComponent,
-  }, {
-    path: 'commands',
-    component: CommandsPageComponent,
+    path: ':instance',
+    canActivate: [ InstanceExistsGuard ],
+    children: [
+      {
+        path: 'overview',
+        component: OverviewPageComponent,
+      },
+      {
+        path: 'parameters',
+        component: ParametersPageComponent,
+      },
+      {
+        path: 'commands',
+        component: CommandsPageComponent,
+      }
+    ]
   }
 ];
 

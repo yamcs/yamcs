@@ -1,0 +1,12 @@
+<mat-toolbar color="primary" [@shadowy]="shadowy">
+  <mat-toolbar-row>
+    <a mat-button routerLink="/">
+      Yamcs
+    </a>
+    <span style="flex: 1 1 auto"></span>
+    <a mat-button routerLink="monitor/dev">Monitor</a>
+    <a mat-button routerLink="mdb/dev">MDB</a>
+    <a mat-button routerLink="system/dev/clients">System</a>
+  </mat-toolbar-row>
+</mat-toolbar>
+<router-outlet></router-outlet>

@@ -141,16 +141,10 @@ export class NavigationButton extends AbstractWidget {
         frame.layout.bringToFront(alreadyOpenFrame);
       } else {
         this.display.resourceResolver.retrieveXMLDisplayResource(opts.target).then(doc => {
-          const layout = frame.layout;
           if (!opts.openInNewWindow) {
             frame.layout.closeDisplayFrame(frame);
           }
-
-          const newFrame = layout.createDisplayFrame(opts.target, doc);
-          if (opts.coordinates) {
-            newFrame.setPosition(opts.coordinates.x, opts.coordinates.y);
-            newFrame.setDimension(opts.coordinates.width, opts.coordinates.height);
-          }
+          frame.layout.createDisplayFrame(opts.target, doc, opts.coordinates);
         });
       }
     }

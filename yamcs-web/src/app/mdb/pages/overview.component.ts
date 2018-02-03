@@ -3,7 +3,7 @@ import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
 
 import { Instance } from '../../../yamcs-client';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
+import { selectInstances } from '../../core/store/instance.selectors';
 import { State } from '../../app.reducers';
 
 @Component({
@@ -12,9 +12,9 @@ import { State } from '../../app.reducers';
 })
 export class OverviewPageComponent {
 
-  instance$: Observable<Instance>;
+  instances$: Observable<Instance[]>;
 
   constructor(store: Store<State>) {
-    this.instance$ = store.select(selectCurrentInstance);
+    this.instances$ = store.select(selectInstances);
   }
 }

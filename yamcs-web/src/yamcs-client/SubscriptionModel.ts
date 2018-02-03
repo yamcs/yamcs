@@ -7,5 +7,6 @@ export class SubscriptionModel {
 
   time = false;
   links = false;
+  management = false;
   parameters: ParameterSubscriptionRequest;
 }

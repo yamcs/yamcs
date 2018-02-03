@@ -2,6 +2,13 @@ import { Display } from './Display';
 import { Layout } from './Layout';
 import { ParameterSample } from './ParameterSample';
 
+export interface Coordinates {
+  x: number;
+  y: number;
+  width?: number;
+  height?: number;
+}
+
 export class DisplayFrame {
 
   container: HTMLDivElement;
@@ -19,9 +26,11 @@ export class DisplayFrame {
   display: Display;
 
   constructor(
+    readonly id: string,
     private targetEl: HTMLDivElement,
     readonly layout: Layout,
-    private xmlDoc: XMLDocument) {
+    private xmlDoc: XMLDocument,
+    coordinates: Coordinates) {
 
     this.container = document.createElement('div');
     this.container.style.setProperty('position', 'absolute');
@@ -48,7 +57,8 @@ export class DisplayFrame {
 
     this.title = document.createElement('span');
     this.title.textContent = 'Loading...';
-    this.title.setAttribute('class', 'mat-typography');
+    this.title.style.setProperty('font-family', 'Lucida Sans Typewriter');
+    this.title.style.setProperty('font-size', '12px');
     this.titleBar.appendChild(this.title);
 
     const frameActions = document.createElement('div');
@@ -82,10 +92,14 @@ export class DisplayFrame {
     this.resizeHandle.style.setProperty('cursor', 'nwse-resize');
     this.container.appendChild(this.resizeHandle);
 
-    this.setPosition(20, 20);
     this.targetEl.appendChild(this.container);
 
     this.renderDisplay();
+
+    this.setPosition(coordinates.x, coordinates.y);
+    if (coordinates.width !== undefined && coordinates.height !== undefined) {
+      this.setDimension(coordinates.width, coordinates.height);
+    }
     this.addEventHandlers();
   }
 
@@ -105,6 +119,15 @@ export class DisplayFrame {
   setPosition(x: number, y: number) {
     this.container.style.setProperty('left', `${x}px`);
     this.container.style.setProperty('top', `${y}px`);
+  }
+
+  getCoordinates() {
+    return {
+      x: parseInt(this.container.style.getPropertyValue('left'), 10),
+      y: parseInt(this.container.style.getPropertyValue('top'), 10),
+      width: this.container.getBoundingClientRect().width,
+      height: this.container.getBoundingClientRect().height - this.titleBarHeight,
+    };
   }
 
   getOpsNames() {
@@ -175,6 +198,7 @@ export class DisplayFrame {
       document.removeEventListener('mousemove', mouseMoveHandler);
       document.removeEventListener('mouseup', mouseUpHandler);
       mousedown = false;
+      this.layout.fireStateChange();
     };
 
     this.titleBar.addEventListener('mousedown', evt => {
@@ -217,6 +241,7 @@ export class DisplayFrame {
       document.removeEventListener('mousemove', mouseMoveHandler);
       document.removeEventListener('mouseup', mouseUpHandler);
       mousedown = false;
+      this.layout.fireStateChange();
     };
     this.resizeHandle.addEventListener('mousedown', evt => {
       evt.preventDefault();

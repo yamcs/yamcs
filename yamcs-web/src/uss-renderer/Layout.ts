@@ -1,7 +1,19 @@
 import { ResourceResolver } from './ResourceResolver';
-import { DisplayFrame } from './DisplayFrame';
+import { DisplayFrame, Coordinates } from './DisplayFrame';
 import { StyleSet } from './StyleSet';
-import { LayoutListener } from './LayoutListener';
+import { LayoutState, FrameState } from './LayoutState';
+
+export interface LayoutListener {
+
+  onDisplayFrameOpen(frame: DisplayFrame): void;
+
+  onDisplayFrameClose(frame: DisplayFrame): void;
+}
+
+export interface LayoutStateListener {
+
+  onStateChange(state: LayoutState): void;
+}
 
 export class Layout {
 
@@ -15,6 +27,7 @@ export class Layout {
   synchronizer: number;
 
   layoutListeners = new Set<LayoutListener>();
+  layoutStateListeners = new Set<LayoutStateListener>();
 
   /**
    * Limit client-side update to this amount of milliseconds.
@@ -40,14 +53,15 @@ export class Layout {
     }, this.updateRate);
   }
 
-  createDisplayFrame(id: string, doc: XMLDocument) {
+  createDisplayFrame(id: string, doc: XMLDocument, coordinates: Coordinates = { x: 20, y: 20 }) {
     if (this.framesById.has(id)) {
       throw new Error(`Layout already contains a frame with id ${id}`);
     }
-    const frame = new DisplayFrame(this.scrollPane, this, doc);
+    const frame = new DisplayFrame(id, this.scrollPane, this, doc, coordinates);
     this.frames.push(frame);
     this.framesById.set(id, frame);
     this.layoutListeners.forEach(l => l.onDisplayFrameOpen(frame));
+    this.fireStateChange();
     return frame;
   }
 
@@ -57,6 +71,22 @@ export class Layout {
 
   getDisplayFrame(id: string) {
     return this.framesById.get(id);
+  }
+
+  fireStateChange() {
+    const state = this.getLayoutState();
+    this.layoutStateListeners.forEach(l => l.onStateChange(state));
+  }
+
+  /**
+   * Returns a JSON structure describing the current layout contents
+   */
+  getLayoutState(): LayoutState {
+    const frameStates: FrameState[] = [];
+    for (const frame of this.frames) { // Keep front-to-back order
+      frameStates.push({ id: frame.id, ...frame.getCoordinates() });
+    }
+    return { frames: frameStates };
   }
 
   closeDisplayFrame(frame: DisplayFrame) {
@@ -70,14 +100,16 @@ export class Layout {
     });
     const frameEl = this.scrollPane.children[idx];
     this.scrollPane.removeChild(frameEl);
+    this.fireStateChange();
   }
 
   bringToFront(frame: DisplayFrame) {
     const idx = this.frames.indexOf(frame);
-    if (idx >= 0) {
+    if (0 <= idx && idx < this.frames.length - 1) {
       this.frames.push(this.frames.splice(idx, 1)[0]);
       const frameEl = this.scrollPane.children[idx];
       this.scrollPane.appendChild(frameEl);
+      this.fireStateChange();
     }
   }
 }
