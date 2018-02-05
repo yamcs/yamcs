@@ -168,7 +168,7 @@ public class XtceDb implements Serializable {
     public Collection<Parameter> getParameters() {
         rwLock.readLock().lock();
         try {
-            return parameters.values();
+            return new ArrayList<>(parameters.values());
         } finally {
             rwLock.readLock().unlock();
         }
