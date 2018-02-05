@@ -35,10 +35,10 @@ import com.google.common.util.concurrent.AbstractService;
  */
 public class SoftwareParameterManager extends AbstractService implements ParameterProvider {
     ExecutorService executor = Executors.newFixedThreadPool(1);
-    ParameterListener prm;
+    private Set<ParameterListener> parameterListeners = new HashSet<>();
     private NamedDescriptionIndex<Parameter> params = new NamedDescriptionIndex<>();
     Set<Parameter> subscribedParams = new HashSet<>();
-    private static final Logger log=LoggerFactory.getLogger(SoftwareParameterManager.class);
+    private static final Logger log = LoggerFactory.getLogger(SoftwareParameterManager.class);
     final String yamcsInstance;
     Processor proc;
 
@@ -47,8 +47,8 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
     }
 
     public void init(XtceDb xtcedb) {
-        for(Parameter p:xtcedb.getParameters()) {
-            if(p.getDataSource() == DataSource.LOCAL) {
+        for (Parameter p : xtcedb.getParameters()) {
+            if (p.getDataSource() == DataSource.LOCAL) {
                 params.add(p);
             }
         }
@@ -64,102 +64,95 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
 
     @Override
     public void setParameterListener(ParameterListener parameterListener) {
-        this.prm = parameterListener;
+        parameterListeners.add(parameterListener);
     }
 
-    //called on the execution thread to update
+    public void addParameterListener(ParameterListener parameterListener) {
+        parameterListeners.add(parameterListener);
+    }
+
+    // called on the execution thread to update
     // TODO: convert from raw to engineering values
     private void doUpdate(final List<org.yamcs.protobuf.Pvalue.ParameterValue> gpvList) {
         ParameterValueList pvlist = new ParameterValueList();
-        for(org.yamcs.protobuf.Pvalue.ParameterValue gpv: gpvList) {
+        for (org.yamcs.protobuf.Pvalue.ParameterValue gpv : gpvList) {
             Parameter p = getParam(gpv.getId());
-            if(subscribedParams.contains(p)) {
-                org.yamcs.parameter.ParameterValue pv =  org.yamcs.parameter.ParameterValue.fromGpb(p, gpv);
+            if (subscribedParams.contains(p)) {
+                org.yamcs.parameter.ParameterValue pv = org.yamcs.parameter.ParameterValue.fromGpb(p, gpv);
                 long t;
-                if(proc!=null) {
-                    t=proc.getCurrentTime();
+                if (proc != null) {
+                    t = proc.getCurrentTime();
                 } else {
                     t = TimeEncoding.getWallclockTime();
                 }
-		
-                if(gpv.hasAcquisitionStatus()) {
+
+                if (gpv.hasAcquisitionStatus()) {
                     pv.setAcquisitionStatus(AcquisitionStatus.ACQUIRED);
                 }
-                
-                if(!gpv.hasGenerationTime()) {
+
+                if (!gpv.hasGenerationTime()) {
                     pv.setGenerationTime(t);
                 }
-                if(!gpv.hasAcquisitionTime()) {
+                if (!gpv.hasAcquisitionTime()) {
                     pv.setAcquisitionTime(t);
                 }
                 pvlist.add(pv);
             }
         }
-        if(pvlist.size()>0) {
-            prm.update(pvlist);
+        if (pvlist.size() > 0) {
+            parameterListeners.forEach(l -> l.update(pvlist));
         }
     }
 
     /**
-     * update the list of parameters.
-     *  - resolves NamedObjectId -&gt; Parameter 
-     *  - sends the result to PRM
+     * update the list of parameters. - resolves NamedObjectId -&gt; Parameter - sends the result to PRM
      */
     public void updateParameters(final List<org.yamcs.protobuf.Pvalue.ParameterValue> gpvList) {
-        //first validate that the names are sofware parameters and the types match
-        for(org.yamcs.protobuf.Pvalue.ParameterValue gpv: gpvList) {
+        // first validate that the names are sofware parameters and the types match
+        for (org.yamcs.protobuf.Pvalue.ParameterValue gpv : gpvList) {
             Parameter p = getParam(gpv.getId());
-            if(p==null) {
-                throw new IllegalArgumentException("Cannot find a local(software) parameter for '"+gpv.getId()+"'");
+            if (p == null) {
+                throw new IllegalArgumentException("Cannot find a local(software) parameter for '" + gpv.getId() + "'");
             }
             ParameterTypeProcessor.checkEngValueAssignment(p, ValueUtility.fromGpb(gpv.getEngValue()));
         }
-        //then filter out the subscribed ones and send it to PRM
+        // then filter out the subscribed ones and send it to PRM
         executor.submit(() -> doUpdate(gpvList));
     }
 
     /**
-     *  Updates a parameter just with the engineering value
+     * Updates a parameter just with the engineering value
      */
     public void updateParameter(final Parameter p, final Value engValue) {
-        if(p.getDataSource()!=DataSource.LOCAL) {
-            throw new IllegalArgumentException("DataSource of parameter "+p.getQualifiedName()+" is not local");
+        if (p.getDataSource() != DataSource.LOCAL) {
+            throw new IllegalArgumentException("DataSource of parameter " + p.getQualifiedName() + " is not local");
         }
         ParameterTypeProcessor.checkEngValueAssignment(p, engValue);
-        executor.submit(new Runnable() {
-        @Override
-        public void run() {
+        executor.submit(() -> {
             ParameterValue pv = new ParameterValue(p);
             pv.setEngineeringValue(engValue);
             long t = proc.getCurrentTime();
             pv.setAcquisitionTime(t);
             pv.setGenerationTime(t);
-            prm.update(Arrays.asList(pv));
-        }
-    });
+
+            List<ParameterValue> wrapped = Arrays.asList(pv);
+            parameterListeners.forEach(l -> l.update(wrapped));
+        });
     }
 
     @Override
     public void startProviding(final Parameter paramDef) {
         log.debug("requested to provide {}", paramDef.getQualifiedName());
-        executor.submit(new Runnable() {
-            @Override
-            public void run() {
-                subscribedParams.add(paramDef);
-            }
-        });
+        executor.submit(() -> subscribedParams.add(paramDef));
     }
 
     @Override
     public void startProvidingAll() {
         log.debug("requested to provide all");
 
-        executor.submit(new Runnable() {
-            @Override
-            public void run() {
-                for(Parameter p:params) {
-                    subscribedParams.add(p);
-                }
+        executor.submit(() -> {
+            for (Parameter p : params) {
+                subscribedParams.add(p);
             }
         });
     }
@@ -177,7 +170,7 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
 
     private Parameter getParam(NamedObjectId paraId) {
         Parameter p;
-        if(paraId.hasNamespace()) {
+        if (paraId.hasNamespace()) {
             p = params.get(paraId.getNamespace(), paraId.getName());
         } else {
             p = params.get(paraId.getName());
@@ -188,8 +181,8 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
     @Override
     public Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification {
         Parameter p = getParam(paraId);
-        if(p==null) {
-            log.info("throwing InvalidIdentification becasue cannot provide {}", paraId);
+        if (p == null) {
+            log.info("throwing InvalidIdentification because cannot provide {}", paraId);
             throw new InvalidIdentification(paraId);
         }
         return p;
@@ -197,7 +190,7 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
 
     @Override
     public boolean canProvide(Parameter param) {
-        return params.get(param.getQualifiedName())!=null;
+        return params.get(param.getQualifiedName()) != null;
     }
 
     @Override
