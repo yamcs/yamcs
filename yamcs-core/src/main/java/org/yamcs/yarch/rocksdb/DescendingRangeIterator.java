@@ -134,7 +134,6 @@ public class DescendingRangeIterator implements DbIterator {
 
     @Override
     public void close() {
-        System.out.println("closing descending iterator");
         valid = false;
         iterator.close();
         

@@ -152,13 +152,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         }
         if(!paramsToSubscribe.isEmpty()) {
             ParameterRequestManager prm = yproc.getParameterRequestManager();
-            try {
-                paramSubscriptionRequestId = prm.addRequest(new ArrayList<>(paramsToSubscribe), this);
-            } catch (InvalidIdentification e) {
-                log.warn("Got Invalid identification when subscribing to parameters for command constraint check",e);
-                notifyFailed(e);
-                return;
-            }
+            paramSubscriptionRequestId = prm.addRequest(new ArrayList<>(paramsToSubscribe), this);
         } else {
             log.debug("No parameter required for post transmission contraint check");
         }

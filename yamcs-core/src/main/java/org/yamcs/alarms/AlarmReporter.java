@@ -82,11 +82,7 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
          
          if(!requiredParameters.isEmpty()) {
              List<Parameter> params=new ArrayList<Parameter>(requiredParameters); // Now that we have uniques..
-             try {
-                 prm.addRequest(params, this);
-             } catch(InvalidIdentification e) {
-                 throw new RuntimeException("Could not register dependencies for alarms", e);
-             }
+             prm.addRequest(params, this);
          }
         notifyStarted();
     }
