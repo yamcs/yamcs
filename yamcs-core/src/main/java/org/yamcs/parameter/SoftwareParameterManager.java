@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -35,7 +36,7 @@ import com.google.common.util.concurrent.AbstractService;
  */
 public class SoftwareParameterManager extends AbstractService implements ParameterProvider {
     ExecutorService executor = Executors.newFixedThreadPool(1);
-    private Set<ParameterListener> parameterListeners = new HashSet<>();
+    private List<ParameterListener> parameterListeners = new CopyOnWriteArrayList<>();
     private NamedDescriptionIndex<Parameter> params = new NamedDescriptionIndex<>();
     Set<Parameter> subscribedParams = new HashSet<>();
     private static final Logger log = LoggerFactory.getLogger(SoftwareParameterManager.class);
