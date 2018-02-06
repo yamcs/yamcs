@@ -3,10 +3,25 @@
     <a mat-button routerLink="/">
       Yamcs
     </a>
+    <button mat-button *ngIf="instance$ | async as instance">
+      <span class="selected-instance">{{ instance.name }}</span>
+      <mat-icon>arrow_drop_down</mat-icon>
+    </button>
     <span style="flex: 1 1 auto"></span>
-    <a mat-button routerLink="monitor/dev">Monitor</a>
-    <a mat-button routerLink="mdb/dev">MDB</a>
-    <a mat-button routerLink="system/dev/clients">System</a>
+    <ng-container *ngIf="instance$ | async as instance">
+      <a mat-button routerLink="monitor" [queryParams]="{instance: instance.name}">
+        <mat-icon>dashboard</mat-icon>
+        Monitor
+      </a>
+      <a mat-button routerLink="mdb" [queryParams]="{instance: instance.name}">
+        <mat-icon>book</mat-icon>
+        MDB
+      </a>
+      <a mat-button routerLink="system/clients" [queryParams]="{instance: instance.name}">
+        <mat-icon>settings</mat-icon>
+        System
+      </a>
+    </ng-container>
   </mat-toolbar-row>
 </mat-toolbar>
 <router-outlet></router-outlet>

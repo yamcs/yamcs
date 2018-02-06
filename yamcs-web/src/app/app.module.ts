@@ -10,7 +10,6 @@ import { AppComponent } from './core/pages/app.component';
 import { SharedModule } from './shared/shared.module';
 import { MdbModule } from './mdb/mdb.module';
 import { AppRoutingModule } from './app-routing.module';
-import { InstancePageComponent } from './core/pages/instance.component';
 
 import { RouterStateSnapshot } from '@angular/router';
 import { reducers, metaReducers } from './app.reducers';
@@ -47,7 +46,6 @@ export class CustomRouterStateSerializer implements RouterStateSerializer<Router
   declarations: [
     AppComponent,
     HomePageComponent,
-    InstancePageComponent,
     NotFoundPageComponent,
   ],
   imports: [

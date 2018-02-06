@@ -6,11 +6,11 @@ import { Instance } from '../../../yamcs-client';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';
 
 @Component({
-  templateUrl: './system.component.html',
-  styleUrls: ['./system.component.css'],
+  templateUrl: './mdb.component.html',
+  styleUrls: ['./mdb.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SystemPageComponent implements OnInit {
+export class MdbPageComponent implements OnInit {
 
   instance$: Observable<Instance>;
 

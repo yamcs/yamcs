@@ -1,0 +1,19 @@
+<mat-sidenav-container class="mat-typography">
+  <mat-sidenav mode="side" opened="true">
+    <mat-toolbar>
+      <mat-toolbar-row>
+        <mat-icon>book</mat-icon>
+        MDB
+      </mat-toolbar-row>
+    </mat-toolbar>
+
+    <mat-nav-list dense>
+      <a mat-list-item routerLink="parameters">Parameters</a>
+      <a mat-list-item routerLink="commands">Commands</a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
+</mat-sidenav-container>

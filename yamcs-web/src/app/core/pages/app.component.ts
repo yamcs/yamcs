@@ -1,6 +1,11 @@
 import { Component, ChangeDetectionStrategy, HostListener, Inject, Input } from '@angular/core';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { DOCUMENT } from '@angular/platform-browser';
+import { Observable } from 'rxjs/Observable';
+import { Instance } from '../../../yamcs-client';
+import { State } from '../../app.reducers';
+import { Store } from '@ngrx/store';
+import { selectCurrentInstance } from '../store/instance.selectors';
 
 @Component({
   selector: 'app-root',
@@ -26,9 +31,14 @@ export class AppComponent {
   @Input()
   shadowy = 'inactive';
 
+  instance$: Observable<Instance>;
+
   constructor(
     @Inject(DOCUMENT) private document: Document,
-  ) {}
+    store: Store<State>,
+  ) {
+    this.instance$ = store.select(selectCurrentInstance);
+  }
 
   @HostListener('window:scroll', [])
   onScroll() {

@@ -3,19 +3,16 @@ import { RouterModule } from '@angular/router';
 
 import { DisplaysPageComponent } from './pages/displays.component';
 import { InstanceExistsGuard } from '../core/guards/instance-exists.guard';
+import { MonitorPageComponent } from './pages/monitor.component';
 
 const routes = [
   {
     path: '',
-    pathMatch: 'full',
-    redirectTo: 'todo',
-  }, {
-    path: ':instance',
     canActivate: [InstanceExistsGuard],
+    component: MonitorPageComponent,
     children: [
       {
-        path: '',
-        pathMatch: 'full',
+        path: 'displays',
         component: DisplaysPageComponent,
       }
     ]
@@ -30,4 +27,5 @@ export class MonitorRoutingModule { }
 
 export const routingComponents = [
   DisplaysPageComponent,
+  MonitorPageComponent,
 ];

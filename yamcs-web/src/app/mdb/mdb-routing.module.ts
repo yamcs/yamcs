@@ -5,18 +5,17 @@ import { OverviewPageComponent } from './pages/overview.component';
 import { ParametersPageComponent } from './pages/parameters.component';
 import { CommandsPageComponent } from './pages/commands.component';
 import { InstanceExistsGuard } from '../core/guards/instance-exists.guard';
+import { MdbPageComponent } from './pages/mdb.component';
 
 const routes = [
   {
     path: '',
-    pathMatch: 'full',
-    redirectTo: 'todo',
-  }, {
-    path: ':instance',
-    canActivate: [ InstanceExistsGuard ],
+    canActivate: [InstanceExistsGuard],
+    component: MdbPageComponent,
     children: [
       {
-        path: 'overview',
+        path: '',
+        pathMatch: 'full',
         component: OverviewPageComponent,
       },
       {
@@ -39,6 +38,7 @@ export class MdbRoutingModule { }
 
 export const routingComponents = [
   CommandsPageComponent,
+  MdbPageComponent,
   OverviewPageComponent,
   ParametersPageComponent,
 ];

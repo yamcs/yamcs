@@ -6,6 +6,7 @@ import { filter, map, take, tap, switchMap } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { selectInstancesLoaded, selectInstancesById } from '../store/instance.selectors';
 import { YamcsService } from '../services/yamcs.service';
+import { SelectInstanceAction } from '../store/instance.actions';
 
 @Injectable()
 export class InstanceExistsGuard implements CanActivate {
@@ -17,7 +18,7 @@ export class InstanceExistsGuard implements CanActivate {
   }
 
   canActivate(route: ActivatedRouteSnapshot): Observable<boolean> {
-    const instanceId = route.params['instance'];
+    const instanceId = route.queryParams['instance'];
 
     // When the instances are loaded, verify the store contains
     // a matching entity.
@@ -27,6 +28,7 @@ export class InstanceExistsGuard implements CanActivate {
       switchMap(() => this.storeContainsInstance(instanceId)),
       tap(inStore => {
         if (inStore) {
+          this.store.dispatch(new SelectInstanceAction(instanceId));
           this.yamcsService.switchInstance(instanceId);
         }
       }),

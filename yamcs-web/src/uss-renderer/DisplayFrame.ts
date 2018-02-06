@@ -14,9 +14,9 @@ export class DisplayFrame {
   container: HTMLDivElement;
 
   titleBar: HTMLDivElement;
-  bubble: HTMLSpanElement;
   title: HTMLSpanElement;
   closeButton: Element;
+  frameActions: HTMLDivElement;
 
   frameContent: HTMLDivElement;
   resizeHandle: HTMLDivElement;
@@ -50,34 +50,30 @@ export class DisplayFrame {
     this.titleBar.style.setProperty('-webkit-user-select', 'none');
     this.container.appendChild(this.titleBar);
 
-    this.bubble = document.createElement('span');
-    this.bubble.innerHTML = '&nbsp;&nbsp;●&nbsp;';
-    this.bubble.style.setProperty('color', 'grey');
-    this.titleBar.appendChild(this.bubble);
-
     this.title = document.createElement('span');
     this.title.textContent = 'Loading...';
+    this.title.style.setProperty('padding-left', '0.5em');
     this.title.style.setProperty('font-family', 'Lucida Sans Typewriter');
     this.title.style.setProperty('font-size', '12px');
     this.titleBar.appendChild(this.title);
 
-    const frameActions = document.createElement('div');
-    frameActions.style.setProperty('position', 'absolute');
-    frameActions.style.setProperty('top', '0');
-    frameActions.style.setProperty('right', '0.5em');
-    frameActions.style.setProperty('height', `${this.titleBarHeight}px`);
-    frameActions.style.setProperty('line-height', `${this.titleBarHeight}px`);
-    frameActions.style.setProperty('color', 'grey');
-    frameActions.style.setProperty('cursor', 'pointer');
-    frameActions.style.setProperty('user-select', 'none');
-    frameActions.style.setProperty('-moz-user-select', 'none');
-    frameActions.style.setProperty('-khtml-user-select', 'none');
-    frameActions.style.setProperty('-webkit-user-select', 'none');
-    this.container.appendChild(frameActions);
+    this.frameActions = document.createElement('div');
+    this.frameActions.style.setProperty('position', 'absolute');
+    this.frameActions.style.setProperty('top', '0');
+    this.frameActions.style.setProperty('right', '0.5em');
+    this.frameActions.style.setProperty('height', `${this.titleBarHeight}px`);
+    this.frameActions.style.setProperty('line-height', `${this.titleBarHeight}px`);
+    this.frameActions.style.setProperty('color', 'grey');
+    this.frameActions.style.setProperty('cursor', 'pointer');
+    this.frameActions.style.setProperty('user-select', 'none');
+    this.frameActions.style.setProperty('-moz-user-select', 'none');
+    this.frameActions.style.setProperty('-khtml-user-select', 'none');
+    this.frameActions.style.setProperty('-webkit-user-select', 'none');
+    this.container.appendChild(this.frameActions);
 
     this.closeButton = document.createElement('span');
     this.closeButton.textContent = '⨉';
-    frameActions.appendChild(this.closeButton);
+    this.frameActions.appendChild(this.closeButton);
 
     this.frameContent = document.createElement('div');
     this.frameContent.style.setProperty('line-height', '0');
@@ -135,7 +131,24 @@ export class DisplayFrame {
   }
 
   syncDisplay() {
-    this.bubble.style.setProperty('color', this.display.getGlobalState());
+    const state = this.display.getDataSourceState();
+    if (state.red) {
+      this.titleBar.style.setProperty('background-color', 'red');
+      this.titleBar.style.setProperty('color', 'white');
+      this.frameActions.style.setProperty('color', 'white');
+    } else if (state.yellow) {
+      this.titleBar.style.setProperty('background-color', 'yellow');
+      this.titleBar.style.setProperty('color', 'black');
+      this.frameActions.style.setProperty('color', 'black');
+    } else if (state.green) {
+      this.titleBar.style.setProperty('background-color', 'green');
+      this.titleBar.style.setProperty('color', 'white');
+      this.frameActions.style.setProperty('color', 'white');
+    } else {
+      this.titleBar.style.setProperty('background-color', '#e9e9e9');
+      this.titleBar.style.setProperty('color', 'black');
+      this.frameActions.style.setProperty('color', 'grey');
+    }
     this.display.digest();
   }
 

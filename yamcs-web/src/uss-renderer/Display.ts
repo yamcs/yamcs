@@ -223,9 +223,9 @@ export class Display {
     return this.opsNames;
   }
 
-  getGlobalState() {
+  getDataSourceState() {
     let green = false;
-    let orange = false;
+    let yellow = false;
     let red = false;
     for (const widget of this.widgets) {
       for (const binding of widget.parameterBindings) {
@@ -238,7 +238,7 @@ export class Display {
             case 'WATCH':
             case 'WARNING':
             case 'DISTRESS':
-              orange = true;
+              yellow = true;
               break;
             case 'CRITICAL':
             case 'SEVERE':
@@ -248,16 +248,7 @@ export class Display {
         }
       }
     }
-
-    if (red) {
-      return 'red';
-    } else if (orange) {
-      return 'orange';
-    } else if (green) {
-      return 'green';
-    } else {
-      return 'grey';
-    }
+    return { green, yellow, red };
   }
 
   processParameterSamples(samples: ParameterSample[]) {

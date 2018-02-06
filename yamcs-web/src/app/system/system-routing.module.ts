@@ -7,10 +7,6 @@ import { SystemPageComponent } from './pages/system.component';
 const routes = [
   {
     path: '',
-    pathMatch: 'full',
-    redirectTo: 'todo',
-  }, {
-    path: ':instance',
     canActivate: [InstanceExistsGuard],
     component: SystemPageComponent,
     children: [

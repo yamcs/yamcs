@@ -13,11 +13,6 @@ const routes: Routes = [
         pathMatch: 'full',
         component: HomePageComponent
       },
-      /*{ // Escape hatch for forced 404s so that :instance route
-        // does not trigger instead.
-        path: '404',
-        component: NotFoundPageComponent,
-      },*/
       {
         path: 'monitor',
         loadChildren: 'app/monitor/monitor.module#MonitorModule',

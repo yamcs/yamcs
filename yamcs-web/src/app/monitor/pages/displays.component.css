@@ -1,6 +1,6 @@
 mat-sidenav-container {
   position: absolute;
-  top: 64px;
+  top: 0;
   bottom: 0;
   left: 0;
   right: 0;
@@ -10,11 +10,18 @@ mat-sidenav {
   width: 200px;
 }
 
-
 tr.action-item td {
   cursor: pointer;
 }
 
 tr.action-item:hover td {
   background-color: lightgrey;
+}
+
+.layout-wrapper {
+  position: absolute;
+  top: 64px;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }

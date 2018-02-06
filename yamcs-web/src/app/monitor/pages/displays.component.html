@@ -1,5 +1,10 @@
-<mat-sidenav-container class="example-container">
+<mat-sidenav-container>
   <mat-sidenav mode="side" opened="true">
+    <mat-toolbar>
+      <mat-toolbar-row>
+        Displays
+      </mat-toolbar-row>
+    </mat-toolbar>
     <ng-container *ngIf="displayInfo$ | async as displayInfo">
       <table yaSimpleTable class="mat-typography">
         <tr *ngFor="let folder of displayInfo.folder">
@@ -24,7 +29,17 @@
     </ng-container>
   </mat-sidenav>
 
-  <mat-sidenav-content class="example-content">
-    <div #displayContainer></div>
+  <mat-sidenav-content>
+    <mat-toolbar>
+      <mat-toolbar-row>
+        <button mat-button>realtime</button>
+        <span *ngIf="time$ | async as time">
+          {{ time.currentTimeUTC }}
+        </span>
+      </mat-toolbar-row>
+    </mat-toolbar>
+    <div class="layout-wrapper">
+      <div #displayContainer></div>
+    </div>
   </mat-sidenav-content>
 </mat-sidenav-container>
