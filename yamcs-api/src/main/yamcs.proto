@@ -265,6 +265,13 @@ message Event {
     INFO = 0;
     WARNING = 1;
     ERROR = 2;
+    //the levels below are compatible with XTCE
+    // we left the 4 out since it could be used 
+    // for warning if we ever decide to get rid of the old ones
+    WATCH = 3;
+    DISTRESS = 5;
+    CRITICAL = 6;
+    SEVERE = 7;
   }
   required string source = 1;
   required int64 generationTime = 2;

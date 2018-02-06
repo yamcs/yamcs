@@ -9,10 +9,10 @@ public final class Table {
       com.google.protobuf.ExtensionRegistry registry) {
     registry.add(org.yamcs.protobuf.Table.rowsLoaded);
   }
-  public interface ColumnInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface ColumnInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:table.ColumnInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional uint32 id = 1;
     /**
      * <code>optional uint32 id = 1;</code>
      */
@@ -22,7 +22,6 @@ public final class Table {
      */
     int getId();
 
-    // optional string name = 2;
     /**
      * <code>optional string name = 2;</code>
      */
@@ -37,7 +36,6 @@ public final class Table {
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // optional string type = 3;
     /**
      * <code>optional string type = 3;</code>
      */
@@ -52,7 +50,6 @@ public final class Table {
     com.google.protobuf.ByteString
         getTypeBytes();
 
-    // optional string protoClass = 4;
     /**
      * <code>optional string protoClass = 4;</code>
      *
@@ -83,8 +80,9 @@ public final class Table {
    * Protobuf type {@code table.ColumnInfo}
    */
   public static final class ColumnInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements ColumnInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:table.ColumnInfo)
+      ColumnInfoOrBuilder {
     // Use ColumnInfo.newBuilder() to construct.
     private ColumnInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -136,18 +134,21 @@ public final class Table {
               break;
             }
             case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              name_ = input.readBytes();
+              name_ = bs;
               break;
             }
             case 26: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000004;
-              type_ = input.readBytes();
+              type_ = bs;
               break;
             }
             case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000008;
-              protoClass_ = input.readBytes();
+              protoClass_ = bs;
               break;
             }
           }
@@ -190,7 +191,6 @@ public final class Table {
     }
 
     private int bitField0_;
-    // optional uint32 id = 1;
     public static final int ID_FIELD_NUMBER = 1;
     private int id_;
     /**
@@ -206,7 +206,6 @@ public final class Table {
       return id_;
     }
 
-    // optional string name = 2;
     public static final int NAME_FIELD_NUMBER = 2;
     private java.lang.Object name_;
     /**
@@ -249,7 +248,6 @@ public final class Table {
       }
     }
 
-    // optional string type = 3;
     public static final int TYPE_FIELD_NUMBER = 3;
     private java.lang.Object type_;
     /**
@@ -292,7 +290,6 @@ public final class Table {
       }
     }
 
-    // optional string protoClass = 4;
     public static final int PROTOCLASS_FIELD_NUMBER = 4;
     private java.lang.Object protoClass_;
     /**
@@ -356,7 +353,8 @@ public final class Table {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -484,8 +482,9 @@ public final class Table {
      * Protobuf type {@code table.ColumnInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Table.ColumnInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:table.ColumnInfo)
+        org.yamcs.protobuf.Table.ColumnInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Table.internal_static_table_ColumnInfo_descriptor;
@@ -631,7 +630,6 @@ public final class Table {
       }
       private int bitField0_;
 
-      // optional uint32 id = 1;
       private int id_ ;
       /**
        * <code>optional uint32 id = 1;</code>
@@ -664,7 +662,6 @@ public final class Table {
         return this;
       }
 
-      // optional string name = 2;
       private java.lang.Object name_ = "";
       /**
        * <code>optional string name = 2;</code>
@@ -678,9 +675,12 @@ public final class Table {
       public java.lang.String getName() {
         java.lang.Object ref = name_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          name_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            name_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -738,7 +738,6 @@ public final class Table {
         return this;
       }
 
-      // optional string type = 3;
       private java.lang.Object type_ = "";
       /**
        * <code>optional string type = 3;</code>
@@ -752,9 +751,12 @@ public final class Table {
       public java.lang.String getType() {
         java.lang.Object ref = type_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          type_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            type_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -812,7 +814,6 @@ public final class Table {
         return this;
       }
 
-      // optional string protoClass = 4;
       private java.lang.Object protoClass_ = "";
       /**
        * <code>optional string protoClass = 4;</code>
@@ -834,9 +835,12 @@ public final class Table {
       public java.lang.String getProtoClass() {
         java.lang.Object ref = protoClass_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          protoClass_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            protoClass_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -921,10 +925,10 @@ public final class Table {
     // @@protoc_insertion_point(class_scope:table.ColumnInfo)
   }
 
-  public interface CellOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface CellOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:table.Cell)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional uint32 columnId = 1;
     /**
      * <code>optional uint32 columnId = 1;</code>
      */
@@ -934,7 +938,6 @@ public final class Table {
      */
     int getColumnId();
 
-    // optional bytes data = 2;
     /**
      * <code>optional bytes data = 2;</code>
      */
@@ -948,8 +951,9 @@ public final class Table {
    * Protobuf type {@code table.Cell}
    */
   public static final class Cell extends
-      com.google.protobuf.GeneratedMessage
-      implements CellOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:table.Cell)
+      CellOrBuilder {
     // Use Cell.newBuilder() to construct.
     private Cell(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -1045,7 +1049,6 @@ public final class Table {
     }
 
     private int bitField0_;
-    // optional uint32 columnId = 1;
     public static final int COLUMNID_FIELD_NUMBER = 1;
     private int columnId_;
     /**
@@ -1061,7 +1064,6 @@ public final class Table {
       return columnId_;
     }
 
-    // optional bytes data = 2;
     public static final int DATA_FIELD_NUMBER = 2;
     private com.google.protobuf.ByteString data_;
     /**
@@ -1084,7 +1086,8 @@ public final class Table {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -1198,8 +1201,9 @@ public final class Table {
      * Protobuf type {@code table.Cell}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Table.CellOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:table.Cell)
+        org.yamcs.protobuf.Table.CellOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Table.internal_static_table_Cell_descriptor;
@@ -1321,7 +1325,6 @@ public final class Table {
       }
       private int bitField0_;
 
-      // optional uint32 columnId = 1;
       private int columnId_ ;
       /**
        * <code>optional uint32 columnId = 1;</code>
@@ -1354,7 +1357,6 @@ public final class Table {
         return this;
       }
 
-      // optional bytes data = 2;
       private com.google.protobuf.ByteString data_ = com.google.protobuf.ByteString.EMPTY;
       /**
        * <code>optional bytes data = 2;</code>
@@ -1401,10 +1403,10 @@ public final class Table {
     // @@protoc_insertion_point(class_scope:table.Cell)
   }
 
-  public interface RowOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface RowOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:table.Row)
+      com.google.protobuf.MessageOrBuilder {
 
-    // repeated .table.ColumnInfo column = 1;
     /**
      * <code>repeated .table.ColumnInfo column = 1;</code>
      *
@@ -1449,7 +1451,6 @@ public final class Table {
     org.yamcs.protobuf.Table.ColumnInfoOrBuilder getColumnOrBuilder(
         int index);
 
-    // repeated .table.Cell cell = 2;
     /**
      * <code>repeated .table.Cell cell = 2;</code>
      */
@@ -1478,8 +1479,9 @@ public final class Table {
    * Protobuf type {@code table.Row}
    */
   public static final class Row extends
-      com.google.protobuf.GeneratedMessage
-      implements RowOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:table.Row)
+      RowOrBuilder {
     // Use Row.newBuilder() to construct.
     private Row(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -1586,7 +1588,6 @@ public final class Table {
       return PARSER;
     }
 
-    // repeated .table.ColumnInfo column = 1;
     public static final int COLUMN_FIELD_NUMBER = 1;
     private java.util.List<org.yamcs.protobuf.Table.ColumnInfo> column_;
     /**
@@ -1642,7 +1643,6 @@ public final class Table {
       return column_.get(index);
     }
 
-    // repeated .table.Cell cell = 2;
     public static final int CELL_FIELD_NUMBER = 2;
     private java.util.List<org.yamcs.protobuf.Table.Cell> cell_;
     /**
@@ -1685,7 +1685,8 @@ public final class Table {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -1799,8 +1800,9 @@ public final class Table {
      * Protobuf type {@code table.Row}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Table.RowOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:table.Row)
+        org.yamcs.protobuf.Table.RowOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Table.internal_static_table_Row_descriptor;
@@ -1986,7 +1988,6 @@ public final class Table {
       }
       private int bitField0_;
 
-      // repeated .table.ColumnInfo column = 1;
       private java.util.List<org.yamcs.protobuf.Table.ColumnInfo> column_ =
         java.util.Collections.emptyList();
       private void ensureColumnIsMutable() {
@@ -2168,7 +2169,8 @@ public final class Table {
           java.lang.Iterable<? extends org.yamcs.protobuf.Table.ColumnInfo> values) {
         if (columnBuilder_ == null) {
           ensureColumnIsMutable();
-          super.addAll(values, column_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, column_);
           onChanged();
         } else {
           columnBuilder_.addAllMessages(values);
@@ -2298,7 +2300,6 @@ public final class Table {
         return columnBuilder_;
       }
 
-      // repeated .table.Cell cell = 2;
       private java.util.List<org.yamcs.protobuf.Table.Cell> cell_ =
         java.util.Collections.emptyList();
       private void ensureCellIsMutable() {
@@ -2440,7 +2441,8 @@ public final class Table {
           java.lang.Iterable<? extends org.yamcs.protobuf.Table.Cell> values) {
         if (cellBuilder_ == null) {
           ensureCellIsMutable();
-          super.addAll(values, cell_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, cell_);
           onChanged();
         } else {
           cellBuilder_.addAllMessages(values);
@@ -2549,10 +2551,10 @@ public final class Table {
     // @@protoc_insertion_point(class_scope:table.Row)
   }
 
-  public interface TableLoadResponseOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface TableLoadResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:table.TableLoadResponse)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional uint32 rowsLoaded = 1;
     /**
      * <code>optional uint32 rowsLoaded = 1;</code>
      */
@@ -2566,8 +2568,9 @@ public final class Table {
    * Protobuf type {@code table.TableLoadResponse}
    */
   public static final class TableLoadResponse extends
-      com.google.protobuf.GeneratedMessage
-      implements TableLoadResponseOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:table.TableLoadResponse)
+      TableLoadResponseOrBuilder {
     // Use TableLoadResponse.newBuilder() to construct.
     private TableLoadResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -2658,7 +2661,6 @@ public final class Table {
     }
 
     private int bitField0_;
-    // optional uint32 rowsLoaded = 1;
     public static final int ROWSLOADED_FIELD_NUMBER = 1;
     private int rowsLoaded_;
     /**
@@ -2680,7 +2682,8 @@ public final class Table {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -2787,8 +2790,9 @@ public final class Table {
      * Protobuf type {@code table.TableLoadResponse}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Table.TableLoadResponseOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:table.TableLoadResponse)
+        org.yamcs.protobuf.Table.TableLoadResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Table.internal_static_table_TableLoadResponse_descriptor;
@@ -2901,7 +2905,6 @@ public final class Table {
       }
       private int bitField0_;
 
-      // optional uint32 rowsLoaded = 1;
       private int rowsLoaded_ ;
       /**
        * <code>optional uint32 rowsLoaded = 1;</code>
@@ -2956,22 +2959,22 @@ public final class Table {
           .newFileScopedGeneratedExtension(
         java.lang.Integer.class,
         null);
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_table_ColumnInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_table_ColumnInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_table_Cell_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_table_Cell_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_table_Row_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_table_Row_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_table_TableLoadResponse_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -2996,43 +2999,44 @@ public final class Table {
       "obuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
-      new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
-        public com.google.protobuf.ExtensionRegistry assignDescriptors(
-            com.google.protobuf.Descriptors.FileDescriptor root) {
-          descriptor = root;
-          internal_static_table_ColumnInfo_descriptor =
-            getDescriptor().getMessageTypes().get(0);
-          internal_static_table_ColumnInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_table_ColumnInfo_descriptor,
-              new java.lang.String[] { "Id", "Name", "Type", "ProtoClass", });
-          internal_static_table_Cell_descriptor =
-            getDescriptor().getMessageTypes().get(1);
-          internal_static_table_Cell_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_table_Cell_descriptor,
-              new java.lang.String[] { "ColumnId", "Data", });
-          internal_static_table_Row_descriptor =
-            getDescriptor().getMessageTypes().get(2);
-          internal_static_table_Row_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_table_Row_descriptor,
-              new java.lang.String[] { "Column", "Cell", });
-          internal_static_table_TableLoadResponse_descriptor =
-            getDescriptor().getMessageTypes().get(3);
-          internal_static_table_TableLoadResponse_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_table_TableLoadResponse_descriptor,
-              new java.lang.String[] { "RowsLoaded", });
-          rowsLoaded.internalInit(descriptor.getExtensions().get(0));
-          return null;
-        }
-      };
+        new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
+          public com.google.protobuf.ExtensionRegistry assignDescriptors(
+              com.google.protobuf.Descriptors.FileDescriptor root) {
+            descriptor = root;
+            return null;
+          }
+        };
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           org.yamcs.protobuf.Web.getDescriptor(),
         }, assigner);
+    internal_static_table_ColumnInfo_descriptor =
+      getDescriptor().getMessageTypes().get(0);
+    internal_static_table_ColumnInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_table_ColumnInfo_descriptor,
+        new java.lang.String[] { "Id", "Name", "Type", "ProtoClass", });
+    internal_static_table_Cell_descriptor =
+      getDescriptor().getMessageTypes().get(1);
+    internal_static_table_Cell_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_table_Cell_descriptor,
+        new java.lang.String[] { "ColumnId", "Data", });
+    internal_static_table_Row_descriptor =
+      getDescriptor().getMessageTypes().get(2);
+    internal_static_table_Row_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_table_Row_descriptor,
+        new java.lang.String[] { "Column", "Cell", });
+    internal_static_table_TableLoadResponse_descriptor =
+      getDescriptor().getMessageTypes().get(3);
+    internal_static_table_TableLoadResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_table_TableLoadResponse_descriptor,
+        new java.lang.String[] { "RowsLoaded", });
+    rowsLoaded.internalInit(descriptor.getExtensions().get(0));
+    org.yamcs.protobuf.Web.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

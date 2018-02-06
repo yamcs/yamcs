@@ -55,13 +55,13 @@ public class ParameterSelectDialog extends JDialog implements ActionListener, Ke
     private XtceDb xtcedb;
     private final JTree treeView;
     private JLabel errorLabel;
-    private FilterableXtceDbTreeModel tm;
+    private XtceDbTreeModel tm;
     private JTextField searchField;
     private List<ParameterSelectDialogListener> listeners;
     ListIndexBar bar;
 
     public ParameterSelectDialog(JFrame parent, YamcsConnectionProperties ycd) {
-        this( parent, ycd, null );
+        this(parent, ycd, null);
     }
 
     public ParameterSelectDialog(JFrame parent, YamcsConnectionProperties ycd, XtceDb db) {
@@ -71,42 +71,42 @@ public class ParameterSelectDialog extends JDialog implements ActionListener, Ke
         listeners = new ArrayList<ParameterSelectDialogListener>();
 
         JPanel searchButtonPanel = new JPanel();
-        searchButtonPanel.setLayout( new BorderLayout() );
+        searchButtonPanel.setLayout(new BorderLayout());
         getContentPane().add(searchButtonPanel, BorderLayout.NORTH);
-        searchButtonPanel.add( new JLabel( "Search" ), BorderLayout.WEST );
-        searchField = new JTextField( "" );
-        searchField.addKeyListener( this );
-        searchButtonPanel.add( searchField, BorderLayout.CENTER );
+        searchButtonPanel.add(new JLabel("Search"), BorderLayout.WEST);
+        searchField = new JTextField("");
+        searchField.addKeyListener(this);
+        searchButtonPanel.add(searchField, BorderLayout.CENTER);
 
-        errorLabel = new JLabel( "Loading..." );
-        getContentPane().add( new JScrollPane( errorLabel ), BorderLayout.CENTER );
+        errorLabel = new JLabel("Loading...");
+        getContentPane().add(new JScrollPane(errorLabel), BorderLayout.CENTER);
 
         loadXtcedb();
 
-        tm = new FilterableXtceDbTreeModel( xtcedb );
-        treeView = new JTree( tm );
-        treeView.addTreeSelectionListener( this );
+        tm = new XtceDbTreeModel(xtcedb);
+        treeView = new JTree(tm);
+        treeView.addTreeSelectionListener(this);
         ToolTipManager.sharedInstance().registerComponent(treeView);
-        treeView.setCellRenderer( new XtceDbCellRenderer() );
+        treeView.setCellRenderer(new XtceDbCellRenderer());
         treeView.setExpandsSelectedPaths(true);
-        if( xtcedb != null ) {
-            JScrollPane scrollPane = new JScrollPane( treeView );
-            scrollPane.setVerticalScrollBarPolicy( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
-            getContentPane().add( scrollPane, BorderLayout.CENTER );
+        if (xtcedb != null) {
+            JScrollPane scrollPane = new JScrollPane(treeView);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+            getContentPane().add(scrollPane, BorderLayout.CENTER);
         }
 
-        bar = new ListIndexBar( treeView.getRowCount() );
-        bar.setBackground( Color.white );
-        bar.setForeground( Color.BLUE );
-        bar.setOpaque( false );
-        getContentPane().add( bar, BorderLayout.EAST );
-        bar.addSelectionListener( new ListSelectionListener() {
+        bar = new ListIndexBar(treeView.getRowCount());
+        bar.setBackground(Color.white);
+        bar.setForeground(Color.BLUE);
+        bar.setOpaque(false);
+        getContentPane().add(bar, BorderLayout.EAST);
+        bar.addSelectionListener(new ListSelectionListener() {
             @Override
-            public void valueChanged( ListSelectionEvent e ) {
+            public void valueChanged(ListSelectionEvent e) {
                 int selectedIndex = e.getFirstIndex();
-                treeView.scrollRowToVisible( selectedIndex );
+                treeView.scrollRowToVisible(selectedIndex);
             }
-        } );
+        });
 
         // OK and Cancel buttons
         JPanel buttonPanel = new JPanel();
@@ -131,83 +131,84 @@ public class ParameterSelectDialog extends JDialog implements ActionListener, Ke
         searchField.requestFocusInWindow();
     }
 
-
     @Override
     public void actionPerformed(ActionEvent e) {
-        String cmd=e.getActionCommand();
-        if ( "add".equals( cmd ) ) {
-            for( ParameterSelectDialogListener l : listeners ) {
-                l.parametersAdded( getSelectedParameterOpsNames() );
+        String cmd = e.getActionCommand();
+        if ("add".equals(cmd)) {
+            for (ParameterSelectDialogListener l : listeners) {
+                l.parametersAdded(getSelectedParameterOpsNames());
             }
         } else {
-            setVisible( false );
+            setVisible(false);
         }
     }
 
     public void updateBar() {
-        bar.setItemCount( treeView.getRowCount() );
+        bar.setItemCount(treeView.getRowCount());
         bar.clearMarkers();
-        int [] selectedRows = treeView.getSelectionRows();
-        if( selectedRows != null ) {
-            for( int row : selectedRows ) {
-                bar.addMarker( row );
+        int[] selectedRows = treeView.getSelectionRows();
+        if (selectedRows != null) {
+            for (int row : selectedRows) {
+                bar.addMarker(row);
             }
         }
     }
 
     @Override
-    public void valueChanged( TreeSelectionEvent e ) {
+    public void valueChanged(TreeSelectionEvent e) {
         updateBar();
     }
 
     public void loadXtcedb() {
-        if( xtcedb != null ) {
+        if (xtcedb != null) {
             return;
         }
         RestClient restClient = new RestClient(connectData);
         try {
             restClient.setAcceptMediaType(MediaType.JAVA_SERIALIZED_OBJECT);
-            restClient.setMaxResponseLength(10*1024*1024);//TODO make this configurable
-            byte[] serializedMdb = restClient.doRequest("/mdb/"+connectData.getInstance(), HttpMethod.GET).get();
+            restClient.setMaxResponseLength(10 * 1024 * 1024);// TODO make this configurable
+            byte[] serializedMdb = restClient.doRequest("/mdb/" + connectData.getInstance(), HttpMethod.GET).get();
             ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(serializedMdb));
-            Object o=ois.readObject();
-            xtcedb=(XtceDb) o;
+            Object o = ois.readObject();
+            xtcedb = (XtceDb) o;
             ois.close();
             setLoadSuccess();
         } catch (Exception e) {
-            System.out.println( "Exception whilst getting mission database: "+e.getMessage() );
-            setLoadFail( e.getMessage() );
+            System.out.println("Exception whilst getting mission database: " + e.getMessage());
+            setLoadFail(e.getMessage());
         }
     }
 
-    private void setLoadFail( String message ) {
-        if( treeView != null ) {
-            treeView.setVisible( false );
+    private void setLoadFail(String message) {
+        if (treeView != null) {
+            treeView.setVisible(false);
         }
-        if( searchField != null ) {
-            searchField.setVisible( false );
+        if (searchField != null) {
+            searchField.setVisible(false);
         }
-        errorLabel.setVisible( true );
-        errorLabel.setText( message );
+        errorLabel.setVisible(true);
+        errorLabel.setText(message);
     }
+
     private void setLoadSuccess() {
-        errorLabel.setVisible( false );
-        if( treeView != null ) {
-            treeView.setVisible( true );
+        errorLabel.setVisible(false);
+        if (treeView != null) {
+            treeView.setVisible(true);
         }
-        if( searchField != null ) {
-            searchField.setVisible( true );
+        if (searchField != null) {
+            searchField.setVisible(true);
         }
     }
 
     /**
      * Convenience method to get selected Parameter opsnames.
+     * 
      * @return
      */
     public List<String> getSelectedParameterOpsNames() {
         List<String> params = new ArrayList<String>();
-        for( Parameter p : getSelectedParameters() ) {
-            params.add( p.getOpsName() );
+        for (Parameter p : getSelectedParameters()) {
+            params.add(p.getOpsName());
         }
         return params;
     }
@@ -222,11 +223,11 @@ public class ParameterSelectDialog extends JDialog implements ActionListener, Ke
         // Assumes model has parameters as leaves
         List<Parameter> params = new ArrayList<Parameter>();
         TreePath[] selectedPaths = treeView.getSelectionPaths();
-        if( selectedPaths != null ) {
-            for( TreePath tp : selectedPaths ) {
+        if (selectedPaths != null) {
+            for (TreePath tp : selectedPaths) {
                 Object node = tp.getLastPathComponent();
-                if( node instanceof ParameterEntry ) {
-                    params.add( ((ParameterEntry)node).getParameter() );
+                if (node instanceof Parameter) {
+                    params.add((Parameter) node);
                 }
             }
         }
@@ -241,9 +242,9 @@ public class ParameterSelectDialog extends JDialog implements ActionListener, Ke
     public List<Object> getSelected() {
         List<Object> selected = new ArrayList<Object>();
         TreePath[] selectedPaths = treeView.getSelectionPaths();
-        if( selectedPaths != null ) {
-            for( TreePath tp : selectedPaths ) {
-                selected.add( tp.getLastPathComponent() );
+        if (selectedPaths != null) {
+            for (TreePath tp : selectedPaths) {
+                selected.add(tp.getLastPathComponent());
             }
         }
         return selected;
@@ -251,25 +252,30 @@ public class ParameterSelectDialog extends JDialog implements ActionListener, Ke
 
     // KeyListener - for the searchField
     @Override
-    public void keyPressed(KeyEvent arg0) { /* Ignore in favour of keyReleased */ }
+    public void keyPressed(KeyEvent arg0) {
+        /* Ignore in favour of keyReleased */ }
+
     @Override
-    public void keyTyped(KeyEvent arg0) { /* Ignore in favour of keyReleased */ }
+    public void keyTyped(KeyEvent arg0) {
+        /* Ignore in favour of keyReleased */ }
+
     @Override
     public void keyReleased(KeyEvent arg0) {
         // Make sure currently selected objects continue to be shown
-        TreePath [] selected = treeView.getSelectionPaths();
-        tm.setAlwaysShown( getSelected() );
-        tm.setFilterText( searchField.getText() );
+        TreePath[] selected = treeView.getSelectionPaths();
+        tm.setAlwaysShown(getSelected());
+        tm.setFilterText(searchField.getText());
         // Re-select previously selected.
-        treeView.setSelectionPaths( selected );
+        treeView.setSelectionPaths(selected);
         updateBar();
     }
 
-    public void addListener( ParameterSelectDialogListener l ) {
-        listeners.add( l );
+    public void addListener(ParameterSelectDialogListener l) {
+        listeners.add(l);
     }
-    public void removeListener( ParameterSelectDialogListener l ) {
-        listeners.remove( l );
+
+    public void removeListener(ParameterSelectDialogListener l) {
+        listeners.remove(l);
     }
 
     /**
@@ -278,14 +284,16 @@ public class ParameterSelectDialog extends JDialog implements ActionListener, Ke
      * @return List of parameter opsnames if OK button clicked, null otherwise.
      */
     public List<String> showDialog() {
-        setVisible( true );
-        /*if( returnValue == APPROVE_OPTION ) {
-        	return getSelectedParameterOpsNames();
-        }*/
+        setVisible(true);
+        /*
+         * if( returnValue == APPROVE_OPTION ) {
+         * return getSelectedParameterOpsNames();
+         * }
+         */
         return null;
     }
 }
 
 interface ParameterSelectDialogListener {
-    public void parametersAdded( List<String> opsnames );
+    public void parametersAdded(List<String> opsnames);
 }

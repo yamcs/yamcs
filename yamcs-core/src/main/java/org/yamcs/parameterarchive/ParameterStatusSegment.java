@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
+import org.yamcs.protobuf.Mdb.AlarmRange;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
@@ -19,72 +20,83 @@ import com.google.protobuf.InvalidProtocolBufferException;
 public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
     static ParameterStatusSerializer serializer = new ParameterStatusSerializer();
     static AcquiredCache cache = new AcquiredCache();
-  
-    
-    public ParameterStatusSegment( boolean buildForSerialisation) {
+
+    public ParameterStatusSegment(boolean buildForSerialisation) {
         super(serializer, buildForSerialisation);
     }
 
-
-    static public final ParameterStatus getStatus(ParameterValue pv) {
+    static public final ParameterStatus getStatus(ParameterValue pv, ParameterStatus prevStatus) {
         AcquisitionStatus acq = pv.getAcquisitionStatus();
         MonitoringResult mr = pv.getMonitoringResult();
-        
-        if(acq==AcquisitionStatus.ACQUIRED && mr == null) {
+
+        if (acq == AcquisitionStatus.ACQUIRED && mr == null) {
             return cache.get(pv.getExpireMills());
         }
         
-        ParameterStatus.Builder pvfb =  ParameterStatus.newBuilder();
-        
-        if(acq!=null) {
+        ParameterStatus.Builder pvfb = ParameterStatus.newBuilder();
+
+        if (acq != null) {
             pvfb.setAcquisitionStatus(acq);
         }
-        
-        if(mr!=null) {
+
+        if (mr != null) {
             pvfb.setMonitoringResult(mr);
         }
         RangeCondition rc = pv.getRangeCondition();
-        if(rc!=null) {
+        if (rc != null) {
             pvfb.setRangeCondition(rc);
         }
-        
+
         addAlarmRange(pvfb, AlarmLevelType.WATCH, pv.getWatchRange());
         addAlarmRange(pvfb, AlarmLevelType.WARNING, pv.getWarningRange());
         addAlarmRange(pvfb, AlarmLevelType.DISTRESS, pv.getDistressRange());
         addAlarmRange(pvfb, AlarmLevelType.CRITICAL, pv.getCriticalRange());
         addAlarmRange(pvfb, AlarmLevelType.SEVERE, pv.getSevereRange());
 
-        return pvfb.build();
+        ParameterStatus newStatus =  pvfb.build();
+        
+        if(newStatus.equals(prevStatus)) {
+            return prevStatus;
+        }
+        return newStatus;
 
     }
 
-
     private static void addAlarmRange(ParameterStatus.Builder pvfb, AlarmLevelType level, DoubleRange range) {
-        if(range==null) {
+        if (range == null) {
             return;
         }
         pvfb.addAlarmRange(ParameterValue.toGpbAlarmRange(level, range));
     }
 
-    
-
     public void addParameterValue(int pos, ParameterValue pv) {
-        add(pos, getStatus(pv));
+        ParameterStatus prevStatus = null;
+        if (pos > 0) {
+            prevStatus = get(pos - 1);
+        }
+
+        add(pos, getStatus(pv, prevStatus));
     }
+
     public void addParameterValue(ParameterValue pv) {
-       add(getStatus(pv)); 
+        ParameterStatus prevStatus = null;
+        if (size > 0) {
+            prevStatus = get(size - 1);
+        }
+        add(getStatus(pv, prevStatus));
     }
-    
+
     ParameterStatusSegment consolidate() {
         return (ParameterStatusSegment) super.consolidate();
     }
+
     public static ParameterStatusSegment parseFrom(ByteBuffer bb) throws DecodingException {
         ParameterStatusSegment r = new ParameterStatusSegment(false);
         r.parse(bb);
         return r;
     }
-    
-    static class ParameterStatusSerializer implements ObjectSerializer<ParameterStatus>  {
+
+    static class ParameterStatusSerializer implements ObjectSerializer<ParameterStatus> {
         @Override
         public byte getFormatId() {
             return BaseSegment.FORMAT_ID_ParameterStatusSegment;
@@ -104,31 +116,33 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
             return e.toByteArray();
         }
     }
-    
+
     /**
-     * cache to avoid creating unnecessary ParameterStatus objects for parameters that have no status other than acquired and expiration time
+     * cache to avoid creating unnecessary ParameterStatus objects for parameters that have no status other than
+     * acquired and expiration time
      * (likely 95% of all parameter values).
      *
      */
     static class AcquiredCache {
         static long EVICTION_INTERVAL = 3600000L;
         static long CACHE_TIME = 3600000L;
-        
-        static final ParameterStatus ACQUIRED_NO_EXP = ParameterStatus.newBuilder().setAcquisitionStatus(AcquisitionStatus.ACQUIRED).build();
+
+        static final ParameterStatus ACQUIRED_NO_EXP = ParameterStatus.newBuilder()
+                .setAcquisitionStatus(AcquisitionStatus.ACQUIRED).build();
         Map<Long, CacheEntry> m = new ConcurrentHashMap<>();
         long lastEviction;
-        
+
         public ParameterStatus get(long expireMills) {
-            if(expireMills<=0) {
+            if (expireMills <= 0) {
                 return ACQUIRED_NO_EXP;
             }
             long now = System.currentTimeMillis();
-            
-            if(now>lastEviction+EVICTION_INTERVAL) {
+
+            if (now > lastEviction + EVICTION_INTERVAL) {
                 performEviction();
             }
             CacheEntry ce = m.get(expireMills);
-            if(ce==null) {
+            if (ce == null) {
                 ParameterStatus status = ParameterStatus.newBuilder().setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
                         .setExpireMillis(expireMills).build();
                 ce = new CacheEntry(status);
@@ -136,25 +150,26 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
             ce.lastAccessedTime = now;
             return ce.status;
         }
-        
+
         private synchronized void performEviction() {
             long now = System.currentTimeMillis();
-            if (now<lastEviction+EVICTION_INTERVAL) {
+            if (now < lastEviction + EVICTION_INTERVAL) {
                 return;
             }
             this.lastEviction = now;
             Iterator<Map.Entry<Long, CacheEntry>> it = m.entrySet().iterator();
-            while(it.hasNext()) {
+            while (it.hasNext()) {
                 Map.Entry<Long, CacheEntry> e = it.next();
-                if(now > e.getValue().lastAccessedTime+CACHE_TIME) {
+                if (now > e.getValue().lastAccessedTime + CACHE_TIME) {
                     it.remove();
                 }
             }
         }
-        
+
         static class CacheEntry {
             final ParameterStatus status;
             long lastAccessedTime;
+
             CacheEntry(ParameterStatus status) {
                 this.status = status;
             }

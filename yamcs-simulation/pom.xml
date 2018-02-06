@@ -5,7 +5,7 @@
   <parent>
     <artifactId>yamcs</artifactId>
     <groupId>org.yamcs</groupId>
-    <version>4.0.1-SNAPSHOT</version>
+    <version>4.0.2-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
@@ -68,7 +68,7 @@
                    <destination>yamcs.yaml</destination> 
                 </source>
                 <source> <location>etc/logging.yamcs-server.properties</location> </source>
-                <source> <location>etc/yprocessor.yaml</location> </source>
+                <source> <location>etc/processor.yaml</location> </source>
               </sources>
             </mapping>
             <mapping>

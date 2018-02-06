@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.artemis.AbstractArtemisTranslatorService;
@@ -88,16 +87,17 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
 
     @Override
     public void onMessage(ClientMessage msg) {
-        if (disabled) {
-            return;
-        }
         try {
+            msg.acknowledge();
+            if (disabled) {
+                return;
+            }
             TmPacketData tm = (TmPacketData) Protocol.decode(msg, TmPacketData.newBuilder());
             packetcount++;
             PacketWithTime pwt = new PacketWithTime(timeService.getMissionTime(),
                     tm.getGenerationTime(), tm.getSequenceNumber(), tm.getPacket().toByteArray());
             tmSink.processPacket(pwt);
-        } catch (YamcsApiException e) {
+        } catch (Exception e) {
             log.warn("{} for message: {}", e.getMessage(), msg);
         }
     }
@@ -105,7 +105,7 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
     @Override
     protected void doStart() {
         try {
-            artemisSession = locator.createSessionFactory().createSession();
+            artemisSession = locator.createSessionFactory().createSession(false, true, true, true);
             String queue = artemisAddress + "-ActiveMQTmProvider";
             artemisSession.createTemporaryQueue(artemisAddress, queue);
             ClientConsumer client = artemisSession.createConsumer(queue,

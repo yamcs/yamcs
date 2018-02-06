@@ -8,10 +8,10 @@ public final class Archive {
   public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistry registry) {
   }
-  public interface ColumnDataOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface ColumnDataOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:archive.ColumnData)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional string name = 1;
     /**
      * <code>optional string name = 1;</code>
      */
@@ -26,7 +26,6 @@ public final class Archive {
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // optional .yamcs.Value value = 2;
     /**
      * <code>optional .yamcs.Value value = 2;</code>
      */
@@ -44,8 +43,9 @@ public final class Archive {
    * Protobuf type {@code archive.ColumnData}
    */
   public static final class ColumnData extends
-      com.google.protobuf.GeneratedMessage
-      implements ColumnDataOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:archive.ColumnData)
+      ColumnDataOrBuilder {
     // Use ColumnData.newBuilder() to construct.
     private ColumnData(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -92,8 +92,9 @@ public final class Archive {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              name_ = input.readBytes();
+              name_ = bs;
               break;
             }
             case 18: {
@@ -149,7 +150,6 @@ public final class Archive {
     }
 
     private int bitField0_;
-    // optional string name = 1;
     public static final int NAME_FIELD_NUMBER = 1;
     private java.lang.Object name_;
     /**
@@ -192,7 +192,6 @@ public final class Archive {
       }
     }
 
-    // optional .yamcs.Value value = 2;
     public static final int VALUE_FIELD_NUMBER = 2;
     private org.yamcs.protobuf.Yamcs.Value value_;
     /**
@@ -221,7 +220,8 @@ public final class Archive {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       if (hasValue()) {
         if (!getValue().isInitialized()) {
@@ -341,8 +341,9 @@ public final class Archive {
      * Protobuf type {@code archive.ColumnData}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Archive.ColumnDataOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:archive.ColumnData)
+        org.yamcs.protobuf.Archive.ColumnDataOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Archive.internal_static_archive_ColumnData_descriptor;
@@ -481,7 +482,6 @@ public final class Archive {
       }
       private int bitField0_;
 
-      // optional string name = 1;
       private java.lang.Object name_ = "";
       /**
        * <code>optional string name = 1;</code>
@@ -495,9 +495,12 @@ public final class Archive {
       public java.lang.String getName() {
         java.lang.Object ref = name_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          name_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            name_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -555,7 +558,6 @@ public final class Archive {
         return this;
       }
 
-      // optional .yamcs.Value value = 2;
       private org.yamcs.protobuf.Yamcs.Value value_ = org.yamcs.protobuf.Yamcs.Value.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder> valueBuilder_;
@@ -664,7 +666,7 @@ public final class Archive {
         if (valueBuilder_ == null) {
           valueBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder>(
-                  value_,
+                  getValue(),
                   getParentForChildren(),
                   isClean());
           value_ = null;
@@ -683,10 +685,10 @@ public final class Archive {
     // @@protoc_insertion_point(class_scope:archive.ColumnData)
   }
 
-  public interface StreamDataOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface StreamDataOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:archive.StreamData)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional string stream = 1;
     /**
      * <code>optional string stream = 1;</code>
      */
@@ -701,7 +703,6 @@ public final class Archive {
     com.google.protobuf.ByteString
         getStreamBytes();
 
-    // repeated .archive.ColumnData column = 2;
     /**
      * <code>repeated .archive.ColumnData column = 2;</code>
      */
@@ -730,8 +731,9 @@ public final class Archive {
    * Protobuf type {@code archive.StreamData}
    */
   public static final class StreamData extends
-      com.google.protobuf.GeneratedMessage
-      implements StreamDataOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:archive.StreamData)
+      StreamDataOrBuilder {
     // Use StreamData.newBuilder() to construct.
     private StreamData(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -778,8 +780,9 @@ public final class Archive {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              stream_ = input.readBytes();
+              stream_ = bs;
               break;
             }
             case 18: {
@@ -833,7 +836,6 @@ public final class Archive {
     }
 
     private int bitField0_;
-    // optional string stream = 1;
     public static final int STREAM_FIELD_NUMBER = 1;
     private java.lang.Object stream_;
     /**
@@ -876,7 +878,6 @@ public final class Archive {
       }
     }
 
-    // repeated .archive.ColumnData column = 2;
     public static final int COLUMN_FIELD_NUMBER = 2;
     private java.util.List<org.yamcs.protobuf.Archive.ColumnData> column_;
     /**
@@ -919,7 +920,8 @@ public final class Archive {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       for (int i = 0; i < getColumnCount(); i++) {
         if (!getColumn(i).isInitialized()) {
@@ -1039,8 +1041,9 @@ public final class Archive {
      * Protobuf type {@code archive.StreamData}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Archive.StreamDataOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:archive.StreamData)
+        org.yamcs.protobuf.Archive.StreamDataOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Archive.internal_static_archive_StreamData_descriptor;
@@ -1203,7 +1206,6 @@ public final class Archive {
       }
       private int bitField0_;
 
-      // optional string stream = 1;
       private java.lang.Object stream_ = "";
       /**
        * <code>optional string stream = 1;</code>
@@ -1217,9 +1219,12 @@ public final class Archive {
       public java.lang.String getStream() {
         java.lang.Object ref = stream_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          stream_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            stream_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -1277,7 +1282,6 @@ public final class Archive {
         return this;
       }
 
-      // repeated .archive.ColumnData column = 2;
       private java.util.List<org.yamcs.protobuf.Archive.ColumnData> column_ =
         java.util.Collections.emptyList();
       private void ensureColumnIsMutable() {
@@ -1419,7 +1423,8 @@ public final class Archive {
           java.lang.Iterable<? extends org.yamcs.protobuf.Archive.ColumnData> values) {
         if (columnBuilder_ == null) {
           ensureColumnIsMutable();
-          super.addAll(values, column_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, column_);
           onChanged();
         } else {
           columnBuilder_.addAllMessages(values);
@@ -1528,10 +1533,10 @@ public final class Archive {
     // @@protoc_insertion_point(class_scope:archive.StreamData)
   }
 
-  public interface TableDataOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface TableDataOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:archive.TableData)
+      com.google.protobuf.MessageOrBuilder {
 
-    // repeated .archive.TableData.TableRecord record = 1;
     /**
      * <code>repeated .archive.TableData.TableRecord record = 1;</code>
      */
@@ -1560,8 +1565,9 @@ public final class Archive {
    * Protobuf type {@code archive.TableData}
    */
   public static final class TableData extends
-      com.google.protobuf.GeneratedMessage
-      implements TableDataOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:archive.TableData)
+      TableDataOrBuilder {
     // Use TableData.newBuilder() to construct.
     private TableData(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -1657,10 +1663,10 @@ public final class Archive {
       return PARSER;
     }
 
-    public interface TableRecordOrBuilder
-        extends com.google.protobuf.MessageOrBuilder {
+    public interface TableRecordOrBuilder extends
+        // @@protoc_insertion_point(interface_extends:archive.TableData.TableRecord)
+        com.google.protobuf.MessageOrBuilder {
 
-      // repeated .archive.ColumnData column = 1;
       /**
        * <code>repeated .archive.ColumnData column = 1;</code>
        */
@@ -1689,8 +1695,9 @@ public final class Archive {
      * Protobuf type {@code archive.TableData.TableRecord}
      */
     public static final class TableRecord extends
-        com.google.protobuf.GeneratedMessage
-        implements TableRecordOrBuilder {
+        com.google.protobuf.GeneratedMessage implements
+        // @@protoc_insertion_point(message_implements:archive.TableData.TableRecord)
+        TableRecordOrBuilder {
       // Use TableRecord.newBuilder() to construct.
       private TableRecord(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
         super(builder);
@@ -1786,7 +1793,6 @@ public final class Archive {
         return PARSER;
       }
 
-      // repeated .archive.ColumnData column = 1;
       public static final int COLUMN_FIELD_NUMBER = 1;
       private java.util.List<org.yamcs.protobuf.Archive.ColumnData> column_;
       /**
@@ -1828,7 +1834,8 @@ public final class Archive {
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
         byte isInitialized = memoizedIsInitialized;
-        if (isInitialized != -1) return isInitialized == 1;
+        if (isInitialized == 1) return true;
+        if (isInitialized == 0) return false;
 
         for (int i = 0; i < getColumnCount(); i++) {
           if (!getColumn(i).isInitialized()) {
@@ -1941,8 +1948,9 @@ public final class Archive {
        * Protobuf type {@code archive.TableData.TableRecord}
        */
       public static final class Builder extends
-          com.google.protobuf.GeneratedMessage.Builder<Builder>
-         implements org.yamcs.protobuf.Archive.TableData.TableRecordOrBuilder {
+          com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+          // @@protoc_insertion_point(builder_implements:archive.TableData.TableRecord)
+          org.yamcs.protobuf.Archive.TableData.TableRecordOrBuilder {
         public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
           return org.yamcs.protobuf.Archive.internal_static_archive_TableData_TableRecord_descriptor;
@@ -2092,7 +2100,6 @@ public final class Archive {
         }
         private int bitField0_;
 
-        // repeated .archive.ColumnData column = 1;
         private java.util.List<org.yamcs.protobuf.Archive.ColumnData> column_ =
           java.util.Collections.emptyList();
         private void ensureColumnIsMutable() {
@@ -2234,7 +2241,8 @@ public final class Archive {
             java.lang.Iterable<? extends org.yamcs.protobuf.Archive.ColumnData> values) {
           if (columnBuilder_ == null) {
             ensureColumnIsMutable();
-            super.addAll(values, column_);
+            com.google.protobuf.AbstractMessageLite.Builder.addAll(
+                values, column_);
             onChanged();
           } else {
             columnBuilder_.addAllMessages(values);
@@ -2343,7 +2351,6 @@ public final class Archive {
       // @@protoc_insertion_point(class_scope:archive.TableData.TableRecord)
     }
 
-    // repeated .archive.TableData.TableRecord record = 1;
     public static final int RECORD_FIELD_NUMBER = 1;
     private java.util.List<org.yamcs.protobuf.Archive.TableData.TableRecord> record_;
     /**
@@ -2385,7 +2392,8 @@ public final class Archive {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       for (int i = 0; i < getRecordCount(); i++) {
         if (!getRecord(i).isInitialized()) {
@@ -2498,8 +2506,9 @@ public final class Archive {
      * Protobuf type {@code archive.TableData}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Archive.TableDataOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:archive.TableData)
+        org.yamcs.protobuf.Archive.TableDataOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Archive.internal_static_archive_TableData_descriptor;
@@ -2649,7 +2658,6 @@ public final class Archive {
       }
       private int bitField0_;
 
-      // repeated .archive.TableData.TableRecord record = 1;
       private java.util.List<org.yamcs.protobuf.Archive.TableData.TableRecord> record_ =
         java.util.Collections.emptyList();
       private void ensureRecordIsMutable() {
@@ -2791,7 +2799,8 @@ public final class Archive {
           java.lang.Iterable<? extends org.yamcs.protobuf.Archive.TableData.TableRecord> values) {
         if (recordBuilder_ == null) {
           ensureRecordIsMutable();
-          super.addAll(values, record_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, record_);
           onChanged();
         } else {
           recordBuilder_.addAllMessages(values);
@@ -2900,10 +2909,10 @@ public final class Archive {
     // @@protoc_insertion_point(class_scope:archive.TableData)
   }
 
-  public interface ColumnInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface ColumnInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:archive.ColumnInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional string name = 1;
     /**
      * <code>optional string name = 1;</code>
      */
@@ -2918,7 +2927,6 @@ public final class Archive {
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // optional string type = 2;
     /**
      * <code>optional string type = 2;</code>
      */
@@ -2937,8 +2945,9 @@ public final class Archive {
    * Protobuf type {@code archive.ColumnInfo}
    */
   public static final class ColumnInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements ColumnInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:archive.ColumnInfo)
+      ColumnInfoOrBuilder {
     // Use ColumnInfo.newBuilder() to construct.
     private ColumnInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -2985,13 +2994,15 @@ public final class Archive {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              name_ = input.readBytes();
+              name_ = bs;
               break;
             }
             case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              type_ = input.readBytes();
+              type_ = bs;
               break;
             }
           }
@@ -3034,7 +3045,6 @@ public final class Archive {
     }
 
     private int bitField0_;
-    // optional string name = 1;
     public static final int NAME_FIELD_NUMBER = 1;
     private java.lang.Object name_;
     /**
@@ -3077,7 +3087,6 @@ public final class Archive {
       }
     }
 
-    // optional string type = 2;
     public static final int TYPE_FIELD_NUMBER = 2;
     private java.lang.Object type_;
     /**
@@ -3127,7 +3136,8 @@ public final class Archive {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -3241,8 +3251,9 @@ public final class Archive {
      * Protobuf type {@code archive.ColumnInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Archive.ColumnInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:archive.ColumnInfo)
+        org.yamcs.protobuf.Archive.ColumnInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Archive.internal_static_archive_ColumnInfo_descriptor;
@@ -3368,7 +3379,6 @@ public final class Archive {
       }
       private int bitField0_;
 
-      // optional string name = 1;
       private java.lang.Object name_ = "";
       /**
        * <code>optional string name = 1;</code>
@@ -3382,9 +3392,12 @@ public final class Archive {
       public java.lang.String getName() {
         java.lang.Object ref = name_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          name_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            name_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -3442,7 +3455,6 @@ public final class Archive {
         return this;
       }
 
-      // optional string type = 2;
       private java.lang.Object type_ = "";
       /**
        * <code>optional string type = 2;</code>
@@ -3456,9 +3468,12 @@ public final class Archive {
       public java.lang.String getType() {
         java.lang.Object ref = type_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          type_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            type_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -3527,10 +3542,10 @@ public final class Archive {
     // @@protoc_insertion_point(class_scope:archive.ColumnInfo)
   }
 
-  public interface TableInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface TableInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:archive.TableInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional string name = 1;
     /**
      * <code>optional string name = 1;</code>
      */
@@ -3545,7 +3560,6 @@ public final class Archive {
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // repeated .archive.ColumnInfo keyColumn = 2;
     /**
      * <code>repeated .archive.ColumnInfo keyColumn = 2;</code>
      */
@@ -3570,7 +3584,6 @@ public final class Archive {
     org.yamcs.protobuf.Archive.ColumnInfoOrBuilder getKeyColumnOrBuilder(
         int index);
 
-    // repeated .archive.ColumnInfo valueColumn = 3;
     /**
      * <code>repeated .archive.ColumnInfo valueColumn = 3;</code>
      */
@@ -3595,7 +3608,6 @@ public final class Archive {
     org.yamcs.protobuf.Archive.ColumnInfoOrBuilder getValueColumnOrBuilder(
         int index);
 
-    // optional string script = 4;
     /**
      * <code>optional string script = 4;</code>
      */
@@ -3614,8 +3626,9 @@ public final class Archive {
    * Protobuf type {@code archive.TableInfo}
    */
   public static final class TableInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements TableInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:archive.TableInfo)
+      TableInfoOrBuilder {
     // Use TableInfo.newBuilder() to construct.
     private TableInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -3662,8 +3675,9 @@ public final class Archive {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              name_ = input.readBytes();
+              name_ = bs;
               break;
             }
             case 18: {
@@ -3683,8 +3697,9 @@ public final class Archive {
               break;
             }
             case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              script_ = input.readBytes();
+              script_ = bs;
               break;
             }
           }
@@ -3733,7 +3748,6 @@ public final class Archive {
     }
 
     private int bitField0_;
-    // optional string name = 1;
     public static final int NAME_FIELD_NUMBER = 1;
     private java.lang.Object name_;
     /**
@@ -3776,7 +3790,6 @@ public final class Archive {
       }
     }
 
-    // repeated .archive.ColumnInfo keyColumn = 2;
     public static final int KEYCOLUMN_FIELD_NUMBER = 2;
     private java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> keyColumn_;
     /**
@@ -3812,7 +3825,6 @@ public final class Archive {
       return keyColumn_.get(index);
     }
 
-    // repeated .archive.ColumnInfo valueColumn = 3;
     public static final int VALUECOLUMN_FIELD_NUMBER = 3;
     private java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> valueColumn_;
     /**
@@ -3848,7 +3860,6 @@ public final class Archive {
       return valueColumn_.get(index);
     }
 
-    // optional string script = 4;
     public static final int SCRIPT_FIELD_NUMBER = 4;
     private java.lang.Object script_;
     /**
@@ -3900,7 +3911,8 @@ public final class Archive {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -4028,8 +4040,9 @@ public final class Archive {
      * Protobuf type {@code archive.TableInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Archive.TableInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:archive.TableInfo)
+        org.yamcs.protobuf.Archive.TableInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Archive.internal_static_archive_TableInfo_descriptor;
@@ -4239,7 +4252,6 @@ public final class Archive {
       }
       private int bitField0_;
 
-      // optional string name = 1;
       private java.lang.Object name_ = "";
       /**
        * <code>optional string name = 1;</code>
@@ -4253,9 +4265,12 @@ public final class Archive {
       public java.lang.String getName() {
         java.lang.Object ref = name_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          name_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            name_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -4313,7 +4328,6 @@ public final class Archive {
         return this;
       }
 
-      // repeated .archive.ColumnInfo keyColumn = 2;
       private java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> keyColumn_ =
         java.util.Collections.emptyList();
       private void ensureKeyColumnIsMutable() {
@@ -4455,7 +4469,8 @@ public final class Archive {
           java.lang.Iterable<? extends org.yamcs.protobuf.Archive.ColumnInfo> values) {
         if (keyColumnBuilder_ == null) {
           ensureKeyColumnIsMutable();
-          super.addAll(values, keyColumn_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, keyColumn_);
           onChanged();
         } else {
           keyColumnBuilder_.addAllMessages(values);
@@ -4553,7 +4568,6 @@ public final class Archive {
         return keyColumnBuilder_;
       }
 
-      // repeated .archive.ColumnInfo valueColumn = 3;
       private java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> valueColumn_ =
         java.util.Collections.emptyList();
       private void ensureValueColumnIsMutable() {
@@ -4695,7 +4709,8 @@ public final class Archive {
           java.lang.Iterable<? extends org.yamcs.protobuf.Archive.ColumnInfo> values) {
         if (valueColumnBuilder_ == null) {
           ensureValueColumnIsMutable();
-          super.addAll(values, valueColumn_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, valueColumn_);
           onChanged();
         } else {
           valueColumnBuilder_.addAllMessages(values);
@@ -4793,7 +4808,6 @@ public final class Archive {
         return valueColumnBuilder_;
       }
 
-      // optional string script = 4;
       private java.lang.Object script_ = "";
       /**
        * <code>optional string script = 4;</code>
@@ -4807,9 +4821,12 @@ public final class Archive {
       public java.lang.String getScript() {
         java.lang.Object ref = script_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          script_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            script_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -4878,10 +4895,10 @@ public final class Archive {
     // @@protoc_insertion_point(class_scope:archive.TableInfo)
   }
 
-  public interface StreamInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface StreamInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:archive.StreamInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional string name = 1;
     /**
      * <code>optional string name = 1;</code>
      */
@@ -4896,7 +4913,6 @@ public final class Archive {
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // repeated .archive.ColumnInfo column = 2;
     /**
      * <code>repeated .archive.ColumnInfo column = 2;</code>
      */
@@ -4921,7 +4937,6 @@ public final class Archive {
     org.yamcs.protobuf.Archive.ColumnInfoOrBuilder getColumnOrBuilder(
         int index);
 
-    // optional string script = 3;
     /**
      * <code>optional string script = 3;</code>
      */
@@ -4940,8 +4955,9 @@ public final class Archive {
    * Protobuf type {@code archive.StreamInfo}
    */
   public static final class StreamInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements StreamInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:archive.StreamInfo)
+      StreamInfoOrBuilder {
     // Use StreamInfo.newBuilder() to construct.
     private StreamInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -4988,8 +5004,9 @@ public final class Archive {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              name_ = input.readBytes();
+              name_ = bs;
               break;
             }
             case 18: {
@@ -5001,8 +5018,9 @@ public final class Archive {
               break;
             }
             case 26: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              script_ = input.readBytes();
+              script_ = bs;
               break;
             }
           }
@@ -5048,7 +5066,6 @@ public final class Archive {
     }
 
     private int bitField0_;
-    // optional string name = 1;
     public static final int NAME_FIELD_NUMBER = 1;
     private java.lang.Object name_;
     /**
@@ -5091,7 +5108,6 @@ public final class Archive {
       }
     }
 
-    // repeated .archive.ColumnInfo column = 2;
     public static final int COLUMN_FIELD_NUMBER = 2;
     private java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> column_;
     /**
@@ -5127,7 +5143,6 @@ public final class Archive {
       return column_.get(index);
     }
 
-    // optional string script = 3;
     public static final int SCRIPT_FIELD_NUMBER = 3;
     private java.lang.Object script_;
     /**
@@ -5178,7 +5193,8 @@ public final class Archive {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -5299,8 +5315,9 @@ public final class Archive {
      * Protobuf type {@code archive.StreamInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Archive.StreamInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:archive.StreamInfo)
+        org.yamcs.protobuf.Archive.StreamInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Archive.internal_static_archive_StreamInfo_descriptor;
@@ -5468,7 +5485,6 @@ public final class Archive {
       }
       private int bitField0_;
 
-      // optional string name = 1;
       private java.lang.Object name_ = "";
       /**
        * <code>optional string name = 1;</code>
@@ -5482,9 +5498,12 @@ public final class Archive {
       public java.lang.String getName() {
         java.lang.Object ref = name_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          name_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            name_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -5542,7 +5561,6 @@ public final class Archive {
         return this;
       }
 
-      // repeated .archive.ColumnInfo column = 2;
       private java.util.List<org.yamcs.protobuf.Archive.ColumnInfo> column_ =
         java.util.Collections.emptyList();
       private void ensureColumnIsMutable() {
@@ -5684,7 +5702,8 @@ public final class Archive {
           java.lang.Iterable<? extends org.yamcs.protobuf.Archive.ColumnInfo> values) {
         if (columnBuilder_ == null) {
           ensureColumnIsMutable();
-          super.addAll(values, column_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, column_);
           onChanged();
         } else {
           columnBuilder_.addAllMessages(values);
@@ -5782,7 +5801,6 @@ public final class Archive {
         return columnBuilder_;
       }
 
-      // optional string script = 3;
       private java.lang.Object script_ = "";
       /**
        * <code>optional string script = 3;</code>
@@ -5796,9 +5814,12 @@ public final class Archive {
       public java.lang.String getScript() {
         java.lang.Object ref = script_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          script_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            script_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -5867,37 +5888,37 @@ public final class Archive {
     // @@protoc_insertion_point(class_scope:archive.StreamInfo)
   }
 
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_archive_ColumnData_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_archive_ColumnData_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_archive_StreamData_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_archive_StreamData_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_archive_TableData_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_archive_TableData_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_archive_TableData_TableRecord_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_archive_TableData_TableRecord_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_archive_ColumnInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_archive_ColumnInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_archive_TableInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_archive_TableInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_archive_StreamInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -5927,60 +5948,61 @@ public final class Archive {
       "(\tB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
-      new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
-        public com.google.protobuf.ExtensionRegistry assignDescriptors(
-            com.google.protobuf.Descriptors.FileDescriptor root) {
-          descriptor = root;
-          internal_static_archive_ColumnData_descriptor =
-            getDescriptor().getMessageTypes().get(0);
-          internal_static_archive_ColumnData_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_archive_ColumnData_descriptor,
-              new java.lang.String[] { "Name", "Value", });
-          internal_static_archive_StreamData_descriptor =
-            getDescriptor().getMessageTypes().get(1);
-          internal_static_archive_StreamData_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_archive_StreamData_descriptor,
-              new java.lang.String[] { "Stream", "Column", });
-          internal_static_archive_TableData_descriptor =
-            getDescriptor().getMessageTypes().get(2);
-          internal_static_archive_TableData_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_archive_TableData_descriptor,
-              new java.lang.String[] { "Record", });
-          internal_static_archive_TableData_TableRecord_descriptor =
-            internal_static_archive_TableData_descriptor.getNestedTypes().get(0);
-          internal_static_archive_TableData_TableRecord_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_archive_TableData_TableRecord_descriptor,
-              new java.lang.String[] { "Column", });
-          internal_static_archive_ColumnInfo_descriptor =
-            getDescriptor().getMessageTypes().get(3);
-          internal_static_archive_ColumnInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_archive_ColumnInfo_descriptor,
-              new java.lang.String[] { "Name", "Type", });
-          internal_static_archive_TableInfo_descriptor =
-            getDescriptor().getMessageTypes().get(4);
-          internal_static_archive_TableInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_archive_TableInfo_descriptor,
-              new java.lang.String[] { "Name", "KeyColumn", "ValueColumn", "Script", });
-          internal_static_archive_StreamInfo_descriptor =
-            getDescriptor().getMessageTypes().get(5);
-          internal_static_archive_StreamInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_archive_StreamInfo_descriptor,
-              new java.lang.String[] { "Name", "Column", "Script", });
-          return null;
-        }
-      };
+        new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
+          public com.google.protobuf.ExtensionRegistry assignDescriptors(
+              com.google.protobuf.Descriptors.FileDescriptor root) {
+            descriptor = root;
+            return null;
+          }
+        };
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           org.yamcs.protobuf.Yamcs.getDescriptor(),
         }, assigner);
+    internal_static_archive_ColumnData_descriptor =
+      getDescriptor().getMessageTypes().get(0);
+    internal_static_archive_ColumnData_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_archive_ColumnData_descriptor,
+        new java.lang.String[] { "Name", "Value", });
+    internal_static_archive_StreamData_descriptor =
+      getDescriptor().getMessageTypes().get(1);
+    internal_static_archive_StreamData_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_archive_StreamData_descriptor,
+        new java.lang.String[] { "Stream", "Column", });
+    internal_static_archive_TableData_descriptor =
+      getDescriptor().getMessageTypes().get(2);
+    internal_static_archive_TableData_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_archive_TableData_descriptor,
+        new java.lang.String[] { "Record", });
+    internal_static_archive_TableData_TableRecord_descriptor =
+      internal_static_archive_TableData_descriptor.getNestedTypes().get(0);
+    internal_static_archive_TableData_TableRecord_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_archive_TableData_TableRecord_descriptor,
+        new java.lang.String[] { "Column", });
+    internal_static_archive_ColumnInfo_descriptor =
+      getDescriptor().getMessageTypes().get(3);
+    internal_static_archive_ColumnInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_archive_ColumnInfo_descriptor,
+        new java.lang.String[] { "Name", "Type", });
+    internal_static_archive_TableInfo_descriptor =
+      getDescriptor().getMessageTypes().get(4);
+    internal_static_archive_TableInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_archive_TableInfo_descriptor,
+        new java.lang.String[] { "Name", "KeyColumn", "ValueColumn", "Script", });
+    internal_static_archive_StreamInfo_descriptor =
+      getDescriptor().getMessageTypes().get(5);
+    internal_static_archive_StreamInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_archive_StreamInfo_descriptor,
+        new java.lang.String[] { "Name", "Column", "Script", });
+    org.yamcs.protobuf.Yamcs.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

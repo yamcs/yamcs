@@ -131,12 +131,7 @@ public class AlgorithmManager extends AbstractService
                 new AlgorithmUtils(yproc.getInstance(), yproc.getProcessorData(), yproc, xtcedb));
 
         globalCtx = new AlgorithmExecutionContext("global", null, yproc.getProcessorData());
-        try {
-            subscriptionId = parameterRequestManager.addRequest(new ArrayList<Parameter>(0), this);
-        } catch (InvalidIdentification e) {
-            log.error("InvalidIdentification while subscribing to the parameterRequestManager with an empty "
-                    + "subscription list", e);
-        }
+        subscriptionId = parameterRequestManager.addRequest(new ArrayList<Parameter>(0), this);
 
         for (Algorithm algo : xtcedb.getAlgorithms()) {
             if (algo.getScope() == Algorithm.Scope.GLOBAL) {
@@ -293,12 +288,7 @@ public class AlgorithmManager extends AbstractService
                 parameterRequestManager.addItemsToRequest(subscriptionId, newItems);
             }
             executionOrder.add(executor); // Add at the back (dependent algorithms will come in front)
-        } catch (InvalidIdentification e) {
-            log.error(
-                    "InvalidIdentification caught when subscribing to the items "
-                            + "required for the algorithm {}\n\t The invalid items are: {}",
-                    executor.getAlgorithm().getName(), e.getInvalidParameters(), e);
-        } catch (InvalidRequestIdentification e) {
+        }  catch (InvalidRequestIdentification e) {
             log.error("InvalidRequestIdentification caught when subscribing to the items required for the algorithm {}",
                     executor.getAlgorithm().getName(), e);
         }

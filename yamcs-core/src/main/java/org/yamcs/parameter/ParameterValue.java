@@ -492,9 +492,25 @@ public class ParameterValue {
     }
     
     private DoubleRange fromGbpAlarmRange(AlarmRange ar) {
-        double minInclusive = ar.hasMinInclusive()?ar.getMinInclusive():Double.NEGATIVE_INFINITY;
-        double maxInclusive = ar.hasMaxInclusive()?ar.getMaxInclusive():Double.POSITIVE_INFINITY;
-        return new DoubleRange(minInclusive, maxInclusive);
+        double min = Double.NEGATIVE_INFINITY;
+        double max = Double.POSITIVE_INFINITY;
+        boolean minInclusive = false;
+        boolean maxInclusive = false;
+        
+        if(ar.hasMinInclusive()) {
+            min = ar.getMinInclusive();
+            minInclusive = true;
+        } else if(ar.hasMinExclusive()) {
+            min = ar.getMinExclusive();
+        }
+        
+        if(ar.hasMaxInclusive()) {
+            max = ar.getMaxInclusive();
+            maxInclusive = true;
+        } else if(ar.hasMaxExclusive()) {
+            max = ar.getMaxExclusive();
+        }
+        return new DoubleRange(min, max, minInclusive, maxInclusive);
     }
 
     /**
