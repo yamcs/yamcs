@@ -245,6 +245,9 @@ export class Field extends AbstractWidget {
       if (!this.overrideDqi) {
         this.fieldBackgroundEl.setAttribute('fill', style.bg.toString());
         this.fieldTextEl.setAttribute('fill', style.fg.toString());
+        if (this.showIndicators) {
+          this.fieldIndicatorEl.setAttribute('fill', style.fg.toString());
+        }
       }
 
       if (this.showIndicators) {
