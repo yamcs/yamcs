@@ -5,6 +5,7 @@ import { WebSocketSubject } from 'rxjs/observable/dom/WebSocketSubject';
 import { WebSocketServerMessage } from './types/internal';
 import {
   ClientInfo,
+  Event,
   LinkEvent,
   ParameterData,
   TimeInfo,
@@ -65,6 +66,16 @@ export class WebSocketClient {
     );
   }
 
+  getEventUpdates() {
+    this.subscriptionModel.events = true;
+    this.emit({ events: 'subscribe' });
+    return this.webSocketObservable.pipe(
+      filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+      filter((msg: WebSocketServerMessage) => msg[3].dt === 'EVENT'),
+      map(msg => msg[3].data as Event),
+    );
+  }
+
   getTimeUpdates() {
     this.subscriptionModel.time = true;
     this.emit({ time: 'subscribe' });
@@ -118,8 +129,8 @@ export class WebSocketClient {
   }
 
   private registerSubscriptions() {
-    if (this.subscriptionModel.time) {
-      this.emit({ time: 'subscribe' });
+    if (this.subscriptionModel.events) {
+      this.emit({ events: 'subscribe' });
     }
     if (this.subscriptionModel.links) {
       this.emit({ links: 'subscribe' });
@@ -129,6 +140,9 @@ export class WebSocketClient {
     }
     if (this.subscriptionModel.parameters) {
       this.emit({ parameters: 'subscribe', data: this.subscriptionModel.parameters });
+    }
+    if (this.subscriptionModel.time) {
+      this.emit({ time: 'subscribe' });
     }
   }
 }

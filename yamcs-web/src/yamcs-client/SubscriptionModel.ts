@@ -5,6 +5,7 @@ import { ParameterSubscriptionRequest } from './types/main';
  */
 export class SubscriptionModel {
 
+  events = false;
   time = false;
   links = false;
   management = false;

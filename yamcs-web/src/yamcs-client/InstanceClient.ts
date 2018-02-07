@@ -6,6 +6,7 @@ import YamcsClient from './YamcsClient';
 
 import {
   CommandsWrapper,
+  EventsWrapper,
   LinksWrapper,
   ParametersWrapper,
   RecordsWrapper,
@@ -39,6 +40,18 @@ export class InstanceClient {
   getTimeUpdates() {
     this.prepareWebSocketClient();
     return this.webSocketClient.getTimeUpdates();
+  }
+
+  getEvents() {
+    return this.http.get<EventsWrapper>(`${this.yamcs.apiUrl}/archive/${this.instance}/events`).pipe(
+      map(msg => msg.event),
+      catchError(this.yamcs.handleError<Event[]>([]))
+    );
+  }
+
+  getEventUpdates() {
+    this.prepareWebSocketClient();
+    return this.webSocketClient.getEventUpdates();
   }
 
   getLinks() {
@@ -98,10 +111,6 @@ export class InstanceClient {
       map(msg => msg.record),
       catchError(this.yamcs.handleError<Record[]>())
     );
-  }
-
-  getEvents() {
-    return this.http.get(`${this.yamcs.apiUrl}/archive/${this.instance}/events`);
   }
 
   getParameters() {

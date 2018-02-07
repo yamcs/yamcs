@@ -55,8 +55,8 @@ export class CustomRouterStateSerializer implements RouterStateSerializer<Router
     AppRoutingModule, // Keep in front of modules that contribute child routing
     SharedModule,
     ClientsModule,
-    MdbModule,
     LinksModule,
+    MdbModule,
     ServicesModule,
 
     /**

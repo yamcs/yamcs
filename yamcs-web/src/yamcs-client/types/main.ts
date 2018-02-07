@@ -151,6 +151,21 @@ export interface DisplayFile {
   filename: string;
 }
 
+export type EventSeverity =
+  'INFO' | 'WARNING' | 'ERROR' |
+  'WATCH' | 'DISTRESS' | 'CRITICAL' | 'SEVERE'
+  ;
+
+export interface Event {
+  source: string;
+  generationTimeUTC: string;
+  receptionTimeUTC: string;
+  seqNumber: number;
+  type: string;
+  message: string;
+  severity: EventSeverity;
+}
+
 export interface TimeInfo {
   currentTime: number;
   currentTimeUTC: string;

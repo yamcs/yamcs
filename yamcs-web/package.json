@@ -4,7 +4,6 @@
   "license": "AGPL-3.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
     "build": "ng build --output-hashing=all --aot",
     "test": "ng test",
     "lint": "ng lint",

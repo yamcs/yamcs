@@ -1,10 +1,23 @@
+<app-monitor-toolbar header="Displays">
+  <app-toolbar-actions>
+    <button mat-button color="primary">
+      <mat-icon>save</mat-icon>
+      Save Layout
+    </button>
+
+    <mat-menu #arrangeMenu="matMenu">
+      <button mat-menu-item>Tile Displays</button>
+      <button mat-menu-item>Cascade Displays</button>
+    </mat-menu>
+    <button mat-button [matMenuTriggerFor]="arrangeMenu" color="primary">
+      Arrange
+      <mat-icon>arrow_drop_down</mat-icon>
+    </button>
+  </app-toolbar-actions>
+</app-monitor-toolbar>
+
 <mat-sidenav-container>
   <mat-sidenav mode="side" opened="true">
-    <mat-toolbar>
-      <mat-toolbar-row>
-        Displays
-      </mat-toolbar-row>
-    </mat-toolbar>
     <ng-container *ngIf="displayInfo$ | async as displayInfo">
       <table yaSimpleTable class="mat-typography">
         <tr *ngFor="let folder of displayInfo.folder">
@@ -30,16 +43,6 @@
   </mat-sidenav>
 
   <mat-sidenav-content>
-    <mat-toolbar>
-      <mat-toolbar-row>
-        <button mat-button>realtime</button>
-        <span *ngIf="time$ | async as time">
-          {{ time.currentTimeUTC }}
-        </span>
-      </mat-toolbar-row>
-    </mat-toolbar>
-    <div class="layout-wrapper">
-      <div #displayContainer></div>
-    </div>
+    <div #displayContainer></div>
   </mat-sidenav-content>
 </mat-sidenav-container>

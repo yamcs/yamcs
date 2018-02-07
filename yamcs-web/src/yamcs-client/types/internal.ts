@@ -1,5 +1,6 @@
 import {
   Command,
+  Event,
   Instance,
   Link,
   Parameter,
@@ -28,6 +29,10 @@ export type WebSocketServerMessage = [
     msg?: string
   }
 ];
+
+export interface EventsWrapper {
+  event: Event[];
+}
 
 export interface InstancesWrapper {
   instance: Instance[];

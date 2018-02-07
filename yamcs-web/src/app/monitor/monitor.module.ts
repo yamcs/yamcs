@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/shared.module';
 import { MonitorRoutingModule, routingComponents } from './monitor-routing.module';
+import { EventTableComponent } from './components/event-table.component';
 
 @NgModule({
   imports: [
@@ -9,6 +10,7 @@ import { MonitorRoutingModule, routingComponents } from './monitor-routing.modul
   ],
   declarations: [
     routingComponents,
+    EventTableComponent,
   ]
 })
 export class MonitorModule {

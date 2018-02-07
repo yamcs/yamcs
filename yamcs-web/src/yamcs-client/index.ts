@@ -9,6 +9,8 @@ export {
   DisplayInfo,
   DisplayFile,
   DisplayFolder,
+  Event,
+  EventSeverity,
   Instance,
   Link,
   Parameter,

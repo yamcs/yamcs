@@ -1,0 +1,14 @@
+<mat-toolbar>
+  <mat-toolbar-row>
+    <span>{{ title }}</span>
+    <ng-content select="app-toolbar-actions"></ng-content>
+    <span style="flex: 1 1 auto"></span>
+    <button mat-button
+            matTooltip="realtime"
+            matTooltipPosition="below"
+            *ngIf="time$ | async as time">
+      <mat-icon>access_time</mat-icon>
+      {{ time.currentTimeUTC }}
+    </button>
+  </mat-toolbar-row>
+</mat-toolbar>

@@ -1,0 +1,15 @@
+<app-monitor-toolbar header="Events">
+  <app-toolbar-actions>
+    <button mat-button color="primary">
+      <mat-icon>filter_list</mat-icon>
+      Filter
+    </button>
+    <button mat-button color="primary">
+      Columns
+      <mat-icon>arrow_drop_down</mat-icon>
+    </button>
+  </app-toolbar-actions>
+</app-monitor-toolbar>
+
+<app-event-table [events]="events$ | async">
+</app-event-table>

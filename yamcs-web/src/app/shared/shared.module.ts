@@ -36,6 +36,7 @@ import {
 import { YaSimpleTableComponent } from './directives/simpleTable.component';
 import { YaTableComponent } from './directives/table.component';
 import { ValuePipe } from './pipes/value.pipe';
+import { ToolbarActionsComponent } from './components/toolbar-actions.component';
 
 const materialModules = [
   CdkTableModule,
@@ -71,6 +72,10 @@ const sharedDirectives = [
   YaTableComponent,
 ];
 
+const sharedComponents = [
+  ToolbarActionsComponent,
+];
+
 const pipes = [
   ValuePipe,
 ];
@@ -85,6 +90,7 @@ const pipes = [
   ],
   declarations: [
     sharedDirectives,
+    sharedComponents,
     pipes,
   ],
   exports: [
@@ -94,6 +100,7 @@ const pipes = [
     RouterModule,
     materialModules,
     sharedDirectives,
+    sharedComponents,
     pipes,
   ],
 })

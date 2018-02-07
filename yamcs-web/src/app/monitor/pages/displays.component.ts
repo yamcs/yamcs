@@ -8,7 +8,7 @@ import {
 import { Observable } from 'rxjs/Observable';
 import { take } from 'rxjs/operators';
 
-import { DisplayInfo, Alias, TimeInfo } from '../../../yamcs-client';
+import { DisplayInfo, Alias } from '../../../yamcs-client';
 import { YamcsService } from '../../core/services/yamcs.service';
 import { ResourceResolver } from '../../../uss-renderer/ResourceResolver';
 import { StyleSet } from '../../../uss-renderer/StyleSet';
@@ -27,7 +27,6 @@ export class DisplaysPageComponent implements AfterViewInit, LayoutListener, Lay
   @ViewChild('displayContainer')
   displayContainerRef: ElementRef;
 
-  time$: Observable<TimeInfo>;
   displayInfo$: Observable<DisplayInfo>;
 
   resourceResolver: ResourceResolver;
@@ -36,7 +35,6 @@ export class DisplaysPageComponent implements AfterViewInit, LayoutListener, Lay
   constructor(private yamcs: YamcsService) {
     this.displayInfo$ = yamcs.getSelectedInstance().getDisplayInfo();
     this.resourceResolver = new UssResourceResolver(yamcs);
-    this.time$ = this.yamcs.getSelectedInstance().getTimeUpdates();
   }
 
   ngAfterViewInit() {
