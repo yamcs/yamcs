@@ -25,6 +25,15 @@ public class TestUtils {
         pv.setEngineeringValue(v);
         return pv;
     }
+    
+    public static void checkEquals( ParameterValue pv1, ParameterValue pv2) {
+        assertEquals(pv1.getParameter(), pv2.getParameter());
+        assertEquals(pv1.getGenerationTime(), pv2.getGenerationTime());
+        assertEquals(pv1.getAcquisitionTime(), pv2.getAcquisitionTime());
+        assertEquals(pv1.getRawValue(), pv2.getRawValue());
+        assertEquals(pv1.getEngValue(), pv2.getEngValue());
+        assertEquals(pv1.getStatus(), pv2.getStatus());
+    }
     public static void checkEquals( ParameterValueArray pva, ParameterValue...pvs) {
         checkEquals(true, true, true, pva, pvs);
     }

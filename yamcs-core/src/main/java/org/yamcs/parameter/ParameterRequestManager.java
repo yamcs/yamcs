@@ -86,7 +86,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         }
 
         if (cacheConfig.enabled) {
-            parameterCache = new ParameterCache(cacheConfig);
+            parameterCache = new ArrayParameterCache(yproc.getInstance(), cacheConfig);
         }
     }
 

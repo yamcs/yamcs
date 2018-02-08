@@ -318,6 +318,9 @@ public class ParameterValue {
         return status.getDeltaMonitoringResult();
     }
 
+    public ParameterStatus getStatus() {
+        return status;
+    }
     /**
      * Convert a PV to a ProtobufPV 
      * 
