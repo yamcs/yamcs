@@ -1,4 +1,4 @@
-<mat-toolbar color="primary" [@shadowy]="shadowy">
+<mat-toolbar color="primary">
   <mat-toolbar-row>
     <a mat-button routerLink="/">
       Yamcs
@@ -18,10 +18,20 @@
         MDB
       </a>
       <a mat-button routerLink="system/clients" [queryParams]="{instance: instance.name}">
-        <mat-icon>settings</mat-icon>
+        <mat-icon>memory</mat-icon>
         System
       </a>
     </ng-container>
+
+    <mat-menu #appMenu="matMenu" overlapTrigger="false">
+      <button mat-menu-item>
+        <mat-icon>brightness_3</mat-icon>
+        Dark Mode
+      </button>
+    </mat-menu>
+    <button mat-icon-button [matMenuTriggerFor]="appMenu">
+      <mat-icon>more_vert</mat-icon>
+    </button>
   </mat-toolbar-row>
 </mat-toolbar>
 <router-outlet></router-outlet>

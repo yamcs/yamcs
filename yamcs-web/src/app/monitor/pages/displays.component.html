@@ -5,9 +5,14 @@
       Save Layout
     </button>
 
-    <mat-menu #arrangeMenu="matMenu">
-      <button mat-menu-item>Tile Displays</button>
-      <button mat-menu-item>Cascade Displays</button>
+    <button mat-button color="primary" (click)="toggleNavigator()">
+      <mat-icon>page_last</mat-icon>
+      Toggle Navigator
+    </button>
+
+    <mat-menu #arrangeMenu="matMenu" overlapTrigger="false">
+      <button mat-menu-item (click)="tileDisplays()">Tile Displays</button>
+      <button mat-menu-item (click)="cascadeDisplays()">Cascade Displays</button>
     </mat-menu>
     <button mat-button [matMenuTriggerFor]="arrangeMenu" color="primary">
       Arrange
@@ -17,7 +22,7 @@
 </app-monitor-toolbar>
 
 <mat-sidenav-container>
-  <mat-sidenav mode="side" opened="true">
+  <mat-sidenav mode="side" [opened]="navigatorOpen$ | async">
     <ng-container *ngIf="displayInfo$ | async as displayInfo">
       <table yaSimpleTable class="mat-typography">
         <tr *ngFor="let folder of displayInfo.folder">

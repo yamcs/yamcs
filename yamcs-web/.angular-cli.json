@@ -20,7 +20,8 @@
       "testTsconfig": "tsconfig.spec.json",
       "prefix": "app",
       "styles": [
-        "styles.css",
+        "./styles/material-theme.scss",
+        "./styles/styles.css",
         "./uss-renderer/font.css",
         "../node_modules/dygraphs/dist/dygraph.css",
         "../node_modules/material-design-icons/iconfont/material-icons.css"

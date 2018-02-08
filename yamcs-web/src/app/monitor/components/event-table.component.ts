@@ -10,7 +10,7 @@ import { Event } from '../../../yamcs-client';
 @Component({
   selector: 'app-event-table',
   templateUrl: './event-table.component.html',
-  // changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventTableComponent implements OnInit {
 

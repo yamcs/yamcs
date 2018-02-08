@@ -65,6 +65,54 @@ export class Layout {
     return frame;
   }
 
+  /**
+   * Repositions frames so they stack from top-left to bottom-right
+   * in their current visibility order.
+   */
+  cascadeFrames() {
+    let pos = 20;
+    for (const frame of this.frames) {
+      frame.setPosition(pos, pos);
+      pos += 20;
+    }
+    this.fireStateChange();
+  }
+
+  /**
+   * Fits all frames in a grid that fits in the available width/height.
+   * Frames are scaled as needed.
+   */
+  tileFrames() {
+    // Determine grid size
+    const sqrt = Math.floor(Math.sqrt(this.frames.length));
+    let rows = sqrt;
+    let cols = sqrt;
+    if (rows * cols < this.frames.length) {
+      cols++;
+      if (rows * cols < this.frames.length) {
+        rows++;
+      }
+    }
+
+    const gutter = 20;
+    // clientWidth excludes size of scrollbars
+    const w = (this.scrollPane.clientWidth - gutter - (cols * gutter)) / cols;
+    const h = (this.scrollPane.clientHeight - gutter - (rows * gutter)) / rows;
+    let x = gutter;
+    let y = gutter;
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols && ((i * cols) + j < this.frames.length); j++) {
+        const frame = this.frames[(i * cols) + j];
+        frame.setPosition(x, y);
+        frame.setDimension(w, h - frame.titleBarHeight);
+        x += w + gutter;
+      }
+      y += h + gutter;
+      x = gutter;
+    }
+    this.fireStateChange();
+  }
+
   hasDisplayFrame(id: string) {
     return this.framesById.has(id);
   }

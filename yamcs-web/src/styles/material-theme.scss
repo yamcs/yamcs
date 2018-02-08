@@ -1,0 +1,48 @@
+@import '~@angular/material/theming';
+
+@include mat-core();
+
+// Define the palettes for your theme using the Material Design palettes available in palette.scss
+// (imported above). For each palette, you can optionally specify a default, lighter, and darker
+// hue. Available color palettes: https://www.google.com/design/spec/style/color.html
+
+$yamcs-blue: (
+  50 : #e0e0f0,
+  100 : #b3b3d9,
+  200 : #8080c0,
+  300 : #4d4da6,
+  400 : #262693,
+  500 : #000080,
+  600 : #000078,
+  700 : #00006d,
+  800 : #000063,
+  900 : #000050,
+  A100 : #8383ff,
+  A200 : #5050ff,
+  A400 : #1d1dff,
+  A700 : #0303ff,
+  contrast: (
+    50 : #000000,
+    100 : #000000,
+    200 : #000000,
+    300 : #ffffff,
+    400 : #ffffff,
+    500 : #ffffff,
+    600 : #ffffff,
+    700 : #ffffff,
+    800 : #ffffff,
+    900 : #ffffff,
+    A100 : #000000,
+    A200 : #ffffff,
+    A400 : #ffffff,
+    A700 : #ffffff,
+  )
+);
+
+
+$app-primary: mat-palette($yamcs-blue);
+$app-accent: mat-palette($mat-pink, A200, A100, A400);
+$app-warn: mat-palette($mat-red);
+
+$app-theme: mat-light-theme($app-primary, $app-accent, $app-warn);
+@include angular-material-theme($app-theme);

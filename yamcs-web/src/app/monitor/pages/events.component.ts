@@ -7,7 +7,7 @@ import { YamcsService } from '../../core/services/yamcs.service';
 
 @Component({
   templateUrl: './events.component.html',
-  // changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventsPageComponent {
 
@@ -24,20 +24,4 @@ export class EventsPageComponent {
     events.push(evt);
     this.events$.next(events);
   }
-
-  /*private sortAndEmitLinks() {
-    const links = [];
-    for (const name of Object.keys(this.linksByName)) {
-      links.push(this.linksByName[name]);
-    }
-    this.links$.next(links.sort((a, b) => {
-      if (a < b) {
-        return -1;
-      } else if (a > b) {
-        return 1;
-      } else {
-        return 0;
-      }
-    }));
-  }*/
 }

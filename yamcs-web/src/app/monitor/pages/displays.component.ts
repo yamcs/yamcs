@@ -16,6 +16,7 @@ import { Layout, LayoutListener, LayoutStateListener } from '../../../uss-render
 import { DisplayFrame, Coordinates } from '../../../uss-renderer/DisplayFrame';
 import { ParameterSample } from '../../../uss-renderer/ParameterSample';
 import { LayoutState } from '../../../uss-renderer/LayoutState';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 @Component({
   templateUrl: './displays.component.html',
@@ -31,6 +32,8 @@ export class DisplaysPageComponent implements AfterViewInit, LayoutListener, Lay
 
   resourceResolver: ResourceResolver;
   layout: Layout;
+
+  navigatorOpen$ = new BehaviorSubject<boolean>(false);
 
   constructor(private yamcs: YamcsService) {
     this.displayInfo$ = yamcs.getSelectedInstance().getDisplayInfo();
@@ -70,6 +73,18 @@ export class DisplaysPageComponent implements AfterViewInit, LayoutListener, Lay
         this.layout.createDisplayFrame(id, doc, coordinates);
       });
     }
+  }
+
+  toggleNavigator() {
+    this.navigatorOpen$.next(!this.navigatorOpen$.getValue());
+  }
+
+  tileDisplays() {
+    this.layout.tileFrames();
+  }
+
+  cascadeDisplays() {
+    this.layout.cascadeFrames();
   }
 
   onDisplayFrameOpen(frame: DisplayFrame) {
