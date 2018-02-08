@@ -5,10 +5,12 @@ import { catchError, map } from 'rxjs/operators';
 
 import {
   InstancesWrapper,
+  ServicesWrapper,
 } from './types/internal';
 
 import {
   Instance,
+  Service,
 } from './types/main';
 import { InstanceClient } from './InstanceClient';
 
@@ -36,6 +38,25 @@ export default class YamcsClient {
     return this.http.get<Instance>(`${this.apiUrl}/instances/${name}`).pipe(
       catchError(this.handleError<Instance>())
     );
+  }
+
+  getServices() {
+    return this.http.get<ServicesWrapper>(`${this.apiUrl}/services/_global`).pipe(
+      map(msg => msg.service),
+      catchError(this.handleError<Service[]>([]))
+    );
+  }
+
+  startService(name: string) {
+    return this.http.patch(`${this.apiUrl}/services/_global/service/${name}`, {
+      state: 'running'
+    });
+  }
+
+  stopService(name: string) {
+    return this.http.patch(`${this.apiUrl}/services/_global/${name}`, {
+      state: 'stopped'
+    });
   }
 
   getStaticText(path: string) {

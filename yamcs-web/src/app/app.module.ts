@@ -18,7 +18,6 @@ import { InstanceEffects } from './core/store/instance.effects';
 import { LoadInstancesAction } from './core/store/instance.actions';
 import { NotFoundPageComponent } from './core/pages/not-found.component';
 import { LinksModule } from './links/links.module';
-import { ServicesModule } from './services/services.module';
 import { RouterStateUrl } from './shared/routing';
 import { YamcsService } from './core/services/yamcs.service';
 import { APP_BASE_HREF } from '@angular/common';
@@ -57,7 +56,6 @@ export class CustomRouterStateSerializer implements RouterStateSerializer<Router
     ClientsModule,
     LinksModule,
     MdbModule,
-    ServicesModule,
 
     /**
      * StoreModule.forRoot is imported once in the root module, accepting a reducer

@@ -1,5 +1,10 @@
 <ng-container *ngIf="stream$ | async as stream">
-  <h1><a routerLink="..">Streams</a> / {{ stream.name }}</h1>
+  <mat-toolbar>
+    <mat-toolbar-row>
+      <a routerLink="..">Streams</a> / {{ stream.name }}
+    </mat-toolbar-row>
+  </mat-toolbar>
+
   <mat-tab-group>
     <mat-tab label="Columns">
       <table yaTable>

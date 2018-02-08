@@ -80,6 +80,18 @@ export class InstanceClient {
     );
   }
 
+  startService(name: string) {
+    return this.http.patch(`${this.yamcs.apiUrl}/services/${this.instance}/service/${name}`, {
+      state: 'running'
+    });
+  }
+
+  stopService(name: string) {
+    return this.http.patch(`${this.yamcs.apiUrl}/services/${this.instance}/service/${name}`, {
+      state: 'stopped'
+    });
+  }
+
   getStreams() {
     return this.http.get<StreamsWrapper>(`${this.yamcs.apiUrl}/archive/${this.instance}/streams`).pipe(
       map(msg => msg.stream),

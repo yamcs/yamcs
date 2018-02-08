@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 import { CdkTableModule } from '@angular/cdk/table';
 import {
@@ -27,6 +28,7 @@ import {
   MatSidenavModule,
   MatSliderModule,
   MatSlideToggleModule,
+  MatSortModule,
   MatTableModule,
   MatTabsModule,
   MatToolbarModule,
@@ -37,9 +39,11 @@ import { YaSimpleTableComponent } from './directives/simpleTable.component';
 import { YaTableComponent } from './directives/table.component';
 import { ValuePipe } from './pipes/value.pipe';
 import { ToolbarActionsComponent } from './components/toolbar-actions.component';
+import { SidebarNavItemComponent } from './components/sidebar-nav-item.component';
 
 const materialModules = [
   CdkTableModule,
+  FlexLayoutModule,
   MatButtonModule,
   MatButtonToggleModule,
   MatCardModule,
@@ -61,6 +65,7 @@ const materialModules = [
   MatSidenavModule,
   MatSliderModule,
   MatSlideToggleModule,
+  MatSortModule,
   MatTableModule,
   MatTabsModule,
   MatToolbarModule,
@@ -73,6 +78,7 @@ const sharedDirectives = [
 ];
 
 const sharedComponents = [
+  SidebarNavItemComponent,
   ToolbarActionsComponent,
 ];
 

@@ -1,5 +1,10 @@
 <ng-container *ngIf="table$ | async as table">
-  <h1><a routerLink="..">Tables</a> / {{ table.name }}</h1>
+  <mat-toolbar>
+    <mat-toolbar-row>
+      <a routerLink="..">Tables</a> / {{ table.name }}
+    </mat-toolbar-row>
+  </mat-toolbar>
+
   <mat-tab-group>
     <mat-tab label="Columns">
       <h2>Key</h2>

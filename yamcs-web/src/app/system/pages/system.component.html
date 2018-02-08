@@ -8,25 +8,30 @@
     </mat-toolbar>
 
     <mat-nav-list dense *ngIf="instance$ | async as instance">
-      <a mat-list-item
-         routerLink="links"
-         [queryParams]="{instance: instance.name}">Links</a>
-      <a mat-list-item
-         routerLink="services"
-         [queryParams]="{instance: instance.name}">Services</a>
-      <a mat-list-item
-         routerLink="clients"
-         [queryParams]="{instance: instance.name}">Clients</a>
+      <app-sidebar-nav-item routerLink="links"
+                            [queryParams]="{instance: instance.name}">
+        Links
+      </app-sidebar-nav-item>
 
-      <h3 matSubheader>Schema</h3>
-      <a mat-list-item>Overview</a>
-      <a mat-list-item
-         routerLink="schema/tables"
-         [queryParams]="{instance: instance.name}">Tables</a>
-      <a mat-list-item
-         routerLink="schema/streams"
-         [queryParams]="{instance: instance.name}">Streams</a>
-      <a mat-list-item>Shell</a>
+      <app-sidebar-nav-item routerLink="services"
+                            [queryParams]="{instance: instance.name}">
+        Services
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item routerLink="clients"
+                            [queryParams]="{instance: instance.name}">
+        Clients
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item routerLink="schema/tables"
+                            [queryParams]="{instance: instance.name}">
+        Tables
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item routerLink="schema/streams"
+                            [queryParams]="{instance: instance.name}">
+        Streams
+      </app-sidebar-nav-item>
     </mat-nav-list>
   </mat-sidenav>
 
