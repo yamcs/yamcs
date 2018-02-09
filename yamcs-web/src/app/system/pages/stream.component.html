@@ -1,9 +1,9 @@
-<ng-container *ngIf="stream$ | async as stream">
-  <mat-toolbar>
-    <mat-toolbar-row>
-      <a routerLink="..">Streams</a> / {{ stream.name }}
-    </mat-toolbar-row>
-  </mat-toolbar>
+<app-system-page *ngIf="stream$ | async as stream">
+  <app-system-toolbar *ngIf="instance$ | async as instance">
+    <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> Streams / {{ stream.name }}
+  </app-system-toolbar>
 
   <mat-tab-group>
     <mat-tab label="Columns">
@@ -23,4 +23,4 @@
       <code [innerHTML]="formatSQL(stream.script)"></code>
     </mat-tab>
   </mat-tab-group>
-</ng-container>
+</app-system-page>

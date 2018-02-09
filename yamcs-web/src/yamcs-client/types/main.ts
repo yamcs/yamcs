@@ -1,3 +1,9 @@
+export interface GeneralInfo {
+  yamcsVersion: string;
+  serverId: string;
+  defaultYamcsInstance: string;
+}
+
 export interface Instance {
   name: string;
   state: string;

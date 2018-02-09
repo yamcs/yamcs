@@ -17,12 +17,10 @@ import { reducers, metaReducers } from './app.reducers';
 import { InstanceEffects } from './core/store/instance.effects';
 import { LoadInstancesAction } from './core/store/instance.actions';
 import { NotFoundPageComponent } from './core/pages/not-found.component';
-import { LinksModule } from './links/links.module';
 import { RouterStateUrl } from './shared/routing';
 import { YamcsService } from './core/services/yamcs.service';
 import { APP_BASE_HREF } from '@angular/common';
 import { HomePageComponent } from './core/pages/home.component';
-import { ClientsModule } from './clients/clients.module';
 
 /**
  * The RouterStateSerializer takes the current RouterStateSnapshot
@@ -53,8 +51,6 @@ export class CustomRouterStateSerializer implements RouterStateSerializer<Router
 
     AppRoutingModule, // Keep in front of modules that contribute child routing
     SharedModule,
-    ClientsModule,
-    LinksModule,
     MdbModule,
 
     /**

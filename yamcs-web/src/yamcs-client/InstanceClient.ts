@@ -66,6 +66,18 @@ export class InstanceClient {
     return this.webSocketClient.getLinkUpdates();
   }
 
+  enableLink(name: string) {
+    return this.http.patch(`${this.yamcs.apiUrl}/links/${this.instance}/${name}`, {
+      state: 'enabled'
+    });
+  }
+
+  disableLink(name: string) {
+    return this.http.patch(`${this.yamcs.apiUrl}/links/${this.instance}/${name}`, {
+      state: 'disabled'
+    });
+  }
+
   getClientUpdates() {
     this.prepareWebSocketClient();
     return this.webSocketClient.getClientUpdates().pipe(

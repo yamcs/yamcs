@@ -1,5 +1,5 @@
 <app-system-page>
-  <app-system-toolbar header="Services"></app-system-toolbar>
+  <app-system-toolbar>Services</app-system-toolbar>
 
   <mat-table [dataSource]="dataSource"
             matSort
@@ -19,15 +19,25 @@
     <ng-container matColumnDef="state">
       <mat-header-cell *matHeaderCellDef fxFlex="32px"></mat-header-cell>
       <mat-cell *matCellDef="let service" fxFlex="32px">
+        <mat-icon *ngIf="service.state === 'STARTING'"
+                  style="color: lightgreen"
+                  [matTooltip]="service.state">
+          check_circle
+        </mat-icon>
         <mat-icon *ngIf="service.state === 'RUNNING'"
                   style="color: green"
                   [matTooltip]="service.state">
           check_circle
         </mat-icon>
-        <mat-icon *ngIf="service.state !== 'RUNNING'"
+        <mat-icon *ngIf="service.state === 'STOPPING' || service.state === 'FAILED'"
                   style="color: red"
                   [matTooltip]="service.state">
           highlight_off
+        </mat-icon>
+        <mat-icon *ngIf="service.state === 'TERMINATED'"
+                  style="color: lightgrey"
+                  [matTooltip]="service.state">
+          lens
         </mat-icon>
       </mat-cell>
     </ng-container>
@@ -38,7 +48,7 @@
         <mat-menu #serviceMenu="matMenu" overlapTrigger="false">
           <button mat-menu-item
                   (click)="startService(service.name)"
-                  [disabled]="service.state === 'RUNNING'">
+                  [disabled]="service.state !== 'TERMINATED'">
             Start Service
           </button>
           <button mat-menu-item

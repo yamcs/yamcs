@@ -24,7 +24,8 @@
         "./styles/styles.css",
         "./uss-renderer/font.css",
         "../node_modules/dygraphs/dist/dygraph.css",
-        "../node_modules/material-design-icons/iconfont/material-icons.css"
+        "../node_modules/material-design-icons/iconfont/material-icons.css",
+        "../node_modules/roboto-fontface/css/roboto/roboto-fontface.css"
       ],
       "scripts": [],
       "environmentSource": "environments/environment.ts",

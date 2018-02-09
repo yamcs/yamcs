@@ -1,7 +1,6 @@
 <mat-toolbar>
   <mat-toolbar-row>
-    <span>{{ header }}</span>
-    &nbsp;&nbsp;&nbsp;&nbsp;
+    <ng-content></ng-content>
     <ng-content select="app-toolbar-actions"></ng-content>
   </mat-toolbar-row>
 </mat-toolbar>

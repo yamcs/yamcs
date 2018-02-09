@@ -1,9 +1,9 @@
-<ng-container *ngIf="table$ | async as table">
-  <mat-toolbar>
-    <mat-toolbar-row>
-      <a routerLink="..">Tables</a> / {{ table.name }}
-    </mat-toolbar-row>
-  </mat-toolbar>
+<app-system-page *ngIf="table$ | async as table">
+  <app-system-toolbar *ngIf="instance$ | async as instance">
+    <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> Tables / {{ table.name }}
+  </app-system-toolbar>
 
   <mat-tab-group>
     <mat-tab label="Columns">
@@ -53,4 +53,4 @@
       <code [innerHTML]="formatSQL(table.script)"></code>
     </mat-tab>
   </mat-tab-group>
-</ng-container>
+</app-system-page>

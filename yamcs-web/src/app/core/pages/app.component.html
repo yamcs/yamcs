@@ -9,7 +9,7 @@
     </button>
     <span style="flex: 1 1 auto"></span>
     <ng-container *ngIf="instance$ | async as instance">
-      <a mat-button routerLink="monitor" [queryParams]="{instance: instance.name}">
+      <a mat-button routerLink="monitor/displays" [queryParams]="{instance: instance.name}">
         <mat-icon>dashboard</mat-icon>
         Monitor
       </a>
@@ -17,7 +17,7 @@
         <mat-icon>book</mat-icon>
         MDB
       </a>
-      <a mat-button routerLink="system/clients" [queryParams]="{instance: instance.name}">
+      <a mat-button routerLink="system/dashboard" [queryParams]="{instance: instance.name}">
         <mat-icon>memory</mat-icon>
         System
       </a>

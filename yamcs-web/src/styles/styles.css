@@ -25,6 +25,11 @@ html, body {
   height: 24px !important;
   width: 24px !important;
 }
+.material-icons.icon32 {
+  font-size: 32px !important;
+  height: 32px !important;
+  width: 32px !important;
+}
 .material-icons.icon36 {
   font-size: 36px !important;
   height: 36px !important;

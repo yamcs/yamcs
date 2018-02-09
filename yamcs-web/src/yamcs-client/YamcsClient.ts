@@ -9,6 +9,7 @@ import {
 } from './types/internal';
 
 import {
+  GeneralInfo,
   Instance,
   Service,
 } from './types/main';
@@ -25,6 +26,12 @@ export default class YamcsClient {
 
   selectInstance(instance: string) {
     return new InstanceClient(instance, this, this.http);
+  }
+
+  getGeneralInfo() {
+    return this.http.get<GeneralInfo>(this.apiUrl).pipe(
+      catchError(this.handleError<GeneralInfo>())
+    );
   }
 
   getInstances() {
