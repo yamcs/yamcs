@@ -1,5 +1,7 @@
-<app-monitor-toolbar header="Events">
-  <app-toolbar-actions>
+<app-monitor-page>
+  <app-monitor-toolbar>
+    Events
+
     <button mat-button color="primary">
       <mat-icon>filter_list</mat-icon>
       Filter
@@ -8,8 +10,66 @@
       Columns
       <mat-icon>arrow_drop_down</mat-icon>
     </button>
-  </app-toolbar-actions>
-</app-monitor-toolbar>
+  </app-monitor-toolbar>
 
-<app-event-table [events]="events$ | async">
-</app-event-table>
+  <mat-table [dataSource]="dataSource">
+    <ng-container cdkColumnDef="message">
+      <mat-header-cell *cdkHeaderCellDef>Message</mat-header-cell>
+      <mat-cell *cdkCellDef="let row">
+        {{ row.message }}
+      </mat-cell>
+    </ng-container>
+
+    <ng-container cdkColumnDef="type">
+      <mat-header-cell *cdkHeaderCellDef>Type</mat-header-cell>
+      <mat-cell *cdkCellDef="let row">
+        {{ row.type }}
+      </mat-cell>
+    </ng-container>
+
+    <ng-container cdkColumnDef="source">
+      <mat-header-cell *cdkHeaderCellDef>Source</mat-header-cell>
+      <mat-cell *cdkCellDef="let row">
+        {{ row.source }}
+      </mat-cell>
+    </ng-container>
+
+    <ng-container cdkColumnDef="severity">
+      <mat-header-cell *cdkHeaderCellDef>Severity</mat-header-cell>
+      <mat-cell *cdkCellDef="let row">
+        {{ row.severity }}
+      </mat-cell>
+    </ng-container>
+
+    <ng-container cdkColumnDef="gentime">
+      <mat-header-cell *cdkHeaderCellDef>Generation Time</mat-header-cell>
+      <mat-cell *cdkCellDef="let row">
+        {{ row.generationTimeUTC }}
+      </mat-cell>
+    </ng-container>
+
+    <ng-container cdkColumnDef="rectime">
+      <mat-header-cell *cdkHeaderCellDef>Reception Time</mat-header-cell>
+      <mat-cell *cdkCellDef="let row">
+        {{ row.receptionTimeUTC }}
+      </mat-cell>
+    </ng-container>
+
+    <ng-container cdkColumnDef="seqNumber">
+      <mat-header-cell *cdkHeaderCellDef>Sequence Number</mat-header-cell>
+      <mat-cell *cdkCellDef="let row">
+        {{ row.seqNumber }}
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *cdkHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *cdkRowDef="let row; columns: displayedColumns;"></mat-row>
+  </mat-table>
+
+  <!--mat-paginator #paginator
+    [length]="events.length"
+    [pageIndex]="pageIndex"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="[25, 50, 100]">
+  </mat-paginator-->
+</app-monitor-page>

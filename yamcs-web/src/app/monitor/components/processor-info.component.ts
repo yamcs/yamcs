@@ -1,22 +1,17 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
 } from '@angular/core';
 import { YamcsService } from '../../core/services/yamcs.service';
 import { Observable } from 'rxjs/Observable';
 import { TimeInfo } from '../../../yamcs-client';
 
 @Component({
-  selector: 'app-monitor-toolbar',
-  templateUrl: './monitor-toolbar.component.html',
-  styleUrls: ['./monitor-toolbar.component.css'],
+  selector: 'app-processor-info',
+  templateUrl: './processor-info.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MonitorToolbarComponent {
-
-  @Input()
-  header: string;
+export class ProcessorInfoComponent {
 
   time$: Observable<TimeInfo>;
 

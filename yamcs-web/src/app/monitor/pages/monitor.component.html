@@ -2,18 +2,21 @@
   <mat-sidenav mode="side" opened="true">
     <mat-toolbar>
       <mat-toolbar-row>
-        <mat-icon>dashboard</mat-icon>
+        <mat-icon class="icon32" style="margin-right: 16px">dashboard</mat-icon>
         Monitor
       </mat-toolbar-row>
     </mat-toolbar>
 
     <mat-nav-list dense *ngIf="instance$ | async as instance">
-      <a mat-list-item
-         routerLink="displays"
-         [queryParams]="{instance: instance.name}">Displays</a>
-      <a mat-list-item
-         routerLink="events"
-         [queryParams]="{instance: instance.name}">Events</a>
+      <app-sidebar-nav-item routerLink="displays"
+                            [queryParams]="{instance: instance.name}">
+        Displays
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item routerLink="events"
+                            [queryParams]="{instance: instance.name}">
+        Events
+      </app-sidebar-nav-item>
       <a mat-list-item>Alarms</a>
       <a mat-list-item>Command History</a>
     </mat-nav-list>

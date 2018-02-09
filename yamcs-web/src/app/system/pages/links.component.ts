@@ -31,6 +31,17 @@ export class LinksPageComponent implements AfterViewInit {
     this.dataSource.sort = this.sort;
   }
 
+  /*
+   * TODO would like to pass this via [trackBy] of mat-table
+   * so that rows are recycled. But this causes update issues.
+   *
+   * This link suggests that it should work though:
+   * https://github.com/angular/material2/issues/7877
+   *
+   * Maybe use custom DataSource?
+   */
+  tableTrackerFn = (index: number, link: Link) => link.name;
+
   enableLink(name: string) {
     this.yamcs.getSelectedInstance().enableLink(name).subscribe();
   }

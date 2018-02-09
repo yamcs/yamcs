@@ -18,6 +18,7 @@ import {
 import {
   Command,
   DisplayInfo,
+  Event,
   Link,
   Parameter,
   Record,

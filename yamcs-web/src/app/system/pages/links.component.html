@@ -2,10 +2,10 @@
   <app-system-toolbar>Links</app-system-toolbar>
 
   <mat-table [dataSource]="dataSource"
-            matSort
-            matSortActive="name"
-            matSortDirection="asc"
-            matSortDisableClear>
+             matSort
+             matSortActive="name"
+             matSortDirection="asc"
+             matSortDisableClear>
     <ng-container matColumnDef="name">
       <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
       <mat-cell *matCellDef="let link">{{ link.name }}</mat-cell>
