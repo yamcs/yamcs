@@ -13,31 +13,29 @@
   </app-monitor-toolbar>
 
   <mat-table [dataSource]="dataSource">
-    <ng-container cdkColumnDef="message">
-      <mat-header-cell *cdkHeaderCellDef>Message</mat-header-cell>
-      <mat-cell *cdkCellDef="let row">
-        {{ row.message }}
+    <ng-container cdkColumnDef="severity">
+      <mat-header-cell *cdkHeaderCellDef fxFlex="50px"></mat-header-cell>
+      <mat-cell *cdkCellDef="let row" fxFlex="50px">
+        <app-severity [severity]="row.severity"></app-severity>
       </mat-cell>
     </ng-container>
 
+    <ng-container cdkColumnDef="message">
+      <mat-header-cell *cdkHeaderCellDef>Message</mat-header-cell>
+      <mat-cell *cdkCellDef="let row" style="white-space: pre">{{ row.message }}</mat-cell>
+    </ng-container>
+
     <ng-container cdkColumnDef="type">
-      <mat-header-cell *cdkHeaderCellDef>Type</mat-header-cell>
-      <mat-cell *cdkCellDef="let row">
+      <mat-header-cell *cdkHeaderCellDef fxFlex="150px">Type</mat-header-cell>
+      <mat-cell *cdkCellDef="let row" fxFlex="150px">
         {{ row.type }}
       </mat-cell>
     </ng-container>
 
     <ng-container cdkColumnDef="source">
-      <mat-header-cell *cdkHeaderCellDef>Source</mat-header-cell>
-      <mat-cell *cdkCellDef="let row">
+      <mat-header-cell *cdkHeaderCellDef fxFlex="150px">Source</mat-header-cell>
+      <mat-cell *cdkCellDef="let row" fxFlex="150px">
         {{ row.source }}
-      </mat-cell>
-    </ng-container>
-
-    <ng-container cdkColumnDef="severity">
-      <mat-header-cell *cdkHeaderCellDef>Severity</mat-header-cell>
-      <mat-cell *cdkCellDef="let row">
-        {{ row.severity }}
       </mat-cell>
     </ng-container>
 
@@ -63,7 +61,7 @@
     </ng-container>
 
     <mat-header-row *cdkHeaderRowDef="displayedColumns"></mat-header-row>
-    <mat-row *cdkRowDef="let row; columns: displayedColumns;"></mat-row>
+    <mat-row *cdkRowDef="let row; columns: displayedColumns;" [ngClass]="row.severity"></mat-row>
   </mat-table>
 
   <!--mat-paginator #paginator

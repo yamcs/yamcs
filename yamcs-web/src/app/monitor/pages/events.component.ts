@@ -9,6 +9,7 @@ import { Event } from '../../../yamcs-client';
 
 @Component({
   templateUrl: './events.component.html',
+  styleUrls: ['./events.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventsPageComponent implements OnInit {
@@ -19,7 +20,7 @@ export class EventsPageComponent implements OnInit {
   @ViewChild(MatPaginator)
   paginator: MatPaginator;
 
-  displayedColumns = ['message', 'type', 'source', 'severity', 'gentime', 'rectime', 'seqNumber'];
+  displayedColumns = ['severity', 'message', 'type', 'source', 'gentime', 'rectime'];
   dataSource: EventDataSource | null;
 
   events$ = new BehaviorSubject<Event[]>([]);

@@ -3,6 +3,8 @@ import { SharedModule } from '../shared/shared.module';
 import { SystemRoutingModule, routingComponents } from './system-routing.module';
 import { SystemToolbarComponent } from './components/system-toolbar.component';
 import { SystemPageTemplateComponent } from './components/system-page-template.component';
+import { RecordComponent } from './components/record.component';
+import { HexComponent } from './components/hex.component';
 
 @NgModule({
   imports: [
@@ -11,6 +13,8 @@ import { SystemPageTemplateComponent } from './components/system-page-template.c
   ],
   declarations: [
     routingComponents,
+    HexComponent,
+    RecordComponent,
     SystemPageTemplateComponent,
     SystemToolbarComponent,
   ]

@@ -18,7 +18,7 @@ export class ValuePipe implements PipeTransform {
       case 'SINT32':
         return '' + value.sint32Value;
       case 'BINARY':
-        return '<binary>'; // TODO ?
+        return '<binary>';
       case 'STRING':
         return value.stringValue;
       case 'TIMESTAMP':

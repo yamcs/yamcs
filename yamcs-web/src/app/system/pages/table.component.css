@@ -1,0 +1,41 @@
+mat-tab-group {
+  height: 100%;
+  position: relative;
+}
+
+.data-table-wrapper {
+  position: relative;
+  overflow: auto;
+  height: 60%;
+  border-bottom: 1px solid #d3d3d3;
+  box-sizing: border-box;
+}
+
+.data-detail {
+  overflow: auto;
+  height: 40%;
+}
+
+.data-table-wrapper tr.selected td {
+  background: #fafafa;
+}
+
+.data-table-wrapper tr:hover td {
+  background: #ffffd6;
+  cursor: pointer;
+}
+
+.mat-tab-body-wrapper {
+  flex-grow: 1;
+}
+
+.mat-tab-body {
+  display: flex !important;
+  flex-direction: column;
+}
+
+.mat-tab-body-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}

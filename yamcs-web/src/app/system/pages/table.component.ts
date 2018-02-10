@@ -10,10 +10,11 @@ import { YamcsService } from '../../core/services/yamcs.service';
 import { State } from '../../app.reducers';
 import { Store } from '@ngrx/store';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 @Component({
   templateUrl: './table.component.html',
-  styleUrls: ['./streamsql.css'],
+  styleUrls: ['./table.component.css', './streamsql.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TablePageComponent implements OnInit {
@@ -21,6 +22,8 @@ export class TablePageComponent implements OnInit {
   instance$: Observable<Instance>;
   table$: Observable<Table>;
   records$: Observable<Record[]>;
+
+  selectedRecord$ = new BehaviorSubject<Record | null>(null);
 
   constructor(route: ActivatedRoute, yamcs: YamcsService, private store: Store<State>) {
     const name = route.snapshot.paramMap.get('name');
@@ -45,5 +48,9 @@ export class TablePageComponent implements OnInit {
 
   formatSQL(sql: string) {
     return utils.formatSQL(sql);
+  }
+
+  selectRecord(record: Record) {
+    this.selectedRecord$.next(record);
   }
 }

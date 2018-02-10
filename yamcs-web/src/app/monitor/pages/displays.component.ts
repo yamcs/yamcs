@@ -33,7 +33,7 @@ export class DisplaysPageComponent implements AfterViewInit, LayoutListener, Lay
   resourceResolver: ResourceResolver;
   layout: Layout;
 
-  navigatorOpen$ = new BehaviorSubject<boolean>(false);
+  navigatorOpen$ = new BehaviorSubject<boolean>(true);
 
   constructor(private yamcs: YamcsService) {
     this.displayInfo$ = yamcs.getSelectedInstance().getDisplayInfo();
