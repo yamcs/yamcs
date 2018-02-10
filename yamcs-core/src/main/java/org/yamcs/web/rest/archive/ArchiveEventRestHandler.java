@@ -21,6 +21,7 @@ import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
+import org.yamcs.web.HttpServer;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
@@ -36,6 +37,8 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.csvreader.CsvWriter;
+import com.google.protobuf.ExtensionRegistry;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -44,7 +47,8 @@ public class ArchiveEventRestHandler extends RestHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ArchiveEventRestHandler.class);
 
-    Map<String, EventProducer> eventProducerMap = new HashMap<>();
+    private Map<String, EventProducer> eventProducerMap = new HashMap<>();
+    private ExtensionRegistry gpbExtensionRegistry;
 
     @Route(path = "/api/archive/:instance/events", method = "GET")
     public void listEvents(RestRequest req) throws HttpException {
@@ -106,10 +110,17 @@ public class ArchiveEventRestHandler extends RestHandler {
 
                 @Override
                 public void processTuple(Stream stream, Tuple tuple) {
-                    Event.Builder event = Event.newBuilder((Event) tuple.getColumn("body"));
-                    event.setGenerationTimeUTC(TimeEncoding.toString(event.getGenerationTime()));
-                    event.setReceptionTimeUTC(TimeEncoding.toString(event.getReceptionTime()));
-                    responseb.addEvent(event);
+                    try {
+                        Event incoming = (Event) tuple.getColumn("body");
+                        Event event = Event.parseFrom(incoming.toByteArray(), getExtensionRegistry());
+
+                        Event.Builder eventb = Event.newBuilder(event);
+                        eventb.setGenerationTimeUTC(TimeEncoding.toString(eventb.getGenerationTime()));
+                        eventb.setReceptionTimeUTC(TimeEncoding.toString(eventb.getReceptionTime()));
+                        responseb.addEvent(eventb.build());
+                    } catch (InvalidProtocolBufferException e) {
+                        log.error("Invalid GPB message", e);
+                    }
                 }
 
                 @Override
@@ -120,7 +131,6 @@ public class ArchiveEventRestHandler extends RestHandler {
         }
     }
 
-
     @Route(path = "/api/archive/:instance/events", method = "POST")
     public void postEvent(RestRequest req) throws HttpException {
 
@@ -130,7 +140,7 @@ public class ArchiveEventRestHandler extends RestHandler {
 
         // get event producer for this instance
         EventProducer eventProducer = null;
-        if(eventProducerMap.containsKey(instance))
+        if (eventProducerMap.containsKey(instance))
             eventProducer = eventProducerMap.get(instance);
         else {
             eventProducer = EventProducerFactory.getEventProducer(instance);
@@ -159,5 +169,13 @@ public class ArchiveEventRestHandler extends RestHandler {
         if (table == null) {
             throw new BadRequestException("No event archive support for instance '" + instance + "'");
         }
+    }
+
+    private ExtensionRegistry getExtensionRegistry() {
+        if (gpbExtensionRegistry == null) {
+            HttpServer httpServer = YamcsServer.getGlobalService(HttpServer.class);
+            gpbExtensionRegistry = httpServer.getGpbExtensionRegistry();
+        }
+        return gpbExtensionRegistry;
     }
 }
