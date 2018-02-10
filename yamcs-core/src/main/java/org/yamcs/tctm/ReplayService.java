@@ -54,8 +54,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.xtceproc.XtceTmProcessor;
 
 import com.google.common.util.concurrent.AbstractService;
-
-import io.protostuff.JsonIOUtil;
+import com.google.protobuf.util.JsonFormat;
 
 /**
  * Provides telemetry packets and processed parameters from the yamcs archive.
@@ -111,8 +110,7 @@ public class ReplayService extends AbstractService
         } else if (spec instanceof String) {
             ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
             try {
-                JsonIOUtil.mergeFrom(((String) spec).getBytes(), rrb,
-                        org.yamcs.protobuf.SchemaYamcs.ReplayRequest.MERGE, false);
+                JsonFormat.parser().merge((String) spec, rrb);
             } catch (IOException e) {
                 throw new ConfigurationException("Cannot parse config into a replay request: " + e.getMessage(), e);
             }
@@ -135,7 +133,8 @@ public class ReplayService extends AbstractService
             dataCount++;
             TmPacketData tpd = (TmPacketData) data;
             replayTime = tpd.getGenerationTime();
-            tmProcessor.processPacket(new PacketWithTime(tpd.getReceptionTime(), tpd.getGenerationTime(), tpd.getSequenceNumber(), tpd.getPacket().toByteArray()));
+            tmProcessor.processPacket(new PacketWithTime(tpd.getReceptionTime(), tpd.getGenerationTime(),
+                    tpd.getSequenceNumber(), tpd.getPacket().toByteArray()));
             break;
         case PP:
             parameterRequestManager.update(calibrate((List<ParameterValue>) data));

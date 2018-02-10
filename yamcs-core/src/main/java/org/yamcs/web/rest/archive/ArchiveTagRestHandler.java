@@ -8,8 +8,6 @@ import org.yamcs.archive.TagReceiver;
 import org.yamcs.protobuf.Rest.CreateTagRequest;
 import org.yamcs.protobuf.Rest.EditTagRequest;
 import org.yamcs.protobuf.Rest.ListTagsResponse;
-import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.web.BadRequestException;
@@ -21,20 +19,18 @@ import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
 import org.yamcs.web.rest.Route;
 import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
-
 public class ArchiveTagRestHandler extends RestHandler {
-    
+
     @Route(path = "/api/archive/:instance/tags", method = "GET")
     public void listTags(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         TagDb tagDb = getTagDb(instance);
-        
+
         IntervalResult ir = req.scanForInterval();
         TimeInterval interval = ir.asTimeInterval();
-        
+
         // Build response with a callback from the TagDb, this is all happening on
         // the same thread.
         ListTagsResponse.Builder responseb = ListTagsResponse.newBuilder();
@@ -42,42 +38,44 @@ public class ArchiveTagRestHandler extends RestHandler {
             tagDb.getTags(interval, new TagReceiver() {
                 @Override
                 public void onTag(ArchiveTag tag) {
-                   responseb.addTag(tag);
+                    responseb.addTag(tag);
                 }
 
-                @Override public void finished() {}
+                @Override
+                public void finished() {
+                }
             });
         } catch (IOException e) {
             throw new InternalServerErrorException("Could not load tags", e);
         }
-        completeOK(req, responseb.build(), SchemaRest.ListTagsResponse.WRITE);
+        completeOK(req, responseb.build());
     }
-    
+
     @Route(path = "/api/archive/:instance/tags/:tagTime/:tagId", method = "GET")
     public void getTag(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         TagDb tagDb = getTagDb(instance);
-        
+
         long tagTime = req.getDateRouteParam("tagTime");
         int tagId = req.getIntegerRouteParam("tagId");
 
-        ArchiveTag tag = verifyTag(req, tagDb, tagTime, tagId); 
-        completeOK(req, tag, SchemaYamcs.ArchiveTag.WRITE);
+        ArchiveTag tag = verifyTag(req, tagDb, tagTime, tagId);
+        completeOK(req, tag);
     }
-    
+
     /**
-     * Adds a new tag. The newly added tag is returned as a response so the user
-     * knows the assigned id.
+     * Adds a new tag. The newly added tag is returned as a response so the user knows the assigned id.
      */
     @Route(path = "/api/archive/:instance/tags", method = "POST")
     public void createTag(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         TagDb tagDb = getTagDb(instance);
-        
-        CreateTagRequest request = req.bodyAsMessage(SchemaRest.CreateTagRequest.MERGE).build();
-        if (!request.hasName())
+
+        CreateTagRequest request = req.bodyAsMessage(CreateTagRequest.newBuilder()).build();
+        if (!request.hasName()) {
             throw new BadRequestException("Name is required");
-        
+        }
+
         // Translate to yamcs-api
         ArchiveTag.Builder tagb = ArchiveTag.newBuilder().setName(request.getName());
         if (request.hasStart()) {
@@ -92,7 +90,7 @@ public class ArchiveTagRestHandler extends RestHandler {
         if (request.hasColor()) {
             tagb.setColor(request.getColor());
         }
-        
+
         // Do the insert
         ArchiveTag newTag;
         try {
@@ -102,9 +100,9 @@ public class ArchiveTagRestHandler extends RestHandler {
         }
 
         // Echo back the tag, with its assigned ID
-        completeOK(req, newTag, SchemaYamcs.ArchiveTag.WRITE);
+        completeOK(req, newTag);
     }
-    
+
     /**
      * Updates an existing tag. Returns the updated tag
      */
@@ -113,9 +111,9 @@ public class ArchiveTagRestHandler extends RestHandler {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         TagDb tagDb = getTagDb(instance);
         ArchiveTag tag = verifyTag(req, tagDb, req.getDateRouteParam("tagTime"), req.getIntegerRouteParam("tagId"));
-        
-        EditTagRequest request = req.bodyAsMessage(SchemaRest.EditTagRequest.MERGE).build();        
-        
+
+        EditTagRequest request = req.bodyAsMessage(EditTagRequest.newBuilder()).build();
+
         // Patch the existing tag
         ArchiveTag.Builder tagb = ArchiveTag.newBuilder(tag);
         if (request.hasName()) {
@@ -133,7 +131,7 @@ public class ArchiveTagRestHandler extends RestHandler {
         if (request.hasColor()) {
             tagb.setColor(request.getColor());
         }
-        
+
         // Override with query params
         if (req.hasQueryParameter("name")) {
             tagb.setName(req.getQueryParameter("name"));
@@ -150,7 +148,7 @@ public class ArchiveTagRestHandler extends RestHandler {
         if (req.hasQueryParameter("color")) {
             tagb.setColor(req.getQueryParameter("color"));
         }
-        
+
         // Persist the update
         ArchiveTag updatedTag;
         try {
@@ -161,10 +159,10 @@ public class ArchiveTagRestHandler extends RestHandler {
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }
-        
-        completeOK(req, updatedTag, SchemaYamcs.ArchiveTag.WRITE);
+
+        completeOK(req, updatedTag);
     }
-    
+
     /**
      * Deletes the identified tag. Returns the deleted tag
      */
@@ -181,10 +179,10 @@ public class ArchiveTagRestHandler extends RestHandler {
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }
-        
-        completeOK(req, deletedTag, SchemaYamcs.ArchiveTag.WRITE);
+
+        completeOK(req, deletedTag);
     }
-    
+
     private static TagDb getTagDb(String yamcsInstance) throws HttpException {
         try {
             return YarchDatabase.getInstance(yamcsInstance).getTagDb();
@@ -192,11 +190,12 @@ public class ArchiveTagRestHandler extends RestHandler {
             throw new InternalServerErrorException("Could not load Tag DB", e);
         }
     }
-    
+
     private ArchiveTag verifyTag(RestRequest req, TagDb tagDb, long tagTime, int tagId) throws HttpException {
-        if (tagId < 1)
+        if (tagId < 1) {
             throw new BadRequestException("Invalid tag ID");
-        
+        }
+
         ArchiveTag tag;
         try {
             tag = tagDb.getTag(tagTime, tagId);

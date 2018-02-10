@@ -18,9 +18,6 @@ import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterData;
-import org.yamcs.protobuf.SchemaPvalue;
-import org.yamcs.protobuf.SchemaWeb;
-import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -64,7 +61,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         case WSR_SUBSCRIBE:
         case "subscribe2": // TODO: remove subscribe2 after making sure nobody uses it.
             ParameterSubscriptionRequest req;
-            req = decoder.decodeMessageData(ctx, SchemaWeb.ParameterSubscriptionRequest.MERGE).build();
+            req = decoder.decodeMessageData(ctx, ParameterSubscriptionRequest.newBuilder()).build();
             if (req.getIdCount() == 0) { // maybe using old method
                 if (req.getListCount() > 0) {
                     log.warn("Client using old parameter subscription method: {}",
@@ -75,10 +72,10 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
             }
             return subscribe(ctx.getRequestId(), req, client.getAuthToken());
         case WSR_SUBSCRIBE_ALL:
-            StringMessage stringMessage = decoder.decodeMessageData(ctx, SchemaYamcs.StringMessage.MERGE).build();
+            StringMessage stringMessage = decoder.decodeMessageData(ctx, StringMessage.newBuilder()).build();
             return subscribeAll(ctx.getRequestId(), stringMessage.getMessage(), client.getAuthToken());
         case WSR_UNSUBSCRIBE:
-            NamedObjectList unsubscribeList = decoder.decodeMessageData(ctx, SchemaYamcs.NamedObjectList.MERGE).build();
+            NamedObjectList unsubscribeList = decoder.decodeMessageData(ctx, NamedObjectList.newBuilder()).build();
             return unsubscribe(ctx.getRequestId(), unsubscribeList, client.getAuthToken());
         case WSR_UNSUBSCRIBE_ALL:
             return unsubscribeAll(ctx.getRequestId());
@@ -103,7 +100,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
 
                 if (!req.hasAbortOnInvalid() || req.getAbortOnInvalid()) {
                     WebSocketException ex = new WebSocketException(requestId, e);
-                    ex.attachData("InvalidIdentification", invalidList, SchemaYamcs.NamedObjectList.WRITE);
+                    ex.attachData("InvalidIdentification", invalidList);
                     throw ex;
                 } else {
                     idList = new ArrayList<>(idList);
@@ -124,7 +121,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                             subscriptionId = pidrm.addRequest(idList, req.getUpdateOnExpiration(), authToken);
                         }
                     }
-                    reply.attachData("InvalidIdentification", invalidList, SchemaYamcs.NamedObjectList.WRITE);
+                    reply.attachData("InvalidIdentification", invalidList);
                 }
             }
 
@@ -212,7 +209,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
 
     private void sendParameterUpdate(ParameterData pd) {
         try {
-            wsHandler.sendData(ProtoDataType.PARAMETER, pd, SchemaPvalue.ParameterData.WRITE);
+            wsHandler.sendData(ProtoDataType.PARAMETER, pd);
         } catch (Exception e) {
             log.warn("got error when sending parameter updates, quitting", e);
             quit();

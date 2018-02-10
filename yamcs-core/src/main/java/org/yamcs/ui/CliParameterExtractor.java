@@ -13,6 +13,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.YamcsApiException.RestExceptionData;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.BulkRestDataReceiver;
 import org.yamcs.api.rest.RestClient;
@@ -180,9 +181,9 @@ public class CliParameterExtractor {
         } catch (ExecutionException e) {
             Throwable t = (e.getCause() != null ? e.getCause() : e);
             if (t instanceof YamcsApiException) {
-                RestExceptionMessage msg = ((YamcsApiException) t).getRestExceptionMessage();
+                RestExceptionData msg = ((YamcsApiException) t).getRestData();
                 if (msg != null) {
-                    System.err.println(msg.getType() + ": " + msg.getMsg());
+                    System.err.println(msg.getType() + ": " + msg.getMessage());
                 } else {
                     System.err.println(t.getMessage());
                 }

@@ -14,7 +14,6 @@ import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Rest.IssueCommandResponse;
-import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.tctm.TcDataLink;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -29,8 +28,8 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
 
         IssueCommandRequest cmdreq = getCommand(7);
         String resp = restClient.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/CONT_VERIF_TC",
-                HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE)).get();
-        IssueCommandResponse response = (fromJson(resp, SchemaRest.IssueCommandResponse.MERGE)).build();
+                HttpMethod.POST, toJson(cmdreq)).get();
+        IssueCommandResponse response = fromJson(resp, IssueCommandResponse.newBuilder()).build();
         assertEquals("REFMDB/SUBSYS1/CONT_VERIF_TC()", response.getSource());
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
@@ -40,8 +39,8 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC", cmdid.getCommandName());
         assertEquals(7, cmdid.getSequenceNumber());
         assertEquals("IntegrationTest", cmdid.getOrigin());
-        
-        packetGenerator.generateContVerifCmdAck((short)1001, (byte)0, 0);
+
+        packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 0, 0);
 
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
@@ -50,7 +49,6 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         CommandHistoryAttribute cha = cmdhist.getAttr(0);
         assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
         assertEquals("NA", cha.getValue().getStringValue());
-
 
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
@@ -62,10 +60,8 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         cha = cmdhist.getAttr(0);
         assertEquals("Verifier_Execution_Time", cha.getName());
-        
-        
-        
-        packetGenerator.generateContVerifCmdAck((short)1001, (byte)5, 0);
+
+        packetGenerator.generateContVerifCmdAck((short) 1001, (byte) 5, 0);
 
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
@@ -76,8 +72,6 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         cha = cmdhist.getAttr(0);
         assertEquals("Verifier_Complete_Time", cha.getName());
-        
-        
 
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
@@ -87,7 +81,6 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         assertEquals("OK", cha.getValue().getStringValue());
     }
 
-
     @Test
     public void testCommandVerificationAlgorithm() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
@@ -95,8 +88,8 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
 
         IssueCommandRequest cmdreq = getCommand(4, "p1", "10", "p2", "20");
         String resp = restClient.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/ALG_VERIF_TC",
-                HttpMethod.POST, toJson(cmdreq, SchemaRest.IssueCommandRequest.WRITE)).get();
-        IssueCommandResponse response = (fromJson(resp, SchemaRest.IssueCommandResponse.MERGE)).build();
+                HttpMethod.POST, toJson(cmdreq)).get();
+        IssueCommandResponse response = fromJson(resp, IssueCommandResponse.newBuilder()).build();
         assertEquals("REFMDB/SUBSYS1/ALG_VERIF_TC(p1: 10, p2: 20)", response.getSource());
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
@@ -106,8 +99,7 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         assertEquals("/REFMDB/SUBSYS1/ALG_VERIF_TC", cmdid.getCommandName());
         assertEquals(4, cmdid.getSequenceNumber());
         assertEquals("IntegrationTest", cmdid.getOrigin());
-        packetGenerator.generateAlgVerifCmdAck((short)25, MyTcDataLink.seqNum, (byte)0, 0);
-
+        packetGenerator.generateAlgVerifCmdAck((short) 25, MyTcDataLink.seqNum, (byte) 0, 0);
 
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
@@ -118,7 +110,6 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         assertEquals(CommandHistoryPublisher.TransmissionContraints_KEY, cha.getName());
         assertEquals("NA", cha.getValue().getStringValue());
 
-
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
         assertEquals(1, cmdhist.getAttrCount());
@@ -127,7 +118,7 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         assertEquals("packetSeqNum", cha.getName());
         assertEquals(5000, cha.getValue().getSint32Value());
 
-        packetGenerator.generateAlgVerifCmdAck((short)25, MyTcDataLink.seqNum, (byte)1, 5);
+        packetGenerator.generateAlgVerifCmdAck((short) 25, MyTcDataLink.seqNum, (byte) 1, 5);
 
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
@@ -146,21 +137,18 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertEquals("Verifier_Complete_Time", cmdhist.getAttr(0).getName());
 
-        
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
         assertEquals(1, cmdhist.getAttrCount());
         cha = cmdhist.getAttr(0);
         assertEquals(CommandHistoryPublisher.CommandComplete_KEY, cha.getName());
         assertEquals("NOK", cha.getValue().getStringValue());
-        
+
         cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
         cha = cmdhist.getAttr(0);
         assertEquals(CommandHistoryPublisher.CommandFailed_KEY, cha.getName());
         assertEquals("Verifier Complete result: NOK", cha.getValue().getStringValue());
     }
-
-
 
     public static class MyTcDataLink extends AbstractService implements TcDataLink {
         static short seqNum = 5000;
@@ -201,7 +189,7 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
 
         @Override
         public void sendTc(PreparedCommand preparedCommand) {
-            if(preparedCommand.getCmdName().contains("ALG_VERIF_TC")) {
+            if (preparedCommand.getCmdName().contains("ALG_VERIF_TC")) {
                 commandHistoryPublisher.publish(preparedCommand.getCommandId(), "packetSeqNum", seqNum);
             }
         }

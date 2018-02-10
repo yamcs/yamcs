@@ -9,27 +9,24 @@ import org.yamcs.YamcsServer;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
 import org.yamcs.protobuf.Rest.ListInstancesResponse;
-import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
-import org.yamcs.security.Privilege;
-import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
+import org.yamcs.security.Privilege;
+import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
-
 
 /**
  * Handles incoming requests related to yamcs instances.
  */
 public class InstanceRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
-    
-    @Route(path="/api/instances", method="GET")
+
+    @Route(path = "/api/instances", method = "GET")
     public void listInstances(RestRequest req) throws HttpException {
         YamcsInstances instances = YamcsServer.getYamcsInstances();
 
@@ -39,18 +36,18 @@ public class InstanceRestHandler extends RestHandler {
             instancesb.addInstance(enriched);
         }
 
-        completeOK(req, instancesb.build(), SchemaRest.ListInstancesResponse.WRITE);
+        completeOK(req, instancesb.build());
     }
 
-    @Route(path="/api/instances/:instance", method="GET")
+    @Route(path = "/api/instances/:instance", method = "GET")
     public void getInstance(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YamcsInstance yamcsInstance = YamcsServer.getYamcsInstance(instance);
         YamcsInstance enriched = YamcsToGpbAssembler.enrichYamcsInstance(req, yamcsInstance);
-        completeOK(req, enriched, SchemaYamcsManagement.YamcsInstance.WRITE);
+        completeOK(req, enriched);
     }
 
-    @Route(path="/api/instances/:instance/clients", method="GET")
+    @Route(path = "/api/instances/:instance/clients", method = "GET")
     public void listClientsForInstance(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
@@ -60,13 +57,12 @@ public class InstanceRestHandler extends RestHandler {
                 responseb.addClient(ClientInfo.newBuilder(client).setState(ClientState.CONNECTED));
             }
         }
-        completeOK(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
+        completeOK(req, responseb.build());
     }
 
-
-    @Route(path="/api/instances/:instance", method={"PATCH", "PUT", "POST"})
+    @Route(path = "/api/instances/:instance", method = { "PATCH", "PUT", "POST" })
     public void editInstance(RestRequest req) throws HttpException {
-        if(!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.SystemPrivilege.MayControlServices))  {
+        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.SystemPrivilege.MayControlServices)) {
             throw new ForbiddenException("No privilege for this operation");
         }
         String instance = verifyInstance(req, req.getRouteParam("instance"));
@@ -91,13 +87,13 @@ public class InstanceRestHandler extends RestHandler {
             throw new BadRequestException("Unsupported service state '" + state + "'");
         }
         cf.whenComplete((v, error) -> {
-           if(error==null) {
-               completeOK(req);
-           } else {
-               Throwable t = ExceptionUtil.unwind(error);
-               log.error("Error when changing instance state to {}", state, t);
-               completeWithError(req, new InternalServerErrorException(t));
-           }
+            if (error == null) {
+                completeOK(req);
+            } else {
+                Throwable t = ExceptionUtil.unwind(error);
+                log.error("Error when changing instance state to {}", state, t);
+                completeWithError(req, new InternalServerErrorException(t));
+            }
         });
     }
 

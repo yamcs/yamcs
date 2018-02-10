@@ -21,10 +21,8 @@ import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.web.rest.Router;
 import org.yamcs.web.websocket.WebSocketFrameHandler;
 
-import com.fasterxml.jackson.core.JsonEncoding;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.google.protobuf.MessageLite;
+import com.google.protobuf.Message;
+import com.google.protobuf.util.JsonFormat;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -57,8 +55,6 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
-import io.protostuff.JsonIOUtil;
-import io.protostuff.Schema;
 
 /**
  * Handles handshakes and messages.
@@ -86,8 +82,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     private static StaticFileHandler fileRequestHandler = new StaticFileHandler();
     private Router apiRouter;
     private boolean contentExpected = false;
-
-    private static JsonFactory jsonFactory = new JsonFactory();
 
     private static final FullHttpResponse BAD_REQUEST = new DefaultFullHttpResponse(
             HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST,
@@ -262,27 +256,28 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         return ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
-    public static <T extends MessageLite> ChannelFuture sendMessageResponse(ChannelHandlerContext ctx, HttpRequest req,
-            HttpResponseStatus status, T responseMsg, Schema<T> responseSchema) {
-        return sendMessageResponse(ctx, req, status, responseMsg, responseSchema, true);
+    public static <T extends Message> ChannelFuture sendMessageResponse(ChannelHandlerContext ctx, HttpRequest req,
+            HttpResponseStatus status, T responseMsg) {
+        return sendMessageResponse(ctx, req, status, responseMsg, true);
     }
 
-    public static <T extends MessageLite> ChannelFuture sendMessageResponse(ChannelHandlerContext ctx, HttpRequest req,
-            HttpResponseStatus status, T responseMsg, Schema<T> responseSchema, boolean autoCloseOnError) {
+    public static <T extends Message> ChannelFuture sendMessageResponse(ChannelHandlerContext ctx, HttpRequest req,
+            HttpResponseStatus status, T responseMsg, boolean autoCloseOnError) {
         ByteBuf body = ctx.alloc().buffer();
         MediaType contentType = MediaType.getAcceptType(req);
 
-        try (ByteBufOutputStream channelOut = new ByteBufOutputStream(body)) {
+        try {
             if (contentType == MediaType.PROTOBUF) {
-                responseMsg.writeTo(channelOut);
+                try (ByteBufOutputStream channelOut = new ByteBufOutputStream(body)) {
+                    responseMsg.writeTo(channelOut);
+                }
             } else if (contentType == MediaType.PLAIN_TEXT) {
-                channelOut.write(responseMsg.toString().getBytes(StandardCharsets.UTF_8));
+                body.writeCharSequence(responseMsg.toString(), StandardCharsets.UTF_8);
             } else { // JSON by default
                 contentType = MediaType.JSON;
-                JsonGenerator generator = jsonFactory.createGenerator(channelOut, JsonEncoding.UTF8);
-                JsonIOUtil.writeTo(generator, responseMsg, responseSchema, false);
-                generator.close();
-                body.writeBytes(NEWLINE_BYTES); // For curl comfort
+                String str = JsonFormat.printer().print(responseMsg);
+                body.writeCharSequence(str, StandardCharsets.UTF_8);
+                // body.writeBytes(NEWLINE_BYTES); // For curl comfort
             }
         } catch (IOException e) {
             return sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.toString());
@@ -292,7 +287,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         int txSize = body.readableBytes();
         HttpUtil.setContentLength(response, txSize);
-        return sendResponse(ctx, req, response, autoCloseOnError);
+        return
+
+        sendResponse(ctx, req, response, autoCloseOnError);
     }
 
     public static ChannelFuture sendPlainTextError(ChannelHandlerContext ctx, HttpRequest req,

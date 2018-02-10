@@ -22,8 +22,6 @@ import org.yamcs.protobuf.Rest.EditProcessorRequest;
 import org.yamcs.protobuf.Rest.ListAlarmsResponse;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
 import org.yamcs.protobuf.Rest.ListProcessorsResponse;
-import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -61,7 +59,7 @@ public class ProcessorRestHandler extends RestHandler {
         for (Processor processor : Processor.getProcessors()) {
             response.addProcessor(toProcessorInfo(processor, req, true));
         }
-        completeOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
+        completeOK(req, response.build());
     }
 
     @Route(path = "/api/processors/:instance", method = "GET")
@@ -72,7 +70,7 @@ public class ProcessorRestHandler extends RestHandler {
         for (Processor processor : Processor.getProcessors(instance)) {
             response.addProcessor(toProcessorInfo(processor, req, true));
         }
-        completeOK(req, response.build(), SchemaRest.ListProcessorsResponse.WRITE);
+        completeOK(req, response.build());
     }
 
     @Route(path = "/api/processors/:instance/:processor", method = "GET")
@@ -80,7 +78,7 @@ public class ProcessorRestHandler extends RestHandler {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
 
         ProcessorInfo pinfo = toProcessorInfo(processor, req, true);
-        completeOK(req, pinfo, SchemaYamcsManagement.ProcessorInfo.WRITE);
+        completeOK(req, pinfo);
     }
 
     @Route(path = "/api/processors/:instance/:processor", method = { "PATCH", "PUT", "POST" })
@@ -90,7 +88,7 @@ public class ProcessorRestHandler extends RestHandler {
             throw new BadRequestException("Cannot update a non-replay processor");
         }
 
-        EditProcessorRequest request = req.bodyAsMessage(SchemaRest.EditProcessorRequest.MERGE).build();
+        EditProcessorRequest request = req.bodyAsMessage(EditProcessorRequest.newBuilder()).build();
         boolean quit = false;
 
         String newState = null;
@@ -177,7 +175,7 @@ public class ProcessorRestHandler extends RestHandler {
                 responseb.addClient(ClientInfo.newBuilder(client).setState(ClientState.CONNECTED));
             }
         }
-        completeOK(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
+        completeOK(req, responseb.build());
     }
 
     @Route(path = "/api/processors/:instance/:processor/alarms", method = "GET")
@@ -190,12 +188,12 @@ public class ProcessorRestHandler extends RestHandler {
                 responseb.addAlarm(ProcessorHelper.toAlarmData(AlarmData.Type.ACTIVE, alarm));
             }
         }
-        completeOK(req, responseb.build(), SchemaRest.ListAlarmsResponse.WRITE);
+        completeOK(req, responseb.build());
     }
 
     @Route(path = "/api/processors/:instance", method = "POST")
     public void createProcessorForInstance(RestRequest restReq) throws HttpException {
-        CreateProcessorRequest request = restReq.bodyAsMessage(SchemaRest.CreateProcessorRequest.MERGE).build();
+        CreateProcessorRequest request = restReq.bodyAsMessage(CreateProcessorRequest.newBuilder()).build();
         if (request.hasStart()) {
             // the old create processor only allowed creating archive processors
             createProcessorForInstanceOld(restReq, request);

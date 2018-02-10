@@ -6,7 +6,6 @@ import java.util.Arrays;
 import org.yamcs.protobuf.Rest.DisplayFile;
 import org.yamcs.protobuf.Rest.DisplayFolder;
 import org.yamcs.protobuf.Rest.ListDisplaysResponse;
-import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.WebConfig;
@@ -40,7 +39,7 @@ public class DisplayRestHandler extends RestHandler {
             responseb.addAllFolder(folderb.getFolderList());
             responseb.addAllFile(folderb.getFileList());
         }
-        completeOK(req, responseb.build(), SchemaRest.ListDisplaysResponse.WRITE);
+        completeOK(req, responseb.build());
     }
 
     private void writeFilesFromDir(File parent, DisplayFolder.Builder folderb) throws BadRequestException {

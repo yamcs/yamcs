@@ -2,9 +2,8 @@ package org.yamcs.web.websocket;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ProcessorException;
 import org.yamcs.Processor;
-import org.yamcs.protobuf.SchemaYamcs;
+import org.yamcs.ProcessorException;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
@@ -31,38 +30,38 @@ public class PacketResource extends AbstractWebSocketResource {
     private Stream stream;
     private StreamSubscriber streamSubscriber;
 
-
     public PacketResource(WebSocketProcessorClient client) {
         super(client);
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+            throws WebSocketException {
         String op = ctx.getOperation();
-        if(OP_unsubscribe.equals(op)) {
+        if (OP_unsubscribe.equals(op)) {
             return unsubscribe(ctx.getRequestId());
         }
 
-        if(op.startsWith(OP_subscribe)) {
-            if(streamSubscriber!=null) {
+        if (op.startsWith(OP_subscribe)) {
+            if (streamSubscriber != null) {
                 throw new WebSocketException(ctx.getRequestId(), "Already subscribed to a stream");
             }
 
-           String[] a = op.split("\\s+");
-           if(a.length!=2) {
-               throw new WebSocketException(ctx.getRequestId(), "Invalid request. Use 'subscribe <stream_name>'");
-           }
-           this.streamName = a[1];
-           YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
-           stream = ydb.getStream(streamName);
-           if(stream==null) {
-               throw new WebSocketException(ctx.getRequestId(), "Invalid request. No stream named '"+streamName+"'");
-           }
-           return subscribe(ctx.getRequestId());
+            String[] a = op.split("\\s+");
+            if (a.length != 2) {
+                throw new WebSocketException(ctx.getRequestId(), "Invalid request. Use 'subscribe <stream_name>'");
+            }
+            this.streamName = a[1];
+            YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
+            stream = ydb.getStream(streamName);
+            if (stream == null) {
+                throw new WebSocketException(ctx.getRequestId(),
+                        "Invalid request. No stream named '" + streamName + "'");
+            }
+            return subscribe(ctx.getRequestId());
         }
 
-
-        throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '"+ctx.getOperation()+"'");
+        throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
     }
 
     private WebSocketReplyData subscribe(int requestId) throws WebSocketException {
@@ -96,13 +95,16 @@ public class PacketResource extends AbstractWebSocketResource {
                 @Override
                 public void onTuple(Stream stream, Tuple tuple) {
                     try {
-                        byte[]  pktData = (byte[]) tuple.getColumn(TmDataLinkInitialiser.PACKET_COLUMN);
+                        byte[] pktData = (byte[]) tuple.getColumn(TmDataLinkInitialiser.PACKET_COLUMN);
                         long genTime = (Long) tuple.getColumn(TmDataLinkInitialiser.GENTIME_COLUMN);
                         long receptionTime = (Long) tuple.getColumn(TmDataLinkInitialiser.RECTIME_COLUMN);
-                        int seqNumber = (Integer)tuple.getColumn(TmDataLinkInitialiser.SEQNUM_COLUMN);
-                        TmPacketData tm = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(pktData)).setGenerationTime(genTime)
-                                .setReceptionTime(receptionTime).setSequenceNumber(seqNumber).build();
-                        wsHandler.sendData(ProtoDataType.TM_PACKET, tm, SchemaYamcs.TmPacketData.WRITE);
+                        int seqNumber = (Integer) tuple.getColumn(TmDataLinkInitialiser.SEQNUM_COLUMN);
+                        TmPacketData tm = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(pktData))
+                                .setGenerationTime(genTime)
+                                .setReceptionTime(receptionTime)
+                                .setSequenceNumber(seqNumber)
+                                .build();
+                        wsHandler.sendData(ProtoDataType.TM_PACKET, tm);
                     } catch (Exception e) {
                         log.warn("got error when sending event, quitting", e);
                         quit();

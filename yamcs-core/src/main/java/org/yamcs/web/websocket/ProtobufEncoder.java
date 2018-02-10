@@ -23,12 +23,13 @@ import org.yamcs.protobuf.YamcsManagement.LinkEvent;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 
+import com.google.protobuf.Message;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
-import io.protostuff.Schema;
 
 public class ProtobufEncoder implements WebSocketEncoder {
 
@@ -57,7 +58,8 @@ public class ProtobufEncoder implements WebSocketEncoder {
     }
 
     @Override
-    public <T> WebSocketFrame encodeData(int sequenceNumber, ProtoDataType dataType, T message, Schema<T> schema) throws IOException {
+    public <T extends Message> WebSocketFrame encodeData(int sequenceNumber, ProtoDataType dataType, T message)
+            throws IOException {
         WebSocketSubscriptionData.Builder responseb = WebSocketSubscriptionData.newBuilder();
         responseb.setSequenceNumber(sequenceNumber);
         responseb.setType(dataType);

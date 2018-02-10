@@ -2,10 +2,9 @@ package org.yamcs.web.websocket;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ProcessorException;
 import org.yamcs.Processor;
+import org.yamcs.ProcessorException;
 import org.yamcs.archive.EventRecorder;
-import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
@@ -30,7 +29,6 @@ public class EventResource extends AbstractWebSocketResource {
     private Stream stream;
     private StreamSubscriber streamSubscriber;
 
-
     public EventResource(WebSocketProcessorClient client) {
         super(client);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
@@ -38,14 +36,15 @@ public class EventResource extends AbstractWebSocketResource {
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+            throws WebSocketException {
         switch (ctx.getOperation()) {
         case OP_subscribe:
             return subscribe(ctx.getRequestId());
         case OP_unsubscribe:
             return unsubscribe(ctx.getRequestId());
         default:
-            throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '"+ctx.getOperation()+"'");
+            throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
         }
     }
 
@@ -57,7 +56,7 @@ public class EventResource extends AbstractWebSocketResource {
 
     @Override
     public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
-        if(streamSubscriber==null) {
+        if (streamSubscriber == null) {
             super.switchProcessor(oldProcessor, newProcessor);
         } else {
             doUnsubscribe();
@@ -89,7 +88,7 @@ public class EventResource extends AbstractWebSocketResource {
                                 .setGenerationTimeUTC(TimeEncoding.toString(event.getGenerationTime()))
                                 .setReceptionTimeUTC(TimeEncoding.toString(event.getReceptionTime()))
                                 .build();
-                        wsHandler.sendData(ProtoDataType.EVENT, event, SchemaYamcs.Event.WRITE);
+                        wsHandler.sendData(ProtoDataType.EVENT, event);
                     } catch (Exception e) {
                         log.warn("got error when sending event, quitting", e);
                         quit();

@@ -7,12 +7,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.utils.TimeEncoding;
-
 
 public class TimeResource extends AbstractWebSocketResource {
 
@@ -28,7 +26,8 @@ public class TimeResource extends AbstractWebSocketResource {
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+            throws WebSocketException {
         switch (ctx.getOperation()) {
         case OP_subscribe:
             return processSubscribeRequest(ctx, decoder);
@@ -37,13 +36,16 @@ public class TimeResource extends AbstractWebSocketResource {
         }
     }
 
-
-    private WebSocketReplyData processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+    private WebSocketReplyData processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+            throws WebSocketException {
         future = timer.scheduleAtFixedRate(() -> {
             try {
                 long currentTime = processor.getCurrentTime();
-                TimeInfo ti = TimeInfo.newBuilder().setCurrentTime(currentTime).setCurrentTimeUTC(TimeEncoding.toString(currentTime)).build();
-                wsHandler.sendData(ProtoDataType.TIME_INFO, ti, SchemaYamcs.TimeInfo.WRITE);
+                TimeInfo ti = TimeInfo.newBuilder()
+                        .setCurrentTime(currentTime)
+                        .setCurrentTimeUTC(TimeEncoding.toString(currentTime))
+                        .build();
+                wsHandler.sendData(ProtoDataType.TIME_INFO, ti);
             } catch (IOException e) {
                 log.debug("Could not send time info data", e);
             }
@@ -53,7 +55,7 @@ public class TimeResource extends AbstractWebSocketResource {
 
     @Override
     public void quit() {
-        if(future!=null) {
+        if (future != null) {
             future.cancel(false);
         }
     }

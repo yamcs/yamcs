@@ -17,8 +17,6 @@ import org.yamcs.api.EventProducerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.protobuf.Rest.ListEventsResponse;
-import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
@@ -116,7 +114,7 @@ public class ArchiveEventRestHandler extends RestHandler {
 
                 @Override
                 public void streamClosed(Stream stream) {
-                    completeOK(req, responseb.build(), SchemaRest.ListEventsResponse.WRITE);
+                    completeOK(req, responseb.build());
                 }
             });
         }
@@ -128,7 +126,7 @@ public class ArchiveEventRestHandler extends RestHandler {
 
         // get event from request
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        Event event = req.bodyAsMessage(SchemaYamcs.Event.MERGE).build();
+        Event event = req.bodyAsMessage(Event.newBuilder()).build();
 
         // get event producer for this instance
         EventProducer eventProducer = null;

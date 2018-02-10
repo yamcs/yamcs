@@ -26,7 +26,6 @@ import org.yamcs.YamcsVersion;
 import org.yamcs.parameterarchive.ParameterArchiveMaintenanceRestHandler;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfo;
-import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpRequestHandler;
@@ -55,6 +54,7 @@ import org.yamcs.web.rest.processor.ProcessorParameterRestHandler;
 import org.yamcs.web.rest.processor.ProcessorRestHandler;
 
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -70,18 +70,14 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.util.AttributeKey;
-import io.netty.channel.ChannelHandler.Sharable;
-
 
 /**
- * Matches a request uri to a registered route handler. Stops on the first
- * match.
+ * Matches a request uri to a registered route handler. Stops on the first match.
  * <p>
  * The Router itself has the same granularity as HttpServer: one instance only.
  * <p>
- * When matching a route, priority is first given to built-in routes, only if
- * none match the first matching instance-specific dynamic route is matched.
- * Dynamic routes often mention ':instance' in their url, which will be
+ * When matching a route, priority is first given to built-in routes, only if none match the first matching
+ * instance-specific dynamic route is matched. Dynamic routes often mention ':instance' in their url, which will be
  * expanded upon registration into the actual yamcs instance.
  */
 @Sharable
@@ -95,12 +91,13 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     private LinkedHashMap<Pattern, Map<HttpMethod, RouteConfig>> dynamicRoutes = new LinkedHashMap<>();
 
     private boolean logSlowRequests = true;
-    int SLOW_REQUEST_TIME = 20;//seconds; requests that execute more than this are logged
+    int SLOW_REQUEST_TIME = 20;// seconds; requests that execute more than this are logged
     ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
     public final static int MAX_BODY_SIZE = 65536;
     public static final AttributeKey<RouteMatch> CTX_ROUTE_MATCH = AttributeKey.valueOf("routeMatch");
-    private static final FullHttpResponse CONTINUE = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE, Unpooled.EMPTY_BUFFER);
-    
+    private static final FullHttpResponse CONTINUE = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
+            HttpResponseStatus.CONTINUE, Unpooled.EMPTY_BUFFER);
+
     public Router() {
         registerRouteHandler(null, new ClientRestHandler());
         registerRouteHandler(null, new DisplayRestHandler());
@@ -114,7 +111,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         registerRouteHandler(null, new ArchiveDownloadRestHandler());
         registerRouteHandler(null, new ArchiveEventRestHandler());
         registerRouteHandler(null, new ArchiveIndexRestHandler());
-        registerRouteHandler(null, new ArchivePacketRestHandler());        
+        registerRouteHandler(null, new ArchivePacketRestHandler());
         registerRouteHandler(null, new ParameterArchiveMaintenanceRestHandler());
         registerRouteHandler(null, new ArchiveParameterRestHandler());
         registerRouteHandler(null, new ArchiveStreamRestHandler());
@@ -146,14 +143,16 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         try {
             for (int i = 0; i < declaredMethods.length; i++) {
                 Method reflectedMethod = declaredMethods[i];
-                if (reflectedMethod.isAnnotationPresent(Route.class) || reflectedMethod.isAnnotationPresent(Routes.class)) {
+                if (reflectedMethod.isAnnotationPresent(Route.class)
+                        || reflectedMethod.isAnnotationPresent(Routes.class)) {
                     MethodHandle handle = lookup.unreflect(reflectedMethod);
 
                     Route[] anns = reflectedMethod.getDeclaredAnnotationsByType(Route.class);
                     for (Route ann : anns) {
                         for (String m : ann.method()) {
                             HttpMethod httpMethod = HttpMethod.valueOf(m);
-                            routeConfigs.add(new RouteConfig(routeHandler, ann.path(), ann.priority(), ann.dataLoad(), httpMethod, handle));
+                            routeConfigs.add(new RouteConfig(routeHandler, ann.path(), ann.priority(), ann.dataLoad(),
+                                    httpMethod, handle));
                         }
                     }
                 }
@@ -188,10 +187,10 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         }
     }
 
-    
     /**
-     * At this point we do not have the full request (only the header) so we have to configure the pipeline either for receiving the 
-     * full request or with route specific pipeline for receiving (large amounts of) data in case of dataLoad routes.
+     * At this point we do not have the full request (only the header) so we have to configure the pipeline either for
+     * receiving the full request or with route specific pipeline for receiving (large amounts of) data in case of
+     * dataLoad routes.
      * 
      * @param ctx
      * @param req
@@ -201,16 +200,16 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     public boolean scheduleExecution(ChannelHandlerContext ctx, HttpRequest req, QueryStringDecoder qsDecoder) {
         try {
             String uri = qsDecoder.path();
-           
+
             RouteMatch match = matchURI(req.method(), uri);
-            if(match==null) {
+            if (match == null) {
                 log.info("No route matching URI: '{}'", req.uri());
                 HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.NOT_FOUND);
                 return false;
             }
             ctx.channel().attr(CTX_ROUTE_MATCH).set(match);
             RouteConfig rc = match.getRouteConfig();
-            if(rc.isDataLoad()) {
+            if (rc.isDataLoad()) {
                 try {
                     RouteHandler target = match.routeConfig.routeHandler;
                     match.routeConfig.handle.invoke(target, ctx, req, match);
@@ -220,7 +219,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                 } catch (HttpException e) {
                     log.warn("Error invoking data load handler on URI '{}': {}", req.uri(), e.getMessage());
                     HttpRequestHandler.sendPlainTextError(ctx, req, e.getStatus(), e.getMessage());
-                } catch(Throwable t) {
+                } catch (Throwable t) {
                     log.error("Error invoking data load handler on URI: '{}'", req.uri(), t);
                     HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST);
                 }
@@ -228,8 +227,8 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                 ctx.pipeline().addLast(new HttpContentCompressor());
                 ctx.pipeline().addLast(new ChunkedWriteHandler());
 
-                //this will cause the channelRead0 to be called as soon as the request is complete 
-                // it will also reject requests whose body is greater than the MAX_BODY_SIZE) 
+                // this will cause the channelRead0 to be called as soon as the request is complete
+                // it will also reject requests whose body is greater than the MAX_BODY_SIZE)
                 ctx.pipeline().addLast(new HttpObjectAggregator(MAX_BODY_SIZE));
                 ctx.pipeline().addLast(this);
                 ctx.fireChannelRead(req);
@@ -252,7 +251,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         log.debug("R{}: Handling REST Request {} {}", restReq.getRequestId(), req.method(), req.uri());
         dispatch(restReq, match);
     }
-    
+
     public RouteMatch matchURI(HttpMethod method, String uri) throws MethodNotAllowedException {
         Set<HttpMethod> allowedMethods = null;
         for (Entry<Pattern, Map<HttpMethod, RouteConfig>> entry : defaultRoutes.entrySet()) {
@@ -293,36 +292,39 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     }
 
     protected void dispatch(RestRequest req, RouteMatch match) {
-        ScheduledFuture<?> x = timer.schedule(() ->{
-            log.error("R{} blocking the netty thread for 2 seconds. uri: {}", req.getRequestId(), req.getHttpRequest().uri());
-        }
-        , 2, TimeUnit.SECONDS);
+        ScheduledFuture<?> x = timer.schedule(() -> {
+            log.error("R{} blocking the netty thread for 2 seconds. uri: {}", req.getRequestId(),
+                    req.getHttpRequest().uri());
+        }, 2, TimeUnit.SECONDS);
 
-        //the handlers will send themselves the response unless they throw an exception, case which is handled in the catch below.
+        // the handlers will send themselves the response unless they throw an exception, case which is handled in the
+        // catch below.
         try {
             RouteHandler target = match.routeConfig.routeHandler;
             match.routeConfig.handle.invoke(target, req);
             req.getCompletableFuture().whenComplete((channelFuture, e) -> {
-                if(e!=null) {
-                    log.debug("R{}: REST request execution finished with error: {}, transferred bytes: {}", req.getRequestId(), e.getMessage(), req.getTransferredSize());
+                if (e != null) {
+                    log.debug("R{}: REST request execution finished with error: {}, transferred bytes: {}",
+                            req.getRequestId(), e.getMessage(), req.getTransferredSize());
                 } else {
-                    log.debug("R{}: REST request execution finished successfully, transferred bytes: {}", req.getRequestId(), req.getTransferredSize());
+                    log.debug("R{}: REST request execution finished successfully, transferred bytes: {}",
+                            req.getRequestId(), req.getTransferredSize());
                 }
             });
-        } catch(Throwable t) {
+        } catch (Throwable t) {
             req.getCompletableFuture().completeExceptionally(t);
             handleException(req, t);
         }
         x.cancel(true);
 
         CompletableFuture<Void> cf = req.getCompletableFuture();
-        if(logSlowRequests) {
-            timer.schedule(() ->{
-                if(!cf.isDone()) {
-                    log.warn("R{} executing for more than 20 seconds. uri: {}", req.getRequestId(), req.getHttpRequest().uri());
+        if (logSlowRequests) {
+            timer.schedule(() -> {
+                if (!cf.isDone()) {
+                    log.warn("R{} executing for more than 20 seconds. uri: {}", req.getRequestId(),
+                            req.getHttpRequest().uri());
                 }
-            }
-            , 20, TimeUnit.SECONDS);
+            }, 20, TimeUnit.SECONDS);
         }
     }
 
@@ -332,8 +334,9 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             log.error(String.format("R%d: Reporting internal server error to client", req.getRequestId()), e);
             RestHandler.sendRestError(req, e.getStatus(), e);
         } else if (t instanceof HttpException) {
-            HttpException e = (HttpException)t;
-            log.warn("R{}: Sending nominal exception {} back to client: {}", req.getRequestId(), e.getStatus(), e.getMessage());
+            HttpException e = (HttpException) t;
+            log.warn("R{}: Sending nominal exception {} back to client: {}", req.getRequestId(), e.getStatus(),
+                    e.getMessage());
             RestHandler.sendRestError(req, e.getStatus(), e);
         } else {
             log.error(String.format("R%d: Reporting internal server error to client", req.getRequestId()), t);
@@ -381,9 +384,9 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         final HttpMethod httpMethod;
         final MethodHandle handle;
         final boolean dataLoad;
-        
-        
-        RouteConfig(RouteHandler routeHandler, String originalPath, boolean priority, boolean dataLoad, HttpMethod httpMethod, MethodHandle handle) {
+
+        RouteConfig(RouteHandler routeHandler, String originalPath, boolean priority, boolean dataLoad,
+                HttpMethod httpMethod, MethodHandle handle) {
             this.routeHandler = routeHandler;
             this.originalPath = originalPath;
             this.priority = priority;
@@ -406,7 +409,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                 }
             }
         }
-        
+
         public boolean isDataLoad() {
             return dataLoad;
         }
@@ -423,7 +426,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             this.regexMatch = regexMatch;
             this.routeConfig = routeConfig;
         }
-        
+
         public RouteConfig getRouteConfig() {
             return routeConfig;
         }
@@ -434,11 +437,10 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     }
 
     /**
-     * 'Documents' all registered resources, and provides some
-     * general server information.
+     * 'Documents' all registered resources, and provides some general server information.
      */
     private final class OverviewRouteHandler extends RestHandler {
-        @Route(path="/api", method="GET")
+        @Route(path = "/api", method = "GET")
         public void getApiOverview(RestRequest req) throws HttpException {
             GetApiOverviewResponse.Builder responseb = GetApiOverviewResponse.newBuilder();
             responseb.setYamcsVersion(YamcsVersion.version);
@@ -472,9 +474,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                 });
             }
             builders.values().forEach(b -> responseb.addRoute(b));
-            completeOK(req, responseb.build(), SchemaRest.GetApiOverviewResponse.WRITE);
+            completeOK(req, responseb.build());
         }
     }
-
- 
 }

@@ -7,70 +7,78 @@ import org.yamcs.api.ws.WSConstants;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
+import com.google.gson.stream.JsonWriter;
+import com.google.protobuf.Message;
+import com.google.protobuf.util.JsonFormat;
 
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
-import io.protostuff.JsonIOUtil;
-import io.protostuff.Schema;
 
 public class JsonEncoder implements WebSocketEncoder {
 
-    private JsonFactory jsonFactory = new JsonFactory();
-
     @Override
     public WebSocketFrame encodeReply(WebSocketReplyData reply) throws IOException {
-        StringWriter sw=new StringWriter();
-        
-        JsonGenerator g=jsonFactory.createGenerator(sw);
-        writeMessageStart(g, WSConstants.MESSAGE_TYPE_REPLY, reply.getSequenceNumber());
-        writeMessageEnd(g);
+        StringWriter sw = new StringWriter();
+        try (JsonWriter writer = new JsonWriter(sw)) {
+            writer.beginArray();
+            writer.value(WSConstants.PROTOCOL_VERSION);
+            writer.value(WSConstants.MESSAGE_TYPE_REPLY);
+            writer.value(reply.getSequenceNumber());
+            writer.endArray();
+        }
         return new TextWebSocketFrame(sw.toString());
     }
 
     @Override
     public WebSocketFrame encodeException(WebSocketException e) throws IOException {
         StringWriter sw = new StringWriter();
-        JsonGenerator g = jsonFactory.createGenerator(sw);
-        writeMessageStart(g, WSConstants.MESSAGE_TYPE_EXCEPTION, e.getRequestId());
-        g.writeStartObject();
-        if (e.getDataType().equals("STRING")) {
-            g.writeStringField("et", "STRING");
-            g.writeStringField("msg", e.getMessage());
-        } else {
-            g.writeStringField("et", e.getDataType());
-            g.writeFieldName("msg");
-            JsonIOUtil.writeTo(g, e.getData(), e.getDataSchema(), false);
+        try (JsonWriter writer = new JsonWriter(sw)) {
+            writer.beginArray();
+            writer.value(WSConstants.PROTOCOL_VERSION);
+            writer.value(WSConstants.MESSAGE_TYPE_EXCEPTION);
+            writer.value(e.getRequestId());
+
+            writer.beginObject();
+
+            writer.name("et");
+            writer.value(e.getDataType());
+
+            if ("STRING".equals(e.getDataType())) {
+                writer.name("msg");
+                writer.value(e.getMessage());
+            } else {
+                writer.name("msg");
+                String json = JsonFormat.printer().print(e.getData());
+                writer.jsonValue(json);
+            }
+            writer.endObject();
+            writer.endArray();
         }
-        g.writeEndObject();
-        writeMessageEnd(g);
         return new TextWebSocketFrame(sw.toString());
     }
 
     @Override
-    public <T> WebSocketFrame encodeData(int sequenceNumber, ProtoDataType dataType, T message, Schema<T> schema) throws IOException {
-        StringWriter sw=new StringWriter();
-        JsonGenerator g=jsonFactory.createGenerator(sw);
-        writeMessageStart(g, WSConstants.MESSAGE_TYPE_DATA, sequenceNumber);
-        g.writeStartObject();
-        g.writeStringField("dt", dataType.name());
-        g.writeFieldName("data");
-        JsonIOUtil.writeTo(g, message, schema, false);
-        g.writeEndObject();
-        writeMessageEnd(g);
+    public <T extends Message> WebSocketFrame encodeData(int sequenceNumber, ProtoDataType dataType, T message)
+            throws IOException {
+        StringWriter sw = new StringWriter();
+        try (JsonWriter writer = new JsonWriter(sw)) {
+            writer.beginArray();
+            writer.value(WSConstants.PROTOCOL_VERSION);
+            writer.value(WSConstants.MESSAGE_TYPE_DATA);
+            writer.value(sequenceNumber);
+
+            writer.beginObject();
+
+            writer.name("dt");
+            writer.value(dataType.name());
+
+            writer.name("data");
+            String json = JsonFormat.printer().print(message);
+            writer.jsonValue(json);
+
+            writer.endObject();
+            writer.endArray();
+        }
         return new TextWebSocketFrame(sw.toString());
-    }
-
-    private void writeMessageStart(JsonGenerator g, int messageType, int seqId) throws IOException {
-        g.writeStartArray();
-        g.writeNumber(WSConstants.PROTOCOL_VERSION);
-        g.writeNumber(messageType);
-        g.writeNumber(seqId);
-    }
-
-    private void writeMessageEnd(JsonGenerator g) throws IOException {
-        g.writeEndArray();
-        g.close();
     }
 }

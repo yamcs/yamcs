@@ -4,9 +4,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-
     <version>4.0.2-SNAPSHOT</version>
-
     <relativePath>..</relativePath>
   </parent>
 
@@ -17,162 +15,6 @@
 
   <build>
     <finalName>${project.artifactId}-${project.version}</finalName>
-    <plugins>
-      <plugin>  <!-- Protostuff can be compiled from command line with mvn protostuff:compile -->
-        <groupId>io.protostuff</groupId>
-        <artifactId>protostuff-maven-plugin</artifactId>
-        <version>${protostuffVersion}</version>
-        <configuration>
-          <protoModules>
-            <protoModule>
-              <source>src/main/yamcs.proto</source>
-              <outputDir>src/main/java</outputDir>
-              <output>java_v2protoc_schema</output>
-              <encoding>UTF-8</encoding>
-              <options>
-                <property>
-                  <name>generate_field_map</name>
-                </property>
-                <property>
-                  <name>enums_by_name</name>
-                </property>
-              </options>
-            </protoModule>
-            <protoModule>
-              <source>src/main/archive.proto</source>
-              <outputDir>src/main/java</outputDir>
-              <output>java_v2protoc_schema</output>
-              <encoding>UTF-8</encoding>
-              <options>
-                <property>
-                  <name>generate_field_map</name>
-                </property>
-                <property>
-                  <name>enums_by_name</name>
-                </property>
-              </options>
-            </protoModule>
-            <protoModule>
-              <source>src/main/mdb.proto</source>
-              <outputDir>src/main/java</outputDir>
-              <output>java_v2protoc_schema</output>
-              <encoding>UTF-8</encoding>
-              <options>
-                <property>
-                  <name>generate_field_map</name>
-                </property>
-                <property>
-                  <name>enums_by_name</name>
-                </property>
-              </options>
-            </protoModule>
-            <protoModule>
-              <source>src/main/pvalue.proto</source>
-              <outputDir>src/main/java</outputDir>
-              <output>java_v2protoc_schema</output>
-              <encoding>UTF-8</encoding>
-              <options>
-                <property>
-                  <name>generate_field_map</name>
-                </property>
-                <property>
-                  <name>enums_by_name</name>
-                </property>
-              </options>
-            </protoModule>
-            <protoModule>
-              <source>src/main/rest.proto</source>
-              <outputDir>src/main/java</outputDir>
-              <output>java_v2protoc_schema</output>
-              <encoding>UTF-8</encoding>
-              <options>
-                <property>
-                  <name>generate_field_map</name>
-                </property>
-                <property>
-                  <name>enums_by_name</name>
-                </property>
-              </options>
-            </protoModule>
-            <protoModule>
-              <source>src/main/alarms.proto</source>
-              <outputDir>src/main/java</outputDir>
-              <output>java_v2protoc_schema</output>
-              <encoding>UTF-8</encoding>
-              <options>
-                <property>
-                  <name>generate_field_map</name>
-                </property>
-                <property>
-                  <name>enums_by_name</name>
-                </property>
-              </options>
-            </protoModule>
-            <protoModule>
-              <source>src/main/commanding.proto</source>
-              <outputDir>src/main/java</outputDir>
-              <output>java_v2protoc_schema</output>
-              <encoding>UTF-8</encoding>
-              <options>
-                <property>
-                  <name>generate_field_map</name>
-                </property>
-                <property>
-                  <name>enums_by_name</name>
-                </property>
-              </options>
-            </protoModule>
-            <protoModule>
-              <source>src/main/web.proto</source>
-              <outputDir>src/main/java</outputDir>
-              <output>java_v2protoc_schema</output>
-              <encoding>UTF-8</encoding>
-              <options>
-                <property>
-                  <name>generate_field_map</name>
-                </property>
-                <property>
-                  <name>enums_by_name</name>
-                </property>
-              </options>
-            </protoModule>
-            <protoModule>
-              <source>src/main/yamcsManagement.proto</source>
-              <outputDir>src/main/java</outputDir>
-              <output>java_v2protoc_schema</output>
-              <encoding>UTF-8</encoding>
-              <options>
-                <property>
-                  <name>generate_field_map</name>
-                </property>
-                <property>
-                  <name>enums_by_name</name>
-                </property>
-              </options>
-            </protoModule>
-            <protoModule>
-              <source>src/main/table.proto</source>
-              <outputDir>src/main/java</outputDir>
-              <output>java_v2protoc_schema</output>
-              <encoding>UTF-8</encoding>
-              <options>
-                <property>
-                  <name>generate_field_map</name>
-                </property>
-                <property>
-                  <name>enums_by_name</name>
-                </property>
-              </options>
-            </protoModule>
-          </protoModules>
-        </configuration>
-        <executions>
-          <execution>
-            <id>compile-protostuff</id>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
   </build>
 
   <dependencies>
@@ -181,9 +23,14 @@
       <artifactId>slf4j-api</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.7</version>
+    </dependency>
+    <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>2.6.1</version>
+      <version>${protobufVersion}</version>
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
@@ -199,17 +46,6 @@
       <groupId>net.sourceforge.javacsv</groupId>
       <artifactId>javacsv</artifactId>
       <version>2.0</version>
-    </dependency>
-    <dependency>
-      <groupId>io.protostuff</groupId>
-      <artifactId>protostuff-api</artifactId>
-      <version>${protostuffVersion}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.protostuff</groupId>
-      <artifactId>protostuff-json</artifactId>
-      <version>${protostuffVersion}</version>
     </dependency>
 
     <!-- TEST DEPENDENCIES -->

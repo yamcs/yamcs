@@ -47,7 +47,7 @@
               <overWriteIfNewer>true</overWriteIfNewer>
               <includeScope>runtime</includeScope>
               <excludeGroupIds>org.yamcs,org.yaml,org.codehaus.janino,net.sourceforge.jdatepicker,net.sourceforge.jexcelapi,com.google.guava,org.rocksdb,com.beust,
-                io.netty,io.protostuff,net.sourceforge.javacsv,com.google.protobuf,org.slf4j
+                io.netty,net.sourceforge.javacsv,com.google.code.gson,com.google.protobuf,org.slf4j
               </excludeGroupIds>
             </configuration>
           </execution>

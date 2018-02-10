@@ -6,7 +6,6 @@ import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.protobuf.Rest.EditServiceRequest;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
-import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 import org.yamcs.security.Privilege;
 import org.yamcs.web.BadRequestException;
@@ -23,25 +22,23 @@ import com.google.common.util.concurrent.Service;
 public class ServiceRestHandler extends RestHandler {
     static String GLOBAL_INSTANCE = "_global";
 
-
-    @Route(path="/api/services/:instance?", method="GET")
-    public void listServices(RestRequest req) throws HttpException {        
+    @Route(path = "/api/services/:instance?", method = "GET")
+    public void listServices(RestRequest req) throws HttpException {
         checkPrivileges(req);
         String instance = req.getRouteParam("instance");
-        if(instance==null) {
+        if (instance == null) {
             throw new BadRequestException("No instance specified");
         }
         boolean global = false;
-        if(GLOBAL_INSTANCE.equals(instance)) {
+        if (GLOBAL_INSTANCE.equals(instance)) {
             global = true;
         } else {
             verifyInstance(req, instance);
         }
 
-
         List<ServiceInfo> slist;
 
-        if(global) {
+        if (global) {
             slist = YamcsServer.getGlobalServices();
         } else {
             YamcsServerInstance ysi = YamcsServer.getInstance(instance);
@@ -51,27 +48,26 @@ public class ServiceRestHandler extends RestHandler {
         ListServiceInfoResponse.Builder responseb = ListServiceInfoResponse.newBuilder();
         responseb.addAllService(slist);
 
-        completeOK(req, responseb.build(), SchemaRest.ListServiceInfoResponse.WRITE);
+        completeOK(req, responseb.build());
     }
 
-
-    @Route(path="/api/services/:instance/:name", method={"PATCH", "PUT", "POST"})
-    @Route(path="/api/services/:instance/service/:name", method={"PATCH", "PUT", "POST"})
+    @Route(path = "/api/services/:instance/:name", method = { "PATCH", "PUT", "POST" })
+    @Route(path = "/api/services/:instance/service/:name", method = { "PATCH", "PUT", "POST" })
     public void editService(RestRequest req) throws HttpException {
         checkPrivileges(req);
         String instance = req.getRouteParam("instance");
-        if(instance==null) {
+        if (instance == null) {
             throw new BadRequestException("No instance specified");
         }
         boolean global = false;
-        if(GLOBAL_INSTANCE.equals(instance)) {
+        if (GLOBAL_INSTANCE.equals(instance)) {
             global = true;
         } else {
             verifyInstance(req, instance);
         }
         String serviceName = req.getRouteParam("name");
 
-        EditServiceRequest request = req.bodyAsMessage(SchemaRest.EditServiceRequest.MERGE).build();
+        EditServiceRequest request = req.bodyAsMessage(EditServiceRequest.newBuilder()).build();
         String state = null;
         if (request.hasState()) {
             state = request.getState();
@@ -80,7 +76,7 @@ public class ServiceRestHandler extends RestHandler {
             state = req.getQueryParameter("state");
         }
 
-        if(serviceName==null) {
+        if (serviceName == null) {
             throw new BadRequestException("No service name specified");
         }
 
@@ -89,13 +85,13 @@ public class ServiceRestHandler extends RestHandler {
             case "stop":
             case "stopped":
                 Service s;
-                if(global) {
+                if (global) {
                     s = YamcsServer.getGlobalService(serviceName);
                 } else {
                     s = YamcsServer.getInstance(instance).getService(serviceName);
                 }
-                if(s==null) {
-                    throw new NotFoundException(req, "No service by name '"+serviceName+"'");
+                if (s == null) {
+                    throw new NotFoundException(req, "No service by name '" + serviceName + "'");
                 }
 
                 s.stopAsync();
@@ -103,7 +99,7 @@ public class ServiceRestHandler extends RestHandler {
                 return;
             case "running":
                 try {
-                    if(global) {
+                    if (global) {
                         YamcsServer.startGlobalService(serviceName);
                     } else {
                         YamcsServer.getInstance(instance).startService(serviceName);
@@ -122,7 +118,7 @@ public class ServiceRestHandler extends RestHandler {
     }
 
     private void checkPrivileges(RestRequest req) throws HttpException {
-        if(!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.SystemPrivilege.MayControlServices))  {
+        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.SystemPrivilege.MayControlServices)) {
             throw new ForbiddenException("No privilege for this operation");
         }
     }

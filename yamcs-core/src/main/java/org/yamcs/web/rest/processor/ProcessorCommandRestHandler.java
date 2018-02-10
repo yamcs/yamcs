@@ -12,11 +12,10 @@ import org.yamcs.commanding.CommandQueueManager;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.protobuf.Commanding;
-import org.yamcs.protobuf.Rest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest.Assignment;
 import org.yamcs.protobuf.Rest.IssueCommandResponse;
-import org.yamcs.protobuf.SchemaRest;
+import org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest;
 import org.yamcs.security.InvalidAuthenticationToken;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.web.BadRequestException;
@@ -26,12 +25,16 @@ import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Route;
-import org.yamcs.xtce.*;
+import org.yamcs.xtce.Argument;
+import org.yamcs.xtce.ArgumentAssignment;
+import org.yamcs.xtce.EnumeratedArgumentType;
+import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.StringArgumentType;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
+import org.yaml.snakeyaml.util.UriEncoder;
 
 import com.google.protobuf.ByteString;
-
-import org.yaml.snakeyaml.util.UriEncoder;
 
 /**
  * Processes command requests
@@ -49,14 +52,13 @@ public class ProcessorCommandRestHandler extends RestHandler {
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
         MetaCommand cmd = verifyCommand(req, mdb, requestCommandName);
 
-
         String origin = "";
         int sequenceNumber = 0;
         boolean dryRun = false;
         String comment = null;
         List<ArgumentAssignment> assignments = new ArrayList<>();
         if (req.hasBody()) {
-            IssueCommandRequest request = req.bodyAsMessage(SchemaRest.IssueCommandRequest.MERGE).build();
+            IssueCommandRequest request = req.bodyAsMessage(IssueCommandRequest.newBuilder()).build();
             if (request.hasOrigin()) {
                 origin = request.getOrigin();
             }
@@ -98,28 +100,30 @@ public class ProcessorCommandRestHandler extends RestHandler {
         // Prepare the command
         PreparedCommand preparedCommand;
         try {
-            preparedCommand = processor.getCommandingManager().buildCommand(cmd, assignments, origin, sequenceNumber, req.getAuthToken());
+            preparedCommand = processor.getCommandingManager().buildCommand(cmd, assignments, origin, sequenceNumber,
+                    req.getAuthToken());
 
-            //make the source - should perhaps come from the client
+            // make the source - should perhaps come from the client
             StringBuilder sb = new StringBuilder();
             sb.append(requestCommandName);
             sb.append("(");
             boolean first = true;
-            for(ArgumentAssignment aa:assignments) {
+            for (ArgumentAssignment aa : assignments) {
                 Argument a = preparedCommand.getMetaCommand().getArgument(aa.getArgumentName());
-                if(!first) {
+                if (!first) {
                     sb.append(", ");
                 } else {
                     first = false;
                 }
                 sb.append(aa.getArgumentName()).append(": ");
 
-                boolean needDelimiter = a !=null && (a.getArgumentType() instanceof StringArgumentType || a.getArgumentType() instanceof EnumeratedArgumentType);
-                if(needDelimiter) {
+                boolean needDelimiter = a != null && (a.getArgumentType() instanceof StringArgumentType
+                        || a.getArgumentType() instanceof EnumeratedArgumentType);
+                if (needDelimiter) {
                     sb.append("\"");
                 }
                 sb.append(aa.getArgumentValue());
-                if(needDelimiter) {
+                if (needDelimiter) {
                     sb.append("\"");
                 }
             }
@@ -141,9 +145,10 @@ public class ProcessorCommandRestHandler extends RestHandler {
                 queue = mgr.getQueue(req.getAuthToken(), preparedCommand);
             } else {
                 queue = processor.getCommandingManager().sendCommand(req.getAuthToken(), preparedCommand);
-                if(comment != null) {
+                if (comment != null) {
                     try {
-                        processor.getCommandingManager().addToCommandHistory(preparedCommand.getCommandId(), "Comment", comment, req.getAuthToken());
+                        processor.getCommandingManager().addToCommandHistory(preparedCommand.getCommandId(), "Comment",
+                                comment, req.getAuthToken());
                     } catch (NoPermissionException e) {
                         throw new ForbiddenException(e);
                     }
@@ -160,7 +165,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
         response.setSource(preparedCommand.getSource());
         response.setBinary(ByteString.copyFrom(preparedCommand.getBinary()));
         response.setHex(StringConverter.arrayToHexString(preparedCommand.getBinary()));
-        completeOK(req, response.build(), SchemaRest.IssueCommandResponse.WRITE);
+        completeOK(req, response.build());
     }
 
     @Route(path = "/api/processors/:instance/:processor/commandhistory/:name*", method = "POST")
@@ -172,16 +177,18 @@ public class ProcessorCommandRestHandler extends RestHandler {
 
         try {
             if (req.hasBody()) {
-                Rest.UpdateCommandHistoryRequest request = req.bodyAsMessage(SchemaRest.UpdateCommandHistoryRequest.MERGE).build();
+                UpdateCommandHistoryRequest request = req.bodyAsMessage(UpdateCommandHistoryRequest.newBuilder())
+                        .build();
                 Commanding.CommandId cmdId = request.getCmdId();
 
-                for (Rest.UpdateCommandHistoryRequest.KeyValue historyEntry : request.getHistoryEntryList()) {
-                    processor.getCommandingManager().addToCommandHistory(cmdId, historyEntry.getKey(), historyEntry.getValue(), req.getAuthToken());
+                for (UpdateCommandHistoryRequest.KeyValue historyEntry : request.getHistoryEntryList()) {
+                    processor.getCommandingManager().addToCommandHistory(cmdId, historyEntry.getKey(),
+                            historyEntry.getValue(), req.getAuthToken());
                 }
             }
         } catch (NoPermissionException e) {
             throw new ForbiddenException(e);
-        } 
+        }
 
         completeOK(req);
     }

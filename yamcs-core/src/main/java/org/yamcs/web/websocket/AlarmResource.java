@@ -10,7 +10,6 @@ import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmListener;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.protobuf.Alarms.AlarmData;
-import org.yamcs.protobuf.SchemaAlarms;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.web.rest.processor.ProcessorHelper;
@@ -122,7 +121,7 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
         AlarmData alarmData = ProcessorHelper.toAlarmData(type, activeAlarm);
 
         try {
-            wsHandler.sendData(ProtoDataType.ALARM_DATA, alarmData, SchemaAlarms.AlarmData.WRITE);
+            wsHandler.sendData(ProtoDataType.ALARM_DATA, alarmData);
         } catch (Exception e) {
             log.warn("Got error when sending alarm, quitting", e);
             quit();

@@ -9,8 +9,6 @@ import org.yamcs.YamcsException;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Rest.EditClientRequest;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
-import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
@@ -34,21 +32,21 @@ public class ClientRestHandler extends RestHandler {
         for (ClientInfo client : clients) {
             responseb.addClient(ClientInfo.newBuilder(client).setState(ClientState.CONNECTED));
         }
-        completeOK(req, responseb.build(), SchemaRest.ListClientsResponse.WRITE);
+        completeOK(req, responseb.build());
     }
 
     @Route(path = "/api/clients/:id", method = "GET")
     public void getClient(RestRequest req) throws HttpException {
         ClientInfo ci = verifyClient(req, req.getIntegerRouteParam("id"));
         ClientInfo.Builder responseb = ClientInfo.newBuilder(ci).setState(ClientState.CONNECTED);
-        completeOK(req, responseb.build(), SchemaYamcsManagement.ClientInfo.WRITE);
+        completeOK(req, responseb.build());
     }
 
     @Route(path = "/api/clients/:id", method = { "PATCH", "PUT", "POST" })
     public void patchClient(RestRequest restReq) throws HttpException {
         ClientInfo ci = verifyClient(restReq, restReq.getIntegerRouteParam("id"));
 
-        EditClientRequest request = restReq.bodyAsMessage(SchemaRest.EditClientRequest.MERGE).build();
+        EditClientRequest request = restReq.bodyAsMessage(EditClientRequest.newBuilder()).build();
         String newProcessorName = null;
         String newInstance = ci.getInstance(); // By default, use same instance
         if (request.hasInstance()) {

@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.management.LinkListener;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.SchemaYamcsManagement;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.YamcsManagement.LinkEvent;
@@ -28,14 +27,15 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+            throws WebSocketException {
         switch (ctx.getOperation()) {
         case OP_subscribe:
             return subscribe(ctx.getRequestId());
         case OP_unsubscribe:
             return unsubscribe(ctx.getRequestId());
         default:
-            throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '"+ctx.getOperation()+"'");
+            throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
         }
     }
 
@@ -90,7 +90,7 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
             LinkEvent.Builder linkb = LinkEvent.newBuilder();
             linkb.setType(type);
             linkb.setLinkInfo(linkInfo);
-            wsHandler.sendData(ProtoDataType.LINK_EVENT, linkb.build(), SchemaYamcsManagement.LinkEvent.WRITE);
+            wsHandler.sendData(ProtoDataType.LINK_EVENT, linkb.build());
         } catch (Exception e) {
             log.warn("got error when sending link event, quitting", e);
             quit();

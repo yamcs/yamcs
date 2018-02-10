@@ -4,7 +4,6 @@ import org.yamcs.archive.CommandHistoryRecorder;
 import org.yamcs.archive.GPBHelper;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Rest.ListCommandsResponse;
-import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
@@ -49,9 +48,10 @@ public class ArchiveCommandRestHandler extends RestHandler {
                 CommandHistoryEntry che = GPBHelper.tupleToCommandHistoryEntry(tuple);
                 responseb.addEntry(che);
             }
+
             @Override
             public void streamClosed(Stream stream) {
-                completeOK(req, responseb.build(), SchemaRest.ListCommandsResponse.WRITE);
+                completeOK(req, responseb.build());
             }
         });
     }
