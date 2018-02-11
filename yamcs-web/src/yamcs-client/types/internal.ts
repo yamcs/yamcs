@@ -6,6 +6,7 @@ import {
   Parameter,
   Record,
   Service,
+  SpaceSystem,
   Stream,
   Table,
 } from './main';
@@ -44,6 +45,10 @@ export interface LinksWrapper {
 
 export interface ServicesWrapper {
   service: Service[];
+}
+
+export interface SpaceSystemsWrapper {
+  spaceSystem: SpaceSystem[];
 }
 
 export interface ParametersWrapper {

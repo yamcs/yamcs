@@ -11,6 +11,7 @@ export {
   DisplayFolder,
   Event,
   EventSeverity,
+  HistoryInfo,
   Instance,
   Link,
   Parameter,
@@ -18,8 +19,10 @@ export {
   ParameterValue,
   Record,
   Service,
+  SpaceSystem,
   Stream,
   Table,
+  UnitInfo,
   Value,
 } from './types/main';
 

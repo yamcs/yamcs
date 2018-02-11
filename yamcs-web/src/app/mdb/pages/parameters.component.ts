@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
-import { Instance, Parameter } from '../../../yamcs-client';
+import { Parameter } from '../../../yamcs-client';
 
 import { YamcsService } from '../../core/services/yamcs.service';
 
@@ -11,7 +11,6 @@ import { YamcsService } from '../../core/services/yamcs.service';
 })
 export class ParametersPageComponent {
 
-  instance$: Observable<Instance>;
   parameters$: Observable<Parameter[]>;
 
   constructor(yamcs: YamcsService) {

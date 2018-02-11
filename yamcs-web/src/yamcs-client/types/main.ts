@@ -81,6 +81,30 @@ export interface Processor {
   name: string;
 }
 
+export interface MissionDatabase {
+  configName: string;
+  name: string;
+  version: string;
+  spaceSystem: SpaceSystem[];
+}
+
+export interface SpaceSystem {
+  name: string;
+  qualifiedName: string;
+  shortDescription?: string;
+  longDescription?: string;
+  version: string;
+  history?: HistoryInfo[];
+  sub: SpaceSystem[];
+}
+
+export interface HistoryInfo {
+  version: string;
+  date: string;
+  message: string;
+  author: string;
+}
+
 export interface Parameter {
   name: string;
   qualifiedName: string;
@@ -215,4 +239,11 @@ export interface ParameterSubscriptionRequest {
   abortOnInvalid: boolean;
   updateOnExpiration: boolean;
   sendFromCache: boolean;
+}
+
+export interface GetParametersOptions {
+  namespace?: string;
+  recurse?: boolean;
+  type?: string;
+  q?: string;
 }

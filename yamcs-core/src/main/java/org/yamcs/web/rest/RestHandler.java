@@ -31,6 +31,7 @@ import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
@@ -202,6 +203,36 @@ public abstract class RestHandler extends RouteHandler {
         }
 
         throw new NotFoundException(req, "No such namespace");
+    }
+
+    protected static SpaceSystem verifySpaceSystem(RestRequest req, XtceDb mdb, String pathName)
+            throws NotFoundException {
+        String namespace;
+        String name;
+        int lastSlash = pathName.lastIndexOf('/');
+        if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
+            namespace = "";
+            name = pathName;
+        } else {
+            namespace = pathName.substring(0, lastSlash);
+            name = pathName.substring(lastSlash + 1);
+        }
+
+        // First try with a prefixed slash (should be the common case)
+        NamedObjectId id = NamedObjectId.newBuilder().setNamespace("/" + namespace).setName(name).build();
+        SpaceSystem spaceSystem = mdb.getSpaceSystem(id);
+        if (spaceSystem != null) {
+            return spaceSystem;
+        }
+
+        // Maybe some non-xtce namespace like MDB:OPS Name
+        id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
+        spaceSystem = mdb.getSpaceSystem(id);
+        if (spaceSystem != null) {
+            return spaceSystem;
+        }
+
+        throw new NotFoundException(req, "No such space system");
     }
 
     protected static NamedObjectId verifyParameterId(RestRequest req, XtceDb mdb, String pathName)

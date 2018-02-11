@@ -1,0 +1,14 @@
+<table yaDataTable *ngIf="spaceSystem$ | async as spaceSystem">
+  <tr>
+    <th>Version</th>
+    <th>Date</th>
+    <th>Message</th>
+    <th>Author</th>
+  </tr>
+  <tr *ngFor="let history of spaceSystem.history">
+    <td>{{ history.version }}</td>
+    <td width="1" style="white-space: nowrap">{{ history.date }}</td>
+    <td style="white-space: pre">{{ history.message }}</td>
+    <td>{{ history.author }}</td>
+  </tr>
+</table>

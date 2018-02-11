@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { catchError, filter, map } from 'rxjs/operators';
 import { WebSocketClient } from './WebSocketClient';
 
@@ -11,6 +11,7 @@ import {
   ParametersWrapper,
   RecordsWrapper,
   ServicesWrapper,
+  SpaceSystemsWrapper,
   StreamsWrapper,
   TablesWrapper,
 } from './types/internal';
@@ -20,12 +21,15 @@ import {
   DisplayInfo,
   Event,
   Link,
+  MissionDatabase,
   Parameter,
   Record,
   Service,
+  SpaceSystem,
   Stream,
   Table,
   ParameterSubscriptionRequest,
+  GetParametersOptions,
 } from './types/main';
 
 export class InstanceClient {
@@ -138,8 +142,29 @@ export class InstanceClient {
     );
   }
 
-  getParameters() {
-    return this.http.get<ParametersWrapper>(`${this.yamcs.apiUrl}/mdb/${this.instance}/parameters`).pipe(
+  getRootSpaceSystems() {
+    return this.http.get<MissionDatabase>(`${this.yamcs.apiUrl}/mdb/${this.instance}`).pipe(
+      map(msg => msg.spaceSystem),
+      catchError(this.yamcs.handleError<SpaceSystem[]>([]))
+    );
+  }
+
+  getSpaceSystems() {
+    return this.http.get<SpaceSystemsWrapper>(`${this.yamcs.apiUrl}/mdb/${this.instance}/space-systems`).pipe(
+      map(msg => msg.spaceSystem),
+      catchError(this.yamcs.handleError<SpaceSystem[]>([]))
+    );
+  }
+
+  getSpaceSystem(qualifiedName: string) {
+    return this.http.get<SpaceSystem>(`${this.yamcs.apiUrl}/mdb/${this.instance}/space-systems${qualifiedName}`).pipe(
+      catchError(this.yamcs.handleError<SpaceSystem>())
+    );
+  }
+
+  getParameters(options: GetParametersOptions = {}) {
+    const params = this.toParams(options);
+    return this.http.get<ParametersWrapper>(`${this.yamcs.apiUrl}/mdb/${this.instance}/parameters`, { params }).pipe(
       map(msg => msg.parameter),
       catchError(this.yamcs.handleError<Parameter[]>([]))
     );
@@ -178,5 +203,15 @@ export class InstanceClient {
     if (!this.webSocketClient) {
       this.webSocketClient = new WebSocketClient(this.instance);
     }
+  }
+
+  private toParams(options: {[key: string]: any}) {
+    let params = new HttpParams();
+    for (const prop in options) {
+      if (options.hasOwnProperty(prop)) {
+        params = params.append(prop, String(options[prop]));
+      }
+    }
+    return params;
   }
 }

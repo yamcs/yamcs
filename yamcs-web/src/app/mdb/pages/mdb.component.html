@@ -2,14 +2,26 @@
   <mat-sidenav mode="side" opened="true">
     <mat-toolbar>
       <mat-toolbar-row>
-        <mat-icon>book</mat-icon>
+          <mat-icon class="icon32" style="margin-right: 16px">book</mat-icon>
         MDB
       </mat-toolbar-row>
     </mat-toolbar>
 
-    <mat-nav-list dense>
-      <a mat-list-item routerLink="parameters">Parameters</a>
-      <a mat-list-item routerLink="commands">Commands</a>
+    <mat-nav-list dense *ngIf="instance$ | async as instance">
+      <app-sidebar-nav-item routerLink="space-systems"
+                            [queryParams]="{instance: instance.name}">
+        Space Systems
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item routerLink="parameters"
+                            [queryParams]="{instance: instance.name}">
+        Parameters
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item routerLink="commands"
+                            [queryParams]="{instance: instance.name}">
+        Commands
+      </app-sidebar-nav-item>
     </mat-nav-list>
   </mat-sidenav>
 

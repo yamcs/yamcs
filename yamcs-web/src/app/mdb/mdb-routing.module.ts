@@ -1,11 +1,14 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { OverviewPageComponent } from './pages/overview.component';
 import { ParametersPageComponent } from './pages/parameters.component';
 import { CommandsPageComponent } from './pages/commands.component';
 import { InstanceExistsGuard } from '../core/guards/instance-exists.guard';
 import { MdbPageComponent } from './pages/mdb.component';
+import { SpaceSystemsPageComponent } from './pages/space-systems.component';
+import { SpaceSystemPageComponent } from './pages/space-system.component';
+import { SpaceSystemParametersTabComponent } from './pages/space-system-parameters.component';
+import { SpaceSystemChangelogTabComponent } from './pages/space-system-changelog.component';
 
 const routes = [
   {
@@ -16,7 +19,29 @@ const routes = [
       {
         path: '',
         pathMatch: 'full',
-        component: OverviewPageComponent,
+        redirectTo: 'space-systems'
+      },
+      {
+        path: 'space-systems',
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            component: SpaceSystemsPageComponent,
+          }, {
+            path: ':qualifiedName',
+            component: SpaceSystemPageComponent,
+            children: [
+              {
+                path: 'changelog',
+                component: SpaceSystemChangelogTabComponent,
+              }, {
+                path: 'parameters',
+                component: SpaceSystemParametersTabComponent,
+              }
+            ]
+          }
+        ]
       },
       {
         path: 'parameters',
@@ -39,6 +64,9 @@ export class MdbRoutingModule { }
 export const routingComponents = [
   CommandsPageComponent,
   MdbPageComponent,
-  OverviewPageComponent,
   ParametersPageComponent,
+  SpaceSystemsPageComponent,
+  SpaceSystemPageComponent,
+  SpaceSystemChangelogTabComponent,
+  SpaceSystemParametersTabComponent,
 ];

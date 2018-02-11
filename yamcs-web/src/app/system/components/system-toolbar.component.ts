@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
 } from '@angular/core';
 
 @Component({
@@ -12,6 +11,4 @@ import {
 })
 export class SystemToolbarComponent {
 
-  @Input()
-  header: string;
 }

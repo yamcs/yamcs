@@ -48,6 +48,7 @@ import org.yamcs.web.rest.mdb.MDBCommandRestHandler;
 import org.yamcs.web.rest.mdb.MDBContainerRestHandler;
 import org.yamcs.web.rest.mdb.MDBParameterRestHandler;
 import org.yamcs.web.rest.mdb.MDBRestHandler;
+import org.yamcs.web.rest.mdb.MDBSpaceSystemRestHandler;
 import org.yamcs.web.rest.processor.ProcessorCommandQueueRestHandler;
 import org.yamcs.web.rest.processor.ProcessorCommandRestHandler;
 import org.yamcs.web.rest.processor.ProcessorParameterRestHandler;
@@ -125,6 +126,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         registerRouteHandler(null, new ProcessorCommandQueueRestHandler());
 
         registerRouteHandler(null, new MDBRestHandler());
+        registerRouteHandler(null, new MDBSpaceSystemRestHandler());
         registerRouteHandler(null, new MDBParameterRestHandler());
         registerRouteHandler(null, new MDBContainerRestHandler());
         registerRouteHandler(null, new MDBCommandRestHandler());

@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
 } from '@angular/core';
 import { YamcsService } from '../../core/services/yamcs.service';
 import { Observable } from 'rxjs/Observable';
@@ -14,9 +13,6 @@ import { TimeInfo } from '../../../yamcs-client';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MonitorToolbarComponent {
-
-  @Input()
-  header: string;
 
   time$: Observable<TimeInfo>;
 

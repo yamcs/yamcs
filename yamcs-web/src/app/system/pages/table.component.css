@@ -3,10 +3,6 @@ mat-tab-group {
   position: relative;
 }
 
-.panel-content {
-  padding: 24px;
-}
-
 .data-table-wrapper {
   position: relative;
   overflow: auto;
