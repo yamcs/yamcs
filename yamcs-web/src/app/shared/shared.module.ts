@@ -40,6 +40,8 @@ import { YaTableComponent } from './directives/table.component';
 import { ValuePipe } from './pipes/value.pipe';
 import { ToolbarActionsComponent } from './components/toolbar-actions.component';
 import { SidebarNavItemComponent } from './components/sidebar-nav-item.component';
+import { DetailToolbarComponent } from './components/detail-toolbar.component';
+import { YaDataTableComponent } from './directives/dataTable.component';
 
 const materialModules = [
   CdkTableModule,
@@ -73,11 +75,13 @@ const materialModules = [
 ];
 
 const sharedDirectives = [
+  YaDataTableComponent,
   YaSimpleTableComponent,
   YaTableComponent,
 ];
 
 const sharedComponents = [
+  DetailToolbarComponent,
   SidebarNavItemComponent,
   ToolbarActionsComponent,
 ];

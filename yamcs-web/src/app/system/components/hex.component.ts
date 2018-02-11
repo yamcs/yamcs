@@ -9,15 +9,19 @@ export class HexComponent {
   @Input()
   base64String: string;
 
+  @Input()
+  fontSize = 10;
+
   getHexString() {
     const raw = atob(this.base64String);
     let result = '';
     let charCount = 0;
     let lineAscii = '';
-    for (let i = 0; i < raw.length; i++) {
+    let i = 0;
+    for (; i < raw.length; i++) {
       if (i % 16 === 0) {
         const charCountHex = charCount.toString(16);
-        result += this.lpad(charCountHex, 8);
+        result += this.lpad(charCountHex, 4);
         result += ': ';
       }
       const code = raw.charCodeAt(i);
@@ -38,6 +42,17 @@ export class HexComponent {
         lineAscii = '';
         charCount += 16;
       }
+    }
+
+    if (lineAscii !== '') {
+      for (let j = 0; j < 32 - (2 * (i % 16)); j++) {
+        if (j !== 0 && ((2 * i) + j) % 4 === 0) {
+          result += ' X';
+        } else {
+          result += 'X';
+        }
+      }
+      result += '  ' + lineAscii;
     }
     return result;
   }

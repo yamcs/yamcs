@@ -3,17 +3,32 @@ mat-tab-group {
   position: relative;
 }
 
+.panel-content {
+  padding: 24px;
+}
+
 .data-table-wrapper {
   position: relative;
   overflow: auto;
-  height: 60%;
-  border-bottom: 1px solid #d3d3d3;
-  box-sizing: border-box;
+  height: 100%;
+}
+
+mat-sidenav {
+  width: 200px;
 }
 
 .data-detail {
+  background-color: #fafafa;
+  float: right;
+  height: 100%;
+  width: 450px;
   overflow: auto;
-  height: 40%;
+  border-left: 1px solid #d3d3d3;
+  box-sizing: border-box;
+}
+
+.data-table-wrapper th, .data-table-wrapper td {
+  white-space: nowrap;
 }
 
 .data-table-wrapper tr.selected td {
@@ -23,19 +38,4 @@ mat-tab-group {
 .data-table-wrapper tr:hover td {
   background: #ffffd6;
   cursor: pointer;
-}
-
-.mat-tab-body-wrapper {
-  flex-grow: 1;
-}
-
-.mat-tab-body {
-  display: flex !important;
-  flex-direction: column;
-}
-
-.mat-tab-body-content {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
 }

@@ -8,8 +8,6 @@ import { Component, ChangeDetectionStrategy, ViewEncapsulation, HostBinding } fr
   template: '<ng-content></ng-content>',
   styles: [`
     table.ya-table {
-      width: 100%;
-      overflow: auto;
       border-spacing: 0;
       border-collapse: collapse;
       border-radius: 2px;
