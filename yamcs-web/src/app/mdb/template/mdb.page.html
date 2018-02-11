@@ -18,9 +18,19 @@
         Parameters
       </app-sidebar-nav-item>
 
+      <app-sidebar-nav-item routerLink="containers"
+                            [queryParams]="{instance: instance.name}">
+        Containers
+      </app-sidebar-nav-item>
+
       <app-sidebar-nav-item routerLink="commands"
                             [queryParams]="{instance: instance.name}">
         Commands
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item routerLink="algorithms"
+                            [queryParams]="{instance: instance.name}">
+        Algorithms
       </app-sidebar-nav-item>
     </mat-nav-list>
   </mat-sidenav>

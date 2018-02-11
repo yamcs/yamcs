@@ -5,7 +5,9 @@ import { WebSocketClient } from './WebSocketClient';
 import YamcsClient from './YamcsClient';
 
 import {
+  AlgorithmsWrapper,
   CommandsWrapper,
+  ContainersWrapper,
   EventsWrapper,
   LinksWrapper,
   ParametersWrapper,
@@ -17,20 +19,28 @@ import {
 } from './types/internal';
 
 import {
-  Command,
   DisplayInfo,
   Event,
   Link,
-  MissionDatabase,
-  Parameter,
   Record,
   Service,
-  SpaceSystem,
   Stream,
   Table,
   ParameterSubscriptionRequest,
+  GetAlgorithmsOptions,
+  GetCommandsOptions,
+  GetContainersOptions,
   GetParametersOptions,
 } from './types/main';
+
+import {
+  Algorithm,
+  Command,
+  Container,
+  MissionDatabase,
+  Parameter,
+  SpaceSystem,
+} from './types/mdb';
 
 export class InstanceClient {
 
@@ -175,10 +185,45 @@ export class InstanceClient {
     return this.webSocketClient.getParameterValueUpdates(options);
   }
 
-  getCommands() {
-    return this.http.get<CommandsWrapper>(`${this.yamcs.apiUrl}/mdb/${this.instance}/commands`).pipe(
+  getCommands(options: GetCommandsOptions = {}) {
+    const params = this.toParams(options);
+    return this.http.get<CommandsWrapper>(`${this.yamcs.apiUrl}/mdb/${this.instance}/commands`, { params }).pipe(
       map(msg => msg.command),
       catchError(this.yamcs.handleError<Command[]>([]))
+    );
+  }
+
+  getCommand(qualifiedName: string) {
+    return this.http.get<Command>(`${this.yamcs.apiUrl}/mdb/${this.instance}/commands${qualifiedName}`).pipe(
+      catchError(this.yamcs.handleError<Command>())
+    );
+  }
+
+  getContainers(options: GetContainersOptions = {}) {
+    const params = this.toParams(options);
+    return this.http.get<ContainersWrapper>(`${this.yamcs.apiUrl}/mdb/${this.instance}/containers`, { params }).pipe(
+      map(msg => msg.container),
+      catchError(this.yamcs.handleError<Container[]>([]))
+    );
+  }
+
+  getContainer(qualifiedName: string) {
+    return this.http.get<Container>(`${this.yamcs.apiUrl}/mdb/${this.instance}/containers${qualifiedName}`).pipe(
+      catchError(this.yamcs.handleError<Container>())
+    );
+  }
+
+  getAlgorithms(options: GetAlgorithmsOptions = {}) {
+    const params = this.toParams(options);
+    return this.http.get<AlgorithmsWrapper>(`${this.yamcs.apiUrl}/mdb/${this.instance}/algorithms`, { params }).pipe(
+      map(msg => msg.algorithm),
+      catchError(this.yamcs.handleError<Algorithm[]>([]))
+    );
+  }
+
+  getAlgorithm(qualifiedName: string) {
+    return this.http.get<Algorithm>(`${this.yamcs.apiUrl}/mdb/${this.instance}/algorithms${qualifiedName}`).pipe(
+      catchError(this.yamcs.handleError<Algorithm>())
     );
   }
 

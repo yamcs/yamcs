@@ -1,15 +1,20 @@
 import {
-  Command,
   Event,
   Instance,
   Link,
-  Parameter,
   Record,
   Service,
-  SpaceSystem,
   Stream,
   Table,
 } from './main';
+
+import {
+  Algorithm,
+  Command,
+  Container,
+  Parameter,
+  SpaceSystem,
+} from './mdb';
 
 export type WebSocketClientMessage = [
   number, // Protocol
@@ -35,6 +40,10 @@ export interface EventsWrapper {
   event: Event[];
 }
 
+export interface ContainersWrapper {
+  container: Container[];
+}
+
 export interface InstancesWrapper {
   instance: Instance[];
 }
@@ -49,6 +58,10 @@ export interface ServicesWrapper {
 
 export interface SpaceSystemsWrapper {
   spaceSystem: SpaceSystem[];
+}
+
+export interface AlgorithmsWrapper {
+  algorithm: Algorithm[];
 }
 
 export interface ParametersWrapper {

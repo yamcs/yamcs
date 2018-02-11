@@ -7,7 +7,7 @@ import { Observable } from 'rxjs/Observable';
 
 @Component({
   selector: 'app-parameters-table',
-  templateUrl: './parameters-table.component.html',
+  templateUrl: './parameters-table.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParametersTableComponent implements AfterViewInit {

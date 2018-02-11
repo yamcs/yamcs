@@ -1,0 +1,30 @@
+<mat-table *ngIf="dataSource"
+            [dataSource]="dataSource"
+            matSort
+            matSortActive="qualifiedName"
+            matSortDirection="asc"
+            matSortDisableClear>
+
+  <ng-container matColumnDef="name">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
+    <mat-cell *matCellDef="let algorithm">{{ algorithm.qualifiedName }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="language">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Language</mat-header-cell>
+    <mat-cell *matCellDef="let algorithm">{{ algorithm.language || '-' }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="scope">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Scope</mat-header-cell>
+    <mat-cell *matCellDef="let algorithm">{{ (algorithm.scope | titlecase) || '-' }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="shortDescription">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Description</mat-header-cell>
+    <mat-cell *matCellDef="let algorithm">{{ algorithm.shortDescription || '-' }}</mat-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+</mat-table>

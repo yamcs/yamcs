@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
-import { Instance, SpaceSystem } from '../../../yamcs-client';
+import { Instance, Algorithm } from '../../../yamcs-client';
 
 import { ActivatedRoute } from '@angular/router';
 
@@ -11,19 +11,23 @@ import { State } from '../../app.reducers';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';
 
 @Component({
-  templateUrl: './space-system.component.html',
-  styleUrls: ['./space-system.component.css'],
+  templateUrl: './space-system-algorithms.tab.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SpaceSystemPageComponent implements OnInit {
+export class SpaceSystemAlgorithmsTabComponent implements OnInit {
 
   instance$: Observable<Instance>;
-  spaceSystem$: Observable<SpaceSystem>;
+  algorithms$: Observable<Algorithm[]>;
 
   constructor(route: ActivatedRoute, yamcs: YamcsService, private store: Store<State>) {
-    const qualifiedName = route.snapshot.paramMap.get('qualifiedName');
-    if (qualifiedName != null) {
-      this.spaceSystem$ = yamcs.getSelectedInstance().getSpaceSystem(qualifiedName);
+    const parent = route.snapshot.parent;
+    if (parent) {
+      const qualifiedName = parent.paramMap.get('qualifiedName');
+      if (qualifiedName != null) {
+        this.algorithms$ = yamcs.getSelectedInstance().getAlgorithms({
+          namespace: qualifiedName
+        });
+      }
     }
   }
 

@@ -11,21 +11,19 @@ import { State } from '../../app.reducers';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';
 
 @Component({
-  templateUrl: './space-system-changelog.component.html',
+  templateUrl: './space-system.page.html',
+  styleUrls: ['./space-system.page.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SpaceSystemChangelogTabComponent implements OnInit {
+export class SpaceSystemPageComponent implements OnInit {
 
   instance$: Observable<Instance>;
   spaceSystem$: Observable<SpaceSystem>;
 
   constructor(route: ActivatedRoute, yamcs: YamcsService, private store: Store<State>) {
-    const parent = route.snapshot.parent;
-    if (parent) {
-      const qualifiedName = parent.paramMap.get('qualifiedName');
-      if (qualifiedName != null) {
-        this.spaceSystem$ = yamcs.getSelectedInstance().getSpaceSystem(qualifiedName);
-      }
+    const qualifiedName = route.snapshot.paramMap.get('qualifiedName');
+    if (qualifiedName != null) {
+      this.spaceSystem$ = yamcs.getSelectedInstance().getSpaceSystem(qualifiedName);
     }
   }
 

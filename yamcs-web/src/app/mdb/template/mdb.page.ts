@@ -6,8 +6,8 @@ import { Instance } from '../../../yamcs-client';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';
 
 @Component({
-  templateUrl: './mdb.component.html',
-  styleUrls: ['./mdb.component.css'],
+  templateUrl: './mdb.page.html',
+  styleUrls: ['./mdb.page.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MdbPageComponent implements OnInit {

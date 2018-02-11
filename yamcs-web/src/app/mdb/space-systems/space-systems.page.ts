@@ -9,7 +9,7 @@ import { YamcsService } from '../../core/services/yamcs.service';
 import { MatTableDataSource, MatSort } from '@angular/material';
 
 @Component({
-  templateUrl: './space-systems.component.html',
+  templateUrl: './space-systems.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SpaceSystemsPageComponent implements AfterViewInit {

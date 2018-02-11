@@ -95,12 +95,11 @@ import org.yamcs.xtce.ValueEnumeration;
 public class XtceToGpbAssembler {
 
     public enum DetailLevel {
-        LINK,
-        SUMMARY,
-        FULL
+        LINK, SUMMARY, FULL
     }
 
-    public static ContainerInfo toContainerInfo(SequenceContainer c, String instanceURL, DetailLevel detail, Set<Option> options) {
+    public static ContainerInfo toContainerInfo(SequenceContainer c, String instanceURL, DetailLevel detail,
+            Set<Option> options) {
         ContainerInfo.Builder cb = ContainerInfo.newBuilder();
 
         cb.setName(c.getName());
@@ -118,7 +117,7 @@ public class XtceToGpbAssembler {
             }
             if (c.getAliasSet() != null) {
                 Map<String, String> aliases = c.getAliasSet().getAliases();
-                for(Entry<String, String> me : aliases.entrySet()) {
+                for (Entry<String, String> me : aliases.entrySet()) {
                     cb.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
                 }
             }
@@ -142,7 +141,8 @@ public class XtceToGpbAssembler {
                         cb.addRestrictionCriteria(toComparisonInfo(comparison, instanceURL, options));
                     }
                 } else if (c.getRestrictionCriteria() instanceof Comparison) {
-                    cb.addRestrictionCriteria(toComparisonInfo((Comparison) c.getRestrictionCriteria(), instanceURL, options));
+                    cb.addRestrictionCriteria(
+                            toComparisonInfo((Comparison) c.getRestrictionCriteria(), instanceURL, options));
                 }
             }
             for (SequenceEntry entry : c.getEntryList()) {
@@ -157,7 +157,8 @@ public class XtceToGpbAssembler {
         return cb.build();
     }
 
-    public static SequenceEntryInfo toSequenceEntryInfo(SequenceEntry e, String instanceURL, DetailLevel detail, Set<Option> options) {
+    public static SequenceEntryInfo toSequenceEntryInfo(SequenceEntry e, String instanceURL, DetailLevel detail,
+            Set<Option> options) {
         SequenceEntryInfo.Builder b = SequenceEntryInfo.newBuilder();
         b.setLocationInBits(e.getLocationInContainerInBits());
 
@@ -193,7 +194,8 @@ public class XtceToGpbAssembler {
         return b.build();
     }
 
-    public static RepeatInfo toRepeatInfo(Repeat xtceRepeat, String instanceURL, DetailLevel detail, Set<Option> options) {
+    public static RepeatInfo toRepeatInfo(Repeat xtceRepeat, String instanceURL, DetailLevel detail,
+            Set<Option> options) {
         RepeatInfo.Builder b = RepeatInfo.newBuilder();
         b.setBitsBetween(xtceRepeat.getOffsetSizeInBits());
         if (xtceRepeat.getCount() instanceof FixedIntegerValue) {
@@ -202,9 +204,11 @@ public class XtceToGpbAssembler {
         } else if (xtceRepeat.getCount() instanceof DynamicIntegerValue) {
             DynamicIntegerValue val = (DynamicIntegerValue) xtceRepeat.getCount();
             if (detail == DetailLevel.SUMMARY) {
-                b.setDynamicCount(toParameterInfo(val.getParameterInstnaceRef().getParameter(), instanceURL, DetailLevel.LINK, options));
+                b.setDynamicCount(toParameterInfo(val.getParameterInstnaceRef().getParameter(), instanceURL,
+                        DetailLevel.LINK, options));
             } else if (detail == DetailLevel.FULL) {
-                b.setDynamicCount(toParameterInfo(val.getParameterInstnaceRef().getParameter(), instanceURL, DetailLevel.FULL, options));
+                b.setDynamicCount(toParameterInfo(val.getParameterInstnaceRef().getParameter(), instanceURL,
+                        DetailLevel.FULL, options));
             }
         } else {
             throw new IllegalStateException("Unexpected repeat count " + xtceRepeat.getCount());
@@ -214,9 +218,11 @@ public class XtceToGpbAssembler {
     }
 
     /**
-     * @param detail whether base commands should be expanded
+     * @param detail
+     *            whether base commands should be expanded
      */
-    public static CommandInfo toCommandInfo(MetaCommand cmd, String instanceURL, DetailLevel detail, Set<Option> options) {
+    public static CommandInfo toCommandInfo(MetaCommand cmd, String instanceURL, DetailLevel detail,
+            Set<Option> options) {
         CommandInfo.Builder cb = CommandInfo.newBuilder();
 
         cb.setName(cmd.getName());
@@ -234,7 +240,7 @@ public class XtceToGpbAssembler {
             }
             if (cmd.getAliasSet() != null) {
                 Map<String, String> aliases = cmd.getAliasSet().getAliases();
-                for(Entry<String, String> me : aliases.entrySet()) {
+                for (Entry<String, String> me : aliases.entrySet()) {
                     cb.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
                 }
             }
@@ -285,11 +291,10 @@ public class XtceToGpbAssembler {
         if (xtceArgument.getArgumentType() != null) {
             ArgumentType xtceType = xtceArgument.getArgumentType();
             b.setType(toArgumentTypeInfo(xtceType));
-            if (!b.hasInitialValue()){
+            if (!b.hasInitialValue()) {
                 String initialValue = null;
                 initialValue = getArgumentTypeInitialValue(xtceArgument.getArgumentType());
-                if(initialValue != null)
-                {
+                if (initialValue != null) {
                     b.setInitialValue(initialValue);
                 }
             }
@@ -304,7 +309,8 @@ public class XtceToGpbAssembler {
         return b.build();
     }
 
-    public static TransmissionConstraintInfo toTransmissionConstraintInfo(TransmissionConstraint xtceConstraint, String instanceURL, Set<Option> options) {
+    public static TransmissionConstraintInfo toTransmissionConstraintInfo(TransmissionConstraint xtceConstraint,
+            String instanceURL, Set<Option> options) {
         TransmissionConstraintInfo.Builder b = TransmissionConstraintInfo.newBuilder();
         if (xtceConstraint.getMatchCriteria() instanceof Comparison) {
             b.addComparison(toComparisonInfo((Comparison) xtceConstraint.getMatchCriteria(), instanceURL, options));
@@ -419,7 +425,7 @@ public class XtceToGpbAssembler {
                     throw new IllegalStateException("Unexpected data source " + xtceDs);
                 }
             }
-            if(p.getParameterType() != null)
+            if (p.getParameterType() != null)
                 b.setType(toParameterTypeInfo(p.getParameterType(), detail));
         }
 
@@ -429,7 +435,7 @@ public class XtceToGpbAssembler {
             }
             if (p.getAliasSet() != null) {
                 Map<String, String> aliases = p.getAliasSet().getAliases();
-                for(Entry<String, String> me : aliases.entrySet()) {
+                for (Entry<String, String> me : aliases.entrySet()) {
                     b.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
                 }
             }
@@ -441,7 +447,7 @@ public class XtceToGpbAssembler {
     public static ParameterTypeInfo toParameterTypeInfo(ParameterType parameterType, DetailLevel detail) {
         ParameterTypeInfo.Builder infob = ParameterTypeInfo.newBuilder();
         infob.setEngType(parameterType.getTypeAsString());
-        for (UnitType ut: parameterType.getUnitSet()) {
+        for (UnitType ut : parameterType.getUnitSet()) {
             infob.addUnitSet(toUnitInfo(ut));
         }
         if (detail == DetailLevel.FULL) {
@@ -472,47 +478,39 @@ public class XtceToGpbAssembler {
         return infob.build();
     }
 
-
     private static String getArgumentTypeInitialValue(ArgumentType argumentType) {
-        if(argumentType == null)
+        if (argumentType == null)
             return null;
         if (argumentType instanceof IntegerArgumentType) {
             return ((IntegerArgumentType) argumentType).getInitialValue();
-        } else if (argumentType instanceof FloatArgumentType)
-        {
-            return ((FloatArgumentType) argumentType).getInitialValue() != null ? ((FloatArgumentType) argumentType).getInitialValue() + "" : null;
-        }
-        else if (argumentType instanceof EnumeratedArgumentType)
-        {
+        } else if (argumentType instanceof FloatArgumentType) {
+            return ((FloatArgumentType) argumentType).getInitialValue() != null
+                    ? ((FloatArgumentType) argumentType).getInitialValue() + ""
+                    : null;
+        } else if (argumentType instanceof EnumeratedArgumentType) {
             return ((EnumeratedArgumentType) argumentType).getInitialValue();
-        }
-        else if (argumentType instanceof StringArgumentType)
-        {
+        } else if (argumentType instanceof StringArgumentType) {
             return ((StringArgumentType) argumentType).getInitialValue();
-        }
-        else if (argumentType instanceof BinaryArgumentType)
-        {
+        } else if (argumentType instanceof BinaryArgumentType) {
             byte[] initialValue = ((BinaryArgumentType) argumentType).getInitialValue();
             return initialValue != null ? DatatypeConverter.printHexBinary(initialValue) : null;
-        }
-        else if (argumentType instanceof BooleanArgumentType)
-        {
-            return ((BooleanArgumentType) argumentType).getInitialValue() != null ? ((BooleanArgumentType) argumentType).getInitialValue().toString() : null;
+        } else if (argumentType instanceof BooleanArgumentType) {
+            return ((BooleanArgumentType) argumentType).getInitialValue() != null
+                    ? ((BooleanArgumentType) argumentType).getInitialValue().toString()
+                    : null;
         }
         return null;
     }
 
-
     public static ArgumentTypeInfo toArgumentTypeInfo(ArgumentType argumentType) {
         ArgumentTypeInfo.Builder infob = ArgumentTypeInfo.newBuilder();
 
-        if(((BaseDataType)argumentType).getEncoding()!=null)
-        {
-            infob.setDataEncoding(toDataEncodingInfo(((BaseDataType)argumentType).getEncoding()));
+        if (((BaseDataType) argumentType).getEncoding() != null) {
+            infob.setDataEncoding(toDataEncodingInfo(((BaseDataType) argumentType).getEncoding()));
         }
 
         infob.setEngType(argumentType.getTypeAsString());
-        for (UnitType ut: argumentType.getUnitSet()) {
+        for (UnitType ut : argumentType.getUnitSet()) {
             infob.addUnitSet(toUnitInfo(ut));
         }
 
@@ -597,7 +595,8 @@ public class XtceToGpbAssembler {
             break;
         case TERMINATION_CHAR:
             String hexChar = Integer.toHexString(sde.getTerminationChar()).toUpperCase();
-            if (hexChar.length() == 1) hexChar = "0" + hexChar;
+            if (hexChar.length() == 1)
+                hexChar = "0" + hexChar;
             result += "0x" + hexChar;
             break;
         default:
@@ -626,19 +625,23 @@ public class XtceToGpbAssembler {
             alarmInfob.addStaticAlarmRange(watchRange);
         }
         if (staticRanges.getWarningRange() != null) {
-            AlarmRange warningRange = ParameterValue.toGpbAlarmRange(AlarmLevelType.WARNING, staticRanges.getWarningRange());
+            AlarmRange warningRange = ParameterValue.toGpbAlarmRange(AlarmLevelType.WARNING,
+                    staticRanges.getWarningRange());
             alarmInfob.addStaticAlarmRange(warningRange);
         }
         if (staticRanges.getDistressRange() != null) {
-            AlarmRange distressRange = ParameterValue.toGpbAlarmRange(AlarmLevelType.DISTRESS, staticRanges.getDistressRange());
+            AlarmRange distressRange = ParameterValue.toGpbAlarmRange(AlarmLevelType.DISTRESS,
+                    staticRanges.getDistressRange());
             alarmInfob.addStaticAlarmRange(distressRange);
         }
         if (staticRanges.getCriticalRange() != null) {
-            AlarmRange criticalRange = ParameterValue.toGpbAlarmRange(AlarmLevelType.CRITICAL, staticRanges.getCriticalRange());
+            AlarmRange criticalRange = ParameterValue.toGpbAlarmRange(AlarmLevelType.CRITICAL,
+                    staticRanges.getCriticalRange());
             alarmInfob.addStaticAlarmRange(criticalRange);
         }
         if (staticRanges.getSevereRange() != null) {
-            AlarmRange severeRange = ParameterValue.toGpbAlarmRange(AlarmLevelType.SEVERE, staticRanges.getSevereRange());
+            AlarmRange severeRange = ParameterValue.toGpbAlarmRange(AlarmLevelType.SEVERE,
+                    staticRanges.getSevereRange());
             alarmInfob.addStaticAlarmRange(severeRange);
         }
 
@@ -700,7 +703,7 @@ public class XtceToGpbAssembler {
             }
             if (a.getAliasSet() != null) {
                 Map<String, String> aliases = a.getAliasSet().getAliases();
-                for(Entry<String, String> me : aliases.entrySet()) {
+                for (Entry<String, String> me : aliases.entrySet()) {
                     b.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
                 }
             }
@@ -714,11 +717,9 @@ public class XtceToGpbAssembler {
             default:
                 throw new IllegalStateException("Unexpected scope " + a.getScope());
             }
-        }
 
-        if (detail == DetailLevel.FULL) {
-            if(a instanceof CustomAlgorithm) {
-                CustomAlgorithm ca= (CustomAlgorithm)a;
+            if (a instanceof CustomAlgorithm) {
+                CustomAlgorithm ca = (CustomAlgorithm) a;
                 if (ca.getLanguage() != null) {
                     b.setLanguage(ca.getLanguage());
                 }
@@ -726,6 +727,9 @@ public class XtceToGpbAssembler {
                     b.setText(ca.getAlgorithmText());
                 }
             }
+        }
+
+        if (detail == DetailLevel.FULL) {
             for (InputParameter p : a.getInputSet()) {
                 b.addInputParameter(toInputParameterInfo(p, mdbURL, options));
             }
@@ -746,9 +750,11 @@ public class XtceToGpbAssembler {
         return b.build();
     }
 
-    public static InputParameterInfo toInputParameterInfo(InputParameter xtceInput, String mdbURL, Set<Option> options) {
+    public static InputParameterInfo toInputParameterInfo(InputParameter xtceInput, String mdbURL,
+            Set<Option> options) {
         InputParameterInfo.Builder resultb = InputParameterInfo.newBuilder();
-        resultb.setParameter(toParameterInfo(xtceInput.getParameterInstance().getParameter(), mdbURL, DetailLevel.SUMMARY, options));
+        resultb.setParameter(
+                toParameterInfo(xtceInput.getParameterInstance().getParameter(), mdbURL, DetailLevel.SUMMARY, options));
         if (xtceInput.getInputName() != null) {
             resultb.setInputName(xtceInput.getInputName());
         }
@@ -757,7 +763,8 @@ public class XtceToGpbAssembler {
         return resultb.build();
     }
 
-    public static OutputParameterInfo toOutputParameterInfo(OutputParameter xtceOutput, String mdbUrl, Set<Option> options) {
+    public static OutputParameterInfo toOutputParameterInfo(OutputParameter xtceOutput, String mdbUrl,
+            Set<Option> options) {
         OutputParameterInfo.Builder resultb = OutputParameterInfo.newBuilder();
         resultb.setParameter(toParameterInfo(xtceOutput.getParameter(), mdbUrl, DetailLevel.SUMMARY, options));
         if (xtceOutput.getOutputName() != null) {
@@ -786,10 +793,14 @@ public class XtceToGpbAssembler {
             Arrays.sort(sortedHistory);
             for (History history : sortedHistory) {
                 HistoryInfo.Builder historyb = HistoryInfo.newBuilder();
-                if (history.getVersion() != null) historyb.setVersion(history.getVersion());
-                if (history.getDate() != null) historyb.setDate(history.getDate());
-                if (history.getMessage() != null) historyb.setMessage(history.getMessage());
-                if (history.getAuthor() != null) historyb.setAuthor(history.getAuthor());
+                if (history.getVersion() != null)
+                    historyb.setVersion(history.getVersion());
+                if (history.getDate() != null)
+                    historyb.setDate(history.getDate());
+                if (history.getMessage() != null)
+                    historyb.setMessage(history.getMessage());
+                if (history.getAuthor() != null)
+                    historyb.setAuthor(history.getAuthor());
                 b.addHistory(historyb);
             }
         }

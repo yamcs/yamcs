@@ -5,8 +5,8 @@ import {
 
 @Component({
   selector: 'app-mdb-toolbar',
-  templateUrl: './mdb-toolbar.component.html',
-  styleUrls: ['./mdb-toolbar.component.css'],
+  templateUrl: './mdb-toolbar.html',
+  styleUrls: ['./mdb-toolbar.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MdbToolbarComponent {

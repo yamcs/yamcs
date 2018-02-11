@@ -1,19 +1,19 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
-import { Parameter } from '../../../yamcs-client';
+import { Container } from '../../../yamcs-client';
 
 import { YamcsService } from '../../core/services/yamcs.service';
 
 @Component({
-  templateUrl: './parameters.component.html',
+  templateUrl: './containers.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ParametersPageComponent {
+export class ContainersPageComponent {
 
-  parameters$: Observable<Parameter[]>;
+  containers$: Observable<Container[]>;
 
   constructor(yamcs: YamcsService) {
-    this.parameters$ = yamcs.getSelectedInstance().getParameters();
+    this.containers$ = yamcs.getSelectedInstance().getContainers();
   }
 }

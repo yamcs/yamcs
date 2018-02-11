@@ -1,3 +1,5 @@
+import { Alias, AlarmRange } from './mdb';
+
 export interface GeneralInfo {
   yamcsVersion: string;
   serverId: string;
@@ -81,70 +83,6 @@ export interface Processor {
   name: string;
 }
 
-export interface MissionDatabase {
-  configName: string;
-  name: string;
-  version: string;
-  spaceSystem: SpaceSystem[];
-}
-
-export interface SpaceSystem {
-  name: string;
-  qualifiedName: string;
-  shortDescription?: string;
-  longDescription?: string;
-  version: string;
-  history?: HistoryInfo[];
-  sub: SpaceSystem[];
-}
-
-export interface HistoryInfo {
-  version: string;
-  date: string;
-  message: string;
-  author: string;
-}
-
-export interface Parameter {
-  name: string;
-  qualifiedName: string;
-  alias?: Alias[];
-  shortDescription?: string;
-  longDescription?: string;
-
-  dataSource: 'COMMAND'
-  | 'COMMAND_HISTORY'
-  | 'CONSTANT'
-  | 'DERIVED'
-  | 'LOCAL'
-  | 'SYSTEM'
-  | 'TELEMETERED';
-
-  unitSet?: UnitInfo[];
-  type?: ParameterType;
-}
-
-export interface UnitInfo {
-  unit: string;
-}
-
-export interface Alias {
-  namespace: string;
-  name: string;
-}
-
-export interface ParameterType {
-  engType: string;
-  dataEncoding: DataEncoding;
-}
-
-export interface DataEncoding {
-  type: string;
-  littleEndian: boolean;
-  sizeInBits: number;
-  encoding: string;
-}
-
 export interface ClientInfo {
   instance: string;
   id: number;
@@ -154,16 +92,6 @@ export interface ClientInfo {
   state: 'CONNECTED' | 'DISCONNECTED';
   currentClient: boolean;
   loginTimeUTC: string;
-}
-
-export interface Command {
-  name: string;
-  qualifiedName: string;
-  alias?: Alias[];
-  shortDescription?: string;
-  longDescription?: string;
-  baseCommand?: Command;
-  abstract: boolean;
 }
 
 export interface DisplayInfo {
@@ -226,14 +154,6 @@ export interface ParameterValue {
   expireMillis: number;
 }
 
-export interface AlarmRange {
-  level: 'NORMAL' | 'WATCH' | 'WARNING' | 'DISTRESS' | 'CRITICAL' | 'SEVERE';
-  minInclusive: number;
-  maxInclusive: number;
-  minExclusive: number;
-  maxExclusive: number;
-}
-
 export interface ParameterSubscriptionRequest {
   id: Alias[];
   abortOnInvalid: boolean;
@@ -245,5 +165,23 @@ export interface GetParametersOptions {
   namespace?: string;
   recurse?: boolean;
   type?: string;
+  q?: string;
+}
+
+export interface GetAlgorithmsOptions {
+  namespace?: string;
+  recurse?: boolean;
+  q?: string;
+}
+
+export interface GetContainersOptions {
+  namespace?: string;
+  recurse?: boolean;
+  q?: string;
+}
+
+export interface GetCommandsOptions {
+  namespace?: string;
+  recurse?: boolean;
   q?: string;
 }

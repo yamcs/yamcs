@@ -43,6 +43,7 @@ import { SidebarNavItemComponent } from './components/sidebar-nav-item.component
 import { DetailToolbarComponent } from './components/detail-toolbar.component';
 import { YaDataTableComponent } from './directives/dataTable.component';
 import { UnitsPipe } from './pipes/units.pipe';
+import { OperatorPipe } from './pipes/operator.pipe';
 
 const materialModules = [
   CdkTableModule,
@@ -88,6 +89,7 @@ const sharedComponents = [
 ];
 
 const pipes = [
+  OperatorPipe,
   UnitsPipe,
   ValuePipe,
 ];

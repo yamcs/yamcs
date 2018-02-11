@@ -1,0 +1,47 @@
+<mat-table *ngIf="dataSource"
+            [dataSource]="dataSource"
+            matSort
+            matSortActive="qualifiedName"
+            matSortDirection="asc"
+            matSortDisableClear>
+
+  <ng-container matColumnDef="name">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
+    <mat-cell *matCellDef="let container">{{ container.qualifiedName }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="maxInterval">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Max Interval</mat-header-cell>
+    <mat-cell *matCellDef="let container">{{ container.maxInterval || '-' }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="sizeInBits">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Size in Bits</mat-header-cell>
+    <mat-cell *matCellDef="let container">{{ container.sizeInBits || '-' }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="baseContainer">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Base Container</mat-header-cell>
+    <mat-cell *matCellDef="let container">
+      {{ container.baseContainer?.qualifiedName || '-' }}
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="restrictionCriteria">
+    <mat-header-cell *matHeaderCellDef>Restriction Criteria</mat-header-cell>
+    <mat-cell *matCellDef="let container">
+      <ng-container *ngFor="let criteria of container.restrictionCriteria">
+        {{ criteria.parameter.qualifiedName }} {{ criteria.operator | operator }} {{ criteria.value }}
+        <br>
+      </ng-container>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="shortDescription">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Description</mat-header-cell>
+    <mat-cell *matCellDef="let container">{{ container.shortDescription || '-' }}</mat-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+</mat-table>

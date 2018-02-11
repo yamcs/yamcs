@@ -5,8 +5,8 @@ import {
 
 @Component({
   selector: 'app-mdb-page',
-  templateUrl: './mdb-page-template.component.html',
-  styleUrls: ['./mdb-page-template.component.css'],
+  templateUrl: './mdb-page-template.html',
+  styleUrls: ['./mdb-page-template.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MdbPageTemplateComponent {
