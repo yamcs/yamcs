@@ -9,7 +9,7 @@ test48:
 
 testMaxRate:
     tcHost: localhost
-    tcPort: 10025
+    tcPort: 20025
     tcMaxRate: 25
     tcQueueSize: 100
     

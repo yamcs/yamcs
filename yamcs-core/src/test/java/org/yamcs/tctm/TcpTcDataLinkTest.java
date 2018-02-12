@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.ConfigurationException;
@@ -25,25 +26,31 @@ import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.utils.TimeEncoding;
 
 public class TcpTcDataLinkTest {
-
+    MyTcpServer mtc;
+    
     @BeforeClass
-    public static void setup() throws IOException {
+    public static void beforeClass() throws IOException {
         TimeEncoding.setUp();
-        int port = 10025;
-        MyTcpServer mtc = (new TcpTcDataLinkTest()).new MyTcpServer(port);
-        mtc.start();
+    }
+    
+    
+    @After
+    public void shutdownTcpServer() throws IOException {
+        mtc.quit();
+            
     }
 
     public class MyTcpServer extends Thread {
-        int port;
         ServerSocket serverSocket;
-
+        volatile  boolean  quitting = false;
+        
         public MyTcpServer(int port) throws IOException {
-            this.port = port;
             serverSocket = new ServerSocket(port);
             serverSocket.setSoTimeout(100000);
-
+            
         }
+
+        
 
         public void run() {
             Socket server = null;
@@ -53,7 +60,7 @@ public class TcpTcDataLinkTest {
                 e1.printStackTrace();
             }
             int maxLength = 65542;
-            while (true) {
+            while (!quitting) {
                 try {
                     DataInputStream in = new DataInputStream(server.getInputStream());
                     // while(in.available() <= 0) {}
@@ -79,6 +86,9 @@ public class TcpTcDataLinkTest {
                 e.printStackTrace();
             }
         }
+        public void quit() {
+            quitting = true;
+        }
     }
 
     @Test
@@ -89,6 +99,9 @@ public class TcpTcDataLinkTest {
         int ncommands = 1000;
         // tcMaxRate = 25
         // tcQueueSize = 100
+        
+        mtc = new MyTcpServer(20025);
+        mtc.start();
         TcpTcDataLink dataLink = new TcpTcDataLink("testinst", "test1", "testMaxRate");
         Semaphore semaphore = new Semaphore(0);
         
@@ -148,7 +161,9 @@ public class TcpTcDataLinkTest {
     public void testTcpTcDefault() throws ConfigurationException,   InterruptedException, IOException {
         Map<Integer, Long> sentTime = new HashMap<>();
         Map<Integer, String> sentStatus = new HashMap<>();
-
+        mtc = new MyTcpServer(10025);
+        mtc.start();
+        
         TcpTcDataLink dataLink = new TcpTcDataLink("testinst", "test1", "test_default");
         Semaphore semaphore = new Semaphore(0);
         
@@ -184,7 +199,7 @@ public class TcpTcDataLinkTest {
         for (int i = 1; i <= 1000; i++) {
             dataLink.sendTc(getCommand(i));
         }
-        assertTrue(semaphore.tryAcquire(1000, 10, TimeUnit.SECONDS));
+        assertTrue(semaphore.tryAcquire(1000, 30, TimeUnit.SECONDS));
         for (int i = 1; i <= 1000; i++) {
             assertEquals("ACK: OK", sentStatus.get(i));
         }
