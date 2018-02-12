@@ -1,5 +1,7 @@
 package org.yamcs.parameterarchive;
 
+import java.util.BitSet;
+
 public class MultipleParameterValueRequest {
     final String[] parameterNames;
     final int[] parameterIds;
@@ -7,15 +9,17 @@ public class MultipleParameterValueRequest {
     final long start;
     final long stop;
     final boolean ascending;
+    final BitSet retrieveRawValues;
     
     //these shall also be considered final - just that I didn't want the constructor to get very long
     boolean retrieveEngValues = true;
     boolean retrieveParamStatus = true;
-    boolean retrieveRawValues = false;
+    
     
     int limit = -1;
     
-    public MultipleParameterValueRequest(long start, long stop, String[] parameterNames, int[] parameterIds, int[] parameterGroupIds,  boolean ascending) {
+    public MultipleParameterValueRequest(long start, long stop, String[] parameterNames, int[] parameterIds, int[] parameterGroupIds, 
+            BitSet retrieveRawValues, boolean ascending) {
         if(parameterGroupIds.length != parameterIds.length) {
             throw new IllegalArgumentException("Different number of parameter ids than parameter group ids");
         }
@@ -29,16 +33,9 @@ public class MultipleParameterValueRequest {
         this.start = start;
         this.stop = stop;
         this.ascending = ascending;
-    }
-    
-    public boolean isRetrieveRawValues() {
-        return retrieveRawValues;
-    }
-
-    public void setRetrieveRawValues(boolean retrieveRawValues) {
         this.retrieveRawValues = retrieveRawValues;
     }
-
+    
     public boolean isRetrieveEngValues() {
         return retrieveEngValues;
     }

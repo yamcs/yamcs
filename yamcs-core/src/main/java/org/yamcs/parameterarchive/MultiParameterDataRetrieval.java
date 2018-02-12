@@ -52,12 +52,13 @@ public class MultiParameterDataRetrieval {
         Map<PartitionIterator, String> partition2ParameterName = new HashMap<>();
         PriorityQueue<PartitionIterator> queue = new PriorityQueue<>(new PartitionIteratorComparator(mpvr.ascending));
         SegmentMerger merger = null;
-        boolean retrieveEng = mpvr.retrieveEngValues || mpvr.retrieveRawValues;
+      
         for (int i = 0; i < mpvr.parameterIds.length; i++) {
+            boolean retrieveEng = mpvr.retrieveEngValues || mpvr.retrieveRawValues.get(i);
             its[i] = parchive.getIterator(p);
 
             PartitionIterator pi = new PartitionIterator(its[i], mpvr.parameterIds[i], mpvr.parameterGroupIds[i],
-                    mpvr.start, mpvr.stop, mpvr.ascending, retrieveEng, mpvr.retrieveRawValues,
+                    mpvr.start, mpvr.stop, mpvr.ascending, retrieveEng, mpvr.retrieveRawValues.get(i),
                     mpvr.retrieveParamStatus);
             if (pi.isValid()) {
                 queue.add(pi);
@@ -97,7 +98,7 @@ public class MultiParameterDataRetrieval {
                 ParameterStatusSegment paramStatuSegment = mpvr.retrieveParamStatus ? pit.parameterStatus() : null;
 
                 BaseSegment rawValueSegment = null;
-                if (mpvr.retrieveRawValues) {
+                if (pit.retrieveRawValue) {
                     rawValueSegment = pit.rawValue();
                     if (rawValueSegment == null) {
                         rawValueSegment = pit.engValue();

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -285,13 +286,15 @@ public class ArchiveParameterRestHandler extends RestHandler {
         IntArray pgidArray = new IntArray();
 
         ParameterId[] pids = piddb.get(p.getQualifiedName());
+        BitSet retriveRawValues = new BitSet();
         if(pids != null) {
-            
             ParameterGroupIdDb pgidDb = parchive.getParameterGroupIdDb();
-
             for(ParameterId pid:pids) {
                 int[] pgids = pgidDb.getAllGroups(pid.pid);
                 for(int pgid: pgids) {
+                    if(pid.rawType!=null) {
+                        retriveRawValues.set(pidArray.size());
+                    }
                     pidArray.add(pid.pid);
                     pgidArray.add(pgid);
                 }
@@ -306,8 +309,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         }
         String[] pnames = new String[pidArray.size()];
         Arrays.fill(pnames, p.getQualifiedName());
-        MultipleParameterValueRequest mpvr = new MultipleParameterValueRequest(start, stop, pnames, pidArray.toArray(), pgidArray.toArray(), ascending);
-        mpvr.setRetrieveRawValues(true);
+        MultipleParameterValueRequest mpvr = new MultipleParameterValueRequest(start, stop, pnames, pidArray.toArray(), pgidArray.toArray(), retriveRawValues, ascending);
         // do not use set limit because the data can be filtered down (e.g. noRepeat) and the limit applies the final filtered data not to the input
         // one day the parameter archive will be smarter and do the filtering inside
         //mpvr.setLimit(limit);
