@@ -34,9 +34,6 @@ public class ParameterValue {
     private Value engValue;
     private long acquisitionTime = TimeEncoding.INVALID_INSTANT;
     private long generationTime;
-    
-    //-1 means it's not set.
-    private long expireMillis = -1;
 
     //use this singleton as a default status 
     ParameterStatus status = ParameterStatus.NOMINAL;
@@ -65,7 +62,6 @@ public class ParameterValue {
         this.engValue = pv.engValue;
         this.acquisitionTime = pv.acquisitionTime;
         this.generationTime = pv.generationTime;
-        this.expireMillis = pv.expireMillis;
     }
     
     public int getAbsoluteBitOffset() {
@@ -213,11 +209,12 @@ public class ParameterValue {
     }
 
     public void setExpireMillis(long em) {
-        this.expireMillis = em;
+        changeNominalStatus();
+        status.setExpireMillis(em);
     }
 
     public long getExpireMills() {
-        return expireMillis;
+        return status.getExpireMills();
     }
 
     public void setEngValue(Value engValue) {
@@ -321,6 +318,9 @@ public class ParameterValue {
     public ParameterStatus getStatus() {
         return status;
     }
+    public void setStatus(ParameterStatus parameterStatus) {
+        this.status = parameterStatus;
+    }
     /**
      * Convert a PV to a ProtobufPV 
      * 
@@ -357,6 +357,7 @@ public class ParameterValue {
             gpvb.setGenerationTimeUTC(TimeEncoding.toString(getGenerationTime()));
         }
 
+        long expireMillis = status.getExpireMills();
         if(expireMillis>=0) {
             gpvb.setExpireMillis(expireMillis);
             
@@ -491,7 +492,7 @@ public class ParameterValue {
     }
     
     public boolean hasExpirationTime() {
-        return expireMillis>=0;
+        return status.getExpireMills()>=0;
     }
     
     private DoubleRange fromGbpAlarmRange(AlarmRange ar) {
@@ -523,6 +524,7 @@ public class ParameterValue {
      * @return true if the parameter is expired at the timestamp now. 
      */
     public boolean isExpired(long now) {
+        long expireMillis = status.getExpireMills();
         return (expireMillis>0) && (acquisitionTime+expireMillis<now);
     }
     
@@ -544,6 +546,7 @@ public class ParameterValue {
         }
         return sb.toString();
     }
+    
     
     
 }

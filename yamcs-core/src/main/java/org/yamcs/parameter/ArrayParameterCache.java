@@ -498,6 +498,8 @@ public class ArrayParameterCache implements ParameterCache {
             }
             pv.setGenerationTime(generationTimeColumn[row]);
             pv.setAcquisitionTime(acquisitionTimeColumns[col][row]);
+            
+            pv.setStatus((ParameterStatus)((Object[])statusColumns[col])[row]);
             return pv;
         }
 
@@ -548,9 +550,16 @@ public class ArrayParameterCache implements ParameterCache {
             if (v != null) {
                 storeValue(rawValueColumns[col], row, v);
             }
-            ((Object[]) statusColumns[col])[row] = pv.getStatus();
+            ParameterStatus status = pv.getStatus();
+            
+            if(row>0) { //avoid filling up memory with identical ParameterStatus
+                ParameterStatus prevStatus = (ParameterStatus)((Object[])statusColumns[col])[row-1];
+                if(prevStatus.equals(status)) {
+                    status = prevStatus;
+                }
+            }
+            ((Object[]) statusColumns[col])[row] = status;
             acquisitionTimeColumns[col][row] = pv.getAcquisitionTime();
-
         }
 
         private void storeValue(Object o, int pos, Value v) {

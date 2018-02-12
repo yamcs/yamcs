@@ -10,6 +10,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameterarchive.TestUtils;
+import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
@@ -30,21 +31,28 @@ public class ArrayParameterCacheTest {
         ArrayParameterCache pcache = new ArrayParameterCache("test", pcc); // 1 second
         assertNull(pcache.getLastValue(p1));
 
+        
         ParameterValue p1v1 = getStringParameterValue(p1, 10);
+        p1v1.setExpireMillis(1000);
+        
+        
         ParameterValue p2v1 = getFloatParameterValue(p2, 10);
+        p2v1.setAcquisitionStatus(AcquisitionStatus.INVALID);
         pcache.update(Arrays.asList(p1v1, p2v1));
 
+        System.out.println("last value p2: "+pcache.getLastValue(p2).getAcquisitionStatus());
         TestUtils.checkEquals(p1v1, pcache.getLastValue(p1));
         TestUtils.checkEquals(p2v1, pcache.getLastValue(p2));
 
         ParameterValue p1v2 = getStringParameterValue(p1, 20);
+        p1v2.setExpireMillis(1000);
+        
         pcache.update(Arrays.asList(p1v2));
 
         TestUtils.checkEquals(p1v2, pcache.getLastValue(p1));
         TestUtils.checkEquals(p2v1, pcache.getLastValue(p2));
 
         List<ParameterValue> pvlist = pcache.getValues(Arrays.asList(p1, p2));
-        System.out.println("got pvlist: " + pvlist);
 
         checkEquals(pvlist, p1v2, p2v1);
 
@@ -90,13 +98,17 @@ public class ArrayParameterCacheTest {
         List<ParameterValue> expectedPVlist = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             ParameterValue pv = getUint64ParameterValue(p1, i * 100L);
+            pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
             expectedPVlist.add(pv);
             pcache.update(Arrays.asList(pv));
         }
-
+        ParameterValue pv0 = expectedPVlist.get(0);
+        
         List<ParameterValue> pvlist = pcache.getAllValues(p1);
         assertEquals(10, pvlist.size());
         for (int i = 0; i < 10; i++) {
+            System.out.println("status: "+pvlist.get(i).getStatus().getAcquisitionStatus());
+            assertEquals(pv0.getStatus().hashCode(), pvlist.get(i).getStatus().hashCode());
             TestUtils.checkEquals(expectedPVlist.get(9 - i), pvlist.get(i));
         }
 

@@ -1,4 +1,8 @@
-Version 4.0.1  released 23-Jan-2017
+Version 4.1.0 released
+ - added an alternative Parameter Cache that consumes less memory by using array of primitives to store parameter values
+
+
+Version 4.0.1 released 23-Jan-2017
  - fixed Artemis data links
  - the parameter select dialog from the Archive Browser will show now also parameters that are not part of containers
 
