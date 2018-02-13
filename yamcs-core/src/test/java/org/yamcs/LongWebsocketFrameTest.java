@@ -4,14 +4,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -30,11 +27,14 @@ public class LongWebsocketFrameTest {
     
     @BeforeClass
     public static void beforeClass() throws Exception {
-        LoggingUtils.enableLogging();
+      //  LoggingUtils.enableLogging();
+        //io.netty.handler.codec.http.websocketx.WebSocket08FrameEncoder debug FINE:Encoding WebSocket Frame opCode=2 length=328927
+        
+        //avoid printing stack traces in the unit tests run 
         YConfiguration.setup("LongWebsocketFrameTest");
         new HttpServer().startServer();
         YamcsServer.setupYamcsServer();
-        LoggingUtils.enableLogging();
+        Logger.getLogger("org.yamcs.api.ws.WebSocketClientHandler").setLevel(Level.OFF);
     }
     
     @AfterClass
