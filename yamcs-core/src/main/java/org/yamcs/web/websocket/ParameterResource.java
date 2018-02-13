@@ -3,9 +3,11 @@ package org.yamcs.web.websocket;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
@@ -122,11 +124,11 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                     ex.attachData("InvalidIdentification", invalidList, SchemaYamcs.NamedObjectList.WRITE);
                     throw ex;
                 } else {
-                    idList = new ArrayList<>(idList);
-                    idList.removeAll(e.getInvalidParameters());
-                    if (idList.isEmpty()) {
+                    if (idList.size() == e.getInvalidParameters().size()) {
                         log.warn("Received subscribe attempt will all-invalid parameters");
                     } else {
+                        Set<NamedObjectId>valid = new HashSet<>(e.getInvalidParameters());
+                        valid.removeAll(e.getInvalidParameters());
                         log.warn(
                                 "Received subscribe attempt with {} invalid parameters. Subscription will continue with {} remaining valids.",
                                 e.getInvalidParameters().size(), idList.size());
@@ -135,7 +137,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                                     StringConverter.idListToString(e.getInvalidParameters()));
                         }
                         if (subscriptionId != -1) {
-                            pidrm.addItemsToRequest(subscriptionId, idList, authToken);
+                            pidrm.addItemsToRequest(subscriptionId, new ArrayList<>(valid), authToken);
                         } else {
                             subscriptionId = pidrm.addRequest(idList, req.getUpdateOnExpiration(), authToken);
                         }
