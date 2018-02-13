@@ -171,6 +171,11 @@ public class MultiParameterDataRetrieval {
         }
     }
 
+    /**
+     * Sorted merging of parameter values from segments with the same start
+     *  taking care that parameters from the same group end up in the same list  
+     *
+     */
     static class SegmentMerger implements Consumer<TimedValue> {
         final SegmentKey key;
         TreeMap<Long, ParameterIdValueList> values;
@@ -187,9 +192,9 @@ public class MultiParameterDataRetrieval {
                 @Override
                 public int compare(Long o1, Long o2) {
                     if (mpvr.ascending) {
-                        return o1.compareTo(o2);
+                        return Long.compareUnsigned(o1,  o2);
                     } else {
-                        return o2.compareTo(o1);
+                        return Long.compareUnsigned(o2, o1);
                     }
                 }
             });
@@ -229,8 +234,7 @@ public class MultiParameterDataRetrieval {
         }
 
         private long k(int parameterGroupId, long instant) {
-            return ((long) parameterGroupId) << SortedTimeSegment.NUMBITS_MASK
-                    | (instant & SortedTimeSegment.TIMESTAMP_MASK);
+          return (instant<<32 ) | ((long) parameterGroupId) ;
         }
 
     }

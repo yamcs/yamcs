@@ -538,6 +538,7 @@ public class ParameterValue {
         } else {
             sb.append(paramFqn);
         }
+        sb.append(" genTime: {").append(TimeEncoding.toString(generationTime)).append("}");
         if(rawValue!=null) {
             sb.append(" rawValue: {").append(rawValue.toString()).append("}");
         }

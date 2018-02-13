@@ -3,6 +3,8 @@ package org.yamcs.parameter;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -193,17 +195,29 @@ public class ArrayParameterCache implements ParameterCache {
     public List<ParameterValue> getAllValues(Parameter pdef) {
         List<ParameterId> pidlist = getParameterIds(pdef);
         List<ParameterValue> result = new ArrayList<>();
+        boolean needsSorting = false;
         for (ParameterId p : pidlist) {
             for (Map.Entry<SortedIntArray, ParameterValueTable> me : tables.entrySet()) {
                 SortedIntArray sia = me.getKey();
                 if (sia.contains(p.id)) {
+                    needsSorting = true;
                     me.getValue().retrieveAll(p, result);
                 }
             }
         }
-
+        //if values are retrieved from multiple tables, we need to sort them by generation time
+        //(in reverse order such that the newest is first)
+        if(needsSorting) {
+            Collections.sort(result, new Comparator<ParameterValue>() {
+                @Override
+                public int compare(ParameterValue pv1, ParameterValue pv2) {
+                    return Long.compare(pv2.getGenerationTime(), pv1.getGenerationTime());
+                }
+            });
+        }
         return result;
     }
+
 
     private List<ParameterId> getParameterIds(List<Parameter> pdefList) {
         List<ParameterId> result = new ArrayList<>();
@@ -278,6 +292,16 @@ public class ArrayParameterCache implements ParameterCache {
                 m.put(type, pid);
             }
             return pid;
+        }
+
+        Parameter getParameterForPid(int x) {
+            for(Map.Entry<Parameter, Map<Integer, Integer>> me: p2pidCache.entrySet())
+                for(Map.Entry<Integer, Integer> me1: me.getValue().entrySet()) {
+                    if(x==me1.getValue()) {
+                        return me.getKey();
+                    }
+                }
+            return null;
         }
 
         public Map<Integer, Integer> get(Parameter p) {
