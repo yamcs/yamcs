@@ -29,7 +29,6 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 
-
 /**
  * Collects each second system processed parameters from whomever registers and sends them on the sys_var stream
  *
@@ -38,8 +37,8 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class SystemParametersCollector extends AbstractService implements Runnable {
-    static Map<String,SystemParametersCollector> instances=new HashMap<>();
-    static long frequencyMillisec=1000;
+    static Map<String, SystemParametersCollector> instances = new HashMap<>();
+    static long frequencyMillisec = 1000;
     List<SystemParametersProducer> providers = new CopyOnWriteArrayList<>();
 
     static final String STREAM_NAME = "sys_param";
@@ -53,23 +52,19 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     ScheduledThreadPoolExecutor timer;
     final Stream stream;
 
-
     int seqCount = 0;
-    private final  Logger log;
+    private final Logger log;
 
-    private final  String namespace;
-    private final  String serverId;
+    private final String namespace;
+    private final String serverId;
 
     final String instance;
     TimeService timeService;
 
-
-   
-
     public SystemParametersCollector(String instance) throws ConfigurationException {
         this(instance, null);
     }
-    
+
     public SystemParametersCollector(String instance, Map<String, Object> args) throws ConfigurationException {
         this.instance = instance;
         log = LoggingUtils.getLogger(this.getClass(), instance);
@@ -77,45 +72,44 @@ public class SystemParametersCollector extends AbstractService implements Runnab
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         Stream s = ydb.getStream(STREAM_NAME);
-        if(s==null) {
-            throw new ConfigurationException("Stream '"+STREAM_NAME+"' does not exist");
+        if (s == null) {
+            throw new ConfigurationException("Stream '" + STREAM_NAME + "' does not exist");
         }
         stream = s;
         timeService = YamcsServer.getInstance(instance).getTimeService();
 
         serverId = YamcsServer.getServerId();
-        namespace = XtceDb.YAMCS_SPACESYSTEM_NAME+NameDescription.PATH_SEPARATOR+serverId;
+        namespace = XtceDb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + serverId;
         log.debug("Using {} as serverId, and {} as namespace for system parameters", serverId, namespace);
-        if(provideJvmVariables) {
-            spJvmTotalMemory = namespace+"/jvmTotalMemory";
+        if (provideJvmVariables) {
+            spJvmTotalMemory = namespace + "/jvmTotalMemory";
             log.debug("publishing jvmTotalMemory with parameter id {}", spJvmTotalMemory);
 
-            spJvmMemoryUsed = namespace+"/jvmMemoryUsed";
+            spJvmMemoryUsed = namespace + "/jvmMemoryUsed";
             log.debug("publishing jvmMemoryUsed with parameter id {}", spJvmMemoryUsed);
 
-            spJvmTheadCount = namespace+"/jvmThreadCount";
+            spJvmTheadCount = namespace + "/jvmThreadCount";
             log.debug("publishing jvmThreadCount with parameter id {}", spJvmTheadCount);
         }
-        synchronized(instances) {
+        synchronized (instances) {
             instances.put(instance, this);
         }
     }
-    
+
     public static SystemParametersCollector getInstance(String instance) {
-        synchronized(instances) {
+        synchronized (instances) {
             return instances.get(instance);
         }
     }
 
     private void processArgs(Map<String, Object> args) {
-        if(args==null) {
+        if (args == null) {
             return;
         }
-        if(args.containsKey("provideJvmVariables")) {
+        if (args.containsKey("provideJvmVariables")) {
             provideJvmVariables = YConfiguration.getBoolean(args, "provideJvmVariables");
         }
     }
-
 
     @Override
     public void doStart() {
@@ -127,7 +121,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     @Override
     public void doStop() {
         timer.shutdown();
-        synchronized(instances) {
+        synchronized (instances) {
             instances.remove(instance);
         }
         notifyStopped();
@@ -138,74 +132,77 @@ public class SystemParametersCollector extends AbstractService implements Runnab
      */
     @Override
     public void run() {
+        long gentime = timeService.getMissionTime();
+        
         List<ParameterValue> params = new ArrayList<>();
-        if(provideJvmVariables) {
+        if (provideJvmVariables) {
             jvmCollectionCountdown--;
-            if(jvmCollectionCountdown<=0) {
-                collectJvmParameters(params);
+            if (jvmCollectionCountdown <= 0) {
+                collectJvmParameters(params, gentime);
                 jvmCollectionCountdown = JVM_COLLECTION_INTERVAL;
             }
         }
-        for(SystemParametersProducer p: providers) {
+        for (SystemParametersProducer p : providers) {
             try {
-                Collection<ParameterValue> pvc =p.getSystemParameters();
+                Collection<ParameterValue> pvc = p.getSystemParameters();
                 params.addAll(pvc);
             } catch (Exception e) {
                 log.warn("Error getting parameters from provider {}", p, e);
             }
         }
-        long gentime = timeService.getMissionTime();
+      
 
-
-        if(params.isEmpty()) {
+        if (params.isEmpty()) {
             return;
         }
 
-        TupleDefinition tdef=ParameterDataLinkInitialiser.PARAMETER_TUPLE_DEFINITION.copy();
-        List<Object> cols=new ArrayList<Object>(4+params.size());
+        TupleDefinition tdef = ParameterDataLinkInitialiser.PARAMETER_TUPLE_DEFINITION.copy();
+        List<Object> cols = new ArrayList<Object>(4 + params.size());
         cols.add(gentime);
         cols.add(namespace);
         cols.add(seqCount);
-        cols.add(timeService.getMissionTime());
-        for(ParameterValue pv:params) {
+        cols.add(gentime);
+        for (ParameterValue pv : params) {
             String name = pv.getParameterQualifiedNamed();
-            int idx=tdef.getColumnIndex(name);
-            if(idx!=-1) {
+            int idx = tdef.getColumnIndex(name);
+            if (idx != -1) {
                 log.warn("duplicate value for {}\nfirst: {}\n second: {}", name, cols.get(idx), pv);
                 continue;
             }
             tdef.addColumn(name, DataType.PARAMETER_VALUE);
             cols.add(pv);
         }
-        Tuple t=new Tuple(tdef, cols);
+        Tuple t = new Tuple(tdef, cols);
         stream.emitTuple(t);
     }
 
-    private void collectJvmParameters(List<ParameterValue> params) {
-        long time = timeService.getMissionTime();
+    private void collectJvmParameters(List<ParameterValue> params, long gentime) {
         Runtime r = Runtime.getRuntime();
-        ParameterValue jvmTotalMemory = SystemParametersCollector.getPV(spJvmTotalMemory, time, r.totalMemory()/1024);
-        ParameterValue jvmMemoryUsed = SystemParametersCollector.getPV(spJvmMemoryUsed, time, (r.totalMemory()-r.freeMemory())/1024);
-        ParameterValue jvmThreadCount = SystemParametersCollector.getUnsignedIntPV(spJvmTheadCount, time, Thread.activeCount());
+        ParameterValue jvmTotalMemory = SystemParametersCollector.getPV(spJvmTotalMemory, gentime, r.totalMemory() / 1024);
+        ParameterValue jvmMemoryUsed = SystemParametersCollector.getPV(spJvmMemoryUsed, gentime,
+                (r.totalMemory() - r.freeMemory()) / 1024);
+        ParameterValue jvmThreadCount = SystemParametersCollector.getUnsignedIntPV(spJvmTheadCount, gentime,
+                Thread.activeCount());
 
         params.add(jvmTotalMemory);
         params.add(jvmMemoryUsed);
         params.add(jvmThreadCount);
     }
-    
+
     /**
      * Register a parameter producer to be called each time the parameters are collected
      *
-     * @deprecated use {@link #registerProducer(SystemParametersProducer p)} instead. 
-     * There is no need to specify which paramameters will be provided 
-     * and in addition they don't even need to be part of the Xtcedb (i.e. the provider can make them up on the fly)
+     * @deprecated use {@link #registerProducer(SystemParametersProducer p)} instead.
+     *             There is no need to specify which paramameters will be provided
+     *             and in addition they don't even need to be part of the Xtcedb (i.e. the provider can make them up on
+     *             the fly)
      * 
      */
-    @Deprecated  
+    @Deprecated
     public void registerProvider(SystemParametersProducer p, Collection<Parameter> params) {
         registerProvider(p);
     }
-    
+
     /**
      * @deprecated old name for {@link #registerProducer}
      */
@@ -213,6 +210,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     public void registerProvider(SystemParametersProducer p) {
         registerProducer(p);
     }
+
     /**
      * Register a parameter producer to be called each time the parameters are collected
      */
@@ -220,16 +218,17 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         log.debug("Registering system variables producer {}", p);
         providers.add(p);
     }
+
     /**
      * Unregister producer - from now on it will not be invoked.
      * Note that the collector collects parameters into a different thread taking all producer in turns,
      * and there might be one collection already started when this method is called.
-     *  
+     * 
      */
     public void unregisterProducer(SystemParametersProducer p) {
         log.debug("Unregistering system variables producer {}", p);
         providers.remove(p);
-        
+
     }
 
     /**
@@ -245,8 +244,9 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         ParameterValue pv = new ParameterValue(fqn);
         pv.setAcquisitionTime(time);
         pv.setGenerationTime(time);
-        return pv;      
+        return pv;
     }
+
     public static ParameterValue getPV(String fqn, long time, String v) {
         ParameterValue pv = getNewPv(fqn, time);
         pv.setEngValue(ValueUtility.getStringValue(v));
@@ -271,12 +271,10 @@ public class SystemParametersCollector extends AbstractService implements Runnab
         return pv;
     }
 
-
     public static ParameterValue getUnsignedIntPV(String fqn, long time, int v) {
         ParameterValue pv = getNewPv(fqn, time);
         pv.setEngValue(ValueUtility.getUint64Value(v));
         return pv;
     }
 
-   
 }
