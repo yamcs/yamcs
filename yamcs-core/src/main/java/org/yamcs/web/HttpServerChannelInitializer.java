@@ -11,26 +11,23 @@ import io.netty.handler.codec.http.cors.CorsHandler;
 
 
 public class HttpServerChannelInitializer extends ChannelInitializer<SocketChannel> {
-
     private Router apiRouter;
-    private CorsConfig corsConfig;
-
+    private WebConfig webConfig;
     public HttpServerChannelInitializer(Router apiRouter) {
         this.apiRouter = apiRouter;
-        
-        corsConfig = WebConfig.getInstance().getCorsConfig();
+        webConfig = WebConfig.getInstance();
     }
 
     @Override
     public void initChannel(SocketChannel ch) {
         ChannelPipeline pipeline = ch.pipeline();
         pipeline.addLast(new HttpServerCodec());
-
+        CorsConfig corsConfig = webConfig.getCorsConfig();
         if (corsConfig != null) {
             pipeline.addLast(new CorsHandler(corsConfig));
         }
         
         //this has to be the last handler in the pipeline
-        pipeline.addLast(new HttpRequestHandler(apiRouter));
+        pipeline.addLast(new HttpRequestHandler(apiRouter, WebConfig.getInstance()));
     }
 }

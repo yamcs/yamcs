@@ -1,0 +1,52 @@
+############################################ testinst configuration  ############################################################################
+services:  
+    - org.yamcs.tctm.DataLinkInitialiser
+    - org.yamcs.archive.XtceTmRecorder
+    - org.yamcs.archive.ParameterRecorder
+    - org.yamcs.archive.EventRecorder
+    - org.yamcs.archive.ReplayServer
+    - org.yamcs.archive.IndexServer
+    - org.yamcs.parameterarchive.ParameterArchive
+    - class: org.yamcs.ProcessorCreatorService
+      args: 
+         name: "realtime"
+         type: "realtime"
+   
+    #this one sets up the command history table
+    - org.yamcs.archive.CommandHistoryRecorder
+
+      
+
+
+#name of the class that is used for the TM index. If not specified, org.yamcs.archive.GenericCccsdsTmIndex is used
+#tmIndexer: 
+
+#config the tm providers started by the TmProviderAdapter
+tmDataLinks:
+    - class: org.yamcs.AbstractIntegrationTest$PacketProvider
+      spec: /storage/yamcs-incoming/eyops/tm
+      stream: tm_realtime
+
+#config the pp providers started by the ParameterDataLinkInitialiser
+parameterDataLinks:
+     - class: org.yamcs.AbstractIntegrationTest$ParameterProvider
+       stream: pp_realtime
+     
+
+# config the tc uplinkers
+tcDataLinks:
+    - class: org.yamcs.ComVerifIntegrationTest$MyTcDataLink
+      stream: tc_realtime
+
+#Specify which MDB configuration to use, references a named section in mdb.yaml 
+mdb: refmdb
+
+
+streamConfig:
+      tm: ["tm_realtime", "tm_dump"]
+      cmdHist: ["cmdhist_realtime",  "cmdhist_dump"]
+      event: ["events_realtime", "events_dump"]
+      param: ["sys_param", "pp_realtime"]
+      alarm: ["alarms_realtime"]
+      tc: ["tc_realtime"]
+           

@@ -66,6 +66,15 @@ public class WebSocketClient {
     // an InvalidException on some of them :-(
     private Map<Integer, RequestResponsePair> requestResponsePairBySeqId = new ConcurrentHashMap<>();
 
+    private int maxFramePayloadLength = 65536;
+    
+    public int getMaxFramePayloadLength() {
+        return maxFramePayloadLength;
+    }
+
+    public void setMaxFramePayloadLength(int maxFramePayloadLength) {
+        this.maxFramePayloadLength = maxFramePayloadLength;
+    }
 
     public WebSocketClient(WebSocketClientCallback callback) {
         this(null, callback);
@@ -145,7 +154,7 @@ public class WebSocketClient {
         URI uri = yprops.webSocketURI();
 
         WebSocketClientHandshaker handshaker = WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13,
-                null, false, header);
+                null, false, header, maxFramePayloadLength);
         WebSocketClientHandler webSocketHandler = new WebSocketClientHandler(handshaker, this, callback);
 
         Bootstrap bootstrap = new Bootstrap()
