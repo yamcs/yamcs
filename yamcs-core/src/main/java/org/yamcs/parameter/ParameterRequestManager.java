@@ -181,7 +181,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     public int addRequest(final Parameter para, final ParameterConsumer tpc) {
         
         final int id = lastSubscriptionId.incrementAndGet();
-        log.debug("new request with subscriptionId {} for parameter: {}, provider: {}", id, para.getQualifiedName());
+        log.debug("new request with subscriptionId {} for parameter: {}", id, para.getQualifiedName());
         subscribeToProviders(para);
         addItemToRequest(id, para);
         request2ParameterConsumerMap.put(id, tpc);

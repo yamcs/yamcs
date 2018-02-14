@@ -66,7 +66,7 @@ class FlightDataHandler {
         } catch (IOException e) {
             log.warn(e.getMessage(), e);
         }
-        log.info("have " + entries.size() + " flight data records");
+        log.info("have {} flight data records", entries.size());
 
     }
 

@@ -148,7 +148,7 @@ public class RDBFactory implements Runnable {
             Map.Entry<String, YRDB> entry=it.next();
             YRDB db = entry.getValue();
             if((db.refcount==0) && ( time-db.lastAccessTime>300000)) {
-                log.debug("Closing the database: "+entry.getKey());
+                log.debug("Closing the database: {}", entry.getKey());
                 db.close();
                 it.remove();
             } 

@@ -190,7 +190,7 @@ public class YConfiguration {
             throw new ConfigurationException(confPath.get(m), key + " exists but is null");
         }
     }
-    
+
     public String getFilename() {
         return confPath.get(root);
     }
@@ -532,8 +532,8 @@ public class YConfiguration {
             InputStream is;
             if (prefix != null) {
                 if ((is = YConfiguration.class.getResourceAsStream("/" + prefix + name)) != null) {
-                    log.debug("Reading " + new File(YConfiguration.class.getResource("/" + prefix + name).getFile())
-                            .getAbsolutePath());
+                    log.debug("Reading {}", new File(YConfiguration.class.getResource("/" + prefix + name).getFile())
+                                    .getAbsolutePath());
                     return is;
                 }
             }
@@ -543,7 +543,7 @@ public class YConfiguration {
             if (f.exists()) {
                 try {
                     is = new FileInputStream(f);
-                    log.debug("Reading " + f.getAbsolutePath());
+                    log.debug("Reading {}", f.getAbsolutePath());
                     return is;
                 } catch (FileNotFoundException e) {
                     throw new ConfigurationException("Cannot read file " + f, e);
@@ -552,7 +552,7 @@ public class YConfiguration {
             if ((is = YConfiguration.class.getResourceAsStream(name)) == null) {
                 throw (new ConfigurationNotFoundException("Cannot find resource " + name));
             }
-            log.debug("Reading " + new File(YConfiguration.class.getResource(name).getFile()).getAbsolutePath());
+            log.debug("Reading {}", new File(YConfiguration.class.getResource(name).getFile()).getAbsolutePath());
             return is;
         }
     }

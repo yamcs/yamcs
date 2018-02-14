@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
@@ -179,7 +178,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
                     log.info("Data read on the TC socket to {}:{}!! : {}", host, port, bb);
                     connected = true;
                 } else if (read < 0) {
-                    log.warn("TC socket to " + host + ":" + port + " has been closed");
+                    log.warn("TC socket to {}:{} has been closed", host, port);
                     socketChannel.close();
                     selector.close();
                     socketChannel = null;
@@ -188,7 +187,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             } else if (selectionKey.isWritable()) {
                 connected = true;
             } else {
-                log.warn("The TC socket to " + host + ":" + port + " is neither writable nor readable");
+                log.warn("The TC socket to {}:{} is neither writable nor readable", host, port);
                 connected = false;
             }
         } catch (IOException e) {
@@ -204,7 +203,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     @Override
     public void sendTc(PreparedCommand pc) {
         if (disabled) {
-            log.warn("TC disabled, ignoring command " + pc.getCommandId());
+            log.warn("TC disabled, ignoring command {}", pc.getCommandId());
             return;
         }
         if (!commandQueue.offer(pc)) {

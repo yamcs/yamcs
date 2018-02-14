@@ -51,10 +51,10 @@ import com.google.common.util.concurrent.Service.State;
 
 /**
  * Responsible for providing to interested listeners info related to creation/removal/update of:
- *  - instances, processors and clients - see {@link ManagementListener}  
- *  - links - see {@link LinkListener}  
- *  - streams and tables - see {@link TableStreamListener}
- *  - command queues - see {@link CommandQueueListener}
+ * - instances, processors and clients - see {@link ManagementListener}
+ * - links - see {@link LinkListener}
+ * - streams and tables - see {@link TableStreamListener}
+ * - command queues - see {@link CommandQueueListener}
  */
 public class ManagementService implements ProcessorListener {
     static Logger log = LoggerFactory.getLogger(ManagementService.class.getName());
@@ -69,15 +69,25 @@ public class ManagementService implements ProcessorListener {
     // Used to update TM-statistics, and Link State
     ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
 
-    Set<ManagementListener> managementListeners = new CopyOnWriteArraySet<>(); // Processors & Clients. Should maybe split up
+    Set<ManagementListener> managementListeners = new CopyOnWriteArraySet<>(); // Processors & Clients. Should maybe
+                                                                               // split up
     Set<LinkListener> linkListeners = new CopyOnWriteArraySet<>();
     Set<CommandQueueListener> commandQueueListeners = new CopyOnWriteArraySet<>();
     Set<TableStreamListener> tableStreamListeners = new CopyOnWriteArraySet<>();
 
+    Map<Processor, Statistics> yprocs = new ConcurrentHashMap<>();
 
-    Map<Processor, Statistics> yprocs=new ConcurrentHashMap<>();
-
-    static final Statistics STATS_NULL=Statistics.newBuilder().setInstance("null").setYProcessorName("null").build();//we use this one because ConcurrentHashMap does not support null values
+    static final Statistics STATS_NULL = Statistics.newBuilder().setInstance("null").setYProcessorName("null").build();// we
+                                                                                                                       // use
+                                                                                                                       // this
+                                                                                                                       // one
+                                                                                                                       // because
+                                                                                                                       // ConcurrentHashMap
+                                                                                                                       // does
+                                                                                                                       // not
+                                                                                                                       // support
+                                                                                                                       // null
+                                                                                                                       // values
 
     static public ManagementService getInstance() {
         return managementService;
@@ -101,7 +111,6 @@ public class ManagementService implements ProcessorListener {
         managementListeners.forEach(l -> l.serviceUnregistered(instance, serviceName));
     }
 
-
     public void registerLink(String instance, String linkName, String streamName, String spec, Link link) {
         LinkInfo.Builder linkb = LinkInfo.newBuilder().setInstance(instance)
                 .setName(linkName).setStream(streamName)
@@ -109,17 +118,17 @@ public class ManagementService implements ProcessorListener {
                 .setStatus(link.getLinkStatus().name())
                 .setType(link.getClass().getSimpleName()).setSpec(spec)
                 .setDataCount(link.getDataCount());
-        if(link.getDetailedStatus()!=null) {
+        if (link.getDetailedStatus() != null) {
             linkb.setDetailedStatus(link.getDetailedStatus());
         }
         LinkInfo linkInfo = linkb.build();
         links.add(new LinkWithInfo(link, linkInfo));
-        linkListeners.forEach(l->l.linkRegistered(linkInfo));
+        linkListeners.forEach(l -> l.linkRegistered(linkInfo));
     }
 
     public void unregisterLink(String instance, String linkName) {
         Optional<LinkWithInfo> o = getLink(instance, linkName);
-        if(o.isPresent()) {
+        if (o.isPresent()) {
             LinkWithInfo lwi = o.get();
             links.remove(lwi);
             linkListeners.forEach(l -> l.linkUnregistered(lwi.linkInfo));
@@ -128,30 +137,31 @@ public class ManagementService implements ProcessorListener {
 
     private Optional<LinkWithInfo> getLink(String instance, String linkName) {
         return links.stream()
-                .filter(lwi->instance.equals(lwi.linkInfo.getInstance()) && linkName.equals(lwi.linkInfo.getName()))
+                .filter(lwi -> instance.equals(lwi.linkInfo.getInstance()) && linkName.equals(lwi.linkInfo.getName()))
                 .findFirst();
     }
+
     public CommandQueueManager getQueueManager(String instance, String processorName) throws YamcsException {
-        for(int i=0;i<qmanagers.size();i++) {
-            CommandQueueManager cqm=qmanagers.get(i);
-            if(cqm.getInstance().equals(instance) && cqm.getChannelName().equals(processorName)) {
+        for (int i = 0; i < qmanagers.size(); i++) {
+            CommandQueueManager cqm = qmanagers.get(i);
+            if (cqm.getInstance().equals(instance) && cqm.getChannelName().equals(processorName)) {
                 return cqm;
             }
         }
 
-        throw new YamcsException("Cannot find a command queue manager for "+instance+"/"+processorName);
+        throw new YamcsException("Cannot find a command queue manager for " + instance + "/" + processorName);
     }
 
     public List<CommandQueueManager> getQueueManagers() {
         return qmanagers;
     }
 
-    public int registerClient(String instance, String procName,  ProcessorClient client) {
+    public int registerClient(String instance, String procName, ProcessorClient client) {
         int id = clientIdGenerator.incrementAndGet();
         try {
-            Processor c=Processor.getInstance(instance, procName);
-            if(c==null) {
-                throw new YamcsException("Unexisting processor ("+instance+", "+procName+") specified");
+            Processor c = Processor.getInstance(instance, procName);
+            if (c == null) {
+                throw new YamcsException("Unexisting processor (" + instance + ", " + procName + ") specified");
             }
             long now = TimeEncoding.getWallclockTime();
             ClientInfo clientInfo = ManagementGpbHelper.toClientInfo(instance, procName, id, now, client);
@@ -165,7 +175,7 @@ public class ManagementService implements ProcessorListener {
 
     public void unregisterClient(int id) {
         ClientWithInfo cwi = clients.remove(id);
-        if(cwi==null) {
+        if (cwi == null) {
             return;
         }
         ClientInfo ci = cwi.clientInfo;
@@ -183,7 +193,8 @@ public class ManagementService implements ProcessorListener {
         client.switchProcessor(newProc);
         newProc.connect(client);
         ClientInfo oldCi = cwi.clientInfo;
-        cwi.clientInfo = ManagementGpbHelper.toClientInfo(newProc.getInstance(), newProc.getName(), oldCi.getId(), oldCi.getLoginTime(), client);
+        cwi.clientInfo = ManagementGpbHelper.toClientInfo(newProc.getInstance(), newProc.getName(), oldCi.getId(),
+                oldCi.getLoginTime(), client);
         try {
             managementListeners.forEach(l -> l.clientInfoChanged(cwi.clientInfo));
         } catch (Exception e) {
@@ -192,31 +203,32 @@ public class ManagementService implements ProcessorListener {
 
     }
 
-    public void createProcessor(ProcessorManagementRequest pmr, String username) throws YamcsException{
-        log.info("Creating new processor instance: {}, name: {}, type: {}, config: {}, persistent: {}",pmr.getInstance(), pmr.getName(), pmr.getType(), pmr.getConfig(), pmr.getPersistent());
+    public void createProcessor(ProcessorManagementRequest pmr, String username) throws YamcsException {
+        log.info("Creating new processor instance: {}, name: {}, type: {}, config: {}, persistent: {}",
+                pmr.getInstance(), pmr.getName(), pmr.getType(), pmr.getConfig(), pmr.getPersistent());
         Processor yproc;
         try {
-            int n=0;
+            int n = 0;
 
             Object spec = null;
-            if(pmr.hasReplaySpec()) {
+            if (pmr.hasReplaySpec()) {
                 spec = pmr.getReplaySpec();
-            } else if (pmr.hasConfig()){
+            } else if (pmr.hasConfig()) {
                 spec = pmr.getConfig();
             }
             yproc = ProcessorFactory.create(pmr.getInstance(), pmr.getName(), pmr.getType(), username, spec);
             yproc.setPersistent(pmr.getPersistent());
-            for(int i=0; i<pmr.getClientIdCount(); i++) {
+            for (int i = 0; i < pmr.getClientIdCount(); i++) {
                 ClientWithInfo cwi = clients.get(pmr.getClientId(i));
-                if(cwi!=null) {
+                if (cwi != null) {
                     switchProcessor(cwi, yproc);
                     n++;
                 } else {
-                    log.warn("createProcessor called with invalid client id:"+pmr.getClientId(i)+"; ignored.");
+                    log.warn("createProcessor called with invalid client id: {}; ignored.", pmr.getClientId(i));
                 }
             }
-            if(n>0 || pmr.getPersistent()) {
-                log.info("Starting new processor '" + yproc.getName() + "' with " + yproc.getConnectedClients() + " clients");
+            if (n > 0 || pmr.getPersistent()) {
+                log.info("Starting new processor '{}' with {} clients", yproc.getName(), yproc.getConnectedClients());
                 yproc.startAsync();
                 yproc.awaitRunning();
             } else {
@@ -226,9 +238,9 @@ public class ManagementService implements ProcessorListener {
         } catch (ProcessorException | ConfigurationException e) {
             throw new YamcsException(e.getMessage(), e.getCause());
         } catch (IllegalStateException e1) {
-            Throwable t =  e1.getCause();
-            if(t instanceof YamcsException) {
-                throw (YamcsException )t;
+            Throwable t = e1.getCause();
+            if (t instanceof YamcsException) {
+                throw (YamcsException) t;
             } else {
                 throw new YamcsException(t.getMessage(), t.getCause());
             }
@@ -237,39 +249,39 @@ public class ManagementService implements ProcessorListener {
 
     public void connectToProcessor(Processor processor, int clientId) throws YamcsException, ProcessorException {
         ClientWithInfo cwi = clients.get(clientId);
-        if(cwi==null) {
-            throw new YamcsException("Invalid client id "+clientId);
+        if (cwi == null) {
+            throw new YamcsException("Invalid client id " + clientId);
         }
         switchProcessor(cwi, processor);
     }
 
     public void connectToProcessor(ProcessorManagementRequest cr) throws YamcsException {
         Processor processor = Processor.getInstance(cr.getInstance(), cr.getName());
-        if(processor==null) {
-            throw new YamcsException("Unexisting processor "+cr.getInstance()+"/"+cr.getName()+" specified");
+        if (processor == null) {
+            throw new YamcsException("Unexisting processor " + cr.getInstance() + "/" + cr.getName() + " specified");
         }
 
         log.debug("Connecting clients {} to processor {}", cr.getClientIdList(), cr.getName());
 
         try {
-            for(int i=0;i<cr.getClientIdCount();i++) {
-                int id=cr.getClientId(i);
+            for (int i = 0; i < cr.getClientIdCount(); i++) {
+                int id = cr.getClientId(i);
                 ClientWithInfo cwi = clients.get(id);
                 switchProcessor(cwi, processor);
             }
-        } catch(ProcessorException e) {
+        } catch (ProcessorException e) {
             throw new YamcsException(e.toString());
         }
     }
 
     public void registerCommandQueueManager(String instance, String processorName, CommandQueueManager cqm) {
-        for(CommandQueue cq:cqm.getQueues()) {
-            commandQueueListeners.forEach(l->l.commandQueueRegistered(instance, processorName, cq));
+        for (CommandQueue cq : cqm.getQueues()) {
+            commandQueueListeners.forEach(l -> l.commandQueueRegistered(instance, processorName, cq));
         }
         qmanagers.add(cqm);
         for (CommandQueueListener l : commandQueueListeners) {
             cqm.registerListener(l);
-            for(CommandQueue q:cqm.getQueues()) {
+            for (CommandQueue q : cqm.getQueues()) {
                 l.updateQueue(q);
             }
         }
@@ -278,8 +290,8 @@ public class ManagementService implements ProcessorListener {
 
     public void unregisterCommandQueueManager(String instance, String processorName, CommandQueueManager cqm) {
         try {
-            for(CommandQueue cq:cqm.getQueues()) {
-                commandQueueListeners.forEach(l->l.commandQueueUnregistered(instance, processorName, cq));
+            for (CommandQueue cq : cqm.getQueues()) {
+                commandQueueListeners.forEach(l -> l.commandQueueUnregistered(instance, processorName, cq));
             }
             qmanagers.remove(cqm);
         } catch (Exception e) {
@@ -302,24 +314,24 @@ public class ManagementService implements ProcessorListener {
     }
 
     public void enableLink(String instance, String linkName) {
-        log.debug("received enableLink for "+instance+"/"+linkName);
+        log.debug("received enableLink for {}/{}", instance, linkName);
         Optional<LinkWithInfo> o = getLink(instance, linkName);
-        if(o.isPresent()) {
+        if (o.isPresent()) {
             LinkWithInfo lci = o.get();
             lci.link.enable();
         } else {
-            throw new IllegalArgumentException("There is no link named '"+linkName+"' in instance "+instance);
+            throw new IllegalArgumentException("There is no link named '" + linkName + "' in instance " + instance);
         }
     }
 
     public void disableLink(String instance, String linkName) {
-        log.debug("received disableLink for "+instance+"/"+linkName);
+        log.debug("received disableLink for {}/{}", instance, linkName);
         Optional<LinkWithInfo> o = getLink(instance, linkName);
-        if(o.isPresent()) {
+        if (o.isPresent()) {
             LinkWithInfo lci = o.get();
             lci.link.disable();
         } else {
-            throw new IllegalArgumentException("There is no link named '"+linkName+"' in instance "+instance);
+            throw new IllegalArgumentException("There is no link named '" + linkName + "' in instance " + instance);
         }
     }
 
@@ -368,15 +380,15 @@ public class ManagementService implements ProcessorListener {
     }
 
     public List<LinkInfo> getLinkInfo() {
-        return links.stream().map(lwi->lwi.linkInfo).collect(Collectors.toList());
+        return links.stream().map(lwi -> lwi.linkInfo).collect(Collectors.toList());
     }
 
     public LinkInfo getLinkInfo(String instance, String name) {
         Optional<LinkInfo> o = links.stream()
                 .map(lwi -> lwi.linkInfo)
-                .filter(li->li.getInstance().equals(instance) && li.getName().equals(name))
+                .filter(li -> li.getInstance().equals(instance) && li.getName().equals(name))
                 .findFirst();
-        if(o.isPresent()) {
+        if (o.isPresent()) {
             return o.get();
         } else {
             return null;
@@ -384,7 +396,7 @@ public class ManagementService implements ProcessorListener {
     }
 
     public Set<ClientInfo> getClientInfo() {
-        synchronized(clients) {
+        synchronized (clients) {
             return clients.values().stream()
                     .map(cwi -> cwi.clientInfo)
                     .collect(Collectors.toSet());
@@ -392,7 +404,7 @@ public class ManagementService implements ProcessorListener {
     }
 
     public Set<ClientInfo> getClientInfo(String username) {
-        synchronized(clients) {
+        synchronized (clients) {
             return clients.values().stream()
                     .map(cwi -> cwi.clientInfo)
                     .filter(ci -> ci.getUsername().equals(username))
@@ -402,7 +414,7 @@ public class ManagementService implements ProcessorListener {
 
     public ClientInfo getClientInfo(int clientId) {
         ClientWithInfo cwi = clients.get(clientId);
-        if(cwi==null) {
+        if (cwi == null) {
             return null;
         }
         return cwi.clientInfo;
@@ -410,17 +422,17 @@ public class ManagementService implements ProcessorListener {
 
     private void updateStatistics() {
         try {
-            for(Entry<Processor,Statistics> entry:yprocs.entrySet()) {
-                Processor yproc=entry.getKey();
-                Statistics stats=entry.getValue();
-                ProcessingStatistics ps=yproc.getTmProcessor().getStatistics();
-                if((stats==STATS_NULL) || (ps.getLastUpdated()>stats.getLastUpdated())) {
-                    stats=ManagementGpbHelper.buildStats(yproc);
+            for (Entry<Processor, Statistics> entry : yprocs.entrySet()) {
+                Processor yproc = entry.getKey();
+                Statistics stats = entry.getValue();
+                ProcessingStatistics ps = yproc.getTmProcessor().getStatistics();
+                if ((stats == STATS_NULL) || (ps.getLastUpdated() > stats.getLastUpdated())) {
+                    stats = ManagementGpbHelper.buildStats(yproc);
                     yprocs.put(yproc, stats);
                 }
-                if(stats!=STATS_NULL) {
+                if (stats != STATS_NULL) {
                     for (ManagementListener l : managementListeners) {
-                        l.statisticsUpdated(yproc, stats);   
+                        l.statisticsUpdated(yproc, stats);
                     }
                 }
             }
@@ -431,8 +443,8 @@ public class ManagementService implements ProcessorListener {
 
     private void checkLinkUpdate() {
         // see if any link has changed
-        for(LinkWithInfo lwi:links) {
-            if(lwi.hasChanged()) {
+        for (LinkWithInfo lwi : links) {
+            if (lwi.hasChanged()) {
                 LinkInfo li = lwi.linkInfo;
                 linkListeners.forEach(l -> l.linkChanged(li));
             }
@@ -461,29 +473,39 @@ public class ManagementService implements ProcessorListener {
 
     public void registerYamcsInstance(YamcsServerInstance ys) {
         ys.addListener(new Listener() {
-            public void running() {notifyInstanceStateChanged(ys);}
-            public void terminated(State from) {notifyInstanceStateChanged(ys);}
-            public void failed(State from, Throwable failure) {notifyInstanceStateChanged(ys);}
+            public void running() {
+                notifyInstanceStateChanged(ys);
+            }
+
+            public void terminated(State from) {
+                notifyInstanceStateChanged(ys);
+            }
+
+            public void failed(State from, Throwable failure) {
+                notifyInstanceStateChanged(ys);
+            }
         }, MoreExecutors.directExecutor());
     }
 
     private void notifyInstanceStateChanged(YamcsServerInstance ysi) {
         managementListeners.forEach(l -> l.instanceStateChanged(ysi));
     }
+
     /**
-     * Restarts a yamcs instance. 
+     * Restarts a yamcs instance.
      * It is not possible to restart an instance - so the old one is stopped and a new one is created and started.
      * 
-     * @param instanceName the name of the instance to be restarted
+     * @param instanceName
+     *            the name of the instance to be restarted
      * @return completable that will complete after the instance has been restarted
      */
-    public CompletableFuture<Void>  restartInstance(String instanceName) {
+    public CompletableFuture<Void> restartInstance(String instanceName) {
         YamcsServerInstance ysi = YamcsServer.getInstance(instanceName);
-        if(ysi==null) {
-            throw new IllegalArgumentException("No instance named '"+instanceName+"'");
+        if (ysi == null) {
+            throw new IllegalArgumentException("No instance named '" + instanceName + "'");
         }
 
-        return CompletableFuture.runAsync(() ->{
+        return CompletableFuture.runAsync(() -> {
             ysi.stopAsync();
             try {
                 ysi.awaitTerminated();
@@ -503,45 +525,47 @@ public class ManagementService implements ProcessorListener {
         });
 
     }
-    public CompletableFuture<Void>  stopInstance(String instanceName) {
+
+    public CompletableFuture<Void> stopInstance(String instanceName) {
         YamcsServerInstance ys = YamcsServer.getInstance(instanceName);
-        if(ys==null) {
-            throw new IllegalArgumentException("No instance named '"+instanceName+"'");
+        if (ys == null) {
+            throw new IllegalArgumentException("No instance named '" + instanceName + "'");
         }
-        return CompletableFuture.runAsync(() ->{
+        return CompletableFuture.runAsync(() -> {
             ys.stopAsync();
             ys.awaitTerminated();
         });
     }
 
     public void registerTable(String instance, TableDefinition tblDef) {
-        tableStreamListeners.forEach(l->l.tableRegistered(instance, tblDef));
+        tableStreamListeners.forEach(l -> l.tableRegistered(instance, tblDef));
     }
 
     public void registerStream(String instance, Stream stream) {
-        tableStreamListeners.forEach(l->l.streamRegistered(instance, stream));
+        tableStreamListeners.forEach(l -> l.streamRegistered(instance, stream));
     }
 
     public void unregisterTable(String instance, String tblName) {
-        tableStreamListeners.forEach(l->l.tableUnregistered(instance, tblName));
+        tableStreamListeners.forEach(l -> l.tableUnregistered(instance, tblName));
     }
 
     public void unregisterStream(String instance, String name) {
-        tableStreamListeners.forEach(l->l.tableUnregistered(instance, name));
+        tableStreamListeners.forEach(l -> l.tableUnregistered(instance, name));
     }
 
     static class LinkWithInfo {
         final Link link;
         LinkInfo linkInfo;
+
         public LinkWithInfo(Link link, LinkInfo linkInfo) {
             this.link = link;
             this.linkInfo = linkInfo;
         }
 
         boolean hasChanged() {
-            if(!linkInfo.getStatus().equals(link.getLinkStatus())
-                    || linkInfo.getDisabled()!=link.isDisabled()
-                    || linkInfo.getDataCount()!=link.getDataCount()
+            if (!linkInfo.getStatus().equals(link.getLinkStatus())
+                    || linkInfo.getDisabled() != link.isDisabled()
+                    || linkInfo.getDataCount() != link.getDataCount()
                     || !linkInfo.getDetailedStatus().equals(link.getDetailedStatus())) {
 
                 linkInfo = LinkInfo.newBuilder(linkInfo).setDisabled(link.isDisabled())
@@ -558,6 +582,7 @@ public class ManagementService implements ProcessorListener {
     static class ClientWithInfo {
         final ProcessorClient client;
         ClientInfo clientInfo;
+
         public ClientWithInfo(ProcessorClient client, ClientInfo clientInfo) {
             this.client = client;
             this.clientInfo = clientInfo;

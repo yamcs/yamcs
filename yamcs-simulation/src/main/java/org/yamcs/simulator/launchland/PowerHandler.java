@@ -54,7 +54,7 @@ class PowerHandler {
         } catch (IOException e) {
             log.warn(e.getMessage(), e);
         }
-        log.info("have " + entries.size() + " power data records");
+        log.info("have {} power data records", entries.size());
 
     }
 

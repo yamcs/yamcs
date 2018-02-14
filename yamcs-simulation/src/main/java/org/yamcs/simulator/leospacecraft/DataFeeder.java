@@ -46,7 +46,7 @@ public class DataFeeder {
                 reader.close();
             }
         }
-        log.info(entries.size() + " steps");
+        log.info("{} steps", entries.size());
     }
     
     public void reset() {

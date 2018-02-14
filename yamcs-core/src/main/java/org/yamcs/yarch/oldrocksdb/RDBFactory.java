@@ -106,7 +106,7 @@ public class RDBFactory implements Runnable {
                     daat.db.close();
                 }
             }
-            log.debug("Creating or opening RDB "+absolutePath+" total rdb open: "+databases.size());
+            log.debug("Creating or opening RDB {} total rdb open: {}", absolutePath, databases.size());
             YRDB db;
             try {
                 db = new YRDB(absolutePath);
@@ -145,7 +145,7 @@ public class RDBFactory implements Runnable {
             Map.Entry<String, DbAndAccessTime> entry=it.next();
             DbAndAccessTime daat=entry.getValue();
             if((daat.refcount==0) && ( time-daat.lastAccess>300000)) {
-                log.debug("Closing the database: "+entry.getKey());
+                log.debug("Closing the database: {}", entry.getKey());
                 daat.db.close();
                 it.remove();
             } 
@@ -153,7 +153,7 @@ public class RDBFactory implements Runnable {
     }
 
     synchronized void shutdown() {
-        log.debug("shutting down, closing all the databases "+databases.keySet());
+        log.debug("shutting down, closing all the databases {}", databases.keySet());
         Iterator<Map.Entry<String, DbAndAccessTime>>it = databases.entrySet().iterator();
         while(it.hasNext()) {
             Map.Entry<String, DbAndAccessTime> entry = it.next();
