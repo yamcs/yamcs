@@ -44,7 +44,6 @@ public class ProcessorsTest {
     public static void setupHornetAndManagement() throws Exception {
         YConfiguration.setup("ProcessorsTest");
         YamcsServer.setupYamcsServer();
-        Logger.getLogger("org.yamcs").setLevel(Level.ALL);
     }
     
     @AfterClass

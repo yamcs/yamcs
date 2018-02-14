@@ -127,8 +127,10 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                     if (idList.size() == e.getInvalidParameters().size()) {
                         log.warn("Received subscribe attempt will all-invalid parameters");
                     } else {
-                        Set<NamedObjectId>valid = new HashSet<>(e.getInvalidParameters());
+                        Set<NamedObjectId>valid = new HashSet<>(idList);
                         valid.removeAll(e.getInvalidParameters());
+                        idList = new ArrayList<>(valid);
+                        
                         log.warn(
                                 "Received subscribe attempt with {} invalid parameters. Subscription will continue with {} remaining valids.",
                                 e.getInvalidParameters().size(), idList.size());
@@ -137,7 +139,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                                     StringConverter.idListToString(e.getInvalidParameters()));
                         }
                         if (subscriptionId != -1) {
-                            pidrm.addItemsToRequest(subscriptionId, new ArrayList<>(valid), authToken);
+                            pidrm.addItemsToRequest(subscriptionId, idList, authToken);
                         } else {
                             subscriptionId = pidrm.addRequest(idList, req.getUpdateOnExpiration(), authToken);
                         }

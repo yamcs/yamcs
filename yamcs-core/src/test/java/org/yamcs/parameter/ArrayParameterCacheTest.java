@@ -40,7 +40,6 @@ public class ArrayParameterCacheTest {
         p2v1.setAcquisitionStatus(AcquisitionStatus.INVALID);
         pcache.update(Arrays.asList(p1v1, p2v1));
 
-        System.out.println("last value p2: "+pcache.getLastValue(p2).getAcquisitionStatus());
         TestUtils.checkEquals(p1v1, pcache.getLastValue(p1));
         TestUtils.checkEquals(p2v1, pcache.getLastValue(p2));
 
@@ -107,7 +106,6 @@ public class ArrayParameterCacheTest {
         List<ParameterValue> pvlist = pcache.getAllValues(p1);
         assertEquals(10, pvlist.size());
         for (int i = 0; i < 10; i++) {
-            System.out.println("status: "+pvlist.get(i).getStatus().getAcquisitionStatus());
             assertEquals(pv0.getStatus().hashCode(), pvlist.get(i).getStatus().hashCode());
             TestUtils.checkEquals(expectedPVlist.get(9 - i), pvlist.get(i));
         }
@@ -130,7 +128,6 @@ public class ArrayParameterCacheTest {
         expectedPVlist.add(pv);
 
         pvlist = pcache.getAllValues(p1);
-        System.out.println("pvlist: "+pvlist);
         assertEquals(16, pvlist.size());
         for (int i = 0; i < 16; i++) {
             TestUtils.checkEquals(expectedPVlist.get(16 - i), pvlist.get(i));

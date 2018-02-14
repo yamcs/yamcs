@@ -131,6 +131,7 @@ public class TcpTcDataLinkTest {
             long gap = mypub.sentTime.get(seq2) - mypub.sentTime.get(seq1);
             assertTrue("gap is not right: " + gap, gap >= 990 && gap < 1010);
         }
+        dataLink.stopAsync();
     }
 
     @Test
@@ -150,8 +151,9 @@ public class TcpTcDataLinkTest {
         for (int i = 1; i <= 1000; i++) {
             dataLink.sendTc(getCommand(i));
         }
-        assertTrue(semaphore.tryAcquire(1000, 30, TimeUnit.SECONDS));
+        assertTrue(semaphore.tryAcquire(1000, 300, TimeUnit.SECONDS));
         assertEquals(1000, mypub.successful.size());
+        dataLink.stopAsync();
     }
 
     private PreparedCommand getCommand(int seq) {

@@ -101,7 +101,6 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     public TcpTcDataLink(String host, int port) {
         this.host = host;
         this.port = port;
-        openSocket();
         log = LoggerFactory.getLogger(this.getClass().getName());
     }
 
@@ -117,7 +116,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     protected void doStart() {
         setupSysVariables();
         this.timer = new ScheduledThreadPoolExecutor(2);
-        timer.scheduleWithFixedDelay(this, 0, 10, TimeUnit.SECONDS);
+        openSocket();
         tcSender = new TcDequeueAndSend();
         timer.execute(tcSender);
         notifyStarted();
@@ -209,6 +208,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             return;
         }
         if (!commandQueue.offer(pc)) {
+            log.warn("Cannot put command {} in the queue, because it's full; sending NACK", pc); 
             commandHistoryListener.publishWithTime(pc.getCommandId(), "Acknowledge_Sent", getCurrentTime(), "NOK");
         }
     }
@@ -299,10 +299,12 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
                     Thread.currentThread().interrupt();
                     log.warn("Send command interrupted while waiting for the queue.", e);
                     return;
+                } catch (Exception e) {
+                    log.error("Error when sending command: ", e);
+                    throw e;
                 }
             }
         }
-
         public void send() {
             ByteBuffer bb = null;
             if (pc.getBinary().length < minimumTcPacketLength) { // enforce the minimum packet length
@@ -310,7 +312,6 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
                 bb.put(pc.getBinary());
                 bb.putShort(4, (short) (minimumTcPacketLength - 7)); // fix packet length
             } else {
-
                 int checksumIndicator = pc.getBinary()[2] & 0x04;
                 if (checksumIndicator == 1) {
                     bb = ByteBuffer.allocate(pc.getBinary().length + 2); // extra slots for check sum
@@ -361,7 +362,6 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
                     }
                 }
             }
-
             if (sent) {
                 commandHistoryListener.publishWithTime(pc.getCommandId(), "Acknowledge_Sent", getCurrentTime(), "OK");
             } else {
