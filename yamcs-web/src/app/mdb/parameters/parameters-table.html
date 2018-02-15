@@ -1,4 +1,5 @@
 <mat-table *ngIf="dataSource"
+            class="ya-data-table"
             [dataSource]="dataSource"
             matSort
             matSortActive="qualifiedName"
@@ -7,7 +8,9 @@
 
   <ng-container matColumnDef="name">
     <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
-    <mat-cell *matCellDef="let parameter">{{ parameter.qualifiedName }}</mat-cell>
+    <mat-cell *matCellDef="let parameter">
+      {{ shortName ? parameter.name : parameter.qualifiedName }}
+    </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="type">

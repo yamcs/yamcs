@@ -19,8 +19,13 @@ export class YamcsService {
 
   switchInstance(instance: string) {
     if (this.selectedInstance) {
-      // TODO close connection
+      if (this.selectedInstance.instance === instance) {
+        return this.selectedInstance;
+      } else {
+        this.selectedInstance.closeConnection();
+      }
     }
+
     this.selectedInstance = this.yamcsClient.selectInstance(instance);
     return this.selectedInstance;
   }

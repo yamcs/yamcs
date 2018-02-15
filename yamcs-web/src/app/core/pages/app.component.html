@@ -32,6 +32,20 @@
     <button mat-icon-button [matMenuTriggerFor]="appMenu">
       <mat-icon>more_vert</mat-icon>
     </button>
+
+    <ng-container *ngIf="user$ | async as user">
+      <mat-menu #userMenu="matMenu" overlapTrigger="false">
+        <a mat-menu-item routerLink="profile">
+          Profile
+        </a>
+      </mat-menu>
+      <button mat-icon-button
+              [matMenuTriggerFor]="userMenu"
+              [matTooltip]="'Account: ' + user.login"
+              matTooltipPosition="left">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+    </ng-container>
   </mat-toolbar-row>
 </mat-toolbar>
 <router-outlet></router-outlet>

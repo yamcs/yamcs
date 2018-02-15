@@ -1,4 +1,4 @@
-import { ParameterSubscriptionRequest } from './types/main';
+import { ParameterSubscriptionRequest } from './types/monitoring';
 
 /**
  * Keeps track of which subscriptions are currently active.

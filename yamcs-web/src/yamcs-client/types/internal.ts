@@ -1,11 +1,5 @@
 import {
-  Event,
   Instance,
-  Link,
-  Record,
-  Service,
-  Stream,
-  Table,
 } from './main';
 
 import {
@@ -15,6 +9,20 @@ import {
   Parameter,
   SpaceSystem,
 } from './mdb';
+
+import {
+  Link,
+  Processor,
+  Record,
+  Service,
+  Stream,
+  Table,
+} from './system';
+
+import {
+  Event,
+} from './monitoring';
+import { ClientInfo } from './main';
 
 export type WebSocketClientMessage = [
   number, // Protocol
@@ -68,8 +76,16 @@ export interface ParametersWrapper {
   parameter: Parameter[];
 }
 
+export interface ClientsWrapper {
+  client: ClientInfo[];
+}
+
 export interface CommandsWrapper {
   command: Command[];
+}
+
+export interface ProcessorsWrapper {
+  processor: Processor[];
 }
 
 export interface StreamsWrapper {

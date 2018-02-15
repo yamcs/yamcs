@@ -15,17 +15,20 @@ export class CommandsTableComponent implements AfterViewInit {
   @Input()
   commands$: Observable<Command[]>;
 
+  @Input()
+  shortName = false;
+
   @ViewChild(MatSort)
   sort: MatSort;
 
-  dataSource = new MatTableDataSource<Command>();
+  dataSource = new MatTableDataSource<Command>([]);
 
   displayedColumns = ['name', 'shortDescription'];
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
     this.commands$.subscribe(commands => {
-      this.dataSource.data = commands;
+      this.dataSource.data = commands || [];
     });
   }
 }

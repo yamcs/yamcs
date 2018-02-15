@@ -12,7 +12,7 @@
     </button>
   </app-monitor-toolbar>
 
-  <mat-table [dataSource]="dataSource">
+  <mat-table [dataSource]="dataSource" class="ya-data-table">
     <ng-container cdkColumnDef="severity">
       <mat-header-cell *cdkHeaderCellDef fxFlex="50px"></mat-header-cell>
       <mat-cell *cdkCellDef="let row" fxFlex="50px">
@@ -40,15 +40,15 @@
     </ng-container>
 
     <ng-container cdkColumnDef="gentime">
-      <mat-header-cell *cdkHeaderCellDef>Generation Time</mat-header-cell>
-      <mat-cell *cdkCellDef="let row">
+      <mat-header-cell *cdkHeaderCellDef fxFlex="160px">Generation Time</mat-header-cell>
+      <mat-cell *cdkCellDef="let row" fxFlex="160px">
         {{ row.generationTimeUTC }}
       </mat-cell>
     </ng-container>
 
     <ng-container cdkColumnDef="rectime">
-      <mat-header-cell *cdkHeaderCellDef>Reception Time</mat-header-cell>
-      <mat-cell *cdkCellDef="let row">
+      <mat-header-cell *cdkHeaderCellDef fxFlex="160px">Reception Time</mat-header-cell>
+      <mat-cell *cdkCellDef="let row" fxFlex="160px">
         {{ row.receptionTimeUTC }}
       </mat-cell>
     </ng-container>
@@ -64,10 +64,10 @@
     <mat-row *cdkRowDef="let row; columns: displayedColumns;" [ngClass]="row.severity"></mat-row>
   </mat-table>
 
-  <!--mat-paginator #paginator
-    [length]="events.length"
+  <mat-paginator #paginator
+    [length]="dataSource.getEventCount()"
     [pageIndex]="pageIndex"
     [pageSize]="pageSize"
     [pageSizeOptions]="[25, 50, 100]">
-  </mat-paginator-->
+  </mat-paginator>
 </app-monitor-page>

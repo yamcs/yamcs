@@ -7,7 +7,6 @@ import { MatSort, MatTableDataSource } from '@angular/material';
 
 @Component({
   templateUrl: './services.component.html',
-  styleUrls: ['./services.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServicesPageComponent implements AfterViewInit {

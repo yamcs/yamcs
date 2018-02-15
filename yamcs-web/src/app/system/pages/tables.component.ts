@@ -11,7 +11,6 @@ import { selectCurrentInstance } from '../../core/store/instance.selectors';
 
 @Component({
   templateUrl: './tables.component.html',
-  styleUrls: ['./tables.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TablesPageComponent implements OnInit, AfterViewInit {

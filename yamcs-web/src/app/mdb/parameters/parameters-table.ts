@@ -15,17 +15,20 @@ export class ParametersTableComponent implements AfterViewInit {
   @Input()
   parameters$: Observable<Parameter[]>;
 
+  @Input()
+  shortName = false;
+
   @ViewChild(MatSort)
   sort: MatSort;
 
-  dataSource = new MatTableDataSource<Parameter>();
+  dataSource = new MatTableDataSource<Parameter>([]);
 
   displayedColumns = ['name', 'type', 'units', 'dataSource', 'shortDescription'];
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
     this.parameters$.subscribe(parameters => {
-      this.dataSource.data = parameters;
+      this.dataSource.data = parameters || [];
     });
   }
 }

@@ -1,0 +1,59 @@
+<div class="panel-content mat-typography" *ngIf="user$ | async as user">
+  <h3>Login</h3>
+  <div class="block">
+    {{ user.login }}
+  </div>
+
+  <h3>Roles</h3>
+  <div class="block">
+    <ul>
+      <li *ngFor="let role of user.roles">
+        {{ role }}
+      </li>
+    </ul>
+  </div>
+
+  <h3>Privileges</h3>
+  <table yaTable>
+    <tr>
+      <th>tmParaPrivileges</th>
+      <td>
+        <ng-container *ngFor="let privilege of user.tmParaPrivileges">
+          {{ privilege }}<br>
+        </ng-container>
+      </td>
+    </tr>
+    <tr>
+      <th>tmParaSetPrivileges</th>
+      <td>
+        <ng-container *ngFor="let privilege of user.tmParaSetPrivileges">
+          {{ privilege }}<br>
+        </ng-container>
+      </td>
+    </tr>
+    <tr>
+      <th>tmPacketPrivileges</th>
+      <td>
+        <ng-container *ngFor="let privilege of user.tmPacketPrivileges">
+          {{ privilege }}<br>
+        </ng-container>
+      </td>
+    </tr>
+    <tr>
+      <th>tcPrivileges</th>
+      <td>
+        <ng-container *ngFor="let privilege of user.tcPrivileges">
+          {{ privilege }}<br>
+        </ng-container>
+      </td>
+    </tr>
+    <tr>
+      <th>systemPrivileges</th>
+      <td>
+        <ng-container *ngFor="let privilege of user.systemPrivileges">
+          {{ privilege }}<br>
+        </ng-container>
+      </td>
+    </tr>
+  </table>
+</div>

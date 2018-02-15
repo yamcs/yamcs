@@ -1,22 +1,24 @@
 <app-system-page *ngIf="info$ | async as info">
   <app-system-toolbar>Dashboard</app-system-toolbar>
 
-  <mat-card>
-    <mat-card-subtitle>Server Info</mat-card-subtitle>
-    <mat-list dense>
-      <mat-list-item>
-        <h3 matLine>Yamcs Version</h3>
-        <p matLine>
-          {{ info.yamcsVersion }}
-        </p>
-      </mat-list-item>
+  <div class="panel-content">
+    <mat-card>
+      <mat-card-subtitle>Server Info</mat-card-subtitle>
+      <mat-list dense>
+        <mat-list-item>
+          <h3 matLine>Yamcs Version</h3>
+          <p matLine>
+            {{ info.yamcsVersion }}
+          </p>
+        </mat-list-item>
 
-      <mat-list-item>
-        <h3 matLine>Server ID</h3>
-        <p matLine>
-          {{ info.serverId }}
-        </p>
-      </mat-list-item>
-    </mat-list>
-  </mat-card>
+        <mat-list-item>
+          <h3 matLine>Server ID</h3>
+          <p matLine>
+            {{ info.serverId }}
+          </p>
+        </mat-list-item>
+      </mat-list>
+    </mat-card>
+  </div>
 </app-system-page>

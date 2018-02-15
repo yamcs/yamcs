@@ -3,20 +3,8 @@ export { InstanceClient } from './InstanceClient';
 
 export {
   ClientInfo,
-  DisplayInfo,
-  DisplayFile,
-  DisplayFolder,
-  Event,
-  EventSeverity,
   Instance,
-  Link,
-  ParameterData,
-  ParameterValue,
-  Record,
-  Service,
-  Stream,
-  Table,
-  Value,
+  UserInfo,
 } from './types/main';
 
 export {
@@ -25,6 +13,10 @@ export {
   Alias,
   Command,
   Container,
+  GetAlgorithmsOptions,
+  GetCommandsOptions,
+  GetContainersOptions,
+  GetParametersOptions,
   HistoryInfo,
   OperatorType,
   Parameter,
@@ -33,6 +25,25 @@ export {
 } from './types/mdb';
 
 export {
-  LinkEvent,
+  DisplayInfo,
+  DisplayFile,
+  DisplayFolder,
+  Event,
+  EventSeverity,
+  ParameterData,
+  ParameterSubscriptionRequest,
+  ParameterValue,
   TimeInfo,
-} from './types/main';
+  Value,
+} from './types/monitoring';
+
+export {
+  GeneralInfo,
+  Link,
+  LinkEvent,
+  Processor,
+  Record,
+  Service,
+  Stream,
+  Table,
+} from './types/system';

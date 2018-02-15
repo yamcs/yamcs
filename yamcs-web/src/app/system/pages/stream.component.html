@@ -7,20 +7,24 @@
 
   <mat-tab-group>
     <mat-tab label="Columns">
-      <table yaTable>
-        <tr>
-          <th width="150">Column</th>
-          <th>Type</th>
-        </tr>
-        <tr *ngFor="let column of stream.column">
-          <td>{{ column.name }}</td>
-          <td>{{ column.type }}</td>
-        </tr>
-      </table>
+      <div class="panel-content">
+        <table yaTable>
+          <tr>
+            <th width="150">Column</th>
+            <th>Type</th>
+          </tr>
+          <tr *ngFor="let column of stream.column">
+            <td>{{ column.name }}</td>
+            <td>{{ column.type }}</td>
+          </tr>
+        </table>
+      </div>
     </mat-tab>
 
     <mat-tab label="Script">
-      <code [innerHTML]="formatSQL(stream.script)"></code>
+      <div class="panel-content">
+        <code [innerHTML]="formatSQL(stream.script)"></code>
+      </div>
     </mat-tab>
   </mat-tab-group>
 </app-system-page>

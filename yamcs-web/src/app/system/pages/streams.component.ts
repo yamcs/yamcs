@@ -11,7 +11,6 @@ import { selectCurrentInstance } from '../../core/store/instance.selectors';
 
 @Component({
   templateUrl: './streams.component.html',
-  styleUrls: ['./streams.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StreamsPageComponent implements OnInit, AfterViewInit {

@@ -5,13 +5,19 @@ import { WebSocketSubject } from 'rxjs/observable/dom/WebSocketSubject';
 import { WebSocketServerMessage } from './types/internal';
 import {
   ClientInfo,
+} from './types/main';
+import {
   Event,
-  LinkEvent,
   ParameterData,
   TimeInfo,
   ParameterSubscriptionRequest,
-} from './types/main';
+} from './types/monitoring';
+import {
+  LinkEvent,
+  Processor,
+} from './types/system';
 import { Observable } from 'rxjs/Observable';
+import { Subscription } from 'rxjs/Subscription';
 
 const PROTOCOL_VERSION = 1;
 const MESSAGE_TYPE_REQUEST = 1;
@@ -27,7 +33,9 @@ export class WebSocketClient {
 
   private subscriptionModel: SubscriptionModel;
   private webSocket: WebSocketSubject<{}>;
-  private webSocketObservable: Observable<{}>;
+
+  private webSocketConnection$: Observable<{}>;
+  private webSocketConnectionSubscription: Subscription;
 
   private requestSequence = 0;
 
@@ -50,13 +58,13 @@ export class WebSocketClient {
         }
       }
     });
-    this.webSocketObservable = this.webSocket.pipe(
+    this.webSocketConnection$ = this.webSocket.pipe(
       retryWhen(errors => {
         console.log('Cannot connect to Yamcs');
         return errors.pipe(delay(1000));
       }),
     );
-    this.webSocketObservable.subscribe((msg: WebSocketServerMessage) => {
+    this.webSocketConnection$.subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
           console.error('Server reported error: ', msg[3].msg);
         }
@@ -67,9 +75,11 @@ export class WebSocketClient {
   }
 
   getEventUpdates() {
-    this.subscriptionModel.events = true;
-    this.emit({ events: 'subscribe' });
-    return this.webSocketObservable.pipe(
+    if (!this.subscriptionModel.events) {
+      this.subscriptionModel.events = true;
+      this.emit({ events: 'subscribe' });
+    }
+    return this.webSocketConnection$.pipe(
       filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
       filter((msg: WebSocketServerMessage) => msg[3].dt === 'EVENT'),
       map(msg => msg[3].data as Event),
@@ -77,9 +87,11 @@ export class WebSocketClient {
   }
 
   getTimeUpdates() {
-    this.subscriptionModel.time = true;
-    this.emit({ time: 'subscribe' });
-    return this.webSocketObservable.pipe(
+    if (!this.subscriptionModel.time) {
+      this.subscriptionModel.time = true;
+      this.emit({ time: 'subscribe' });
+    }
+    return this.webSocketConnection$.pipe(
       filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
       filter((msg: WebSocketServerMessage) => msg[3].dt === 'TIME_INFO'),
       map(msg => msg[3].data as TimeInfo),
@@ -87,9 +99,11 @@ export class WebSocketClient {
   }
 
   getLinkUpdates() {
-    this.subscriptionModel.links = true;
-    this.emit({ links: 'subscribe' });
-    return this.webSocketObservable.pipe(
+    if (!this.subscriptionModel.links) {
+      this.subscriptionModel.links = true;
+      this.emit({ links: 'subscribe' });
+    }
+    return this.webSocketConnection$.pipe(
       filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
       filter((msg: WebSocketServerMessage) => msg[3].dt === 'LINK_EVENT'),
       map(msg => msg[3].data as LinkEvent),
@@ -97,12 +111,26 @@ export class WebSocketClient {
   }
 
   getClientUpdates() {
-    this.subscriptionModel.management = true;
-    this.emit({ management: 'subscribe' });
-    return this.webSocketObservable.pipe(
+    if (!this.subscriptionModel.management) {
+      this.subscriptionModel.management = true;
+      this.emit({ management: 'subscribe' });
+    }
+    return this.webSocketConnection$.pipe(
       filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
       filter((msg: WebSocketServerMessage) => msg[3].dt === 'CLIENT_INFO'),
       map(msg => msg[3].data as ClientInfo),
+    );
+  }
+
+  getProcessorUpdates() {
+    if (!this.subscriptionModel.management) {
+      this.subscriptionModel.management = true;
+      this.emit({ management: 'subscribe' });
+    }
+    return this.webSocketConnection$.pipe(
+      filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+      filter((msg: WebSocketServerMessage) => msg[3].dt === 'PROCESSOR_INFO'),
+      map(msg => msg[3].data as Processor),
     );
   }
 
@@ -112,11 +140,16 @@ export class WebSocketClient {
       parameter: 'subscribe',
       data: options,
     });
-    return this.webSocketObservable.pipe(
+    return this.webSocketConnection$.pipe(
       filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
       filter((msg: WebSocketServerMessage) => msg[3].dt === 'PARAMETER'),
       map(msg => msg[3].data as ParameterData),
     );
+  }
+
+  close() {
+    this.webSocketConnectionSubscription.unsubscribe();
+    this.webSocket.unsubscribe();
   }
 
   private emit(payload: { [key: string]: any, data?: {} }) {

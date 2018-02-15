@@ -13,7 +13,10 @@ import { selectCurrentInstance } from '../../core/store/instance.selectors';
 
 @Component({
   templateUrl: './stream.component.html',
-  styleUrls: ['./streamsql.css'],
+  styleUrls: [
+    './stream.component.css',
+    './streamsql.css',
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StreamPageComponent implements OnInit {

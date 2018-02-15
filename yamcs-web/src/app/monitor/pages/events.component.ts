@@ -21,9 +21,7 @@ export class EventsPageComponent implements OnInit {
   paginator: MatPaginator;
 
   displayedColumns = ['severity', 'message', 'type', 'source', 'gentime', 'rectime'];
-  dataSource: EventDataSource | null;
-
-  events$ = new BehaviorSubject<Event[]>([]);
+  dataSource: EventDataSource;
 
   constructor(private yamcs: YamcsService) {
     this.yamcs.getSelectedInstance().getEventUpdates().subscribe(evt => {
@@ -56,5 +54,9 @@ class EventDataSource extends DataSource<Event> {
     return this.dataChange;
   }
 
-  disconnect() {}
+  disconnect() { }
+
+  public getEventCount() {
+    return this.dataChange.getValue().length;
+  }
 }

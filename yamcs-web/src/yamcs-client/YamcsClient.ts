@@ -9,10 +9,13 @@ import {
 } from './types/internal';
 
 import {
-  GeneralInfo,
   Instance,
-  Service,
+  UserInfo,
 } from './types/main';
+import {
+  GeneralInfo,
+  Service,
+} from './types/system';
 import { InstanceClient } from './InstanceClient';
 
 export default class YamcsClient {
@@ -34,9 +37,18 @@ export default class YamcsClient {
     );
   }
 
+  /**
+   * Returns info on the authenticated user
+   */
+  getUserInfo() {
+    return this.http.get<UserInfo>(`${this.apiUrl}/user`).pipe(
+      catchError(this.handleError<UserInfo>())
+    );
+  }
+
   getInstances() {
     return this.http.get<InstancesWrapper>(`${this.apiUrl}/instances`).pipe(
-      map(msg => msg.instance),
+      map(msg => msg.instance || []),
       catchError(this.handleError<Instance[]>([]))
     );
   }
@@ -49,7 +61,7 @@ export default class YamcsClient {
 
   getServices() {
     return this.http.get<ServicesWrapper>(`${this.apiUrl}/services/_global`).pipe(
-      map(msg => msg.service),
+      map(msg => msg.service || []),
       catchError(this.handleError<Service[]>([]))
     );
   }

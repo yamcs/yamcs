@@ -49,3 +49,42 @@ html, body {
 .panel-content {
   padding: 24px;
 }
+
+.ya-data-table mat-header-row {
+  min-height: 0;
+}
+
+.ya-data-table mat-row:hover {
+  background: #fafafa;
+}
+
+.ya-data-table mat-row {
+  min-height: 0;
+}
+
+.ya-data-table mat-cell {
+  font-size: 12px;
+  line-height: 16px;
+  color: rgba(0, 0, 0, .654);
+  padding: 7px 0 8px 0;
+}
+
+.ya-data-table mat-icon {
+  font-size: 16px !important;
+  height: 16px !important;
+  width: 16px !important;
+}
+
+.ya-data-table .mat-button, .ya-data-table .mat-stroked-button {
+  line-height: 16px;
+  min-width: 0;
+}
+
+.ya-data-table a {
+  color: #000;
+  text-decoration: none;
+}
+
+.ya-data-table a:hover {
+  text-decoration: underline;
+}

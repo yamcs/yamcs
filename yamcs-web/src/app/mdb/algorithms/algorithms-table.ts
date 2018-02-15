@@ -15,17 +15,20 @@ export class AlgorithmsTableComponent implements AfterViewInit {
   @Input()
   algorithms$: Observable<Algorithm[]>;
 
+  @Input()
+  shortName = false;
+
   @ViewChild(MatSort)
   sort: MatSort;
 
-  dataSource = new MatTableDataSource<Algorithm>();
+  dataSource = new MatTableDataSource<Algorithm>([]);
 
   displayedColumns = ['name', 'language', 'scope', 'shortDescription'];
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
     this.algorithms$.subscribe(algorithms => {
-      this.dataSource.data = algorithms;
+      this.dataSource.data = algorithms || [];
     });
   }
 }

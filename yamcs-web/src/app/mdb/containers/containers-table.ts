@@ -15,17 +15,20 @@ export class ContainersTableComponent implements AfterViewInit {
   @Input()
   containers$: Observable<Container[]>;
 
+  @Input()
+  shortName = false;
+
   @ViewChild(MatSort)
   sort: MatSort;
 
-  dataSource = new MatTableDataSource<Container>();
+  dataSource = new MatTableDataSource<Container>([]);
 
   displayedColumns = ['name', 'maxInterval', 'sizeInBits', 'baseContainer', 'restrictionCriteria', 'shortDescription'];
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
     this.containers$.subscribe(containers => {
-      this.dataSource.data = containers;
+      this.dataSource.data = containers || [];
     });
   }
 }

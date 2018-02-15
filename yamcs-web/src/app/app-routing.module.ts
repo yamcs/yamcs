@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { NotFoundPageComponent } from './core/pages/not-found.component';
 import { InstanceExistsGuard } from './core/guards/instance-exists.guard';
 import { HomePageComponent } from './core/pages/home.component';
+import { ProfileComponent } from './core/pages/profile.component';
 
 const routes: Routes = [
   {
@@ -25,7 +26,14 @@ const routes: Routes = [
         path: 'system',
         loadChildren: 'app/system/system.module#SystemModule',
       },
-      { path: '**', component: NotFoundPageComponent },
+      {
+        path: 'profile',
+        component: ProfileComponent,
+      },
+      {
+        path: '**',
+        component: NotFoundPageComponent,
+      },
     ]
   },
 ];

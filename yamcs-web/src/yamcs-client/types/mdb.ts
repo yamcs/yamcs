@@ -129,3 +129,28 @@ export class RepeatInfo {
   dynamicCount: Parameter;
   bitsBetween: number;
 }
+
+export interface GetParametersOptions {
+  namespace?: string;
+  recurse?: boolean;
+  type?: string;
+  q?: string;
+}
+
+export interface GetAlgorithmsOptions {
+  namespace?: string;
+  recurse?: boolean;
+  q?: string;
+}
+
+export interface GetContainersOptions {
+  namespace?: string;
+  recurse?: boolean;
+  q?: string;
+}
+
+export interface GetCommandsOptions {
+  namespace?: string;
+  recurse?: boolean;
+  q?: string;
+}

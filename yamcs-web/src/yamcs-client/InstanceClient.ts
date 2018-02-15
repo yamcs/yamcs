@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { catchError, filter, map } from 'rxjs/operators';
+import { catchError, filter, map, startWith } from 'rxjs/operators';
 import { WebSocketClient } from './WebSocketClient';
 
 import YamcsClient from './YamcsClient';
@@ -11,36 +11,43 @@ import {
   EventsWrapper,
   LinksWrapper,
   ParametersWrapper,
+  ProcessorsWrapper,
   RecordsWrapper,
   ServicesWrapper,
   SpaceSystemsWrapper,
   StreamsWrapper,
   TablesWrapper,
+  ClientsWrapper,
 } from './types/internal';
-
-import {
-  DisplayInfo,
-  Event,
-  Link,
-  Record,
-  Service,
-  Stream,
-  Table,
-  ParameterSubscriptionRequest,
-  GetAlgorithmsOptions,
-  GetCommandsOptions,
-  GetContainersOptions,
-  GetParametersOptions,
-} from './types/main';
 
 import {
   Algorithm,
   Command,
   Container,
+  GetAlgorithmsOptions,
+  GetCommandsOptions,
+  GetContainersOptions,
+  GetParametersOptions,
   MissionDatabase,
   Parameter,
   SpaceSystem,
 } from './types/mdb';
+
+import {
+  DisplayInfo,
+  Event,
+  ParameterSubscriptionRequest,
+} from './types/monitoring';
+
+import {
+  Link,
+  Processor,
+  Record,
+  Service,
+  Stream,
+  Table,
+} from './types/system';
+import { ClientInfo } from './types/main';
 
 export class InstanceClient {
 
@@ -59,7 +66,7 @@ export class InstanceClient {
 
   getEvents() {
     return this.http.get<EventsWrapper>(`${this.yamcs.apiUrl}/archive/${this.instance}/events`).pipe(
-      map(msg => msg.event),
+      map(msg => msg.event || []),
       catchError(this.yamcs.handleError<Event[]>([]))
     );
   }
@@ -71,7 +78,7 @@ export class InstanceClient {
 
   getLinks() {
     return this.http.get<LinksWrapper>(`${this.yamcs.apiUrl}/links/${this.instance}`).pipe(
-      map(msg => msg.link),
+      map(msg => msg.link || []),
       catchError(this.yamcs.handleError<Link[]>([]))
     );
   }
@@ -93,6 +100,27 @@ export class InstanceClient {
     });
   }
 
+  getProcessors() {
+    return this.http.get<ProcessorsWrapper>(`${this.yamcs.apiUrl}/services/${this.instance}`).pipe(
+      map(msg => msg.processor || []),
+      catchError(this.yamcs.handleError<Processor[]>([]))
+    );
+  }
+
+  getProcessorUpdates() {
+    this.prepareWebSocketClient();
+    return this.webSocketClient.getProcessorUpdates().pipe(
+      filter(msg => msg.instance === this.instance)
+    );
+  }
+
+  getClients() {
+    return this.http.get<ClientsWrapper>(`${this.yamcs.apiUrl}/instances/${this.instance}/clients`).pipe(
+      map(msg => msg.client || []),
+      catchError(this.yamcs.handleError<ClientInfo[]>([]))
+    );
+  }
+
   getClientUpdates() {
     this.prepareWebSocketClient();
     return this.webSocketClient.getClientUpdates().pipe(
@@ -102,7 +130,7 @@ export class InstanceClient {
 
   getServices() {
     return this.http.get<ServicesWrapper>(`${this.yamcs.apiUrl}/services/${this.instance}`).pipe(
-      map(msg => msg.service),
+      map(msg => msg.service || []),
       catchError(this.yamcs.handleError<Service[]>([]))
     );
   }
@@ -121,7 +149,7 @@ export class InstanceClient {
 
   getStreams() {
     return this.http.get<StreamsWrapper>(`${this.yamcs.apiUrl}/archive/${this.instance}/streams`).pipe(
-      map(msg => msg.stream),
+      map(msg => msg.stream || []),
       catchError(this.yamcs.handleError<Stream[]>([]))
     );
   }
@@ -134,7 +162,7 @@ export class InstanceClient {
 
   getTables() {
     return this.http.get<TablesWrapper>(`${this.yamcs.apiUrl}/archive/${this.instance}/tables`).pipe(
-      map(msg => msg.table),
+      map(msg => msg.table || []),
       catchError(this.yamcs.handleError<Table[]>([]))
     );
   }
@@ -147,7 +175,7 @@ export class InstanceClient {
 
   getTableData(name: string) {
     return this.http.get<RecordsWrapper>(`${this.yamcs.apiUrl}/archive/${this.instance}/tables/${name}/data`).pipe(
-      map(msg => msg.record),
+      map(msg => msg.record || []),
       catchError(this.yamcs.handleError<Record[]>())
     );
   }
@@ -161,7 +189,7 @@ export class InstanceClient {
 
   getSpaceSystems() {
     return this.http.get<SpaceSystemsWrapper>(`${this.yamcs.apiUrl}/mdb/${this.instance}/space-systems`).pipe(
-      map(msg => msg.spaceSystem),
+      map(msg => msg.spaceSystem || []),
       catchError(this.yamcs.handleError<SpaceSystem[]>([]))
     );
   }
@@ -175,7 +203,7 @@ export class InstanceClient {
   getParameters(options: GetParametersOptions = {}) {
     const params = this.toParams(options);
     return this.http.get<ParametersWrapper>(`${this.yamcs.apiUrl}/mdb/${this.instance}/parameters`, { params }).pipe(
-      map(msg => msg.parameter),
+      map(msg => msg.parameter || []),
       catchError(this.yamcs.handleError<Parameter[]>([]))
     );
   }
@@ -188,7 +216,7 @@ export class InstanceClient {
   getCommands(options: GetCommandsOptions = {}) {
     const params = this.toParams(options);
     return this.http.get<CommandsWrapper>(`${this.yamcs.apiUrl}/mdb/${this.instance}/commands`, { params }).pipe(
-      map(msg => msg.command),
+      map(msg => msg.command || []),
       catchError(this.yamcs.handleError<Command[]>([]))
     );
   }
@@ -202,7 +230,7 @@ export class InstanceClient {
   getContainers(options: GetContainersOptions = {}) {
     const params = this.toParams(options);
     return this.http.get<ContainersWrapper>(`${this.yamcs.apiUrl}/mdb/${this.instance}/containers`, { params }).pipe(
-      map(msg => msg.container),
+      map(msg => msg.container || []),
       catchError(this.yamcs.handleError<Container[]>([]))
     );
   }
@@ -216,7 +244,7 @@ export class InstanceClient {
   getAlgorithms(options: GetAlgorithmsOptions = {}) {
     const params = this.toParams(options);
     return this.http.get<AlgorithmsWrapper>(`${this.yamcs.apiUrl}/mdb/${this.instance}/algorithms`, { params }).pipe(
-      map(msg => msg.algorithm),
+      map(msg => msg.algorithm || []),
       catchError(this.yamcs.handleError<Algorithm[]>([]))
     );
   }
@@ -242,6 +270,12 @@ export class InstanceClient {
     }).pipe(
       catchError(this.yamcs.handleError<string>())
     );
+  }
+
+  closeConnection() {
+    if (this.webSocketClient) {
+      this.webSocketClient.close();
+    }
   }
 
   private prepareWebSocketClient() {

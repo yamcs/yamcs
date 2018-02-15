@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, ViewChild, AfterViewInit } from '@angular/core';
 
 import { ClientInfo } from '../../../yamcs-client';
+import { merge } from 'rxjs/observable/merge';
 
 import { YamcsService } from '../../core/services/yamcs.service';
 import { MatTableDataSource, MatSort } from '@angular/material';
@@ -21,6 +22,12 @@ export class ClientsPageComponent implements AfterViewInit {
   private clientsById: { [key: string]: ClientInfo } = {};
 
   constructor(yamcs: YamcsService) {
+    yamcs.getSelectedInstance().getClients().subscribe(clients => {
+      for (const client of clients) {
+        this.processClientEvent(client);
+      }
+    });
+
     yamcs.getSelectedInstance().getClientUpdates().subscribe(evt => {
       this.processClientEvent(evt);
     });
@@ -32,6 +39,7 @@ export class ClientsPageComponent implements AfterViewInit {
 
   private processClientEvent(evt: ClientInfo) {
     switch (evt.state) {
+      case undefined:
       case 'CONNECTED':
         this.clientsById[evt.id] = evt;
         this.dataSource.data = Object.values(this.clientsById);

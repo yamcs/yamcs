@@ -21,6 +21,7 @@ import { RouterStateUrl } from './shared/routing';
 import { YamcsService } from './core/services/yamcs.service';
 import { APP_BASE_HREF } from '@angular/common';
 import { HomePageComponent } from './core/pages/home.component';
+import { ProfileComponent } from './core/pages/profile.component';
 
 /**
  * The RouterStateSerializer takes the current RouterStateSnapshot
@@ -44,6 +45,7 @@ export class CustomRouterStateSerializer implements RouterStateSerializer<Router
     AppComponent,
     HomePageComponent,
     NotFoundPageComponent,
+    ProfileComponent,
   ],
   imports: [
     BrowserModule,
