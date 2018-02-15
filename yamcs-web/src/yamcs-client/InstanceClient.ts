@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { catchError, filter, map, startWith } from 'rxjs/operators';
+import { catchError, filter, map } from 'rxjs/operators';
 import { WebSocketClient } from './WebSocketClient';
 
 import YamcsClient from './YamcsClient';
