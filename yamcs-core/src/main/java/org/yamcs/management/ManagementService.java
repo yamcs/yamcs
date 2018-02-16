@@ -473,14 +473,17 @@ public class ManagementService implements ProcessorListener {
 
     public void registerYamcsInstance(YamcsServerInstance ys) {
         ys.addListener(new Listener() {
+            @Override
             public void running() {
                 notifyInstanceStateChanged(ys);
             }
 
+            @Override
             public void terminated(State from) {
                 notifyInstanceStateChanged(ys);
             }
 
+            @Override
             public void failed(State from, Throwable failure) {
                 notifyInstanceStateChanged(ys);
             }

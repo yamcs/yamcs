@@ -95,7 +95,7 @@ public class LosStore {
         	log.debug("No LOS data file to dump.");
             return null;
         }     
-        log.debug("readLosFile: {}",  requestedFile.toString());
+        log.debug("readLosFile: {}",  requestedFile);
 
         try {
         	
@@ -125,7 +125,7 @@ public class LosStore {
 
     public void deleteFile(String filename) {
         Path fileToDelete = Paths.get(System.getProperty("user.dir") + "/losData/" + filename);
-        log.debug("Delete Los File: {}", fileToDelete.toString());
+        log.debug("Delete Los File: {}", fileToDelete);
         try{
             fileToDelete.toFile().delete();
         } catch(Exception e){

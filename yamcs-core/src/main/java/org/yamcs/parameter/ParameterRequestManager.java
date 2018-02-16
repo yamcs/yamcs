@@ -234,7 +234,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * @param para
      */
     public void addItemsToRequest(final int subscriptionId, final Parameter para) throws InvalidRequestIdentification {
-        log.debug("adding to subscriptionID {}: items: {} ", subscriptionId, para);
+        log.debug("adding to subscriptionID {}: items: {} ", subscriptionId, para.getName());
         final ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
         if ((consumer == null) && !request2DVParameterConsumerMap.containsKey(subscriptionId)
                 && alarmChecker != null && alarmChecker.getSubscriptionId() != subscriptionId) {
@@ -256,7 +256,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * @throws InvalidRequestIdentification
      */
     public void addItemsToRequest(final int subscriptionId, final List<Parameter> paraList) throws InvalidRequestIdentification {
-        log.debug("adding to subscriptionID {}: items: {} ", subscriptionId, paraList);
+        log.debug("adding to subscriptionID {}: {} items ", subscriptionId, paraList.size());
         final ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
         if ((consumer == null) && !request2DVParameterConsumerMap.containsKey(subscriptionId)) {
             log.error(" addItemsToRequest called with an invalid subscriptionId={}\n current "
