@@ -10,12 +10,10 @@ import { take } from 'rxjs/operators';
 
 import { DisplayInfo, Alias } from '../../../yamcs-client';
 import { YamcsService } from '../../core/services/YamcsService';
-import { ResourceResolver } from '../../../uss-renderer/ResourceResolver';
-import { StyleSet } from '../../../uss-renderer/StyleSet';
-import { Layout, LayoutListener, LayoutStateListener } from '../../../uss-renderer/Layout';
-import { DisplayFrame, Coordinates } from '../../../uss-renderer/DisplayFrame';
-import { ParameterSample } from '../../../uss-renderer/ParameterSample';
-import { LayoutState } from '../../../uss-renderer/LayoutState';
+import { ResourceResolver } from './ResourceResolver';
+import { Layout, LayoutListener, LayoutStateListener } from './Layout';
+import { DisplayFrame, Coordinates } from './DisplayFrame';
+import { LayoutState } from './LayoutState';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 @Component({
@@ -41,37 +39,31 @@ export class DisplaysPage implements AfterViewInit, LayoutListener, LayoutStateL
   }
 
   ngAfterViewInit() {
-    this.resourceResolver.retrieveXML('mcs_dqistyle.xml').then(doc => {
-      const styleSet = new StyleSet(doc);
-      const targetEl = this.displayContainerRef.nativeElement;
-      this.layout = new Layout(targetEl, styleSet, this.resourceResolver);
+    const targetEl = this.displayContainerRef.nativeElement;
+    this.layout = new Layout(targetEl, this.resourceResolver);
+    this.layout.layoutListeners.add(this);
 
-      // Attempt to restore state from session storage.
-      // This way refresh or navigation don't just throw away all opened displays
-      const instance = this.yamcs.getSelectedInstance().instance;
-      const item = sessionStorage.getItem(`yamcs.${instance}.layout`);
-      if (item) {
-        const state = JSON.parse(item) as LayoutState;
-        this.restoreState(state);
-      }
+    // Attempt to restore state from session storage.
+    // This way refresh or navigation don't just throw away all opened displays
+    const instance = this.yamcs.getSelectedInstance().instance;
+    const item = sessionStorage.getItem(`yamcs.${instance}.layout`);
+    if (item) {
+      const state = JSON.parse(item) as LayoutState;
+      this.restoreState(state);
+    }
 
-      this.layout.layoutListeners.add(this);
-      this.layout.layoutStateListeners.add(this);
-    });
+    this.layout.layoutStateListeners.add(this);
   }
 
   openDisplay(id: string, coordinates?: Coordinates) {
     if (!this.layout) {
       return;
     }
-
     const existingFrame = this.layout.getDisplayFrame(id);
     if (existingFrame) {
       this.layout.bringToFront(existingFrame);
     } else {
-      this.resourceResolver.retrieveXMLDisplayResource(id).then(doc => {
-        this.layout.createDisplayFrame(id, doc, coordinates);
-      });
+      this.layout.createDisplayFrame(id, coordinates);
     }
   }
 
@@ -102,11 +94,7 @@ export class DisplaysPage implements AfterViewInit, LayoutListener, LayoutStateL
         sendFromCache: true,
         updateOnExpiration: true,
       }).subscribe(evt => {
-        const samples: ParameterSample[] = [];
-        for (const pval of evt.parameter) {
-          samples.push(new ParameterSample(pval));
-        }
-        frame.processParameterSamples(samples);
+        frame.processParameterValues(evt.parameter);
       });
     }
   }

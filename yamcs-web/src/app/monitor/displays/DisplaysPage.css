@@ -12,12 +12,3 @@ mat-sidenav {
   border-right: 1px solid #d3d3d3;
   color: rgba(0, 0, 0, .654);
 }
-
-tr.even td {
-  background-color: #fafafa;
-}
-
-tr.action-item:hover td {
-  cursor: pointer;
-  background: #ffffd6;
-}

@@ -1,6 +1,6 @@
-import { Display } from './Display';
 import { Layout } from './Layout';
-import { ParameterSample } from './ParameterSample';
+import { UssDisplay } from '../../../uss-renderer/UssDisplay';
+import { ParameterValue } from '../../../yamcs-client';
 
 export interface Coordinates {
   x: number;
@@ -23,14 +23,13 @@ export class DisplayFrame {
 
   titleBarHeight = 20;
 
-  display: Display;
+  display: UssDisplay;
 
   constructor(
     readonly id: string,
     private targetEl: HTMLDivElement,
     readonly layout: Layout,
-    private xmlDoc: XMLDocument,
-    coordinates: Coordinates) {
+    private coordinates: Coordinates) {
 
     this.container = document.createElement('div');
     this.container.style.setProperty('position', 'absolute');
@@ -51,9 +50,8 @@ export class DisplayFrame {
     this.container.appendChild(this.titleBar);
 
     this.title = document.createElement('span');
-    this.title.textContent = 'Loading...';
     this.title.style.setProperty('padding-left', '0.5em');
-    this.title.style.setProperty('font-family', 'Lucida Sans Typewriter');
+    this.title.style.setProperty('class', 'mat-typography');
     this.title.style.setProperty('font-size', '12px');
     this.titleBar.appendChild(this.title);
 
@@ -90,13 +88,21 @@ export class DisplayFrame {
 
     this.targetEl.appendChild(this.container);
 
-    this.renderDisplay();
+    this.display = new UssDisplay(this, this.frameContent, this.layout.resourceResolver);
+  }
 
-    this.setPosition(coordinates.x, coordinates.y);
-    if (coordinates.width !== undefined && coordinates.height !== undefined) {
-      this.setDimension(coordinates.width, coordinates.height);
-    }
-    this.addEventHandlers();
+  loadAsync() {
+    return this.display.parseAndDraw(this.id).then(() => {
+      this.container.style.setProperty('background-color', this.display.bgcolor.toString());
+      this.setDimension(this.display.width, this.display.height);
+      this.title.textContent = this.display.title;
+
+      this.setPosition(this.coordinates.x, this.coordinates.y);
+      if (this.coordinates.width !== undefined && this.coordinates.height !== undefined) {
+        this.setDimension(this.coordinates.width, this.coordinates.height);
+      }
+      this.addEventHandlers();
+    });
   }
 
   setDimension(width: number, height: number) {
@@ -152,18 +158,8 @@ export class DisplayFrame {
     this.display.digest();
   }
 
-  processParameterSamples(samples: ParameterSample[]) {
-    this.display.processParameterSamples(samples);
-  }
-
-  private renderDisplay() {
-    this.display = new Display(this.frameContent, this.layout.resourceResolver);
-    this.display.frame = this;
-    this.display.parseAndDraw(this.xmlDoc);
-
-    this.container.style.setProperty('background-color', this.display.bgcolor.toString());
-    this.setDimension(this.display.width, this.display.height);
-    this.title.textContent = this.display.title;
+  processParameterValues(pvals: ParameterValue[]) {
+    this.display.processParameterValues(pvals);
   }
 
   private addEventHandlers() {

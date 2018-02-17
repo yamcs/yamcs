@@ -1,13 +1,13 @@
 import { Tag } from '../tags';
 import * as utils from '../utils';
-import { Display } from '../Display';
+import { UssDisplay } from '../UssDisplay';
 import { ParameterBinding } from '../ParameterBinding';
 import { ComputationBinding } from '../ComputationBinding';
 import { DataSourceSample } from '../DataSourceSample';
-import { ParameterSample } from '../ParameterSample';
 import { ComputationSample } from '../ComputationSample';
 import { DataSourceBinding } from '../DataSourceBinding';
 import { StyleSet } from '../StyleSet';
+import { ParameterSample } from '../ParameterSample';
 
 let widgetSequence = 0;
 
@@ -38,7 +38,7 @@ export abstract class AbstractWidget {
 
   constructor(
     protected node: Node,
-    protected display: Display) {
+    protected display: UssDisplay) {
 
     this.sequenceNumber = widgetSequence++;
     this.id = `w${this.sequenceNumber}`;
@@ -56,7 +56,7 @@ export abstract class AbstractWidget {
       this.parseDataBinding(childNode);
     }
 
-    this.styleSet = display.frame.layout.styleSet;
+    this.styleSet = display.styleSet;
   }
 
   abstract parseAndDraw(): Tag;

@@ -34,29 +34,9 @@
 
   <mat-sidenav-container>
     <mat-sidenav mode="side" [opened]="navigatorOpen$ | async">
-      <ng-container *ngIf="displayInfo$ | async as displayInfo">
-        <table yaSimpleTable class="mat-typography">
-          <tr *ngFor="let folder of displayInfo.folder; even as isEven">
-            <td>
-              <mat-icon class="icon16">folder</mat-icon>
-            </td>
-            <td>
-              {{ folder.filename }}/
-            </td>
-          </tr>
-          <tr class="action-item no-select"
-              *ngFor="let file of displayInfo.file; even as isEven"
-              [class.even]="isEven"
-              (click)="openDisplay(file.filename)">
-            <td>
-              <mat-icon class="icon16">widgets</mat-icon>
-            </td>
-            <td>
-              {{ file.filename }}
-            </td>
-          </tr>
-        </table>
-      </ng-container>
+      <app-display-navigator [displayInfo]="displayInfo$ | async"
+                             (select)="openDisplay($event.filename)">
+      </app-display-navigator>
     </mat-sidenav>
 
     <mat-sidenav-content>

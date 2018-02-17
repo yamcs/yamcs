@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { DisplaysPage } from './pages/DisplaysPage';
+import { DisplaysPage } from './displays/DisplaysPage';
 import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
-import { MonitorPage } from './pages/MonitorPage';
-import { EventsPage } from './pages/EventsPage';
-import { MonitorToolbar } from './components/MonitorToolbar';
+import { MonitorPage } from './template/MonitorPage';
+import { EventsPage } from './events/EventsPage';
+import { MonitorToolbar } from './template/MonitorToolbar';
 
 const routes = [
   {

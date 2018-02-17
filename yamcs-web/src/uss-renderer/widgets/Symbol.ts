@@ -2,8 +2,8 @@ import * as utils from '../utils';
 
 import { AbstractWidget } from './AbstractWidget';
 import { Image } from '../tags';
-import { ResourceResolver } from '../ResourceResolver';
 import { DataSourceBinding } from '../DataSourceBinding';
+import { ResourceResolver } from '../../app/monitor/displays/ResourceResolver';
 
 export class Symbol extends AbstractWidget {
 

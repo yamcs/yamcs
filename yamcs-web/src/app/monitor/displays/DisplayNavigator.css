@@ -1,0 +1,8 @@
+tr.even td {
+  background-color: #fafafa;
+}
+
+tr.action-item:hover td {
+  cursor: pointer;
+  background: #ffffd6;
+}

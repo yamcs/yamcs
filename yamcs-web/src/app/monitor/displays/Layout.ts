@@ -1,7 +1,6 @@
-import { ResourceResolver } from './ResourceResolver';
 import { DisplayFrame, Coordinates } from './DisplayFrame';
-import { StyleSet } from './StyleSet';
 import { LayoutState, FrameState } from './LayoutState';
+import { ResourceResolver } from './ResourceResolver';
 
 export interface LayoutListener {
 
@@ -36,7 +35,6 @@ export class Layout {
 
   constructor(
     private targetEl: HTMLDivElement,
-    readonly styleSet: StyleSet,
     readonly resourceResolver: ResourceResolver,
   ) {
     this.scrollPane = document.createElement('div');
@@ -53,16 +51,17 @@ export class Layout {
     }, this.updateRate);
   }
 
-  createDisplayFrame(id: string, doc: XMLDocument, coordinates: Coordinates = { x: 20, y: 20 }) {
+  createDisplayFrame(id: string, coordinates: Coordinates = { x: 20, y: 20 }) {
     if (this.framesById.has(id)) {
       throw new Error(`Layout already contains a frame with id ${id}`);
     }
-    const frame = new DisplayFrame(id, this.scrollPane, this, doc, coordinates);
-    this.frames.push(frame);
-    this.framesById.set(id, frame);
-    this.layoutListeners.forEach(l => l.onDisplayFrameOpen(frame));
-    this.fireStateChange();
-    return frame;
+    const frame = new DisplayFrame(id, this.scrollPane, this, coordinates);
+    frame.loadAsync().then(() => {
+      this.frames.push(frame);
+      this.framesById.set(id, frame);
+      this.layoutListeners.forEach(l => l.onDisplayFrameOpen(frame));
+      this.fireStateChange();
+    });
   }
 
   /**

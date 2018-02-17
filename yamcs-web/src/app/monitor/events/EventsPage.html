@@ -12,7 +12,7 @@
     </button>
   </app-monitor-toolbar>
 
-  <mat-table [dataSource]="dataSource" class="ya-data-table">
+  <mat-table *ngIf="dataSource" [dataSource]="dataSource" class="ya-data-table">
     <ng-container cdkColumnDef="severity">
       <mat-header-cell *cdkHeaderCellDef fxFlex="50px"></mat-header-cell>
       <mat-cell *cdkCellDef="let row" fxFlex="50px">

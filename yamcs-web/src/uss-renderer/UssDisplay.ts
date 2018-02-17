@@ -13,11 +13,13 @@ import { AbstractWidget } from './widgets/AbstractWidget';
 import { Svg, Rect, Tag, Defs, Pattern } from './tags';
 import { Compound } from './widgets/Compound';
 import { Color } from './Color';
-import { ResourceResolver } from './ResourceResolver';
-import { DisplayFrame } from './DisplayFrame';
+import { ResourceResolver } from '../app/monitor/displays/ResourceResolver';
+import { DisplayFrame } from '../app/monitor/displays/DisplayFrame';
 import { ParameterSample } from './ParameterSample';
+import { ParameterValue } from '../yamcs-client';
+import { StyleSet } from './StyleSet';
 
-export class Display {
+export class UssDisplay {
 
   private widgets: AbstractWidget[] = [];
   private opsNames = new Set<string>();
@@ -28,12 +30,16 @@ export class Display {
   width: number;
   height: number;
 
-  frame: DisplayFrame;
-
   container: HTMLDivElement;
   measurerSvg: SVGSVGElement;
 
-  constructor(private targetEl: HTMLDivElement, public resourceResolver: ResourceResolver) {
+  styleSet: StyleSet;
+
+  constructor(
+    readonly frame: DisplayFrame,
+    private targetEl: HTMLDivElement,
+    readonly resourceResolver: ResourceResolver,
+  ) {
     this.container = document.createElement('div');
     this.container.setAttribute('style', 'position: relative');
     this.targetEl.appendChild(this.container);
@@ -46,55 +52,61 @@ export class Display {
     targetEl.appendChild(this.measurerSvg);
   }
 
-  parseAndDraw(xmlDoc: XMLDocument, grid = false) {
-    const displayEl = xmlDoc.getElementsByTagName('Display')[0];
+  parseAndDraw(id: string, grid = false) {
+    return Promise.all([
+      this.resourceResolver.retrieveXMLDisplayResource(id),
+      this.resourceResolver.retrieveXML('mcs_dqistyle.xml'),
+    ]).then(docs => {
+      this.styleSet = new StyleSet(docs[1]);
+      const displayEl = docs[0].getElementsByTagName('Display')[0];
 
-    this.title = utils.parseStringChild(displayEl, 'Title', 'Untitled');
-    this.width = utils.parseFloatChild(displayEl, 'Width');
-    this.height = utils.parseFloatChild(displayEl, 'Height');
-    this.bgcolor = utils.parseColorChild(displayEl, 'BackgroundColor', new Color(212, 212, 212, 255));
+      this.title = utils.parseStringChild(displayEl, 'Title', 'Untitled');
+      this.width = utils.parseFloatChild(displayEl, 'Width');
+      this.height = utils.parseFloatChild(displayEl, 'Height');
+      this.bgcolor = utils.parseColorChild(displayEl, 'BackgroundColor', new Color(212, 212, 212, 255));
 
-    const rootEl = new Svg({
-      width: this.width,
-      height: this.height,
-      'xmlns': 'http://www.w3.org/2000/svg',
-      'xmlns:xlink': 'http://www.w3.org/1999/xlink',
-    });
+      const rootEl = new Svg({
+        width: this.width,
+        height: this.height,
+        'xmlns': 'http://www.w3.org/2000/svg',
+        'xmlns:xlink': 'http://www.w3.org/1999/xlink',
+      });
 
-    this.addDefinitions(rootEl);
-    this.addStyles(rootEl);
+      this.addDefinitions(rootEl);
+      this.addStyles(rootEl);
 
-    rootEl.addChild(new Rect({
-      x: 0,
-      y: 0,
-      width: this.width,
-      height: this.height,
-      fill: this.bgcolor
-    }));
-
-    if (grid) {
       rootEl.addChild(new Rect({
         x: 0,
         y: 0,
         width: this.width,
         height: this.height,
-        style: 'fill: url(#uss-grid)',
+        fill: this.bgcolor
       }));
-    }
 
-    const elementsNode = utils.findChild(displayEl, 'Elements');
-    const elementNodes = utils.findChildren(elementsNode);
-    this.drawElements(rootEl, elementNodes);
+      if (grid) {
+        rootEl.addChild(new Rect({
+          x: 0,
+          y: 0,
+          width: this.width,
+          height: this.height,
+          style: 'fill: url(#uss-grid)',
+        }));
+      }
 
-    const svg = rootEl.toDomElement() as SVGSVGElement;
-    this.targetEl.appendChild(svg);
+      const elementsNode = utils.findChild(displayEl, 'Elements');
+      const elementNodes = utils.findChildren(elementsNode);
+      this.drawElements(rootEl, elementNodes);
 
-    // Call widget-specific lifecycle hooks
-    for (const widget of this.widgets) {
-      widget.svg = svg;
-      widget.afterDomAttachment();
-      widget.initializeBindings();
-    }
+      const svg = rootEl.toDomElement() as SVGSVGElement;
+      this.targetEl.appendChild(svg);
+
+      // Call widget-specific lifecycle hooks
+      for (const widget of this.widgets) {
+        widget.svg = svg;
+        widget.afterDomAttachment();
+        widget.initializeBindings();
+      }
+    });
   }
 
   private addDefinitions(svg: Svg) {
@@ -251,8 +263,9 @@ export class Display {
     return { green, yellow, red };
   }
 
-  processParameterSamples(samples: ParameterSample[]) {
-    for (const sample of samples) {
+  processParameterValues(pvals: ParameterValue[]) {
+    for (const pval of pvals) {
+      const sample = new ParameterSample(pval);
       const widgets = this.widgetsByTrigger.get(sample.opsName);
       if (widgets) {
         for (const widget of widgets) {

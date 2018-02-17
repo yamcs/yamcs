@@ -2,12 +2,12 @@ import * as utils from '../utils';
 
 import { AbstractWidget } from './AbstractWidget';
 import { Text, Rect, ClipPath, G } from '../tags';
-import { Display } from '../Display';
+import { UssDisplay } from '../UssDisplay';
 import { DataSourceBinding } from '../DataSourceBinding';
 
 export class Label extends AbstractWidget {
 
-  constructor(node: Node, display: Display) {
+  constructor(node: Node, display: UssDisplay) {
     super(node, display);
   }
 
