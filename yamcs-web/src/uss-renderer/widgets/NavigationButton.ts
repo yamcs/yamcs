@@ -35,8 +35,10 @@ export class NavigationButton extends AbstractWidget {
     this.commandClass = utils.parseStringAttribute(pressCmd, 'class');
     switch (this.commandClass) {
       case 'OpenDisplayCommand':
+        const relto = this.display.frame.id;
+        const base = relto.substring(0, relto.lastIndexOf('/'));
         this.openDisplayCommandOptions = {
-          target: `${utils.parseStringChild(pressCmd, 'DisplayBasename')}.uss`,
+          target: `${base}/${utils.parseStringChild(pressCmd, 'DisplayBasename')}.uss`,
           openInNewWindow: utils.parseBooleanChild(pressCmd, 'OpenInNewWindow'),
         };
         if (utils.hasChild(pressCmd, 'Coordinates')) {
