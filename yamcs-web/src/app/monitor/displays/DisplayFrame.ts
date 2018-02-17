@@ -1,6 +1,8 @@
 import { Layout } from './Layout';
 import { UssDisplay } from '../../../uss-renderer/UssDisplay';
 import { ParameterValue } from '../../../yamcs-client';
+import { Display } from './Display';
+import { OpiDisplay } from '../../../opi-renderer/OpiDisplay';
 
 export interface Coordinates {
   x: number;
@@ -23,7 +25,7 @@ export class DisplayFrame {
 
   titleBarHeight = 20;
 
-  display: UssDisplay;
+  display: Display;
 
   constructor(
     readonly id: string,
@@ -88,12 +90,18 @@ export class DisplayFrame {
 
     this.targetEl.appendChild(this.container);
 
-    this.display = new UssDisplay(this, this.frameContent, this.layout.resourceResolver);
+    if (id.toLowerCase().endsWith('uss')) {
+      this.display = new UssDisplay(this, this.frameContent, this.layout.resourceResolver);
+    } else if (id.toLowerCase().endsWith('opi')) {
+      this.display = new OpiDisplay(this, this.frameContent, this.layout.resourceResolver);
+    } else {
+      alert('No viewer for file ' + id);
+    }
   }
 
   loadAsync() {
     return this.display.parseAndDraw(this.id).then(() => {
-      this.container.style.setProperty('background-color', this.display.bgcolor.toString());
+      this.container.style.setProperty('background-color', this.display.getBackgroundColor());
       this.setDimension(this.display.width, this.display.height);
       this.title.textContent = this.display.title;
 
@@ -132,8 +140,8 @@ export class DisplayFrame {
     };
   }
 
-  getOpsNames() {
-    return this.display.getOpsNames();
+  getParameterIds() {
+    return this.display.getParameterIds();
   }
 
   syncDisplay() {

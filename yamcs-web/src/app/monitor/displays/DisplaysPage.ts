@@ -8,7 +8,7 @@ import {
 import { Observable } from 'rxjs/Observable';
 import { take } from 'rxjs/operators';
 
-import { Alias, DisplayFolder } from '../../../yamcs-client';
+import { DisplayFolder } from '../../../yamcs-client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ResourceResolver } from './ResourceResolver';
 import { Layout, LayoutListener, LayoutStateListener } from './Layout';
@@ -80,14 +80,8 @@ export class DisplaysPage implements AfterViewInit, LayoutListener, LayoutStateL
   }
 
   onDisplayFrameOpen(frame: DisplayFrame) {
-    const opsNames = frame.getOpsNames();
-    if (opsNames.size) {
-      const ids: Alias[] = [];
-      opsNames.forEach(opsName => ids.push({
-        namespace: 'MDB:OPS Name',
-        name: opsName,
-      }));
-
+    const ids = frame.getParameterIds();
+    if (ids.length) {
       this.yamcs.getSelectedInstance().getParameterValueUpdates({
         id: ids,
         abortOnInvalid: false,

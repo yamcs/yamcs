@@ -16,10 +16,11 @@ import { Color } from './Color';
 import { ResourceResolver } from '../app/monitor/displays/ResourceResolver';
 import { DisplayFrame } from '../app/monitor/displays/DisplayFrame';
 import { ParameterSample } from './ParameterSample';
-import { ParameterValue } from '../yamcs-client';
+import { ParameterValue, Alias } from '../yamcs-client';
 import { StyleSet } from './StyleSet';
+import { Display } from '../app/monitor/displays/Display';
 
-export class UssDisplay {
+export class UssDisplay implements Display {
 
   private widgets: AbstractWidget[] = [];
   private opsNames = new Set<string>();
@@ -107,6 +108,10 @@ export class UssDisplay {
         widget.initializeBindings();
       }
     });
+  }
+
+  public getBackgroundColor() {
+    return this.bgcolor.toString();
   }
 
   private addDefinitions(svg: Svg) {
@@ -231,8 +236,13 @@ export class UssDisplay {
     }
   }
 
-  getOpsNames() {
-    return this.opsNames;
+  getParameterIds() {
+    const ids: Alias[] = [];
+    this.opsNames.forEach(opsName => ids.push({
+      namespace: 'MDB:OPS Name',
+      name: opsName,
+    }));
+    return ids;
   }
 
   getDataSourceState() {
