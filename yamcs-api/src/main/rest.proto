@@ -252,18 +252,15 @@ message BulkGetIndexRequest {
   repeated string packetname = 4;
 }
 
-message ListDisplaysResponse {
-  repeated DisplayFolder folder = 1;
-  repeated DisplayFile file = 2;
-}
-
 message DisplayFolder {
-  optional string filename = 1;
-  repeated DisplayFolder folder = 2;
-  repeated DisplayFile file = 3;
+  optional string name = 1;
+  optional string path = 2;
+  repeated DisplayFolder folder = 3;
+  repeated DisplayFile file = 4;
 }
 
 message DisplayFile {
-  optional string filename = 1;
-  optional string url = 2;
+  optional string name = 1;
+  optional string path = 2;
+  optional string url = 3;
 }

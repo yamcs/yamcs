@@ -23,19 +23,16 @@ export interface Value {
   booleanValue: boolean;
 }
 
-export interface DisplayInfo {
-  folder: DisplayFolder[];
-  file: DisplayFile[];
-}
-
 export interface DisplayFolder {
-  filename: string;
-  folder: DisplayFolder[];
-  file: DisplayFile[];
+  name: string;
+  path: string;
+  folder?: DisplayFolder[];
+  file?: DisplayFile[];
 }
 
 export interface DisplayFile {
-  filename: string;
+  name: string;
+  path: string;
 }
 
 export type EventSeverity =

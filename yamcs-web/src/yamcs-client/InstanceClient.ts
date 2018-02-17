@@ -34,7 +34,7 @@ import {
 } from './types/mdb';
 
 import {
-  DisplayInfo,
+  DisplayFolder,
   Event,
   ParameterSubscriptionRequest,
 } from './types/monitoring';
@@ -289,8 +289,8 @@ export class InstanceClient {
   }
 
   getDisplayInfo() {
-    return this.http.get<DisplayInfo>(`${this.yamcs.apiUrl}/displays/${this.instance}`).pipe(
-      catchError(this.yamcs.handleError<DisplayInfo>())
+    return this.http.get<DisplayFolder>(`${this.yamcs.apiUrl}/displays/${this.instance}`).pipe(
+      catchError(this.yamcs.handleError<DisplayFolder>())
     );
   }
 
@@ -298,7 +298,7 @@ export class InstanceClient {
    * Returns a string representation of the display definition file
    */
   getDisplay(path: string) {
-    return this.http.get(`${this.yamcs.staticUrl}/${this.instance}/displays/${path}`, {
+    return this.http.get(`${this.yamcs.staticUrl}/${this.instance}/displays${path}`, {
       responseType: 'text',
     }).pipe(
       catchError(this.yamcs.handleError<string>())

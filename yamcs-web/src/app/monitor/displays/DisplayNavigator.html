@@ -1,21 +1,21 @@
 <table yaSimpleTable class="mat-typography" *ngIf="displayInfo">
-  <tr *ngFor="let folder of displayInfo.folder; even as isEven">
-    <td>
-      <mat-icon class="icon16">folder</mat-icon>
-    </td>
-    <td>
-      {{ folder.filename }}/
-    </td>
+  <tr *ngIf="currentFolder !== displayInfo"
+      class="no-select"
+      (click)="selectParent()">
+    <td width="1"><mat-icon class="icon12">folder</mat-icon></td>
+    <td>..</td>
   </tr>
-  <tr class="action-item no-select"
-      *ngFor="let file of displayInfo.file; even as isEven"
+  <tr *ngFor="let folder of currentFolder.folder; even as isEven"
+      class="no-select"
+      (click)="selectFolder(folder)">
+    <td width="1"><mat-icon class="icon12">folder</mat-icon></td>
+    <td>{{ folder.name }}/</td>
+  </tr>
+  <tr *ngFor="let file of currentFolder.file; even as isEven"
+      class="no-select"
       [class.even]="isEven"
       (click)="selectFile(file)">
-    <td>
-      <mat-icon class="icon16">widgets</mat-icon>
-    </td>
-    <td>
-      {{ file.filename }}
-    </td>
+    <td width="1"><mat-icon class="icon12">widgets</mat-icon></td>
+    <td>{{ file.name }}</td>
   </tr>
 </table>

@@ -8,7 +8,7 @@ import {
 import { Observable } from 'rxjs/Observable';
 import { take } from 'rxjs/operators';
 
-import { DisplayInfo, Alias } from '../../../yamcs-client';
+import { Alias, DisplayFolder } from '../../../yamcs-client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ResourceResolver } from './ResourceResolver';
 import { Layout, LayoutListener, LayoutStateListener } from './Layout';
@@ -26,7 +26,7 @@ export class DisplaysPage implements AfterViewInit, LayoutListener, LayoutStateL
   @ViewChild('displayContainer')
   displayContainerRef: ElementRef;
 
-  displayInfo$: Observable<DisplayInfo>;
+  displayInfo$: Observable<DisplayFolder>;
 
   resourceResolver: ResourceResolver;
   layout: Layout;

@@ -19,7 +19,6 @@ export {
 } from './types/mdb';
 
 export {
-  DisplayInfo,
   DisplayFile,
   DisplayFolder,
   Event,

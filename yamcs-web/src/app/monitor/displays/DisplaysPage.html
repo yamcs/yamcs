@@ -35,7 +35,7 @@
   <mat-sidenav-container>
     <mat-sidenav mode="side" [opened]="navigatorOpen$ | async">
       <app-display-navigator [displayInfo]="displayInfo$ | async"
-                             (select)="openDisplay($event.filename)">
+                             (select)="openDisplay($event.path)">
       </app-display-navigator>
     </mat-sidenav>
 
