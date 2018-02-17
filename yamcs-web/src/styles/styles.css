@@ -85,6 +85,10 @@ html, body {
   text-decoration: none;
 }
 
-.ya-data-table a:hover {
+.ya-data-table mat-row:hover a {
   text-decoration: underline;
+}
+
+.ya-data-table a:hover {
+  color: #000080;
 }

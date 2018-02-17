@@ -6,10 +6,45 @@ export interface GeneralInfo {
   defaultYamcsInstance: string;
 }
 
+export type ServiceState = 'NEW'
+  | 'STARTING'
+  | 'RUNNING'
+  | 'STOPPING'
+  | 'TERMINATED'
+  | 'FAILED';
+
+export interface Instance {
+  name: string;
+  state: ServiceState;
+  processor: Processor[];
+}
+
+export interface ClientInfo {
+  instance: string;
+  id: number;
+  username: string;
+  applicationName: string;
+  processorName: string;
+  state: 'CONNECTED' | 'DISCONNECTED';
+  currentClient: boolean;
+  loginTimeUTC: string;
+}
+
+export interface UserInfo {
+login: string;
+clientInfo: ClientInfo[];
+roles: string[];
+tmParaPrivileges: string[];
+tmParaSetPrivileges: string[];
+tmPacketPrivileges: string[];
+tcPrivileges: string[];
+systemPrivileges: string[];
+}
+
 export interface Service {
   instance: string;
   name: string;
-  state: string;
+  state: ServiceState;
   className: string;
 }
 
@@ -32,7 +67,7 @@ export interface Processor {
   creator: string;
   hasAlarms: boolean;
   hasCommanding: boolean;
-  state: string;
+  state: ServiceState;
 }
 
 export interface LinkEvent {
@@ -63,4 +98,54 @@ export interface Record {
 export interface ColumnData {
   name: string;
   value: Value;
+}
+
+
+export interface Statistics {
+  instance: string;
+  yProcessorName: string;
+  tmstats: TmStatistics[];
+  lastUpdatedUTC: string;
+}
+
+export interface TmStatistics {
+  packetName: string;
+  receivedPackets: number;
+  lastReceivedUTC: string;
+  lastPacketTimeUTC: string;
+  subscribedParameterCount: number;
+}
+
+export interface CommandQueueInfo {
+  instance: string;
+  processorName: string;
+  name: string;
+  state: 'BLOCKED' | 'DISABLED' | 'ENABLED';
+  nbSentCommands: number;
+  nbRejectCommands: number;
+  stateExpirationTimeS: number;
+  entry: CommandQueueEntry[];
+}
+
+export interface CommandQueueEvent {
+  type: 'COMMAND_ADDED' | 'COMMAND_REJECTED' | 'COMMAND_SENT';
+  data: CommandQueueEntry;
+}
+
+export interface CommandQueueEntry {
+  instance: string;
+  processorName: string;
+  queueName: string;
+  cmdId: CommandId;
+  source: string;
+  binary: string;
+  generationTime: number;
+  uuid: string;
+}
+
+export interface CommandId {
+  generationTime: number;
+  origin: string;
+  sequenceNumber: number;
+  commandName: string;
 }

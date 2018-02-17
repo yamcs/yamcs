@@ -23,6 +23,11 @@
         Services
       </app-sidebar-nav-item>
 
+      <app-sidebar-nav-item routerLink="processors"
+                            [queryParams]="{instance: instance.name}">
+        Processors
+      </app-sidebar-nav-item>
+
       <app-sidebar-nav-item routerLink="clients"
                             [queryParams]="{instance: instance.name}">
         Clients

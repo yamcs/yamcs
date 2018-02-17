@@ -1,8 +1,3 @@
-mat-tab-group {
-  height: 100%;
-  position: relative;
-}
-
 .data-table-wrapper {
   position: relative;
   overflow: auto;
@@ -28,7 +23,7 @@ mat-sidenav {
 }
 
 .data-table-wrapper tr.selected td {
-  background: #ffffd6;
+  background: #ffffd6 !important;
 }
 
 .data-table-wrapper tr:hover td {

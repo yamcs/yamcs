@@ -40,6 +40,7 @@ import {
 } from './types/monitoring';
 
 import {
+  ClientInfo,
   Link,
   Processor,
   Record,
@@ -47,7 +48,6 @@ import {
   Stream,
   Table,
 } from './types/system';
-import { ClientInfo } from './types/main';
 
 export class InstanceClient {
 
@@ -101,9 +101,15 @@ export class InstanceClient {
   }
 
   getProcessors() {
-    return this.http.get<ProcessorsWrapper>(`${this.yamcs.apiUrl}/services/${this.instance}`).pipe(
+    return this.http.get<ProcessorsWrapper>(`${this.yamcs.apiUrl}/processors/${this.instance}`).pipe(
       map(msg => msg.processor || []),
       catchError(this.yamcs.handleError<Processor[]>([]))
+    );
+  }
+
+  getProcessor(name: string) {
+    return this.http.get<Processor>(`${this.yamcs.apiUrl}/processors/${this.instance}/${name}`).pipe(
+      catchError(this.yamcs.handleError<Processor>())
     );
   }
 
@@ -114,10 +120,37 @@ export class InstanceClient {
     );
   }
 
+  getProcessorStatistics() {
+    this.prepareWebSocketClient();
+    return this.webSocketClient.getProcessorStatistics().pipe(
+      filter(msg => msg.instance === this.instance)
+    );
+  }
+
+  getCommandQueueInfoUpdates() {
+    this.prepareWebSocketClient();
+    return this.webSocketClient.getCommandQueueInfoUpdates().pipe(
+      filter(msg => msg.instance === this.instance)
+    );
+  }
+
+  getCommandQueueEventUpdates() {
+    this.prepareWebSocketClient();
+    return this.webSocketClient.getCommandQueueEventUpdates().pipe(
+      filter(msg => msg.data.instance === this.instance)
+    );
+  }
+
   getClients() {
     return this.http.get<ClientsWrapper>(`${this.yamcs.apiUrl}/instances/${this.instance}/clients`).pipe(
       map(msg => msg.client || []),
       catchError(this.yamcs.handleError<ClientInfo[]>([]))
+    );
+  }
+
+  getClient(id: number) {
+    return this.http.get<ClientInfo>(`${this.yamcs.apiUrl}/clients/${id}`).pipe(
+      catchError(this.yamcs.handleError<ClientInfo>())
     );
   }
 

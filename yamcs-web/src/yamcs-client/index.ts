@@ -2,12 +2,6 @@ export { default as YamcsClient } from './YamcsClient';
 export { InstanceClient } from './InstanceClient';
 
 export {
-  ClientInfo,
-  Instance,
-  UserInfo,
-} from './types/main';
-
-export {
   AlarmRange,
   Algorithm,
   Alias,
@@ -38,12 +32,21 @@ export {
 } from './types/monitoring';
 
 export {
+  ClientInfo,
+  CommandId,
+  CommandQueueEntry,
+  CommandQueueEvent,
+  CommandQueueInfo,
   GeneralInfo,
+  Instance,
   Link,
   LinkEvent,
   Processor,
   Record,
   Service,
+  Statistics,
   Stream,
   Table,
+  TmStatistics,
+  UserInfo,
 } from './types/system';

@@ -2,11 +2,11 @@ import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
 
 @Component({
   selector: 'app-sidebar-nav-item',
-  templateUrl: './sidebar-nav-item.component.html',
-  styleUrls: ['./sidebar-nav-item.component.css'],
+  templateUrl: './SidebarNavItem.html',
+  styleUrls: ['./SidebarNavItem.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SidebarNavItemComponent {
+export class SidebarNavItem {
 
   @Input()
   routerLink: string;

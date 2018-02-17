@@ -1,0 +1,31 @@
+<ng-container *ngIf="instance$ | async as instance">
+  <app-system-page *ngIf="stream$ | async as stream">
+    <app-system-toolbar>
+      <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
+        <mat-icon>arrow_back</mat-icon>
+      </a> Streams / {{ stream.name }}
+    </app-system-toolbar>
+
+    <nav mat-tab-nav-bar>
+      <a mat-tab-link
+        routerLink="./columns"
+        routerLinkActive #rla="routerLinkActive"
+        [queryParams]="{instance: instance.name}"
+        [active]="rla.isActive">
+        Columns
+      </a>
+
+      <a mat-tab-link
+        routerLink="./script"
+        routerLinkActive #rlb="routerLinkActive"
+        [queryParams]="{instance: instance.name}"
+        [active]="rlb.isActive">
+        Script
+      </a>
+    </nav>
+
+    <div class="outlet-wrapper">
+      <router-outlet></router-outlet>
+    </div>
+  </app-system-page>
+</ng-container>

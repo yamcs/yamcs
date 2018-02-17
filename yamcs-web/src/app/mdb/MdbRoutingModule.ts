@@ -22,9 +22,9 @@ const routes = [{
   children: [{
     path: '',
     pathMatch: 'full',
-    redirectTo: 'SpaceSystems'
+    redirectTo: 'space-systems',
   }, {
-    path: 'SpaceSystems',
+    path: 'space-systems',
     children: [
       {
         path: '',

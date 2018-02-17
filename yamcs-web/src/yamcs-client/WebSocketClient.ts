@@ -4,17 +4,18 @@ import { delay, filter, map, retryWhen } from 'rxjs/operators';
 import { WebSocketSubject } from 'rxjs/observable/dom/WebSocketSubject';
 import { WebSocketServerMessage } from './types/internal';
 import {
-  ClientInfo,
-} from './types/main';
-import {
   Event,
   ParameterData,
   TimeInfo,
   ParameterSubscriptionRequest,
 } from './types/monitoring';
 import {
+  ClientInfo,
   LinkEvent,
   Processor,
+  Statistics,
+  CommandQueueInfo,
+  CommandQueueEvent,
 } from './types/system';
 import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
@@ -134,6 +135,42 @@ export class WebSocketClient {
     );
   }
 
+  getProcessorStatistics() {
+    if (!this.subscriptionModel.management) {
+      this.subscriptionModel.management = true;
+      this.emit({ management: 'subscribe' });
+    }
+    return this.webSocketConnection$.pipe(
+      filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+      filter((msg: WebSocketServerMessage) => msg[3].dt === 'PROCESSING_STATISTICS'),
+      map(msg => msg[3].data as Statistics),
+    );
+  }
+
+  getCommandQueueInfoUpdates() {
+    if (!this.subscriptionModel.commandQueues) {
+      this.subscriptionModel.commandQueues = true;
+      this.emit({ cqueues: 'subscribe' });
+    }
+    return this.webSocketConnection$.pipe(
+      filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+      filter((msg: WebSocketServerMessage) => msg[3].dt === 'COMMAND_QUEUE_INFO'),
+      map(msg => msg[3].data as CommandQueueInfo),
+    );
+  }
+
+  getCommandQueueEventUpdates() {
+    if (!this.subscriptionModel.commandQueues) {
+      this.subscriptionModel.commandQueues = true;
+      this.emit({ cqueues: 'subscribe' });
+    }
+    return this.webSocketConnection$.pipe(
+      filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+      filter((msg: WebSocketServerMessage) => msg[3].dt === 'COMMAND_QUEUE_EVENT'),
+      map(msg => msg[3].data as CommandQueueEvent),
+    );
+  }
+
   getParameterValueUpdates(options: ParameterSubscriptionRequest) {
     this.subscriptionModel.parameters = options;
     this.emit({
@@ -170,6 +207,9 @@ export class WebSocketClient {
     }
     if (this.subscriptionModel.management) {
       this.emit({ management: 'subscribe' });
+    }
+    if (this.subscriptionModel.commandQueues) {
+      this.emit({ cqueues: 'subscribe' });
     }
     if (this.subscriptionModel.parameters) {
       this.emit({ parameters: 'subscribe', data: this.subscriptionModel.parameters });

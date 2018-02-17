@@ -9,5 +9,6 @@ export class SubscriptionModel {
   time = false;
   links = false;
   management = false;
+  commandQueues = false;
   parameters: ParameterSubscriptionRequest;
 }

@@ -5,5 +5,5 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
   template: '<ng-content></ng-content>',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ToolbarActionsComponent {
+export class ToolbarActions {
 }

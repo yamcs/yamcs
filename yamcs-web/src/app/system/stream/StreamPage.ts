@@ -5,7 +5,6 @@ import { Stream, Instance } from '../../../yamcs-client';
 
 import { ActivatedRoute } from '@angular/router';
 
-import * as utils from '../utils';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Store } from '@ngrx/store';
 import { State } from '../../app.reducers';
@@ -13,10 +12,7 @@ import { selectCurrentInstance } from '../../core/store/instance.selectors';
 
 @Component({
   templateUrl: './StreamPage.html',
-  styleUrls: [
-    './StreamPage.css',
-    './streamsql.css',
-  ],
+  styleUrls: ['./StreamPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StreamPage implements OnInit {
@@ -33,9 +29,5 @@ export class StreamPage implements OnInit {
 
   ngOnInit() {
     this.instance$ = this.store.select(selectCurrentInstance);
-  }
-
-  formatSQL(sql: string) {
-    return utils.formatSQL(sql);
   }
 }

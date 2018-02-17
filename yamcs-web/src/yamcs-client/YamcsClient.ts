@@ -9,12 +9,10 @@ import {
 } from './types/internal';
 
 import {
-  Instance,
-  UserInfo,
-} from './types/main';
-import {
   GeneralInfo,
+  Instance,
   Service,
+  UserInfo,
 } from './types/system';
 import { InstanceClient } from './InstanceClient';
 

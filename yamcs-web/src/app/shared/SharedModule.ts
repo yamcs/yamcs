@@ -35,13 +35,13 @@ import {
   MatTooltipModule,
 } from '@angular/material';
 
-import { YaSimpleTableComponent } from './directives/simpleTable.component';
-import { YaTableComponent } from './directives/table.component';
+import { YaSimpleTableComponent } from './directives/SimpleTableDirective';
+import { YaTableComponent } from './directives/TableDirective';
 import { ValuePipe } from './pipes/ValuePipe';
-import { ToolbarActionsComponent } from './components/toolbar-actions.component';
-import { SidebarNavItemComponent } from './components/sidebar-nav-item.component';
-import { DetailToolbarComponent } from './components/detail-toolbar.component';
-import { YaDataTableComponent } from './directives/dataTable.component';
+import { ToolbarActions } from './components/ToolbarActions';
+import { SidebarNavItem } from './components/SidebarNavItem';
+import { DetailToolbar } from './components/DetailToolbar';
+import { YaDataTableComponent } from './directives/DataTableDirective';
 import { UnitsPipe } from './pipes/UnitsPipe';
 import { OperatorPipe } from './pipes/OperatorPipe';
 
@@ -83,9 +83,9 @@ const sharedDirectives = [
 ];
 
 const sharedComponents = [
-  DetailToolbarComponent,
-  SidebarNavItemComponent,
-  ToolbarActionsComponent,
+  DetailToolbar,
+  SidebarNavItem,
+  ToolbarActions,
 ];
 
 const pipes = [

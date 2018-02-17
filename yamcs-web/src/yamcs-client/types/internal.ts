@@ -1,8 +1,4 @@
 import {
-  Instance,
-} from './main';
-
-import {
   Algorithm,
   Command,
   Container,
@@ -11,6 +7,8 @@ import {
 } from './mdb';
 
 import {
+  ClientInfo,
+  Instance,
   Link,
   Processor,
   Record,
@@ -22,7 +20,6 @@ import {
 import {
   Event,
 } from './monitoring';
-import { ClientInfo } from './main';
 
 export type WebSocketClientMessage = [
   number, // Protocol
