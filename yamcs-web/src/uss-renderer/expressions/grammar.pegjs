@@ -135,8 +135,26 @@ BooleanLiteral 'boolean'
   = TRUE { return { type: 'BooleanLiteral', value: true }; }
   / FALSE { return { type: 'BooleanLiteral', value: false }; }
 
-NumericLiteral 'integer'
-  = [0-9]+ { return { type: 'NumericLiteral', value: parseInt(text(), 10) }; }
+NumericLiteral 'number'
+  = DecimalIntegerLiteral '.' DecimalDigit* {
+    return { type: 'NumericLiteral', value: parseFloat(text()) };
+  }
+  / '.' DecimalDigit+ {
+    return { type: 'NumericLiteral', value: parseFloat(text()) };
+  }
+  / DecimalIntegerLiteral {
+    return { type: 'NumericLiteral', value: parseFloat(text()) };
+  }
+
+DecimalIntegerLiteral
+  = '0'
+  / NonZeroDigit DecimalDigit*
+
+DecimalDigit
+  = [0-9]
+
+NonZeroDigit
+  = [1-9]
 
 StringLiteral 'string'
   = '"' chars:[^\n\r\f"]* '"' {
