@@ -53,7 +53,7 @@ export class UssDisplay implements Display {
     targetEl.appendChild(this.measurerSvg);
   }
 
-  parseAndDraw(id: string, grid = true) {
+  parseAndDraw(id: string, grid = false) {
     return Promise.all([
       this.resourceResolver.retrieveXMLDisplayResource(id),
       this.resourceResolver.retrieveXML('mcs_dqistyle.xml'),

@@ -2,7 +2,7 @@ import * as utils from '../utils';
 
 import { AbstractWidget } from './AbstractWidget';
 import { Color } from '../Color';
-import { G, Rect, Text } from '../tags';
+import { G, Rect, Text, Circle } from '../tags';
 
 import Dygraph from 'dygraphs';
 import { DataSourceSample } from '../DataSourceSample';
@@ -15,6 +15,11 @@ import { DEFAULT_STYLE } from '../StyleSet';
 import { ParameterBinding } from '../ParameterBinding';
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const PLOT_COLORS = [
+  Color.BLACK,
+  new Color(0, 0, 255, 255),
+];
 
 const indicatorChars = 2;
 
@@ -45,7 +50,7 @@ export class LineGraph extends AbstractWidget {
   private xAxisColor: Color;
   private yAxisColor: Color;
 
-  private valueBinding: ParameterBinding;
+  private valueBindings: ParameterBinding[];
   private buffer: SampleBuffer;
 
   private legendEl: Element;
@@ -199,38 +204,48 @@ export class LineGraph extends AbstractWidget {
       const colSize = Math.floor(fm.width);
       const boxWidth = colSize * effectiveColumns;
 
-      this.legendHeight = 10;
-      const boxHeight = 10;
-      g.addChild(new Rect({
-        id: `${this.id}-legendbg`,
-        x: this.x + this.width - boxWidth,
-        y: this.y,
-        width: boxWidth,
-        height: boxHeight,
-        fill: this.styleSet.getStyle('NOT_RECEIVED').bg.toString(),
-        'shape-rendering': 'crispEdges',
-      }));
+      for (let i = 0; i < this.valueBindings.length; i++) {
+        const valueBinding = this.valueBindings[i];
+        this.legendHeight += 10;
+        const boxHeight = 10;
+        g.addChild(new Rect({
+          id: `${this.id}-legendbg`,
+          x: this.x + this.width - boxWidth,
+          y: this.y + (i * boxHeight),
+          width: boxWidth,
+          height: boxHeight,
+          fill: this.styleSet.getStyle('NOT_RECEIVED').bg.toString(),
+          'shape-rendering': 'crispEdges',
+        }));
 
-      g.addChild(new Text({
-        x: this.x + this.width - boxWidth,
-        y: this.y + Math.ceil(boxHeight / 2),
-        'dominant-baseline': 'middle',
-        'font-family': fontFamily,
-        'font-size': fontSize,
-        'text-anchor': 'end',
-        fill: Color.BLACK.toString(),
-      }, this.valueBinding.opsName));
+        g.addChild(new Circle({
+          cx: this.x + this.width - boxWidth - 10,
+          cy: this.y + (i * boxHeight) + Math.ceil(boxHeight / 2),
+          r: 4,
+          fill: PLOT_COLORS[i],
+        }));
 
-      g.addChild(new Text({
-        id: `${this.id}-legend`,
-        x: this.x + this.width - (colSize * indicatorChars),
-        y: this.y + Math.ceil(boxHeight / 2),
-        'dominant-baseline': 'middle',
-        'font-family': fontFamily,
-        'font-size': fontSize,
-        'text-anchor': 'end',
-        fill: this.styleSet.getStyle('NOT_RECEIVED').fg.toString(),
-      }));
+        g.addChild(new Text({
+          x: this.x + this.width - boxWidth - 20,
+          y: this.y + (i * boxHeight) + Math.ceil(boxHeight / 2),
+          'dominant-baseline': 'middle',
+          'font-family': fontFamily,
+          'font-size': fontSize,
+          'text-anchor': 'end',
+          fill: Color.BLACK.toString(),
+        }, valueBinding.opsName));
+
+        g.addChild(new Text({
+          id: `${this.id}-legend`,
+          x: this.x + this.width - (colSize * indicatorChars),
+          y: this.y + (i * boxHeight) + Math.ceil(boxHeight / 2),
+          'dominant-baseline': 'middle',
+          'font-family': fontFamily,
+          'font-size': fontSize,
+          'text-anchor': 'end',
+          fill: this.styleSet.getStyle('NOT_RECEIVED').fg.toString(),
+        }));
+      }
     }
     return g;
   }
@@ -329,42 +344,44 @@ export class LineGraph extends AbstractWidget {
         ctx.stroke();
 
         // Add guidelines
-        if (this.valueBinding.sample) {
-          for (const range of this.valueBinding.sample.alarmRanges) {
-            switch (range.level) {
-              case 'WATCH':
-              case 'WARNING':
-                ctx.strokeStyle = Color.forName('yellow').toString();
-                if (range.minInclusive !== undefined) {
-                  this.drawGuideline(ctx, area, g, range.minInclusive);
-                }
-                if (range.maxInclusive !== undefined) {
-                  this.drawGuideline(ctx, area, g, range.maxInclusive);
-                }
-                if (range.minExclusive !== undefined) {
-                  this.drawGuideline(ctx, area, g, range.minExclusive);
-                }
-                if (range.maxExclusive !== undefined) {
-                  this.drawGuideline(ctx, area, g, range.maxExclusive);
-                }
-                break;
-              case 'DISTRESS':
-              case 'CRITICAL':
-              case 'SEVERE':
-                ctx.strokeStyle = Color.forName('red').toString();
-                if (range.minInclusive !== undefined) {
-                  this.drawGuideline(ctx, area, g, range.minInclusive);
-                }
-                if (range.maxInclusive !== undefined) {
-                  this.drawGuideline(ctx, area, g, range.maxInclusive);
-                }
-                if (range.minExclusive !== undefined) {
-                  this.drawGuideline(ctx, area, g, range.minExclusive);
-                }
-                if (range.maxExclusive !== undefined) {
-                  this.drawGuideline(ctx, area, g, range.maxExclusive);
-                }
-                break;
+        for (const valueBinding of this.valueBindings) {
+          if (valueBinding.sample) {
+            for (const range of valueBinding.sample.alarmRanges) {
+              switch (range.level) {
+                case 'WATCH':
+                case 'WARNING':
+                  ctx.strokeStyle = Color.forName('yellow').toString();
+                  if (range.minInclusive !== undefined) {
+                    this.drawGuideline(ctx, area, g, range.minInclusive);
+                  }
+                  if (range.maxInclusive !== undefined) {
+                    this.drawGuideline(ctx, area, g, range.maxInclusive);
+                  }
+                  if (range.minExclusive !== undefined) {
+                    this.drawGuideline(ctx, area, g, range.minExclusive);
+                  }
+                  if (range.maxExclusive !== undefined) {
+                    this.drawGuideline(ctx, area, g, range.maxExclusive);
+                  }
+                  break;
+                case 'DISTRESS':
+                case 'CRITICAL':
+                case 'SEVERE':
+                  ctx.strokeStyle = Color.forName('red').toString();
+                  if (range.minInclusive !== undefined) {
+                    this.drawGuideline(ctx, area, g, range.minInclusive);
+                  }
+                  if (range.maxInclusive !== undefined) {
+                    this.drawGuideline(ctx, area, g, range.maxInclusive);
+                  }
+                  if (range.minExclusive !== undefined) {
+                    this.drawGuideline(ctx, area, g, range.minExclusive);
+                  }
+                  if (range.maxExclusive !== undefined) {
+                    this.drawGuideline(ctx, area, g, range.maxExclusive);
+                  }
+                  break;
+              }
             }
           }
         }
@@ -390,7 +407,8 @@ export class LineGraph extends AbstractWidget {
   registerBinding(binding: DataSourceBinding) {
     switch (binding.dynamicProperty) {
       case 'VALUE':
-        this.valueBinding = binding;
+        this.valueBindings = this.valueBindings || [];
+        this.valueBindings.push(binding);
         break;
       default:
         console.warn('Unsupported dynamic property: ' + binding.dynamicProperty);
@@ -409,29 +427,31 @@ export class LineGraph extends AbstractWidget {
 
   digest() {
     if (this.legendHeight) {
-      if (this.valueBinding && this.valueBinding.sample) {
-        const sample = this.valueBinding.sample;
-        const cdmcsMonitoringResult = convertMonitoringResult(sample);
-        let v = this.valueBinding.value;
-        v = v.toFixed(this.legendDecimals);
-        this.legendEl.textContent = v;
-        let style = DEFAULT_STYLE;
-        switch (sample.acquisitionStatus) {
-          case 'ACQUIRED':
-            style = this.styleSet.getStyle('ACQUIRED', cdmcsMonitoringResult);
-            break;
-          case 'NOT_RECEIVED':
-            style = this.styleSet.getStyle('NOT_RECEIVED');
-            break;
-          case 'INVALID':
-            style = this.styleSet.getStyle('INVALID');
-            break;
-          case 'EXPIRED':
-            style = this.styleSet.getStyle('STATIC', cdmcsMonitoringResult);
-            break;
+      for (const valueBinding of this.valueBindings) {
+        if (valueBinding.sample) {
+          const sample = valueBinding.sample;
+          const cdmcsMonitoringResult = convertMonitoringResult(sample);
+          let v = valueBinding.value;
+          v = v.toFixed(this.legendDecimals);
+          this.legendEl.textContent = v;
+          let style = DEFAULT_STYLE;
+          switch (sample.acquisitionStatus) {
+            case 'ACQUIRED':
+              style = this.styleSet.getStyle('ACQUIRED', cdmcsMonitoringResult);
+              break;
+            case 'NOT_RECEIVED':
+              style = this.styleSet.getStyle('NOT_RECEIVED');
+              break;
+            case 'INVALID':
+              style = this.styleSet.getStyle('INVALID');
+              break;
+            case 'EXPIRED':
+              style = this.styleSet.getStyle('STATIC', cdmcsMonitoringResult);
+              break;
+          }
+          this.legendBackgroundEl.setAttribute('fill', style.bg.toString());
+          this.legendEl.setAttribute('fill', style.fg.toString());
         }
-        this.legendBackgroundEl.setAttribute('fill', style.bg.toString());
-        this.legendEl.setAttribute('fill', style.fg.toString());
       }
     }
 
