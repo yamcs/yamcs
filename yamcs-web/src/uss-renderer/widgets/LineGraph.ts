@@ -2,7 +2,7 @@ import * as utils from '../utils';
 
 import { AbstractWidget } from './AbstractWidget';
 import { Color } from '../Color';
-import { G } from '../tags';
+import { G, Rect, Text } from '../tags';
 
 import Dygraph from 'dygraphs';
 import { DataSourceSample } from '../DataSourceSample';
@@ -10,16 +10,19 @@ import { SampleBuffer, Sample } from '../SampleBuffer';
 import { CircularBuffer } from '../CircularBuffer';
 import { ExpirationBuffer } from '../ExpirationBuffer';
 import { DataSourceBinding } from '../DataSourceBinding';
+import { convertMonitoringResult } from './Field';
+import { DEFAULT_STYLE } from '../StyleSet';
+import { ParameterBinding } from '../ParameterBinding';
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const indicatorChars = 2;
 
 /**
  * TODO
  * - interaction model for y or x scroll
  * - interaction model for ctrl y or x zoom
  * - dynamically update xlabelwidth based on tick metrics
- * - day indication on domain title
- * - limit indication
  */
 export class LineGraph extends AbstractWidget {
 
@@ -29,6 +32,8 @@ export class LineGraph extends AbstractWidget {
 
   private title: string;
   private titleHeight: number;
+  private legendHeight: number;
+  private legendDecimals: number;
   private graphBackgroundColor: Color;
   private plotBackgroundColor: Color;
   private xLabel: string;
@@ -40,8 +45,11 @@ export class LineGraph extends AbstractWidget {
   private xAxisColor: Color;
   private yAxisColor: Color;
 
-  private valueBinding: DataSourceBinding;
+  private valueBinding: ParameterBinding;
   private buffer: SampleBuffer;
+
+  private legendEl: Element;
+  private legendBackgroundEl: Element;
 
   parseAndDraw() {
     this.title = utils.parseStringChild(this.node, 'Title');
@@ -168,15 +176,68 @@ export class LineGraph extends AbstractWidget {
       this.buffer = new CircularBuffer(expirationSamples);
     }
 
+    const legendG = this.parseAndDrawLegend();
     return new G({
       id: this.id,
       class: 'line-graph',
       translate: `translate(${this.x},${this.y})`,
       'data-name': this.name,
-    });
+    }).addChild(legendG);
+  }
+
+  parseAndDrawLegend() {
+    const g = new G();
+    this.legendHeight = 0;
+    if (utils.parseBooleanChild(this.node, 'LegendEnabled')) {
+      this.legendDecimals = utils.parseIntChild(this.node, 'LegendFieldDecimals');
+      const columns = utils.parseIntChild(this.node, 'LegendFieldColumns');
+      const effectiveColumns = columns + indicatorChars;
+
+      const fontFamily = 'Lucida Sans Typewriter';
+      const fontSize = '10px';
+      const fm = this.getFontMetrics('w', fontFamily, fontSize);
+      const colSize = Math.floor(fm.width);
+      const boxWidth = colSize * effectiveColumns;
+
+      this.legendHeight = 10;
+      const boxHeight = 10;
+      g.addChild(new Rect({
+        id: `${this.id}-legendbg`,
+        x: this.x + this.width - boxWidth,
+        y: this.y,
+        width: boxWidth,
+        height: boxHeight,
+        fill: this.styleSet.getStyle('NOT_RECEIVED').bg.toString(),
+        'shape-rendering': 'crispEdges',
+      }));
+
+      g.addChild(new Text({
+        x: this.x + this.width - boxWidth,
+        y: this.y + Math.ceil(boxHeight / 2),
+        'dominant-baseline': 'middle',
+        'font-family': fontFamily,
+        'font-size': fontSize,
+        'text-anchor': 'end',
+        fill: Color.BLACK.toString(),
+      }, this.valueBinding.opsName));
+
+      g.addChild(new Text({
+        id: `${this.id}-legend`,
+        x: this.x + this.width - (colSize * indicatorChars),
+        y: this.y + Math.ceil(boxHeight / 2),
+        'dominant-baseline': 'middle',
+        'font-family': fontFamily,
+        'font-size': fontSize,
+        'text-anchor': 'end',
+        fill: this.styleSet.getStyle('NOT_RECEIVED').fg.toString(),
+      }));
+    }
+    return g;
   }
 
   afterDomAttachment() {
+    this.legendBackgroundEl = this.svg.getElementById(`${this.id}-legendbg`);
+    this.legendEl = this.svg.getElementById(`${this.id}-legend`);
     // First wrapper positions within the display
     // (LineGraphs are rendered outside of SVG)
     const container = document.createElement('div');
@@ -184,7 +245,7 @@ export class LineGraph extends AbstractWidget {
     container.setAttribute('id', containerId);
     container.style.setProperty('position', 'absolute');
     container.style.setProperty('left', `${this.x}px`);
-    container.style.setProperty('top', `${this.y}px`);
+    container.style.setProperty('top', `${this.y + this.legendHeight}px`);
     container.style.setProperty('line-height', 'normal');
 
     // Second wrapper because Dygraphs will modify its style attributes
@@ -235,7 +296,7 @@ export class LineGraph extends AbstractWidget {
       fillGraph: false,
       interactionModel: {},
       width: this.width,
-      height: this.height,
+      height: this.height - this.legendHeight,
       xlabel: this.xLabel,
       ylabel: this.yLabel,
       labels: [this.xLabel, this.yLabel],
@@ -347,6 +408,33 @@ export class LineGraph extends AbstractWidget {
   }
 
   digest() {
+    if (this.legendHeight) {
+      if (this.valueBinding && this.valueBinding.sample) {
+        const sample = this.valueBinding.sample;
+        const cdmcsMonitoringResult = convertMonitoringResult(sample);
+        let v = this.valueBinding.value;
+        v = v.toFixed(this.legendDecimals);
+        this.legendEl.textContent = v;
+        let style = DEFAULT_STYLE;
+        switch (sample.acquisitionStatus) {
+          case 'ACQUIRED':
+            style = this.styleSet.getStyle('ACQUIRED', cdmcsMonitoringResult);
+            break;
+          case 'NOT_RECEIVED':
+            style = this.styleSet.getStyle('NOT_RECEIVED');
+            break;
+          case 'INVALID':
+            style = this.styleSet.getStyle('INVALID');
+            break;
+          case 'EXPIRED':
+            style = this.styleSet.getStyle('STATIC', cdmcsMonitoringResult);
+            break;
+        }
+        this.legendBackgroundEl.setAttribute('fill', style.bg.toString());
+        this.legendEl.setAttribute('fill', style.fg.toString());
+      }
+    }
+
     const snapshot = this.buffer.snapshot();
     this.updateGraph(snapshot);
   }

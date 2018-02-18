@@ -12,6 +12,41 @@ import { DataSourceSample } from '../DataSourceSample';
 
 const indicatorChars = 2;
 
+/**
+ * Converts the monitoring result from Yamcs to CDMCS.
+ */
+export function convertMonitoringResult(sample: DataSourceSample) {
+  switch (sample.monitoringResult) {
+    case 'DISABLED':
+      return 'DISABLED';
+    case 'IN_LIMITS':
+      return 'IN_LIMITS';
+    case 'WATCH':
+    case 'WARNING':
+    case 'DISTRESS':
+      if (sample.rangeCondition === 'LOW') {
+        return 'NOMINAL_LOW_LIMIT_VIOLATION';
+      } else if (sample.rangeCondition === 'HIGH') {
+        return 'NOMINAL_HIGH_LIMIT_VIOLATION';
+      } else {
+        return 'NOMINAL_LIMIT_VIOLATION';
+      }
+    case 'CRITICAL':
+    case 'SEVERE':
+      if (sample.rangeCondition === 'LOW') {
+        return 'DANGER_LOW_LIMIT_VIOLATION';
+      } else if (sample.rangeCondition === 'HIGH') {
+        return 'DANGER_HIGH_LIMIT_VIOLATION';
+      } else {
+        // Does not exist??
+        // return 'DANGER_LIMIT_VIOLATION'
+        return 'DANGER_HIGH_LIMIT_VIOLATION';
+      }
+    default:
+      return 'UNDEFINED';
+  }
+}
+
 export class Field extends AbstractWidget {
 
   decimals: number;
@@ -216,7 +251,7 @@ export class Field extends AbstractWidget {
   digest() {
     if (this.valueBinding && this.valueBinding.sample) {
       const sample = this.valueBinding.sample;
-      const cdmcsMonitoringResult = this.convertMonitoringResult(sample);
+      const cdmcsMonitoringResult = convertMonitoringResult(sample);
       let v = this.valueBinding.value;
       if (typeof v === 'number') {
         if (this.format) {
@@ -267,41 +302,6 @@ export class Field extends AbstractWidget {
       const value = this.fillColorBinding.value;
       const color = Color.forName(value);
       this.fieldBackgroundEl.setAttribute('fill', color.toString());
-    }
-  }
-
-  /**
-   * Converts the monitoring result from Yamcs to CDMCS.
-   */
-  convertMonitoringResult(sample: DataSourceSample) {
-    switch (sample.monitoringResult) {
-      case 'DISABLED':
-        return 'DISABLED';
-      case 'IN_LIMITS':
-        return 'IN_LIMITS';
-      case 'WATCH':
-      case 'WARNING':
-      case 'DISTRESS':
-        if (sample.rangeCondition === 'LOW') {
-          return 'NOMINAL_LOW_LIMIT_VIOLATION';
-        } else if (sample.rangeCondition === 'HIGH') {
-          return 'NOMINAL_HIGH_LIMIT_VIOLATION';
-        } else {
-          return 'NOMINAL_LIMIT_VIOLATION';
-        }
-      case 'CRITICAL':
-      case 'SEVERE':
-        if (sample.rangeCondition === 'LOW') {
-          return 'DANGER_LOW_LIMIT_VIOLATION';
-        } else if (sample.rangeCondition === 'HIGH') {
-          return 'DANGER_HIGH_LIMIT_VIOLATION';
-        } else {
-          // Does not exist??
-          // return 'DANGER_LIMIT_VIOLATION'
-          return 'DANGER_HIGH_LIMIT_VIOLATION';
-        }
-      default:
-        return 'UNDEFINED';
     }
   }
 }
