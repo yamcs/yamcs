@@ -176,9 +176,9 @@ public class XtceToGpbAssembler {
         if (e instanceof ContainerEntry) {
             ContainerEntry ce = (ContainerEntry) e;
             if (detail == DetailLevel.LINK || detail == DetailLevel.SUMMARY) {
-                b.setContainer(toContainerInfo(ce.getSequenceContainer(), instanceURL, DetailLevel.LINK, options));
+                b.setContainer(toContainerInfo(ce.getRefContainer(), instanceURL, DetailLevel.LINK, options));
             } else if (detail == DetailLevel.FULL) {
-                b.setContainer(toContainerInfo(ce.getSequenceContainer(), instanceURL, DetailLevel.FULL, options));
+                b.setContainer(toContainerInfo(ce.getRefContainer(), instanceURL, DetailLevel.FULL, options));
             }
         } else if (e instanceof ParameterEntry) {
             ParameterEntry pe = (ParameterEntry) e;
