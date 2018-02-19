@@ -17,14 +17,14 @@ import { selectCurrentInstance } from '../../core/store/instance.selectors';
 })
 export class SpaceSystemPage implements OnInit {
 
+  qualifiedName: string;
+
   instance$: Observable<Instance>;
   spaceSystem$: Observable<SpaceSystem>;
 
   constructor(route: ActivatedRoute, yamcs: YamcsService, private store: Store<State>) {
-    const qualifiedName = route.snapshot.paramMap.get('qualifiedName');
-    if (qualifiedName != null) {
-      this.spaceSystem$ = yamcs.getSelectedInstance().getSpaceSystem(qualifiedName);
-    }
+    this.qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
+    this.spaceSystem$ = yamcs.getSelectedInstance().getSpaceSystem(this.qualifiedName);
   }
 
   ngOnInit() {

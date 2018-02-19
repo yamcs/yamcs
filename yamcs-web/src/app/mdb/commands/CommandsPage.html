@@ -1,7 +1,14 @@
-<app-mdb-page>
+<app-mdb-page *ngIf="instance$ | async as instance">
   <app-mdb-toolbar>Commands</app-mdb-toolbar>
 
-  <div class="panel-content">
-    <app-commands-table [commands$]="commands$"></app-commands-table>
-  </div>
+  <ng-container *ngIf="commands$ | async as commands">
+    <div class="panel-content" *ngIf="commands.length; else empty">
+      <app-commands-table [commands$]="commands$"></app-commands-table>
+    </div>
+    <ng-template #empty>
+      <app-empty-message>
+        The Mission Database for <i>{{ instance.name }}</i> does not define any commands.
+      </app-empty-message>
+    </ng-template>
+  </ng-container>
 </app-mdb-page>

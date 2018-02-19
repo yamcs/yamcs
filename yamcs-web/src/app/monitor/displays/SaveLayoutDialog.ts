@@ -16,8 +16,6 @@ export class SaveLayoutDialog {
     private yamcs: YamcsService,
     private dialogRef: MatDialogRef<SaveLayoutDialog>,
     @Inject(MAT_DIALOG_DATA) readonly data: any) {
-
-    console.log('layout', data.state);
   }
 
   save() {

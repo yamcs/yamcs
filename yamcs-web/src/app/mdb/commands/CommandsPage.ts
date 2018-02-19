@@ -1,9 +1,12 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
-import { Command } from '../../../yamcs-client';
+import { Command, Instance } from '../../../yamcs-client';
 
 import { YamcsService } from '../../core/services/YamcsService';
+import { State } from '../../app.reducers';
+import { Store } from '@ngrx/store';
+import { selectCurrentInstance } from '../../core/store/instance.selectors';
 
 @Component({
   templateUrl: './CommandsPage.html',
@@ -11,9 +14,11 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class CommandsPage {
 
+  instance$: Observable<Instance>;
   commands$: Observable<Command[]>;
 
-  constructor(yamcs: YamcsService) {
+  constructor(yamcs: YamcsService, store: Store<State>) {
+    this.instance$ = store.select(selectCurrentInstance);
     this.commands$ = yamcs.getSelectedInstance().getCommands();
   }
 }

@@ -44,6 +44,7 @@ import { DetailToolbar } from './components/DetailToolbar';
 import { YaDataTableComponent } from './directives/DataTableDirective';
 import { UnitsPipe } from './pipes/UnitsPipe';
 import { OperatorPipe } from './pipes/OperatorPipe';
+import { EmptyMessage } from './components/EmptyMessage';
 
 const materialModules = [
   CdkTableModule,
@@ -84,6 +85,7 @@ const sharedDirectives = [
 
 const sharedComponents = [
   DetailToolbar,
+  EmptyMessage,
   SidebarNavItem,
   ToolbarActions,
 ];

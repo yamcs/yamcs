@@ -1,1 +1,12 @@
-<app-parameters-table [parameters$]="parameters$" [shortName]="true"></app-parameters-table>
+<ng-container *ngIf="parameters$ | async as parameters">
+  <app-parameters-table *ngIf="parameters.length; else empty"
+                      [parameters$]="parameters$"
+                      [shortName]="true">
+  </app-parameters-table>
+
+  <ng-template #empty>
+    <app-empty-message>
+      The space system {{ qualifiedName }} does not define any parameters.
+    </app-empty-message>
+  </ng-template>
+</ng-container>

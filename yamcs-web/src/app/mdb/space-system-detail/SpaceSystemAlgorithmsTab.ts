@@ -16,19 +16,17 @@ import { selectCurrentInstance } from '../../core/store/instance.selectors';
 })
 export class SpaceSystemAlgorithmsTab implements OnInit {
 
+  qualifiedName: string;
+
   instance$: Observable<Instance>;
   algorithms$: Observable<Algorithm[]>;
 
   constructor(route: ActivatedRoute, yamcs: YamcsService, private store: Store<State>) {
-    const parent = route.snapshot.parent;
-    if (parent) {
-      const qualifiedName = parent.paramMap.get('qualifiedName');
-      if (qualifiedName != null) {
-        this.algorithms$ = yamcs.getSelectedInstance().getAlgorithms({
-          namespace: qualifiedName
-        });
-      }
-    }
+    const parent = route.snapshot.parent!;
+    this.qualifiedName = parent.paramMap.get('qualifiedName')!;
+    this.algorithms$ = yamcs.getSelectedInstance().getAlgorithms({
+      namespace: this.qualifiedName
+    });
   }
 
   ngOnInit() {

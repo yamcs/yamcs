@@ -16,19 +16,17 @@ import { selectCurrentInstance } from '../../core/store/instance.selectors';
 })
 export class SpaceSystemParametersTab implements OnInit {
 
+  qualifiedName: string;
+
   instance$: Observable<Instance>;
   parameters$: Observable<Parameter[]>;
 
   constructor(route: ActivatedRoute, yamcs: YamcsService, private store: Store<State>) {
-    const parent = route.snapshot.parent;
-    if (parent) {
-      const qualifiedName = parent.paramMap.get('qualifiedName');
-      if (qualifiedName != null) {
-        this.parameters$ = yamcs.getSelectedInstance().getParameters({
-          namespace: qualifiedName
-        });
-      }
-    }
+    const parent = route.snapshot.parent!;
+    this.qualifiedName = parent.paramMap.get('qualifiedName')!;
+    this.parameters$ = yamcs.getSelectedInstance().getParameters({
+      namespace: this.qualifiedName
+    });
   }
 
   ngOnInit() {

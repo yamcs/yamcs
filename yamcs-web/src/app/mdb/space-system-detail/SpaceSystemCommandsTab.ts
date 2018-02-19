@@ -16,19 +16,17 @@ import { selectCurrentInstance } from '../../core/store/instance.selectors';
 })
 export class SpaceSystemCommandsTab implements OnInit {
 
+  qualifiedName: string;
+
   instance$: Observable<Instance>;
   commands$: Observable<Command[]>;
 
   constructor(route: ActivatedRoute, yamcs: YamcsService, private store: Store<State>) {
-    const parent = route.snapshot.parent;
-    if (parent) {
-      const qualifiedName = parent.paramMap.get('qualifiedName');
-      if (qualifiedName != null) {
-        this.commands$ = yamcs.getSelectedInstance().getCommands({
-          namespace: qualifiedName
-        });
-      }
-    }
+    const parent = route.snapshot.parent!;
+    this.qualifiedName = parent.paramMap.get('qualifiedName')!;
+    this.commands$ = yamcs.getSelectedInstance().getCommands({
+      namespace: this.qualifiedName
+    });
   }
 
   ngOnInit() {

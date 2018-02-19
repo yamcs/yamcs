@@ -1,7 +1,14 @@
-<app-mdb-page>
+<app-mdb-page *ngIf="instance$ | async as instance">
   <app-mdb-toolbar>Containers</app-mdb-toolbar>
 
-  <div class="panel-content">
-    <app-containers-table [containers$]="containers$"></app-containers-table>
-  </div>
+  <ng-container *ngIf="containers$ | async as containers">
+    <div class="panel-content" *ngIf="containers.length; else empty">
+      <app-containers-table [containers$]="containers$"></app-containers-table>
+    </div>
+    <ng-template #empty>
+      <app-empty-message>
+        The Mission Database for <i>{{ instance.name }}</i> does not define any containers.
+      </app-empty-message>
+    </ng-template>
+  </ng-container>
 </app-mdb-page>
