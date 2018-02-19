@@ -3,7 +3,9 @@
 
   <ng-container *ngIf="algorithms$ | async as algorithms">
     <div class="panel-content" *ngIf="algorithms.length; else empty">
-      <app-algorithms-table [algorithms$]="algorithms$"></app-algorithms-table>
+      <app-algorithms-table [algorithms$]="algorithms$"
+                            [instance]="instance">
+      </app-algorithms-table>
     </div>
     <ng-template #empty>
       <app-empty-message>

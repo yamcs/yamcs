@@ -14,6 +14,7 @@ import { SpaceSystemAlgorithmsTab } from './space-system-detail/SpaceSystemAlgor
 import { ContainersPage } from './containers/ContainersPage';
 import { SpaceSystemContainersTab } from './space-system-detail/SpaceSystemContainersTab';
 import { SpaceSystemCommandsTab } from './space-system-detail/SpaceSystemCommandsTab';
+import { AlgorithmPage } from './algorithms/AlgorithmPage';
 
 const routes = [{
   path: '',
@@ -57,15 +58,22 @@ const routes = [{
     ]
   }, {
     path: 'algorithms',
+    pathMatch: 'full',
     component: AlgorithmsPage,
   }, {
+    path: 'algorithms/:qualifiedName',
+    component: AlgorithmPage,
+  }, {
     path: 'commands',
+    pathMatch: 'full',
     component: CommandsPage,
   }, {
     path: 'containers',
+    pathMatch: 'full',
     component: ContainersPage,
   }, {
     path: 'parameters',
+    pathMatch: 'full',
     component: ParametersPage,
   }]
 }];
@@ -78,6 +86,7 @@ export class MdbRoutingModule { }
 
 export const routingComponents = [
   AlgorithmsPage,
+  AlgorithmPage,
   CommandsPage,
   ContainersPage,
   MdbPage,

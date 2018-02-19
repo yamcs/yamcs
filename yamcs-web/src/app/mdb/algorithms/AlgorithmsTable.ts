@@ -13,6 +13,9 @@ import { Observable } from 'rxjs/Observable';
 export class AlgorithmsTable implements AfterViewInit {
 
   @Input()
+  instance: string;
+
+  @Input()
   algorithms$: Observable<Algorithm[]>;
 
   @Input()

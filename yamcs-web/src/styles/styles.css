@@ -92,3 +92,22 @@ html, body {
 .ya-data-table a:hover {
   color: #000080;
 }
+
+.dl-horizontal dt {
+  float: left;
+  width: 160px;
+  clear: left;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(0, 0, 0, .654);
+}
+
+.dl-horizontal dd {
+  margin-left: 180px;
+}
+
+.dl-horizontal dd:after {
+  clear: both;
+}

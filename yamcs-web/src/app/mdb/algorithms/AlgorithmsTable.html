@@ -14,7 +14,10 @@
   <ng-container matColumnDef="name">
     <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
     <mat-cell *matCellDef="let algorithm">
-      {{ shortName ? algorithm.name : algorithm.qualifiedName }}
+      <a [routerLink]="['./', algorithm.qualifiedName]"
+         [queryParams]="{instance: instance.name}">
+        {{ shortName ? algorithm.name : algorithm.qualifiedName }}
+      </a>
     </mat-cell>
   </ng-container>
 
@@ -25,7 +28,7 @@
 
   <ng-container matColumnDef="scope">
     <mat-header-cell *matHeaderCellDef mat-sort-header>Scope</mat-header-cell>
-    <mat-cell *matCellDef="let algorithm">{{ (algorithm.scope | titlecase) || '-' }}</mat-cell>
+    <mat-cell *matCellDef="let algorithm">{{ algorithm.scope || '-' }}</mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="shortDescription">
