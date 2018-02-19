@@ -179,9 +179,8 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         resourcesByName.put(name, resource);
     }
 
-    private WebSocketEncoder getEncoder()
-    {
-        if(encoder == null){
+    private WebSocketEncoder getEncoder() {
+        if (encoder == null) {
             log.debug("WebSocket frame encoding is not specified. Encoding in JSON by default");
             return new JsonEncoder();
         }
