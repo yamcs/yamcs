@@ -31,4 +31,8 @@ export class ParametersTable implements AfterViewInit {
       this.dataSource.data = parameters || [];
     });
   }
+
+  applyFilter(value: string) {
+    this.dataSource.filter = value.trim().toLowerCase();
+  }
 }

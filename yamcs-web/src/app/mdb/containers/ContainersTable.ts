@@ -31,4 +31,8 @@ export class ContainersTable implements AfterViewInit {
       this.dataSource.data = containers || [];
     });
   }
+
+  applyFilter(value: string) {
+    this.dataSource.filter = value.trim().toLowerCase();
+  }
 }

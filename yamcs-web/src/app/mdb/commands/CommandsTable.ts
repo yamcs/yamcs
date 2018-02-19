@@ -31,4 +31,8 @@ export class CommandsTable implements AfterViewInit {
       this.dataSource.data = commands || [];
     });
   }
+
+  applyFilter(value: string) {
+    this.dataSource.filter = value.trim().toLowerCase();
+  }
 }

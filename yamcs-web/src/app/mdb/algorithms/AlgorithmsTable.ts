@@ -31,4 +31,8 @@ export class AlgorithmsTable implements AfterViewInit {
       this.dataSource.data = algorithms || [];
     });
   }
+
+  applyFilter(value: string) {
+    this.dataSource.filter = value.trim().toLowerCase();
+  }
 }
