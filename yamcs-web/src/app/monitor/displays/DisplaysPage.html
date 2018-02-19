@@ -17,7 +17,9 @@
       Show Navigator
     </button>
 
-    <button mat-button color="primary">
+    <button mat-button
+            color="primary"
+            (click)="saveLayout()">
       <mat-icon>save</mat-icon>
       Save Layout
     </button>
@@ -32,15 +34,8 @@
     </button>
   </app-monitor-toolbar>
 
-  <mat-sidenav-container>
-    <mat-sidenav mode="side" [opened]="navigatorOpen$ | async">
-      <app-display-navigator [displayInfo]="displayInfo$ | async"
-                             (select)="openDisplay($event.path)">
-      </app-display-navigator>
-    </mat-sidenav>
-
-    <mat-sidenav-content>
-      <div #displayContainer></div>
-    </mat-sidenav-content>
-  </mat-sidenav-container>
+  <app-layout-component #layout
+                        [showNavigator]="navigatorOpen$ | async"
+                        (stateChange)="onStateChange($event)">
+  </app-layout-component>
 </app-monitor-page>

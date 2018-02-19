@@ -6,6 +6,7 @@ import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
 import { MonitorPage } from './template/MonitorPage';
 import { EventsPage } from './events/EventsPage';
 import { MonitorToolbar } from './template/MonitorToolbar';
+import { LayoutsPage } from './layouts/LayoutsPage';
 
 const routes = [
   {
@@ -20,6 +21,10 @@ const routes = [
       {
         path: 'events',
         component: EventsPage,
+      },
+      {
+        path: 'layouts',
+        component: LayoutsPage,
       }
     ]
   }
@@ -34,6 +39,7 @@ export class MonitorRoutingModule { }
 export const routingComponents = [
   DisplaysPage,
   EventsPage,
+  LayoutsPage,
   MonitorPage,
   MonitorToolbar,
 ];

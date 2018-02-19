@@ -1,0 +1,17 @@
+<app-monitor-page>
+  <app-monitor-toolbar>
+    Layouts
+  </app-monitor-toolbar>
+
+  <div class="panel-content">
+    <mat-table *ngIf="dataSource" [dataSource]="dataSource" class="ya-data-table">
+      <ng-container cdkColumnDef="name">
+        <mat-header-cell *cdkHeaderCellDef>Name</mat-header-cell>
+        <mat-cell *cdkCellDef="let layout">{{ layout.name }}</mat-cell>
+      </ng-container>
+
+      <mat-header-row *cdkHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *cdkRowDef="let row; columns: displayedColumns;"></mat-row>
+    </mat-table>
+  </div>
+</app-monitor-page>

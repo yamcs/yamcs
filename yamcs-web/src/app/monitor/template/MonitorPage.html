@@ -13,6 +13,11 @@
         Displays
       </app-sidebar-nav-item>
 
+      <app-sidebar-nav-item routerLink="layouts"
+                            [queryParams]="{instance: instance.name}">
+        Layouts
+      </app-sidebar-nav-item>
+
       <app-sidebar-nav-item routerLink="events"
                             [queryParams]="{instance: instance.name}">
         Events

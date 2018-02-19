@@ -4,11 +4,17 @@ td {
   height: 12px;
 }
 
-tr.even td {
-  background-color: #fafafa;
-}
-
 tr:hover td {
   cursor: pointer;
   background: #ffffd6;
+}
+
+td.icon {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+table {
+  margin-top: 10px;
+  margin-bottom: 10px;
 }

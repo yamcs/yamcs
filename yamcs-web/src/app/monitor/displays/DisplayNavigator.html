@@ -2,20 +2,19 @@
   <tr *ngIf="currentFolder !== displayInfo"
       class="no-select"
       (click)="selectParent()">
-    <td width="1"><mat-icon class="icon12">folder</mat-icon></td>
+    <td class="icon" width="1"><mat-icon class="icon12">folder</mat-icon></td>
     <td>..</td>
   </tr>
-  <tr *ngFor="let folder of currentFolder.folder; even as isEven"
+  <tr *ngFor="let folder of currentFolder.folder"
       class="no-select"
       (click)="selectFolder(folder)">
-    <td width="1"><mat-icon class="icon12">folder</mat-icon></td>
+    <td class="icon" width="1"><mat-icon class="icon12">folder</mat-icon></td>
     <td>{{ folder.name }}/</td>
   </tr>
-  <tr *ngFor="let file of currentFolder.file; even as isEven"
+  <tr *ngFor="let file of currentFolder.file"
       class="no-select"
-      [class.even]="isEven"
       (click)="selectFile(file)">
-    <td width="1"><mat-icon class="icon12">widgets</mat-icon></td>
+    <td class="icon" width="1"><mat-icon class="icon12">bookmark_border</mat-icon></td>
     <td>{{ file.name }}</td>
   </tr>
 </table>

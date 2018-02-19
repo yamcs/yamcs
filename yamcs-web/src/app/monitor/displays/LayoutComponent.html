@@ -1,0 +1,11 @@
+<mat-sidenav-container>
+  <mat-sidenav mode="side" [opened]="showNavigator">
+    <app-display-navigator [displayInfo]="displayInfo$ | async"
+                            (select)="openDisplay($event.path)">
+    </app-display-navigator>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+      <div #displayContainer></div>
+  </mat-sidenav-content>
+</mat-sidenav-container>
