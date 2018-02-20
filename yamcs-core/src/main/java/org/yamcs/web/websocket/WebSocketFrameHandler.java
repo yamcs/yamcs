@@ -1,23 +1,5 @@
 package org.yamcs.web.websocket;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
-import org.yamcs.YamcsServer;
-import org.yamcs.api.ws.WSConstants;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.web.HttpRequestHandler;
-import org.yamcs.web.HttpRequestInfo;
-import org.yamcs.web.HttpServer;
-import org.yamcs.web.WebConfig;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.Channel;
@@ -31,6 +13,23 @@ import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler.ServerHandshakeStateEvent;
 import io.netty.util.AttributeKey;
 import io.protostuff.Schema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
+import org.yamcs.YamcsServer;
+import org.yamcs.api.ws.WSConstants;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
+import org.yamcs.protobuf.Yamcs.ProtoDataType;
+import org.yamcs.security.AuthenticationToken;
+import org.yamcs.web.HttpRequestHandler;
+import org.yamcs.web.HttpRequestInfo;
+import org.yamcs.web.HttpServer;
+import org.yamcs.web.WebConfig;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class for text/binary websocket handling
@@ -180,6 +179,14 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         resourcesByName.put(name, resource);
     }
 
+    private WebSocketEncoder getEncoder() {
+        if (encoder == null) {
+            log.debug("WebSocket frame encoding is not specified. Encoding in JSON by default");
+            return new JsonEncoder();
+        }
+        return encoder;
+    }
+
     public void sendReply(WebSocketReplyData reply) throws IOException {
         if(!channel.isOpen()) {
             throw new IOException("Channel not open");
@@ -189,12 +196,13 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             return;
         }
 
-        WebSocketFrame frame = encoder.encodeReply(reply);
+
+        WebSocketFrame frame = getEncoder().encodeReply(reply);
         channel.writeAndFlush(frame);
     }
 
     private void sendException(WebSocketException e) throws IOException {
-        WebSocketFrame frame = encoder.encodeException(e);
+        WebSocketFrame frame = getEncoder().encodeException(e);
         channel.writeAndFlush(frame);
     }
 
@@ -206,6 +214,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
      * 
      */
     public <S> void sendData(ProtoDataType dataType, S data, Schema<S> schema) throws IOException {
+
         dataSeqCount++;
         if(!channel.isOpen()) {
             throw new IOException("Channel not open");
@@ -224,7 +233,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             return;
         }
         droppedWrites = 0;
-        WebSocketFrame frame = encoder.encodeData(dataSeqCount, dataType, data, schema);
+        WebSocketFrame frame = getEncoder().encodeData(dataSeqCount, dataType, data, schema);
         channel.writeAndFlush(frame);
     }
 
