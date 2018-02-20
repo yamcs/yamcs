@@ -18,12 +18,14 @@ import org.yamcs.protobuf.Mdb.AlgorithmInfo.Scope;
 import org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo;
 import org.yamcs.protobuf.Mdb.ArgumentInfo;
 import org.yamcs.protobuf.Mdb.ArgumentTypeInfo;
+import org.yamcs.protobuf.Mdb.CommandContainerInfo;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ComparisonInfo;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
 import org.yamcs.protobuf.Mdb.DataEncodingInfo;
 import org.yamcs.protobuf.Mdb.DataEncodingInfo.Type;
 import org.yamcs.protobuf.Mdb.DataSourceType;
+import org.yamcs.protobuf.Mdb.FixedValueInfo;
 import org.yamcs.protobuf.Mdb.InputParameterInfo;
 import org.yamcs.protobuf.Mdb.OutputParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
@@ -37,12 +39,14 @@ import org.yamcs.protobuf.Mdb.UnitInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.YamcsManagement.HistoryInfo;
 import org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
+import org.yamcs.xtce.ArgumentEntry;
 import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.BinaryArgumentType;
@@ -62,6 +66,7 @@ import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
 import org.yamcs.xtce.FixedIntegerValue;
+import org.yamcs.xtce.FixedValueEntry;
 import org.yamcs.xtce.FloatArgumentType;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatParameterType;
@@ -72,6 +77,7 @@ import org.yamcs.xtce.IntegerArgumentType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.MetaCommandContainer;
 import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
 import org.yamcs.xtce.OnPeriodicRateTrigger;
@@ -187,10 +193,36 @@ public class XtceToGpbAssembler {
             } else if (detail == DetailLevel.FULL) {
                 b.setParameter(toParameterInfo(pe.getParameter(), instanceURL, DetailLevel.FULL, options));
             }
+        } else if (e instanceof ArgumentEntry) {
+            ArgumentEntry ae = (ArgumentEntry) e;
+            b.setArgument(toArgumentInfo(ae.getArgument()));
+        } else if (e instanceof FixedValueEntry) {
+            FixedValueEntry fe = (FixedValueEntry) e;
+            FixedValueInfo.Builder feb = FixedValueInfo.newBuilder();
+            if (fe.getName() != null) {
+                feb.setName(fe.getName());
+            }
+            if (fe.getSizeInBits() != -1) {
+                feb.setSizeInBits(fe.getSizeInBits());
+            }
+            feb.setHexValue(StringConverter.arrayToHexString(fe.getBinaryValue()));
+            b.setFixedValue(feb.build());
         } else {
             throw new IllegalStateException("Unexpected entry " + e);
         }
 
+        return b.build();
+    }
+
+    public static FixedValueInfo toFixedValueInfo(FixedValueEntry entry) {
+        FixedValueInfo.Builder b = FixedValueInfo.newBuilder();
+        if (entry.getName() != null) {
+            b.setName(entry.getName());
+        }
+        if (entry.getSizeInBits() != -1) {
+            b.setSizeInBits(entry.getSizeInBits());
+        }
+        b.setHexValue(StringConverter.arrayToHexString(entry.getBinaryValue()));
         return b.build();
     }
 
@@ -215,6 +247,33 @@ public class XtceToGpbAssembler {
         }
 
         return b.build();
+    }
+
+    public static CommandContainerInfo toCommandContainerInfo(MetaCommandContainer container, String instanceURL,
+            DetailLevel detail, Set<Option> options) {
+        CommandContainerInfo.Builder ccb = CommandContainerInfo.newBuilder();
+        ccb.setName(container.getName());
+        if (container.getQualifiedName() != null) {
+            ccb.setQualifiedName(container.getQualifiedName());
+        }
+        if (container.getShortDescription() != null) {
+            ccb.setShortDescription(container.getShortDescription());
+        }
+        if (container.getLongDescription() != null) {
+            ccb.setLongDescription(container.getLongDescription());
+        }
+        if (container.getAliasSet() != null) {
+            Map<String, String> aliases = container.getAliasSet().getAliases();
+            for (Entry<String, String> me : aliases.entrySet()) {
+                ccb.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+            }
+        }
+
+        for (SequenceEntry entry : container.getEntryList()) {
+            ccb.addEntry(toSequenceEntryInfo(entry, instanceURL, detail, options));
+        }
+
+        return ccb.build();
     }
 
     /**
@@ -263,6 +322,11 @@ public class XtceToGpbAssembler {
                 for (TransmissionConstraint xtceConstraint : cmd.getTransmissionConstraintList()) {
                     cb.addConstraint(toTransmissionConstraintInfo(xtceConstraint, instanceURL, options));
                 }
+            }
+
+            if (cmd.getCommandContainer() != null) {
+                MetaCommandContainer container = cmd.getCommandContainer();
+                cb.setCommandContainer(toCommandContainerInfo(container, instanceURL, DetailLevel.FULL, options));
             }
 
             if (detail == DetailLevel.SUMMARY) {

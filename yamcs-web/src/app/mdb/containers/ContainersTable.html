@@ -14,7 +14,10 @@
   <ng-container matColumnDef="name">
     <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
     <mat-cell *matCellDef="let container">
-      {{ shortName ? container.name : container.qualifiedName }}
+      <a [routerLink]="['./', container.qualifiedName]"
+         [queryParams]="{instance: instance.name}">
+        {{ shortName ? container.name : container.qualifiedName }}
+      </a>
     </mat-cell>
   </ng-container>
 
@@ -31,7 +34,12 @@
   <ng-container matColumnDef="baseContainer">
     <mat-header-cell *matHeaderCellDef mat-sort-header>Base Container</mat-header-cell>
     <mat-cell *matCellDef="let container">
-      {{ container.baseContainer?.qualifiedName || '-' }}
+      <a *ngIf="container.baseContainer"
+         [routerLink]="['/mdb/containers/', container.baseContainer?.qualifiedName]"
+         [queryParams]="{instance: instance.name}">
+        {{ container.baseContainer?.qualifiedName || '-' }}
+      </a>
+      <span *ngIf="!container.baseContainer">-</span>
     </mat-cell>
   </ng-container>
 
@@ -39,7 +47,12 @@
     <mat-header-cell *matHeaderCellDef>Restriction Criteria</mat-header-cell>
     <mat-cell *matCellDef="let container">
       <ng-container *ngFor="let criteria of container.restrictionCriteria">
-        {{ criteria.parameter.qualifiedName }} {{ criteria.operator | operator }} {{ criteria.value }}
+        <a [routerLink]="['/mdb/parameters/', criteria.parameter.qualifiedName]"
+           [queryParams]="{instance: instance.name}">
+          {{ criteria.parameter.qualifiedName }}
+        </a>
+        {{ criteria.operator | operator }}
+        {{ criteria.value }}
         <br>
       </ng-container>
     </mat-cell>

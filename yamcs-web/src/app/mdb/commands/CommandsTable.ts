@@ -13,6 +13,9 @@ import { Observable } from 'rxjs/Observable';
 export class CommandsTable implements AfterViewInit {
 
   @Input()
+  instance: string;
+
+  @Input()
   commands$: Observable<Command[]>;
 
   @Input()

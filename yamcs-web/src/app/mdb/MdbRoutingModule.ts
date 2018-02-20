@@ -15,6 +15,13 @@ import { ContainersPage } from './containers/ContainersPage';
 import { SpaceSystemContainersTab } from './space-system-detail/SpaceSystemContainersTab';
 import { SpaceSystemCommandsTab } from './space-system-detail/SpaceSystemCommandsTab';
 import { AlgorithmPage } from './algorithms/AlgorithmPage';
+import { SpaceSystemAlgorithmTab } from './space-system-detail/SpaceSystemAlgorithmTab';
+import { SpaceSystemParameterTab } from './space-system-detail/SpaceSystemParameterTab';
+import { ParameterPage } from './parameters/ParameterPage';
+import { SpaceSystemContainerTab } from './space-system-detail/SpaceSystemContainerTab';
+import { ContainerPage } from './containers/ContainerPage';
+import { CommandPage } from './commands/CommandPage';
+import { SpaceSystemCommandTab } from './space-system-detail/SpaceSystemCommandTab';
 
 const routes = [{
   path: '',
@@ -40,19 +47,36 @@ const routes = [{
           redirectTo: 'parameters'
         }, {
           path: 'algorithms',
+          pathMatch: 'full',
           component: SpaceSystemAlgorithmsTab,
         }, {
+          path: 'algorithms/:qualifiedName',
+          component: SpaceSystemAlgorithmTab,
+        }, {
           path: 'changelog',
+          pathMatch: 'full',
           component: SpaceSystemChangelogTab,
         }, {
           path: 'commands',
+          pathMatch: 'full',
           component: SpaceSystemCommandsTab,
         }, {
+          path: 'commands/:qualifiedName',
+          component: SpaceSystemCommandTab,
+        }, {
           path: 'containers',
+          pathMatch: 'full',
           component: SpaceSystemContainersTab,
         }, {
+          path: 'containers/:qualifiedName',
+          component: SpaceSystemContainerTab,
+        }, {
           path: 'parameters',
+          pathMatch: 'full',
           component: SpaceSystemParametersTab,
+        }, {
+          path: 'parameters/:qualifiedName',
+          component: SpaceSystemParameterTab,
         }]
       }
     ]
@@ -68,13 +92,22 @@ const routes = [{
     pathMatch: 'full',
     component: CommandsPage,
   }, {
+    path: 'commands/:qualifiedName',
+    component: CommandPage,
+  }, {
     path: 'containers',
     pathMatch: 'full',
     component: ContainersPage,
   }, {
+    path: 'containers/:qualifiedName',
+    component: ContainerPage,
+  }, {
     path: 'parameters',
     pathMatch: 'full',
     component: ParametersPage,
+  }, {
+    path: 'parameters/:qualifiedName',
+    component: ParameterPage,
   }]
 }];
 
@@ -88,14 +121,21 @@ export const routingComponents = [
   AlgorithmsPage,
   AlgorithmPage,
   CommandsPage,
+  CommandPage,
   ContainersPage,
+  ContainerPage,
   MdbPage,
   ParametersPage,
+  ParameterPage,
   SpaceSystemsPage,
   SpaceSystemPage,
   SpaceSystemAlgorithmsTab,
+  SpaceSystemAlgorithmTab,
   SpaceSystemChangelogTab,
   SpaceSystemCommandsTab,
+  SpaceSystemCommandTab,
   SpaceSystemContainersTab,
+  SpaceSystemContainerTab,
   SpaceSystemParametersTab,
+  SpaceSystemParameterTab,
 ];

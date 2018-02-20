@@ -14,7 +14,10 @@
   <ng-container matColumnDef="name">
     <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
     <mat-cell *matCellDef="let command">
-      {{ shortName ? command.name : command.qualifiedName }}
+      <a [routerLink]="['./', command.qualifiedName]"
+         [queryParams]="{instance: instance.name}">
+        {{ shortName ? command.name : command.qualifiedName }}
+      </a>
     </mat-cell>
   </ng-container>
 

@@ -14,7 +14,7 @@ import {
   LinkEvent,
   Processor,
   Statistics,
-  CommandQueueInfo,
+  CommandQueue,
   CommandQueueEvent,
 } from './types/system';
 import { Observable } from 'rxjs/Observable';
@@ -147,7 +147,7 @@ export class WebSocketClient {
     );
   }
 
-  getCommandQueueInfoUpdates() {
+  getCommandQueueUpdates() {
     if (!this.subscriptionModel.commandQueues) {
       this.subscriptionModel.commandQueues = true;
       this.emit({ cqueues: 'subscribe' });
@@ -155,7 +155,7 @@ export class WebSocketClient {
     return this.webSocketConnection$.pipe(
       filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
       filter((msg: WebSocketServerMessage) => msg[3].dt === 'COMMAND_QUEUE_INFO'),
-      map(msg => msg[3].data as CommandQueueInfo),
+      map(msg => msg[3].data as CommandQueue),
     );
   }
 

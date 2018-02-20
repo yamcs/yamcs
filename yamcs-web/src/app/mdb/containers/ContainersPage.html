@@ -3,7 +3,9 @@
 
   <ng-container *ngIf="containers$ | async as containers">
     <div class="panel-content" *ngIf="containers.length; else empty">
-      <app-containers-table [containers$]="containers$"></app-containers-table>
+      <app-containers-table [containers$]="containers$"
+                            [instance]="instance">
+      </app-containers-table>
     </div>
     <ng-template #empty>
       <app-empty-message>

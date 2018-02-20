@@ -1,0 +1,7 @@
+<ng-container *ngIf="instance$ | async as instance">
+  <ng-container *ngIf="parameter$ | async as parameter">
+    <app-parameter-detail [instance]="instance"
+                          [parameter]="parameter">
+    </app-parameter-detail>
+  </ng-container>
+</ng-container>

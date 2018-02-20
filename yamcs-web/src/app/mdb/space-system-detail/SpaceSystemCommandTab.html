@@ -1,0 +1,7 @@
+<ng-container *ngIf="instance$ | async as instance">
+  <ng-container *ngIf="command$ | async as command">
+    <app-command-detail [instance]="instance"
+                        [command]="command">
+    </app-command-detail>
+  </ng-container>
+</ng-container>

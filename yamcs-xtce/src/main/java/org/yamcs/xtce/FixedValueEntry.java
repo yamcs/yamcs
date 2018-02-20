@@ -26,6 +26,10 @@ public class FixedValueEntry extends SequenceEntry {
         this.binaryValue = binaryValue;
         this.sizeInBits = sizeInBits;
     }
+    
+    public String getName() {
+        return name;
+    }
 
     public byte[] getBinaryValue() {
         return binaryValue;

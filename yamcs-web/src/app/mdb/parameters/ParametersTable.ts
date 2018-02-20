@@ -13,6 +13,9 @@ import { Observable } from 'rxjs/Observable';
 export class ParametersTable implements AfterViewInit {
 
   @Input()
+  instance: string;
+
+  @Input()
   parameters$: Observable<Parameter[]>;
 
   @Input()

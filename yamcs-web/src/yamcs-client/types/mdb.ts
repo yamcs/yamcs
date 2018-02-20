@@ -63,6 +63,53 @@ export interface DataEncoding {
 export interface Command extends NameDescription {
   baseCommand?: Command;
   abstract: boolean;
+  argument: Argument[];
+  argumentAssignment: ArgumentAssignment[];
+  significance: Significance;
+  constraint: TransmissionConstraint[];
+  commandContainer: CommandContainer;
+}
+
+export interface CommandContainer extends NameDescription {
+  sizeInBits: number;
+  baseContainer?: Container;
+  entry: SequenceEntry[];
+}
+
+export interface Argument {
+  name: string;
+  description: string;
+  initialValue: string;
+  type: ArgumentType;
+}
+
+export interface ArgumentType {
+  engType: string;
+  dataEncoding: DataEncoding;
+  unitSet: UnitInfo[];
+  enumValue: EnumValue[];
+  rangeMin: number;
+  rangeMax: number;
+}
+
+export interface ArgumentAssignment {
+  name: string;
+  value: string;
+}
+
+export interface Significance {
+  consequenceLevel: 'NONE' | 'WATCH' | 'WARNING' | 'DISTRESS' | 'CRITICAL' | 'SEVERE';
+  reasonForWarning: string;
+}
+
+export interface TransmissionConstraint {
+  comparison: ComparisonInfo[];
+  timeout: number;
+}
+
+export interface EnumValue {
+  value: number;
+  label: string;
 }
 
 export interface AlarmRange {
@@ -78,7 +125,7 @@ export interface Algorithm extends NameDescription {
   language: string;
   text: string;
   inputParameter: InputParameter[];
-  OutputParameter: OutputParameter[];
+  outputParameter: OutputParameter[];
   onParameterUpdate: Parameter[];
   onPeriodicRate: number[];
 }
@@ -119,9 +166,18 @@ export interface ComparisonInfo {
 export interface SequenceEntry {
   locationInBits: number;
   referenceLocation: 'CONTAINER_START' | 'PREVIOUS_ENTRY';
-  container: Container;
-  parameter: Parameter;
   repeat: RepeatInfo;
+
+  container?: Container;
+  parameter?: Parameter;
+  argument?: Argument;
+  fixedValue?: FixedValue;
+}
+
+export interface FixedValue {
+  name: string;
+  hexValue: string;
+  sizeInBits: number;
 }
 
 export class RepeatInfo {

@@ -1,0 +1,83 @@
+<dl class="dl-horizontal no-lead">
+  <dt>Container</dt>
+  <dd>{{ container.qualifiedName }}</dd>
+
+  <dt>Alias</dt>
+  <dd>
+    <ng-container *ngFor="let alias of container.alias">
+      {{ alias.name }} <small>(namespace: {{ alias.namespace }})</small><br>
+    </ng-container>
+  </dd>
+
+  <dt>Short Description</dt>
+  <dd>{{ container.shortDescription || '-' }}</dd>
+
+  <dt>Long Description</dt>
+  <dd>{{ container.longDescription || '-' }}</dd>
+</dl>
+
+<mat-divider></mat-divider>
+
+<dl class="dl-horizontal">
+  <dt>Max Interval</dt>
+  <dd>
+    <span *ngIf="container.maxInterval">{{ container.maxInterval }} ms</span>
+    <span *ngIf="!container.maxInterval">-</span>
+  </dd>
+
+  <dt>Base Container</dt>
+  <dd>
+    <a *ngIf="container.baseContainer"
+       [routerLink]="['/mdb/containers/', container.baseContainer?.qualifiedName]"
+       [queryParams]="{instance: instance.name}">
+      {{ container.baseContainer?.qualifiedName || '-' }}
+    </a>
+    <span *ngIf="!container.baseContainer">-</span>
+  </dd>
+
+  <dt>Restriction Criteria</dt>
+  <dd>
+    <ng-container *ngFor="let criteria of container.restrictionCriteria">
+      <a [routerLink]="['/mdb/parameters/', criteria.parameter.qualifiedName]"
+         [queryParams]="{instance: instance.name}">
+        {{ criteria.parameter.qualifiedName }}
+      </a>
+      {{ criteria.operator | operator }}
+      {{ criteria.value }}
+      <br>
+    </ng-container>
+  </dd>
+</dl>
+
+<mat-divider></mat-divider>
+
+<dl class="dl-horizontal">
+  <dt>Sequence Entries</dt>
+  <dd>
+    <table yaDataTable>
+      <tr>
+        <th>Type</th>
+        <th>Ref</th>
+        <th>Location in Bits</th>
+        <th>Reference Location</th>
+      </tr>
+      <tr *ngFor="let entry of container.entry">
+        <ng-container *ngIf="entry.parameter">
+          <td>Parameter</td>
+          <td>
+            <a [routerLink]="['/mdb/parameters/', entry.parameter.qualifiedName]"
+               [queryParams]="{instance: instance.name}">
+              {{ entry.parameter.qualifiedName }}
+            </a>
+          </td>
+        </ng-container>
+        <ng-container *ngIf="entry.container">
+          <td>Container</td>
+          <td>{{ entry.container.qualifiedName }}</td>
+        </ng-container>
+        <td>{{ entry.locationInBits }}</td>
+        <td>{{ entry.referenceLocation }}</td>
+      </tr>
+    </table>
+  </dd>
+</dl>

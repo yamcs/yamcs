@@ -7,6 +7,7 @@ import YamcsClient from './YamcsClient';
 import {
   AlgorithmsWrapper,
   CommandsWrapper,
+  CommandQueuesWrapper,
   ContainersWrapper,
   EventsWrapper,
   LinksWrapper,
@@ -47,6 +48,7 @@ import {
   Service,
   Stream,
   Table,
+  CommandQueue,
 } from './types/system';
 
 export class InstanceClient {
@@ -127,11 +129,33 @@ export class InstanceClient {
     );
   }
 
-  getCommandQueueInfoUpdates() {
+  getCommandQueues(processorName: string) {
+    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/cqueues`;
+    return this.http.get<CommandQueuesWrapper>(url).pipe(
+      map(msg => msg.queue || []),
+      catchError(this.yamcs.handleError<CommandQueue[]>([]))
+    );
+  }
+
+  getCommandQueue(processorName: string, queueName: string) {
+    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/cqueues/${queueName}`;
+    return this.http.get<CommandQueue>(url).pipe(
+      catchError(this.yamcs.handleError<CommandQueue>())
+    );
+  }
+
+  getCommandQueueUpdates(processorName?: string) {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getCommandQueueInfoUpdates().pipe(
+    const cqueues$ = this.webSocketClient.getCommandQueueUpdates().pipe(
       filter(msg => msg.instance === this.instance)
     );
+    if (processorName === undefined) {
+      return cqueues$;
+    } else {
+      return cqueues$.pipe(
+        filter(msg => msg.processorName === processorName)
+      );
+    }
   }
 
   getCommandQueueEventUpdates() {
@@ -238,6 +262,12 @@ export class InstanceClient {
     return this.http.get<ParametersWrapper>(`${this.yamcs.apiUrl}/mdb/${this.instance}/parameters`, { params }).pipe(
       map(msg => msg.parameter || []),
       catchError(this.yamcs.handleError<Parameter[]>([]))
+    );
+  }
+
+  getParameter(qualifiedName: string) {
+    return this.http.get<Parameter>(`${this.yamcs.apiUrl}/mdb/${this.instance}/parameters${qualifiedName}`).pipe(
+      catchError(this.yamcs.handleError<Parameter>())
     );
   }
 

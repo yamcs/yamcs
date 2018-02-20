@@ -13,6 +13,9 @@ import { Observable } from 'rxjs/Observable';
 export class ContainersTable implements AfterViewInit {
 
   @Input()
+  instance: string;
+
+  @Input()
   containers$: Observable<Container[]>;
 
   @Input()

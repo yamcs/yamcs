@@ -155,6 +155,7 @@ message CommandInfo {
   optional SignificanceInfo significance = 10;
   repeated TransmissionConstraintInfo constraint = 11;
   optional string url = 12;
+  optional CommandContainerInfo commandContainer = 13;
 }
 
 message RepeatInfo {
@@ -170,9 +171,33 @@ message SequenceEntryInfo {
   }
   optional int32 locationInBits = 1;
   optional ReferenceLocationType referenceLocation = 2;
+
+  // For use in sequence containers
   optional ContainerInfo container = 3;
   optional ParameterInfo parameter = 4;
+
+  // For use in command containers
+  optional ArgumentInfo argument = 6;
+  optional FixedValueInfo fixedValue = 7;
+
   optional RepeatInfo repeat = 5;
+}
+
+message FixedValueInfo {
+  optional string name = 1;
+  optional string hexValue = 2;
+  optional int32 sizeInBits = 3;
+}
+
+message CommandContainerInfo {
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated yamcs.NamedObjectId alias = 5;
+  optional int32 sizeInBits = 6;
+  optional CommandContainerInfo baseContainer = 7;
+  repeated SequenceEntryInfo entry = 8;
 }
 
 message ContainerInfo {

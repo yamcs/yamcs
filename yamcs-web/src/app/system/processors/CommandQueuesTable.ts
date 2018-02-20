@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, Input, AfterViewInit } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import { CommandQueueInfo } from '../../../yamcs-client';
+import { CommandQueue } from '../../../yamcs-client';
 import { MatTableDataSource } from '@angular/material';
 
 @Component({
@@ -11,10 +11,9 @@ import { MatTableDataSource } from '@angular/material';
 export class CommandQueuesTable implements AfterViewInit {
 
   @Input()
-  info$: Observable<CommandQueueInfo>;
+  cqueues$: Observable<CommandQueue[]>;
 
-  dataSource = new MatTableDataSource<CommandQueueInfo>();
-  private infoByName: { [key: string]: CommandQueueInfo } = {};
+  dataSource = new MatTableDataSource<CommandQueue>();
 
   displayedColumns = [
     'name',
@@ -22,9 +21,8 @@ export class CommandQueuesTable implements AfterViewInit {
   ];
 
   ngAfterViewInit() {
-    this.info$.subscribe(info => {
-      this.infoByName[info.name] = info;
-      this.dataSource.data = Object.values(this.infoByName);
+    this.cqueues$.subscribe(cqueues => {
+      this.dataSource.data = cqueues;
     });
   }
 }

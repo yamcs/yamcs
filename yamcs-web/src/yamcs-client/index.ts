@@ -35,7 +35,7 @@ export {
   CommandId,
   CommandQueueEntry,
   CommandQueueEvent,
-  CommandQueueInfo,
+  CommandQueue,
   GeneralInfo,
   Instance,
   Link,

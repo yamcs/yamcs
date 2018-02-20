@@ -1,6 +1,7 @@
 <ng-container *ngIf="commands$ | async as commands">
   <app-commands-table *ngIf="commands.length; else empty"
                       [commands$]="commands$"
+                      [instance]="instance$ | async"
                       [shortName]="true">
   </app-commands-table>
 

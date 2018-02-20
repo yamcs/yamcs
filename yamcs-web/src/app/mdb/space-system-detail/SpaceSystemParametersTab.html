@@ -1,7 +1,8 @@
 <ng-container *ngIf="parameters$ | async as parameters">
   <app-parameters-table *ngIf="parameters.length; else empty"
-                      [parameters$]="parameters$"
-                      [shortName]="true">
+                        [instance]="instance$ | async"
+                        [parameters$]="parameters$"
+                        [shortName]="true">
   </app-parameters-table>
 
   <ng-template #empty>

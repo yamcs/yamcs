@@ -116,7 +116,7 @@ export interface TmStatistics {
   subscribedParameterCount: number;
 }
 
-export interface CommandQueueInfo {
+export interface CommandQueue {
   instance: string;
   processorName: string;
   name: string;

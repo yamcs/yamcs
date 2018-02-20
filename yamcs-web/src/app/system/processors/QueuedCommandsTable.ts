@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, Input, AfterViewInit, ViewChild } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import { CommandQueueInfo, CommandQueueEntry } from '../../../yamcs-client';
+import { CommandQueue, CommandQueueEntry } from '../../../yamcs-client';
 import { MatSort, MatTableDataSource } from '@angular/material';
 
 @Component({
@@ -11,13 +11,12 @@ import { MatSort, MatTableDataSource } from '@angular/material';
 export class QueuedCommandsTable implements AfterViewInit {
 
   @Input()
-  info$: Observable<CommandQueueInfo>;
+  cqueues$: Observable<CommandQueue[]>;
 
   @ViewChild(MatSort)
   sort: MatSort;
 
   dataSource = new MatTableDataSource<CommandQueueEntry>();
-  private infoByName: { [key: string]: CommandQueueInfo } = {};
 
   displayedColumns = [
     'generationTime',
@@ -29,22 +28,17 @@ export class QueuedCommandsTable implements AfterViewInit {
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
-    this.info$.subscribe(info => {
-      this.infoByName[info.name] = info;
-      console.log('add', info);
-      this.refreshDataSource();
-    });
-  }
 
-  // We receive entries grouped by queue, but rather
-  // have a flat list
-  private refreshDataSource() {
-    const entries = [];
-    for (const info of Object.values(this.infoByName)) {
-      if (info.entry) {
-        entries.push(...info.entry);
+    // We receive entries grouped by queue, but rather
+    // have a flat list
+    this.cqueues$.subscribe(cqueues => {
+      const entries = [];
+      for (const cqueue of cqueues) {
+        if (cqueue.entry) {
+          entries.push(...cqueue.entry);
+        }
       }
-    }
-    this.dataSource.data = entries;
+      this.dataSource.data = entries;
+    });
   }
 }

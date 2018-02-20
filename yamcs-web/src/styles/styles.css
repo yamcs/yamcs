@@ -93,6 +93,16 @@ html, body {
   color: #000080;
 }
 
+.dl-horizontal {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  padding: 0;
+}
+
+.dl-horizontal.no-lead {
+  margin-top: 0;
+}
+
 .dl-horizontal dt {
   float: left;
   width: 160px;

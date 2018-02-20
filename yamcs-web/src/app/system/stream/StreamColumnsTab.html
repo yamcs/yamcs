@@ -1,7 +1,7 @@
 <div class="panel-content" *ngIf="stream$ | async as stream">
-  <table yaTable>
+  <table yaDataTable>
     <tr>
-      <th width="150">Column</th>
+      <th width="200">Column</th>
       <th>Type</th>
     </tr>
     <tr *ngFor="let column of stream.column">

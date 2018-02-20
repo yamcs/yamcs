@@ -4,4 +4,5 @@ code {
   padding: 1em;
   font-size: 10px;
   border: 1px solid #d3d3d3;
+  white-space: pre;
 }

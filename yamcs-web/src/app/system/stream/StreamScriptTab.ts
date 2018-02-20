@@ -11,7 +11,10 @@ import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   templateUrl: './StreamScriptTab.html',
-  styleUrls: ['../streamsql.css'],
+  styleUrls: [
+    './StreamScriptTab.css',
+    '../streamsql.css',
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StreamScriptTab {

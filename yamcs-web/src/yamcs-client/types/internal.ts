@@ -15,6 +15,7 @@ import {
   Service,
   Stream,
   Table,
+  CommandQueue,
 } from './system';
 
 import {
@@ -75,6 +76,10 @@ export interface ParametersWrapper {
 
 export interface ClientsWrapper {
   client: ClientInfo[];
+}
+
+export interface CommandQueuesWrapper {
+  queue: CommandQueue[];
 }
 
 export interface CommandsWrapper {

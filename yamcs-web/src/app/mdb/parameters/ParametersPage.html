@@ -3,7 +3,9 @@
 
   <ng-container *ngIf="parameters$ | async as parameters">
     <div class="panel-content" *ngIf="parameters.length; else empty">
-      <app-parameters-table [parameters$]="parameters$"></app-parameters-table>
+      <app-parameters-table [parameters$]="parameters$"
+                            [instance]="instance">
+      </app-parameters-table>
     </div>
     <ng-template #empty>
       <app-empty-message>

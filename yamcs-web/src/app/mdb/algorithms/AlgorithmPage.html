@@ -1,111 +1,15 @@
-<app-mdb-page *ngIf="instance$ | async as instance">
-  <app-mdb-toolbar>
-    <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
-      <mat-icon>arrow_back</mat-icon>
-    </a> {{ qualifiedName }}
-  </app-mdb-toolbar>
+<ng-container *ngIf="instance$ | async as instance">
+  <app-mdb-page *ngIf="algorithm$ | async as algorithm">
+    <app-mdb-toolbar>
+      <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
+        <mat-icon>arrow_back</mat-icon>
+      </a> {{ algorithm.qualifiedName }}
+    </app-mdb-toolbar>
 
-  <div class="panel-content" *ngIf="algorithm$ | async as algorithm">
-    <dl class="dl-horizontal">
-      <dt>Algorithm</dt>
-      <dd>{{ algorithm.qualifiedName }}</dd>
-
-      <dt>Alias</dt>
-      <dd>
-        <ng-container *ngFor="let alias of algorithm.alias">
-          {{ alias.name }} <small>(namespace: {{ alias.namespace }})</small><br>
-        </ng-container>
-      </dd>
-
-      <dt>Short Description</dt>
-      <dd>{{ algorithm.shortDescription || '-' }}</dd>
-
-      <dt>Long Description</dt>
-      <dd>{{ algorithm.longDescription || '-' }}</dd>
-    </dl>
-
-    <mat-divider></mat-divider>
-
-    <dl class="dl-horizontal">
-      <dt>Scope</dt>
-      <dd>{{ algorithm.scope || '-' }}</dd>
-
-      <dt>Language</dt>
-      <dd>{{ algorithm.language || '-' }}</dd>
-
-      <dt>Text</dt>
-      <dd>
-        <code>{{ algorithm.text || '-' }}</code>
-      </dd>
-    </dl>
-
-    <mat-divider></mat-divider>
-
-    <dl class="dl-horizontal">
-      <dt>Input Parameters</dt>
-      <dd>
-        <table yaDataTable *ngIf="algorithm.inputParameter">
-          <tr>
-            <th>Input Name</th>
-            <th>Parameter</th>
-            <th>Instance</th>
-            <th>Mandatory</th>
-          </tr>
-          <tr *ngFor="let inputParameter of algorithm.inputParameter">
-            <td>{{ inputParameter.inputName }}</td>
-            <td>{{ inputParameter.parameter.qualifiedName }}</td>
-            <td style="text-align: center">
-              {{ inputParameter.parameterInstance }}
-            </td>
-            <td style="text-align: center">
-              <mat-icon *ngIf="inputParameter.mandatory">check</mat-icon>
-              <mat-icon *ngIf="!inputParameter.mandatory">close</mat-icon>
-            </td>
-          </tr>
-        </table>
-        <span *ngIf="!algorithm.inputParameter">-</span>
-      </dd>
-    </dl>
-
-    <mat-divider></mat-divider>
-
-    <dl class="dl-horizontal">
-      <dt>Output Parameters</dt>
-      <dd>
-        <table yaDataTable *ngIf="algorithm.outputParameter">
-          <tr>
-            <th>Output Name</th>
-            <th>Parameter</th>
-          </tr>
-          <tr *ngFor="let outputParameter of algorithm.outputParameter">
-            <td>{{ outputParameter.outputName }}</td>
-            <td>{{ outputParameter.parameter.qualifiedName }}</td>
-          </tr>
-        </table>
-        <span *ngIf="!algorithm.outputParameter">-</span>
-      </dd>
-    </dl>
-
-    <mat-divider></mat-divider>
-
-    <dl class="dl-horizontal">
-      <dt>Triggers</dt>
-      <dd>
-        <table yaDataTable>
-          <tr>
-            <th>Type</th>
-            <th>Value</th>
-          </tr>
-          <tr *ngFor="let trigger of algorithm.onParameterUpdate">
-            <td>OnParameterUpdate</td>
-            <td>{{ trigger.qualifiedName }}</td>
-          </tr>
-          <tr *ngIf="algorithm.onPeriodicRate">
-            <td>OnPeriodicRate</td>
-            <td>2000</td>
-          </tr>
-        </table>
-      </dd>
-    </dl>
-  </div>
-</app-mdb-page>
+    <div class="panel-content">
+      <app-algorithm-detail [instance]="instance"
+                            [algorithm]="algorithm">
+      </app-algorithm-detail>
+    </div>
+  </app-mdb-page>
+</ng-container>
