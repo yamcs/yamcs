@@ -714,6 +714,8 @@ public class ArrayParameterCache implements ParameterCache {
                 System.arraycopy(o1, head, o2, 0, o1.length - head);
                 System.arraycopy(o1, 0, o2, o1.length - head, head);
                 return o2;
+            } else if (o instanceof BitSet) {
+                return o;
             } else {
                 throw new IllegalArgumentException("Cannot double objects of type " + o.getClass());
             }
