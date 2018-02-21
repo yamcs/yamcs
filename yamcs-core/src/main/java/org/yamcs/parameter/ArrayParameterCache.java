@@ -98,10 +98,16 @@ public class ArrayParameterCache implements ParameterCache {
 
             ParameterValueTable table = tables.get(sia);
             long t = table.getLastTime();
-            if (t <= tmax)
+            if (t < tmax)
                 continue;
-
-            result = table.getLastValue(p);
+            
+            ParameterValue pv = table.getLastValue(p);
+            if(t==tmax && result!=null && result.getAcquisitionTime() > pv.getAcquisitionTime()) {
+                result = pv;
+            } else {
+                result = pv;
+            }
+            
             tmax = t;
         }
 
