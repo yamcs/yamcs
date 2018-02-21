@@ -102,8 +102,10 @@ public class ArrayParameterCache implements ParameterCache {
                 continue;
             
             ParameterValue pv = table.getLastValue(p);
-            if(t==tmax && result!=null && result.getAcquisitionTime() > pv.getAcquisitionTime()) {
-                result = pv;
+            if(t==tmax) {
+                if(result!=null && result.getAcquisitionTime() < pv.getAcquisitionTime()) {
+                    result = pv;
+                }
             } else {
                 result = pv;
             }
