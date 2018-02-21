@@ -5,6 +5,7 @@ import { YamcsService } from '../services/YamcsService';
 
 @Component({
   templateUrl: './ProfilePage.html',
+  styleUrls: ['./ProfilePage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfilePage {

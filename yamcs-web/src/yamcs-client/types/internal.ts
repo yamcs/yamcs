@@ -20,6 +20,7 @@ import {
 
 import {
   Event,
+  Sample,
 } from './monitoring';
 
 export type WebSocketClientMessage = [
@@ -100,4 +101,8 @@ export interface TablesWrapper {
 
 export interface RecordsWrapper {
   record: Record[];
+}
+
+export interface SamplesWrapper {
+  sample: Sample[];
 }

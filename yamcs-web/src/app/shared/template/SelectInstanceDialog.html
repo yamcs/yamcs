@@ -1,0 +1,21 @@
+<h2 mat-dialog-title>Select Instance</h2>
+
+<mat-dialog-content *ngIf="instances$ | async as instances">
+  <mat-selection-list #selectionList>
+    <mat-list-option *ngFor="let instance of instances"
+                     [value]="instance.name">
+      {{ instance.name }}
+    </mat-list-option>
+  </mat-selection-list>
+  <p>&nbsp;</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+
+  <button mat-button
+          color="primary"
+          (click)="applySelection()">
+    Select
+  </button>
+</mat-dialog-actions>

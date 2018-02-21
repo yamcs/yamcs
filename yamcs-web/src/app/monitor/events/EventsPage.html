@@ -2,11 +2,11 @@
   <app-monitor-toolbar>
     Events
 
-    <button mat-button color="primary">
+    <button mat-button color="primary" disabled>
       <mat-icon>filter_list</mat-icon>
       Filter
     </button>
-    <button mat-button color="primary">
+    <button mat-button color="primary" disabled>
       Columns
       <mat-icon>arrow_drop_down</mat-icon>
     </button>
@@ -64,10 +64,10 @@
     <mat-row *cdkRowDef="let row; columns: displayedColumns;" [ngClass]="row.severity"></mat-row>
   </mat-table>
 
-  <mat-paginator #paginator
+  <!--mat-paginator #paginator
     [length]="dataSource.getEventCount()"
     [pageIndex]="pageIndex"
     [pageSize]="pageSize"
     [pageSizeOptions]="[25, 50, 100]">
-  </mat-paginator>
+  </mat-paginator-->
 </app-monitor-page>

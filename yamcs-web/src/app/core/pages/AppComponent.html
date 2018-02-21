@@ -3,7 +3,7 @@
     <a mat-button routerLink="/">
       Yamcs
     </a>
-    <button mat-button *ngIf="instance$ | async as instance">
+    <button mat-button *ngIf="instance$ | async as instance" (click)="openInstanceDialog()">
       <span class="selected-instance">{{ instance.name }}</span>
       <mat-icon>arrow_drop_down</mat-icon>
     </button>
@@ -24,8 +24,8 @@
     </ng-container>
 
     <mat-menu #appMenu="matMenu" overlapTrigger="false">
-      <button mat-menu-item>
-        <mat-icon>brightness_3</mat-icon>
+      <button mat-menu-item disabled>
+        <mat-icon style="transform: rotate(180deg)">brightness_3</mat-icon>
         Dark Mode
       </button>
     </mat-menu>

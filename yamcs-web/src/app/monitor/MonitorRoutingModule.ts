@@ -15,6 +15,11 @@ const routes = [
     component: MonitorPage,
     children: [
       {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'displays',
+      },
+      {
         path: 'displays',
         component: DisplaysPage,
       },

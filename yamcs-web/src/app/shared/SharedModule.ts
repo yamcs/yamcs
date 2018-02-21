@@ -35,17 +35,19 @@ import {
   MatTooltipModule,
 } from '@angular/material';
 
-import { YaSimpleTableComponent } from './directives/SimpleTableDirective';
-import { YaTableComponent } from './directives/TableDirective';
+import { YaSimpleTableComponent } from './template/SimpleTableDirective';
+import { YaTableComponent } from './template/TableDirective';
 import { ValuePipe } from './pipes/ValuePipe';
-import { ToolbarActions } from './components/ToolbarActions';
-import { SidebarNavItem } from './components/SidebarNavItem';
-import { DetailToolbar } from './components/DetailToolbar';
-import { YaDataTableComponent } from './directives/DataTableDirective';
+import { ToolbarActions } from './template/ToolbarActions';
+import { SidebarNavItem } from './template/SidebarNavItem';
+import { DetailToolbar } from './template/DetailToolbar';
+import { YaDataTableComponent } from './template/DataTableDirective';
 import { UnitsPipe } from './pipes/UnitsPipe';
 import { OperatorPipe } from './pipes/OperatorPipe';
-import { EmptyMessage } from './components/EmptyMessage';
-import { TabDetailIcon } from './components/TabDetailIcon';
+import { EmptyMessage } from './template/EmptyMessage';
+import { TabDetailIcon } from './template/TabDetailIcon';
+import { ParameterPlot } from './widgets/ParameterPlot';
+import { SelectInstanceDialog } from './template/SelectInstanceDialog';
 
 const materialModules = [
   CdkTableModule,
@@ -88,6 +90,8 @@ const sharedComponents = [
   DetailToolbar,
   EmptyMessage,
   SidebarNavItem,
+  ParameterPlot,
+  SelectInstanceDialog,
   TabDetailIcon,
   ToolbarActions,
 ];
@@ -120,6 +124,9 @@ const pipes = [
     sharedDirectives,
     sharedComponents,
     pipes,
+  ],
+  entryComponents: [
+    SelectInstanceDialog,
   ],
 })
 export class SharedModule {

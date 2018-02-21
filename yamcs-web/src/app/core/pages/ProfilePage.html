@@ -1,59 +1,66 @@
+<mat-toolbar>
+  Profile
+</mat-toolbar>
 <div class="panel-content mat-typography" *ngIf="user$ | async as user">
-  <h3>Login</h3>
-  <div class="block">
-    {{ user.login }}
-  </div>
+  <dl class="dl-horizontal no-lead">
+    <dt>Login</dt>
+    <dd>{{ user.login }}</dd>
 
-  <h3>Roles</h3>
-  <div class="block">
-    <ul>
-      <li *ngFor="let role of user.roles">
+    <dt>Roles</dt>
+    <dd>
+      <ng-container *ngFor="let role of user.roles">
         {{ role }}
-      </li>
-    </ul>
-  </div>
+      </ng-container>
+    </dd>
+  </dl>
 
-  <h3>Privileges</h3>
-  <table yaTable>
-    <tr>
-      <th>tmParaPrivileges</th>
-      <td>
-        <ng-container *ngFor="let privilege of user.tmParaPrivileges">
-          {{ privilege }}<br>
-        </ng-container>
-      </td>
-    </tr>
-    <tr>
-      <th>tmParaSetPrivileges</th>
-      <td>
-        <ng-container *ngFor="let privilege of user.tmParaSetPrivileges">
-          {{ privilege }}<br>
-        </ng-container>
-      </td>
-    </tr>
-    <tr>
-      <th>tmPacketPrivileges</th>
-      <td>
-        <ng-container *ngFor="let privilege of user.tmPacketPrivileges">
-          {{ privilege }}<br>
-        </ng-container>
-      </td>
-    </tr>
-    <tr>
-      <th>tcPrivileges</th>
-      <td>
-        <ng-container *ngFor="let privilege of user.tcPrivileges">
-          {{ privilege }}<br>
-        </ng-container>
-      </td>
-    </tr>
-    <tr>
-      <th>systemPrivileges</th>
-      <td>
-        <ng-container *ngFor="let privilege of user.systemPrivileges">
-          {{ privilege }}<br>
-        </ng-container>
-      </td>
-    </tr>
-  </table>
+  <mat-divider></mat-divider>
+
+  <dl class="dl-horizontal">
+    <dt>Privileges</dt>
+    <dd>
+      <table yaDataTable>
+        <tr>
+          <th>tmParaPrivileges</th>
+          <td>
+            <ng-container *ngFor="let privilege of user.tmParaPrivileges">
+              {{ privilege }}<br>
+            </ng-container>
+          </td>
+        </tr>
+        <tr>
+          <th>tmParaSetPrivileges</th>
+          <td>
+            <ng-container *ngFor="let privilege of user.tmParaSetPrivileges">
+              {{ privilege }}<br>
+            </ng-container>
+          </td>
+        </tr>
+        <tr>
+          <th>tmPacketPrivileges</th>
+          <td>
+            <ng-container *ngFor="let privilege of user.tmPacketPrivileges">
+              {{ privilege }}<br>
+            </ng-container>
+          </td>
+        </tr>
+        <tr>
+          <th>tcPrivileges</th>
+          <td>
+            <ng-container *ngFor="let privilege of user.tcPrivileges">
+              {{ privilege }}<br>
+            </ng-container>
+          </td>
+        </tr>
+        <tr>
+          <th>systemPrivileges</th>
+          <td>
+            <ng-container *ngFor="let privilege of user.systemPrivileges">
+              {{ privilege }}<br>
+            </ng-container>
+          </td>
+        </tr>
+      </table>
+    </dd>
+  </dl>
 </div>

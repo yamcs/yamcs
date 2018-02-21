@@ -81,3 +81,11 @@ export interface ParameterSubscriptionRequest {
   updateOnExpiration: boolean;
   sendFromCache: boolean;
 }
+
+export interface Sample {
+  time: string;
+  avg: number;
+  min: number;
+  max: number;
+  n: number;
+}

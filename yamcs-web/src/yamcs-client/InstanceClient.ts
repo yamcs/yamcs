@@ -19,6 +19,7 @@ import {
   StreamsWrapper,
   TablesWrapper,
   ClientsWrapper,
+  SamplesWrapper,
 } from './types/internal';
 
 import {
@@ -38,6 +39,7 @@ import {
   DisplayFolder,
   Event,
   ParameterSubscriptionRequest,
+  Sample,
 } from './types/monitoring';
 
 import {
@@ -274,6 +276,14 @@ export class InstanceClient {
   getParameterValueUpdates(options: ParameterSubscriptionRequest) {
     this.prepareWebSocketClient();
     return this.webSocketClient.getParameterValueUpdates(options);
+  }
+
+  getParameterSamples(qualifiedName: string) {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/parameters${qualifiedName}/samples`;
+    return this.http.get<SamplesWrapper>(url).pipe(
+      map(msg => msg.sample || []),
+      catchError(this.yamcs.handleError<Sample[]>([]))
+    );
   }
 
   getCommands(options: GetCommandsOptions = {}) {
