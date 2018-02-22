@@ -72,7 +72,7 @@ export class WebSocketClient {
         return errors.pipe(delay(1000));
       }),
     );
-    this.webSocketConnection$.subscribe((msg: WebSocketServerMessage) => {
+    this.webSocketConnectionSubscription = this.webSocketConnection$.subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
           console.error('Server reported error: ', msg[3].msg);
         }

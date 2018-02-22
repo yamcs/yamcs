@@ -1,5 +1,5 @@
-<app-monitor-page>
-  <app-monitor-toolbar *ngIf="state$ | async as state">
+<app-monitor-page *ngIf="instance$ | async as instance">
+  <app-monitor-toolbar *ngIf="updatedState$ | async as state">
     Displays
 
     &nbsp;&nbsp;&nbsp;
@@ -36,7 +36,7 @@
 
   <app-layout-component #layoutComponent
                         [startWithOpenedNavigator]="true"
-                        [layoutState]="initialLayout"
-                        (stateChange)="onStateChange($event)">
+                        [layoutState]="initialState$ | async"
+                        (stateChange)="onStateChange(instance.name, $event)">
   </app-layout-component>
 </app-monitor-page>

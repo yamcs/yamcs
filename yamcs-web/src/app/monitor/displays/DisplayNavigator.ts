@@ -21,6 +21,7 @@ export class DisplayNavigator implements OnChanges {
   currentFolder: DisplayFolder;
 
   ngOnChanges() {
+    console.log('got new display info', this.displayInfo);
     if (!this.displayInfo) {
       return;
     }

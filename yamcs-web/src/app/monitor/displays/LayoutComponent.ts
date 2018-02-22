@@ -4,11 +4,11 @@ import {
   ViewChild,
   ElementRef,
   ChangeDetectionStrategy,
-  AfterViewInit,
   Output,
   EventEmitter,
   Input,
   OnInit,
+  OnChanges,
 } from '@angular/core';
 import { ResourceResolver } from './ResourceResolver';
 import { Layout, LayoutStateListener, LayoutListener } from './Layout';
@@ -17,8 +17,10 @@ import { YamcsService } from '../../core/services/YamcsService';
 import { take } from 'rxjs/operators';
 import { DisplayFrame, Coordinates } from './DisplayFrame';
 import { DisplayFolder } from '../../../yamcs-client';
-import { Observable } from 'rxjs/Observable';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Store } from '@ngrx/store';
+import { State } from '../../app.reducers';
+import { selectCurrentInstance } from '../../core/store/instance.selectors';
 
 @Component({
   selector: 'app-layout-component',
@@ -26,7 +28,7 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
   styleUrls: ['./LayoutComponent.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LayoutComponent implements OnInit, AfterViewInit, LayoutListener, LayoutStateListener {
+export class LayoutComponent implements OnInit, OnChanges, LayoutListener, LayoutStateListener {
 
   @Input()
   startWithOpenedNavigator = true;
@@ -40,14 +42,20 @@ export class LayoutComponent implements OnInit, AfterViewInit, LayoutListener, L
   @ViewChild('displayContainer')
   private displayContainerRef: ElementRef;
 
-  displayInfo$: Observable<DisplayFolder>;
   showNavigator$: BehaviorSubject<boolean>;
+  displayInfo$ = new BehaviorSubject<DisplayFolder | null>(null);
 
   private resourceResolver: ResourceResolver;
   private layout: Layout;
 
-  constructor(private yamcs: YamcsService) {
-    this.displayInfo$ = yamcs.getSelectedInstance().getDisplayInfo();
+  constructor(private yamcs: YamcsService, store: Store<State>) {
+    store.select(selectCurrentInstance).subscribe(instance => {
+      // TODO should be simpler. yamcs.getSelectedInstance() is not yet updated when this triggers.
+      const instanceClient = this.yamcs.yamcsClient.selectInstance(instance.name);
+      instanceClient.getDisplayInfo().subscribe(displayInfo => {
+        this.displayInfo$.next(displayInfo);
+      });
+    });
     this.resourceResolver = new RemoteResourceResolver(yamcs);
   }
 
@@ -55,8 +63,14 @@ export class LayoutComponent implements OnInit, AfterViewInit, LayoutListener, L
     this.showNavigator$ = new BehaviorSubject<boolean>(this.startWithOpenedNavigator);
   }
 
-  ngAfterViewInit() {
+  ngOnChanges() {
     const targetEl = this.displayContainerRef.nativeElement;
+    if (this.layout) {
+      this.layout.layoutListeners.delete(this);
+      this.layout.layoutStateListeners.delete(this);
+      targetEl.innerHTML = '';
+    }
+
     this.layout = new Layout(targetEl, this.resourceResolver);
     this.layout.layoutListeners.add(this);
     if (this.layoutState) {
