@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
@@ -101,7 +100,6 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     public TcpTcDataLink(String host, int port) {
         this.host = host;
         this.port = port;
-        openSocket();
         log = LoggerFactory.getLogger(this.getClass().getName());
     }
 
@@ -117,7 +115,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     protected void doStart() {
         setupSysVariables();
         this.timer = new ScheduledThreadPoolExecutor(2);
-        timer.scheduleWithFixedDelay(this, 0, 10, TimeUnit.SECONDS);
+        openSocket();
         tcSender = new TcDequeueAndSend();
         timer.execute(tcSender);
         notifyStarted();
@@ -180,7 +178,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
                     log.info("Data read on the TC socket to {}:{}!! : {}", host, port, bb);
                     connected = true;
                 } else if (read < 0) {
-                    log.warn("TC socket to " + host + ":" + port + " has been closed");
+                    log.warn("TC socket to {}:{} has been closed", host, port);
                     socketChannel.close();
                     selector.close();
                     socketChannel = null;
@@ -189,7 +187,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             } else if (selectionKey.isWritable()) {
                 connected = true;
             } else {
-                log.warn("The TC socket to " + host + ":" + port + " is neither writable nor readable");
+                log.warn("The TC socket to {}:{} is neither writable nor readable", host, port);
                 connected = false;
             }
         } catch (IOException e) {
@@ -205,10 +203,11 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     @Override
     public void sendTc(PreparedCommand pc) {
         if (disabled) {
-            log.warn("TC disabled, ignoring command " + pc.getCommandId());
+            log.warn("TC disabled, ignoring command {}", pc.getCommandId());
             return;
         }
         if (!commandQueue.offer(pc)) {
+            log.warn("Cannot put command {} in the queue, because it's full; sending NACK", pc); 
             commandHistoryListener.publishWithTime(pc.getCommandId(), "Acknowledge_Sent", getCurrentTime(), "NOK");
         }
     }
@@ -299,10 +298,12 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
                     Thread.currentThread().interrupt();
                     log.warn("Send command interrupted while waiting for the queue.", e);
                     return;
+                } catch (Exception e) {
+                    log.error("Error when sending command: ", e);
+                    throw e;
                 }
             }
         }
-
         public void send() {
             ByteBuffer bb = null;
             if (pc.getBinary().length < minimumTcPacketLength) { // enforce the minimum packet length
@@ -310,7 +311,6 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
                 bb.put(pc.getBinary());
                 bb.putShort(4, (short) (minimumTcPacketLength - 7)); // fix packet length
             } else {
-
                 int checksumIndicator = pc.getBinary()[2] & 0x04;
                 if (checksumIndicator == 1) {
                     bb = ByteBuffer.allocate(pc.getBinary().length + 2); // extra slots for check sum
@@ -361,7 +361,6 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
                     }
                 }
             }
-
             if (sent) {
                 commandHistoryListener.publishWithTime(pc.getCommandId(), "Acknowledge_Sent", getCurrentTime(), "OK");
             } else {

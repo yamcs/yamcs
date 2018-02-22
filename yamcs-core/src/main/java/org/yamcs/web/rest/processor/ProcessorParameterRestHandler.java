@@ -82,7 +82,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
                 alarmServer.acknowledge(p, seqNum, req.getUsername(), processor.getCurrentTime(), comment);
                 completeOK(req);
             } catch (CouldNotAcknowledgeAlarmException e) {
-                log.debug("Did not acknowledge alarm " + seqNum + ". " + e.getMessage());
+                log.debug("Did not acknowledge alarm {}.{}", seqNum, e.getMessage());
                 throw new BadRequestException(e.getMessage());
             }
         default:

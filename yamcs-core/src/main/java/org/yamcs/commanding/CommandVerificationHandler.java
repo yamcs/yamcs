@@ -212,7 +212,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
             ta = cv.getOnTimeout();
             break;
         default:
-            log.error("Illegal state onVerifierFinished called with state:"+state);
+            log.error("Illegal state onVerifierFinished called with state: {}", state);
         } 
         if(ta==TerminationAction.SUCCESS) {
             cmdHistPublisher.publish(preparedCommand.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY, "OK");

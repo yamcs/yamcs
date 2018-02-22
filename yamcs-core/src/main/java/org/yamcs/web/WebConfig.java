@@ -26,6 +26,7 @@ public class WebConfig {
     private int port;
     private List<String> webRoots = new ArrayList<>(2);
     private boolean zeroCopyEnabled = true;
+    private int maxWsFrameLength = 65535;
 
     // Refer to W3C spec for understanding these properties
     // Cross-origin Resource Sharing (CORS) enables ajaxified use of the REST api by
@@ -134,11 +135,13 @@ public class WebConfig {
                         "Error in yamcs.yaml: webSocket->connectionCloseNumDroppedMsg has to be greater than 0. Provided value: "
                                 + webSocketConnectionCloseNumDroppedMsg);
             }
+            maxWsFrameLength = YConfiguration.getInt(ws, "maxFrameLength", maxWsFrameLength);
         }
         if (webSocketWriteBufferWaterMark == null) {
             webSocketWriteBufferWaterMark = new WriteBufferWaterMark(32 * 1024, 64 * 1024); // these are also default
                                                                                             // netty values
         }
+
     }
 
     public static WebConfig getInstance() {
@@ -174,6 +177,10 @@ public class WebConfig {
 
     public List<GpbExtension> getGpbExtensions() {
         return gpbExtensions;
+    }
+
+    public int getWebSocketMaxFrameLength() {
+        return maxWsFrameLength;
     }
 
     static class GpbExtension {

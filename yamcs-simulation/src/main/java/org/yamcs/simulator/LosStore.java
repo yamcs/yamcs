@@ -58,7 +58,7 @@ public class LosStore {
         try {
             File folder = new File(System.getProperty("user.dir") + "/losData/");
             File[] listOfFiles = folder.listFiles() == null? new File[0] : folder.listFiles(); //To avoid a null pointer in case of the folder not existing
-            log.debug("Los files list size: " + listOfFiles.length);
+            log.debug("Los files list size: {}", listOfFiles.length);
 
             for (int i = 0; i < listOfFiles.length; i++) {
 
@@ -69,7 +69,7 @@ public class LosStore {
 
             byte[] array = losNamePacket.getUserDataBuffer().array();
             int arrayLength = array.length;
-            log.debug("Recording names sent: " + new String(array, 16, arrayLength - 16));
+            log.debug("Recording names sent: {}", new String(array, 16, arrayLength - 16));
 
             // terminate string with 0
             losNamePacket.appendUserDataBuffer(new byte[1]);
@@ -95,7 +95,7 @@ public class LosStore {
         	log.debug("No LOS data file to dump.");
             return null;
         }     
-        log.debug("readLosFile :" + requestedFile.toString());
+        log.debug("readLosFile: {}",  requestedFile);
 
         try {
         	
@@ -104,7 +104,7 @@ public class LosStore {
             // disable additional downloads of the current file
             path = null;
         } catch (IOException e) {
-        	log.error("readLosFile :" + e.getMessage(), e);
+        	log.error("readLosFile: " + e.getMessage(), e);
         }
         return datas;
     }
@@ -118,14 +118,14 @@ public class LosStore {
         }
         losStored++;
        
-        log.debug("#" + losStored);
+        log.debug("#{}", losStored);
         log.debug(packet.toString());
 
     }
 
     public void deleteFile(String filename) {
         Path fileToDelete = Paths.get(System.getProperty("user.dir") + "/losData/" + filename);
-        log.debug("Delete Los File: " + fileToDelete.toString());
+        log.debug("Delete Los File: {}", fileToDelete);
         try{
             fileToDelete.toFile().delete();
         } catch(Exception e){
@@ -192,7 +192,7 @@ public class LosStore {
 
         path = Paths.get(System.getProperty("user.dir") + "/losData/" + "tm_" + losClock.getTimeStamp() + ".dat");
         try {
-        	log.info("Creating Los file: " + path);
+        	log.info("Creating Los file: {}", path);
 
             Files.createDirectories(path.getParent());
             Files.createFile(path);

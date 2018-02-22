@@ -43,7 +43,7 @@ class DHSHandler {
         } catch (IOException e) {
             System.out.println(e);
         }
-        log.info("have " + entries.size() + " DHS data records");
+        log.info("have {} DHS data records", entries.size());
     }
 
     public void fillPacket(CCSDSPacket packet) {

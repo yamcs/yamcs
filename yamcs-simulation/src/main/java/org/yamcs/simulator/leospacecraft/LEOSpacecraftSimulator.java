@@ -133,7 +133,7 @@ public class LEOSpacecraftSimulator extends Simulator {
         while(pendingCommands.size()>0) {
             CCSDSPacket commandPacket = pendingCommands.poll();
             if (commandPacket.getPacketType() == 10) {
-                log.debug("BATT COMMAND: " + commandPacket.getPacketId()+" batNum: "+commandPacket.getUserDataBuffer().get(0));
+                log.debug("BATT COMMAND: {} batNum: {}", commandPacket.getPacketId(), commandPacket.getUserDataBuffer().get(0));
 
                 switch(commandPacket.getPacketId()) {
                 case 1:

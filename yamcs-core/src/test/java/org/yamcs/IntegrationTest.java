@@ -286,7 +286,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
         // first subscribe to command history
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
-
+        wsListener.cmdHistoryDataList.clear();
+        
         IssueCommandRequest cmdreq = getCommand(5, "uint32_arg", "1000");
         String resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST, cmdreq);
         assertTrue(resp.contains("binary"));

@@ -2,7 +2,9 @@ package org.yamcs.web.websocket;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,11 +105,13 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                     ex.attachData("InvalidIdentification", invalidList);
                     throw ex;
                 } else {
-                    idList = new ArrayList<>(idList);
-                    idList.removeAll(e.getInvalidParameters());
-                    if (idList.isEmpty()) {
+                    if (idList.size() == e.getInvalidParameters().size()) {
                         log.warn("Received subscribe attempt will all-invalid parameters");
                     } else {
+                        Set<NamedObjectId> valid = new HashSet<>(idList);
+                        valid.removeAll(e.getInvalidParameters());
+                        idList = new ArrayList<>(valid);
+
                         log.warn(
                                 "Received subscribe attempt with {} invalid parameters. Subscription will continue with {} remaining valids.",
                                 e.getInvalidParameters().size(), idList.size());

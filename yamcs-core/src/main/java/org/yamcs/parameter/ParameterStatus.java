@@ -8,6 +8,7 @@ import org.yamcs.utils.DoubleRange;
 public class ParameterStatus {
     public static final ParameterStatus NOMINAL = new ParameterStatus();
     
+
     private AcquisitionStatus acquisitionStatus = AcquisitionStatus.ACQUIRED;
     private boolean processingStatus = true;
     private MonitoringResult monitoringResult;
@@ -19,6 +20,9 @@ public class ParameterStatus {
     private DoubleRange distressRange;
     private DoubleRange criticalRange;
     private DoubleRange severeRange;
+    
+    //-1 means it's not set.
+    private long expireMillis = -1;
     
     public AcquisitionStatus getAcquisitionStatus() {
         return acquisitionStatus;
@@ -80,5 +84,81 @@ public class ParameterStatus {
     public void setSevereRange(DoubleRange severeRange) {
         this.severeRange = severeRange;
     }
-   
+    public void setExpireMillis(long em) {
+        this.expireMillis = em;
+    }
+
+    public long getExpireMills() {
+        return expireMillis;
+    }
+    
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((acquisitionStatus == null) ? 0 : acquisitionStatus.hashCode());
+        result = prime * result + ((criticalRange == null) ? 0 : criticalRange.hashCode());
+        result = prime * result + ((deltaMonitoringResult == null) ? 0 : deltaMonitoringResult.hashCode());
+        result = prime * result + ((distressRange == null) ? 0 : distressRange.hashCode());
+        result = prime * result + (int) (expireMillis ^ (expireMillis >>> 32));
+        result = prime * result + ((monitoringResult == null) ? 0 : monitoringResult.hashCode());
+        result = prime * result + (processingStatus ? 1231 : 1237);
+        result = prime * result + ((rangeCondition == null) ? 0 : rangeCondition.hashCode());
+        result = prime * result + ((severeRange == null) ? 0 : severeRange.hashCode());
+        result = prime * result + ((warningRange == null) ? 0 : warningRange.hashCode());
+        result = prime * result + ((watchRange == null) ? 0 : watchRange.hashCode());
+        return result;
+    }
+    
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ParameterStatus other = (ParameterStatus) obj;
+        if (acquisitionStatus != other.acquisitionStatus)
+            return false;
+        if (criticalRange == null) {
+            if (other.criticalRange != null)
+                return false;
+        } else if (!criticalRange.equals(other.criticalRange))
+            return false;
+        if (deltaMonitoringResult != other.deltaMonitoringResult)
+            return false;
+        if (distressRange == null) {
+            if (other.distressRange != null)
+                return false;
+        } else if (!distressRange.equals(other.distressRange))
+            return false;
+        if (expireMillis != other.expireMillis)
+            return false;
+        if (monitoringResult != other.monitoringResult)
+            return false;
+        if (processingStatus != other.processingStatus)
+            return false;
+        if (rangeCondition != other.rangeCondition)
+            return false;
+        if (severeRange == null) {
+            if (other.severeRange != null)
+                return false;
+        } else if (!severeRange.equals(other.severeRange))
+            return false;
+        if (warningRange == null) {
+            if (other.warningRange != null)
+                return false;
+        } else if (!warningRange.equals(other.warningRange))
+            return false;
+        if (watchRange == null) {
+            if (other.watchRange != null)
+                return false;
+        } else if (!watchRange.equals(other.watchRange))
+            return false;
+        return true;
+    }
+
 }

@@ -186,6 +186,14 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         resourcesByName.put(name, resource);
     }
 
+    private WebSocketEncoder getEncoder() {
+        if (encoder == null) {
+            log.debug("WebSocket frame encoding is not specified. Encoding in JSON by default");
+            return new JsonEncoder();
+        }
+        return encoder;
+    }
+
     public void sendReply(WebSocketReplyData reply) throws IOException {
         if (!channel.isOpen()) {
             throw new IOException("Channel not open");
@@ -195,12 +203,12 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             return;
         }
 
-        WebSocketFrame frame = encoder.encodeReply(reply);
+        WebSocketFrame frame = getEncoder().encodeReply(reply);
         channel.writeAndFlush(frame);
     }
 
     private void sendException(WebSocketException e) throws IOException {
-        WebSocketFrame frame = encoder.encodeException(e);
+        WebSocketFrame frame = getEncoder().encodeException(e);
         channel.writeAndFlush(frame);
     }
 
@@ -229,7 +237,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             return;
         }
         droppedWrites = 0;
-        WebSocketFrame frame = encoder.encodeData(dataSeqCount, dataType, data);
+        WebSocketFrame frame = getEncoder().encodeData(dataSeqCount, dataType, data);
         channel.writeAndFlush(frame);
     }
 

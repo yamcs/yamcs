@@ -12,9 +12,6 @@ import org.yamcs.utils.SortedIntArray;
  * Parameter Group segment - keeps references to Time and Value segments for a given parameter group and segment. 
  *  
  *  This class is used during the parameter archive buildup
- *   - it uses GenericValueSegment to store any kind of Value
- *   - once the segment is full, the consolidate method will turn each GenericValueSegment into an storage optimised one.
- *   
  * 
  * @author nm
  *

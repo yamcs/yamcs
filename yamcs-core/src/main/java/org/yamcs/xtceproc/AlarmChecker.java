@@ -60,7 +60,7 @@ public class AlarmChecker {
     public void parameterSubscribed(Parameter p) {
         ParameterType ptype = p.getParameterType();
         if(ptype==null) {
-            log.debug("Parameter "+p.getName()+" has no type");
+            log.debug("Parameter {} has no type", p.getName());
             return;
         }
         Set<Parameter> params = ptype.getDependentParameters();

@@ -211,7 +211,7 @@ public class OldArchiveParameterRestHandler extends RestHandler {
                             }
                         }
                     } else {
-                        log.warn("Unexpected value type " + o.getClass());
+                        log.warn("Unexpected value type {}", o.getClass());
                     }
 
                 }

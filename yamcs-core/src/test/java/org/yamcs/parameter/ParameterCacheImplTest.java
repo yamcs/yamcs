@@ -14,7 +14,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
 
-public class ParameterCacheTest {
+public class ParameterCacheImplTest {
     Parameter p1 = new Parameter("p1");
     Parameter p2 = new Parameter("p2");
     
@@ -27,7 +27,7 @@ public class ParameterCacheTest {
     public void test1() {
         ParameterCacheConfig pcc = new ParameterCacheConfig(true, true, 1000, 4096);
        
-        ParameterCache pcache = new ParameterCache(pcc); //1 second
+        ParameterCache pcache = new ParameterCacheImpl(pcc); //1 second
         assertNull(pcache.getLastValue(p1));
         
         ParameterValue p1v1 = getParameterValue(p1, 10);
@@ -57,7 +57,7 @@ public class ParameterCacheTest {
     public void testNoCacheAll() {
         ParameterCacheConfig pcc = new ParameterCacheConfig(true, false, 1000, 4096);
        
-        ParameterCache pcache = new ParameterCache(pcc); //1 second
+        ParameterCache pcache = new ParameterCacheImpl(pcc); //1 second
         assertNull(pcache.getLastValue(p1));
         
         ParameterValue p1v1 = getParameterValue(p1, 10);
@@ -85,7 +85,7 @@ public class ParameterCacheTest {
     @Test
     public void testCircularity() {
         ParameterCacheConfig pcc = new ParameterCacheConfig(true, true, 1000, 4096);
-        ParameterCache pcache = new ParameterCache(pcc); //1 second
+        ParameterCache pcache = new ParameterCacheImpl(pcc); //1 second
         assertNull(pcache.getLastValue(p1));
         List<ParameterValue> expectedPVlist = new ArrayList<>();
         for(int i=0;i<10;i++) {
@@ -128,7 +128,7 @@ public class ParameterCacheTest {
     @Test
     public void testResize() {
         ParameterCacheConfig pcc = new ParameterCacheConfig(true, true, 2000, 4096);
-        ParameterCache pcache = new ParameterCache(pcc); //should keep at least 200 samples
+        ParameterCache pcache = new ParameterCacheImpl(pcc); //should keep at least 200 samples
         assertNull(pcache.getLastValue(p1));
         List<ParameterValue> expectedPVlist = new ArrayList<>();
         for(int i=0;i<256;i++) {
@@ -161,7 +161,7 @@ public class ParameterCacheTest {
     @Test
     public void testMaxSize() {
         ParameterCacheConfig pcc = new ParameterCacheConfig(true, true, 2000, 128);
-        ParameterCache pcache = new ParameterCache(pcc); //should keep max 128 samples
+        ParameterCache pcache = new ParameterCacheImpl(pcc); //should keep max 128 samples
         assertNull(pcache.getLastValue(p1));
         List<ParameterValue> expectedPVlist = new ArrayList<>();
         for(int i=0;i<256;i++) {
@@ -231,7 +231,7 @@ public class ParameterCacheTest {
     @Ignore
     public void testConcurrency() throws InterruptedException {
         ParameterCacheConfig pcc = new ParameterCacheConfig(true, true, 1000, 4096);
-        final ParameterCache pcache = new ParameterCache(pcc);
+        final ParameterCache pcache = new ParameterCacheImpl(pcc);
         Thread writer = new Thread(new Runnable() {
             @Override
             public void run() {

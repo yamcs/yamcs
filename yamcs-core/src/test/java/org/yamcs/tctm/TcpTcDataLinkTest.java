@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.ConfigurationException;
@@ -25,18 +26,30 @@ import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.utils.TimeEncoding;
 
 public class TcpTcDataLinkTest {
-    static int port;
+    MyTcpServer mtc;
+
     @BeforeClass
-    public static void setup() throws IOException {
+    public static void beforeClass() throws IOException {
         TimeEncoding.setUp();
-        MyTcpServer mtc = new MyTcpServer();
-        port = mtc.port;
+    }
+
+    @Before
+    public void setupTcpServer() throws IOException {
+        mtc = new MyTcpServer();
         mtc.start();
+    }
+
+    @Before
+    public void shutdownTcpServer() throws IOException {
+        mtc = new MyTcpServer();
+        mtc.stop();
+
     }
 
     static public class MyTcpServer extends Thread {
         int port;
         ServerSocket serverSocket;
+        volatile boolean quitting = false;
 
         public MyTcpServer() throws IOException {
             serverSocket = new ServerSocket();
@@ -51,9 +64,10 @@ public class TcpTcDataLinkTest {
                 server = serverSocket.accept();
             } catch (IOException e1) {
                 e1.printStackTrace();
+                return;
             }
             int maxLength = 65542;
-            while (true) {
+            while (!quitting) {
                 try {
                     DataInputStream in = new DataInputStream(server.getInputStream());
                     // while(in.available() <= 0) {}
@@ -79,25 +93,29 @@ public class TcpTcDataLinkTest {
                 e.printStackTrace();
             }
         }
+
+        public void quit() throws IOException {
+            this.quitting = true;
+            serverSocket.close();
+        }
     }
 
     @Test
     public void testTcpTcMaxRate() throws ConfigurationException, InterruptedException, IOException {
         int ncommands = 20;
         int tcMaxRate = 2;
-        
+
         Map<String, Object> config = new HashMap<>();
         config.put("tcMaxRate", tcMaxRate);
         config.put("tcQueueSize", ncommands);
         config.put("tcHost", "localhost");
-        config.put("tcPort", port);
-        
+        config.put("tcPort", mtc.port);
+
         TcpTcDataLink dataLink = new TcpTcDataLink("testinst", "test1", config);
         Semaphore semaphore = new Semaphore(0);
         MyPublisher mypub = new MyPublisher(semaphore);
-        dataLink.setCommandHistoryPublisher(mypub) ;
-        
-        
+        dataLink.setCommandHistoryPublisher(mypub);
+
         dataLink.startAsync();
         dataLink.awaitRunning();
 
@@ -107,34 +125,35 @@ public class TcpTcDataLinkTest {
 
         assertTrue(semaphore.tryAcquire(ncommands, 10, TimeUnit.SECONDS));
         assertTrue("Number of commands sent is smaller than queue size: ", mypub.successful.size() >= ncommands);
-        for (int i = 5; i<mypub.successful.size()-tcMaxRate; i++) {
+        for (int i = 5; i < mypub.successful.size() - tcMaxRate; i++) {
             int seq1 = mypub.successful.get(i);
-            int seq2 = mypub.successful.get(i+tcMaxRate);
+            int seq2 = mypub.successful.get(i + tcMaxRate);
             long gap = mypub.sentTime.get(seq2) - mypub.sentTime.get(seq1);
-            assertTrue("gap is not right: "+gap, gap>=990 && gap<1010);
+            assertTrue("gap is not right: " + gap, gap >= 990 && gap < 1010);
         }
+        dataLink.stopAsync();
     }
 
     @Test
-    public void testTcpTcDefault() throws ConfigurationException,   InterruptedException, IOException {
+    public void testTcpTcDefault() throws ConfigurationException, InterruptedException, IOException {
         Map<String, Object> config = new HashMap<>();
         config.put("tcHost", "localhost");
-        config.put("tcPort", port);
+        config.put("tcPort", mtc.port);
 
         TcpTcDataLink dataLink = new TcpTcDataLink("testinst", "test1", config);
         Semaphore semaphore = new Semaphore(0);
         MyPublisher mypub = new MyPublisher(semaphore);
-        dataLink.setCommandHistoryPublisher(mypub) ;
-       
+        dataLink.setCommandHistoryPublisher(mypub);
+
         dataLink.startAsync();
         dataLink.awaitRunning();
-        
-        
+
         for (int i = 1; i <= 1000; i++) {
             dataLink.sendTc(getCommand(i));
         }
-        assertTrue(semaphore.tryAcquire(1000, 30, TimeUnit.SECONDS));
+        assertTrue(semaphore.tryAcquire(1000, 300, TimeUnit.SECONDS));
         assertEquals(1000, mypub.successful.size());
+        dataLink.stopAsync();
     }
 
     private PreparedCommand getCommand(int seq) {
@@ -148,17 +167,17 @@ public class TcpTcDataLinkTest {
         pc.setBinary(b);
         return pc;
     }
-    
-    
+
     static class MyPublisher implements CommandHistoryPublisher {
         Map<Integer, Long> sentTime = new HashMap<>();
         List<Integer> successful = new ArrayList<>();
         List<Integer> failed = new ArrayList<>();
         Semaphore semaphore;
-        
+
         MyPublisher(Semaphore semaphore) {
             this.semaphore = semaphore;
         }
+
         @Override
         public void publish(CommandId cmdId, String key, long value) {
             sentTime.put(cmdId.getSequenceNumber(), value);
@@ -167,12 +186,12 @@ public class TcpTcDataLinkTest {
         @Override
         public void publish(CommandId cmdId, String key, String value) {
             if (key.equals("Acknowledge_Sent_Status")) {
-                if(value.equals("OK")) {
+                if (value.equals("OK")) {
                     successful.add(cmdId.getSequenceNumber());
-                } else if(value.equals("NOK")) {
+                } else if (value.equals("NOK")) {
                     failed.add(cmdId.getSequenceNumber());
                 } else {
-                    fail("Unexpected ack '"+value+"'");
+                    fail("Unexpected ack '" + value + "'");
                 }
                 semaphore.release();
             }

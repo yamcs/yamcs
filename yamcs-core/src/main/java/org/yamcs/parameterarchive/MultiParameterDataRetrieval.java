@@ -52,12 +52,13 @@ public class MultiParameterDataRetrieval {
         Map<PartitionIterator, String> partition2ParameterName = new HashMap<>();
         PriorityQueue<PartitionIterator> queue = new PriorityQueue<>(new PartitionIteratorComparator(mpvr.ascending));
         SegmentMerger merger = null;
-        boolean retrieveEng = mpvr.retrieveEngValues || mpvr.retrieveRawValues;
+      
         for (int i = 0; i < mpvr.parameterIds.length; i++) {
+            boolean retrieveEng = mpvr.retrieveEngValues || mpvr.retrieveRawValues.get(i);
             its[i] = parchive.getIterator(p);
 
             PartitionIterator pi = new PartitionIterator(its[i], mpvr.parameterIds[i], mpvr.parameterGroupIds[i],
-                    mpvr.start, mpvr.stop, mpvr.ascending, retrieveEng, mpvr.retrieveRawValues,
+                    mpvr.start, mpvr.stop, mpvr.ascending, retrieveEng, mpvr.retrieveRawValues.get(i),
                     mpvr.retrieveParamStatus);
             if (pi.isValid()) {
                 queue.add(pi);
@@ -97,7 +98,7 @@ public class MultiParameterDataRetrieval {
                 ParameterStatusSegment paramStatuSegment = mpvr.retrieveParamStatus ? pit.parameterStatus() : null;
 
                 BaseSegment rawValueSegment = null;
-                if (mpvr.retrieveRawValues) {
+                if (pit.retrieveRawValue) {
                     rawValueSegment = pit.rawValue();
                     if (rawValueSegment == null) {
                         rawValueSegment = pit.engValue();
@@ -170,6 +171,11 @@ public class MultiParameterDataRetrieval {
         }
     }
 
+    /**
+     * Sorted merging of parameter values from segments with the same start
+     *  taking care that parameters from the same group end up in the same list  
+     *
+     */
     static class SegmentMerger implements Consumer<TimedValue> {
         final SegmentKey key;
         TreeMap<Long, ParameterIdValueList> values;
@@ -186,9 +192,9 @@ public class MultiParameterDataRetrieval {
                 @Override
                 public int compare(Long o1, Long o2) {
                     if (mpvr.ascending) {
-                        return o1.compareTo(o2);
+                        return Long.compareUnsigned(o1,  o2);
                     } else {
-                        return o2.compareTo(o1);
+                        return Long.compareUnsigned(o2, o1);
                     }
                 }
             });
@@ -228,8 +234,7 @@ public class MultiParameterDataRetrieval {
         }
 
         private long k(int parameterGroupId, long instant) {
-            return ((long) parameterGroupId) << SortedTimeSegment.NUMBITS_MASK
-                    | (instant & SortedTimeSegment.TIMESTAMP_MASK);
+          return (instant<<32 ) | ((long) parameterGroupId) ;
         }
 
     }

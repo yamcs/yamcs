@@ -1,15 +1,11 @@
 package org.yamcs.api.ws;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.ws.WebSocketClient.RequestResponsePair;
-import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
@@ -34,7 +30,6 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.util.CharsetUtil;
 
-
 public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
 
     private static final Logger log = LoggerFactory.getLogger(WebSocketClientHandler.class);
@@ -46,7 +41,8 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 
     private ChannelPromise handshakeFuture;
 
-    public WebSocketClientHandler(WebSocketClientHandshaker handshaker, WebSocketClient client, WebSocketClientCallback callback) {
+    public WebSocketClientHandler(WebSocketClientHandshaker handshaker, WebSocketClient client,
+            WebSocketClientCallback callback) {
         this.handshaker = handshaker;
         this.client = client;
         this.callback = callback;
@@ -72,7 +68,8 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         callback.disconnected();
 
         if (client.isReconnectionEnabled()) {
-            ctx.channel().eventLoop().schedule(() -> client.connect(), client.reconnectionInterval, TimeUnit.MILLISECONDS);
+            ctx.channel().eventLoop().schedule(() -> client.connect(), client.reconnectionInterval,
+                    TimeUnit.MILLISECONDS);
         }
     }
 
@@ -117,7 +114,8 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 
     private void processFrame(BinaryWebSocketFrame frame) {
         try {
-            WebSocketServerMessage message = WebSocketServerMessage.newBuilder().mergeFrom(new ByteBufInputStream(frame.content())).build();
+            WebSocketServerMessage message = WebSocketServerMessage.newBuilder()
+                    .mergeFrom(new ByteBufInputStream(frame.content())).build();
             switch (message.getType()) {
             case REPLY:
                 processReplyData(message.getReply());
@@ -138,14 +136,14 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 
     private void processReplyData(WebSocketReplyData reply) throws InvalidProtocolBufferException {
         int reqId = reply.getSequenceNumber();
-        RequestResponsePair pair =  client.removeUpstreamRequest(reqId);
+        RequestResponsePair pair = client.removeUpstreamRequest(reqId);
         if (pair == null) {
             log.warn("Received an exception for a request I did not send (or was already finished) seqNum: {}", reqId);
             return;
-        } 
-        if(reply.hasData()) {
+        }
+        if (reply.hasData()) {
             String dataType = reply.getType();
-            if("InvalidIdentification".equals(dataType)) {
+            if ("InvalidIdentification".equals(dataType)) {
                 byte[] barray = reply.getData().toByteArray();
                 NamedObjectList invalidList = NamedObjectList.newBuilder().mergeFrom(barray).build();
                 for (NamedObjectId invalidId : invalidList.getListList()) {
@@ -154,15 +152,14 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
                 }
             }
         }
-        if(pair.responseHandler!=null) {
+        if (pair.responseHandler != null) {
             pair.responseHandler.onCompletion();
         }
     }
-    
-    
+
     private void processExceptionData(WebSocketExceptionData exceptionData) throws IOException {
         int reqId = exceptionData.getSequenceNumber();
-        RequestResponsePair pair =  client.getRequestResponsePair(reqId);
+        RequestResponsePair pair = client.getRequestResponsePair(reqId);
         if (pair == null) {
             log.warn("Received an exception for a request I did not send (or was already finished) seqNum: {}", reqId);
             return;

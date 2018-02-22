@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
-import org.yamcs.protobuf.Mdb.AlarmRange;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
@@ -24,7 +23,6 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
     public ParameterStatusSegment(boolean buildForSerialisation) {
         super(serializer, buildForSerialisation);
     }
-
     static public final ParameterStatus getStatus(ParameterValue pv, ParameterStatus prevStatus) {
         AcquisitionStatus acq = pv.getAcquisitionStatus();
         MonitoringResult mr = pv.getMonitoringResult();
@@ -146,6 +144,7 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
                 ParameterStatus status = ParameterStatus.newBuilder().setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
                         .setExpireMillis(expireMills).build();
                 ce = new CacheEntry(status);
+                m.put(expireMills, ce);
             }
             ce.lastAccessedTime = now;
             return ce.status;

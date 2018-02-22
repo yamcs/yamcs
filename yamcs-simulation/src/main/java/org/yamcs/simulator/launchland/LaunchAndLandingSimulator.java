@@ -152,7 +152,7 @@ public class LaunchAndLandingSimulator extends Simulator {
 
                     if (engageHoldOneCycle) { // hold the command for 1 cycle after the command Ack received
                         waitToEngage = waitToEngage + 1;
-                        log.debug("Value : " + waitToEngage);
+                        log.debug("Value : {}", waitToEngage);
                     }
 
                     if (unengageHoldOneCycle) {
@@ -196,7 +196,7 @@ public class LaunchAndLandingSimulator extends Simulator {
                 deleteRecording(commandPacket);
                 break;
             default:
-                log.error("Invalid command packet id: " + commandPacket.getPacketId());
+                log.error("Invalid command packet id: {}", commandPacket.getPacketId());
             }
 
         }
@@ -278,7 +278,7 @@ public class LaunchAndLandingSimulator extends Simulator {
             }
         }
         String fileName1 = new String(fileNameArray, indexStartOfString, indexEndOfString - indexStartOfString);
-        log.info("Command DUMP_RECORDING for file " + fileName1);
+        log.info("Command DUMP_RECORDING for file {}", fileName1);
         dumpLosDataFile(fileName1);
         getTMLink().ackPacketSend(ackPacket(commandPacket, 2, 0));
     }
@@ -287,7 +287,7 @@ public class LaunchAndLandingSimulator extends Simulator {
         getTMLink().ackPacketSend(ackPacket(commandPacket, 1, 0));
         byte[] fileNameArray = commandPacket.getUserDataBuffer().array();
         String fileName = new String(fileNameArray, 16, fileNameArray.length - 22);
-        log.info("Command DELETE_RECORDING for file " + fileName);
+        log.info("Command DELETE_RECORDING for file {}", fileName);
         deleteLosDataFile(fileName);
         getTMLink().ackPacketSend(ackPacket(commandPacket, 2, 0));
     }

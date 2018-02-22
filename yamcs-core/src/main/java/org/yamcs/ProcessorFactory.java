@@ -57,7 +57,7 @@ public class ProcessorFactory {
             if(conf.containsKey(type, "services")) {
                 serviceList =  YamcsServer.createServices(yamcsInstance, conf.getList(type, "services"));
             } else {
-                log.warn("Deprecated configuration in "+conf.getFilename()+". Please use services");
+                log.warn("Deprecated configuration in {}. Please use services", conf.getFilename());
                 if(conf.containsKey(type,"telemetryProvider")) {
                     Map<String, Object> m = (Map<String, Object>) conf.getMap(type, "telemetryProvider");
                     String tmClass = YConfiguration.getString(m, "class");

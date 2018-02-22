@@ -91,8 +91,11 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     }
     public static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
 
-    public HttpRequestHandler(Router apiRouter) {
+    WebConfig webConfig;
+
+    public HttpRequestHandler(Router apiRouter, WebConfig webConfig) {
         this.apiRouter = apiRouter;
+        this.webConfig = webConfig;
     }
 
     @Override
@@ -231,7 +234,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         // Add websocket-specific handlers to channel pipeline
         String webSocketPath = req.uri();
-        ctx.pipeline().addLast(new WebSocketServerProtocolHandler(webSocketPath));
+        ctx.pipeline().addLast(
+                new WebSocketServerProtocolHandler(webSocketPath, null, false, webConfig.getWebSocketMaxFrameLength()));
 
         HttpRequestInfo originalRequestInfo = new HttpRequestInfo(req);
         originalRequestInfo.setYamcsInstance(yamcsInstance);

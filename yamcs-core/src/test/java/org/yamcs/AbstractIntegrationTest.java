@@ -174,7 +174,7 @@ public abstract class AbstractIntegrationTest {
         return builder;
     }
 
-    class MyWsListener implements WebSocketClientCallback {
+    static class MyWsListener implements WebSocketClientCallback {
         Semaphore onConnect = new Semaphore(0);
         Semaphore onDisconnect = new Semaphore(0);
 

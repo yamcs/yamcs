@@ -52,7 +52,7 @@ class RCSHandler {
         } catch (IOException e) {
             log.warn(e.getMessage(), e);
         }
-        log.info("have " + entries.size() + " RHS data records");
+        log.info("have {} RHS data records", entries.size());
     }
 
     public void fillPacket(CCSDSPacket packet) {

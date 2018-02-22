@@ -85,7 +85,7 @@ public class TelemetryLink {
         if(simulator.getSimWindow() != null)
             simulator.getSimWindow().setServerStatus(conn.getId(), ServerConnection.ConnectionStatus.CONNECTING);
         try {
-            log.info("Waiting for connection from server " + conn.getId());
+            log.info("Waiting for connection from server {}", conn.getId());
             conn.setTmServerSocket(new ServerSocket(conn.getTmPort()));
             conn.setTmSocket(conn.getTmServerSocket().accept());
 

@@ -231,7 +231,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
                 List<ParameterValueWithId> expired  = updateAndCheckExpiration(subscription, items, now);
                 if(!expired.isEmpty()) {
-                    log.debug("Updating {} parameters due to expiration");
+                    log.debug("Updating {} parameters due to expiration", expired.size());
                     listener.update(subscriptionId, expired);
                 }
             }
@@ -338,7 +338,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
                 if((subscription.checkExpiration) && (now-subscription.lastExpirationCheck>CHECK_EXPIRATION_INTERVAL)) {
                     List<ParameterValueWithId> expired = checkExpiration(subscription, now);
                     if(!expired.isEmpty()) {
-                        log.debug("Updating {} parameters due to expiration");
+                        log.debug("Updating {} parameters due to expiration", expired.size());
                         listener.update(me.getKey(), expired);
                     }
                 }
@@ -355,7 +355,6 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             Parameter p = pv.getParameter();
             ParameterValue oldPv = subscription.pvexp.put(p, pv);
             if((oldPv!=null) && oldPv.getAcquisitionStatus()==AcquisitionStatus.ACQUIRED && oldPv.isExpired(now)) {
-
                 ParameterValue tmp = new ParameterValue(oldPv); //make a copy because this is shared by other subscribers
                 tmp.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
                 addValueForAllIds(expired, subscription, tmp);
@@ -369,6 +368,8 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         List<ParameterValueWithId> expired = new ArrayList<>();
         for(ParameterValue pv: subscription.pvexp.values()) {
             if(pv.getAcquisitionStatus()==AcquisitionStatus.ACQUIRED && pv.isExpired(now)) {
+               
+                
                 ParameterValue tmp = new ParameterValue(pv); //make a copy because this is shared by other subscribers
                 tmp.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
                 subscription.pvexp.put(pv.getParameter(), tmp);
