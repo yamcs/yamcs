@@ -59,9 +59,13 @@ export class LayoutComponent implements OnInit, AfterViewInit, LayoutListener, L
     const targetEl = this.displayContainerRef.nativeElement;
     this.layout = new Layout(targetEl, this.resourceResolver);
     this.layout.layoutListeners.add(this);
-    this.restoreState(this.layoutState).then(() => {
+    if (this.layoutState) {
+      this.restoreState(this.layoutState).then(() => {
+        this.layout.layoutStateListeners.add(this);
+      });
+    } else {
       this.layout.layoutStateListeners.add(this);
-    });
+    }
   }
 
   openDisplay(id: string, coordinates?: Coordinates): Promise<void> {
