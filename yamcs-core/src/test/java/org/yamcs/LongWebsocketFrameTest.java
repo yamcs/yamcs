@@ -40,7 +40,6 @@ public class LongWebsocketFrameTest {
         YamcsServer.shutDown();
     }
 
-    
     @Test
     public void testWithSmallFrame() throws Exception {
         assertNotNull(testit(65536));
@@ -48,11 +47,8 @@ public class LongWebsocketFrameTest {
     
     @Test
     public void testWithBigFrame() throws Exception {
-        // Disabled because this test gets a TimeoutException, just like the one with small frame size
-        // assertNull(testit(1024*1024));
+        assertNull(testit(1024*1024));
     }
-    
-    
 
     private TimeoutException testit(int frameSize) throws Exception {
         MyWsListener wsListener = new MyWsListener();
@@ -84,7 +80,7 @@ public class LongWebsocketFrameTest {
     private ParameterSubscriptionRequest getRequest() {
         
         ParameterSubscriptionRequest.Builder b = ParameterSubscriptionRequest.newBuilder();
-        for(int i = 0; i<10000; i++) {
+        for(int i = 0; i<5000; i++) {
             b.addId(NamedObjectId.newBuilder().setName("/very/long/parameter/name"+i).build());
         }
         b.setAbortOnInvalid(false);
