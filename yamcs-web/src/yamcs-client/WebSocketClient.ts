@@ -44,9 +44,16 @@ export class WebSocketClient {
   private subscribeOnOpen = false;
 
   constructor(instance: string) {
+    const currentLocation = window.location;
+    let wsUrl = 'ws://';
+    if (currentLocation.protocol === 'https') {
+      wsUrl = 'wss://';
+    }
+    wsUrl += `${currentLocation.host}/_websocket/${instance}`;
+
     this.subscriptionModel = new SubscriptionModel();
     this.webSocket = webSocket({
-      url: `ws://localhost:8090/_websocket/${instance}`,
+      url: wsUrl,
       closeObserver: {
         next: () => this.subscribeOnOpen = true
       },

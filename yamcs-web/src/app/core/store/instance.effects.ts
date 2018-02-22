@@ -18,7 +18,7 @@ export class InstanceEffects {
   @Effect()
   loadInstances$ = this.actions$.ofType(instanceActions.LOAD).pipe(
     switchMap(() => {
-      return this.http.get<any>(`http://localhost:8090/api/instances`).pipe(
+      return this.http.get<any>('/api/instances').pipe(
         map(msg => msg.instance),
         map(instances => new LoadInstancesSuccessAction(instances)),
         catchError(err => of(new LoadInstancesFailAction(err))),
