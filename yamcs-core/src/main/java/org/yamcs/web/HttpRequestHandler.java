@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -26,7 +24,6 @@ import org.yamcs.web.websocket.WebSocketFrameHandler;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.protobuf.MessageLite;
 
 import io.netty.buffer.ByteBuf;
@@ -101,8 +98,11 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     }
     public static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
 
-    public HttpRequestHandler(Router apiRouter) {
+    WebConfig webConfig;
+    
+    public HttpRequestHandler(Router apiRouter, WebConfig webConfig) {
         this.apiRouter = apiRouter;
+        this.webConfig = webConfig;
     }
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg)  throws Exception {
@@ -239,7 +239,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         // Add websocket-specific handlers to channel pipeline
         String webSocketPath = req.uri();
-        ctx.pipeline().addLast(new WebSocketServerProtocolHandler(webSocketPath));
+        ctx.pipeline().addLast(new WebSocketServerProtocolHandler(webSocketPath, null, false, webConfig.getWebSocketMaxFrameLength()));
 
         HttpRequestInfo originalRequestInfo = new HttpRequestInfo(req);
         originalRequestInfo.setYamcsInstance(yamcsInstance);
