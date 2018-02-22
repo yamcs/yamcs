@@ -11,7 +11,7 @@ import { State } from '../../app.reducers';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';
 
 @Component({
-  templateUrl: './SpacesystemContainersTab.html',
+  templateUrl: './SpaceSystemContainersTab.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SpaceSystemContainersTab implements OnInit {
