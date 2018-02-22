@@ -219,7 +219,7 @@ export class WebSocketClient {
       this.emit({ cqueues: 'subscribe' });
     }
     if (this.subscriptionModel.parameters) {
-      this.emit({ parameters: 'subscribe', data: this.subscriptionModel.parameters });
+      this.emit({ parameter: 'subscribe', data: this.subscriptionModel.parameters });
     }
     if (this.subscriptionModel.time) {
       this.emit({ time: 'subscribe' });
