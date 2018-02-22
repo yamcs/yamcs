@@ -4,8 +4,8 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ProcessorException;
 import org.yamcs.Processor;
+import org.yamcs.ProcessorException;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;
@@ -16,7 +16,6 @@ import org.yamcs.protobuf.Commanding.CommandQueueEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueEvent;
 import org.yamcs.protobuf.Commanding.CommandQueueEvent.Type;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
-import org.yamcs.protobuf.SchemaCommanding;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 
@@ -32,19 +31,21 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
     public static final String OP_unsubscribe = "unsubscribe";
 
     private volatile boolean subscribed = false;
+
     public CommandQueueResource(WebSocketProcessorClient client) {
         super(client);
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+            throws WebSocketException {
         switch (ctx.getOperation()) {
         case OP_subscribe:
             return subscribe(ctx.getRequestId());
         case OP_unsubscribe:
             return unsubscribe(ctx.getRequestId());
         default:
-            throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '"+ctx.getOperation()+"'");
+            throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
         }
     }
 
@@ -93,35 +94,36 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
 
     @Override
     public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
-        if(subscribed) {
+        if (subscribed) {
             doUnsubscribe();
             super.switchProcessor(oldProcessor, newProcessor);
-            doSubscribe();    
+            doSubscribe();
         } else {
             super.switchProcessor(oldProcessor, newProcessor);
         }
     }
 
     /**
-     * right after subcription send the full queeue content (commands included).
-     * Afterwards the clinets get notified by command added/command removed when the queue gets modified.
+     * right after subcription send the full queeue content (commands included). Afterwards the clinets get notified by
+     * command added/command removed when the queue gets modified.
      *
      * @param q
      */
     private void sendInitialUpdateQueue(CommandQueue q) {
         CommandQueueInfo info = ManagementGpbHelper.toCommandQueueInfo(q, true);
         try {
-            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info, SchemaCommanding.CommandQueueInfo.WRITE);
+            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info);
         } catch (Exception e) {
             log.warn("got error when sending command queue info, quitting", e);
             quit();
         }
     }
+
     @Override
     public void updateQueue(CommandQueue q) {
         CommandQueueInfo info = ManagementGpbHelper.toCommandQueueInfo(q, false);
         try {
-            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info, SchemaCommanding.CommandQueueInfo.WRITE);
+            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info);
         } catch (Exception e) {
             log.warn("got error when sending command queue info, quitting", e);
             quit();
@@ -135,7 +137,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
             CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
             evtb.setType(Type.COMMAND_ADDED);
             evtb.setData(data);
-            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build(), SchemaCommanding.CommandQueueEvent.WRITE);
+            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
         } catch (Exception e) {
             log.warn("got error when sending command queue event, quitting", e);
             quit();
@@ -149,7 +151,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
             CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
             evtb.setType(Type.COMMAND_REJECTED);
             evtb.setData(data);
-            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build(), SchemaCommanding.CommandQueueEvent.WRITE);
+            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
         } catch (Exception e) {
             log.warn("got error when sending command queue event, quitting", e);
             quit();
@@ -163,7 +165,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
             CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
             evtb.setType(Type.COMMAND_SENT);
             evtb.setData(data);
-            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build(), SchemaCommanding.CommandQueueEvent.WRITE);
+            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
         } catch (Exception e) {
             log.warn("got error when sending command queue event, quitting", e);
             quit();

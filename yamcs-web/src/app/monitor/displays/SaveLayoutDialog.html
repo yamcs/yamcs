@@ -1,0 +1,13 @@
+<h2 mat-dialog-title>Save Layout</h2>
+
+<mat-dialog-content>
+  <mat-form-field style="width: 100%">
+    <input matInput [formControl]="name" placeholder="Layout name">
+  </mat-form-field>
+  <p>&nbsp;</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-button (click)="save()" color="primary">Save</button>
+</mat-dialog-actions>

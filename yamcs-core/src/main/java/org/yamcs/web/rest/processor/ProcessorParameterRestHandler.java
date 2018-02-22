@@ -25,9 +25,6 @@ import org.yamcs.protobuf.Rest.BulkGetParameterValueResponse;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Rest.EditAlarmRequest;
-import org.yamcs.protobuf.SchemaPvalue;
-import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
@@ -44,28 +41,29 @@ import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 public class ProcessorParameterRestHandler extends RestHandler {
-    
+
     private final static Logger log = LoggerFactory.getLogger(ProcessorParameterRestHandler.class);
-    
-    @Route(path = "/api/processors/:instance/:processor/parameters/:name*/alarms/:seqnum", method = { "PATCH", "PUT", "POST" })
+
+    @Route(path = "/api/processors/:instance/:processor/parameters/:name*/alarms/:seqnum", method = { "PATCH", "PUT",
+            "POST" })
     public void patchParameterAlarm(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         AlarmServer alarmServer = verifyAlarmServer(processor);
-        
+
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
         int seqNum = req.getIntegerRouteParam("seqnum");
-        
+
         String state = null;
         String comment = null;
-        EditAlarmRequest request = req.bodyAsMessage(SchemaRest.EditAlarmRequest.MERGE).build();
+        EditAlarmRequest request = req.bodyAsMessage(EditAlarmRequest.newBuilder()).build();
         if (request.hasState()) {
             state = request.getState();
         }
         if (request.hasComment()) {
             comment = request.getComment();
         }
-        
+
         // URI can override body
         if (req.hasQueryParameter("state")) {
             state = req.getQueryParameter("state");
@@ -73,10 +71,10 @@ public class ProcessorParameterRestHandler extends RestHandler {
         if (req.hasQueryParameter("comment")) {
             comment = req.getQueryParameter("comment");
         }
-        if(state==null) {
+        if (state == null) {
             throw new BadRequestException("No state specified");
         }
-        
+
         switch (state.toLowerCase()) {
         case "acknowledged":
             try {
@@ -91,16 +89,16 @@ public class ProcessorParameterRestHandler extends RestHandler {
             throw new BadRequestException("Unsupported state '" + state + "'");
         }
     }
-    
+
     @Route(path = "/api/processors/:instance/:processor/parameters/:name*", method = { "PUT", "POST" })
     public void setSingleParameterValue(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         SoftwareParameterManager mgr = verifySoftwareParameterManager(processor);
-        
+
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
-        
-        Value v = ValueUtility.fromGpb(req.bodyAsMessage(SchemaYamcs.Value.MERGE).build());
+
+        Value v = ValueUtility.fromGpb(req.bodyAsMessage(org.yamcs.protobuf.Yamcs.Value.newBuilder()).build());
         try {
             mgr.updateParameter(p, v);
         } catch (IllegalArgumentException e) {
@@ -108,28 +106,30 @@ public class ProcessorParameterRestHandler extends RestHandler {
         }
         completeOK(req);
     }
-    
-    @Route(path = "/api/processors/:instance/:processor/parameters/mset", method = { "POST", "PUT" }, priority=true)
+
+    @Route(path = "/api/processors/:instance/:processor/parameters/mset", method = { "POST", "PUT" }, priority = true)
     public void setParameterValues(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         SoftwareParameterManager mgr = verifySoftwareParameterManager(processor);
-        
-        BulkSetParameterValueRequest request = req.bodyAsMessage(SchemaRest.BulkSetParameterValueRequest.MERGE).build();
+
+        BulkSetParameterValueRequest request = req.bodyAsMessage(BulkSetParameterValueRequest.newBuilder()).build();
 
         // check permission
         ParameterRequestManager prm = processor.getParameterRequestManager();
-        for(SetParameterValueRequest r : request.getRequestList()) {
+        for (SetParameterValueRequest r : request.getRequestList()) {
             try {
                 String parameterName = prm.getParameter(r.getId()).getQualifiedName();
-                if(!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.Type.TM_PARAMETER_SET, parameterName)) {
-                    throw new ForbiddenException("User " + req.getAuthToken() + " has no 'set' permission for parameter "
-                            + parameterName);
+                if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.Type.TM_PARAMETER_SET,
+                        parameterName)) {
+                    throw new ForbiddenException(
+                            "User " + req.getAuthToken() + " has no 'set' permission for parameter "
+                                    + parameterName);
                 }
             } catch (InvalidIdentification e) {
                 throw new BadRequestException("InvalidIdentification: " + e.getMessage());
             }
         }
-        
+
         // Yamcs uses ParameterValue, so map to that structure
         List<ParameterValue> pvals = new ArrayList<>();
         for (SetParameterValueRequest r : request.getRequestList()) {
@@ -146,15 +146,16 @@ public class ProcessorParameterRestHandler extends RestHandler {
 
         completeOK(req);
     }
-    
+
     @Route(path = "/api/processors/:instance/:processor/parameters/:name*", method = "GET")
     public void getParameterValue(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
-        
+
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
-        
-        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
+
+        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.Type.TM_PARAMETER,
+                p.getQualifiedName())) {
             log.warn("Parameter Info for {} not authorized for token {}", p.getQualifiedName(), req.getAuthToken());
             throw new BadRequestException("Invalid parameter name specified");
         }
@@ -166,7 +167,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         if (req.hasQueryParameter("fromCache")) {
             fromCache = req.getQueryParameterAsBoolean("fromCache");
         }
-        
+
         NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
         List<NamedObjectId> ids = Arrays.asList(id);
         List<ParameterValue> pvals = doGetParameterValues(processor, req.getAuthToken(), ids, fromCache, timeout);
@@ -177,22 +178,22 @@ public class ProcessorParameterRestHandler extends RestHandler {
         } else {
             pval = pvals.get(0);
         }
-            
-        completeOK(req, pval, SchemaPvalue.ParameterValue.WRITE);
+
+        completeOK(req, pval);
     }
-    
-    @Route(path = "/api/processors/:instance/:processor/parameters/mget", method = {"GET", "POST"}, priority=true)
+
+    @Route(path = "/api/processors/:instance/:processor/parameters/mget", method = { "GET", "POST" }, priority = true)
     public void getParameterValues(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
-        
-        BulkGetParameterValueRequest request = req.bodyAsMessage(SchemaRest.BulkGetParameterValueRequest.MERGE).build();
+
+        BulkGetParameterValueRequest request = req.bodyAsMessage(BulkGetParameterValueRequest.newBuilder()).build();
         if (request.getIdCount() == 0) {
             throw new BadRequestException("Empty parameter list");
         }
 
         long timeout = 10000;
         boolean fromCache = true;
-        
+
         // Consider body params first
         if (request.hasTimeout()) {
             timeout = request.getTimeout();
@@ -200,7 +201,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         if (request.hasFromCache()) {
             fromCache = request.getFromCache();
         }
-            
+
         // URI params override body
         if (req.hasQueryParameter("timeout")) {
             timeout = req.getQueryParameterAsLong("timeout");
@@ -208,16 +209,17 @@ public class ProcessorParameterRestHandler extends RestHandler {
         if (req.hasQueryParameter("fromCache")) {
             fromCache = req.getQueryParameterAsBoolean("fromCache");
         }
-        
+
         List<NamedObjectId> ids = request.getIdList();
         List<ParameterValue> pvals = doGetParameterValues(processor, req.getAuthToken(), ids, fromCache, timeout);
 
         BulkGetParameterValueResponse.Builder responseb = BulkGetParameterValueResponse.newBuilder();
         responseb.addAllValue(pvals);
-        completeOK(req, responseb.build(), SchemaRest.BulkGetParameterValueResponse.WRITE);
+        completeOK(req, responseb.build());
     }
-    
-    private List<ParameterValue> doGetParameterValues(Processor processor, AuthenticationToken authToken, List<NamedObjectId> ids, boolean fromCache, long timeout) throws HttpException {
+
+    private List<ParameterValue> doGetParameterValues(Processor processor, AuthenticationToken authToken,
+            List<NamedObjectId> ids, boolean fromCache, long timeout) throws HttpException {
         if (timeout > 60000) {
             throw new BadRequestException("Invalid timeout specified. Maximum is 60.000 milliseconds");
         }
@@ -227,13 +229,13 @@ public class ProcessorParameterRestHandler extends RestHandler {
         ParameterWithIdRequestHelper pwirh = new ParameterWithIdRequestHelper(prm, myConsumer);
         List<ParameterValue> pvals = new ArrayList<>();
         try {
-            if(fromCache) {
-                if(!prm.hasParameterCache()) {
+            if (fromCache) {
+                if (!prm.hasParameterCache()) {
                     throw new BadRequestException("ParameterCache not activated for this processor");
                 }
                 List<ParameterValueWithId> l;
                 l = pwirh.getValuesFromCache(ids, authToken);
-                for(ParameterValueWithId pvwi: l) {
+                for (ParameterValueWithId pvwi : l) {
                     pvals.add(pvwi.toGbpParameterValue());
                 }
             } else {
@@ -241,36 +243,37 @@ public class ProcessorParameterRestHandler extends RestHandler {
                 int reqId = pwirh.addRequest(ids, authToken);
                 long t0 = System.currentTimeMillis();
                 long t1;
-                while(true) {
+                while (true) {
                     t1 = System.currentTimeMillis();
-                    long remaining = timeout - (t1-t0);
+                    long remaining = timeout - (t1 - t0);
                     List<ParameterValueWithId> l = myConsumer.queue.poll(remaining, TimeUnit.MILLISECONDS);
-                    if(l==null) {
+                    if (l == null) {
                         break;
                     }
 
-                    for(ParameterValueWithId pvwi: l) {
+                    for (ParameterValueWithId pvwi : l) {
                         pvals.add(pvwi.toGbpParameterValue());
                     }
-                    //TODO: this may not be correct: if we get a parameter multiple times, we stop here before receiving all parameters
-                    if(pvals.size() == ids.size()) {
+                    // TODO: this may not be correct: if we get a parameter multiple times, we stop here before
+                    // receiving all parameters
+                    if (pvals.size() == ids.size()) {
                         break;
                     }
-                } 
+                }
                 pwirh.removeRequest(reqId);
             }
-        }  catch (InvalidIdentification e) {
-            //TODO - send the invalid parameters in a parsable form
-            throw new BadRequestException("Invalid parameters: "+e.getInvalidParameters().toString());
+        } catch (InvalidIdentification e) {
+            // TODO - send the invalid parameters in a parsable form
+            throw new BadRequestException("Invalid parameters: " + e.getInvalidParameters().toString());
         } catch (InterruptedException e) {
             throw new InternalServerErrorException("Interrupted while waiting for parameters");
         } catch (NoPermissionException e) {
             throw new ForbiddenException(e.getMessage(), e);
         }
-        
+
         return pvals;
     }
-    
+
     private static class MyConsumer implements ParameterWithIdConsumer {
         LinkedBlockingQueue<List<ParameterValueWithId>> queue = new LinkedBlockingQueue<>();
 
@@ -279,7 +282,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
             queue.add(params);
         }
     }
-    
+
     private SoftwareParameterManager verifySoftwareParameterManager(Processor processor) throws BadRequestException {
         SoftwareParameterManager mgr = processor.getParameterRequestManager().getSoftwareParameterManager();
         if (mgr == null) {

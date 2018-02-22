@@ -1,0 +1,21 @@
+<ng-container *ngFor="let column of table.keyColumn">
+  <h6>
+    <mat-icon class="icon12" style="color: gold;" matTooltip="Key Column">vpn_key</mat-icon>
+    {{ column.name }}
+  </h6>
+  <div class="block">
+      {{ (getColumnValue(record, column.name) | value) || '-' }}
+  </div>
+</ng-container>
+
+<ng-container *ngFor="let column of table.valueColumn">
+  <h6>{{ column.name }}</h6>
+  <div class="block">
+    <ng-container *ngIf="column.type !== 'BINARY' && !column.type.startsWith('PROTOBUF')">
+      {{ (getColumnValue(record, column.name) | value) || '-' }}
+    </ng-container>
+    <ng-container *ngIf="column.type === 'BINARY' || column.type.startsWith('PROTOBUF')">
+      <app-hex [base64String]="getBinaryColumnValue(record, column.name)"></app-hex>
+    </ng-container>
+  </div>
+</ng-container>

@@ -1,0 +1,15 @@
+<ng-container *ngIf="instance$ | async as instance">
+  <app-mdb-page *ngIf="algorithm$ | async as algorithm">
+    <app-mdb-toolbar>
+      <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
+        <mat-icon>arrow_back</mat-icon>
+      </a> {{ algorithm.qualifiedName }}
+    </app-mdb-toolbar>
+
+    <div class="panel-content">
+      <app-algorithm-detail [instance]="instance"
+                            [algorithm]="algorithm">
+      </app-algorithm-detail>
+    </div>
+  </app-mdb-page>
+</ng-container>

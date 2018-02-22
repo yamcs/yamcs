@@ -15,8 +15,6 @@ import org.yamcs.protobuf.Rest.EditCommandQueueEntryRequest;
 import org.yamcs.protobuf.Rest.EditCommandQueueRequest;
 import org.yamcs.protobuf.Rest.ListCommandQueueEntries;
 import org.yamcs.protobuf.Rest.ListCommandQueuesResponse;
-import org.yamcs.protobuf.SchemaCommanding;
-import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;
@@ -26,35 +24,35 @@ import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.web.rest.Route;
 
 public class ProcessorCommandQueueRestHandler extends RestHandler {
-    
+
     @Route(path = "/api/processors/:instance/:processor/cqueues", method = "GET")
     public void listQueues(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
-        
+
         ListCommandQueuesResponse.Builder response = ListCommandQueuesResponse.newBuilder();
         ManagementService managementService = ManagementService.getInstance();
         CommandQueueManager mgr = managementService.getCommandQueueManager(processor);
         mgr.getQueues().forEach(q -> response.addQueue(toCommandQueueInfo(req, q, true)));
-        completeOK(req, response.build(), SchemaRest.ListCommandQueuesResponse.WRITE);
+        completeOK(req, response.build());
     }
-    
+
     @Route(path = "/api/processors/:instance/:processor/cqueues/:name", method = "GET")
     public void getQueue(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         CommandQueue queue = verifyCommandQueue(req, mgr, req.getRouteParam("name"));
-        
+
         CommandQueueInfo info = toCommandQueueInfo(req, queue, true);
-        completeOK(req, info, SchemaCommanding.CommandQueueInfo.WRITE);
+        completeOK(req, info);
     }
-    
+
     @Route(path = "/api/processors/:instance/:processor/cqueues/:name", method = { "PATCH", "PUT", "POST" })
     public void editQueue(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         CommandQueue queue = verifyCommandQueue(req, mgr, req.getRouteParam("name"));
-        
-        EditCommandQueueRequest body = req.bodyAsMessage(SchemaRest.EditCommandQueueRequest.MERGE).build();
+
+        EditCommandQueueRequest body = req.bodyAsMessage(EditCommandQueueRequest.newBuilder()).build();
         String state = null;
         if (body.hasState()) {
             state = body.getState();
@@ -62,7 +60,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         if (req.hasQueryParameter("state")) {
             state = req.getQueryParameter("state");
         }
-        
+
         CommandQueue updatedQueue = queue;
         if (state != null) {
             switch (state.toLowerCase()) {
@@ -80,30 +78,31 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
             }
         }
         CommandQueueInfo qinfo = toCommandQueueInfo(req, updatedQueue, true);
-        completeOK(req, qinfo, SchemaCommanding.CommandQueueInfo.WRITE);
+        completeOK(req, qinfo);
     }
-    
+
     @Route(path = "/api/processors/:instance/:processor/cqueues/:name/entries", method = "GET")
     public void listQueueEntries(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         CommandQueue queue = verifyCommandQueue(req, mgr, req.getRouteParam("name"));
-        
+
         ListCommandQueueEntries.Builder responseb = ListCommandQueueEntries.newBuilder();
         for (PreparedCommand pc : queue.getCommands()) {
             CommandQueueEntry qEntry = ManagementGpbHelper.toCommandQueueEntry(queue, pc);
             responseb.addEntry(qEntry);
         }
-        completeOK(req, responseb.build(), SchemaRest.ListCommandQueueEntries.WRITE);
+        completeOK(req, responseb.build());
     }
-    
-    @Route(path = "/api/processors/:instance/:processor/cqueues/:cqueue/entries/:uuid", method = { "PATCH", "PUT", "POST" })
+
+    @Route(path = "/api/processors/:instance/:processor/cqueues/:cqueue/entries/:uuid", method = { "PATCH", "PUT",
+            "POST" })
     public void editQueueEntry(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         UUID entryId = UUID.fromString(req.getRouteParam("uuid"));
-        
-        EditCommandQueueEntryRequest body = req.bodyAsMessage(SchemaRest.EditCommandQueueEntryRequest.MERGE).build();
+
+        EditCommandQueueEntryRequest body = req.bodyAsMessage(EditCommandQueueEntryRequest.newBuilder()).build();
         String state = null;
         if (body.hasState()) {
             state = body.getState();
@@ -111,7 +110,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         if (req.hasQueryParameter("state")) {
             state = req.getQueryParameter("state");
         }
-        
+
         if (state != null) {
             // TODO queue manager currently iterates over all queues, which doesn't really match
             // what we want. It would be better to assure only the queue from the URI is considered.
@@ -127,7 +126,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
                 throw new BadRequestException("Unsupported state '" + state + "'");
             }
         }
-        
+
         completeOK(req);
     }
 
@@ -154,7 +153,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         }
         return b.build();
     }
-    
+
     private CommandQueueManager verifyCommandQueueManager(Processor processor) throws BadRequestException {
         ManagementService managementService = ManagementService.getInstance();
         CommandQueueManager mgr = managementService.getCommandQueueManager(processor);
@@ -163,13 +162,15 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
         }
         return mgr;
     }
-    
-    private CommandQueue verifyCommandQueue(RestRequest req, CommandQueueManager mgr, String queueName) throws NotFoundException {
+
+    private CommandQueue verifyCommandQueue(RestRequest req, CommandQueueManager mgr, String queueName)
+            throws NotFoundException {
         CommandQueue queue = mgr.getQueue(queueName);
         if (queue == null) {
             String processorName = mgr.getChannelName();
             String instance = mgr.getInstance();
-            throw new NotFoundException(req, "No queue named '" + queueName + "' (processor: '" + instance + "/" + processorName + "')");
+            throw new NotFoundException(req,
+                    "No queue named '" + queueName + "' (processor: '" + instance + "/" + processorName + "')");
         } else {
             return queue;
         }

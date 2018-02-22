@@ -5,11 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -58,15 +54,9 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.util.concurrent.AbstractService;
-import com.google.protobuf.MessageLite;
-import com.google.protobuf.MessageLite.Builder;
-
-import io.protostuff.JsonIOUtil;
-import io.protostuff.JsonInput;
-import io.protostuff.Schema;
+import com.google.protobuf.Message;
+import com.google.protobuf.util.JsonFormat;
 
 public abstract class AbstractIntegrationTest {
     final String yamcsInstance = "IntegrationTest";
@@ -78,8 +68,8 @@ public abstract class AbstractIntegrationTest {
     RestClient restClient;
     protected UsernamePasswordToken adminToken = new UsernamePasswordToken("admin", "rootpassword");
     RefMdbPacketGenerator packetGenerator;
-    static {  
-     //   LoggingUtils.enableLogging();
+    static {
+        // LoggingUtils.enableLogging();
     }
 
     @BeforeClass
@@ -90,7 +80,7 @@ public abstract class AbstractIntegrationTest {
     @Before
     public void before() throws InterruptedException {
 
-        if(Privilege.getInstance().isEnabled())  {
+        if (Privilege.getInstance().isEnabled()) {
             ycp.setAuthenticationToken(adminToken);
         }
 
@@ -98,7 +88,7 @@ public abstract class AbstractIntegrationTest {
         parameterProvider = ParameterProvider.instance;
         assertNotNull(packetProvider);
         assertNotNull(parameterProvider);
-        
+
         wsListener = new MyWsListener();
 
         wsClient = new WebSocketClient(ycp, wsListener);
@@ -112,9 +102,9 @@ public abstract class AbstractIntegrationTest {
         packetGenerator = packetProvider.mdbPacketGenerator;
         packetGenerator.setGenerationTime(TimeEncoding.INVALID_INSTANT);
 
-        //        ClientInfo cinfo = wsListener.clientInfoList.poll(5, TimeUnit.SECONDS);
-        //        System.out.println("got cinfo:"+cinfo);
-        //        assertNotNull(cinfo);
+        // ClientInfo cinfo = wsListener.clientInfoList.poll(5, TimeUnit.SECONDS);
+        // System.out.println("got cinfo:"+cinfo);
+        // assertNotNull(cinfo);
     }
 
     protected ClientInfo getClientInfo() throws InterruptedException {
@@ -125,37 +115,37 @@ public abstract class AbstractIntegrationTest {
         return cinfo;
     }
 
-
-
     private static void setupYamcs() throws Exception {
-        File dataDir=new File("/tmp/yamcs-IntegrationTest-data");
+        File dataDir = new File("/tmp/yamcs-IntegrationTest-data");
 
         FileUtils.deleteRecursively(dataDir.toPath());
 
         YConfiguration.setup("IntegrationTest");
         new HttpServer().startServer();
-        //     artemisServer = ArtemisServer.setupArtemis();
-        //   ArtemisManagement.setupYamcsServerControl();
+        // artemisServer = ArtemisServer.setupArtemis();
+        // ArtemisManagement.setupYamcsServerControl();
         YamcsServer.setupYamcsServer();
     }
-
 
     IssueCommandRequest getCommand(int seq, String... args) {
         IssueCommandRequest.Builder b = IssueCommandRequest.newBuilder();
         b.setOrigin("IntegrationTest");
         b.setSequenceNumber(seq);
-        for(int i = 0; i<args.length; i+=2) {
-            b.addAssignment(IssueCommandRequest.Assignment.newBuilder().setName(args[i]).setValue(args[i+1]).build());
+        for (int i = 0; i < args.length; i += 2) {
+            b.addAssignment(IssueCommandRequest.Assignment.newBuilder().setName(args[i]).setValue(args[i + 1]).build());
         }
 
         return b.build();
     }
+
     protected ParameterSubscriptionRequest getSubscription(String... pfqname) {
         return getSubscription(true, false, pfqname);
     }
-    protected ParameterSubscriptionRequest getSubscription(boolean sendFromCache, boolean updateOnExpiration,  String... pfqname) {
+
+    protected ParameterSubscriptionRequest getSubscription(boolean sendFromCache, boolean updateOnExpiration,
+            String... pfqname) {
         ParameterSubscriptionRequest.Builder b = ParameterSubscriptionRequest.newBuilder();
-        for(String p: pfqname) {
+        for (String p : pfqname) {
             b.addId(NamedObjectId.newBuilder().setName(p).build());
         }
         b.setSendFromCache(sendFromCache);
@@ -171,41 +161,17 @@ public abstract class AbstractIntegrationTest {
     }
 
     @AfterClass
-    public static void shutDownYamcs()  throws Exception {
+    public static void shutDownYamcs() throws Exception {
         YamcsServer.shutDown();
     }
 
-
-    <T extends MessageLite> String toJson(T msg, Schema<T> schema) throws IOException {
-        StringWriter writer = new StringWriter();
-        JsonIOUtil.writeTo(writer, msg, schema, false);
-        return writer.toString();
+    <T extends Message> String toJson(T msg) throws IOException {
+        return JsonFormat.printer().print(msg);
     }
 
-    <T extends MessageLite.Builder> T fromJson(String jsonstr, Schema<T> schema) throws IOException {
-        StringReader reader = new StringReader(jsonstr);
-        T msg = schema.newMessage();
-        JsonIOUtil.mergeFrom(reader, msg, schema, false);
-        return msg;
-    }
-
-    //parses a series of messages (not really a list because they are not separated by "," and do not have start and end of list ([ ])
-    <T extends MessageLite> List<T> allFromJson(String jsonstr, Schema schema) throws IOException {
-
-        StringReader reader = new StringReader(jsonstr);
-        JsonParser parser = JsonIOUtil.DEFAULT_JSON_FACTORY.createParser(reader);
-        JsonInput input = new JsonInput(parser);
-
-        List<T> r = new ArrayList<>();
-        while(true) {
-            JsonToken t = parser.nextToken();
-            if(t==null) break;
-            if (t != JsonToken.START_OBJECT) throw new RuntimeException("Expected: "+JsonToken.START_OBJECT+", got: "+t);
-            MessageLite.Builder msgb = (Builder) schema.newMessage();
-            schema.mergeFrom(input, msgb);
-            r.add((T)msgb.build());
-        }
-        return r;
+    <T extends Message.Builder> T fromJson(String json, T builder) throws IOException {
+        JsonFormat.parser().merge(json, builder);
+        return builder;
     }
 
     static class MyWsListener implements WebSocketClientCallback {
@@ -226,7 +192,8 @@ public abstract class AbstractIntegrationTest {
         LinkedBlockingQueue<CommandQueueInfo> cmdQueueInfoList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<ConnectionInfo> connInfoList = new LinkedBlockingQueue<>();
 
-        int count =0;
+        int count = 0;
+
         @Override
         public void connected() {
             onConnect.release();
@@ -288,6 +255,7 @@ public abstract class AbstractIntegrationTest {
             }
         }
     }
+
     public static class PacketProvider extends AbstractService implements TmPacketDataLink, TmProcessor {
         static volatile PacketProvider instance;
         RefMdbPacketGenerator mdbPacketGenerator = new RefMdbPacketGenerator();
@@ -296,25 +264,31 @@ public abstract class AbstractIntegrationTest {
         public PacketProvider(String yinstance, String name, String spec) {
             instance = this;
         }
+
         @Override
         public Status getLinkStatus() {
             return Status.OK;
         }
+
         @Override
         public String getDetailedStatus() {
             return "OK";
         }
+
         @Override
         public void enable() {
         }
+
         @Override
         public void disable() {
 
         }
+
         @Override
         public boolean isDisabled() {
             return false;
         }
+
         @Override
         public long getDataCount() {
             return 0;
@@ -330,36 +304,41 @@ public abstract class AbstractIntegrationTest {
             mdbPacketGenerator.setTmProcessor(this);
             notifyStarted();
         }
+
         @Override
         protected void doStop() {
             notifyStopped();
         }
+
         @Override
         public void processPacket(PacketWithTime pwrt) {
             tmSink.processPacket(pwrt);
         }
+
         @Override
         public void processPacket(PacketWithTime pwrt, SequenceContainer rootContainer) {
             tmSink.processPacket(pwrt);
         }
+
         @Override
         public void finished() {
 
         }
     }
-    
+
     public static class ParameterProvider extends AbstractService implements ParameterDataLink {
         int seqNum = 0;
         ParameterSink ppListener;
         long generationTime;
-        
+
         static volatile ParameterProvider instance;
         XtceDb xtcedb;
+
         public ParameterProvider(String yamcsInstance, String name) {
             instance = this;
             xtcedb = XtceDbFactory.getInstance(yamcsInstance);
         }
-        
+
         @Override
         public Status getLinkStatus() {
             return Status.OK;
@@ -385,7 +364,7 @@ public abstract class AbstractIntegrationTest {
 
         @Override
         public long getDataCount() {
-            return seqNum*3;
+            return seqNum * 3;
         }
 
         @Override
@@ -402,47 +381,47 @@ public abstract class AbstractIntegrationTest {
         protected void doStop() {
             notifyStopped();
         }
+
         public void setGenerationTime(long genTime) {
             this.generationTime = genTime;
         }
-       
+
         void generateParameters(int x) {
-           
+
             ParameterValue pv1 = new ParameterValue(xtcedb.getParameter("/REFMDB/SUBSYS1/processed_para_uint"));
             pv1.setUnsignedIntegerValue(x);
             pv1.setGenerationTime(generationTime);
-            
+
             ParameterValue pv2 = new ParameterValue(xtcedb.getParameter("/REFMDB/SUBSYS1/processed_para_string"));
             pv2.setGenerationTime(generationTime);
-            pv2.setStringValue("para" +x);
-            
-            //add a parameter raw value to see that it's calibrated
+            pv2.setStringValue("para" + x);
+
+            // add a parameter raw value to see that it's calibrated
             ParameterValue pv5 = new ParameterValue(xtcedb.getParameter("/REFMDB/SUBSYS1/processed_para_enum_nc"));
             pv5.setGenerationTime(generationTime);
             pv5.setRawUnsignedInteger(1);
-            
-            
+
             ppListener.updateParameters(generationTime, "IntegrationTest", seqNum, Arrays.asList(pv1, pv2, pv5));
-            
-            //this one should be combined with the two above in the archive as they have the same generation time, group and sequence
-            org.yamcs.protobuf.Pvalue.ParameterValue pv3 = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder().setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
+
+            // this one should be combined with the two above in the archive as they have the same generation time,
+            // group and sequence
+            org.yamcs.protobuf.Pvalue.ParameterValue pv3 = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
+                    .setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
                     .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/processed_para_double"))
                     .setGenerationTime(generationTime)
                     .setEngValue(ValueUtility.getDoubleGbpValue(x))
                     .build();
             ppListener.updateParams(generationTime, "IntegrationTest", seqNum, Arrays.asList(pv3));
-            
-            
-            //mixup some ParameterValue with Protobuf ParameterValue to test compatibility with old yamcs
-            org.yamcs.protobuf.Pvalue.ParameterValue pv4 = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder().setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
+
+            // mixup some ParameterValue with Protobuf ParameterValue to test compatibility with old yamcs
+            org.yamcs.protobuf.Pvalue.ParameterValue pv4 = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
+                    .setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
                     .setId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/processed_para_uint"))
-                    .setGenerationTime(generationTime+20)
+                    .setGenerationTime(generationTime + 20)
                     .setEngValue(ValueUtility.getUint32GbpValue(x))
                     .build();
-            ppListener.updateParams(generationTime+20, "IntegrationTest", seqNum, Arrays.asList(pv4));
-            
-           
-            
+            ppListener.updateParams(generationTime + 20, "IntegrationTest", seqNum, Arrays.asList(pv4));
+
             seqNum++;
         }
     }

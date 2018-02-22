@@ -16,10 +16,6 @@ import org.yamcs.archive.XtceTmRecorder;
 import org.yamcs.protobuf.Archive.TableData.TableRecord;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Rest.BulkDownloadParameterValueRequest;
-import org.yamcs.protobuf.SchemaArchive;
-import org.yamcs.protobuf.SchemaCommanding;
-import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -60,12 +56,13 @@ import io.netty.buffer.ByteBufOutputStream;
 /**
  * Serves archived data through a web api.
  *
- * <p>Archive requests use chunked encoding with an unspecified content length, which enables
- * us to send large dumps without needing to determine a content length on the server.
+ * <p>
+ * Archive requests use chunked encoding with an unspecified content length, which enables us to send large dumps
+ * without needing to determine a content length on the server.
  */
 public class ArchiveDownloadRestHandler extends RestHandler {
 
-    @Route(path = "/api/archive/:instance/downloads/parameters", method = {"GET", "POST"})
+    @Route(path = "/api/archive/:instance/downloads/parameters", method = { "GET", "POST" })
     public void downloadParameters(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
@@ -73,7 +70,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         rr.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
 
         // First try from body
-        BulkDownloadParameterValueRequest request = req.bodyAsMessage(SchemaRest.BulkDownloadParameterValueRequest.MERGE).build();
+        BulkDownloadParameterValueRequest request = req.bodyAsMessage(BulkDownloadParameterValueRequest.newBuilder())
+                .build();
         if (request.hasStart()) {
             rr.setStart(RestRequest.parseTime(request.getStart()));
         }
@@ -95,7 +93,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         for (NamedObjectId id : request.getIdList()) {
             Parameter p = mdb.getParameter(id);
             if (p == null) {
-                throw new BadRequestException("Invalid parameter name specified "+id);
+                throw new BadRequestException("Invalid parameter name specified " + id);
             }
             if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName())) {
                 throw new BadRequestException("Insufficient privileges for parameter " + p.getQualifiedName());
@@ -104,7 +102,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         }
         if (ids.isEmpty()) {
             for (Parameter p : mdb.getParameters()) {
-                if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName())) {
+                if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Type.TM_PARAMETER,
+                        p.getQualifiedName())) {
                     continue;
                 }
                 if (request.hasNamespace()) {
@@ -154,7 +153,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
 
         ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, p, false);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
-        
+
         if (req.asksFor(MediaType.CSV)) {
             // Added on-demand for CSV (for Protobuf this is always added)
             boolean addRaw = false;
@@ -214,12 +213,13 @@ public class ArchiveDownloadRestHandler extends RestHandler {
                 }
             });
         } else {
-            RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<TmPacketData>(req, SchemaYamcs.TmPacketData.WRITE) {
-                @Override
-                public TmPacketData mapTuple(Tuple tuple) {
-                    return GPBHelper.tupleToTmPacketData(tuple);
-                }
-            });
+            RestStreams.stream(instance, sql,
+                    new StreamToChunkedProtobufEncoder<TmPacketData>(req) {
+                        @Override
+                        public TmPacketData mapTuple(Tuple tuple) {
+                            return GPBHelper.tupleToTmPacketData(tuple);
+                        }
+                    });
         }
     }
 
@@ -245,7 +245,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
 
-        RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<CommandHistoryEntry>(req, SchemaCommanding.CommandHistoryEntry.WRITE) {
+        RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<CommandHistoryEntry>(req) {
             @Override
             public CommandHistoryEntry mapTuple(Tuple tuple) {
                 return GPBHelper.tupleToCommandHistoryEntry(tuple);
@@ -260,8 +260,9 @@ public class ArchiveDownloadRestHandler extends RestHandler {
 
         TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
 
-        boolean dumpFormat = req.hasQueryParameter("format") && "dump".equalsIgnoreCase(req.getQueryParameter("format"));
-        
+        boolean dumpFormat = req.hasQueryParameter("format")
+                && "dump".equalsIgnoreCase(req.getQueryParameter("format"));
+
         List<String> cols = null;
         if (req.hasQueryParameter("cols")) {
             cols = new ArrayList<>(); // Order, and non-unique
@@ -286,14 +287,15 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         if (dumpFormat) {
             RestStreams.stream(instance, sql, new TableDumpEncoder(req));
         } else {
-            RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<TableRecord>(req, SchemaArchive.TableData.TableRecord.WRITE) {
-            @Override
-            public TableRecord mapTuple(Tuple tuple) {
-                TableRecord.Builder rec = TableRecord.newBuilder();
-                rec.addAllColumn(ArchiveHelper.toColumnDataList(tuple));
-                return rec.build();
-            }
-            });
+            RestStreams.stream(instance, sql,
+                    new StreamToChunkedProtobufEncoder<TableRecord>(req) {
+                        @Override
+                        public TableRecord mapTuple(Tuple tuple) {
+                            TableRecord.Builder rec = TableRecord.newBuilder();
+                            rec.addAllColumn(ArchiveHelper.toColumnDataList(tuple));
+                            return rec.build();
+                        }
+                    });
         }
     }
 
@@ -344,7 +346,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
     }
 
     private void transferChunkedProtobufEvents(RestRequest req, String instance, String sql) throws HttpException {
-        RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<Event>(req, SchemaYamcs.Event.WRITE) {
+        RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<Event>(req) {
 
             @Override
             public Event mapTuple(Tuple tuple) {

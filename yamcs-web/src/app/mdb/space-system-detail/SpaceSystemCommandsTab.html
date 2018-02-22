@@ -1,0 +1,13 @@
+<ng-container *ngIf="commands$ | async as commands">
+  <app-commands-table *ngIf="commands.length; else empty"
+                      [commands$]="commands$"
+                      [instance]="instance$ | async"
+                      [shortName]="true">
+  </app-commands-table>
+
+  <ng-template #empty>
+    <app-empty-message>
+      The space system {{ qualifiedName }} does not define any commands.
+    </app-empty-message>
+  </ng-template>
+</ng-container>

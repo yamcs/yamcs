@@ -1,0 +1,12 @@
+<div class="panel-content" *ngIf="stream$ | async as stream">
+  <table yaDataTable>
+    <tr>
+      <th width="200">Column</th>
+      <th>Type</th>
+    </tr>
+    <tr *ngFor="let column of stream.column">
+      <td>{{ column.name }}</td>
+      <td>{{ column.type }}</td>
+    </tr>
+  </table>
+</div>

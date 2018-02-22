@@ -16,7 +16,7 @@ import io.netty.handler.codec.http.cors.CorsConfig;
 import io.netty.handler.codec.http.cors.CorsConfigBuilder;
 
 /**
- * Data holder for webConfig section of yamcs.yamnl
+ * Data holder for webConfig section of yamcs.yaml
  */
 public class WebConfig {
 
@@ -32,18 +32,22 @@ public class WebConfig {
     // Cross-origin Resource Sharing (CORS) enables ajaxified use of the REST api by
     // remote web applications.
     private CorsConfig corsConfig;
-    
-    //used for the websockets write buffer:
-    // the bigger the values, the more memory it might consume but it will be more resilient against unstable networks
+
+    private List<GpbExtension> gpbExtensions = new ArrayList<>(0);
+
+    // used for the websockets write buffer:
+    // the higher the values, the more memory it might consume but it will be more resilient against unstable networks
     private WriteBufferWaterMark webSocketWriteBufferWaterMark;
-    //after how many dropped messages close the connection
+
+    // Number of dropped messages after which to close the connection
     private int webSocketConnectionCloseNumDroppedMsg = 5;
-    
+
     private WebConfig() {
         YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
 
         if (yconf.containsKey("webPort")) {
-            log.warn("Property 'webPort' in yamcs.yaml is deprecated. Instead nest new property 'port' under 'webConfig'.");
+            log.warn(
+                    "Property 'webPort' in yamcs.yaml is deprecated. Instead nest new property 'port' under 'webConfig'.");
             port = yconf.getInt("webPort");
         }
         if (yconf.containsKey("webRoot")) {
@@ -59,7 +63,8 @@ public class WebConfig {
             }
         }
         if (yconf.containsKey("zeroCopyEnabled")) {
-            log.warn("Property 'zeroCopyEnabled' in yamcs.yaml is deprecated. Instead nest 'zeroCopyEnabled' under 'webConfig'.");
+            log.warn(
+                    "Property 'zeroCopyEnabled' in yamcs.yaml is deprecated. Instead nest 'zeroCopyEnabled' under 'webConfig'.");
             zeroCopyEnabled = yconf.getBoolean("zeroCopyEnabled");
         }
 
@@ -78,7 +83,7 @@ public class WebConfig {
                     webRoots.add(YConfiguration.getString(webConfig, "webRoot"));
                 }
             }
-            if(webConfig.containsKey("cors")) {
+            if (webConfig.containsKey("cors")) {
                 Map<String, Object> ycors = YConfiguration.getMap(webConfig, "cors");
                 if (YConfiguration.getBoolean(ycors, "enabled")) {
                     if (YConfiguration.isList(ycors, "allowOrigin")) {
@@ -92,8 +97,17 @@ public class WebConfig {
                     }
                 }
             }
-            
-           
+
+            if (webConfig.containsKey("gpbExtensions")) {
+                List<Map<String, Object>> extensionsConf = YConfiguration.getList(webConfig, "gpbExtensions");
+                for (Map<String, Object> conf : extensionsConf) {
+                    GpbExtension extension = new GpbExtension();
+                    extension.clazz = YConfiguration.getString(conf, "class");
+                    extension.field = YConfiguration.getString(conf, "field");
+                    gpbExtensions.add(extension);
+                }
+
+            }
         } else {
             // Allow CORS requests for unprotected Yamcs instances
             // (Browsers would anyway strip Authorization header)
@@ -101,8 +115,10 @@ public class WebConfig {
         }
 
         if (corsb != null) {
-            corsb.allowedRequestMethods(HttpMethod.GET, HttpMethod.POST, HttpMethod.PATCH, HttpMethod.PUT, HttpMethod.DELETE);
-            corsb.allowedRequestHeaders(HttpHeaderNames.CONTENT_TYPE, HttpHeaderNames.ACCEPT, HttpHeaderNames.AUTHORIZATION, HttpHeaderNames.ORIGIN);
+            corsb.allowedRequestMethods(HttpMethod.GET, HttpMethod.POST, HttpMethod.PATCH, HttpMethod.PUT,
+                    HttpMethod.DELETE);
+            corsb.allowedRequestHeaders(HttpHeaderNames.CONTENT_TYPE, HttpHeaderNames.ACCEPT,
+                    HttpHeaderNames.AUTHORIZATION, HttpHeaderNames.ORIGIN);
             corsConfig = corsb.build();
         }
         if (yconf.containsKey("webConfig", "webSocket")) {
@@ -111,18 +127,21 @@ public class WebConfig {
                 Map<String, Object> wswm = YConfiguration.getMap(ws, "writeBufferWaterMark");
                 webSocketWriteBufferWaterMark = new WriteBufferWaterMark(YConfiguration.getInt(wswm, "low"),
                         YConfiguration.getInt(wswm, "high"));
-            }            
-            webSocketConnectionCloseNumDroppedMsg = YConfiguration.getInt(ws, "connectionCloseNumDroppedMsg", webSocketConnectionCloseNumDroppedMsg);
-            if(webSocketConnectionCloseNumDroppedMsg<1) {
-                throw new ConfigurationException("Error in yamcs.yaml: webSocket->connectionCloseNumDroppedMsg has to be greater than 0. Provided value: "+webSocketConnectionCloseNumDroppedMsg);
+            }
+            webSocketConnectionCloseNumDroppedMsg = YConfiguration.getInt(ws, "connectionCloseNumDroppedMsg",
+                    webSocketConnectionCloseNumDroppedMsg);
+            if (webSocketConnectionCloseNumDroppedMsg < 1) {
+                throw new ConfigurationException(
+                        "Error in yamcs.yaml: webSocket->connectionCloseNumDroppedMsg has to be greater than 0. Provided value: "
+                                + webSocketConnectionCloseNumDroppedMsg);
             }
             maxWsFrameLength = YConfiguration.getInt(ws, "maxFrameLength", maxWsFrameLength);
         }
-        if(webSocketWriteBufferWaterMark==null) {
-            webSocketWriteBufferWaterMark = new WriteBufferWaterMark(32*1024, 64*1024); //these are also default netty values
+        if (webSocketWriteBufferWaterMark == null) {
+            webSocketWriteBufferWaterMark = new WriteBufferWaterMark(32 * 1024, 64 * 1024); // these are also default
+                                                                                            // netty values
         }
-        
-        
+
     }
 
     public static WebConfig getInstance() {
@@ -134,14 +153,12 @@ public class WebConfig {
     }
 
     /**
-     * returns the write buffer water mark that shall be used for web sockets 
-     * @return
+     * Returns the write buffer water mark that shall be used for web sockets
      */
     public WriteBufferWaterMark getWebSocketWriteBufferWaterMark() {
         return webSocketWriteBufferWaterMark;
     }
-    
-    
+
     public boolean isZeroCopyEnabled() {
         return zeroCopyEnabled;
     }
@@ -157,8 +174,17 @@ public class WebConfig {
     public int getWebSocketConnectionCloseNumDroppedMsg() {
         return webSocketConnectionCloseNumDroppedMsg;
     }
-    
+
+    public List<GpbExtension> getGpbExtensions() {
+        return gpbExtensions;
+    }
+
     public int getWebSocketMaxFrameLength() {
         return maxWsFrameLength;
+    }
+
+    static class GpbExtension {
+        String clazz;
+        String field;
     }
 }

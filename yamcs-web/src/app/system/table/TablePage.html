@@ -1,0 +1,39 @@
+<ng-container *ngIf="instance$ | async as instance">
+  <app-system-page *ngIf="table$ | async as table">
+    <app-system-toolbar>
+      <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
+        <mat-icon>arrow_back</mat-icon>
+      </a> Tables / {{ table.name }}
+    </app-system-toolbar>
+
+    <nav mat-tab-nav-bar>
+      <a mat-tab-link
+         routerLink="./columns"
+         routerLinkActive #rla="routerLinkActive"
+         [queryParams]="{instance: instance.name}"
+         [active]="rla.isActive">
+        Columns
+      </a>
+
+      <a mat-tab-link
+         routerLink="./data"
+         routerLinkActive #rlb="routerLinkActive"
+         [queryParams]="{instance: instance.name}"
+         [active]="rlb.isActive">
+        Data
+      </a>
+
+      <a mat-tab-link
+         routerLink="./script"
+         routerLinkActive #rlc="routerLinkActive"
+         [queryParams]="{instance: instance.name}"
+         [active]="rlc.isActive">
+        Script
+      </a>
+    </nav>
+
+    <div class="outlet-wrapper">
+      <router-outlet></router-outlet>
+    </div>
+  </app-system-page>
+</ng-container>

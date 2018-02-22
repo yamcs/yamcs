@@ -1,0 +1,51 @@
+<mat-sidenav-container class="mat-typography">
+  <mat-sidenav mode="side" opened="true">
+    <mat-toolbar>
+      <mat-toolbar-row>
+        <mat-icon class="icon32" style="margin-right: 16px">memory</mat-icon>
+        System
+      </mat-toolbar-row>
+    </mat-toolbar>
+
+    <mat-nav-list dense *ngIf="instance$ | async as instance">
+      <app-sidebar-nav-item routerLink="dashboard"
+                            [queryParams]="{instance: instance.name}">
+        Dashboard
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item routerLink="links"
+                            [queryParams]="{instance: instance.name}">
+        Links
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item routerLink="services"
+                            [queryParams]="{instance: instance.name}">
+        Services
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item routerLink="processors"
+                            [queryParams]="{instance: instance.name}">
+        Processors
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item routerLink="clients"
+                            [queryParams]="{instance: instance.name}">
+        Clients
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item routerLink="tables"
+                            [queryParams]="{instance: instance.name}">
+        Tables
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item routerLink="streams"
+                            [queryParams]="{instance: instance.name}">
+        Streams
+      </app-sidebar-nav-item>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
+</mat-sidenav-container>

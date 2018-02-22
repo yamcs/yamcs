@@ -2,7 +2,7 @@ package org.yamcs.web.rest;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -19,10 +19,9 @@ import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.Router.RouteMatch;
 
-import com.fasterxml.jackson.core.JsonEncoding;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.google.protobuf.MessageLite;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
+import com.google.protobuf.util.JsonFormat;
 
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
@@ -33,8 +32,6 @@ import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.util.AsciiString;
-import io.protostuff.JsonIOUtil;
-import io.protostuff.Schema;
 
 /**
  * Encapsulates everything to do with one Rest Request. Object is gc-ed, when request ends.
@@ -43,30 +40,31 @@ public class RestRequest {
     public enum Option {
         NO_LINK;
     }
-    
+
     private ChannelHandlerContext channelHandlerContext;
     private FullHttpRequest httpRequest;
     private QueryStringDecoder qsDecoder;
     private AuthenticationToken token;
     private RouteMatch routeMatch;
-    private static JsonFactory jsonFactory = new JsonFactory();
+
     CompletableFuture<Void> cf = new CompletableFuture<>();
-    static AtomicInteger counter = new AtomicInteger(); 
+    static AtomicInteger counter = new AtomicInteger();
     final int requestId;
     long txSize = 0;
-    
-    public RestRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest, QueryStringDecoder qsDecoder, AuthenticationToken token) {
+
+    public RestRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest,
+            QueryStringDecoder qsDecoder, AuthenticationToken token) {
         this.channelHandlerContext = channelHandlerContext;
         this.httpRequest = httpRequest;
         this.token = token;
         this.qsDecoder = qsDecoder;
         this.requestId = counter.incrementAndGet();
     }
-    
+
     void setRouteMatch(RouteMatch routeMatch) {
         this.routeMatch = routeMatch;
     }
-    
+
     public boolean hasRouteParam(String name) {
         try {
             return routeMatch.regexMatch.group(name) != null;
@@ -77,19 +75,21 @@ public class RestRequest {
             return false;
         }
     }
-    
+
     public String getRouteParam(String name) {
         return routeMatch.getRouteParam(name);
     }
-    
+
     /**
      * 
-     * @return unique across running yamcs server rest request id used to aid in tracking the request executin in the log file
+     * @return unique across running yamcs server rest request id used to aid in tracking the request executin in the
+     *         log file
      * 
      */
     public int getRequestId() {
         return requestId;
     }
+
     public long getLongRouteParam(String name) throws BadRequestException {
         String routeParam = routeMatch.regexMatch.group(name);
         try {
@@ -98,7 +98,7 @@ public class RestRequest {
             throw new BadRequestException("Path segment ':" + name + "' is not a valid integer value");
         }
     }
-    
+
     public int getIntegerRouteParam(String name) throws BadRequestException {
         String routeParam = routeMatch.regexMatch.group(name);
         try {
@@ -107,7 +107,7 @@ public class RestRequest {
             throw new BadRequestException("Path segment ':" + name + "' is not a valid integer value");
         }
     }
-    
+
     public long getDateRouteParam(String name) throws BadRequestException {
         String routeParam = routeMatch.regexMatch.group(name);
         try {
@@ -120,19 +120,19 @@ public class RestRequest {
             }
         }
     }
-    
+
     public String getFullPathWithoutQueryString() {
         return qsDecoder.path();
     }
-    
+
     public boolean hasHeader(String name) {
         return httpRequest.headers().contains(name);
     }
-    
+
     public String getHeader(AsciiString name) {
         return httpRequest.headers().get(name);
     }
-    
+
     /**
      * Experimental feature to gather common parameters. Should also be made to include the pretty-flag
      */
@@ -143,10 +143,10 @@ public class RestRequest {
         }
         return options;
     }
-    
+
     /**
-     * Matches the content type on either the Accept header or a 'format' query param.
-     * Should probably better be integrated with the deriveTargetContentType setting.
+     * Matches the content type on either the Accept header or a 'format' query param. Should probably better be
+     * integrated with the deriveTargetContentType setting.
      */
     public boolean asksFor(MediaType mediaType) {
         if (hasQueryParameter("format")) {
@@ -168,32 +168,31 @@ public class RestRequest {
                     && mediaType.is(getHttpRequest().headers().get(HttpHeaderNames.ACCEPT));
         }
     }
-    
-   
+
     /**
-     * Returns the username of the authenticated user. Or {@link Privilege#getDefaultUser()} if the user
-     * is not authenticated.
+     * Returns the username of the authenticated user. Or {@link Privilege#getDefaultUser()} if the user is not
+     * authenticated.
      */
     public String getUsername() {
-        return Privilege.getInstance().getUsername(token);
+        return Privilege.getUsername(token);
     }
-    
+
     public AuthenticationToken getAuthToken() {
         return token;
     }
-    
+
     public boolean hasQueryParameter(String name) {
         return qsDecoder.parameters().containsKey(name);
     }
-    
+
     public Map<String, List<String>> getQueryParameters() {
         return qsDecoder.parameters();
     }
-    
+
     public List<String> getQueryParameterList(String name) {
         return qsDecoder.parameters().get(name);
     }
-    
+
     public List<String> getQueryParameterList(String name, List<String> defaultList) {
         if (hasQueryParameter(name)) {
             return getQueryParameterList(name);
@@ -201,14 +200,15 @@ public class RestRequest {
             return defaultList;
         }
     }
-    
+
     public String getQueryParameter(String name) {
         List<String> param = qsDecoder.parameters().get(name);
 
-        if (param==null || param.isEmpty()) return null;
+        if (param == null || param.isEmpty())
+            return null;
         return param.get(0);
     }
-    
+
     public String getQueryParameter(String name, String defaultValue) throws BadRequestException {
         if (hasQueryParameter(name)) {
             return getQueryParameter(name);
@@ -216,7 +216,7 @@ public class RestRequest {
             return defaultValue;
         }
     }
-    
+
     public int getQueryParameterAsInt(String name) throws BadRequestException {
         String param = getQueryParameter(name);
         try {
@@ -225,7 +225,7 @@ public class RestRequest {
             throw new BadRequestException("Query parameter '" + name + "' does not have a valid integer value");
         }
     }
-    
+
     public int getQueryParameterAsInt(String name, int defaultValue) throws BadRequestException {
         if (hasQueryParameter(name)) {
             return getQueryParameterAsInt(name);
@@ -233,7 +233,7 @@ public class RestRequest {
             return defaultValue;
         }
     }
-    
+
     public long getQueryParameterAsLong(String name) throws BadRequestException {
         String param = getQueryParameter(name);
         try {
@@ -242,7 +242,7 @@ public class RestRequest {
             throw new BadRequestException("Query parameter '" + name + "' does not have a valid integer value");
         }
     }
-    
+
     public long getQueryParameterAsLong(String name, long defaultValue) throws BadRequestException {
         if (hasQueryParameter(name)) {
             return getQueryParameterAsLong(name);
@@ -250,7 +250,7 @@ public class RestRequest {
             return defaultValue;
         }
     }
-    
+
     public long getQueryParameterAsDate(String name) throws BadRequestException {
         String param = getQueryParameter(name);
         try {
@@ -259,7 +259,7 @@ public class RestRequest {
             return TimeEncoding.parse(param);
         }
     }
-    
+
     public long getQueryParameterAsDate(String name, long defaultValue) throws BadRequestException {
         if (hasQueryParameter(name)) {
             return getQueryParameterAsDate(name);
@@ -267,14 +267,14 @@ public class RestRequest {
             return defaultValue;
         }
     }
-    
+
     public boolean getQueryParameterAsBoolean(String name) {
         List<String> paramList = getQueryParameterList(name);
         String param = paramList.get(0);
         return (param == null || "".equals(param) || "true".equalsIgnoreCase(param)
                 || "yes".equalsIgnoreCase(param));
     }
-    
+
     public boolean getQueryParameterAsBoolean(String name, boolean defaultValue) {
         if (hasQueryParameter(name)) {
             return getQueryParameterAsBoolean(name);
@@ -282,118 +282,97 @@ public class RestRequest {
             return defaultValue;
         }
     }
-    
+
     public boolean isSSL() {
         return channelHandlerContext.pipeline().get(SslHandler.class) != null;
     }
-    
+
     public ChannelHandlerContext getChannelHandlerContext() {
         return channelHandlerContext;
     }
-    
+
     public HttpRequest getHttpRequest() {
         return httpRequest;
     }
-    
-    /**
-     * Returns a new Json Generator that will have pretty-printing enabled if the original request specified this.
-     */
-    public JsonGenerator createJsonGenerator(OutputStream out) throws IOException {
-        JsonGenerator generator = jsonFactory.createGenerator(out, JsonEncoding.UTF8);
-        if (qsDecoder.parameters().containsKey("pretty")) {
-            if (hasQueryParameter("pretty") && getQueryParameterAsBoolean("pretty")) {
-                generator.useDefaultPrettyPrinter();
-            }
-        } else {
-            // Pretty by default
-            generator.useDefaultPrettyPrinter();
-        }
-        return generator;
-    }
-    
+
     public boolean hasBody() {
         return HttpUtil.getContentLength(httpRequest) > 0;
     }
-    
+
     /**
-     * Deserializes the incoming message extracted from the body. This does not
-     * care about what the HTTP method is. Any required checks should be done
-     * elsewhere.
+     * Deserializes the incoming message extracted from the body. This does not care about what the HTTP method is. Any
+     * required checks should be done elsewhere.
      * <p>
-     * This method is only able to read JSON or Protobuf, the two auto-supported
-     * serialization mechanisms. If a certain operation needs to read anything
-     * else, it should check for that itself, and then use
+     * This method is only able to read JSON or Protobuf, the two auto-supported serialization mechanisms. If a certain
+     * operation needs to read anything else, it should check for that itself, and then use
      * {@link #bodyAsInputStream()}.
      */
-    public <T extends MessageLite.Builder> T bodyAsMessage(Schema<T> sourceSchema) throws BadRequestException {
+    public <T extends Message.Builder> T bodyAsMessage(T builder) throws BadRequestException {
         MediaType sourceContentType = deriveSourceContentType();
-        InputStream cin = bodyAsInputStream();
-        T msg = sourceSchema.newMessage();
         // Allow for empty body, otherwise user has to specify '{}'
         if (HttpUtil.getContentLength(httpRequest) > 0) {
-            try {
-                if (MediaType.PROTOBUF.equals(sourceContentType)) {
-                    msg.mergeFrom(cin);
-                } else {
-                    JsonIOUtil.mergeFrom(cin, msg, sourceSchema, false);
+            if (MediaType.PROTOBUF.equals(sourceContentType)) {
+                try (InputStream cin = bodyAsInputStream()) {
+                    builder.mergeFrom(cin);
+                } catch (IOException e) {
+                    throw new BadRequestException(e);
                 }
-            } catch(IOException|NullPointerException e) {
-                throw new BadRequestException(e);
-            } finally {
-                // GPB's mergeFrom does not close the stream, not sure about JsonIOUtil
-                try { cin.close(); } catch (IOException e) {}
+            } else {
+                try {
+                    String json = httpRequest.content().toString(StandardCharsets.UTF_8);
+                    JsonFormat.parser().merge(json, builder);
+                } catch (InvalidProtocolBufferException e) {
+                    throw new BadRequestException(e);
+                }
             }
         }
-        return msg;
+        return builder;
     }
-    
+
     public InputStream bodyAsInputStream() {
         return new ByteBufInputStream(httpRequest.content());
     }
-    
+
     /**
-     * @return  see {@link MediaType#getContentType(HttpRequest)}
+     * @return see {@link MediaType#getContentType(HttpRequest)}
      */
     public MediaType deriveSourceContentType() {
         return MediaType.getContentType(httpRequest);
     }
-   
-    
+
     /**
-     * Derives an applicable content type for the output. This tries to match
-     * JSON or BINARY media types with the ACCEPT header, else it will revert to
-     * the (derived) source content type.
+     * Derives an applicable content type for the output. This tries to match JSON or BINARY media types with the ACCEPT
+     * header, else it will revert to the (derived) source content type.
      *
      * @return the content type that will be used for the response message
      */
     public MediaType deriveTargetContentType() {
         return deriveTargetContentType(httpRequest);
     }
-    
-    
+
     public static MediaType deriveTargetContentType(HttpRequest httpRequest) {
         MediaType mt = MediaType.JSON;
         if (httpRequest.headers().contains(HttpHeaderNames.ACCEPT)) {
             String acceptedContentType = httpRequest.headers().get(HttpHeaderNames.ACCEPT);
-            mt =  MediaType.from(acceptedContentType);
+            mt = MediaType.from(acceptedContentType);
         } else if (httpRequest.headers().contains(HttpHeaderNames.CONTENT_TYPE)) {
             String declaredContentType = httpRequest.headers().get(HttpHeaderNames.CONTENT_TYPE);
-            mt =  MediaType.from(declaredContentType);
+            mt = MediaType.from(declaredContentType);
         }
-        
-        //we only support one of these two for the output, so just force JSON by default        
-        if(mt!=MediaType.JSON && mt!=MediaType.PROTOBUF) {
+
+        // we only support one of these two for the output, so just force JSON by default
+        if (mt != MediaType.JSON && mt != MediaType.PROTOBUF) {
             mt = MediaType.JSON;
         }
         return mt;
     }
-    
+
     public String getBaseURL() {
         String scheme = isSSL() ? "https://" : "http://";
         String host = getHeader(HttpHeaderNames.HOST);
         return (host != null) ? scheme + host : "";
     }
-    
+
     /**
      * 
      * When the request is finished, the CompleteableFuture has to be used to signal the end.
@@ -405,12 +384,11 @@ public class RestRequest {
     public CompletableFuture<Void> getCompletableFuture() {
         return cf;
     }
-    
-    
+
     /**
-     * Get the number of bytes transferred as the result of the REST call.
-     * It should not include the http headers.
-     * Note that the number might be increased before the data is sent so it will be wrong if there was an error sending data.
+     * Get the number of bytes transferred as the result of the REST call. It should not include the http headers. Note
+     * that the number might be increased before the data is sent so it will be wrong if there was an error sending
+     * data.
      * 
      * 
      * @return number of bytes transferred as part of the request
@@ -418,14 +396,16 @@ public class RestRequest {
     public long getTransferredSize() {
         return txSize;
     }
+
     /**
      * add numBytes to the transferred size
      * 
      * @param numBytes
      */
     public void addTransferredSize(long numBytes) {
-        txSize+=numBytes;
+        txSize += numBytes;
     }
+
     /**
      * Returns true if the request specifies descending by use of the query string paramter 'order=desc'
      */
@@ -440,15 +420,15 @@ public class RestRequest {
                 return true;
             default:
                 throw new BadRequestException("Unsupported value for order parameter. Expected 'asc' or 'desc'");
-            }            
+            }
         } else {
             return descendByDefault;
         }
     }
-    
+
     /**
-     * Interprets the provided string as either an instant, or an ISO 8601
-     * string and returns it as an instant of type long
+     * Interprets the provided string as either an instant, or an ISO 8601 string and returns it as an instant of type
+     * long
      */
     public static long parseTime(String datetime) {
         try {
@@ -457,44 +437,44 @@ public class RestRequest {
             return TimeEncoding.parse(datetime);
         }
     }
-    
+
     public IntervalResult scanForInterval() throws HttpException {
         return new IntervalResult(this);
     }
-    
+
     public String getApiURL() {
         return getBaseURL() + "/api";
     }
-    
+
     public static class IntervalResult {
         private final long start;
         private final long stop;
-        
+
         IntervalResult(RestRequest req) throws BadRequestException {
             start = req.getQueryParameterAsDate("start", TimeEncoding.INVALID_INSTANT);
             stop = req.getQueryParameterAsDate("stop", TimeEncoding.INVALID_INSTANT);
         }
-        
+
         public boolean hasInterval() {
             return start != TimeEncoding.INVALID_INSTANT || stop != TimeEncoding.INVALID_INSTANT;
         }
-        
+
         public boolean hasStart() {
             return start != TimeEncoding.INVALID_INSTANT;
         }
-        
+
         public boolean hasStop() {
             return stop != TimeEncoding.INVALID_INSTANT;
         }
-        
+
         public long getStart() {
             return start;
         }
-        
+
         public long getStop() {
             return stop;
         }
-        
+
         public TimeInterval asTimeInterval() {
             TimeInterval intv = new TimeInterval();
             if (hasStart()) {
@@ -505,7 +485,7 @@ public class RestRequest {
             }
             return intv;
         }
-        
+
         public String asSqlCondition(String col) {
             StringBuilder buf = new StringBuilder();
             if (start != TimeEncoding.INVALID_INSTANT) {

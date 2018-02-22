@@ -1,0 +1,21 @@
+.hl {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #000080;
+  opacity: 0;
+}
+
+.link-active .hl {
+  opacity: 0.1;
+}
+
+:host:focus{
+  outline: none;
+}
+
+a {
+  color: rgba(0, 0, 0, .654) !important;
+}

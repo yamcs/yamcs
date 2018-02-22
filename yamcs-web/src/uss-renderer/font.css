@@ -1,0 +1,7 @@
+@font-face {
+  font-family: 'Lucida Sans Typewriter';
+  src: url('./fonts/LucidaSans-Typewriter.woff') format('woff');
+  src: url('./fonts/LucidaSans-Typewriter.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}

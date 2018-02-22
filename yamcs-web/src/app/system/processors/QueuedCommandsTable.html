@@ -1,0 +1,53 @@
+<mat-table *ngIf="dataSource"
+           [dataSource]="dataSource"
+           class="ya-data-table"
+           matSort
+           matSortActive="generationTime"
+           matSortDirection="asc"
+           matSortDisableClear>
+
+  <ng-container matColumnDef="generationTime">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Generation Time</mat-header-cell>
+    <mat-cell *matCellDef="let entry">
+      {{ entry.generationTime }}
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="cmdId.commandName">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Command</mat-header-cell>
+    <mat-cell *matCellDef="let entry">
+      {{ entry.cmdId.commandName }}
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="queueName">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Queue</mat-header-cell>
+    <mat-cell *matCellDef="let entry">
+      {{ entry.queueName }}
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="username">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>User</mat-header-cell>
+    <mat-cell *matCellDef="let entry">
+      {{ entry.username }}
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="cmdId.origin">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Source</mat-header-cell>
+    <mat-cell *matCellDef="let entry">
+      {{ entry.cmdId.origin }}
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="source">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Command String</mat-header-cell>
+    <mat-cell *matCellDef="let entry">
+      {{ entry.source }}
+    </mat-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+</mat-table>

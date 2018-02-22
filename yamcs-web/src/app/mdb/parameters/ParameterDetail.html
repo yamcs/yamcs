@@ -1,0 +1,21 @@
+<dl class="dl-horizontal no-lead">
+  <dt>Parameter</dt>
+  <dd>{{ parameter.qualifiedName }}</dd>
+
+  <dt>Alias</dt>
+  <dd>
+    <ng-container *ngFor="let alias of parameter.alias">
+      {{ alias.name }} <small>(namespace: {{ alias.namespace }})</small><br>
+    </ng-container>
+  </dd>
+
+  <dt>Short Description</dt>
+  <dd>{{ parameter.shortDescription || '-' }}</dd>
+
+  <dt>Long Description</dt>
+  <dd>{{ parameter.longDescription || '-' }}</dd>
+</dl>
+
+<mat-divider></mat-divider>
+
+<app-parameter-plot [parameter]="parameter"></app-parameter-plot>

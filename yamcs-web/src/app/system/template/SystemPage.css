@@ -1,0 +1,21 @@
+mat-sidenav-container {
+  position: absolute;
+  top: 48px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+}
+
+mat-sidenav {
+  width: 200px;
+  background-color: #fafafa;
+  border-right: 1px solid #d3d3d3;
+}
+
+mat-toolbar {
+  background-color: #fafafa;
+  border-bottom: 1px solid #d3d3d3;
+  box-sizing: content-box;
+  color: rgba(0, 0, 0, .654);
+}

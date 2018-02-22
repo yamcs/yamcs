@@ -1,6 +1,7 @@
 package org.yamcs.web.rest.archive;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,8 +13,6 @@ import org.yamcs.api.MediaType;
 import org.yamcs.archive.IndexRequestListener;
 import org.yamcs.archive.IndexServer;
 import org.yamcs.protobuf.Rest.BulkGetIndexRequest;
-import org.yamcs.protobuf.SchemaRest;
-import org.yamcs.protobuf.SchemaYamcs;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.protobuf.Yamcs.IndexResult;
@@ -28,20 +27,20 @@ import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
 import org.yamcs.web.rest.Route;
 
-import com.fasterxml.jackson.core.JsonGenerator;
+import com.google.protobuf.util.JsonFormat;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.handler.codec.http.LastHttpContent;
-import io.protostuff.JsonIOUtil;
 
 /**
  * Serves archive indexes through a web api.
  *
- * <p>These responses use chunked encoding with an unspecified content length, which enables
- * us to send large dumps without needing to determine a content length on the server.
+ * <p>
+ * These responses use chunked encoding with an unspecified content length, which enables us to send large dumps without
+ * needing to determine a content length on the server.
  */
 public class ArchiveIndexRestHandler extends RestHandler {
 
@@ -81,13 +80,13 @@ public class ArchiveIndexRestHandler extends RestHandler {
                 }
             }
         }
-        
-        if(req.hasBody()) {
-            BulkGetIndexRequest bgir = req.bodyAsMessage(SchemaRest.BulkGetIndexRequest.MERGE).build();
-            if(bgir.hasStart()) {
+
+        if (req.hasBody()) {
+            BulkGetIndexRequest bgir = req.bodyAsMessage(BulkGetIndexRequest.newBuilder()).build();
+            if (bgir.hasStart()) {
                 requestb.setStart(TimeEncoding.parse(bgir.getStart()));
             }
-            if(bgir.hasStop()) {
+            if (bgir.hasStop()) {
                 requestb.setStop(TimeEncoding.parse(bgir.getStop()));
             }
             filter.addAll(bgir.getFilterList());
@@ -95,7 +94,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
                 requestb.addTmPacket(NamedObjectId.newBuilder().setName(name));
             }
         }
-        
+
         if (filter.isEmpty() && requestb.getTmPacketCount() == 0) {
             requestb.setSendAllTm(true);
             requestb.setSendAllPp(true);
@@ -275,7 +274,8 @@ public class ArchiveIndexRestHandler extends RestHandler {
         @Override
         public void processData(IndexResult indexResult) throws Exception {
             if (first) {
-                lastChannelFuture = HttpRequestHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType, null);
+                lastChannelFuture = HttpRequestHandler.startChunkedTransfer(req.getChannelHandlerContext(),
+                        req.getHttpRequest(), contentType, null);
                 stats = req.getChannelHandlerContext().attr(HttpRequestHandler.CTX_CHUNK_STATS).get();
                 first = false;
             }
@@ -297,9 +297,8 @@ public class ArchiveIndexRestHandler extends RestHandler {
             if (MediaType.PROTOBUF.equals(contentType)) {
                 msg.writeDelimitedTo(bufOut);
             } else {
-                JsonGenerator generator = req.createJsonGenerator(bufOut);
-                JsonIOUtil.writeTo(generator, msg, SchemaYamcs.ArchiveRecord.WRITE, false);
-                generator.close();
+                String json = JsonFormat.printer().print(msg);
+                bufOut.write(json.getBytes(StandardCharsets.UTF_8));
             }
         }
 
@@ -307,15 +306,14 @@ public class ArchiveIndexRestHandler extends RestHandler {
             if (MediaType.PROTOBUF.equals(contentType)) {
                 msg.writeDelimitedTo(bufOut);
             } else {
-                JsonGenerator generator = req.createJsonGenerator(bufOut);
-                JsonIOUtil.writeTo(generator, msg, SchemaYamcs.IndexResult.WRITE, false);
-                generator.close();
+                String json = JsonFormat.printer().print(msg);
+                bufOut.write(json.getBytes(StandardCharsets.UTF_8));
             }
         }
 
         @Override
         public void finished(boolean success) {
-            if (first) { //empty result
+            if (first) { // empty result
                 RestHandler.completeOK(req);
             } else {
                 try {
@@ -324,8 +322,8 @@ public class ArchiveIndexRestHandler extends RestHandler {
                         writeChunk();
                     }
                     req.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
-                    .addListener(ChannelFutureListener.CLOSE)
-                    .addListener(l-> req.getCompletableFuture().complete(null));
+                            .addListener(ChannelFutureListener.CLOSE)
+                            .addListener(l -> req.getCompletableFuture().complete(null));
                 } catch (IOException e) {
                     log.error("Could not write final chunk of data", e);
                     req.getChannelHandlerContext().close();

@@ -1,0 +1,9 @@
+mat-toolbar-row {
+  height: 48px;
+  box-shadow: 0 .125rem .3125rem rgba(0,0,0,.26);
+  z-index: 2;
+}
+
+.mat-toolbar-multiple-rows {
+  min-height: 48px;
+}

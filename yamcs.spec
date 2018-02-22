@@ -23,7 +23,7 @@ Yet another Mission Control System
 %build
 
 %if %{_buildweb}
-  cd yamcs-web && npm install && npm run build && cd ..
+  cd yamcs-web && npm install && npm run build-prod && cd ..
 %endif
 
 mvn clean compile package -Dmaven.test.skip=true -Dmaven.buildNumber.doUpdate=false
@@ -34,8 +34,9 @@ mkdir -p %{buildroot}/%{prefix}/log
 mkdir -p %{buildroot}/%{prefix}/cache
 mkdir -p %{buildroot}/etc # For system /etc
 mkdir -p %{buildroot}/etc/init.d
-mkdir -p %{buildroot}/%{prefix}/lib/xtce
 mkdir -p %{buildroot}/%{prefix}/lib/ext
+mkdir -p %{buildroot}/%{prefix}/lib/yamcs-web
+mkdir -p %{buildroot}/%{prefix}/lib/xtce
 mkdir -p %{buildroot}/%{prefix}/web/
 
 cp -a yamcs-core/lib %{buildroot}/%{prefix}/
@@ -51,7 +52,7 @@ cp -a contrib/sysvinit/* %{buildroot}/etc/init.d/
 cp -a yamcs-api/src/main/*.proto %{buildroot}/%{prefix}/lib/
 
 %if %{_buildweb}
-cp -a yamcs-web/build/*  %{buildroot}/%{prefix}/web/
+cp -a yamcs-web/dist/* %{buildroot}/%{prefix}/lib/yamcs-web/
 %endif
 
 

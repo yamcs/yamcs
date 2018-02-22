@@ -1,18 +1,9 @@
 package org.yamcs.web.websocket;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufInputStream;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.WebSocketFrame;
-import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler.ServerHandshakeStateEvent;
-import io.netty.util.AttributeKey;
-import io.protostuff.Schema;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
@@ -26,10 +17,19 @@ import org.yamcs.web.HttpRequestInfo;
 import org.yamcs.web.HttpServer;
 import org.yamcs.web.WebConfig;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import com.google.protobuf.Message;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler.ServerHandshakeStateEvent;
+import io.netty.util.AttributeKey;
 
 /**
  * Class for text/binary websocket handling
@@ -43,7 +43,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
     private ChannelHandlerContext ctx;
 
-    //these two are valid after the socket has been upgraded and they are practical final
+    // these two are valid after the socket has been upgraded and they are practical final
     private Channel channel;
     private WebSocketProcessorClient processorClient;
 
@@ -59,9 +59,10 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     // Provides access to the various resources served through this websocket
     private Map<String, AbstractWebSocketResource> resourcesByName = new HashMap<>();
 
-    //after how many consecutive dropped writes will the connection be closed
-    
+    // after how many consecutive dropped writes will the connection be closed
+
     int connectionCloseNumDroppedMsg;
+
     public WebSocketFrameHandler(HttpRequestInfo originalRequestInfo) {
         this.originalRequestInfo = originalRequestInfo;
         connectionCloseNumDroppedMsg = WebConfig.getInstance().getWebSocketConnectionCloseNumDroppedMsg();
@@ -78,14 +79,14 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         if (originalRequestInfo.getHeaders().contains(HttpHeaderNames.USER_AGENT)) {
             applicationName = originalRequestInfo.getHeaders().get(HttpHeaderNames.USER_AGENT);
         } else {
-            applicationName = "Unknown (" + channel.remoteAddress() +")";
+            applicationName = "Unknown (" + channel.remoteAddress() + ")";
         }
 
         String yamcsInstance = originalRequestInfo.getYamcsInstance();
         AuthenticationToken authToken = originalRequestInfo.getAuthenticationToken();
         processorClient = new WebSocketProcessorClient(yamcsInstance, this, applicationName, authToken);
         HttpServer httpServer = YamcsServer.getGlobalService(HttpServer.class);
-        if (httpServer != null) { // Can happen in junit when not using  yamcs.yaml
+        if (httpServer != null) { // Can happen in junit when not using yamcs.yaml
             for (WebSocketResourceProvider provider : httpServer.getWebSocketResourceProviders()) {
                 AbstractWebSocketResource resource = provider.createForClient(processorClient);
                 processorClient.registerResource(provider.getRoute(), resource);
@@ -96,7 +97,8 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt == ServerHandshakeStateEvent.HANDSHAKE_COMPLETE) {
-            log.info("{} {} {}", originalRequestInfo.getMethod(), originalRequestInfo.getUri(), HttpResponseStatus.SWITCHING_PROTOCOLS.code());
+            log.info("{} {} {}", originalRequestInfo.getMethod(), originalRequestInfo.getUri(),
+                    HttpResponseStatus.SWITCHING_PROTOCOLS.code());
 
             // After upgrade, no further HTTP messages will be received
             ctx.pipeline().remove(HttpRequestHandler.class);
@@ -112,15 +114,19 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
                 log.debug("Received frame {}", frame);
                 if (frame instanceof TextWebSocketFrame) {
                     // We could do something more clever here, but only need to support json and gpb for now
-                    if (decoder == null)
+                    if (decoder == null) {
                         decoder = new JsonDecoder();
-                    if (encoder == null)
+                    }
+                    if (encoder == null) {
                         encoder = new JsonEncoder();
+                    }
                 } else if (frame instanceof BinaryWebSocketFrame) {
-                    if (decoder == null)
+                    if (decoder == null) {
                         decoder = new ProtobufDecoder();
-                    if (encoder == null)
+                    }
+                    if (encoder == null) {
                         encoder = new ProtobufEncoder(ctx);
+                    }
                 } else {
                     // Pong, ping, continuation and close should already be handled by netty's handler
                     return;
@@ -128,19 +134,19 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
                 ByteBuf binary = frame.content();
                 if (binary != null) {
-                    if(log.isTraceEnabled()) {
+                    if (log.isTraceEnabled()) {
                         log.debug("Websocket data: {}", frame);
                     }
-                    InputStream in = new ByteBufInputStream(binary);
-                    WebSocketDecodeContext msg = decoder.decodeMessage(in);
+                    WebSocketDecodeContext msg = decoder.decodeMessage(binary);
                     AbstractWebSocketResource resource = resourcesByName.get(msg.getResource());
                     if (resource != null) {
                         WebSocketReplyData reply = resource.processRequest(msg, decoder);
-                        if(reply != null) {
+                        if (reply != null) {
                             sendReply(reply);
                         }
                     } else {
-                        throw new WebSocketException(msg.getRequestId(), "Invalid message (unsupported resource: '"+msg.getResource()+"')");
+                        throw new WebSocketException(msg.getRequestId(),
+                                "Invalid message (unsupported resource: '" + msg.getResource() + "')");
                     }
                 }
             } catch (WebSocketException e) {
@@ -150,10 +156,11 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         } catch (Exception e) {
             log.error("Internal Server Error while handling incoming web socket frame", e);
             try { // Gut-shot, at least try to inform the client
-                // TODO should do our best to return a better requestId here
+                  // TODO should do our best to return a better requestId here
                 sendException(new WebSocketException(WSConstants.NO_REQUEST_ID, "Internal Server Error"));
-            } catch(Exception e2) { // Oh well, we tried.
-                log.warn("Could not inform client of earlier Internal Server Error due to additional exception " + e2, e2);
+            } catch (Exception e2) { // Oh well, we tried.
+                log.warn("Could not inform client of earlier Internal Server Error due to additional exception " + e2,
+                        e2);
             }
         }
     }
@@ -188,14 +195,13 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     }
 
     public void sendReply(WebSocketReplyData reply) throws IOException {
-        if(!channel.isOpen()) {
+        if (!channel.isOpen()) {
             throw new IOException("Channel not open");
         }
-        if(!channel.isWritable()) {
+        if (!channel.isWritable()) {
             log.warn("Dropping reply message because channel is not writable");
             return;
         }
-
 
         WebSocketFrame frame = getEncoder().encodeReply(reply);
         channel.writeAndFlush(frame);
@@ -207,20 +213,18 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     }
 
     /**
-     * Sends actual data over the web socket. If the channel is not or no longer
-     * writable, the message is dropped.  We do not want to block the calling thread (because that will be a processor thread). 
+     * Sends actual data over the web socket. If the channel is not or no longer writable, the message is dropped. We do
+     * not want to block the calling thread (because that will be a processor thread).
      * 
-     * The websocket clients will know when the messages have been dropped from the squence count.
-     * 
+     * The websocket clients will know when the messages have been dropped from the sequence count.
      */
-    public <S> void sendData(ProtoDataType dataType, S data, Schema<S> schema) throws IOException {
-
+    public <T extends Message> void sendData(ProtoDataType dataType, T data) throws IOException {
         dataSeqCount++;
-        if(!channel.isOpen()) {
+        if (!channel.isOpen()) {
             throw new IOException("Channel not open");
         }
 
-        if(!channel.isWritable()) {
+        if (!channel.isWritable()) {
             log.warn("Dropping {} message for client [id={}, username={}] because channel is not or no longer writable",
                     dataType, processorClient.getClientId(), processorClient.getUsername());
             droppedWrites++;
@@ -233,7 +237,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             return;
         }
         droppedWrites = 0;
-        WebSocketFrame frame = getEncoder().encodeData(dataSeqCount, dataType, data, schema);
+        WebSocketFrame frame = getEncoder().encodeData(dataSeqCount, dataType, data);
         channel.writeAndFlush(frame);
     }
 

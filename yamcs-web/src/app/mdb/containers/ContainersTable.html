@@ -1,0 +1,68 @@
+<mat-form-field style="width: 100%;">
+  <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
+  <span matPrefix><mat-icon>filter_list</mat-icon></span>
+</mat-form-field>
+
+<mat-table *ngIf="dataSource"
+            class="ya-data-table"
+            [dataSource]="dataSource"
+            matSort
+            matSortActive="qualifiedName"
+            matSortDirection="asc"
+            matSortDisableClear>
+
+  <ng-container matColumnDef="name">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
+    <mat-cell *matCellDef="let container">
+      <a [routerLink]="['./', container.qualifiedName]"
+         [queryParams]="{instance: instance.name}">
+        {{ shortName ? container.name : container.qualifiedName }}
+      </a>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="maxInterval">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Max Interval</mat-header-cell>
+    <mat-cell *matCellDef="let container">{{ container.maxInterval || '-' }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="sizeInBits">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Size in Bits</mat-header-cell>
+    <mat-cell *matCellDef="let container">{{ container.sizeInBits || '-' }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="baseContainer">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Base Container</mat-header-cell>
+    <mat-cell *matCellDef="let container">
+      <a *ngIf="container.baseContainer"
+         [routerLink]="['/mdb/containers/', container.baseContainer?.qualifiedName]"
+         [queryParams]="{instance: instance.name}">
+        {{ container.baseContainer?.qualifiedName || '-' }}
+      </a>
+      <span *ngIf="!container.baseContainer">-</span>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="restrictionCriteria">
+    <mat-header-cell *matHeaderCellDef>Restriction Criteria</mat-header-cell>
+    <mat-cell *matCellDef="let container">
+      <ng-container *ngFor="let criteria of container.restrictionCriteria">
+        <a [routerLink]="['/mdb/parameters/', criteria.parameter.qualifiedName]"
+           [queryParams]="{instance: instance.name}">
+          {{ criteria.parameter.qualifiedName }}
+        </a>
+        {{ criteria.operator | operator }}
+        {{ criteria.value }}
+        <br>
+      </ng-container>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="shortDescription">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Description</mat-header-cell>
+    <mat-cell *matCellDef="let container">{{ container.shortDescription || '-' }}</mat-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+</mat-table>

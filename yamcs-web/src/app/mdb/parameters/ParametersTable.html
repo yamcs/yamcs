@@ -1,0 +1,46 @@
+<mat-form-field style="width: 100%;">
+  <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
+  <span matPrefix><mat-icon>filter_list</mat-icon></span>
+</mat-form-field>
+
+<mat-table *ngIf="dataSource"
+            class="ya-data-table"
+            [dataSource]="dataSource"
+            matSort
+            matSortActive="qualifiedName"
+            matSortDirection="asc"
+            matSortDisableClear>
+
+  <ng-container matColumnDef="name">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
+    <mat-cell *matCellDef="let parameter">
+      <a [routerLink]="['./', parameter.qualifiedName]"
+         [queryParams]="{instance: instance.name}">
+        {{ shortName ? parameter.name : parameter.qualifiedName }}
+      </a>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="type">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Type</mat-header-cell>
+    <mat-cell *matCellDef="let parameter">{{ (parameter.type?.engType | titlecase) || '-' }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="units">
+    <mat-header-cell *matHeaderCellDef>Units</mat-header-cell>
+    <mat-cell *matCellDef="let parameter">{{ (parameter.type?.unitSet | units) || '-' }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="dataSource">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Data Source</mat-header-cell>
+    <mat-cell *matCellDef="let parameter">{{ (parameter.dataSource | titlecase) || '-' }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="shortDescription">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Description</mat-header-cell>
+    <mat-cell *matCellDef="let parameter">{{ parameter.shortDescription || '-' }}</mat-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+</mat-table>

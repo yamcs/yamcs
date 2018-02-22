@@ -1,0 +1,111 @@
+<dl class="dl-horizontal no-lead">
+  <dt>Command</dt>
+  <dd>{{ command.qualifiedName }}</dd>
+
+  <dt>Alias</dt>
+  <dd>
+    <ng-container *ngFor="let alias of command.alias">
+      {{ alias.name }} <small>(namespace: {{ alias.namespace }})</small><br>
+    </ng-container>
+  </dd>
+
+  <dt>Short Description</dt>
+  <dd>{{ command.shortDescription || '-' }}</dd>
+
+  <dt>Long Description</dt>
+  <dd>{{ command.longDescription || '-' }}</dd>
+</dl>
+
+<mat-divider></mat-divider>
+
+<dl class="dl-horizontal">
+  <dt>Abstract</dt>
+  <dd>{{ command.abstract }}</dd>
+
+  <dt>Significance</dt>
+  <dd *ngIf="command.significance">
+    {{ command.significance.consequenceLevel }}
+    {{ command.significance.reasonForWarning }}
+  </dd>
+  <dd *ngIf="!command.significance">-</dd>
+
+  <dt>Argument Assignments</dt>
+  <dd *ngIf="command.argumentAssignment">
+    <ng-container *ngFor="let assignment of command.argumentAssignment">
+      {{ assignment.name}} = {{ assignment.value }}<br>
+    </ng-container>
+  </dd>
+  <dd *ngIf="!command.argumentAssignment">-</dd>
+
+  <dt>Arguments</dt>
+  <dd *ngIf="command.argument">
+    <table yaDataTable>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Type</th>
+        <th>Initial Value</th>
+      </tr>
+      <tr *ngFor="let argument of command.argument">
+        <td>{{ argument.name || '-' }}</td>
+        <td>{{ argument.description || '-' }}</td>
+        <td>{{ argument.type || '-' }}</td>
+        <td>{{ argument.initialValue || '-'}}</td>
+      </tr>
+    </table>
+  </dd>
+  <dd *ngIf="!command.argument">-</dd>
+</dl>
+
+<mat-divider></mat-divider>
+
+<dl class="dl-horizontal">
+  <dt>Constraints</dt>
+  <dd *ngIf="command.constraint">
+    <table yaDataTable>
+      <tr>
+        <th>Constraint</th>
+        <th>Timeout</th>
+      </tr>
+      <tr *ngFor="let constraint of command.constraint">
+        <td>
+          <ng-container *ngFor="let comparison of constraint.comparison">
+            {{ comparison.parameter.qualifiedName }}
+          </ng-container>
+        </td>
+        <td>{{ constraint.timeout || '-' }}</td>
+      </tr>
+    </table>
+  </dd>
+  <dd *ngIf="!command.constraint">-</dd>
+</dl>
+
+<mat-divider></mat-divider>
+
+<dl class="dl-horizontal">
+  <dt>Sequence Entries</dt>
+  <dd>
+    <table yaDataTable>
+      <tr>
+        <th>Type</th>
+        <th>Ref</th>
+        <th>Location in Bits</th>
+        <th>Reference Location</th>
+      </tr>
+      <tr *ngFor="let entry of command.commandContainer.entry">
+        <ng-container *ngIf="entry.argument">
+          <td>Argument</td>
+          <td>
+            {{ entry.argument?.name }}
+          </td>
+        </ng-container>
+        <ng-container *ngIf="entry.fixedValue">
+          <td>Fixed Value</td>
+          <td>0x{{ entry.fixedValue?.hexValue }}</td>
+        </ng-container>
+        <td>{{ entry.locationInBits }}</td>
+        <td>{{ entry.referenceLocation }}</td>
+      </tr>
+    </table>
+  </dd>
+</dl>

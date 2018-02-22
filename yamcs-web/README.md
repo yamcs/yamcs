@@ -1,32 +1,7 @@
-## Yamcs Web
+# Yamcs Web
 
-Web-based dashboard application for Yamcs.
+Run `npm run build` to build the project once. The build artifacts will be stored `dist/`.
 
-This project is in incubation phase. Embrace change.
+For development you want to use the watch mode:
 
-### Prerequisites
-
-* npm
-
-If you want to run npm as a non-root user, you might need to
-ensure non-root users have write permission in its temporary folder, like:
-
-    sudo chmod go+w ~/tmp/
-
-On Debian-based Linux distributions such as Ubuntu, the NodeJS binary is named `nodejs` instead of `node`. To ensure the NodeJS binary can be found by the build scripts, a symlink is required:
-
-    sudo ln -s /usr/bin/nodejs /usr/bin/node
-
-### First Installation
-
-Fetch dependencies:
-
-    npm install
-
-### Build site
-
-    npm run build
-
-The output is in the folder `./build`. Indicate this folder as one of the web roots in your `yamcs.yaml` to let Yamcs serve its content.
-
-Run `npm run build` whenever you changed a source file. A watch functionality will be added at a later time.
+    npm run watch

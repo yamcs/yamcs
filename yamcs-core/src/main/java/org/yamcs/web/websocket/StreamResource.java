@@ -9,8 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Archive.ColumnData;
 import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Rest.StreamSubscribeRequest;
-import org.yamcs.protobuf.SchemaArchive;
-import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.Value;
@@ -43,7 +41,8 @@ public class StreamResource extends AbstractWebSocketResource {
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+            throws WebSocketException {
         switch (ctx.getOperation()) {
         case OP_subscribe:
             return processSubscribeRequest(ctx, decoder);
@@ -54,14 +53,15 @@ public class StreamResource extends AbstractWebSocketResource {
         }
     }
 
-    private WebSocketReplyData processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+    private WebSocketReplyData processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+            throws WebSocketException {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
 
         // Optionally read body. If it's not provided, suppose the subscription concerns
         // the stream of the current processor (TODO currently doesn't work with JSON).
         Stream stream;
         if (ctx.getData() != null) { // Check doesn't work with JSON, always returns JsonParser
-            StreamSubscribeRequest req = decoder.decodeMessageData(ctx, SchemaRest.StreamSubscribeRequest.MERGE).build();
+            StreamSubscribeRequest req = decoder.decodeMessageData(ctx, StreamSubscribeRequest.newBuilder()).build();
             if (req.hasStream()) {
                 stream = ydb.getStream(req.getStream());
             } else {
@@ -77,7 +77,7 @@ public class StreamResource extends AbstractWebSocketResource {
             public void onTuple(Stream stream, Tuple tuple) {
                 StreamData data = ArchiveHelper.toStreamData(stream, tuple);
                 try {
-                    wsHandler.sendData(ProtoDataType.STREAM_DATA, data, SchemaArchive.StreamData.WRITE);
+                    wsHandler.sendData(ProtoDataType.STREAM_DATA, data);
                 } catch (IOException e) {
                     log.debug("Could not send tuple data", e);
                 }
@@ -110,7 +110,8 @@ public class StreamResource extends AbstractWebSocketResource {
         }
     }
 
-    private Object makeTupleColumn(WebSocketDecodeContext ctx, String name, Value value, DataType columnType) throws WebSocketException {
+    private Object makeTupleColumn(WebSocketDecodeContext ctx, String name, Value value, DataType columnType)
+            throws WebSocketException {
         // Sanity check. We should perhaps find a better way to do all of this
         switch (columnType.val) {
         case SHORT:
@@ -149,10 +150,11 @@ public class StreamResource extends AbstractWebSocketResource {
         }
     }
 
-    private WebSocketReplyData processPublishRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+    private WebSocketReplyData processPublishRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+            throws WebSocketException {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
 
-        StreamData req = decoder.decodeMessageData(ctx, SchemaArchive.StreamData.MERGE).build();
+        StreamData req = decoder.decodeMessageData(ctx, StreamData.newBuilder()).build();
         Stream stream = ydb.getStream(req.getStream());
         if (stream == null) {
             throw new WebSocketException(ctx.getRequestId(), "Cannot find stream '" + req.getStream() + "'");
@@ -164,7 +166,8 @@ public class StreamResource extends AbstractWebSocketResource {
         // 'fixed' colums
         for (ColumnDefinition cdef : stream.getDefinition().getColumnDefinitions()) {
             ColumnData providedField = findColumnValue(req, cdef.getName());
-            if (providedField == null) continue;
+            if (providedField == null)
+                continue;
             if (!providedField.hasValue()) {
                 throw new WebSocketException(ctx.getRequestId(), "No value was provided for column " + cdef.getName());
             }

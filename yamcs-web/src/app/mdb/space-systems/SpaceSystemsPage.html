@@ -1,0 +1,24 @@
+<app-mdb-page *ngIf="instance$ | async as instance">
+  <app-mdb-toolbar>Space Systems</app-mdb-toolbar>
+
+  <div class="panel-content">
+    <mat-table [dataSource]="dataSource"
+                class="ya-data-table"
+                matSort
+                matSortActive="qualifiedName"
+                matSortDirection="asc"
+                matSortDisableClear>
+
+      <ng-container matColumnDef="qualifiedName">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Qualified Name</mat-header-cell>
+        <mat-cell *matCellDef="let spaceSystem">
+          <a [routerLink]="['./', spaceSystem.qualifiedName]"
+             [queryParams]="{instance: instance.name}">{{ spaceSystem.qualifiedName }}</a>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    </mat-table>
+  </div>
+</app-mdb-page>

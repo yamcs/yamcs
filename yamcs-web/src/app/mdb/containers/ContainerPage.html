@@ -1,0 +1,15 @@
+<ng-container *ngIf="instance$ | async as instance">
+  <app-mdb-page *ngIf="container$ | async as container">
+    <app-mdb-toolbar>
+      <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
+        <mat-icon>arrow_back</mat-icon>
+      </a> {{ container.qualifiedName }}
+    </app-mdb-toolbar>
+
+    <div class="panel-content">
+      <app-container-detail [instance]="instance"
+                            [container]="container">
+      </app-container-detail>
+    </div>
+  </app-mdb-page>
+</ng-container>

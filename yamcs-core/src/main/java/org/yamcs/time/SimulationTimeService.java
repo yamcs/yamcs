@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Rest.SetSimulationTimeRequest;
-import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpServer;
@@ -27,13 +26,13 @@ import org.yamcs.web.rest.Route;
 public class SimulationTimeService implements TimeService {
     double speed;
     long javaTime0;
-    long javaTime; //this is the java time when the last simElapsedTime has been set
+    long javaTime; // this is the java time when the last simElapsedTime has been set
     long simElapsedTime;
     private static final Logger log = LoggerFactory.getLogger(SimulationTimeService.class);
 
     public SimulationTimeService(String yamcsInstance) {
         javaTime0 = System.currentTimeMillis();
-        javaTime = javaTime0 ;
+        javaTime = javaTime0;
         simElapsedTime = 0;
         speed = 1;
 
@@ -44,7 +43,7 @@ public class SimulationTimeService implements TimeService {
     @Override
     public long getMissionTime() {
         long t;
-        t= (long) (javaTime0 + simElapsedTime + speed*(System.currentTimeMillis()-javaTime));
+        t = (long) (javaTime0 + simElapsedTime + speed * (System.currentTimeMillis() - javaTime));
         return t;
     }
 
@@ -66,29 +65,29 @@ public class SimulationTimeService implements TimeService {
      */
     public static class SimTimeRestHandler extends RestHandler {
 
-        @Route(path = "/api/time/:instance", method = { "PUT", "POST"})
+        @Route(path = "/api/time/:instance", method = { "PUT", "POST" })
         public void setSimTime(RestRequest req) throws HttpException {
             String instance = verifyInstance(req, req.getRouteParam("instance"));
             TimeService ts = YamcsServer.getInstance(instance).getTimeService();
-            if(!(ts instanceof SimulationTimeService)) {
+            if (!(ts instanceof SimulationTimeService)) {
                 log.warn("Simulation time service requested for a non-simulation TimeService {}", ts);
                 throw new NotFoundException(req);
             }
 
             SimulationTimeService sts = (SimulationTimeService) ts;
-            SetSimulationTimeRequest request = req.bodyAsMessage(SchemaRest.SetSimulationTimeRequest.MERGE).build();
+            SetSimulationTimeRequest request = req.bodyAsMessage(SetSimulationTimeRequest.newBuilder()).build();
 
-            if(request.hasTime0()) {
+            if (request.hasTime0()) {
                 sts.setTime0(request.getTime0());
-            } else if(request.hasTime0UTC()) {
+            } else if (request.hasTime0UTC()) {
                 sts.setTime0(TimeEncoding.parse(request.getTime0UTC()));
             }
 
-            if(request.hasSimSpeed()) {
+            if (request.hasSimSpeed()) {
                 sts.setSimSpeed(request.getSimSpeed());
             }
 
-            if(request.hasSimElapsedTime()) {
+            if (request.hasSimElapsedTime()) {
                 sts.setSimElapsedTime(request.getSimElapsedTime());
             }
 

@@ -1,0 +1,29 @@
+<app-system-page *ngIf="instance$ | async as instance">
+  <app-system-toolbar *ngIf="processor$ | async as processor">
+    <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> Processors / {{ processor.name }}
+  </app-system-toolbar>
+
+  <nav mat-tab-nav-bar>
+    <a mat-tab-link
+      routerLink="./tm"
+      routerLinkActive #rla="routerLinkActive"
+      [queryParams]="{instance: instance.name}"
+      [active]="rla.isActive">
+      TM
+    </a>
+
+    <a mat-tab-link
+      routerLink="./tc"
+      routerLinkActive #rlb="routerLinkActive"
+      [queryParams]="{instance: instance.name}"
+      [active]="rlb.isActive">
+      TC
+    </a>
+  </nav>
+
+  <div class="outlet-wrapper">
+    <router-outlet></router-outlet>
+  </div>
+</app-system-page>

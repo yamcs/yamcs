@@ -1,0 +1,11 @@
+/deep/ .dtype {
+  color: red;
+}
+
+/deep/ .paren {
+  color: blue;
+}
+
+/deep/ .kw {
+  color: blue;
+}

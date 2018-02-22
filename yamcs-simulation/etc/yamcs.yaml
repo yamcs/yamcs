@@ -18,11 +18,11 @@ incomingDir: /storage/yamcs-incoming
 
 webConfig:
    #where to find the web directory with ccs, js etc
-   # the displays are also loaded from <webRoot>/displays/<instance> directory
+   # the displays are also loaded from <webRoot>/<instance>/displays/ directory
    # This may be a list to indicate multiple webroot locations
    webRoot:
-      - web/base
-      - web/yss
+      - lib/yamcs-web
+      - web
 
    # port used by the webserver
    webPort: 8090

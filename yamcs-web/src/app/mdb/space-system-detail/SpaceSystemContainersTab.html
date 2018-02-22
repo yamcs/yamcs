@@ -1,0 +1,13 @@
+<ng-container *ngIf="containers$ | async as containers">
+  <app-containers-table *ngIf="containers.length; else empty"
+                      [instance]="instance$ | async"
+                      [containers$]="containers$"
+                      [shortName]="true">
+  </app-containers-table>
+
+  <ng-template #empty>
+    <app-empty-message>
+      The space system {{ qualifiedName }} does not define any containers.
+    </app-empty-message>
+  </ng-template>
+</ng-container>

@@ -1,0 +1,13 @@
+<div class="panel-content">
+  <h2>Queues</h2>
+  <app-command-queues-table [cqueues$]="cqueues$"></app-command-queues-table>
+
+  <p>&nbsp;</p>
+  <h2>Queued Commands</h2>
+  <app-queued-commands-table *ngIf="hasEntries(); else empty"
+                             [cqueues$]="cqueues$">
+  </app-queued-commands-table>
+  <ng-template #empty>
+    All command queues are empty.
+  </ng-template>
+</div>

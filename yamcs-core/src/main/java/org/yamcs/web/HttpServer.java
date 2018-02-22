@@ -1,5 +1,6 @@
 package org.yamcs.web;
 
+import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -8,10 +9,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.web.WebConfig.GpbExtension;
 import org.yamcs.web.rest.Router;
 import org.yamcs.web.websocket.WebSocketResourceProvider;
 
 import com.google.common.util.concurrent.AbstractService;
+import com.google.protobuf.Descriptors.FieldDescriptor.Type;
+import com.google.protobuf.ExtensionRegistry;
+import com.google.protobuf.GeneratedMessage.GeneratedExtension;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -26,13 +31,12 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 
 /**
- * Server wide HTTP server based on Netty that provides a number of
- * Yamcs web services:
+ * Server wide HTTP server based on Netty that provides a number of Yamcs web services:
  *
  * <ul>
- *  <li>REST API
- *  <li>WebSocket API
- *  <li>Static file serving
+ * <li>REST API
+ * <li>WebSocket API
+ * <li>Static file serving
  * </ul>
  */
 public class HttpServer extends AbstractService {
@@ -44,12 +48,39 @@ public class HttpServer extends AbstractService {
     private List<WebSocketResourceProvider> webSocketResourceProviders = new CopyOnWriteArrayList<>();
     private WebConfig config;
 
+    // Needed for JSON serialization of message extensions
+    private ExtensionRegistry gpbExtensionRegistry = ExtensionRegistry.newInstance();
+
     public HttpServer() {
         this(WebConfig.getInstance());
     }
 
     public HttpServer(WebConfig config) {
         this.config = config;
+
+        for (GpbExtension extension : config.getGpbExtensions()) {
+            try {
+                Class<?> extensionClazz = Class.forName(extension.clazz);
+                Field field = extensionClazz.getField(extension.field);
+
+                @SuppressWarnings("unchecked")
+                GeneratedExtension<?, Type> genExtension = (GeneratedExtension<?, Type>) field.get(null);
+                gpbExtensionRegistry.add(genExtension);
+                log.info("Installing extension " + genExtension.getDescriptor().getFullName());
+            } catch (IllegalAccessException e) {
+                log.error("Could not load extension class", e);
+                continue;
+            } catch (ClassNotFoundException e) {
+                log.error("Could not load extension class", e);
+                continue;
+            } catch (SecurityException e) {
+                log.error("Could not load extension class", e);
+                continue;
+            } catch (NoSuchFieldException e) {
+                log.error("Could not load extension class", e);
+                continue;
+            }
+        }
     }
 
     @Override
@@ -67,16 +98,17 @@ public class HttpServer extends AbstractService {
         int port = config.getPort();
         bossGroup = new NioEventLoopGroup(1);
 
-        //Note that by default (i.e. with nThreads = 0), Netty will limit the number
-        //of worker threads to 2*number of CPU cores
-        EventLoopGroup workerGroup = new NioEventLoopGroup(0, new ThreadPerTaskExecutor(new DefaultThreadFactory("YamcsHttpServer")));
+        // Note that by default (i.e. with nThreads = 0), Netty will limit the number
+        // of worker threads to 2*number of CPU cores
+        EventLoopGroup workerGroup = new NioEventLoopGroup(0,
+                new ThreadPerTaskExecutor(new DefaultThreadFactory("YamcsHttpServer")));
 
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workerGroup)
-        .channel(NioServerSocketChannel.class)
-        .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
-        .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-        .childHandler(new HttpServerChannelInitializer(apiRouter));
+                .channel(NioServerSocketChannel.class)
+                .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
+                .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                .childHandler(new HttpServerChannelInitializer(apiRouter));
 
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port)).sync();
@@ -106,6 +138,10 @@ public class HttpServer extends AbstractService {
 
     public List<WebSocketResourceProvider> getWebSocketResourceProviders() {
         return webSocketResourceProviders;
+    }
+
+    public ExtensionRegistry getGpbExtensionRegistry() {
+        return gpbExtensionRegistry;
     }
 
     @Override

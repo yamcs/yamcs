@@ -3,7 +3,6 @@ package org.yamcs.web.rest.archive;
 import org.yamcs.archive.AlarmRecorder;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Rest.ListAlarmsResponse;
-import org.yamcs.protobuf.SchemaRest;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
@@ -20,30 +19,31 @@ import org.yamcs.yarch.Tuple;
 
 public class ArchiveAlarmRestHandler extends RestHandler {
 
-    @Route(path="/api/archive/:instance/alarms", method="GET")
-    @Route(path="/api/archive/:instance/alarms/:parameter*", method="GET")
-    //@Route(path="/api/archive/:instance/alarms/:parameter*/:triggerTime?", method="GET") // same comment as below
+    @Route(path = "/api/archive/:instance/alarms", method = "GET")
+    @Route(path = "/api/archive/:instance/alarms/:parameter*", method = "GET")
+    // @Route(path="/api/archive/:instance/alarms/:parameter*/:triggerTime?", method="GET") // same comment as below
     public void listAlarms(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-                
+
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
-        
+
         SqlBuilder sqlb = new SqlBuilder(AlarmRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
         if (ir.hasInterval()) {
-            sqlb.where(ir.asSqlCondition("triggerTime"));    
+            sqlb.where(ir.asSqlCondition("triggerTime"));
         }
         if (req.hasRouteParam("parameter")) {
             XtceDb mdb = XtceDbFactory.getInstance(instance);
             Parameter p = verifyParameter(req, mdb, req.getRouteParam("parameter"));
             sqlb.where("parameter = '" + p.getQualifiedName() + "'");
         }
-        /*if (req.hasRouteParam("triggerTime")) {
-            sqlb.where("triggerTime = " + req.getDateRouteParam("triggerTime"));
-        }*/
+        /*
+         * if (req.hasRouteParam("triggerTime")) { sqlb.where("triggerTime = " + req.getDateRouteParam("triggerTime"));
+         * }
+         */
         sqlb.descend(req.asksDescending(true));
-        
+
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
         RestStreams.stream(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
 
@@ -55,14 +55,13 @@ public class ArchiveAlarmRestHandler extends RestHandler {
 
             @Override
             public void streamClosed(Stream stream) {
-                completeOK(req, responseb.build(), SchemaRest.ListAlarmsResponse.WRITE);
+                completeOK(req, responseb.build());
             }
         });
-        
-        
+
     }
-    
-    /*
+
+    /*-
      Commented out because in its current form the handling is ambiguous to the previous
      operation. Perhaps should use queryparams instead. and have parameter* always be terminal
     @Route(path="/api/archive/:instance/alarms/:parameter*   /:triggerTime/:seqnum", method="GET")
@@ -83,7 +82,7 @@ public class ArchiveAlarmRestHandler extends RestHandler {
         
         List<AlarmData> alarms = new ArrayList<>();
         RestStreams.streamAndWait(instance, sql, new RestStreamSubscriber(0, 2) {
-
+    
             @Override
             public void processTuple(Stream stream, Tuple tuple) {
                 AlarmData alarm = ArchiveHelper.tupleToAlarmData(tuple);

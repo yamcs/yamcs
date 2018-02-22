@@ -1,0 +1,42 @@
+<app-monitor-page>
+  <app-monitor-toolbar *ngIf="state$ | async as state">
+    Displays
+
+    &nbsp;&nbsp;&nbsp;
+    <button mat-button
+            color="primary"
+            (click)="layoutComponent.clear()"
+            [disabled]="!state.frames.length">
+      <mat-icon>clear</mat-icon>
+      Empty Canvas
+    </button>
+
+    <button mat-button
+            color="primary"
+            (click)="saveLayout()"
+            [disabled]="!state.frames.length">
+      <mat-icon>save</mat-icon>
+      Save Layout
+    </button>
+
+    <mat-menu #arrangeMenu="matMenu" overlapTrigger="false">
+      <button mat-menu-item
+              (click)="layoutComponent.tileFrames()">Tile Displays</button>
+      <button mat-menu-item
+              (click)="layoutComponent.cascadeFrames()">Cascade Displays</button>
+    </mat-menu>
+    <button mat-button
+            [matMenuTriggerFor]="arrangeMenu"
+            [disabled]="!state.frames.length"
+            color="primary">
+      Arrange
+      <mat-icon>arrow_drop_down</mat-icon>
+    </button>
+  </app-monitor-toolbar>
+
+  <app-layout-component #layoutComponent
+                        [startWithOpenedNavigator]="true"
+                        [layoutState]="initialLayout"
+                        (stateChange)="onStateChange($event)">
+  </app-layout-component>
+</app-monitor-page>

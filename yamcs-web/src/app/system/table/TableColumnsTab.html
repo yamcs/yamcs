@@ -1,0 +1,27 @@
+<div class="panel-content" *ngIf="table$ | async as table">
+  <h3>Key</h3>
+  <table yaDataTable>
+    <tr>
+      <th width="200">Column</th>
+      <th>Type</th>
+    </tr>
+    <tr *ngFor="let column of table.keyColumn">
+      <td style="white-space: nowrap">{{ column.name }}</td>
+      <td>{{ column.type }}</td>
+    </tr>
+  </table>
+
+  <p>&nbsp;</p>
+
+  <h3>Value</h3>
+  <table yaDataTable>
+    <tr>
+      <th width="200">Column</th>
+      <th>Type</th>
+    </tr>
+    <tr *ngFor="let column of table.valueColumn">
+      <td style="white-space: nowrap">{{ column.name }}</td>
+      <td>{{ column.type }}</td>
+    </tr>
+  </table>
+</div>
