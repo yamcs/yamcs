@@ -7,6 +7,7 @@ import { MonitorPage } from './template/MonitorPage';
 import { EventsPage } from './events/EventsPage';
 import { MonitorToolbar } from './template/MonitorToolbar';
 import { LayoutsPage } from './layouts/LayoutsPage';
+import { LayoutPage } from './layouts/LayoutPage';
 
 const routes = [
   {
@@ -29,7 +30,12 @@ const routes = [
       },
       {
         path: 'layouts',
+        pathMatch: 'full',
         component: LayoutsPage,
+      },
+      {
+        path: 'layouts/:name',
+        component: LayoutPage,
       }
     ]
   }
@@ -45,6 +51,7 @@ export const routingComponents = [
   DisplaysPage,
   EventsPage,
   LayoutsPage,
+  LayoutPage,
   MonitorPage,
   MonitorToolbar,
 ];

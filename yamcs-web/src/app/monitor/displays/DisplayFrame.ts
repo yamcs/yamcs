@@ -34,6 +34,7 @@ export class DisplayFrame {
     private coordinates: Coordinates) {
 
     this.container = document.createElement('div');
+    this.container.style.setProperty('visibility', 'hidden');
     this.container.style.setProperty('position', 'absolute');
     this.container.style.setProperty('top', '0');
     this.container.style.setProperty('left', '0');
@@ -109,6 +110,7 @@ export class DisplayFrame {
       if (this.coordinates.width !== undefined && this.coordinates.height !== undefined) {
         this.setDimension(this.coordinates.width, this.coordinates.height);
       }
+      this.container.style.setProperty('visibility', 'visible');
       this.addEventHandlers();
     });
   }

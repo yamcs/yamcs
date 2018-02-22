@@ -1,8 +1,11 @@
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Component, Inject } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { YamcsService } from '../../core/services/YamcsService';
-import { SavedLayout } from './SavedLayout';
+import { LayoutStorage } from './LayoutStorage';
+import { Store } from '@ngrx/store';
+import { State } from '../../app.reducers';
+import { selectCurrentInstance } from '../../core/store/instance.selectors';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-save-layout-dialog',
@@ -13,29 +16,19 @@ export class SaveLayoutDialog {
   name = new FormControl();
 
   constructor(
-    private yamcs: YamcsService,
     private dialogRef: MatDialogRef<SaveLayoutDialog>,
+    private store: Store<State>,
+    private router: Router,
     @Inject(MAT_DIALOG_DATA) readonly data: any) {
   }
 
   save() {
-    const instance = this.yamcs.getSelectedInstance().instance;
-    const storageKey = `yamcs.${instance}.savedLayouts`;
-
-    // Append to already saved layouts
-    let savedLayouts: SavedLayout[] = [];
-    const item = localStorage.getItem(storageKey);
-    if (item) {
-      savedLayouts = JSON.parse(item) as SavedLayout[];
-    }
-    savedLayouts.push({
-      name: this.name.value,
-      state: this.data.state,
+    this.store.select(selectCurrentInstance).subscribe(instance => {
+      const layoutName = this.name.value;
+      const layoutState = this.data.state;
+      LayoutStorage.saveLayout(instance.name, layoutName, layoutState);
+      this.dialogRef.close();
+      this.router.navigateByUrl(`/monitor/layouts/${layoutName}?instance=${instance.name}`);
     });
-
-    // Persist (for now only to local storage)
-    localStorage.setItem(storageKey, JSON.stringify(savedLayouts));
-
-    this.dialogRef.close();
   }
 }

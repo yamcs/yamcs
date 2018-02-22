@@ -136,9 +136,9 @@ export class UssDisplay implements Display {
         -khtml-user-select: none;
         -webkit-user-select: none;
       }
-      .field:hover {
+      /*.field:hover {
         opacity: 0.7;
-      }
+      }*/
     `);
     svg.addChild(style);
   }

@@ -15,6 +15,9 @@ export class DisplayNavigator implements OnChanges {
   @Output()
   select = new EventEmitter<DisplayFile>();
 
+  @Output()
+  close = new EventEmitter<void>();
+
   currentFolder: DisplayFolder;
 
   ngOnChanges() {

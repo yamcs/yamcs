@@ -4,7 +4,7 @@ const sprintf = require('sprintf-js').sprintf;
 
 
 import { AbstractWidget } from './AbstractWidget';
-import { G, Rect, Text, Tag } from '../tags';
+import { G, Rect, Text } from '../tags';
 import { Color } from '../Color';
 import { DataSourceBinding } from '../DataSourceBinding';
 import { DEFAULT_STYLE } from '../StyleSet';
@@ -143,8 +143,8 @@ export class Field extends AbstractWidget {
       rect.setAttribute('fill-opacity', '1');
     }
 
-    let rectParent = g;
-    for (const binding of this.parameterBindings) {
+    const rectParent = g;
+    /*for (const binding of this.parameterBindings) {
       if (binding.dynamicProperty === 'VALUE' && binding.opsName) {
         const yamcsInstance = 'dev'; // TODO window.location.pathname.match(/\/([^\/]*)\/?/)[1];
         const a = new Tag('a', {
@@ -155,7 +155,7 @@ export class Field extends AbstractWidget {
         rectParent = a;
         break;
       }
-    }
+    }*/
     rectParent.addChild(rect);
 
     let textWidth = boxWidth;

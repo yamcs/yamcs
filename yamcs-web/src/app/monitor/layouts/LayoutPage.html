@@ -1,0 +1,46 @@
+<app-monitor-page *ngIf="instance$ | async as instance">
+  <app-monitor-toolbar>
+    <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> {{ layout?.name }}
+
+    &nbsp;&nbsp;&nbsp;
+    <button mat-button
+            color="primary"
+            (click)="saveLayout()"
+            [disabled]="!(dirty$ | async)">
+      <mat-icon>save</mat-icon>
+      Save
+    </button>
+
+    <button mat-button
+            color="primary"
+            (click)="renameLayout()"
+            disabled>
+      <mat-icon>edit</mat-icon>
+      Rename
+    </button>
+
+    <button mat-button
+            color="primary"
+            (click)="removeLayout()">
+      <mat-icon>delete_forever</mat-icon>
+      Delete
+    </button>
+
+    <mat-menu #arrangeMenu="matMenu" overlapTrigger="false">
+      <button mat-menu-item (click)="layoutComponent.tileFrames()">Tile Displays</button>
+      <button mat-menu-item (click)="layoutComponent.cascadeFrames()">Cascade Displays</button>
+    </mat-menu>
+    <button mat-button [matMenuTriggerFor]="arrangeMenu" color="primary">
+      Arrange
+      <mat-icon>arrow_drop_down</mat-icon>
+    </button>
+  </app-monitor-toolbar>
+
+  <app-layout-component #layoutComponent
+                        [startWithOpenedNavigator]="false"
+                        [layoutState]="layout"
+                        (stateChange)="onStateChange($event)">
+  </app-layout-component>
+</app-monitor-page>

@@ -56,9 +56,9 @@ export class Layout {
       throw new Error(`Layout already contains a frame with id ${id}`);
     }
     const frame = new DisplayFrame(id, this.scrollPane, this, coordinates);
-    frame.loadAsync().then(() => {
-      this.frames.push(frame);
-      this.framesById.set(id, frame);
+    this.frames.push(frame);
+    this.framesById.set(id, frame);
+    return frame.loadAsync().then(() => {
       this.layoutListeners.forEach(l => l.onDisplayFrameOpen(frame));
       this.fireStateChange();
     });
@@ -123,6 +123,13 @@ export class Layout {
   fireStateChange() {
     const state = this.getLayoutState();
     this.layoutStateListeners.forEach(l => l.onStateChange(state));
+  }
+
+  clear() {
+    const framesCopy = [...this.frames];
+    for (const frame of framesCopy) {
+      this.closeDisplayFrame(frame);
+    }
   }
 
   /**

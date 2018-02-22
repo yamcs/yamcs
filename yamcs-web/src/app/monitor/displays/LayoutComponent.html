@@ -1,11 +1,19 @@
-<mat-sidenav-container>
-  <mat-sidenav mode="side" [opened]="showNavigator">
-    <app-display-navigator [displayInfo]="displayInfo$ | async"
-                            (select)="openDisplay($event.path)">
-    </app-display-navigator>
-  </mat-sidenav>
+<div class="wrapper">
+  <mat-sidenav-container>
+    <mat-sidenav mode="side" [opened]="showNavigator$ | async">
+      <app-display-navigator [displayInfo]="displayInfo$ | async"
+                             (select)="openDisplay($event.path)">
+      </app-display-navigator>
+    </mat-sidenav>
 
-  <mat-sidenav-content>
+    <mat-sidenav-content>
       <div #displayContainer></div>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+
+  <div class="collapse-sidebar">
+    <button mat-icon-button (click)="toggleNavigator()">
+      <mat-icon [class.opened]="showNavigator$ | async">last_page</mat-icon>
+    </button>
+  </div>
+</div>

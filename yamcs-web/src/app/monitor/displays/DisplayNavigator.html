@@ -9,12 +9,12 @@
       class="no-select"
       (click)="selectFolder(folder)">
     <td class="icon" width="1"><mat-icon class="icon12">folder</mat-icon></td>
-    <td>{{ folder.name }}/</td>
+    <td style="white-space: nowrap">{{ folder.name }}/</td>
   </tr>
   <tr *ngFor="let file of currentFolder.file"
       class="no-select"
       (click)="selectFile(file)">
     <td class="icon" width="1"><mat-icon class="icon12">bookmark_border</mat-icon></td>
-    <td>{{ file.name }}</td>
+    <td style="white-space: nowrap">{{ file.name }}</td>
   </tr>
 </table>

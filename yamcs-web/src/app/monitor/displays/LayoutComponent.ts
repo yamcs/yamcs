@@ -1,5 +1,15 @@
 
-import { Component, ViewChild, ElementRef, ChangeDetectionStrategy, AfterViewInit, Output, EventEmitter, Input } from '@angular/core';
+import {
+  Component,
+  ViewChild,
+  ElementRef,
+  ChangeDetectionStrategy,
+  AfterViewInit,
+  Output,
+  EventEmitter,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { ResourceResolver } from './ResourceResolver';
 import { Layout, LayoutStateListener, LayoutListener } from './Layout';
 import { LayoutState } from './LayoutState';
@@ -8,6 +18,7 @@ import { take } from 'rxjs/operators';
 import { DisplayFrame, Coordinates } from './DisplayFrame';
 import { DisplayFolder } from '../../../yamcs-client';
 import { Observable } from 'rxjs/Observable';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 @Component({
   selector: 'app-layout-component',
@@ -15,10 +26,13 @@ import { Observable } from 'rxjs/Observable';
   styleUrls: ['./LayoutComponent.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LayoutComponent implements AfterViewInit, LayoutListener, LayoutStateListener {
+export class LayoutComponent implements OnInit, AfterViewInit, LayoutListener, LayoutStateListener {
 
   @Input()
-  showNavigator = true;
+  startWithOpenedNavigator = true;
+
+  @Input()
+  layoutState: LayoutState = { frames: [] };
 
   @Output()
   stateChange = new EventEmitter<LayoutState>();
@@ -26,8 +40,8 @@ export class LayoutComponent implements AfterViewInit, LayoutListener, LayoutSta
   @ViewChild('displayContainer')
   private displayContainerRef: ElementRef;
 
-
   displayInfo$: Observable<DisplayFolder>;
+  showNavigator$: BehaviorSubject<boolean>;
 
   private resourceResolver: ResourceResolver;
   private layout: Layout;
@@ -37,33 +51,29 @@ export class LayoutComponent implements AfterViewInit, LayoutListener, LayoutSta
     this.resourceResolver = new RemoteResourceResolver(yamcs);
   }
 
+  ngOnInit() {
+    this.showNavigator$ = new BehaviorSubject<boolean>(this.startWithOpenedNavigator);
+  }
+
   ngAfterViewInit() {
     const targetEl = this.displayContainerRef.nativeElement;
     this.layout = new Layout(targetEl, this.resourceResolver);
     this.layout.layoutListeners.add(this);
-
-    // Attempt to restore state from session storage.
-    // This way refresh or navigation don't just throw away all opened displays
-    const instance = this.yamcs.getSelectedInstance().instance;
-    const item = sessionStorage.getItem(`yamcs.${instance}.layout`);
-    if (item) {
-      const state = JSON.parse(item) as LayoutState;
-      this.restoreState(state);
-    }
-
-    this.layout.layoutStateListeners.add(this);
+    this.restoreState(this.layoutState).then(() => {
+      this.layout.layoutStateListeners.add(this);
+    });
   }
 
-  openDisplay(id: string, coordinates?: Coordinates) {
-    if (!this.layout) {
-      return;
+  openDisplay(id: string, coordinates?: Coordinates): Promise<void> {
+    if (this.layout) {
+      const existingFrame = this.layout.getDisplayFrame(id);
+      if (existingFrame) {
+        this.layout.bringToFront(existingFrame);
+      } else {
+        return this.layout.createDisplayFrame(id, coordinates);
+      }
     }
-    const existingFrame = this.layout.getDisplayFrame(id);
-    if (existingFrame) {
-      this.layout.bringToFront(existingFrame);
-    } else {
-      this.layout.createDisplayFrame(id, coordinates);
-    }
+    return Promise.resolve();
   }
 
   tileFrames() {
@@ -72,6 +82,10 @@ export class LayoutComponent implements AfterViewInit, LayoutListener, LayoutSta
 
   cascadeFrames() {
     this.layout.cascadeFrames();
+  }
+
+  clear() {
+    this.layout.clear();
   }
 
   onDisplayFrameOpen(frame: DisplayFrame) {
@@ -97,18 +111,24 @@ export class LayoutComponent implements AfterViewInit, LayoutListener, LayoutSta
   }
 
   getLayoutState() {
-    this.layout.getLayoutState();
+    return this.layout.getLayoutState();
   }
 
-  restoreState(state: LayoutState) {
+  private restoreState(state: LayoutState) {
+    const openPromises = [];
     for (const frameState of state.frames) {
-      this.openDisplay(frameState.id, {
+      openPromises.push(this.openDisplay(frameState.id, {
         x: frameState.x,
         y: frameState.y,
         width: frameState.width,
         height: frameState.height,
-      });
+      }));
     }
+    return Promise.all(openPromises);
+  }
+
+  toggleNavigator() {
+    this.showNavigator$.next(!this.showNavigator$.getValue());
   }
 }
 
