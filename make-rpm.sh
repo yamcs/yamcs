@@ -35,16 +35,6 @@ logproperties=yamcs-core/etc/logging.yamcs-server.properties.sample
 sed -e 's/%h\/.yamcs\/log/\/opt\/yamcs\/log/g' $logproperties > $logproperties.tmp;
 mv $logproperties.tmp $logproperties
 
-
-if [ "$buildweb" = "1" ]; then
-   # npm uses local-scoped dependencies.
-   # Setup links before packing, so deps don't get re-downloaded everytime
-   ln -s "$yamcshome/yamcs-web/node_modules" yamcs-web
-   if [ ! -d yamcs-web/node_modules ]; then
-       echo "[WARNING] No cached npm dependencies. They will be downloaded from Internet."
-   fi
-fi
-
 cd /tmp
 
 mkdir -p $HOME/rpmbuild/{SRPMS,RPMS,BUILD,SPECS,SOURCES,tmp}
