@@ -5,6 +5,7 @@
   "scripts": {
     "ng": "ng",
     "build": "ng build --output-hashing=all --aot",
+    "build-prod": "ng build --output-hashing=all --aot --prod",
     "test": "ng test",
     "lint": "ng lint",
     "watch": "ng build --output-hashing=all -w",

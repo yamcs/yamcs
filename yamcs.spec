@@ -23,7 +23,7 @@ Yet another Mission Control System
 %build
 
 %if %{_buildweb}
-  cd yamcs-web && npm install && npm run build && cd ..
+  cd yamcs-web && npm install && npm run build-prod && cd ..
 %endif
 
 mvn clean compile package -Dmaven.test.skip=true -Dmaven.buildNumber.doUpdate=false
