@@ -26,7 +26,7 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
     }
 
 
-    static public final ParameterStatus getStatus(ParameterValue pv) {
+    static public final ParameterStatus getStatus(ParameterValue pv, ParameterStatus prevStatus) {
         AcquisitionStatus acq = pv.getAcquisitionStatus();
         MonitoringResult mr = pv.getMonitoringResult();
         
@@ -54,7 +54,12 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
         addAlarmRange(pvfb, AlarmLevelType.CRITICAL, pv.getCriticalRange());
         addAlarmRange(pvfb, AlarmLevelType.SEVERE, pv.getSevereRange());
 
-        return pvfb.build();
+        ParameterStatus newStatus =  pvfb.build();
+        
+        if(newStatus.equals(prevStatus)) {
+            return prevStatus;
+        }
+        return newStatus;
 
     }
 
@@ -69,10 +74,18 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
     
 
     public void addParameterValue(int pos, ParameterValue pv) {
-        add(pos, getStatus(pv));
+        ParameterStatus prevStatus = null;
+        if (pos > 0) {
+            prevStatus = get(pos - 1);
+        }
+        add(pos, getStatus(pv, prevStatus));
     }
     public void addParameterValue(ParameterValue pv) {
-       add(getStatus(pv)); 
+        ParameterStatus prevStatus = null;
+        if (size > 0) {
+            prevStatus = get(size - 1);
+        }
+       add(getStatus(pv, prevStatus)); 
     }
     
     ParameterStatusSegment consolidate() {
