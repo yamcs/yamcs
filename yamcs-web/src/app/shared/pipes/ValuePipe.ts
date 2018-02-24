@@ -22,7 +22,7 @@ export class ValuePipe implements PipeTransform {
       case 'STRING':
         return value.stringValue;
       case 'TIMESTAMP':
-        return '' + value.timestampValue;
+        return value.stringValue;
       case 'UINT64':
         return '' + value.uint64Value;
       case 'SINT64':
