@@ -65,7 +65,7 @@
           <button mat-stroked-button
                   color="warn"
                   (click)="disableLink(link.name)"
-                  *ngIf="link.status === 'OK'">
+                  *ngIf="link.status !== 'DISABLED'">
             Disable
           </button>
         </mat-cell>

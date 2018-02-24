@@ -22,6 +22,16 @@ export class LinksPage implements AfterViewInit {
   private linksByName: { [key: string]: Link } = {};
 
   constructor(private yamcs: YamcsService) {
+
+    // Fetch with REST first, otherwise may take up to a second
+    // before we get an update via websocket.
+    this.yamcs.getSelectedInstance().getLinks().subscribe(links => {
+      for (const link of links) {
+        this.linksByName[link.name] = link;
+      }
+      this.dataSource.data = Object.values(this.linksByName);
+    });
+
     this.yamcs.getSelectedInstance().getLinkUpdates().subscribe(evt => {
       this.processLinkEvent(evt);
     });
