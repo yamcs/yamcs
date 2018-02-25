@@ -22,16 +22,6 @@
             </mat-list-item>
           </mat-list>
         </mat-card>
-
-        <mat-card *ngIf="jvmThreadCountParameter$ | async as parameter">
-          <mat-card-subtitle>JVM Thread Count</mat-card-subtitle>
-          <app-parameter-plot>
-            <app-parameter-series [parameter]="parameter"
-                                  [grid]="true"
-                                  [axisLineWidth]="0">
-            </app-parameter-series>
-          </app-parameter-plot>
-        </mat-card>
       </div>
 
       <div fxFlex="33.33">
@@ -44,9 +34,11 @@
             </app-parameter-series>
           </app-parameter-plot>
         </mat-card>
+      </div>
 
-        <mat-card *ngIf="jvmTotalMemoryParameter$ | async as parameter">
-          <mat-card-subtitle>JVM Total Memory</mat-card-subtitle>
+      <div fxFlex="33.33">
+        <mat-card *ngIf="jvmThreadCountParameter$ | async as parameter">
+          <mat-card-subtitle>JVM Thread Count</mat-card-subtitle>
           <app-parameter-plot>
             <app-parameter-series [parameter]="parameter"
                                   [grid]="true"
@@ -54,9 +46,6 @@
             </app-parameter-series>
           </app-parameter-plot>
         </mat-card>
-      </div>
-
-      <div fxFlex="33.33">
       </div>
     </div>
   </div>

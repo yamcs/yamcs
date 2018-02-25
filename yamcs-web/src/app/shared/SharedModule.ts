@@ -49,6 +49,7 @@ import { TabDetailIcon } from './template/TabDetailIcon';
 import { ParameterPlot } from './widgets/ParameterPlot';
 import { SelectInstanceDialog } from './template/SelectInstanceDialog';
 import { ParameterSeries } from './widgets/ParameterSeries';
+import { DateTimePipe } from './pipes/DateTimePipe';
 
 const materialModules = [
   CdkTableModule,
@@ -99,6 +100,7 @@ const sharedComponents = [
 ];
 
 const pipes = [
+  DateTimePipe,
   OperatorPipe,
   UnitsPipe,
   ValuePipe,

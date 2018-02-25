@@ -29,6 +29,7 @@ import {
   GetAlgorithmsOptions,
   GetCommandsOptions,
   GetContainersOptions,
+  GetEventsOptions,
   GetParametersOptions,
   MissionDatabase,
   Parameter,
@@ -69,8 +70,10 @@ export class InstanceClient {
     return this.webSocketClient.getTimeUpdates();
   }
 
-  getEvents() {
-    return this.http.get<EventsWrapper>(`${this.yamcs.apiUrl}/archive/${this.instance}/events`).pipe(
+  getEvents(options: GetEventsOptions = {}) {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/events`;
+    const params = this.toParams(options);
+    return this.http.get<EventsWrapper>(url, { params }).pipe(
       map(msg => msg.event || []),
       catchError(this.yamcs.handleError<Event[]>([]))
     );

@@ -1,18 +1,18 @@
-import { Component, ChangeDetectionStrategy, OnInit, ViewChild } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { YamcsService } from '../../core/services/YamcsService';
 import { MatPaginator } from '@angular/material';
-import { DataSource } from '@angular/cdk/table';
-
-import { Event } from '../../../yamcs-client';
+import { EventsDataSource } from './EventsDataSource';
 
 @Component({
   templateUrl: './EventsPage.html',
   styleUrls: ['./EventsPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EventsPage implements OnInit {
+export class EventsPage implements OnInit, AfterViewInit {
+
+  start: Date;
+  stop: Date;
 
   pageIndex = 0;
   pageSize = 25;
@@ -20,43 +20,26 @@ export class EventsPage implements OnInit {
   @ViewChild(MatPaginator)
   paginator: MatPaginator;
 
-  displayedColumns = ['severity', 'message', 'type', 'source', 'gentime', 'rectime'];
-  dataSource: EventDataSource;
+  dataSource: EventsDataSource;
+  displayedColumns = ['severity', 'gentime', 'message', 'type', 'source', 'rectime'];
 
   constructor(private yamcs: YamcsService) {
-    this.yamcs.getSelectedInstance().getEventUpdates().subscribe(evt => {
-      // this.processEvent(evt);
-    });
   }
 
   ngOnInit() {
-    this.yamcs.getSelectedInstance().getEvents().subscribe(events => {
-      this.dataSource = new EventDataSource(events, this.paginator);
-    });
+    this.dataSource = new EventsDataSource(this.yamcs, this.paginator);
+    this.jumpToNow();
   }
 
-  /*private processEvent(evt: Event) {
-    const events = this.events$.getValue().slice();
-    events.push(evt);
-    this.events$.next(events);
-  }*/
-}
+  ngAfterViewInit() {
 
-class EventDataSource extends DataSource<Event> {
-  dataChange = new BehaviorSubject<Event[]>([]);
-
-  constructor(events: Event[], paginator: MatPaginator) {
-    super();
-    this.dataChange.next(events);
   }
 
-  connect() {
-    return this.dataChange;
-  }
-
-  disconnect() { }
-
-  public getEventCount() {
-    return this.dataChange.getValue().length;
+  jumpToNow() {
+    this.stop = new Date(); // TODO use mission time instead.
+    this.start = new Date();
+    this.start.setUTCHours(this.stop.getUTCHours() - 1);
+    this.dataSource.loadEvents(this.start, this.stop);
   }
 }
+

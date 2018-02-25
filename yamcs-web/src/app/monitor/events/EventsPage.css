@@ -1,7 +1,18 @@
+.table-status {
+  height: 16px;
+  background-color: #f2f2f2;
+  font-size: 12px;
+  line-height: 16px;
+}
+
 .ERROR mat-cell {
   color: red;
 }
 
 .WARNING mat-cell {
   color: orange;
+}
+
+.spinner-container {
+  text-align: center;
 }
