@@ -8,6 +8,7 @@ import { EventsPage } from './events/EventsPage';
 import { MonitorToolbar } from './template/MonitorToolbar';
 import { LayoutsPage } from './layouts/LayoutsPage';
 import { LayoutPage } from './layouts/LayoutPage';
+import { AlarmsPage } from './alarms/AlarmsPage';
 
 const routes: Routes = [
   {
@@ -20,6 +21,10 @@ const routes: Routes = [
         path: '',
         pathMatch: 'full',
         redirectTo: 'displays',
+      },
+      {
+        path: 'alarms',
+        component: AlarmsPage,
       },
       {
         path: 'displays',
@@ -49,6 +54,7 @@ const routes: Routes = [
 export class MonitorRoutingModule { }
 
 export const routingComponents = [
+  AlarmsPage,
   DisplaysPage,
   EventsPage,
   LayoutsPage,

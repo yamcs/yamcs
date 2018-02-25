@@ -22,7 +22,11 @@
                             [queryParams]="{instance: instance.name}">
         Events
       </app-sidebar-nav-item>
-      <a mat-list-item>Alarms (TODO)</a>
+
+      <app-sidebar-nav-item routerLink="alarms"
+                            [queryParams]="{instance: instance.name}">
+        Alarms
+      </app-sidebar-nav-item>
       <a mat-list-item>Command History (TODO)</a>
     </mat-nav-list>
   </mat-sidenav>

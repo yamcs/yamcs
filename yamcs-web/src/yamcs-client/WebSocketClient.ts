@@ -4,6 +4,7 @@ import { delay, filter, map, retryWhen } from 'rxjs/operators';
 import { WebSocketSubject } from 'rxjs/observable/dom/WebSocketSubject';
 import { WebSocketServerMessage } from './types/internal';
 import {
+  Alarm,
   Event,
   ParameterData,
   TimeInfo,
@@ -19,6 +20,7 @@ import {
 } from './types/system';
 import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 const PROTOCOL_VERSION = 1;
 const MESSAGE_TYPE_REQUEST = 1;
@@ -31,6 +33,8 @@ const MESSAGE_TYPE_DATA = 4;
  * transfers subscriptions between different connections.
  */
 export class WebSocketClient {
+
+  readonly connected$ = new BehaviorSubject<boolean>(false);
 
   private subscriptionModel: SubscriptionModel;
   private webSocket: WebSocketSubject<{}>;
@@ -55,11 +59,15 @@ export class WebSocketClient {
     this.webSocket = webSocket({
       url: wsUrl,
       closeObserver: {
-        next: () => this.subscribeOnOpen = true
+        next: () => {
+          this.connected$.next(false);
+          this.subscribeOnOpen = true;
+        }
       },
       openObserver: {
         next: () => {
           console.log('Connected to Yamcs');
+          this.connected$.next(true);
           if (this.subscribeOnOpen) {
             this.registerSubscriptions();
           }
@@ -115,6 +123,18 @@ export class WebSocketClient {
       filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
       filter((msg: WebSocketServerMessage) => msg[3].dt === 'LINK_EVENT'),
       map(msg => msg[3].data as LinkEvent),
+    );
+  }
+
+  getAlarmUpdates() {
+    if (!this.subscriptionModel.alarms) {
+      this.subscriptionModel.alarms = true;
+      this.emit({ alarms: 'subscribe' });
+    }
+    return this.webSocketConnection$.pipe(
+      filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+      filter((msg: WebSocketServerMessage) => msg[3].dt === 'ALARM_DATA'),
+      map(msg => msg[3].data as Alarm),
     );
   }
 
@@ -206,6 +226,9 @@ export class WebSocketClient {
   }
 
   private registerSubscriptions() {
+    if (this.subscriptionModel.alarms) {
+      this.emit({ alarms: 'subscribe' });
+    }
     if (this.subscriptionModel.events) {
       this.emit({ events: 'subscribe' });
     }

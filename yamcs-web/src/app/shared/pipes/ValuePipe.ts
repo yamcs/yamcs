@@ -1,8 +1,11 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { Value } from '../../../yamcs-client';
+import { DateTimePipe } from './DateTimePipe';
 
 @Pipe({ name: 'value' })
 export class ValuePipe implements PipeTransform {
+
+  constructor(private dateTimePipe: DateTimePipe) {}
 
   transform(value: Value): string | null {
     if (!value) {
@@ -22,7 +25,7 @@ export class ValuePipe implements PipeTransform {
       case 'STRING':
         return value.stringValue;
       case 'TIMESTAMP':
-        return value.stringValue;
+        return this.dateTimePipe.transform(value.stringValue);
       case 'UINT64':
         return '' + value.uint64Value;
       case 'SINT64':

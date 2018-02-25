@@ -5,6 +5,7 @@ import { ParameterSubscriptionRequest } from './types/monitoring';
  */
 export class SubscriptionModel {
 
+  alarms = false;
   events = false;
   time = false;
   links = false;

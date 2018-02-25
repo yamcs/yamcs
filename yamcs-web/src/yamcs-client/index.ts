@@ -19,6 +19,7 @@ export {
 } from './types/mdb';
 
 export {
+  Alarm,
   DisplayFile,
   DisplayFolder,
   Event,

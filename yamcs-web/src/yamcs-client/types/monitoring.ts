@@ -89,3 +89,19 @@ export interface Sample {
   max: number;
   n: number;
 }
+
+export interface Alarm {
+  seqNum: number;
+  type: 'ACTIVE' | 'TRIGGERED' | 'SEVERITY_INCREASED' | 'PVAL_UPDATED' | 'ACKNOWLEDGED' | 'CLEARED';
+  triggerValue: ParameterValue;
+  mostSevereValue: ParameterValue;
+  currentValue: ParameterValue;
+  violations: number;
+  acknowledgeInfo: AcknowledgeInfo;
+}
+
+export interface AcknowledgeInfo {
+  acknowledgedBy: string;
+  acknowledgedMessage: string;
+  acknowledgeTimeUTC: string;
+}

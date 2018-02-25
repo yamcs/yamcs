@@ -14,8 +14,10 @@ import { TimeInfo } from '../../../yamcs-client';
 export class ProcessorInfoComponent {
 
   time$: Observable<TimeInfo>;
+  connected$: Observable<boolean>;
 
   constructor(private yamcs: YamcsService) {
     this.time$ = this.yamcs.getSelectedInstance().getTimeUpdates();
+    this.connected$ = this.yamcs.getSelectedInstance().connected$;
   }
 }

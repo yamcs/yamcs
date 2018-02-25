@@ -1,11 +1,11 @@
 import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
 
 @Component({
-  selector: 'app-severity',
-  templateUrl: './SeverityComponent.html',
+  selector: 'app-alarm-severity',
+  templateUrl: './AlarmSeverityComponent.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SeverityComponent {
+export class AlarmSeverityComponent {
 
   @Input()
   severity: string;

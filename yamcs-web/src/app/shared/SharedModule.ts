@@ -50,6 +50,8 @@ import { ParameterPlot } from './widgets/ParameterPlot';
 import { SelectInstanceDialog } from './template/SelectInstanceDialog';
 import { ParameterSeries } from './widgets/ParameterSeries';
 import { DateTimePipe } from './pipes/DateTimePipe';
+import { Expirable } from './template/Expirable';
+import { Dots } from './template/Dots';
 
 const materialModules = [
   CdkTableModule,
@@ -90,7 +92,9 @@ const sharedDirectives = [
 
 const sharedComponents = [
   DetailToolbar,
+  Dots,
   EmptyMessage,
+  Expirable,
   SidebarNavItem,
   ParameterPlot,
   SelectInstanceDialog,
@@ -132,6 +136,9 @@ const pipes = [
   entryComponents: [
     SelectInstanceDialog,
   ],
+  providers: [
+    DateTimePipe, // Needed because ValuePipe uses this pipe too
+  ]
 })
 export class SharedModule {
 }

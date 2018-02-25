@@ -1,0 +1,11 @@
+.expired {
+  font-style: italic;
+}
+
+mat-icon {
+  color: #000080;
+}
+
+::ng-deep .mat-tooltip {
+  white-space: pre-line;
+}

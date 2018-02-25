@@ -3,10 +3,11 @@ import { SharedModule } from '../shared/SharedModule';
 import { MonitorRoutingModule, routingComponents } from './MonitorRoutingModule';
 import { MonitorPageTemplate } from './template/MonitorPageTemplate';
 import { ProcessorInfoComponent } from './template/ProcessorInfoComponent';
-import { SeverityComponent } from './events/SeverityComponent';
+import { EventSeverityComponent } from './events/EventSeverityComponent';
 import { DisplayNavigator } from './displays/DisplayNavigator';
 import { SaveLayoutDialog } from './displays/SaveLayoutDialog';
 import { LayoutComponent } from './displays/LayoutComponent';
+import { AlarmSeverityComponent } from './alarms/AlarmSeverityComponent';
 
 const dialogComponents = [
   SaveLayoutDialog,
@@ -20,11 +21,12 @@ const dialogComponents = [
   declarations: [
     routingComponents,
     dialogComponents,
+    AlarmSeverityComponent,
     DisplayNavigator,
+    EventSeverityComponent,
     LayoutComponent,
     MonitorPageTemplate,
     ProcessorInfoComponent,
-    SeverityComponent,
   ],
   entryComponents: [
     dialogComponents,

@@ -9,13 +9,13 @@
                matSortDirection="asc"
                matSortDisableClear>
       <ng-container matColumnDef="name">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
-        <mat-cell *matCellDef="let link">{{ link.name }}</mat-cell>
+        <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="200px">Name</mat-header-cell>
+        <mat-cell *matCellDef="let link" fxFlex="200px">{{ link.name }}</mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="type">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>Type</mat-header-cell>
-        <mat-cell *matCellDef="let link">{{ link.type }}</mat-cell>
+        <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="200px">Type</mat-header-cell>
+        <mat-cell *matCellDef="let link" fxFlex="200px">{{ link.type }}</mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="status">
@@ -40,18 +40,26 @@
       </ng-container>
 
       <ng-container matColumnDef="spec">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>Spec</mat-header-cell>
-        <mat-cell *matCellDef="let link">{{ link.spec }}</mat-cell>
+        <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="250px">Spec</mat-header-cell>
+        <mat-cell *matCellDef="let link" fxFlex="250px">{{ link.spec }}</mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="stream">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>Stream</mat-header-cell>
-        <mat-cell *matCellDef="let link">{{ link.stream }}</mat-cell>
+        <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="150px">Stream</mat-header-cell>
+        <mat-cell *matCellDef="let link" fxFlex="150px">{{ link.stream }}</mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="dataCount">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>Data Count</mat-header-cell>
-        <mat-cell *matCellDef="let link">{{ link.dataCount }}</mat-cell>
+        <mat-header-cell *matHeaderCellDef
+                         mat-sort-header
+                         fxFlex="90px">
+          Data Count
+        </mat-header-cell>
+        <mat-cell *matCellDef="let link"
+                  fxFlex="90px"
+                  style="text-align: right">
+          {{ link.dataCount | number }}
+        </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="actions">

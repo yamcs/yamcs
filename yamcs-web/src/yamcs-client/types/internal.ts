@@ -19,6 +19,7 @@ import {
 } from './system';
 
 import {
+  Alarm,
   Event,
   Sample,
 } from './monitoring';
@@ -69,6 +70,10 @@ export interface SpaceSystemsWrapper {
 
 export interface AlgorithmsWrapper {
   algorithm: Algorithm[];
+}
+
+export interface AlarmsWrapper {
+  alarm: Alarm[];
 }
 
 export interface ParametersWrapper {

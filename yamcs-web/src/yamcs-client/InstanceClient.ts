@@ -5,6 +5,7 @@ import { WebSocketClient } from './WebSocketClient';
 import YamcsClient from './YamcsClient';
 
 import {
+  AlarmsWrapper,
   AlgorithmsWrapper,
   CommandsWrapper,
   CommandQueuesWrapper,
@@ -38,6 +39,7 @@ import {
 } from './types/mdb';
 
 import {
+  Alarm,
   DisplayFolder,
   Event,
   ParameterSubscriptionRequest,
@@ -54,9 +56,11 @@ import {
   Table,
   CommandQueue,
 } from './types/system';
+import { Observable } from 'rxjs/Observable';
 
 export class InstanceClient {
 
+  public connected$: Observable<boolean>;
   private webSocketClient: WebSocketClient;
 
   constructor(
@@ -212,6 +216,34 @@ export class InstanceClient {
     });
   }
 
+  getActiveAlarms(processorName: string) {
+    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/alarms`;
+    return this.http.get<AlarmsWrapper>(url).pipe(
+      map(msg => msg.alarm || []),
+      catchError(this.yamcs.handleError<Alarm[]>([]))
+    );
+  }
+
+  getAlarms() {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/alarms`;
+    return this.http.get<AlarmsWrapper>(url).pipe(
+      map(msg => msg.alarm || []),
+      catchError(this.yamcs.handleError<Alarm[]>([]))
+    );
+  }
+
+  getAlarmUpdates() {
+    this.prepareWebSocketClient();
+    return this.webSocketClient.getAlarmUpdates();
+  }
+
+  getAlarmsForParameter(qualifiedName: string) {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/alarms${qualifiedName}`;
+    return this.http.get<Alarm>(url).pipe(
+      catchError(this.yamcs.handleError<Alarm>())
+    );
+  }
+
   getStreams() {
     return this.http.get<StreamsWrapper>(`${this.yamcs.apiUrl}/archive/${this.instance}/streams`).pipe(
       map(msg => msg.stream || []),
@@ -362,6 +394,7 @@ export class InstanceClient {
   private prepareWebSocketClient() {
     if (!this.webSocketClient) {
       this.webSocketClient = new WebSocketClient(this.instance);
+      this.connected$ = this.webSocketClient.connected$;
     }
   }
 
