@@ -210,3 +210,9 @@ export interface GetCommandsOptions {
   recurse?: boolean;
   q?: string;
 }
+
+export interface GetParameterSamplesOptions {
+  start?: string;
+  stop?: string;
+  order?: 'asc' | 'desc';
+}

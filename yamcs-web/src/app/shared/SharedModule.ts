@@ -48,6 +48,7 @@ import { EmptyMessage } from './template/EmptyMessage';
 import { TabDetailIcon } from './template/TabDetailIcon';
 import { ParameterPlot } from './widgets/ParameterPlot';
 import { SelectInstanceDialog } from './template/SelectInstanceDialog';
+import { ParameterSeries } from './widgets/ParameterSeries';
 
 const materialModules = [
   CdkTableModule,
@@ -92,6 +93,7 @@ const sharedComponents = [
   SidebarNavItem,
   ParameterPlot,
   SelectInstanceDialog,
+  ParameterSeries,
   TabDetailIcon,
   ToolbarActions,
 ];

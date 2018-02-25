@@ -33,6 +33,7 @@ import {
   MissionDatabase,
   Parameter,
   SpaceSystem,
+  GetParameterSamplesOptions,
 } from './types/mdb';
 
 import {
@@ -280,9 +281,11 @@ export class InstanceClient {
     return this.webSocketClient.getParameterValueUpdates(options);
   }
 
-  getParameterSamples(qualifiedName: string) {
+  getParameterSamples(qualifiedName: string, options: GetParameterSamplesOptions = {}) {
+
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/parameters${qualifiedName}/samples`;
-    return this.http.get<SamplesWrapper>(url).pipe(
+    const params = this.toParams(options);
+    return this.http.get<SamplesWrapper>(url, { params }).pipe(
       map(msg => msg.sample || []),
       catchError(this.yamcs.handleError<Sample[]>([]))
     );
