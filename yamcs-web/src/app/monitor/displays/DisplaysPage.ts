@@ -8,8 +8,12 @@ import { MatDialog } from '@angular/material';
 import { SaveLayoutDialog } from './SaveLayoutDialog';
 import { LayoutComponent } from './LayoutComponent';
 import { LayoutState } from './LayoutState';
-import { YamcsService } from '../../core/services/YamcsService';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { State } from '../../app.reducers';
+import { Store } from '@ngrx/store';
+import { selectCurrentInstance } from '../../core/store/instance.selectors';
+import { Observable } from 'rxjs/Observable';
+import { Instance } from '../../../yamcs-client';
 
 @Component({
   templateUrl: './DisplaysPage.html',
@@ -20,20 +24,28 @@ export class DisplaysPage {
   @ViewChild('layoutComponent')
   private layoutComponent: LayoutComponent;
 
+  instance$: Observable<Instance>;
   initialLayout: LayoutState;
-  state$: BehaviorSubject<LayoutState>;
 
-  constructor(private yamcs: YamcsService, private dialog: MatDialog) {
-    // Attempt to restore state from session storage.
-    // This way refresh or navigation don't just throw away all opened displays
-    const instance = this.yamcs.getSelectedInstance().instance;
-    const item = sessionStorage.getItem(`yamcs.${instance}.layout`);
-    if (item) {
-      this.initialLayout = JSON.parse(item) as LayoutState;
-      this.state$ = new BehaviorSubject<LayoutState>(this.initialLayout);
-    } else {
-      this.state$ = new BehaviorSubject<LayoutState>({ frames: [] });
-    }
+  // State as loaded freshly from sessionstorage
+  initialState$ = new BehaviorSubject<LayoutState>({ frames: [] });
+
+  // State as updated while the component is connected
+  updatedState$ = new BehaviorSubject<LayoutState>({ frames: [] });
+
+  constructor(private dialog: MatDialog, store: Store<State>) {
+    this.instance$ = store.select(selectCurrentInstance);
+    this.instance$.subscribe(instance => {
+      // Attempt to restore state from session storage.
+      // This way refresh or navigation don't just throw away all opened displays
+      const item = sessionStorage.getItem(`yamcs.${instance.name}.layout`);
+      if (item) {
+        this.initialLayout = JSON.parse(item) as LayoutState;
+        this.initialState$.next(this.initialLayout);
+      } else {
+        this.initialState$.next({ frames: [] });
+      }
+    });
   }
 
   saveLayout() {
@@ -43,9 +55,8 @@ export class DisplaysPage {
     });
   }
 
-  onStateChange(state: LayoutState) {
-    this.state$.next(state);
-    const instance = this.yamcs.getSelectedInstance().instance;
+  onStateChange(instance: string, state: LayoutState) {
+    this.updatedState$.next(state);
     sessionStorage.setItem(`yamcs.${instance}.layout`, JSON.stringify(state));
   }
 }

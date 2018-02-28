@@ -18,7 +18,7 @@ import { InstanceClient } from './InstanceClient';
 
 export default class YamcsClient {
 
-  readonly baseUrl = 'http://localhost:8090';
+  readonly baseUrl = '';
   readonly apiUrl = `${this.baseUrl}/api`;
   readonly staticUrl = `${this.baseUrl}/_static`;
 

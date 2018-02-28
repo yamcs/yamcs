@@ -36,7 +36,7 @@
   </dd>
 
   <dt>Restriction Criteria</dt>
-  <dd>
+  <dd *ngIf="container.restrictionCriteria">
     <ng-container *ngFor="let criteria of container.restrictionCriteria">
       <a [routerLink]="['/mdb/parameters/', criteria.parameter.qualifiedName]"
          [queryParams]="{instance: instance.name}">
@@ -47,6 +47,7 @@
       <br>
     </ng-container>
   </dd>
+  <dd *ngIf="!container.restrictionCriteria">-</dd>
 </dl>
 
 <mat-divider></mat-divider>
