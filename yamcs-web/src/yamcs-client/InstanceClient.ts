@@ -89,7 +89,9 @@ export class InstanceClient {
 
   getLinkUpdates() {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getLinkUpdates();
+    return this.webSocketClient.getLinkUpdates().pipe(
+      filter(msg => msg.linkInfo.instance === this.instance)
+    );
   }
 
   enableLink(name: string) {

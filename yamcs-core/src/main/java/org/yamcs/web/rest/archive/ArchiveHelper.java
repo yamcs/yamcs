@@ -107,6 +107,7 @@ public final class ArchiveHelper {
             case TIMESTAMP:
                 v.setType(Type.TIMESTAMP);
                 v.setTimestampValue((Long) column);
+                v.setStringValue(TimeEncoding.toString((Long) column));
                 break;
             case ENUM:
             case STRING:

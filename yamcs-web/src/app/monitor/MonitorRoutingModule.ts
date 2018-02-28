@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 
 import { DisplaysPage } from './displays/DisplaysPage';
 import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
@@ -9,10 +9,11 @@ import { MonitorToolbar } from './template/MonitorToolbar';
 import { LayoutsPage } from './layouts/LayoutsPage';
 import { LayoutPage } from './layouts/LayoutPage';
 
-const routes = [
+const routes: Routes = [
   {
     path: '',
     canActivate: [InstanceExistsGuard],
+    runGuardsAndResolvers: 'always',  // See DisplaysPage.ts for documentation
     component: MonitorPage,
     children: [
       {

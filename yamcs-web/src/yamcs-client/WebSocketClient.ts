@@ -44,9 +44,16 @@ export class WebSocketClient {
   private subscribeOnOpen = false;
 
   constructor(instance: string) {
+    const currentLocation = window.location;
+    let wsUrl = 'ws://';
+    if (currentLocation.protocol === 'https') {
+      wsUrl = 'wss://';
+    }
+    wsUrl += `${currentLocation.host}/_websocket/${instance}`;
+
     this.subscriptionModel = new SubscriptionModel();
     this.webSocket = webSocket({
-      url: `ws://localhost:8090/_websocket/${instance}`,
+      url: wsUrl,
       closeObserver: {
         next: () => this.subscribeOnOpen = true
       },
@@ -65,7 +72,7 @@ export class WebSocketClient {
         return errors.pipe(delay(1000));
       }),
     );
-    this.webSocketConnection$.subscribe((msg: WebSocketServerMessage) => {
+    this.webSocketConnectionSubscription = this.webSocketConnection$.subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
           console.error('Server reported error: ', msg[3].msg);
         }
@@ -212,7 +219,7 @@ export class WebSocketClient {
       this.emit({ cqueues: 'subscribe' });
     }
     if (this.subscriptionModel.parameters) {
-      this.emit({ parameters: 'subscribe', data: this.subscriptionModel.parameters });
+      this.emit({ parameter: 'subscribe', data: this.subscriptionModel.parameters });
     }
     if (this.subscriptionModel.time) {
       this.emit({ time: 'subscribe' });

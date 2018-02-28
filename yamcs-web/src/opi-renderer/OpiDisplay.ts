@@ -55,9 +55,9 @@ export class OpiDisplay implements Display {
         fill: this.bgcolor,
       }));
 
-      for (const widgetNode of utils.findChildren(displayEl, 'widget')) {
-        console.log('have', widgetNode);
-      }
+      // for (const widgetNode of utils.findChildren(displayEl, 'widget')) {
+        // console.log('have', widgetNode);
+      // }
 
       const svg = rootEl.toDomElement() as SVGSVGElement;
       this.targetEl.appendChild(svg);

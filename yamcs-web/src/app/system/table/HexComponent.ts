@@ -47,9 +47,9 @@ export class HexComponent {
     if (lineAscii !== '') {
       for (let j = 0; j < 32 - (2 * (i % 16)); j++) {
         if (j !== 0 && ((2 * i) + j) % 4 === 0) {
-          result += ' X';
+          result += '  ';
         } else {
-          result += 'X';
+          result += ' ';
         }
       }
       result += '  ' + lineAscii;
