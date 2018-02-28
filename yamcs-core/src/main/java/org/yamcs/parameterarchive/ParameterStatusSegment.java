@@ -145,6 +145,7 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
                 ParameterStatus status = ParameterStatus.newBuilder().setAcquisitionStatus(AcquisitionStatus.ACQUIRED)
                         .setExpireMillis(expireMills).build();
                 ce = new CacheEntry(status);
+                m.put(expireMills, ce);
             }
             ce.lastAccessedTime = now;
             return ce.status;
