@@ -32,6 +32,7 @@ import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Yamcs.EndAction;
+import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
@@ -137,18 +138,26 @@ public class ReplayService extends AbstractService
                     tpd.getSequenceNumber(), tpd.getPacket().toByteArray()));
             break;
         case PP:
-            parameterRequestManager.update(calibrate((List<ParameterValue>) data));
+            List<ParameterValue> pvals = (List<ParameterValue>) data;
+            if (!pvals.isEmpty()) {
+                replayTime = pvals.get(0).getGenerationTime();
+                parameterRequestManager.update(calibrate(pvals));
+            }
             break;
         case CMD_HISTORY:
             CommandHistoryEntry che = (CommandHistoryEntry) data;
+            replayTime = che.getCommandId().getGenerationTime();
             commandHistoryRequestManager.addCommand(PreparedCommand.fromCommandHistoryEntry(che));
+            break;
+        case EVENT:
+            Event evt = (Event) data;
+            replayTime = evt.getGenerationTime();
             break;
         default:
             log.error("Unexpected data type {} received", type);
         }
-
     }
-
+    
     private List<ParameterValue> calibrate(List<ParameterValue> pvlist) {
         ParameterTypeProcessor ptypeProcessor = yprocessor.getProcessorData().getParameterTypeProcessor();
 
