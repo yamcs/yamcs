@@ -81,7 +81,7 @@ public class DescendingRangeIterator implements DbIterator {
             //check that it is not earlier than start
             if(rangeStart!=null) {
                 int c = ByteArrayUtils.compare(rangeStart, curKey);
-                if((strictStart && c<0) || (c<=0)) {
+                if((strictStart && c<0) || (!strictStart && c<=0)) {
                     valid = true;
                 }
             } else {

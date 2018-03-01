@@ -79,7 +79,7 @@ public class AscendingRangeIterator implements DbIterator {
             //check that it is not beyond the end
             if(rangeEnd!=null) {
                 int c = ByteArrayUtils.compare(curKey, rangeEnd);
-                if((strictEnd && c<0) || (c<=0)) {
+                if((strictEnd && c<0) || (!strictEnd && c<=0)) {
                     valid = true;
                 }
             } else {
