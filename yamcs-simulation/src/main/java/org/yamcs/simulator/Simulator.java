@@ -3,7 +3,6 @@ package org.yamcs.simulator;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import org.slf4j.Logger;
@@ -112,11 +111,6 @@ public class Simulator extends Thread {
     }
 
     protected void transmitTM(CCSDSPacket packet) {
-        tmLink.tmTransmit(packet);
-
-    }
-
-    protected void transmitAck(CCSDSPacket packet) {
         tmLink.tmTransmit(packet);
 
     }
