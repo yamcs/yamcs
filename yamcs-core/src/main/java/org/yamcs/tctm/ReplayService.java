@@ -106,6 +106,9 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         if(!rrb.hasSpeed()) {
             rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.REALTIME).setParam(1));
         }
+        if(!rrb.hasEndAction()) {
+            rrb.setEndAction(EndAction.STOP);
+        }
         this.originalReplayRequest = rrb.build();
         xtceDb = XtceDbFactory.getInstance(instance);
     }
