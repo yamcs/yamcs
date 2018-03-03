@@ -523,6 +523,7 @@ public class ParameterValue {
         if(engValue!=null) {
             sb.append(" engValue: {").append(engValue.toString()).append("}");
         }
+        sb.append(" genTime: {").append(TimeEncoding.toString(generationTime)).append("}");
         return sb.toString();
     }
     
