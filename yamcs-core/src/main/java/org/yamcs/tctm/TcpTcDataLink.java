@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
@@ -118,10 +120,18 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         openSocket();
         tcSender = new TcDequeueAndSend();
         timer.execute(tcSender);
+        timer.scheduleAtFixedRate(this, 10L, 10L, TimeUnit.SECONDS);
         notifyStarted();
     }
 
-    protected void openSocket() {
+    /**
+     * attempts to open the socket if not alreayd open and returns true if its open at the end of the call 
+     * @return
+     */
+    protected synchronized boolean openSocket() {
+        if(isSocketOpen()) {
+            return true;
+        }
         try {
             InetAddress address = InetAddress.getByName(host);
             socketChannel = SocketChannel.open(new InetSocketAddress(address, port));
@@ -130,6 +140,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             selector = Selector.open();
             selectionKey = socketChannel.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ);
             log.info("TC connection established to {}:{}", host, port);
+            return true;
         } catch (IOException e) {
             String exc = (e instanceof ConnectException) ? ((ConnectException) e).getMessage() : e.toString();
             log.info("Cannot open TC connection to {}:{} '{}'. Retrying in 10s", host, port, exc.toString());
@@ -143,6 +154,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             }
             socketChannel = null;
         }
+        return false;
     }
 
     protected void disconnect() {
@@ -163,12 +175,11 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
      * 
      * @return
      */
-    protected boolean isSocketOpen() {
-        final ByteBuffer bb = ByteBuffer.allocate(16);
+    private boolean isSocketOpen() {
         if (socketChannel == null) {
             return false;
         }
-
+        final ByteBuffer bb = ByteBuffer.allocate(16);
         boolean connected = false;
         try {
             selector.select();
@@ -263,9 +274,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         if (!isRunning() || disabled) {
             return;
         }
-        if (!isSocketOpen()) {
-            openSocket();
-        }
+        openSocket();
     }
 
     @Override
@@ -327,12 +336,8 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
             
             bb.rewind();
-            while (!sent && (retries > 0)) {
-                if (!isSocketOpen()) {
-                    openSocket();
-                }
-
-                if (isSocketOpen()) {
+            while (!sent && (retries > 0)) {              
+                if (openSocket()) {
                     try {
                         socketChannel.write(bb);
                         tcCount++;
