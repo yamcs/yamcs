@@ -393,6 +393,11 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         }
     }
 
+    public void quit() {
+       for(int subscriptionId:subscriptions.keySet()) {
+           prm.removeRequest(subscriptionId);
+       }
+    }
 
 
     static class Subscription {

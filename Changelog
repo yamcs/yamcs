@@ -1,5 +1,7 @@
-Version 4.1.0 released
+Version 4.1.1 released
  - added an alternative Parameter Cache that consumes less memory by using array of primitives to store parameter values
+ - refurbished yamcs-web
+ - support multiple parameter subscriptions via the websocket
 
 
 Version 4.0.1 released 23-Jan-2017

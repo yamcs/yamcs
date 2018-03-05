@@ -4262,6 +4262,23 @@ public final class Pvalue {
      * <code>optional int32 seqNum = 4;</code>
      */
     int getSeqNum();
+
+    /**
+     * <code>optional int32 subscriptionId = 5;</code>
+     *
+     * <pre>
+     *this is used when parameter data is delivered as result of subscriptions
+     * </pre>
+     */
+    boolean hasSubscriptionId();
+    /**
+     * <code>optional int32 subscriptionId = 5;</code>
+     *
+     * <pre>
+     *this is used when parameter data is delivered as result of subscriptions
+     * </pre>
+     */
+    int getSubscriptionId();
   }
   /**
    * Protobuf type {@code pvalue.ParameterData}
@@ -4337,6 +4354,11 @@ public final class Pvalue {
             case 32: {
               bitField0_ |= 0x00000004;
               seqNum_ = input.readInt32();
+              break;
+            }
+            case 40: {
+              bitField0_ |= 0x00000008;
+              subscriptionId_ = input.readInt32();
               break;
             }
           }
@@ -4507,11 +4529,35 @@ public final class Pvalue {
       return seqNum_;
     }
 
+    public static final int SUBSCRIPTIONID_FIELD_NUMBER = 5;
+    private int subscriptionId_;
+    /**
+     * <code>optional int32 subscriptionId = 5;</code>
+     *
+     * <pre>
+     *this is used when parameter data is delivered as result of subscriptions
+     * </pre>
+     */
+    public boolean hasSubscriptionId() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional int32 subscriptionId = 5;</code>
+     *
+     * <pre>
+     *this is used when parameter data is delivered as result of subscriptions
+     * </pre>
+     */
+    public int getSubscriptionId() {
+      return subscriptionId_;
+    }
+
     private void initFields() {
       parameter_ = java.util.Collections.emptyList();
       group_ = "";
       generationTime_ = 0L;
       seqNum_ = 0;
+      subscriptionId_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -4544,6 +4590,9 @@ public final class Pvalue {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeInt32(4, seqNum_);
       }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeInt32(5, subscriptionId_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -4568,6 +4617,10 @@ public final class Pvalue {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(4, seqNum_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(5, subscriptionId_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -4699,6 +4752,8 @@ public final class Pvalue {
         bitField0_ = (bitField0_ & ~0x00000004);
         seqNum_ = 0;
         bitField0_ = (bitField0_ & ~0x00000008);
+        subscriptionId_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -4748,6 +4803,10 @@ public final class Pvalue {
           to_bitField0_ |= 0x00000004;
         }
         result.seqNum_ = seqNum_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.subscriptionId_ = subscriptionId_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -4800,6 +4859,9 @@ public final class Pvalue {
         }
         if (other.hasSeqNum()) {
           setSeqNum(other.getSeqNum());
+        }
+        if (other.hasSubscriptionId()) {
+          setSubscriptionId(other.getSubscriptionId());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -5246,6 +5308,54 @@ public final class Pvalue {
       public Builder clearSeqNum() {
         bitField0_ = (bitField0_ & ~0x00000008);
         seqNum_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int subscriptionId_ ;
+      /**
+       * <code>optional int32 subscriptionId = 5;</code>
+       *
+       * <pre>
+       *this is used when parameter data is delivered as result of subscriptions
+       * </pre>
+       */
+      public boolean hasSubscriptionId() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional int32 subscriptionId = 5;</code>
+       *
+       * <pre>
+       *this is used when parameter data is delivered as result of subscriptions
+       * </pre>
+       */
+      public int getSubscriptionId() {
+        return subscriptionId_;
+      }
+      /**
+       * <code>optional int32 subscriptionId = 5;</code>
+       *
+       * <pre>
+       *this is used when parameter data is delivered as result of subscriptions
+       * </pre>
+       */
+      public Builder setSubscriptionId(int value) {
+        bitField0_ |= 0x00000010;
+        subscriptionId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 subscriptionId = 5;</code>
+       *
+       * <pre>
+       *this is used when parameter data is delivered as result of subscriptions
+       * </pre>
+       */
+      public Builder clearSubscriptionId() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        subscriptionId_ = 0;
         onChanged();
         return this;
       }
@@ -6778,20 +6888,21 @@ public final class Pvalue {
       "2\n\020monitoringResult\030\002 \001(\0162\030.pvalue.Monit" +
       "oringResult\022.\n\016rangeCondition\030\003 \001(\0162\026.pv" +
       "alue.RangeCondition\022#\n\nalarmRange\030\004 \003(\0132" +
-      "\017.mdb.AlarmRange\022\024\n\014expireMillis\030\005 \001(\003\"q",
-      "\n\rParameterData\022)\n\tparameter\030\001 \003(\0132\026.pva" +
-      "lue.ParameterValue\022\r\n\005group\030\002 \001(\t\022\026\n\016gen" +
-      "erationTime\030\003 \001(\003\022\016\n\006seqNum\030\004 \001(\005\"\201\001\n\nTi" +
-      "meSeries\022)\n\006sample\030\001 \003(\0132\031.pvalue.TimeSe" +
-      "ries.Sample\032H\n\006Sample\022\014\n\004time\030\001 \001(\t\022\013\n\003a" +
-      "vg\030\002 \001(\001\022\013\n\003min\030\003 \001(\001\022\013\n\003max\030\004 \001(\001\022\t\n\001n\030" +
-      "\005 \001(\005*M\n\021AcquisitionStatus\022\014\n\010ACQUIRED\020\000" +
-      "\022\020\n\014NOT_RECEIVED\020\001\022\013\n\007INVALID\020\002\022\013\n\007EXPIR" +
-      "ED\020\003*o\n\020MonitoringResult\022\014\n\010DISABLED\020\000\022\r" +
-      "\n\tIN_LIMITS\020\001\022\t\n\005WATCH\020\007\022\013\n\007WARNING\020\n\022\014\n",
-      "\010DISTRESS\020\r\022\014\n\010CRITICAL\020\020\022\n\n\006SEVERE\020\023*#\n" +
-      "\016RangeCondition\022\007\n\003LOW\020\000\022\010\n\004HIGH\020\001B\024\n\022or" +
-      "g.yamcs.protobuf"
+      "\017.mdb.AlarmRange\022\024\n\014expireMillis\030\005 \001(\003\"\211",
+      "\001\n\rParameterData\022)\n\tparameter\030\001 \003(\0132\026.pv" +
+      "alue.ParameterValue\022\r\n\005group\030\002 \001(\t\022\026\n\016ge" +
+      "nerationTime\030\003 \001(\003\022\016\n\006seqNum\030\004 \001(\005\022\026\n\016su" +
+      "bscriptionId\030\005 \001(\005\"\201\001\n\nTimeSeries\022)\n\006sam" +
+      "ple\030\001 \003(\0132\031.pvalue.TimeSeries.Sample\032H\n\006" +
+      "Sample\022\014\n\004time\030\001 \001(\t\022\013\n\003avg\030\002 \001(\001\022\013\n\003min" +
+      "\030\003 \001(\001\022\013\n\003max\030\004 \001(\001\022\t\n\001n\030\005 \001(\005*M\n\021Acquis" +
+      "itionStatus\022\014\n\010ACQUIRED\020\000\022\020\n\014NOT_RECEIVE" +
+      "D\020\001\022\013\n\007INVALID\020\002\022\013\n\007EXPIRED\020\003*o\n\020Monitor" +
+      "ingResult\022\014\n\010DISABLED\020\000\022\r\n\tIN_LIMITS\020\001\022\t",
+      "\n\005WATCH\020\007\022\013\n\007WARNING\020\n\022\014\n\010DISTRESS\020\r\022\014\n\010" +
+      "CRITICAL\020\020\022\n\n\006SEVERE\020\023*#\n\016RangeCondition" +
+      "\022\007\n\003LOW\020\000\022\010\n\004HIGH\020\001B\024\n\022org.yamcs.protobu" +
+      "f"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -6824,7 +6935,7 @@ public final class Pvalue {
     internal_static_pvalue_ParameterData_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_pvalue_ParameterData_descriptor,
-        new java.lang.String[] { "Parameter", "Group", "GenerationTime", "SeqNum", });
+        new java.lang.String[] { "Parameter", "Group", "GenerationTime", "SeqNum", "SubscriptionId", });
     internal_static_pvalue_TimeSeries_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_pvalue_TimeSeries_fieldAccessorTable = new

@@ -83,6 +83,9 @@ message ParameterData {
   optional string group = 2;
   optional int64  generationTime = 3;
   optional int32 seqNum = 4;
+
+  //this is used when parameter data is delivered as result of subscriptions
+  optional int32 subscriptionId = 5;
 }
 
 message TimeSeries {

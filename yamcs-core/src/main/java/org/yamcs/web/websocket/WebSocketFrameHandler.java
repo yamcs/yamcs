@@ -1,6 +1,7 @@
 package org.yamcs.web.websocket;
 
 import java.io.IOException;
+import java.nio.channels.ClosedChannelException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -140,7 +141,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
                     WebSocketDecodeContext msg = decoder.decodeMessage(binary);
                     AbstractWebSocketResource resource = resourcesByName.get(msg.getResource());
                     if (resource != null) {
-                        WebSocketReplyData reply = resource.processRequest(msg, decoder);
+                        WebSocketReply reply = resource.processRequest(msg, decoder);
                         if (reply != null) {
                             sendReply(reply);
                         }
@@ -194,7 +195,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         return encoder;
     }
 
-    public void sendReply(WebSocketReplyData reply) throws IOException {
+    public void sendReply(WebSocketReply reply) throws IOException {
         if (!channel.isOpen()) {
             throw new IOException("Channel not open");
         }
@@ -221,7 +222,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     public <T extends Message> void sendData(ProtoDataType dataType, T data) throws IOException {
         dataSeqCount++;
         if (!channel.isOpen()) {
-            throw new IOException("Channel not open");
+            throw new ClosedChannelException();
         }
 
         if (!channel.isWritable()) {
@@ -245,7 +246,4 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         return channel;
     }
 
-    public void sendReply(WebSocketReply reply) throws IOException {
-        sendReply(reply.toWebSocketReplyData());
-    }
 }

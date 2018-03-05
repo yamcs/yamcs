@@ -8561,6 +8561,33 @@ public final class Web {
     boolean getSendFromCache();
 
     /**
+     * <code>optional int32 subscriptionId = 5;</code>
+     *
+     * <pre>
+     *subcriptionId
+     *  0 or not specified means to add parameters to the first subscription made
+     *     this is for compatibility with the previous yamcs version before 4.1 
+     *     when it was not possible to have multiple subscriptions   
+     * -1 means to create a new subscription
+     * &gt;1 means to add parameters to the existing subcription with that id
+     * </pre>
+     */
+    boolean hasSubscriptionId();
+    /**
+     * <code>optional int32 subscriptionId = 5;</code>
+     *
+     * <pre>
+     *subcriptionId
+     *  0 or not specified means to add parameters to the first subscription made
+     *     this is for compatibility with the previous yamcs version before 4.1 
+     *     when it was not possible to have multiple subscriptions   
+     * -1 means to create a new subscription
+     * &gt;1 means to add parameters to the existing subcription with that id
+     * </pre>
+     */
+    int getSubscriptionId();
+
+    /**
      * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
      *
      * <pre>
@@ -8616,6 +8643,10 @@ public final class Web {
   }
   /**
    * Protobuf type {@code web.ParameterSubscriptionRequest}
+   *
+   * <pre>
+   * Used for parameter subscription and unsubscription.
+   * </pre>
    */
   public static final class ParameterSubscriptionRequest extends
       com.google.protobuf.GeneratedMessage implements
@@ -8689,10 +8720,15 @@ public final class Web {
               sendFromCache_ = input.readBool();
               break;
             }
+            case 40: {
+              bitField0_ |= 0x00000008;
+              subscriptionId_ = input.readInt32();
+              break;
+            }
             case 80002: {
-              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
                 list_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
-                mutable_bitField0_ |= 0x00000010;
+                mutable_bitField0_ |= 0x00000020;
               }
               list_.add(input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
               break;
@@ -8708,7 +8744,7 @@ public final class Web {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
           id_ = java.util.Collections.unmodifiableList(id_);
         }
-        if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+        if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
           list_ = java.util.Collections.unmodifiableList(list_);
         }
         this.unknownFields = unknownFields.build();
@@ -8855,6 +8891,39 @@ public final class Web {
       return sendFromCache_;
     }
 
+    public static final int SUBSCRIPTIONID_FIELD_NUMBER = 5;
+    private int subscriptionId_;
+    /**
+     * <code>optional int32 subscriptionId = 5;</code>
+     *
+     * <pre>
+     *subcriptionId
+     *  0 or not specified means to add parameters to the first subscription made
+     *     this is for compatibility with the previous yamcs version before 4.1 
+     *     when it was not possible to have multiple subscriptions   
+     * -1 means to create a new subscription
+     * &gt;1 means to add parameters to the existing subcription with that id
+     * </pre>
+     */
+    public boolean hasSubscriptionId() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional int32 subscriptionId = 5;</code>
+     *
+     * <pre>
+     *subcriptionId
+     *  0 or not specified means to add parameters to the first subscription made
+     *     this is for compatibility with the previous yamcs version before 4.1 
+     *     when it was not possible to have multiple subscriptions   
+     * -1 means to create a new subscription
+     * &gt;1 means to add parameters to the existing subcription with that id
+     * </pre>
+     */
+    public int getSubscriptionId() {
+      return subscriptionId_;
+    }
+
     public static final int LIST_FIELD_NUMBER = 10000;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> list_;
     /**
@@ -8925,6 +8994,7 @@ public final class Web {
       abortOnInvalid_ = false;
       updateOnExpiration_ = false;
       sendFromCache_ = false;
+      subscriptionId_ = 0;
       list_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
@@ -8964,6 +9034,9 @@ public final class Web {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeBool(4, sendFromCache_);
       }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeInt32(5, subscriptionId_);
+      }
       for (int i = 0; i < list_.size(); i++) {
         output.writeMessage(10000, list_.get(i));
       }
@@ -8991,6 +9064,10 @@ public final class Web {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(4, sendFromCache_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(5, subscriptionId_);
       }
       for (int i = 0; i < list_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
@@ -9076,6 +9153,10 @@ public final class Web {
     }
     /**
      * Protobuf type {@code web.ParameterSubscriptionRequest}
+     *
+     * <pre>
+     * Used for parameter subscription and unsubscription.
+     * </pre>
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
@@ -9127,9 +9208,11 @@ public final class Web {
         bitField0_ = (bitField0_ & ~0x00000004);
         sendFromCache_ = false;
         bitField0_ = (bitField0_ & ~0x00000008);
+        subscriptionId_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000010);
         if (listBuilder_ == null) {
           list_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000010);
+          bitField0_ = (bitField0_ & ~0x00000020);
         } else {
           listBuilder_.clear();
         }
@@ -9182,10 +9265,14 @@ public final class Web {
           to_bitField0_ |= 0x00000004;
         }
         result.sendFromCache_ = sendFromCache_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.subscriptionId_ = subscriptionId_;
         if (listBuilder_ == null) {
-          if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          if (((bitField0_ & 0x00000020) == 0x00000020)) {
             list_ = java.util.Collections.unmodifiableList(list_);
-            bitField0_ = (bitField0_ & ~0x00000010);
+            bitField0_ = (bitField0_ & ~0x00000020);
           }
           result.list_ = list_;
         } else {
@@ -9242,11 +9329,14 @@ public final class Web {
         if (other.hasSendFromCache()) {
           setSendFromCache(other.getSendFromCache());
         }
+        if (other.hasSubscriptionId()) {
+          setSubscriptionId(other.getSubscriptionId());
+        }
         if (listBuilder_ == null) {
           if (!other.list_.isEmpty()) {
             if (list_.isEmpty()) {
               list_ = other.list_;
-              bitField0_ = (bitField0_ & ~0x00000010);
+              bitField0_ = (bitField0_ & ~0x00000020);
             } else {
               ensureListIsMutable();
               list_.addAll(other.list_);
@@ -9259,7 +9349,7 @@ public final class Web {
               listBuilder_.dispose();
               listBuilder_ = null;
               list_ = other.list_;
-              bitField0_ = (bitField0_ & ~0x00000010);
+              bitField0_ = (bitField0_ & ~0x00000020);
               listBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getListFieldBuilder() : null;
@@ -9707,12 +9797,80 @@ public final class Web {
         return this;
       }
 
+      private int subscriptionId_ ;
+      /**
+       * <code>optional int32 subscriptionId = 5;</code>
+       *
+       * <pre>
+       *subcriptionId
+       *  0 or not specified means to add parameters to the first subscription made
+       *     this is for compatibility with the previous yamcs version before 4.1 
+       *     when it was not possible to have multiple subscriptions   
+       * -1 means to create a new subscription
+       * &gt;1 means to add parameters to the existing subcription with that id
+       * </pre>
+       */
+      public boolean hasSubscriptionId() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional int32 subscriptionId = 5;</code>
+       *
+       * <pre>
+       *subcriptionId
+       *  0 or not specified means to add parameters to the first subscription made
+       *     this is for compatibility with the previous yamcs version before 4.1 
+       *     when it was not possible to have multiple subscriptions   
+       * -1 means to create a new subscription
+       * &gt;1 means to add parameters to the existing subcription with that id
+       * </pre>
+       */
+      public int getSubscriptionId() {
+        return subscriptionId_;
+      }
+      /**
+       * <code>optional int32 subscriptionId = 5;</code>
+       *
+       * <pre>
+       *subcriptionId
+       *  0 or not specified means to add parameters to the first subscription made
+       *     this is for compatibility with the previous yamcs version before 4.1 
+       *     when it was not possible to have multiple subscriptions   
+       * -1 means to create a new subscription
+       * &gt;1 means to add parameters to the existing subcription with that id
+       * </pre>
+       */
+      public Builder setSubscriptionId(int value) {
+        bitField0_ |= 0x00000010;
+        subscriptionId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 subscriptionId = 5;</code>
+       *
+       * <pre>
+       *subcriptionId
+       *  0 or not specified means to add parameters to the first subscription made
+       *     this is for compatibility with the previous yamcs version before 4.1 
+       *     when it was not possible to have multiple subscriptions   
+       * -1 means to create a new subscription
+       * &gt;1 means to add parameters to the existing subcription with that id
+       * </pre>
+       */
+      public Builder clearSubscriptionId() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        subscriptionId_ = 0;
+        onChanged();
+        return this;
+      }
+
       private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> list_ =
         java.util.Collections.emptyList();
       private void ensureListIsMutable() {
-        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+        if (!((bitField0_ & 0x00000020) == 0x00000020)) {
           list_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>(list_);
-          bitField0_ |= 0x00000010;
+          bitField0_ |= 0x00000020;
          }
       }
 
@@ -9928,7 +10086,7 @@ public final class Web {
       @java.lang.Deprecated public Builder clearList() {
         if (listBuilder_ == null) {
           list_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000010);
+          bitField0_ = (bitField0_ & ~0x00000020);
           onChanged();
         } else {
           listBuilder_.clear();
@@ -10047,7 +10205,7 @@ public final class Web {
           listBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder>(
                   list_,
-                  ((bitField0_ & 0x00000010) == 0x00000010),
+                  ((bitField0_ & 0x00000020) == 0x00000020),
                   getParentForChildren(),
                   isClean());
           list_ = null;
@@ -10069,30 +10227,6 @@ public final class Web {
   public interface ParameterSubscriptionResponseOrBuilder extends
       // @@protoc_insertion_point(interface_extends:web.ParameterSubscriptionResponse)
       com.google.protobuf.MessageOrBuilder {
-
-    /**
-     * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-     */
-    java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> 
-        getValidList();
-    /**
-     * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-     */
-    org.yamcs.protobuf.Yamcs.NamedObjectId getValid(int index);
-    /**
-     * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-     */
-    int getValidCount();
-    /**
-     * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-     */
-    java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-        getValidOrBuilderList();
-    /**
-     * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-     */
-    org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getValidOrBuilder(
-        int index);
 
     /**
      * <code>repeated .yamcs.NamedObjectId invalid = 2;</code>
@@ -10117,9 +10251,22 @@ public final class Web {
      */
     org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getInvalidOrBuilder(
         int index);
+
+    /**
+     * <code>optional int32 subscriptionId = 3;</code>
+     */
+    boolean hasSubscriptionId();
+    /**
+     * <code>optional int32 subscriptionId = 3;</code>
+     */
+    int getSubscriptionId();
   }
   /**
    * Protobuf type {@code web.ParameterSubscriptionResponse}
+   *
+   * <pre>
+   * Response to parameter subscription
+   * </pre>
    */
   public static final class ParameterSubscriptionResponse extends
       com.google.protobuf.GeneratedMessage implements
@@ -10170,20 +10317,17 @@ public final class Web {
               }
               break;
             }
-            case 10: {
+            case 18: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                valid_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
+                invalid_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              valid_.add(input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
+              invalid_.add(input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
               break;
             }
-            case 18: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-                invalid_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
-                mutable_bitField0_ |= 0x00000002;
-              }
-              invalid_.add(input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
+            case 24: {
+              bitField0_ |= 0x00000001;
+              subscriptionId_ = input.readInt32();
               break;
             }
           }
@@ -10195,9 +10339,6 @@ public final class Web {
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-          valid_ = java.util.Collections.unmodifiableList(valid_);
-        }
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
           invalid_ = java.util.Collections.unmodifiableList(invalid_);
         }
         this.unknownFields = unknownFields.build();
@@ -10231,41 +10372,7 @@ public final class Web {
       return PARSER;
     }
 
-    public static final int VALID_FIELD_NUMBER = 1;
-    private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> valid_;
-    /**
-     * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-     */
-    public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getValidList() {
-      return valid_;
-    }
-    /**
-     * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-     */
-    public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-        getValidOrBuilderList() {
-      return valid_;
-    }
-    /**
-     * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-     */
-    public int getValidCount() {
-      return valid_.size();
-    }
-    /**
-     * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-     */
-    public org.yamcs.protobuf.Yamcs.NamedObjectId getValid(int index) {
-      return valid_.get(index);
-    }
-    /**
-     * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-     */
-    public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getValidOrBuilder(
-        int index) {
-      return valid_.get(index);
-    }
-
+    private int bitField0_;
     public static final int INVALID_FIELD_NUMBER = 2;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> invalid_;
     /**
@@ -10301,9 +10408,24 @@ public final class Web {
       return invalid_.get(index);
     }
 
+    public static final int SUBSCRIPTIONID_FIELD_NUMBER = 3;
+    private int subscriptionId_;
+    /**
+     * <code>optional int32 subscriptionId = 3;</code>
+     */
+    public boolean hasSubscriptionId() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional int32 subscriptionId = 3;</code>
+     */
+    public int getSubscriptionId() {
+      return subscriptionId_;
+    }
+
     private void initFields() {
-      valid_ = java.util.Collections.emptyList();
       invalid_ = java.util.Collections.emptyList();
+      subscriptionId_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -10311,12 +10433,6 @@ public final class Web {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
-      for (int i = 0; i < getValidCount(); i++) {
-        if (!getValid(i).isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
       for (int i = 0; i < getInvalidCount(); i++) {
         if (!getInvalid(i).isInitialized()) {
           memoizedIsInitialized = 0;
@@ -10330,11 +10446,11 @@ public final class Web {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      for (int i = 0; i < valid_.size(); i++) {
-        output.writeMessage(1, valid_.get(i));
-      }
       for (int i = 0; i < invalid_.size(); i++) {
         output.writeMessage(2, invalid_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeInt32(3, subscriptionId_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -10345,13 +10461,13 @@ public final class Web {
       if (size != -1) return size;
 
       size = 0;
-      for (int i = 0; i < valid_.size(); i++) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, valid_.get(i));
-      }
       for (int i = 0; i < invalid_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, invalid_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(3, subscriptionId_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -10433,6 +10549,10 @@ public final class Web {
     }
     /**
      * Protobuf type {@code web.ParameterSubscriptionResponse}
+     *
+     * <pre>
+     * Response to parameter subscription
+     * </pre>
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
@@ -10462,7 +10582,6 @@ public final class Web {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getValidFieldBuilder();
           getInvalidFieldBuilder();
         }
       }
@@ -10472,18 +10591,14 @@ public final class Web {
 
       public Builder clear() {
         super.clear();
-        if (validBuilder_ == null) {
-          valid_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000001);
-        } else {
-          validBuilder_.clear();
-        }
         if (invalidBuilder_ == null) {
           invalid_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000001);
         } else {
           invalidBuilder_.clear();
         }
+        subscriptionId_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -10511,24 +10626,21 @@ public final class Web {
       public org.yamcs.protobuf.Web.ParameterSubscriptionResponse buildPartial() {
         org.yamcs.protobuf.Web.ParameterSubscriptionResponse result = new org.yamcs.protobuf.Web.ParameterSubscriptionResponse(this);
         int from_bitField0_ = bitField0_;
-        if (validBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            valid_ = java.util.Collections.unmodifiableList(valid_);
-            bitField0_ = (bitField0_ & ~0x00000001);
-          }
-          result.valid_ = valid_;
-        } else {
-          result.valid_ = validBuilder_.build();
-        }
+        int to_bitField0_ = 0;
         if (invalidBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
             invalid_ = java.util.Collections.unmodifiableList(invalid_);
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000001);
           }
           result.invalid_ = invalid_;
         } else {
           result.invalid_ = invalidBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.subscriptionId_ = subscriptionId_;
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -10544,37 +10656,11 @@ public final class Web {
 
       public Builder mergeFrom(org.yamcs.protobuf.Web.ParameterSubscriptionResponse other) {
         if (other == org.yamcs.protobuf.Web.ParameterSubscriptionResponse.getDefaultInstance()) return this;
-        if (validBuilder_ == null) {
-          if (!other.valid_.isEmpty()) {
-            if (valid_.isEmpty()) {
-              valid_ = other.valid_;
-              bitField0_ = (bitField0_ & ~0x00000001);
-            } else {
-              ensureValidIsMutable();
-              valid_.addAll(other.valid_);
-            }
-            onChanged();
-          }
-        } else {
-          if (!other.valid_.isEmpty()) {
-            if (validBuilder_.isEmpty()) {
-              validBuilder_.dispose();
-              validBuilder_ = null;
-              valid_ = other.valid_;
-              bitField0_ = (bitField0_ & ~0x00000001);
-              validBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                   getValidFieldBuilder() : null;
-            } else {
-              validBuilder_.addAllMessages(other.valid_);
-            }
-          }
-        }
         if (invalidBuilder_ == null) {
           if (!other.invalid_.isEmpty()) {
             if (invalid_.isEmpty()) {
               invalid_ = other.invalid_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000001);
             } else {
               ensureInvalidIsMutable();
               invalid_.addAll(other.invalid_);
@@ -10587,7 +10673,7 @@ public final class Web {
               invalidBuilder_.dispose();
               invalidBuilder_ = null;
               invalid_ = other.invalid_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000001);
               invalidBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getInvalidFieldBuilder() : null;
@@ -10596,17 +10682,14 @@ public final class Web {
             }
           }
         }
+        if (other.hasSubscriptionId()) {
+          setSubscriptionId(other.getSubscriptionId());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
 
       public final boolean isInitialized() {
-        for (int i = 0; i < getValidCount(); i++) {
-          if (!getValid(i).isInitialized()) {
-            
-            return false;
-          }
-        }
         for (int i = 0; i < getInvalidCount(); i++) {
           if (!getInvalid(i).isInitialized()) {
             
@@ -10635,252 +10718,12 @@ public final class Web {
       }
       private int bitField0_;
 
-      private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> valid_ =
-        java.util.Collections.emptyList();
-      private void ensureValidIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          valid_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>(valid_);
-          bitField0_ |= 0x00000001;
-         }
-      }
-
-      private com.google.protobuf.RepeatedFieldBuilder<
-          org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> validBuilder_;
-
-      /**
-       * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-       */
-      public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getValidList() {
-        if (validBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(valid_);
-        } else {
-          return validBuilder_.getMessageList();
-        }
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-       */
-      public int getValidCount() {
-        if (validBuilder_ == null) {
-          return valid_.size();
-        } else {
-          return validBuilder_.getCount();
-        }
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-       */
-      public org.yamcs.protobuf.Yamcs.NamedObjectId getValid(int index) {
-        if (validBuilder_ == null) {
-          return valid_.get(index);
-        } else {
-          return validBuilder_.getMessage(index);
-        }
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-       */
-      public Builder setValid(
-          int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
-        if (validBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureValidIsMutable();
-          valid_.set(index, value);
-          onChanged();
-        } else {
-          validBuilder_.setMessage(index, value);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-       */
-      public Builder setValid(
-          int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        if (validBuilder_ == null) {
-          ensureValidIsMutable();
-          valid_.set(index, builderForValue.build());
-          onChanged();
-        } else {
-          validBuilder_.setMessage(index, builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-       */
-      public Builder addValid(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
-        if (validBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureValidIsMutable();
-          valid_.add(value);
-          onChanged();
-        } else {
-          validBuilder_.addMessage(value);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-       */
-      public Builder addValid(
-          int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
-        if (validBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureValidIsMutable();
-          valid_.add(index, value);
-          onChanged();
-        } else {
-          validBuilder_.addMessage(index, value);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-       */
-      public Builder addValid(
-          org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        if (validBuilder_ == null) {
-          ensureValidIsMutable();
-          valid_.add(builderForValue.build());
-          onChanged();
-        } else {
-          validBuilder_.addMessage(builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-       */
-      public Builder addValid(
-          int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        if (validBuilder_ == null) {
-          ensureValidIsMutable();
-          valid_.add(index, builderForValue.build());
-          onChanged();
-        } else {
-          validBuilder_.addMessage(index, builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-       */
-      public Builder addAllValid(
-          java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
-        if (validBuilder_ == null) {
-          ensureValidIsMutable();
-          com.google.protobuf.AbstractMessageLite.Builder.addAll(
-              values, valid_);
-          onChanged();
-        } else {
-          validBuilder_.addAllMessages(values);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-       */
-      public Builder clearValid() {
-        if (validBuilder_ == null) {
-          valid_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000001);
-          onChanged();
-        } else {
-          validBuilder_.clear();
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-       */
-      public Builder removeValid(int index) {
-        if (validBuilder_ == null) {
-          ensureValidIsMutable();
-          valid_.remove(index);
-          onChanged();
-        } else {
-          validBuilder_.remove(index);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-       */
-      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder getValidBuilder(
-          int index) {
-        return getValidFieldBuilder().getBuilder(index);
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-       */
-      public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getValidOrBuilder(
-          int index) {
-        if (validBuilder_ == null) {
-          return valid_.get(index);  } else {
-          return validBuilder_.getMessageOrBuilder(index);
-        }
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-       */
-      public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-           getValidOrBuilderList() {
-        if (validBuilder_ != null) {
-          return validBuilder_.getMessageOrBuilderList();
-        } else {
-          return java.util.Collections.unmodifiableList(valid_);
-        }
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-       */
-      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addValidBuilder() {
-        return getValidFieldBuilder().addBuilder(
-            org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-       */
-      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addValidBuilder(
-          int index) {
-        return getValidFieldBuilder().addBuilder(
-            index, org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
-      }
-      /**
-       * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
-       */
-      public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId.Builder> 
-           getValidBuilderList() {
-        return getValidFieldBuilder().getBuilderList();
-      }
-      private com.google.protobuf.RepeatedFieldBuilder<
-          org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-          getValidFieldBuilder() {
-        if (validBuilder_ == null) {
-          validBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder>(
-                  valid_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
-                  getParentForChildren(),
-                  isClean());
-          valid_ = null;
-        }
-        return validBuilder_;
-      }
-
       private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> invalid_ =
         java.util.Collections.emptyList();
       private void ensureInvalidIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
           invalid_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>(invalid_);
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000001;
          }
       }
 
@@ -11030,7 +10873,7 @@ public final class Web {
       public Builder clearInvalid() {
         if (invalidBuilder_ == null) {
           invalid_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000001);
           onChanged();
         } else {
           invalidBuilder_.clear();
@@ -11107,12 +10950,44 @@ public final class Web {
           invalidBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
               org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder>(
                   invalid_,
-                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  ((bitField0_ & 0x00000001) == 0x00000001),
                   getParentForChildren(),
                   isClean());
           invalid_ = null;
         }
         return invalidBuilder_;
+      }
+
+      private int subscriptionId_ ;
+      /**
+       * <code>optional int32 subscriptionId = 3;</code>
+       */
+      public boolean hasSubscriptionId() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional int32 subscriptionId = 3;</code>
+       */
+      public int getSubscriptionId() {
+        return subscriptionId_;
+      }
+      /**
+       * <code>optional int32 subscriptionId = 3;</code>
+       */
+      public Builder setSubscriptionId(int value) {
+        bitField0_ |= 0x00000002;
+        subscriptionId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 subscriptionId = 3;</code>
+       */
+      public Builder clearSubscriptionId() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        subscriptionId_ = 0;
+        onChanged();
+        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:web.ParameterSubscriptionResponse)
@@ -12034,18 +11909,19 @@ public final class Web {
       "PLY\020\002\022\r\n\tEXCEPTION\020\003\022\010\n\004DATA\020\004\"4\n\026WebSoc",
       "ketExtensionData\022\014\n\004type\030\001 \001(\r\022\014\n\004data\030\002" +
       " \001(\014\"8\n\024RestExceptionMessage\022\014\n\004type\030\001 \001" +
-      "(\t\022\013\n\003msg\030\002 \001(\t*\005\010d\020\311\001\"\264\001\n\034ParameterSubs" +
+      "(\t\022\013\n\003msg\030\002 \001(\t*\005\010d\020\311\001\"\314\001\n\034ParameterSubs" +
       "criptionRequest\022 \n\002id\030\001 \003(\0132\024.yamcs.Name" +
       "dObjectId\022\026\n\016abortOnInvalid\030\002 \001(\010\022\032\n\022upd" +
       "ateOnExpiration\030\003 \001(\010\022\025\n\rsendFromCache\030\004" +
-      " \001(\010\022\'\n\004list\030\220N \003(\0132\024.yamcs.NamedObjectI" +
-      "dB\002\030\001\"k\n\035ParameterSubscriptionResponse\022#" +
-      "\n\005valid\030\001 \003(\0132\024.yamcs.NamedObjectId\022%\n\007i" +
-      "nvalid\030\002 \003(\0132\024.yamcs.NamedObjectId\"\207\001\n\016C",
-      "onnectionInfo\022\020\n\010clientId\030\001 \001(\005\0220\n\010insta" +
-      "nce\030\002 \001(\0132\036.yamcsManagement.YamcsInstanc" +
-      "e\0221\n\tprocessor\030\003 \001(\0132\036.yamcsManagement.P" +
-      "rocessorInfoB\024\n\022org.yamcs.protobuf"
+      " \001(\010\022\026\n\016subscriptionId\030\005 \001(\005\022\'\n\004list\030\220N " +
+      "\003(\0132\024.yamcs.NamedObjectIdB\002\030\001\"^\n\035Paramet" +
+      "erSubscriptionResponse\022%\n\007invalid\030\002 \003(\0132" +
+      "\024.yamcs.NamedObjectId\022\026\n\016subscriptionId\030",
+      "\003 \001(\005\"\207\001\n\016ConnectionInfo\022\020\n\010clientId\030\001 \001" +
+      "(\005\0220\n\010instance\030\002 \001(\0132\036.yamcsManagement.Y" +
+      "amcsInstance\0221\n\tprocessor\030\003 \001(\0132\036.yamcsM" +
+      "anagement.ProcessorInfoB\024\n\022org.yamcs.pro" +
+      "tobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -12112,13 +11988,13 @@ public final class Web {
     internal_static_web_ParameterSubscriptionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_web_ParameterSubscriptionRequest_descriptor,
-        new java.lang.String[] { "Id", "AbortOnInvalid", "UpdateOnExpiration", "SendFromCache", "List", });
+        new java.lang.String[] { "Id", "AbortOnInvalid", "UpdateOnExpiration", "SendFromCache", "SubscriptionId", "List", });
     internal_static_web_ParameterSubscriptionResponse_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_web_ParameterSubscriptionResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_web_ParameterSubscriptionResponse_descriptor,
-        new java.lang.String[] { "Valid", "Invalid", });
+        new java.lang.String[] { "Invalid", "SubscriptionId", });
     internal_static_web_ConnectionInfo_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_web_ConnectionInfo_fieldAccessorTable = new

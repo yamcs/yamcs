@@ -82,6 +82,9 @@ message RestExceptionMessage {
   extensions 100 to 200;
 }
 
+/*
+ * Used for parameter subscription and unsubscription.
+ */
 message ParameterSubscriptionRequest {
   repeated yamcs.NamedObjectId id = 1;
   //if set to true, an error message will be sent back if any parameter from the list above is invalid
@@ -97,15 +100,27 @@ message ParameterSubscriptionRequest {
   // otherwise just wait for the parameters to be updated
   optional bool sendFromCache = 4;
 
+  //subcriptionId
+  //  0 or not specified means to add parameters to the first subscription made
+  //     this is for compatibility with the previous yamcs version before 4.1 
+  //     when it was not possible to have multiple subscriptions   
+  // -1 means to create a new subscription
+  // >1 means to add parameters to the existing subcription with that id
+  optional int32 subscriptionId = 5;
+
 //Hack to allow the old subscribe with NamedObjectList to work when json is used.
 // When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
 // remove this field when we are sure nobody uses the old method
   repeated yamcs.NamedObjectId list = 10000 [deprecated=true]; 
 }
 
+/*
+ * Response to parameter subscription
+ *
+ */
 message ParameterSubscriptionResponse {
-  repeated yamcs.NamedObjectId valid = 1;
   repeated yamcs.NamedObjectId invalid = 2;
+  optional int32 subscriptionId = 3;
 }
 
 

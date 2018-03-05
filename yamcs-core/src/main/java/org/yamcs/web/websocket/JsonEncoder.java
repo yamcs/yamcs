@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 import org.yamcs.api.ws.WSConstants;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 
 import com.google.gson.stream.JsonWriter;
@@ -17,13 +16,19 @@ import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 public class JsonEncoder implements WebSocketEncoder {
 
     @Override
-    public WebSocketFrame encodeReply(WebSocketReplyData reply) throws IOException {
+    public WebSocketFrame encodeReply(WebSocketReply reply) throws IOException {
         StringWriter sw = new StringWriter();
         try (JsonWriter writer = new JsonWriter(sw)) {
             writer.beginArray();
             writer.value(WSConstants.PROTOCOL_VERSION);
             writer.value(WSConstants.MESSAGE_TYPE_REPLY);
-            writer.value(reply.getSequenceNumber());
+            writer.value(reply.getRequestId());
+            if(reply.hasData()) {
+                writer.beginObject().name(reply.getDataType());
+                String json = JsonFormat.printer().print(reply.getData());
+                writer.jsonValue(json);
+                writer.endObject();
+            }
             writer.endArray();
         }
         return new TextWebSocketFrame(sw.toString());

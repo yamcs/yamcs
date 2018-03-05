@@ -49,10 +49,10 @@ public class ProtobufEncoder implements WebSocketEncoder {
     }
 
     @Override
-    public WebSocketFrame encodeReply(WebSocketReplyData reply) throws IOException {
+    public WebSocketFrame encodeReply(WebSocketReply reply) throws IOException {
         WebSocketServerMessage serverMessage = WebSocketServerMessage.newBuilder()
                 .setType(MessageType.REPLY)
-                .setReply(reply)
+                .setReply(reply.toWebSocketReplyData())
                 .build();
         return toFrame(serverMessage);
     }

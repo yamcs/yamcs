@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Archive.ColumnData;
 import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Rest.StreamSubscribeRequest;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -41,7 +40,7 @@ public class StreamResource extends AbstractWebSocketResource {
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
         switch (ctx.getOperation()) {
         case OP_subscribe:
@@ -53,7 +52,7 @@ public class StreamResource extends AbstractWebSocketResource {
         }
     }
 
-    private WebSocketReplyData processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+    private WebSocketReply processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
 
@@ -90,7 +89,7 @@ public class StreamResource extends AbstractWebSocketResource {
 
         stream.addSubscriber(subscriber);
         subscriptions.add(new Subscription(stream, subscriber));
-        return toAckReply(ctx.getRequestId());
+        return WebSocketReply.ack(ctx.getRequestId());
     }
 
     private static DataType dataTypeFromValue(Value value) {
@@ -150,7 +149,7 @@ public class StreamResource extends AbstractWebSocketResource {
         }
     }
 
-    private WebSocketReplyData processPublishRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+    private WebSocketReply processPublishRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
 
@@ -188,7 +187,7 @@ public class StreamResource extends AbstractWebSocketResource {
         Tuple t = new Tuple(tdef, tupleColumns);
         log.info("Emitting tuple {} to {}", t, stream.getName());
         stream.emitTuple(t);
-        return toAckReply(ctx.getRequestId());
+        return WebSocketReply.ack(ctx.getRequestId());
     }
 
     private static ColumnData findColumnValue(StreamData tupleData, String name) {

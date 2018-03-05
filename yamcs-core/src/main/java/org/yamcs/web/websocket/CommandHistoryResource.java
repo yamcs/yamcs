@@ -12,7 +12,6 @@ import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.utils.ValueUtility;
 
@@ -31,7 +30,7 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
         switch (ctx.getOperation()) {
         case "subscribe":
@@ -41,12 +40,12 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
         }
     }
 
-    private WebSocketReplyData subscribe(int requestId) {
+    private WebSocketReply subscribe(int requestId) {
         CommandHistoryRequestManager chrm = processor.getCommandHistoryManager();
         if (chrm != null) {
             subscriptionId = chrm.subscribeCommandHistory(null, 0, this);
         }
-        return toAckReply(requestId);
+        return WebSocketReply.ack(requestId);
     }
 
     /**

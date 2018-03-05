@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.archive.EventRecorder;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.utils.TimeEncoding;
@@ -36,7 +35,7 @@ public class EventResource extends AbstractWebSocketResource {
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
         switch (ctx.getOperation()) {
         case OP_subscribe:
@@ -48,10 +47,10 @@ public class EventResource extends AbstractWebSocketResource {
         }
     }
 
-    private WebSocketReplyData subscribe(int requestId) throws WebSocketException {
+    private WebSocketReply subscribe(int requestId) throws WebSocketException {
         doUnsubscribe(); // Only one subscription at a time
         doSubscribe();
-        return toAckReply(requestId);
+        return WebSocketReply.ack(requestId);
     }
 
     @Override
@@ -67,9 +66,9 @@ public class EventResource extends AbstractWebSocketResource {
         }
     }
 
-    private WebSocketReplyData unsubscribe(int requestId) throws WebSocketException {
+    private WebSocketReply unsubscribe(int requestId) throws WebSocketException {
         doUnsubscribe();
-        return toAckReply(requestId);
+        return WebSocketReply.ack(requestId);
     }
 
     @Override

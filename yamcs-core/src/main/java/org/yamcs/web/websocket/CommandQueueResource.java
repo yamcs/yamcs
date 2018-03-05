@@ -16,7 +16,6 @@ import org.yamcs.protobuf.Commanding.CommandQueueEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueEvent;
 import org.yamcs.protobuf.Commanding.CommandQueueEvent.Type;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 
 /**
@@ -37,7 +36,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
         switch (ctx.getOperation()) {
         case OP_subscribe:
@@ -49,9 +48,9 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
         }
     }
 
-    private WebSocketReplyData subscribe(int requestId) throws WebSocketException {
+    private WebSocketReply subscribe(int requestId) throws WebSocketException {
         try {
-            WebSocketReplyData reply = toAckReply(requestId);
+            WebSocketReply reply = WebSocketReply.ack(requestId);
             wsHandler.sendReply(reply);
             doSubscribe();
             return null;
@@ -61,9 +60,9 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
         }
     }
 
-    private WebSocketReplyData unsubscribe(int requestId) throws WebSocketException {
+    private WebSocketReply unsubscribe(int requestId) throws WebSocketException {
         doUnsubscribe();
-        return toAckReply(requestId);
+        return WebSocketReply.ack(requestId);
     }
 
     @Override

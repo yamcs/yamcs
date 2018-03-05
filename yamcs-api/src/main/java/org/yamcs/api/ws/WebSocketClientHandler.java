@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.ws.WebSocketClient.RequestResponsePair;
+import org.yamcs.protobuf.Web.ParameterSubscriptionResponse;
 import org.yamcs.protobuf.Web.WebSocketServerMessage;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
@@ -147,6 +148,13 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
                 byte[] barray = reply.getData().toByteArray();
                 NamedObjectList invalidList = NamedObjectList.newBuilder().mergeFrom(barray).build();
                 for (NamedObjectId invalidId : invalidList.getListList()) {
+                    // Notify downstream
+                    callback.onInvalidIdentification(invalidId);
+                }
+            } else if (ParameterSubscriptionResponse.class.getSimpleName().equals(dataType)) {
+                byte[] barray = reply.getData().toByteArray();
+                ParameterSubscriptionResponse psr = ParameterSubscriptionResponse.newBuilder().mergeFrom(barray).build();
+                for (NamedObjectId invalidId : psr.getInvalidList()) {
                     // Notify downstream
                     callback.onInvalidIdentification(invalidId);
                 }

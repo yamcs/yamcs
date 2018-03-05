@@ -36,7 +36,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
         switch (ctx.getOperation()) {
         case OP_getProcessorInfo:
@@ -50,11 +50,11 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
         }
     }
 
-    private WebSocketReplyData processGetProcessorInfoRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
+    private WebSocketReply processGetProcessorInfoRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
         int requestId = ctx.getRequestId();
         ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
         try {
-            wsHandler.sendReply(toAckReply(requestId));
+            wsHandler.sendReply(WebSocketReply.ack(requestId));
             wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, pinfo);
         } catch (IOException e) {
             log.warn("Exception when sending data", e);
@@ -64,12 +64,12 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
     }
 
     // return client info of this client
-    private WebSocketReplyData processGetClientInfoRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
+    private WebSocketReply processGetClientInfoRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
         int requestId = ctx.getRequestId();
         ClientInfo cinfo = ManagementService.getInstance().getClientInfo(clientId);
         cinfo = ClientInfo.newBuilder(cinfo).setState(ClientState.CONNECTED).setCurrentClient(true).build();
         try {
-            wsHandler.sendReply(toAckReply(requestId));
+            wsHandler.sendReply(WebSocketReply.ack(requestId));
             wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo);
         } catch (IOException e) {
             log.error("Exception when sending data", e);
@@ -85,9 +85,9 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
      * Calling this multiple times, will cause the current set of data to be sent again. Further updates will still
      * arrive one-time only.
      */
-    private WebSocketReplyData processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
+    private WebSocketReply processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
         try {
-            wsHandler.sendReply(toAckReply(ctx.getRequestId()));
+            wsHandler.sendReply(WebSocketReply.ack(ctx.getRequestId()));
 
             // Send current set of processors
             for (Processor processor : Processor.getProcessors()) {

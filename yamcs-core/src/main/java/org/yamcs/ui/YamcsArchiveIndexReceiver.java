@@ -13,9 +13,7 @@ import org.yamcs.protobuf.Rest.CreateTagRequest;
 import org.yamcs.protobuf.Rest.EditTagRequest;
 import org.yamcs.protobuf.Rest.ListTagsResponse;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
-import org.yamcs.protobuf.Yamcs.DeleteTagRequest;
 import org.yamcs.protobuf.Yamcs.IndexResult;
-import org.yamcs.protobuf.Yamcs.UpsertTagRequest;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 

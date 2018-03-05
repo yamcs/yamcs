@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.tctm.TmDataLinkInitialiser;
@@ -35,7 +34,7 @@ public class PacketResource extends AbstractWebSocketResource {
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
         String op = ctx.getOperation();
         if (OP_unsubscribe.equals(op)) {
@@ -64,10 +63,10 @@ public class PacketResource extends AbstractWebSocketResource {
         throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
     }
 
-    private WebSocketReplyData subscribe(int requestId) throws WebSocketException {
+    private WebSocketReply subscribe(int requestId) throws WebSocketException {
         doUnsubscribe(); // Only one subscription at a time
         doSubscribe();
-        return toAckReply(requestId);
+        return WebSocketReply.ack(requestId);
     }
 
     @Override
@@ -79,9 +78,9 @@ public class PacketResource extends AbstractWebSocketResource {
         doSubscribe();
     }
 
-    private WebSocketReplyData unsubscribe(int requestId) throws WebSocketException {
+    private WebSocketReply unsubscribe(int requestId) throws WebSocketException {
         doUnsubscribe();
-        return toAckReply(requestId);
+        return WebSocketReply.ack(requestId);
     }
 
     @Override

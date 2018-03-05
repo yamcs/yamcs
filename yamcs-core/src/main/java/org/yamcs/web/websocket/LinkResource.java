@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.management.LinkListener;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.YamcsManagement.LinkEvent;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
@@ -27,7 +26,7 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
         switch (ctx.getOperation()) {
         case OP_subscribe:
@@ -39,12 +38,11 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
         }
     }
 
-    private WebSocketReplyData subscribe(int requestId) throws WebSocketException {
+    private WebSocketReply subscribe(int requestId) throws WebSocketException {
         ManagementService mservice = ManagementService.getInstance();
 
         try {
-            WebSocketReplyData reply = toAckReply(requestId);
-            wsHandler.sendReply(reply);
+            wsHandler.sendReply(WebSocketReply.ack(requestId));
 
             for (LinkInfo linkInfo : mservice.getLinkInfo()) {
                 sendLinkInfo(LinkEvent.Type.REGISTERED, linkInfo);
@@ -57,10 +55,10 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
         }
     }
 
-    private WebSocketReplyData unsubscribe(int requestId) throws WebSocketException {
+    private WebSocketReply unsubscribe(int requestId) throws WebSocketException {
         ManagementService mservice = ManagementService.getInstance();
         mservice.removeLinkListener(this);
-        return toAckReply(requestId);
+        return WebSocketReply.ack(requestId);
     }
 
     @Override

@@ -2,7 +2,6 @@ package org.yamcs.web.websocket;
 
 import java.io.IOException;
 
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 
 import com.google.protobuf.Message;
@@ -11,7 +10,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 
 public interface WebSocketEncoder {
 
-    WebSocketFrame encodeReply(WebSocketReplyData reply) throws IOException;
+    WebSocketFrame encodeReply(WebSocketReply reply) throws IOException;
 
     WebSocketFrame encodeException(WebSocketException e) throws IOException;
 

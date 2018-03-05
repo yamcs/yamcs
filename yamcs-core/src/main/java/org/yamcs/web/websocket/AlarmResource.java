@@ -10,7 +10,6 @@ import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmListener;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.protobuf.Alarms.AlarmData;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.web.rest.processor.ProcessorHelper;
 
@@ -27,7 +26,7 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
     }
 
     @Override
-    public WebSocketReplyData processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
         switch (ctx.getOperation()) {
         case "subscribe":
@@ -39,10 +38,9 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
         }
     }
 
-    private WebSocketReplyData subscribe(int requestId) throws WebSocketException {
+    private WebSocketReply subscribe(int requestId) throws WebSocketException {
         try {
-            WebSocketReplyData reply = toAckReply(requestId);
-            wsHandler.sendReply(reply);
+            wsHandler.sendReply(WebSocketReply.ack(requestId));
             doSubscribe();
             return null;
         } catch (IOException e) {
@@ -51,9 +49,9 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
         }
     }
 
-    private WebSocketReplyData unsubscribe(int requestId) throws WebSocketException {
+    private WebSocketReply unsubscribe(int requestId) throws WebSocketException {
         doUnsubscribe();
-        return toAckReply(requestId);
+        return WebSocketReply.ack(requestId);
     }
 
     @Override

@@ -95,9 +95,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         NamedObjectId invalidId = wsListener.invalidIdentificationList.poll(5, TimeUnit.SECONDS);
         assertNotNull(invalidId);
         assertEquals("/REFMDB/SUBSYS1/InvalidParaName", invalidId.getName());
-        // TODO: because there is an invalid parameter, the request is sent back so we have to wait a little;
-        // should fix this - we should have an ack that the thing has been subscribed
-        // Thread.sleep(1000);
+       
         // generate some TM packets and monitor realtime reception
         for (int i = 0; i < 10; i++) {
             packetGenerator.generate_PKT1_1();
