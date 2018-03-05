@@ -41,6 +41,8 @@ import org.yamcs.protobuf.Rest.IssueCommandResponse;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
 import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
+import org.yamcs.protobuf.Web.ParameterSubscriptionResponse;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -89,12 +91,14 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 "/REFMDB/SUBSYS1/InvalidParaName");
 
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", invalidSubscrList);
-        CompletableFuture<Void> cf = wsClient.sendRequest(wsr);
+        CompletableFuture<WebSocketReplyData> cf = wsClient.sendRequest(wsr);
 
-        cf.get();
-        NamedObjectId invalidId = wsListener.invalidIdentificationList.poll(5, TimeUnit.SECONDS);
-        assertNotNull(invalidId);
-        assertEquals("/REFMDB/SUBSYS1/InvalidParaName", invalidId.getName());
+        WebSocketReplyData wsrd = cf.get();
+        assertTrue(wsrd.hasData());
+        assertEquals(ParameterSubscriptionResponse.class.getSimpleName(), wsrd.getType());
+        ParameterSubscriptionResponse psr = ParameterSubscriptionResponse.parseFrom(wsrd.getData());
+        assertEquals(1, psr.getInvalidCount());
+        assertEquals("/REFMDB/SUBSYS1/InvalidParaName", psr.getInvalid(0).getName());
        
         // generate some TM packets and monitor realtime reception
         for (int i = 0; i < 10; i++) {

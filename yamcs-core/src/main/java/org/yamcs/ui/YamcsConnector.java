@@ -23,6 +23,7 @@ import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.api.ws.WebSocketResponseHandler;
+import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 
@@ -230,7 +231,7 @@ public class YamcsConnector implements WebSocketClientCallback {
         wsClient.sendRequest(wsr,  wsrh);
     }
     
-    public CompletableFuture<Void> performSubscription(WebSocketRequest wsr, WebSocketClientCallback client) {
+    public CompletableFuture<WebSocketReplyData> performSubscription(WebSocketRequest wsr, WebSocketClientCallback client) {
         if(!subscribers.contains(client)){
             subscribers.add(client);
         }

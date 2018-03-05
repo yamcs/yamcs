@@ -178,7 +178,6 @@ public abstract class AbstractIntegrationTest {
         Semaphore onConnect = new Semaphore(0);
         Semaphore onDisconnect = new Semaphore(0);
 
-        LinkedBlockingQueue<NamedObjectId> invalidIdentificationList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<ParameterData> parameterDataList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<CommandHistoryEntry> cmdHistoryDataList = new LinkedBlockingQueue<>();
         LinkedBlockingQueue<ClientInfo> clientInfoList = new LinkedBlockingQueue<>();
@@ -205,10 +204,6 @@ public abstract class AbstractIntegrationTest {
             onDisconnect.release();
         }
 
-        @Override
-        public void onInvalidIdentification(NamedObjectId id) {
-            invalidIdentificationList.add(id);
-        }
 
         @Override
         public void onMessage(WebSocketSubscriptionData data) {

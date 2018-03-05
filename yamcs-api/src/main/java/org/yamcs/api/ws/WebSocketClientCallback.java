@@ -29,9 +29,5 @@ public interface WebSocketClientCallback {
     default void disconnected() {
     }
 
-    // TODO get this out of here and into the WebSocketResponseHandler
-    default void onInvalidIdentification(NamedObjectId id) {
-    }
-
     void onMessage(WebSocketSubscriptionData data);
 }

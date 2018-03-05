@@ -142,26 +142,8 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
             log.warn("Received an exception for a request I did not send (or was already finished) seqNum: {}", reqId);
             return;
         }
-        if (reply.hasData()) {
-            String dataType = reply.getType();
-            if ("InvalidIdentification".equals(dataType)) {
-                byte[] barray = reply.getData().toByteArray();
-                NamedObjectList invalidList = NamedObjectList.newBuilder().mergeFrom(barray).build();
-                for (NamedObjectId invalidId : invalidList.getListList()) {
-                    // Notify downstream
-                    callback.onInvalidIdentification(invalidId);
-                }
-            } else if (ParameterSubscriptionResponse.class.getSimpleName().equals(dataType)) {
-                byte[] barray = reply.getData().toByteArray();
-                ParameterSubscriptionResponse psr = ParameterSubscriptionResponse.newBuilder().mergeFrom(barray).build();
-                for (NamedObjectId invalidId : psr.getInvalidList()) {
-                    // Notify downstream
-                    callback.onInvalidIdentification(invalidId);
-                }
-            }
-        }
         if (pair.responseHandler != null) {
-            pair.responseHandler.onCompletion();
+            pair.responseHandler.onCompletion(reply);
         }
     }
 
