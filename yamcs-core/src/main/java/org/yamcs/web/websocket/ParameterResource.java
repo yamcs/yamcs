@@ -140,6 +140,9 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                         } else {
                             subscriptionId = pidrm.addRequest(idList, req.getUpdateOnExpiration(), authToken);
                         }
+                        if(firstSubscriptionId == -1) {
+                            firstSubscriptionId = subscriptionId;
+                        }
                     }
                     ParameterSubscriptionResponse psr = ParameterSubscriptionResponse.newBuilder().setSubscriptionId(subscriptionId)
                             .addAllInvalid(e.getInvalidParameters()).build();
