@@ -106,7 +106,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                     pidrm.addItemsToRequest(subscriptionId, idList, authToken);
                 } else {
                     subscriptionId = pidrm.addRequest(idList, req.getUpdateOnExpiration(), authToken);
-                    if(firstSubscriptionId!=-1) {
+                    if(firstSubscriptionId == -1) {
                         firstSubscriptionId = subscriptionId;
                     }
                 }
