@@ -9,7 +9,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -20,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.NameReference;
 import org.yamcs.xtce.Algorithm;
@@ -94,7 +99,7 @@ public class XtceDbFactory {
 
         boolean loadSerialized = attemptToLoadSerialized;
         boolean serializedLoaded = false;
-        String filename = loaderTree.getConfigName()+".xtce";
+        String filename = sha1(loaderTree.getConfigName()+".xtce");
 
         if (loadSerialized) {
             if (new File(getFullName(filename) + ".serialized").exists()) {
@@ -570,6 +575,16 @@ public class XtceDbFactory {
     public synchronized static void reset() {
         instance2Db.clear();
         instance2DbConfigs.clear();
+    }
+    
+    private static String sha1(String input) throws ConfigurationException {
+        try {
+            MessageDigest msdDigest = MessageDigest.getInstance("SHA-1");
+            msdDigest.update(input.getBytes("UTF-8"), 0, input.length());
+            return StringConverter.arrayToHexString(msdDigest.digest());
+        } catch(NoSuchAlgorithmException|UnsupportedEncodingException e) {
+            throw new ConfigurationException("Cannot compute SHA-1 of a string", e);
+        }
     }
 
     static class LoaderTree {
