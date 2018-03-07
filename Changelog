@@ -1,10 +1,10 @@
-Version 4.1.1 released
+Version 4.1.1 released 7-Mar-2018
  - added an alternative Parameter Cache that consumes less memory by using array of primitives to store parameter values
  - refurbished yamcs-web
  - support multiple parameter subscriptions via the websocket
 
 
-Version 4.0.1 released 23-Jan-2017
+Version 4.0.1 released 23-Jan-2018
  - fixed Artemis data links
  - the parameter select dialog from the Archive Browser will show now also parameters that are not part of containers
 
