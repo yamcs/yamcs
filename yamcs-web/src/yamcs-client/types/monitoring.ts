@@ -1,4 +1,4 @@
-import { Alias, AlarmRange } from './mdb';
+import { Alias, AlarmRange, Parameter } from './mdb';
 
 export interface Value {
   type: 'FLOAT'
@@ -98,6 +98,7 @@ export interface Alarm {
   currentValue: ParameterValue;
   violations: number;
   acknowledgeInfo: AcknowledgeInfo;
+  parameter: Parameter;
 }
 
 export interface AcknowledgeInfo {

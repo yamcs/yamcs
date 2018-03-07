@@ -453,7 +453,7 @@ public class XtceToGpbAssembler {
 
         b.setName(p.getName());
         b.setQualifiedName(p.getQualifiedName());
-        if (!options.contains(Option.NO_LINK)) {
+        if (!options.contains(Option.NO_LINK) && mdbURL != null) {
             b.setUrl(mdbURL + "/parameters" + p.getQualifiedName());
         }
 

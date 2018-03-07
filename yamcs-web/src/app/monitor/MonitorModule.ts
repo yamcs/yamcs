@@ -8,6 +8,7 @@ import { DisplayNavigator } from './displays/DisplayNavigator';
 import { SaveLayoutDialog } from './displays/SaveLayoutDialog';
 import { LayoutComponent } from './displays/LayoutComponent';
 import { AlarmSeverityComponent } from './alarms/AlarmSeverityComponent';
+import { AlarmDetail } from './alarms/AlarmDetail';
 
 const dialogComponents = [
   SaveLayoutDialog,
@@ -21,6 +22,7 @@ const dialogComponents = [
   declarations: [
     routingComponents,
     dialogComponents,
+    AlarmDetail,
     AlarmSeverityComponent,
     DisplayNavigator,
     EventSeverityComponent,

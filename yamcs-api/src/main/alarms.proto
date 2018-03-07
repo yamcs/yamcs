@@ -3,6 +3,7 @@ syntax="proto2";
 package alarms;
 option java_package = "org.yamcs.protobuf";
 
+import "mdb.proto";
 import "pvalue.proto";
 
 message AcknowledgeInfo {
@@ -28,4 +29,5 @@ message AlarmData {
   optional pvalue.ParameterValue currentValue = 5;
   optional uint32 violations = 6;
   optional AcknowledgeInfo acknowledgeInfo = 7;
+  optional mdb.ParameterInfo parameter = 8;
 }

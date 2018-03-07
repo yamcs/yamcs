@@ -21,14 +21,10 @@ export class TableDataTab {
   selectedRecord$ = new BehaviorSubject<Record | null>(null);
 
   constructor(route: ActivatedRoute, yamcs: YamcsService) {
-    const parent = route.snapshot.parent;
-    if (parent) {
-      const name = parent.paramMap.get('name');
-      if (name) {
-        this.table$ = yamcs.getSelectedInstance().getTable(name);
-        this.records$ = yamcs.getSelectedInstance().getTableData(name);
-      }
-    }
+    const parent = route.snapshot.parent!;
+    const name = parent.paramMap.get('name')!;
+    this.table$ = yamcs.getSelectedInstance().getTable(name);
+    this.records$ = yamcs.getSelectedInstance().getTableData(name);
   }
 
   getColumnValue(record: Record, columnName: string) {
